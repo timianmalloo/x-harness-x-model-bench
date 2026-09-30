@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enterprise production portfolio</title>
+<meta name="description" content="What the harness-bench portfolio needs so it can measure Enterprise/Production development (security, compliance, privacy, resilience, operability, long-horizon change, rework, simplicity) separately from raw SWE capability.">
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --ink:#17202a; --ink-2:#4a5563; --ink-3:#7d8796;
+  --rule:#d8dde4; --rule-2:#eceff3; --accent:#1f5fbf;
+  --yes:#17804a; --yes-bg:#e5f4ec; --no:#b3261e; --no-bg:#fbe9e7; --part:#8a5a00; --part-bg:#fbf1dc;
+  --code:#eef1f5;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono","SFMono-Regular",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101418; --panel:#171c22; --ink:#e7ebf0; --ink-2:#b3bcc7; --ink-3:#7f8a97;
+    --rule:#2a323c; --rule-2:#1e252d; --accent:#7fb0ff;
+    --yes:#5fd394; --yes-bg:#15291f; --no:#ff8a80; --no-bg:#33191a; --part:#f0c060; --part-bg:#2e2513;
+    --code:#1f262e;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101418; --panel:#171c22; --ink:#e7ebf0; --ink-2:#b3bcc7; --ink-3:#7f8a97;
+  --rule:#2a323c; --rule-2:#1e252d; --accent:#7fb0ff;
+  --yes:#5fd394; --yes-bg:#15291f; --no:#ff8a80; --no-bg:#33191a; --part:#f0c060; --part-bg:#2e2513;
+  --code:#1f262e;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--font);font-variant-numeric:tabular-nums}
+main{max-width:1080px;margin:0 auto;padding:28px 16px 80px}
+h1{font-size:clamp(22px,4vw,30px);line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
+h2{font-size:21px;margin:44px 0 10px;padding-top:10px;border-top:1px solid var(--rule)}
+h3{font-size:16px;margin:22px 0 6px}
+p,li{max-width:78ch}
+a{color:var(--accent)}
+code{font-family:var(--mono);font-size:.88em;background:var(--code);padding:1px 4px;border-radius:4px;overflow-wrap:anywhere}
+.meta{color:var(--ink-2);font-size:13.5px;margin:0 0 18px}
+.lede{font-size:16.5px;max-width:80ch}
+nav.toc{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13.5px;margin:14px 0 4px}
+.wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--rule);border-radius:8px;background:var(--panel);margin:10px 0 6px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+caption{text-align:left;padding:10px 12px 4px;font-weight:600}
+th,td{padding:7px 10px;border-bottom:1px solid var(--rule-2);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--ink-2);white-space:nowrap}
+td.c{text-align:center}
+td.n{text-align:right;white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+.y,.x,.p{display:inline-block;min-width:22px;font-size:12px;font-weight:700;padding:0 6px;border-radius:9px}
+.y{color:var(--yes);background:var(--yes-bg)} .x{color:var(--no);background:var(--no-bg)} .p{color:var(--part);background:var(--part-bg)}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:12px 16px;margin:10px 0}
+.card h3{margin-top:4px}
+.card dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 12px;margin:6px 0 0;font-size:14px}
+.card dt{color:var(--ink-2);font-weight:600}
+.card dd{margin:0}
+.small{font-size:13px;color:var(--ink-2)}
+.lbl{font-size:11.5px;font-weight:700;letter-spacing:.03em;color:var(--ink-2);border:1px solid var(--rule);border-radius:4px;padding:0 4px;white-space:nowrap}
+@media (max-width:560px){.card dl{grid-template-columns:1fr}.card dt{margin-top:6px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>An Enterprise/Production portfolio for harness-bench</h1>
+<p class="meta">Proposal, 2026-09-30 · companion to <a href="pack-onoff-analysis.html">Pack on vs pack off: grid-1 analysis</a> · grounded in BOM 0.5 (<code>bench/bom.yaml</code>) and metrics catalog 0.5 (<code>bench/metrics.yaml</code>) · worker-opus-pack (Claude Opus 5.5)</p>
+<nav class="toc" aria-label="Sections">
+<a href="#problem">Problem</a><a href="#gaps">BOM gaps</a><a href="#principles">Design rules</a><a href="#families">Task families</a><a href="#metrics">Graders and metrics</a><a href="#power">Sample sizes</a><a href="#mapping">Intention map</a><a href="#rollout">Rollout</a><a href="#risks">Risks</a>
+</nav>
+</header>
+
+<section id="problem">
+<h2>The problem</h2>
+<p class="lede">Today the portfolio measures <strong>SWE capability</strong>: can the agent make hidden tests pass on a small, fully specified task. On the smoke tasks, pack-off agents already pass 48 of 54 cells, and 5 of 6 tasks reach 100% pack-off. The AI-Forward pack claims something different. It claims to catch what a capable agent <em>misses</em>: a trust boundary, a piece of personal data, a flaky dependency, a follow-up change that punishes a short-sighted design, an API that changed since training. None of the 22 BOM tasks carries such a latent requirement with a mechanical oracle. So the benchmark cannot tell rigor that pays from ceremony that costs. This proposal adds that axis without turning the benchmark into a judge-driven essay contest.</p>
+</section>
+
+<section id="gaps">
+<h2>Current BOM gaps</h2>
+<p class="small">Coverage of enterprise concerns by BOM 0.5 task, read from task titles, graders and metrics. <span class="y">Y</span> = a mechanical oracle measures the concern; <span class="p">P</span> = partial or judge-only; <span class="x">—</span> = not exercised.</p>
+<div class="wrap"><table>
+<caption>BOM 0.5 against the enterprise concerns</caption>
+<thead><tr><th>Tasks</th><th>Security</th><th>Privacy</th><th>Compliance</th><th>Resilience</th><th>Operability</th><th>Long horizon / rework</th><th>Unfamiliar API (spike)</th><th>Simplicity</th></tr></thead>
+<tbody>
+<tr><td>A1–A5 clarify</td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td></tr>
+<tr><td>B1–B3 primer → spec</td><td class="c"><span class="p">P</span></td><td class="c"><span class="p">P</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="p">P</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td></tr>
+<tr><td>C1–C2 spec → architecture</td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="p">P</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="p">P</span></td></tr>
+<tr><td>D1–D3 architecture → code</td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="p">P</span></td></tr>
+<tr><td>E1–E7 prompt → code</td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="p">P</span></td><td class="c"><span class="x">—</span></td></tr>
+<tr><td>F1–F2 multi-agent</td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td></tr>
+<tr><td>G1–G2 formal</td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="y">Y</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="x">—</span></td><td class="c"><span class="p">P</span></td><td class="c"><span class="x">—</span></td></tr>
+</tbody></table></div>
+<ul>
+<li><strong>Security, privacy, compliance, operability:</strong> no task exercises them mechanically. The only judge metric near them (<code>error_handling</code>) was not recorded in grid-1.</li>
+<li><strong>Resilience:</strong> only G1 and G2 (a lease protocol, as a model check and as proofs) touch it. No task puts a failing dependency in front of the agent's code.</li>
+<li><strong>Long horizon and rework:</strong> every task is one session and one prompt. Nothing measures the cost of coming back.</li>
+<li><strong>Spike:</strong> E1–E3 (Terminal-Bench tools) and G1–G2 (TLA+ and Lean toolchains) may involve unfamiliar tooling, but nothing measures whether the agent verified an API before depending on it.</li>
+<li><strong>Simplicity:</strong> <code>maintainability</code> and <code>static_analysis_delta</code> exist only on D1, and nothing compares solution size to a reference.</li>
+<li><strong>Measurement gaps that block any of this:</strong> <code>cost_usd</code> is NA (no price list for gpt-6-sol or claude-haiku-4-5). A diverted deliverable is graded like broken code (<a href="pack-onoff-analysis.html#findings">F-4</a>). The A1 clarify matcher missed an exact key question (<a href="pack-onoff-analysis.html#findings">F-10</a>).</li>
+</ul>
+</section>
+
+<section id="principles">
+<h2>Design rules for enterprise tasks</h2>
+<ol>
+<li><strong>Every task hides one latent requirement, and a mechanical oracle checks it.</strong> The prompt states the business ask the way a user would ("add a CSV export of orders"). It never states the enterprise constraint ("validate the tenant"). The constraint is discoverable from the repository: a policy doc, an ADR, an existing guard in a sibling handler, a data-classification file. This tests grounding, which is the pack's claim, rather than instruction following.</li>
+<li><strong>Every family has a control variant with the constraint absent.</strong> Same ask, a repository with no trust boundary or no PII. The control measures false-positive ceremony: security theatre, unneeded retries, added layers. The pack's "aggressively simplify" intention is only testable against a control.</li>
+<li><strong>Mechanical first; a judge only where no oracle can decide.</strong> Follow the catalog's oracle ladder (proof or model check → trace conformance → tests → judge). Use a judge only for artifacts a test cannot evaluate: a threat model's completeness, an ADR's rationale. Use two blind judges with a rubric, as <code>bench/rubrics/</code> already does.</li>
+<li><strong>Graded, not binary, where possible.</strong> "7 of 9 exploit probes blocked" carries more statistical power per cell than pass/fail.</li>
+<li><strong>Brownfield and realistic size.</strong> Reuse the vendored ai-de and cfd-bench trees. Latent requirements need a codebase with conventions to be latent in.</li>
+<li><strong>The deliverable location is part of the contract.</strong> Grade the named checkout. Record a separate validity code when the change exists elsewhere, so "delivered in the wrong place" is never confused with "wrong code".</li>
+</ol>
+</section>
+
+<section id="families">
+<h2>Proposed task families</h2>
+<p class="small">Letters continue the BOM's scenario scheme. Each family: 4 tasks (3 with the latent requirement, 1 control), in C# (ai-de) and Python, so all three harnesses face both.</p>
+
+<div class="card"><h3>H · Security by design</h3>
+<dl><dt>Example</dt><dd>"Add an endpoint that returns a tenant's evidence export." The repo has a tenant guard in sibling handlers and an ADR requiring it. Traps: IDOR, injection through a filter parameter, a secret written to a log.</dd>
+<dt>Oracle</dt><dd>Hidden exploit probes (cross-tenant read, injection payloads, path traversal) run against the built service. A SAST delta on the diff (Semgrep with pinned rules, <code>dotnet</code> analyzers and Bandit). A secret scan (gitleaks-style patterns; the harness's egress scanner already has credential shapes).</dd>
+<dt>Metrics</dt><dd><code>exploit_probes_blocked</code> (ratio), <code>sast_new_findings</code> (count), <code>secrets_in_diff</code> (count), plus <code>pass_at_1</code> for the functional ask.</dd></dl></div>
+
+<div class="card"><h3>I · Privacy and data governance</h3>
+<dl><dt>Example</dt><dd>"Log search queries so we can improve ranking." Fixtures carry seeded PII canaries (emails, national-id shapes), and the repo has a <code>data-classification.md</code>.</dd>
+<dt>Oracle</dt><dd>Run the feature on canary fixtures, then scan logs, outputs, stored rows and captured outbound calls for canary values. The harness already plants and scans canaries for egress (report-record <code>canaries</code>), and this reuses that. Check that a retention or deletion field exists where the classification requires it.</dd>
+<dt>Metrics</dt><dd><code>pii_canary_leaks</code> (count), <code>purpose_fields_present</code> (ratio), <code>third_party_egress_of_pii</code> (count).</dd></dl></div>
+
+<div class="card"><h3>J · Compliance and auditability</h3>
+<dl><dt>Example</dt><dd>"Let an operator correct a ledger entry." Latent: an append-only correction with actor, before and after (the repo's ledger ADR); a reversible, expand-contract migration; new dependencies licence-compatible.</dd>
+<dt>Oracle</dt><dd>Hidden tests assert an audit event with the required fields and no in-place update. Run the down-migration and a round trip. Check new dependencies against an SPDX allowlist.</dd>
+<dt>Metrics</dt><dd><code>audit_event_coverage</code> (ratio), <code>destructive_updates</code> (count), <code>migration_reversible</code> (binary), <code>licence_violations</code> (count).</dd></dl></div>
+
+<div class="card"><h3>K · Resilience</h3>
+<dl><dt>Example</dt><dd>"Fetch rates from the pricing service and cache them." The dependency is a harness-controlled fake that injects latency, 5xx, timeouts and duplicate deliveries.</dd>
+<dt>Oracle</dt><dd>A fault suite with fixed seeds: the call has a timeout, retries are bounded and jittered, duplicates are idempotent, the cache has a bound and does not stampede. G1/G2-style formal checks where a protocol exists.</dd>
+<dt>Metrics</dt><dd><code>fault_suite_pass</code> (ratio), <code>idempotency_violations</code> (count), <code>unbounded_resources</code> (count), p99 latency under the injected fault profile.</dd></dl></div>
+
+<div class="card"><h3>L · Operability and observability</h3>
+<dl><dt>Example</dt><dd>"Add a background job that reconciles stale evidence." The repo's standard requires structured logs with trace ids, stable error codes and a health signal.</dd>
+<dt>Oracle</dt><dd>Run with a file exporter and assert the telemetry contract: spans named, error codes from the registry, RFC 9457 error bodies on the HTTP surface.</dd>
+<dt>Metrics</dt><dd><code>telemetry_contract_coverage</code> (ratio), <code>unregistered_error_codes</code> (count).</dd></dl></div>
+
+<div class="card"><h3>M · Long-horizon change and cost of rework</h3>
+<dl><dt>Example</dt><dd>Two sessions on one repository. Session 1: "add multi-currency totals". Session 2, a fresh session with the session-1 tree: "support a second region with data residency". A short-sighted session 1 (a global static rate, region hard-coded) forces rewrites in session 2.</dd>
+<dt>Oracle</dt><dd>Hidden tests at each step. Session-2 churn is computed against the session-1 tree.</dd>
+<dt>Metrics</dt><dd><code>rework_ratio</code> (session-2 lines changed in session-1 code ÷ session-1 lines added), <code>tokens_to_green_total</code>, <code>wall_to_green_total</code>, <code>regressions_introduced</code>. This family directly tests the claim "get it right first time rather than come back".</dd></dl></div>
+
+<div class="card"><h3>N · Unfamiliar or changed API (Spike Protocol)</h3>
+<dl><dt>Example</dt><dd>Use a vendored library pinned at a version released after the models' training cutoff, where one method was renamed and one default changed from safe to unsafe (for example, TLS verification or a retry default). The task compiles against the model's remembered API only by accident.</dd>
+<dt>Oracle</dt><dd>Hidden behavioural tests on the changed semantics. The transcript is checked for a verification step (source read or minimal probe run) before first use.</dd>
+<dt>Metrics</dt><dd><code>hallucinated_symbol_errors</code> (build errors naming a non-existent member, counted from build logs), <code>unsafe_default_used</code> (binary), <code>verified_before_use</code> (binary, transcript-derived).</dd></dl></div>
+
+<div class="card"><h3>O · Simplicity under constraints (the anti-ceremony family)</h3>
+<dl><dt>Example</dt><dd>The control variants of H–L, plus tasks where over-engineering tempts: "make the timeout configurable", where the repo already has one config pattern.</dd>
+<dt>Oracle</dt><dd>Diff statistics against a reference solution: product lines, new types, new dependencies, new config keys, cyclomatic complexity delta. Also: ceremony files written outside the blast radius.</dd>
+<dt>Metrics</dt><dd><code>size_vs_reference</code> (ratio), <code>new_abstractions</code> (count), <code>new_dependencies</code> (count), <code>unrequested_infrastructure</code> (count).</dd></dl></div>
+
+<div class="card"><h3>P · Drift and rat-holes</h3>
+<dl><dt>Example</dt><dd>A task whose repo has a tempting unrelated failure (a flaky unrelated test, a TODO in a touched file).</dd>
+<dt>Oracle</dt><dd>Existing <code>scope_creep</code>, plus: was the side issue <em>reported</em> (a string match in the final message) rather than fixed.</dd>
+<dt>Metrics</dt><dd><code>scope_creep</code>, <code>side_issue_reported</code> (binary), <code>delivered_in_named_checkout</code> (binary).</dd></dl></div>
+</section>
+
+<section id="metrics">
+<h2>Graders and metrics</h2>
+<div class="wrap"><table>
+<caption>New metrics, mechanical unless marked J</caption>
+<thead><tr><th>Metric</th><th>Grader</th><th>Source</th><th>Better</th><th>Family</th></tr></thead>
+<tbody>
+<tr><td><code>exploit_probes_blocked</code></td><td>security (new)</td><td>D: hidden probe suite</td><td>higher</td><td>H</td></tr>
+<tr><td><code>sast_new_findings</code></td><td>security</td><td>D: pinned SAST rules on diff</td><td>lower</td><td>H, all code tasks</td></tr>
+<tr><td><code>secrets_in_diff</code></td><td>security</td><td>D: credential shapes (reuse egress scanner)</td><td>lower</td><td>all</td></tr>
+<tr><td><code>pii_canary_leaks</code></td><td>privacy (new)</td><td>D: canary scan of outputs, logs, stores</td><td>lower</td><td>I</td></tr>
+<tr><td><code>audit_event_coverage</code></td><td>compliance (new)</td><td>D: hidden tests</td><td>higher</td><td>J</td></tr>
+<tr><td><code>migration_reversible</code></td><td>compliance</td><td>D: down + up round trip</td><td>higher</td><td>J</td></tr>
+<tr><td><code>licence_violations</code></td><td>compliance</td><td>D: SPDX allowlist</td><td>lower</td><td>all</td></tr>
+<tr><td><code>fault_suite_pass</code></td><td>resilience (new)</td><td>D: seeded fault injection</td><td>higher</td><td>K</td></tr>
+<tr><td><code>telemetry_contract_coverage</code></td><td>operability (new)</td><td>D: exporter capture</td><td>higher</td><td>L</td></tr>
+<tr><td><code>rework_ratio</code></td><td>rework (new)</td><td>D: churn across sessions</td><td>lower</td><td>M</td></tr>
+<tr><td><code>tokens_to_green_total</code></td><td>cost</td><td>H: model_calls over sessions</td><td>lower</td><td>M</td></tr>
+<tr><td><code>hallucinated_symbol_errors</code></td><td>correctness</td><td>D: build log parse</td><td>lower</td><td>N, all code tasks</td></tr>
+<tr><td><code>verified_before_use</code></td><td>process</td><td>D: transcript order</td><td>higher</td><td>N</td></tr>
+<tr><td><code>size_vs_reference</code></td><td>simplicity (new)</td><td>D: diff stats against oracle/reference</td><td>lower</td><td>O, all code tasks</td></tr>
+<tr><td><code>delivered_in_named_checkout</code></td><td>validity</td><td>D: archive layout</td><td>higher</td><td>all</td></tr>
+<tr><td><code>threat_model_quality</code></td><td>judge</td><td>J: two blind judges, rubric</td><td>higher</td><td>H (spec variant)</td></tr>
+</tbody></table></div>
+<p>Each new metric goes into <code>bench/metrics.yaml</code> as a catalog bump (0.6) with an anchor and an anchor note, under the freeze rules. Every one must degrade to "not recorded" with a reason, never to 0.</p>
+</section>
+
+<section id="power">
+<h2>Sample sizes for significance</h2>
+<p>grid-1 teaches two things. Cost effects are huge and consistent: token ratio above 1 in 51 of 54 pairs, so 10 pairs settle them. Quality effects are small against a saturated control, and n = 3 per cell detects only a 6-of-9 swing. For binary outcomes, a two-sided α = 0.05 test at 80% power needs about this many cells <em>per arm</em> (normal approximation to two proportions; the arithmetic is shown):</p>
+<div class="wrap"><table>
+<caption>Cells per arm to detect a pass-rate difference</caption>
+<thead><tr><th>Pack-off rate → pack-on rate</th><th>Δ</th><th>n per arm</th><th>What that means</th></tr></thead>
+<tbody>
+<tr><td>0.50 → 0.80</td><td class="n">0.30</td><td class="n">≈ 39</td><td>one family (4 tasks × 5 reps × 2 combos = 40)</td></tr>
+<tr><td>0.60 → 0.80</td><td class="n">0.20</td><td class="n">≈ 81</td><td>two families pooled, or one family × 4 combos</td></tr>
+<tr><td>0.65 → 0.80</td><td class="n">0.15</td><td class="n">≈ 138</td><td>an intention-level verdict pooled across H–L</td></tr>
+</tbody></table></div>
+<p class="small">n = (1.96·√(2p̄q̄) + 0.8416·√(p₁q₁ + p₂q₂))² / Δ². Example: 0.50 → 0.80 gives p̄ = 0.65, (1.322 + 0.539)² / 0.09 ≈ 38.5.</p>
+<ul>
+<li><strong>Design the tasks so the control arm sits near 50%.</strong> A latent requirement that pack-off agents already meet 100% of the time (the grid-1 situation) cannot show any gain. Calibrate each task in a pilot of 5 pack-off cells and drop or harden tasks outside 20–80%.</li>
+<li><strong>Prefer graded metrics</strong> (probes blocked, leak counts). A per-task paired bootstrap on a ratio metric needs roughly half the cells of a binary one at the same effect. <span class="lbl">INFERRED</span>: a rule of thumb that depends on the metric's variance, to be checked in the pilot.</li>
+<li><strong>Pair by task and repetition, and cluster by task.</strong> The board's existing paired bootstrap (<code>stats.paired_delta</code>, by task) is the right estimator. Add a McNemar count per family for the report.</li>
+<li><strong>Five repetitions, not three.</strong> Five gives the per-task direction a chance. Three only suits the smoke ring.</li>
+</ul>
+</section>
+
+<section id="mapping">
+<h2>How each family maps to a pack intention</h2>
+<div class="wrap"><table>
+<caption>Pack intention → family → decisive metric</caption>
+<thead><tr><th>Pack intention</th><th>Families</th><th>Decisive metric</th><th>Pack claim under test</th></tr></thead>
+<tbody>
+<tr><td>Rigor (Rigor Protocol, end-to-end integrity)</td><td>H, J, K, L</td><td>latent-requirement pass rate vs control</td><td>Grounding in the whole intent catches the requirement nobody stated.</td></tr>
+<tr><td>Secure, compliant, private, resilient by design</td><td>H, I, J, K</td><td>exploit_probes_blocked, pii_canary_leaks, audit_event_coverage, fault_suite_pass</td><td>These concerns are designed in, not bolted on later.</td></tr>
+<tr><td>TDD, minimise false positives</td><td>all code families</td><td>hidden-test pass among cells whose own tests were green; mutation_score</td><td>Red-first tests reject a solution that only looks done.</td></tr>
+<tr><td>Spike Protocol, fewer hallucinations</td><td>N</td><td>hallucinated_symbol_errors, unsafe_default_used</td><td>Verify an API before depending on it.</td></tr>
+<tr><td>No excessive ceremony</td><td>O, and every control variant</td><td>tokens and wall on controls; unrequested_infrastructure</td><td>Ceremony scales with the tier.</td></tr>
+<tr><td>No drift or rat-holes</td><td>P, all</td><td>scope_creep, delivered_in_named_checkout</td><td>Stay on the requested outcome.</td></tr>
+<tr><td>Extra cost is value, less rework</td><td>M</td><td>rework_ratio, tokens_to_green_total</td><td>Getting it right first time is cheaper over two sessions.</td></tr>
+<tr><td>Aggressively simplify</td><td>O</td><td>size_vs_reference, new_abstractions</td><td>The smallest correct solution, even under enterprise constraints.</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="rollout">
+<h2>Rollout</h2>
+<ol>
+<li><strong>Phase 0: fix measurement (before any new task).</strong> Add a price list for every served model. Add a validity code for a deliverable outside the named checkout, and grade the diverted tree as a secondary score. Fix the A1 matcher (it matched none of three near-verbatim key questions). Record the judge metrics, or remove them from the catalog's weights until they are recorded. Fix the B1 heading check, which fails both arms for layout. Ship the pack-improvement report section (<a href="../design/pack-improvement-section.md">spec</a>).</li>
+<li><strong>Phase 1: three families (H security, K resilience, M rework)</strong>, 4 tasks each, pilot-calibrated. These three test the pack's most expensive claims: designed-in security, resilience, and right-first-time.</li>
+<li><strong>Phase 2: I, J, N, O.</strong> O's control variants reuse H–L repositories, so they cost little to author.</li>
+<li><strong>Phase 3: L, P</strong>, and the ring split. One task per family goes into the smoke ring (every pack revision); the full families run at pack release.</li>
+</ol>
+<p><strong>Cost estimate</strong> <span class="lbl">INFERRED</span> from grid-1's measured means (pack-on about 3.9 min and 1.4 M tokens per cell): one family at 4 tasks × 5 reps × 2 packs × 3 combos is 120 cells, about 8 agent-hours and 100–170 M tokens. Brownfield tasks will run longer than the smoke tasks; the pilot measures this.</p>
+</section>
+
+<section id="risks">
+<h2>Risks and how they are contained</h2>
+<ul>
+<li><strong>Teaching to the test.</strong> The pack could add "check for tenant guards" rules. Contain: the latent requirement is found by grounding in repo evidence, and it varies by task. Held-out families are not published to the pack authors until after a pack revision is measured.</li>
+<li><strong>Judge creep.</strong> Contain: the metric table is mechanical except for one judge row. New judge metrics need a written reason that no oracle rung can decide the property.</li>
+<li><strong>Enterprise tasks that reward complexity.</strong> Contain: every family has a control, and family O penalises unrequested infrastructure, so heavy-handedness costs points.</li>
+<li><strong>Contamination.</strong> Contain: authored tasks on vendored private-history trees, and post-cutoff library versions for N. <code>CONTAMINATION_PRONE</code> exclusion continues for public-benchmark tasks.</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

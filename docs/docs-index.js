@@ -1366,7 +1366,47 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d25da6e28666eaab36ce9d234843b8359c990b3b42ac985175bfa56392af60a8"
+      "sourceSha256": "3a3352452011bf8332e3d25d5f2aa0e72c35225961e1cbbd1241848425163c84"
+    },
+    {
+      "id": "design-pack-improvement-section",
+      "path": "docs/design/pack-improvement-section.md",
+      "title": "Design: the report's closing section, \\\"Pack on vs pack off — where to improve the pack\\\"",
+      "type": "design",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 4 · report (follow-on to row 20)",
+      "reviewBy": "2027-03-31",
+      "reviewSuggested": [],
+      "summary": "Specifies a report section that is always present and always last: from a run's own facts it computes paired pack-on/pack-off deltas, a value-vs-waste class per (task, combo), ceremony and drift indicators read from the native records, inconclusive detection, per-intention verdicts and a ranked, deterministic list of \"where to improve the pack\" findings (PK-01..PK-08). Every number names its source file and field; NA always carries a reason and small n is always shown. Report-only (no new ledger fact); red-first test plan with goldens from grid-1 and grid-1-cc; six slices. Written for an engineer who was not in the analysis session.",
+      "tags": [
+        "benchmark",
+        "report",
+        "pack-effect",
+        "continuous-improvement",
+        "statistics",
+        "transcripts"
+      ],
+      "links": [
+        {
+          "to": "design-phase4-report",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-phase4-statistics",
+          "rel": "depends-on"
+        },
+        {
+          "to": "proposal-pack-onoff-analysis",
+          "rel": "implements"
+        },
+        {
+          "to": "proposal-enterprise-production-portfolio",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "1f343bb4b344d27dbcb09d60fcc59eead585ce7a8f4ec91aeac0f8b872f73123"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -2152,6 +2192,43 @@ window.DOCS_INDEX = {
       "sourceSha256": "6e60fa814c6eae61a7b55760e8315c186138ee62e0783571b412994046748e4e"
     },
     {
+      "id": "note-spike-fm1-tla-trace-validation",
+      "path": "docs/notes/spike-fm1-tla-trace-validation.md",
+      "title": "Spike DR-FM1: TLC's external-trace-validation mechanism, measured on this host",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Phase 2: deterministic graders (S-08g); unblocks T-G1's model_conformance/model_non_vacuity",
+      "reviewBy": "2026-10-29",
+      "reviewSuggested": [],
+      "summary": "DR-FM1's granted spike (docs/notes/rulings.md R-84), run on this host. TWO documented TLC trace-validation mechanisms were opened and read: the current one (tlaplus/Examples' EWD998ChanTrace.tla, using the Json/IOUtils CommunityModules and a POSTCONDITION) and the original one (Pressler/Kuppe, \"Verifying Software Traces Against a Formal Specification with TLA+ and TLC\", Dec 2018). The pinned tla2tools v1.7.4 (TLC 2.19) does not support the POSTCONDITION/ALIAS config keywords the current pattern uses (verified from the jar's own keyword table), and every CommunityModules release checked (Feb 2023 - Sep 2026) fails to load under TLC 2.19 at all (a class it references, tlc2.value.impl.KSubsetValue, does not exist in that TLC build, and TLC's override loader aborts for Json/IOUtils too even though neither needs it). The classic technique needs neither: the trace is a literal TLA+ value, the model's own post-step state is compared to a recorded snapshot via an INVARIANT, and TLC's own violation report names the first divergent line. Run end to end on this host: a small reference model of coord-core.py's lease fold accepts one recorded five-step trace (exit 0, \"No error has been found\", depth 6) and rejects one bug-seeded trace at exactly its known divergence (exit 12, \"Invariant TraceInv is violated\", the printed line naming trace step 3 verbatim). The trace interface (state variables and the recorded-line shape) is written down for G1's prompt.",
+      "tags": [
+        "benchmark",
+        "spike",
+        "formal-methods",
+        "tla+",
+        "toolchain",
+        "DR-FM1",
+        "G1"
+      ],
+      "links": [
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-formal-grader",
+          "rel": "refines"
+        },
+        {
+          "to": "note-spike-s12-formal-toolchains",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "c3fb2b2bc474aad67f114db773a428d3d4da6766a4c87636d14baade372bed46"
+    },
+    {
       "id": "note-spike-gw-headless",
       "path": "docs/notes/spike-gw-headless.md",
       "title": "Spike GW-H: the headless judge CLIs with every tool denied: Claude qualifies in text mode; Codex keeps its code-mode exec tool",
@@ -2465,6 +2542,70 @@ window.DOCS_INDEX = {
         }
       ],
       "sourceSha256": "599e881c212a84daecdb3fe4fcce0f251a6f89faee2040584fd621926e706112"
+    },
+    {
+      "id": "proposal-enterprise-production-portfolio",
+      "path": "docs/proposals/enterprise-production-portfolio.md",
+      "title": "An Enterprise/Production portfolio for harness-bench",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-12-31",
+      "reviewSuggested": [],
+      "summary": "BOM 0.5 measures SWE capability on small, saturated tasks; no task carries a latent enterprise requirement with a mechanical oracle. Proposes eight task families (H security, I privacy, J compliance, K resilience, L operability, M long-horizon rework, N unfamiliar API / spike, O simplicity controls, P drift), their mechanical metrics, sample sizes (about 39 cells per arm for a 0.30 pass-rate delta), the map to each pack intention, and a phased rollout that fixes measurement first. The page is enterprise-production-portfolio.html.",
+      "tags": [
+        "benchmark",
+        "proposal",
+        "bom",
+        "security",
+        "privacy",
+        "resilience",
+        "rework",
+        "simplicity"
+      ],
+      "links": [
+        {
+          "to": "proposal-cross-harness-benchmarking",
+          "rel": "relates-to"
+        },
+        {
+          "to": "proposal-pack-onoff-analysis",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "d697717132ff5593483f35e8ecb04948ceadc97f9c1b83c1f4136140105f5b9d"
+    },
+    {
+      "id": "proposal-pack-onoff-analysis",
+      "path": "docs/proposals/pack-onoff-analysis.md",
+      "title": "Pack on vs pack off: grid-1 analysis and ranked pack changes",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-12-31",
+      "reviewSuggested": [],
+      "summary": "grid-1 + grid-1-cc (108 cells, pack r97, BOM 0.3 smoke): the pack cost 3.5x tokens and 1.9x wall clock and passed 40/54 vs 48/54 (p=0.08); 10 of 14 pack-on failures trace to worktree diversion (WT1) and ceremony that ended the turn, not to wrong code. Process changed as intended (goal state 51/54, test-first on D1 8/9 vs 0/9) but no smoke task can show the payoff; security, privacy, resilience and the Spike Protocol are not measurable in this BOM. Seven ranked pack changes. The page is pack-onoff-analysis.html.",
+      "tags": [
+        "benchmark",
+        "proposal",
+        "pack-effect",
+        "continuous-improvement"
+      ],
+      "links": [
+        {
+          "to": "proposal-cross-harness-benchmarking",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-phase4-report",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "bc99152fe91b41a296a2cc51aecdf8e0a7dc47d96efaa34858b6a262a63d987f"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -3165,6 +3306,14 @@ window.DOCS_INDEX = {
       "artifactId": "coordination-phase1-finish"
     },
     {
+      "id": "surface-proposals-enterprise-production-portfolio",
+      "path": "docs/proposals/enterprise-production-portfolio.html",
+      "title": "Enterprise production portfolio",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "proposal-enterprise-production-portfolio"
+    },
+    {
       "id": "surface-case-study",
       "path": "docs/case-study.html",
       "title": "From Specification to Implementation: An AI-Forward Case Study",
@@ -3193,7 +3342,15 @@ window.DOCS_INDEX = {
       "kind": "knowledge-tool",
       "description": "Open an interactive knowledge artifact.",
       "artifactId": "spec-harness-bench"
+    },
+    {
+      "id": "surface-proposals-pack-onoff-analysis",
+      "path": "docs/proposals/pack-onoff-analysis.html",
+      "title": "Pack on vs pack off: grid-1 analysis",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "2574f96ddef54933836461533026c33a51224002b07675c69da5ca52c952d13e"
+  "graphSha256": "ae05f8a2f60a9b52a9fc5499e7a96f217f9411e034e2b2e283838abec49e5522"
 };
