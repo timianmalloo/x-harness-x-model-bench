@@ -571,6 +571,34 @@ def test_every_available_tools_id_in_the_copilot_profile_has_a_reader_class():  
 # committed fixtures `read()` already uses, returns the paths, commands and `is_write` the
 # pack-improvement report section's ceremony/drift indicators are built on.
 
+# Regression (Leader forensic review, 2026-09-30, verified bug 2): the old `_PATCH_HEADER` pattern
+# truncated a Windows absolute path at "C:" -- confirmed against the real archive
+# (`runs/grid-1/archive/4a6250261f80ded4/attempt-1/home/session-state/.../events.jsonl:126`, a
+# Copilot D1 cell). This is that shape, as a fixture row through `copilot.tool_inputs` end to end.
+
+def test_pi_t6_apply_patch_windows_absolute_path_survives_its_own_backslashes(tmp_path):
+    row = {
+        "type": "assistant.message",
+        "data": {"content": "", "toolRequests": [{
+            "name": "apply_patch",
+            "arguments": (
+                "*** Begin Patch\n*** Add File: C:\\Projects\\bench-cells\\grid-1\\4a6250261f80ded4\\"
+                "ws-evidence-census\\tests\\AiDe.Core.Tests\\EvidenceCensusProjectionTests.cs\n"
+                "+using AiDe.Core.Facts;\n*** End Patch\n"
+            ),
+        }]},
+    }
+    record = tmp_path / "events.jsonl"
+    record.write_text(json.dumps(row) + "\n", encoding="utf-8")
+    trace = copilot.tool_inputs(record)
+    expected_path = (
+        "C:\\Projects\\bench-cells\\grid-1\\4a6250261f80ded4\\ws-evidence-census\\tests\\"
+        "AiDe.Core.Tests\\EvidenceCensusProjectionTests.cs"
+    )
+    assert trace.calls[0].paths == (expected_path,)
+    assert trace.calls[0].is_write
+
+
 def test_pi_t6_apply_patch_add_and_update_headers_are_writes():
     trace = copilot.tool_inputs(FIXED)
     patches = [c for c in trace.calls if c.name == "apply_patch"]

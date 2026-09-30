@@ -9,7 +9,14 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from harness_bench.errors import Cause
-from harness_bench.telemetry import Extraction, claude_code, codex, copilot, normalize
+from harness_bench.telemetry import (
+    Extraction,
+    claude_code,
+    codex,
+    copilot,
+    normalize,
+    patch_header_paths,
+)
 
 FIX = Path(__file__).parent / "fixtures"
 PROMPT = 'Run this shell command: python -c "print(6*7)" and write its exact output to answer.txt in the current directory. Then reply DONE.'
@@ -464,6 +471,29 @@ def test_pi_t6_codex_tool_inputs_reads_exec_commands():
         ("exec", (), 'python -c "print(6*7)"', False),
         ("exec", (), "[System.IO.File]::WriteAllBytes((Join-Path (Get-Location) 'answer.txt'), [byte[]](52,50,13,10))", False),
     ]
+
+
+# Regression (Leader forensic review, 2026-09-30, verified bug 2): the old `_PATCH_HEADER` pattern
+# excluded backslash outright, so a Windows absolute path in a Copilot `apply_patch` body truncated
+# to "C:" -- confirmed against the real archive, `runs/grid-1/archive/4a6250261f80ded4/attempt-1/
+# home/session-state/d72fa471-ad50-4c41-97a2-8cb4a164683c/events.jsonl:126` (a Copilot D1 cell).
+
+def test_patch_header_paths_keeps_a_windows_absolute_path_with_backslashes():
+    text = (
+        '*** Begin Patch\n*** Add File: C:\\Projects\\bench-cells\\grid-1\\4a6250261f80ded4\\'
+        'ws-evidence-census\\tests\\AiDe.Core.Tests\\EvidenceCensusProjectionTests.cs\n'
+        '+using AiDe.Core.Facts;\n*** End Patch\n'
+    )
+    expected_path = (
+        'C:\\Projects\\bench-cells\\grid-1\\4a6250261f80ded4\\ws-evidence-census\\tests\\'
+        'AiDe.Core.Tests\\EvidenceCensusProjectionTests.cs'
+    )
+    assert patch_header_paths(text) == (expected_path,)
+
+
+def test_patch_header_paths_keeps_a_posix_absolute_path():
+    text = '*** Begin Patch\n*** Update File: /home/user/repo/src/a.py\n@@\n*** End Patch\n'
+    assert patch_header_paths(text) == ('/home/user/repo/src/a.py',)
 
 
 def test_pi_t6_codex_tool_inputs_apply_patch_update_header_is_a_write():

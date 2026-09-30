@@ -23,7 +23,7 @@ from __future__ import annotations
 import fnmatch
 import re
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from decimal import ROUND_HALF_EVEN, Context, Decimal, localcontext
 from pathlib import Path
 
@@ -210,6 +210,45 @@ def first_call_input(
 # --------------------------------------------------------------------------------------------------
 
 
+def _relative_to_root(raw: str, root: Path | None) -> str:
+    """POSIX-normalised `raw`, relative to `root` when it falls under it (design section 4.3): a
+    native record's own paths are absolute -- Windows backslash or POSIX forward-slash, depending
+    on harness and OS -- while blast_radius globs (`src/**`, a bare file name) are repo-relative,
+    so an `fnmatch` comparison needs both sides in the same shape. Found as a real bug (not
+    guessed): grid-1 native records carry absolute paths, so `src/**` never matched them and only
+    a bare `**` pattern ever fired `product_write` (4 of PK-02's false positives traced to this).
+
+    A path outside `root` (or when `root` is unknown, e.g. no attempt archive) keeps only its last
+    three segments -- never a full absolute path past this module (section 8's own privacy rule);
+    a path with 3 or fewer segments already (the common case for an already-relative fixture path)
+    is unchanged."""
+    posix = raw.replace("\\", "/")
+    if root is not None:
+        root_posix = root.as_posix().rstrip("/") + "/"
+        if posix.startswith(root_posix):
+            return posix[len(root_posix):]
+    segments = [s for s in posix.split("/") if s]
+    return "/".join(segments[-3:])
+
+
+def _normalize_calls(calls: Sequence[ToolInput], ws: Path | None) -> tuple[ToolInput, ...]:
+    """Every call's `paths`, run through `_relative_to_root(..., ws)` -- the ONE place raw native
+    paths (Claude Code, Codex and Copilot's readers all leave `ToolInput.paths` exactly as their
+    own native record states them, `telemetry/__init__.py::ToolInput`'s own docstring) are
+    normalised before any glob match. Called once per cell (`_cell_indicators`), before
+    `ceremony_share`/`test_first`/`stopped_without_product` -- every caller of `classify()` in
+    production sees already-relative paths; only direct unit tests of `classify()` pass raw ones."""
+    return tuple(replace(c, paths=tuple(_relative_to_root(p, ws) for p in c.paths)) for c in calls)
+
+
+def _matches_blast_radius(paths: Sequence[str], blast_radius: Sequence[str]) -> bool:
+    """One definition of "a relative path matches a blast-radius glob" (design section 4.4's own
+    comment: `product_write` and `diverted_delivery` must use "the same matcher... for the
+    identical glob syntax, one definition, not two"). `fnmatch`'s `*` matches `/` too, so `src/**`
+    and `src/*` match the same set -- intentional (design section 4.4)."""
+    return any(fnmatch.fnmatch(p, pat) for p in paths for pat in blast_radius)
+
+
 def classify(call: ToolInput, blast_radius: Sequence[str] | None) -> frozenset[str]:
     """One tool call's classes (design section 4.3's table). `blast_radius=None` means the task's
     own blast radius could not be read: `product_write` then never fires here (it would otherwise
@@ -233,11 +272,7 @@ def classify(call: ToolInput, blast_radius: Sequence[str] | None) -> frozenset[s
         classes.add("git_identity")
     if call.is_write and any(TEST_PATH.search(p) for p in call.paths):
         classes.add("test_write")
-    elif (
-        call.is_write
-        and blast_radius is not None
-        and any(fnmatch.fnmatch(p, pat) for p in call.paths for pat in blast_radius)
-    ):
+    elif call.is_write and blast_radius is not None and _matches_blast_radius(call.paths, blast_radius):
         classes.add("product_write")
     return frozenset(classes)
 
@@ -333,7 +368,7 @@ def diverted_delivery(attempt_dir: Path, ws: Path, blast_radius: Sequence[str] |
             if not candidate.is_file():
                 continue
             rel = candidate.relative_to(sibling).as_posix()
-            if not any(fnmatch.fnmatch(rel, pattern) for pattern in blast_radius):
+            if not _matches_blast_radius((rel,), blast_radius):
                 continue
             counterpart = ws / candidate.relative_to(sibling)
             if not counterpart.is_file() or counterpart.read_bytes() != candidate.read_bytes():
@@ -696,6 +731,37 @@ class PackImprovementResult:
     pk08: Pk08Watch | None
     inconclusive: tuple[TaskInconclusive, ...]
     method_lines: tuple[str, ...]
+    population_caveats: tuple[str, ...] = ()
+
+
+def population_caveats(view: RunView) -> tuple[str, ...]:
+    """An NA-style honesty line -- never a new metric -- for every (combo, pack) whose planned cell
+    count (`plan.json`'s own `cells[]`, never re-derived) has fewer than half its cells land
+    `validity == "valid"`. Verified on grid-1: `cc-opus` planned 18/18 for each arm, landed 5 valid
+    off and 6 valid on -- both under half, both reported. A plan cell missing `combo`/`pack` (a
+    synthetic `RunView` built directly by a test, not through `views.load`) is skipped, never
+    guessed into a bucket."""
+    planned: dict[tuple[str, str], int] = {}
+    for c in view.plan.get("cells") or []:
+        if isinstance(c, dict) and isinstance(c.get("combo"), str) and isinstance(c.get("pack"), str):
+            key = (c["combo"], c["pack"])
+            planned[key] = planned.get(key, 0) + 1
+    valid: dict[tuple[str, str], int] = {}
+    for c in view.cells:
+        if c.validity == "valid":
+            key = (c.combo, c.pack)
+            valid[key] = valid.get(key, 0) + 1
+    lines = []
+    for key in sorted(planned):
+        n_planned = planned[key]
+        n_valid = valid.get(key, 0)
+        if n_planned > 0 and n_valid < n_planned / 2:
+            combo, pack = key
+            lines.append(
+                f"Population caveat: {combo} ({pack}) has {n_valid} of {n_planned} planned cells "
+                f"valid -- fewer than half; its findings rest on a smaller population than planned."
+            )
+    return tuple(lines)
 
 
 def method_lines(board_obj: Board | None) -> tuple[str, ...]:
@@ -772,6 +838,7 @@ def _cell_indicators(
         return _CellIndicators(None, na, False, na, False, na, na, na, pfw)
     attempts = _attempt_dirs(run_dir, cell.cell_id)
     attempt_dir = attempts[-1] if attempts else None
+    ws = attempt_dir / "ws" if attempt_dir is not None else None
     session_id = outcome_event.get("session_id")
     trace = _cell_trace(run_dir, view, cell, session_id) if attempt_dir is not None else None
     record_na = Measure(None, NA_RECORD_UNREADABLE)
@@ -779,12 +846,14 @@ def _cell_indicators(
         ceremony, test_first_, goal_present, git_ident = record_na, record_na, False, False
         calls: tuple[ToolInput, ...] = ()
     else:
-        calls = trace.calls
+        # `_normalize_calls` is the ONE place raw native paths are relativized to `ws` before any
+        # glob match; every indicator below that reads paths (through `classify()`) sees the
+        # result, never the trace's own raw absolute paths.
+        calls = _normalize_calls(trace.calls, ws)
         ceremony = ceremony_share(calls, blast_radius)
         test_first_ = test_first(calls, blast_radius)
         goal_present = goal_state_present(trace.first_assistant_text)
         git_ident = git_identity_set(calls)
-    ws = attempt_dir / "ws" if attempt_dir is not None else None
     diverted = diverted_delivery(attempt_dir, ws, blast_radius) if attempt_dir is not None and ws is not None else Measure(None, NA_ARCHIVE_ABSENT)
     p1 = cell.scores.get("pass_at_1")
     p1_value = p1.value if p1 is not None else None
@@ -1098,7 +1167,7 @@ def assemble(
 
     headline = _headline(all_pairs, task_counts, valid_cells, on_diverted_failed, on_stopped)
     return PackImprovementResult(state, None, headline, tuple(groups), ranked, pk08, tuple(inconclusive),
-                                  method_lines(board_obj))
+                                  method_lines(board_obj), population_caveats(view))
 
 
 def _passed(c: CellView) -> bool:

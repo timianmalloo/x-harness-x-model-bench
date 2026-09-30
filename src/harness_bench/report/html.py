@@ -2119,6 +2119,7 @@ def _pack_improvement(view: views.RunView, board_obj: board.Board | None, run_di
         return html_builder.el("section", {"id": "pack-improvement"}, *children)
 
     children.append(html_builder.el("p", None, result.headline or "No pack-attributable waste or harm was detected in this run."))
+    children.extend(html_builder.el("p", None, line) for line in result.population_caveats)
 
     group_table = html_builder.el(
         "table", None,

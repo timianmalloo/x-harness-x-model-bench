@@ -123,6 +123,45 @@ def test_pi_t7_test_first_uses_write_target_paths_only():
     assert "product_write" in pi.classify(call, ["src/solution.py"])
 
 
+# ---------------------------------------------------------------------------------------------------
+# Regression (Leader forensic review, 2026-09-30, verified bug 1): a native record's own `paths`
+# are absolute (POSIX or Windows, forward or back slashes); `fnmatch` against a relative
+# blast_radius glob (`src/**`) only ever matched a bare `**` pattern until paths were relativized
+# to the cell's `ws` in one place (`_normalize_calls`, called once by `_cell_indicators`) before any
+# glob match. 4 of grid-1's 9 PK-02 cells were false positives from this (the report trusted
+# `stopped_without_product` when a real, unmatched `product_write` had actually happened).
+# ---------------------------------------------------------------------------------------------------
+
+
+def test_pi_relative_to_root_relativizes_posix_and_windows_absolute_paths():
+    ws = Path("C:/Projects/bench-cells/x/4a6250261f80ded4/ws")
+    assert pi._relative_to_root("C:/Projects/bench-cells/x/4a6250261f80ded4/ws/src/a.py", ws) == "src/a.py"
+    assert pi._relative_to_root("C:\\Projects\\bench-cells\\x\\4a6250261f80ded4\\ws\\src\\a.py", ws) == "src/a.py"
+    assert pi._relative_to_root("src/a.py", ws) == "src/a.py"  # already relative: unchanged
+
+
+def test_pi_relative_to_root_keeps_last_three_segments_outside_ws():
+    ws = Path("C:/Projects/bench-cells/x/4a6250261f80ded4/ws")
+    assert pi._relative_to_root("C:/Users/tim/.cache/other/deep/file.txt", ws) == "other/deep/file.txt"
+    assert pi._relative_to_root("a.py", None) == "a.py"  # no root at all: never a guessed path
+
+
+def test_pi_normalize_calls_lets_product_write_fire_on_absolute_paths_after_relativization():
+    ws = Path("C:/Projects/bench-cells/x/4a6250261f80ded4/ws")
+    calls = (
+        ToolInput(1, "Write", ("C:/Projects/bench-cells/x/4a6250261f80ded4/ws/src/AiDe.Core/a.cs",), None, True),
+        ToolInput(2, "Write", ("C:\\Projects\\bench-cells\\x\\4a6250261f80ded4\\ws\\src\\AiDe.Core\\b.cs",), None, True),
+    )
+    normalized = pi._normalize_calls(calls, ws)
+    assert normalized[0].paths == ("src/AiDe.Core/a.cs",)
+    assert normalized[1].paths == ("src/AiDe.Core/b.cs",)
+    for call in normalized:
+        assert "product_write" in pi.classify(call, ["src/**"])
+    # before relativization, the identical absolute calls never match a relative blast radius:
+    for call in calls:
+        assert "product_write" not in pi.classify(call, ["src/**"])
+
+
 def test_pi_t7_test_first_orders_test_write_before_product_write():
     # D1's own shape (tasks/D1/task.yaml:35): blast_radius names both the product and "tests/**".
     blast_radius = ["solution.py", "tests/**"]
@@ -547,6 +586,49 @@ def test_pi_t12_ranking_is_stable_under_input_shuffles():
 def test_pi_t12_a_zero_count_finding_is_not_rendered():
     findings = [_finding("PK-01", failed_pairs=5, count=0), _finding("PK-02", failed_pairs=1, count=1)]
     assert [f.code for f in pi.rank_findings(findings)] == ["PK-02"]
+
+
+# ---------------------------------------------------------------------------------------------------
+# Population caveat (grid-1's cc-opus case, verified: 5/18 off, 6/18 on -- both under half): a
+# combo x arm whose valid cell count is fewer than half its planned count gets an honesty line, not
+# a silently smaller-population finding.
+# ---------------------------------------------------------------------------------------------------
+
+
+def _planned_view(planned: dict, valid_counts: dict) -> views.RunView:
+    """`planned` is {(combo, pack): n}; `valid_counts` is a subset naming how many of those n land
+    `valid` (the rest are invalid, never omitted -- a real run's plan always accounts for every
+    planned cell)."""
+    plan_cells, cells = [], []
+    for (combo, pack), n in planned.items():
+        n_valid = valid_counts.get((combo, pack), 0)
+        for i in range(n):
+            cid = f"{combo}-{pack}-{i}"
+            plan_cells.append({"cell_id": cid, "task": "X1", "rep": i, "combo": combo, "pack": pack})
+            cells.append(_cell(cid, combo, pack, validity="valid" if i < n_valid else "invalid (x)"))
+    return views.RunView("r1", {"cells": plan_cells, "profiles": {}}, True, "grade-1", None, cells)
+
+
+def test_population_caveats_fires_under_half_valid():
+    view = _planned_view({("cc-opus", "off"): 18, ("cc-opus", "on"): 18}, {("cc-opus", "off"): 5, ("cc-opus", "on"): 6})
+    lines = pi.population_caveats(view)
+    assert len(lines) == 2
+    assert any("cc-opus (off)" in ln and "5 of 18" in ln for ln in lines)
+    assert any("cc-opus (on)" in ln and "6 of 18" in ln for ln in lines)
+
+
+def test_population_caveats_silent_at_or_above_half():
+    view = _planned_view({("codex-sol", "off"): 18}, {("codex-sol", "off"): 9})  # exactly half: not "fewer than"
+    assert pi.population_caveats(view) == ()
+
+
+def test_population_caveats_skips_plan_cells_with_no_combo_or_pack():
+    """A synthetic `RunView` built directly (not through `views.load`) may carry plan cells with no
+    `combo`/`pack` key -- skipped, never guessed into a bucket (the mutants test's own `_holm_view`
+    fixture shape)."""
+    plan = {"cells": [{"cell_id": "a", "task": "X1", "rep": 1}], "profiles": {}}
+    view = views.RunView("r1", plan, True, "grade-1", None, [])
+    assert pi.population_caveats(view) == ()
 
 
 # ---------------------------------------------------------------------------------------------------
