@@ -69,12 +69,31 @@ def test_the_pass_writes_one_row_per_applicable_metric_of_the_tasks_graders(root
     assert sorted(r["metric_id"] for r in graded(root, tmp_path)) == sorted(expected)
 
 
+COORDINATION = {"model_map_adherence", "per_agent_attribution", "intent_log_completeness", "kg_use",
+                "coordination_overhead", "parallel_efficiency", "protocol_conformance"}
+
+
 def test_an_unbuilt_grader_is_na_not_built_for_each_of_its_metrics_never_0(root, tmp_path):
-    set_graders(root, ["correctness", "cost", "process", "formal"])  # formal is not registered
+    # "formal" is now registered (W5-FIMPL); "coordination" (a real catalog grader with no runner.GRADERS entry)
+    # stands in for a genuinely unregistered one.
+    set_graders(root, ["correctness", "cost", "process", "coordination"])
     got = {r["metric_id"]: (r["value"], r["reason"]) for r in graded(root, tmp_path)}
-    assert "formal" not in runner.GRADERS and got["formal_checks_clean"] == (None, "not built")  # an unregistered grader
-    assert {m: v for m, v in got.items() if m not in BUILT | PROCESS} == \
-        {m: (None, "not built") for m in ((CORRECTNESS | COST) - BUILT) | {"formal_checks_clean", "bugs_confirmed", "bug_claim_precision", "statement_integrity", "model_conformance", "model_non_vacuity"}}
+    assert "coordination" not in runner.GRADERS  # an unregistered grader
+    assert {m: got[m] for m in COORDINATION} == {m: (None, "not built") for m in COORDINATION}
+    assert {m: v for m, v in got.items() if m not in BUILT | PROCESS | COORDINATION} == \
+        {m: (None, "not built") for m in (CORRECTNESS | COST) - BUILT}
+
+
+def test_formal_on_a_task_with_no_formal_block_is_na_never_0_or_a_crash(root, tmp_path):
+    # "formal" is registered but X1 is not a scenario-7 task: every one of its six metrics is a deterministic NA,
+    # never a guessed 0 and never an unregistered-grader "not built" (G5/G3; docs/design/formal-grader.md).
+    set_graders(root, ["correctness", "cost", "process", "formal"])
+    got = {r["metric_id"]: (r["value"], r["reason"]) for r in graded(root, tmp_path)}
+    reason = "formal.tool None not in ('tla', 'lean')"
+    assert {m: got[m] for m in ("formal_checks_clean", "bugs_confirmed", "bug_claim_precision",
+                                "statement_integrity", "model_conformance", "model_non_vacuity")} == \
+        {m: (None, reason) for m in ("formal_checks_clean", "bugs_confirmed", "bug_claim_precision",
+                                     "statement_integrity", "model_conformance", "model_non_vacuity")}
     missing = (None, "per-call outcome missing on 2 of 2 calls")  # the captured Codex record: every ok is null (DR-G3)
     assert {m: got[m] for m in PROCESS} == {  # process is registered (GR-PROC p1-p3), so measured, never `not built`
         "tool_error_rate": missing, "stuck_loops": missing, "recovery_rate": missing,
