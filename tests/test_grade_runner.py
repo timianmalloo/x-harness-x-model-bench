@@ -260,9 +260,9 @@ def test_a_committed_mini_run_regrades_to_its_0_3_values_with_every_other_metric
     assert views.load(run_dir).catalog_version == config.load_yaml(root / "bench" / "metrics.yaml")["version"] == released  # make_root releases the source catalog's .dev version
 
 
-@pytest.mark.parametrize("name", sorted(config.load_yaml(ROOT / "bench" / "regrade-baseline-0.3.yaml")["runs_export_2"]))
+@pytest.mark.parametrize("name", sorted(config.load_yaml(ROOT / "bench" / "regrade-baseline-0.3.yaml")["runs_export_3"]))
 def test_the_gate_runs_0_3_exports_equal_the_committed_baseline(name):  # P5, L-1: read-only; absent runs skip (CI)
-    entry = config.load_yaml(ROOT / "bench" / "regrade-baseline-0.3.yaml")["runs_export_2"][name]  # export shape 2 (R-78 DR-S-4)
+    entry = config.load_yaml(ROOT / "bench" / "regrade-baseline-0.3.yaml")["runs_export_3"][name]  # export shape 3 (R-86: no extraction_id)
     if not (GATE_RUNS / name / "plan.json").is_file():
         pytest.skip(f"gate run {name} is not on this host (set HB_GATE_RUNS to the runs folder)")
     view = views.load(GATE_RUNS / name, "0.3")

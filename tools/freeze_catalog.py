@@ -112,7 +112,9 @@ def freeze(root: Path, golden: Path, freeze_path: Path) -> int:
         except SystemExit:
             shutil.rmtree(out, ignore_errors=True)
             raise
-    versions[version] = {"catalog_hash": runner.catalog_hash(root), "golden": view_pins, "board_golden": board_pins}
+    # R-86: the entry names its (catalog, board export) pair, whose golden is the board_golden written above
+    versions[version] = {"catalog_hash": runner.catalog_hash(root), "golden": view_pins, "board_golden": board_pins,
+                         "board_export_version": str(board.EXPORT_VERSION)}
     freeze_path.write_text(yaml.safe_dump(record, sort_keys=False), encoding="utf-8", newline="\n")  # LF (eol=lf)
     print(f"froze {version}: catalog_hash {versions[version]['catalog_hash']}")
     return 0

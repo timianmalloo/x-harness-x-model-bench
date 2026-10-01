@@ -55,6 +55,8 @@ def test_freeze_writes_both_goldens_and_the_entry(tmp_path):
     version = str(config.load_yaml(root / "bench" / "metrics.yaml")["version"])
     entry = yaml.safe_load(freeze_path.read_text(encoding="utf-8"))["versions"][version]
     assert entry["catalog_hash"] == runner.catalog_hash(root)
+    # R-86: the freeze names its (catalog, board export) pair, so check (d) holds without bumping EXPORT_VERSION
+    assert entry.get("board_export_version") == str(board_mod.EXPORT_VERSION)
     for name in FIXTURES:
         view_bytes = (golden / version / f"{name}.export").read_bytes()
         board_bytes = (golden / version / f"{name}.board.export").read_bytes()

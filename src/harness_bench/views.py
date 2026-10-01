@@ -574,12 +574,13 @@ def _enc(value):
 
 
 def export(view: RunView) -> bytes:
-    """The canonical result (sorted keys and rows). A pass's identity and evidence paths are not part of it,
-    so a re-grade of the same archive gives the same bytes (US-26)."""
+    """The canonical result (sorted keys and rows). A pass's identity (`grading_id`) and evidence paths are not
+    part of it, nor is `extraction_id` (the normaliser's build hash: provenance, like `grading_id`, not a result;
+    R-86), so a re-grade of the same archive, or a normaliser fix, gives the same bytes (US-26)."""
     cells = [{"cell_id": c.cell_id, "label": c.label, "outcome": c.outcome, "cause": c.cause, "code": c.code,
               "validity": c.validity, "validity_code": c.validity_code, "wall_ms": _enc(c.wall_ms), "model_ms": _enc(c.model_ms),
               "tool_ms": _enc(c.tool_ms), "idle_ms": _enc(c.idle_ms), "tokens": c.tokens, "tokens_reason": c.tokens_reason,
-              "scores": _enc(c.scores), "extraction_id": c.extraction_id, "meta_calls": _enc(c.meta_calls),
+              "scores": _enc(c.scores), "meta_calls": _enc(c.meta_calls),
               "warnings": [{"code": w.code, "level": w.level, "message": w.message} for w in c.warnings]}
              | ({"delegate_calls": _enc(c.delegate_calls)} if c.scenario == 6 else {})  # R-74 c2; the 0.3 bytes unchanged
              for c in sorted(view.cells, key=lambda c: c.cell_id)]
