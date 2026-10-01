@@ -543,13 +543,6 @@ def bug_claim_precision(inp: CellInput, timeout: float) -> Score:
     _value, _reason, n, confirmed, evidence = _bug_confirmation(inp, timeout)
     if n == 0:
         return Score(None, NO_BUGS_MD)
-    # Flagged (not fixed here): bench/metrics.yaml (frozen at 0.5, catalog-freeze.yaml Leader-owned) has no `scale`
-    # for bug_claim_precision, though the design names scale 4 (formal-grader.md's Metric definitions). A Decimal
-    # value here is exactly what US-33/DR-FM2's fixtures require (the two moved fixtures read 0.5000), but
-    # `runner._run_grader` raises HB-GRD-003 for the whole formal grader if this ever runs through a real pass
-    # before that scale is added -- the same "Leader renews it after this merges" shape as the gate-stamp digest
-    # (Measured section). Un-flag by adding `scale: 4` to bug_claim_precision (and model_conformance/
-    # model_non_vacuity, which the design scopes the same way) at the next catalog freeze.
     return Score(Decimal(confirmed) / Decimal(n), None, evidence)
 
 

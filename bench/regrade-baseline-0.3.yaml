@@ -12,3 +12,11 @@ runs:
 runs_export_2:
   row15-d1-1: {export_sha256: f65031ceaf136e7acc0986a4313ccc3420bd21a092b4c8595663c2fda9dd6e20, bytes: 5815, pass: grade-20260925T063930-dec9eb}
   a1-capture-1: {export_sha256: a1d069d21d07c930da02d8003a4676d9f47ddc6dfe5adb4d6884b263c0327c01, bytes: 2924, pass: grade-20260925T075419-1dc414}
+# 2026-09-30, views export shape 3 (R-86: extraction_id leaves views.export -- provenance, like grader_build, not a
+# result). Same 0.3 passes, measured on the archived gate runs (HB_GATE_RUNS), proven as the shape-2 section was:
+# the old (shape-2) export minus `extraction_id` from each cell, re-canonicalised, is byte-equal to the new export
+# below (confirmed against the real archives before and after the extraction_id removal; EXP-A). check_regrade and
+# test_grade_runner.py's byte-identity test now read this section.
+runs_export_3:
+  row15-d1-1: {export_sha256: abc2abae1538af23ce1dba53f2872fcbdedd43f8acbbd77e1b8261bf47f7ecf6, bytes: 5317, pass: grade-20260925T063930-dec9eb}
+  a1-capture-1: {export_sha256: be516d6725de98f17fc9ac1e5593ab58b679c70c617279b8e258ac0bedd8d461, bytes: 2675, pass: grade-20260925T075419-1dc414}

@@ -1010,8 +1010,12 @@ def test_a_ledger_graded_before_r15_and_r24_exports_what_it_did_before(tmp_path,
         cell.pop("warnings")  # new in W2-VIEWS: a key the 5feece0 export did not have
         cell.pop("meta_calls")  # new in W2-VIEWS-FU (R-54 c3): the other one
         assert "delegate_calls" not in cell  # R-74 c2: exported only for a scenario-6 cell, so old exports keep their bytes
+        assert "extraction_id" not in cell  # R-86: extraction_id left views.export; provenance, not a result
     assert "leaderboard" not in doc  # R-78 DR-S-4: the leaderboard left views.export; board.export owns it
-    assert doc == {k: v for k, v in expected["exports"][name].items() if k != "leaderboard"}
+    expected_doc = {k: v for k, v in expected["exports"][name].items() if k != "leaderboard"}
+    for cell in expected_doc["cells"]:
+        cell.pop("extraction_id", None)  # R-86: the golden fixture predates the field's removal from the export
+    assert doc == expected_doc
 
 
 def test_a_pass_before_r15_names_no_unreadable_record_so_its_cells_read_as_before(root, tmp_path, monkeypatch):

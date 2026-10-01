@@ -41,7 +41,7 @@ from harness_bench.plan import file_hash, load_confirmed
 
 ROOT = Path(__file__).resolve().parents[1]
 BASELINE = "bench/regrade-baseline-0.3.yaml"
-BASELINE_KEY = "runs_export_2"  # the section for the current views export shape (R-78 DR-S-4: no leaderboard)
+BASELINE_KEY = "runs_export_3"  # the section for the current views export shape (R-86: no extraction_id)
 FREEZE = "bench/catalog-freeze.yaml"
 EXPECTED = "tests/fixtures/gate/expected-counts.yaml"
 ALLOWANCE = ROOT / "bench" / "regrade-allowed-findings.yaml"

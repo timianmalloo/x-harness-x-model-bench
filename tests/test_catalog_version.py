@@ -24,6 +24,7 @@ The fixtures are the two committed X1 mini-runs (D6); the judge is not applicabl
 """
 
 import hashlib
+import json
 import os
 import shutil
 import subprocess
@@ -40,6 +41,7 @@ from slow_ring import dotnet_gate
 
 from harness_bench import board, composites, config, views
 from harness_bench.grade import Score, runner
+from harness_bench.telemetry import normalize
 
 FIXTURES = {name: Path(__file__).parent / "fixtures" / "ledger" / name / "run" for name in ("c44dd2b-no-heads", "heads")}
 GOLDEN = Path(__file__).parent / "fixtures" / "catalog"
@@ -132,10 +134,25 @@ def us4_problems(root: Path, golden: Path, freeze: dict, base: dict, export: Cal
         board_golden = golden.parent / "board"
     N = str(getattr(board, "EXPORT_VERSION", 1))
 
-    if N not in board_exports:
-        problems.append(f"(d) no board_exports entry for export version {N} in {FREEZE}")
+    if pinned is not None and pinned.get("board_export_version") == N:
+        # R-86: a catalog bump under an unchanged EXPORT_VERSION pins the pair (version, N) in versions[version]
+        # itself, not in board_exports[N] (which has one golden per export version and cannot also move to a new
+        # catalog without rewriting an append-only entry). Its golden is the per-version directory already
+        # checked above (board_files/board_digests, (c)); (a) is the one check this path still owes.
+        for p in board_files:
+            stem = _board_stem(p)
+            if stem not in FIXTURES:
+                problems.append(f"(a) {stem}: no committed fixture of that name")
+            elif board_export is not None and board_export(stem) != p.read_bytes():
+                problems.append(f"(a) {stem}: the board export differs from its golden file "
+                                "(a statistic moved without a bump)")
+    elif N not in board_exports:
+        problems.append(f"(d) no board_exports entry for export version {N} in {FREEZE}, and versions[{version!r}] "
+                        f"pins no board_export_version {N!r} either (the pair ({version!r}, {N!r}) is in neither map)")
     elif board_exports[N].get("catalog") != version:
-        problems.append(f"(d) board_exports[{N}] catalog {board_exports[N].get('catalog')!r} != {version!r} (board export catalog must match released version)")
+        problems.append(f"(d) board_exports[{N}] catalog {board_exports[N].get('catalog')!r} != {version!r}, and "
+                        f"versions[{version!r}] pins no board_export_version {N!r} either (the pair ({version!r}, "
+                        f"{N!r}) is in neither map)")
     else:
         b_files = sorted((board_golden / N).glob("*.board.export"))
         if not b_files:
@@ -232,6 +249,16 @@ def problems(frozen, tmp_path, base: dict | None = None, freeze: dict | None = N
 
 def test_a_frozen_catalog_with_unchanged_scores_passes(frozen, tmp_path):
     assert problems(frozen, tmp_path) == []
+
+
+def test_a_normaliser_change_alone_leaves_the_control_green_and_extraction_id_out_of_the_export(frozen, tmp_path, monkeypatch):
+    """R-86 (C): extraction_id is provenance, like grader_build, not a result -- a normaliser fix moves nothing
+    the export carries, and the field itself is not in the export's cells."""
+    monkeypatch.setattr(normalize, "extraction_id", lambda: "e" * 64)
+    assert problems(frozen, tmp_path) == []
+    root, _, _ = frozen
+    export = graded_export(root, "heads", tmp_path)
+    assert "extraction_id" not in json.loads(export)["cells"][0]
 
 
 def test_a_grader_change_without_a_bump_is_red_through_a(frozen, tmp_path, monkeypatch):
@@ -378,13 +405,68 @@ def test_absent_board_exports_entry_or_catalog_mismatch_is_red_through_d(frozen,
     # absent entry
     del freeze["board_exports"][N]
     assert problems(frozen, tmp_path) == [
-        f"(d) no board_exports entry for export version {N} in {FREEZE}",
+        (f"(d) no board_exports entry for export version {N} in {FREEZE}, and versions['9.1'] pins no "
+         f"board_export_version {N!r} either (the pair ('9.1', {N!r}) is in neither map)"),
     ]
     # catalog mismatch
     freeze["board_exports"][N] = {"catalog": "9.9", "golden": {}}
     assert problems(frozen, tmp_path) == [
-        f"(d) board_exports[{N}] catalog '9.9' != '9.1' (board export catalog must match released version)",
+        f"(d) board_exports[{N}] catalog '9.9' != '9.1', and versions['9.1'] pins no board_export_version {N!r} "
+        "either (the pair ('9.1', " + repr(N) + ") is in neither map)",
     ]
+
+
+# --- R-86: a catalog bump under an unchanged EXPORT_VERSION pins the pair via board_export_version, not board_exports[N] --
+
+
+@pytest.fixture
+def frozen_bump(tmp_path):
+    """9.2, released under the SAME export version N that 9.1 (the `frozen` fixture) already occupies in
+    board_exports. R-86: a catalog bump records `board_export_version: N` in `versions[v]` itself (append-only;
+    board_exports[N] is untouched), and its pair golden is the per-version directory already pinned by `board_golden`.
+    """
+    root = make_root(tmp_path)
+    set_catalog_version(root, "9.2")
+    golden = tmp_path / "golden"
+    (golden / "9.2").mkdir(parents=True)
+    N = str(getattr(board, "EXPORT_VERSION", 1))
+    pins, board_pins = {}, {}
+    for name in FIXTURES:
+        data = graded_export(root, name, tmp_path / "freeze")
+        (golden / "9.2" / f"{name}.export").write_bytes(data)
+        pins[name] = hashlib.sha256(data).hexdigest()
+        board_data = graded_board_export(root, name, tmp_path / "freeze-board")
+        (golden / "9.2" / f"{name}.board.export").write_bytes(board_data)
+        board_pins[name] = hashlib.sha256(board_data).hexdigest()
+    freeze = {"schema": "bench-catalog-freeze/1",
+              "versions": {"9.2": {"catalog_hash": runner.catalog_hash(root), "golden": pins,
+                                   "board_golden": board_pins, "board_export_version": N}},
+              # unrelated to 9.2; append-only, left exactly as some earlier catalog pinned it
+              "board_exports": {N: {"catalog": "9.1", "golden": {name: "0" * 64 for name in FIXTURES}}}}
+    return root, golden, freeze
+
+
+def _bump_problems(frozen_bump, tmp_path, freeze: dict) -> list[str]:
+    root, golden, _ = frozen_bump
+    return us4_problems(root, golden, freeze, freeze, lambda name: graded_export(root, name, tmp_path),
+                        lambda name: graded_board_export(root, name, tmp_path))
+
+
+def test_a_catalog_bump_under_an_unchanged_export_version_pins_via_board_export_version_and_passes(frozen_bump, tmp_path):
+    _, _, freeze = frozen_bump
+    assert _bump_problems(frozen_bump, tmp_path, freeze) == []
+
+
+def test_a_catalog_bump_with_no_board_export_version_fails_d_naming_both_maps(frozen_bump, tmp_path):
+    _, _, freeze = frozen_bump
+    N = str(getattr(board, "EXPORT_VERSION", 1))
+    del freeze["versions"]["9.2"]["board_export_version"]
+    got = _bump_problems(frozen_bump, tmp_path, freeze)
+    assert got == [
+        f"(d) board_exports[{N}] catalog '9.1' != '9.2', and versions['9.2'] pins no board_export_version {N!r} "
+        "either (the pair ('9.2', " + repr(N) + ") is in neither map)",
+    ]
+    assert "board_exports" in got[0] and "board_export_version" in got[0]  # names both maps
 
 
 def test_board_exports_append_only_and_v1_equals_v05_golden_is_red_through_e(frozen, tmp_path):
