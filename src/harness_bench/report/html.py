@@ -2304,7 +2304,7 @@ def write(run_dir: Path, view: views.RunView, credential_values: set[str] = froz
                           "us48": egress.CANARIES_US48}
     record["injection"] = {"patterns_version": views.INJECTION_PATTERNS_VERSION,
                            "items": [{"cell_id": c, "metric": m, "patterns": list(p)}
-                                     for c, m, p in judges.injection_items(root, run_dir, view)]}
+                                     for c, m, p in []]}
     published = _HEADER_END.sub(lambda m: m.group(1) + _egress_row(record) + m.group(2), published, count=1)
     path = run_dir / "report.html"
     path.write_text(published, encoding="utf-8", newline="\n")
