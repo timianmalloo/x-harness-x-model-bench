@@ -12,7 +12,7 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
-from archived_runs import CODEX_MODEL, make_root, set_prices
+from archived_runs import CODEX_MODEL, make_root, set_catalog_version, set_prices
 from stats_fixtures import stats_run
 from test_composites import TEST_CATALOG
 
@@ -104,9 +104,12 @@ def test_tb2_header_row_text():
 def test_tb3_board_export_golden(tmp_path):
     """T-B3 (D6): the board.export golden.
 
-    Built by stats_run with fixed inputs and S4's committed test catalog with anchors.
+    Built by stats_run with fixed inputs and S4's committed test catalog with anchors. The catalog label is fixed
+    too: the board carries `catalog_version`, and the repo's catalog release is not an input of T-B3 (R-86; the
+    0.6 release moved only that label, verified by swapping it back to the pinned digest).
     """
     root = make_root(tmp_path)
+    set_catalog_version(root, "0.5")
     run_dir = stats_run(
         root,
         tmp_path,
