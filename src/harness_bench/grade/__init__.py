@@ -54,7 +54,7 @@ class CellInput:
     task: Mapping  # task.yaml as loaded; a grader that reads the task runs only when the task is current
     task_dir: Path
     archive: Path  # run_dir/archive/<cid>/attempt-<n> (READ-ONLY)
-    out_dir: Path  # run_dir/grading/<gid>/<cid>/<grader>/: the only place a grader writes
+    out_dir: Path  # run_dir/grading/<gid>/<cid>/<grader>/: the only place a grader writes its evidence (logs, reports)
     events: tuple[Mapping, ...]  # this cell's engine events
     record_reason: str | None  # why the native record was missing or unreadable (R-15), or None
     model_calls: tuple[Mapping, ...]  # this cell's rows under the pass's extraction_id (unstamped)
@@ -67,6 +67,12 @@ class CellInput:
     # The pass's append, for the facts a grader records beside its scores: the judge grader's `verdict_uses` rows and
     # its calls' `model_calls` rows, principal gateway (ADR-0006 Amendment 3). None outside a grading pass.
     emit: Callable[[str, dict], None] | None = None
+    # Where a grader builds a disposable working copy it builds or runs something in (a `uv`/`dotnet`/`lake`/`pytest`
+    # step): outside the repository (ADR-0013; the grading-copy-outside-repo fix), so an upward-discovering tool
+    # (uv, pip, dotnet's global.json, ...) never reaches this repository's own pyproject.toml/.python-version. Never
+    # None in a real pass (runner.py always sets it); None only in a hand-built CellInput (a test), where a grader
+    # falls back to out_dir.
+    work_root: Path | None = None
 
 
 GraderFn = Callable[[CellInput], Mapping[str, Score]]

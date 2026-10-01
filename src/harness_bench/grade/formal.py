@@ -240,7 +240,8 @@ def _g2_model_non_vacuity(inp: CellInput, timeout: float) -> Score:
     if lake is None:
         return Score(None, NOT_WARMED.format(reason=reason))
     out_dir = inp.out_dir / "non_vacuity"
-    with _grading_copy(ws / "Proofs", out_dir / "proofs") as proofs:
+    work_dir = (inp.work_root or inp.out_dir) / "non_vacuity"  # ADR-0013: outside the repository in a real pass
+    with _grading_copy(ws / "Proofs", work_dir / "proofs") as proofs:
         (proofs / "Fold.lean").write_bytes(buggy.read_bytes())  # the swap: agent's own files untouched
         done = correctness.run_step([str(lake), "build"], proofs, correctness._env(), timeout)
         log = _write_log(out_dir, "lake-buggy-fold.log", f"exit {done.returncode}\n{done.stdout}\n{done.stderr}")
@@ -271,17 +272,18 @@ def _lake_env_lean(lake: Path, cwd: Path, script: Path, env: dict, timeout: floa
 
 
 def _statement_material(proofs: Path, theorem_names: list[str], lake: Path, env: dict, timeout: float,
-                         out_dir: Path) -> tuple[Path, list[Path]] | tuple[None, str]:
+                         out_dir: Path, work_dir: Path | None = None) -> tuple[Path, list[Path]] | tuple[None, str]:
     """Materialize the four real files `statement_integrity`/`formal_checks_clean`'s G2 hash and axiom checks share:
     a staging copy of Fold.lean/lakefile.toml/lean-toolchain plus the elaborator's own `#check` rendering of every
     name in `theorem_names`, written to a real file (never a synthesized in-memory string). Returns
-    (staging dir, [the four Paths]) or (None, an NA reason)."""
+    (staging dir, [the four Paths]) or (None, an NA reason). `work_dir` (default `out_dir`) is where the disposable
+    build copy lands -- outside the repository in a real pass (ADR-0013); `out_dir` keeps the staged evidence."""
     for name, rel in (("Proofs/Fold.lean", "Fold.lean"), ("lakefile.toml", "lakefile.toml"), ("lean-toolchain", "lean-toolchain")):
         if not (proofs / rel).is_file():
             return None, f"no {name} in the working copy"
     # A grading copy, never the archive (`ws` stays immutable): `lake env lean --run`'s import resolution needs the
     # project already built (oleans present), so this builds once in a disposable copy before the elaborator call.
-    with _grading_copy(proofs, out_dir / "build") as copy:
+    with _grading_copy(proofs, (work_dir or out_dir) / "build") as copy:
         built = correctness.run_step([str(lake), "build"], copy, env, timeout)
         if built.timed_out:
             return None, "HB-GRD-002 grading step timeout"
@@ -328,7 +330,8 @@ def _g2_statement_integrity(inp: CellInput, timeout: float) -> Score:
         return Score(None, NOT_WARMED.format(reason=reason))
     out_dir = inp.out_dir / "statement_integrity"
     out_dir.mkdir(parents=True, exist_ok=True)
-    staging, result = _statement_material(ws / "Proofs", names, lake, correctness._env(), timeout, out_dir)
+    work_dir = (inp.work_root or inp.out_dir) / "statement_integrity"  # ADR-0013: outside the repository in a real pass
+    staging, result = _statement_material(ws / "Proofs", names, lake, correctness._env(), timeout, out_dir, work_dir)
     if staging is None:
         return Score(None, result)
     digest = tree_hash(staging, result)
@@ -371,7 +374,8 @@ def _g2_formal_checks_clean(inp: CellInput, timeout: float) -> Score:
         hit = _lexical_hit(lean_file.read_text(encoding="utf-8", errors="replace"))
         if hit is not None:
             lexical_hits.append((lean_file.relative_to(proofs_src).as_posix(), hit))
-    with _grading_copy(proofs_src, out_dir / "proofs") as proofs:
+    work_dir = (inp.work_root or inp.out_dir) / "checks"  # ADR-0013: outside the repository in a real pass
+    with _grading_copy(proofs_src, work_dir / "proofs") as proofs:
         done = correctness.run_step([str(lake), "build"], proofs, correctness._env(), timeout)
         log = _write_log(out_dir, "lake.log", f"exit {done.returncode}\n{done.stdout}\n{done.stderr}")
         if done.timed_out:

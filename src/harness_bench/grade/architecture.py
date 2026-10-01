@@ -100,9 +100,10 @@ def _measure(inp: CellInput, rules: tuple[Rule, ...]) -> Score:
         return Score(None, _changes.NOT_FOUND)
     applied = passed = 0
     log = []
+    work_root = inp.work_root or inp.out_dir  # ADR-0013: outside the repository in a real pass; out_dir in a test
     try:
-        with (_changes.pre_turn_tree(ws, commit, inp.out_dir / "pre-turn", timeout) as base,
-              _changes.grading_copy(ws, inp.out_dir / "work") as work):
+        with (_changes.pre_turn_tree(ws, commit, work_root / "pre-turn", timeout) as base,
+              _changes.grading_copy(ws, work_root / "work") as work):
             written = [p for p, status in _changes.change_set(base, work).items() if status != "deleted"]
             for name, prefix, suffix, breaks in rules:
                 scope = [p for p in written if p.startswith(prefix) and p.endswith(suffix)]

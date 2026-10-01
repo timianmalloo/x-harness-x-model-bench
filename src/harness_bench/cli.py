@@ -168,7 +168,7 @@ def cmd_run(args) -> int:
         cfg = engine.EngineConfig(run_dir=run_dir, cells_root=cells_root, launchers=launchers,
                                   build_workspace=_workspace_builder(root, p, cells_root / ".sources", tools_dir.parent / "pack",
                                                                      tools_dir.parent / "upstream"),
-                                  grade=lambda d: runner.run_pass(d, root, judge.IN_RUN).summary())  # no judge call
+                                  grade=lambda d: runner.run_pass(d, root, judge.IN_RUN, cells_root=cells_root).summary())  # no judge call
         summary = engine.Engine(p, cfg).run()
     finally:
         engine.log.removeHandler(log_handler)
@@ -260,7 +260,7 @@ def cmd_grade(args) -> int:
         roots = gateway.run_roots(root, Path(args.runs))
         live_scan = (roots, gateway.refuse_if_live(roots))  # the scan grading.started records (R-65 c1)
         judging = judge.calling(_judge_calls(args, root))
-    result = runner.run_pass(run_dir, root, judging, live_scan)
+    result = runner.run_pass(run_dir, root, judging, live_scan, cells_root=Path(args.cells_root))
     print(f"graded {result.cells_graded} cell(s) in pass {result.grading_id}")
     if judging is None:
         print(f"judge misses: {judge.misses(run_dir, result.grading_id)} call(s)")  # US-26 c2

@@ -125,6 +125,7 @@ def grade_cell(inp: CellInput) -> Mapping[str, Score]:
 
     out = inp.out_dir
     out.mkdir(parents=True, exist_ok=True)
+    work_root = inp.work_root or inp.out_dir  # ADR-0013: outside the repository in a real pass; out_dir in a test
     log_file = out / "mutation.log"
     evidence = log_file.relative_to(inp.run_dir).as_posix()
     log: list[str] = []
@@ -136,8 +137,8 @@ def grade_cell(inp: CellInput) -> Mapping[str, Score]:
 
     started = time.monotonic()
     with ExitStack() as stack:
-        pre_tree = stack.enter_context(_changes.pre_turn_tree(ws, commit, out / "pre-turn", timeout))
-        work_tree = stack.enter_context(_changes.grading_copy(ws, out / "work"))
+        pre_tree = stack.enter_context(_changes.pre_turn_tree(ws, commit, work_root / "pre-turn", timeout))
+        work_tree = stack.enter_context(_changes.grading_copy(ws, work_root / "work"))
         changes = _changes.change_set(pre_tree, work_tree)
 
         added_or_changed = [p for p, status in changes.items() if status in ("added", "changed")]

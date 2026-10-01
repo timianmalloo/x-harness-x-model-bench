@@ -193,13 +193,17 @@ def parse_pytest(path: Path) -> tuple[int, int] | None:
     return (total, passed) if total >= 0 and 0 <= passed <= total else None
 
 
-def grade(ws: Path, task_dir: Path, oracle: dict, out_dir: Path, run_dir: Path, timeout: float) -> Result:
+def grade(ws: Path, task_dir: Path, oracle: dict, out_dir: Path, run_dir: Path, timeout: float,
+          work_dir: Path | None = None) -> Result:
+    """`out_dir` is evidence only (oracle.log, relative to `run_dir`); the disposable copy the oracle command
+    actually runs in is built under `work_dir` (default `out_dir`, a test-only fallback) -- outside the repository
+    in a real pass (ADR-0013), so `uv run` and friends never discover this repository's own pyproject.toml."""
     kind = oracle.get("runner")
     if kind not in ("unittest", "dotnet", "pytest") or not oracle.get("command"):
         return Result(None, None, f"oracle runner {kind!r} not built (phase 1 runs unittest)", "")
     if not ws.is_dir():
         return Result(None, None, "no working copy in the archive", "")
-    work = out_dir / "work"
+    work = (work_dir or out_dir) / "work"
     shutil.copytree(ws, work, ignore=shutil.ignore_patterns(".git"))
     shutil.copytree(task_dir / "tests", work, dirs_exist_ok=True)
     argv = [sys.executable if a == "{python}" else a for a in oracle["command"]]
@@ -282,7 +286,8 @@ class PreTurn:
 
     @cached_property
     def tree(self) -> Path:
-        ws, dest = self._inp.archive / "ws", self._inp.out_dir / "pre-turn"
+        ws = self._inp.archive / "ws"
+        dest = (self._inp.work_root or self._inp.out_dir) / "pre-turn"
         return self._stack.enter_context(_changes.pre_turn_tree(ws, self.commit, dest, self._timeout))
 
 
@@ -296,7 +301,8 @@ def _by_cause(inp: CellInput, oracle: dict, cell: Result, timeout: float, pre: P
         return Result(None, None, _changes.NOT_FOUND, cell.evidence)
     control = inp.out_dir / "pre-turn-oracle"
     control.mkdir()
-    base = grade(pre.tree, inp.task_dir, oracle, control, inp.run_dir, timeout)  # a copy; the shared tree is untouched
+    control_work = (inp.work_root or inp.out_dir) / "pre-turn-oracle"
+    base = grade(pre.tree, inp.task_dir, oracle, control, inp.run_dir, timeout, control_work)  # a copy; the shared tree is untouched
     if base.reason is None:  # the hidden tests compiled and ran on the pre-turn tree: the cell broke the build
         return Result(0, Decimal(0), None, cell.evidence)
     if base.reason in (RESTORE, SDK) or base.reason.startswith("HB-GRD-002"):  # the control could not tell
@@ -318,7 +324,8 @@ def build_and_suite_clean(inp: CellInput, oracle: dict, timeout: float) -> Score
         env.update({k: os.environ[k] for k in DOTNET_HOST_ENV if k in os.environ})  # ADR-0013, as the oracle step
     steps, lines, last = [], [], None
     started = time.monotonic()
-    with _changes.grading_copy(ws, out / "work") as work:
+    work_root = (inp.work_root or inp.out_dir) / "build"  # ADR-0013: outside the repository in a real pass
+    with _changes.grading_copy(ws, work_root / "work") as work:
         if kind in ("unittest", "pytest"):
             steps = [[sys.executable, "-m", "compileall", "-q", "."]]
         else:
@@ -462,6 +469,7 @@ def regression_count(inp: CellInput, oracle: dict, timeout: float, pre: PreTurn)
         return Score(None, _changes.NOT_FOUND)
     out = inp.out_dir / "regressions"
     out.mkdir()
+    work_root = (inp.work_root or inp.out_dir) / "regressions"  # ADR-0013: outside the repository in a real pass
     log, evidence = [], (out / "regressions.log").relative_to(inp.run_dir).as_posix()
     env = _env() | {k: os.environ[k] for k in DOTNET_HOST_ENV if k in os.environ}  # ADR-0013, as the oracle step
 
@@ -469,7 +477,7 @@ def regression_count(inp: CellInput, oracle: dict, timeout: float, pre: PreTurn)
         (out / "regressions.log").write_text("".join(log), encoding="utf-8")
         return Score(value, reason, evidence)
 
-    with _changes.grading_copy(ws, out / "cell") as tree:
+    with _changes.grading_copy(ws, work_root / "cell") as tree:
         after, failure = _public_suite(tree, projects, env, timeout, log)
     if failure:
         return written(None, failure)
@@ -482,7 +490,7 @@ def regression_count(inp: CellInput, oracle: dict, timeout: float, pre: PreTurn)
         # showed as a regression on a cell that did not touch it (spike note, c2). The second run costs one suite run,
         # only when there is a candidate. assume: a flake that fails twice in a row is rare enough to be disclosed, not
         # removed; confirm by the gate runs' values across passes; if false, the byte-identity gate fails on it.
-        with _changes.grading_copy(ws, out / "cell") as tree:
+        with _changes.grading_copy(ws, work_root / "cell") as tree:
             again, failure = _public_suite(tree, projects, env, timeout, log)
         if failure:
             return written(None, failure)
@@ -508,7 +516,7 @@ def grade_cell(inp: CellInput) -> dict[str, Score]:
     oracle, timeout = inp.task.get("oracle") or {}, inp.plan["parameters"]["grading_step_timeout"]
     with ExitStack() as stack:
         pre = PreTurn(inp, timeout, stack)
-        c = grade(inp.archive / "ws", inp.task_dir, oracle, inp.out_dir, inp.run_dir, timeout)
+        c = grade(inp.archive / "ws", inp.task_dir, oracle, inp.out_dir, inp.run_dir, timeout, inp.work_root)
         if c.compile_error:
             c = _by_cause(inp, oracle, c, timeout, pre)
         return {"pass_at_1": Score(c.passed, c.reason, c.evidence), "partial_credit": Score(c.partial_credit, c.reason, c.evidence),

@@ -40,7 +40,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
 
-from harness_bench import config, ledger, oslock, profiles, tools, views
+from harness_bench import config, ledger, oslock, profiles, tools, views, workspace
 from harness_bench.errors import BenchError
 from harness_bench.grade import (
     CellInput,
@@ -183,21 +183,30 @@ def _abandoned(run_dir: Path, done: set[str], named: set[tuple[str, str]]) -> li
 
 
 def run_pass(run_dir: Path, root: Path, judging: Mapping[str, GraderFn] | None = None,
-             live_scan: tuple | None = None) -> PassResult:
+             live_scan: tuple | None = None, *, cells_root: Path | None = None) -> PassResult:
     """One grading pass. `judging` replaces registered graders for this pass only (design phase3-gateway-judges
     section 6): the in-run pass passes `judge.IN_RUN`, `bench grade --allow-model-calls` passes `judge.calling(...)`,
     and a plain `bench grade` passes nothing (the judge reads the verdict store only). `live_scan` is the
     (roots, runs with liveness) the live-run refusal scanned before a calling pass; grading.started records it
-    (R-65 c1). A pass that cannot call scans nothing."""
+    (R-65 c1). A pass that cannot call scans nothing.
+
+    `cells_root` (default `root.parent / "bench-cells"`, the same default `bench --cells-root` and `plan.build_plan`
+    use, ADR-0013): every grader's disposable working copy lands under `cells_root / "grading"`, never under
+    `run_dir` (grading-copy-outside-repo fix), so an upward-discovering tool (`uv`, ...) run inside one never reaches
+    this repository's own pyproject.toml/.python-version. Checked once per pass (HB-GRD-006)."""
     plan = load_confirmed(run_dir)
+    cells_root = cells_root or root.parent / "bench-cells"
+    grading_root = cells_root / "grading"
+    workspace.check_grading_root(grading_root)
     with oslock.RunLock.acquire(run_dir / "grade.lock", "HB-GRD-001"):
-        return _Pass(run_dir, root, plan, judging or {}, live_scan).run()
+        return _Pass(run_dir, root, plan, judging or {}, live_scan, grading_root).run()
 
 
 class _Pass:
     def __init__(self, run_dir: Path, root: Path, plan: dict, judging: Mapping[str, GraderFn],
-                 live_scan: tuple | None = None) -> None:
+                 live_scan: tuple | None = None, grading_root: Path | None = None) -> None:
         self.run_dir, self.root, self.plan, self.live_scan = run_dir, root, plan, live_scan
+        self.grading_root = grading_root or (run_dir / "grading")  # test-only fallback (in-repo, previous behaviour)
         self.graders = {**GRADERS, **judging}
         self.grading_id = f"{views.GRADE_PREFIX}{time.strftime('%Y%m%dT%H%M%S', time.gmtime())}-{secrets.token_hex(3)}"
         self.catalog = config.load_yaml(root / "bench" / "metrics.yaml")
@@ -297,6 +306,7 @@ class _Pass:
         folder = self.run_dir / "archive" / cid / f"attempt-{attempt}"
         out_dir = self.run_dir / "grading" / self.grading_id / cid
         out_dir.mkdir(parents=True)
+        work_root = self.grading_root / self.grading_id / cid  # mirrors out_dir's shape, outside the repository
         ex, missing, model_rows, tool_rows = self._extract(cell, folder, session_id, held)
         unreadable = missing if ex is None else (normalize.record_unreadable(ex) or missing)
         if unreadable is not None:
@@ -313,9 +323,11 @@ class _Pass:
                          archive=folder, out_dir=out_dir, events=events, record_reason=unreadable, model_calls=tuple(model_rows),
                          tool_calls=tuple(tool_rows), turn_usage=tuple(usage.get(cid, [])), metrics={},
                          allow_model_calls=False,  # R-58 DR-2: only `judge.calling` (--allow-model-calls) sets it
-                         extraction=ex, prices=self.prices if self.prices_ok else None, emit=self.append)
+                         extraction=ex, prices=self.prices if self.prices_ok else None, emit=self.append,
+                         work_root=work_root)
         for grader, metrics in applicable(self.catalog, names).items():
-            scores = self._run_grader(grader, dataclasses.replace(base, out_dir=out_dir / grader, metrics=metrics), current)
+            inp = dataclasses.replace(base, out_dir=out_dir / grader, work_root=work_root / grader, metrics=metrics)
+            scores = self._run_grader(grader, inp, current)
             self.wanted.update((cid, m) for m in metrics)
             for metric in sorted(metrics):
                 self._score(cell, attempt, metric, scores[metric])

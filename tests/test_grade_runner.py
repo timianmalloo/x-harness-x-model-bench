@@ -56,6 +56,20 @@ def graded(root, tmp_path) -> list[dict]:
     return pass_rows(run_dir, "scores", runner.run_pass(run_dir, root).grading_id)
 
 
+# --- grading-copy-outside-repo (ADR-0013 Amendment 2): cells_root threaded in, checked before any grader runs -------
+
+def test_run_pass_refuses_a_cells_root_under_a_project_file(root, tmp_path):
+    """HB-GRD-006: a `cells_root` (so `cells_root/grading`) sitting under a project's own pyproject.toml/.python-
+    version is refused before any grader builds a working copy under it (the ORCL-B guard)."""
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    bad_project = tmp_path / "bad-project"
+    (bad_project / "pyproject.toml").parent.mkdir(parents=True, exist_ok=True)
+    (bad_project / "pyproject.toml").write_text("[project]\nname = \"bad\"\n", encoding="utf-8")
+    with pytest.raises(BenchError) as e:
+        runner.run_pass(run_dir, root, cells_root=bad_project / "bench-cells")
+    assert e.value.code == "HB-GRD-006"
+
+
 # --- dispatch by the task's graders (replaces METRICS) ------------------------------------------------------------
 
 
