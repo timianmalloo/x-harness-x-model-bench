@@ -1,3 +1,3 @@
 # Pinned grader inputs stamp. Renew via: python tools/gate_stamp.py --renew
 schema: bench-gate-stamp/1
-digest: 763612e75d59b3616cd61f0fa198ef8c9792c9f00a0075d309800158fd2b5edd
+digest: 49c6908a229b75ad7f9fac3683e34d2aa8d35b81318304afe4714c2439dd7d8e
