@@ -146,23 +146,38 @@ swapped in, agent proof files untouched, build must fail).
 
 ## S6. `formal.statement_hash`, computed
 
-`formal.statement_hash` follows the design's recipe (`formal-grader.md` §`statement_integrity`,
-"G2"): a `plan.tree_hash`-shaped hash (`plan.py:91-97` — sha256, entries in casefold-sorted
-order, each entry `path.encode() + b"\0" + content.replace(CRLF, LF) + b"\0"`) over:
+**Revised 2026-10-02 (grid-3 incident, R-8x TBD).** The value below replaces one computed by a
+bespoke, out-of-band procedure this section used to describe (a synthetic per-theorem hash entry
+labelled `Proofs/Statements.lean::<name>`, content captured with `#check @<name>` — the fully
+explicit `∀`-quantified rendering). That procedure was never reproducible by the real grader:
+`grade/formal.py`'s `_statement_material` reuses `plan.tree_hash`/`plan.file_hash`, the project's
+one sanctioned hashing recipe (G12, `formal-grader.md:53`: "No second hashing recipe exists
+anywhere in the codebase"), which hashes real files under a real staging directory — a label
+containing `::` can never be a real Windows filename `tree_hash` hashes a real `Path` for, so the
+old recipe could only ever be computed by a one-off script, not by the grader. Every G2 cell in
+grid-3 (276-cell run, grading `grade-20261001T210800-579e4f`, 2026-10-01) scored
+`statement_integrity` 0 "given statements edited (statement_hash mismatch)" identically — all 3
+models × pack on/off × 2 reps — because the stored hash could never match what the grader
+actually computes, independent of what any agent did to the statements.
 
-- `Proofs/Fold.lean` (full bytes, from `workspace/Proofs/`);
-- `Proofs/lakefile.toml` and `Proofs/lean-toolchain` (full bytes);
-- for each name in `formal.theorem_names`, a synthetic entry labelled
-  `Proofs/Statements.lean::<name>` whose content is that name's `#check` rendering (captured with
-  `lake env lean <script>.lean`, `evidence.md` §2) plus a trailing newline. The design leaves this
-  synthetic label unspecified; this is the one that materialized it, recorded here so the future
-  grader implementation matches this value exactly rather than re-deriving a different one.
+`formal.statement_hash` is now computed by calling the grader's own code directly (never a hand
+replica): `formal._statement_material(workspace/Proofs, formal.theorem_names, lake, ..., out_dir)`
+then `plan.tree_hash(staging, files)` over the four real files it stages —
+
+- `Fold.lean`, `lakefile.toml`, `lean-toolchain` (copied verbatim from the disposable build copy);
+- `check.out`, one file holding the elaborator's own `#check <name>` rendering (no `@`) for every
+  name in `formal.theorem_names`, concatenated in list order, from one `lake env lean <script>.lean`
+  invocation.
+
+Confirmed identical whether run against `workspace/Proofs` (the given, `sorry`-bodied statements)
+or `oracle/reference/Proofs` (the filled proofs): `6778ce589c3fee429a68c1dee9635b198bf94efa0c3be376dada8d6f9aa56b0d`
+both times — a changed proof *term* never changes `#check`'s output, exactly as `evidence.md` §2
+already showed for the old recipe, re-confirmed here for the new one. This is pinned by
+`tests/test_grade_formal.py::test_g2_real_task_statement_hash_matches_what_the_grader_computes`
+and `::test_g2_real_oracle_reference_scores_clean_against_the_real_task`.
 
 Recomputing this hash from a changed `Fold.lean`, `lakefile.toml`, `lean-toolchain`, or either
-theorem's *type* will produce a different digest, exactly as `statement_integrity` requires; a
-changed proof *term* (the agent's real work) does not change `#check`'s output, so it does not
-change the hash — confirmed directly in `evidence.md` §2 (the unfilled, `sorry`-bodied given
-`Statements.lean` and the filled reference produce byte-identical `#check` text).
+theorem's *type* still produces a different digest, exactly as `statement_integrity` requires.
 
 ## S7. `bench validate`
 

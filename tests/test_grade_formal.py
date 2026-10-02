@@ -228,6 +228,49 @@ def test_g2_statement_integrity_agent_statements_not_applicable(tmp_path):
     assert encode(formal.statement_integrity(inp, TIMEOUT)) == (None, "formal.statements: agent — statement integrity not applicable")
 
 
+# --- the real task G2's own statement_hash must be reproducible by the grader (grid-3 2026-10-01 CI-class) -------
+#
+# tasks/G2's formal.statement_hash was computed by a bespoke, unreproducible procedure (recorded only in
+# oracle/README.md S6: a synthetic per-theorem hash entry labelled "Proofs/Statements.lean::<name>", content
+# captured via `#check @<name>` -- the fully-explicit ∀ rendering, evidence.md §2), never through
+# `_statement_material`/`plan.tree_hash`, the project's one sanctioned hashing recipe (G12, formal-grader.md:53)
+# -- and a synthetic label containing `::` can never be a real Windows filename `tree_hash` could hash a real
+# Path for anyway. Every G2 cell in grid-3 (276-cell run, grading grade-20261001T210800-579e4f) scored
+# statement_integrity 0 "given statements edited (statement_hash mismatch)" identically across all 3 models x
+# pack on/off x 2 reps, independent of what any agent did to the statements, because the stored hash could
+# never match what the real grader computes. This test pins the real task's stored hash against what
+# `_statement_material` actually produces, so a future re-authoring that reintroduces an out-of-band recipe
+# fails here rather than silently zeroing an entire task's statement_integrity column again.
+
+G2_REAL = ROOT / "tasks" / "G2"
+
+
+def _g2_real_task() -> dict:
+    from harness_bench import config
+    return config.load_yaml(G2_REAL / "task.yaml")
+
+
+def test_g2_real_task_statement_hash_matches_what_the_grader_computes(tmp_path):
+    task = _g2_real_task()
+    names = task["formal"]["theorem_names"]
+    lake, reason = formal._warm_lake(ROOT)
+    assert lake is not None, reason
+    staging, files = formal._statement_material(
+        G2_REAL / "workspace" / "Proofs", names, lake, formal.correctness._env(), TIMEOUT, tmp_path / "probe")
+    assert staging is not None, files  # files holds the NA reason on failure
+    from harness_bench.plan import tree_hash
+    computed = tree_hash(staging, files)
+    assert computed == task["formal"]["statement_hash"]
+
+
+def test_g2_real_oracle_reference_scores_clean_against_the_real_task(tmp_path):
+    task = _g2_real_task()
+    ws = _g2_ws(tmp_path, G2_REAL / "oracle" / "reference" / "Proofs")
+    inp = _cell_input(tmp_path, ws, task)
+    assert encode(formal.statement_integrity(inp, TIMEOUT)) == (1, None)
+    assert encode(formal.formal_checks_clean(inp, TIMEOUT)) == (1, None)
+
+
 def test_g2_formal_checks_clean_reference_is_1(tmp_path):
     ws = _g2_ws(tmp_path, G2_REF / "Proofs")
     inp = _cell_input(tmp_path, ws, G2_TASK)
