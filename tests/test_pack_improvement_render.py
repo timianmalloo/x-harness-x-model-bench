@@ -96,3 +96,29 @@ def test_pi_t14_a_planted_canary_never_reaches_the_rendered_page(tmp_path):
 
     doc = html.render(view, archive_present=True, run_dir=run_dir, root=root_dir)
     assert CANARY not in doc
+
+
+# ---------------------------------------------------------------------------------------------------
+# PI-T16: the "Value vs waste" group table's Combo column shows the real combo id (the same text the
+# leaderboard, pack-effect and runs sections show, via `_combo_label`), never the c1..c8 CSS-filter
+# token `_combo_index` hands out -- that vocabulary drives the legend's `hide-cN` classes
+# (html.py:134-142) and is otherwise an internal id, not a display label. No rule in
+# docs/design/pack-improvement-section.md or docs/notes/rulings.md requires blinding the combo
+# identity in this section.
+# ---------------------------------------------------------------------------------------------------
+
+
+def test_pi_t16_group_table_shows_the_real_combo_name_not_the_cn_token(tmp_path):
+    root_dir = make_root(tmp_path)
+    run_dir = make_run(root_dir, tmp_path, {"a": GOOD, "b": GOOD}, harness="codex",
+                        combos={"a": "copilot-sol", "b": "copilot-sol"})
+    runner.run_pass(run_dir, root_dir)
+    view = views.load(run_dir)
+    for c in view.cells:  # make_run plans every cell pack "off"; flip one so a pair forms
+        if c.cell_id == "a":
+            c.pack = "on"
+
+    doc = html.render(view, archive_present=True, run_dir=run_dir, root=root_dir)
+    section = re.search(r'<section id="pack-improvement">.*', doc, re.DOTALL).group(0)
+    assert "copilot-sol" in section
+    assert re.search(r"<td>c[1-8]</td>", section) is None

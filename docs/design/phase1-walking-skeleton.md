@@ -206,7 +206,7 @@ The physical rules are ADR-0006's (one definition); in short:
 | `timed_out` | HB-CELL-301 | agent | budget deadline |
 | `blocked (permission)` | HB-CELL-201 | agent | refused ACP permission request |
 | `failed (adapter crash)` | HB-CELL-105 | harness | EOF before `end_turn` |
-| `failed (protocol)` | HB-CELL-107 | harness | > 20 non-JSON lines or a line over 1 MiB (the line cap); junk archived |
+| `failed (protocol)` | HB-CELL-107 | harness | > 20 non-JSON lines or a line over 8 MiB (the line cap, raised from 1 MiB 2026-10-02: grid-3 evidence measured legitimate single tool-result lines up to 2.3 MiB); junk archived |
 | `failed (provider)` | HB-CELL-108 | infrastructure | status 408, 429, 5xx or overload in the native error row (Claude `apiErrorStatus`; Codex `task_complete.error`), found by the pre-outcome scan; takes precedence over `timed_out` and `adapter crash` |
 | `failed (model unavailable)` | HB-CELL-116 | benchmark | any other 4xx model error (for example 404 `model_not_found`, 400 `invalid_request_error`): the plan pinned a model the account cannot serve (probe W3) |
 | `failed (handshake timeout)` | HB-CELL-104 | infrastructure | handshake deadline |
@@ -278,7 +278,7 @@ The physical rules are ADR-0006's (one definition); in short:
 | Archive failure / sharing violation on delete | US-19 | mitigate | Workspace kept; teardown exits non-zero; bounded retry | T-ARC-full, T-ARC-locked |
 | Hidden tests in the agent's own working copy | Workspace builder | prevent | — | T-WS-oracle (no oracle path or blob in the task clone's history or the working copy) |
 | An agent instruction file in an ancestor of the cells root (for example a root under the user profile) | Spike R1.3 | prevent | HB-PRE-002 | T-PRE-ancestor |
-| Native-record format drift; malformed, huge or deeply nested record | ADR-0008 | detect + contain | HB-TEL-001; bounded reader: line ≤ 1 MiB, file ≤ 256 MiB, and a line whose parse raises `RecursionError` is malformed | T-TEL-golden, T-TEL-missing, T-TEL-fuzz (D2, including a 100,000-deep nesting case) |
+| Native-record format drift; malformed, huge or deeply nested record | ADR-0008 | detect + contain | HB-TEL-001; bounded reader: line ≤ 8 MiB (raised from 1 MiB 2026-10-02, same measured reason as HB-CELL-107), file ≤ 256 MiB, and a line whose parse raises `RecursionError` is malformed | T-TEL-golden, T-TEL-missing, T-TEL-fuzz (D2, including a 100,000-deep nesting case) |
 | Grading an unarchived cell / two grade processes | ADR-0007 | prevent | HB-GRD-001 | T-GRD-unarchived, T-LOCK |
 | Host suspended | ADR-0007 | detect | HB-CELL-106 | T-ENG-suspend (injected clocks); probe A9 |
 

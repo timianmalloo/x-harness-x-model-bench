@@ -2066,11 +2066,18 @@ def _pi_ratio_cell(m) -> str:
     return "NA" if m.value is None else f"{m.value:.2f}x"
 
 
-def _pi_group_row(g, combo_ix: dict[str, str]) -> html_builder.Html:
-    label = combo_ix.get(g.combo, g.combo)
+def _pi_group_row(g, combo_ix: dict[str, str], combo_harness: dict[str, str]) -> html_builder.Html:
+    # The Combo column shows the real combo id (`_combo_label`, same text the leaderboard, pack-effect
+    # and runs sections show), never the c1..c8 legend/filter token `combo_ix` hands out -- that token
+    # vocabulary exists only to drive the control bar's `hide-cN` classes (CSS above, design section 6),
+    # and is otherwise an internal id, not a display label; a reader could not tell which harness a row
+    # named. `data-combo` still carries the token so this row still obeys the combo legend's filter.
+    label = _combo_label(g.combo, combo_harness.get(g.combo, ""))
     flag = " (ceiling_off)" if g.is_ceiling_off else ""
+    token = combo_ix.get(g.combo)
+    row_attrs = {"data-combo": token} if token is not None else None
     return html_builder.el(
-        "tr", None,
+        "tr", row_attrs,
         html_builder.el("td", None, g.task),
         html_builder.el("td", None, label),
         html_builder.el("td", {"class": "num"}, f"{g.passes_on}/{g.n_pairs} · {g.passes_off}/{g.n_pairs}"),
@@ -2107,6 +2114,10 @@ def _pack_improvement(view: views.RunView, board_obj: board.Board | None, run_di
     (design section 8) -- no transcript text, no command text, no path other than a repo-relative
     pack prefix reaches this renderer to begin with."""
     result = pack_improvement_mod.assemble(view, board_obj, run_dir, root, archive_present=archive_present)
+    combo_harness: dict[str, str] = {}
+    if board_obj is not None:
+        for r in board_obj.rows:
+            combo_harness.setdefault(r.combo, r.harness)
     heading = html_builder.el("h2", None, "Pack on vs pack off — where to improve the pack")
     children: list[html_builder.Html] = [heading]
     if result.state != pack_improvement_mod.STATE_FULL and result.state != pack_improvement_mod.STATE_PARTIAL:
@@ -2127,7 +2138,7 @@ def _pack_improvement(view: views.RunView, board_obj: board.Board | None, run_di
         html_builder.el("thead", None, html_builder.el(
             "tr", None, *(html_builder.el("th", {"scope": "col"}, h) for h in
                           ("Task", "Combo", "Pass on · off", "Median token ratio", "Median wall ratio", "Class")))),
-        html_builder.el("tbody", None, *(_pi_group_row(g, combo_ix) for g in result.groups)),
+        html_builder.el("tbody", None, *(_pi_group_row(g, combo_ix, combo_harness) for g in result.groups)),
     )
     children.append(html_builder.el(
         "div", {"class": "region", "role": "region", "tabindex": "0", "aria-labelledby": "pi-groups-caption"},

@@ -10,6 +10,8 @@ Behaviour comes from the FAKE_ACP environment variable (JSON):
    "linger": <seconds to stay alive after stdin closes, like a CLI that is slow to exit>,
    "stderr": "<text written to stderr at start>", "mkdir": "<a folder created relative to cwd at start>",
    "handshake_delay": <seconds before answering initialize>,
+   "line_bytes": <mode "huge_line" only: the line's byte count, default 2 MiB (grid-3's own measured
+                  Claude Code image-tool-result and Codex verbose-stdout lines ran 1.0-2.3 MiB)>,
    "echo_credential": <at the prompt, echo record_dir/.credentials.json to stderr, a message chunk, echo.txt in cwd,
                        and the prompt's error reply>,
    "daemon": <at the prompt, start a detached grandchild that outlives the turn (a build server), trying breakaway
@@ -105,7 +107,7 @@ def main() -> int:
             OUT.write(b"Update available! Run npm i -g something\n")
         OUT.flush()
     if MODE == "huge_line":
-        OUT.write(b"x" * (2 * 1024 * 1024) + b"\n")
+        OUT.write(b"x" * CFG.get("line_bytes", 2 * 1024 * 1024) + b"\n")
         OUT.flush()
     session_id = str(uuid.uuid4())
     for raw in sys.stdin.buffer:

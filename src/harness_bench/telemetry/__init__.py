@@ -4,10 +4,16 @@ Pattern: Anti-Corruption Layer into a Canonical Data Model. Each reader turns on
 record into the same shapes: model calls in disjoint token buckets (uncached input, cache read,
 cache write, output; reasoning is a component of output), tool calls, and provider-error rows.
 
-Readers are bounded (ADR-0008, design): a line over 1 MiB, a line nested deep enough to raise
+Readers are bounded (ADR-0008, design): a line over 8 MiB, a line nested deep enough to raise
 RecursionError, or a line that does not parse is counted as malformed and skipped; a record over
 256 MiB is read only to that size. A field of the wrong type is treated as absent. A usage field that is
 absent is listed in `Extraction.missing` as HB-TEL-001: NOT_RECORDED, never a silent 0.
+
+MAX_LINE was 1 MiB (HB-CELL-107 fix, 2026-10-02, the same sibling bound as driver.py's own
+MAX_LINE and raised for the same measured reason): grid-3's archive has a Claude Code image
+tool_result line at 1.0-1.3 MiB and a Codex CommandExecution verbose-stdout line at 2.3 MiB, both
+legitimate single tool-result rows that the old bound silently dropped as malformed (NOT_RECORDED
+instead of read). 8 MiB keeps a >3x margin over the largest measured line.
 """
 
 from __future__ import annotations
@@ -18,7 +24,7 @@ from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
-MAX_LINE = 1 << 20
+MAX_LINE = 8 << 20
 MAX_FILE = 256 << 20
 
 
