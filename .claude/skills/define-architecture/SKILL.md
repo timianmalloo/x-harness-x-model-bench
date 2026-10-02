@@ -22,6 +22,10 @@ A spec (`docs/specs/<feature>.md` from `/specify`) or a prompt. If only a prompt
 
 ## Flow (Rigor Protocol, specialized to system shape)
 
+**Decision closure.** Read `knowledge/decision-interrogation.md`. Research technical facts rather
+than asking the human. Before handoff, run DI6 for unresolved product constraints or trade-offs:
+show the Question / Needed for / Recommendation table, then ask one question at a time.
+
 **Stage 0 — Interdict the rush.** Do not name a tech stack or draw boxes yet. The first plausible architecture is a hypothesis.
 
 **Stage 1 — OPEN.** Sketch the system as a system (Meadows): the **stocks** (what accumulates — queues, state, balances), the **flows** (requests, messages, money), the **feedback loops** (retries, backpressure, rate limits, caches, circuit breakers), the **delays** (latency, eventual consistency), and the **boundary** you draw (and what you exclude). Enumerate candidate architectures (at least two genuinely different shapes). Ask the leverage-point question: *where is the high-leverage structural decision, vs. the merely visible one?* List every external contract the system will depend on.

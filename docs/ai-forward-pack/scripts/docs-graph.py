@@ -1033,6 +1033,19 @@ def _frontmatter_snapshot(artifact):
     }
 
 
+def _opted_into_docs_explorer(root, dst):
+    """pack-onoff-analysis.html #3 (class PK-03, F-6): docs-index.js is a generated pack
+    artifact; it must not appear, unasked, in a repo that never opted into the Docs
+    Explorer. 'Opted in' is read from what is ALREADY on disk, independent of this call --
+    the destination file itself, or docs/index.html (the Explorer shell a skill
+    instantiates before calling derive). A repo with neither has not opted in; `derive`
+    then refuses to seed the FIRST one and says so, rather than creating docs/ in a product
+    tree nobody asked to put it in."""
+    if os.path.exists(dst):
+        return True
+    return os.path.exists(os.path.join(root, "index.html"))
+
+
 def cmd_derive(args):
     arts, problems = scan(
         args.root,
@@ -1120,6 +1133,17 @@ def cmd_derive(args):
             4,
         )
     dst = args.out or os.path.join(args.root, "docs-index.js")
+    # Explicit --root or --out is a direct ask (sandboxed tests and callers that name their
+    # own location both count) and bypasses the opt-in check below; only the DEFAULT -- no
+    # flag, the documented skill invocation -- is guarded.
+    root_explicit = "--root" in sys.argv[1:]
+    if not args.out and not root_explicit and not _opted_into_docs_explorer(args.root, dst):
+        print("docs-graph derive: skipped writing {0} -- the repo has not opted into the "
+              "Docs Explorer (neither it nor {1} exists yet). Pass --out to write it "
+              "anyway, or instantiate docs/index.html first "
+              "(pack-onoff-analysis.html #3, class PK-03).".format(
+                  dst, os.path.join(args.root, "index.html")), file=sys.stderr)
+        return 0
     for a in arts:
         current, _ = _read_source_bounded(a["_fs_path"], a["id"])
         if sha256_text(normalized_source(current)) != source_snapshots[a["_fs_path"]]:

@@ -22,6 +22,10 @@ A spec and/or `docs/architecture.md`, or a prompt for a feature within an existi
 
 ## Flow (Rigor Protocol, specialized to component shape)
 
+**Decision closure.** Read `knowledge/decision-interrogation.md`. Research technical facts rather
+than asking the human. Before handoff, run DI6 for unresolved component trade-offs: show the
+Question / Needed for / Recommendation table, then ask one question at a time.
+
 The stages below are the contract; **the full stage text is `reference/flow.md`** — read it once, at Stage 0, and work from it. Do not re-invoke this skill to re-read it (a second invocation re-injects this whole file — class CTX-E), and do not paraphrase a stage from memory when the file is one read away.
 
 - **Stage 0 — Interdict the rush.**

@@ -3,11 +3,12 @@ load: always
 ---
 # Session Worktree Discipline
 
-*Normative guidance for **where a session does its work**. Every new session starts in its own
-git worktree; a session may create more if the work needs them; and no worktree is ever left
-behind. `coord-core.py` already keys coordination by worktree and enforces one session per tree —
-this document makes the worktree **the default unit of session isolation** rather than something
-you reach for after a collision, and it closes the half nobody owns: cleanup.*
+*Normative guidance for **where a session does its work**. A session isolates into its own git
+worktree when another writer might share its checkout; a session may create more worktrees if the
+work needs them; and no worktree is ever left behind. `coord-core.py` already keys coordination by
+worktree and enforces one session per tree — this document makes isolation **the default response
+to a concurrent-writer risk** rather than something you reach for after a collision, and it closes
+the half nobody owns: cleanup.*
 
 Normative keywords (**MUST**, **SHOULD**, **MAY**, **MUST NOT**) follow RFC 2119.
 
@@ -41,11 +42,19 @@ delete is a gated action).
 
 ## 1. The directive
 
-**WT1 — A new session starts in a new worktree.** A session that will write to the repository
-**MUST** begin by creating and entering its own git worktree, on its own branch, rather than
-working in the primary checkout. This is the default and it does not require a reason; working in
-the primary checkout is what requires one (WT4). The primary checkout stays clean, reviewable and
-always-buildable — which is what makes it a useful reference while other work is in flight.
+**WT1 — Isolate on concurrent-writer risk, not on session-newness.** Create and enter an own
+worktree, on its own branch, before writing — but only when another live agent/session or the
+pack's coordination runner might write the same checkout. Staying anyway under that risk is the
+exception (WT4); with no such risk, see WT1b.
+
+**WT1b — No concurrent writer: work in place.** A fresh clone, a CI job, a benchmark cell, a
+single-agent repo, or a prompt naming the checkout are cases with nothing else writing there —
+isolating just moves the deliverable somewhere the requester never opens. Default; no reason
+needed. Evidence: class **WT-D** (`docs/lessons/defect-classes.md`).
+
+**WT1c — Done means back where the requester looks.** A change made in a worktree is not done
+until it is **integrated into the checkout the requester named**, or handed back **explicitly as
+not delivered**.
 
 **WT1a — A new task starts in a new session, and a long session compacts before it turns.** A worktree isolates the *tree*; nothing isolates the *context*. A session that carries a pack refresh, a PR merge and then a product-pivot proposal in one conversation re-reads all three on every request — the profiled shape was a 23-hour session whose main context grew from 159k to 564k tokens across three unrelated tasks with **zero compactions**, because a long-context tier never forces one. So: when the task changes, start a new session (or compact deliberately) *in the same worktree*; the audit log, not the conversation, is how work compounds across sessions (AL5). A harness setting that lets the context grow without bound (`contextTier: long_context` in Copilot CLI, a 1M window in Claude Code) is a per-phase choice (GO19), never a global default — `pack-doctor.py` reports it. `session-profile.py` finding SP-01 is the recurrence signal; class **CTX-A**.
 
@@ -60,11 +69,10 @@ enforces the first half (`COORD-WORKTREE-OCCUPIED`: *"two sessions in one tree i
 lost"*). The second half is the discipline this document adds: a session does its writing in one
 tree at a time so that "what did this session change?" has a single, answerable location.
 
-**WT4 — Working in the primary checkout is a recorded exception, not a default.** There are real
-cases: a one-line fix on a repo with no concurrency, a repository whose tooling cannot function
-outside the primary tree, an environment where worktrees are unavailable. Say which, in the
-session's own words, and proceed. An unstated exception is indistinguishable from having forgotten
-the rule — and it is the shape that erodes the discipline within a week.
+**WT4 — Staying in a shared checkout under risk is a recorded exception.** Covers what WT1b does
+not: a concurrency risk exists (WT1) but isolation is skipped — tooling that needs the primary
+tree, or no worktrees available. Say which, and proceed; an unstated exception is
+indistinguishable from having forgotten the rule.
 
 **WT5 — Name the branch and the tree for the work, not for the session.** `feature/audit-duration`
 tells the next person what is in there; `session-2026-08-22-a` tells them nothing and guarantees
@@ -167,8 +175,10 @@ designated leader, the join is run as `conductor-join.py --epoch <n>` with the e
 
 ## 4. Self-verification checklist
 
-- [ ] The session created and entered **its own worktree** on its own branch before writing
-      (WT1), or recorded why it is working in the primary checkout (WT4).
+- [ ] A concurrent-writer risk was checked, not assumed from "this is a new session" (WT1): isolate
+      if present, or record why not (WT4); work in place if absent (WT1b).
+- [ ] If a worktree was used, the change reached the checkout the requester named, or the hand-back
+      named it not delivered (WT1c).
 - [ ] Additional worktrees, if any, follow the same lifecycle (WT2).
 - [ ] The branch and directory are named for **the work** (WT5).
 - [ ] At close, the worktree was **removed or explicitly kept with a reason** (WT6).

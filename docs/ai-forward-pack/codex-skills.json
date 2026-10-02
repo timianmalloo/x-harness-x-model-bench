@@ -30,6 +30,9 @@
   "compile": [
     "SKILL.md"
   ],
+  "create-proposal": [
+    "SKILL.md"
+  ],
   "define-architecture": [
     "SKILL.md"
   ],

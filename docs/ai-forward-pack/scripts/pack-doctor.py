@@ -236,6 +236,65 @@ def check_hooks(root):
                    "copy adapters/hooks/copilot.ai-forward-hooks.json to .github/hooks/ai-forward.json, grok.ai-forward-hooks.json to .grok/hooks/ai-forward.json, agy.ai-forward-hooks.json to .agents/hooks.json, and merge adapters/hooks/claude-code.settings.hooks.json into .claude/settings.json (INSTALL 1.4 / 1.7 / 1.8)")
 
 
+def check_hook_launchers(root):
+    """Scan five config files recursively for legacy command tokens; no custom allowlist."""
+    import shutil
+    import subprocess
+    files = [".claude/settings.json", ".github/hooks/ai-forward.json",
+             ".agents/hooks.json", ".codex/hooks.json"]
+    grok_hooks = os.path.join(root, ".grok", "hooks")
+    if os.path.isdir(grok_hooks):
+        files.extend(".grok/hooks/" + name for name in sorted(os.listdir(grok_hooks)) if name.endswith(".json"))
+    configured = False
+
+    def walk(value):
+        if isinstance(value, dict):
+            for key, item in value.items():
+                if key in ("command", "bash", "powershell") and isinstance(item, str):
+                    yield item
+                else:
+                    yield from walk(item)
+        elif isinstance(value, list):
+            for item in value:
+                yield from walk(item)
+
+    for relative in files:
+        try:
+            with open(os.path.join(root, relative), encoding="utf-8") as handle:
+                text = handle.read()
+            config = json.loads(text)
+        except FileNotFoundError:
+            continue
+        except (OSError, ValueError):
+            return _result("hook launchers", FAIL, "HOOK-CONFIG-INVALID: " + relative,
+                           "repair JSON/UTF-8 encoding without discarding local settings")
+        for command in walk(config):
+            if "py=$(python3" in command:
+                return _result("hook launchers", FAIL, "HOOK-SHELL: Bash-only command in " + relative,
+                               "refresh the pack; inspect custom wrappers separately")
+            configured = configured or "run-hook.sh" in command
+    if not configured:
+        return _result("hook launchers", WARN, "portable pack launcher not configured", "refresh the pack")
+    git = shutil.which("git")
+    if not git or not os.path.isfile(os.path.join(root, "docs", "ai-forward-pack", "hooks", "run-hook.sh")):
+        return _result("hook launchers", FAIL, "HOOK-RUNTIME-MISSING: Git or run-hook.sh absent",
+                       "install Git and Python 3; refresh the complete hook bundle")
+    try:
+        result = subprocess.run(
+            [git, "-c", "alias.aif-hook=!sh", "aif-hook",
+             "docs/ai-forward-pack/hooks/run-hook.sh", "reread-guard.py", "--help"],
+            cwd=root, capture_output=True, text=True, encoding="utf-8", timeout=10,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return _result("hook launchers", FAIL, "HOOK-RUNTIME-FAILED: launcher probe could not finish",
+                       "check Git's shell and Python installations")
+    if result.returncode != 0 or "usage:" not in result.stdout.lower():
+        return _result("hook launchers", FAIL, "HOOK-RUNTIME-FAILED: hook help did not execute",
+                       "check Git's shell, Python, and the installed hook bundle")
+    return _result("hook launchers", PASS,
+                   "Git launcher executed the Python hook; native event enforcement is not qualified here")
+
+
 def check_block(root, fname):
     p = os.path.join(root, fname)
     if not os.path.exists(p):
@@ -739,6 +798,7 @@ def run(root):
         check_block(root, "AGENTS.md"),
         check_claude_md_import(root),
         check_hooks(root),
+        check_hook_launchers(root),
         check_claude_settings(root),
         check_copilot_settings(),
         check_graph(root),

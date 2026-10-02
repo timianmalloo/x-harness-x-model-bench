@@ -10,6 +10,8 @@ Run a coordination plan. You become the **coordinator**: you own the division of
 
 **If there is no plan, build one first.** Invoke `/prepare-for-coordination` with the same scope, then execute the plan it produces. Executing without a plan means inventing the division of responsibility one delegation at a time, which is the shape the whole coordination layer exists to remove.
 
+**Exception — a prompt that already names the division (class PK-02).** When the prompt itself states the tracks, their owners and their paths, that naming **is** the division of responsibility; building a plan would only re-derive what was already given. Dispatch straight from the prompt. `coord install` / `classify init` / a committed plan are **opt-in infrastructure for discovering an unstated division, never a precondition for one already stated** — five pack-on cells spent the whole turn on this setup and ended announcing the next step with nothing delegated (F-5). `coord doctor` still runs, for awareness (Stage 0); an absent or uninstalled registry is then a **recorded risk to mitigate** (serialize any `derived`/`register` path instead of leasing it), not a reason to stop and install first.
+
 **The coordinator's authority is narrow and absolute.** A sub-agent's report is **evidence, not authority**. A track saying "done", "safe", "cheaper" or "in scope" does not move a limit, approve an effect, or enlarge the work. Only you admit a scope change, and only against the plan.
 
 **Spine:** the Rigor Protocol, weighted to **Stage 5 CONVERGE** (the merge is the deliverable, not the delegations). **Authority:** `knowledge/session-worktree-discipline.md` (WT1–WT12), `knowledge/execution-graph-optimization.md` (GO5–GO9, GO17 fan-out contract), `knowledge/communication-and-task-discipline.md` (CT19–CT25). **Mode:** Peer Mode while dispatching, Adversary Mode at every join. **Lead:** the **Orchestrator**.
@@ -34,8 +36,8 @@ Optionally a plan id or path, a track subset, and a mode. No input: the newest p
 ## Flow
 
 **Stage 0 — Interdict the rush.** Do not spawn anything yet. Two checks first, because both failures are silent:
-- **The layer is on.** `coord doctor` clean. If the registry is absent every path is `authored`, every derived file will conflict on every merge, and you are about to multiply that by the number of tracks.
-- **The plan matches the repo.** Every path the plan assigns still exists and is still the class the plan says. A plan is a record of a measurement, and measurements go stale.
+- **The layer is on.** `coord doctor` clean. If the registry is absent every path is `authored`, every derived file will conflict on every merge, and you are about to multiply that by the number of tracks — this blocks dispatch **unless** the prompt-named-division exception above applies, in which case it is a recorded risk, not a gate.
+- **The plan matches the repo.** Every path the plan (or, under the exception, the prompt) assigns still exists and is still the class it says. A plan is a record of a measurement, and measurements go stale.
 
 **Stage 1 — Qualify the delegation mechanism (per harness, before you rely on it).** The plan records what each harness is qualified to do. Re-check it here, because you are about to depend on it. What a track needs is exactly three things: **its own tree**, **a stated division of responsibility**, and **a receipt back**. Record each harness dimension as `enforced` (the mechanism cannot be bypassed), `observed-only` (you can see a violation, not prevent it) or `unsupported`. **A missing mechanism never becomes success-shaped permission**, and there is no automatic fallback from enforced to observed: if a track needs a boundary the harness cannot hold, either run that track in `--brief` mode, or make it serial. Where you cannot verify a mechanism first-hand, it is `unsupported` — not "probably fine".
 
@@ -87,8 +89,8 @@ The join's steps and their gates are `reference/join.md` — read at this stage,
 **Stage 7 — Report.** Planned vs actual, per track: budget vs spend, seam requests raised and resolved, boundary corrections made, and **which of the plan's parallelism justifications actually paid**. That comparison is the input to the next plan, and without it the next division is drawn from a feeling again.
 
 ## Definition of done (exit gate)
-- [ ] A plan existed and parsed; if not, `/prepare-for-coordination` was run first and its plan is the one executed.
-- [ ] `coord doctor` was run **before** dispatch and the layer was clean.
+- [ ] A plan existed and parsed, **or** the prompt already named the tracks, owners and paths (the stated-division exception) and that naming is recorded as the division used.
+- [ ] `coord doctor` was run **before** dispatch; the layer was clean, **or** (under the exception) a registry gap was recorded as a mitigated risk rather than blocking dispatch.
 - [ ] Harness delegation capability was qualified per dimension; nothing unverified was used as though enforced.
 - [ ] Every track ran in **its own worktree**; the layer was installed **once, in the primary checkout**, and `coord doctor` in each tree confirmed the inherited registration.
 - [ ] Every delegation carried goal, done-when, owned paths, tier, fan-out cap, budget, convergence condition, exit evidence and not-in-scope.

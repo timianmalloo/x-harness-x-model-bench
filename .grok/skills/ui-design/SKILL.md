@@ -37,6 +37,11 @@ Modes are mutually exclusive; the standards are orthogonal and composable. **The
 
 ## Flow (Rigor Protocol, specialized to the interface)
 
+**Decision interrogation.** Read `knowledge/decision-interrogation.md`. During Stages 1-2, use its
+serial dialogue before settling consequential direction, archetype, density, interaction, or visual
+trade-offs that evidence cannot decide. Before handoff, run DI6. If questions remain, show the
+Question / Needed for / Recommendation table first, then ask one question at a time.
+
 The stages below are the contract; **the full stage text is `reference/flow.md`** — read it once, at Stage 0, and work from it. Do not re-invoke this skill to re-read it (a second invocation re-injects this whole file — class CTX-E), and do not paraphrase a stage from memory when the file is one read away.
 
 - **Stage 0 — Interdict the rush.**

@@ -37,6 +37,21 @@ HERE = Path(__file__).resolve().parent
 CAPABILITIES = {"worktree_isolation", "instructions", "hooks", "permissions"}
 RANK = {"unsupported": 0, "observed-only": 1, "enforced": 2}
 MAX_DOCUMENT = 2 * 1024 * 1024
+# `coord-core.py leader who --json` measured 144-246 ms idle, up to 1352 ms under one
+# parallel test run on a 28-core host (x-harness-x-model-bench, 2026-09-29, brief
+# al-01M3Q4K73M91FWPR48PACHH04W). The old fixed 2 s per-check bound left under 650 ms of
+# headroom there and, under heavier load, turned a live lease into a false RUN-LEADER
+# (RUN-B). LEADER_CHECK_TIMEOUT gives a single check >3.5x that measured worst case.
+LEADER_CHECK_TIMEOUT = 5
+# assume: a housekeeping leader check (no operation deadline of its own -- the periodic
+# in-run check, the renewal, and the post-completion re-check) may retry for this long
+# before treating an unresponsive check as lost authority. 2x LEADER_CHECK_TIMEOUT stays
+# far below a worker's own attempt deadline and the lease TTL, so the dispatch loop stays
+# responsive to a genuinely wedged check (see test_blocked_git_does_not_hold_attempt_cleanup).
+# Confirmed by running the reproduction in the Measured section (four workers + a dotnet
+# build) against this bound; wrong if a live check regularly needs longer than this under
+# ordinary (non-wedged) load, which nothing measured here shows -- recheck if it recurs.
+LEADER_RETRY_BUDGET = 2 * LEADER_CHECK_TIMEOUT
 
 
 def load_module(name, filename):
@@ -55,6 +70,16 @@ class Refused(Exception):
     def __init__(self, code, remedy):
         self.code, self.remedy = code, remedy
         super().__init__(code)
+
+
+class LeaderCheckSlow(Refused):
+    """A bounded leader-check subprocess did not finish inside its timeout. Carries the
+    same RUN-LEADER code as any other refusal, so an unaware caller behaves exactly as
+    before; only Runner.leader_retrying tells this apart, to retry while a check's
+    deadline still allows it instead of treating load as lost authority (RUN-B)."""
+
+    def __init__(self, remedy):
+        super().__init__("RUN-LEADER", remedy)
 
 
 def require(condition, code, remedy):
@@ -568,12 +593,12 @@ class Runner:
                 return False
             started_check = time.monotonic()
             checkout_identity(remaining)
-            row = self.leader(owner, timeout=min(2, remaining - (time.monotonic() - started_check)))
+            row = self.leader(owner, timeout=min(LEADER_CHECK_TIMEOUT, remaining - (time.monotonic() - started_check)))
             current = socket.lstat()
             return row["epoch"] == admission["epoch"] and time.time() < row["expires_at"] and (
                 current.st_dev, current.st_ino) == socket_identity and stat.S_ISSOCK(current.st_mode)
 
-        require(admitted(2), "RUN-LEADER", "Live authority and socket identity must remain unchanged.")
+        require(admitted(LEADER_CHECK_TIMEOUT), "RUN-LEADER", "Live authority and socket identity must remain unchanged.")
         self.event(manifest, "attachment_started", worker=args.worker, harness=args.harness)
         try:
             if args.harness == "codex":
@@ -672,7 +697,10 @@ class Runner:
         result = run_bounded(command,
                              cwd=self.cwd, env=dict(os.environ, AGENT_SESSION=owner),
                              timeout_seconds=timeout, stdout_limit=8192, stderr_limit=2048)
-        require(result.returncode == 0 and not result.timed_out and not result.limit_exceeded
+        if result.timed_out:
+            raise LeaderCheckSlow("The bounded leader check did not finish inside its "
+                                   "timeout; retry while the check's deadline still allows it.")
+        require(result.returncode == 0 and not result.limit_exceeded
                 and not result.cleanup_error and result.contained, "RUN-LEADER",
                 "Establish a live designation for this Owner or inspect the bounded leader command failure.")
         if renew_run:
@@ -681,6 +709,19 @@ class Runner:
         require(row.get("state") == "live" and row.get("leader") == owner,
                 "RUN-LEADER", "Use the live designated Owner; the runner never pins or steals leadership.")
         return row
+
+    def leader_retrying(self, owner, deadline, renew_run=None):
+        """Retry a leader check while its deadline allows -- never a fixed per-attempt
+        timeout. Only a definitive epoch/liveness answer (raised by leader() as a plain
+        Refused) or the deadline itself ends the retry; a bounded-subprocess timeout
+        (LeaderCheckSlow) is retried instead of read as lost authority (RUN-B)."""
+        while True:
+            window = min(LEADER_CHECK_TIMEOUT, deadline - time.time())
+            require(window > 0, "RUN-LEADER", "Lease or attempt deadline expired; retain the worker evidence.")
+            try:
+                return self.leader(owner, timeout=window, renew_run=renew_run)
+            except LeaderCheckSlow:
+                time.sleep(min(0.25, max(0, deadline - time.time())))
 
     def renew_admitted(self, manifest):
         """Bounded helper: expected epoch is checked in the SAME CAS attempt as renewal."""
@@ -845,7 +886,8 @@ class Runner:
             if cancelled():
                 return False
             try:
-                row = self.leader(owner, timeout=min(2, remaining, lease["expires_at"] - time.time()))
+                deadline = min(time.time() + remaining, lease["expires_at"])
+                row = self.leader_retrying(owner, deadline)
                 require(row["epoch"] == admission["epoch"], "RUN-LEADER", "The leader epoch changed; no further dispatch is admitted.")
                 lease["expires_at"] = row["expires_at"]
                 return not cancelled()
@@ -958,7 +1000,7 @@ class Runner:
                                 result.update(state="blocked", code="RUN-DECISION-NOT-CHECKED")
                             elif state["open_count"]:
                                 result.update(state="blocked", code="RUN-DECISION-OPEN")
-                            elif not fence(2):
+                            elif not fence(LEADER_RETRY_BUDGET):
                                 result.update(state="cancelled", code=lease["reason"])
                             else:
                                 result["state"] = "ready_for_review"
@@ -980,11 +1022,12 @@ class Runner:
                     done, pending = wait(pending, timeout=0.1, return_when=FIRST_COMPLETED)
                     results.extend(f.result() for f in done)
                     if not stop.is_set() and time.monotonic() >= next_check:
-                        if fence(2):
+                        if fence(LEADER_RETRY_BUDGET):
                             if lease["expires_at"] - time.time() <= float(admission["ttl"]) * 2 / 3:
                                 try:
-                                    self.leader(owner, timeout=min(2, lease["expires_at"] - time.time()), renew_run=manifest["run_id"])
-                                    fence(2)
+                                    self.leader_retrying(owner, min(time.time() + LEADER_RETRY_BUDGET,
+                                                          lease["expires_at"]), renew_run=manifest["run_id"])
+                                    fence(LEADER_RETRY_BUDGET)
                                 except (Refused, OSError, ValueError):
                                     lease["reason"] = "RUN-LEADER"
                                     stop.set()

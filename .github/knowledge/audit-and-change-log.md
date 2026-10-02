@@ -26,6 +26,8 @@ The governing idea: **a coding session's reasoning is the most valuable thing it
 
 **AL0.1 — All writes go through the script bundle.** The audit and change logs are written **only** via `docs/ai-forward-pack/scripts/audit-log.py` (`append`, `change`, `import`), never by hand-appending JSON or generating an ad-hoc script at prompt time — exactly as graph mechanics go only through `docs-graph.py` (V18). The script assigns the id, stamps the time, escapes the content for the viewer, and re-renders in one step.
 
+**AL0.2 — The log degrades to a local area until the repo opts in, and never invents a git identity (classes PK-03, PK-07).** The default `--root` writes to `docs/audit/` only when that directory **already exists** — the repo's own signal that it opted into the Audit Mandate writing into its product tree (measured: 11 of 54 pack-on cells in grid-1 and 23 of 138 in grid-3 seeded `docs/audit/`, and often `docs/docs-index.js`, into a repo that never asked, breaking one cell's own test). A repo with no `docs/audit/` yet gets the pack's own local, already-tracked-by-default area (`.agents/log/`, D10) instead; an explicit `--root` is a direct ask and is honoured exactly as given, unchanged. The same opt-in rule governs `docs-graph.py derive`'s `docs/docs-index.js`. **Neither the script nor the agent calling it may run `git config user.*`** to force a blocked commit through: if a commit fails for a missing identity, the change is left uncommitted and the gap is reported — never papered over with an invented author (4 of 54, then 4 of 54 again, pack-on cells did this; no pack-off cell ever did).
+
 ---
 
 ## 1. The audit-log entry schema
@@ -178,6 +180,7 @@ A discerned change is **promoted** to the change log with `audit-log.py change` 
 - [ ] Every skill run appended an audit entry with the five required fields + `kind`/`skill`/`tool`/`artifacts` (AL1–AL2, AL5).
 - [ ] The entry was written via `audit-log.py` (not hand-appended), and `audit-data.js`/`index.html` were re-rendered (AL0.1, AL11).
 - [ ] No secret or PII entered either log (AL4).
+- [ ] `docs/audit/` was created only because it already existed or `--root` was given explicitly — never seeded unasked into a repo that had not opted in; no git identity was invented to force a commit (AL0.2).
 - [ ] The four design-shaping skills appended a change entry with `prompt`, `summary`, `rationale`, and git before/after (CL1–CL2).
 - [ ] Other meaningful changes were discerned and promoted, not left implicit (CL3).
 - [ ] The bundle is a graph node (`docs/audit/audit-log.md` with frontmatter + a typed link); entries link artifacts (AL7–AL8).

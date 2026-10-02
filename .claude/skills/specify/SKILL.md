@@ -22,6 +22,11 @@ A prompt, an idea, a problem statement, or a backlog item. May be one sentence. 
 
 ## Flow (Rigor Protocol, specialized to the problem)
 
+**Decision interrogation.** Read `knowledge/decision-interrogation.md`. During Stages 1-2, use its
+serial dialogue before settling any consequential scope, user-need, UX-flow, or UI-archetype choice
+that evidence cannot decide. Before handoff, run DI6. If questions remain, show the
+Question / Needed for / Recommendation table first, then ask one question at a time.
+
 **Stage 0 — Interdict the rush.** Do not propose a solution, a UI, or an architecture. If the input already contains a solution, extract the *underlying problem* it is trying to solve and spec that. (Anti-pattern: solution masquerading as requirement.)
 
 **Stage 1 — OPEN.** Free-recall the problem space: who is this for, what are they actually trying to accomplish, what are the candidate framings of the problem, what scenarios exist (baseline / adversarial / wildcard user), what is explicitly *out*. Sketch the system the product lives in. List the unknowns (user facts, domain facts, comparables) to establish.

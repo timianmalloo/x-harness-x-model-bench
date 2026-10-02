@@ -64,6 +64,17 @@ for _stream in (sys.stdout, sys.stderr):
 MANIFEST = "FOUNDATION.md"
 
 
+def read_hook_settings(path):
+    """Decode policy-bearing configuration strictly; absence alone is an empty install."""
+    if os.path.islink(path):
+        raise ValueError("symlink hook target")
+    try:
+        with open(path, encoding="utf-8", newline="") as handle:
+            return handle.read()
+    except FileNotFoundError:
+        return None
+
+
 def merge_named_hook_bundles(source_text, current_text=None):
     """Refresh source-owned names and retain project-owned names; reject invalid JSON."""
     source = json.loads(source_text)
@@ -71,7 +82,104 @@ def merge_named_hook_bundles(source_text, current_text=None):
     for value in (source, current):
         if not isinstance(value, dict) or any(not isinstance(section, dict) for section in value.values()):
             raise ValueError("Named hook bundles must be objects of objects")
+    _refresh_legacy_ownership(current)
     current.update(source)
+    return json.dumps(current, indent=2) + "\n"
+
+
+def _refresh_legacy_ownership(value):
+    """Migrate only the complete previously emitted ownership command, not wrappers."""
+    prefix = ("py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); "
+              "[ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); "
+              'root=$(git rev-parse --show-toplevel) || exit 2; '
+              'exec "$py" "$root/docs/ai-forward-pack/scripts/coord-core.py" hook --host ')
+    launcher = "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh "
+    if isinstance(value, dict):
+        command = value.get("command")
+        for host in ("claude", "copilot", "codex", "grok", "agy"):
+            if command == prefix + host and not value.get("args"):
+                caller = "" if host == "agy" else "--caller-cwd "
+                value["command"] = launcher + caller + "../scripts/coord-core.py hook --host " + host
+                break
+        stop = prefix.replace('scripts/coord-core.py" hook --host ',
+                              'hooks/owner-review-gate.py" --host ') + "codex --event Stop"
+        if command == stop and not value.get("args"):
+            value["command"] = launcher + "owner-review-gate.py --host codex --event Stop"
+        for item in value.values():
+            _refresh_legacy_ownership(item)
+    elif isinstance(value, list):
+        for item in value:
+            _refresh_legacy_ownership(item)
+
+
+def merge_hook_ownership(current_text):
+    """Refresh existing native opt-ins only; never create or enable an ownership hook."""
+    config = json.loads(merge_claude_settings('{"hooks":{}}', current_text))
+    _refresh_legacy_ownership(config)
+    return json.dumps(config, indent=2) + "\n"
+
+
+def merge_claude_settings(source_text, current_text=None):
+    """Replace complete shipped commands, never custom wrappers or permission settings."""
+    source = json.loads(source_text)
+    current = json.loads(current_text.lstrip("\ufeff")) if current_text is not None else {}
+    for config in (source, current):
+        if not isinstance(config, dict) or not isinstance(config.get("hooks", {}), dict):
+            raise ValueError("Settings and hooks must be objects")
+        for entries in config.get("hooks", {}).values():
+            if not isinstance(entries, list):
+                raise ValueError("Hook events must be arrays")
+            for entry in entries:
+                if not isinstance(entry, dict) or not isinstance(entry.get("hooks"), list):
+                    raise ValueError("Hook entries must contain handler arrays")
+                if "matcher" in entry and not isinstance(entry["matcher"], str):
+                    raise ValueError("Hook matcher must be a string")
+                for handler in entry["hooks"]:
+                    if not isinstance(handler, dict):
+                        raise ValueError("Hook handlers must be objects")
+                    if handler.get("type") == "command" and not isinstance(handler.get("command"), str):
+                        raise ValueError("Command handlers require a command string")
+                    if "command" in handler and not isinstance(handler["command"], str):
+                        raise ValueError("Hook commands must be strings")
+    prefix = ("py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null); "
+              "[ -x \"$py\" ] || py=$(python -c 'import sys;print(sys.executable)'); ")
+    launcher = "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh "
+    ownership = launcher + "--caller-cwd ../scripts/coord-core.py hook --host claude"
+    ownership_old = {
+        prefix + '"$py" "' + path + '" hook'
+        for path in ("pack/scripts/coord-core.py", "docs/ai-forward-pack/scripts/coord-core.py")
+    }
+    ownership_old.add(prefix + 'root=$(git rev-parse --show-toplevel) || exit 2; '
+                      'exec "$py" "$root/docs/ai-forward-pack/scripts/coord-core.py" hook --host claude')
+    hooks = current.setdefault("hooks", {})
+    for event, entries in source.get("hooks", {}).items():
+        replacements = {}
+        for entry in entries:
+            for handler in entry["hooks"]:
+                command = handler.get("command", "")
+                match = re.fullmatch(re.escape(launcher) + r"([a-z-]+\.py) (--host claude(?: --event \w+)?)", command)
+                if match:
+                    script, args = match.groups()
+                    target = "docs/ai-forward-pack/hooks/" + script
+                    for old in (prefix + '"$py" ' + target + " " + args,
+                                "python " + target + " " + args):
+                        replacements[old] = command
+        if event == "PreToolUse":
+            replacements.update({old: ownership for old in ownership_old})
+        have = hooks.setdefault(event, [])
+        for entry in have:
+            for handler in entry["hooks"]:
+                old = handler.get("command")
+                if old in replacements and not handler.get("args"):
+                    handler["command"] = replacements[old]
+        existing = {handler.get("command") for entry in have for handler in entry["hooks"]}
+        for entry in entries:
+            if not any(handler.get("command") in existing for handler in entry["hooks"]):
+                have.append(entry)
+                existing.update(handler.get("command") for handler in entry["hooks"])
+    for key, value in source.items():
+        if key != "hooks":
+            current.setdefault(key, value)
     return json.dumps(current, indent=2) + "\n"
 
 BEGIN = "<!-- AI-FORWARD-PACK:BEGIN"
@@ -259,7 +367,7 @@ class Applier(object):
 
         `--project` still wins. Without it this used the target directory's basename, which
         stamps a WORKTREE folder into the target's committed `docs/index.html` and `AGENTS.md`
-        whenever the install is run from a worktree -- which WT1 requires it to be.
+        whenever the install is run from a worktree -- which WT1 often makes it.
         """
         here = os.path.dirname(os.path.abspath(__file__))
         if here not in sys.path:
@@ -546,7 +654,7 @@ class Applier(object):
                    read(os.path.join(hooks, "grok.ai-forward-hooks.json")))
         agy_target = os.path.join(self.target, ".agents", "hooks.json")
         try:
-            current_hooks = read(agy_target)
+            current_hooks = read_hook_settings(agy_target)
             if os.path.islink(agy_target):
                 raise ValueError("symlink hook target")
             merged_hooks = merge_named_hook_bundles(read(os.path.join(hooks, "agy.ai-forward-hooks.json")), current_hooks)
@@ -565,6 +673,25 @@ class Applier(object):
         self.place("bundle", ".agents/skills.json",
                    os.path.join(self.target, ".agents", "skills.json"), skills_json)
         self._settings(read(os.path.join(hooks, "claude-code.settings.hooks.json")))
+        optional = [os.path.join(self.target, ".codex", "hooks.json")]
+        grok_hooks = os.path.join(self.target, ".grok", "hooks")
+        if os.path.isdir(grok_hooks):
+            optional.extend(os.path.join(grok_hooks, name) for name in sorted(os.listdir(grok_hooks))
+                            if name.endswith(".json"))
+        for target in optional:
+            relative = os.path.relpath(target, self.target).replace("\\", "/")
+            try:
+                current = read_hook_settings(target)
+                if current is None:
+                    continue
+                merged = merge_hook_ownership(current)
+            except (OSError, ValueError, TypeError):
+                self.row("hooks", relative, "CONFLICT", "fail", "invalid native hooks; existing file retained")
+                continue
+            if merged != current:
+                self._write(target, merged)
+            self.row("hooks", relative, "UNCHANGED" if merged == current else "MERGE", "ok",
+                     "existing opt-ins only; native review remains required")
         self._gitignore()
         self._gitattributes()
         self._editorconfig()
@@ -580,44 +707,18 @@ class Applier(object):
     def _settings(self, snippet_text):
         dest = os.path.join(self.target, ".claude", "settings.json")
         try:
-            snippet = json.loads(snippet_text or "{}")
-        except ValueError:
-            self.row("hooks", ".claude/settings.json", "ERROR", "fail", "pack snippet is not valid JSON")
+            current_text = read_hook_settings(dest)
+            merged = merge_claude_settings(snippet_text, current_text)
+        except (OSError, ValueError, TypeError):
+            self.row("hooks", ".claude/settings.json", "CONFLICT", "fail",
+                     "HOOK-SETTINGS-INVALID: existing settings retained; inspect JSON and nested hook shapes")
             return
-        current_text = read(dest)
-        try:
-            current = json.loads(current_text) if current_text else {}
-        except ValueError:
-            self.row("hooks", ".claude/settings.json", "CONFLICT", "fail", "existing settings.json is not valid JSON - merge by hand")
-            return
-        merged = json.loads(json.dumps(current))
-        hooks = merged.setdefault("hooks", {})
-        shipped = {h.get("command") for entries in (snippet.get("hooks") or {}).values()
-                   for entry in entries for h in entry.get("hooks", [])}
-
-        def stale(entry):
-            # A pack-managed entry (every command runs a pack hook) whose command the pack no longer ships:
-            # its form changed (PLAT-A, revision 95), so it is replaced, never kept beside its successor.
-            commands = [h.get("command") for h in entry.get("hooks", [])] if isinstance(entry, dict) else []
-            return bool(commands) and all(isinstance(c, str) and "docs/ai-forward-pack/hooks/" in c
-                                          and c not in shipped for c in commands)
-
-        for event, entries in (snippet.get("hooks") or {}).items():
-            have = hooks.setdefault(event, [])
-            have[:] = [e for e in have if not stale(e)]
-            for entry in entries:
-                wanted = {h.get("command") for h in entry.get("hooks", [])}
-                if not any(wanted & {h.get("command") for h in e.get("hooks", [])} for e in have):
-                    have.append(entry)
-        for k, v in snippet.items():
-            if k != "hooks" and k not in merged:
-                merged[k] = v
-        if merged == current:
+        if merged == current_text:
             self.row("hooks", ".claude/settings.json", "UNCHANGED", "ok")
             return
-        self._write(dest, json.dumps(merged, indent=2) + "\n")
+        self._write(dest, merged)
         self.row("hooks", ".claude/settings.json", "ADD" if current_text is None else "MERGE", "ok",
-                 "hooks + showThinkingSummaries merged; other keys untouched")
+                 "exact shipped hooks refreshed; custom hooks and settings retained; BOM-free UTF-8")
 
     def _tracked_under(self, path):
         """Which files does the TARGET repo track under this path? None = cannot tell.

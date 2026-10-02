@@ -32,7 +32,12 @@ From the prompt, the user states **the domain and the problem they are solving**
 
 **Stage 2 — INTERROGATE.** Turn the map into precise research questions (Precision Questioning types): *Clarification* — what exactly does this term mean in the domain; *Assumption* — what is the field taking for granted; *Evidence* — what does the state of the art actually show; *Cause* — why do existing solutions make the trade-offs they do; *Significance* — which of these facts changes our design.
 
-**Stage 3 — EVIDENCE (deep research; the heart of /collectknowledge).** The Domain Researcher gathers and **sources** (`web_search`/`web_fetch`, with the source-of-truth hierarchy BoK §III.1: standards/specs/primary sources > official docs > reputable secondary > forums):
+**Stage 3 — EVIDENCE (deep research; the heart of /collectknowledge).** First inspect the active
+harness and selected model for a native deep-research capability. When one is available, use it for
+the broad research pass; otherwise use `web_search`/`web_fetch`. Deep-research output is a lead, not
+authority: open and verify the cited primary sources before promoting a claim. The Domain Researcher
+then gathers and **sources** with the source-of-truth hierarchy BoK §III.1: standards/specs/primary
+sources > official docs > reputable secondary > forums:
 - **State of the art** — current best-practice approaches, leading techniques, recent advances, and where the frontier is.
 - **Comparable solutions / problem statements** — how existing products and the literature frame and solve this problem (named, with what each does well and badly); adjacent problems worth borrowing from.
 - **Reference information & data** — the standards, regulations, formulae, benchmarks, datasets, and domain constants that pertain; the units, invariants, and edge cases of the domain.

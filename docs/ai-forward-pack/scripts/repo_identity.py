@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """repo_identity.py - the canonical project name, in ONE place (class PACK-P).
 
-WHY THIS EXISTS. The pack's own worktree discipline (WT1) requires every writing session to
-work in its own linked worktree, and `coord worktree new` names that directory
+WHY THIS EXISTS. The pack's own worktree discipline (WT1) sends a writing session with a
+concurrent-writer risk into its own linked worktree, and `coord worktree new` names that directory
 `<repo>-<branch-slug>`. Any generator that names the project `basename(cwd)` therefore stamps
 the WORKTREE folder into a committed artifact the moment the discipline is followed:
 `docs/audit/audit-data.js` ("project"), `docs/audit/index.html` (<title>), the Docs Explorer

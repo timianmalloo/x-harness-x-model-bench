@@ -163,6 +163,13 @@ Append-only JSONL operations use a **persistent sibling `.lock` file** so concur
 writers keep coordinating on one stable lock inode even when the data file is atomically
 replaced. Repositories using the tool MUST ignore `*.jsonl.lock`; the lock is local
 coordination state, not project history.
+
+**V19 — Human-facing Markdown has an HTML companion.** Whenever a skill creates or materially
+updates a human-facing Markdown artifact, it MUST create or refresh a sibling `.html` view in the
+same change. Use the stdlib-only renderer:
+`python3 docs/ai-forward-pack/scripts/render-markdown.py <artifact.md>` (on Windows use `python` or
+`py -3`). The Markdown remains canonical and carries frontmatter; the HTML is a self-contained
+consumption view and is not a second source of truth. Purpose-built HTML mockups remain hand-authored.
 ---
 
 ## 5. Self-verification checklist
@@ -178,6 +185,7 @@ coordination state, not project history.
 - [ ] Material changes propagated: inbound neighbors flagged `review-suggested` with provenance, in the same change (V16).
 - [ ] Session exhaust captured: sub-ADR decisions/assumptions written as linked decision notes before close (V17).
 - [ ] Graph mechanics ran through the script bundle (`derive`/`flag`/`freshness`), not ad-hoc scripts (V18).
+- [ ] Every human-facing Markdown artifact has a refreshed sibling HTML view (V19).
 - [ ] Index/diagrams updated in the same change as the content (V11).
 
 ---

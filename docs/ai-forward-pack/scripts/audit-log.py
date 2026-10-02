@@ -400,6 +400,27 @@ def consume_start(root, session, skill=None):
 
 
 
+# pack-onoff-analysis.html #3 (class PK-03, F-6): 11 of 54 pack-on cells in grid-1 (23 of 138 in grid-3) added
+# docs/audit/ -- and often docs/docs-index.js -- into repos that never asked for it, because
+# this default autocreated docs/audit/ on first use regardless of whether the repo had opted
+# in. An explicit --root is a direct ask and is honoured exactly as given, unchanged. The
+# DEFAULT now degrades to the pack's own local, already-tracked-by-default area
+# (.agents/log/, D10) unless docs/audit/ already exists on disk -- the repo's own signal
+# that it opted into the Audit Mandate writing into its product tree.
+DEFAULT_PRODUCT_ROOT = "docs"
+DEFAULT_FALLBACK_ROOT = os.path.join(".agents", "log")
+
+
+def resolve_default_root(explicit):
+    """An explicit --root is never 'unasked', so it is returned untouched. The default is
+    resolved against what is ALREADY on disk, never created by this check itself."""
+    if explicit:
+        return explicit
+    if os.path.isdir(os.path.join(DEFAULT_PRODUCT_ROOT, "audit")):
+        return DEFAULT_PRODUCT_ROOT
+    return DEFAULT_FALLBACK_ROOT
+
+
 def audit_dir(root):
     return os.path.join(root, "audit")
 
@@ -1307,7 +1328,10 @@ def cmd_import(args):
 def main():
     ap = argparse.ArgumentParser(prog="audit-log.py", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--root", default="docs", help="docs root (default: docs); audit dir is <root>/audit")
+    ap.add_argument("--root", default=None,
+                    help="docs root (default: docs/ if docs/audit/ already exists in this "
+                         "repo, else the local .agents/log/ area -- never created unasked, "
+                         "pack-onoff-analysis #3 / class PK-03); audit dir is <root>/audit")
     ap.add_argument("--project", default=None, help="project name for the viewer (default: repo dir name)")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
@@ -1434,6 +1458,7 @@ def main():
                                                           "duration_source=session-start-hook")
 
     args = ap.parse_args()
+    args.root = resolve_default_root(args.root)
     dispatch = {
         "append": cmd_append, "change": cmd_change, "list": cmd_list, "search": cmd_search,
         "get": cmd_get, "render": cmd_render, "git-context": cmd_git_context,

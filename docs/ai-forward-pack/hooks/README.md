@@ -1,5 +1,31 @@
 # Hooks — the controls that run at the tool seam
 
+## Supported platforms and safe refresh
+
+AI-Forward and consuming repositories support **Copilot CLI, Claude Code, Codex CLI,
+Grok Build and Antigravity (`agy`) on Windows and macOS**. Hook prerequisites are
+**Git and Python 3**; no Node dependency is introduced. Every default hook and native
+ownership emitter uses the existing quote-free Git launcher, which invokes Git's own
+shell on Windows. Codex ownership keeps the caller directory through `--caller-cwd`.
+Skill discovery and each host's native trust/approval requirements are unchanged.
+Codex lifecycle hooks remain opt-in; support does not imply identical native events.
+
+Source sync and downstream `pack-apply` now share the same Claude settings merger.
+It replaces only complete known shipped commands, not commands merely mentioning a
+pack path. Custom wrappers, extra handlers, matchers, timeouts, permissions and existing
+ownership opt-ins survive. Malformed nested settings and symlink targets are refused
+without overwrite. A valid UTF-8 BOM is removed during the authorized refresh, and
+repeated refreshes are idempotent. New installs never enable ownership implicitly.
+Existing Codex hook files, Grok ownership files and Agy ownership bundles receive the
+same exact-command migration; absent opt-ins stay absent. Re-review changed native
+hook definitions in the harness when it requests approval.
+
+Run `pack-doctor.py` after updating: it rejects old Bash-only commands and invalid
+configuration encoding, then executes a fixed benign hook-help probe through the
+launcher. A successful probe verifies execution on this machine, not native event or
+authorization enforcement. Update the JSON and scripts together; a JSON-only copy
+can point at a launcher that is not installed.
+
 Native ownership is an explicit project opt-in. `coord hook --config --host
 claude|codex|copilot|grok|agy` emits a reviewable entry; it changes no settings or trust.
 Grok can keep it in a separate `.grok/hooks/coord-ownership.json`. Agy uses a local
