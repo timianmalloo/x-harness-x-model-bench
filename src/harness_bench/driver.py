@@ -1,7 +1,13 @@
 """The ACP cell driver (ADR-0002): one prompt turn with one harness adapter over stdio.
 
-- Bounded line reader: a line over 1 MiB, or more than 20 lines that are not JSON (update banners,
-  warnings), is `failed (protocol)`; the reader never grows past one line.
+- Bounded line reader: a line over 8 MiB, or more than 20 lines that are not JSON (update banners,
+  warnings), is `failed (protocol)`; the reader never grows past one line. 8 MiB (raised from 1 MiB,
+  HB-CELL-107 fix, 2026-10-02) is measured, not guessed: grid-3's own archived evidence has a Claude
+  Code image tool_result (base64 PNG) at 1.0-1.3 MiB and a Codex CommandExecution's full
+  `--verbosity detailed` stdout at 2.3 MiB, both legitimate single tool-result lines, not malformed
+  input -- the old 1 MiB bound failed the whole turn on them. 8 MiB keeps a >3x margin over the
+  largest measured line while staying a hard ceiling (`PHASE1_MAX_PARALLELISM` caps concurrent cells
+  at 4, so worst case is 32 MiB of buffered line data, trivial against host memory).
 - Strict parse: only JSON objects are messages; responses are matched by id.
 - Deny-all permissions: every `session/request_permission` is answered `cancelled` and counted
   (the static profile should make it zero, US-14); any other client request gets -32601.
@@ -32,7 +38,7 @@ from harness_bench.errors import Cause
 from harness_bench.procs import CellProcess
 from harness_bench.telemetry import ProviderError, normalize
 
-MAX_LINE = 1 << 20
+MAX_LINE = 8 << 20
 MAX_JUNK = 20
 PROTOCOL_VERSION = 1
 CLIENT_INFO = {"name": "harness-bench", "version": "1"}

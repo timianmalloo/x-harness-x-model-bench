@@ -409,8 +409,8 @@ def test_f9_two_models_in_one_shutdown_are_two_rows_one_ordinal(tmp_path):
     assert len({c.native_ordinal for c in ex.model_calls}) == 1  # one shutdown line for both
 
 
-def test_f10_an_over_sized_system_message_line_is_malformed_not_crashing(tmp_path):  # F10; the MAX_LINE bound (1 MiB)
-    huge = _row("system.message", {"role": "system", "content": "x" * (1200 * 1024)})
+def test_f10_an_over_sized_system_message_line_is_malformed_not_crashing(tmp_path):  # F10; the MAX_LINE bound (8 MiB)
+    huge = _row("system.message", {"role": "system", "content": "x" * (9 * 1024 * 1024)})
     path = _write(tmp_path, [_start(), huge, _user("prompt"), _shutdown(_model_metrics())])
     ex = copilot.read(path)
     assert ex.malformed_lines == 1

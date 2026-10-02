@@ -201,7 +201,7 @@ Rationale (revision 2, upheld by R-26):
 - `session.start.data.version` must be in `SUPPORTED_EVENT_VERSIONS = {1}`. When it is not, or when there is no `session.start`: `MissingField(0, "events.version")` and no model rows.
 - **Why only Copilot is gated:** it is the only one of the three records that carries a format version distinct from the build. Claude Code and Codex rows carry the CLI build version (Inferred from the phase-1 fixtures' shape). A gate on the build would duplicate US-12's build check, so their readers stay Tolerant Readers without a gate.
 
-**Bounds:** the existing `rows()`: a 1 MiB line cap, a 256 MiB file cap, malformed lines counted. No SQLite file is opened, because a per-cell ACP home has none (O6).
+**Bounds:** the existing `rows()`: an 8 MiB line cap (raised from 1 MiB 2026-10-02, HB-CELL-107 fix: measured real tool-result lines up to 2.3 MiB), a 256 MiB file cap, malformed lines counted. No SQLite file is opened, because a per-cell ACP home has none (O6).
 
 | Canonical field | Source and rule |
 | --- | --- |
@@ -301,7 +301,7 @@ The Solution-Selection Ladder is unchanged: reuse `rows()`, `ex.count`, `find_re
 | F7 | The arithmetic check fails | **Degrade:** HB-TEL-001 `input_tokens` | reader |
 | F8 | A bad bucket type | **Degrade:** `ex.count` | reader |
 | F9 | Two models in one shutdown | the key includes `model` (R-26) | a synthetic two-model sample |
-| F10 | A line over 1 MiB | **Accept:** counted malformed; the reader's fields are small | a synthetic 1.2 MiB `system.message` leaves the rows unchanged |
+| F10 | A line over 8 MiB | **Accept:** counted malformed; the reader's fields are small | a synthetic 9 MiB `system.message` leaves the rows unchanged |
 | F11 | Pack instructions not loaded | **Detect:** the section 4.5 US-9 scan and `instruction list` | W1-COP-I |
 | F12 | An instruction file above the cells root | **Prevent:** HB-PRE-002 | workspace |
 | F13 | An ACP permission request | **Detect:** the driver counts it (US-14) | E2E |
