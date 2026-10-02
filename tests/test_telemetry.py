@@ -449,9 +449,24 @@ def test_foreign_types_in_known_fields_are_ignored_not_crashed_on(tmp_path, line
 @pytest.mark.parametrize("reader", [claude_code, codex, copilot], ids=["claude-code", "codex", "copilot"])
 def test_deeply_nested_and_huge_lines_are_skipped_as_malformed(tmp_path, reader):  # T-TEL-fuzz: 100,000-deep nesting
     path = tmp_path / "r.jsonl"
-    path.write_text("[" * 100_000 + "\n" + '{"a":' * 100_000 + "\n" + "x" * (2 << 20) + "\n", encoding="utf-8")
+    # 10 MiB -- past the 8 MiB bound (HB-CELL-107 fix), so this stays malformed/skipped either way.
+    path.write_text("[" * 100_000 + "\n" + '{"a":' * 100_000 + "\n" + "x" * (10 << 20) + "\n", encoding="utf-8")
     ex = reader.read(path)
     assert ex.model_calls == [] and ex.malformed_lines == 3
+
+
+@pytest.mark.parametrize("reader", [claude_code, codex, copilot], ids=["claude-code", "codex", "copilot"])
+def test_a_large_legitimate_line_within_the_raised_bound_is_not_skipped(tmp_path, reader):
+    """grid-3's archived evidence: a Claude Code image tool_result and a Codex verbose-stdout
+    CommandExecution both wrote a single native-record line of 1.0-2.3 MiB -- valid JSON, not
+    malformed, just a large tool-result payload. The reader's own 1 MiB bound (sized without
+    measuring real payloads, like driver.py's identical HB-CELL-107 bound) silently dropped a line
+    this size as malformed, losing that row's data. Raised to 8 MiB (same margin, same measurement)."""
+    path = tmp_path / "r.jsonl"
+    big_line = json.dumps({"big": "x" * (2 << 20)})
+    path.write_text(big_line + "\n", encoding="utf-8")
+    ex = reader.read(path)
+    assert ex.malformed_lines == 0
 
 
 def _without(src: Path, dest: Path, usage_key: str, field: str) -> None:
