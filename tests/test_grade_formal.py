@@ -323,6 +323,22 @@ def test_g2_model_non_vacuity_no_buggy_fold_asset_is_na(tmp_path):
     assert encode(formal._g2_model_non_vacuity(inp, TIMEOUT)) == (None, "no oracle/fold-buggy/Fold.lean for this task version")
 
 
+def test_g2_model_non_vacuity_out_dir_created_when_work_root_differs_from_out_dir(tmp_path):
+    """ADR-0013 Amendment 2 (grading-copy relocation, 7ca97d83): a real pass's `work_root` sits
+    outside the repository, in a different tree than `out_dir` (runner.py:309,327,329). This test
+    file's own `_cell_input` helper leaves `work_root` at its `None` default, under which `work_dir`
+    (`inp.work_root or inp.out_dir`) happens to equal `out_dir`, so `_grading_copy`'s `copytree` into
+    `work_dir/"proofs"` silently creates `out_dir` as a side effect -- masking that `_g2_model_non_vacuity`
+    never creates `out_dir` itself (unlike `_g1_formal_checks_clean`/`_g2_formal_checks_clean`, which both
+    call `out_dir.mkdir(parents=True, exist_ok=True)`). With `work_root` genuinely distinct, as every
+    real grid-3 pass has it, that side effect is gone and `_write_log(out_dir, ...)` must FileNotFoundError
+    unless `out_dir` is created explicitly (grid-3 2026-10-01, G2.copilot-sol.pack-on.r2, HB-GRD-003)."""
+    ws = _g2_ws(tmp_path, G2_REF / "Proofs")
+    inp = _cell_input(tmp_path, ws, G2_TASK, {"oracle/fold-buggy/Fold.lean": FIXTURES / "g2" / "buggy-fold" / "Fold.lean"})
+    inp = dataclass_replace(inp, work_root=tmp_path / "work-root-outside")
+    assert encode(formal._g2_model_non_vacuity(inp, TIMEOUT)) == (1, None)
+
+
 # --- the _replay seam: test-only (R-84 c1) -------------------------------------------------------------------
 
 def test_replay_raises_not_implemented_when_unstubbed():

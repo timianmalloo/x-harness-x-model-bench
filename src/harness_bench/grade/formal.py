@@ -240,6 +240,9 @@ def _g2_model_non_vacuity(inp: CellInput, timeout: float) -> Score:
     if lake is None:
         return Score(None, NOT_WARMED.format(reason=reason))
     out_dir = inp.out_dir / "non_vacuity"
+    out_dir.mkdir(parents=True, exist_ok=True)  # ADR-0013 Amendment 2: work_dir (below) no longer coincides with
+    # out_dir in a real pass, so _grading_copy's copytree into work_dir no longer creates this directory as a side
+    # effect (HB-GRD-003 FileNotFoundError, grid-3 2026-10-01 G2.copilot-sol.pack-on.r2)
     work_dir = (inp.work_root or inp.out_dir) / "non_vacuity"  # ADR-0013: outside the repository in a real pass
     with _grading_copy(ws / "Proofs", work_dir / "proofs") as proofs:
         (proofs / "Fold.lean").write_bytes(buggy.read_bytes())  # the swap: agent's own files untouched
