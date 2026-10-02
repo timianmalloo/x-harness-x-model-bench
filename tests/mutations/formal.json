@@ -9,7 +9,7 @@
   {
     "name": "G2: skip the Proofs/** binary-artifact scan before invoking lake (FM12 analogue)",
     "file": "src/harness_bench/grade/formal.py",
-    "find": "    offender = _artifact_offender(proofs_src, _G2_PROOF_ALLOWED_EXTS, _G2_PROOF_ALLOWED_NAMES)",
+    "find": "    offender = _artifact_offender(proofs_src, _G2_PROOF_ALLOWED_EXTS, _G2_PROOF_ALLOWED_NAMES, _LAKE_BUILD_OUTPUT)",
     "replace": "    offender = None",
     "tests": ["tests/test_grade_formal.py::test_g2_formal_checks_clean_refuses_a_binary_artifact_before_invoking_lake"]
   },
