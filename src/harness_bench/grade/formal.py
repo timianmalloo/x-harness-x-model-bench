@@ -57,18 +57,29 @@ NO_BUGS_MD = "no BUGS.md in the working copy"
 _G1_SPEC_ALLOWED_EXTS = {".tla", ".cfg", ".tex"}
 _G2_PROOF_ALLOWED_EXTS = {".lean"}
 _G2_PROOF_ALLOWED_NAMES = {"lakefile.toml", "lean-toolchain", ".gitignore"}
+_LAKE_BUILD_OUTPUT = {".lake", "lake-manifest.json"}  # the one definition of Lake's own build-output names,
+# shared by _grading_copy's copytree ignore list and _artifact_offender's scan below: tasks/G2/prompt.md
+# requires the agent to `lake build` in Proofs/ (prompt.md:28), which always creates both, so a name that
+# can never reach the graded build copy anyway (it is stripped before that copy is even made) must never be
+# penalised in the scan that reads the archive directly, either (grid-3 2026-10-02: every G2 cell's
+# formal_checks_clean read 0 for exactly this -- the scan flagged the agent's own, prompt-mandated .lake/).
 _STATES_LINE = re.compile(r"^\d[\d,]* states? generated,\s*[\d,]+ distinct states? found", re.MULTILINE)
 
 
-def _artifact_offender(root: Path, allowed_exts: set[str], allowed_names: set[str]) -> str | None:
+def _artifact_offender(root: Path, allowed_exts: set[str], allowed_names: set[str],
+                        ignored_names: set[str] = frozenset()) -> str | None:
     """The first (sorted) file under `root` whose suffix/name is not allowed, or None. `root` missing is not this
-    check's concern (the caller's own 'no working copy' / 'no ... in the working copy' NA covers that)."""
+    check's concern (the caller's own 'no working copy' / 'no ... in the working copy' NA covers that).
+    `ignored_names` prunes a whole build-output directory (e.g. `.lake`) or a standalone generated file (e.g.
+    `lake-manifest.json`) from the scan entirely, wherever it occurs in the tree -- distinct from
+    `allowed_names` (a specific file this check still looks at, by exact name, and lets through)."""
     if not root.is_dir():
         return None
     offenders = sorted(
         p.relative_to(root).as_posix()
         for p in root.rglob("*")
         if p.is_file() and p.suffix.lower() not in allowed_exts and p.name not in allowed_names
+        and not ignored_names & set(p.relative_to(root).parts)
     )
     return offenders[0] if offenders else None
 
@@ -266,7 +277,7 @@ class _GradingCopy:
 
 def _grading_copy(src: Path, dest: Path) -> _GradingCopy:
     """A disposable copy of `src` at `dest` (never the archive), git-free and build-output-free."""
-    shutil.copytree(src, dest, ignore=shutil.ignore_patterns(".git", ".lake", "lake-manifest.json"))
+    shutil.copytree(src, dest, ignore=shutil.ignore_patterns(".git", *_LAKE_BUILD_OUTPUT))
     return _GradingCopy(dest)
 
 
@@ -358,7 +369,7 @@ def _g2_formal_checks_clean(inp: CellInput, timeout: float) -> Score:
     proofs_src = ws / "Proofs"
     if not (proofs_src / "Fold.lean").is_file():
         return Score(None, "no Proofs/Fold.lean in the working copy")
-    offender = _artifact_offender(proofs_src, _G2_PROOF_ALLOWED_EXTS, _G2_PROOF_ALLOWED_NAMES)
+    offender = _artifact_offender(proofs_src, _G2_PROOF_ALLOWED_EXTS, _G2_PROOF_ALLOWED_NAMES, _LAKE_BUILD_OUTPUT)
     out_dir = inp.out_dir / "checks"
     out_dir.mkdir(parents=True, exist_ok=True)
     if offender is not None:
