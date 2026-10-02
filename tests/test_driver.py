@@ -212,8 +212,21 @@ def test_junk_lines_are_a_protocol_failure(tmp_path):  # T-DRV-junk
 
 @pytestmark_native
 def test_a_huge_line_is_a_protocol_failure(tmp_path):
-    result = _turn(tmp_path, fake="huge_line")
-    assert result.cause is Cause.protocol and "1 MiB" in result.detail
+    # 10 MiB -- well past the bound in either its old (1 MiB) or new (8 MiB) size, so this stays a
+    # protocol failure either way; only the MiB count in the message moves with the bound.
+    result = _turn(tmp_path, fake="huge_line", line_bytes=10 * 1024 * 1024)
+    assert result.cause is Cause.protocol and "8 MiB" in result.detail
+
+
+@pytestmark_native
+def test_a_line_within_the_measured_real_payload_range_is_not_a_protocol_failure(tmp_path):
+    """HB-CELL-107 fired on 5 grid-3 cells and 2 grid-2 cells whose native records carried a single
+    large tool-result line -- a Claude Code image tool_result (1.0-1.3 MiB base64 PNG) or a Codex
+    CommandExecution's full --verbosity detailed stdout (2.3 MiB) -- none of them malformed, just one
+    legitimate oversized line. The old 1 MiB bound failed the whole cell's turn on a line this size;
+    the raised 8 MiB bound must not."""
+    result = _turn(tmp_path, fake="huge_line", line_bytes=2 * 1024 * 1024)
+    assert result.cause is not Cause.protocol
 
 
 @pytestmark_native
