@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-09-29T23:29:36Z",
+  "generated": "2026-10-02T15:18:40Z",
   "audit": [
     {
       "actor": null,
@@ -64557,6 +64557,27 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M3YK4CVX9YJVQF3A87VY6YBA",
+      "shortname": "updatepack-r97",
+      "datetime": "2026-10-02T15:18:40Z",
+      "session": "coord-opus-cq",
+      "prompt": "update this repo's AI-Forward Pack to upstream ai-forward main ccc5160 (WT1 rescope 8ccfc4e, runner leader-check fix b647a34, turn-close/ceremony budget and opt-in pack artifacts ccc5160)",
+      "summary": "95 -> 97 from ai-forward ccc5160 via the source pack-apply.py: 45 update, 8 add, 3 skip, 3 baselines, 1 conflict (context-budget.json: repo file kept, baselines re-measured); repo heredoc guard moved to the portable launcher (HOOK-SHELL FAIL -> PASS); pack-doctor 0 FAIL / 3 WARN; commit 90e7e7df",
+      "kind": "command",
+      "skill": "updatepack",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "goal": "this repo carries pack revision 97 at ccc5160",
+      "done_when": "plan read, apply run, conflict reconciled, pack-doctor green, committed",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-02T15:14:32Z",
+      "duration_seconds": 248.0
     }
   ],
   "changes": [

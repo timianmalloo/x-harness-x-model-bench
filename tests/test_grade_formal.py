@@ -34,11 +34,12 @@ def _skip_unless_toolchains_warmed() -> None:
     jar_dir = Path(os.environ["HB_TLA_JAR"]).parent if os.environ.get("HB_TLA_JAR") else (
         Path(os.environ.get("LOCALAPPDATA", "")) / "harness-bench" / "tools")
     if not jar_dir.is_dir() or not list(jar_dir.glob("tla2tools*.jar")):
-        pytest.skip("tla2tools.jar not warmed on this host (HB_TLA_JAR or %LOCALAPPDATA%/harness-bench/tools)")
+        pytest.skip("tla2tools.jar not warmed on this host (HB_TLA_JAR or %LOCALAPPDATA%/harness-bench/tools)",
+                    allow_module_level=True)
     elan_home = Path(os.environ["ELAN_HOME"]) if os.environ.get("ELAN_HOME") else Path.home() / ".elan"
     lake = elan_home / "bin" / ("lake.exe" if os.name == "nt" else "lake")
     if not lake.is_file():
-        pytest.skip(f"Lean/elan not warmed on this host: {lake} missing")
+        pytest.skip(f"Lean/elan not warmed on this host: {lake} missing", allow_module_level=True)
 
 
 _skip_unless_toolchains_warmed()  # module-level: every test here needs both real toolchains
