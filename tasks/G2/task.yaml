@@ -20,7 +20,11 @@ formal:
   tool: lean              # Lean 4 via elan + lake, no Mathlib
   statements: fixed       # replay is idempotent (NFR-R1); a retried claim takes no second lease (F9)
   toolchain: "leanprover/lean4:v4.34.1"   # lean-toolchain pin (spike S-12); elan 4.2.4 installs it
-  statement_hash: "751a0f1475b5a081aeab9c88479df327ae4b27d75a5bac2df94b760dd03c26cb"
+  statement_hash: "6778ce589c3fee429a68c1dee9635b198bf94efa0c3be376dada8d6f9aa56b0d"  # recomputed 2026-10-02 (grid-3
+  # incident): the original value was computed by a bespoke procedure (oracle/README.md S6, pre-fix) that the
+  # real grader (grade/formal.py _statement_material) never reproduces -- see oracle/README.md S6 for how this
+  # value was computed (the grader's own code path, run against workspace/Proofs; identical against
+  # oracle/reference/Proofs, confirmed by test_g2_real_task_statement_hash_matches_what_the_grader_computes).
   theorem_names:
     - fold_replay_is_idempotent   # NFR-R1, test_T2_fold_is_idempotent_under_replay
     - retried_event_is_a_no_op    # F9, test_T15_duplicate_seq_is_idempotent
