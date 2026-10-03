@@ -22,6 +22,7 @@ summary: >-
 # ADR-0014: An arm replaces the pack setting; one cell is one (task version, combo, arm, repetition)
 
 - **Status:** Proposed
+- **Amended (2026-10-03, W1-A design `design-eval-arms`; W0 rev 3):** see "Amendment 1" before *Alternatives considered*. The decision text above is unchanged.
 - **Date:** 2026-10-03
 - **Deciders:** @timianmalloo (DR-E1, 2026-10-03); authored by Claude Code with the Data & Persistence Architect and Distributed Systems lenses
 - **Context spec/architecture:** `docs/specs/enterprise-evaluation.md` (C-E1, EV-17, R-E12); `docs/architecture-evaluation-campaign.md`; amends ADR-0006 *Identity* and `docs/architecture.md` *Context*.
@@ -54,6 +55,16 @@ Grids 1-4 must still load, report and verify (EN9, US-4), and a grid-4 re-plan m
 **6. Equivalence control (EV-17).** A test re-plans `runs/grid-4/matrix.yaml` with grid-4's frozen task versions (read from its `plan.json`) and asserts the same set of `(task, combo, arm, rep)` and the same `cell_id`s. The order may differ; the set and the ids may not.
 
 **History rule.** No historical file changes. A `bench-plan/1` run is read through the accessors forever (EN9). Type-2 by identity: a new plan schema is a new dimension version; old plans keep theirs.
+
+### Amendment 1 (2026-10-03; W1-A design `docs/design/eval-arms.md` section 12, gate passed; W0 rev 3 sections 5 and 10)
+
+Recorded by the Coordinator (`coord-opus-e1e4`) with W0 rev 3. Items (a)-(e) are W1-A's text, verbatim:
+
+> (a) Section 4: `bench plan` draws the launch seed up to 100 times and stores the first seed whose order meets the bound; a shape with no such seed (a single block) is refused with HB-PLN-001. Ordering uses sorted SHA-256 keys of `(seed, block[, arm])`, not a PRNG, so a stored seed replays on any Python version. (b) Section 2: a `bench-plan/2` plan has no top-level `pack`; `arms` is the only statement of pack revisions. (c) Section 2 and the `Cell` label: a `bench-plan/2` label is `<task>.<combo>.arm-<arm>.r<rep>`. (d) A measurement plan refuses a task whose `status` is not `ready`; a discrimination plan refuses `stub` (HB-PLN-004). (e) Ids in a matrix file are quoted strings: bare `off` is a YAML boolean.
+
+Added by the Coordinator from the W1-A gate (RV-PAT W1-A findings 1, 2, 5):
+- (f) Section 2, accessors: with (b), a reader that needs "the run's pack" reads `plan_pack(plan)`, defined once in `plan.py`: the top-level `pack` of a `bench-plan/1` plan, else the pack of the plan's only pack-bearing arm. A plan with two or more pack-bearing arms makes it raise HB-PLN-005, naming the arms, until X-A3 migrates the reader to comparisons (E3). No reader degrades to `None` silently.
+- (g) Section 2, "a guard test greps for it": the guard scans the AST, not text. It flags every string constant `"pack"` outside docstrings, every attribute named `pack`, and every keyword argument `pack=`. Its allowlist pins a hit count per allowlisted file (a ratchet: a count may fall, never rise); X-A3 lowers the counts to zero in E3.
 
 ## Alternatives considered
 

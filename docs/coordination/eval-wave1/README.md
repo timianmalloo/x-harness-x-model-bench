@@ -27,7 +27,7 @@ You were given a brief in this folder. Read this file, then your brief. Both bin
 
 ## 1. Start (in this order, before anything else)
 1. `python docs/ai-forward-pack/scripts/audit-log.py start --session <your session> --skill <your skill>` (DC-190). A resumed run repeats this line first.
-2. `export AGENT_SESSION=<your session>` in every shell call (the commit floor enforces on it).
+2. **Prefix every `git commit` and every coord call inline:** `AGENT_SESSION=<your session> git commit …`, `AGENT_SESSION=<your session> python $C …` (PowerShell: `$env:AGENT_SESSION='<your session>'; git commit …` in the **same** call). **Why:** each Bash or PowerShell tool call starts a fresh shell, so an `export` in one call is gone in the next. The commit floor then prints "AGENT_SESSION is unset" and only advises; it enforces nothing. At least five worker commits on 2026-10-03 went through that way (class COORD-D). A one-time `export` is not compliance.
 3. If your cwd is not already your brief's tree, then from the primary checkout run `python $C worktree new --branch <your branch> --session <your session>`. It prints the tree path, `C:\Projects\x-harness-x-model-bench-<branch with / as ->`. Use **absolute paths into that tree** from then on.
 4. In the tree, run `python $C doctor` and read it. **Never** `coord install`. **Never** `EnterWorktree` or `ExitWorktree` (F-25: an 8,143 s stall).
 5. Check that W0 is in your base: `git -C <tree> log --oneline -1 -- docs/design/eval-seam-contracts.md` prints a commit. If it does not, stop and report "W0 not on main".
@@ -42,6 +42,17 @@ You were given a brief in this folder. Read this file, then your brief. Both bin
 - **Fan-out cap 0.** Spawn no sub-agents. In a design slice, the adversary seats are the separate lens reviewers (RV-*). You run `/design-slice` Stage 4 as a self-check against `.claude/skills/design-slice/reference/definition-of-done.md`, and leave the Gate record **pending** with the reviewer list from your brief. You never clear a veto.
 - **Context ceiling.** Your brief's budget states it. At 85 % of it: commit, write what remains into the doc's *Status* table, and stop with your report. Never `/compact` in the middle of a section.
 - **A budget firing is a defect signal (GO9),** not a reason to continue. Stop and report the overrun with its cause.
+
+## 2a. Testability floor (binding on every design from batch b on, and on every revision)
+
+RV-TA blocked every first-pass Wave 1 design (W1-F, W1-G, W1-B, W1-D) on the same five shapes (class TEST-B, `docs/lessons/defect-classes.md`). A design that misses any item below fails its own Stage 4 self-check; RV-TA checks this list first.
+
+For **each named test**, the design states:
+1. **The assertion that fails today, and why.** Name the assertion and the current behaviour that makes it false. "Red" never means an `ImportError`, `AttributeError` or `NameError`: a test that patches or imports a symbol that does not exist yet fails for the wrong reason, and stays wrong after a broken build. If the symbol is new, the test reaches it through the public path that will call it, or the design says which skeleton commit lands first.
+2. **The red fixture for every guard or scan.** A temp tree or input that the rule must flag, run before the real tree. Deleting the rule must turn the test red. Name the fixture.
+3. **The real-wiring test beside any fake.** Where an engine, CLI or runner test uses a fake, one test drives the real composition (the real `cli.py` command, the real `run_pass`) and fails if the wiring line is removed. Name it.
+4. **The mutant that separates each adjacent pair of rules.** Where two rules can give the same observable result (precedence rows, a guard and its fallback), name one input on which they differ and the mutant that swaps them.
+5. **The allowlist or sweep checked against the tree.** An allowlist or "every reader migrated" claim cites the scan run on the design's base commit and its output count, and the test asserts the same set.
 
 ## 3. Finish (design tracks)
 1. The design doc carries V2 frontmatter: `id: design-eval-<slice>`, `type: design`, `status: proposed`, `owner: "@timianmalloo"`, `links` with at least `implements` → `spec-enterprise-evaluation` and `arch-evaluation-campaign`, `depends-on` → its ADR(s) and `design-eval-seam-contracts`, `review-by`, and a real summary.
