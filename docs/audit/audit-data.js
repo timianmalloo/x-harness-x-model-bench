@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T15:43:53Z",
+  "generated": "2026-10-03T15:46:54Z",
   "audit": [
     {
       "actor": null,
@@ -64678,6 +64678,29 @@ window.AUDIT_DATA = {
       "duration_source": "session-start-hook",
       "started_at": "2026-10-03T15:41:52Z",
       "duration_seconds": 121.0
+    },
+    {
+      "id": "al-01M4174SHYF91K9080GVW1FE19",
+      "shortname": "define-architecture-evaluation-campaign",
+      "datetime": "2026-10-03T15:46:54Z",
+      "session": "coord-opus-cq",
+      "prompt": "start /define-architecture",
+      "summary": "docs/architecture-evaluation-campaign.md + ADR-0014..0021 (arm/cell grain, two-turn attempts and crash-atomic snapshots, campaign record, engine identity and freeze, hidden-check harness, catalog 0.7, stdlib power/verdicts, plan-level resume and liveness); spike E4 Verified on Windows for all 3 harnesses; council 3 rounds: Security PASS, Distributed Systems PASS, SRE/Data&Persistence/Enterprise/Simplifier/Patterns PASS WITH CONDITIONS; operator DI6 (post-fix cells re-run); phases E1 skeleton, E2/E3/E4 parallel, E5 campaign",
+      "kind": "skill",
+      "skill": "define-architecture",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/architecture-evaluation-campaign.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "tier": "T2",
+      "fan_out": 9,
+      "duration_source": "session-start-hook",
+      "started_at": "2026-10-03T15:44:09Z",
+      "duration_seconds": 165.0
     }
   ],
   "changes": [
@@ -65114,6 +65137,36 @@ window.AUDIT_DATA = {
         "commits": []
       },
       "audit_ref": "al-01M3QQK2HDKRCQJJ411ANYCTJ8"
+    },
+    {
+      "id": "cl-01M4174STB9ETP4BC69DZ93SQW",
+      "datetime": "2026-10-03T15:46:54Z",
+      "session": null,
+      "kind": "architecture",
+      "skill": "define-architecture",
+      "title": "Evaluation-campaign architecture: arms in the plan, two-turn attempts, campaign record, hidden-check harness, plan-level resume",
+      "prompt": "start /define-architecture",
+      "summary": "ADR-0014..0021 and amendments to ADR-0006/0007/0010/0011/0013",
+      "rationale": "The gated enterprise-evaluation spec needs three arms in one run, a two-turn rework task, a pre-registered campaign with an engine freeze, and hidden mechanical checks; the council required crash-atomic writes, per-turn resume, plan-level resume, a token-free allowlisted check environment and a forgery-proof result path",
+      "artifacts": [
+        "docs/architecture-evaluation-campaign.md",
+        "docs/adr/0014-arm-replaces-pack-setting.md",
+        "docs/adr/0021-plan-level-resume-and-liveness.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "bc768ed2",
+        "after": "2ad01b291b7c8f859d88edaf8c4f449d3b832838",
+        "branch": "main",
+        "pushed": false,
+        "commits": [
+          "2ad01b29 docs(adr-0015): link the merged spike E4 note (depends-on) and regenerate the docs index",
+          "0de4b5c0 join spike E4 (DR-E4, R-E6): a second ACP session/prompt on the same session after end_turn works on claude-code (claude-opus-5-5), codex (gpt-6-sol) and copilot (gpt-6-sol) on Windows - same session id, no errors, per-turn usage in each prompt response, context carry strongly indicated; macOS unverified; the engine changes it needs are named in ADR-0015. Claude Sonnet 5 worker (Leader join on Claude Opus 5.5)",
+          "99be853f chore(spike): dispose the e4 PoC script (spike scaffolding is not kept; the note records the method and evidence)",
+          "1cf8fed3 docs(architecture): evaluation-campaign amendment (gated, 3 council rounds) - companion docs/architecture-evaluation-campaign.md refining arch-harness-bench, ADR-0014 arm replaces pack setting (cell = task version x combo x arm x rep; cell_id keeps its pack key carrying the arm id so grids 1-4 load and re-plan unchanged), ADR-0015 two turns on one ACP session with crash-atomic turn snapshots and a per-turn crash predicate (TLA+), ADR-0016 campaign record (hash-chained ledger, create_once records, rings as bench-matrix/2), ADR-0017 engine identity manifest and freeze (post-fix cells re-run, operator DI6), ADR-0018 hidden-check harness (HOST_ENV allowlist, explicit handle list, write-once-last-and-alone result with a tamper cross-check; Windows now, macOS follow-up), ADR-0019 catalog 0.7 (scenario-7 pass@1; append-only golden correction), ADR-0020 stdlib power and verdicts (reference cases reproduced), ADR-0021 plan-level resume and liveness; amendment text in ADR-0006/0007/0010/0011/0013; phases E1 walking skeleton, E2/E3/E4 in parallel, E5 first campaign. Council: Security PASS, Distributed Systems PASS, SRE/Data&Persistence/Enterprise/Simplifier/Patterns PASS WITH CONDITIONS (applied); authors did not clear their own vetoes. Claude Opus 5.5 author, Claude Sonnet 5 council (Leader on Claude Opus 5.5)",
+          "ebf21cee spike(e4): a second session/prompt in the same ACP session, after end_turn (R-E6, DR-E4)"
+        ]
+      }
     }
   ],
   "messages": [
