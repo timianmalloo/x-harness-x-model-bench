@@ -47,3 +47,19 @@ Lens: hard veto on a correctness claim with no verification path, or a triggered
 Blocking: 1 (G1 allowlist red on arrival) and 4 (outcome precedence). Clears when both are amended and the amendments carry a red-first test.
 
 GATE w0-seam-contracts · Test Architect · BLOCK · 14 findings (rv-ta-e1e4, 2026-10-03)
+
+## W0 rev 2: `docs/design/eval-seam-contracts.md` (main `3c1c9827`), delta re-review, 2026-10-03
+
+Scope: my 14 findings against the *Review disposition* table (14 rows, all "accepted") and the text.
+
+| # | check | result | evidence |
+| --- | --- | --- | --- |
+| 1 (blocking) | G1 reader migration | Resolved. Allowlist gains `cli_table.py`, `context_growth.py`. `views.py:525`, `_changes.py:84`, `cli.py:145-148` are migrated by X-A1 in the guard's commit, and s13 gives X-A1 that one `cli.py` function. Re-grep of `src/` on this tree finds no other `["pack"]` / `.get("pack"` / `.pack` reader outside the allowlist and those three. | s10 G1 row; grep on `3c1c9827` |
+| 4 (blocking) | outcome precedence | Resolved. Seven ordered rows, first match decides (suspend, bound, `check/` hash, other s10a(b), malformed, did-not-build, score). Stdin closed on every path (exit 0 after ack, 3 after refusal). Tests: one per row plus one per adjacent pair, with two named order cases. | s3 outcome table, "Tests" line |
+| 2, 3, 5-14 | disposition true in text | Verified true: word-bounded `HOST_ENV` token; AST resolver with `node.level`; `property_check_pass` predicate; unique temp names `<name>.tmp-<pid>-<uuid4>` plus file-capable `stale_temps`; HB-RDY-010 for a discrimination re-run; `expected` = the narrowed property set with correctness metrics recorded but not required; `at_scale` normaliser; `min(case.bound_ms, bounds_ms[interface])`; `hidden_tests_pass/ms` evidence and the disagreement function; DR-4 marked ruled (R-90); committed-plan golden fixtures. | s2, s3, s4, s6, s7, s11 |
+
+Residual (minor, not blocking):
+- `runner.applicable` is cited with a third argument (property name) that does not exist today (`runner.py:161` takes two). It is a planned change owned by X-F/W1-G; its red test is the one R-90 condition 5 already requires.
+- Row 3 (hash mismatch) is checked before the ack-framing rows, so its test must include a tamper that also exits cleanly; the "one per adjacent pair" rule covers it.
+
+GATE w0-seam-contracts · Test Architect · PASS WITH CONDITIONS · 2 findings (rv-ta-e1e4, 2026-10-03)
