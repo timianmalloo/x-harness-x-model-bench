@@ -1,17 +1,27 @@
-"""Skeleton: a limiter that does nothing useful (K5). Replaced by the real solution."""
+"""Limit how often a function may be called."""
 
-SENTINEL = object()
+import functools
+import time
+
+import quotakit
 
 
 class LimitExceeded(Exception):
-    """Skeleton."""
+    """Raised by a limited function when a call would exceed its limit."""
 
 
 def limit_calls(max_calls, per_seconds, clock=None):
-    def decorator(func):
-        def stub(*args, **kwargs):
-            return SENTINEL
+    """Let the decorated function run at most ``max_calls`` times in any window of ``per_seconds``."""
 
-        return stub
+    def decorator(func):
+        gate = quotakit.Gate(max_calls, per_seconds, clock=clock or time.monotonic)
+
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            if not gate.admit():
+                raise LimitExceeded(f"{getattr(func, '__name__', 'call')}: more than {max_calls} calls in {per_seconds}s")
+            return func(*args, **kwargs)
+
+        return wrapper
 
     return decorator
