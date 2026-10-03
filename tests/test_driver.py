@@ -942,3 +942,14 @@ def test_run_turn_fills_the_result_its_caller_supplies(tmp_path):  # so the ack 
         cell.terminate_and_confirm(timeout=10)
         cell.close()
     assert result is supplied and seen == ["0.79.0"]  # known before the prompt goes out
+
+
+def test_session_new_still_sends_its_servers_when_the_agent_starts_slowly(tmp_path):  # TIME-B: the old 10 s bound, forced
+    cell = _spawn(tmp_path, handshake_delay=10.5)
+    try:
+        result = driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=None, handshake_timeout=10,
+                                 before_send=lambda sid: None, mcp_servers=[])
+        assert result.cause is None, result.detail
+    finally:
+        cell.terminate_and_confirm(timeout=10)
+        cell.close()
