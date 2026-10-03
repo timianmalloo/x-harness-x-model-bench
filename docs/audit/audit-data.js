@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T20:04:58Z",
+  "generated": "2026-10-03T20:07:13Z",
   "audit": [
     {
       "actor": null,
@@ -76918,6 +76918,74 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1l.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T20:06:28Z",
+      "done_when": "Rev-2 section and gate line appended",
+      "fan_out": 0,
+      "goal": "Verify W1-L rev 2 closes the round-1 TA blockers and the readiness control",
+      "id": "al-01M41P034NF49ZVN9V89ZJ3PKB",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-L rev 2 round)",
+      "session": "rv-ta-l2-e1e4",
+      "shortname": "design-slice-review-ta-w1l-r2",
+      "skill": "design-slice-review",
+      "summary": "RV-TA round 2 on W1-L rev 2: PASS WITH CONDITIONS, 8 findings; round-1 blockers closed",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-tasks.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:43:06Z",
+      "done_when": "Gate PASS; per task base, latent requirement, hidden check, reference and naive, expected values; new graders named",
+      "fan_out": 0,
+      "goal": "Run design-slice for W1-L producing docs/design/eval-property-tasks.md",
+      "id": "al-01M41H7EC69FXDDYM5SW89CPDW",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-l-property-tasks.md",
+      "session": "w1l-tasks-e1e4",
+      "shortname": "design-slice-eval-property-tasks",
+      "skill": "design-slice",
+      "summary": "Specified eight property tasks (RS1/2, RW1/2, NG1/2, SM1/2): bases, pins, latent requirements, hidden tests, variants, new graders; seam requests SR-L1..L3, DR-L1",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-tasks.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:51:45Z",
+      "done_when": "every finding has a disposition row; derive/validate exit 0",
+      "duration_seconds": 599.0,
+      "fan_out": 0,
+      "goal": "apply the W1-L gate findings",
+      "id": "al-01M41N54G4PJP9GGT54DJ9E44W",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-l-property-tasks.md (rev 2 follow-up)",
+      "session": "w1l-tasks-r2-e1e4",
+      "shortname": "design-slice-eval-property-tasks-r2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T19:41:46Z",
+      "summary": "W1-L rev 2: applied RV-TA/RV-PAT/RV-SIM first-round findings and W0 rev 5/R-97; EV-5 note appended; SR-L5/SR-L6 filed",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     }
   ],
   "changes": [
@@ -77917,45 +77985,35 @@ window.AUDIT_DATA = {
       "title": "W0 seam contracts rev 5"
     },
     {
-      "id": "cl-01M41MQ5ZA1MDT23D4DPF37HSW",
-      "datetime": "2026-10-03T19:44:08Z",
-      "session": null,
-      "kind": "design",
-      "skill": "design-slice",
-      "title": "W1-E rev 2: discrimination record per R-98, check-less scoping, single overlay rule",
-      "prompt": null,
-      "summary": "Applied RV-TA/PAT/SEC/SIM first-round findings: no run ids in the record body, link after created-or-equal, identity.for_task, CHECK_PROPERTIES scoping, one safe_relpath/overlay_files, grader-allowlist env, no-record on HB-RDY-011, HB-RDY-009 deferred to E4.",
-      "rationale": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-10-03T19:44:08Z",
       "git": {
-        "before": null,
         "after": "926cee3eee04249aeaf1fdb38f1868df9e37e92b",
+        "before": null,
         "branch": "design/eval-discriminate",
-        "pushed": null,
-        "commits": []
-      }
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41MQ5ZA1MDT23D4DPF37HSW",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Applied RV-TA/PAT/SEC/SIM first-round findings: no run ids in the record body, link after created-or-equal, identity.for_task, CHECK_PROPERTIES scoping, one safe_relpath/overlay_files, grader-allowlist env, no-record on HB-RDY-011, HB-RDY-009 deferred to E4.",
+      "tags": [],
+      "title": "W1-E rev 2: discrimination record per R-98, check-less scoping, single overlay rule"
     },
     {
-      "id": "cl-01M41NW9BBVVY4FAYX8Y4NR7MJ",
-      "datetime": "2026-10-03T20:04:24Z",
-      "session": "coord-opus-e1e4",
-      "kind": "design",
-      "skill": "execute-with-coordination",
-      "title": "W0 seam contracts rev 6 to 6.3; ADR-0016 Amendment 1",
-      "prompt": null,
-      "summary": "R-98 applied (record body without run/grading ids, bytes-equal already-done, link with record_stem); SR-E3 granted; the rev 4/5 delta conditions of five lenses (R6-1..R6-18); rev 6.1 TA/SEC on rev 6; rev 6.2 W1-J SR-J1/J3/J4; rev 6.3 DS on rev 6 and W1-J, SR-J2 check_models ruling.",
-      "rationale": "R-98 directs the Coordinator to amend ADR-0016 and rewrite W0 s6 before X-E's first record; the review conditions bind before the owning builds.",
       "artifacts": [
         "docs/design/eval-seam-contracts.md",
         "docs/adr/0016-campaign-record.md"
       ],
-      "tags": [],
+      "datetime": "2026-10-03T20:04:24Z",
       "git": {
-        "before": "507e5d4a",
         "after": "e988fd60354a4451f2c284c0469039b50a2c7229",
+        "before": "507e5d4a",
         "branch": "coord/eval-w0-rev6-pack2",
-        "pushed": null,
         "commits": [
           "e988fd60 docs(coordination): pack part 2 - 13 compiled external prompts (CO-S0), README routing/DAG/launch order; W0 rev 6.3 (RV-DS on rev 6 and W1-J; SR-J2 check_models ruled: WIDER data first, one commit)",
           "24ac479f docs(design): W0 rev 6.2 - the W1-J seams SR-J1, SR-J3, SR-J4 (one append_missing_rows owned by X-J1; turns {n, prompt, sha256}; job_active_baseline after the lazy helper)",
@@ -77977,8 +78035,58 @@ window.AUDIT_DATA = {
           "69f1242d test(S1): red tests for the S1 task - hidden tests, wrong apps, probes, variants (33 red on assertions against the skeleton)",
           "21163389 feat(S1): task skeleton - 501 stubs, neutral check, empty variant and wrong-app tables, stand-in bench_check (X-I, W1-I rev 2)",
           "549f7bc4 design(eval): W1-E discriminate, synthetic agent and readiness (EV-7)"
-        ]
-      }
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M41NW9BBVVY4FAYX8Y4NR7MJ",
+      "kind": "design",
+      "prompt": null,
+      "rationale": "R-98 directs the Coordinator to amend ADR-0016 and rewrite W0 s6 before X-E's first record; the review conditions bind before the owning builds.",
+      "session": "coord-opus-e1e4",
+      "skill": "execute-with-coordination",
+      "summary": "R-98 applied (record body without run/grading ids, bytes-equal already-done, link with record_stem); SR-E3 granted; the rev 4/5 delta conditions of five lenses (R6-1..R6-18); rev 6.1 TA/SEC on rev 6; rev 6.2 W1-J SR-J1/J3/J4; rev 6.3 DS on rev 6 and W1-J, SR-J2 check_models ruling.",
+      "tags": [],
+      "title": "W0 seam contracts rev 6 to 6.3; ADR-0016 Amendment 1"
+    },
+    {
+      "artifacts": [],
+      "datetime": "2026-10-03T18:43:16Z",
+      "git": {
+        "after": "d47965b1f9e9638cff9acedc8169d6fd56694965",
+        "before": null,
+        "branch": "design/eval-property-tasks",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41H7QVEXEJXVQ8RHTS2A4N3",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Specified RS1/2, RW1/2, NG1/2, SM1/2; hallucination count is final-tree static and verified_before_use is NA without tool targets, both provisional on DR-L1 and SR-L1",
+      "tags": [],
+      "title": "W1-L: eight property tasks on eight distinct MIT/Apache bases"
+    },
+    {
+      "artifacts": [],
+      "datetime": "2026-10-03T19:51:51Z",
+      "git": {
+        "after": "fce2b0d6a98812f5003e94b703d68d178f29d4be",
+        "before": null,
+        "branch": "design/eval-property-tasks",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41N5A0GKTTD70953CQQKAED",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Applies 32 first-round review findings and W0 rev 5; eight property tasks re-specified with full wrong-app coverage and re-traced RS variants",
+      "tags": [],
+      "title": "W1-L rev 2: whole-tree simplicity counts, verified_before_use not built, R-97 resolver, skeleton-first helpers"
     }
   ],
   "messages": [

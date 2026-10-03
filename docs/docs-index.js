@@ -2407,6 +2407,72 @@ window.DOCS_INDEX = {
       "sourceSha256": "c18ce4b2d3ba321f0b76097b0ad2976333c5facc15f0eb67aef0b5b0c1722c5a"
     },
     {
+      "id": "design-eval-property-tasks",
+      "path": "docs/design/eval-property-tasks.md",
+      "title": "Design W1-L: the remaining property tasks (resilience, rework, no-guessing, simplicity; two each)",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation E2/E4: Wave 1 design slice W1-L (rework by X-RW in E2; the rest in E4)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Eight tasks specified to the level an author can build without a question: for each of RS1/RS2 (resilience), RW1/RW2 (rework), NG1/NG2 (no-guessing) and SM1/SM2 (simplicity) a real MIT or Apache base at a pinned 40-hex commit (eight distinct bases, all imported under python -S), the latent requirement, the prompt shape, hidden tests with a wrong-app fixture for every test, the check or strategy, reference and naive shapes, expected values with provenance (Inferred until the real host reproduces them), and the seeded-defect variants that flip each probe, case clause or metric. Revision 2 applies the three first-round lens reviews and W0 rev 5: three new graders (noguess with hallucinated_symbol_errors per R-97; diffstats; rework) plus the resilience cases, the whole-tree simplicity counts with the outside-radius clause and v-laundered, verified_before_use not built in E4, skeleton-first commits for the helpers, and one parametrised task-test module. Gate: rev 2 pending RV-TA.",
+      "tags": [
+        "benchmark",
+        "property-tasks",
+        "resilience",
+        "rework",
+        "no-guessing",
+        "simplicity",
+        "evaluation-campaign",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-property-grader",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-security-tasks",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0015-multi-turn-attempt-and-turn-snapshots",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0018-hidden-check-harness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0019-catalog-0-7-property-metrics",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        },
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "09a145e0a264601d4bf174e018234dc7740ec867d011ed45c15418ccbbd79706"
+    },
+    {
       "id": "design-eval-seam-contracts",
       "path": "docs/design/eval-seam-contracts.md",
       "title": "W0 seam contracts: the interfaces every Evaluation Campaign slice designs and builds against",
@@ -5198,7 +5264,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "531914453a403250281744a7351623525ea6d9488e95a5da71171811ed91702b"
+      "sourceSha256": "6870ca4c300824c59bed200083ce50b9dde2b55b55a5d4ef12ca8afed49eef89"
     },
     {
       "id": "brief-eval-env-a",
@@ -6962,7 +7028,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TD\n  O([Open report]) --> H[Header + campaign block: question, arms, pre-registration hash, baseline, fixes, MDE]\n  O -->|run in no campaign| NC([No verdict section; harness-bench report as before])\n  H -->|run ineligible| IN([Verdict section states reason and differing items; no verdicts])\n  H --> T[Verdict table: property x harness, per comparison]\n  T -->|better or worse| E1[Effect, interval, MDE mark, token ratio]\n  T -->|no difference >= MDE| E2([Interval inside the MDE band; reader can rule out effects of MDE size])\n  T -->|inconclusive| E3([Reason: underpowered or not recorded, with counts; reader sees what more data would need])\n  E1 -->|dominance rule met| D([A dominates B: keep A for this harness])\n  E1 -->|better but costlier| C([better at xN tokens: reader weighs value against cost])\n  T -->|activate a verdict| RUNS[Runs filtered to its pairs] --> UF3([Harness-bench UF-3: cell card])\n  T -->|activate excluded n| XL[Excluded cells: id, arm, cause] --> UF3\n  O -->|pack section read directly| PK([Pack section: header and every intention verdict labelled exploratory; link to section 3])\n  UF3 -->|archive absent| NA([Archive not in this copy + path])\n  H -->|analysis not pre-registered| EX([Labelled exploratory wherever shown; not a verdict])"
         }
       ],
-      "sourceSha256": "a6b2110475049b1bceb5252b93fed89dc6b5c653ae3fec30aec2975c0f1d91b2"
+      "sourceSha256": "dc44b25711edc3125b255de5df1e911a90cda089f18f7b433b26037d467392d1"
     },
     {
       "id": "spec-harness-bench",
@@ -7249,5 +7315,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "526baf611bc8b2ad55e83bf069e9b18bfa1d0f278beb6e84971918abb0ace320"
+  "graphSha256": "3208fbd5fc002482a6d98f2557649857f42c76f1aedbf4b164427af32e801829"
 };
