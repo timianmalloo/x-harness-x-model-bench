@@ -216,6 +216,8 @@ class Engine:
         self.spend_cap = self.params.get("spend_cap_tokens")  # None: no cap, or disabled by a `continue` (design 6.1)
         self.spend_tokens = 0  # the run's spend: a running sum on the engine thread, never persisted (design 3)
         self.cells_unmeasured = 0  # ended cells whose usage was not recorded: never counted as 0 (design 6.3)
+        self._check_ms: int | None = None
+        self._check_rechecked = False
 
     # the single writer ----------------------------------------------------------------------------
 
@@ -379,6 +381,12 @@ class Engine:
             raise BenchError("HB-USR-002", f"run {self.plan['run_id']} has already started; phase 1 re-runs under a new run id")
         run_dir.mkdir(parents=True, exist_ok=True)
         lock = oslock.RunLock.acquire(run_dir / ".lock", code="HB-RUN-005")
+        try:
+            if self.cfg.campaign_check is not None:
+                self.cfg.campaign_check()  # own run lock held; refusal propagates before any launch
+        except BaseException:
+            lock.release()
+            raise  # refusal creates no started-run marker, so the operator can retry
         segment = f"engine-{int(time.time())}"
         for fact in FACTS:
             self.writers[fact] = ledger.SegmentWriter.create(run_dir / fact, segment)
@@ -408,6 +416,9 @@ class Engine:
                     # outcome. A worker still archiving stays in active so the loop drains it, and does
                     # not keep the slot: design 6.2 step 8 launches in this tick once the decision is closed.
                     held = sum(cid not in self.outcomes for cid in self.active)
+                    if pending and not self.stopped and not self.broken and held < self.params["parallelism"] \
+                            and not self.decisions.any_open:
+                        self._identity_ok()  # one check clears all launches of this tick
                     while pending and not self.stopped and not self.broken and held < self.params["parallelism"] \
                             and not self.decisions.any_open:  # launching pauses while a decision is open (US-15)
                         self._launch(pending.pop(0))
@@ -444,12 +455,32 @@ class Engine:
                     and len(self.outcomes) == len(self.plan["cells"]))
         return RunSummary(0 if complete else 3, dict(self.outcomes))
 
-    def _stop_launching(self, code: str, reason: str) -> None:
+    def _identity_ok(self) -> bool:
+        self._check_ms = None
+        self._check_rechecked = False
+        if self.cfg.identity_check is None:
+            return True
+        started = self.clock()
+        reason = "engine identity drift"
+        try:
+            result = self.cfg.identity_check()
+            differences = result.diff
+            self._check_rechecked = result.rechecked
+        except Exception as exc:  # noqa: BLE001 -- any injected-check failure must stop launches
+            differences = []
+            reason = f"engine identity check failed: {type(exc).__name__}"
+        self._check_ms = max(0, round((self.clock() - started) * 1000))
+        if differences or reason != "engine identity drift":
+            self._stop_launching("HB-IDN-001", reason, diff=differences, identity_check_ms=self._check_ms)
+            return False
+        return True
+
+    def _stop_launching(self, code: str, reason: str, **fields) -> None:
         if self.stopped:
             return
         self.stopped = code
         try:
-            self._append_now("events", {"kind": "run.launch_stopped", "code": code, "reason": reason})
+            self._append_now("events", {"kind": "run.launch_stopped", "code": code, "reason": reason, **fields})
         except BenchError:  # the ledger broke: the loop now aborts and drains
             pass
 
@@ -537,8 +568,13 @@ class Engine:
                 log.warning("control retried", extra={"error_code": "HB-USR-002", "detail": type(exc).__name__})
 
     def _launch(self, cell: dict) -> None:
+        identity_fields = {}
+        if self._check_ms is not None:
+            identity_fields["identity_check_ms"] = self._check_ms
+            if self._check_rechecked:
+                identity_fields["identity_recheck"] = 1  # ledger.canonical forbids bool; W0 ledger flag encoding
         try:
-            self._append_now("events", {"kind": "cell.launch_intent", "cell_id": cell["cell_id"], "label": cell["label"]})
+            self._append_now("events", {"kind": "cell.launch_intent", "cell_id": cell["cell_id"], "label": cell["label"], **identity_fields})
         except BenchError:  # the ledger broke: this cell is never launched; the loop aborts and drains
             return
         a = _Active(cell, threading.Thread(target=self._cell_worker, args=(cell,), daemon=True, name=f"cell-{cell['cell_id']}"))

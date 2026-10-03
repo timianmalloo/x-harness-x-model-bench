@@ -182,7 +182,8 @@ def test_a_raising_check_stops_launching(base):  # T-28
     def check():
         raise OSError("do not leak this path or detail")
 
-    summary, events, _ = _run(base, _plan(n_cells=1), FakeLauncher({}), identity_check=check, loop_interval=0.01)
+    summary, events, _ = _run(base, _plan(n_cells=1), FakeLauncher({}), identity_check=check,
+                               clock=IdentityClock(), loop_interval=0.01)
     stops = [e for e in events if e["kind"] == "run.launch_stopped"]
 
     assert summary.exit_code == 3
@@ -280,6 +281,37 @@ def test_campaign_check_raise_releases_lock_and_launches_nothing(base):
     assert caught.value.code == "HB-CMP-001"
     assert not oslock.is_held(run_dir / ".lock")
     assert not any(e["kind"] == "cell.launch_intent" for e in _events(run_dir))
+
+
+def test_refused_campaign_check_leaves_run_retryable(base):
+    p = _plan(n_cells=1)
+    run_dir = base / "runs" / p["run_id"]
+
+    def refuse():
+        raise BenchError("HB-CMP-001", "campaign locked; retry")
+
+    with pytest.raises(BenchError):
+        _run(base, p, FakeLauncher({}), campaign_check=refuse, loop_interval=0.01)
+    assert not (run_dir / "events").exists(), "a refused run must not acquire the already-started marker"
+    summary, _, _ = _run(base, p, FakeLauncher({}), campaign_check=lambda: None, loop_interval=0.01)
+    assert summary.exit_code == 0
+
+
+def test_real_identity_check_records_cold_and_warm_timings(base):  # W1-D IO, demo exit evidence
+    from statistics import median
+
+    from harness_bench import identity
+
+    root = Path(__file__).resolve().parents[1]
+    p = _plan(n_cells=3, parallelism=1)
+    run = identity.side(identity.manifest(root, ["X1"], p["builds"]), "run")
+    p["campaign"] = {"identity": {"hash": identity.identity_hash(run), "components": run["components"]}}
+    summary, events, _ = _run(base, p, FakeLauncher({}), identity_check=identity.launch_check(root, p), loop_interval=0.01)
+    timings = [e.get("identity_check_ms") for e in events if e["kind"] == "cell.launch_intent"]
+
+    assert summary.exit_code == 0 and len(timings) == 3
+    assert all(isinstance(ms, int) and 0 <= ms < 2000 for ms in timings)
+    print(json.dumps({"identity_check_ms": {"cold": timings[0], "median": median(timings[1:]), "max": max(timings[1:])}}))
 
 
 def _outcomes(events):

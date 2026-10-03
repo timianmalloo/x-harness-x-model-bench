@@ -233,7 +233,7 @@ def identity_root(tmp_path):
 def frozen_plan(root, tasks=("t",), builds=None):
     m = identity.manifest(root, tasks, builds)
     run = identity.side(m, "run")
-    return {"tasks": dict.fromkeys(tasks, {}), "builds": builds or {},
+    return {"tasks": {task: {} for task in tasks}, "builds": builds or {},
             "campaign": {"identity": {"hash": identity.identity_hash(run), "components": run["components"]}}}
 
 
