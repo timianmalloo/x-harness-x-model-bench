@@ -25,6 +25,7 @@ summary: >-
 # ADR-0018: Property hidden checks run in the grading copy's Job Object, loopback-only, with a schema-bound result
 
 - **Status:** Proposed
+- **Amended (2026-10-03, W0 seam contracts rev 2 and rev 3; W1-F design `design-eval-property-grader`):** see "Amendment 1" before *Alternatives considered*. The decision text above is unchanged.
 - **Date:** 2026-10-03
 - **Deciders:** @timianmalloo; authored by Claude Code with the **Security & Identity Architect in Peer Mode from the start**, and the Distributed Systems and SRE lenses
 - **Context spec/architecture:** `docs/specs/enterprise-evaluation.md` (EV-2, EV-3, EV-5, EV-6, NFR Security, the STRIDE table, R-E9); ADR-0010 (cell output untrusted on the host), ADR-0012 (proportionate security), ADR-0013 Am. 2 (grading copies under `cells_root`).
@@ -81,6 +82,16 @@ Security tasks attack the agent's deliverable with injection, authorization-bypa
 **11. Hostile code beside durable records (council S3).** While a check runs, agent-written code runs with the operator's rights while `bench/campaigns/` and `bench/discrimination/` exist on disk. "Create-only" and "append-only" are application conventions, not OS permissions: the deliverable *could* edit them. Residual, accepted (ADR-0012, ADR-0013). Cheap mitigations, adopted: (a) a grading pass never runs while `campaign.lock` is held, and `bench campaign` refuses while a campaign run's `grade.lock` is held, so no campaign write is open during a check; (b) after every grading pass of a campaign run, and before every `bench campaign` command, `bench campaign verify` checks the campaign ledger's hash chain, that every content-addressed file's name equals its hash, and `git status --porcelain bench/campaigns bench/discrimination` (a committed file changed outside a campaign command is refused, naming the file); (c) the git history of these committed records is the witness of last resort.
 
 **12. Bounds per adapter, and host sleep (councils Patterns, R3).** Per-case wall bounds are declared per (task, interface): `in-process` and `loopback` cases have separate declared bounds, because loopback adds process start and socket latency. The outer bound is `grading_step_timeout`. A grading step whose wall clock contains a host suspend gap (the `SleepDetector` rule of `docs/notes/spike-a9-host-sleep.md`, applied to the grading step) is NOT_RECORDED `host suspended` and re-run by the next grading pass, never scored as a timeout; a seeded-suspend test covers it.
+
+### Amendment 1 (2026-10-03; W0 rev 2 section 3 (RV-SEC 1, 9), W1-F design (RV-SEC W1-F F9), W0 rev 3)
+
+Recorded by the Coordinator (`coord-opus-e1e4`) with W0 rev 3. W0 section 3 is the contract; this note records where it departs from the text above.
+- **§1, §2, in-process.** The check never imports agent code. For an `in-process` task it spawns a **probe host** (the bench-provided `bench_check.py` in host mode) through `spawn_deliverable`; the probe host imports the app and answers each probe with the raw response over pipes the check owns. "Probes call it in process: no socket at all" now holds inside the probe host. Reason: a forger in the deliverable's module body wrote a forged result 3 of 3 times when the check imported the app (W1-F spike SP-F1).
+- **§1, interpreter.** The check runs under `sys._base_executable -S` (no site-packages), not "the task's pinned interpreter". The check is stdlib only.
+- **§1, stdio.** The probe host's stdio are pipes owned by the check, not files in the copy. The app's own output (file descriptors 1 and 2, `sys.stdout`, `sys.stderr`, `wsgi.errors`) never reaches the protocol channel; it is captured as evidence under the grader's `out_dir/check` (W0 rev 3).
+- **§4, result channel.** The check reads `cases.json`, the grader's normalised copy of the authored `cases.yaml`. The document is one line of canonical JSON (at most 64 KiB). After the grader accepts it, the grader writes one byte to the check's stdin; the check exits 0 only after that byte, and 3 on stdin EOF with no byte (spike E1-S3).
+- **§2, app kinds.** `app.kind` is `callable` or `wsgi`; a `wsgi` app may be built by a factory (`factory: true`, `args`, `paths`, `{state_dir}`) and the probe host gives it a complete PEP 3333 environ (W0 rev 3; S1 needs it in E1).
+- **§7, start.** A probe host whose ready line does not arrive within `bounds_ms[interface]` is `did not start` (primary metric 0, a measured failure). Only the outer bound firing is NOT_RECORDED.
 
 ## Alternatives considered
 
