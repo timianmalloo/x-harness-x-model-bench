@@ -28,6 +28,7 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
+import ring_cache
 
 from harness_bench import config, workspace
 from harness_bench.grade import correctness
@@ -196,23 +197,11 @@ def teardown_module(module):
     shutil.rmtree(_WORK, ignore_errors=True)
 
 
-def _version(task_id: str) -> str:
-    """A cache key that changes with the task's authored overlay, so a stale cached base is never reused."""
-    import hashlib
-    digest = hashlib.sha256()
-    for path in sorted((task_dir(task_id) / "workspace").rglob("*")):
-        if path.is_file():
-            digest.update(path.relative_to(task_dir(task_id)).as_posix().encode() + path.read_bytes())
-    digest.update(task_yaml(task_id)["source"]["commit"].encode())
-    return "ng" + digest.hexdigest()
-
-
 @functools.cache
 def engine_base(task_id: str) -> Path:
     """The base tree as the engine builds it: `workspace.task_source` over the pinned upstream plus the overlay (ORCL-A)."""
-    root = Path(tempfile.gettempdir()) / "hb-ng-ring"
     try:
-        return workspace.task_source(task_dir(task_id), _version(task_id), root / "sources", root / "upstream")
+        return ring_cache.cached_base(task_dir(task_id), "ng")
     except Exception as exc:  # noqa: BLE001 - an unreachable upstream skips, unless the ring is required
         if os.environ.get("HB_REQUIRE_NG_BASE") == "1":
             pytest.fail(f"HB_REQUIRE_NG_BASE=1 but the {task_id} base cannot be built: {exc}")
@@ -407,7 +396,7 @@ def test_ng_pin_tree_matches_the_engine_built_base(task_id):
     """Readiness ring: the engine-built base is the pinned upstream tree plus the overlay, and the recorded tree is real."""
     base = engine_base(task_id)
     source = task_yaml(task_id)["source"]
-    clone = workspace.upstream_tree(source["repo"], source["commit"], Path(tempfile.gettempdir()) / "hb-ng-ring" / "upstream")
+    clone = workspace.upstream_tree(source["repo"], source["commit"], ring_cache.ring_root("ng") / "upstream")
     tree = subprocess.run(["git", "rev-parse", f"{SPECS[task_id]['pin']}^{{tree}}"], cwd=clone, capture_output=True, text=True,
                           check=True).stdout.strip()
     assert tree == recorded_tree(task_id) == SPECS[task_id]["tree"]
