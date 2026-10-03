@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T22:42:59Z",
+  "generated": "2026-10-03T23:05:36Z",
   "audit": [
     {
       "actor": null,
@@ -77531,6 +77531,28 @@ window.AUDIT_DATA = {
         "branch": "coord/eval-w0-rev68-w1k",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M420834R8XY0Z7FXPRA8Y43Z",
+      "shortname": "design-review-sre-w1k",
+      "datetime": "2026-10-03T23:05:36Z",
+      "session": "rv-sre-w1k-e1e4",
+      "prompt": "docs/coordination/eval-wave1/rv-sre.md (W1-K)",
+      "summary": "SRE lens review of W1-K: 12 findings, PASS WITH CONDITIONS",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sre-w1k.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "SRE review of W1-K",
+      "done_when": "review file and gate line committed",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
@@ -79068,6 +79090,15 @@ window.AUDIT_DATA = {
       "kind": "decision-request",
       "ref": "req-01M41V2MC1RTCBB4APR3TSXEYP",
       "session": "w1k-resume-e1e4"
+    },
+    {
+      "id": "mail-01M41YDRBHF72J02CX3BN7VEB6",
+      "ts": "2026-10-03T22:33:45Z",
+      "from": "owner-fable",
+      "to": "w1k-resume-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41V2MC1RTCBB4APR3TSXEYP",
+      "session": "owner-fable"
     }
   ]
 };

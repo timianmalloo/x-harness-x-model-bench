@@ -5028,6 +5028,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "13c7180017ca42ed74ed764d8435d9a46f5aa7a7e14f60dd4480d2f61a008ba6"
     },
     {
+      "id": "review-eval-sre-w1k",
+      "path": "docs/design/reviews/eval-review-sre-w1k.md",
+      "title": "W1-K resume, liveness and the alarm channel: SRE lens review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of docs/design/eval-resume.md (branch design/eval-resume, 315cf1d4, rev 1.1) by the SRE lens: the alarm and the resume disagree on what \"pending\" means, the last_progress_at segment pick is wrong after a grading pass, the default alarm channel does not reach a sleeping operator, and the wrapper can leak the ntfy topic. Twelve findings, condition-setting.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "6dbb1b345f2d9c0aca3332938e0ee35c2611ccb9906582d0a48c128a65539c86"
+    },
+    {
       "id": "review-eval-ta",
       "path": "docs/design/reviews/eval-review-ta.md",
       "title": "Evaluation Campaign design reviews: Test Architect lens",
@@ -7912,5 +7933,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "a9e0adbeb86fa5f662fd2bbafd6367b26317484f26bf9bbc325e816912975967"
+  "graphSha256": "c02583ceb6624b51056ea9e039727478e7afcdadb6309c21d04388da5fd1b8fe"
 };
