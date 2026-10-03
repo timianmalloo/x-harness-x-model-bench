@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T19:49:31Z",
+  "generated": "2026-10-03T19:55:16Z",
   "audit": [
     {
       "actor": null,
@@ -74610,6 +74610,28 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "id": "al-01M41NBJ8CQBGSA56ZBN0G79X9",
+      "shortname": "design-slice-review-w0-rev6-sec",
+      "datetime": "2026-10-03T19:55:16Z",
+      "session": "rv-sec-w0r6-e1e4",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md (W0 rev 6 delta)",
+      "summary": "RV-SEC W0 rev 6: PASS WITH CONDITIONS, 4 minor findings",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Review W0 rev 6 for the security lens",
+      "done_when": "Section appended with gate line",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
