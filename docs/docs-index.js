@@ -4441,6 +4441,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "a97c88934f6ac7af7f54eff8fc95d769ce89b0702cfc78f842975db0fbe5afe6"
     },
     {
+      "id": "review-eval-sim-w1l",
+      "path": "docs/design/reviews/eval-review-sim-w1l.md",
+      "title": "Simplifier review of W1-L (property tasks and four graders)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Adversary Mode, soft veto) on design/eval-property-tasks 5da93d91. PASS WITH CONDITIONS: cut verified_before_use until SR-L1, defer the noguess resolver, fix the E2/E4 phase inversion of product_lines and in_radius, remove dead resilience cases and duplicate variants, and fold the per-task test rows into readiness.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "9fa4e7bda99adf13192cab2b73f7eabd0cdc3ac79153b75728af9182626633fd"
+    },
+    {
       "id": "review-eval-sre-w1d",
       "path": "docs/design/reviews/eval-review-sre-w1d.md",
       "title": "W1-D engine identity design review: SRE lens",
@@ -6255,5 +6276,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "426b6d97eb19ef9ec417b73480c62ab7cde16c961f5f06b5b863e107662fc589"
+  "graphSha256": "9eae8b371ecdcaea0ebd1acdc4e35731c7fe20a401fa70956c42eccf8defeddd"
 };
