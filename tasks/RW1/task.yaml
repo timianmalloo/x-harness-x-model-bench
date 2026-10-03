@@ -38,8 +38,8 @@ expected:
   reference:
     property_check_pass: 1                       # Inferred: both hidden-test files pass on the reference and its ratio is below the 0.3000 ceiling (W0 section 3 truth table). Not a grader output.
     turn1_tests_pass: 1                          # Inferred: turn 1's hidden file passes on the reference turn-1 snapshot
-    rework_ratio: "<X-RW: hand count of the committed reference diff>"
+    rework_ratio: "0.0625"                  # Inferred: hand count of the committed reference diff, 1 of 16 turn-1 product lines changed (oracle/evidence.md); not a grader output
   naive:
     property_check_pass: 0                       # Inferred: the naive passes every hidden test and its rework_ratio is above the ceiling, so the conjunction is 0
     turn1_tests_pass: 1
-    rework_ratio: "<X-RW: hand count of the committed naive diff>"
+    rework_ratio: "0.7143"                  # Inferred: hand count of the committed naive diff, 5 of 7 turn-1 product lines changed (oracle/evidence.md); not a grader output

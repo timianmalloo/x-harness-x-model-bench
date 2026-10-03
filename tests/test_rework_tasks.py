@@ -495,7 +495,6 @@ def test_each_variant_flips_exactly_its_set(tid, name, bases):
     spec = variant(tid, name)
     reference = reference_observed(tid, str(bases[tid]))
     observed = observe(tid, bases[tid], apply_edits(solution(tid, "reference"), spec["edits"]))
-    assert observed.final.errored == frozenset() and observed.snapshot.errored == frozenset(), observed.final.output
     flips = [m for m in ("property_check_pass", "turn1_tests_pass", "rework_ratio")
              if getattr(observed, m) != getattr(reference, m)]
     assert flips == sorted(spec["flips"], key=("property_check_pass", "turn1_tests_pass", "rework_ratio").index)

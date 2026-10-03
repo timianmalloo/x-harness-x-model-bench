@@ -30,7 +30,10 @@ class Money2Tests(unittest.TestCase):
             calls.append((args, kwargs))
             return sentinel
 
-        with mock.patch.object(humanfriendly, "format_money", recorder):
+        # `humanfriendly` replaces itself in sys.modules with a deprecation proxy, and an attribute set on the proxy is not seen
+        # by the package's own functions. Patch the dict the function itself reads its globals from.
+        namespace = humanfriendly.format_dollars.__globals__
+        with mock.patch.dict(namespace, {"format_money": recorder}):
             result = humanfriendly.format_dollars(1234.5)
         self.assertEqual(calls, [((1234.5, "USD"), {})])
         self.assertIs(result, sentinel)
