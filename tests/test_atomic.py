@@ -70,9 +70,8 @@ def test_create_once_creates_then_noops_on_equal_bytes(tmp_path, caplog):
 def test_create_once_refuses_different_bytes_and_keeps_the_original(tmp_path, caplog):
     path = tmp_path / "once.json"
     assert atomic.create_once(path, b"original") is True
-    with caplog.at_level(logging.WARNING, logger=LOG):
-        with pytest.raises(BenchError) as ei:
-            atomic.create_once(path, b"other")
+    with caplog.at_level(logging.WARNING, logger=LOG), pytest.raises(BenchError) as ei:
+        atomic.create_once(path, b"other")
     assert ei.value.code == "HB-LED-007"
     assert str(path) in ei.value.message
     assert path.read_bytes() == b"original"
@@ -164,7 +163,7 @@ def test_create_once_refuses_a_symlink_existing_path(tmp_path):
     assert target.read_bytes() == b"keep-me"
 
 
-def test_create_once_refuses_a_file_swapped_in_before_the_link(tmp_path):
+def test_create_once_refuses_a_file_swapped_in_before_the_link(tmp_path, monkeypatch):
     path = tmp_path / "once.json"
     other = tmp_path / "premade"
     other.write_bytes(b"premade-bytes")
@@ -173,11 +172,9 @@ def test_create_once_refuses_a_file_swapped_in_before_the_link(tmp_path):
     def swap(src, dst, **kwargs):
         real_link(other, dst)
 
-    import harness_bench.atomic as mod
-    from unittest import mock
-    with mock.patch.object(os, "link", swap):
-        with pytest.raises(BenchError) as ei:
-            mod.create_once(path, b"written")
+    monkeypatch.setattr(os, "link", swap)
+    with pytest.raises(BenchError) as ei:
+        atomic.create_once(path, b"written")
     assert ei.value.code == "HB-LED-007"
     assert not path.exists()
     assert other.read_bytes() == b"premade-bytes"
