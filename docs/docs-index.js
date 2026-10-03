@@ -1857,6 +1857,78 @@ window.DOCS_INDEX = {
       "sourceSha256": "7b5e5eaa9251750bfeb2247d6653f09b9ee2e4f3ada4d6d810e20e0245940205"
     },
     {
+      "id": "design-eval-atomic-publish",
+      "path": "docs/design/eval-atomic-publish.md",
+      "title": "W1-B design: crash-atomic publish (atomic.py create_once and publish_dir, archive.py rework)",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 design slice W1-B; builds in E1 (X-B1 atomic.py, X-B2 archive.py)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Designs the two write helpers every campaign record and every archive goes through: create_once (a file appears only complete, never overwritten) and publish_dir (a folder appears only after its copy verified), plus the one recovery rule for the crash window between the rename and the ledger rows (specified here, built by X-K1 in E3). Revision 2 applies the five W1-B lens reviews (34 findings, each dispositioned in section 18) and W0 rev 3. Settles the data model (the published name is the only completeness fact), the temp-name and sweep contract, the Windows no-directory-fsync branch, the strict verify, the reader surfaces a leaked temp would break, and names every red-first test and seeded mutant so X-B1 and X-B2 can start from this file alone. Adds three measured Windows facts (text-mode os.write corrupts bytes, a junction is unlinkable, a held handle blocks a folder rename).",
+      "tags": [
+        "benchmark",
+        "crash-atomic",
+        "archive",
+        "create-once",
+        "evaluation-campaign",
+        "w1-b"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0015-multi-turn-attempt-and-turn-snapshots",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0016-campaign-record",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0021-plan-level-resume-and-liveness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-20261003-spike-e1-ntfs-atomic-publish",
+          "rel": "depends-on"
+        },
+        {
+          "to": "review-eval-ds",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sec",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-pat",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-ta",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "4706e446d39f829dfaa8bf399dd337646353d79baf5ff7fa33e8f8bea7c986ee"
+    },
+    {
       "id": "design-eval-catalog-0-7",
       "path": "docs/design/eval-catalog-0-7.md",
       "title": "Catalog 0.7 (ADR-0019): the eleven property metrics, scenario-7 pass@1 and the missing-pass@1 fix",
@@ -5944,5 +6016,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "5284d5763adf291a6abda8627e72c808b69c14992a8ae1366413262e39077014"
+  "graphSha256": "60f80812129b1c05238feeaaf78bea43484a248b90d79fc4d07ec42405477db8"
 };

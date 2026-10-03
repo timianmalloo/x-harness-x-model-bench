@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:21:53Z",
+  "generated": "2026-10-03T18:22:27Z",
   "audit": [
     {
       "actor": null,
@@ -66317,23 +66317,69 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41G0JR9XQ8JED1AE0VBAGEF",
-      "shortname": "ta-review-w1b-r2",
-      "datetime": "2026-10-03T18:21:53Z",
-      "session": "rv-ta-bd-e1e4",
-      "prompt": "RV-TA delta re-review of W1-B rev 2",
-      "summary": "RV-TA W1-B rev 2: PASS WITH CONDITIONS (3 minor findings)",
-      "kind": "skill",
-      "skill": "design-slice-review",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/design/reviews/eval-review-ta-w1b.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "tier": "T2"
+      "datetime": "2026-10-03T18:21:53Z",
+      "id": "al-01M41G0JR9XQ8JED1AE0VBAGEF",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "RV-TA delta re-review of W1-B rev 2",
+      "session": "rv-ta-bd-e1e4",
+      "shortname": "ta-review-w1b-r2",
+      "skill": "design-slice-review",
+      "summary": "RV-TA W1-B rev 2: PASS WITH CONDITIONS (3 minor findings)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-atomic-publish.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:40:44Z",
+      "done_when": "Gate PASS incl. Security and Distributed Systems; the D1 and D3 red tests named; the Windows no-directory-fsync branch stated; the defect class text for exists means complete",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-B crash-atomic publish, producing docs/design/eval-atomic-publish.md",
+      "id": "al-01M41DN7FNGSCBEYQ6A1K3HF5M",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-b-atomic-publish.md",
+      "session": "w1b-publish-e1e4",
+      "shortname": "design-slice-eval-atomic-publish",
+      "skill": "design-slice",
+      "summary": "W1-B design: create_once, publish_dir, sweep, recovery rule, archive rework, tests by node id, spike E1-S2",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-atomic-publish.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:20:13Z",
+      "done_when": "Every finding has a disposition row; Gate record has the five first-round lines plus rev 2 pending RV-TA; derive and validate exit 0",
+      "duration_seconds": 773.0,
+      "fan_out": 0,
+      "goal": "Apply the W1-B lens-review findings and Coordinator answers",
+      "id": "al-01M41FXH5HKYBZWKFGBP84JG6E",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "W1-B rev 2 follow-up: apply five lens reviews and W0 rev 3 (brief docs/coordination/eval-wave1/w1-b-atomic-publish.md)",
+      "session": "w1b-publish-r2-e1e4",
+      "shortname": "design-slice-eval-atomic-publish-rev2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T18:07:20Z",
+      "summary": "Revised the W1-B design: 34 findings dispositioned, recover_archive moved to X-K1, HB-LED-009 dropped, site scan re-derived with red fixtures, identity check and enforced sweep lock, public rename_with_retry, seam request S-B4",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     }
   ],
   "changes": [
@@ -66958,6 +67004,50 @@ window.AUDIT_DATA = {
       "summary": "Applies RV-TA/PAT/SIM, W0 rev 3 and R-95; Control 1 gets red cases and reads 0.6 definitions from d6dda42d; (e) exception and corrected_from become a written contingency",
       "tags": [],
       "title": "Catalog 0.7 design rev 2: cross-version control from git, n_recorded, owner rule ruled (R-95), correction record deferred"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-atomic-publish.md"
+      ],
+      "datetime": "2026-10-03T17:40:54Z",
+      "git": {
+        "after": "b46bf907c5d035691d44bcc04c302149e8864030",
+        "before": null,
+        "branch": "design/eval-atomic-publish",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41DNH6Q8HPW9V20350SV052",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-b-atomic-publish.md",
+      "rationale": "ADR-0015 5a and ADR-0016 2a rest on primitives measured in spikes E1-S1 and E1-S2; RV-DS 5,6,7,9, RV-SEC 10, RV-PAT 5 dispositions become tests.",
+      "session": "w1b-publish-e1e4",
+      "skill": "design-slice",
+      "summary": "Designs atomic.py (create_once, publish_dir, sweep_temps) and the archive.py rework: final name appears only after a verified copy; rows hash source bytes; folder-then-rows-then-event recovery rule with states S0-S6; O_BINARY required on Windows; leaked temps hidden from git, verify and attempt readers.",
+      "tags": [],
+      "title": "Crash-atomic publish: temp-then-rename for folders, temp-then-link for files, one recovery rule, strict verify"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-atomic-publish.md"
+      ],
+      "datetime": "2026-10-03T18:20:21Z",
+      "git": {
+        "after": "32548ed921664e2db3fcde42634ac4e241c93e78",
+        "before": null,
+        "branch": "design/eval-atomic-publish",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41FXSDXPNN8VVXE51S86BT4",
+      "kind": "design",
+      "prompt": "W1-B rev 2 follow-up",
+      "rationale": "Apply the five W1-B lens reviews and the Coordinator answers; RV-TA BLOCK findings 2 and 3 fixed with real-path tests and red fixtures",
+      "session": "w1b-publish-r2-e1e4",
+      "skill": "design-slice",
+      "summary": "34 review findings dispositioned; recover_archive specified not built in E1; HB-LED-009 refused; site scan re-derived (12 sites, 11 keys) with red fixtures; rename_with_retry public; seam request S-B4",
+      "tags": [],
+      "title": "W1-B rev 2: recovery moves to X-K1, sweep lock enforced, create_once identity-checked, one WIN-A retry helper"
     }
   ],
   "messages": [
