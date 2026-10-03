@@ -661,6 +661,24 @@ summary: >-
 - **Control (proposed):** an autouse fixture in `tests/conftest.py` that removes every name on the credential list for every test not marked `credentials`, plus a test that sets the variable and asserts these three still pass. Route: a small Grok slice once Grok is qualified (DR-5), else a Sonnet slice.
 - **Status:** `candidate`
 
+### TEST-B: a design names a red-first test that cannot fail for the reason it states (candidate)
+- **Signature:** a design slice lists a test as "red first", but nothing in the design shows which assertion fails today and why. Five shapes recur: (a) the test patches or imports a symbol that does not exist yet, so it fails with `AttributeError` or `ImportError`, not on its assertion; (b) a guard or scan test has no red fixture, so deleting the rule stays green; (c) an engine or CLI test uses a fake, so removing the real wiring line breaks no test; (d) two rules give the same observable result, so neither can fail alone; (e) an allowlist or "every reader migrated" claim is asserted without a scan of the tree.
+- **Why it survives:** the author writes the test list from the contract, not from today's code. A test name reads as a proof, and the Stage 4 self-check asks "is there a test", not "what does it fail on today". The gap shows only when an adversarial reviewer runs or reads the test against the base commit.
+- **Instances:**
+  - `2026-10-03` (Evaluation Campaign Wave 1, batch a): RV-TA blocked every first-pass design: W1-F (`docs/design/reviews/eval-review-ta-w1f.md`: a clean-exit tamper test missing, outcome rows 3 and 4 not separable, shape d), W1-G (`eval-review-ta-w1g.md`: control 1, the 0.6 golden digests, the (e) exception tests), W1-B and W1-D (reviews filed by RV-TA on the same day; W1-D: `cli.py` passing the launch check is covered only by a fake, shape c).
+- **Sweep:** every remaining Wave 1 design (batch b: W1-H, W1-C, W1-E, W1-J, W1-L, then W1-K) and every revision of a batch-a design.
+- **Control:** the *Testability floor* in `docs/coordination/eval-wave1/README.md` section 2a: for each named test the design states the failing assertion and why, the red fixture of every guard, the real-wiring test beside every fake, the mutant that separates each adjacent rule pair, and the scan behind every allowlist. RV-TA checks it first. Rung: always-loaded instruction for Wave 1 workers. Upgrade trigger: a batch-b design blocked on one of the five shapes after this rule is on main; then the `design-slice` Definition of Done gains the five items.
+- **Status:** `candidate`
+
+### COORD-D: a per-call environment rule read as a one-time setup (candidate)
+- **Signature:** an instruction says to set shell state "in every shell call" (`export AGENT_SESSION=…`), and the agent sets it once. The agent's harness starts a fresh shell for each tool call, so the state is gone by the next call. A control that reads the state (the commit floor) then finds it unset, prints an advisory and lets the commit through.
+- **Why it survives:** the export succeeds, and the later commit succeeds too. The only sign is one advisory line in a long tool output. The rule's wording ("in every shell call") is correct but describes a state, not an action on the line that needs it.
+- **Instances:**
+  - `2026-10-03` (Evaluation Campaign Wave 1): at least five worker commits printed "AGENT_SESSION is unset" (reported by the Leader), so the commit boundary only advised for them.
+- **Sweep:** owed (the Leader): the `coord-core.py` advisories in today's worker logs (`.agents/log/*.jsonl`) and commit hooks output, to count the commits that passed unattributed.
+- **Control:** `docs/coordination/eval-wave1/README.md` section 1 step 2 now requires an **inline prefix** on every `git commit` and every coord call (`AGENT_SESSION=<id> git commit …`) and says why. Rung: always-loaded instruction. Upgrade trigger: one more unattributed commit after this rule is on main; then the commit floor refuses (not advises) when `AGENT_SESSION` is unset in a registered worker tree.
+- **Status:** `candidate`
+
 ---
 
 ## Inherited classes (seeded from the pack)
