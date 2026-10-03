@@ -1,0 +1,53 @@
+---
+id: review-eval-ta-w1k
+title: "W1-K resume, liveness and the alarm channel: Test Architect lens review"
+type: doc
+status: draft
+owner: "@timianmalloo"
+links:
+  - { to: design-eval-seam-contracts, rel: relates-to }
+review-by: "2026-10-17"
+summary: >-
+  Adversary-mode review of docs/design/eval-resume.md (design/eval-resume, 315cf1d4, rev 1.1) and
+  models/run_lifecycle.tla by the Test Architect lens. The window map, the prefix sweep and the TLC evidence are
+  strong. Conditions: the stop path has no C7 or C4 cell in its tests, finish-the-stop idempotence (W12e) contradicts
+  the unsealed new segments, X-K1's gate entry tests need X-K2's cmd_run hunk, two reds are mutant-shaped, and F-1
+  leaves one liveness property vacuous for the code. PASS WITH CONDITIONS.
+---
+
+# W1-K: Test Architect lens review (rv-ta-w1k-e1e4, 2026-10-03)
+
+Persona: test-architect, Adversary Mode, T2, hard veto. Read: `docs/design/eval-resume.md` (all, rev 1.1), the testability floor (README 2a), `engine.py` 408-440 and `FACTS` (`engine.py:49`) on main. Checked against W0 rev 6.8, R-100 and ADR-0021 Amendment 1 as the design quotes them. Not re-run: `check_models --quick` (9 min); the doc's 34/34 and 4/4 are the author's observation, not mine. Severity: blocking / major / minor. Confidence: Verified (opened) / Inferred.
+
+**What holds.** Each ADR row has a window with a node id and a technique (T1 prefix, T2 real kill). Three stop windows, W12d, W12e, resume-of-a-resume (W13, W14), the refusal order and the wrote-nothing refusal test all exist. The prefix sweep uses an independent oracle. The skeleton-first plan keeps reds on assertions. The model rejects each new variant by its own target, and liveness carries no crash exception.
+
+| # | location | finding | severity | evidence | fix | confidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | s4 W12, mutants M-STOPLAUNCHES | The stop tests use cells in C2, C3, C5 and C6 only. C7 (no `launch_intent`, stop set: no action) is where `NoLaunchAfterStop` matters most, and no W12 cell, assertion or mutant covers it. A resume that launches a never-launched cell on a stopped run passes every named test. C4 under stop (snapshot redo, then `stopped`) and the C4 failure path (HB-CELL-117) also have no node id, window row or mutant. | major | design lines 113-118, 162, 190-192; the s4 table has no C4 row | Add a C7 cell to each W12 param, asserting no `cell.launch_intent` and no `cell.outcome` for it. Add M-STOPC7 (stop input ignored for C7). Add `W4b_snapshot_event_absent` under stop, and one test with the redo forced to fail (HB-CELL-117) with a mutant that drops the redo. | Verified |
+| 2 | s3.1 steps 5 and 8, W12e | W12e asserts a byte-identical ledger and no new segment on the second finish-the-stop call. But the first call opens new `events`, `turn_usage` and `archive_files` segments (step 5), writes no `run.completed`, and so seals nothing (the engine seals only in the `run.completed` path, `engine.py:425-430`). Step 5 treats every unsealed dead engine segment as abandoned, so the second call finds the first call's unsealed segments, writes `segment.abandoned` rows and opens more. Either W12e fails or the design needs a rule it does not state (seal at the end of a finish-the-stop). | major | design lines 98-99, 103, 164; `engine.py:425-430` | State who seals the segments of a finish-the-stop resume. Add a test: finish-the-stop, then `bench verify` (exit 0, no `HB-LED-002`), then a second call writes zero bytes. Add a mutant that skips the seal. | Verified (code); consequence Inferred |
+| 3 | s13 commit order, s4 (c), s12 seam | The X-K1 crash-window tests are X-K1's gate entry condition (s4, s13). W2, W3, W3b, W6, W11 and `test_cli_run_resumes[T2]` drive the real `cli.py run <run_id>`. That branch is X-K2's second dispatch, which starts after X-K1 joins. X-K1's real-kill tests cannot go green on X-K1's own branch. Two sections disagree at the seam. | major | design lines 144, 176, 366, 380-381 | X-K1 owns a test harness that calls `resume.resume_run` through the real `Engine` entry (a real composition), and `test_cli_run_resumes` moves to X-K2's second dispatch as its exit test. Or move the `cmd_run` hunk into X-K1. Say which. | Verified (text) |
+| 4 | s4 W5 and W10, column (a) | The red given is "duplicate archive_files key fails when a mutant appends all rows". That is the mutant's failure, not the assertion that fails today (floor item 1). Today the skeleton raises `HB-USR-002`, so the real red is an exit-code assertion. W13 and W14 give a bare "exactly one abandoned row" and "same decisions", the same weak shape. | minor | design lines 155, 160, 165-166 | Write the red as an assertion on the real output (exit status, rows present). Keep the duplicate-key line as the mutant column (M-APPENDALL exists). | Verified |
+| 5 | s4 sweep test, floor item 5 | N is "counted by X-K1 at its skeleton commit". The sweep covers one cell of one golden ledger, and the oracle is keyed by the last row's kind, with no stop-flag axis. Under stop, C2/C3/C5/C6 give different actions, so a sweep with `stopped=False` leaves the stop branch to the three W12 params. Multi-cell interleavings are not swept. | minor | design lines 107, 170 | Run the sweep for both `stopped` values with a second oracle table. Add one two-cell golden ledger with interleaved rows. Record both counts in the test. | Verified |
+| 6 | s4 (d), (e) mutants and sweeps | The doc names 15 mutants (plus 5 alarm mutants); none separates the D-K5 redefinition of `completed` (a reader that keeps `any(run.completed)`), the D-K2 pid wait, or the fail-closed progress read. `test_completed_has_one_definition` pins a count of `rg "run.completed" src`; main shows 17 matching lines today (grep -r, Verified), and the doc leaves the number to X-K1. | minor | design lines 59, 198 | Add M-ANYCOMPLETED (W16 turns red) and M-PIDKILL. Record the scan (17 on base `ef4e86dc`) in the test. | Verified (count) |
+| 7 | s5.4 TLC evidence | The reachability proof of the crash-after-stop state is `reach.py` in a session scratchpad: not committed, not re-runnable from the repo. The US-44 run is stale (357,112,128 states, rev 1); the doc says so and defers to the Leader. | minor | design lines 259, 273 | Commit the witness operator as a note, or mark the evidence not reproducible. Order the US-44 run before the gate merge, since the `Resume` guard change touches the safety property. | Verified (text) |
+| 8 | s5.3 F-1, `ArchivedCellsGetGraded` | The model keeps the engine's grade enabled on a stopped run, so `ArchivedCellsGetGraded` holds through a crash after `ApplyStop` by a step the code will not take (R-100: the finish-the-stop resume starts no grading). TLC green says nothing about the code on that path, and the code carries a test (`M-STOPGRADES`) for the opposite behaviour. | major (condition) | design lines 103, 193, 232 | Until the Owner rules, label the property Inferred for the stop path in s5.4. Then either (a) grading after exit 3 is `bench grade` only: gate `GradeStart(p, "engine")` on `~stopApplied`, restate the property "when not stopped", and add a witness that a stopped run holds ungraded archived cells; or (b) the resume grades: W12 and M-STOPGRADES flip. | Verified (text) |
+| 9 | s13 alarm tests | The wrapper test runs `-DryRun` with a stub `bench`: no test asserts what the scheduled task actually runs. A wrong argument list (`--alarm-after` dropped) passes every named test. | minor | design lines 373, 383 | One test that the wrapper, without `-DryRun`, calls `bench status <id> --alarm-after <s>` against a stub on PATH (assert argv). | Inferred |
+
+**Seam disagreements.** (1) s4 (c) and s13 gate X-K1 on real-`cli.py` kill tests; s12 gives the `cmd_run` hunk to X-K2 after X-K1 joins (finding 3). (2) s3.1 step 8 and s5.3 against the live engine (`engine.py:414`): the model grades after a stop, the resume does not (finding 8, F-1, with the Owner). I found no contradiction with W0 rev 6.8 as the design quotes it.
+
+**Floor check (README 2a).** Item 1 met except finding 4. Item 2 met (fixtures named for refusals, sweep, pairing, abandoned head). Item 3 met for `cli.py` once finding 3 is settled; open for the wrapper (finding 9). Item 4 met except C7, C4 and D-K5 (findings 1, 6). Item 5 met for `FACTS`; N pending at the skeleton (finding 5).
+
+**Conditions to clear the gate.** Findings 1, 2, 3 and 8 resolved in the design text: tests named, the seal rule stated, the harness owner stated, F-1 ruled or the property relabelled.
+
+GATE W1-K · Test Architect · PASS WITH CONDITIONS · 9 findings (rv-ta-w1k-e1e4, 2026-10-03)
+
+## Addendum: R-101 (F-1 closed by ruling; map check)
+
+R-101 (`docs/notes/rulings.md:1732`): the finish-the-stop resume grades and writes exactly one `run.completed` after `run.resumed`; R-100 condition 3 is superseded; the model needs no edit. Finding 8 is resolved in direction (model and code now agree). Finding 2 is mostly resolved (`run.completed` seals the new segments). The map cannot yet carry the new assertions:
+
+| # | location | finding | severity | fix |
+| --- | --- | --- | --- | --- |
+| A1 | s4 W12, W12e, M-STOPGRADES, s3.1 steps 4 and 8 | W12 asserts "no run.completed, no grading pass" and M-STOPGRADES guards that; both now encode the bug. Step 4 says a stopped run with nothing to do writes nothing and is never "complete"; with `run.completed` after `run.resumed`, the stop row (not `run.completed`) must still decide exit 3 with no segment and no row. | major | W12 (three params) asserts the grading pass ran, exactly one `run.completed` follows the last `run.resumed`, `run.stopped` once, exit 3. W12e asserts the second call writes no `run.completed`, no segment, byte-identical ledger. Replace M-STOPGRADES with M-STOPNOGRADE (grading skipped) and M-DOUBLECOMPLETED (second call re-writes it). Red today: the skeleton's exit code and rows. State in step 4 and D-K5 that the stop row decides exit 3. |
+| A2 | s5.3, s12 F-1 row, s3.1 step 8 | Text still describes the old rule. | minor | Rewrite as R-101 item 4 says, in the gate revision. |
+
+The gate line stands. Conditions: findings 1, 3, A1, and finding 2 reduced to stating W12e idempotence over the sealed segments.

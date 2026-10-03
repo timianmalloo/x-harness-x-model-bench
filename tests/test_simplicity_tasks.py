@@ -22,8 +22,9 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
+import ring_cache
 
-from harness_bench import config, workspace
+from harness_bench import config
 from harness_bench.grade import correctness
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -106,11 +107,10 @@ def task_yaml(tid: str) -> dict:
 @pytest.fixture(scope="session")
 def bases() -> dict:
     """tid -> the base tree as the engine builds it: `workspace.task_source` over the pinned upstream (ORCL-A)."""
-    root = Path(tempfile.gettempdir()) / "hb-sm-ring"
     built = {}
     for tid in IDS:
         try:
-            built[tid] = workspace.task_source(task_dir(tid), f"smring{tid.lower()}00000", root / "sources", root / "upstream")
+            built[tid] = ring_cache.cached_base(task_dir(tid), "sm")
         except Exception as exc:  # noqa: BLE001 - an unreachable upstream skips, unless the ring is required
             import os
             if os.environ.get("HB_REQUIRE_SM_BASE") == "1":
@@ -374,7 +374,7 @@ def test_provenance_text(tid):
 # ---- readiness ring: the base and the measured numbers ---------------------------------------------------------------
 
 def upstream_clone(tid: str) -> Path:
-    upstream = Path(tempfile.gettempdir()) / "hb-sm-ring" / "upstream"
+    upstream = ring_cache.ring_root("sm") / "upstream"
     key = __import__("hashlib").sha256(f"{DEFINITIONS[tid]['repo']}@{DEFINITIONS[tid]['pin']}".encode()).hexdigest()[:16]
     return upstream / key
 

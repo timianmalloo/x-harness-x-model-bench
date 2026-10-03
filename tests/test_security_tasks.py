@@ -25,8 +25,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
+import ring_cache
 
-from harness_bench import config, workspace
+from harness_bench import config
 
 ROOT = Path(__file__).resolve().parents[1]
 TASK = ROOT / "tasks" / "S1"
@@ -110,9 +111,8 @@ def naive_source() -> str:
 @pytest.fixture(scope="session")
 def s1_base() -> Path:
     """The base tree as the engine builds it: `workspace.task_source` over the pinned upstream (W1-I 5.1, ORCL-A)."""
-    root = Path(tempfile.gettempdir()) / "hb-s1-ring"
     try:
-        return workspace.task_source(TASK, "s1ring0000000000", root / "sources", root / "upstream")
+        return ring_cache.cached_base(TASK, "s1")
     except Exception as exc:  # noqa: BLE001 - an unreachable upstream skips, unless the ring is required
         import os
         if os.environ.get("HB_REQUIRE_S1_BASE") == "1":
@@ -339,7 +339,7 @@ def test_s1_pin_problems_fire_on_each_red_fixture():
 def test_s1_pin_is_a_full_commit(s1_base):
     """Readiness ring: the engine-built base is the pinned upstream tree plus the overlay, and the tree hash is recorded."""
     commit = config.load_yaml(TASK / "task.yaml")["source"]["commit"]
-    upstream = Path(tempfile.gettempdir()) / "hb-s1-ring" / "upstream"
+    upstream = ring_cache.ring_root("s1") / "upstream"
     clone = next(p for p in upstream.iterdir() if (p / ".git").is_dir())
     tree = subprocess.run(["git", "rev-parse", f"{commit}^{{tree}}"], cwd=clone, capture_output=True, text=True,
                           check=True).stdout.strip()

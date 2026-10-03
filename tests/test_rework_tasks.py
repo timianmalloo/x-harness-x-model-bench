@@ -29,6 +29,7 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
+import ring_cache
 
 from harness_bench import config, workspace
 from harness_bench.grade import correctness
@@ -117,11 +118,10 @@ def all_short(tid: str) -> frozenset[str]:
 
 @pytest.fixture(scope="session")
 def bases() -> dict[str, Path]:
-    root = Path(tempfile.gettempdir()) / "hb-rw-ring"
     out = {}
     for tid in IDS:
         try:
-            out[tid] = workspace.task_source(task_dir(tid), "rwring0000000000", root / "sources", root / "upstream")
+            out[tid] = ring_cache.cached_base(task_dir(tid), "rw")
         except Exception as exc:  # noqa: BLE001 - an unreachable upstream skips, unless the ring is required
             if os.environ.get("HB_REQUIRE_RW_BASE") == "1":
                 pytest.fail(f"HB_REQUIRE_RW_BASE=1 but the {tid} base cannot be built: {exc}")
@@ -294,7 +294,7 @@ def test_provenance(tid, bases):
     spec, folder = SPEC[tid], task_dir(tid)
     data = task_yaml(tid)
     assert data["source"]["commit"] == spec["pin"] and data["source"]["repo"] == spec["repo"]
-    clone = workspace.upstream_tree(spec["repo"], spec["pin"], Path(tempfile.gettempdir()) / "hb-rw-ring" / "upstream")
+    clone = workspace.upstream_tree(spec["repo"], spec["pin"], ring_cache.ring_root("rw") / "upstream")
     upstream = subprocess.run(["git", "rev-parse", f"{spec['pin']}^{{tree}}"], cwd=clone, capture_output=True, text=True,
                               check=True).stdout.strip()
     recorded = re.search(r"^- pin tree: `([0-9a-f]{40})`", evidence(tid), re.MULTILINE)

@@ -256,7 +256,7 @@
  },
  {
   "name": "catalog_hash leaves out bench/rubrics/",
-  "file": "src/harness_bench/grade/runner.py",
+  "file": "src/harness_bench/identity.py",
   "find": "    return tree_hash(bench, [bench / \"metrics.yaml\", *rubrics])",
   "replace": "    return tree_hash(bench, [bench / \"metrics.yaml\"])",
   "tests": ["tests/test_grade_runner.py::test_grading_started_carries_the_catalog_hash_and_the_measured_tool_versions",
