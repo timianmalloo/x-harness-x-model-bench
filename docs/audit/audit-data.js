@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:04:00Z",
+  "generated": "2026-10-03T18:17:47Z",
   "audit": [
     {
       "actor": null,
@@ -66089,6 +66089,28 @@ window.AUDIT_DATA = {
         "branch": "owner/ruling-r95",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M41FS2E079PYRJWTQBFBDKPZ",
+      "shortname": "review-ta-w1h-w1c",
+      "datetime": "2026-10-03T18:17:47Z",
+      "session": "rv-ta-hc-e1e4",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-H and W1-C)",
+      "summary": "RV-TA reviews: W1-H PASS WITH CONDITIONS (10), W1-C PASS WITH CONDITIONS (9)",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1h.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Test Architect gate on W1-H and W1-C",
+      "done_when": "two review files with gate lines committed",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
