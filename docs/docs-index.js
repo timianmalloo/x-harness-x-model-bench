@@ -712,10 +712,14 @@ window.DOCS_INDEX = {
         {
           "to": "adr-0013-native-cells",
           "rel": "refines"
+        },
+        {
+          "to": "note-20261003-spike-e4-post-turn-prompt",
+          "rel": "depends-on"
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4c1bd2c1a7fc5c80da1127ff4016ffa1e52f674e9a112d9b73e0940a1abeda4a"
+      "sourceSha256": "b239bddc9ac605c41d45c20ca09ff481e25b5f1c1a85f5f35096e8512b39b8e0"
     },
     {
       "id": "adr-0016-campaign-record",
@@ -1372,6 +1376,35 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "5ef416d018179c6637ba358a9fe1787d392f2211b744f725440b8b73b1e43c1d"
+    },
+    {
+      "id": "note-20261003-spike-e4-post-turn-prompt",
+      "path": "docs/notes/spike-e4-post-turn-prompt.md",
+      "title": "Spike E4 - a second session/prompt in the same ACP session after end_turn",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-12-24",
+      "reviewSuggested": [],
+      "summary": "Verified on all three harnesses (Windows host; macOS unverified): the ACP session itself accepts a second session/prompt on the same sessionId after turn 1 ends with stopReason end_turn, with no second handshake and stdin never closed between turns. Turn 2 completed end_turn on claude-code (claude-opus-5-5), codex (gpt-6-sol) and copilot (gpt-6-sol), and each adapter's growing cachedReadTokens across the turn boundary shows turn 1's context carried into turn 2. The production engine does not do this today: driver.run_turn sends exactly one prompt and returns (src/harness_bench/driver.py:300), and engine.py's _attempt closes stdin immediately after it returns (src/harness_bench/engine.py:752), inside a finally that always runs (engine.py:728-732). Supporting DR-E4's two-turn rework task needs driver/engine changes, named below, not just a second RPC call.",
+      "tags": [
+        "spike",
+        "acp",
+        "multi-turn",
+        "rework",
+        "risk-R-E6",
+        "DR-E4",
+        "EV-4"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "07917835d700372f139f4dff998db93acf736dcede8f9ff54b35791b3507156c"
     },
     {
       "id": "note-catalog-0.5-anchors",
@@ -3959,5 +3992,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "f8c8b2ad316083e85410380208235e0f961b647dde59cc5899e632a8547bd6f7"
+  "graphSha256": "50c919946d0f2ff3c106ba0b8d5577b7d17fff876b285fa046d499dab1344397"
 };

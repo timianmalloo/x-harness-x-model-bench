@@ -12,6 +12,7 @@ links:
   - { to: adr-0006-results-data-model, rel: refines }
   - { to: adr-0007-run-engine, rel: refines }
   - { to: adr-0013-native-cells, rel: refines }
+  - { to: note-20261003-spike-e4-post-turn-prompt, rel: depends-on }
 review-by: "2027-10-03"
 summary: >-
   A multi-turn task's cell sends turn 2 as a second session/prompt on the same ACP session and the same stdin
