@@ -3712,6 +3712,32 @@ window.DOCS_INDEX = {
       "sourceSha256": "679de9c8f28e2b6684cd7282e3dc83c533ed0715fadc8d1b9ae839715a0cde46"
     },
     {
+      "id": "review-eval-pat-w1c",
+      "path": "docs/design/reviews/eval-review-pat-w1c.md",
+      "title": "Patterns Expert review of W1-C: campaign record and bench campaign (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of docs/design/eval-campaign-record.md (design/eval-campaign-record, ae21488b, 61338062) against W0 rev 3 and R-87..R-96. One blocking finding: the state table leaves no legal way to re-pilot after a fix in the registered state. The acquire_then_probe protocol is sound but its signature fits one probe, not a set. Gate BLOCK.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "9215229a55f61ffb3426151b71c284bf7baf76da7672f8357fde4ae74b420fc4"
+    },
+    {
       "id": "review-eval-pat-w1d",
       "path": "docs/design/reviews/eval-review-pat-w1d.md",
       "title": "Patterns Expert review of W1-D, engine identity (Adversary Mode)",
@@ -3791,6 +3817,32 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "c33ac9d8f236927e6121743dd55d504e18253c268c91cef111867c973d182657"
+    },
+    {
+      "id": "review-eval-pat-w1h",
+      "path": "docs/design/reviews/eval-review-pat-w1h.md",
+      "title": "Patterns Expert review of W1-H: power, verdicts, gates, report section 3 (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of docs/design/eval-power-verdicts.md (design/eval-power-verdicts, 2a9faa3c, b5509d66) against W0 rev 3 and R-87..R-96. The design predates R-96; the holm level_rule disclosure and its second test row are missing. Six findings, no blocking, gate PASS WITH CONDITIONS.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "bd2a44d2bc529215f326d6c51aa8dac31d3dd05bce58e60627170d2f80cded7d"
     },
     {
       "id": "review-eval-pat-w1i",
@@ -5838,5 +5890,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "f31c11c610a187694080adf0bf4c674aa422e81a3ff7e3916628ddddaa344b4d"
+  "graphSha256": "b5bfb0cfa9366288659723016f1c245e7d66a1038f23fd680705e61191d4d4b8"
 };
