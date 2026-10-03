@@ -75,7 +75,7 @@ def listed_credential_names() -> tuple[str, ...]:
 def clear_ambient_credentials(request, monkeypatch):
     """Hermetic tests do not see ambient credentials. A ``credentials`` test keeps the operator environment."""
     if request.node.get_closest_marker("credentials") is None:
-        for name in ():  # skeleton: the names exist; nothing is cleared yet
+        for name in listed_credential_names():
             monkeypatch.delenv(name, raising=False)
     yield
 
