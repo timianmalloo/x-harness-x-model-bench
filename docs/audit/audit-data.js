@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:00:59Z",
+  "generated": "2026-10-03T18:10:46Z",
   "audit": [
     {
       "actor": null,
@@ -65618,6 +65618,28 @@ window.AUDIT_DATA = {
     {
       "actor": null,
       "artifacts": [
+        "docs/design/eval-security-tasks.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:48:16Z",
+      "done_when": "Gate PASS incl. Security; two real codebases on different bases (DR-T1); the latent requirement; in-process probes; reference and naive solutions; expected values with provenance (GLD-A)",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-I security tasks S1 and S2 producing docs/design/eval-security-tasks.md",
+      "id": "al-01M41E30XX2G0GYMDGEKPAXD0A",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-i-security-tasks.md",
+      "session": "w1i-security-e1e4",
+      "shortname": "design-slice-eval-security-tasks",
+      "skill": "design-slice",
+      "summary": "Designed security tasks S1 (microdot, fully specified) and S2 (bottle, base and probes named): latent guards, 10 in-process probes with BENCHCANARY values, reference and naive solutions, expected values with provenance, nine defect variants, offline-build declaration, two seam requests; gate pending",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
         "docs/design/reviews/eval-review-ta-w1f.md"
       ],
       "compiled": false,
@@ -66059,6 +66081,30 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T1",
       "tool": null
+    },
+    {
+      "id": "al-01M41FBZKFAZF0N889PA25YV52",
+      "shortname": "design-slice-eval-security-tasks-rev2",
+      "datetime": "2026-10-03T18:10:38Z",
+      "session": "w1i-security-r2-e1e4",
+      "prompt": "docs/coordination/eval-wave1/w1-i-security-tasks.md (rev 2 follow-up applying RV-TA, RV-PAT, RV-SEC, RV-SIM)",
+      "summary": "W1-I rev 2: S1 aligned to W0 rev 3 (wsgi, frames), eight probes, both tokens scanned, wrong-app fixtures, hardened variant test, S2 cut, review disposition table",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-security-tasks.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "apply the four W1-I first-round reviews",
+      "done_when": "every finding dispositioned; gate record has first-round lines plus rev 2 pending RV-TA, RV-PAT",
+      "tier": "T2",
+      "fan_out": 0,
+      "started_at": "2026-10-03T18:02:16Z",
+      "duration_seconds": 502.0
     }
   ],
   "changes": [
@@ -66528,6 +66574,28 @@ window.AUDIT_DATA = {
     },
     {
       "artifacts": [
+        "docs/design/eval-security-tasks.md"
+      ],
+      "datetime": "2026-10-03T17:48:26Z",
+      "git": {
+        "after": "be1a074857356c12cf775427266ca0941f447e0d",
+        "before": "be1a0748",
+        "branch": "design/eval-security-tasks",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41E3B1P0ZXTMJWTB0WTQ7E0",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-i-security-tasks.md",
+      "rationale": "web.py rejected (third-party import under -S). Payload sets must close the SQL parenthesis (a probe designed against the wrong template was dead). Bound x20 of measured 80 ms.",
+      "session": "w1i-security-e1e4",
+      "skill": "design-slice",
+      "summary": "Two security property tasks on two different public stdlib-only bases (microdot, bottle). S1 specified end to end; S2 base and probes named. Probes proven live by nine seeded-defect variants; expected values hand-derived and confirmed by a stand-in driver. No build step so builds are offline by construction.",
+      "tags": [],
+      "title": "W1-I: S1 on microdot, S2 on bottle; ten in-process probes; expected 1.0000 / 0.4000"
+    },
+    {
+      "artifacts": [
         "docs/design/eval-property-grader.md"
       ],
       "datetime": "2026-10-03T17:19:39Z",
@@ -66597,6 +66665,26 @@ window.AUDIT_DATA = {
       "summary": "Rev 3 answers 13 seam requests and 11 routed lens findings: wsgi kind in E1 (C-1), probe-host additions and start bound, NA never dropped, DOTNET_HOST_ENV to _env.py, reparse-safe grading copy, sweep_temps/TEMP_RE (no HB-LED-009), recover_archive to X-K1, quoted arm ids, grid4 golden, no top-level pack + plan_pack + HB-PLN-004/005, G1 AST ratchet, run-side effective identity in the plan, catalog_hash in identity.py, G2 every file + direction test, R-93/R-94 recorded, W1-G owner rule provisional on an Owner request, (e) exception deferred.",
       "tags": [],
       "title": "W0 seam contracts rev 3: Wave 1 seam answers"
+    },
+    {
+      "id": "cl-01M41FC7AKVR1X94SC030Q4H6F",
+      "datetime": "2026-10-03T18:10:46Z",
+      "session": null,
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "W1-I rev 2: eight probes, wsgi per W0 rev 3 C-1, S2 cut to classes",
+      "prompt": null,
+      "summary": "Applied RV-TA/PAT/SEC/SIM first-round findings to docs/design/eval-security-tasks.md",
+      "rationale": null,
+      "artifacts": [],
+      "tags": [],
+      "git": {
+        "before": null,
+        "after": "8bde0c531441a8d460675ccb8af839281c27074f",
+        "branch": "design/eval-security-tasks",
+        "pushed": null,
+        "commits": []
+      }
     }
   ],
   "messages": [
