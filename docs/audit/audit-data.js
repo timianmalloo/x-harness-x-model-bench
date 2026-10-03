@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:22:27Z",
+  "generated": "2026-10-03T18:27:04Z",
   "audit": [
     {
       "actor": null,
@@ -66380,6 +66380,72 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1h.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:24:14Z",
+      "done_when": "two review files with gate lines",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-H and W1-C",
+      "id": "al-01M41G4WA0X67R5PGH62JKRCDG",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "session": "rv-sim-hc-e1e4",
+      "shortname": "review-sim-w1h",
+      "skill": "design-slice-review",
+      "summary": "Simplifier review of W1-H: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1c.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:24:14Z",
+      "done_when": "two review files with gate lines",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-H and W1-C",
+      "id": "al-01M41G4WXG026Z0MH6P12SBMBS",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "session": "rv-sim-hc-e1e4",
+      "shortname": "review-sim-w1c",
+      "skill": "design-slice-review",
+      "summary": "Simplifier review of W1-C: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M41GA22KNR8QFC0767K105V3",
+      "shortname": "design-slice-review-w1d-r2-ta",
+      "datetime": "2026-10-03T18:27:03Z",
+      "session": "rv-ta-d2-e1e4",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-D rev 2 re-review)",
+      "summary": "RV-TA rev 2 of W1-D: PASS WITH CONDITIONS; T-25 assume refuted (T9-2 stubs Engine)",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1d.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "re-review W1-D rev 2",
+      "done_when": "gate line appended",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
