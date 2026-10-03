@@ -31,7 +31,7 @@ property:
   fault_contract: {}
 graders: [correctness, property]
 oracle:
-  summary: "Hidden unittest cases for the notes endpoints (stdlib only), then eight in-process probes of the built app in a probe host (check.py)."
+  summary: "Hidden unittest cases for the notes endpoints (stdlib only), then eight in-process probes of the built app in a probe host (check.py). leak-2 scans the host's file descriptors 1 and 2 only, so it measures accidental logging, not a deliberate leak through a child process or a file (W0 rev 4 section 3). leak-3 scans {state_dir} and the files that are new or changed in the deliverable copy only (residual R-S3: a token written elsewhere, or re-encoded, is not seen)."
   runner: unittest
   command: ["{python}", "-m", "unittest", "-v", "test_notes_hidden"]
 expected:

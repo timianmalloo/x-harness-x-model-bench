@@ -149,14 +149,21 @@ class ProbeHost:
         return any(n in data for n in needles)
 
 
+_STARTS = []
+
+
 def probe_host(case):
-    return ProbeHost(_CTX, case, _CTX.bound_ms(case) / 1000)
+    host = ProbeHost(_CTX, case, _CTX.bound_ms(case) / 1000)
+    _STARTS.append(host.start_ms)
+    return host
 
 
 def run_case(case, fn):
+    """The case span starts at the host's ready line: the start is bounded apart from the case (W1-F 5.5)."""
     t0 = time.monotonic()
+    del _STARTS[:]
     outcome = fn()
-    elapsed_ms = round((time.monotonic() - t0) * 1000)
+    elapsed_ms = round((time.monotonic() - t0) * 1000) - sum(_STARTS)
     if elapsed_ms > _CTX.bound_ms(case):
         outcome = "timeout"
     return {"id": case["id"], "outcome": outcome, "duration_ms": elapsed_ms}

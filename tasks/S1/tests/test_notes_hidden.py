@@ -105,9 +105,10 @@ class NotesTests(unittest.TestCase):
         self.make("other", "other")
         status, data = call(self.app, "GET", "/notes", query="q=" + quote("alpha"))
         self.assertEqual(status, 200)
-        self.assertEqual(data["notes"], [a, b])
+        by_id = lambda notes: sorted(notes, key=lambda n: n["id"])  # noqa: E731 - order is test 4's job, not this one's
+        self.assertEqual(by_id(data["notes"]), [a, b])
         status, data = call(self.app, "GET", "/notes", query="q=" + quote("ALPHA"))
-        self.assertEqual(data["notes"], [a, b])
+        self.assertEqual(by_id(data["notes"]), [a, b])
         status, data = call(self.app, "GET", "/notes", query="q=" + quote("zzz-no-match"))
         self.assertEqual((status, data), (200, {"notes": []}))
 
@@ -145,18 +146,19 @@ class NotesTests(unittest.TestCase):
         guards = [(microdot.microdot.Microdot, "run"), (microdot.microdot.Microdot, "start_server"),
                   (asyncio.base_events.BaseEventLoop, "create_server"), (socketserver.TCPServer, "server_bind")]
         before = os.getcwd()
-        with tempfile.TemporaryDirectory() as empty:
-            os.chdir(empty)
-            try:
-                with contextlib.ExitStack() as stack:
-                    for owner, name in guards:
-                        stack.enter_context(unittest.mock.patch.object(owner, name, refuse))
-                    module = load_module()
-                    self.assertEqual(os.listdir(empty), [])
-                    module.create_app(dict(TOKENS), os.path.join(self.tmp, "other.db"))
+        empty = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, empty, True)  # a failing app leaves its database open
+        os.chdir(empty)
+        try:
+            with contextlib.ExitStack() as stack:
+                for owner, name in guards:
+                    stack.enter_context(unittest.mock.patch.object(owner, name, refuse))
+                module = load_module()
                 self.assertEqual(os.listdir(empty), [])
-            finally:
-                os.chdir(before)
+                module.create_app(dict(TOKENS), os.path.join(self.tmp, "other.db"))
+            self.assertEqual(os.listdir(empty), [])
+        finally:
+            os.chdir(before)
 
 
 if __name__ == "__main__":

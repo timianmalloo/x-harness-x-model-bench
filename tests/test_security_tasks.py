@@ -387,7 +387,9 @@ def test_s1_no_oracle_string_in_prompt_or_task_workspace(s1_base):
 
 def test_s1_hidden_tests_fail_on_the_stub_and_pass_on_both_solutions(s1_base):
     stub = run_hidden(s1_base, STUB_SOURCE)
-    assert stub.passed == frozenset(), stub.output  # the 501 stub fails all eight (the base's red case)
+    # The 501 stub fails seven. Test 8 asserts an absence (no file, no server at import), which a stub satisfies: W1-I 5.6
+    # says "all eight fail on the base", which is wrong for test 8; the wrong-app fixtures wa-import and wa-serve hold it.
+    assert stub.passed == {"test_importing_the_module_has_no_side_effects"}, stub.output
     assert run_hidden(s1_base, reference_source()).passed == frozenset(HIDDEN_TESTS), run_hidden(s1_base, reference_source()).output
     assert run_hidden(s1_base, naive_source()).passed == frozenset(HIDDEN_TESTS), run_hidden(s1_base, naive_source()).output
 
@@ -460,7 +462,10 @@ CRASH_EDIT = [("        return tokens.get(token)\n", "        raise RuntimeError
 def test_s1_the_variant_judge_rejects_a_variant_that_crashes(s1_base):
     """The crash-variant flips every probe by outcome. Only clauses (1) and (4) tell it from a guard being removed."""
     crash = with_edits(reference_source(), CRASH_EDIT)
-    spec = {"flips": PROBES, "clause": dict.fromkeys(PROBES, "body")}
+    # A crash flips the five probes that need a working app (their setup fails) and not the three leak probes, which a
+    # dead app cannot leak from. W1-I F18 says "every probe"; measured, it is five.
+    flipped = ("inj-1", "inj-3", "authz-1", "authz-2", "authz-3")
+    spec = {"flips": flipped, "clause": dict.fromkeys(flipped, "body")}
     failed = judge_variant(spec, run_hidden(s1_base, crash), run_check(s1_base, crash))
     assert {"hidden", "clause"} <= failed
     assert "flipped" not in failed  # by outcome alone, the crash looks like a perfect variant
