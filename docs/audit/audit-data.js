@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:16:40Z",
+  "generated": "2026-10-03T18:24:14Z",
   "audit": [
     {
       "actor": null,
@@ -66271,6 +66271,72 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1h.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:17:47Z",
+      "done_when": "two review files with gate lines committed",
+      "fan_out": 0,
+      "goal": "Test Architect gate on W1-H and W1-C",
+      "id": "al-01M41FS2E079PYRJWTQBFBDKPZ",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-H and W1-C)",
+      "session": "rv-ta-hc-e1e4",
+      "shortname": "review-ta-w1h-w1c",
+      "skill": "design-slice-review",
+      "summary": "RV-TA reviews: W1-H PASS WITH CONDITIONS (10), W1-C PASS WITH CONDITIONS (9)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M41G4WA0X67R5PGH62JKRCDG",
+      "shortname": "review-sim-w1h",
+      "datetime": "2026-10-03T18:24:14Z",
+      "session": "rv-sim-hc-e1e4",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "summary": "Simplifier review of W1-H: PASS WITH CONDITIONS",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1h.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Simplifier review of W1-H and W1-C",
+      "done_when": "two review files with gate lines",
+      "tier": "T2",
+      "fan_out": 0
+    },
+    {
+      "id": "al-01M41G4WXG026Z0MH6P12SBMBS",
+      "shortname": "review-sim-w1c",
+      "datetime": "2026-10-03T18:24:14Z",
+      "session": "rv-sim-hc-e1e4",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "summary": "Simplifier review of W1-C: PASS WITH CONDITIONS",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1c.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Simplifier review of W1-H and W1-C",
+      "done_when": "two review files with gate lines",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [

@@ -4002,6 +4002,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "be00c56fc382061170f39bd21fcc7eeafc8c064fbb4100188b64e39c0dead710"
     },
     {
+      "id": "review-eval-sim-w1c",
+      "path": "docs/design/reviews/eval-review-sim-w1c.md",
+      "title": "Simplifier lens review of W1-C, campaign record and bench campaign",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-campaign-record.md (design/eval-campaign-record, ae21488b, 61338062) against W0 rev 3 and R-87..R-96. OI-4 answered: ring_run.attached.tag is constant and can go in the SR-C2 request. status and verify are specified both as read-only and as full lock-probe-sweep sessions.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "9b10d9156950d3ad3726972d605bcb28670275889eb8ad1478f6f98f3c080448"
+    },
+    {
       "id": "review-eval-sim-w1d",
       "path": "docs/design/reviews/eval-review-sim-w1d.md",
       "title": "Simplifier lens review of W1-D, engine identity",
@@ -4063,6 +4084,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "884d2fa0b86d7e0e0bb2a50e1f1d05093778cf7750b02c3d12b49360f297f621"
+    },
+    {
+      "id": "review-eval-sim-w1h",
+      "path": "docs/design/reviews/eval-review-sim-w1h.md",
+      "title": "Simplifier lens review of W1-H, power, verdicts, gates and report section 3",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-power-verdicts.md (design/eval-power-verdicts, 2a9faa3c, b5509d66) against W0 rev 3 and R-87..R-96. The core is the smallest correct shape. About a third of the label, statement and sweep rows duplicate another row's mutant; one seam with W1-C (pilot arity, admission) is open.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "f51e5bd95ac3a1c9151effb97dd8438a9be7ccecf0caaa66582e358155680613"
     },
     {
       "id": "review-eval-sim-w1i",
@@ -4193,6 +4235,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "419eae4b6c538261f2df8886c398978b0fb458cc0ff45ed486e089ecb4f65f2d"
     },
     {
+      "id": "review-eval-ta-w1c",
+      "path": "docs/design/reviews/eval-review-ta-w1c.md",
+      "title": "W1-C campaign record and bench campaign design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-C against W0 rev 3, the section 2a testability floor and R-87..R-95. The transition table, the per-command guard / idempotency / refusal / test columns, the git-prefix verify rule and the real-wiring tests (P-3, P-4) are strong. PASS WITH CONDITIONS: skeleton landing order for X-B and X-D is unstated so about 15 tests are red by a missing module, 17 mutants are bare ids, the register-side race has no mutant, and the \"measured over 90 races\" claim has no positive control.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-c"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "550632ad0091f31cf2acb8bc82b6da5f3c812df7b28de7e4b1cdd652bc5ac6fd"
+    },
+    {
       "id": "review-eval-ta-w1d",
       "path": "docs/design/reviews/eval-review-ta-w1d.md",
       "title": "W1-D engine identity design review: Test Architect lens",
@@ -4272,6 +4341,33 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "684469f7893d3d5bdf763648f189faf86d5cb8840c9e22c8b73a8151c461ec38"
+    },
+    {
+      "id": "review-eval-ta-w1h",
+      "path": "docs/design/reviews/eval-review-ta-w1h.md",
+      "title": "W1-H power, verdicts, gates and report section 3 design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-H against W0 rev 3, the section 2a testability floor and R-87..R-96. Exact pins for 93/53/115, the label and statement tables, the conservation test and the R-93 DOM test are strong. PASS WITH CONDITIONS: three named mutants are not killed by the row that names them, one precedence pair has an equivalent mutant, rows that pass on the skeleton can be made red by a better skeleton, the coverage test has a one-sigma margin, and R-96 adds conditions the plan does not yet test.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-h"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "ce30415edd1a56756cec1db3385f29a724821b47f51e6614ce30caedf2f3f7e9"
     },
     {
       "id": "review-eval-ta-w1i",
@@ -5838,5 +5934,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "f31c11c610a187694080adf0bf4c674aa422e81a3ff7e3916628ddddaa344b4d"
+  "graphSha256": "1df11d3a462b35fc64621b983ee4179e469496bda490938b4559e15cf0976419"
 };
