@@ -25,7 +25,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from harness_bench import engine, host, ledger, lifecycle, plan
+from harness_bench import engine, host, ledger, lifecycle, oslock, plan
 from harness_bench.errors import BenchError
 from harness_bench.telemetry import claude_code
 
@@ -131,6 +131,155 @@ def _run(base, p, launcher, limit=RUN_LIMIT, **cfg):
 
 def _events(run_dir: Path) -> list[dict]:
     return [row for seg in sorted((run_dir / "events").glob("*.jsonl")) for row in ledger.read_segment(seg)]
+
+
+class IdentityClock:
+    """Only the check advances this clock; worker scheduling cannot change its duration."""
+    def __init__(self):
+        self.milliseconds = 0
+
+    def __call__(self):
+        return self.milliseconds / 1000
+
+
+def _identity_payload(row):
+    return {k: v for k, v in row.items() if k not in {"recorded_at", "mono_ns", "seq", "prev_hash", "hash"}}
+
+
+def test_a_drifted_file_stops_launching_with_a_named_diff(base):  # T-26, active cell finishes
+    from harness_bench.identity import CheckResult
+    clock = IdentityClock()
+    calls = []
+
+    def check():
+        calls.append(1)
+        clock.milliseconds += 7
+        return CheckResult([] if len(calls) == 1 else ["engine.py changed"], False)
+
+    summary, events, _ = _run(base, _plan(n_cells=2, parallelism=1), FakeLauncher({}),
+                               identity_check=check, clock=clock, loop_interval=0.01)
+    stops = [e for e in events if e["kind"] == "run.launch_stopped"]
+
+    assert summary.exit_code == 3
+    assert len(stops) == 1
+    assert _identity_payload(stops[0]) == {"kind": "run.launch_stopped", "code": "HB-IDN-001",
+                                         "reason": "engine identity drift", "diff": ["engine.py changed"], "identity_check_ms": 7}
+    assert sum(e["kind"] == "cell.launch_intent" for e in events) == 1
+    assert len(summary.outcomes) == 1 and next(iter(summary.outcomes.values()))["outcome"] == "completed"
+
+
+def test_drift_before_the_first_launch_records_no_intent(base):  # T-27
+    from harness_bench.identity import CheckResult
+    summary, events, _ = _run(base, _plan(n_cells=1), FakeLauncher({}),
+                               identity_check=lambda: CheckResult(["engine.py changed"], False), loop_interval=0.01)
+
+    assert summary.exit_code == 3
+    assert not any(e["kind"] == "cell.launch_intent" for e in events)
+    assert sum(e["kind"] == "run.launch_stopped" for e in events) == 1
+
+
+def test_a_raising_check_stops_launching(base):  # T-28
+    def check():
+        raise OSError("do not leak this path or detail")
+
+    summary, events, _ = _run(base, _plan(n_cells=1), FakeLauncher({}), identity_check=check, loop_interval=0.01)
+    stops = [e for e in events if e["kind"] == "run.launch_stopped"]
+
+    assert summary.exit_code == 3
+    assert len(stops) == 1
+    assert _identity_payload(stops[0]) == {"kind": "run.launch_stopped", "code": "HB-IDN-001",
+                                         "reason": "engine identity check failed: OSError", "diff": [], "identity_check_ms": 0}
+    assert not any(e["kind"] == "cell.launch_intent" for e in events)
+
+
+def test_non_campaign_run_has_no_check_and_no_field(base):  # T-29
+    summary, events, _ = _run(base, _plan(n_cells=1), FakeLauncher({}), identity_check=None, loop_interval=0.01)
+    intents = [e for e in events if e["kind"] == "cell.launch_intent"]
+
+    assert summary.exit_code == 0 and len(intents) == 1
+    assert "identity_check_ms" not in intents[0] and "identity_recheck" not in intents[0]
+
+
+def test_launch_intent_carries_its_own_identity_check_ms(base):  # T-30
+    from harness_bench.identity import CheckResult
+    clock = IdentityClock()
+    durations = iter((7, 11, 13))
+    calls = []
+
+    def check():
+        duration = next(durations)
+        calls.append(duration)
+        clock.milliseconds += duration
+        return CheckResult([], duration == 11)
+
+    summary, events, _ = _run(base, _plan(n_cells=3, parallelism=1), FakeLauncher({}),
+                               identity_check=check, clock=clock, loop_interval=0.01)
+    intents = [e for e in events if e["kind"] == "cell.launch_intent"]
+
+    assert summary.exit_code == 0
+    assert [row.get("identity_check_ms") for row in intents] == [7, 11, 13]
+    assert calls == [7, 11, 13]
+    assert "identity_recheck" not in intents[0] and intents[1]["identity_recheck"] == 1 and "identity_recheck" not in intents[2]
+
+
+def test_one_check_per_tick(base):  # T-31
+    from harness_bench.identity import CheckResult
+    calls = []
+    clock = IdentityClock()
+
+    def check():
+        calls.append(1)
+        clock.milliseconds += 17
+        return CheckResult([], False)
+
+    summary, events, _ = _run(base, _plan(n_cells=3, parallelism=3), FakeLauncher({}),
+                               identity_check=check, clock=clock, loop_interval=0.01)
+    intents = [e for e in events if e["kind"] == "cell.launch_intent"]
+
+    assert summary.exit_code == 0 and len(intents) == 3
+    assert calls == [1]
+    assert [row.get("identity_check_ms") for row in intents] == [17, 17, 17]
+
+
+def test_other_stop_rows_are_unchanged(base, monkeypatch):  # T-32, existing stop wins
+    calls = []
+    monkeypatch.setattr(engine, "_free_bytes", lambda path: 0)
+    summary, events, _ = _run(base, _plan(n_cells=1), FakeLauncher({}),
+                               identity_check=lambda: calls.append(1), loop_interval=0.01)
+    stops = [e for e in events if e["kind"] == "run.launch_stopped"]
+
+    assert summary.exit_code == 3
+    assert len(stops) == 1 and calls == []
+    assert _identity_payload(stops[0]) == {"kind": "run.launch_stopped", "code": "HB-RUN-004", "reason": "free space below the floor"}
+
+
+def test_campaign_check_runs_once_under_run_lock_before_any_launch(base):  # W0 rev 4 §6
+    p = _plan(n_cells=2)
+    run_dir = base / "runs" / p["run_id"]
+    observations = []
+
+    def check():
+        observations.append((oslock.is_held(run_dir / ".lock"),
+                             any(row["kind"] == "cell.launch_intent" for row in _events(run_dir))))
+
+    summary, events, _ = _run(base, p, FakeLauncher({}), campaign_check=check, loop_interval=0.01)
+
+    assert observations == [(True, False)]
+    assert summary.exit_code == 0 and sum(e["kind"] == "cell.launch_intent" for e in events) == 2
+
+
+def test_campaign_check_raise_releases_lock_and_launches_nothing(base):
+    p = _plan(n_cells=1)
+    run_dir = base / "runs" / p["run_id"]
+
+    def check():
+        raise BenchError("HB-CMP-001", "campaign locked")
+
+    with pytest.raises(BenchError) as caught:
+        _run(base, p, FakeLauncher({}), campaign_check=check, loop_interval=0.01)
+    assert caught.value.code == "HB-CMP-001"
+    assert not oslock.is_held(run_dir / ".lock")
+    assert not any(e["kind"] == "cell.launch_intent" for e in _events(run_dir))
 
 
 def _outcomes(events):

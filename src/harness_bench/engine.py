@@ -85,6 +85,11 @@ class Launcher(Protocol):
     def read(self, path: Path): ...
 
 
+class IdentityResult(Protocol):
+    diff: list[str]
+    rechecked: bool
+
+
 @dataclass
 class EngineConfig:
     run_dir: Path
@@ -94,6 +99,8 @@ class EngineConfig:
     grade: object | None  # (run_dir) -> pass summary dict; run once after every cell is terminal (grade/runner.py)
     loop_interval: float = 0.2
     clock: Callable[[], float] = time.monotonic
+    identity_check: Callable[[], IdentityResult] | None = None
+    campaign_check: Callable[[], None] | None = None
 
 
 @dataclass

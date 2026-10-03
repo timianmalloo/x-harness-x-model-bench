@@ -4,9 +4,20 @@ One class per source file, keyed relative to src/harness_bench/. The manifest
 and launch recheck are dispatch D2.
 """
 
-from collections.abc import Mapping
+import hashlib
+import time
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
-from typing import Literal
+from typing import Literal, NamedTuple
+
+from harness_bench.ledger import canonical
+
+SCHEMA = "bench-identity/1"
+
+
+class CheckResult(NamedTuple):
+    diff: list[str]
+    rechecked: bool
 
 # Pattern: Table-driven classification (ADR-0017 Amendment 1; W0 §9).
 # Explicit file keys keep a new file red until its class is reviewed.
@@ -141,3 +152,28 @@ def stale(root: Path, classes: Mapping[str, str], planned: frozenset[str]) -> li
     """Return ghost class entries and planned entries that have landed."""
     files = _source_files(root)
     return sorted((classes.keys() - files - planned) | (files & planned))
+
+
+def manifest(root: Path, tasks: Sequence[str], builds: Mapping[str, Mapping] | None = None) -> dict:
+    return {"schema": SCHEMA, "components": {}}
+
+
+def identity_hash(m: dict) -> str:
+    return hashlib.sha256(canonical(m)).hexdigest()
+
+
+def side(m: dict, which: Literal["run", "grade"]) -> dict:
+    return {"schema": m["schema"], "components": {}}
+
+
+def diff(a: dict, b: dict) -> list[str]:
+    return []
+
+
+def for_task(m: dict, task: str) -> dict:
+    return m
+
+
+def launch_check(root: Path, plan: dict, *, clock=time.monotonic, sleep=time.sleep,
+                 deadline_s: float = 2.0) -> Callable[[], CheckResult] | None:
+    return lambda: CheckResult([], False)
