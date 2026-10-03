@@ -1857,6 +1857,64 @@ window.DOCS_INDEX = {
       "sourceSha256": "7b5e5eaa9251750bfeb2247d6653f09b9ee2e4f3ada4d6d810e20e0245940205"
     },
     {
+      "id": "design-eval-arms",
+      "path": "docs/design/eval-arms.md",
+      "title": "W1-A design: arms in the plan (bench-matrix/2, bench-plan/2, blocked launch order, the pack-reader guard)",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 design slice W1-A (builds as X-A1 in E1 and X-A3 in E3)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Designs ADR-0014 for the code. One new concept, the arm, replaces the pack setting: bench-matrix/2 declares arms and bench-plan/2 freezes one pack revision per pack-bearing arm, one ordered comparison list, a stored launch seed and cells keyed by arm, with the cell_id recipe byte-identical (so grid-4 re-plans to the same 276 ids, shown by spike). Launch order is blocked by (task, combo, rep) with hash-keyed arm order; an accepted plan meets the 5 % bound, found by bounded redraw, and an unsatisfiable shape is refused (HB-PLN-001). A measurement plan refuses a task that is not ready (HB-PLN-004). The pack-reader guard is an AST scan with a per-file hit-count ratchet; three readers migrate in its commit, and four plan-level readers move to the plan_pack accessor (W0 rev 3). A second ratchet counts the bare on/off literals and report.js. The E1 / E3 split, every on/off literal site, the EV-17 test map and six spikes are in the doc. Revision 2 applies the RV-TA, RV-SIM and RV-PAT conditions; each finding has a row in the Review disposition.",
+      "tags": [
+        "benchmark",
+        "campaign",
+        "arms",
+        "plan",
+        "matrix",
+        "launch-order",
+        "evaluation-campaign",
+        "design-slice"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0014-arm-and-cell-grain",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        },
+        {
+          "to": "review-eval-ta-w1a",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sim-w1a",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-pat-w1a",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "3338bafa6fc3f2aefd6e08b5d3dbdb1b1f7766aa30bce8849ee9625316729689"
+    },
+    {
       "id": "design-eval-atomic-publish",
       "path": "docs/design/eval-atomic-publish.md",
       "title": "W1-B design: crash-atomic publish (atomic.py create_once and publish_dir, archive.py rework)",
@@ -6048,6 +6106,14 @@ window.DOCS_INDEX = {
       "artifactId": "audit-log"
     },
     {
+      "id": "surface-design-eval-arms",
+      "path": "docs/design/eval-arms.html",
+      "title": "Eval Arms",
+      "kind": "design-preview",
+      "description": "Inspect a rendered design or design-language preview.",
+      "artifactId": "design-eval-arms"
+    },
+    {
       "id": "surface-design-eval-catalog-0-7",
       "path": "docs/design/eval-catalog-0-7.html",
       "title": "Eval Catalog 0 7",
@@ -6157,5 +6223,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "0ca873d8faf06c756163f4b06a8aacca62f43162aa9294d72b2bb60e309eeae4"
+  "graphSha256": "f765fa47fcd4cc0ce19d58ec436cfd30b6ebd4fdddac0dfebf3608c4946f5240"
 };
