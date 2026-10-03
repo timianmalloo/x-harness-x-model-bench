@@ -3475,6 +3475,31 @@ window.DOCS_INDEX = {
       "sourceSha256": "6498292143c8251d7eacdd9887b620b175937d91c7c69224f58467d473a63c2f"
     },
     {
+      "id": "review-eval-sim-w1f",
+      "path": "docs/design/reviews/eval-review-sim-w1f.md",
+      "title": "Simplifier lens review of W1-F, the property grader",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-property-grader.md (design/eval-property-grader, 441da4ba and e41289a2) checked against W0 rev 2 on main 3c1c9827.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-property-grader",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "f9de79c2dc4e53bc285c818c570127431120c7f1898ce194345adabbf55b519d"
+    },
+    {
       "id": "review-eval-ta",
       "path": "docs/design/reviews/eval-review-ta.md",
       "title": "Evaluation Campaign design reviews: Test Architect lens",
@@ -5014,5 +5039,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "b5107dd09987affe58c56d8808ffec7f70ccfc9d4686769359666811f765a765"
+  "graphSha256": "c28a5718f31b10bfe0de48a3149f42b7eff6510c405230cd350d137a4c92f48c"
 };

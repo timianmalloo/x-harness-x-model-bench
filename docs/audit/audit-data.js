@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:27:05Z",
+  "generated": "2026-10-03T17:29:53Z",
   "audit": [
     {
       "actor": null,
@@ -65452,6 +65452,28 @@ window.AUDIT_DATA = {
         "branch": "design/eval-w0-rev2",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M41D1C23G3JDKK8GASYE3G14",
+      "shortname": "design-slice-review-sim-w1f",
+      "datetime": "2026-10-03T17:29:53Z",
+      "session": "rv-sim-e1e4",
+      "prompt": "Leader message: review W1-F against W0 rev 2",
+      "summary": "Simplifier review of W1-F: 9 findings, PASS WITH CONDITIONS",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1f.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "review W1-F",
+      "done_when": "gate line written",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
