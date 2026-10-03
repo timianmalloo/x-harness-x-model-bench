@@ -514,11 +514,14 @@ def test_cmd_plan_passes_configured_tools_and_cells_roots_to_probe(monkeypatch, 
 @pytest.mark.native
 @pytest.mark.workstation
 def test_pinned_copilot_instruction_list_repeats_for_both_real_working_copies(base):
+    # The primary checkout holds the installed build and its sibling holds the pack, from any worktree path (also a temp one).
+    common = gitsafe.git(["rev-parse", "--path-format=absolute", "--git-common-dir"], cwd=ROOT, timeout=60).stdout.strip()
+    primary = Path(common).parent
     tools_dir = ROOT / ".tools" / "harness"
-    if not tools_dir.exists():  # a coordination worktree shares the installed build in the primary checkout
-        tools_dir = ROOT.parent / "x-harness-x-model-bench" / ".tools" / "harness"
+    if not tools_dir.exists():
+        tools_dir = primary / ".tools" / "harness"
     exe = tools.resolve(tools_dir)["copilot"].exe
-    pack_source = ROOT.parent / "ai-forward"
+    pack_source = primary.parent / "ai-forward"
     commit = gitsafe.git(["rev-parse", "HEAD"], cwd=pack_source, timeout=60).stdout.strip()
     source = workspace.task_source(ROOT / "tasks" / "X1", plan.task_version_hash(ROOT / "tasks" / "X1"), base / "sources")
     results = {}

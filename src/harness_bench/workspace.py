@@ -180,7 +180,8 @@ def task_source(task_dir: Path, version: str, sources_root: Path, upstream_root:
                                                 "cache root")
             clone = upstream_tree(source["repo"], source["commit"], upstream_root)
             _extract_upstream_tree(clone, source["commit"], tmp)
-        shutil.copytree(task_dir / "workspace", tmp, dirs_exist_ok=True)
+        # Bytecode a test wrote into the task folder is not part of the version hash (plan.py) and never part of a base tree.
+        shutil.copytree(task_dir / "workspace", tmp, dirs_exist_ok=True, ignore=shutil.ignore_patterns("__pycache__"))
         gitsafe.git(["init", "-q", "-b", "main"], cwd=tmp, timeout=GIT_TIMEOUT)
         gitsafe.git(["add", "-A"], cwd=tmp, timeout=GIT_TIMEOUT)
         gitsafe.git(["commit", "-q", "-m", f"{task_dir.name} base ({version[:12]})"], cwd=tmp, timeout=GIT_TIMEOUT, identity=True)
