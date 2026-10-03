@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:00:59Z",
+  "generated": "2026-10-03T18:04:00Z",
   "audit": [
     {
       "actor": null,
@@ -66059,6 +66059,36 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T1",
       "tool": null
+    },
+    {
+      "id": "al-01M41EZVA5RM6TAWHCQPRZ9MCH",
+      "shortname": "ruling R-95 (DR-9, also_graded_by owner rule amends R-90 c1 and c6)",
+      "datetime": "2026-10-03T18:04:00Z",
+      "session": "owner-fable",
+      "prompt": "Owner seat: rule req-01M41E37FGK5CRZ7NCK3RA20JV from the Coordinator: may R-90 conditions 1 and 6 be amended so runner.applicable also resolves a metric's owner through an optional catalog key also_graded_by, letting the formal grader record scenario-7 pass_at_1 (ADR-0019 item 3)? Options A amend, B defer to 0.8, C new id formal_pass_at_1. Context W0 rev 3 s7, W1-G design, reviews ta/pat/sim, R-90. Work in an own worktree owner/ruling-r95.",
+      "summary": "R-95 DR-9: (A) granted, (B) and (C) refused. Verified: applicable keys by one grader string (runner.py:161-168), duplicate ids refused (config.py:150-152), outside keys fail the pass with HB-GRD-004 (runner.py:358, errors.py:67), board primary reads pass_at_1 by id (board.py:190,194), ADR-0019 item 3 is accepted and already marks its mechanism provisional on this request. R-90 c6 fixed who records the metric, not the entry's bytes; c1 fixed one function for three readers, and the owner clause lives in that function, so the purpose is kept. Conditions: non-owner guard proven through a real run_pass on G1- and G2-shaped tasks (X-F owns the clause and T-R3..T-R5); also_graded_by validated at once in validate_catalog (grader module, differs from grader, no repeats); reader sweep complete incl. the task-changed fallback where the owner is correctness and the NA folder is pinned by test; amendment text in R-90 c5's dispatch paragraph, W0 s7 drops provisional, ADR-0019:49 updated by X-G1; sequencing as the Coordinator set it.",
+      "kind": "manual",
+      "skill": null,
+      "tool": null,
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "outcome": "success",
+      "goal": "Rule DR-9 (req-01M41E37FGK5CRZ7NCK3RA20JV): whether R-90 conditions 1 and 6 are amended so applicable() resolves a metric owner through also_graded_by",
+      "done_when": "Ruling 95 in docs/notes/rulings.md via coord decide rule from the owner/ruling-r95 worktree, the request resolved, an audit entry appended, committed",
+      "tier": "T0",
+      "fan_out": 0,
+      "git": {
+        "sha": "1ceea651bceeada8e8406e1633afaa930d48a9f3",
+        "short": "1ceea651b",
+        "branch": "owner/ruling-r95",
+        "pushed": null
+      }
     }
   ],
   "changes": [
