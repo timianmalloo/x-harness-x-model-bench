@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:27:05Z",
+  "generated": "2026-10-03T17:30:44Z",
   "audit": [
     {
       "actor": null,
@@ -65450,6 +65450,36 @@ window.AUDIT_DATA = {
         "sha": "f6848adebd3139166e6eb68e3bc7b13c0d52e826",
         "short": "f6848adeb",
         "branch": "design/eval-w0-rev2",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M41D2XESE56QHPSQSVBB2K89",
+      "shortname": "ruling R-93 (DR-7, grid-level hidden-test disagreement count)",
+      "datetime": "2026-10-03T17:30:44Z",
+      "session": "owner-fable",
+      "prompt": "Owner seat: rule DR-7, should grid runs surface the hidden-test disagreement count (property evidence vs pass_at_1) in the EV-20 header, or is the pilot gate item enough; (a) pilot only per R-90 condition 3, (b) one header line in report/campaign_section.py from X-E's function; context W0 rev 2 section 7 condition 3 and RV-DS 10.",
+      "summary": "R-93 DR-7: (b) in substance. Grid runs surface the count (R-90 c3: never silently resolved; Reliability NFR pattern: pilot-gate classes counted per grid, reported not hidden), but in section 3 beside ADR-0020 s2's exclusions as a warning with cell ids, not in the EV-20 header, whose field list is spec-fixed to campaign identity and eligibility. It changes no verdict, exclusion or eligibility (a disagreement rule would be a pre-registration exclusion rule, P1's). Pilot gate keeps its GateItem. Conditions: rendered only when n>0 so EVU-4 holds; red-first DOM check on a seeded-disagreement fixture (X-H2, named by W1-H); copy says warning not verdict input; derived at report time, no store.",
+      "kind": "manual",
+      "skill": null,
+      "tool": null,
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "outcome": "success",
+      "goal": "Rule DR-7 (req-01M41CV2MNPQENPMEMP01QF3ZY): whether grid runs show R-90's hidden-test disagreement count in the EV-20 header or only the pilot gate carries it",
+      "done_when": "Ruling 93 in docs/notes/rulings.md via coord decide rule, the request resolved, committed on owner/ruling-r93",
+      "tier": "T0",
+      "fan_out": 0,
+      "git": {
+        "sha": "3c1c98278e08c948215a4bf7dacdd960be37aa30",
+        "short": "3c1c98278",
+        "branch": "owner/ruling-r93",
         "pushed": null
       }
     }
