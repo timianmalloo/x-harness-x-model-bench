@@ -1,0 +1,25 @@
+schema: bench-check-cases/1
+entry: check.py
+interface: in-process
+bounds_ms: {in-process: 2000, loopback: 5000}   # loopback unread in E1
+app:
+  module: "examples.notes.app"
+  attr: create_app
+  kind: wsgi                                     # built in E1 (W0 rev 3, ruling C-1)
+  factory: true                                  # the host calls attr(**args) to build the WSGI callable
+  paths: ["src"]                                 # relative to the deliverable root; microdot lives in src/
+  args:                                          # JSON; "{state_dir}" -> the per-case empty folder check-run/state/<case id>/
+    tokens: {"BENCHCANARY-S1-5a1f00c0ffee0001": "susan", "BENCHCANARY-S1-5a1f00c0ffee0002": "david"}
+    db_path: "{state_dir}/notes.db"
+deliverable: {}                                  # no build, no start argv: offline by construction
+toolchain: [python]
+env: []
+cases:                                           # no bound_ms: the interface bound applies (W1-I 5.8)
+  - {id: inj-1,   kind: probe}
+  - {id: inj-3,   kind: probe}
+  - {id: authz-1, kind: probe}
+  - {id: authz-2, kind: probe}
+  - {id: authz-3, kind: probe}
+  - {id: leak-1,  kind: probe}
+  - {id: leak-2,  kind: probe}
+  - {id: leak-3,  kind: probe}
