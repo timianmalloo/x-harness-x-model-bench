@@ -2077,6 +2077,72 @@ window.DOCS_INDEX = {
       "sourceSha256": "ee86fee9a13fb656a204a655b794e776831055a17eb00e86f897dce39248e262"
     },
     {
+      "id": "design-eval-property-tasks",
+      "path": "docs/design/eval-property-tasks.md",
+      "title": "Design W1-L: the remaining property tasks (resilience, rework, no-guessing, simplicity; two each)",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation E2/E4: Wave 1 design slice W1-L (rework by X-RW in E2; the rest in E4)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Eight tasks specified to the level an author can build without a question: for each of RS1/RS2 (resilience), RW1/RW2 (rework), NG1/NG2 (no-guessing) and SM1/SM2 (simplicity) a real MIT or Apache base at a pinned 40-hex commit (eight distinct bases, all imported under python -S), the latent requirement, the prompt shape, hidden tests with wrong-app fixtures, the check or strategy, reference and naive shapes, expected values with provenance (marked Inferred until the real host reproduces them), and the seeded-defect variants that flip each probe or metric. Three graders are new and specified: noguess (verified_before_use, hallucinated_symbol_errors), diffstats (size_vs_reference, new_abstractions, new_dependencies) and rework (rework_ratio, turn1_tests_pass). Grounding finding: the tool-call record carries no arguments, so verified_before_use cannot be computed today (seam SR-L1); and EV-5's \"build-log errors\" has no source (Owner request DR-L1). Gate pending RV-PAT, RV-SIM, RV-TA.",
+      "tags": [
+        "benchmark",
+        "property-tasks",
+        "resilience",
+        "rework",
+        "no-guessing",
+        "simplicity",
+        "evaluation-campaign",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-property-grader",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-security-tasks",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0015-multi-turn-attempt-and-turn-snapshots",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0018-hidden-check-harness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0019-catalog-0-7-property-metrics",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        },
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "034744aadb3a6be176eefaa87e3e1913ae1f9b57b130cb6202bee62655aab01d"
+    },
+    {
       "id": "design-eval-seam-contracts",
       "path": "docs/design/eval-seam-contracts.md",
       "title": "W0 seam contracts: the interfaces every Evaluation Campaign slice designs and builds against",
@@ -3704,6 +3770,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "5251732e1cd4289428039c0593ca2bcf0102f5de6d2e399b5f41af19a333478d"
     },
     {
+      "id": "review-eval-ds-w1c",
+      "path": "docs/design/reviews/eval-review-ds-w1c.md",
+      "title": "W1-C campaign record and bench campaign: Distributed Systems lens review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of docs/design/eval-campaign-record.md (design/eval-campaign-record, ae21488b, 61338062) by the Distributed Systems lens. DS-1, F2 and F8 hold. Two majors: the torn-tail repair breaks the ledger-prefix rule after a commit, and the run side of conclude has no lock-then-probe partner. PASS WITH CONDITIONS.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "1bce63791bbba85e0eb55e47af0b8f06bf90131a3dc75d712f6af432ccf8defe"
+    },
+    {
       "id": "review-eval-pat",
       "path": "docs/design/reviews/eval-review-pat.md",
       "title": "Patterns Expert review of the Evaluation Campaign design slices (Adversary Mode)",
@@ -4157,6 +4244,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "be00c56fc382061170f39bd21fcc7eeafc8c064fbb4100188b64e39c0dead710"
     },
     {
+      "id": "review-eval-sim-w1c",
+      "path": "docs/design/reviews/eval-review-sim-w1c.md",
+      "title": "Simplifier lens review of W1-C, campaign record and bench campaign",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-campaign-record.md (design/eval-campaign-record, ae21488b, 61338062) against W0 rev 3 and R-87..R-96. OI-4 answered: ring_run.attached.tag is constant and can go in the SR-C2 request. status and verify are specified both as read-only and as full lock-probe-sweep sessions.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "9b10d9156950d3ad3726972d605bcb28670275889eb8ad1478f6f98f3c080448"
+    },
+    {
       "id": "review-eval-sim-w1d",
       "path": "docs/design/reviews/eval-review-sim-w1d.md",
       "title": "Simplifier lens review of W1-D, engine identity",
@@ -4218,6 +4326,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "884d2fa0b86d7e0e0bb2a50e1f1d05093778cf7750b02c3d12b49360f297f621"
+    },
+    {
+      "id": "review-eval-sim-w1h",
+      "path": "docs/design/reviews/eval-review-sim-w1h.md",
+      "title": "Simplifier lens review of W1-H, power, verdicts, gates and report section 3",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-power-verdicts.md (design/eval-power-verdicts, 2a9faa3c, b5509d66) against W0 rev 3 and R-87..R-96. The core is the smallest correct shape. About a third of the label, statement and sweep rows duplicate another row's mutant; one seam with W1-C (pilot arity, admission) is open.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "f51e5bd95ac3a1c9151effb97dd8438a9be7ccecf0caaa66582e358155680613"
     },
     {
       "id": "review-eval-sim-w1i",
@@ -6047,5 +6176,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "c2302cffe84d68c1cec59bbc69f34d04b38a36b61682311e7abc88ed4f182035"
+  "graphSha256": "a73da8fe5806d1ddaef0a6bff05897a7f4ad3971e7c406121927d918a2372ae1"
 };

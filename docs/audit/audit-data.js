@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:25:41Z",
+  "generated": "2026-10-03T18:43:16Z",
   "audit": [
     {
       "actor": null,
@@ -66382,24 +66382,112 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41G7HGSGQXE3PHHSV19T3NC",
-      "shortname": "design-slice-review-eval-sec-w1c",
-      "datetime": "2026-10-03T18:25:41Z",
-      "session": "rv-sec-w1c-e1e4",
-      "prompt": "docs/coordination/eval-wave1/rv-sec.md",
-      "summary": "Security gate on W1-C: PASS WITH CONDITIONS, 10 findings",
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1h.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:24:14Z",
+      "done_when": "two review files with gate lines",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-H and W1-C",
+      "id": "al-01M41G4WA0X67R5PGH62JKRCDG",
       "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "session": "rv-sim-hc-e1e4",
+      "shortname": "review-sim-w1h",
       "skill": "design-slice-review",
-      "tool": null,
+      "summary": "Simplifier review of W1-H: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1c.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:24:14Z",
+      "done_when": "two review files with gate lines",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-H and W1-C",
+      "id": "al-01M41G4WXG026Z0MH6P12SBMBS",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "session": "rv-sim-hc-e1e4",
+      "shortname": "review-sim-w1c",
+      "skill": "design-slice-review",
+      "summary": "Simplifier review of W1-C: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ds-w1c.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:25:13Z",
+      "done_when": "gate line written and committed",
+      "fan_out": 0,
+      "goal": "DS lens review of W1-C",
+      "id": "al-01M41G6PKG1R95CYZCP8V85P5G",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ds.md",
+      "session": "rv-ds-w1c-e1e4",
+      "shortname": "design-slice-review-eval-ds-w1c",
+      "skill": "design-slice-review",
+      "summary": "DS review of W1-C: PASS WITH CONDITIONS, 7 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [
         "docs/design/reviews/eval-review-sec-w1c.md"
       ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:25:41Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "Security review of W1-C",
+      "id": "al-01M41G7HGSGQXE3PHHSV19T3NC",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md",
+      "session": "rv-sec-w1c-e1e4",
+      "shortname": "design-slice-review-eval-sec-w1c",
+      "skill": "design-slice-review",
+      "summary": "Security gate on W1-C: PASS WITH CONDITIONS, 10 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M41H7EC69FXDDYM5SW89CPDW",
+      "shortname": "design-slice-eval-property-tasks",
+      "datetime": "2026-10-03T18:43:06Z",
+      "session": "w1l-tasks-e1e4",
+      "prompt": "docs/coordination/eval-wave1/w1-l-property-tasks.md",
+      "summary": "Specified eight property tasks (RS1/2, RW1/2, NG1/2, SM1/2): bases, pins, latent requirements, hidden tests, variants, new graders; seam requests SR-L1..L3, DR-L1",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-tasks.md"
+      ],
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Security review of W1-C",
-      "done_when": "gate line written",
+      "goal": "Run design-slice for W1-L producing docs/design/eval-property-tasks.md",
+      "done_when": "Gate PASS; per task base, latent requirement, hidden check, reference and naive, expected values; new graders named",
       "tier": "T2",
       "fan_out": 0
     }
@@ -67070,6 +67158,26 @@ window.AUDIT_DATA = {
       "summary": "34 review findings dispositioned; recover_archive specified not built in E1; HB-LED-009 refused; site scan re-derived (12 sites, 11 keys) with red fixtures; rename_with_retry public; seam request S-B4",
       "tags": [],
       "title": "W1-B rev 2: recovery moves to X-K1, sweep lock enforced, create_once identity-checked, one WIN-A retry helper"
+    },
+    {
+      "id": "cl-01M41H7QVEXEJXVQ8RHTS2A4N3",
+      "datetime": "2026-10-03T18:43:16Z",
+      "session": null,
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "W1-L: eight property tasks on eight distinct MIT/Apache bases",
+      "prompt": null,
+      "summary": "Specified RS1/2, RW1/2, NG1/2, SM1/2; hallucination count is final-tree static and verified_before_use is NA without tool targets, both provisional on DR-L1 and SR-L1",
+      "rationale": null,
+      "artifacts": [],
+      "tags": [],
+      "git": {
+        "before": null,
+        "after": "d47965b1f9e9638cff9acedc8169d6fd56694965",
+        "branch": "design/eval-property-tasks",
+        "pushed": null,
+        "commits": []
+      }
     }
   ],
   "messages": [
