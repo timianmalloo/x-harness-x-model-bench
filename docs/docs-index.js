@@ -671,7 +671,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b24044b331bb70a584dcecb9bfede068050b01f41b39164f61e7e15e055e36f7"
+      "sourceSha256": "60f80f38dfbe16a241f46a734b3aa3f6d6ebbae3d8fe5473d03ac4558afaadb4"
     },
     {
       "id": "adr-0015-multi-turn-attempt-and-turn-snapshots",
@@ -835,7 +835,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b85c178624f60e2805ec13c6e781b43368d7e18008b510c7b07039d7abcc7dda"
+      "sourceSha256": "95e15d30221b96ef5928528fe2c1dd39ac9af7c0b3b93cd0c28bb174c7df876a"
     },
     {
       "id": "adr-0019-catalog-0-7-property-metrics",
@@ -870,7 +870,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "38c63445d9c42604256bae18f3df915c277b7a4312e680bd1bc379dbb8732c60"
+      "sourceSha256": "8869f917fa5e1fcb241d47f9cd972565982c1cc17436a690745b7968ce8153a0"
     },
     {
       "id": "adr-0020-power-and-verdicts-stdlib",
@@ -1969,7 +1969,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation: W0 (serial spine item 2), before Wave 1",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "Revision 2. The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
+      "summary": "Revision 3 (the Wave 1 seam answers; rev-3 change table at the end). The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
       "tags": [
         "benchmark",
         "campaign",
@@ -2061,7 +2061,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "dd54e1963b397b840c92373598cf1c8f166384d556f42353341fa76117933a5c"
+      "sourceSha256": "ccb232390d0419f71662e9a3811a4e03d81f3a7b773fbb61cc1db62aa401fe2a"
     },
     {
       "id": "design-formal-grader",
@@ -2993,7 +2993,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "187d4f09758f6a375601b9ddb7a0fc2c12f0043c64dd5117e0e97a7f70879f43"
+      "sourceSha256": "f5677606d1b0ae3044b8005d12810e41a532bdff1cd7a9a3a199a5796693d2e0"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -4861,7 +4861,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "a65992eab45e0bcfbeca7493342745a82f72c6bf1233e821dac5f0dfdcaa33ac"
+      "sourceSha256": "e9d90123909840664872204d201be56ce41df2e05a31975af309a88b7d084c3d"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -5716,5 +5716,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "ecff74e34e306d76fc4cebd87d47dcc0bd769354f359e5a2491f22292759dc6a"
+  "graphSha256": "57973dd9964a3403db23a85e9375ab7842a817f9b24cc82ae3a04eee41f4a223"
 };

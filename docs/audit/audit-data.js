@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:58:36Z",
+  "generated": "2026-10-03T18:00:59Z",
   "audit": [
     {
       "actor": null,
@@ -66037,6 +66037,28 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:59:34Z",
+      "done_when": "request list shows none open to coord-opus-e1e4; rev 3 on design/eval-w0-rev3 with derive/validate exit 0",
+      "fan_out": 0,
+      "goal": "Every open seam request to coord-opus-e1e4 ruled and W0 rev 3 committed with gate record and ADR amendment notes",
+      "id": "al-01M41EQQN7G37BQBB9ZK4SS8CB",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Coordinator #3: answer the seam queue (13 requests) and the Leader-routed Wave 1 lens seams; apply them to W0 as rev 3 with a change table, the five rev-2 gate lines, and ADR amendment notes for ADR-0014/0018/0019; plus the Wave 1 testability floor and the inline AGENT_SESSION rule.",
+      "session": "coord-opus-e1e4",
+      "shortname": "w0-seam-contracts-rev3",
+      "skill": "execute-with-coordination",
+      "summary": "13 seam requests resolved (9 granted, 4 granted in part, 0 refused outright; refused parts: HB-LED-009, verdict-label change, X-G1 file grant). One Owner request (W1-G owner rule vs R-90 c1/c6). Ruling C-1: wsgi kind built in E1 for S1. W0 rev 3 sections 1-14, change table, re-read list; ADR-0014/0018/0019 Amendment 1 notes; README testability floor and inline AGENT_SESSION; classes TEST-B, COORD-D.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     }
   ],
   "changes": [
@@ -66403,151 +66425,178 @@ window.AUDIT_DATA = {
       "title": "Row-17 gateway: Fable judge (text), Codex judge not qualified (DR-GW-1), cells-root call folders, stdin, request+invocation key, verified-provenance write-once store, verdict_uses outcome+code"
     },
     {
-      "id": "cl-01M3JM1RR2C0VJZYHT4ZJQPFFP",
-      "datetime": "2026-09-27T23:43:50Z",
-      "session": "w4-stats-design",
-      "kind": "design",
-      "skill": "design-slice",
-      "title": "Row 19 statistics design: two-stage percentile bootstrap, component-tier ranking with pass@1 gate, derived-only",
-      "prompt": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only.\nMeasured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).\nDone when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible); the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0); the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases; the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label; the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog); where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable; the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee; the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed); the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named; the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document; any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved; docs-graph derive and validate pass; Commit the document.\nNot in scope: implementing anything; the full report's UI (row 20, a separate ui-design pass); the full grid (wave 5); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\n\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-stats-design (use absolute paths or cd into it in each shell command).",
-      "summary": "docs/design/phase4-statistics.md: normalisation by catalog anchors, gated composite, bootstrap over tasks then repetitions, ranking tiers from interval overlap merged by pass@1 dominance, pack effect and comparison via one paired-delta function; nothing stored",
-      "rationale": "Measured: 0.024 s per interval (stdlib Decimal suffices); two-stage covers 0.97 at 6x3 vs cluster-only 0.88, so the conservative method serves US-36's refuse-to-separate aim; count-based ranks break US-36 (i) on non-transitive overlap",
       "artifacts": [
         "docs/design/phase4-statistics.md"
       ],
-      "tags": [],
+      "datetime": "2026-09-27T23:43:50Z",
       "git": {
-        "before": "3d06948",
         "after": "30af0a5087d4c51083fec2cd1ab3f120bb9a8fa0",
+        "before": "3d06948",
         "branch": "w4-stats-design",
-        "pushed": null,
         "commits": [
           "30af0a5 design(stats): phase-4 statistics first draft - composites, two-stage percentile bootstrap, ranking with ties, pack effect, run comparison; DR-S-1..6 open"
-        ]
-      }
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M3JM1RR2C0VJZYHT4ZJQPFFP",
+      "kind": "design",
+      "prompt": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only.\nMeasured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).\nDone when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible); the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0); the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases; the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label; the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog); where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable; the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee; the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed); the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named; the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document; any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved; docs-graph derive and validate pass; Commit the document.\nNot in scope: implementing anything; the full report's UI (row 20, a separate ui-design pass); the full grid (wave 5); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\n\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-stats-design (use absolute paths or cd into it in each shell command).",
+      "rationale": "Measured: 0.024 s per interval (stdlib Decimal suffices); two-stage covers 0.97 at 6x3 vs cluster-only 0.88, so the conservative method serves US-36's refuse-to-separate aim; count-based ranks break US-36 (i) on non-transitive overlap",
+      "session": "w4-stats-design",
+      "skill": "design-slice",
+      "summary": "docs/design/phase4-statistics.md: normalisation by catalog anchors, gated composite, bootstrap over tasks then repetitions, ranking tiers from interval overlap merged by pass@1 dominance, pack effect and comparison via one paired-delta function; nothing stored",
+      "tags": [],
+      "title": "Row 19 statistics design: two-stage percentile bootstrap, component-tier ranking with pass@1 gate, derived-only"
     },
     {
-      "id": "cl-01M3MENFS0Z3SF72CSHC7CRQNB",
-      "datetime": "2026-09-28T16:48:13Z",
-      "session": "w4-report-design",
-      "kind": "design",
-      "skill": "design-slice",
-      "title": "Row 20 report: a pure projection pre-rendered as HTML and SVG under a hashed-script CSP; summaries gated by a mechanical claim check; only R8 waits on EGRESS s2",
-      "prompt": "Compiled brief al-01M3MDD0MN10YWDK3MMHYVYAAQ (row 20)",
-      "summary": "Design + mockup committed; F-1 surfaced; DR-R-1..9 with defaults",
-      "rationale": "Offline, zero-request, readable without JS (US-40, spec :988); summaries cannot publish an unverifiable or zero-crossing claim (US-42, US-37 c2); live model spend isolated to one slice after EGRESS s2",
       "artifacts": [
         "docs/design/phase4-report.md"
       ],
-      "tags": [],
+      "datetime": "2026-09-28T16:48:13Z",
       "git": {
-        "before": "2a8057ed5622030692d03ac96c5035b1448d6eef",
         "after": "623db6de7bd5ef972713490ff437688f16bdf251",
+        "before": "2a8057ed5622030692d03ac96c5035b1448d6eef",
         "branch": "w4-report-design",
-        "pushed": null,
         "commits": [
           "623db6d docs(design): row-20 report design, round-1 gate fold-in (Test Architect 7 items, UX 1 blocker + 3 majors)",
           "e618adb docs(design): phase-4 report and summaries design, first draft, with mockup (row 20)"
-        ]
-      }
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M3MENFS0Z3SF72CSHC7CRQNB",
+      "kind": "design",
+      "prompt": "Compiled brief al-01M3MDD0MN10YWDK3MMHYVYAAQ (row 20)",
+      "rationale": "Offline, zero-request, readable without JS (US-40, spec :988); summaries cannot publish an unverifiable or zero-crossing claim (US-42, US-37 c2); live model spend isolated to one slice after EGRESS s2",
+      "session": "w4-report-design",
+      "skill": "design-slice",
+      "summary": "Design + mockup committed; F-1 surfaced; DR-R-1..9 with defaults",
+      "tags": [],
+      "title": "Row 20 report: a pure projection pre-rendered as HTML and SVG under a hashed-script CSP; summaries gated by a mechanical claim check; only R8 waits on EGRESS s2"
     },
     {
-      "id": "cl-01M3QQM2N1YTHZY4Q54W01QV9Z",
-      "datetime": "2026-09-29T23:22:27Z",
-      "session": "worker-sonnet-formal",
-      "kind": "design",
-      "skill": "design-slice",
-      "title": "Design the formal grader (grade/formal.py) for G1/G2: four US-32 scores, statement integrity, bug confirmation",
-      "prompt": "Design the formal grader (spec S-08g) with the /design-slice skill, so a later /implement slice can build src/harness_bench/grade/formal.py and tasks G1 (TLA+) and G2 (Lean 4) can be authored; the design is the deliverable, not code. Done when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining the four scores of US-32, statement integrity, trace conformance, bug-seeded variants, bug confirmation, the toolchain invocation (warm-before-clock, closing S-12's tla2tools gap), the report surfaces, the ledger facts, error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (persona reviews incl. Test Architect), each verdict recorded in the doc; any decision the design cannot settle becomes a decision request with a recommended default; the doc is committed; docs-graph.py validate passes. Not in scope: implementing formal.py; authoring G1 or G2; changing any code; any file under runs/; any push.",
-      "summary": "docs/design/formal-grader.md, revision 2 (post-gate): grade/formal.py's six metric definitions (formal_checks_clean, statement_integrity, model_conformance, model_non_vacuity, bugs_confirmed, bug_claim_precision) for G1 (TLA+) and G2 (Lean 4), with an exact per-task NA-cascade table, the toolchain-invocation contract via correctness.run_step (closing the D3 procs-allowlist question), a warm-before-clock fix for S-12's tla2tools gap, a STRIDE-lite analysis, a G2 statement-integrity hash that reuses Lean's own #check output, two whole-cell golden-master tests, and a red-first test plan with named mutants. Three real persona reviews ran in parallel (Test Architect, Security & Identity Architect, The Simplifier), each BLOCK on revision 1; all Blockers (2 TA, 3 Security) and the Simplifier's Major are fixed in revision 2, recorded in the Gate record. Two decision requests remain open (DR-FM1: the TLA+ trace-replay mechanism is unspiked, needs a pre-implementation spike; DR-FM2: no judge rubric yet for a not-seeded bug claim). Security/privacy rollups (docs/security/threat-model.md, privacy-review.md) updated with this design's boundaries and findings. docs-graph.py validate: 0 defects.",
-      "rationale": "S-08g is on T-G1/T-G2's critical path and US-32/US-33 require four separate formal scores plus bug confirmation, not a single pass/fail. Three adversarial persona reviews (Test Architect, Security & Identity Architect, The Simplifier) found real gaps in revision 1 -- most materially an untrusted-content-to-tool path (agent-authored TLA+/Lean executed by the grading host) with three unmitigated boundaries -- all closed in revision 2 before the gate cleared.",
       "artifacts": [
         "docs/design/formal-grader.md"
       ],
-      "tags": [],
+      "audit_ref": "al-01M3QQK2HDKRCQJJ411ANYCTJ8",
+      "datetime": "2026-09-29T23:22:27Z",
       "git": {
-        "before": "f31ce5bf8316c4ce44442386a184b10273b30a79",
         "after": "f31ce5bf8316c4ce44442386a184b10273b30a79",
+        "before": "f31ce5bf8316c4ce44442386a184b10273b30a79",
         "branch": "w5-formal",
-        "pushed": null,
-        "commits": []
+        "commits": [],
+        "pushed": null
       },
-      "audit_ref": "al-01M3QQK2HDKRCQJJ411ANYCTJ8"
+      "id": "cl-01M3QQM2N1YTHZY4Q54W01QV9Z",
+      "kind": "design",
+      "prompt": "Design the formal grader (spec S-08g) with the /design-slice skill, so a later /implement slice can build src/harness_bench/grade/formal.py and tasks G1 (TLA+) and G2 (Lean 4) can be authored; the design is the deliverable, not code. Done when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining the four scores of US-32, statement integrity, trace conformance, bug-seeded variants, bug confirmation, the toolchain invocation (warm-before-clock, closing S-12's tla2tools gap), the report surfaces, the ledger facts, error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (persona reviews incl. Test Architect), each verdict recorded in the doc; any decision the design cannot settle becomes a decision request with a recommended default; the doc is committed; docs-graph.py validate passes. Not in scope: implementing formal.py; authoring G1 or G2; changing any code; any file under runs/; any push.",
+      "rationale": "S-08g is on T-G1/T-G2's critical path and US-32/US-33 require four separate formal scores plus bug confirmation, not a single pass/fail. Three adversarial persona reviews (Test Architect, Security & Identity Architect, The Simplifier) found real gaps in revision 1 -- most materially an untrusted-content-to-tool path (agent-authored TLA+/Lean executed by the grading host) with three unmitigated boundaries -- all closed in revision 2 before the gate cleared.",
+      "session": "worker-sonnet-formal",
+      "skill": "design-slice",
+      "summary": "docs/design/formal-grader.md, revision 2 (post-gate): grade/formal.py's six metric definitions (formal_checks_clean, statement_integrity, model_conformance, model_non_vacuity, bugs_confirmed, bug_claim_precision) for G1 (TLA+) and G2 (Lean 4), with an exact per-task NA-cascade table, the toolchain-invocation contract via correctness.run_step (closing the D3 procs-allowlist question), a warm-before-clock fix for S-12's tla2tools gap, a STRIDE-lite analysis, a G2 statement-integrity hash that reuses Lean's own #check output, two whole-cell golden-master tests, and a red-first test plan with named mutants. Three real persona reviews ran in parallel (Test Architect, Security & Identity Architect, The Simplifier), each BLOCK on revision 1; all Blockers (2 TA, 3 Security) and the Simplifier's Major are fixed in revision 2, recorded in the Gate record. Two decision requests remain open (DR-FM1: the TLA+ trace-replay mechanism is unspiked, needs a pre-implementation spike; DR-FM2: no judge rubric yet for a not-seeded bug claim). Security/privacy rollups (docs/security/threat-model.md, privacy-review.md) updated with this design's boundaries and findings. docs-graph.py validate: 0 defects.",
+      "tags": [],
+      "title": "Design the formal grader (grade/formal.py) for G1/G2: four US-32 scores, statement integrity, bug confirmation"
     },
     {
-      "id": "cl-01M4174STB9ETP4BC69DZ93SQW",
-      "datetime": "2026-10-03T15:46:54Z",
-      "session": null,
-      "kind": "architecture",
-      "skill": "define-architecture",
-      "title": "Evaluation-campaign architecture: arms in the plan, two-turn attempts, campaign record, hidden-check harness, plan-level resume",
-      "prompt": "start /define-architecture",
-      "summary": "ADR-0014..0021 and amendments to ADR-0006/0007/0010/0011/0013",
-      "rationale": "The gated enterprise-evaluation spec needs three arms in one run, a two-turn rework task, a pre-registered campaign with an engine freeze, and hidden mechanical checks; the council required crash-atomic writes, per-turn resume, plan-level resume, a token-free allowlisted check environment and a forgery-proof result path",
       "artifacts": [
         "docs/architecture-evaluation-campaign.md",
         "docs/adr/0014-arm-replaces-pack-setting.md",
         "docs/adr/0021-plan-level-resume-and-liveness.md"
       ],
-      "tags": [],
+      "datetime": "2026-10-03T15:46:54Z",
       "git": {
-        "before": "bc768ed2",
         "after": "2ad01b291b7c8f859d88edaf8c4f449d3b832838",
+        "before": "bc768ed2",
         "branch": "main",
-        "pushed": false,
         "commits": [
           "2ad01b29 docs(adr-0015): link the merged spike E4 note (depends-on) and regenerate the docs index",
           "0de4b5c0 join spike E4 (DR-E4, R-E6): a second ACP session/prompt on the same session after end_turn works on claude-code (claude-opus-5-5), codex (gpt-6-sol) and copilot (gpt-6-sol) on Windows - same session id, no errors, per-turn usage in each prompt response, context carry strongly indicated; macOS unverified; the engine changes it needs are named in ADR-0015. Claude Sonnet 5 worker (Leader join on Claude Opus 5.5)",
           "99be853f chore(spike): dispose the e4 PoC script (spike scaffolding is not kept; the note records the method and evidence)",
           "1cf8fed3 docs(architecture): evaluation-campaign amendment (gated, 3 council rounds) - companion docs/architecture-evaluation-campaign.md refining arch-harness-bench, ADR-0014 arm replaces pack setting (cell = task version x combo x arm x rep; cell_id keeps its pack key carrying the arm id so grids 1-4 load and re-plan unchanged), ADR-0015 two turns on one ACP session with crash-atomic turn snapshots and a per-turn crash predicate (TLA+), ADR-0016 campaign record (hash-chained ledger, create_once records, rings as bench-matrix/2), ADR-0017 engine identity manifest and freeze (post-fix cells re-run, operator DI6), ADR-0018 hidden-check harness (HOST_ENV allowlist, explicit handle list, write-once-last-and-alone result with a tamper cross-check; Windows now, macOS follow-up), ADR-0019 catalog 0.7 (scenario-7 pass@1; append-only golden correction), ADR-0020 stdlib power and verdicts (reference cases reproduced), ADR-0021 plan-level resume and liveness; amendment text in ADR-0006/0007/0010/0011/0013; phases E1 walking skeleton, E2/E3/E4 in parallel, E5 first campaign. Council: Security PASS, Distributed Systems PASS, SRE/Data&Persistence/Enterprise/Simplifier/Patterns PASS WITH CONDITIONS (applied); authors did not clear their own vetoes. Claude Opus 5.5 author, Claude Sonnet 5 council (Leader on Claude Opus 5.5)",
           "ebf21cee spike(e4): a second session/prompt in the same ACP session, after end_turn (R-E6, DR-E4)"
-        ]
-      }
+        ],
+        "pushed": false
+      },
+      "id": "cl-01M4174STB9ETP4BC69DZ93SQW",
+      "kind": "architecture",
+      "prompt": "start /define-architecture",
+      "rationale": "The gated enterprise-evaluation spec needs three arms in one run, a two-turn rework task, a pre-registered campaign with an engine freeze, and hidden mechanical checks; the council required crash-atomic writes, per-turn resume, plan-level resume, a token-free allowlisted check environment and a forgery-proof result path",
+      "session": null,
+      "skill": "define-architecture",
+      "summary": "ADR-0014..0021 and amendments to ADR-0006/0007/0010/0011/0013",
+      "tags": [],
+      "title": "Evaluation-campaign architecture: arms in the plan, two-turn attempts, campaign record, hidden-check harness, plan-level resume"
     },
     {
-      "id": "cl-01M41CEMSZVTB7AHE5VSWQSRXP",
-      "datetime": "2026-10-03T17:19:39Z",
-      "session": "w1f-property-e1e4",
-      "kind": "design",
-      "skill": "design-slice",
-      "title": "W1-F: property grader keeps agent code out of the check process (probe-host child), accepts one acknowledged document from a lone check, and classifies by one fixed precedence",
-      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md",
-      "summary": "Design docs/design/eval-property-grader.md: runner.applicable narrows by property tag (R-90); hidden tests via correctness.grade() then a fresh hashed check copy; DETACHED base-interpreter check with one-byte ack; in-process probes run in a bench_check probe-host child (RV-SEC F1 forgery reproduced 3/3 by spike SP-F2); precedence HB-CHK-004>003>002(hash)>002(10a)>001>measured 0>scores; Kleene primary; _env.py one allowlist; egress task_canary. Gate pending RV-PAT, RV-SIM, RV-TA, RV-SEC.",
-      "rationale": "ADR-0018 s1 and s10a hold only if no agent code runs in the deciding process; spikes SP-F1/F2 verified the sweep, the handshake and the forgery",
       "artifacts": [
         "docs/design/eval-property-grader.md"
       ],
-      "tags": [],
+      "datetime": "2026-10-03T17:19:39Z",
       "git": {
-        "before": "5092455c",
         "after": "5092455c9bb3f00821671edfedb546218286873d",
+        "before": "5092455c",
         "branch": "design/eval-property-grader",
-        "pushed": null,
-        "commits": []
-      }
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41CEMSZVTB7AHE5VSWQSRXP",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md",
+      "rationale": "ADR-0018 s1 and s10a hold only if no agent code runs in the deciding process; spikes SP-F1/F2 verified the sweep, the handshake and the forgery",
+      "session": "w1f-property-e1e4",
+      "skill": "design-slice",
+      "summary": "Design docs/design/eval-property-grader.md: runner.applicable narrows by property tag (R-90); hidden tests via correctness.grade() then a fresh hashed check copy; DETACHED base-interpreter check with one-byte ack; in-process probes run in a bench_check probe-host child (RV-SEC F1 forgery reproduced 3/3 by spike SP-F2); precedence HB-CHK-004>003>002(hash)>002(10a)>001>measured 0>scores; Kleene primary; _env.py one allowlist; egress task_canary. Gate pending RV-PAT, RV-SIM, RV-TA, RV-SEC.",
+      "tags": [],
+      "title": "W1-F: property grader keeps agent code out of the check process (probe-host child), accepts one acknowledged document from a lone check, and classifies by one fixed precedence"
     },
     {
-      "id": "cl-01M41E2R397305FHW1J1A72D6N",
-      "datetime": "2026-10-03T17:48:07Z",
-      "session": "w1f-property-r2-e1e4",
-      "kind": "design",
-      "skill": "design-slice",
-      "title": "W1-F rev 2: property grader conformed to W0 rev 2 (seven rows, tamper NA, per-phase suspend, 64 KiB, E1 probe-only)",
-      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md (rev 2 follow-up: apply the four W1-F reviews)",
-      "summary": "Applied 38 findings of RV-TA (BLOCK), RV-SEC, RV-PAT, RV-SIM. W0 rev 2 wins: the seven-row outcome table with Classification.row, rows 1-5 NA for every metric, suspend detector per phase span, 64 KiB line, hidden_tests_pass and at_scale, fault/static/wsgi/resilience not built in E1. Added the clean-exit row-3 test and mutation entry, reparse-safe copy, bounded probe-host start and reader. Committed the SP-F2 forgery fixture with its positive control (9/9 each).",
-      "rationale": "W0 rev 2 is the contract; divergences only by seam request (req-01M41DM7XQG9GYVR32TJ762V67 NA handling to X-H1/X-E; req-01M41DM80KBD42GYARADW4V6HZ env import cycle).",
       "artifacts": [
         "docs/design/eval-property-grader.md",
         "tests/test_property_forgery_fixture.py"
       ],
-      "tags": [],
+      "datetime": "2026-10-03T17:48:07Z",
       "git": {
-        "before": "13011c96",
         "after": "13011c961ce3114597432725d16854a0ede6af10",
+        "before": "13011c96",
         "branch": "design/eval-property-grader",
-        "pushed": null,
-        "commits": []
-      }
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41E2R397305FHW1J1A72D6N",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md (rev 2 follow-up: apply the four W1-F reviews)",
+      "rationale": "W0 rev 2 is the contract; divergences only by seam request (req-01M41DM7XQG9GYVR32TJ762V67 NA handling to X-H1/X-E; req-01M41DM80KBD42GYARADW4V6HZ env import cycle).",
+      "session": "w1f-property-r2-e1e4",
+      "skill": "design-slice",
+      "summary": "Applied 38 findings of RV-TA (BLOCK), RV-SEC, RV-PAT, RV-SIM. W0 rev 2 wins: the seven-row outcome table with Classification.row, rows 1-5 NA for every metric, suspend detector per phase span, 64 KiB line, hidden_tests_pass and at_scale, fault/static/wsgi/resilience not built in E1. Added the clean-exit row-3 test and mutation entry, reparse-safe copy, bounded probe-host start and reader. Committed the SP-F2 forgery fixture with its positive control (9/9 each).",
+      "tags": [],
+      "title": "W1-F rev 2: property grader conformed to W0 rev 2 (seven rows, tamper NA, per-phase suspend, 64 KiB, E1 probe-only)"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/adr/0014-arm-replaces-pack-setting.md",
+        "docs/adr/0018-hidden-check-harness.md",
+        "docs/adr/0019-catalog-0-7-property-metrics.md"
+      ],
+      "datetime": "2026-10-03T17:59:35Z",
+      "git": {
+        "after": "d053385c697f884b9099f3555747ff7192bca9fc",
+        "before": "e466acb5",
+        "branch": "design/eval-w0-rev3",
+        "commits": [
+          "d053385c docs(coordination): Wave 1 testability floor and inline AGENT_SESSION rule; classes TEST-B, COORD-D"
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M41EQQXPA4B3E384EMFHADMV",
+      "kind": "design",
+      "prompt": null,
+      "rationale": "One revision so every slice re-reads one contract; refusals keep ADR-0020 and W0 s4 meanings; the R-90 amendment goes to the Owner.",
+      "session": "coord-opus-e1e4",
+      "skill": "execute-with-coordination",
+      "summary": "Rev 3 answers 13 seam requests and 11 routed lens findings: wsgi kind in E1 (C-1), probe-host additions and start bound, NA never dropped, DOTNET_HOST_ENV to _env.py, reparse-safe grading copy, sweep_temps/TEMP_RE (no HB-LED-009), recover_archive to X-K1, quoted arm ids, grid4 golden, no top-level pack + plan_pack + HB-PLN-004/005, G1 AST ratchet, run-side effective identity in the plan, catalog_hash in identity.py, G2 every file + direction test, R-93/R-94 recorded, W1-G owner rule provisional on an Owner request, (e) exception deferred.",
+      "tags": [],
+      "title": "W0 seam contracts rev 3: Wave 1 seam answers"
     }
   ],
   "messages": [
@@ -66721,6 +66770,15 @@ window.AUDIT_DATA = {
       "kind": "ruling",
       "ref": null,
       "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M41EPSBFHPV1FM5A4680W5S9",
+      "ts": "2026-10-03T17:59:03Z",
+      "from": "w1h-power-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41EPSB7E91C4APYT1QGN3FV",
+      "session": "w1h-power-e1e4"
     }
   ]
 };

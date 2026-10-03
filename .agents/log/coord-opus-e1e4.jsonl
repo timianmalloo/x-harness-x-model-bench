@@ -37,3 +37,5 @@
 {"agent": "coord-opus-e1e4", "at": 1791049888.135658, "kind": "claim", "path": "docs/adr/0018-hidden-check-harness.md", "seq": 37, "session": "coord-opus-e1e4", "ttl": 300.0, "wi": "coord-opus-e1e4"}
 {"agent": "coord-opus-e1e4", "at": 1791049888.774586, "kind": "claim", "path": "docs/adr/0019-catalog-0-7-property-metrics.md", "seq": 38, "session": "coord-opus-e1e4", "ttl": 300.0, "wi": "coord-opus-e1e4"}
 {"at": 1791050024.5411892, "from": "coord-opus-e1e4", "kind": "ruling", "mail_id": "mail-01M41ED1JXN48J1TQYPE869PMJ", "ref": null, "session": "coord-opus-e1e4", "to": "leader-e1e4", "type": "mail"}
+{"action": "resolve", "agent": "coord-opus-e1e4", "at": 1791050401.3677979, "id": "req-01M41EPKRBCVQ28MS96CHNTDRZ", "kind": "request", "outcome": "resolution", "path": "-", "seq": 40, "session": "coord-opus-e1e4", "type": "request", "wi": "WI-0"}
+{"action": "resolve", "agent": "coord-opus-e1e4", "at": 1791050401.4761934, "id": "req-01M41EPKVYZQ9NH97HEJR7M5PY", "kind": "request", "outcome": "resolution", "path": "-", "seq": 41, "session": "coord-opus-e1e4", "type": "request", "wi": "WI-0"}
