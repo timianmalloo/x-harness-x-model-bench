@@ -4226,6 +4226,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "d70e401df96961909a7dbcf6a8fc12b4d21da47122ae7ce9aa25bb7e0292125e"
     },
     {
+      "id": "review-eval-ds-w1k",
+      "path": "docs/design/reviews/eval-review-ds-w1k.md",
+      "title": "W1-K resume, liveness and the alarm channel: Distributed Systems lens review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of docs/design/eval-resume.md rev 1.1 (design/eval-resume, 315cf1d4) and models/run_lifecycle.tla against W0 rev 6.8, R-100, R-101 and ADR-0021 Amendment 1. The stop windows, finish-the-stop, NoLaunchAfterStop and the classifier hold. R-101 settles F-1 and removes the seal and alarm hazards it would have caused, but leaves the design text stale. Seven majors: stale R-101 text and the step 4 pending definition, run-level state not rebuilt on resume, no lock heartbeat during resume, pid reuse ignores the recorded creation time, segment ordinal and ordering, the HB-LED-005 wedge, and the pid-alive exit. PASS WITH CONDITIONS.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "5ebaf54b8e1ccacef5192f971ece7beeef77ffaf40fcc22d02dfa226130585ca"
+    },
+    {
       "id": "review-eval-pat",
       "path": "docs/design/reviews/eval-review-pat.md",
       "title": "Patterns Expert review of the Evaluation Campaign design slices (Adversary Mode)",
@@ -8008,5 +8029,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "5f3bc5e13becb72f3f705b5eacd688629be01732710e01359a35df94dc84e670"
+  "graphSha256": "475071ededa3c4f46f5e61099be817a55387775762088197692de64c56f44c36"
 };
