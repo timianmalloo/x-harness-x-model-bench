@@ -3983,7 +3983,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f9130d83d0531d2f14173f38552764fe4df8f4003f856fefbddd6d70fb05a8d6"
+      "sourceSha256": "2e738331996f46eb30416c1ee5a11d6aed1fed5b7cf677b60a300e7a8d3ea9c2"
     },
     {
       "id": "review-eval-ds-w1b",
@@ -4026,6 +4026,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "1bce63791bbba85e0eb55e47af0b8f06bf90131a3dc75d712f6af432ccf8defe"
+    },
+    {
+      "id": "review-eval-ds-w1j",
+      "path": "docs/design/reviews/eval-review-ds-w1j.md",
+      "title": "W1-J multi-turn attempt, turn snapshots and TLA+ model: Distributed Systems lens review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of docs/design/eval-multi-turn.md (design/eval-multi-turn, 08fabe34, 6b838ff2) and models/run_lifecycle.tla by the Distributed Systems lens. The turn loop, the ack barrier and the snapshot order hold, and the model fits the engine's sequential worker. Three majors: snapshot recovery has no E2 code path, the sweep seam is stale, and two of the five invariants have no code mirror. PASS WITH CONDITIONS.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "d70e401df96961909a7dbcf6a8fc12b4d21da47122ae7ce9aa25bb7e0292125e"
     },
     {
       "id": "review-eval-pat",
@@ -6927,5 +6948,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "b42dd1486ad58394b6081bed243f9f3b848f76a7a32c34e5cb584d702a12e2b9"
+  "graphSha256": "bfb118a935a61f6b8e47893aa56b85602575d656a550ccaae1cc58a129b959d4"
 };
