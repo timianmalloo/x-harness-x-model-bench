@@ -594,7 +594,8 @@ def load_confirmed(run_dir: Path) -> dict:
     if not path.exists():
         raise BenchError("HB-USR-001", f"no confirmed plan at {path}")
     data = json.loads(path.read_text(encoding="utf-8"))
-    if data.get("schema") not in ("bench-plan/1", SCHEMA):
+    # Historical hand-authored ledger fixtures predate a schema field; explicit newer schemas still refuse.
+    if data.get("schema", "bench-plan/1") not in ("bench-plan/1", SCHEMA):
         raise BenchError("HB-USR-002", f"unsupported plan schema {data.get('schema')!r}")
     if plan_hash(data) != data.get("plan_hash"):
         raise BenchError("HB-LED-002", f"{path} was edited after confirmation (plan_hash mismatch)")

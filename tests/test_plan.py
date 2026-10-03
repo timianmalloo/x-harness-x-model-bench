@@ -338,11 +338,13 @@ def test_measurement_plan_refuses_synthetic_even_when_every_task_is_ready(tmp_pa
 
 
 def test_load_confirmed_reads_legacy_and_refuses_a_future_schema(tmp_path):
-    for schema in ("bench-plan/1", "bench-plan/9"):
+    for schema in (None, "bench-plan/1", "bench-plan/9"):
         body = {"schema": schema, "cells": [], "pack": {"revision": 1}}
+        if schema is None:
+            body.pop("schema")
         body["plan_hash"] = plan.plan_hash(body)
         folder = plan.confirm(tmp_path / str(schema).replace("/", "-"), body).parent
-        if schema == "bench-plan/1":
+        if schema in (None, "bench-plan/1"):
             assert plan.load_confirmed(folder) == body
         else:
             with pytest.raises(BenchError, match="HB-USR-002"):
