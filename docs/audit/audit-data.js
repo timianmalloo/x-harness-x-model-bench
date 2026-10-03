@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:41:44Z",
+  "generated": "2026-10-03T17:42:48Z",
   "audit": [
     {
       "actor": null,
@@ -65654,6 +65654,28 @@ window.AUDIT_DATA = {
       "compiled": false,
       "goal": "Review W1-G as Test Architect",
       "done_when": "gate line written",
+      "tier": "T2",
+      "fan_out": 0
+    },
+    {
+      "id": "al-01M41DS16KDRQS89AB4F0G7S1B",
+      "shortname": "design-slice-review-eval-ds-w1b",
+      "datetime": "2026-10-03T17:42:48Z",
+      "session": "rv-ds-e1e4",
+      "prompt": "review W1-B",
+      "summary": "DS gate W1-B PASS WITH CONDITIONS",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ds-w1b.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "DS review W1-B",
+      "done_when": "gate line",
       "tier": "T2",
       "fan_out": 0
     }
