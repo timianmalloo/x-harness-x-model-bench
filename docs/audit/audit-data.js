@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:13:58Z",
+  "generated": "2026-10-03T18:15:58Z",
   "audit": [
     {
       "actor": null,
@@ -66205,6 +66205,28 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "id": "al-01M41FNR1K3MKJRXYKY12FBKM5",
+      "shortname": "design-slice-review-ta-w1g-r2",
+      "datetime": "2026-10-03T18:15:58Z",
+      "session": "rv-ta-w1g-e1e4",
+      "prompt": "W1-G rev 2 re-review",
+      "summary": "TA re-review W1-G rev 2: PASS WITH CONDITIONS",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1g.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Re-review W1-G delta",
+      "done_when": "gate line appended",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
