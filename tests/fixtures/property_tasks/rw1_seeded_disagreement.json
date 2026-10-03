@@ -1,0 +1,8 @@
+{
+  "purpose": "R2-4 / W1-L Erratum 1: a discrimination result for RW1 whose reference role disagrees with task.yaml's expected block on one metric. X-J2b's multi-turn path feeds it to readiness in the follow-on and asserts HB-RDY-003 names the metric, the expected value and the observed value (W1-E T-E11, T-E12).",
+  "task": "RW1",
+  "role": "reference",
+  "observed": {"property_check_pass": 1, "turn1_tests_pass": 1, "rework_ratio": "0.5000"},
+  "disagrees_on": "rework_ratio",
+  "cites": ["T-E11", "T-E12"]
+}
