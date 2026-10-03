@@ -3502,6 +3502,37 @@ window.DOCS_INDEX = {
       "sourceSha256": "5665e66315039cf611d9c8fa7f7b9c0b1285fdfc6d3c5e57dc20640175987e95"
     },
     {
+      "id": "review-eval-sec-w1b",
+      "path": "docs/design/reviews/eval-review-sec-w1b.md",
+      "title": "Security & Identity review of W1-B: crash-atomic publish (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Security & Identity gate on W1-B (design/eval-atomic-publish, 67e7dc83) against W0 rev 2. W0 F10 landed (nonce temp name, exclusive create, lstat-first non-recursing sweep, tests named). Open: ignore patterns hide planted content from the tamper check, the temp-to-final link has no identity check, and the symlink branch is unmeasured with a test that can skip everywhere. PASS WITH CONDITIONS, 8 findings.",
+      "tags": [
+        "review",
+        "security",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-b"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sec",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "72070286c2458a4a228c43e457b4258dfcd4c72b5150d27482371f62e1d0d075"
+    },
+    {
       "id": "review-eval-sec-w1f",
       "path": "docs/design/reviews/eval-review-sec-w1f.md",
       "title": "Security & Identity review of W1-F: hidden-check runner and property grader (Adversary Mode)",
@@ -5168,5 +5199,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "923c0d2f0d0df3bd1866d1f94c5c4ac2ca8612eff10d80dbd713d04e8f8c0e4e"
+  "graphSha256": "81c16961277d764325f7d078033150a7193a5d275f1ea0175a77d069022717ef"
 };
