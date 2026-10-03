@@ -1854,7 +1854,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4e907d89627f0bb44616109ae745c5793edf8e2ba1d3132afa0a36f2d18c73db"
+      "sourceSha256": "f9267759fb6d42eb850f9cd36a4954809bf437e56885344c97069d86003479c2"
     },
     {
       "id": "design-eval-seam-contracts",
@@ -3359,6 +3359,32 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "32f235bdd9ef5a50f339b185b9f5b27a48dbb164b03913b0a07c5bf58f1e5fd8"
+    },
+    {
+      "id": "review-eval-sec",
+      "path": "docs/design/reviews/eval-review-sec.md",
+      "title": "Security & Identity lens review: Evaluation Campaign design slices (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "The Security & Identity lens's findings on the Evaluation Campaign designs, one section per slice, appended per batch. Each section ends with one gate line. Findings only: no design is edited here.",
+      "tags": [
+        "review",
+        "security",
+        "evaluation-campaign",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "2a70d02cbc2de5b67584c890192a4635b731ecedb108c15de5c3c5b2454080ea"
     },
     {
       "id": "coordination-eval-brief-rv-ds",
@@ -4874,5 +4900,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "9a475383318089580b65bae5b370c6cda232bd4d9a0db0003e11025170068161"
+  "graphSha256": "b8fd8e0985e5388c40e2308743544bb1c252041a36deac5dd437f9a2e96f1c74"
 };
