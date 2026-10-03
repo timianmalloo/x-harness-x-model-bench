@@ -1854,7 +1854,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "000847c3e2d80cd53d63a0d5d241e3926a1ba5d59004c119f4dc4a8bbdf0b543"
+      "sourceSha256": "57d4eb4ca1786bd4b012c42cbb0a2263628f17448d0ab1b2c2fa1cd516db026a"
     },
     {
       "id": "design-eval-seam-contracts",
@@ -1866,7 +1866,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation: W0 (serial spine item 2), before Wave 1",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input and result, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows, the identity manifest, the discrimination record, the catalog 0.7 metric ids, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard.",
+      "summary": "Revision 2. The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
       "tags": [
         "benchmark",
         "campaign",
@@ -1935,10 +1935,30 @@ window.DOCS_INDEX = {
         {
           "to": "rulings-register",
           "rel": "depends-on"
+        },
+        {
+          "to": "review-eval-ta",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sec",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-ds",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-pat",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sim",
+          "rel": "relates-to"
         }
       ],
       "diagrams": [],
-      "sourceSha256": "99c2e6c6193641085c71e6e419d52b532c2b7715b10a7e683339edb970df0b33"
+      "sourceSha256": "dd54e1963b397b840c92373598cf1c8f166384d556f42353341fa76117933a5c"
     },
     {
       "id": "design-formal-grader",
@@ -2870,7 +2890,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "35a7eaa2dc2f9fc75887ae91f0779e646d15d250f9e698d0fcbada49a54cbf97"
+      "sourceSha256": "187d4f09758f6a375601b9ddb7a0fc2c12f0043c64dd5117e0e97a7f70879f43"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -3718,7 +3738,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d3ab5a6b39cf0942f178146b989e3080874367d2746dd6f6afc82fa64e93dcd0"
+      "sourceSha256": "9adc3887229833a8325ffb7cfb5799a17a38a406b5414d998a6f46bd55b2b80c"
     },
     {
       "id": "coordination-eval-brief-w1-b-atomic-publish",
@@ -3748,7 +3768,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5168597c6b0183cceee7655cd053c76846f34476dec23d58fd81eab0433e35b3"
+      "sourceSha256": "05dfdae47c5eec5a5f0f60f1ed7009d9c99fb92310c27c755e5679272776aa77"
     },
     {
       "id": "coordination-eval-brief-w1-c-campaign-record",
@@ -3778,7 +3798,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4d1e6ceaefbf1a90b1aa3276bc124be9184a2612d4adaa5df1601bf52cbee629"
+      "sourceSha256": "6056f0e1d9dbf7168ec1c1926dafa8701c6724567d26331b6e41089b68394e94"
     },
     {
       "id": "coordination-eval-brief-w1-d-identity",
@@ -3808,7 +3828,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "1c36c7b98f742f571bd72336768ff07b65ea8e23274fd8f197b1c24b05b2f3c0"
+      "sourceSha256": "24b608d592a74c6e0ccfabfadbc6c50939a829549b9cb6b894f860b3db17bf8e"
     },
     {
       "id": "coordination-eval-brief-w1-e-discriminate",
@@ -3838,7 +3858,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "43a57b357b745a5a928a9b8e36be36fe7d2fe09ed00a4ac1ed8f08c2787c8a8b"
+      "sourceSha256": "e2848b7bd80aa557498bd299eebb1734167cab12aea6efaa860bec06f01e88c2"
     },
     {
       "id": "coordination-eval-brief-w1-f-property-grader",
@@ -3868,7 +3888,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "7845000902c4a62227c7e9270329f13a068f1f01eec5b768af04e9aa4d6d72da"
+      "sourceSha256": "2fee4beb0fb70c623d50754b705144a5c77775f532793c57e841986bda5e6001"
     },
     {
       "id": "coordination-eval-brief-w1-g-catalog",
@@ -3898,7 +3918,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "185764e4b471ffc8f425f768c58a8b399ff649d267f3358416bdfade52c5a9a6"
+      "sourceSha256": "53ce7e020ce8c0841cd52ee11413c2b4e80e7d061067163918a1fb3b3386fc4d"
     },
     {
       "id": "coordination-eval-brief-w1-h-power-verdicts",
@@ -3928,7 +3948,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8e477bd13559d653d4385d7a1491ae0be39c7fe16643375d4646c94a49043984"
+      "sourceSha256": "009490d0e90c3ada016008869590eff5a0dc57de8da4547f0a65245514935700"
     },
     {
       "id": "coordination-eval-brief-w1-i-security-tasks",
@@ -3958,7 +3978,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2fb5c6d262ffcb4ae4fa2bb0b22695db5aa9de8b068e8d0c0cd198a302db8292"
+      "sourceSha256": "6b9e69ac42dc59d18043bf7572cf4b2e544c25abb0bad0d138e0c7cdb093d2af"
     },
     {
       "id": "coordination-eval-brief-w1-j-multi-turn",
@@ -3988,7 +4008,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "edf0ae6de4cb40222b57e640795fa4334a8a0749bdd1ca3ee40160556740fa81"
+      "sourceSha256": "db4c35d639e5e206f3f1e02530a324b6a9d926c748c536eae70c2fc10862485a"
     },
     {
       "id": "coordination-eval-brief-w1-k-resume",
@@ -4018,7 +4038,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "c348b139535a31c1d3e4d365ac94eb334c2575ec1e5cf7599c22177e36408000"
+      "sourceSha256": "72ca58384d73ab49d772963f95bf9eb4f61fdc146fc30b7a5875716703ed6fe4"
     },
     {
       "id": "coordination-eval-brief-w1-l-property-tasks",
@@ -4048,7 +4068,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "6fd71cbbd65d638bddd1f62c450f08b104e5ffccf0f04d9074e21f0bc5058638"
+      "sourceSha256": "f83531f019581701c8d02bc5050a9c78ea5586074ce8c61bd8e5c19cc9e23be4"
     },
     {
       "id": "coordination-eval-campaign",
@@ -4083,7 +4103,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "1d00bfc93fcc99855c85571f47606626255859fecbb057d509515f5b102ecb2a"
+      "sourceSha256": "6483e206fb3db8920ad65f550ae0d9aaf29906581c093d1585fb072a4c4d49a8"
     },
     {
       "id": "coordination-eval-q0",
@@ -4113,7 +4133,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3911e5a596c38ef5d1515447046678e6216e977007742a951dd1477ddf12796c"
+      "sourceSha256": "d79453c04137a69d749be6383d05625fda0eae9b586c3c8f89790701364e4ac0"
     },
     {
       "id": "coordination-eval-wave1-briefs",
@@ -4147,7 +4167,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8d73f7e1ddb94fe85b2caf3dbada58d9f954385e7f56efb55f38d3b5223d0aa3"
+      "sourceSha256": "a65992eab45e0bcfbeca7493342745a82f72c6bf1233e821dac5f0dfdcaa33ac"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -4994,5 +5014,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "e070125ba29cfd949e9659b408a70b806a17f566d89cfe529fa17a8f8154bbd8"
+  "graphSha256": "b5107dd09987affe58c56d8808ffec7f70ccfc9d4686769359666811f765a765"
 };
