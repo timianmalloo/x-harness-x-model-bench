@@ -4514,6 +4514,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "0820df82326c77df02683b9cd20f7d2cc707197ea7c89272ef29de5157afc16e"
     },
     {
+      "id": "review-eval-pat-w1k",
+      "path": "docs/design/reviews/eval-review-pat-w1k.md",
+      "title": "Patterns Expert review of W1-K, resume, liveness and the alarm (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of design/eval-resume rev 1.1 (315cf1d4) against W0 rev 6.8, R-100 and ADR-0021 with Amendment 1. The reconcile-from-log and the one-input classifier are sound; one seam defect (X-K1 cannot reach its own tests), one contradiction (a finished stop still alarms), and five smaller pattern gaps. No pattern is named in the doc.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-k"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "56c52b805ffbf97db1f169cf3209fab2cc45e45ebfeddf3b536703b3a377d624"
+    },
+    {
       "id": "review-eval-pat-w1l",
       "path": "docs/design/reviews/eval-review-pat-w1l.md",
       "title": "Patterns Expert review of W1-L, the eight property tasks (Adversary Mode)",
@@ -4953,6 +4980,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "be3d70f4fd74e78422394d9d06b72a133c2360746f4099ee7f464be2e074a271"
     },
     {
+      "id": "review-eval-sim-w1k",
+      "path": "docs/design/reviews/eval-review-sim-w1k.md",
+      "title": "Simplifier review of W1-K, resume, liveness and the alarm (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM review of design/eval-resume rev 1.1 (315cf1d4). The reconcile design is the smallest correct core; the proof is larger than it needs to be (the prefix sweep already kills the classifier mutants), and the alarm channel ships two deliveries where one reaches the sleeping operator. Soft veto: conditions, no block.",
+      "tags": [
+        "review",
+        "simplifier",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-k"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "429696d3b1db788fab0e26112c4bc9cdf94fd666c7235a320517c911a883c940"
+    },
+    {
       "id": "review-eval-sim-w1l",
       "path": "docs/design/reviews/eval-review-sim-w1l.md",
       "title": "Simplifier review of W1-L (property tasks and four graders)",
@@ -5026,6 +5080,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "13c7180017ca42ed74ed764d8435d9a46f5aa7a7e14f60dd4480d2f61a008ba6"
+    },
+    {
+      "id": "review-eval-sre-w1k",
+      "path": "docs/design/reviews/eval-review-sre-w1k.md",
+      "title": "W1-K resume, liveness and the alarm channel: SRE lens review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of docs/design/eval-resume.md (branch design/eval-resume, 315cf1d4, rev 1.1) by the SRE lens: the alarm and the resume disagree on what \"pending\" means, the last_progress_at segment pick is wrong after a grading pass, the default alarm channel does not reach a sleeping operator, and the wrapper can leak the ntfy topic. Twelve findings, condition-setting.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "6dbb1b345f2d9c0aca3332938e0ee35c2611ccb9906582d0a48c128a65539c86"
     },
     {
       "id": "review-eval-ta",
@@ -5322,6 +5397,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "bbb97953c678b2652d7e7fd02a39c8f7fe52601b98e81c277a2bddf303394ae5"
+    },
+    {
+      "id": "review-eval-ta-w1k",
+      "path": "docs/design/reviews/eval-review-ta-w1k.md",
+      "title": "W1-K resume, liveness and the alarm channel: Test Architect lens review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of docs/design/eval-resume.md (design/eval-resume, 315cf1d4, rev 1.1) and models/run_lifecycle.tla by the Test Architect lens. The window map, the prefix sweep and the TLC evidence are strong. Conditions: the stop path has no C7 or C4 cell in its tests, finish-the-stop idempotence (W12e) contradicts the unsealed new segments, X-K1's gate entry tests need X-K2's cmd_run hunk, two reds are mutant-shaped, and F-1 leaves one liveness property vacuous for the code. PASS WITH CONDITIONS.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "1101de66319e5f7b558a39ebea06eac08203cb2d82627a4204fbf18f3636c815"
     },
     {
       "id": "review-eval-ta-w1l",
@@ -7912,5 +8008,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "e9376d6da364687cf828729e2c0b59f32d72e32a759d72ca8cc504e7eb35f32b"
+  "graphSha256": "5f3bc5e13becb72f3f705b5eacd688629be01732710e01359a35df94dc84e670"
 };
