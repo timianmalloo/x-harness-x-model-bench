@@ -29,6 +29,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PY = sys._base_executable
 PAYLOAD = "<script>bench</script>"
 READY = {"ready": "bench-probe-host/1"}
+HOST_ENV = ("PATH", "SYSTEMROOT", "SYSTEMDRIVE", "WINDIR", "TEMP", "TMP")  # correctness.py:48; the check is stdlib only
 CASE_BOUND_S = 2.0
 MAX_LINE = 1 << 20
 
@@ -71,13 +72,25 @@ def write_result(deliverable, cases):
     os._exit(0 if ack == b"\x06" else 3)
 
 
+def host_env():
+    """The probe host's environment: the HOST_ENV allowlist plus no bytecode; never os.environ wholesale (ADR-0018 s9)."""
+    env = {k: os.environ[k] for k in HOST_ENV if k in os.environ}
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    return env
+
+
 def probe_host_case(root, app, evid):
     """One host per case. The host's first line must be the ready line, within the case bound (W1-F s5.5)."""
     t0 = time.monotonic()
-    host = subprocess.Popen([PY, "-S", os.path.join(HERE, "probe_host.py"), "--root", root, "--app", app],
-                            stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                            stderr=open(os.path.join(evid, "host.err"), "wb"), close_fds=True,
-                            creationflags=DETACHED_PROCESS, env=dict(os.environ))
+    argv = [PY, "-S", os.path.join(HERE, "probe_host.py"), "--root", root, "--app", app,
+            "--env-out", os.path.join(evid, "host.env.json")]
+    with open(os.path.join(evid, "host.err"), "wb") as err:
+        host = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=err, close_fds=True,
+                                creationflags=DETACHED_PROCESS, env=host_env())
+        return _exchange(host, t0)
+
+
+def _exchange(host, t0):
     lines = queue.Queue()
 
     def reader():
@@ -130,6 +143,8 @@ def probe_host_case(root, app, evid):
 def main():
     mode, evid, root, app = sys.argv[1:5]
     os.makedirs(evid, exist_ok=True)
+    with open(os.path.join(evid, "check.env.json"), "w", encoding="utf-8") as f:
+        json.dump(sorted(os.environ), f)  # key names only: the test asserts no credential reached this process
     t0 = time.monotonic()
     if mode == "in-check-import":
         sys.path.insert(0, root)

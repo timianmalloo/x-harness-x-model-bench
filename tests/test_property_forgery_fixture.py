@@ -31,6 +31,7 @@ FIX = Path(__file__).parent / "fixtures" / "property"
 OUTER_S = 20.0
 MAX_RESULT_BYTES = 64 * 1024  # W0 rev 2 section 3 framing
 TRIALS = 3
+CREDENTIALS = ("HB_CLAUDE_OAUTH_TOKEN", "CLAUDE_CODE_OAUTH_TOKEN", "GH_TOKEN", "ANTHROPIC_API_KEY")
 
 
 def _filetime_now() -> int:
@@ -58,15 +59,41 @@ def _valid(doc) -> bool:
             and doc["cases"][0].get("outcome") in ("blocked", "exploited", "timeout"))
 
 
+@pytest.fixture(autouse=True)
+def credentials(monkeypatch):
+    """Every credential name the design denies is set in the grader's environment (ADR-0018 s9; W1-F s14)."""
+    for name in CREDENTIALS:
+        monkeypatch.setenv(name, "dummy-credential-must-not-reach-a-child")
+
+
+def _assert_no_credentials(evid: Path) -> None:
+    """The check and, when one ran, the probe host each wrote their own key names; none is a credential."""
+    seen = 0
+    for name in ("check.env.json", "host.env.json"):
+        path = evid / "check" / name
+        if path.exists():
+            keys = {k.upper() for k in json.loads(path.read_text(encoding="utf-8"))}
+            assert not keys & set(CREDENTIALS), (name, sorted(keys & set(CREDENTIALS)))
+            seen += 1
+    assert seen, "no child wrote its environment"
+
+
 def _grade(mode: str, app: str, evid: Path) -> dict:
     """One check run, classified by W0 rev 2 section 3 (first matching row decides)."""
     evid.mkdir(parents=True)
+    with open(evid / "check.stderr", "wb") as err:
+        result = _run(mode, app, evid, err)
+    _assert_no_credentials(evid)
+    return result
+
+
+def _run(mode: str, app: str, evid: Path, err) -> dict:
     env = {k: os.environ[k] for k in ("PATH", "SYSTEMROOT", "SYSTEMDRIVE", "WINDIR", "TEMP", "TMP") if k in os.environ}
-    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    env["PYTHONDONTWRITEBYTECODE"] = "1"  # an allowlist, never os.environ wholesale
     job = procs.Job()
     proc = subprocess.Popen(
         [sys._base_executable, "-S", str(FIX / "spike_check.py"), mode, str(evid / "check"), str(FIX), app],
-        stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=open(evid / "check.stderr", "wb"), close_fds=True,
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=err, close_fds=True,
         creationflags=0x4 | 0x8, env=env)  # CREATE_SUSPENDED | DETACHED_PROCESS (spike E1-S3)
     try:
         handle = procs._open_process(proc.pid)
@@ -135,6 +162,7 @@ def test_module_body_forgery_in_probe_host_is_refused(tmp_path):
     """The shipped shape: the forged line is the probe host's first line, not its ready line, so `did not start`."""
     for n in range(TRIALS):
         r = _grade("probe-host", "forge_module:handle", tmp_path / f"t{n}")
+        assert (tmp_path / f"t{n}" / "check" / "host.env.json").exists()  # the host itself was checked
         assert r["row"] == 6, r  # a measured 0 (EV-1), never a forged score
         assert r["doc"]["deliverable"] == "did not start", r
         assert all(c["outcome"] != "blocked" for c in r["doc"]["cases"]), r
@@ -144,5 +172,6 @@ def test_probe_host_control_answers_with_the_raw_response(tmp_path):
     """The same host shape serves a probe: an unescaped echo is `exploited`, decided in the check."""
     for n in range(TRIALS):
         r = _grade("probe-host", "vulnerable_app:handle", tmp_path / f"t{n}")
+        assert (tmp_path / f"t{n}" / "check" / "host.env.json").exists()
         assert r["row"] == 7, r
         assert r["doc"]["deliverable"] == "ran" and r["doc"]["cases"][0]["outcome"] == "exploited", r

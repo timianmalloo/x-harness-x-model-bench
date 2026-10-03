@@ -1,11 +1,12 @@
 """Spike stand-in for `bench_check.py --probe-host` (W1-F s5.5): import the app, write the ready line, serve lines.
 
-Stdlib only, run as `<base> -S probe_host.py --root <dir> --app <module>:<attr>`. Its stdin and stdout are pipes the
+Stdlib only, run as `<base> -S probe_host.py --root <dir> --app <module>:<attr> [--env-out <file>]`. Its stdin and stdout are pipes the
 check owns. X-F replaces this file with the real host mode of `grade/bench_check.py`.
 """
 
 import importlib
 import json
+import os
 import sys
 
 READY = {"ready": "bench-probe-host/1"}
@@ -13,6 +14,9 @@ READY = {"ready": "bench-probe-host/1"}
 
 def main() -> None:
     args = dict(zip(sys.argv[1::2], sys.argv[2::2], strict=True))
+    if "--env-out" in args:  # key names only, before any agent code runs: the test asserts no credential arrived
+        with open(args["--env-out"], "w", encoding="utf-8") as f:
+            json.dump(sorted(os.environ), f)
     sys.path.insert(0, args["--root"])
     module, attr = args["--app"].split(":")
     try:
