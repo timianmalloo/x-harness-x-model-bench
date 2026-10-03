@@ -23,11 +23,14 @@ control prints `board golden: not pinned (frozen before board.export)`.
 The fixtures are the two committed X1 mini-runs (D6); the judge is not applicable to X1, so no model is called.
 """
 
+import copy
 import hashlib
+import io
 import json
 import os
 import shutil
 import subprocess
+import tarfile
 import tomllib
 import uuid
 from collections.abc import Callable
@@ -41,6 +44,7 @@ from slow_ring import dotnet_gate
 
 from harness_bench import board, composites, config, views
 from harness_bench.grade import Score, runner
+from harness_bench.grade import property as grade_property
 from harness_bench.telemetry import normalize
 
 FIXTURES = {name: Path(__file__).parent / "fixtures" / "ledger" / name / "run" for name in ("c44dd2b-no-heads", "heads")}
@@ -538,6 +542,216 @@ def test_a_dev_version_is_exempt_and_says_so(frozen, tmp_path, capsys):
                     encoding="utf-8")  # no pin, no golden, a moved weight: all exempt for a probe
     assert problems(frozen, tmp_path) == []
     assert capsys.readouterr().out == f"{PROBE}\n"
+
+
+# --- catalog 0.7.dev: the eleven property metrics (X-G1, W1-G T-C1..T-C4, T-C6; W0 §7, R-95, R-97) -----------------
+
+# scale None: the key is absent (W0 §7 "int" / "int 0/1"). property None: untagged.
+# Anchors are W1-G §4.1. hallucinated_symbol_errors' note is R-97 condition 3, not the design's
+# "build-log errors" sentence. Floats are what YAML loads for a scale-4 anchor (0.0000 -> 0.0).
+ELEVEN = (
+    {"id": "property_check_pass", "area": "correctness", "kind": "score", "better": "higher",
+     "scale": None, "property": None, "anchor": [0, 1],
+     "anchor_note": "convention: binary indicator in [0, 1]"},
+    {"id": "exploit_probes_blocked", "area": "correctness", "kind": "score", "better": "higher",
+     "scale": 4, "property": "security", "anchor": [0.0, 1.0],
+     "anchor_note": "spec docs/specs/enterprise-evaluation.md:244"},
+    {"id": "fault_suite_pass", "area": "correctness", "kind": "score", "better": "higher",
+     "scale": 4, "property": "resilience", "anchor": [0.0, 1.0],
+     "anchor_note": "spec docs/specs/enterprise-evaluation.md:256"},
+    {"id": "idempotency_violations", "area": "correctness", "kind": "score", "better": "lower",
+     "scale": None, "property": "resilience", "anchor": [5, 0],
+     "anchor_note": ("convention: cap at 5 duplicated effects; provisional until the E4 "
+                     "discrimination records give the naive solution's measured count; 0 is clean")},
+    {"id": "turn1_tests_pass", "area": "correctness", "kind": "score", "better": "higher",
+     "scale": None, "property": "rework", "anchor": [0, 1],
+     "anchor_note": "convention: binary indicator in [0, 1]"},
+    {"id": "rework_ratio", "area": "rigor", "kind": "score", "better": "lower",
+     "scale": 4, "property": "rework", "anchor": [1.0, 0.0],
+     "anchor_note": "spec docs/specs/enterprise-evaluation.md:263"},
+    {"id": "hallucinated_symbol_errors", "area": "rigor", "kind": "score", "better": "lower",
+     "scale": None, "property": "no-guessing", "anchor": [5, 0],
+     "anchor_note": ("convention: cap at 5 unresolved vendored-API references in the final tree; "
+                     "provisional until the E4 discrimination records; 0 is clean")},
+    {"id": "verified_before_use", "area": "rigor", "kind": "score", "better": "higher",
+     "scale": None, "property": "no-guessing", "anchor": [0, 1],
+     "anchor_note": "spec docs/specs/enterprise-evaluation.md:270"},
+    {"id": "size_vs_reference", "area": "rigor", "kind": "score", "better": "lower",
+     "scale": 4, "property": "simplicity", "anchor": [3.0, 1.0],
+     "anchor_note": ("convention: 3x the reference's added lines is the worst, at or under the "
+                     "reference is the best (EV-6 :274 defines the ratio, not a range); "
+                     "provisional until the E4 discrimination records")},
+    {"id": "new_abstractions", "area": "rigor", "kind": "score", "better": "lower",
+     "scale": None, "property": "simplicity", "anchor": [4, 0],
+     "anchor_note": ("convention: cap at 4 new types or interfaces; provisional until the E4 "
+                     "discrimination records; 0 is none (EV-6 :275)")},
+    {"id": "new_dependencies", "area": "rigor", "kind": "score", "better": "lower",
+     "scale": None, "property": "simplicity", "anchor": [2, 0],
+     "anchor_note": ("convention: cap at 2 new dependencies; provisional until the E4 "
+                     "discrimination records; 0 is none (EV-6 :276)")},
+)
+FREEZE_06_COMMIT = "d6dda42d"  # the 0.6 freeze; catalog_hash reads metrics.yaml and bench/rubrics/
+HSE_PHRASE = "unresolved vendored-API references in the final tree"
+HSE_RETIRED = "build-log errors"
+
+
+def _index(catalog: dict) -> dict[str, tuple[str, dict]]:
+    found: dict[str, tuple[str, dict]] = {}
+    for area_id, area in (catalog.get("areas") or {}).items():
+        for metric in area.get("metrics") or []:
+            found[metric["id"]] = (area_id, metric)
+    return found
+
+
+def _metric(catalog: dict, metric_id: str) -> dict:
+    return _index(catalog)[metric_id][1]
+
+
+def _validate(catalog: dict) -> list[str]:
+    problems = config.Problems()
+    config.validate_metrics(catalog, problems, config.grader_modules(ROOT), root=ROOT)
+    return problems.items
+
+
+def _r79_problems(metric: dict) -> list[str]:
+    """R-79 form and anchor direction. The two faults are separate: a blank note is not a reversed anchor."""
+    problems: list[str] = []
+    note = metric.get("anchor_note")
+    if not isinstance(note, str) or not note.strip():
+        problems.append("anchor_note blank")
+    elif not note.startswith(("spec ", "measured ", "convention: ")):
+        problems.append("anchor_note is not an R-79 form")
+    anchor = metric.get("anchor")
+    better = metric.get("better")
+    if not isinstance(anchor, (list, tuple)) or len(anchor) != 2:
+        problems.append("anchor must be [worst, best]")
+    else:
+        worst, best = anchor
+        if worst == best:
+            problems.append("anchor worst == best")
+        elif (better == "higher" and worst > best) or (better == "lower" and worst < best):
+            problems.append("anchor direction contradicts better")
+    return problems
+
+
+def _06_definition_problems(archived: dict, current: dict) -> list[str]:
+    """0.6 entries must match the current catalog. pass_at_1 may gain also_graded_by: [formal] and nothing else."""
+    old, new = _index(archived), _index(current)
+    problems: list[str] = []
+    for metric_id, (_, previous) in old.items():
+        if metric_id not in new:
+            problems.append(f"{metric_id} is missing from the current catalog")
+            continue
+        current_metric = dict(new[metric_id][1])
+        if metric_id == "pass_at_1":
+            extra = current_metric.pop("also_graded_by", None)
+            if extra is not None and extra != ["formal"]:
+                problems.append(f"pass_at_1 also_graded_by {extra!r} is not [formal]")
+        if dict(previous) != current_metric:
+            problems.append(f"{metric_id} changed beyond pass_at_1's also_graded_by key")
+    return problems
+
+
+def _root06(tmp: Path) -> Path:
+    """git archive of the 0.6 freeze commit. An unreachable commit fails; it never skips."""
+    done = subprocess.run(
+        ["git", "archive", FREEZE_06_COMMIT, "bench/metrics.yaml", "bench/rubrics"],
+        cwd=ROOT, capture_output=True, timeout=60, check=False)
+    assert done.returncode == 0, (
+        f"0.6 freeze commit {FREEZE_06_COMMIT} is not reachable (git archive failed; "
+        f"a shallow checkout fails here and never skips): {done.stderr.decode('utf-8', errors='replace')}")
+    dest = tmp / "root06"
+    dest.mkdir()
+    with tarfile.open(fileobj=io.BytesIO(done.stdout), mode="r:") as archive:
+        archive.extractall(dest, filter="data")
+    return dest
+
+
+def test_catalog_has_the_eleven_property_metrics_with_the_fixed_fields():
+    catalog = config.load_yaml(ROOT / "bench" / "metrics.yaml")
+    found = _index(catalog)
+    missing = sorted(row["id"] for row in ELEVEN if row["id"] not in found)
+    assert missing == []  # red on 0.6: the catalog holds none of the eleven ids
+    assert catalog["version"] == "0.7.dev"
+    for row in ELEVEN:
+        area, metric = found[row["id"]]
+        assert area == row["area"], row["id"]
+        assert metric["kind"] == row["kind"], row["id"]
+        assert metric["better"] == row["better"], row["id"]
+        assert metric.get("scale") == row["scale"], row["id"]
+        assert metric.get("property") == row["property"], row["id"]
+        assert metric["grader"] == "property", row["id"]
+        assert metric["weight"] == 0, row["id"]
+        assert metric["source"] == ["D"], row["id"]
+    assert _validate(catalog) == []
+
+
+def test_every_property_metric_anchor_is_in_a_permitted_r79_form_and_points_the_right_way():
+    # Red fixtures first (floor 2): a blank note and a reversed anchor are different faults.
+    blank = _r79_problems({"better": "higher", "anchor": [0, 1], "anchor_note": ""})
+    reversed_anchor = _r79_problems(
+        {"better": "higher", "anchor": [1, 0], "anchor_note": "convention: binary indicator in [0, 1]"})
+    assert any("blank" in item for item in blank)
+    assert not any("direction" in item for item in blank)
+    assert any("direction" in item for item in reversed_anchor)
+    assert not any("blank" in item for item in reversed_anchor)
+    catalog = config.load_yaml(ROOT / "bench" / "metrics.yaml")
+    found = _index(catalog)
+    for row in ELEVEN:
+        assert row["id"] in found, row["id"]  # red on 0.6: same absence as T-C1
+        _, metric = found[row["id"]]
+        assert _r79_problems(metric) == [], row["id"]
+        assert metric.get("anchor") == row["anchor"], row["id"]
+        assert metric.get("anchor_note") == row["anchor_note"], row["id"]
+        if row["id"] == "hallucinated_symbol_errors":
+            note = metric.get("anchor_note") or ""
+            assert HSE_RETIRED not in note
+            assert HSE_PHRASE in note
+
+
+def test_the_06_definitions_read_from_the_freeze_commit_hash_to_the_pin_and_are_unchanged_in_07_except_pass_at_1(tmp_path):
+    root06 = _root06(tmp_path)
+    pinned = config.load_yaml(ROOT / FREEZE)["versions"]["0.6"]["catalog_hash"]
+    assert runner.catalog_hash(root06) == pinned
+    archived = config.load_yaml(root06 / "bench" / "metrics.yaml")
+    current = config.load_yaml(ROOT / "bench" / "metrics.yaml")
+    assert _06_definition_problems(archived, current) == []
+    # The allowed delta is only that one key. A copy that adds it stays clean; a real edit does not.
+    allowed = copy.deepcopy(current)
+    _metric(allowed, "pass_at_1")["also_graded_by"] = ["formal"]
+    assert _06_definition_problems(archived, allowed) == []
+    flipped = copy.deepcopy(current)
+    entry = _metric(flipped, "partial_credit")
+    entry["better"] = "lower" if entry["better"] == "higher" else "higher"
+    assert _06_definition_problems(archived, flipped)
+    weighted = copy.deepcopy(current)
+    _metric(weighted, "pass_at_1")["weight"] = 1
+    assert _06_definition_problems(archived, weighted)
+
+
+@pytest.mark.xfail(strict=True, reason="X-A1 owns the property-tag check; X-F owns STRATEGIES. Unread until then.")
+def test_a_property_tag_outside_property_names_is_refused_and_property_names_match_the_strategy_keys():
+    catalog = config.load_yaml(ROOT / "bench" / "metrics.yaml")
+    bad = copy.deepcopy(catalog)
+    _metric(bad, "partial_credit")["property"] = "no_guessing"
+    added = [item for item in _validate(bad) if item not in _validate(catalog)]
+    assert added, "property tag no_guessing must be refused"
+    names = getattr(config, "PROPERTY_NAMES", None)
+    strategies = getattr(grade_property, "STRATEGIES", None)
+    assert names is not None, "config.PROPERTY_NAMES"
+    assert strategies is not None, "grade.property.STRATEGIES"
+    assert list(names) == list(strategies.keys())
+
+
+@pytest.mark.xfail(strict=True, reason="X-A1 owns the also_graded_by check. The key is unread until then.")
+def test_an_also_graded_by_name_that_is_unknown_equal_to_the_grader_or_repeated_is_refused():
+    catalog = config.load_yaml(ROOT / "bench" / "metrics.yaml")
+    cases = {"unknown": ["formla"], "equal to grader": ["correctness"], "repeated": ["formal", "formal"]}
+    for name, value in cases.items():
+        bad = copy.deepcopy(catalog)
+        _metric(bad, "pass_at_1")["also_graded_by"] = value
+        added = [item for item in _validate(bad) if item not in _validate(catalog)]
+        assert added, f"{name}: also_graded_by {value!r} must be refused"
 
 
 # --- the slow ring: dotnet fixtures run only on the grading host (design: Catalog-version rule 4; seam V-4) ---------
