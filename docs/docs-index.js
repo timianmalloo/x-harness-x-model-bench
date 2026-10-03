@@ -1886,7 +1886,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "7b5e5eaa9251750bfeb2247d6653f09b9ee2e4f3ada4d6d810e20e0245940205"
+      "sourceSha256": "9e9a2965716a0db1920841bdc5cf8196dc905fee0cca1cc1d7b922e3fd670645"
     },
     {
       "id": "design-eval-arms",
@@ -4102,6 +4102,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "325ed61a2612279876fc84935fa81ca59c7aa6f26bb89407ba4a3311242c7ea3"
     },
     {
+      "id": "review-eval-pat-w1l",
+      "path": "docs/design/reviews/eval-review-pat-w1l.md",
+      "title": "Patterns Expert review of W1-L, the eight property tasks (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of design/eval-property-tasks (5da93d91) against W0 rev 3, R-87..R-96, the merged W1-F strategy and registration pattern, W1-G catalog 0.7 and W1-I's task pattern. The pin, NOTICE, wrong-app and variant pattern conforms. Seven findings: an E2/E4 phasing contradiction for the shared product-line counter, an agent-editable vendored library, an under-specified fault-case predicate, and strategy and catalog fit gaps. PASS WITH CONDITIONS.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-l"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "10fe24ae90af7b74cfa61d438f46a9f2c93c3d13f4f7b932fcb9e83dac2e94af"
+    },
+    {
       "id": "review-eval-sec",
       "path": "docs/design/reviews/eval-review-sec.md",
       "title": "Security & Identity lens review: Evaluation Campaign design slices (Adversary Mode)",
@@ -4187,7 +4214,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d1a714dc884b86bd6e755c114bd5da0f0853111b241ab5d688a8b48812a0b731"
+      "sourceSha256": "a3757d6ce6731cd6180552d45504592b69bc251c9557de511549053c7c98b43a"
     },
     {
       "id": "review-eval-sec-w1f",
@@ -4439,6 +4466,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "a97c88934f6ac7af7f54eff8fc95d769ce89b0702cfc78f842975db0fbe5afe6"
+    },
+    {
+      "id": "review-eval-sim-w1l",
+      "path": "docs/design/reviews/eval-review-sim-w1l.md",
+      "title": "Simplifier review of W1-L (property tasks and four graders)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Adversary Mode, soft veto) on design/eval-property-tasks 5da93d91. PASS WITH CONDITIONS: cut verified_before_use until SR-L1, defer the noguess resolver, fix the E2/E4 phase inversion of product_lines and in_radius, remove dead resilience cases and duplicate variants, and fold the per-task test rows into readiness.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "9fa4e7bda99adf13192cab2b73f7eabd0cdc3ac79153b75728af9182626633fd"
     },
     {
       "id": "review-eval-sre-w1d",
@@ -4708,6 +4756,33 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "60320ec9b40537661e3c2b375e345ef2a436d47b0b472498db323d9b882b8c7d"
+    },
+    {
+      "id": "review-eval-ta-w1l",
+      "path": "docs/design/reviews/eval-review-ta-w1l.md",
+      "title": "W1-L property tasks (eight) design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-L (RS1/RS2, RW1/RW2, NG1/NG2, SM1/SM2 and four graders) against W0 rev 3, R-87..R-96 and the W1-I pattern. BLOCK on four items: simplicity primary is launderable through a file outside the radius, verified_before_use returns a plausible 0 for shell reads, the grader-helper tests are red by ImportError, and the wrong-app fixtures leave about a third of the hidden tests unguarded.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-l"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "531914453a403250281744a7351623525ea6d9488e95a5da71171811ed91702b"
     },
     {
       "id": "brief-eval-env-a",
@@ -6473,14 +6548,6 @@ window.DOCS_INDEX = {
       "description": "Inspect a rendered design or design-language preview."
     },
     {
-      "id": "surface-adr-0020-power-and-verdicts-stdlib",
-      "path": "docs/adr/0020-power-and-verdicts-stdlib.html",
-      "title": "0020 Power And Verdicts Stdlib",
-      "kind": "knowledge-tool",
-      "description": "Open an interactive knowledge artifact.",
-      "artifactId": "adr-0020-power-and-verdicts-stdlib"
-    },
-    {
       "id": "surface-proposals-benchmark-state-and-target",
       "path": "docs/proposals/benchmark-state-and-target.html",
       "title": "Benchmark: state and target",
@@ -6511,14 +6578,6 @@ window.DOCS_INDEX = {
       "kind": "knowledge-tool",
       "description": "Open an interactive knowledge artifact.",
       "artifactId": "proposal-enterprise-production-portfolio"
-    },
-    {
-      "id": "surface-coordination-eval-wave2-e1-env-a",
-      "path": "docs/coordination/eval-wave2-e1/env-a.html",
-      "title": "Env A",
-      "kind": "knowledge-tool",
-      "description": "Open an interactive knowledge artifact.",
-      "artifactId": "brief-eval-env-a"
     },
     {
       "id": "surface-case-study",
@@ -6557,79 +6616,7 @@ window.DOCS_INDEX = {
       "kind": "knowledge-tool",
       "description": "Open an interactive knowledge artifact.",
       "artifactId": "proposal-pack-onoff-analysis"
-    },
-    {
-      "id": "surface-coordination-eval-wave2-e1-readme",
-      "path": "docs/coordination/eval-wave2-e1/README.html",
-      "title": "Readme",
-      "kind": "knowledge-tool",
-      "description": "Open an interactive knowledge artifact.",
-      "artifactId": "coordination-eval-wave2-e1-briefs"
-    },
-    {
-      "id": "surface-coordination-eval-wave2-e1-tool-gsm",
-      "path": "docs/coordination/eval-wave2-e1/tool-gsm.html",
-      "title": "Tool Gsm",
-      "kind": "knowledge-tool",
-      "description": "Open an interactive knowledge artifact.",
-      "artifactId": "brief-eval-tool-gsm"
-    },
-    {
-      "id": "surface-coordination-eval-wave2-e1-x-a1",
-      "path": "docs/coordination/eval-wave2-e1/x-a1.html",
-      "title": "X A1",
-      "kind": "knowledge-tool",
-      "description": "Open an interactive knowledge artifact.",
-      "artifactId": "brief-eval-x-a1"
-    },
-    {
-      "id": "surface-coordination-eval-wave2-e1-x-b1",
-      "path": "docs/coordination/eval-wave2-e1/x-b1.html",
-      "title": "X B1",
-      "kind": "knowledge-tool",
-      "description": "Open an interactive knowledge artifact.",
-      "artifactId": "brief-eval-x-b1"
-    },
-    {
-      "id": "surface-coordination-eval-wave2-e1-x-b2",
-      "path": "docs/coordination/eval-wave2-e1/x-b2.html",
-      "title": "X B2",
-      "kind": "knowledge-tool",
-      "description": "Open an interactive knowledge artifact.",
-      "artifactId": "brief-eval-x-b2"
-    },
-    {
-      "id": "surface-coordination-eval-wave2-e1-x-d",
-      "path": "docs/coordination/eval-wave2-e1/x-d.html",
-      "title": "X D",
-      "kind": "knowledge-tool",
-      "description": "Open an interactive knowledge artifact.",
-      "artifactId": "brief-eval-x-d"
-    },
-    {
-      "id": "surface-coordination-eval-wave2-e1-x-f",
-      "path": "docs/coordination/eval-wave2-e1/x-f.html",
-      "title": "X F",
-      "kind": "knowledge-tool",
-      "description": "Open an interactive knowledge artifact.",
-      "artifactId": "brief-eval-x-f"
-    },
-    {
-      "id": "surface-coordination-eval-wave2-e1-x-g1",
-      "path": "docs/coordination/eval-wave2-e1/x-g1.html",
-      "title": "X G1",
-      "kind": "knowledge-tool",
-      "description": "Open an interactive knowledge artifact.",
-      "artifactId": "brief-eval-x-g1"
-    },
-    {
-      "id": "surface-coordination-eval-wave2-e1-x-i",
-      "path": "docs/coordination/eval-wave2-e1/x-i.html",
-      "title": "X I",
-      "kind": "knowledge-tool",
-      "description": "Open an interactive knowledge artifact.",
-      "artifactId": "brief-eval-x-i"
     }
   ],
-  "graphSha256": "d4859def3d3ea97042a6f2732e7d8d154bf5cc924a1c92f953724056c9e5b72a"
+  "graphSha256": "939e330166e2e554d17836842aa005bd717eb881c7ceedf87b37f5a8ce8b2f37"
 };
