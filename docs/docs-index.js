@@ -1886,7 +1886,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9e9a2965716a0db1920841bdc5cf8196dc905fee0cca1cc1d7b922e3fd670645"
+      "sourceSha256": "4bf1fe95dffaac7f64f692a9be2df8b5cd0c53d26ccfcbae88fc15627b478cbe"
     },
     {
       "id": "design-eval-arms",
@@ -4254,7 +4254,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "68339d1b87cb8b6fcc0b597c3875e40c45856c5af3638c6efd711e1701b2fb2b"
+      "sourceSha256": "c9a61f54cf9f85f2939533b7bf5c30ed0ff9c6ed9de98ba9b502dd3148ef7a27"
     },
     {
       "id": "review-eval-sec-w1b",
@@ -4317,6 +4317,37 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "a3757d6ce6731cd6180552d45504592b69bc251c9557de511549053c7c98b43a"
+    },
+    {
+      "id": "review-eval-sec-w1e",
+      "path": "docs/design/reviews/eval-review-sec-w1e.md",
+      "title": "Security & Identity review of W1-E: discriminate, the synthetic profile and readiness (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Security & Identity gate on W1-E (design/eval-discriminate, 549f7bc4) judged against W0 rev 5 and R-98. Variants are data-only and the overlay is mostly safe, but the overlay misses destination links and Windows name forms, the variant edits have no path containment, the synthetic environment is a denylist that contradicts itself, and the attach path does not refuse a discrimination run. PASS WITH CONDITIONS, 10 findings.",
+      "tags": [
+        "review",
+        "security",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-e"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sec",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "89e40f91a92bd46f8371806d74554bd9ff040ff776bf00655485a55eff57447d"
     },
     {
       "id": "review-eval-sec-w1f",
@@ -4399,7 +4430,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "6498292143c8251d7eacdd9887b620b175937d91c7c69224f58467d473a63c2f"
+      "sourceSha256": "c6be0e7d4145dd1fcd2e234a164a452b53865a3a38867fa0280aaae2e881dc76"
     },
     {
       "id": "review-eval-sim-w1a",
@@ -4484,6 +4515,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "c862b5fa4bdd0dc807da71facdea81ca7c5c0fa4cc7b2c8839eaddf8d481ac64"
+    },
+    {
+      "id": "review-eval-sim-w1e",
+      "path": "docs/design/reviews/eval-review-sim-w1e.md",
+      "title": "Simplifier review of W1-E (discriminate, synthetic profile, readiness)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Adversary Mode, soft veto) on design/eval-discriminate 549f7bc4 against W0 rev 5 and R-98. PASS WITH CONDITIONS: the SyntheticLauncher, variants-as-cells and the HB-RDY set are the smallest correct mechanism for E1; defer the empty FROZEN registry (HB-RDY-009) to E4, fold about ten test nodes, key the run link by record name, and drop the build re-hash.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b1640f5c6c09d40b7f2776d7cde366b5e07f445130d69098148ffcd01416430e"
     },
     {
       "id": "review-eval-sim-w1f",
@@ -6776,5 +6828,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "2bd528edf88b0a2db123de807b48eb65172def723b2f3be931763232a8398c3b"
+  "graphSha256": "51ab90a596c570257bbb5ccf2bc14b9126284d155b298ea32b8500f9a261da02"
 };

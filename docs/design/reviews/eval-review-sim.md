@@ -41,3 +41,20 @@ Checked and sound (no finding): `create_once` plus `publish_dir` as the only two
 Blocking: none. Soft veto: not exercised; findings 1-4 should be applied before the dependent slices gate.
 
 GATE w0-seam-contracts · Simplifier · PASS WITH CONDITIONS · 12 findings (rv-sim-e1e4, 2026-10-03)
+
+## W0 rev 5 sections 6 and 7 (2026-10-03; `docs/design/eval-seam-contracts.md` on main b0f6455d)
+
+Scope: section 6 "no `synthetic.yaml`" and section 7 "`verified_before_use` is not built" plus the simplicity clause. Code opened: `tests/test_profiles.py:125`, `tests/test_acp_record.py:249`, `config.py:34,117`, `profiles.py:176`. Both cuts are right. Findings are residual.
+
+| # | location | finding | severity | evidence | fix | confidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | s7 simplicity clause (b), `v-laundered` | The variant is "reference plus 25 lines and two classes in a new out-of-radius file". Clause (a) already counts those two classes tree-wide, so `new_abstractions` exceeds its ceiling and the primary is 0 with clause (b) deleted. The claim "a mutant that drops clause (b) turns it red" is false for this input. Clause (b) (`outside_radius_lines`, a new required ceiling inside the task hash) has no test that needs it. | major | W0 s7 simplicity bullet (a), (b) and last sentence | Add `v-laundered-lines`: reference plus 25 plain-function lines in an out-of-radius file, no class or import. Only (b) fails it. Or drop (b) and its ceiling. | Inferred (depends on the task's `new_abstractions` ceiling, which the reference sets) |
+| 2 | s7 `verified_before_use` NA | "Every cell records NA `not built`" and both `expected` roles declare `{na: "not built"}`. W0 names no writer of that NA row, and E4's X-NG is the only candidate. Omitting the metric from the narrowed set (`runner.applicable`) until its producer exists writes no NA, declares no `expected`, and needs no exemption path. | minor | W0 s7 bullet; s2 `expected` semantics | State the writer, or keep the id in the catalog and out of `applicable` for `no-guessing` until built. | Inferred |
+| 3 | s6 synthetic bullet | Right cut: a fourth profile file turns `test_profiles.py:125` and `test_acp_record.py:249` red (Verified). The price is three hunks (`config.HARNESSES` entry, `SYNTHETIC_PROFILE_RECORD`, the HB-PLN-004 branch). The branch exists only because the `HARNESSES` entry makes `validate_matrix` accept `synthetic` (`config.py:117`, its one reader besides `profiles.py:176`). Equal-cost alternative: accept `synthetic` in `validate_matrix` only for `kind: discrimination`, which needs no refusal row. Not asked: a seam round costs more than it saves. Note "exclusion stays structural" is half true: runtime for plans, structural for the qualification suite. | minor | W0 s6 bullet; `config.py:34,117` | Keep as written; soften "structural" to name the HB-PLN-004 check. | Verified (tests, readers); Inferred (alternative) |
+| 4 | s6 record JSON, second-production bullet, rev 5 table rows | Stale against R-98 (5fa957ad): the JSON still carries `run_id` and `grading_id`, the "read the key first, compare only..." bullet and "option (a) stands meanwhile" remain, and the table says "DR-E1 open: code option (a)". W0 rev 6 is owed. W1-E s4.2 already matches R-98. | minor | W0 s6; R-98 | Rev 6: drop the ids from the JSON, delete both option-(a) texts. | Verified |
+
+**Seam disagreement.** W0 s6 (record body with ids, option (a)) vs W1-E s4.2 (no ids) and R-98; the ruling decides, W0 is the stale side.
+
+Blocking: none. Soft veto: not exercised; finding 1 should be applied before X-NG/X-SM build.
+
+GATE w0-rev5-s6-s7 · Simplifier · PASS WITH CONDITIONS · 4 findings (rv-sim-w1e-e1e4, 2026-10-03)
