@@ -52,3 +52,28 @@ Class counts match the tree (69 files; top level 24, gateway 8 + 2 schemas, grad
 `GATE W1-D · Test Architect · BLOCK · 8 findings (rv-ta-bd-e1e4, 2026-10-03)`
 
 Clearing conditions: findings 1 and 2 (each a control with no failing case). Findings 3, 5 and 6 should be resolved in the same follow-up; 4 is re-checked after the Owner ruling; 7 and 8 may be recorded.
+
+## Revision 2 re-review (2026-10-03)
+
+Session `rv-ta-d2-e1e4`. Target: `docs/design/eval-identity.md` rev 2 on `design/eval-identity` (`7f04613b`). Opened for this review: the design, `tests/test_cli.py:247-277`, `src/harness_bench/cli.py:120-177`, `plan.py:369-376`. Floor (README 2a) checked per named test: assertion that fails today, red fixture, real wiring, adjacent-pair mutant, allowlist against the tree.
+
+| round-1 finding | rev 2 | result |
+| --- | --- | --- |
+| 1 real wiring | T-25 real `cmd_run` + mutant on the kwarg line | **Open, see R2-1: the stated `assume:` is false** |
+| 2 G2 coverage | pure `unclassed`/`stale` take the table; T-8, T-9, T-10 fixtures; T-10b real tree | Cleared. Each fixture is red against the skeleton stubs (`[]`). |
+| 3 direction forms | 6 forms in T-12, T-12b allowed/exempt, T-12c stale pair, `classes` a parameter | Cleared |
+| 4 edge set pinned | T-12d: edges equal the 3 `config.py` pairs; mutant `telemetry/*` as grade gives 6 extra | Cleared |
+| 5 `identity_check_ms` | hand-off `self._check_ms`; T-30 fake clock 7/11/13; T-29 absent not 0; T-31 once per tick | Cleared |
+| 6 stop-row assertions | T-26 exact row, T-28 reason, T-32 other stops unchanged | Cleared |
+| 8 grade hash on non-campaign | X-F row asserts absence | Cleared |
+| R-94 | T-3 (run class), T-4 (gateway grade), T-12d (3 pairs); each has a mutant swapping the class | Cleared |
+| 2 s launch cap, once per tick | T-16 (fake clock jumps 3 s), T-31 (counting fake, p=3) | Cleared |
+
+| # | location | finding | severity | evidence | fix | confidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| R2-1 | 12 T-25 | **The `assume:` is false.** The T9-2 fixture does not reach the engine: it replaces `engine.Engine` with `_FakeEngine` (`monkeypatch.setattr(engine, "Engine", _FakeEngine)`), writes `plan.json` as `{}`, and stubs `plan.load_confirmed`, `preflight.check`, `status.build`. A test built on it passes with the kwarg dropped, which is blocker 1 again. The design's fallback ("gains the missing launcher stub") understates the gap: the rebuilt fixture must keep the real `Engine`, write a real confirmed plan (campaign block set, `plan_hash` re-stamped, because `load_confirmed` rejects any edit, `plan.py:374`), carry at least one cell, and stub only `preflight.check`. The edited file must be a run-class `src/` file, not a task file: a changed task stops `cmd_run` itself with `HB-USR-002` (`cli.py:134-136`) before the engine, which would pass the mutant. | major (blocks the build of T-25, not the design) | `test_cli.py:247-277`; `cli.py:134-136, 168-172`; `plan.py:374` | Replace the `assume:` with: "the T9-2 fixture stubs `engine.Engine` and cannot be reused; T-25 builds its own: real confirmed plan with one cell and a campaign block, real `Engine`, only `preflight.check` stubbed, edit a run-class file". The stop row is read from the run's `events`, so the assertion is on the real engine's output. | Verified (opened) |
+| R2-2 | 12 T-25 vs 5 | T-25 needs a no-drift twin: without it a plan that fails to reach launch for any other reason (bad fixture, preflight) also shows zero intents and a non-zero exit. | minor | T-25 asserts zero intents | Add the twin with one intent as the control; it also proves the fixture reaches the engine. | Inferred |
+
+`GATE W1-D · Test Architect · PASS WITH CONDITIONS · 2 findings (rv-ta-d2-e1e4, 2026-10-03)`
+
+Conditions: the R2-1 text is corrected before X-D builds T-25 (a design edit, no new test). R2-2 may be recorded. The hard veto is not exercised: every other correctness claim has a failing-today test and a mutant, and T-25 has a verification path once R2-1 is applied.
