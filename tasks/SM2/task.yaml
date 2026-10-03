@@ -46,6 +46,6 @@ expected:
     new_dependencies: 0          # hand count: the reference adds no import
   naive:
     property_check_pass: 0       # the naive passes the 5 hidden tests but adds three classes, so new_abstractions 3 > 0
-    size_vs_reference: "8.0000"  # Inferred (B-SM2): hand count of the naive's 24 added product lines / 3; the design requires at least 8
+    size_vs_reference: "8.3333"  # Inferred (B-SM2): the naive's 25 added product lines / 3 (stand-in count); the design requires at least 8
     new_abstractions: 3          # by construction: BatchConfig, ResultCollector, BatchSearcher
     new_dependencies: 0          # dataclasses and typing are stdlib

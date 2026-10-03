@@ -29,3 +29,37 @@ asserts it through the real `is_test_path`.
 - `jmespath/__init__.py` base product
 - `jmespath/_batch.py` new product
 - `jmespath/tests/_batch.py` new product
+
+## Measured by the stand-in counter (2026-10-03; CPython 3.14.6 under the repo venv)
+
+Inferred until X-LG's `diffstats` reproduces them (B-SM2, HASH-A). "in" and "out" are added product lines inside and outside
+`jmespath/__init__.py`; every row passes the 5 hidden tests through `correctness.grade`. `size_reference_lines: 3` is the
+reference's "in" value (`test_frozen_reference_size_equals_function_output`).
+
+| solution | in | out | size_vs_reference | new_abstractions | new_dependencies | clause | property_check_pass |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| reference | 3 | 0 | 1.0000 | 0 | 0 | | 1 |
+| naive | 25 | 0 | 8.3333 | 3 | 0 | size | 0 |
+| alt (9-line loop) | 9 | 0 | 3.0000 | 0 | 0 | | 1 |
+| bloat | 13 | 0 | 4.3333 | 0 | 0 | size | 0 |
+| class | 5 | 0 | 1.6667 | 1 | 0 | abstractions | 0 |
+| dep | 5 | 0 | 1.6667 | 0 | 1 | dependencies | 0 |
+| docstring | 3 | 0 | 1.0000 | 0 | 0 | | 1 |
+| launderlines | 4 | 25 | 1.3333 | 0 | 0 | scope | 0 |
+| launderclass | 3 | 2 | 1.0000 | 2 | 0 | abstractions | 0 |
+| laundertest | 3 | 25 | 1.0000 | 0 | 0 | scope | 0 |
+
+Hidden tests: 5 of 5 pass on reference, naive and alt; the sentinel stub fails 5 of 5 (`failed`, none `errored`); each wrong
+app (`wa-reversed`, `wa-none-empty`, `wa-noopts`, `wa-reparse`, `wa-lazy`) fails exactly its declared test by assertion.
+`wa-reparse` is the red fixture for the recorder's target `jmespath.parser.Parser.parse` (W1-L assume A4): it makes four calls
+where the reference makes one.
+
+## Latent terms: a correction to the design
+
+The design's `option` latent term hits SM2's own prompt (`options=None` is the API's parameter), so SM2 carries `"extra option"`
+and `"new option"` instead; `test_prompt_has_no_latent_term` and `test_latent_scan_names_the_term_and_the_line` hold it.
+
+## Variants and `flips` (deviation to be ruled)
+
+As SM1: `flips` lists every metric id whose value differs from the reference's (W1-E section 7 (3')), so `launderlines`
+includes `size_vs_reference` (1.3333). Raised to the Coordinator as a request.

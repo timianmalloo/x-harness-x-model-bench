@@ -13,7 +13,6 @@ rule). The `ready` follow-on deletes the stand-in and asserts the same numbers t
 from __future__ import annotations
 
 import ast
-import functools
 import importlib.util
 import re
 import shutil
@@ -68,7 +67,7 @@ DEFINITIONS = {
             "wa-empty-raises": ["test_none_on_an_empty_table"],
             "wa-dict": ["test_the_result_is_a_document_with_its_doc_id"],
         },
-        "alt_lines": 6, "naive_lines": 18, "created": "tinydb/_first.py", "test_dir_created": "tinydb/tests/_first.py",
+        "alt_lines": 6, "naive_lines": 19, "created": "tinydb/_first.py", "test_dir_created": "tinydb/tests/_first.py",
     },
     "SM2": {
         "repo": "https://github.com/jmespath/jmespath.py", "pin": "2812594e69d43098ef60f81f4efc404c071b0418",
@@ -82,7 +81,7 @@ DEFINITIONS = {
             "wa-reparse": ["test_the_expression_is_parsed_once"],
             "wa-lazy": ["test_an_invalid_expression_raises_parse_error_even_for_no_documents"],
         },
-        "alt_lines": 9, "naive_lines": 24, "created": "jmespath/_batch.py", "test_dir_created": "jmespath/tests/_batch.py",
+        "alt_lines": 9, "naive_lines": 25, "created": "jmespath/_batch.py", "test_dir_created": "jmespath/tests/_batch.py",
     },
 }
 IDS = sorted(DEFINITIONS)

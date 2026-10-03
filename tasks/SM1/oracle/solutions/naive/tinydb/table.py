@@ -3,6 +3,8 @@ This module implements tables, the central place for accessing and manipulating
 data in TinyDB.
 """
 
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from collections.abc import Callable, Iterable, Iterator, Mapping, MutableMapping
 from typing import (
     NoReturn,
@@ -30,6 +32,24 @@ class Document(dict):
     def __init__(self, value: Mapping, doc_id: int):
         super().__init__(value)
         self.doc_id = doc_id
+
+
+@dataclass
+class FirstOptions:
+    default: Optional[Document] = None
+    limit: int = 1
+
+
+class FirstStrategy(ABC):
+    @abstractmethod
+    def pick(self, docs, options): ...
+
+
+class ScanStrategy(FirstStrategy):
+    def pick(self, docs, options):
+        for doc in docs:
+            return doc
+        return options.default
 
 
 class Table:
@@ -294,8 +314,11 @@ class Table:
 
         return docs
 
-    def first(self, cond: QueryLike) -> Optional[Document]:
-        return next(iter(self.search(cond)), None)
+    def first(self, cond: QueryLike, options: Optional[FirstOptions] = None,
+              strategy: Optional[FirstStrategy] = None) -> Optional[Document]:
+        options = options or FirstOptions()
+        strategy = strategy or ScanStrategy()
+        return strategy.pick(self.search(cond), options)
 
     @overload
     def get(self) -> NoReturn: ...

@@ -26,7 +26,7 @@ class SearchManyTests(unittest.TestCase):
         options = jmespath.Options(dict_cls=collections.OrderedDict)
         results = jmespath.search_many("{x: a}", [{"a": 1}, {"a": 2}], options=options)
         self.assertEqual([type(r) for r in results], [collections.OrderedDict, collections.OrderedDict])
-        self.assertEqual([r["x"] for r in results], [1, 2])
+        self.assertEqual(sorted(r["x"] for r in results), [1, 2])  # the order is test 1's concern alone
 
     def test_the_expression_is_parsed_once(self):
         calls = []

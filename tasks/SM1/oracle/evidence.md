@@ -30,3 +30,32 @@ there. One row per path: `base` or `new` against the base tree, then the classif
 - `tinydb/table.py` base product
 - `tinydb/_first.py` new product
 - `tinydb/tests/_first.py` new product
+
+## Measured by the stand-in counter (2026-10-03; CPython 3.14.6 under the repo venv)
+
+Inferred until X-LG's `diffstats` reproduces them (B-SM1, HASH-A). "in" and "out" are added product lines inside and outside
+`tinydb/table.py`; every row passes the 5 hidden tests through `correctness.grade`. `size_reference_lines: 2` is the reference's
+"in" value (`test_frozen_reference_size_equals_function_output`).
+
+| solution | in | out | size_vs_reference | new_abstractions | new_dependencies | clause | property_check_pass |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| reference | 2 | 0 | 1.0000 | 0 | 0 | | 1 |
+| naive | 19 | 0 | 9.5000 | 3 | 0 | size | 0 |
+| alt (6-line loop) | 6 | 0 | 3.0000 | 0 | 0 | | 1 |
+| bloat | 7 | 0 | 3.5000 | 0 | 0 | size | 0 |
+| class | 4 | 0 | 2.0000 | 1 | 0 | abstractions | 0 |
+| dep | 4 | 0 | 2.0000 | 0 | 1 | dependencies | 0 |
+| docstring | 2 | 0 | 1.0000 | 0 | 0 | | 1 |
+| launderlines | 3 | 25 | 1.5000 | 0 | 0 | scope | 0 |
+| launderclass | 2 | 2 | 1.0000 | 2 | 0 | abstractions | 0 |
+| laundertest | 2 | 25 | 1.0000 | 0 | 0 | scope | 0 |
+
+The design's "naive about 25 lines" is 19 here, and "v-laundered-class: one empty class" is two classes in two lines (W0 rev
+6.6). Hidden tests: 5 of 5 pass on reference, naive and alt; the sentinel stub fails 5 of 5 (`failed`, none `errored`); each
+wrong app (`wa-last`, `wa-raises`, `wa-empty-raises`, `wa-dict`) fails exactly its declared tests by assertion.
+
+## Variants and `flips` (deviation to be ruled)
+
+`flips` lists every metric id whose value differs from the reference's, as W1-E section 7 (3') defines it for a check-less
+task, so `launderlines` lists `size_vs_reference` as well as `property_check_pass` (its three in-radius lines give 1.5000,
+not 1.0000). The brief and W0 rev 6.6 write `flips: [property_check_pass]` for it. Raised to the Coordinator as a request.

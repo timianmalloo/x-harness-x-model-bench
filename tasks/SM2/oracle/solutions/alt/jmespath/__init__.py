@@ -14,4 +14,10 @@ def search(expression, data, options=None):
 
 def search_many(expression, documents, options=None):
     parsed = compile(expression)
-    return [parsed.search(d, options=options) for d in documents]
+    results = []
+    index = 0
+    while index < len(documents):
+        document = documents[index]
+        results.append(parsed.search(document, options=options))
+        index += 1
+    return results

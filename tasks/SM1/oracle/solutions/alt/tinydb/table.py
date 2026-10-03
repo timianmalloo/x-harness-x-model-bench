@@ -295,7 +295,11 @@ class Table:
         return docs
 
     def first(self, cond: QueryLike) -> Optional[Document]:
-        return next(iter(self.search(cond)), None)
+        found = None
+        for doc in self.search(cond):
+            found = doc
+            break
+        return found
 
     @overload
     def get(self) -> NoReturn: ...
