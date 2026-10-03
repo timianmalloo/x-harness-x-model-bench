@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:49:49Z",
+  "generated": "2026-10-03T19:53:17Z",
   "audit": [
     {
       "actor": null,
@@ -65858,22 +65858,84 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41E5VD8KB9CYTACYWF4GHH0",
-      "shortname": "ta-w1f-r2",
-      "datetime": "2026-10-03T17:49:48Z",
-      "session": "rv-ta-w1f-e1e4",
-      "prompt": "RV-TA delta re-review of W1-F rev 2",
-      "summary": "Test Architect re-review of W1-F rev 2: PASS WITH CONDITIONS, 2 minor residuals",
-      "kind": "skill",
-      "skill": "design-slice-review",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/design/reviews/eval-review-ta-w1f.md"
       ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:49:48Z",
+      "id": "al-01M41E5VD8KB9CYTACYWF4GHH0",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "RV-TA delta re-review of W1-F rev 2",
+      "session": "rv-ta-w1f-e1e4",
+      "shortname": "ta-w1f-r2",
+      "skill": "design-slice-review",
+      "summary": "Test Architect re-review of W1-F rev 2: PASS WITH CONDITIONS, 2 minor residuals",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1f.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:49:52Z",
+      "done_when": "gate line",
+      "fan_out": 0,
+      "goal": "re-check 3 conditions",
+      "id": "al-01M41E5YP6HHH206H7J8B0CDKK",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader: W1-F rev 2 delta",
+      "session": "rv-sec-w1f-e1e4",
+      "shortname": "design-slice-review-sec-w1f-r2",
+      "skill": "design-slice-review",
+      "summary": "SEC W1-F rev 2: conditions met, PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1a.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:50:14Z",
+      "id": "al-01M41E6MCMNKDJAZF27C5DE4JF",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "RV-PAT review of W1-A arms v2 and W1-D engine identity (docs/coordination/eval-wave1/rv-pat.md)",
+      "session": "rv-pat-ad-e1e4",
+      "shortname": "rv-pat-ad",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT reviews of W1-A and W1-D: both PASS WITH CONDITIONS, 6 findings each",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "id": "al-01M41N7WVBBY9T3MA38FFKFDBH",
+      "shortname": "design-slice-eval-multi-turn",
+      "datetime": "2026-10-03T19:53:15Z",
+      "session": "w1j-multiturn-e1e4",
+      "prompt": "docs/coordination/eval-wave1/w1-j-multi-turn.md",
+      "summary": "Designed the multi-turn attempt, turn snapshots and the TLA+ model (W1-J): turn-<n> snapshot folder, snapshot key part on archive_files, driver open/send/close, one budget; model v5 with NumTurns, phased archive writes, 6 new seeded variants; TLC passes, 28/28 variants rejected, US-44 bounds pass (363,738,864 distinct states).",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-multi-turn.md"
+      ],
       "tags": [],
       "outcome": "success",
-      "compiled": false
+      "compiled": false,
+      "goal": "Run /design-slice for W1-J multi-turn attempt, turn snapshots and the TLA+ model (ADR-0015), producing docs/design/eval-multi-turn.md",
+      "done_when": "Gate PASS incl. Distributed Systems and SRE; TLC run with PromptOncePerTurn, SnapshotBeforeNextTurn, NoSnapshotInFlight, CrashedTurnPredicate, ArchiveExistsMeansComplete, each seeded variant rejected",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
@@ -66339,6 +66401,28 @@ window.AUDIT_DATA = {
           "1cf8fed3 docs(architecture): evaluation-campaign amendment (gated, 3 council rounds) - companion docs/architecture-evaluation-campaign.md refining arch-harness-bench, ADR-0014 arm replaces pack setting (cell = task version x combo x arm x rep; cell_id keeps its pack key carrying the arm id so grids 1-4 load and re-plan unchanged), ADR-0015 two turns on one ACP session with crash-atomic turn snapshots and a per-turn crash predicate (TLA+), ADR-0016 campaign record (hash-chained ledger, create_once records, rings as bench-matrix/2), ADR-0017 engine identity manifest and freeze (post-fix cells re-run, operator DI6), ADR-0018 hidden-check harness (HOST_ENV allowlist, explicit handle list, write-once-last-and-alone result with a tamper cross-check; Windows now, macOS follow-up), ADR-0019 catalog 0.7 (scenario-7 pass@1; append-only golden correction), ADR-0020 stdlib power and verdicts (reference cases reproduced), ADR-0021 plan-level resume and liveness; amendment text in ADR-0006/0007/0010/0011/0013; phases E1 walking skeleton, E2/E3/E4 in parallel, E5 first campaign. Council: Security PASS, Distributed Systems PASS, SRE/Data&Persistence/Enterprise/Simplifier/Patterns PASS WITH CONDITIONS (applied); authors did not clear their own vetoes. Claude Opus 5.5 author, Claude Sonnet 5 council (Leader on Claude Opus 5.5)",
           "ebf21cee spike(e4): a second session/prompt in the same ACP session, after end_turn (R-E6, DR-E4)"
         ]
+      }
+    },
+    {
+      "id": "cl-01M41N7YBJR6NQPV63F36Y58QC",
+      "datetime": "2026-10-03T19:53:17Z",
+      "session": "w1j-multiturn-e1e4",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "Multi-turn attempt: turn-<n> snapshot folder, snapshot key part, one budget, lifecycle model v5",
+      "prompt": "docs/coordination/eval-wave1/w1-j-multi-turn.md",
+      "summary": "W1-J design: data model, snapshot contract, driver/engine shape, TLA+ model v5 with TLC evidence, test plan with the four testability checks.",
+      "rationale": "ADR-0015 left the snapshot path and the code shape open; the model must pass TLC before X-J1 starts. Folder turn-<n> avoids the attempt-* globs of five readers; final rows omit the snapshot field so every existing archive_hash is unchanged; the budget clock starts once; the lifecycle model gains NumTurns, phased crash-atomic archive writes and six seeded variants.",
+      "artifacts": [
+        "docs/design/eval-multi-turn.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": null,
+        "after": "1c72006533871d770c6a9308e7132623a7639e2b",
+        "branch": "design/eval-multi-turn",
+        "pushed": null,
+        "commits": []
       }
     }
   ],
