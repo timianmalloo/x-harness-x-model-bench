@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:54:30Z",
+  "generated": "2026-10-03T17:58:36Z",
   "audit": [
     {
       "actor": null,
@@ -65957,23 +65957,86 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41EEECHHJQ3RCZPJ06E1FMP",
-      "shortname": "review-sec-w1i",
-      "datetime": "2026-10-03T17:54:30Z",
-      "session": "rv-sec-w1i-e1e4",
-      "prompt": "Security review of W1-I (S1 microdot, S2 bottle) against W0 rev 2",
-      "summary": "GATE W1-I Security PASS WITH CONDITIONS, 8 findings",
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1i.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:53:06Z",
+      "id": "al-01M41EBW5M2SS30RGJT1ZJ4JSN",
       "kind": "skill",
+      "outcome": "success",
+      "prompt": "Review W1-I security tasks design as Test Architect (brief rv-ta.md)",
+      "session": "rv-ta-w1i-e1e4",
+      "shortname": "review-ta-w1i",
       "skill": "design-slice-review",
-      "tool": null,
+      "summary": "Test Architect review of W1-I security tasks: BLOCK, 9 findings",
+      "tags": [],
+      "tool": null
+    },
+    {
       "actor": "claude-sonnet-5-5",
       "artifacts": [
         "docs/design/reviews/eval-review-sec-w1i.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "tier": "T2"
+      "datetime": "2026-10-03T17:54:30Z",
+      "id": "al-01M41EEECHHJQ3RCZPJ06E1FMP",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Security review of W1-I (S1 microdot, S2 bottle) against W0 rev 2",
+      "session": "rv-sec-w1i-e1e4",
+      "shortname": "review-sec-w1i",
+      "skill": "design-slice-review",
+      "summary": "GATE W1-I Security PASS WITH CONDITIONS, 8 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-grader.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:19:40Z",
+      "done_when": "Gate PASS with Security & Identity as hard-veto reviewer; the four ADR-0018 red tests and the race test named; job-alone constraints adopted (sys._base_executable, DETACHED_PROCESS, one-byte ack)",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-F hidden-check runner and property grader, producing docs/design/eval-property-grader.md",
+      "id": "al-01M41CEN2C02BQ55YW4MA3JCJ7",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md",
+      "session": "w1f-property-e1e4",
+      "shortname": "design-slice-eval-property-grader",
+      "skill": "design-slice",
+      "summary": "W1-F design for the hidden-check runner and property grader: data model, contracts, probe host (RV-SEC F1), handshake, outcome precedence (RV-TA s3), FMA, STRIDE per ADR-0018 row, telemetry, test plan by node id; spikes SP-F1/F2; seam requests req-01M41C0NFEXQA0XVH4FTK9YDBD, req-01M41C0ZCPJ13PQ77KNC5AHQMZ, req-01M41C57K2VVC7C4JGEJC18FR1; gate pending",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-grader.md",
+        "tests/test_property_forgery_fixture.py"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:48:07Z",
+      "done_when": "every finding has a disposition row; TA blocking 1 and 2 specified with named tests and the mutation entry; SEC conditions met (fixture committed, seam request, junction test); validate exit 0; named-path commits",
+      "fan_out": 0,
+      "goal": "Apply the four W1-F reviews to docs/design/eval-property-grader.md, W0 rev 2 winning, with a review-disposition table",
+      "id": "al-01M41E2RBZ9HAV9Q77EGHWRV86",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md (rev 2 follow-up: apply the four W1-F reviews)",
+      "session": "w1f-property-r2-e1e4",
+      "shortname": "design-slice-eval-property-grader-r2",
+      "skill": "design-slice",
+      "summary": "W1-F revision 2: all 38 review findings dispositioned; conformed to W0 rev 2; SP-F2 fixture, positive control and shipped-shape refusal committed and run 9/9; two seam requests sent; gate pending RV-TA re-review and RV-SEC conditions",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     }
   ],
   "changes": [
@@ -66440,6 +66503,51 @@ window.AUDIT_DATA = {
           "ebf21cee spike(e4): a second session/prompt in the same ACP session, after end_turn (R-E6, DR-E4)"
         ]
       }
+    },
+    {
+      "id": "cl-01M41CEMSZVTB7AHE5VSWQSRXP",
+      "datetime": "2026-10-03T17:19:39Z",
+      "session": "w1f-property-e1e4",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "W1-F: property grader keeps agent code out of the check process (probe-host child), accepts one acknowledged document from a lone check, and classifies by one fixed precedence",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md",
+      "summary": "Design docs/design/eval-property-grader.md: runner.applicable narrows by property tag (R-90); hidden tests via correctness.grade() then a fresh hashed check copy; DETACHED base-interpreter check with one-byte ack; in-process probes run in a bench_check probe-host child (RV-SEC F1 forgery reproduced 3/3 by spike SP-F2); precedence HB-CHK-004>003>002(hash)>002(10a)>001>measured 0>scores; Kleene primary; _env.py one allowlist; egress task_canary. Gate pending RV-PAT, RV-SIM, RV-TA, RV-SEC.",
+      "rationale": "ADR-0018 s1 and s10a hold only if no agent code runs in the deciding process; spikes SP-F1/F2 verified the sweep, the handshake and the forgery",
+      "artifacts": [
+        "docs/design/eval-property-grader.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "5092455c",
+        "after": "5092455c9bb3f00821671edfedb546218286873d",
+        "branch": "design/eval-property-grader",
+        "pushed": null,
+        "commits": []
+      }
+    },
+    {
+      "id": "cl-01M41E2R397305FHW1J1A72D6N",
+      "datetime": "2026-10-03T17:48:07Z",
+      "session": "w1f-property-r2-e1e4",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "W1-F rev 2: property grader conformed to W0 rev 2 (seven rows, tamper NA, per-phase suspend, 64 KiB, E1 probe-only)",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md (rev 2 follow-up: apply the four W1-F reviews)",
+      "summary": "Applied 38 findings of RV-TA (BLOCK), RV-SEC, RV-PAT, RV-SIM. W0 rev 2 wins: the seven-row outcome table with Classification.row, rows 1-5 NA for every metric, suspend detector per phase span, 64 KiB line, hidden_tests_pass and at_scale, fault/static/wsgi/resilience not built in E1. Added the clean-exit row-3 test and mutation entry, reparse-safe copy, bounded probe-host start and reader. Committed the SP-F2 forgery fixture with its positive control (9/9 each).",
+      "rationale": "W0 rev 2 is the contract; divergences only by seam request (req-01M41DM7XQG9GYVR32TJ762V67 NA handling to X-H1/X-E; req-01M41DM80KBD42GYARADW4V6HZ env import cycle).",
+      "artifacts": [
+        "docs/design/eval-property-grader.md",
+        "tests/test_property_forgery_fixture.py"
+      ],
+      "tags": [],
+      "git": {
+        "before": "13011c96",
+        "after": "13011c961ce3114597432725d16854a0ede6af10",
+        "branch": "design/eval-property-grader",
+        "pushed": null,
+        "commits": []
+      }
     }
   ],
   "messages": [
@@ -66549,6 +66657,69 @@ window.AUDIT_DATA = {
       "to": "owner-fable",
       "kind": "decision-request",
       "ref": "req-01M41BS9Y7D1ANHSNDYM9N2H08",
+      "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M41C40NC7E7S5NG8CKX9BD0E",
+      "ts": "2026-10-03T17:13:51Z",
+      "from": "owner-fable",
+      "to": "coord-opus-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41BS9Y7D1ANHSNDYM9N2H08",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41CV2MWGYW2HGQ5CQ63WJES",
+      "ts": "2026-10-03T17:26:27Z",
+      "from": "coord-opus-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41CV2MNPQENPMEMP01QF3ZY",
+      "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M41D2XB9KZ7DC50YYE2TP8MM",
+      "ts": "2026-10-03T17:30:43Z",
+      "from": "owner-fable",
+      "to": "coord-opus-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41CV2MNPQENPMEMP01QF3ZY",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41DJ574PMT6CXTZ07KYCT73",
+      "ts": "2026-10-03T17:39:03Z",
+      "from": "w1d-identity-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41DJ56WN77QNKFCW34GMG3A",
+      "session": "w1d-identity-e1e4"
+    },
+    {
+      "id": "mail-01M41E19DJNZNP9GKWHAT8CNPS",
+      "ts": "2026-10-03T17:47:19Z",
+      "from": "owner-fable",
+      "to": "w1d-identity-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41DJ56WN77QNKFCW34GMG3A",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41E37FRZPRF65SWNBYJ41KN",
+      "ts": "2026-10-03T17:48:22Z",
+      "from": "coord-opus-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41E37FGK5CRZ7NCK3RA20JV",
+      "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M41ED1JXN48J1TQYPE869PMJ",
+      "ts": "2026-10-03T17:53:44Z",
+      "from": "coord-opus-e1e4",
+      "to": "leader-e1e4",
+      "kind": "ruling",
+      "ref": null,
       "session": "coord-opus-e1e4"
     }
   ]

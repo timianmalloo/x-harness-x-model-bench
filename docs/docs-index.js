@@ -1857,6 +1857,109 @@ window.DOCS_INDEX = {
       "sourceSha256": "f4a94ef16a9889ff1923491693ecb0533e12741e2a9345905ebd65b4e864415d"
     },
     {
+      "id": "design-eval-property-grader",
+      "path": "docs/design/eval-property-grader.md",
+      "title": "Design W1-F: the hidden-check runner and the property grader (boundary B7, security-sensitive)",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation E1: Wave 1 design slice W1-F (built by X-F in E1; loopback by X-LB in E4)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Revision 2, conformed to W0 rev 2. One registered `property` grader (R-90): runner.applicable narrows it to the task's property; it runs the hidden tests through correctness.grade() and then the task's hidden check in a fresh, reparse-safe copy, in a new Job Object, started DETACHED with the base interpreter under -S and the grading environment allowlist. The check never imports agent code: probes go through a probe-host child whose pipes the check owns (the module-body forgery is committed as a fixture with its positive control). The grader accepts one line from a live, lone check, acknowledges it with one byte, and classifies by W0's seven ordered rows, with the suspend rule on each phase's span. E1 builds the security strategy, probe cases and `callable` apps only. Gate: rev 2 pending.",
+      "tags": [
+        "benchmark",
+        "grading",
+        "property-grader",
+        "hidden-check",
+        "security",
+        "trust-boundary",
+        "b7",
+        "evaluation-campaign",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0018-hidden-check-harness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0010-untrusted-cell-output",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0012-proportionate-security",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0013-native-cells",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0019-catalog-0-7-property-metrics",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-20261003-spike-e1-job-alone",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-20261003-spike-e1-handle-list",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-spike-phase1-probes",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-20260924-spike-a9-host-sleep",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-phase3-graders",
+          "rel": "refines"
+        },
+        {
+          "to": "coordination-eval-campaign",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-ta-w1f",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sec-w1f",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-pat-w1f",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sim-w1f",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "ee86fee9a13fb656a204a655b794e776831055a17eb00e86f897dce39248e262"
+    },
+    {
       "id": "design-eval-seam-contracts",
       "path": "docs/design/eval-seam-contracts.md",
       "title": "W0 seam contracts: the interfaces every Evaluation Campaign slice designs and builds against",
@@ -4065,6 +4168,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "6abf11a4043297b0f4e7fc2e3f3465e3575d54b2a68242649ee0a4e20298d7c4"
     },
     {
+      "id": "review-eval-ta-w1i",
+      "path": "docs/design/reviews/eval-review-ta-w1i.md",
+      "title": "W1-I security tasks S1 and S2 design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-I against W0 rev 2 and R-87..R-94. The probe table, the corrected inj-1 and the nine-variant idea are strong. BLOCK on two controls that can be satisfied for the wrong reason: the 11 hidden tests are red only by a missing module, and the variant test judges outcomes while a fail-closed host turns any crash into \"exploited\".",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-i"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "a77aaa75c7d107352b3fd028b23570540e99566d776e9161046ac3b4746a09f4"
+    },
+    {
       "id": "coordination-eval-brief-rv-ds",
       "path": "docs/coordination/eval-wave1/rv-ds.md",
       "title": "RV-DS brief: Distributed Systems lens reviewer (Adversary Mode)",
@@ -5493,6 +5623,14 @@ window.DOCS_INDEX = {
       "artifactId": "audit-log"
     },
     {
+      "id": "surface-design-eval-property-grader",
+      "path": "docs/design/eval-property-grader.html",
+      "title": "Eval Property Grader",
+      "kind": "design-preview",
+      "description": "Inspect a rendered design or design-language preview.",
+      "artifactId": "design-eval-property-grader"
+    },
+    {
       "id": "surface-design-eval-seam-contracts",
       "path": "docs/design/eval-seam-contracts.html",
       "title": "Eval Seam Contracts",
@@ -5578,5 +5716,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "d92f5689d1b0836f3903b0a2f84bd54ba1bad7efdba9c50ef661fa10b5174444"
+  "graphSha256": "ecff74e34e306d76fc4cebd87d47dcc0bd769354f359e5a2491f22292759dc6a"
 };
