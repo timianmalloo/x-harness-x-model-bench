@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:22:27Z",
+  "generated": "2026-10-03T18:34:30Z",
   "audit": [
     {
       "actor": null,
@@ -65522,6 +65522,28 @@ window.AUDIT_DATA = {
     {
       "actor": null,
       "artifacts": [
+        "docs/design/eval-arms.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:43:34Z",
+      "done_when": "Gate line with Patterns, Simplifier and Test Architect PASS; the grid-4 re-plan equivalence test (EV-17) specified by node id; the E1 / E3 split stated",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-A arms v2 (ADR-0014), producing docs/design/eval-arms.md",
+      "id": "al-01M41DTDY3J8ABY33NTC0N6YVM",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "C:\\Projects\\x-harness-x-model-bench\\docs\\coordination\\eval-wave1\\w1-a-arms.md",
+      "session": "w1a-arms-e1e4",
+      "shortname": "design-slice-eval-arms",
+      "skill": "design-slice",
+      "summary": "W1-A arms v2 design: bench-matrix/2, bench-plan/2, blocked launch order with bounded redraw, ready rule, AST pack-reader guard, E1/E3 split, EV-17 test map; four spikes, two W0 errata, four seam requests",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
         "docs/design/reviews/eval-review-pat-w1f.md"
       ],
       "compiled": false,
@@ -66380,6 +66402,96 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1h.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:24:14Z",
+      "done_when": "two review files with gate lines",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-H and W1-C",
+      "id": "al-01M41G4WA0X67R5PGH62JKRCDG",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "session": "rv-sim-hc-e1e4",
+      "shortname": "review-sim-w1h",
+      "skill": "design-slice-review",
+      "summary": "Simplifier review of W1-H: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1c.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:24:14Z",
+      "done_when": "two review files with gate lines",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-H and W1-C",
+      "id": "al-01M41G4WXG026Z0MH6P12SBMBS",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "session": "rv-sim-hc-e1e4",
+      "shortname": "review-sim-w1c",
+      "skill": "design-slice-review",
+      "summary": "Simplifier review of W1-C: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ds-w1c.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:25:13Z",
+      "done_when": "gate line written and committed",
+      "fan_out": 0,
+      "goal": "DS lens review of W1-C",
+      "id": "al-01M41G6PKG1R95CYZCP8V85P5G",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ds.md",
+      "session": "rv-ds-w1c-e1e4",
+      "shortname": "design-slice-review-eval-ds-w1c",
+      "skill": "design-slice-review",
+      "summary": "DS review of W1-C: PASS WITH CONDITIONS, 7 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M41GPSXV3S5EJB729HWTYE3P",
+      "shortname": "design-slice-eval-arms-r2",
+      "datetime": "2026-10-03T18:34:01Z",
+      "session": "w1a-arms-r2-e1e4",
+      "prompt": "docs/coordination/eval-wave1/w1-a-arms.md (follow-up rev 2: apply RV-TA, RV-SIM, RV-PAT conditions)",
+      "summary": "W1-A rev 2: 22 review findings dispositioned; plan_pack and HB-PLN-005 readers; G1 count ratchet and literal ratchet; real-git builder test; grid-4 entry point and provenance; Latin-square rejected; trims",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-arms.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Apply the W1-A gate conditions on top of W0 rev 3",
+      "done_when": "every finding has a disposition row; gate lines verbatim; validate exit 0",
+      "tier": "T2",
+      "fan_out": 0,
+      "started_at": "2026-10-03T18:33:49Z",
+      "duration_seconds": 12.0
     }
   ],
   "changes": [
@@ -66849,6 +66961,28 @@ window.AUDIT_DATA = {
     },
     {
       "artifacts": [
+        "docs/design/eval-arms.md"
+      ],
+      "datetime": "2026-10-03T17:43:46Z",
+      "git": {
+        "after": "1722e06d5956c3276e108adb96ea1cadfdc2cdce",
+        "before": null,
+        "branch": "design/eval-arms",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41DTSMG4Q0GSM3AYVPS967K",
+      "kind": "design",
+      "prompt": "C:\\Projects\\x-harness-x-model-bench\\docs\\coordination\\eval-wave1\\w1-a-arms.md",
+      "rationale": "SP-A1..A5 measured results; ADR-0014 section 4 assertion kept; W0 errata filed as seam requests",
+      "session": "w1a-arms-e1e4",
+      "skill": "design-slice",
+      "summary": "W1-A design for ADR-0014: arm replaces pack setting; cell_id recipe unchanged (grid-4 276 ids reproduced by spike); launch seed stored, redrawn up to 100 times to meet the 5 percent bound (pilot shape fails 25 percent of first draws); HB-PLN-004 added; guard G1 as AST with E1 allowlist; E1/E3 split and every on/off literal site mapped",
+      "tags": [],
+      "title": "Arms v2: every plan is bench-plan/2, blocked hash-keyed launch order with bounded redraw, measurement plans refuse non-ready tasks, AST pack-reader guard"
+    },
+    {
+      "artifacts": [
         "docs/design/eval-security-tasks.md"
       ],
       "datetime": "2026-10-03T17:48:26Z",
@@ -67048,6 +67182,29 @@ window.AUDIT_DATA = {
       "summary": "34 review findings dispositioned; recover_archive specified not built in E1; HB-LED-009 refused; site scan re-derived (12 sites, 11 keys) with red fixtures; rename_with_retry public; seam request S-B4",
       "tags": [],
       "title": "W1-B rev 2: recovery moves to X-K1, sweep lock enforced, create_once identity-checked, one WIN-A retry helper"
+    },
+    {
+      "id": "cl-01M41GQP7XAQHFKJW658RSDA2H",
+      "datetime": "2026-10-03T18:34:30Z",
+      "session": "w1a-arms-r2-e1e4",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "W1-A rev 2: G1 ratchets, plan_pack readers, test-plan trims",
+      "prompt": "w1-a-arms.md follow-up rev 2",
+      "summary": "Applies RV-TA/SIM/PAT conditions on W0 rev 3: plan_pack readers, count ratchet plus literal ratchet, real-git builder test, trims",
+      "rationale": "Gate passed with conditions; findings are advice applied without widening the slice",
+      "artifacts": [
+        "docs/design/eval-arms.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": null,
+        "after": "9a0aa49b3998295edc0846d1a00ccb9b38206fe0",
+        "branch": "design/eval-arms",
+        "pushed": null,
+        "commits": []
+      },
+      "audit_ref": "al-01M41GPSXV3S5EJB729HWTYE3P"
     }
   ],
   "messages": [
