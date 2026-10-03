@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:44:09Z",
+  "generated": "2026-10-03T19:00:31Z",
   "audit": [
     {
       "actor": null,
@@ -66694,28 +66694,146 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41H90J96K9V1343P7M6YN2P",
-      "shortname": "coord-w0-rev4-wave2-e1",
-      "datetime": "2026-10-03T18:43:58Z",
-      "session": "coord-opus-e1e4",
-      "prompt": "Coordinator #4: answer open seams, ADR-0020 Amendment 1, W0 rev 4 with change table and delta re-read list, Wave 2 E1 dispatch pack",
-      "summary": "W0 rev 4: 6 seam requests resolved (5 granted, SR-C1 in part: oslock.py to X-B1 not X-C); cross-slice rulings on W1-C/W1-H (pilot arity, expected_na, admission, plan_hash, run_side_check via engine campaign_check, lock-free reads, content-keyed git witness); RV-PAT rev3 delta conditions; ADR-0020 Amendment 1; Wave 2 E1 pack: README (routing, DAG, launch order) + 9 briefs + 6 coord-run/1 contracts (compile ids owed); 5 briefs owed on W1-C/W1-E/W1-H",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/design/eval-seam-contracts.md",
         "docs/adr/0020-power-and-verdicts-stdlib.md",
         "docs/coordination/eval-wave2-e1/README.md"
       ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:43:58Z",
+      "done_when": "committed on coord/eval-w0-rev4-wave2; derive/validate exit 0; requests resolved; handback sent",
+      "fan_out": 1,
+      "goal": "Answer coord-opus-e1e4 seams, write ADR-0020 Am. 1 and W0 rev 4 with delta re-read list, and the Wave 2 E1 dispatch pack",
+      "id": "al-01M41H90J96K9V1343P7M6YN2P",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Coordinator #4: answer open seams, ADR-0020 Amendment 1, W0 rev 4 with change table and delta re-read list, Wave 2 E1 dispatch pack",
+      "session": "coord-opus-e1e4",
+      "shortname": "coord-w0-rev4-wave2-e1",
+      "skill": "execute-with-coordination",
+      "summary": "W0 rev 4: 6 seam requests resolved (5 granted, SR-C1 in part: oslock.py to X-B1 not X-C); cross-slice rulings on W1-C/W1-H (pilot arity, expected_na, admission, plan_hash, run_side_check via engine campaign_check, lock-free reads, content-keyed git witness); RV-PAT rev3 delta conditions; ADR-0020 Amendment 1; Wave 2 E1 pack: README (routing, DAG, launch order) + 9 briefs + 6 coord-run/1 contracts (compile ids owed); 5 briefs owed on W1-C/W1-E/W1-H",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1l.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:47:20Z",
+      "done_when": "review file and gate line committed",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-L",
+      "id": "al-01M41HF6GCAX8ZDPSENYBQESZ1",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md (W1-L)",
+      "session": "rv-sim-w1l-e1e4",
+      "shortname": "design-slice-review-sim-w1l",
+      "skill": "design-slice-review",
+      "summary": "Simplifier review of W1-L: PASS WITH CONDITIONS, 12 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1l.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:50:03Z",
+      "done_when": "report file committed with gate line",
+      "fan_out": 0,
+      "goal": "Patterns review of W1-L",
+      "id": "al-01M41HM5PWW9JX4HBZF5YAK41E",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md (W1-L)",
+      "session": "rv-pat-w1l-e1e4",
+      "shortname": "design-slice-review-pat-w1l",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT review of W1-L: PASS WITH CONDITIONS, 7 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1l.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:50:41Z",
+      "done_when": "review file with gate line committed",
+      "fan_out": 0,
+      "goal": "TA review of W1-L",
+      "id": "al-01M41HNAQ0Y96P8ZMTR09Y2Q9M",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-L)",
+      "session": "rv-ta-w1l-e1e4",
+      "shortname": "design-slice-review-eval-ta-w1l",
+      "skill": "design-slice-review",
+      "summary": "Test Architect review of W1-L: BLOCK, 13 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "datetime": "2026-10-03T18:55:05Z",
+      "done_when": "Ruling 97 in docs/notes/rulings.md via coord decide rule from the owner/ruling-r97 worktree, the request resolved, an audit entry appended, committed",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/ruling-r97",
+        "pushed": null,
+        "sha": "a49c56dae86f7fcd1605f68f25f3a9e0d8740e42",
+        "short": "a49c56dae"
+      },
+      "goal": "Rule DR-L1 (req-01M41GWNS06F362RJ78XB7AXY5): the meaning and producer of hallucinated_symbol_errors; verify W1-L's no-source claim in code; name the amendment-note author",
+      "id": "al-01M41HXCD95CQYNFPVEG03TAQ2",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Owner seat: rule coord request req-01M41GWNS06F362RJ78XB7AXY5 (DR-L1, from W1-L): the meaning of hallucinated_symbol_errors. EV-5 refers to build-log errors, which have no source in the bench. W1-L recommends option A, a final-tree static count. Verify the no-source claim in code before ruling, and state whether the spec or ADR-0019 needs an amendment note and who writes it. Own worktree owner/ruling-r97.",
+      "session": "owner-fable",
+      "shortname": "ruling R-97 (DR-L1, hallucinated_symbol_errors is a final-tree unresolved-reference count; EV-5 note by W1-L)",
+      "skill": null,
+      "summary": "R-97 DR-L1: (A) granted with the meaning fixed, (B) refused. hallucinated_symbol_errors = distinct unresolved references to the vendored API in the final tree inside the blast radius, a grading-pass (source D) measure, never a trajectory count. Verified: ToolCall carries no output (telemetry/__init__.py:61-69, normalize.py:177-180), so B has no source; but the bench does have a grading-pass build.log (grade/correctness.py:313-355): compileall for Python (syntax only, cannot name a missing member), dotnet build for .NET (can). W1-L's no-source claim is right for the trajectory and for Python, too broad as stated. Conditions: one producer per language named in noguess.py (static resolver for Python; build.log for a compiled language, not built in E4, NA never 0); resolver failure is NA never 0 (test_hse_resolver_failure_is_na); wording 'unresolved vendored-API references in the final tree' replaces 'build-log errors' in the catalog anchor_note (X-G1); expected values stay Inferred until X-NG's first strategy run. Spec EV-5 gets an appended note citing R-97, written by W1-L in its gate revision; ADR-0019 needs none.",
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "tier": "T0",
+      "tool": null
+    },
+    {
+      "id": "al-01M41J7A8XEAV3CBPX59XRPR14",
+      "shortname": "design-slice-review-pat-w1c-r2",
+      "datetime": "2026-10-03T19:00:31Z",
+      "session": "rv-pat-hc-e1e4",
+      "prompt": "Leader: re-review W1-C rev 2, delta only",
+      "summary": "RV-PAT W1-C rev 2: PASS, 1 minor",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1c.md"
+      ],
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Answer coord-opus-e1e4 seams, write ADR-0020 Am. 1 and W0 rev 4 with delta re-read list, and the Wave 2 E1 dispatch pack",
-      "done_when": "committed on coord/eval-w0-rev4-wave2; derive/validate exit 0; requests resolved; handback sent",
-      "tier": "T1",
-      "fan_out": 1
+      "goal": "Delta re-review of W1-C rev 2",
+      "done_when": "rev-2 section with gate line committed",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [

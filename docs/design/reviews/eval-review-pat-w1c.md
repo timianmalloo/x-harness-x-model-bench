@@ -34,3 +34,26 @@ Read from `design/eval-campaign-record` at 61338062 (532 lines), W0 rev 3 s6, `o
 **Command state-guard table.** Eleven of twelve commands are consistent between s4 and s5; the exception is finding 1. The matrix test C-45 is the right control and must carry the `registered` row for `pilot pass`.
 
 GATE W1-C · Patterns Expert · BLOCK · 8 findings (rv-pat-hc-e1e4, 2026-10-03)
+
+## Revision 2 (delta only), 2026-10-03
+
+Read from `design/eval-campaign-record` at 8a718b7a (main merged at 6099a0a3): sections 2, 4, 5, 6, 7 step 5, 10, 16, tests C-27, C-30, C-33, L-6, L-7, V-4.
+
+| first-round finding | result | evidence |
+| --- | --- | --- |
+| 1 blocking, re-pilot dead end | **Closed.** `defect_fix.admitted` in `registered` now lands `baselined`; `pilot attach`, `pilot pass`, `power` final, `admit` and `register` are each legal in the state the previous step leaves, and C-33 walks the path on the real CLI with a refused `register` in `baselined` first. `pilot_current` is gone, so no flag can disagree with the state. A fix in `measuring` is legal, changes no state, and is handled by eligibility rules 5 and 6. | s4 table and the rule paragraph; C-33 |
+| 2 major, staged states | **Closed.** Step 5 keys on content (HEAD blob cut at its last newline is a prefix of the working file; other tracked paths byte-equal; deleted tracked path is a finding) and reads no status letters, so `A `, `AM`, `MM` need no rule. V-4 asserts them on a real repo. The history walk and the `h`/`S`/`!!` scans are additions from other lenses and are coherent with it. | s7 step 5 a-g; V-4 |
+| 3 major, set of probes | **Closed.** `acquire_then_probe(own, own_code, others: Sequence[tuple[Path, str]], *, between=None)`, owned by X-B1, called by `session` and the grader; L-6 and L-7 assert the set and the shared call. | s6; L-6, L-7 |
+| 5 major, seam with W1-H | **Closed** by the rev 4 arity, a failed reader writing no row, `level_rule` in the preview, and the `min_pairs` warning (C-23, C-28, C-48). | s5 `pilot pass`, `register` |
+| 6 major, stale final power | **Closed.** A decision is current only with a `seq` after the last baseline or fix (power final) or the last `pilot.passed` (admission); C-30 has a case and a mutant for each, and C-27 pins admission currency. | s2 history rule; C-27, C-30 |
+| 4, 7, 8 minor | Closed (`between` keyword-only, pattern named, one code per command family, `baseline` compares with the effective identity). | s16 |
+
+New finding:
+
+| # | location | finding | severity | evidence | fix | confidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| R2-1 | s7 step 5b | The history walk compares consecutive first-parent ledger commits, and a merge of two branches' ledgers "fails closed". That is correct for tamper detection but leaves a legitimate merge with no stated recovery; the only exit would be hand-editing history. The design names the assumption (single operator, one branch line) but gives the operator no action. | minor | s7 line 254, `assume:` clause | Add the refusal copy's action (for example, "rebase the ledger onto one line or abandon this campaign") and one test row for the merge case. | Verified (text) |
+
+All five first-round majors and the blocking finding are closed in the text. The delta introduces no new pattern concern. Nothing was run; the closure is read from the design and its tests.
+
+GATE W1-C · Patterns Expert · PASS · 1 findings (rv-pat-hc-e1e4, 2026-10-03)
