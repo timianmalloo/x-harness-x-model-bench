@@ -38,3 +38,22 @@ Read in full on `design/eval-security-tasks` (2fc8906b). W0 from `main`; W1-F fr
 - **Egress.** `BENCHCANARY-S1-<16 hex>` matches W1-F §5.10's `task_canary` regex.
 
 GATE W1-I · Patterns Expert · BLOCK · 7 findings (rv-pat-w1i-e1e4, 2026-10-03)
+
+## Revision 2 re-review, 2026-10-03 (delta only)
+
+Read `design/eval-security-tasks` rev 2 (e95af01a) against W0 rev 3 §3 on `main` (7d7d4d88) and the rev 2 disposition table.
+
+| # | Check | Result | Evidence | Confidence |
+| --- | --- | --- | --- | --- |
+| 1 | S1 uses W0 rev 3 §3 names exactly | Yes. `app: {module, attr, kind: wsgi, factory, paths, args}`, `{state_dir}` in `args`, `paths` relative to the deliverable root. Request frame `{id, method, path, query, headers, body_b64}` and response `{id, ok, status, headers, body_b64}` are quoted from W0 and used as written. App output for `leak-2` is the file under `<out_dir>/check`, as W0 says. | S1 §5.4, §5.5 vs W0 lines 105-107, 122-128 | Verified |
+| 2 | PAT 1 (blocking) | Resolved by ruling C-1; seam table re-addressed. | S1 disposition row PAT 1; W0 line 649 | Verified |
+| 3 | PAT 2 | Resolved. Rev 1 fallbacks removed. New rule if the built host lacks item 5: drop `leak-2`, 7 probes, naive blocked {authz-3, leak-1, leak-3} = 3/7 = "0.4286" (arithmetic checked), never default `blocked`, new task version. | S1 §16 | Verified |
+| 4 | PAT 3 | Resolved. A2 cites W0 rev 3 names; no unwritten W1-F text cited. | S1 §17 A2 | Verified |
+| 5 | PAT 4 | Resolved. G9, F1 and the test row now agree on 13 variants; no "8 variants" remains. | S1 G9, F1 | Verified |
+| 6 | PAT 5 | Resolved. Ids stated task-local in §3; `authz-4` cut; S2 path traversal named as its own class. | S1 §3, §12 | Verified |
+| 7 | PAT 6 | Resolved. "Shared Fixture". | S1 §6 | Verified |
+| 8 | PAT 7 | Accepted as recorded: S1 follows `tasks/README.md` `oracle/solutions/`; X-E is asked to state the overlay rule in its own design. Open item for X-E, not for W1-I. | S1 §5.7 | Inferred (X-E not read) |
+
+New minor note: the 13 variants m9-m13 are Inferred until X-I runs them (S1 says so); the variant test is the control. No new finding.
+
+GATE W1-I · Patterns Expert · PASS · 0 findings (rev 2, rv-pat-w1i-e1e4, 2026-10-03)
