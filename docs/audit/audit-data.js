@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T20:00:54Z",
+  "generated": "2026-10-03T20:01:21Z",
   "audit": [
     {
       "actor": null,
@@ -74717,6 +74717,28 @@ window.AUDIT_DATA = {
       "shortname": "design-slice-review-pat-w1j",
       "skill": "design-slice-review",
       "summary": "RV-PAT review of W1-J multi-turn: PASS WITH CONDITIONS, 8 findings, one seam disagreement with W1-B",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1j.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T20:00:43Z",
+      "done_when": "review file and gate line committed",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-J",
+      "id": "al-01M41NNJ5VJV0XSTWAG0EJP3YY",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md (W1-J)",
+      "session": "rv-sim-w1j-e1e4",
+      "shortname": "design-slice-review-w1j-sim",
+      "skill": "design-slice-review",
+      "summary": "RV-SIM review of W1-J: PASS WITH CONDITIONS, 10 findings",
       "tags": [],
       "tier": "T2",
       "tool": null
