@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T22:42:59Z",
+  "generated": "2026-10-03T23:05:24Z",
   "audit": [
     {
       "actor": null,
@@ -77531,6 +77531,28 @@ window.AUDIT_DATA = {
         "branch": "coord/eval-w0-rev68-w1k",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M4207QKD6JEWH4FN280RRABS",
+      "shortname": "design-slice-review-w1k-patsim",
+      "datetime": "2026-10-03T23:05:24Z",
+      "session": "rv-patsim-w1k-e1e4",
+      "prompt": "Review W1-K under Patterns and Simplifier lenses",
+      "summary": "Two lens reviews of eval-resume rev 1.1: both PASS WITH CONDITIONS (7 and 8 findings)",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1k.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Review W1-K under two lenses",
+      "done_when": "two review files with gate lines committed",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
@@ -79068,6 +79090,15 @@ window.AUDIT_DATA = {
       "kind": "decision-request",
       "ref": "req-01M41V2MC1RTCBB4APR3TSXEYP",
       "session": "w1k-resume-e1e4"
+    },
+    {
+      "id": "mail-01M41YDRBHF72J02CX3BN7VEB6",
+      "ts": "2026-10-03T22:33:45Z",
+      "from": "owner-fable",
+      "to": "w1k-resume-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41V2MC1RTCBB4APR3TSXEYP",
+      "session": "owner-fable"
     }
   ]
 };
