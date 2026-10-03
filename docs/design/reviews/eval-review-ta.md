@@ -97,3 +97,38 @@ Conditions: 1-4 applied in rev 6; 5-7 before the owning track's red-first commit
 
 GATE w0-seam-contracts-rev3-5-delta · Test Architect · PASS WITH CONDITIONS · 7 findings (rv-ta-w1e-e1e4, 2026-10-03)
 
+
+## W0 rev 6 delta (variant carrier, `check_segment`, record and reconciliation, §7, §8), 2026-10-03
+
+Scope: `docs/design/eval-seam-contracts.md` on main (`4e817553`), the rev-6 change table (R6-1..R6-18) and its re-read list for my lens; ADR-0016 *Amendment 1*; my open conditions from the rev 3-5 section above and from `eval-review-ta-w1e.md` (rev-2 section). Confidence: Verified = I opened it or ran it.
+
+### Earlier conditions
+
+| condition | result | evidence |
+| --- | --- | --- |
+| r45 1 (device names pass the charset) | Closed, with a gap (finding 2, 3) | s3 `check_segment`: fullmatch, no `:`, no trailing dot or space, device stem; red fixtures `nul`, `NUL`/`com1` under a permissive `rx`, `lpt9.log`, `a:b`, `x.`, `x `, `"ok\n"`; controls; mutant drops rule 3. Owner X-F |
+| r45 2 (`probe` vs `CHECK_PROPERTIES`) and W1-E R2-2 | Closed | s6 record bullet: `probe` only for `CHECK_PROPERTIES`; check-less evidence is `property.json` `hidden_tests` and `clause`; s2 has the two tie tests (X-A1, X-F) |
+| r45 3 (clause-driven variant carrier) | Closed | s2 rev 6 (a): `flips`/`clauses` keyed by metric id for check-less tasks; s7 `v-laundered-lines` (only clause (b) fails it); fixture X-SM, mutant X-LG (E4) |
+| r45 4 (forged `probe`) | Closed; accepted in part | s6 reconciliation diffs `scores` and `probe`; fixture "forged `probe` outcome fails HB-RDY-004 when its run exists"; fresh-clone forgery named an accepted residual |
+| r45 5 (`verified_before_use` NA) | Closed | s7: X-LG `noguess` helper is the one writer; real-pass test, emit-0 mutant, `expected_na` exemption |
+| r45 6 (`for_task` red) | Closed | s6: X-D's D2 skeleton adds `for_task` with a wrong body first |
+| r45 7 (stale option (a)) | Closed | s6 body listed field by field; option (a) withdrawn; R-98 conditions 1-4; ADR-0016 Amendment 1 matches (body, grain, link, s2a) |
+| W1-E R2-2 | Closed | as r45 2 |
+| W1-E R2-1 (a `timeout` is HB-RDY-011) | **Not closed** (finding 1) | s11 HB-RDY-011 row lists check NA rows, `unbiased_ok`, reader raise; no `timeout`. s6 says a one-trial `timeout` is "such a defect, shown rather than hidden" |
+
+### New findings
+
+| # | location | finding | severity | evidence | fix | confidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | s6 body ("A load-dependent outcome (a `timeout` in one trial only)..."), s11 HB-RDY-011 | R2-1 stays open and R-98 now states the opposite. A case `timeout` is an outcome that makes `property_check_pass` 0 (s3), not an NA row. A load-driven `timeout` on a reference case disagrees with `expected` (HB-RDY-003), and W1-E D-E3 writes a disagreeing record. The clean retry then differs from the stored bytes: HB-RDY-010 on a key that never changes, and the operator must delete a committed-looking file by hand. The same holds for a variant flip caused by a `timeout` (W1-E F7 accepts it as residual). "Shown rather than hidden" is true only for a `timeout` that appears in the second trial. | major | s6 R-98 bullet; s11 line `HB-RDY-011`; s3 outcome set; W1-E `eval-discriminate.md` D-E3, F7 | Add to the HB-RDY-011 row: a case `outcome: timeout` that `expected` and the declared `flips` do not name; nothing written. One param on W1-E T-E13 (timeout, then a clean retry succeeds). Or state in s6 that a first-trial `timeout` is written and the retry rule is "delete and re-run", with a test. Pick one | Verified (text) |
+| 2 | s3 `check_segment` callers (case ids, variant names, overlay components, `campaign_id`) | Only the function's own fixtures are named. The four callers each need a test that fails when the call is removed (floor item 3): campaign id `nul` through the real `bench campaign create` (X-C); variant name `nul` and overlay component `con/x.py` through readiness (X-E); case id `nul` through X-F's `cases.json` writer. `grep check_segment docs` finds it only in W0; W1-C, W1-E and W1-F do not name it. Deleting one caller's line turns nothing red. | major | `grep -rn check_segment docs` (one file) | Add one line to s3: one test per caller, owner and fixture as above, and a W1-C / W1-E / W1-F follow-up row | Verified |
+| 3 | s3 device list | `conin$` and `conout$` are console devices and are absent from the list. `os.path.exists("conin$")` and `("conout$")` are True on this host (Windows 11, Python 3.12); `nul .` is also True, which rule 2 catches. Case ids and variant names exclude `$` by their `rx`; the overlay-component `rx` is not stated, so it can pass. | minor | ran `os.path.exists` on 14 names; s3 rule 3 list | Name the overlay `rx` (`^[A-Za-z0-9._-]+$`) or add the two names; one red fixture | Verified (host); Inferred (a write through them is harmful) |
+| 4 | s6 R-98 condition 4 | "No option-(a) compare-subset branch exists on any tree when the first record is committed" has no test or scan. That is a sweep claim (floor item 5, HYG-A). | minor | s6 R-98 bullet | Name a scan (X-E): no `src/` function other than `create_once` compares bytes of a record; or drop the claim to a review checklist item | Verified (text) |
+| 5 | s6 SR-E3 (2), R6-15 | `property.json` written for every property task, with `hidden_tests` and `check.clauses` null or a pointer: no X-F test is named. W1-E's T-E reads it, but X-F owns the writer, and X-F is running. | minor | s6 SR-E3 (2) | X-F test: a rework fixture through `grade_cell` writes `property.json` with `hidden_tests` per tree; a mutant that skips it makes W1-E's reader raise | Verified (text) |
+| 6 | s8 failed-reader rule | Three call sites convert a raise: X-C `pilot pass` (no row, reason printed), X-H2 (`not recorded: <reason>`), X-E (HB-RDY-011). W0 names no test for the first two. W1-H still carries the `None` form (`eval-power-verdicts.md:205`), so its tests are written for the withdrawn carrier. | minor | s8; `eval-power-verdicts.md:205` | One test per site, with the reason text asserted; W1-H and W1-C follow-up rows | Verified |
+
+Sound (Verified, text): the record body is closed and has no time, pid, path, run id or run hash; the byte-identical two-run test (real engine) separates a varying field from a constant one, and the HB-RDY-010 / HB-LED-007 pair has a code-asserting test; the link is written only after created-or-equal (red test beside T-E6); `acquire_then_probe` has two named mutants; OI-5 has three real-CLI tests; the D3 AST rule has a red fixture; `plan_hash` has a swap-between-parse-and-check mutant. Note: the `v-laundered-lines` mutant (X-LG, E4) cannot run in E1, so the E1 proof of the check-less carrier is X-E's hand-built check-less fixture; X-E must name it (it is not in W0).
+
+Conditions: 1 and 2 before X-E's skeleton commit and X-F's next open group; 3-6 with the owning build.
+
+GATE w0-seam-contracts-rev6-delta · Test Architect · PASS WITH CONDITIONS · 6 findings (rv-ta-w0r6-e1e4, 2026-10-03)
