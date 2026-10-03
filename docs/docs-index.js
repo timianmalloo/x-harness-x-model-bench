@@ -1857,6 +1857,78 @@ window.DOCS_INDEX = {
       "sourceSha256": "57d4eb4ca1786bd4b012c42cbb0a2263628f17448d0ab1b2c2fa1cd516db026a"
     },
     {
+      "id": "design-eval-atomic-publish",
+      "path": "docs/design/eval-atomic-publish.md",
+      "title": "W1-B design: crash-atomic publish (atomic.py create_once and publish_dir, archive.py rework)",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 design slice W1-B; builds in E1 (X-B1 atomic.py, X-B2 archive.py)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Designs the two write helpers every campaign record and every archive goes through: create_once (a file appears only complete, never overwritten) and publish_dir (a folder appears only after its copy verified), plus the one recovery rule for the crash window between the rename and the ledger rows. Settles the data model (the published name is the only completeness fact), the temp-name and sweep contract, the Windows no-directory-fsync branch, the strict verify, the reader surfaces a leaked temp would break, and names every red-first test and seeded mutant so X-B1 and X-B2 can start from this file alone. Adds three measured Windows facts (text-mode os.write corrupts bytes, a junction is unlinkable, a held handle blocks a folder rename).",
+      "tags": [
+        "benchmark",
+        "crash-atomic",
+        "archive",
+        "create-once",
+        "evaluation-campaign",
+        "w1-b"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0015-multi-turn-attempt-and-turn-snapshots",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0016-campaign-record",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0021-plan-level-resume-and-liveness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-20261003-spike-e1-ntfs-atomic-publish",
+          "rel": "depends-on"
+        },
+        {
+          "to": "review-eval-ds",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sec",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-pat",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-ta",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "75d78a2fcbd1a4b935560439dfff2a35b2be250ec5d7e2b760bac0527bf8813f"
+    },
+    {
       "id": "design-eval-seam-contracts",
       "path": "docs/design/eval-seam-contracts.md",
       "title": "W0 seam contracts: the interfaces every Evaluation Campaign slice designs and builds against",
@@ -3399,7 +3471,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9e9de15f0f0e0a3c65e3cc32b87b0122da2773daef6d399386535a8c80869fe5"
+      "sourceSha256": "e69173cadc79609b475999dedd6a7a537c2f9b50669f08202809d75aa2581ae4"
     },
     {
       "id": "review-eval-pat",
@@ -3428,6 +3500,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "cac2581e19b119c1e877e7ca86db14203662fd2f012ae25732366558a495c930"
     },
     {
+      "id": "review-eval-pat-w1f",
+      "path": "docs/design/reviews/eval-review-pat-w1f.md",
+      "title": "Patterns Expert review of W1-F, the property grader (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of design/eval-property-grader (441da4ba, e41289a2) against W0 rev 2 (3c1c9827). Patterns named correctly, four divergences from W0 rev 2 flagged as seams, no blocker.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-f"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "01c7cc579b70df928bcc210eb0ba15aa7a36ba039c6751ca67f72510eb413c61"
+    },
+    {
       "id": "review-eval-sec",
       "path": "docs/design/reviews/eval-review-sec.md",
       "title": "Security & Identity lens review: Evaluation Campaign design slices (Adversary Mode)",
@@ -3451,7 +3550,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2a70d02cbc2de5b67584c890192a4635b731ecedb108c15de5c3c5b2454080ea"
+      "sourceSha256": "5665e66315039cf611d9c8fa7f7b9c0b1285fdfc6d3c5e57dc20640175987e95"
     },
     {
       "id": "review-eval-sim",
@@ -5014,5 +5113,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "4daf8d55d8006eac6191d5790dc5e2b39bad25dc5910e9c0b3c0bffddb15905e"
+  "graphSha256": "7d7440ca37cb2658d1610f85f6f047e2fdebb35b787678055716901c759b08e1"
 };
