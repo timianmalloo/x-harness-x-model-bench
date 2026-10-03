@@ -1854,7 +1854,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4e907d89627f0bb44616109ae745c5793edf8e2ba1d3132afa0a36f2d18c73db"
+      "sourceSha256": "f9267759fb6d42eb850f9cd36a4954809bf437e56885344c97069d86003479c2"
     },
     {
       "id": "design-eval-seam-contracts",
@@ -3359,6 +3359,32 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "32f235bdd9ef5a50f339b185b9f5b27a48dbb164b03913b0a07c5bf58f1e5fd8"
+    },
+    {
+      "id": "review-eval-pat",
+      "path": "docs/design/reviews/eval-review-pat.md",
+      "title": "Patterns Expert review of the Evaluation Campaign design slices (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "One Patterns Expert (RV-PAT) lens file for the Evaluation Campaign: one section per reviewed slice, appended per batch. Findings carry location, severity, evidence, fix and confidence. Advisory lens; a pattern survives only if the Simplifier also clears it.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "cac2581e19b119c1e877e7ca86db14203662fd2f012ae25732366558a495c930"
     },
     {
       "id": "coordination-eval-brief-rv-ds",
@@ -4874,5 +4900,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "9a475383318089580b65bae5b370c6cda232bd4d9a0db0003e11025170068161"
+  "graphSha256": "4ab528b72120f23430219f268ec4c1029a15475549bd837d123c6ab046bdc498"
 };
