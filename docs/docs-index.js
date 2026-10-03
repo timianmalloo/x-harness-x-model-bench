@@ -1857,6 +1857,51 @@ window.DOCS_INDEX = {
       "sourceSha256": "7b5e5eaa9251750bfeb2247d6653f09b9ee2e4f3ada4d6d810e20e0245940205"
     },
     {
+      "id": "design-eval-catalog-0-7",
+      "path": "docs/design/eval-catalog-0-7.md",
+      "title": "Catalog 0.7 (ADR-0019): the eleven property metrics, scenario-7 pass@1 and the missing-pass@1 fix",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1, design slice W1-G (builds X-G1 in E1, X-G3 and the _passed fix in E3)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Design of catalog 0.7: the eleven property metrics written out in full YAML with R-79 anchors and no new area; the dispatch rule that lets one grader record a metric another grader owns (the property: tag and the new also_graded_by key); the per-task formal.pass_rule that makes scenario-7 pass_at_1 a three-valued AND; the missing-pass@1 fix and its sweep as the new defect class ABS-A; and the US-4 control, which is a cross-version regrade against the committed 0.6 goldens, with the 0.6 definitions read from the freeze commit. Revision 2 applies the three W1-G reviews, W0 rev 3 and R-95: the owner rule is ruled, and the corrected_from record is a written contingency.",
+      "tags": [
+        "benchmark",
+        "catalog",
+        "metrics",
+        "grading",
+        "us-4",
+        "evaluation-campaign",
+        "w1-g"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0019-catalog-0-7-property-metrics",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "0b5cff38703dc03b75420c16279c50cb8fd147a5a72d3d99e31bc0a035034810"
+    },
+    {
       "id": "design-eval-property-grader",
       "path": "docs/design/eval-property-grader.md",
       "title": "Design W1-F: the hidden-check runner and the property grader (boundary B7, security-sensitive)",
@@ -5684,6 +5729,14 @@ window.DOCS_INDEX = {
       "artifactId": "audit-log"
     },
     {
+      "id": "surface-design-eval-catalog-0-7",
+      "path": "docs/design/eval-catalog-0-7.html",
+      "title": "Eval Catalog 0 7",
+      "kind": "design-preview",
+      "description": "Inspect a rendered design or design-language preview.",
+      "artifactId": "design-eval-catalog-0-7"
+    },
+    {
       "id": "surface-design-eval-property-grader",
       "path": "docs/design/eval-property-grader.html",
       "title": "Eval Property Grader",
@@ -5785,5 +5838,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "2fed79ec8c2d638a2462ad00fdd70943bb79d40cfd6812a59b3e75d082f269c1"
+  "graphSha256": "f31c11c610a187694080adf0bf4c674aa422e81a3ff7e3916628ddddaa344b4d"
 };

@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:15:58Z",
+  "generated": "2026-10-03T18:16:40Z",
   "audit": [
     {
       "actor": null,
@@ -66207,26 +66207,70 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41FNR1K3MKJRXYKY12FBKM5",
-      "shortname": "design-slice-review-ta-w1g-r2",
-      "datetime": "2026-10-03T18:15:58Z",
-      "session": "rv-ta-w1g-e1e4",
-      "prompt": "W1-G rev 2 re-review",
-      "summary": "TA re-review W1-G rev 2: PASS WITH CONDITIONS",
-      "kind": "skill",
-      "skill": "design-slice-review",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/design/reviews/eval-review-ta-w1g.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Re-review W1-G delta",
+      "datetime": "2026-10-03T18:15:58Z",
       "done_when": "gate line appended",
+      "fan_out": 0,
+      "goal": "Re-review W1-G delta",
+      "id": "al-01M41FNR1K3MKJRXYKY12FBKM5",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "W1-G rev 2 re-review",
+      "session": "rv-ta-w1g-e1e4",
+      "shortname": "design-slice-review-ta-w1g-r2",
+      "skill": "design-slice-review",
+      "summary": "TA re-review W1-G rev 2: PASS WITH CONDITIONS",
+      "tags": [],
       "tier": "T2",
-      "fan_out": 0
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-catalog-0-7.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:37:59Z",
+      "done_when": "Gate PASS; the eleven metric entries with anchors (R-79 forms); the scenario-7 pass rule for G2; the US-4 control; the append-only corrected_from record",
+      "fan_out": 0,
+      "goal": "W1-G catalog 0.7 (ADR-0019), scenario-7 pass@1 and the missing-pass@1 fix",
+      "id": "al-01M41DG6B6QQ397PSVDPZEAGCF",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-g-catalog.md",
+      "session": "w1g-catalog-e1e4",
+      "shortname": "design-slice-eval-catalog-0-7",
+      "skill": "design-slice",
+      "summary": "Designed catalog 0.7: eleven property metrics in full YAML (no new area), also_graded_by dispatch for scenario-7 pass_at_1 with formal.pass_rule, absence-is-not-failure fix and sweep (ABS-A), cross-version US-4 control and append-only corrected_from record; gate pending",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-catalog-0-7.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:12:56Z",
+      "done_when": "every finding has a disposition row; Gate record has the three first-round lines plus rev 2 pending RV-TA; validate exit 0",
+      "fan_out": 0,
+      "goal": "Apply the three W1-G reviews and the W0 rev 3 and R-95 rulings to the catalog 0.7 design",
+      "id": "al-01M41FG66QB873BZEQYFKTPCDG",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-g-catalog.md (rev 2 follow-up: apply RV-TA, RV-PAT, RV-SIM, W0 rev 3, R-95)",
+      "session": "w1g-catalog-r2-e1e4",
+      "shortname": "design-slice-eval-catalog-0-7-rev2",
+      "skill": "design-slice",
+      "summary": "W1-G rev 2: Control 1 hardened with red cases and 0.6 definitions read from git, n_recorded split, owner rule per R-95, corrected_from as a written contingency, testability floor, review disposition table",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     }
   ],
   "changes": [
@@ -66789,24 +66833,68 @@ window.AUDIT_DATA = {
       "title": "W0 seam contracts rev 3: Wave 1 seam answers"
     },
     {
-      "id": "cl-01M41FC7AKVR1X94SC030Q4H6F",
-      "datetime": "2026-10-03T18:10:46Z",
-      "session": null,
-      "kind": "design",
-      "skill": "design-slice",
-      "title": "W1-I rev 2: eight probes, wsgi per W0 rev 3 C-1, S2 cut to classes",
-      "prompt": null,
-      "summary": "Applied RV-TA/PAT/SEC/SIM first-round findings to docs/design/eval-security-tasks.md",
-      "rationale": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-10-03T18:10:46Z",
       "git": {
-        "before": null,
         "after": "8bde0c531441a8d460675ccb8af839281c27074f",
+        "before": null,
         "branch": "design/eval-security-tasks",
-        "pushed": null,
-        "commits": []
-      }
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41FC7AKVR1X94SC030Q4H6F",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Applied RV-TA/PAT/SEC/SIM first-round findings to docs/design/eval-security-tasks.md",
+      "tags": [],
+      "title": "W1-I rev 2: eight probes, wsgi per W0 rev 3 C-1, S2 cut to classes"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-catalog-0-7.md"
+      ],
+      "datetime": "2026-10-03T17:38:09Z",
+      "git": {
+        "after": "3c1c98278e08c948215a4bf7dacdd960be37aa30",
+        "before": null,
+        "branch": "design/eval-catalog-0-7",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41DGGB8793Z5DGA7Y1TKWWN",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-g-catalog.md",
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Settles how catalog 0.7 is built: no new area (config requires seven), one optional also_graded_by key so the formal grader owns pass_at_1 for G2, a three-valued pass rule in task.yaml, absence excluded from pass counts (ABS-A), and a cross-version US-4 control with a chain-linked correction record",
+      "tags": [],
+      "title": "Catalog 0.7 design: property metrics in existing areas, also_graded_by owner rule, formal.pass_rule, recorded-pairs pass counts, chain-linked corrected_from"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-catalog-0-7.md"
+      ],
+      "datetime": "2026-10-03T18:13:20Z",
+      "git": {
+        "after": "0fc300af8ea1088b14789f984dafc1e58deca65b",
+        "before": null,
+        "branch": "design/eval-catalog-0-7",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41FGXTZ46GPDVWGTMX4H5AS",
+      "kind": "design",
+      "prompt": "w1-g-catalog.md rev 2 follow-up",
+      "rationale": "RV-TA BLOCK on controls with no failing case; Coordinator deferral of the (e) exception; R-95 grants the owner rule",
+      "session": "w1g-catalog-r2-e1e4",
+      "skill": "design-slice",
+      "summary": "Applies RV-TA/PAT/SIM, W0 rev 3 and R-95; Control 1 gets red cases and reads 0.6 definitions from d6dda42d; (e) exception and corrected_from become a written contingency",
+      "tags": [],
+      "title": "Catalog 0.7 design rev 2: cross-version control from git, n_recorded, owner rule ruled (R-95), correction record deferred"
     }
   ],
   "messages": [
