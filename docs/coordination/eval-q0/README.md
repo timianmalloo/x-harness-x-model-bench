@@ -54,3 +54,18 @@ env -u XAI_API_KEY sh $W status --run q0-e1e4
 3. The Codex binary that ran is 0.160.0: the native session record's CLI version, or the adapter's log line.
 4. **Not testable through this wrapper:** the plan's *assume:* that a follow-on dispatch can be prepared from a linked tree. The approved wrapper always `cd`s to the primary checkout, so the runner's base is always the primary's HEAD (`coord-runner.py:426`). Consequence: a green-after-red follow-on cannot start from the red branch tip through the runner. Until the wrapper takes the invoking tree, a follow-on runs either (a) as a Claude Sonnet sub-agent in the same tree (the plan's stated fallback), or (b) in a fresh external dispatch that does red and green in one turn. The Coordinator records this in the plan's harness table after Q0.
 5. A `claude` runner worker is **not** in this contract. R-87 condition 5 allows one, but its argv and its model pin through the runner are unexercised (0 of 106 runs). Sonnet tracks use the Agent tool (R-87 Option 1). Adding one is a later, separate contract.
+
+## Q0 result (run `q0-e1e4`, 2026-10-03; verified by `coord-opus-e1e4`)
+
+Run state `ready_for_review`, epoch 13, 138 s. Each worker completed 1 turn with 0 permission requests, 0 native denials and 0 tool errors. Each commit adds exactly one line to `docs/notes/qualify-worker.md` and touches nothing else (`git show --stat`, read by the Coordinator).
+
+| worker | wall | commit | version (evidence) | served model (evidence) | verdict |
+| --- | --- | --- | --- | --- | --- |
+| `worker-codex-q0e` | 68.6 s | `6676e9d2` | codex-cli **0.160.0** (native record `cli_version`); adapter 1.12.0 (`agentInfo.version`) | **`gpt-6.1-sol`**, effort high (`~/.codex/sessions/2026/10/03/rollout-2026-10-03T10-01-43-01a102b6-e540-76c2-b6c1-05c332032bcc.jsonl`) | observed-only: **qualified** |
+| `worker-agy-q0e` | 135.3 s | `344a9b24` | agy **1.2.13** (`~/.gemini/antigravity-cli/cli.log`) | **`gemini-3.8-flash-high`** (`cli.log` model resolution; conversation store `64e95f68-….db` `executor_metadata`) | observed-only: **qualified** |
+| `worker-grok-q0e` | 71.6 s | `b732b3ea` | grok **1.0.41** (`_meta.agentVersion`) | **`grok-4.6`** (ACP `selected_model`; `~/.grok/sessions/…q0-grok-e1e4/01a102b6-e198-…/summary.json` `current_model_id`; `chat_history.jsonl` `grok-4.6-build`) despite `-m grok-4.7` | **unsupported at the pin** |
+
+- The runner reports `selected_model` null for Codex and Agy because neither adapter returns one. The native records are the evidence.
+- Not tested, as stated above: a follow-on dispatch prepared from a linked tree (the wrapper always runs from the primary checkout).
+- Grok: a decision request to `owner-fable` asks for the route of the four Grok tracks. None of them starts before W1-G or W1-B passes its gate, so nothing waits on it yet.
+- The three `q0-*` branches and trees are qualification-only, never joined. After this review they are removed through `coord worktree cleanup` (WT8 checks).
