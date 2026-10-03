@@ -2019,6 +2019,58 @@ window.DOCS_INDEX = {
       "sourceSha256": "4706e446d39f829dfaa8bf399dd337646353d79baf5ff7fa33e8f8bea7c986ee"
     },
     {
+      "id": "design-eval-campaign-record",
+      "path": "docs/design/eval-campaign-record.md",
+      "title": "W1-C design: the campaign record and `bench campaign`",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 (W1-C; builds as X-C in E1)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Designs campaign.py and the `bench campaign` commands (revision 2): a closed 11-kind hash-chained ledger folded into a derived state with one legal path from every fix back to a registration, a state guard / idempotency rule / refusal copy / test node for every command, write commands under the own-lock-then-probe protocol (the proof plus a barrier test with a positive control, not a race count) and lock-free reads, the pre-registration freeze (attach before launch, re-register refused once attached, a run-side check inside the engine), plan binding by plan_hash, id and link validation before any path is built, `verify` with a content-keyed git witness over the committed history, derived eligibility, and a test plan whose every node names the assertion that fails today, the red fixture, the real-wiring partner and a written mutant.",
+      "tags": [
+        "benchmark",
+        "campaign",
+        "ledger",
+        "freeze",
+        "locks",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0016-campaign-record",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0017-engine-identity-and-freeze",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0018-hidden-check-harness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "a8113ed21ab3b0d0e1f6be04074283079dc7fe4d8e6860229d49fe8f070c3130"
+    },
+    {
       "id": "design-eval-catalog-0-7",
       "path": "docs/design/eval-catalog-0-7.md",
       "title": "Catalog 0.7 (ADR-0019): the eleven property metrics, scenario-7 pass@1 and the missing-pass@1 fix",
@@ -4214,7 +4266,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d1a714dc884b86bd6e755c114bd5da0f0853111b241ab5d688a8b48812a0b731"
+      "sourceSha256": "a3757d6ce6731cd6180552d45504592b69bc251c9557de511549053c7c98b43a"
     },
     {
       "id": "review-eval-sec-w1f",
@@ -6509,6 +6561,14 @@ window.DOCS_INDEX = {
       "artifactId": "design-eval-arms"
     },
     {
+      "id": "surface-design-eval-campaign-record",
+      "path": "docs/design/eval-campaign-record.html",
+      "title": "Eval Campaign Record",
+      "kind": "design-preview",
+      "description": "Inspect a rendered design or design-language preview.",
+      "artifactId": "design-eval-campaign-record"
+    },
+    {
       "id": "surface-design-eval-catalog-0-7",
       "path": "docs/design/eval-catalog-0-7.html",
       "title": "Eval Catalog 0 7",
@@ -6618,5 +6678,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "eeaeb4df88a58a2d918acc9b86c59fc7cba3d57e7ec643f3040938e4eb3a5042"
+  "graphSha256": "743567b2c0a96956303136d5aac9169e1d5f4ff1824f686b3f681a017f49bba5"
 };
