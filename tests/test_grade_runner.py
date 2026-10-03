@@ -460,7 +460,7 @@ def set_task(root, **keys) -> None:
 
 def stub_returning(metrics_of_grader: dict[str, Score]):
     def grade(inp):
-        return {m: metrics_of_grader.get(m, Score(1)) for m in inp.metrics}
+        return {m: metrics_of_grader.get(m, Score(1, None)) for m in inp.metrics}
     return grade
 
 
@@ -470,7 +470,7 @@ def catalog_of(root) -> dict:
 
 def test_a_security_task_graded_by_property_writes_exactly_two_property_rows_and_the_pass_completes(root, tmp_path, monkeypatch):  # T-R1
     set_task(root, graders=["correctness", "property"], property={"name": "security"})
-    with_grader(monkeypatch, "property", stub_returning({"exploit_probes_blocked": Score(Decimal("1"))}))
+    with_grader(monkeypatch, "property", stub_returning({"exploit_probes_blocked": Score(Decimal("1"), None)}))
     rows = graded(root, tmp_path)
     assert {r["metric_id"] for r in rows} - CORRECTNESS == PROPERTY_ROWS
     assert sorted(r["metric_id"] for r in rows).count("property_check_pass") == 1
@@ -492,12 +492,12 @@ def test_applicable_with_no_prop_keeps_only_untagged_metrics(root, tmp_path, mon
 def test_pass_at_1_has_one_owner_when_correctness_and_formal_are_both_named(root, tmp_path, monkeypatch):  # T-R3
     catalog = catalog_of(root)
     assert [g for g, ms in runner.applicable(catalog, ["correctness", "formal"]).items() if "pass_at_1" in ms] == ["correctness"]
-    assert [g for g, ms in runner.applicable(catalog, ["formal", "correctness"]).items() if "pass_at_1" in ms] == ["formal"]  # first named
+    assert [g for g, ms in runner.applicable(catalog, ["formal", "correctness"]).items() if "pass_at_1" in ms] == ["correctness"]  # the catalog order, not the task list
 
 
 def test_a_formal_only_task_gets_pass_at_1_from_formal(root, tmp_path, monkeypatch):  # T-R4
     set_task(root, graders=["formal"])
-    with_grader(monkeypatch, "formal", stub_returning({"pass_at_1": Score(1)}))
+    with_grader(monkeypatch, "formal", stub_returning({"pass_at_1": Score(1, None)}))
     rows = graded(root, tmp_path)
     assert [r["metric_id"] for r in rows].count("pass_at_1") == 1
     assert [r["value"] for r in rows if r["metric_id"] == "pass_at_1"] == [1]
