@@ -943,11 +943,12 @@ def test_model_unavailable_alone_does_not_count_toward_the_breaker(base, monkeyp
     assert stops == []
 
 
-def test_the_breaker_leaves_running_cells_running(base):
+@pytest.mark.parametrize("fast_delay", [0, 1.5])  # 1.5: the failing cells arrive late, as under full-suite load (TIME-B)
+def test_the_breaker_leaves_running_cells_running(base, fast_delay):
     p = _plan(n_cells=5, parallelism=2)
     slow, *fast = p["cells"]
     launcher = FakeLauncher({slow["label"]: {"sleep": 3},
-                             **{c["label"]: {"mode": "provider_error"} for c in fast}})
+                             **{c["label"]: {"mode": "provider_error", "handshake_delay": fast_delay} for c in fast}})
     summary, events, _ = _run(base, p, launcher)
     assert [e["code"] for e in events if e["kind"] == "run.launch_stopped"] == ["HB-CELL-108"]
     assert _outcomes(events)[slow["cell_id"]]["outcome"] == "completed"
