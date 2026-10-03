@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:00:59Z",
+  "generated": "2026-10-03T18:22:49Z",
   "audit": [
     {
       "actor": null,
@@ -66059,6 +66059,28 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T1",
       "tool": null
+    },
+    {
+      "id": "al-01M41G1ZG2T4BXKBTDDZ15VWAB",
+      "shortname": "design-slice-eval-property-grader-r3",
+      "datetime": "2026-10-03T18:22:39Z",
+      "session": "w1f-property-r3-e1e4",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md (rev 3 delta: C-1 wsgi, W0 rev 3 frames, five probe-host items, start bound)",
+      "summary": "W1-F rev 3 delta: app.kind wsgi built in E1 with W0 frames, PEP 3333 environ, factory/args/{state_dir}, paths, app output off the protocol channel (host start sequence), start bound = bounds_ms[interface]; spike SP-F3 re-ran the forgery against a wsgi host (refused 9/9); 14 rev-3 test rows against the testability floor; gate rev 3 delta pending RV-TA, RV-SEC",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-grader.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Revise W1-F for W0 rev 3 ruling C-1: wsgi kind, frames, five probe-host items, start bound",
+      "done_when": "delta designed with floor-compliant tests incl. a real-wiring WSGI test; forgery re-run on wsgi; disposition rows; gate record rev 3 delta pending RV-TA, RV-SEC; validate exit 0",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
@@ -66597,6 +66619,28 @@ window.AUDIT_DATA = {
       "summary": "Rev 3 answers 13 seam requests and 11 routed lens findings: wsgi kind in E1 (C-1), probe-host additions and start bound, NA never dropped, DOTNET_HOST_ENV to _env.py, reparse-safe grading copy, sweep_temps/TEMP_RE (no HB-LED-009), recover_archive to X-K1, quoted arm ids, grid4 golden, no top-level pack + plan_pack + HB-PLN-004/005, G1 AST ratchet, run-side effective identity in the plan, catalog_hash in identity.py, G2 every file + direction test, R-93/R-94 recorded, W1-G owner rule provisional on an Owner request, (e) exception deferred.",
       "tags": [],
       "title": "W0 seam contracts rev 3: Wave 1 seam answers"
+    },
+    {
+      "id": "cl-01M41G29KMV71MS5ES0EWJ30Q0",
+      "datetime": "2026-10-03T18:22:49Z",
+      "session": "w1f-property-r3-e1e4",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "W1-F rev 3: wsgi probe host in E1 (ruling C-1), app output off the protocol channel, start bound outside the case span",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md (rev 3 delta)",
+      "summary": "The probe host gains the wsgi kind with W0 rev 3 frames, an explicit PEP 3333 environ, a factory called with {state_dir}-resolved args, paths after the root, and a start sequence that moves fds 0-2 before agent code so app output lands in out_dir/check/host/<case>.log; the start is bounded by bounds_ms[interface] and a miss is did not start; SP-F3 re-ran the forgery against a wsgi host (refused).",
+      "rationale": "C-1: S1 is a WSGI factory; W0 rev 3 granted req-01M41DPBSM9 and req-01M41DT67 in part. Start kept outside the case span because SP-F3 saw a 486 ms honest start.",
+      "artifacts": [
+        "docs/design/eval-property-grader.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "1ceea651",
+        "after": "1ceea651bceeada8e8406e1633afaa930d48a9f3",
+        "branch": "design/eval-property-grader-r3",
+        "pushed": null,
+        "commits": []
+      }
     }
   ],
   "messages": [
