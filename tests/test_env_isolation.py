@@ -10,11 +10,10 @@ import sys
 from pathlib import Path
 
 import pytest
+from ambient_credentials import listed_credential_names
 
 from harness_bench import profiles
 
-# `import conftest` binds tests/fixtures/grade/formal/conftest.py once pytest has put that
-# directory on sys.path. The list lives once, in tests/conftest.py; reach that module by path.
 _TESTS_CONFTEST = Path(__file__).resolve().parent / "conftest.py"
 
 NAMED = (
@@ -43,21 +42,6 @@ class _Failures:
         else:
             last = report.outcome
         self.lines.append(f"{report.nodeid}: {last}")
-
-
-def listed_credential_names() -> tuple[str, ...]:
-    for module in sys.modules.values():
-        file = getattr(module, "__file__", None)
-        if not file:
-            continue
-        try:
-            same = Path(file).resolve() == _TESTS_CONFTEST
-        except OSError:
-            continue
-        fn = getattr(module, "listed_credential_names", None)
-        if same and fn is not None:
-            return fn()
-    raise RuntimeError(f"{_TESTS_CONFTEST} is not loaded")
 
 
 def _rerun(nodeids: tuple[str, ...] | list[str], extra: list[str] | None = None) -> tuple[int, list[str]]:
