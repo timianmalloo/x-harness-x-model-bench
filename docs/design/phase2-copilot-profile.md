@@ -28,7 +28,8 @@ summary: >-
   denial measured on revision 92 (R-27) is visible. Also HB-PRE-002 for Copilot's instruction files, the US-9 scan,
   the US-9..US-14 promise-to-test table, and the Leader's capture and scrub procedure. Revision 3, after the design gate
   and rulings R-12..R-28.
-review-suggested: []
+review-suggested:
+  - { by: adr-0006-results-data-model, on: 2026-10-03, reason: "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending" }
 ---
 
 # Design: the Copilot harness profile (phase 2, rows 1-5)

@@ -23,6 +23,8 @@ summary: >-
   the two in step.
 review-suggested:
   - { by: adr-0006-results-data-model, on: 2026-09-24, reason: "Amendment 1: model_calls grain re-declared per native usage report with requests and model in the key; tool_calls.outcome_code (R-26, R-27)" }
+  - { by: adr-0007-run-engine, on: 2026-10-03, reason: "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending" }
+  - { by: adr-0013-native-cells, on: 2026-10-03, reason: "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending" }
 ---
 
 # Design: run lifecycle model

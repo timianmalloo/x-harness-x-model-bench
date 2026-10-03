@@ -21,6 +21,9 @@ summary: >-
   bug_claim_precision) for G1 (TLA+) and G2 (Lean 4). Closes S-12's warm-before-clock gap for
   tla2tools.jar by design; names the toolchain invocation contract (correctness.run_step, the
   only sanctioned procs path); flags the TLA+ trace-replay mechanism as unspiked.
+review-suggested:
+  - { by: adr-0006-results-data-model, on: 2026-10-03, reason: "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending" }
+  - { by: adr-0013-native-cells, on: 2026-10-03, reason: "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending" }
 ---
 
 # Design: the formal grader (`grade/formal.py`)

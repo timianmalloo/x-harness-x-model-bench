@@ -23,6 +23,7 @@ summary: >-
 # ADR-0006: A hash-chained, append-only record per run; every result is a derived view
 
 - **Status:** Proposed
+- **Amended (2026-10-03, ADR-0014, ADR-0015, ADR-0021; architecture council round 1):** the `cell_id` ingredient `pack` carries the arm id; `archive_files` gains a `snapshot` key part; `events` gains per-turn rows and resume rows; archive writes become crash-atomic. See "Amendment 5" below.
 - **Amended (2026-09-24, ruling R-26; design `design-phase2-copilot-profile` section 3):** the `model_calls` grain is re-declared as one native usage report per model, with an additive `requests` count and `model` in the key; `tool_calls` gains `outcome_code` (ruling R-27). See "Amendment 1" under Facts and their grains.
 - **Amended (2026-09-25, ruling R-15 Q6):** `model_calls` gains `total_nano_aiu`, Copilot's native AI-unit measure (`modelMetrics.<model>.totalNanoAiu`) stored verbatim as an additive column, null (never 0) when the native record does not carry it. See "Amendment 2" under Facts and their grains.
 - **Amended (2026-09-25, R-58 c1 and c6; design `phase3-gateway-judges` sections 4.1, 4.2 and 9.1; W3-GW-I slice 3):** `verdict_uses` gets its grain, key, closed `outcome` enum, `code`, placement in the grading pass's own sealed segment and its `heads` entry; `model_calls` rows with principal `gateway` are the judge calls' usage. See "Amendment 3" under Facts and their grains.
@@ -168,6 +169,14 @@ All of these are projections computed in memory by `bench report` from the verif
 
 - `runs/` is kept until P1 deletes it. Ledgers may outlive pruned archives: pruning records `archive.pruned` in `events`, and US-41's "archive absent" state covers it.
 - The verdict cache is kept as long as any run references it. Pruning the cache makes those runs' re-grades call judges again, and the run says so.
+
+### Amendment 5 (2026-10-03; ADR-0014, ADR-0015, ADR-0021)
+
+- **Identity.** `cell_id` keeps its recipe and key names byte for byte. The ingredient named `pack` now carries the **arm id** (ADR-0014): `on`/`off` in every plan written before this amendment, any declared arm id after it. A cell is one (task version, combo, arm, repetition). A cross-run join (US-52) needs an explicit arm → pack-revision mapping; joining by ingredients alone is no longer allowed.
+- **`archive_files` grain.** One row is exactly one file or link in one **snapshot** of one archive attempt of one cell. Key `(run_id, cell_id, archive_attempt, snapshot, path)`, `snapshot` ∈ {`turn-<n>`, `final`}; a row without the field reads `final`. `cell.archived.archive_hash` covers the `final` rows only; each turn snapshot's hash is on `cell.turn_snapshot_archived` (ADR-0015).
+- **`events` additions.** `cell.prompt_sent{turn}` (absent reads 1), `cell.turn_ended{turn, stop_reason, turn_seconds, usage}`, `cell.turn_snapshot_archived{turn, snapshot_hash, files, bytes, duration_ms, job_active_processes}`, and the resume rows of ADR-0021 (`segment.abandoned` written by a resuming engine; resume start with its counts).
+- **Crash-atomic archive.** Every archive and snapshot folder is written to a temporary sibling, fsynced, verified and renamed; "the folder exists" means "the copy is complete" (ADR-0015 §5a; this fixes a pre-existing defect of the end-of-attempt archive).
+- **Migration.** None: absent fields read as stated; no ledger or archive is rewritten.
 
 ## Alternatives considered
 

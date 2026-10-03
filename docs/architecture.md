@@ -35,7 +35,7 @@ summary: >-
 
 ## Context & constraints
 
-**What the system must do:** the spec's core scenario. Run a `harness × model × pack` matrix over a BOM, one isolated cell per (task version, combo, pack, repetition); grade every cell with the strongest oracle; report with honest uncertainty.
+**What the system must do:** the spec's core scenario. Run a `harness × model × pack` matrix over a BOM, one isolated cell per (task version, combo, pack, repetition); grade every cell with the strongest oracle; report with honest uncertainty. *(Amended 2026-10-03: one cell per (task version, combo, **arm**, repetition), ADR-0014; see [Amendment 1](#amendment-1-2026-10-03-the-evaluation-campaign).)*
 
 **Hard constraints:**
 - **Host.** One Windows 11 workstation; local only (NG2); Windows host only (NG9). No Docker for any task (ADR-0013, Amendment 1).
@@ -228,6 +228,20 @@ flowchart TB
 - **ADR-0011:** LOA C1–C11 mapped to Python, with a control each, plus the profile qualification suite.
 - **ADR-0012:** proportionate security for a single-operator local tool (owner ruling); supersedes parts of ADR-0001, 0003, 0005 and 0010.
 - **ADR-0013:** cells run natively, each in its own git working copy and Job Object (owner ruling); supersedes ADR-0001 for authored tasks.
+- **ADR-0014..ADR-0021:** the Evaluation Campaign amendment (below).
+
+## Amendment 1 (2026-10-03): the Evaluation Campaign
+
+The enterprise-evaluation spec (`docs/specs/enterprise-evaluation.md`) amends this architecture. The full amendment is the companion document `docs/architecture-evaluation-campaign.md` (draft; its council gate is pending). Until that gate passes, the statements below are proposed, and the rest of this document stands. What it changes here:
+- **ADR-0014:** an arm replaces the pack setting; a plan holds one pack revision per pack-on arm; one cell is one (task version, combo, arm, repetition); the `cell_id` recipe is unchanged, so grids 1-4 load as two-arm runs.
+- **ADR-0015:** a cell attempt may hold a second user turn on the same ACP session (spike E4, Windows); prompt-once becomes once per (cell, turn); `archive_files` gains a `snapshot` key part; the job is terminated after the last turn, not every turn (amends ADR-0013 §2 and the lifecycle obligations below).
+- **ADR-0016:** a new Evaluation Campaign context: a committed, hash-chained campaign ledger; create-only discrimination records produced by synthetic cells through the engine; rings as committed matrix templates.
+- **ADR-0017:** engine identity is a per-component content manifest; the freeze admits only recorded defect fixes; eligibility is derived.
+- **ADR-0018:** property hidden checks run in the grading copy's Job Object, loopback only, with a schema-bound result (new boundary B7).
+- **ADR-0019:** catalog 0.7 (property metrics, scenario-7 `pass_at_1`, expected values); a missing `pass_at_1` is never counted as a fail.
+- **ADR-0020:** power analysis, verdicts, dominance and ring gates are pure stdlib functions checked against reference cases.
+- **ADR-0021:** plan-level resume of a run (per-turn reconciliation, launch-time identity and disk checks), `last_progress_at` and an alarm exit; archive writes become crash-atomic (ADR-0015 §5a, a pre-existing defect).
+- **Amendment text** is in ADR-0006 (Amendment 5), ADR-0007 (Amendment 1), ADR-0010 (Amendment 1), ADR-0011 (Amendment 1) and ADR-0013 (item 6). The council's round-1 vetoes are resolved in text and await re-check (companion gate record).
 
 ## Lifecycle model obligations (`models/run_lifecycle.tla`, US-44)
 

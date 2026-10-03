@@ -22,6 +22,7 @@ review-suggested: []
 # ADR-0010: Cell output is untrusted on the host; grading runs in containers
 
 - **Status:** Proposed
+- **Amended (2026-10-03, ADR-0018; architecture council round 1):** see "Amendment 1" before *Alternatives considered*.
 - **Amended by ADR-0013 (2026-09-23):**
   - grading steps that run cell content run natively, in their own grading working copy (the archive plus the hidden tests) inside their own Job Object with a deadline, not in a grading container;
   - safe host git (`gitsafe.py`) is unchanged.
@@ -54,6 +55,10 @@ Add boundary **B6 · cell output ↔ host tooling**. Everything under a cell's w
    - a planted `core.fsmonitor` marker command is not run;
    - a planted symlink to a host canary file is archived as a link, not as content;
    - a planted `.claude/settings.json` hook in a workspace is not triggered by any bench command.
+
+### Amendment 1 (2026-10-03; ADR-0018)
+
+Property hidden checks execute the agent's deliverable **on purpose**, with attack payloads and loopback fault fakes, in a grading copy under `cells_root` and its own Job Object. This is boundary **B7**. Its controls are in ADR-0018: the check and the deliverable get the grading `HOST_ENV` allowlist, never `os.environ` (§9); the deliverable is spawned only with an explicit handle list, so it cannot inherit the result pipe (§10); the result is schema-bound on the check's own stdout (§4); listeners bind `127.0.0.1` only (§3); no campaign write is open during a check, and campaign records are verified after each pass (§11). B6 stands unchanged for everything else.
 
 ## Alternatives considered
 

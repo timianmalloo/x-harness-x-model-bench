@@ -18,6 +18,7 @@ links:
 review-by: "2027-03-22"
 review-suggested:
   - { by: design-phase3-gateway-judges, on: 2026-09-25, reason: "row-17 gateway design gated (rev 3): Fable judge, Codex not qualified (DR-GW-1), CLI-added context (DR-GW-5)" }
+  - { by: adr-0013-native-cells, on: 2026-10-03, reason: "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending" }
 summary: >-
   harness-bench is a local benchmark run by one trusted operator (ADR-0012). Each cell works natively
   in its own git working copy, and nothing more (ADR-0013). The controls that remain protect result

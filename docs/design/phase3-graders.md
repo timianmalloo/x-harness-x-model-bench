@@ -30,6 +30,9 @@ summary: >-
   and tool versions ride on `grading.started`. The US-4 control fails on a score change or a catalog-hash change
   without a version bump. The four gate tasks are frozen. The byte-identity gate compares `views.export` bytes of two
   asserted passes, never ledger bytes. Revision 2 clears the Test Architect's and the D&P Architect's vetoes.
+review-suggested:
+  - { by: adr-0006-results-data-model, on: 2026-10-03, reason: "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending" }
+  - { by: adr-0013-native-cells, on: 2026-10-03, reason: "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending" }
 ---
 
 # Design: full graders (row 16)

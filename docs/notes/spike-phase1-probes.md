@@ -15,6 +15,8 @@ summary: >-
   isApiErrorMessage, apiErrorStatus and error, model "<synthetic>" and zero usage; Codex reports a bad
   model as ACP complete with task_complete.error. N4: no harness process leaves its cell's Job Object,
   the job handle is not inheritable, and nothing survives TerminateJobObject.
+review-suggested:
+  - { by: adr-0013-native-cells, on: 2026-10-03, reason: "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending" }
 ---
 
 # Phase-1 probes W1, W3, N4

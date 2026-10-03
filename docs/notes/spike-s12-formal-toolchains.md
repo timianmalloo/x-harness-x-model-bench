@@ -23,6 +23,8 @@ summary: >-
   `.lake/build` is 70 KB. macOS is unverified for both toolchains (marked, not guessed): no
   macOS CI job exists today. Nothing in either toolchain failed; a first draft Lean proof was
   wrong (my error, not a toolchain fault) and was fixed.
+review-suggested:
+  - { by: adr-0013-native-cells, on: 2026-10-03, reason: "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending" }
 ---
 
 # Spike S-12: TLA+ and Lean 4 toolchains run natively on the Windows operator host

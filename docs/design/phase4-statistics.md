@@ -25,6 +25,8 @@ summary: >-
   above it (US-36, C1); the pack effect on minus off per area and combo with E1-E3 excluded and `no detectable
   effect` when the interval touches zero (US-37); the two-run comparison with its refusal rule (US-52). Everything
   is derived at read time; nothing new is stored. Six decision requests (DR-S-1..6) carry recommended defaults.
+review-suggested:
+  - { by: adr-0006-results-data-model, on: 2026-10-03, reason: "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending" }
 ---
 
 # Design: statistics (phase 4, wave 4 row 19)

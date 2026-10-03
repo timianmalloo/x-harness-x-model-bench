@@ -21,6 +21,8 @@ summary: >-
   `normalize.totals` and the existing view measures `views.busy_ms`, `views.calls_per_cell` and
   `views.model_call` (DM7: one definition per quantity). `compactions` has no recorded signal on any
   harness today, so it is unconditionally NA, never 0 (US-27).
+review-suggested:
+  - { by: adr-0006-results-data-model, on: 2026-10-03, reason: "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending" }
 ---
 
 # Design: the cell-grain cost and efficiency metrics (W3-COST phase 2)

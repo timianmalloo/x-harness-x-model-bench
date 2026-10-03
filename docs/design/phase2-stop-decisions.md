@@ -27,6 +27,9 @@ summary: >-
   cap) pause launching; each request is resolved exactly once; the plan's decision_timeout applies the default. The
   built breaker gets its acceptance criterion and falsifying reverts. The grace is a TLC-checked refinement of the
   terminate step (spike: 22 of 22 variants rejected; the US-44 bounds pass). Revision 2, after the three-lens gate.
+review-suggested:
+  - { by: adr-0006-results-data-model, on: 2026-10-03, reason: "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending" }
+  - { by: adr-0007-run-engine, on: 2026-10-03, reason: "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending" }
 ---
 
 # Design: stop, decisions and the circuit breaker (phase 2, row 10)

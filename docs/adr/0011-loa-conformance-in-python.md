@@ -19,6 +19,7 @@ summary: >-
 # ADR-0011: LOA conformance criteria mapped to Python, with a control per criterion
 
 - **Status:** Proposed
+- **Amended (2026-10-03, architecture council round 1, Enterprise E2):** the import-lint controls for the Evaluation Campaign modules are registered in "Amendment 1" before *Evidence*.
 - **Date:** 2026-09-23
 - **Deciders:** @timianmalloo; authored by Claude Code for the architect council (Enterprise Architect item 4, round 1)
 - **Context spec/architecture:** `docs/architecture.md` LOA conformance; `layered-optimized-architecture.md` C1–C11
@@ -66,6 +67,14 @@ Any failure blocks the bump.
   - Churn in harness builds is caught by one suite.
 - **Negative / accepted trade-offs:** the suite needs real credentials for the served-model check, so it runs locally before a profile bump, not in hosted CI.
 - **Follow-ups / new risks:** none beyond the phase-1 tests.
+
+### Amendment 1 (2026-10-03; ADR-0016..ADR-0021)
+
+The Evaluation Campaign amendment (`docs/architecture-evaluation-campaign.md`) claims these controls; they join the C5 and C9 rows:
+- **C5 (side-effect protection):** the import lint's forbidden-import list extends to the campaign module, the engine-identity module, the power module, the verdict and ring-gate views, and the property grader with its `bench_check` helper: none may import `harness_bench.gateway`. A test fails on any such import.
+- **C9 (anti-pattern absence):** no model call on the campaign, verdict, gate or hidden-check path, enforced by the same lint; and no free text across B2 from `bench campaign status --json` (schema test, as C4).
+- **C4 (typed boundaries):** the hidden-check result schema (ADR-0018 §4) is validated, with a test that plants free text and an unknown case id and asserts NOT_RECORDED `check output invalid`.
+- **C10 (audit completeness):** `bench verify` covers the campaign ledger chain and every turn snapshot's hash; `bench campaign verify` covers content-address names (ADR-0016 §8).
 
 ## Evidence
 

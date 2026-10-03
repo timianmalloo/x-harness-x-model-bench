@@ -393,7 +393,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3a1df533db69b892fcabeaa32a62f94e1aafe232790be4fab6e1d3636750b08d"
+      "sourceSha256": "c63113c0d48dddf26d34faef2c28d0974c731ff6dcd69b0b7368ba630675e176"
     },
     {
       "id": "adr-0007-run-engine",
@@ -424,7 +424,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "734bdbbc4651013d8130c1527ee3a0081b9cdeee241ea85c3a7e6e9bfbbb04ed"
+      "sourceSha256": "a9d695b9f909b244be1bd461ac01c4441889a5030a69e062a88c23ba0da0e6d2"
     },
     {
       "id": "adr-0008-telemetry",
@@ -522,7 +522,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "da7f2e0eb827dd43af9cf37c552d3326914ea0db5b91a4ce9a5636736cde4aa4"
+      "sourceSha256": "d0d60321801892e4f68e84d3f84a938d82fcc3e8c6679360c75e23cf9ac1319b"
     },
     {
       "id": "adr-0011-loa-python",
@@ -548,7 +548,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "27da114b153d8f864a697bb171c1c7134c08688e28a136b88768cbd94520af68"
+      "sourceSha256": "f647a1dc787a32c301f24cb7358a8f1f8cdb48ca33408d8402b2c2e390747b86"
     },
     {
       "id": "adr-0012-proportionate-security",
@@ -635,7 +635,395 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b31c1d7f7612b9a6705bcf2c46209eeeb2eeeaad4cb481521f9db9fd828d8e9b"
+      "sourceSha256": "f205dce9e911100fac9262c27a178741e428e0f75a2afa59deb2577dea574670"
+    },
+    {
+      "id": "adr-0014-arm-and-cell-grain",
+      "path": "docs/adr/0014-arm-replaces-pack-setting.md",
+      "title": "ADR-0014: An arm replaces the pack setting; one cell is one (task version, combo, arm, repetition)",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation E1 (two arms), E3 (three arms)",
+      "reviewBy": "2027-10-03",
+      "reviewSuggested": [],
+      "summary": "A plan carries one pack revision per pack-on arm (zero for pack-off), and a cell is one (task version, combo, arm, repetition). The cell_id recipe and its key name stay byte-identical, with the arm id in the `pack` ingredient and `on`/`off` as the legacy arm ids, so grids 1-4 load, report and verify unchanged and a grid-4 re-plan gives the same cells. New plans launch in a seeded blocked-randomised order and name their comparison pairs; the board and pack section read a comparison pair instead of the literals on/off.",
+      "tags": [
+        "benchmark",
+        "data-model",
+        "grain",
+        "plan",
+        "arm",
+        "migration"
+      ],
+      "links": [
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b24044b331bb70a584dcecb9bfede068050b01f41b39164f61e7e15e055e36f7"
+    },
+    {
+      "id": "adr-0015-multi-turn-attempt-and-turn-snapshots",
+      "path": "docs/adr/0015-multi-turn-attempt-and-turn-snapshots.md",
+      "title": "ADR-0015: A cell attempt may hold a second user turn; each non-final turn leaves an append-only snapshot",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation E2 (spike E4 passed on Windows)",
+      "reviewBy": "2027-10-03",
+      "reviewSuggested": [],
+      "summary": "A multi-turn task's cell sends turn 2 as a second session/prompt on the same ACP session and the same stdin channel, after turn 1 returns end_turn and after the working copy is archived as a turn snapshot. Spike E4 verified this on all three harnesses on Windows (macOS unverified). The Cell keeps one prompted attempt; prompt_sent and the snapshot carry a turn index; prompt-once becomes once per (cell, turn); archive_files gains a snapshot key part whose absence reads 'final'. The driver, engine and archiver need named changes.",
+      "tags": [
+        "benchmark",
+        "run-engine",
+        "archive",
+        "grain",
+        "multi-turn",
+        "lifecycle"
+      ],
+      "links": [
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0007-run-engine",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0013-native-cells",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "4c1bd2c1a7fc5c80da1127ff4016ffa1e52f674e9a112d9b73e0940a1abeda4a"
+    },
+    {
+      "id": "adr-0016-campaign-record",
+      "path": "docs/adr/0016-campaign-record.md",
+      "title": "ADR-0016: The Evaluation Campaign is a committed, hash-chained ledger over unchanged runs, with content-addressed records",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation E1 onward",
+      "reviewBy": "2027-10-03",
+      "reviewSuggested": [],
+      "summary": "The Evaluation Campaign context keeps one append-only, hash-chained ledger per campaign under bench/campaigns/<id>/ (committed, single writer `bench campaign`), plus immutable content-addressed files for engine identities, pre-registrations and power-analysis inputs. Discrimination records are create-only files keyed by (task version, engine identity, platform), produced by synthetic cells through the engine. Rings are committed matrix templates identified by content hash. The campaign references runs by id and never copies their facts; eligibility, gate results, power outputs and verdicts are derived.",
+      "tags": [
+        "benchmark",
+        "data-model",
+        "grain",
+        "campaign",
+        "discrimination",
+        "ring",
+        "persistence"
+      ],
+      "links": [
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b4affef7efd9943abb53a493634f064ce4e4c0df83a29793e38ce9ad6f885509"
+    },
+    {
+      "id": "adr-0017-engine-identity-and-freeze",
+      "path": "docs/adr/0017-engine-identity-and-freeze.md",
+      "title": "ADR-0017: Engine identity is a per-component content manifest; the freeze admits only recorded defect fixes",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation E1 onward",
+      "reviewBy": "2027-10-03",
+      "reviewSuggested": [],
+      "summary": "A campaign's engine baseline is a manifest of content hashes per engine component (each source module, the catalog hash, BOM, prices, profiles, harness builds, uv.lock, the campaign's task versions, platform and Python version), not a git commit, so unrelated commits do not break a freeze and a difference is named per item. A recorded defect fix replaces named component hashes under a defect class, in a before-hash chain. Eligibility is derived; a run-side fix after cells ran makes those runs ineligible and they are re-run (operator decision 2026-10-03); the run-side identity is also rechecked before every cell launch.",
+      "tags": [
+        "benchmark",
+        "reproducibility",
+        "freeze",
+        "eligibility",
+        "campaign"
+      ],
+      "links": [
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0016-campaign-record",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "a7ca9f0a61f7bc7f6b1657a189020d642372f91d20e760a91ebc9f26d4215247"
+    },
+    {
+      "id": "adr-0018-hidden-check-harness",
+      "path": "docs/adr/0018-hidden-check-harness.md",
+      "title": "ADR-0018: Property hidden checks run in the grading copy's Job Object, loopback-only, with a schema-bound result on their own pipe",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation E1 (in-process probes), E4 (loopback fault fakes)",
+      "reviewBy": "2027-10-03",
+      "reviewSuggested": [],
+      "summary": "One generic property grader runs a task's hidden check (attack probes, fault fakes, diff statistics) inside a grading copy under cells_root, in its own Job Object with per-case and outer bounds. Probes prefer in-process calls; a listener binds the literal 127.0.0.1 on an OS-assigned port. The check's result comes back only on its own stdout pipe in a closed schema, the check tree is hashed before and after, planted secrets are synthetic canaries with a scanner-named shape, and seeds derive from (task version, cell, metric) so a re-grade reproduces exactly. Boundary B7.",
+      "tags": [
+        "benchmark",
+        "grading",
+        "security",
+        "trust-boundary",
+        "resilience",
+        "hidden-check"
+      ],
+      "links": [
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0010-untrusted-cell-output",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0012-proportionate-security",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0013-native-cells",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b85c178624f60e2805ec13c6e781b43368d7e18008b510c7b07039d7abcc7dda"
+    },
+    {
+      "id": "adr-0019-catalog-0-7-property-metrics",
+      "path": "docs/adr/0019-catalog-0-7-property-metrics.md",
+      "title": "ADR-0019: Catalog 0.7 adds the property metrics, scenario-7 pass@1 and per-metric expected values; a missing pass@1 is never a fail",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation E1 (0.7.dev), E3 (0.7 frozen)",
+      "reviewBy": "2027-10-03",
+      "reviewSuggested": [],
+      "summary": "Catalog 0.7 is a new version under the R-59/R-86 rules: it adds property_check_pass and the EV-2..EV-6 secondaries, a pass_at_1 for scenario-7 (formal) tasks, and expected-value declarations per metric in each property task's task.yaml. The pack section's rule that counts a missing pass_at_1 as a fail is a defect and is fixed: missing is NOT_RECORDED and excluded. The US-4 control is the catalog-freeze golden for every 0.6 metric.",
+      "tags": [
+        "benchmark",
+        "catalog",
+        "metrics",
+        "grading",
+        "us-4"
+      ],
+      "links": [
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "design-pack-improvement-section",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "38c63445d9c42604256bae18f3df915c277b7a4312e680bd1bc379dbb8732c60"
+    },
+    {
+      "id": "adr-0020-power-and-verdicts-stdlib",
+      "path": "docs/adr/0020-power-and-verdicts-stdlib.md",
+      "title": "ADR-0020: Power analysis, verdicts, dominance and ring gates are pure stdlib functions checked against reference cases",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation E1 onward",
+      "reviewBy": "2027-10-03",
+      "reviewSuggested": [],
+      "summary": "The power analysis (two-proportion and Connor paired-binary sizes, MDE solved back), the per-property verdict rule with task-stratified bootstrap intervals, the token-ratio dominance rule and the per-tag ring gates are pure Python-stdlib functions of recorded inputs and a seed. No statistics dependency is added: statistics.NormalDist reproduces the spec's reference sizes (93, 53, 115) in this session. Outputs are derived views; tests check closed-form references, an independent hand-coded formula, a seeded-wrong variant and seeded coverage simulations.",
+      "tags": [
+        "benchmark",
+        "statistics",
+        "power-analysis",
+        "verdict",
+        "ring",
+        "derived-view"
+      ],
+      "links": [
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "fea4b3c8bc2799cfda23a80c7f7c4a422f94b09d92454be36159e6164711c1f6"
+    },
+    {
+      "id": "adr-0021-plan-level-resume-and-liveness",
+      "path": "docs/adr/0021-plan-level-resume-and-liveness.md",
+      "title": "ADR-0021: Plan-level resume of a run, with per-turn reconciliation and a progress signal an alarm can watch",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation E3 (needed by E5's multi-night grid)",
+      "reviewBy": "2027-10-03",
+      "reviewSuggested": [],
+      "summary": "A restarted `bench run` for an existing run id resumes it: it verifies the ledger, proves each cell terminal from its recorded outcome event, reconciles every non-terminal cell by ADR-0007's rules extended per turn (ADR-0015), relaunches only never-prompted cells in the frozen plan order, and grades once every cell is terminal. It refuses a resume after a stop or under a drifted run-side identity. `bench status` exposes last_progress_at, and `bench status --alarm-after` gives a scheduled check a non-zero exit when progress stalls. A per-launch disk check and a stated worst-case cell and grading time complete the multi-night story.",
+      "tags": [
+        "benchmark",
+        "run-engine",
+        "resume",
+        "liveness",
+        "sre",
+        "multi-night"
+      ],
+      "links": [
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0007-run-engine",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0015-multi-turn-attempt-and-turn-snapshots",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0017-engine-identity-and-freeze",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "a21a64ebc37fb049fb8019ca181c3e0e5d9702befd3ea04ae668ea18d930b598"
+    },
+    {
+      "id": "arch-evaluation-campaign",
+      "path": "docs/architecture-evaluation-campaign.md",
+      "title": "Architecture amendment: the Evaluation Campaign (arms, multi-turn cells, campaigns, hidden checks)",
+      "type": "architecture",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: phases E1-E5 (walking skeleton first)",
+      "reviewBy": "2027-04-01",
+      "reviewSuggested": [],
+      "summary": "An amendment to the harness-bench architecture for the enterprise-evaluation spec. A run's plan carries one pack revision per pack-on arm and a cell is one (task version, combo, arm, repetition), with the old cell_id recipe kept so grids 1-4 load unchanged; a cell attempt may hold a second user turn with an append-only turn snapshot; a new Evaluation Campaign context keeps a committed, hash-chained campaign ledger, a per-component engine-identity manifest, create-only discrimination records and ring templates; property hidden checks run in the grading copy's Job Object on loopback only; power analysis and verdicts are pure stdlib functions checked against reference cases; a run resumes at plan level across nights (ADR-0021), and archive and create-only writes are crash-atomic. Everything stays T0 and native (Windows today). Revised after architect council round 1.",
+      "tags": [
+        "benchmark",
+        "architecture",
+        "campaign",
+        "arm",
+        "turn-snapshot",
+        "hidden-check",
+        "power-analysis",
+        "verdict"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0014-arm-and-cell-grain",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0015-multi-turn-attempt-and-turn-snapshots",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0016-campaign-record",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0017-engine-identity-and-freeze",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0018-hidden-check-harness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0019-catalog-0-7-property-metrics",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0020-power-and-verdicts-stdlib",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0021-plan-level-resume-and-liveness",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "Component map & boundaries",
+          "mermaid": "flowchart TB\n  subgraph Session[\"Coordinator session (/start-benchmark, campaign steps)\"]\n    SK[start-benchmark skill: compile, confirm, relay]\n  end\n  subgraph Camp[\"Evaluation Campaign (new, T0)\"]\n    CC[bench campaign: create, baseline, fix, power, register, attach, conclude]\n    EI[Engine identity: manifest + diff]\n    PW[Power analysis: stdlib, by input hash]\n    DSC[Discriminate: synthetic cells through the engine]\n    RG[Ring gates: pure functions per tag]\n  end\n  subgraph Host[\"bench (existing pipeline, amended)\"]\n    PLN[Plan: arms, blocked randomised order, rings]\n    ENG[Run engine: multi-turn attempt]\n    DRV[ACP driver: turn n prompt]\n    ARC[Archiver: turn snapshots]\n    GRD[Grade orchestrator]\n    HC[Property grader: hidden-check runner]\n    VIEWS[Views]\n    VER[Verdicts + eligibility: derived]\n    REP[Report: section 3]\n  end\n  subgraph Store[\"Records\"]\n    CL[(bench/campaigns/<id>: ledger, identities, power inputs, preregs)]\n    DR[(bench/discrimination)]\n    RT[(bench/rings)]\n    RUN[(runs/<run_id>: ADR-0006 facts + archives with snapshots)]\n  end\n  subgraph GC[\"Grading copy under cells_root (one Job Object, deadline)\"]\n    CHK[Hidden check: probes / fault fake on 127.0.0.1]\n    DEL[Agent deliverable]\n  end\n  SK --> CC & PLN\n  CC --> EI & PW & DSC & RG\n  CC --> CL\n  DSC --> PLN\n  DSC --> DR\n  RT --> PLN\n  PLN --> ENG --> DRV\n  ENG --> ARC --> RUN\n  GRD --> HC --> CHK --> DEL\n  HC --> RUN\n  RUN --> VIEWS --> VER --> REP\n  CL --> VER\n  RUN --> RG\n  RUN --> PW"
+        },
+        {
+          "kind": "flowchart",
+          "title": "Delivery phasing (vertical slices)",
+          "mermaid": "flowchart LR\n  E1[E1 walking skeleton] --> E2[E2 multi-turn]\n  E1 --> E3[E3 three arms, rings, resume]\n  E1 --> E4[E4 remaining checks]\n  SLB[spike S-LB] --> E4\n  E2 --> J{converge: ADR-0021 §4 table + TLC}\n  E3 --> J\n  E4 --> J\n  J --> E5[E5 first campaign]"
+        }
+      ],
+      "sourceSha256": "a96c1e13df2e84d970d8a6f5708c878907047e21d83763576d0c31441f09d38a"
     },
     {
       "id": "arch-harness-bench",
@@ -679,7 +1067,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TB\n  subgraph Session[\"Coordinator session (Claude Code, /start-benchmark)\"]\n    SK[start-benchmark skill: compile, confirm, relay, audit-log entries]\n  end\n  subgraph Host[\"bench (Python, T0) on the Windows host\"]\n    CLI[bench CLI: validate, plan, run, status, stop, grade, report, verify, teardown]\n    ENG[Run engine: single writer, lifecycle = run_lifecycle.tla]\n    WSB[Workspace builder]\n    TLS[Tools folder: pinned harness builds]\n    PRF[(Harness profiles: build, mode, pin, home seeding, reader)]\n    DRV[ACP cell driver]\n    ARC[Archiver: no link following, exact-value credential scan]\n    TEL[Telemetry: readers + normaliser]\n    GRD[Grade orchestrator]\n    GW[Model gateway: tool-less]\n    EG[Egress gate]\n    VIEWS[Pure-Python projections]\n    REP[Report: CLI + HTML + summaries]\n  end\n  subgraph Store[\"runs/<run_id>/ + cache/\"]\n    LED[(hash-chained facts: events, model_calls, tool_calls, archive_files, scores, verdict_uses)]\n    ARCH[(cell archives)]\n    CTL[(control/: stop, decision answers)]\n    VC[(shared verdict cache)]\n  end\n  subgraph Cells[\"bench-cells/<run>/<cell> (native, one Job Object each)\"]\n    CELL[Cell: own working copy + own harness home]\n    GC[Grading working copy: archive + hidden tests]\n  end\n  SK -->|bench plan / run / status --json| CLI\n  SK -->|decision answers| CTL\n  CLI --> ENG\n  ENG --> WSB & DRV & ARC\n  PRF --> TLS & DRV & TEL\n  DRV -->|spawn into Job Object, ACP stdio| CELL\n  CTL --> ENG\n  ENG --> LED\n  ARC --> ARCH\n  ARCH --> TEL --> LED\n  ARCH --> GRD --> GC\n  GRD --> LED\n  GRD --> GW\n  GW --> VC\n  GW --> EG\n  LED --> VIEWS --> REP\n  REP --> GW\n  REP --> EG"
         }
       ],
-      "sourceSha256": "47cbda0696530c5697083b68970d85b25219fcc70ec4607ddffe11a22a5f7eb8"
+      "sourceSha256": "5f0ef36e8cc9165d0f471d371ed98aa8973c0d80ea0714b9bdd9f13ea9da3065"
     },
     {
       "id": "mutation-record-phase1",
@@ -1087,7 +1475,13 @@ window.DOCS_INDEX = {
       "owner": "@timianmalloo",
       "phase": "",
       "reviewBy": "2027-03-29",
-      "reviewSuggested": [],
+      "reviewSuggested": [
+        {
+          "by": "adr-0013-native-cells",
+          "on": "2026-10-03",
+          "reason": "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending"
+        }
+      ],
       "summary": "R-83 condition 1. Every one of the 89 Terminal-Bench 2.0 task folders at commit 2fd12b88aafdd04a52c298e3940bcb189f9766d6 (2fd12b88) was read (task.toml, environment/Dockerfile, and, where the Dockerfile alone did not settle it, tests/test.sh and solution/solve.sh) and given one verdict: native (19), apt (63), linux-only (5) or git-state (2). No easy-band task is native, so E1 takes a shortfall task from the medium band (R-83's shortfall rule 1); E2 and E3 take native tasks from their own bands. No task was run and no task folder changed.",
       "tags": [
         "benchmark",
@@ -1108,7 +1502,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "a7fbc49645bd7e5c8bcfe25298ca69ff096eede0ed2b996918f76d2e90fb2cce"
+      "sourceSha256": "72ed5d34053444192765584120319de0c1eba48f9b94fed34d753553db056c18"
     },
     {
       "id": "review-w1-acp-codex",
@@ -1325,7 +1719,18 @@ window.DOCS_INDEX = {
       "owner": "@timianmalloo",
       "phase": "Phase 2: deterministic graders (S-08g); unblocks T-G1, T-G2",
       "reviewBy": "2027-03-29",
-      "reviewSuggested": [],
+      "reviewSuggested": [
+        {
+          "by": "adr-0006-results-data-model",
+          "on": "2026-10-03",
+          "reason": "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending"
+        },
+        {
+          "by": "adr-0013-native-cells",
+          "on": "2026-10-03",
+          "reason": "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending"
+        }
+      ],
       "summary": "Design for grade/formal.py: the four US-32 scores (checks, statement integrity, model conformance, model non-vacuity) plus US-33 bug confirmation (bugs_confirmed, bug_claim_precision) for G1 (TLA+) and G2 (Lean 4). Closes S-12's warm-before-clock gap for tla2tools.jar by design; names the toolchain invocation contract (correctness.run_step, the only sanctioned procs path); flags the TLA+ trace-replay mechanism as unspiked.",
       "tags": [
         "benchmark",
@@ -1366,7 +1771,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "6605e19930b34af24cf0103741e017c94c724762f966b3427cc48fef38fc3bb1"
+      "sourceSha256": "35a9e21a114a060769440616d23bb3d0b920e247b9a003616b64bde3f0da2b9c"
     },
     {
       "id": "design-pack-improvement-section",
@@ -1422,6 +1827,16 @@ window.DOCS_INDEX = {
           "by": "adr-0006-results-data-model",
           "on": "2026-09-24",
           "reason": "Amendment 1: model_calls grain re-declared per native usage report with requests and model in the key; tool_calls.outcome_code (R-26, R-27)"
+        },
+        {
+          "by": "adr-0007-run-engine",
+          "on": "2026-10-03",
+          "reason": "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending"
+        },
+        {
+          "by": "adr-0013-native-cells",
+          "on": "2026-10-03",
+          "reason": "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending"
         }
       ],
       "summary": "The detailed design of the thinnest end-to-end path: prose → confirmed plan → run engine → native cells, each in its own git working copy and Job Object, driven over ACP (Claude, Codex) → verified archive → telemetry from native records → correctness and cost graded in grading working copies → pure projections → CLI table and a minimal HTML report. Version 4: cells run natively in their own working copies and Job Objects (ADR-0013); validity-first; the engine's launch, kill and record order matched to the checked lifecycle model.",
@@ -1478,7 +1893,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d2e34ee86f4728a38dbda8f5396442d0f7b116ba1cf388801f0f71cd1b233250"
+      "sourceSha256": "68d21210315ba5735d300080ab513ee18935a94a25de40b28d64f82709a994a6"
     },
     {
       "id": "design-phase2-copilot-profile",
@@ -1489,7 +1904,13 @@ window.DOCS_INDEX = {
       "owner": "@timianmalloo",
       "phase": "Phase 2 · smoke on all harnesses (wave 1: the Copilot-vs-Codex capability)",
       "reviewBy": "2027-03-24",
-      "reviewSuggested": [],
+      "reviewSuggested": [
+        {
+          "by": "adr-0006-results-data-model",
+          "on": "2026-10-03",
+          "reason": "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending"
+        }
+      ],
       "summary": "How a Copilot cell runs: a data-only profile (bench/profiles/copilot.yaml) whose templated command launches the pinned native binary @github/copilot-win32-x64 1.0.89-1 by path with no ACP adapter; an ACP session/set_model before the prompt (driver.py changes); a reader over the per-cell events.jsonl that writes per-report model_calls rows under the ADR-0006 grain amendment (R-26) and records each tool call's outcome_code, so the pack-on hook denial measured on revision 92 (R-27) is visible. Also HB-PRE-002 for Copilot's instruction files, the US-9 scan, the US-9..US-14 promise-to-test table, and the Leader's capture and scrub procedure. Revision 3, after the design gate and rulings R-12..R-28.",
       "tags": [
         "benchmark",
@@ -1551,7 +1972,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "fc2a19dde03292985b30ed6585cf11ac714b4396dd7c3a0ec4be80899ad4b7ec"
+      "sourceSha256": "912760bbb9d49ad2b5b33db54a676aa0e8d0edc1b8e32fc7789965ec8f5e4e5b"
     },
     {
       "id": "design-phase2-scripted-user",
@@ -1623,7 +2044,18 @@ window.DOCS_INDEX = {
       "owner": "@timianmalloo",
       "phase": "Phase 2 · smoke on all harnesses (wave 2: row 10, W2-STOP)",
       "reviewBy": "2027-03-25",
-      "reviewSuggested": [],
+      "reviewSuggested": [
+        {
+          "by": "adr-0006-results-data-model",
+          "on": "2026-10-03",
+          "reason": "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending"
+        },
+        {
+          "by": "adr-0007-run-engine",
+          "on": "2026-10-03",
+          "reason": "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending"
+        }
+      ],
       "summary": "How a run stops on purpose and how it asks for, and times out, a decision. `bench stop` and `bench answer` write apply-once control files that the engine applies on its own thread. A stop sends ACP session/cancel, closes stdin, waits a profile grace of at most 10 s, then terminates the Job Object, so every running cell is `stopped` within 30 s (R-21, UXA-10), and a `run.stopped` fact is recorded. Three decision kinds (blocked cell, qualification gap, spend cap) pause launching; each request is resolved exactly once; the plan's decision_timeout applies the default. The built breaker gets its acceptance criterion and falsifying reverts. The grace is a TLC-checked refinement of the terminate step (spike: 22 of 22 variants rejected; the US-44 bounds pass). Revision 2, after the three-lens gate.",
       "tags": [
         "benchmark",
@@ -1682,7 +2114,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3dbc40e3d87e76548cf8bda92266fefc77892f87086a180ae5a9572d91b287b7"
+      "sourceSha256": "773ef54b17f8554995fd374ee583c3cc7512ec362879c2954e5902850a3c1665"
     },
     {
       "id": "design-phase3-cost",
@@ -1693,7 +2125,13 @@ window.DOCS_INDEX = {
       "owner": "@timianmalloo",
       "phase": "Phase 3 · grading and judges (wave 3: row 16, W3-COST)",
       "reviewBy": "2027-03-25",
-      "reviewSuggested": [],
+      "reviewSuggested": [
+        {
+          "by": "adr-0006-results-data-model",
+          "on": "2026-10-03",
+          "reason": "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending"
+        }
+      ],
       "summary": "Seam C-1: `grade/runner.py`'s inline `_cost` (cost_usd only) moves verbatim into `grade/cost.py`'s `grade_cell(inp)`, registered in `runner.GRADERS[\"cost\"]`. Six cell-grain metrics are decided: cost_usd (unchanged) plus five new ones -- tokens_per_minute, output_tokens_per_turn, cache_hit_ratio, cache_write_amplification, context_growth (peak) and compactions -- each defined only from `normalize.totals` and the existing view measures `views.busy_ms`, `views.calls_per_cell` and `views.model_call` (DM7: one definition per quantity). `compactions` has no recorded signal on any harness today, so it is unconditionally NA, never 0 (US-27).",
       "tags": [
         "benchmark",
@@ -1727,7 +2165,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b98ebe81faa4fc34f9e89af9dc5b9bced87fd337a2d9ff9658c529769a58004c"
+      "sourceSha256": "0716758a182336abcbbbcb7cc6e3f07676c4f8ecef1939641c02ab061d6e43c1"
     },
     {
       "id": "design-phase3-gateway-judges",
@@ -1738,7 +2176,18 @@ window.DOCS_INDEX = {
       "owner": "@timianmalloo",
       "phase": "Phase 3 · wave 3 (row 17: the gateway, the judges, calibration; built by W3-GW-I)",
       "reviewBy": "2027-03-25",
-      "reviewSuggested": [],
+      "reviewSuggested": [
+        {
+          "by": "adr-0006-results-data-model",
+          "on": "2026-10-03",
+          "reason": "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending"
+        },
+        {
+          "by": "adr-0013-native-cells",
+          "on": "2026-10-03",
+          "reason": "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending"
+        }
+      ],
       "summary": "Row 17 per R-58 and R-59, driven by spike GW-H and revised through a five-persona gate. The gateway calls judges through the pinned headless CLIs, from call folders under the cells root, only under bench grade --allow-model-calls and never while any run is live. The Anthropic judge is claude-fable-5-1 (served on 2.1.282, text output, 0 tool events). The OpenAI judge gpt-6-sol is not qualified and is never spawned: Codex 0.156 keeps its code-mode exec tool (DR-GW-1). Requests are scrubbed, scanned, egress-checked and sent on stdin; answers are schema-validated; verdicts live in a request-keyed memo store whose hits are checked against the storing ledger. Calibration is one human label per (artifact, rubric item), set-checked before any verdict. The gate passed in two rounds, with every veto cleared by its holder. Five Owner decisions are open.",
       "tags": [
         "benchmark",
@@ -1805,7 +2254,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "11cfe403eba38db6ea0020b2c8226338dc714ac519f78a904b363634626795b7"
+      "sourceSha256": "971894a3f483971f8de28cdf8fb4839d6035caa77b8088c2dd92430ee885fc61"
     },
     {
       "id": "design-phase3-graders",
@@ -1816,7 +2265,18 @@ window.DOCS_INDEX = {
       "owner": "@timianmalloo",
       "phase": "Phase 3 · grading and judges (wave 3: row 16, W3-GRADE-D)",
       "reviewBy": "2027-03-25",
-      "reviewSuggested": [],
+      "reviewSuggested": [
+        {
+          "by": "adr-0006-results-data-model",
+          "on": "2026-10-03",
+          "reason": "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending"
+        },
+        {
+          "by": "adr-0013-native-cells",
+          "on": "2026-10-03",
+          "reason": "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending"
+        }
+      ],
       "summary": "Row 16: every metric the ready tasks A1, C1, D1 and E6 name through their `graders:` lists gets a definition, an oracle rung (US-25), its NA reasons (US-27), an additivity class and a fixture with a stated expected value, cut from runs/row15-d1-1, runs/a1-capture-1 or the C1/E6 reference solutions. A frozen per-cell `CellInput` replaces `grade(run_dir, task_dir)`. A registry dispatch by the task's `graders`, with a completeness check before `grading.completed`, replaces the fixed `METRICS` tuple. Catalog `0.4.dev` is a probe version (R-59). `catalog_hash` and tool versions ride on `grading.started`. The US-4 control fails on a score change or a catalog-hash change without a version bump. The four gate tasks are frozen. The byte-identity gate compares `views.export` bytes of two asserted passes, never ledger bytes. Revision 2 clears the Test Architect's and the D&P Architect's vetoes.",
       "tags": [
         "benchmark",
@@ -1885,7 +2345,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "eab83dcb87ac2a7bc4b9e3dbb39cb5bde89a957c3486d66b09282a10e1a35bee"
+      "sourceSha256": "7ab3f541781705af3004e9567e0cbaba868c4965b2464c579eeb3c470d58d914"
     },
     {
       "id": "design-phase4-report",
@@ -1959,7 +2419,13 @@ window.DOCS_INDEX = {
       "owner": "@timianmalloo",
       "phase": "Phase 4 · statistics and full report (wave 4: row 19)",
       "reviewBy": "2027-03-27",
-      "reviewSuggested": [],
+      "reviewSuggested": [
+        {
+          "by": "adr-0006-results-data-model",
+          "on": "2026-10-03",
+          "reason": "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending"
+        }
+      ],
       "summary": "Row 19 (S-08f composites + S-11 statistics): normalisation by catalog anchors and the correctness-gated composite at the cell grain; a two-stage (tasks, then repetitions) percentile bootstrap, 95%, at least 2,000 resamples, keyed per quantity from a recorded seed so the same results and seed give identical intervals; ranking where overlapping intervals share a tier and a pass@1 interval entirely below another can never rank above it (US-36, C1); the pack effect on minus off per area and combo with E1-E3 excluded and `no detectable effect` when the interval touches zero (US-37); the two-run comparison with its refusal rule (US-52). Everything is derived at read time; nothing new is stored. Six decision requests (DR-S-1..6) carry recommended defaults.",
       "tags": [
         "benchmark",
@@ -2010,7 +2476,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8b0a99de10b1c210eac82145dac5801695ce1630b2241eee347f571eed9ec892"
+      "sourceSha256": "2d36330dab267baa41719ca2e34620f388224060ee3ec833e6a9b923d8a21077"
     },
     {
       "id": "design-run-lifecycle-model",
@@ -2026,6 +2492,16 @@ window.DOCS_INDEX = {
           "by": "adr-0006-results-data-model",
           "on": "2026-09-24",
           "reason": "Amendment 1: model_calls grain re-declared per native usage report with requests and model in the key; tool_calls.outcome_code (R-26, R-27)"
+        },
+        {
+          "by": "adr-0007-run-engine",
+          "on": "2026-10-03",
+          "reason": "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending"
+        },
+        {
+          "by": "adr-0013-native-cells",
+          "on": "2026-10-03",
+          "reason": "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending"
         }
       ],
       "summary": "The TLA+ model of one run's lifecycle, the proof obligation the run engine is built against (US-44). TLC checks 16 safety invariants at the US-44 bounds (3 cells, parallelism 2, 1 engine crash) and at small bounds with `bench grade` contending, grading mutual exclusion at 2 passes, and 5 liveness properties at 1 cell; each of 22 seeded-bug variants is rejected by its own target checked alone, and two witnesses show that every cell can finish and the R-21 cancel grace is reachable. A mapping table binds every model action to the engine's ledger events, and a conformance test keeps the two in step.",
@@ -2059,7 +2535,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2d300301d99c0b9a0205e5f40faf745f7ae3613525ec326d34253e580ee46752"
+      "sourceSha256": "52d7d305c96d90c65de701503a8ccf26a2a0e0ad3c180e917fbc0c1413676b77"
     },
     {
       "id": "audit-log",
@@ -2348,7 +2824,13 @@ window.DOCS_INDEX = {
       "owner": "@timianmalloo",
       "phase": "",
       "reviewBy": "2026-10-23",
-      "reviewSuggested": [],
+      "reviewSuggested": [
+        {
+          "by": "adr-0013-native-cells",
+          "on": "2026-10-03",
+          "reason": "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending"
+        }
+      ],
       "summary": "W1: pack-apply.py apply --install installs pack revision 92 non-interactively in under a second and lists every path it wrote as JSON (437 files). W3: a failed Claude call is an assistant row with isApiErrorMessage, apiErrorStatus and error, model \"<synthetic>\" and zero usage; Codex reports a bad model as ACP complete with task_complete.error. N4: no harness process leaves its cell's Job Object, the job handle is not inheritable, and nothing survives TerminateJobObject.",
       "tags": [
         "benchmark",
@@ -2369,7 +2851,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "c7120b4935287c2ec0faa4fc3a5313fdab8345eb9b68248f023d26f531cc480d"
+      "sourceSha256": "9dade027eb726ba4b620935498b0708b0e2f6df789ef821ec483c526af229b0d"
     },
     {
       "id": "note-spike-runner-path",
@@ -2454,7 +2936,13 @@ window.DOCS_INDEX = {
       "owner": "@timianmalloo",
       "phase": "",
       "reviewBy": "2026-10-29",
-      "reviewSuggested": [],
+      "reviewSuggested": [
+        {
+          "by": "adr-0013-native-cells",
+          "on": "2026-10-03",
+          "reason": "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending"
+        }
+      ],
       "summary": "Both toolchains proved out natively on this Windows 11 host. TLA+: Temurin JDK 21 already on PATH, tla2tools.jar v1.7.4 re-downloaded and its sha256 matched tools/check_models.py's pin exactly, TLC checked run_lifecycle.tla (liveness config) clean in 10.4s inside a fresh git worktree. Lean 4: elan 4.2.4 installed natively to the operator's per-user ~/.elan, a minimal no-Mathlib lake project pinned to leanprover/lean4:v4.34.1 built clean (`#print axioms` shows only propext/Quot.sound, no sorry) in a fresh git worktree; first build (toolchain download+install+build) took 54.3s, a rebuild with the toolchain already warm took 1.1s. The elan toolchain cache is 3.1 GB and lives outside any cell's working copy; a cell's own `.lake/build` is 70 KB. macOS is unverified for both toolchains (marked, not guessed): no macOS CI job exists today. Nothing in either toolchain failed; a first draft Lean proof was wrong (my error, not a toolchain fault) and was fixed.",
       "tags": [
         "benchmark",
@@ -2486,7 +2974,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "df8d513d62ec351e5a02eff71d55416089cba5b8bdf5132f1f28f97c6071b32c"
+      "sourceSha256": "d35a8989cbc5eb2f8456f152825f7a70d3f79266c6567e2e24727038af97beb7"
     },
     {
       "id": "proof-phase2",
@@ -3336,6 +3824,11 @@ window.DOCS_INDEX = {
           "by": "design-phase3-gateway-judges",
           "on": "2026-09-25",
           "reason": "row-17 gateway design gated (rev 3): Fable judge, Codex not qualified (DR-GW-1), CLI-added context (DR-GW-5)"
+        },
+        {
+          "by": "adr-0013-native-cells",
+          "on": "2026-10-03",
+          "reason": "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending"
         }
       ],
       "summary": "harness-bench is a local benchmark run by one trusted operator (ADR-0012). Each cell works natively in its own git working copy, and nothing more (ADR-0013). The controls that remain protect result validity (hidden tests never in the agent's tree) and what the operator shares (no credential in a published report). The agent's reach outside its working copy is accepted by the owner.",
@@ -3384,7 +3877,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart LR\n  subgraph Host[\"Host (trusted: the operator)\"]\n    Engine[\"bench engine\\n(single writer)\"]\n    Runs[\"runs/&lt;id&gt;\\nledger + archives\"]\n    Creds[\"subscription logins\\n(harness homes)\"]\n    Report[\"report HTML\"]\n  end\n  subgraph Cell[\"Cell (the agent, with the operator's rights)\"]\n    Agent[\"harness + model\"]\n    WS[\"own git working copy\"]\n  end\n  Oracle[\"hidden tests / oracle\"]\n  Engine -- \"B1 spawn into Job Object, kill\" --> Cell\n  Creds -- \"B1 per-cell copy\" --> Cell\n  Cell -- \"B4 archive\" --> Runs\n  Oracle -. \"B2 never in the task clone\" .- Cell\n  Runs --> Report\n  Report -- \"B5 publish\" --> Shared[\"shared report\"]"
         }
       ],
-      "sourceSha256": "72039cacf42bf7d64e146390be99b1733a044f832b5e1ee5ad089bfff7ccfc85"
+      "sourceSha256": "8be69c5be0babb7b09d1b7b023721d7cd6a1bed19987f6da0f5bdc3bb1fa4d8b"
     }
   ],
   "surfaces": [
@@ -3466,5 +3959,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "331a3236140b81ccf4a447933cefa68344271f8766719717a37ea50045d18d6b"
+  "graphSha256": "f8c8b2ad316083e85410380208235e0f961b647dde59cc5899e632a8547bd6f7"
 };

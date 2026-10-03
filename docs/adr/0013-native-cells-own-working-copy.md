@@ -25,6 +25,7 @@ review-suggested: []
 # ADR-0013: Cells run natively, each in its own git working copy
 
 - **Status:** Proposed. **Owner ruling, 2026-09-23.** Supersedes ADR-0001 for authored tasks.
+- **Amended (2026-10-03, ADR-0015, ADR-0018; architecture council round 1):** see "Amendment 3" (item 6) below.
 - **Deciders:** @timianmalloo; authored by Claude Code.
 - **The ruling:**
   - "Why do we actually even need docker and containers? Our current coordination model allows us to spawn CLI instances without that. We don't need extra isolation."
@@ -91,6 +92,10 @@ Grading runs natively too: each step that runs cell content works in its own gra
 
 **5. Platform.** Cells run on the operator's host, Windows or macOS (Amendment 1). The report header names the platform. A run is compared only with a run on the same platform, because the platform changes what is measured (wall clock, the harness build, the toolchain).
 - Finding, 2026-09-28: the engine is Windows-only today. `procs.py` stops a cell through a Win32 Job Object, `tools.py` pins the `win32-x64` harness packages, and `oslock.py` and `preflight.py` branch on `win32`. On macOS the engine fails at import: `procs.py` calls `ctypes.WinDLL`, which exists only on Windows. It never refuses cleanly. A macOS port (a process group with confirmed termination, the `darwin` packages, the lock and the preflight) is a follow-up.
+
+**6. Turns and hidden checks (Amendment 3, 2026-10-03; ADR-0015, ADR-0018).**
+- §2's "at the end of every turn the engine terminates the job" now reads "at the end of the attempt's **last** turn". Between turns of a multi-turn task the adapter and its job stay alive, so turn 2 is sent on the same ACP session (spike E4, Windows).
+- A property hidden check runs in a grading copy under `cells_root` (item 3a) in its own Job Object and starts the agent's deliverable inside it. The deliverable gets the grading environment allowlist and an explicit handle list, like the adapter spawn above (ADR-0018 §9-§10). The runner is Windows-only, like the rest of the engine (§5); its macOS primitive is part of the port.
 
 ## Alternatives considered
 

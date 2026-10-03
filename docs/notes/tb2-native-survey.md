@@ -16,6 +16,8 @@ summary: >-
   linux-only (5) or git-state (2). No easy-band task is native, so E1 takes a shortfall task from the
   medium band (R-83's shortfall rule 1); E2 and E3 take native tasks from their own bands. No task was
   run and no task folder changed.
+review-suggested:
+  - { by: adr-0013-native-cells, on: 2026-10-03, reason: "Proposed amendment 2026-10-03 (ADR-0014/0015, arch-evaluation-campaign): cell grain by arm, per-turn prompt_sent, archive_files snapshot key part, job terminated after the last turn; council gate pending" }
 ---
 
 # TB2 native survey (R-83 condition 1)
