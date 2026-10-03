@@ -756,7 +756,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b4affef7efd9943abb53a493634f064ce4e4c0df83a29793e38ce9ad6f885509"
+      "sourceSha256": "8eee493ff9b2b2363be00f20281732ab9e5486e00a2a61e9cd59df1e3fe98da0"
     },
     {
       "id": "adr-0017-engine-identity-and-freeze",
@@ -2325,7 +2325,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation: W0 (serial spine item 2), before Wave 1",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "Revision 5 (the W1-E and W1-L seam answers SR-E1, SR-E2, SR-L1..SR-L4, the W1-L review rulings and R-97; rev-5 change table and re-read list at the end; DR-E1 open on the discrimination record body). Revision 4 (the batch-b seam answers and the RV-PAT, RV-SIM, RV-SEC and RV-DS cross-slice findings on W1-B, W1-C, W1-D and W1-H; rev-4 change table and the delta re-read list at the end; rev 3's table kept). The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
+      "summary": "Revision 6 (R-98: the discrimination record body drops `run_id` and `grading_id`, ADR-0016 Amendment 1; and the conditions of the five W0 rev 4/5 delta reviews; rev-6 change table and re-read list at the end). Revision 5 (the W1-E and W1-L seam answers SR-E1, SR-E2, SR-L1..SR-L4, the W1-L review rulings and R-97; rev-5 change table and re-read list at the end; DR-E1, then open, is ruled by R-98 and applied in rev 6). Revision 4 (the batch-b seam answers and the RV-PAT, RV-SIM, RV-SEC and RV-DS cross-slice findings on W1-B, W1-C, W1-D and W1-H; rev-4 change table and the delta re-read list at the end; rev 3's table kept). The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
       "tags": [
         "benchmark",
         "campaign",
@@ -2417,7 +2417,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "c75d1bdd99cdace712a4604da9aa46474822319d2ca73836af60f9fbbc1972a7"
+      "sourceSha256": "2b85dc233dc39bab022ac28aad4ffaa74173d94de852fc840be85cc602bc9721"
     },
     {
       "id": "design-eval-security-tasks",
@@ -3987,7 +3987,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3f23e95945420a4ee6366c6ddaf6a4e55eba309640d2adb82d0da09a0608d689"
+      "sourceSha256": "18c21e232bd2506fa8cc02c361491fffccd6db12006110fa278c0653d98c904b"
     },
     {
       "id": "review-eval-pat-w1a",
@@ -4095,6 +4095,33 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "7da33ff71d59e17bf028b3732ab744578caad0d450be6c98b5c7488d6433bbde"
+    },
+    {
+      "id": "review-eval-pat-w1e",
+      "path": "docs/design/reviews/eval-review-pat-w1e.md",
+      "title": "Patterns Expert review of W1-E, discriminate and readiness (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of design/eval-discriminate (549f7bc4) against W0 rev 5 and R-98. The SyntheticLauncher Strategy and the overlay rule conform. Twelve findings: the baseline compare still defines \"a manifest seen from one task\" a second time, the variant compare has no readiness row or code, three copies of the overlay path rule, a re-implemented env filter, the clauses.json hand-off by path arithmetic, and R-98 residue. BLOCK until applied.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-e"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "0ce427afee460ac4922c59594237d2307013361d10450c53a1564b3949c545cc"
     },
     {
       "id": "review-eval-pat-w1f",
@@ -6828,5 +6855,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "88b9c218e322090ad60412648b9cae5b463b1922ed1d48156bf38b54e007b14c"
+  "graphSha256": "b4252c4bd3fb9142fedafc036debe24ff8a14aabfbc51ad2ab47374f611304a9"
 };
