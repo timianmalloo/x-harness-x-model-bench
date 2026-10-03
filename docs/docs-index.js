@@ -1974,6 +1974,70 @@ window.DOCS_INDEX = {
       "sourceSha256": "0b5cff38703dc03b75420c16279c50cb8fd147a5a72d3d99e31bc0a035034810"
     },
     {
+      "id": "design-eval-discriminate",
+      "path": "docs/design/eval-discriminate.md",
+      "title": "W1-E design: discriminate, the synthetic profile and the readiness check (EV-7; X-E)",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 design slice W1-E; builds in E1 (X-E: discriminate.py, readiness.py, synthetic_agent.py, profiles.py)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Designs the one path by which a property task becomes ready: bench discriminate runs the task's reference, its naive solution and its defect variants as synthetic cells through the real engine, working-copy builder, archiver and grading pass (and so the real probe host), and writes a create-once, idempotent discrimination record; readiness.py then refuses `ready` unless that record exists, was made by the real host, matches the current task version and engine, and every expected value is observed. Settles the record's data model (no run id in its body, so a legitimate retry is a no-op), the synthetic agent (a stdlib ACP process behind Launcher; engine.py unchanged, Verified by spike S-E1), the solutions-overlay rule, the disagreement and clock-failure readers, the discrimination sweeper, and names every red-first test with its fixture, real-wiring partner and mutant.",
+      "tags": [
+        "benchmark",
+        "discrimination",
+        "readiness",
+        "synthetic-agent",
+        "evaluation-campaign",
+        "w1-e"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0016-campaign-record",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0018-hidden-check-harness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0019-catalog-0-7-property-metrics",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-property-grader",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-atomic-publish",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-security-tasks",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "23816dc860518bd544fbc4db7091c297449207207a6958b64c82368b6d9eeefb"
+    },
+    {
       "id": "design-eval-property-grader",
       "path": "docs/design/eval-property-grader.md",
       "title": "Design W1-F: the hidden-check runner and the property grader (boundary B7, security-sensitive)",
@@ -3704,6 +3768,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "5251732e1cd4289428039c0593ca2bcf0102f5de6d2e399b5f41af19a333478d"
     },
     {
+      "id": "review-eval-ds-w1c",
+      "path": "docs/design/reviews/eval-review-ds-w1c.md",
+      "title": "W1-C campaign record and bench campaign: Distributed Systems lens review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of docs/design/eval-campaign-record.md (design/eval-campaign-record, ae21488b, 61338062) by the Distributed Systems lens. DS-1, F2 and F8 hold. Two majors: the torn-tail repair breaks the ledger-prefix rule after a commit, and the run side of conclude has no lock-then-probe partner. PASS WITH CONDITIONS.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "1bce63791bbba85e0eb55e47af0b8f06bf90131a3dc75d712f6af432ccf8defe"
+    },
+    {
       "id": "review-eval-pat",
       "path": "docs/design/reviews/eval-review-pat.md",
       "title": "Patterns Expert review of the Evaluation Campaign design slices (Adversary Mode)",
@@ -3967,7 +4052,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5665e66315039cf611d9c8fa7f7b9c0b1285fdfc6d3c5e57dc20640175987e95"
+      "sourceSha256": "68339d1b87cb8b6fcc0b597c3875e40c45856c5af3638c6efd711e1701b2fb2b"
     },
     {
       "id": "review-eval-sec-w1b",
@@ -4060,7 +4145,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3a6bca265279c14fc75952442488a7253d6b844c3d8429b6e03ce3e41d4a05b4"
+      "sourceSha256": "18dce2da2879aae256e87796b1574fc932971d049d81dc98e9560bf7a4785290"
     },
     {
       "id": "review-eval-sec-w1i",
@@ -4157,6 +4242,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "be00c56fc382061170f39bd21fcc7eeafc8c064fbb4100188b64e39c0dead710"
     },
     {
+      "id": "review-eval-sim-w1c",
+      "path": "docs/design/reviews/eval-review-sim-w1c.md",
+      "title": "Simplifier lens review of W1-C, campaign record and bench campaign",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-campaign-record.md (design/eval-campaign-record, ae21488b, 61338062) against W0 rev 3 and R-87..R-96. OI-4 answered: ring_run.attached.tag is constant and can go in the SR-C2 request. status and verify are specified both as read-only and as full lock-probe-sweep sessions.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "9b10d9156950d3ad3726972d605bcb28670275889eb8ad1478f6f98f3c080448"
+    },
+    {
       "id": "review-eval-sim-w1d",
       "path": "docs/design/reviews/eval-review-sim-w1d.md",
       "title": "Simplifier lens review of W1-D, engine identity",
@@ -4218,6 +4324,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "884d2fa0b86d7e0e0bb2a50e1f1d05093778cf7750b02c3d12b49360f297f621"
+    },
+    {
+      "id": "review-eval-sim-w1h",
+      "path": "docs/design/reviews/eval-review-sim-w1h.md",
+      "title": "Simplifier lens review of W1-H, power, verdicts, gates and report section 3",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-power-verdicts.md (design/eval-power-verdicts, 2a9faa3c, b5509d66) against W0 rev 3 and R-87..R-96. The core is the smallest correct shape. About a third of the label, statement and sweep rows duplicate another row's mutant; one seam with W1-C (pilot arity, admission) is open.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "f51e5bd95ac3a1c9151effb97dd8438a9be7ccecf0caaa66582e358155680613"
     },
     {
       "id": "review-eval-sim-w1i",
@@ -4399,7 +4526,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "218e6fe8bdf9182f9e5f9a52aa75b17228f0f92ed2e7a0fb04b8e870831f87fa"
+      "sourceSha256": "56d9113537b7ed9b5fe31112d6906f43b44c370c8a502c4cc40657c84a430193"
     },
     {
       "id": "review-eval-ta-w1f",
@@ -5946,6 +6073,14 @@ window.DOCS_INDEX = {
       "artifactId": "design-eval-catalog-0-7"
     },
     {
+      "id": "surface-design-eval-discriminate",
+      "path": "docs/design/eval-discriminate.html",
+      "title": "Eval Discriminate",
+      "kind": "design-preview",
+      "description": "Inspect a rendered design or design-language preview.",
+      "artifactId": "design-eval-discriminate"
+    },
+    {
       "id": "surface-design-eval-property-grader",
       "path": "docs/design/eval-property-grader.html",
       "title": "Eval Property Grader",
@@ -6047,5 +6182,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "c2302cffe84d68c1cec59bbc69f34d04b38a36b61682311e7abc88ed4f182035"
+  "graphSha256": "e3562ec766d05b1c7e1bee947d2e1758a82d0824d4866f234723d1f85a3aba3d"
 };

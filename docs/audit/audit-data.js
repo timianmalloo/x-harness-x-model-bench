@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:25:41Z",
+  "generated": "2026-10-03T18:44:26Z",
   "audit": [
     {
       "actor": null,
@@ -66382,24 +66382,156 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41G7HGSGQXE3PHHSV19T3NC",
-      "shortname": "design-slice-review-eval-sec-w1c",
-      "datetime": "2026-10-03T18:25:41Z",
-      "session": "rv-sec-w1c-e1e4",
-      "prompt": "docs/coordination/eval-wave1/rv-sec.md",
-      "summary": "Security gate on W1-C: PASS WITH CONDITIONS, 10 findings",
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1h.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:24:14Z",
+      "done_when": "two review files with gate lines",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-H and W1-C",
+      "id": "al-01M41G4WA0X67R5PGH62JKRCDG",
       "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "session": "rv-sim-hc-e1e4",
+      "shortname": "review-sim-w1h",
       "skill": "design-slice-review",
-      "tool": null,
+      "summary": "Simplifier review of W1-H: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1c.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:24:14Z",
+      "done_when": "two review files with gate lines",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-H and W1-C",
+      "id": "al-01M41G4WXG026Z0MH6P12SBMBS",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "session": "rv-sim-hc-e1e4",
+      "shortname": "review-sim-w1c",
+      "skill": "design-slice-review",
+      "summary": "Simplifier review of W1-C: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ds-w1c.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:25:13Z",
+      "done_when": "gate line written and committed",
+      "fan_out": 0,
+      "goal": "DS lens review of W1-C",
+      "id": "al-01M41G6PKG1R95CYZCP8V85P5G",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ds.md",
+      "session": "rv-ds-w1c-e1e4",
+      "shortname": "design-slice-review-eval-ds-w1c",
+      "skill": "design-slice-review",
+      "summary": "DS review of W1-C: PASS WITH CONDITIONS, 7 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [
         "docs/design/reviews/eval-review-sec-w1c.md"
       ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:25:41Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "Security review of W1-C",
+      "id": "al-01M41G7HGSGQXE3PHHSV19T3NC",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md",
+      "session": "rv-sec-w1c-e1e4",
+      "shortname": "design-slice-review-eval-sec-w1c",
+      "skill": "design-slice-review",
+      "summary": "Security gate on W1-C: PASS WITH CONDITIONS, 10 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1d.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:27:03Z",
+      "done_when": "gate line appended",
+      "fan_out": 0,
+      "goal": "re-review W1-D rev 2",
+      "id": "al-01M41GA22KNR8QFC0767K105V3",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-D rev 2 re-review)",
+      "session": "rv-ta-d2-e1e4",
+      "shortname": "design-slice-review-w1d-r2-ta",
+      "skill": "design-slice-review",
+      "summary": "RV-TA rev 2 of W1-D: PASS WITH CONDITIONS; T-25 assume refuted (T9-2 stubs Engine)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1f.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:27:19Z",
+      "done_when": "two gate lines appended on review/eval-sec-f3",
+      "fan_out": 0,
+      "goal": "Delta-review W0 rev 3 s3 and W1-F rev 3 for security",
+      "id": "al-01M41GAH3C8KT9WQFY1825VZYF",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md (delta: W0 rev 3 s3, W1-F rev 3)",
+      "session": "rv-sec-f3-e1e4",
+      "shortname": "review-sec-w1f-r3-w0-s3",
+      "skill": "design-slice-review",
+      "summary": "Security delta gates: W0 rev 3 s3 PASS (3 findings); W1-F rev 3 PASS WITH CONDITIONS (6 findings)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M41H9B0QJVMYRQGTZ0BQ6AQA",
+      "shortname": "design-slice-eval-discriminate",
+      "datetime": "2026-10-03T18:44:08Z",
+      "session": "w1e-discrim-e1e4",
+      "prompt": "docs/coordination/eval-wave1/w1-e-discriminate.md",
+      "summary": "W1-E design: discriminate, synthetic agent (spike S-E1), idempotent record, overlay rule, real-host readiness, variants, readers, sweeper, test plan",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-discriminate.md"
+      ],
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Security review of W1-C",
-      "done_when": "gate line written",
+      "goal": "Run /design-slice for W1-E discriminate, synthetic profile and readiness (EV-7)",
+      "done_when": "Gate PASS incl. Security; the SCAN-A red fixture named; the synthetic agent mechanism",
       "tier": "T2",
       "fan_out": 0
     }
@@ -67070,6 +67202,28 @@ window.AUDIT_DATA = {
       "summary": "34 review findings dispositioned; recover_archive specified not built in E1; HB-LED-009 refused; site scan re-derived (12 sites, 11 keys) with red fixtures; rename_with_retry public; seam request S-B4",
       "tags": [],
       "title": "W1-B rev 2: recovery moves to X-K1, sweep lock enforced, create_once identity-checked, one WIN-A retry helper"
+    },
+    {
+      "id": "cl-01M41H9WD09F4V22981XF71CDD",
+      "datetime": "2026-10-03T18:44:26Z",
+      "session": "w1e-discrim-e1e4",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "W1-E: discrimination record without run ids, no synthetic profile file, variants as synthetic cells, R-HOST readiness",
+      "prompt": "docs/coordination/eval-wave1/w1-e-discriminate.md",
+      "summary": "docs/design/eval-discriminate.md; seam requests req-01M41H86JNZ3XPT1T1RJZJE35X, req-01M41H86X2ENXFWMWGTHTDDHMN",
+      "rationale": "Obligations O1-O7 routed by RV-TA W1-I, RV-DS W0/W1-B, RV-PAT W1-I, R-93/R-96 and seam V67; status is inside the task version hash so the flip to ready precedes the record",
+      "artifacts": [
+        "docs/design/eval-discriminate.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": null,
+        "after": "b88746d9f6ab43bb94c7f2a5d0197f845d2565e4",
+        "branch": "design/eval-discriminate",
+        "pushed": null,
+        "commits": []
+      }
     }
   ],
   "messages": [
