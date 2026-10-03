@@ -2,8 +2,8 @@ import shutil
 from copy import deepcopy
 from pathlib import Path
 
-import yaml
 import pytest
+import yaml
 
 from harness_bench import config
 

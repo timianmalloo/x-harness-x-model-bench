@@ -35,8 +35,10 @@ HARNESSES = ("claude-code", "codex", "copilot", "grok", "agy")
 PACKS = ("on", "off")
 ARM_OFF = "off"
 ARM_ID = re.compile(r"[a-z][a-z0-9-]{0,15}")
-PROPERTY_NAMES = ()
+PROPERTY_NAMES = ("security", "resilience", "rework", "no-guessing", "simplicity")
 CHECK_PROPERTIES = frozenset({"security", "resilience"})
+RING_TAGS = ("pilot", "pack-regression", "comparison")
+PACK_COMMIT = re.compile(r"[0-9a-f]{40}")
 METRIC_SOURCES = ("D", "J", "H", "P")
 # A cell budget is 1-60 minutes: every BOM task fits, so a larger one is an input error until a task needs it.
 MAX_BUDGET_MINUTES = 60
@@ -104,15 +106,24 @@ def validate_bom(bom: dict, p: Problems, where: str = "bench/bom.yaml") -> None:
 
 
 def validate_matrix(m: dict, bom: dict, p: Problems, where: str) -> None:
-    if m.get("schema") != "bench-matrix/1":
-        p.add(where, "schema must be bench-matrix/1")
-    if not isinstance(m.get("repetitions"), int) or m["repetitions"] < 1:
+    schema = m.get("schema")
+    if schema not in ("bench-matrix/1", "bench-matrix/2"):
+        p.add(where, "schema must be bench-matrix/1 or bench-matrix/2")
+    if not isinstance(m.get("repetitions"), int) or isinstance(m.get("repetitions"), bool) or m["repetitions"] < 1:
         p.add(where, "repetitions must be a positive integer")
-    packs = m.get("packs") or []
-    if any(isinstance(x, bool) for x in packs):
-        p.add(where, 'packs contains a boolean: YAML 1.1 reads bare on/off as true/false; quote them ("on", "off")')
-    elif not packs or any(x not in PACKS for x in packs):
-        p.add(where, f"packs must be a non-empty subset of {PACKS}")
+    if schema == "bench-matrix/2":
+        _validate_matrix_arms(m, p, where)
+    else:
+        for field_name in ("arms", "comparisons", "ring"):
+            if field_name in m:
+                p.add(where, f"bench-matrix/1 forbids {field_name}")
+        packs = m.get("packs") or []
+        if any(isinstance(x, bool) for x in packs):
+            p.add(where, 'packs contains a boolean: YAML 1.1 reads bare on/off as true/false; quote them ("on", "off")')
+        elif not packs or any(x not in PACKS for x in packs):
+            p.add(where, f"packs must be a non-empty subset of {PACKS}")
+        elif len(packs) != len(set(packs)):
+            p.add(where, "duplicate pack settings")
     ids = set()
     for c in m.get("combos") or []:
         if c.get("id") in ids:
@@ -131,6 +142,77 @@ def validate_matrix(m: dict, bom: dict, p: Problems, where: str) -> None:
             p.add(where, f"bom subset names unknown task {tid}")
     elif subset not in ("smoke", "full"):
         p.add(where, "bom.subset must be smoke, full, or a list of task ids")
+
+
+def pack_pin_problem(pack) -> str | None:
+    """The shared static/role-binding boundary: no relative repository or movable git ref."""
+    if not isinstance(pack, dict):
+        return "pack must be a mapping with source and commit"
+    source, commit = pack.get("source"), pack.get("commit")
+    if not isinstance(source, str) or not Path(source).is_absolute():
+        return "pack source must be an absolute path string"
+    if not isinstance(commit, str) or not PACK_COMMIT.fullmatch(commit):
+        return "pack commit must be 40 lowercase hex characters"
+    return None
+
+
+def _validate_matrix_arms(m: dict, p: Problems, where: str) -> None:
+    if "packs" in m:
+        p.add(where, "bench-matrix/2 forbids packs")
+    arms = m.get("arms")
+    if not isinstance(arms, list) or len(arms) < 2:
+        p.add(where, "arms must be a list with at least 2 entries")
+    if not isinstance(arms, list):
+        return
+    ids = set()
+    ring = m.get("ring")
+    if "ring" in m and (not isinstance(ring, dict) or ring.get("tag") not in RING_TAGS):
+        p.add(where, f"ring.tag must be one of {RING_TAGS}")
+    for index, arm in enumerate(arms):
+        if not isinstance(arm, dict):
+            p.add(where, f"arms[{index}] must be a mapping")
+            continue
+        aid = arm.get("id")
+        if not isinstance(aid, str):
+            p.add(where, f'arms[{index}].id must be a string; YAML on/off are booleans: quote them ("on", "off")')
+            continue
+        if not ARM_ID.fullmatch(aid):
+            p.add(where, f"arms[{index}].id must match {ARM_ID.pattern}")
+        if aid in ids:
+            p.add(where, f"duplicate arm id {aid}")
+        ids.add(aid)
+        if aid == ARM_OFF:
+            if "pack" in arm:
+                p.add(where, "off arm must have no pack")
+        elif arm.get("pack") is not None:
+            problem = pack_pin_problem(arm["pack"])
+            if problem:
+                p.add(where, f"arm {aid}: {problem}")
+        elif "ring" not in m:
+            p.add(where, f"arm {aid}: an unbound role requires a ring")
+    comparisons = m.get("comparisons")
+    if comparisons is None:
+        if len(arms) >= 3:
+            p.add(where, "comparisons is required with 3 or more arms")
+        return
+    if not isinstance(comparisons, list):
+        p.add(where, "comparisons must be a list of pairs")
+        return
+    seen = set()
+    for index, pair in enumerate(comparisons):
+        if not isinstance(pair, list) or len(pair) != 2:
+            p.add(where, f"comparisons[{index}] must be a pair")
+            continue
+        if any(not isinstance(aid, str) for aid in pair):
+            p.add(where, f"comparisons[{index}] ids must be strings; YAML on/off are booleans: quote them")
+            continue
+        if any(aid not in ids for aid in pair):
+            p.add(where, f"comparisons[{index}] must name declared arms")
+        if pair[0] == pair[1]:
+            p.add(where, f"comparisons[{index}] must name different arms")
+        if tuple(pair) in seen:
+            p.add(where, f"duplicate comparison pair {pair}")
+        seen.add(tuple(pair))
 
 
 def validate_metrics(
