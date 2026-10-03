@@ -46,9 +46,37 @@ def imports(rel: str, tree: ast.Module) -> set[str]:
 def import_violations(root: Path, classes: Mapping[str, str], allowed: Mapping,
                       exempt: frozenset[str]) -> list[tuple[str, str]]:
     """Run-to-grade edges, minus named pairs and the composition-root exemption."""
-    return []
+    return sorted(_run_to_grade_edges(root, classes, exempt) - allowed.keys())
 
 
 def stale_allowed(root: Path, classes: Mapping[str, str], allowed: Mapping) -> list[tuple[str, str]]:
     """Allowed edges that are absent from the current tree."""
-    return []
+    return sorted(allowed.keys() - _run_to_grade_edges(root, classes, frozenset()))
+
+
+def _target_file(target: str, classes: Mapping[str, str]) -> str | None:
+    """Map a dotted import target to its src-relative file: the longest prefix naming a module or package."""
+    parts = target.split(".")
+    if parts[0] != "harness_bench":
+        return None
+    for end in range(len(parts), 1, -1):
+        base = "/".join(parts[1:end])
+        for candidate in (f"{base}.py", f"{base}/__init__.py"):
+            if candidate in classes:
+                return candidate
+    return None
+
+
+def _run_to_grade_edges(root: Path, classes: Mapping[str, str], exempt: frozenset[str]) -> set[tuple[str, str]]:
+    src = root / "src" / "harness_bench"
+    edges = set()
+    for name, kind in classes.items():
+        path = src / name
+        if kind != "run" or name in exempt or not path.is_file():
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for target in imports(f"src/harness_bench/{name}", tree):
+            hit = _target_file(target, classes)
+            if hit and classes[hit] == "grade":
+                edges.add((name, hit))
+    return edges
