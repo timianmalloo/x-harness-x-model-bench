@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:04:00Z",
+  "generated": "2026-10-03T18:20:21Z",
   "audit": [
     {
       "actor": null,
@@ -65544,6 +65544,28 @@ window.AUDIT_DATA = {
     {
       "actor": null,
       "artifacts": [
+        "docs/design/eval-atomic-publish.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:40:44Z",
+      "done_when": "Gate PASS incl. Security and Distributed Systems; the D1 and D3 red tests named; the Windows no-directory-fsync branch stated; the defect class text for exists means complete",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-B crash-atomic publish, producing docs/design/eval-atomic-publish.md",
+      "id": "al-01M41DN7FNGSCBEYQ6A1K3HF5M",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-b-atomic-publish.md",
+      "session": "w1b-publish-e1e4",
+      "shortname": "design-slice-eval-atomic-publish",
+      "skill": "design-slice",
+      "summary": "W1-B design: create_once, publish_dir, sweep, recovery rule, archive rework, tests by node id, spike E1-S2",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
         "docs/design/reviews/eval-review-sim-w1f.md"
       ],
       "compiled": false,
@@ -66061,34 +66083,58 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41EZVA5RM6TAWHCQPRZ9MCH",
-      "shortname": "ruling R-95 (DR-9, also_graded_by owner rule amends R-90 c1 and c6)",
-      "datetime": "2026-10-03T18:04:00Z",
-      "session": "owner-fable",
-      "prompt": "Owner seat: rule req-01M41E37FGK5CRZ7NCK3RA20JV from the Coordinator: may R-90 conditions 1 and 6 be amended so runner.applicable also resolves a metric's owner through an optional catalog key also_graded_by, letting the formal grader record scenario-7 pass_at_1 (ADR-0019 item 3)? Options A amend, B defer to 0.8, C new id formal_pass_at_1. Context W0 rev 3 s7, W1-G design, reviews ta/pat/sim, R-90. Work in an own worktree owner/ruling-r95.",
-      "summary": "R-95 DR-9: (A) granted, (B) and (C) refused. Verified: applicable keys by one grader string (runner.py:161-168), duplicate ids refused (config.py:150-152), outside keys fail the pass with HB-GRD-004 (runner.py:358, errors.py:67), board primary reads pass_at_1 by id (board.py:190,194), ADR-0019 item 3 is accepted and already marks its mechanism provisional on this request. R-90 c6 fixed who records the metric, not the entry's bytes; c1 fixed one function for three readers, and the owner clause lives in that function, so the purpose is kept. Conditions: non-owner guard proven through a real run_pass on G1- and G2-shaped tasks (X-F owns the clause and T-R3..T-R5); also_graded_by validated at once in validate_catalog (grader module, differs from grader, no repeats); reader sweep complete incl. the task-changed fallback where the owner is correctness and the NA folder is pinned by test; amendment text in R-90 c5's dispatch paragraph, W0 s7 drops provisional, ADR-0019:49 updated by X-G1; sequencing as the Coordinator set it.",
-      "kind": "manual",
-      "skill": null,
-      "tool": null,
       "actor": "Owner seat (Fable, claude-fable-5-1)",
       "artifacts": [
         "docs/notes/rulings.md"
       ],
+      "datetime": "2026-10-03T18:04:00Z",
+      "done_when": "Ruling 95 in docs/notes/rulings.md via coord decide rule from the owner/ruling-r95 worktree, the request resolved, an audit entry appended, committed",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/ruling-r95",
+        "pushed": null,
+        "sha": "1ceea651bceeada8e8406e1633afaa930d48a9f3",
+        "short": "1ceea651b"
+      },
+      "goal": "Rule DR-9 (req-01M41E37FGK5CRZ7NCK3RA20JV): whether R-90 conditions 1 and 6 are amended so applicable() resolves a metric owner through also_graded_by",
+      "id": "al-01M41EZVA5RM6TAWHCQPRZ9MCH",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Owner seat: rule req-01M41E37FGK5CRZ7NCK3RA20JV from the Coordinator: may R-90 conditions 1 and 6 be amended so runner.applicable also resolves a metric's owner through an optional catalog key also_graded_by, letting the formal grader record scenario-7 pass_at_1 (ADR-0019 item 3)? Options A amend, B defer to 0.8, C new id formal_pass_at_1. Context W0 rev 3 s7, W1-G design, reviews ta/pat/sim, R-90. Work in an own worktree owner/ruling-r95.",
+      "session": "owner-fable",
+      "shortname": "ruling R-95 (DR-9, also_graded_by owner rule amends R-90 c1 and c6)",
+      "skill": null,
+      "summary": "R-95 DR-9: (A) granted, (B) and (C) refused. Verified: applicable keys by one grader string (runner.py:161-168), duplicate ids refused (config.py:150-152), outside keys fail the pass with HB-GRD-004 (runner.py:358, errors.py:67), board primary reads pass_at_1 by id (board.py:190,194), ADR-0019 item 3 is accepted and already marks its mechanism provisional on this request. R-90 c6 fixed who records the metric, not the entry's bytes; c1 fixed one function for three readers, and the owner clause lives in that function, so the purpose is kept. Conditions: non-owner guard proven through a real run_pass on G1- and G2-shaped tasks (X-F owns the clause and T-R3..T-R5); also_graded_by validated at once in validate_catalog (grader module, differs from grader, no repeats); reader sweep complete incl. the task-changed fallback where the owner is correctness and the NA folder is pinned by test; amendment text in R-90 c5's dispatch paragraph, W0 s7 drops provisional, ADR-0019:49 updated by X-G1; sequencing as the Coordinator set it.",
       "tags": [
         "ruling",
         "eval-campaign"
       ],
-      "outcome": "success",
-      "goal": "Rule DR-9 (req-01M41E37FGK5CRZ7NCK3RA20JV): whether R-90 conditions 1 and 6 are amended so applicable() resolves a metric owner through also_graded_by",
-      "done_when": "Ruling 95 in docs/notes/rulings.md via coord decide rule from the owner/ruling-r95 worktree, the request resolved, an audit entry appended, committed",
       "tier": "T0",
+      "tool": null
+    },
+    {
+      "id": "al-01M41FXH5HKYBZWKFGBP84JG6E",
+      "shortname": "design-slice-eval-atomic-publish-rev2",
+      "datetime": "2026-10-03T18:20:13Z",
+      "session": "w1b-publish-r2-e1e4",
+      "prompt": "W1-B rev 2 follow-up: apply five lens reviews and W0 rev 3 (brief docs/coordination/eval-wave1/w1-b-atomic-publish.md)",
+      "summary": "Revised the W1-B design: 34 findings dispositioned, recover_archive moved to X-K1, HB-LED-009 dropped, site scan re-derived with red fixtures, identity check and enforced sweep lock, public rename_with_retry, seam request S-B4",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-atomic-publish.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Apply the W1-B lens-review findings and Coordinator answers",
+      "done_when": "Every finding has a disposition row; Gate record has the five first-round lines plus rev 2 pending RV-TA; derive and validate exit 0",
+      "tier": "T2",
       "fan_out": 0,
-      "git": {
-        "sha": "1ceea651bceeada8e8406e1633afaa930d48a9f3",
-        "short": "1ceea651b",
-        "branch": "owner/ruling-r95",
-        "pushed": null
-      }
+      "started_at": "2026-10-03T18:07:20Z",
+      "duration_seconds": 773.0
     }
   ],
   "changes": [
@@ -66558,6 +66604,28 @@ window.AUDIT_DATA = {
     },
     {
       "artifacts": [
+        "docs/design/eval-atomic-publish.md"
+      ],
+      "datetime": "2026-10-03T17:40:54Z",
+      "git": {
+        "after": "b46bf907c5d035691d44bcc04c302149e8864030",
+        "before": null,
+        "branch": "design/eval-atomic-publish",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41DNH6Q8HPW9V20350SV052",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-b-atomic-publish.md",
+      "rationale": "ADR-0015 5a and ADR-0016 2a rest on primitives measured in spikes E1-S1 and E1-S2; RV-DS 5,6,7,9, RV-SEC 10, RV-PAT 5 dispositions become tests.",
+      "session": "w1b-publish-e1e4",
+      "skill": "design-slice",
+      "summary": "Designs atomic.py (create_once, publish_dir, sweep_temps) and the archive.py rework: final name appears only after a verified copy; rows hash source bytes; folder-then-rows-then-event recovery rule with states S0-S6; O_BINARY required on Windows; leaked temps hidden from git, verify and attempt readers.",
+      "tags": [],
+      "title": "Crash-atomic publish: temp-then-rename for folders, temp-then-link for files, one recovery rule, strict verify"
+    },
+    {
+      "artifacts": [
         "docs/design/eval-property-grader.md"
       ],
       "datetime": "2026-10-03T17:19:39Z",
@@ -66627,6 +66695,28 @@ window.AUDIT_DATA = {
       "summary": "Rev 3 answers 13 seam requests and 11 routed lens findings: wsgi kind in E1 (C-1), probe-host additions and start bound, NA never dropped, DOTNET_HOST_ENV to _env.py, reparse-safe grading copy, sweep_temps/TEMP_RE (no HB-LED-009), recover_archive to X-K1, quoted arm ids, grid4 golden, no top-level pack + plan_pack + HB-PLN-004/005, G1 AST ratchet, run-side effective identity in the plan, catalog_hash in identity.py, G2 every file + direction test, R-93/R-94 recorded, W1-G owner rule provisional on an Owner request, (e) exception deferred.",
       "tags": [],
       "title": "W0 seam contracts rev 3: Wave 1 seam answers"
+    },
+    {
+      "id": "cl-01M41FXSDXPNN8VVXE51S86BT4",
+      "datetime": "2026-10-03T18:20:21Z",
+      "session": "w1b-publish-r2-e1e4",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "W1-B rev 2: recovery moves to X-K1, sweep lock enforced, create_once identity-checked, one WIN-A retry helper",
+      "prompt": "W1-B rev 2 follow-up",
+      "summary": "34 review findings dispositioned; recover_archive specified not built in E1; HB-LED-009 refused; site scan re-derived (12 sites, 11 keys) with red fixtures; rename_with_retry public; seam request S-B4",
+      "rationale": "Apply the five W1-B lens reviews and the Coordinator answers; RV-TA BLOCK findings 2 and 3 fixed with real-path tests and red fixtures",
+      "artifacts": [
+        "docs/design/eval-atomic-publish.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": null,
+        "after": "32548ed921664e2db3fcde42634ac4e241c93e78",
+        "branch": "design/eval-atomic-publish",
+        "pushed": null,
+        "commits": []
+      }
     }
   ],
   "messages": [
