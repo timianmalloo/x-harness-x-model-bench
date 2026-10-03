@@ -118,3 +118,8 @@ def test_grading_copy_with_junction_leaves_target_untouched_formal(tmp_path):
         assert not (copy / "escape").exists(), "the junction target was copied"
     assert sentinel_unchanged(sentinel, snapshot)
 
+
+
+def test_copy_tree_records_the_skipped_junction_relative_path(tmp_path):
+    ws, _sentinel, _snapshot = make_tree_with_junction(tmp_path)
+    assert _changes.copy_tree(ws, tmp_path / "copy") == ["escape"]

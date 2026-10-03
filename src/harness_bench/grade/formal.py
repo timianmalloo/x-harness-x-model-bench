@@ -41,7 +41,7 @@ from decimal import Decimal
 from pathlib import Path
 from typing import NamedTuple
 
-from harness_bench.grade import CellInput, Score, correctness
+from harness_bench.grade import CellInput, Score, _changes, correctness
 from harness_bench.plan import file_hash, tree_hash
 
 NOT_BUILT = "not built"  # R-84 c1: the literal reason a real pass reads for the two unspiked G1 metrics
@@ -277,7 +277,7 @@ class _GradingCopy:
 
 def _grading_copy(src: Path, dest: Path) -> _GradingCopy:
     """A disposable copy of `src` at `dest` (never the archive), git-free and build-output-free."""
-    shutil.copytree(src, dest, ignore=shutil.ignore_patterns(".git", *_LAKE_BUILD_OUTPUT))
+    _changes.copy_tree(src, dest, ignore=(".git", *_LAKE_BUILD_OUTPUT))
     return _GradingCopy(dest)
 
 

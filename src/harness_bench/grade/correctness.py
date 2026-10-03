@@ -204,8 +204,8 @@ def grade(ws: Path, task_dir: Path, oracle: dict, out_dir: Path, run_dir: Path, 
     if not ws.is_dir():
         return Result(None, None, "no working copy in the archive", "")
     work = (work_dir or out_dir) / "work"
-    shutil.copytree(ws, work, ignore=shutil.ignore_patterns(".git"))
-    shutil.copytree(task_dir / "tests", work, dirs_exist_ok=True)
+    _changes.copy_tree(ws, work, ignore=(".git",))
+    _changes.copy_tree(task_dir / "tests", work, ignore=(), dirs_exist_ok=True)
     argv = [sys.executable if a == "{python}" else a for a in oracle["command"]]
     env = _env()
     if kind == "dotnet":
