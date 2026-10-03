@@ -53,8 +53,38 @@ def test_empty_history_exits_2():
     assert _run(_case("empty_history")).returncode == 2
 
 
-def test_missing_usage_file_exits_2():
-    assert _run(_case("missing_usage")).returncode == 2
+def test_missing_usage_file_reads_the_responses_and_exits_0():
+    """TOOL-GSM-B: usage.json is absent on a deadline-killed session; the response rows decide."""
+    r = _run(_case("missing_usage"))
+    assert r.returncode == 0, r.stderr
+    assert "source=chat_history (usage.json absent)" in r.stdout
+
+
+def test_only_chat_history_exits_0_and_names_its_source():
+    r = _run(_case("only_chat_history"))
+    assert r.returncode == 0, r.stderr
+    assert "source=chat_history" in r.stdout
+    assert "grok-4.7-build x3" in r.stdout
+    assert "usage.json models: (absent)" in r.stdout
+    assert "summary.json current_model_id: (absent)" in r.stdout
+
+
+def test_only_chat_history_with_a_46_response_exits_1_and_names_it():
+    r = _run(_case("only_chat_history_mixed"))
+    assert r.returncode == 1
+    assert "grok-4.6-build x1" in r.stdout
+
+
+def test_summary_alone_saying_47_does_not_clear_a_46_response_when_usage_is_absent():
+    r = _run(_case("no_usage_summary_47_response_46"))
+    assert r.returncode == 1
+    assert "grok-4.6-build x1" in r.stdout
+
+
+def test_no_chat_history_and_no_usage_exits_2_not_recorded():
+    r = _run(_case("neither"))
+    assert r.returncode == 2
+    assert r.stdout.startswith("not recorded")
 
 
 def test_missing_directory_exits_2():

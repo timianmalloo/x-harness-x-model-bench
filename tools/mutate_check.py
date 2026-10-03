@@ -305,6 +305,14 @@ def _restore_original(rel: str, original: bytes) -> None:
     _remove_sidecar()
 
 
+def _import_harness_bench() -> None:
+    import harness_bench  # noqa: F401
+
+
+def _environment_refusal() -> int | None:
+    return None
+
+
 def _refuse_if_sidecar() -> int | None:
     record = _read_sidecar()
     if record is None:
@@ -467,7 +475,9 @@ def main(argv: list[str]) -> int:
         return _cmd_check_clean()
     if argv and argv[0] == "--cosmic-ray":
         return _main_cosmic_ray(argv[1:])
-    refused = _refuse_if_sidecar()
+    refused = _environment_refusal()
+    if refused is None:
+        refused = _refuse_if_sidecar()
     if refused is not None:
         return refused
     if argv and argv[0] == "--touched":
