@@ -1397,12 +1397,12 @@ window.DOCS_INDEX = {
       ],
       "links": [
         {
-          "to": "note-spike-e1-job-alone",
+          "to": "note-20261003-spike-e1-job-alone",
           "rel": "relates-to"
         }
       ],
       "diagrams": [],
-      "sourceSha256": "054f0800fe8ab750d12a713b83136b2a293230f8f31df53114e39c12adedfe1d"
+      "sourceSha256": "33a86b139ebe6a7a3a028f07e678b7b1ab264eda2fb5073361897fbea72f5bfc"
     },
     {
       "id": "note-20261003-spike-e1-handle-list",
@@ -5084,6 +5084,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "60320ec9b40537661e3c2b375e345ef2a436d47b0b472498db323d9b882b8c7d"
     },
     {
+      "id": "review-eval-ta-w1j",
+      "path": "docs/design/reviews/eval-review-ta-w1j.md",
+      "title": "W1-J multi-turn design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-J (multi-turn attempt, turn snapshots, TLA+ model v5) against W0 rev 6 and the rulings on main. PASS WITH CONDITIONS: the model evidence is real and each ADR-0015 section 7 invariant has its own variant, but the check_models.py change exceeds its grant and is not on the branch, the two engine-bug tests are red for the wrong reason, and the final-row omission is pinned on the reader side only.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-j"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "bbb97953c678b2652d7e7fd02a39c8f7fe52601b98e81c277a2bddf303394ae5"
+    },
+    {
       "id": "review-eval-ta-w1l",
       "path": "docs/design/reviews/eval-review-ta-w1l.md",
       "title": "W1-L property tasks (eight) design review: Test Architect lens",
@@ -6981,5 +7008,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "ca78fc39e7c04eb2c86a76c027e2bbf40bd6756b375a0db3447b838b05ecef19"
+  "graphSha256": "a39e24f85e7497dbd190e8d809c96b875c384508bf1fc188cce154b7448549f0"
 };

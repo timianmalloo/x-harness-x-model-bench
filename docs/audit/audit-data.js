@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T19:58:33Z",
+  "generated": "2026-10-03T19:59:07Z",
   "audit": [
     {
       "actor": null,
@@ -74656,26 +74656,48 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41NHKDNNM4ZGTPEVPBXWTVH",
-      "shortname": "design-slice-review-sre-w1j",
-      "datetime": "2026-10-03T19:58:33Z",
-      "session": "rv-sre-j-e1e4",
-      "prompt": "docs/coordination/eval-wave1/rv-sre.md (W1-J)",
-      "summary": "SRE review of W1-J multi-turn: PASS WITH CONDITIONS, 9 findings",
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1j.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:57:33Z",
+      "done_when": "review file and gate line committed",
+      "fan_out": 0,
+      "goal": "RV-TA gate review of W1-J",
+      "id": "al-01M41NFRN0HXSFCMH1HYBAXKEJ",
       "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-J)",
+      "session": "rv-ta-w1j-e1e4",
+      "shortname": "design-slice-review-ta-w1j",
       "skill": "design-slice-review",
-      "tool": null,
+      "summary": "RV-TA review of W1-J multi-turn: PASS WITH CONDITIONS, 10 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [
         "docs/design/reviews/eval-review-sre-w1j.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "SRE review of W1-J",
+      "datetime": "2026-10-03T19:58:33Z",
       "done_when": "review file and gate line committed",
+      "fan_out": 0,
+      "goal": "SRE review of W1-J",
+      "id": "al-01M41NHKDNNM4ZGTPEVPBXWTVH",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sre.md (W1-J)",
+      "session": "rv-sre-j-e1e4",
+      "shortname": "design-slice-review-sre-w1j",
+      "skill": "design-slice-review",
+      "summary": "SRE review of W1-J multi-turn: PASS WITH CONDITIONS, 9 findings",
+      "tags": [],
       "tier": "T2",
-      "fan_out": 0
+      "tool": null
     }
   ],
   "changes": [
