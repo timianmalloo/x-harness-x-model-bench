@@ -208,6 +208,18 @@ def test_task_source_from_upstream_builds_the_pinned_tree_plus_the_overlay(base)
     assert _git(dest, "remote").strip() == ""
 
 
+def test_task_source_leaves_bytecode_a_test_wrote_into_the_task_workspace_out_of_the_base(base):  # NG pin-tree flake
+    upstream = base / "upstream"
+    upstream.mkdir()
+    commit = _local_upstream_repo(upstream, {"a.txt": "A\n"})
+    task_dir = base / "tasks" / "P4"
+    _source_task(task_dir, upstream, commit, {"README.md": "x\n", "pkg/__pycache__/m.cpython-314.pyc": "junk"})
+
+    dest = workspace.task_source(task_dir, "v4", base / "sources", base / "upstream-cache")
+
+    assert _tree(dest) == {"a.txt": "A\n", "README.md": "x\n"}
+
+
 def test_task_source_from_upstream_needs_an_upstream_cache_root(base):
     upstream = base / "upstream"
     upstream.mkdir()
