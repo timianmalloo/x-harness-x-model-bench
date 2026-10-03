@@ -53,3 +53,18 @@ Power loss between the file fsyncs and the rename stays flagged (spike E1-S1 "St
 GATE w0-seam-contracts · Distributed Systems · BLOCK · 14 findings (rv-ds-e1e4, 2026-10-03)
 
 Clears when finding 1 is applied (it is a few sentences in §6). Findings 2-11 are conditions for the dependent slices' gates (W1-B: 5, 6, 9; W1-C: 1, 7, 8, 12; W1-E: 2; W1-F: 3, 4, 10, 13; W1-H: 11; W1-A: 14). I expect PASS WITH CONDITIONS on a re-read once finding 1 and findings 2, 3, 7 are in the text.
+
+## W0 seam contracts, revision 2 (delta re-review, 2026-10-03, `main` 3c1c9827)
+
+Scope: the Review disposition rows for DS 1-14 and the sections they cite. Read in the file: §6 freeze order (lines 259-265), lock protocol (268), §3 bounds (131), §7 condition 3 (327), §8 verdict seed (361), §11 codes (442, 452, 461-462).
+
+| finding | disposition | my check | result |
+| --- | --- | --- | --- |
+| DS 1 (blocking) | accepted; attach freezes (HB-CMP-009), `bench run` refuses unattached or mismatched prereg (HB-CMP-010) | Attach is appended under `campaign.lock` before the first launch and refused unless the plan hash equals the registered hash; re-register is refused once any run is attached; the launch check reads the ledger under the lock, and it needs no later re-check because re-register can no longer happen. Both interleavings are closed. Narrowing ADR-0016 §3 is sound (stricter, never weaker). | cleared (Verified in text; the two-process test is named) |
+| DS 4 | accepted in part; automatic re-run of a `timeout` case rejected | Reasoning holds: a re-run is not idempotent against a stateful deliverable, doubles the worst case and hides intermittent hangs; EV-3 makes a hang a measured failure. Accepted parts (bound cut is HB-CHK-003, bounds from measured reference durations) cover the infra half. Residual: load can still convert a slow pass into `timeout`; it is visible only through `duration_ms`. | accepted; residual minor (Inferred) |
+| DS 10 | accepted in part; grader-side `hidden_tests_agree` rejected | Reasoning holds: the property grader reading the correctness output is the (c) coupling R-90 refused. The after-pass function `readiness.hidden_test_disagreements` fed to `gates.pilot` is a clean place. Residual: grid runs still have no count until DR-7 is ruled, so a flaky hidden test in the grid changes the primary unflagged. | accepted; residual major until DR-7 (Inferred) |
+| DS 2, 3, 5-9, 11-14 | accepted | DS 2 (HB-RDY-010), DS 8 (own lock first, then try-probe; HB-GRD-007), DS 11 (verdict seed across runs) and DS 12 (freeze reads only the ledger) read in the text. DS 3, 5, 6, 7, 9, 13, 14 taken from the table only, not re-opened line by line. | accepted |
+
+Conditions: (1) DR-7 is ruled before X-H2 builds `campaign_section` and `gates`; the ruling must make a grid-run hidden-test disagreement visible in the report. (2) W1-F records each case's `duration_ms` and the pilot gate surfaces any `timeout` case, so load-driven timeouts are seen rather than inferred. (3) W1-B, W1-C and W1-F carry the accepted rows I did not re-open (DS 3, 5, 6, 7, 9) as tests in their designs, and I will check them there.
+
+GATE w0-seam-contracts · Distributed Systems · PASS WITH CONDITIONS · 2 residual findings (rv-ds-e1e4, 2026-10-03)
