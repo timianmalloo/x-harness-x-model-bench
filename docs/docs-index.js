@@ -3449,6 +3449,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "cac2581e19b119c1e877e7ca86db14203662fd2f012ae25732366558a495c930"
     },
     {
+      "id": "review-eval-pat-w1a",
+      "path": "docs/design/reviews/eval-review-pat-w1a.md",
+      "title": "Patterns Expert review of W1-A, arms v2 (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of design/eval-arms (ab13f0eb) against W0 rev 2 and R-87..R-93. The hash-keyed blocked order with a bounded redraw and the AST form of G1 survive; the dropped top-level pack makes four readers degrade silently (one of them not covered by SP-A3), G1's token set is narrower than its claim, and the drop is in no seam request.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-a"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "a1bef601e5f3cb91dd3f9ebbf9a55408d249813f1a74d0849ebadd9b94ce5e3d"
+    },
+    {
       "id": "review-eval-pat-w1b",
       "path": "docs/design/reviews/eval-review-pat-w1b.md",
       "title": "Patterns Expert review of W1-B, crash-atomic publish (Adversary Mode)",
@@ -3474,6 +3501,33 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "679de9c8f28e2b6684cd7282e3dc83c533ed0715fadc8d1b9ae839715a0cde46"
+    },
+    {
+      "id": "review-eval-pat-w1d",
+      "path": "docs/design/reviews/eval-review-pat-w1d.md",
+      "title": "Patterns Expert review of W1-D, engine identity (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of design/eval-identity (71a15a0b) against W0 rev 2 and R-87..R-93. The injected check, the single CLASSES table, import_graph.py and the refusal of a tooling class survive; the refusal's cost model prices only grade-side edits and omits the run-side shared kernel, the launch check's reference identity is unfiled, and the SUBPROCESS_CALLERS mapping inherits a matcher that misses aliased imports. telemetry/* is provisional.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-d"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "7da33ff71d59e17bf028b3732ab744578caad0d450be6c98b5c7488d6433bbde"
     },
     {
       "id": "review-eval-pat-w1f",
@@ -3608,6 +3662,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "6498292143c8251d7eacdd9887b620b175937d91c7c69224f58467d473a63c2f"
     },
     {
+      "id": "review-eval-sim-w1b",
+      "path": "docs/design/reviews/eval-review-sim-w1b.md",
+      "title": "Simplifier lens review of W1-B, crash-atomic publish",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-atomic-publish.md (design/eval-atomic-publish, 67e7dc83) against W0 rev 2 section 4 and R-87..R-93 on main. The two helpers, the strict verify and the temp reader fix earn their place; recover_archive is built two phases early and the test and telemetry surface has removable pieces.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "be00c56fc382061170f39bd21fcc7eeafc8c064fbb4100188b64e39c0dead710"
+    },
+    {
       "id": "review-eval-sim-w1f",
       "path": "docs/design/reviews/eval-review-sim-w1f.md",
       "title": "Simplifier lens review of W1-F, the property grader",
@@ -3627,6 +3702,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "e02b9c406c50e4ac255322f67b483331ebc51b943a7b5c0e97b4f27fee167473"
+    },
+    {
+      "id": "review-eval-sim-w1g",
+      "path": "docs/design/reviews/eval-review-sim-w1g.md",
+      "title": "Simplifier lens review of W1-G, catalog 0.7",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-catalog-0-7.md (design/eval-catalog-0-7, b0987941) against W0 rev 2 and R-87..R-93 on main. also_graded_by is the smallest correct mechanism; the (e) exception and corrected_from record are built for a case the design itself shows cannot occur.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "884d2fa0b86d7e0e0bb2a50e1f1d05093778cf7750b02c3d12b49360f297f621"
     },
     {
       "id": "review-eval-ta",
@@ -5222,5 +5318,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "9920f59bc909fdcfdbccebdd753385172401119f459e05b840b5d7166fc31f5d"
+  "graphSha256": "e00c743e092996be04bc0fa62bf548769ca2bc493b8a1904f838c2ea649226e4"
 };
