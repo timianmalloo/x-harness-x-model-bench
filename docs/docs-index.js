@@ -1961,6 +1961,67 @@ window.DOCS_INDEX = {
       "sourceSha256": "dd54e1963b397b840c92373598cf1c8f166384d556f42353341fa76117933a5c"
     },
     {
+      "id": "design-eval-security-tasks",
+      "path": "docs/design/eval-security-tasks.md",
+      "title": "Design W1-I: security tasks S1 and S2 (two codebases, a latent guard, in-process probes)",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation E1/E4: Wave 1 design slice W1-I (S1 authored by X-I in E1; S2 in E4)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "S1 is specified to the point X-I can author it with no question: base microdot at a pinned commit (MIT, stdlib only), the prompt text, the hidden functional tests, ten in-process probes (3 injection, 4 authorization bypass, 3 secret leak, all with BENCHCANARY- values), the reference and naive solutions, expected values with provenance (reference 1.0000, naive 0.4000, hand-derived then confirmed by a stand-in driver), case bounds from measured durations, and nine seeded-defect variants that flip exactly their own probes. S2 is named: base bottle at a pinned commit, signed-cookie sessions, team tenancy, path-traversal and SQL injection, secret leak. Both bases build with no build step, so both are offline by construction (RV-SEC W0 rev 2 condition). Five probe-host additions and a start bound are sent as seam requests. Gate pending.",
+      "tags": [
+        "benchmark",
+        "property-tasks",
+        "security",
+        "hidden-check",
+        "canary",
+        "evaluation-campaign",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0018-hidden-check-harness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0019-catalog-0-7-property-metrics",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0012-proportionate-security",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0013-native-cells",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        },
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "2e0ac140549d0da1a0439f80d7069d9d844af467c79ef670fb49ab4149283abd"
+    },
+    {
       "id": "design-formal-grader",
       "path": "docs/design/formal-grader.md",
       "title": "Design: the formal grader (grade/formal.py) — checks, statement integrity, trace conformance, bug confirmation",
@@ -5016,6 +5077,14 @@ window.DOCS_INDEX = {
       "artifactId": "design-eval-seam-contracts"
     },
     {
+      "id": "surface-design-eval-security-tasks",
+      "path": "docs/design/eval-security-tasks.html",
+      "title": "Eval Security Tasks",
+      "kind": "design-preview",
+      "description": "Inspect a rendered design or design-language preview.",
+      "artifactId": "design-eval-security-tasks"
+    },
+    {
       "id": "surface-design-mockups-phase4-report",
       "path": "docs/design/mockups/phase4-report.html",
       "title": "harness-bench report mockup (row 20)",
@@ -5093,5 +5162,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "d44afd06b9a28cf903d87cef238b0a03d7ad230e7a81680def6ae72abf80232e"
+  "graphSha256": "1fd8dc64adc2e53ec31593e405429ac08b8a35669459357f0377f33ee0e77ada"
 };
