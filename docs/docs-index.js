@@ -950,7 +950,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "223ed173edb0e6aed2026d30001a0bcaa87645861fb7bf7d788c43fcd6a346a7"
+      "sourceSha256": "f06b88f66be36e7963c5792c5332d51e90a468390f05f35ab74f767ddc98d0dc"
     },
     {
       "id": "arch-evaluation-campaign",
@@ -2658,7 +2658,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "c865bc681dc42a4fbfcc3028b7b0a3373434e8bc56bd14b9ad70622e0b343e9d"
+      "sourceSha256": "d351f3e60095a7fa79b4c6243fd63cc29b3402cf2948074e120174e2fa5d32ed"
     },
     {
       "id": "design-eval-security-tasks",
@@ -3651,7 +3651,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "1a07a2bd770fc842a77e6b2eae43d2431e3c4003c257cd0e71c0ff3db10ce4f7"
+      "sourceSha256": "763ef69aeae6bf10cab2090e3e4238a1a17ff52ebfccbca7787417c6afa55057"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -6174,7 +6174,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "fb5d4e1549f37d5e6e347c3e47362bb69a48fbda3549d87e39aef0e2a5b9fd37"
+      "sourceSha256": "015eaf6b8d45d97569cb637e6a6c42b8837194701c3e24a43cea2f5202245621"
     },
     {
       "id": "brief-eval-x-k2",
@@ -6186,7 +6186,7 @@ window.DOCS_INDEX = {
       "phase": "",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "X-K2 builds bench status --alarm-after, last_progress_at, the alarm channel W1-K chooses, and the resume entry line in cli.py, on Agy gemini-3.8-flash-high in two turns. Blocked until W1-K passes its gate.",
+      "summary": "X-K2 builds bench status --alarm-after, last_progress_at and the ntfy alarm channel (R-102), importing resume.has_work, on Agy gemini-3.8-flash-high in two turns. Blocked until W1-K passes its gate.",
       "tags": [],
       "links": [
         {
@@ -6199,7 +6199,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d30eb2f6e5320b13813cbe7d150b0ca74eb9f9d75d9ea1b862b045582ecc1473"
+      "sourceSha256": "3ca1d894f7530b72d868383d40d47cd04636665533140646b9d792b6da00fc5e"
     },
     {
       "id": "brief-eval-x-lb",
@@ -7126,7 +7126,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4cc220d2b7ae4db62a5a9bce495aafd913f9e9ed69767864031e7ce0392a6f84"
+      "sourceSha256": "89fa3567118e82c779e2e6f214d8a9577acc867360752c27f492e42da520f677"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -8029,5 +8029,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "4baf5f9dd443756cb2d4fd63ec7ad794c96fe177b92ea4525ae14e8fa60a1d80"
+  "graphSha256": "a3e7f0797a71cc4cba60e2831b926d4c5ef91a343811bc320a007ab9a3a4d238"
 };

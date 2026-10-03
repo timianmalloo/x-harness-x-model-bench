@@ -83,7 +83,7 @@ A track starts when its design gate has passed, its design is on `main`, and eve
 | X-G3 | W1-G ✓; X-A3a (serial spine 7: the `_passed` fix before the formal `pass_at_1` rows exist) |
 | Leader `freeze_catalog.py` (R-86) | X-G3 joined |
 | X-K1a..d | W1-K gate ✗; **X-J1 joined** (serial spine 6); X-D2 |
-| X-K2a, b | W1-K gate ✗; X-C joined (`status.py`, `cli.py` E1); X-J1 joined (R6.5b gives X-J1 one `status.py` hunk in E2, so X-K2 rebases on it) |
+| X-K2a, b | W1-K gate ✗; X-C joined (`status.py`, `cli.py` E1); X-J1 joined (R6.5b gives X-J1 one `status.py` hunk in E2, so X-K2 rebases on it); **X-K2b only: X-K1 joined** (W0 rev 6.9: the `cmd_run` resume hunk is X-K1's, R6.9a, and `alarm.py` imports X-K1's `resume.has_work`, R-102) |
 | X-LB1 | SP-LB operator run passed and merged ✗; X-LB0 |
 | X-LB0 (SR-L5) | X-F joined (`grade/property.py` E1); not SP-LB |
 | X-LG | W1-L ✓; X-F, X-D2, X-A1a joined (E1 hub files); X-J2a (`_changes`); X-LB0 (`property.hidden_tests`, `write_section`, `procs.run`) |
@@ -93,7 +93,7 @@ A track starts when its design gate has passed, its design is on `main`, and eve
 | X-I-S2 | W1-I ✓ for the spike; RV-SEC and RV-TA on the spike note before authoring; `ready` after X-F joins and the 0.7 freeze (W1-I §4) |
 | X-CV | every E2-E4 item joined; the Leader's freeze committed |
 
-**Critical path (Inferred durations from the plan, which ran 2-14× long in phase 1):** X-D joined (W1-J's gate has passed) → X-J1 (5 turns, about 5 h) → X-K1 (4 turns, 4.5 h) → X-CV (2 h + machine time). W1-K starts at W1-J's merge and runs beside X-J1, so it is off the path unless its gate takes longer than X-J1. Nearly as long: E1's X-H2 and X-A1b → X-A3 (3 turns) → X-G3 → freeze. The E4 task tracks are off the critical path if their authoring runs now.
+**Critical path (Inferred durations from the plan, which ran 2-14× long in phase 1):** X-D joined (W1-J's gate has passed) → X-J1 (5 turns, about 5 h) → X-K1 (4 turns, 4.5 h) → X-K2b (1 turn, about 1 h; W0 rev 6.9 puts it after X-K1, X-K2a runs beside X-K1) → X-CV (2 h + machine time). W1-K starts at W1-J's merge and runs beside X-J1, so it is off the path unless its gate takes longer than X-J1. Nearly as long: E1's X-H2 and X-A1b → X-A3 (3 turns) → X-G3 → freeze. The E4 task tracks are off the critical path if their authoring runs now.
 
 ## 4. Launch order (cap 6 running across E1 and part 3; at most 2 per external harness; critical path first)
 
@@ -107,7 +107,7 @@ E1 items keep priority over part 3 (E1 README §7) until X-INT. Part 3 fills fre
 5. **When X-H2 and X-A1b have joined:** X-A3a (Agy) → X-G3 (Grok) → the Leader's freeze; X-A3b, X-A3c beside X-G3.
 6. **When X-J2a has joined:** X-LG (Agy, three turns).
 7. **When the operator has run SP-LB and it passed:** X-LB1 (Sonnet) and X-RS authoring (Sonnet).
-8. **When W1-K passes its gate:** X-K2 (Agy); X-K1 (Codex) once X-J1 has joined.
+8. **When W1-K passes its gate:** X-K1 (Codex) once X-J1 has joined; X-K2a (Agy) beside X-K1 (the alarm task script, its test, the runbook, `last_progress_at`; no `cli.py`, no pending logic); X-K2b once X-K1 has joined (W0 rev 6.9: the `cmd_run` hunk and `resume.has_work` are X-K1's).
 9. **`ready` follow-ons (Sonnet, same trees):** X-NG after X-LG; X-SM after X-LG and X-J2b; X-RW (RW1) after X-J1 and X-J2b; X-RS after X-LB; X-I-S2 after X-F.
 10. **X-CV** last.
 
