@@ -1,0 +1,2 @@
+{"agent": "worker-sonnet-cat", "at": 1790812518.7791698, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-sonnet-cat", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-catalog-0-6-release"}
+{"agent": "worker-sonnet-cat", "at": 1790814367.4979966, "kind": "session-end", "path": "-", "seq": 2, "session": "worker-sonnet-cat", "wi": "WI-0", "worktree": "x-harness-x-model-bench-catalog-0-6-release"}

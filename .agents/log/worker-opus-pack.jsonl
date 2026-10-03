@@ -1,0 +1,2 @@
+{"agent": "worker-opus-pack", "at": 1790799726.6847482, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-opus-pack", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-pack-onoff-proposals"}
+{"agent": "worker-opus-pack", "at": 1790801880.6287818, "kind": "session-end", "path": "-", "seq": 2, "session": "worker-opus-pack", "wi": "WI-0", "worktree": "x-harness-x-model-bench-pack-onoff-proposals"}

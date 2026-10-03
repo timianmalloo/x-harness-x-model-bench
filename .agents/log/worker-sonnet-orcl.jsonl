@@ -1,0 +1,2 @@
+{"agent": "worker-sonnet-orcl", "at": 1790810418.5536554, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-sonnet-orcl", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-grading-copy-outside-repo"}
+{"agent": "worker-sonnet-orcl", "at": 1790814524.3086169, "kind": "session-end", "path": "-", "seq": 2, "session": "worker-sonnet-orcl", "wi": "WI-0", "worktree": "x-harness-x-model-bench-grading-copy-outside-repo"}

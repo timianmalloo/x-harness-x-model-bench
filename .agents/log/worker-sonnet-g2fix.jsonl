@@ -1,0 +1,2 @@
+{"agent": "worker-sonnet-g2fix", "at": 1790908034.9947362, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-sonnet-g2fix", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-g2-statement-hash"}
+{"agent": "worker-sonnet-g2fix", "at": 1790943921.207624, "kind": "session-end", "path": "-", "seq": 2, "session": "worker-sonnet-g2fix", "wi": "WI-0", "worktree": "x-harness-x-model-bench-g2-statement-hash"}

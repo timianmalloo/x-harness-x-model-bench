@@ -1,0 +1,2 @@
+{"agent": "worker-sonnet-auth", "at": 1790801780.3865619, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-sonnet-auth", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-cell-auth-and-cause"}
+{"agent": "worker-sonnet-auth", "at": 1790810706.2665856, "kind": "session-end", "path": "-", "seq": 2, "session": "worker-sonnet-auth", "wi": "WI-0", "worktree": "x-harness-x-model-bench-cell-auth-and-cause"}

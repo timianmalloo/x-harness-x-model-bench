@@ -1,0 +1,2 @@
+{"agent": "worker-sonnet-rpt", "at": 1790908036.313702, "kind": "session-start", "path": "-", "seq": 1, "session": "worker-sonnet-rpt", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-report-combo-names-and-line-limit"}
+{"agent": "worker-sonnet-rpt", "at": 1790943797.842649, "kind": "session-end", "path": "-", "seq": 2, "session": "worker-sonnet-rpt", "wi": "WI-0", "worktree": "x-harness-x-model-bench-report-combo-names-and-line-limit"}
