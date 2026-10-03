@@ -2508,7 +2508,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2b85dc233dc39bab022ac28aad4ffaa74173d94de852fc840be85cc602bc9721"
+      "sourceSha256": "dd272b09298bc8cf17beeeb8f970d5d362451188dd1e5afce2996eac116d18c6"
     },
     {
       "id": "design-eval-security-tasks",
@@ -2569,7 +2569,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "6da3d7bdbe67556acf6469df6b636271f47db3313fb619405c40178479c656a4"
+      "sourceSha256": "93b474584bcd4844385345f9f440d7b041c260738094034ca4ab0e5232025331"
     },
     {
       "id": "design-formal-grader",
@@ -3501,7 +3501,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "33254fc4f422e6000a11d7213e9d02c4634de82bd1679c5c6af9b56e3f67fee8"
+      "sourceSha256": "3fcbf941d7d24b458a7bd652d55e2f0d0ea35a730fc56b162fa375dcdb1e77df"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -5268,6 +5268,35 @@ window.DOCS_INDEX = {
       "sourceSha256": "57c3960e70475246ed81a4d1ff337fade7d0c94bd1e6461b0df37d0cff99f401"
     },
     {
+      "id": "brief-eval-tool-gsm-b",
+      "path": "docs/coordination/eval-wave2-e1/tool-gsm-b.md",
+      "title": "Brief TOOL-GSM-B: the Grok served-model reader on a deadline-killed session",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "tools/grok_served_model.py falls back to the assistant rows of chat_history.jsonl when usage.json is absent, says which file it read, and still exits non-zero when nothing is recorded or the ids disagree with the pin.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "brief-eval-tool-gsm",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "dccd13b36f97db865ed77191495949124dfc56a9df3f419b14e3e2e1cf0e2773"
+    },
+    {
       "id": "brief-eval-x-a1",
       "path": "docs/coordination/eval-wave2-e1/x-a1.md",
       "title": "Brief X-A1: arms in the plan, ring plumbing, the pack-reader guard (E1 build)",
@@ -5294,7 +5323,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "39479e4591c9fe9dcac7e31ceef2d62806334c5d78d91e97bac655756c95c1ee"
+      "sourceSha256": "6252a059c23b39058f30bda99d149f90ce4ed4360f61d4d8350c543c452304b0"
     },
     {
       "id": "brief-eval-x-b1",
@@ -5323,7 +5352,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "151b2f470840a34fe8955f89700014c522f696116006a5daf7e613cf7c9732f8"
+      "sourceSha256": "34d80e00c9f8ceb4e966f04f49c1aefad2afdcb5c70fcf39498f529db8806f30"
     },
     {
       "id": "brief-eval-x-b2",
@@ -5355,6 +5384,35 @@ window.DOCS_INDEX = {
       "sourceSha256": "a16f73aeebe362c4dd5e74b5d5c60566d0bd106fe6baff2168c70d890e10c348"
     },
     {
+      "id": "brief-eval-x-c",
+      "path": "docs/coordination/eval-wave2-e1/x-c.md",
+      "title": "Brief X-C: campaign record, `bench campaign` and the run-side check (E1 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-C builds campaign.py, the bench campaign commands, the lock protocol, verify with its git witness, the run-side check inside the engine, the campaign status document and the after-grading hook of W1-C rev 2, under W0 rev 6, on Agy gemini-3.8-flash-high, in three dispatches, each red and green in one turn.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-campaign-record",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "5341f3282ed2f90a9cd35177724d382d7c4dc12ebfdc89a3ebda9a801b134d93"
+    },
+    {
       "id": "brief-eval-x-d",
       "path": "docs/coordination/eval-wave2-e1/x-d.md",
       "title": "Brief X-D: engine identity, launch recheck, E1 registry rows (E1 build)",
@@ -5381,7 +5439,36 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2d1658478d8d8c6887f6b5d1223c3d04aece0790c13bbf84b0353fee0f128844"
+      "sourceSha256": "1da6989fde0ee0bd334d3b52691892ea569d64afbf6f199c29ab5426e77873ca"
+    },
+    {
+      "id": "brief-eval-x-e",
+      "path": "docs/coordination/eval-wave2-e1/x-e.md",
+      "title": "Brief X-E: discriminate, synthetic agent and readiness (E1 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-E builds discriminate.py, readiness.py and synthetic_agent.py of W1-E rev 2 under W0 rev 6 and R-98, red first, on Sonnet: the skeleton first, then the engine-only tests, then the host tests once X-F's host has joined.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-discriminate",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "120b01ea1e0d5cdcba769c21dc327006b732ab72453026d84e786bfd424e1547"
     },
     {
       "id": "brief-eval-x-f",
@@ -5410,7 +5497,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "42653e5707f81c7a2601798cb36336eac8df739b5d0ea1c99841f5fd565b8306"
+      "sourceSha256": "a8de3e141c1d32c14490a6a35ec66e7fae243b9855f6a7e040159a77c4af22a3"
     },
     {
       "id": "brief-eval-x-g1",
@@ -5442,6 +5529,68 @@ window.DOCS_INDEX = {
       "sourceSha256": "ddcdd5487396d265418362d5708a8f123beab54ff110f2bd208c900296a79648"
     },
     {
+      "id": "brief-eval-x-h1",
+      "path": "docs/coordination/eval-wave2-e1/x-h1.md",
+      "title": "Brief X-H1: power, verdicts, dominance, ring gates (E1 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-H1 builds power.py, verdicts.py and gates.py of W1-H rev 2 (stdlib only, pure functions) under W0 rev 6 on Grok grok-4.7 high, in three turns: power, then verdicts and gates as two parallel turns, each red and green in one turn.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-power-verdicts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0020-power-and-verdicts-stdlib",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "bc2325d78f60f85a3962358971b49414ff24961cdb41a1d8979ac1a7b5187068"
+    },
+    {
+      "id": "brief-eval-x-h2",
+      "path": "docs/coordination/eval-wave2-e1/x-h2.md",
+      "title": "Brief X-H2: report section 3, the R-93 line, the plan_packs header (E1 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-H2 builds report/campaign_section.py (verdict rows, legend, exclusions block, NA counts, the three-state R-93 line) and the report/html.py hook with the plan_packs header lines, on Agy gemini-3.8-flash-high, one turn red and green.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-power-verdicts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "2bc4517590a50534f3c043cf0c615c0054cf5c560767ec67aa0323f25fcce714"
+    },
+    {
       "id": "brief-eval-x-i",
       "path": "docs/coordination/eval-wave2-e1/x-i.md",
       "title": "Brief X-I: security task S1 (E1 build)",
@@ -5469,6 +5618,35 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "d2f5e31b97b000bf14fbe830b3f1514fc0a7184e3a9554fcae4c2bff9d5571ea"
+    },
+    {
+      "id": "brief-eval-x-int",
+      "path": "docs/coordination/eval-wave2-e1/x-int.md",
+      "title": "Brief X-INT: the E1 end-to-end walking skeleton (E1 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-INT proves the joined E1 tracks end to end through the real CLI: the campaign happy path, the T-E19 reader refusals, a two-arm report, and the arm-reader assume, on Sonnet, with the real cells credential-marked.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "coordination-eval-campaign",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "4cb06a998dbf4f14babca317eb9c828edf2e7ac3e18d5808264ca62f49c6c9b9"
     },
     {
       "id": "coordination-eval-brief-rv-ds",
@@ -6149,7 +6327,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation: Wave 2, phase E1 (walking skeleton build)",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "The rules every E1 build worker follows, the routing of the fourteen E1 items to harness and pinned model (R-87, R-88 confirmed to Codex, R-91, R-92), the real dependency DAG, the launch order by critical path, the dispatch shape per track (one external turn red and green, or a Sonnet follow-on), and one brief per item. Nine briefs are written; five wait on designs that have not passed their gate.",
+      "summary": "The rules every E1 build worker follows, the routing of the fourteen E1 items to harness and pinned model (R-87, R-88 confirmed to Codex, R-91, R-92), the real dependency DAG, the launch order by critical path, the dispatch shape per track (one external turn red and green, or a Sonnet follow-on), and one brief per item. Nine briefs are written; five wait on designs that have not passed their gate. Part 2 (W0 rev 6, Coordinator session #6): the X-C, X-H1, X-H2, X-E and X-INT briefs, TOOL-GSM-B, the rev-6 alignment of part 1, the external compilations, the Grok transport finding, and the DAG and launch order as of 2026-10-03 evening.",
       "tags": [
         "coordination",
         "briefs",
@@ -6176,7 +6354,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "e2e149d6c67eca61922e3543511dbb6a4d4ef022b268ce246d7d988d375f7266"
+      "sourceSha256": "892d9cd49622f7d6aa6169fa3d57b2b6f0f27c768b4870d78d937bb55262c6cd"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -7071,5 +7249,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "5374f229e4dafb48534bce7165a7975ad29b9319d82dcd9fe2c0ac29c87755b6"
+  "graphSha256": "526baf611bc8b2ad55e83bf069e9b18bfa1d0f278beb6e84971918abb0ace320"
 };
