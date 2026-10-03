@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:31:57Z",
+  "generated": "2026-10-03T17:41:44Z",
   "audit": [
     {
       "actor": null,
@@ -65594,23 +65594,65 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41D559W6W2NKVWZFAT38JDM",
-      "shortname": "design-slice-review-sec-w1f",
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1f.md"
+      ],
+      "compiled": false,
       "datetime": "2026-10-03T17:31:57Z",
-      "session": "rv-sec-w1f-e1e4",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "SEC review of W1-F",
+      "id": "al-01M41D559W6W2NKVWZFAT38JDM",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "docs/coordination/eval-wave1/rv-sec.md (W1-F)",
+      "session": "rv-sec-w1f-e1e4",
+      "shortname": "design-slice-review-sec-w1f",
+      "skill": "design-slice-review",
       "summary": "SEC gate on W1-F: PASS WITH CONDITIONS, 8 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1f.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:32:37Z",
+      "duration_seconds": 88.0,
+      "id": "al-01M41D6BRPSJ0DN0XZS015TQWN",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "RV-TA brief: review W1-F property grader design (design/eval-property-grader) against W0 rev 2",
+      "session": "rv-ta-w1f-e1e4",
+      "shortname": "ta-w1f-review",
+      "skill": "design-slice-review",
+      "started_at": "2026-10-03T17:31:09Z",
+      "summary": "Test Architect review of W1-F: BLOCK, 10 findings (2 blocking: tests-phase suspend, clean-exit tamper test)",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "id": "al-01M41DQ2NBGSFMYYP469Q4SA7A",
+      "shortname": "design-slice-review-ta-w1g",
+      "datetime": "2026-10-03T17:41:44Z",
+      "session": "rv-ta-w1g-e1e4",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-G)",
+      "summary": "TA review of W1-G catalog 0.7: BLOCK, 10 findings",
       "kind": "skill",
       "skill": "design-slice-review",
       "tool": null,
       "actor": null,
       "artifacts": [
-        "docs/design/reviews/eval-review-sec-w1f.md"
+        "docs/design/reviews/eval-review-ta-w1g.md"
       ],
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "SEC review of W1-F",
+      "goal": "Review W1-G as Test Architect",
       "done_when": "gate line written",
       "tier": "T2",
       "fan_out": 0

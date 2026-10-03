@@ -3580,6 +3580,60 @@ window.DOCS_INDEX = {
       "sourceSha256": "0b00511fbc81f9dfcea0fbc2fdc36dbbc7e4c8b273f2c38248dcaa6d328fbcde"
     },
     {
+      "id": "review-eval-ta-w1f",
+      "path": "docs/design/reviews/eval-review-ta-w1f.md",
+      "title": "W1-F property grader design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-F against W0 rev 2. The ADR-0018 red tests are named and can fail. Two blocking gaps: the hidden-tests phase has no suspend control (W0 s3 requires one per phase), and the clean-exit tamper test (my W0 rev 2 condition) is not specified. The design also still disagrees with W0 rev 2 at four points.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-f"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "886af10708ebef8494dd494c384dae81303cde6e64658f846aa608270096236d"
+    },
+    {
+      "id": "review-eval-ta-w1g",
+      "path": "docs/design/reviews/eval-review-ta-w1g.md",
+      "title": "W1-G catalog 0.7 design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-G against W0 rev 2 and R-87..R-93. The three-valued _pass fix and the pass rule are well tested. BLOCK on three controls that cannot fail as specified: the cross-version regrade (no red case, and the 0.6 golden's digest is checked by nothing once 0.7 is current), and the (e) exception (clause v and others untested, commit check is a regex).",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-g"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "6abf11a4043297b0f4e7fc2e3f3465e3575d54b2a68242649ee0a4e20298d7c4"
+    },
+    {
       "id": "coordination-eval-brief-rv-ds",
       "path": "docs/coordination/eval-wave1/rv-ds.md",
       "title": "RV-DS brief: Distributed Systems lens reviewer (Adversary Mode)",
@@ -5093,5 +5147,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "d44afd06b9a28cf903d87cef238b0a03d7ad230e7a81680def6ae72abf80232e"
+  "graphSha256": "ef5d6c555b7f7fe0f693d9e1f3b3ddfa30d836175a3f111c2211722d93f8b311"
 };
