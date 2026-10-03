@@ -43,3 +43,29 @@ Controls confirmed sound (no finding): result is a closed schema with case ids o
 RESIDUAL RISK: a same-user deliverable can still inject into the check or edit committed records (accepted, ADR-0012, ADR-0013, ADR-0018 s10a and s11). A deliverable that binds `0.0.0.0` is LAN-reachable during a check (accepted, follow-up HB-CHK-005 in E4). CLEARS-THE-VETO: no, until finding 1 is resolved in W0 text. Findings 2 to 4, 6 and 7 are conditions.
 
 GATE w0-seam-contracts · Security & Identity · BLOCK · 12 findings (rv-sec-e1e4, 2026-10-03)
+
+## W0 rev 2 re-review (delta only), 2026-10-03: `docs/design/eval-seam-contracts.md` on main 3c1c9827
+
+Scope: the 12 findings above against rev 2's section 3, section 10 (G4, G5) and the Review disposition table. Nothing else re-read.
+
+| finding | rev 2 result | evidence |
+| --- | --- | --- |
+| F1 (blocking) | Resolved. The check never imports agent code. A probe host is spawned through `spawn_deliverable` with only its own stdio handles; the check classifies the raw response. The red-first forgery test is named. W1-F reports 3/3 forged-document trials succeeding against the old model and 3/3 defeated by the probe host (reported by the Leader; the evidence is in W1-F's design and I did not review it). | rev 2 s3 "in-process, redefined" |
+| F2 | Resolved: `env` is limited to `TOOLCHAIN_ENV` plus `HB_CHECK_*`, the profiles denylist is refused (HB-RDY-005), and `spawn_deliverable` raises on other keys. | s3 `env` |
+| F3 | Resolved: tests phase first, job confirmed empty, then a fresh `check-run/` copy with `check/` copied last. | s3 Invocation |
+| F4 | Resolved: outcome row 3 is the `check/` hash mismatch (HB-CHK-002), and the row order is explicit. | s3 outcome table |
+| F5 | Resolved: derivable measures are computed by the grader; unknown keys are `check output invalid`. | s3 `measures` |
+| F6 | Resolved: word-bounded G4 token and G5 for `os.environ` use (per the disposition table; I read the disposition rows, not the G4/G5 text). | disposition TA 2, SEC 6, SEC 12 |
+| F7 | Accepted in part, and I agree with the reasoning. `build` goes through `spawn_deliverable`. Rejecting "readiness rejects a build that needs a package index" is right: readiness cannot observe a build's network reach. | disposition SEC 7 |
+| F8, F9, F10, F11, F12 | Resolved as dispositioned. F9's `-S` choice (not `-I`, which would drop the script folder from `sys.path`) is sound. | disposition rows |
+
+New findings from the delta:
+
+| location | finding | severity | fix | confidence |
+| --- | --- | --- | --- | --- |
+| s3 SEC 7 residual | An offline build is a task declaration that nothing enforces. A build step can still fetch packages (supply chain) and run install hooks as the operator. | minor | W1-I and W1-L must state the offline build and the pinned inputs per task; the security reviewer of each checks it. Keep it in the accepted residual list. | Inferred |
+| s3 probe host | The probe host runs agent code in the same grading copy as `check/`, so agent code can read the check source and the probe payloads and special-case them. Row 3 detects modification, not reading. | minor | Accept as a residual of ADR-0013 (same user). Optionally keep payloads out of `check/` until sent (the probe host receives them one at a time over the pipe, as rev 2 already does). | Inferred |
+
+Conditions for the slices that build on this: (1) W1-F carries the red-first forged-document fixture against the probe host and the 3-trial result as a committed test; (2) the `-S` and amendment note lands in W1-F's design; (3) W1-I and W1-L declare offline builds.
+
+GATE w0-seam-contracts rev 2 · Security & Identity · PASS WITH CONDITIONS · 2 findings (rv-sec-e1e4, 2026-10-03)
