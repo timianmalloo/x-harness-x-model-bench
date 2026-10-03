@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:52:19Z",
+  "generated": "2026-10-03T17:54:30Z",
   "audit": [
     {
       "actor": null,
@@ -65916,18 +65916,59 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41EAESV42T3VKA1QYP389RR",
-      "shortname": "RV-SIM W1-I review",
-      "datetime": "2026-10-03T17:52:19Z",
-      "session": "rv-sim-w1i-e1e4",
-      "prompt": "Simplifier review of W1-I security tasks S1 and S2",
-      "summary": "8 findings, PASS WITH CONDITIONS; all five probe-host asks needed by S1, none S2-only; S2 probe list premature",
-      "kind": "skill",
-      "skill": "design-slice-review",
-      "tool": null,
       "actor": "Claude Sonnet 5.5",
       "artifacts": [
         "docs/design/reviews/eval-review-sim-w1i.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:52:19Z",
+      "id": "al-01M41EAESV42T3VKA1QYP389RR",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Simplifier review of W1-I security tasks S1 and S2",
+      "session": "rv-sim-w1i-e1e4",
+      "shortname": "RV-SIM W1-I review",
+      "skill": "design-slice-review",
+      "summary": "8 findings, PASS WITH CONDITIONS; all five probe-host asks needed by S1, none S2-only; S2 probe list premature",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1i.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:52:21Z",
+      "done_when": "report committed with gate line",
+      "fan_out": 0,
+      "goal": "Patterns review of W1-I",
+      "id": "al-01M41EAGE75491PTBZAJBXCD14",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md (W1-I)",
+      "session": "rv-pat-w1i-e1e4",
+      "shortname": "design-slice-review-pat-w1i",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT review of W1-I: BLOCK, 1 blocking seam finding (wsgi not built in E1)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M41EEECHHJQ3RCZPJ06E1FMP",
+      "shortname": "review-sec-w1i",
+      "datetime": "2026-10-03T17:54:30Z",
+      "session": "rv-sec-w1i-e1e4",
+      "prompt": "Security review of W1-I (S1 microdot, S2 bottle) against W0 rev 2",
+      "summary": "GATE W1-I Security PASS WITH CONDITIONS, 8 findings",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": "claude-sonnet-5-5",
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1i.md"
       ],
       "tags": [],
       "outcome": "success",
