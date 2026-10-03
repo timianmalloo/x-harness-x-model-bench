@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Benchmark: state and target</title>
+<meta name="description" content="An honest assessment of harness-bench after grids 1-4: what works, what does not, and the approach to a benchmark that can measure Enterprise/Production value per dollar.">
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --ink:#17202a; --ink-2:#4a5563; --ink-3:#7d8796;
+  --rule:#d8dde4; --rule-2:#eceff3; --accent:#1f5fbf;
+  --hit:#17804a; --hit-bg:#e5f4ec; --miss:#b3261e; --miss-bg:#fbe9e7; --inc:#8a5a00; --inc-bg:#fbf1dc;
+  --code:#eef1f5;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono","SFMono-Regular",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101418; --panel:#171c22; --ink:#e7ebf0; --ink-2:#b3bcc7; --ink-3:#7f8a97;
+    --rule:#2a323c; --rule-2:#1e252d; --accent:#7fb0ff;
+    --hit:#5fd394; --hit-bg:#15291f; --miss:#ff8a80; --miss-bg:#33191a; --inc:#f0c060; --inc-bg:#2e2513;
+    --code:#1f262e;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101418; --panel:#171c22; --ink:#e7ebf0; --ink-2:#b3bcc7; --ink-3:#7f8a97;
+  --rule:#2a323c; --rule-2:#1e252d; --accent:#7fb0ff;
+  --hit:#5fd394; --hit-bg:#15291f; --miss:#ff8a80; --miss-bg:#33191a; --inc:#f0c060; --inc-bg:#2e2513;
+  --code:#1f262e;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--font);font-variant-numeric:tabular-nums}
+main{max-width:1080px;margin:0 auto;padding:28px 16px 80px}
+h1{font-size:clamp(22px,4vw,30px);line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
+h2{font-size:21px;margin:44px 0 10px;padding-top:10px;border-top:1px solid var(--rule)}
+h3{font-size:16px;margin:24px 0 6px}
+p,li{max-width:80ch}
+a{color:var(--accent)}
+code{font-family:var(--mono);font-size:.88em;background:var(--code);padding:1px 4px;border-radius:4px;overflow-wrap:anywhere}
+.meta{color:var(--ink-2);font-size:13.5px;margin:0 0 18px}
+.lede{font-size:16.5px;max-width:82ch}
+nav.toc{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13.5px;margin:14px 0 4px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:18px 0}
+.tile{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:12px 14px}
+.tile .k{font-size:12.5px;color:var(--ink-2);text-transform:uppercase;letter-spacing:.04em}
+.tile .v{font-size:26px;font-weight:650;margin:2px 0}
+.tile .s{font-size:13px;color:var(--ink-2)}
+.wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--rule);border-radius:8px;background:var(--panel);margin:10px 0 6px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+caption{text-align:left;padding:10px 12px 4px;font-weight:600;color:var(--ink)}
+th,td{padding:7px 10px;border-bottom:1px solid var(--rule-2);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--ink-2);white-space:nowrap}
+td.n{text-align:right;white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+.tag{display:inline-block;font-size:12px;font-weight:650;padding:1px 7px;border-radius:10px;white-space:nowrap}
+.hit{color:var(--hit);background:var(--hit-bg)}
+.miss{color:var(--miss);background:var(--miss-bg)}
+.inc{color:var(--inc);background:var(--inc-bg)}
+.lbl{font-size:11.5px;font-weight:700;letter-spacing:.03em;color:var(--ink-2);border:1px solid var(--rule);border-radius:4px;padding:0 4px;white-space:nowrap}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:14px 16px;margin:12px 0}
+.card h3{margin-top:0}
+.note{border-left:3px solid var(--accent);padding:6px 12px;background:var(--panel);margin:12px 0;color:var(--ink-2)}
+ol.steps li{margin:6px 0}
+@media print{body{background:#fff}nav.toc{display:none}}
+</style>
+</head>
+<body>
+<main>
+<h1>Benchmark: state and target</h1>
+<p class="meta">Proposal, 2026-10-03 &middot; author: the Leader (Claude Opus 5.5, session coord-opus-cq) &middot; evidence: <code>runs/grid-1</code> to <code>runs/grid-4</code>, their <code>report.html</code> closing sections, and <a href="pack-onoff-analysis.html">pack-onoff-analysis.html</a> &middot; graph record: <a href="benchmark-state-and-target.md">benchmark-state-and-target.md</a></p>
+
+<p class="lede"><strong>The tool works. It cannot yet answer the question it was built for.</strong> harness-bench now runs 276-cell grids across three harnesses with clean integrity checks, and its pack-improvement loop has found and verified real pack fixes. But whether the AI-Forward pack adds rigor, security, compliance and resilience is <em>unmeasured</em>: the task set gives those properties nothing to win on. This page states what works, what does not, and the approach to a benchmark that measures <strong>Enterprise/Production value per dollar, per harness</strong>.</p>
+
+<nav class="toc" aria-label="Contents">
+<a href="#works">What works</a><a href="#fails">What does not work</a><a href="#evidence">What the evidence says about the pack</a><a href="#target">The target</a><a href="#approach">Proposed approach</a><a href="#plan">Sequence</a><a href="#success">How we know it worked</a><a href="#decisions">Decisions needed</a><a href="#notdo">What we stop doing</a>
+</nav>
+
+<div class="tiles">
+<div class="tile"><div class="k">Grids run</div><div class="v">4</div><div class="s">grid-1 108 cells, grid-2 264, grid-3 276, grid-4 276</div></div>
+<div class="tile"><div class="k">Pack cost (grid-4)</div><div class="v">5.7&times;</div><div class="s">tokens; 2.2&times; wall clock, pack on vs off</div></div>
+<div class="tile"><div class="k">Pass gain (grid-4)</div><div class="v">none</div><div class="s">86 vs 82 of 116 pairs, p = 0.66</div></div>
+<div class="tile"><div class="k">Pack-attributed failures</div><div class="v">4 &rarr; 0</div><div class="s">grid-3 &rarr; grid-4, after fixes 2+3</div></div>
+</div>
+
+<h2 id="works">What works</h2>
+<ul>
+<li><span class="tag hit">Verified</span> <strong>The engine.</strong> grid-3 and grid-4 each ran 276 cells over Copilot, Codex and Claude Code with no combo skipped; <code>bench verify</code> is <code>ok</code>; CI is green on Windows and macOS. Integrity controls (frozen plans, catalog freeze, gate ring, mutation sweeps) caught grader defects before they became conclusions.</li>
+<li><span class="tag hit">Verified</span> <strong>The measure &rarr; fix upstream &rarr; re-measure loop.</strong> It found pack defects in the data and confirmed the fixes in the next grid:
+<div class="wrap"><table>
+<caption>Pack defects found and verified fixed</caption>
+<thead><tr><th>Defect</th><th>Before</th><th>After</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Work diverted into a worktree the grader never sees (PK-01)</td><td class="n">5 cells (grid-1, corrected)</td><td class="n">1 (grid-3), 0 (grid-4)</td><td>WT1 rescope, ai-forward 8ccfc4e</td></tr>
+<tr><td>Turn ended with no product written (PK-02)</td><td class="n">5 (grid-1), 4 (grid-3)</td><td class="n">0 (grid-4)</td><td>CT25a close check, CT19a ceremony budget, ccc5160</td></tr>
+<tr><td>Ceremony on tasks pack-off already aces (PK-05)</td><td class="n">39.9M tokens (grid-3)</td><td class="n">8.2M (grid-4), &minus;79%</td><td>ccc5160</td></tr>
+<tr><td>Pack-attributed failures, total</td><td class="n">4 of 33 (grid-3)</td><td class="n">0 of 32 (grid-4)</td><td>both of the above</td></tr>
+</tbody></table></div></li>
+<li><span class="tag hit">Verified</span> <strong>Cost is measured mechanically.</strong> Every report ends with the pack-on/pack-off section (tokens, wall clock, fixed context, ceremony, drift, diversion), from one definition of each quantity.</li>
+</ul>
+
+<h2 id="fails">What does not work</h2>
+<div class="card"><h3>1. The benchmark cannot see what the pack is for <span class="tag miss">the main gap</span></h3>
+<p>Most tasks are saturated: both arms pass, so rigor has nothing to improve (grid-4's closing section lists A1&ndash;A3, C1, D1&ndash;D3, E4&ndash;E7, F1, F2 as <em>saturated</em>). The judge metrics that would show quality &mdash; spec quality, ADR quality, error handling, assumption disclosure &mdash; are <em>not recorded</em> in every grid. No task tests security, compliance, privacy, resilience, rework cost, or the Spike Protocol. The "inconclusive" list dominates every report.</p></div>
+<div class="card"><h3>2. No statistical power</h3>
+<p>Two repetitions over 23 tasks leave every leaderboard row tied (<code>1=</code>) and almost every pack effect "no detectable effect". Run-to-run variance is large: with the same pack-off arm, tokens per cell moved between grid-3 and grid-4 by &minus;14% (Codex) to +24% (Claude Code). Only large effects can show.</p></div>
+<div class="card"><h3>3. Every grid until grid-4 lost data to infrastructure defects</h3>
+<ul>
+<li>grid-1: 24 Claude Code cells skipped (OAuth refresh-token rotation).</li>
+<li>grid-2: 127 cells skipped (a DNS error and an OAuth expiry both misclassified as "model unavailable"); E2&ndash;E5 unscored (the grading copy lived inside the repo, so <code>uv</code> found the wrong project).</li>
+<li>grid-3: G2 unscored (a hand-derived statement hash and an artifact scan that flagged the build output the prompt requires); 5 cells lost to a 1 MiB line bound.</li>
+<li>grid-4: G2 scores clean on every formal check but cannot rank &mdash; scenario 7 has no pass@1 definition.</li>
+</ul>
+<p>Each fix was right. Finding one per grid, at about 10 hours per grid, is why this has taken weeks.</p></div>
+<div class="card"><h3>4. The cycle is slow</h3>
+<p>A grid takes about 5 h to run and 5 h to grade (measured, grid-3 and grid-4). A gate ring takes about 85 min. Many fixes needed a gate ring and a re-grade before the next grid.</p></div>
+<div class="card"><h3>5. The process mirrored the pack's own problem</h3>
+<p>Rulings, sweeps, gate rings and re-reviews made the tool trustworthy, and they consumed most of the time &mdash; the same ceremony-versus-outcome trade-off the analysis found in the pack. The Leader added defects too: two watchers that silently stopped working, a mutation committed to main, a re-grade trusted to recover G2 that could not, and misquoted figures almost pushed upstream.</p></div>
+<div class="card"><h3>6. Prose rules do not hold</h3>
+<p>"Never set a git identity" was written down; 4 cells per grid still did it (PK-07). Fix 3's opt-in rule was defeated by the pack's own start marker creating <code>docs/audit/</code> (51 grid-4 cells). Rules held only when a mechanism enforced them.</p></div>
+
+<h2 id="evidence">What the evidence says about the pack</h2>
+<div class="wrap"><table>
+<caption>Pack on vs pack off, grid-4 (pack ccc5160, catalog 0.6)</caption>
+<thead><tr><th>Harness</th><th>Tokens on / off</th><th>pass@1 &Delta;</th><th>Correctness &Delta;</th><th>Drift &Delta;</th></tr></thead>
+<tbody>
+<tr><td>Claude Code (claude-opus-5-5)</td><td class="n">681k / 232k</td><td class="n">+0.09 [0.00, 0.24]</td><td class="n"><span class="tag hit">+4.1 [0.5, 7.9]</span></td><td class="n">&minus;6.1 [&minus;13.9, 0.0]</td></tr>
+<tr><td>Codex (gpt-6-sol)</td><td class="n">1.47M / 372k</td><td class="n">+0.03 [&minus;0.05, 0.13]</td><td class="n">+0.3 [&minus;2.6, 3.7]</td><td class="n"><span class="tag miss">&minus;16.2 [&minus;29.7, &minus;4.4]</span></td></tr>
+<tr><td>Copilot (gpt-6-sol)</td><td class="n">2.87M / 265k</td><td class="n">+0.00 [&minus;0.08, 0.08]</td><td class="n">&minus;2.3 [&minus;5.4, 0.0]</td><td class="n"><span class="tag miss">&minus;21.5 [&minus;39.2, &minus;6.2]</span></td></tr>
+</tbody></table></div>
+<p><span class="lbl">VERIFIED</span> On these tasks the pack is a net cost: 2.9&ndash;10.8&times; tokens, about 2&times; wall clock, no pass-rate gain, and consistently worse drift. The one positive signal is Claude Code correctness +4.1 in grid-4. The fixes so far removed <em>harm</em> (failed deliveries), not <em>cost</em>: pack-on tokens per cell rose from grid-3 to grid-4 on every harness. <span class="lbl">INFERRED</span> Part of that rise is run-to-run variance (point 2), which is itself the reason a power analysis comes first.</p>
+<div class="note">This verdict is about these tasks, not the pack's thesis. A task set where both arms pass cannot reward rigor; one with no security or resilience requirement cannot reward secure-by-default work. The data says the pack is expensive; it does not yet say whether it is worth it.</div>
+
+<h2 id="target">The target</h2>
+<p class="lede">A benchmark that answers, with a stated confidence: <strong>"Does pack version X deliver better Enterprise/Production outcomes per dollar than pack-off and than pack version Y, on each harness?"</strong> &mdash; where "outcome" includes correctness <em>and</em> security, resilience, rework avoided and simplicity, each checked mechanically, and the answer arrives in hours, not days.</p>
+
+<h2 id="approach">Proposed approach</h2>
+<div class="card"><h3>A. Tasks that can show value <span class="tag inc">largest gap</span></h3>
+<p>Build an Enterprise/Production task family (sketched in <a href="enterprise-production-portfolio.html">enterprise-production-portfolio.html</a>; none of it is built). Each task is unsaturated, multi-step, on an existing codebase, and carries a hidden mechanical check for the property the pack claims to improve:</p>
+<ul>
+<li><strong>Security by default</strong> &mdash; a feature request whose naive implementation is exploitable; hidden tests attack it (injection, authorization bypass, secret leakage).</li>
+<li><strong>Resilience</strong> &mdash; a change to code that calls an unreliable dependency; a fault-injection harness checks timeouts, retries, idempotency.</li>
+<li><strong>Rework cost</strong> &mdash; a two-turn task: the second turn's requirement punishes a short-sighted first design; measure the second turn's diff size and failures.</li>
+<li><strong>Spike Protocol / no guessing</strong> &mdash; an unfamiliar or deliberately unusual API whose plausible guess is wrong; hidden tests fail on the guessed contract.</li>
+<li><strong>Simplicity</strong> &mdash; a task with an obvious over-engineered path; measure added abstractions and lines against a reference, with correctness held fixed.</li>
+</ul>
+<p>Keep a few saturated calibration tasks; stop spending most of the budget on them.</p></div>
+<div class="card"><h3>B. Quality metrics that record</h3>
+<p>Prefer mechanical proxies (hidden attack tests, fault injection, diff-size and abstraction counts, assumption-marker detection). Where only judgment works, enable the judge rubric with a calibrated jury and report agreement; never leave a metric that the report shows but no pass records.</p></div>
+<div class="card"><h3>C. Enough power</h3>
+<p>Run a power analysis from grid-3/grid-4 variance before the next full grid. Expect fewer tasks with more repetitions, paired by task, and a pre-registered primary metric per question, so an effect has a stated minimum detectable size.</p></div>
+<div class="card"><h3>D. A faster, more stable loop</h3>
+<ul>
+<li><strong>Pilot ring:</strong> one repetition of every task before a full grid, graded immediately, so a grader defect costs an hour, not a grid.</li>
+<li><strong>Pack-regression ring:</strong> a small fixed subset (a few hours) for each pack change; the full grid runs only to answer a pre-registered question.</li>
+<li><strong>Parallel grading:</strong> grading is half of every grid's wall clock.</li>
+<li><strong>Engine freeze:</strong> no grader or engine change during a measurement campaign except a recorded defect fix.</li>
+</ul></div>
+<div class="card"><h3>E. Pack direction the data already supports</h3>
+<ul>
+<li><strong>Simplify aggressively:</strong> fixes 4&ndash;6 &mdash; shrink the always-loaded context (AGENTS.md block 26.5 KB; Copilot's always-applied set 241 KB) and make T0 mechanical. This is the largest measured cost lever left.</li>
+<li><strong>Mechanism over prose:</strong> every rule the data shows matters gets a hook or a test (fix 3b is the first: the start marker and git identity).</li>
+</ul></div>
+
+<h2 id="plan">Sequence</h2>
+<ol class="steps">
+<li><strong>Freeze the engine</strong> at the current main, except recorded defect fixes (scenario-7 pass@1; the pack section counting a missing pass@1 as a fail).</li>
+<li><strong>Specify</strong> the Enterprise/Production task family and its metrics (this proposal's next step: <code>/specify</code>).</li>
+<li><strong>Power analysis</strong> from grid-3/grid-4 &rarr; repetitions and task count for the target effect sizes.</li>
+<li><strong>Build 4&ndash;6 tasks</strong> (one per property above) and the <strong>pilot ring</strong>; prove each task's oracle through the engine (reference solution passes, a seeded naive solution fails).</li>
+<li><strong>Build a slimmed pack</strong> (fixes 4&ndash;6 and 3b) as pack version Y.</li>
+<li><strong>One well-powered grid:</strong> pack-off vs current pack vs slimmed pack, three harnesses, the new tasks plus a small calibration set.</li>
+</ol>
+
+<h2 id="success">How we know it worked</h2>
+<ul>
+<li>The next grid's report gives each pack property a <em>verdict</em> (hit / miss) with an interval, not "inconclusive" &mdash; for at least security, resilience and rework.</li>
+<li>No full grid loses data to a grader or engine defect (the pilot ring caught it first).</li>
+<li>A pack change can be evaluated in under a working day on the regression ring.</li>
+<li>The pack-on cost ratio is reported next to the value it bought, per harness, and the slimmed pack is no worse on value at materially lower cost &mdash; or the data says plainly that it is.</li>
+</ul>
+
+<h2 id="decisions">Decisions needed</h2>
+<div class="wrap"><table>
+<thead><tr><th>#</th><th>Decision</th><th>Recommended default</th></tr></thead>
+<tbody>
+<tr><td>DR-T1</td><td>Which properties the first task family covers</td><td>Security, resilience, rework, no-guessing (Spike), simplicity &mdash; one task each</td></tr>
+<tr><td>DR-T2</td><td>Mechanical proxies vs judge rubric</td><td>Mechanical first; judge only where no proxy exists, with a calibrated jury</td></tr>
+<tr><td>DR-T3</td><td>Engine freeze scope</td><td>Freeze at current main; defect fixes only, each recorded</td></tr>
+<tr><td>DR-T4</td><td>Comparison arms for the next grid</td><td>pack-off, current pack (ccc5160 + 3b), slimmed pack</td></tr>
+<tr><td>DR-T5</td><td>Saturated calibration tasks</td><td>Keep at most 4, one repetition each</td></tr>
+</tbody></table></div>
+
+<h2 id="notdo">What we stop doing</h2>
+<ul>
+<li>Running full grids on the current task set to measure pack changes: it will keep showing "the pack costs more and gains nothing measurable" until the tasks can reward rigor.</li>
+<li>Discovering grader defects in full grids.</li>
+<li>Writing rules as prose where the data shows they matter.</li>
+</ul>
+</main>
+</body>
+</html>

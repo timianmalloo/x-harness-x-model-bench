@@ -300,7 +300,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f2f8c54f5fbb39a221b38e3ef81a244d9eaae0d6a96c724febb5e07889a93080"
+      "sourceSha256": "3d3ab6acf8702154d173901bfded9f58c598b32267ee5aa54afb2571599441b1"
     },
     {
       "id": "adr-0004-static-permissions",
@@ -635,7 +635,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8387ae6205532c71d610c371dfa493322031185950aa6fd2dbaeddba8b40763f"
+      "sourceSha256": "b31c1d7f7612b9a6705bcf2c46209eeeb2eeeaad4cb481521f9db9fd828d8e9b"
     },
     {
       "id": "arch-harness-bench",
@@ -1314,7 +1314,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4bd0643b49ef8013d28dca7680622dda01f765adb6d382027b65ae830952da5b"
+      "sourceSha256": "9a74dc7c4ac879a5b9ebbf7ecd57d10e119d6893f94c0a64714e09952344281e"
     },
     {
       "id": "design-formal-grader",
@@ -1366,7 +1366,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3a3352452011bf8332e3d25d5f2aa0e72c35225961e1cbbd1241848425163c84"
+      "sourceSha256": "6605e19930b34af24cf0103741e017c94c724762f966b3427cc48fef38fc3bb1"
     },
     {
       "id": "design-pack-improvement-section",
@@ -1406,7 +1406,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "1f343bb4b344d27dbcb09d60fcc59eead585ce7a8f4ec91aeac0f8b872f73123"
+      "sourceSha256": "0dc3681fd1745437a69f34261b6837f1d9a3da86aa38a638855b31426cd0ab8f"
     },
     {
       "id": "design-phase1-walking-skeleton",
@@ -1478,7 +1478,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "78ab25577cbd309b85a4b28378ba4ee6886a2a248a3a6b16b696366e5d62d097"
+      "sourceSha256": "d2e34ee86f4728a38dbda8f5396442d0f7b116ba1cf388801f0f71cd1b233250"
     },
     {
       "id": "design-phase2-copilot-profile",
@@ -1551,7 +1551,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b15244d34330ebd4917bbc7599bd30944f2de10767b6a719ec18a0e19c25ee7f"
+      "sourceSha256": "fc2a19dde03292985b30ed6585cf11ac714b4396dd7c3a0ec4be80899ad4b7ec"
     },
     {
       "id": "design-phase2-scripted-user",
@@ -1885,7 +1885,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "fa7a0f6fd7e21269edee76a1b41bd420fea03f84e13adde5f44a7ddb3e752a3b"
+      "sourceSha256": "eab83dcb87ac2a7bc4b9e3dbb39cb5bde89a957c3486d66b09282a10e1a35bee"
     },
     {
       "id": "design-phase4-report",
@@ -2164,7 +2164,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4a80aa387443b88912862b866b1ebb8aa8e947e1e533d7af447c315a9cc29bb4"
+      "sourceSha256": "269cbcb311dd7644fb7bfe4d2219b565506bbcca0e80253b49c79879927158e8"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -2519,6 +2519,41 @@ window.DOCS_INDEX = {
       "sourceSha256": "22f534f0e61cb15908757ffc2902841f4db2567d376f8d0c5ddeef32c7f0dac2"
     },
     {
+      "id": "proposal-benchmark-state-and-target",
+      "path": "docs/proposals/benchmark-state-and-target.md",
+      "title": "Benchmark: state and target",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-12-31",
+      "reviewSuggested": [],
+      "summary": "After grids 1-4 the tool works (276-cell grids, verify ok, CI green) and its pack-improvement loop found and verified real fixes (pack-attributed failures 4 -> 0, ceremony waste -79%), but it cannot answer the question it was built for: the tasks are mostly saturated, the judge metrics never record, and no task tests security, resilience, rework or the Spike Protocol. On these tasks the pack costs 2.9-10.8x tokens with no pass gain and worse drift. Approach: an Enterprise/Production task family with mechanical checks, metrics that record, a power analysis, a pilot ring and an engine freeze, and one well-powered grid comparing pack-off, the current pack and a slimmed pack. The page is benchmark-state-and-target.html.",
+      "tags": [
+        "benchmark",
+        "proposal",
+        "pack-effect",
+        "enterprise",
+        "assessment"
+      ],
+      "links": [
+        {
+          "to": "proposal-pack-onoff-analysis",
+          "rel": "relates-to"
+        },
+        {
+          "to": "proposal-enterprise-production-portfolio",
+          "rel": "relates-to"
+        },
+        {
+          "to": "proposal-cross-harness-benchmarking",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "6e3c3b3fdd84cbe7cfd839cc575780f6c9bd39fe6432428b44d7632cf4d1c422"
+    },
+    {
       "id": "proposal-cross-harness-benchmarking",
       "path": "docs/proposals/cross-harness-benchmarking-proposal.md",
       "title": "Cross-Harness Benchmarking Proposal (ai-forward)",
@@ -2605,7 +2640,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "bc99152fe91b41a296a2cc51aecdf8e0a7dc47d96efaa34858b6a262a63d987f"
+      "sourceSha256": "32f235bdd9ef5a50f339b185b9f5b27a48dbb164b03913b0a07c5bf58f1e5fd8"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -3298,6 +3333,14 @@ window.DOCS_INDEX = {
       "description": "Inspect a rendered design or design-language preview."
     },
     {
+      "id": "surface-proposals-benchmark-state-and-target",
+      "path": "docs/proposals/benchmark-state-and-target.html",
+      "title": "Benchmark: state and target",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "proposal-benchmark-state-and-target"
+    },
+    {
       "id": "surface-coordination-coordination-phase1-finish",
       "path": "docs/coordination/coordination-phase1-finish.html",
       "title": "Coordination plan - finish harness-bench phase 1 (pre-merge findings, N5, mutation bar, E2E)",
@@ -3352,5 +3395,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "ae05f8a2f60a9b52a9fc5499e7a96f217f9411e034e2b2e283838abec49e5522"
+  "graphSha256": "349ebd75922f5b07ca68e90d544fb3890de97a29fba78dcb8b7b7f25f0cf628e"
 };
