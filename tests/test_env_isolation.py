@@ -94,3 +94,13 @@ def test_a_credentials_marked_test_still_sees_the_planted_variable():
     seen = os.environ.get(profiles.OAUTH_TOKEN_ENV)
     Path(witness).write_text(seen or "", encoding="utf-8")
     assert seen == PLANTED
+
+
+def test_the_credential_list_resolves_when_another_conftest_shadows_the_tests_one(monkeypatch):
+    """Full-suite order: tests/fixtures/grade/formal/conftest.py is imported as `conftest`, and the
+    by-path scan of sys.modules found no tests/conftest.py (ENV-C: the isolation test failed only in the full run)."""
+    for key, module in list(sys.modules.items()):
+        file = getattr(module, "__file__", None)
+        if file and Path(file).resolve() == _TESTS_CONFTEST:
+            monkeypatch.delitem(sys.modules, key)
+    assert profiles.OAUTH_TOKEN_ENV in listed_credential_names()
