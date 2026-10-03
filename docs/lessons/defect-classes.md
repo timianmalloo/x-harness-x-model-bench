@@ -652,6 +652,15 @@ summary: >-
 - **Control:** `tests/test_grade_formal.py::test_g2_formal_checks_clean_lake_build_output_is_not_a_binary_artifact` (a `Proofs/` tree with real `.lake/build/**` output and `lake-manifest.json`, otherwise clean, scores `1`; observed red before the fix, exactly the grid-3 shape) and `::test_g2_formal_checks_clean_a_stray_binary_outside_lake_still_fails` (parametrized `x.olean`/`foo.so`: a binary anywhere else, even beside a genuine `.lake/` tree, still scores `0` — proving the exemption is narrow, not "anything near `.lake` passes"). The general rule (CI2 derive): whenever a task's own instructions mandate running a tool in a scanned directory, name that tool's build-output in one shared constant the scan excludes and the disposable-copy step strips, and add a positive fixture that runs (or fakes) the mandated tool before asserting the scan passes — a scan fixtured only with hand-placed violations never proves it tolerates compliance.
 - **Status:** `controlled`
 
+### ENV-A: a hermetic test reads an ambient credential from the operator's shell (candidate)
+- **Signature:** a test that asserts a credential is copied, present or absent reads the real variable from the process environment instead of setting or clearing it. It passes in a clean shell and fails in any shell that carries the credential, so the suite's result depends on who runs it.
+- **Why it survives:** CI and most worker shells have no `HB_CLAUDE_OAUTH_TOKEN`, so the suite is green there. The operator's and the Leader's shells carry it, and a red there reads as flake.
+- **Instances:**
+  - `2026-10-03` (Q0 join, found by the Leader; reproduced by `coord-opus-e1e4` on main `5092455c`): with `HB_CLAUDE_OAUTH_TOKEN` set to a dummy value, 3 tests fail: `tests/test_gateway_headless.py::test_t_gw_10_the_credential_is_present_during_the_call_and_gone_after_it`, `::test_t_gw_10_the_credential_is_gone_after_a_timeout_and_after_an_exception_past_the_copy`, and `tests/test_profiles.py::test_the_launcher_reports_no_model_setter_and_a_copied_login[claude-code]`. With it unset, all 5 selected tests pass. Pre-existing on main.
+- **Sweep:** owed (the fix slice): every test that names a credential variable (`grep -rn "OAUTH_TOKEN\|_API_KEY\|GH_TOKEN" tests/`) either sets it with `monkeypatch.setenv` or clears it with `monkeypatch.delenv(..., raising=False)`.
+- **Control (proposed):** an autouse fixture in `tests/conftest.py` that removes every name on the credential list for every test not marked `credentials`, plus a test that sets the variable and asserts these three still pass. Route: a small Grok slice once Grok is qualified (DR-5), else a Sonnet slice.
+- **Status:** `candidate`
+
 ---
 
 ## Inherited classes (seeded from the pack)
