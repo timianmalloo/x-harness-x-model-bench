@@ -4001,6 +4001,37 @@ window.DOCS_INDEX = {
       "sourceSha256": "72070286c2458a4a228c43e457b4258dfcd4c72b5150d27482371f62e1d0d075"
     },
     {
+      "id": "review-eval-sec-w1c",
+      "path": "docs/design/reviews/eval-review-sec-w1c.md",
+      "title": "Security & Identity review of W1-C: campaign record and bench campaign (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Security & Identity gate on W1-C (design/eval-campaign-record, ae21488b + 61338062) against W0 rev 3 and R-87..R-96. Tamper tests, lock-as-regular-file and the three ignore lines are mostly sound. Open: unvalidated campaign id writes outside the folder, symlinked ledger or folders, a status-code-keyed git witness blind to ignored paths, and attach freezing on a chain-derived stamp while binding no plan content.",
+      "tags": [
+        "review",
+        "security",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-c"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sec",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "d1a714dc884b86bd6e755c114bd5da0f0853111b241ab5d688a8b48812a0b731"
+    },
+    {
       "id": "review-eval-sec-w1f",
       "path": "docs/design/reviews/eval-review-sec-w1f.md",
       "title": "Security & Identity review of W1-F: hidden-check runner and property grader (Adversary Mode)",
@@ -6016,5 +6047,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "60f80812129b1c05238feeaaf78bea43484a248b90d79fc4d07ec42405477db8"
+  "graphSha256": "c2302cffe84d68c1cec59bbc69f34d04b38a36b61682311e7abc88ed4f182035"
 };
