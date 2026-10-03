@@ -8,7 +8,7 @@ tags: [spike, windows, handle-list, adr-0018, security, b7]
 links:
   - { to: adr-0018-hidden-check-harness, rel: relates-to }
   - { to: adr-0013-native-cells, rel: relates-to }
-  - { to: design-e1-evaluation-walking-skeleton, rel: relates-to }
+  - { to: arch-evaluation-campaign, rel: relates-to }
 review-by: "2027-04-03"
 summary: >-
   CPython 3.14.6's subprocess already passes PROC_THREAD_ATTRIBUTE_HANDLE_LIST holding only the three stdio handles

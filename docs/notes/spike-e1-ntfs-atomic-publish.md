@@ -8,7 +8,7 @@ tags: [spike, ntfs, crash-atomic, create-once, archive, adr-0015, adr-0016]
 links:
   - { to: adr-0016-campaign-record, rel: relates-to }
   - { to: adr-0015-multi-turn-attempt-and-turn-snapshots, rel: relates-to }
-  - { to: design-e1-evaluation-walking-skeleton, rel: relates-to }
+  - { to: arch-evaluation-campaign, rel: relates-to }
 review-by: "2027-04-03"
 summary: >-
   On this host (Windows 11 Pro 10.0.26200, NTFS C:, CPython 3.14.6): os.link onto an existing name raises

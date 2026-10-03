@@ -1406,12 +1406,12 @@ window.DOCS_INDEX = {
           "rel": "relates-to"
         },
         {
-          "to": "design-e1-evaluation-walking-skeleton",
+          "to": "arch-evaluation-campaign",
           "rel": "relates-to"
         }
       ],
       "diagrams": [],
-      "sourceSha256": "abac9d0d54a3164987431cfd05e6f783c6cf09d2af87990c42dd7eef04737893"
+      "sourceSha256": "22117af55e9dcfb486e19db51c74bdf68050295aaa3da6c5cec61e70d37785e8"
     },
     {
       "id": "note-20261003-spike-e1-job-alone",
@@ -1446,12 +1446,12 @@ window.DOCS_INDEX = {
           "rel": "relates-to"
         },
         {
-          "to": "design-e1-evaluation-walking-skeleton",
+          "to": "arch-evaluation-campaign",
           "rel": "relates-to"
         }
       ],
       "diagrams": [],
-      "sourceSha256": "af24028cc71e2a98eaf6c48cd324e089d02729338824e31dab31f63fa6c41d40"
+      "sourceSha256": "4727728811450075ffa2c0c6dac359e8f77c08962e48821b98fd23f561d4990f"
     },
     {
       "id": "note-20261003-spike-e1-ntfs-atomic-publish",
@@ -1483,12 +1483,12 @@ window.DOCS_INDEX = {
           "rel": "relates-to"
         },
         {
-          "to": "design-e1-evaluation-walking-skeleton",
+          "to": "arch-evaluation-campaign",
           "rel": "relates-to"
         }
       ],
       "diagrams": [],
-      "sourceSha256": "0e6292d7e11ad4f1d3f4316a8f9bb12fd87ad7cebd9228d7c5bad902308753d9"
+      "sourceSha256": "b4a34721f11e7ea17b663b3c283ab3d213b285ba7f222b94ae6cba5475d23785"
     },
     {
       "id": "note-20261003-spike-e4-post-turn-prompt",
@@ -4105,5 +4105,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "03f8bcb4f4082a3350a93ab0f7633f0e7624cf288a3a7a47749e9e103c224b97"
+  "graphSha256": "76ab8efe7ba9662ef8c22b80f37ea8304d5616d23c9961d12114eba9553d77f9"
 };

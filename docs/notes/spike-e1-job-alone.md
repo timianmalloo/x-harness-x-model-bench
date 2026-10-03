@@ -9,7 +9,7 @@ links:
   - { to: adr-0018-hidden-check-harness, rel: relates-to }
   - { to: note-spike-isolation-permissions, rel: refines }
   - { to: note-spike-phase1-probes, rel: relates-to }
-  - { to: design-e1-evaluation-walking-skeleton, rel: relates-to }
+  - { to: arch-evaluation-campaign, rel: relates-to }
 review-by: "2027-04-03"
 summary: >-
   procs.Job.pids() (JobObjectBasicProcessIdList) and the same query with a NULL handle from inside the check both
