@@ -1854,7 +1854,91 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9a74dc7c4ac879a5b9ebbf7ecd57d10e119d6893f94c0a64714e09952344281e"
+      "sourceSha256": "4e907d89627f0bb44616109ae745c5793edf8e2ba1d3132afa0a36f2d18c73db"
+    },
+    {
+      "id": "design-eval-seam-contracts",
+      "path": "docs/design/eval-seam-contracts.md",
+      "title": "W0 seam contracts: the interfaces every Evaluation Campaign slice designs and builds against",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: W0 (serial spine item 2), before Wave 1",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input and result, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows, the identity manifest, the discrimination record, the catalog 0.7 metric ids, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard.",
+      "tags": [
+        "benchmark",
+        "campaign",
+        "seam-contracts",
+        "coordination",
+        "w0",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "coordination-eval-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0014-arm-and-cell-grain",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0015-multi-turn-attempt-and-turn-snapshots",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0016-campaign-record",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0017-engine-identity-and-freeze",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0018-hidden-check-harness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0019-catalog-0-7-property-metrics",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0020-power-and-verdicts-stdlib",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0021-plan-level-resume-and-liveness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-20261003-spike-e1-ntfs-atomic-publish",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-20261003-spike-e1-job-alone",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-20261003-spike-e1-handle-list",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "99c2e6c6193641085c71e6e419d52b532c2b7715b10a7e683339edb970df0b33"
     },
     {
       "id": "design-formal-grader",
@@ -4148,5 +4232,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "fceceede3987a44d5eaf47fef356031888edaca3f67b0d710bf21cf40fb9e9ca"
+  "graphSha256": "85bf62e38be828d35ec793f78ea71f4ead19458468cf364b1dab4043d1c47e45"
 };

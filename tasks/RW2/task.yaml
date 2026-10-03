@@ -1,0 +1,17 @@
+schema: bench-task/1
+id: RW2
+scenario: 5                 # W0 decision: property tasks are scenario 5 (docs/design/eval-seam-contracts.md section 1)
+title: "Rework task 2 on a second codebase (W1-L)"
+status: stub
+language: tbd
+source:
+  kind: authored
+  upstream: "harness-bench property task"
+  repo: tbd
+  commit: tbd
+budget:
+  minutes: 60               # provisional (W0); the task's design fixes it (1-60)
+  usd_cap: null
+property:
+  name: rework           # W0 section 2; the task's design fills the other property fields
+graders: []                 # DR-4 (a), provisional: [correctness, property] once grade/property.py exists
