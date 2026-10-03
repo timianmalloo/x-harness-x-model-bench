@@ -4126,6 +4126,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "be00c56fc382061170f39bd21fcc7eeafc8c064fbb4100188b64e39c0dead710"
     },
     {
+      "id": "review-eval-sim-w1c",
+      "path": "docs/design/reviews/eval-review-sim-w1c.md",
+      "title": "Simplifier lens review of W1-C, campaign record and bench campaign",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-campaign-record.md (design/eval-campaign-record, ae21488b, 61338062) against W0 rev 3 and R-87..R-96. OI-4 answered: ring_run.attached.tag is constant and can go in the SR-C2 request. status and verify are specified both as read-only and as full lock-probe-sweep sessions.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "9b10d9156950d3ad3726972d605bcb28670275889eb8ad1478f6f98f3c080448"
+    },
+    {
       "id": "review-eval-sim-w1d",
       "path": "docs/design/reviews/eval-review-sim-w1d.md",
       "title": "Simplifier lens review of W1-D, engine identity",
@@ -4187,6 +4208,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "884d2fa0b86d7e0e0bb2a50e1f1d05093778cf7750b02c3d12b49360f297f621"
+    },
+    {
+      "id": "review-eval-sim-w1h",
+      "path": "docs/design/reviews/eval-review-sim-w1h.md",
+      "title": "Simplifier lens review of W1-H, power, verdicts, gates and report section 3",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-power-verdicts.md (design/eval-power-verdicts, 2a9faa3c, b5509d66) against W0 rev 3 and R-87..R-96. The core is the smallest correct shape. About a third of the label, statement and sweep rows duplicate another row's mutant; one seam with W1-C (pilot arity, admission) is open.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "f51e5bd95ac3a1c9151effb97dd8438a9be7ccecf0caaa66582e358155680613"
     },
     {
       "id": "review-eval-sim-w1i",
@@ -4260,7 +4302,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "0b00511fbc81f9dfcea0fbc2fdc36dbbc7e4c8b273f2c38248dcaa6d328fbcde"
+      "sourceSha256": "f4ca3375121735995f75cbc84a8c5e96cd9e65a03f39bc9607ef2bb3f08c999d"
     },
     {
       "id": "review-eval-ta-w1a",
@@ -4395,7 +4437,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "87ef42f05959e3fc15a32c08c3961ded84c6c97f6551d661d51d538592619e09"
+      "sourceSha256": "33124234b26a7c0ad855539c8e39f6b86c2cb274c77313f47cefa734009c60eb"
     },
     {
       "id": "review-eval-ta-w1g",
@@ -6016,5 +6058,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "60f80812129b1c05238feeaaf78bea43484a248b90d79fc4d07ec42405477db8"
+  "graphSha256": "2e097a014c678e1a772aea5fdf78d3e196e354526645fc5bcb8f0411d70bce78"
 };

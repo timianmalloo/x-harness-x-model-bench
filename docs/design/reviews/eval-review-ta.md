@@ -63,3 +63,16 @@ Residual (minor, not blocking):
 - Row 3 (hash mismatch) is checked before the ack-framing rows, so its test must include a tamper that also exits cleanly; the "one per adjacent pair" rule covers it.
 
 GATE w0-seam-contracts · Test Architect · PASS WITH CONDITIONS · 2 findings (rv-ta-e1e4, 2026-10-03)
+
+## W0 rev 3 section 3 delta (wsgi kind, frames, app keys, app output, start bound), 2026-10-03
+
+Scope: the rev-3 changes in `docs/design/eval-seam-contracts.md` s3 on main, against the rev-3 change table (rows `req-01M41DPBSM9`, `req-01M41DT67`, ruling C-1) and W1-F rev 3 (`f125430a`, s14). Confidence: Verified (I opened both).
+
+| # | location | finding | severity | evidence | fix | confidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | W0 s3 `paths` bullet; HB-RDY-005 | The rule "readiness refuses an absolute path or one that leaves the root" has two enforcers: X-E's readiness and the grader's own re-check (W1-F: `ValueError` before any copy). W0 names no test or owner for the readiness side. W1-F tests only its own. A readiness that skips the rule would pass every W1-F test. | minor | W0 s3 "`paths`." bullet; W1-F s14 `test_cases_paths_outside_root_are_refused` | W0 adds one line: X-E carries a readiness test for HB-RDY-005 on `paths` (the four bad forms plus a good one). I did not open W1-E's design for it. | Inferred |
+| 2 | W0 s3 "Frames" | "W1-F may add fields; it may not rename these" has no pin. W1-F adds `error` on a failed call (allowed) but names no golden of the request and response key sets. | minor | W0 s3 Frames; W1-F s5.5 and s14 | Name a golden of both frame key sets in W0 (owner X-F), or accept W1-F finding 5's fix. | Verified |
+
+Sound (Verified): the wsgi kind has a real-wiring test and a kind-set test (`unknown_app_kind`); the environ list is countable (18 fixed keys: 11 CGI, 7 `wsgi.*`) and W1-F's test writes the same set; the start bound has a rule with a non-default fixture (bound 1,000 ms against case 200 ms) and row 6; app-output routing has a test that the protocol carries only the response. The one W0-level rule that no slice test pins (a grandchild's output is not captured) belongs to W1-F's RF-11, finding 1 in `eval-review-ta-w1f.md`. W1-F nests `{state_dir}` substitution at any depth; W0 says "string values". That is a superset, not a conflict.
+
+GATE w0-seam-contracts-s3-rev3 · Test Architect · PASS WITH CONDITIONS · 2 findings (rv-ta-f3-e1e4, 2026-10-03)
