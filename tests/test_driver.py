@@ -737,11 +737,13 @@ def _assert_paired(emitted: set[str]) -> None:
 
 
 @pytestmark_native
-def test_every_message_type_the_fake_emits_is_paired_and_every_pairing_is_emitted(tmp_path):  # D7
+@pytest.mark.parametrize("slow_start", [0, 3.5])  # 3.5: every agent starts slowly, as under full-suite load (TIME-B)
+def test_every_message_type_the_fake_emits_is_paired_and_every_pairing_is_emitted(tmp_path, slow_start):  # D7
     from concurrent.futures import ThreadPoolExecutor
     modes = _fake_modes()
     assert {"ok", "permission", "eof_mid_turn"} <= set(modes)
-    env = {m: dict(os.environ, FAKE_ACP=json.dumps({"mode": m, "usage": [{"model": "m", "token_count": {}}]})) for m in modes}
+    env = {m: dict(os.environ, FAKE_ACP=json.dumps({"mode": m, "usage": [{"model": "m", "token_count": {}}],
+                                                    "handshake_delay": slow_start})) for m in modes}
     for m in modes:
         (tmp_path / m).mkdir()
     with ThreadPoolExecutor(max_workers=len(modes)) as pool:
