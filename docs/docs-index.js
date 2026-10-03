@@ -1939,7 +1939,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4bf1fe95dffaac7f64f692a9be2df8b5cd0c53d26ccfcbae88fc15627b478cbe"
+      "sourceSha256": "c411280ccee54cda16a67100d4762e01b82c39a48dc8fef59769925442798be5"
     },
     {
       "id": "design-eval-arms",
@@ -2278,6 +2278,64 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "9421f6075f4a08aa6812800c417a4f2647aa74f4d86903b2100cc6e8dfdf362e"
+    },
+    {
+      "id": "design-eval-multi-turn",
+      "path": "docs/design/eval-multi-turn.md",
+      "title": "Design: multi-turn attempt, turn snapshots and the TLA+ model (W1-J, ADR-0015)",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 (E2 build track X-J1)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "How a cell holds a second user turn on one ACP session: the driver splits into open, send-turn and close; the engine snapshots the working copy between turns into archive/<cell>/turn-<n>/ through the crash-atomic publish of W0 section 4 before turn n+1's prompt_sent is durable; archive_files gains a snapshot key part that old rows read as final, so every existing verify result is unchanged; the budget clock starts once, at turn 1. The lifecycle model gains a turn index, a snapshot protocol and phased archive writes. TLC passes it and rejects every seeded variant of the five ADR-0015 section 7 invariants.",
+      "tags": [
+        "evaluation-campaign",
+        "multi-turn",
+        "snapshot",
+        "run-engine",
+        "archive",
+        "lifecycle",
+        "tla",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0015-multi-turn-attempt-and-turn-snapshots",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0007-run-engine",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0013-native-cells",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-run-lifecycle-model",
+          "rel": "refines"
+        },
+        {
+          "to": "note-20261003-spike-e4-post-turn-prompt",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "e32527dad56e2c97cd4340c492f0d1c2e679b74853f5d208139ef40ccb8ae847"
     },
     {
       "id": "design-eval-power-verdicts",
@@ -3488,7 +3546,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "52d7d305c96d90c65de701503a8ccf26a2a0e0ad3c180e917fbc0c1413676b77"
+      "sourceSha256": "c2ee1c2cb82c0eb2c1986915d883410898b43527715dae9d0a2e61d8c6a36977"
     },
     {
       "id": "audit-log",
@@ -7737,6 +7795,14 @@ window.DOCS_INDEX = {
       "artifactId": "design-eval-discriminate"
     },
     {
+      "id": "surface-design-eval-multi-turn",
+      "path": "docs/design/eval-multi-turn.html",
+      "title": "Eval Multi Turn",
+      "kind": "design-preview",
+      "description": "Inspect a rendered design or design-language preview.",
+      "artifactId": "design-eval-multi-turn"
+    },
+    {
       "id": "surface-design-eval-property-grader",
       "path": "docs/design/eval-property-grader.html",
       "title": "Eval Property Grader",
@@ -7838,5 +7904,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "f2f0e10805e1d01c85785ee9a1c273faaa95387c8fbdd405facfa0a011a00587"
+  "graphSha256": "7f80802f05438b5b7a0bc7f5ce55cbf887596f529dd3a3af07f073a177cb6172"
 };
