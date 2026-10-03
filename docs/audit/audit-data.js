@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:55:06Z",
+  "generated": "2026-10-03T19:21:20Z",
   "audit": [
     {
       "actor": null,
@@ -66720,6 +66720,36 @@ window.AUDIT_DATA = {
         "sha": "a49c56dae86f7fcd1605f68f25f3a9e0d8740e42",
         "short": "a49c56dae",
         "branch": "owner/ruling-r97",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M41KDDX1Y6C2Q2BEGDGTMP8H",
+      "shortname": "ruling R-98 (DR-E1, discrimination record body drops run_id/grading_id; link file local; ADR-0016 Amendment 1 by the Coordinator)",
+      "datetime": "2026-10-03T19:21:20Z",
+      "session": "owner-fable",
+      "prompt": "Leader to Owner: rule coord request req-01M41J1E3PDYAG1WTAGH004MZ8 (DR-E1, from Coordinator #5) as the next number. Should the discrimination record's body drop run_id and grading_id? ADR-0016 s4 puts them in the body; RV-DS (W0 F2) and W1-E want the body idempotent so a retry writes equal bytes and does not hit HB-LED-007; W1-E reconciles via a local runs/<run>/discrimination-link.json. Option (a) stands meanwhile. If you rule to drop the ids, say who writes the ADR-0016 amendment note. Own worktree owner/ruling-r98.",
+      "summary": "R-98 DR-E1: (A) granted, (B) refused. The body drops run_id and grading_id: ADR-0016 s2a's one bytes-equal meaning of already-done cannot hold with a per-production id in the body (RV-DS W0 F2), and option (b)'s subset compare is a second definition of one predicate (DM7). The ids served only read-time reconciliation, which needs a local run anyway; the link moves to runs/<run>/discrimination-link.json (W1-E 4.3). Verified: no record exists (bench/discrimination absent on main), create_once not yet in src, no reader of the body. Grain restated: one file is one discrimination result of one key; a later trial confirms (equal bytes) or is HB-RDY-010. Conditions: link written only after created-or-equal, never after HB-RDY-010 (red test beside T-E6); HB-RDY-010 names the metric before HB-LED-007; reconciliation never degrades to a pass (newest link by its stamp; no link/run/pass prints reconciled: no); no option-(a) branch survives in X-E; bench campaign verify unaffected. ADR-0016 Amendment 1 (decision text unchanged) and the W0 s6 rewrite: the Coordinator with W0 rev 6, before X-E's first record commit.",
+      "kind": "manual",
+      "skill": null,
+      "tool": null,
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "outcome": "success",
+      "goal": "Rule DR-E1 (req-01M41J1E3PDYAG1WTAGH004MZ8): whether the discrimination record body holds run_id and grading_id; name the ADR-0016 amendment author",
+      "done_when": "Ruling 98 in docs/notes/rulings.md via coord decide rule from the owner/ruling-r98 worktree, the request resolved, an audit entry appended, committed",
+      "tier": "T0",
+      "fan_out": 0,
+      "git": {
+        "sha": "9879623f037613116d65ce25da0000e6f60ac10a",
+        "short": "9879623f0",
+        "branch": "owner/ruling-r98",
         "pushed": null
       }
     }
