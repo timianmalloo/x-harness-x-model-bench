@@ -144,6 +144,21 @@ def test_a_stub_map_is_a_placeholder_and_the_plan_still_refuses_it(tmp_path):  #
     assert [i for i in config.validate_repo(root) if i.startswith("tasks/F2")] == []
 
 
+def test_a_stub_map_that_would_fail_validation_is_not_checked_until_draft(tmp_path):  # kills the check-every-status mutant
+    root = tmp_path / "root"
+    shutil.copytree(ROOT / "bench", root / "bench")
+    shutil.copytree(ROOT / "src", root / "src", ignore=shutil.ignore_patterns("__pycache__"))
+    shutil.copytree(ROOT / "tasks", root / "tasks", ignore=shutil.ignore_patterns("workspace", "tests", "oracle"))
+    task = root / "tasks" / "F2" / "task.yaml"
+    data = config.load_yaml(task)
+    data.update(status="stub", model_map=F1_DRAFT)  # bare keys: invalid once checked, and not all `tbd`
+    task.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+    assert [i for i in config.validate_repo(root) if i.startswith("tasks/F2")] == []
+    data["status"] = "draft"
+    task.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+    assert [i for i in config.validate_repo(root) if i.startswith("tasks/F2") and "model_map" in i]
+
+
 # --- item 5: bench plan refuses a map that cannot distinguish routing from no routing -------------------------------
 
 
