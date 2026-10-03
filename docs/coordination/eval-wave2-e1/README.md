@@ -47,7 +47,7 @@ You were given a brief in this folder. Read this file, then your brief, then the
 ```
 uv run ruff check src tests tools
 env -u HB_CLAUDE_OAUTH_TOKEN uv run pytest -q          # the full non-credential suite; PowerShell: Remove-Item Env:HB_CLAUDE_OAUTH_TOKEN -ErrorAction SilentlyContinue; uv run pytest -q
-python tools/mutate_check.py --touched main            # every mutant killed, or a recorded reason per survivor
+uv run python tools/mutate_check.py --touched main     # every mutant killed, or a recorded reason per survivor
 python docs/ai-forward-pack/scripts/docs-graph.py validate
 ```
 A track that touches `grade/`: the gate ring and stamp renewal, once per batch (the Leader). **Grok joins (R-92 condition 1):** `python tools/grok_served_model.py <the dispatch's session dir>` exits 0, and its output goes in the plan's Tracks row; a non-zero exit pauses Grok dispatch and the Coordinator raises a request. **Codex and Agy joins:** the served model is read from the native record (Codex `~/.codex/sessions/…/rollout-*.jsonl` `model`; Agy `cli.log` model resolution), as Q0 did. The Coordinator re-runs at least one red SHA per track at the join.
