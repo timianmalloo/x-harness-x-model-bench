@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:47:34Z",
+  "generated": "2026-10-03T17:59:35Z",
   "audit": [
     {
       "actor": null,
@@ -65740,37 +65740,144 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41E1QZ8SHA7RXF6GK9CZAHZ",
-      "shortname": "ruling R-94 (DR-8, telemetry/* run side; gateway component)",
-      "datetime": "2026-10-03T17:47:34Z",
-      "session": "owner-fable",
-      "prompt": "Owner seat: rule req-01M41DJ56WN77QNKFCW34GMG3A from W1-D (eval-identity, 71a15a0b): ADR-0017 s1 lists telemetry/* as grade but engine.py and driver.py use it on the cell path; recommendation A (telemetry/* to run; add bench/gateway.yaml as grade-class component gateway); author's correction: 6 import edges in 3 modules, not 5 allowlist entries. Verify in code, rule as R-94, say whether an ADR amendment note is needed and who writes it.",
-      "summary": "R-94 DR-8: (A) granted, (B) and (C) refused. Verified: engine._read_records (engine.py:661,854) runs the harness reader (profiles.py:261-262, READERS) at every cell end and feeds _classify (cause) and _spend (SPEND, the spend-cap stop); driver.py:237,246,290 classify through normalize; so all five telemetry files alter what a cell records: run side. Edge count verified at 6 (driver->telemetry/__init__, driver->normalize, engine->normalize, profiles->claude_code, codex, copilot). bench/gateway.yaml read only by grade/judge, report/judges, gateway/calibration and validate-time config: grade component gateway, empty when absent. (B) would make the eligibility rule report a false match. ADR amendment note needed: W1-D writes Amendment 1 on design/eval-identity in ADR-0006's form, lands with its gate merge; W0 s9 note via the Coordinator's seam answer. Conditions: red-first tests pinning both classes; allowlist stays at the 3 config.py pairs; gateway absent->present is a grade-side fix by design; cost measured through defect_fix.admitted run-scope telemetry-only rows.",
-      "kind": "manual",
-      "skill": null,
-      "tool": null,
       "actor": "Owner seat (Fable, claude-fable-5-1)",
       "artifacts": [
         "docs/notes/rulings.md"
       ],
+      "datetime": "2026-10-03T17:47:34Z",
+      "done_when": "Ruling 94 in docs/notes/rulings.md via coord decide rule, the request resolved, an audit entry appended, committed on owner/ruling-r94",
+      "duration_seconds": 20.0,
+      "duration_source": "session-start-hook",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/ruling-r94",
+        "pushed": null,
+        "sha": "4b0069a278787fbb4365b85631919b873ab05ed4",
+        "short": "4b0069a27"
+      },
+      "goal": "Rule DR-8 (req-01M41DJ56WN77QNKFCW34GMG3A): whether ADR-0017 s1 is amended so telemetry/* is run side and bench/gateway.yaml is a grade-side component",
+      "id": "al-01M41E1QZ8SHA7RXF6GK9CZAHZ",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Owner seat: rule req-01M41DJ56WN77QNKFCW34GMG3A from W1-D (eval-identity, 71a15a0b): ADR-0017 s1 lists telemetry/* as grade but engine.py and driver.py use it on the cell path; recommendation A (telemetry/* to run; add bench/gateway.yaml as grade-class component gateway); author's correction: 6 import edges in 3 modules, not 5 allowlist entries. Verify in code, rule as R-94, say whether an ADR amendment note is needed and who writes it.",
+      "session": "owner-fable",
+      "shortname": "ruling R-94 (DR-8, telemetry/* run side; gateway component)",
+      "skill": null,
+      "started_at": "2026-10-03T17:47:14Z",
+      "summary": "R-94 DR-8: (A) granted, (B) and (C) refused. Verified: engine._read_records (engine.py:661,854) runs the harness reader (profiles.py:261-262, READERS) at every cell end and feeds _classify (cause) and _spend (SPEND, the spend-cap stop); driver.py:237,246,290 classify through normalize; so all five telemetry files alter what a cell records: run side. Edge count verified at 6 (driver->telemetry/__init__, driver->normalize, engine->normalize, profiles->claude_code, codex, copilot). bench/gateway.yaml read only by grade/judge, report/judges, gateway/calibration and validate-time config: grade component gateway, empty when absent. (B) would make the eligibility rule report a false match. ADR amendment note needed: W1-D writes Amendment 1 on design/eval-identity in ADR-0006's form, lands with its gate merge; W0 s9 note via the Coordinator's seam answer. Conditions: red-first tests pinning both classes; allowlist stays at the 3 config.py pairs; gateway absent->present is a grade-side fix by design; cost measured through defect_fix.admitted run-scope telemetry-only rows.",
       "tags": [
         "ruling",
         "eval-campaign"
       ],
-      "outcome": "success",
-      "goal": "Rule DR-8 (req-01M41DJ56WN77QNKFCW34GMG3A): whether ADR-0017 s1 is amended so telemetry/* is run side and bench/gateway.yaml is a grade-side component",
-      "done_when": "Ruling 94 in docs/notes/rulings.md via coord decide rule, the request resolved, an audit entry appended, committed on owner/ruling-r94",
       "tier": "T0",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1b.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:47:06Z",
+      "done_when": "gate line written",
       "fan_out": 0,
-      "duration_source": "session-start-hook",
-      "started_at": "2026-10-03T17:47:14Z",
-      "duration_seconds": 20.0,
-      "git": {
-        "sha": "4b0069a278787fbb4365b85631919b873ab05ed4",
-        "short": "4b0069a27",
-        "branch": "owner/ruling-r94",
-        "pushed": null
-      }
+      "goal": "SEC review of W1-B",
+      "id": "al-01M41E0WKQDV5PCDHS0GFCXG1M",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md (W1-B)",
+      "session": "rv-sec-w1b-e1e4",
+      "shortname": "design-slice-review-sec-w1b",
+      "skill": "design-slice-review",
+      "summary": "SEC gate on W1-B: PASS WITH CONDITIONS, 8 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sre-w1d.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:49:03Z",
+      "done_when": "review file committed with gate line",
+      "duration_seconds": 8.0,
+      "fan_out": 0,
+      "goal": "SRE review of W1-D",
+      "id": "al-01M41E4FBGAZ7DD8KF1193J817",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Review W1-D engine identity design (SRE lens)",
+      "session": "rv-sre-e1e4",
+      "shortname": "sre-review-w1d",
+      "skill": "design-slice-review",
+      "started_at": "2026-10-03T17:48:55Z",
+      "summary": "SRE review of W1-D: PASS WITH CONDITIONS, 8 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "rv-sim-ad-e1e4",
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1a.md",
+        "docs/design/reviews/eval-review-sim-w1d.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:49:04Z",
+      "id": "al-01M41E4FTM77HQF6WJS96BSJH8",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "RV-SIM review of W1-A arms v2 and W1-D engine identity",
+      "session": "rv-sim-ad-e1e4",
+      "shortname": "rv-sim-w1a-w1d",
+      "skill": "design-slice-review",
+      "summary": "Simplifier reviews: W1-A and W1-D both PASS WITH CONDITIONS (8 findings each)",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1a.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:49:09Z",
+      "duration_seconds": 28.0,
+      "id": "al-01M41E4MV7PR2Z0CBA2T488RBB",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "RV-TA review of W1-A arms v2 (brief eval-wave1/rv-ta.md)",
+      "session": "rv-ta-w1a-e1e4",
+      "shortname": "rv-ta-w1a",
+      "skill": "design-slice-review",
+      "started_at": "2026-10-03T17:48:41Z",
+      "summary": "RV-TA review of W1-A arms v2: PASS WITH CONDITIONS, 8 findings",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "id": "al-01M41EQQN7G37BQBB9ZK4SS8CB",
+      "shortname": "w0-seam-contracts-rev3",
+      "datetime": "2026-10-03T17:59:34Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Coordinator #3: answer the seam queue (13 requests) and the Leader-routed Wave 1 lens seams; apply them to W0 as rev 3 with a change table, the five rev-2 gate lines, and ADR amendment notes for ADR-0014/0018/0019; plus the Wave 1 testability floor and the inline AGENT_SESSION rule.",
+      "summary": "13 seam requests resolved (9 granted, 4 granted in part, 0 refused outright; refused parts: HB-LED-009, verdict-label change, X-G1 file grant). One Owner request (W1-G owner rule vs R-90 c1/c6). Ruling C-1: wsgi kind built in E1 for S1. W0 rev 3 sections 1-14, change table, re-read list; ADR-0014/0018/0019 Amendment 1 notes; README testability floor and inline AGENT_SESSION; classes TEST-B, COORD-D.",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Every open seam request to coord-opus-e1e4 ruled and W0 rev 3 committed with gate record and ADR amendment notes",
+      "done_when": "request list shows none open to coord-opus-e1e4; rev 3 on design/eval-w0-rev3 with derive/validate exit 0",
+      "tier": "T1",
+      "fan_out": 0
     }
   ],
   "changes": [
@@ -66237,6 +66344,33 @@ window.AUDIT_DATA = {
           "ebf21cee spike(e4): a second session/prompt in the same ACP session, after end_turn (R-E6, DR-E4)"
         ]
       }
+    },
+    {
+      "id": "cl-01M41EQQXPA4B3E384EMFHADMV",
+      "datetime": "2026-10-03T17:59:35Z",
+      "session": "coord-opus-e1e4",
+      "kind": "design",
+      "skill": "execute-with-coordination",
+      "title": "W0 seam contracts rev 3: Wave 1 seam answers",
+      "prompt": null,
+      "summary": "Rev 3 answers 13 seam requests and 11 routed lens findings: wsgi kind in E1 (C-1), probe-host additions and start bound, NA never dropped, DOTNET_HOST_ENV to _env.py, reparse-safe grading copy, sweep_temps/TEMP_RE (no HB-LED-009), recover_archive to X-K1, quoted arm ids, grid4 golden, no top-level pack + plan_pack + HB-PLN-004/005, G1 AST ratchet, run-side effective identity in the plan, catalog_hash in identity.py, G2 every file + direction test, R-93/R-94 recorded, W1-G owner rule provisional on an Owner request, (e) exception deferred.",
+      "rationale": "One revision so every slice re-reads one contract; refusals keep ADR-0020 and W0 s4 meanings; the R-90 amendment goes to the Owner.",
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/adr/0014-arm-replaces-pack-setting.md",
+        "docs/adr/0018-hidden-check-harness.md",
+        "docs/adr/0019-catalog-0-7-property-metrics.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "e466acb5",
+        "after": "d053385c697f884b9099f3555747ff7192bca9fc",
+        "branch": "design/eval-w0-rev3",
+        "pushed": null,
+        "commits": [
+          "d053385c docs(coordination): Wave 1 testability floor and inline AGENT_SESSION rule; classes TEST-B, COORD-D"
+        ]
+      }
     }
   ],
   "messages": [
@@ -66347,51 +66481,6 @@ window.AUDIT_DATA = {
       "kind": "decision-request",
       "ref": "req-01M41BS9Y7D1ANHSNDYM9N2H08",
       "session": "coord-opus-e1e4"
-    },
-    {
-      "id": "mail-01M41C40NC7E7S5NG8CKX9BD0E",
-      "ts": "2026-10-03T17:13:51Z",
-      "from": "owner-fable",
-      "to": "coord-opus-e1e4",
-      "kind": "ruling",
-      "ref": "req-01M41BS9Y7D1ANHSNDYM9N2H08",
-      "session": "owner-fable"
-    },
-    {
-      "id": "mail-01M41CV2MWGYW2HGQ5CQ63WJES",
-      "ts": "2026-10-03T17:26:27Z",
-      "from": "coord-opus-e1e4",
-      "to": "owner-fable",
-      "kind": "decision-request",
-      "ref": "req-01M41CV2MNPQENPMEMP01QF3ZY",
-      "session": "coord-opus-e1e4"
-    },
-    {
-      "id": "mail-01M41D2XB9KZ7DC50YYE2TP8MM",
-      "ts": "2026-10-03T17:30:43Z",
-      "from": "owner-fable",
-      "to": "coord-opus-e1e4",
-      "kind": "ruling",
-      "ref": "req-01M41CV2MNPQENPMEMP01QF3ZY",
-      "session": "owner-fable"
-    },
-    {
-      "id": "mail-01M41DJ574PMT6CXTZ07KYCT73",
-      "ts": "2026-10-03T17:39:03Z",
-      "from": "w1d-identity-e1e4",
-      "to": "owner-fable",
-      "kind": "decision-request",
-      "ref": "req-01M41DJ56WN77QNKFCW34GMG3A",
-      "session": "w1d-identity-e1e4"
-    },
-    {
-      "id": "mail-01M41E19DJNZNP9GKWHAT8CNPS",
-      "ts": "2026-10-03T17:47:19Z",
-      "from": "owner-fable",
-      "to": "w1d-identity-e1e4",
-      "kind": "ruling",
-      "ref": "req-01M41DJ56WN77QNKFCW34GMG3A",
-      "session": "owner-fable"
     }
   ]
 };
