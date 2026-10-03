@@ -40,3 +40,14 @@ Persona: test-architect, Adversary Mode, T2, hard veto. Read: `docs/design/eval-
 **Conditions to clear the gate.** Findings 1, 2, 3 and 8 resolved in the design text: tests named, the seal rule stated, the harness owner stated, F-1 ruled or the property relabelled.
 
 GATE W1-K · Test Architect · PASS WITH CONDITIONS · 9 findings (rv-ta-w1k-e1e4, 2026-10-03)
+
+## Addendum: R-101 (F-1 closed by ruling; map check)
+
+R-101 (`docs/notes/rulings.md:1732`): the finish-the-stop resume grades and writes exactly one `run.completed` after `run.resumed`; R-100 condition 3 is superseded; the model needs no edit. Finding 8 is resolved in direction (model and code now agree). Finding 2 is mostly resolved (`run.completed` seals the new segments). The map cannot yet carry the new assertions:
+
+| # | location | finding | severity | fix |
+| --- | --- | --- | --- | --- |
+| A1 | s4 W12, W12e, M-STOPGRADES, s3.1 steps 4 and 8 | W12 asserts "no run.completed, no grading pass" and M-STOPGRADES guards that; both now encode the bug. Step 4 says a stopped run with nothing to do writes nothing and is never "complete"; with `run.completed` after `run.resumed`, the stop row (not `run.completed`) must still decide exit 3 with no segment and no row. | major | W12 (three params) asserts the grading pass ran, exactly one `run.completed` follows the last `run.resumed`, `run.stopped` once, exit 3. W12e asserts the second call writes no `run.completed`, no segment, byte-identical ledger. Replace M-STOPGRADES with M-STOPNOGRADE (grading skipped) and M-DOUBLECOMPLETED (second call re-writes it). Red today: the skeleton's exit code and rows. State in step 4 and D-K5 that the stop row decides exit 3. |
+| A2 | s5.3, s12 F-1 row, s3.1 step 8 | Text still describes the old rule. | minor | Rewrite as R-101 item 4 says, in the gate revision. |
+
+The gate line stands. Conditions: findings 1, 3, A1, and finding 2 reduced to stating W12e idempotence over the sealed segments.
