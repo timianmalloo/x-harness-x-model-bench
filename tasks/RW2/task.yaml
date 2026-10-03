@@ -2,16 +2,44 @@ schema: bench-task/1
 id: RW2
 scenario: 5                 # W0 decision: property tasks are scenario 5 (docs/design/eval-seam-contracts.md section 1)
 title: "Rework task 2 on a second codebase (W1-L)"
-status: stub
-language: tbd
+status: draft               # Stays draft until a real-host multi-turn discrimination record reproduces `expected` (W1-L 5.3; X-J1 and X-J2b must join first, W0 rev 6.6 R6.6c). Not X-RW's call alone.
+language: python
 source:
   kind: authored
-  upstream: "harness-bench property task"
-  repo: tbd
-  commit: tbd
+  upstream: "harness-bench property task on schedule"
+  repo: "https://github.com/dbader/schedule"
+  commit: "82a43db1b938d8fdf60103bd41f329e06c8d3651"   # master at authoring, git rev-parse HEAD of a fresh clone, 2026-10-03; its tree is 113c0a93af441e26f0d7736ff48c5f1e60e03762
+  workspace_from: source        # E5 and S1 precedent: the engine's own task_source() builds the base; nothing vendored
+  license: MIT
+  copyright: "Copyright (c) 2013 Daniel Bader"
 budget:
-  minutes: 60               # provisional (W0); the task's design fixes it (1-60)
+  minutes: 60                # the W0 provisional value and the BOM entry's value; both turns share it (W1-L 6.3)
   usd_cap: null
+blast_radius: ["schedule/__init__.py"]
+model_map: null
+scripted_user: false
+formal: null
+turns: ["turns/2.md"]          # turn 1 is prompt.md (ADR-0015 section 1)
+graded_snapshots: [turn-1]     # ADR-0015 section 8
 property:
-  name: rework           # W0 section 2; the task's design fills the other property fields
-graders: []                 # DR-4 (a), provisional: [correctness, property] once grade/property.py exists
+  name: rework
+  latent_requirement: "A failure policy added to a scheduler must sit behind one hook, so a second policy changes the hook's listeners and not the run loop."
+  evidence_paths: ["schedule/__init__.py"]
+  latent_terms: [hook, callback, observer, listener, policy, strategy, extensib, pluggable, subscribe]
+  primary_metric: property_check_pass
+  ceilings: { rework_ratio: "0.3000" }
+  fault_contract: {}
+graders: [correctness, property]
+oracle:
+  summary: "Hidden unittest files per turn (tests/turn1, tests/turn2; stdlib only). The strategy runs turn 1's file on the turn-1 snapshot and both files on the final tree, then measures rework_ratio over the turn-1-added product lines (W1-L 6.1). The discovery pattern matches only the hidden files, never test_schedule.py."
+  runner: unittest
+  command: ["{python}", "-S", "-m", "unittest", "discover", "-v", "-s", ".", "-t", ".", "-p", "test_failure*.py"]
+expected:
+  reference:
+    property_check_pass: 1                       # Inferred: both hidden-test files pass on the reference and its ratio is below the 0.3000 ceiling (W0 section 3 truth table). Not a grader output.
+    turn1_tests_pass: 1                          # Inferred: turn 1's hidden file passes on the reference turn-1 snapshot
+    rework_ratio: "<X-RW: hand count of the committed reference diff>"
+  naive:
+    property_check_pass: 0                       # Inferred: the naive passes every hidden test and its rework_ratio is above the ceiling, so the conjunction is 0
+    turn1_tests_pass: 1
+    rework_ratio: "<X-RW: hand count of the committed naive diff>"
