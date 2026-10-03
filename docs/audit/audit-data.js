@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:42:48Z",
+  "generated": "2026-10-03T17:46:15Z",
   "audit": [
     {
       "actor": null,
@@ -65676,6 +65676,27 @@ window.AUDIT_DATA = {
       "compiled": false,
       "goal": "DS review W1-B",
       "done_when": "gate line",
+      "tier": "T2",
+      "fan_out": 0
+    },
+    {
+      "id": "al-01M41DZAK6MV7PQP38T6SDQ2GQ",
+      "shortname": "rv-sim-gb",
+      "datetime": "2026-10-03T17:46:15Z",
+      "session": "rv-sim-gb-e1e4",
+      "prompt": "RV-SIM review of W1-G catalog 0.7 and W1-B atomic publish",
+      "summary": "Simplifier reviews: W1-G PASS WITH CONDITIONS (7), W1-B PASS WITH CONDITIONS (8)",
+      "kind": "manual",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1g.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "goal": "Simplifier-lens review of W1-G and W1-B",
+      "done_when": "two review files with gate lines committed on review/eval-sim-gb",
       "tier": "T2",
       "fan_out": 0
     }
