@@ -23,6 +23,7 @@ summary: >-
 # ADR-0016: The Evaluation Campaign is a committed, hash-chained ledger over unchanged runs
 
 - **Status:** Proposed
+- **Amended (2026-10-03, W0 rev 6 s6; R-98):** the discrimination record no longer holds the synthetic run id and grading id; the grain is one discrimination *result*; the run link is local. See "Amendment 1" before *Alternatives considered*. The decision text below is unchanged.
 - **Date:** 2026-10-03
 - **Deciders:** @timianmalloo; authored by Claude Code with the Data & Persistence Architect lens (DM1-DM13)
 - **Context spec/architecture:** `docs/specs/enterprise-evaluation.md` (domain model; EV-7, EV-12..EV-16, EV-20); `docs/architecture-evaluation-campaign.md`.
@@ -59,6 +60,14 @@ The spec adds a Campaign aggregate (states `draft` → `baselined` → `piloted`
 **7. The campaign references, never copies (B8).** Runs, grading passes, ring templates and discrimination records are referenced by id and hash. Gate results, admission inputs, eligibility, power outputs and verdicts are recomputed from the runs on read. The `pilot.passed` row records the decision and the hash of the gate's inputs (the pilot's score-set segment heads), so the decision can be re-verified. `registered` is refused unless the passing pilot covered every (task, combo, harness) of the grid the pre-registration names (council SRE minor).
 
 **8. Hostile code and these records (council S3).** During a hidden check (ADR-0018), agent-written code runs with the operator's rights while these committed records exist on disk; create-only and append-only are application conventions, not OS permissions. Residual, accepted (ADR-0012, ADR-0013). Mitigations: no campaign write is open during a grading pass, and `bench campaign verify` (hash chain, content-address names, `git status` of `bench/campaigns` and `bench/discrimination`) runs after every grading pass of a campaign run and before every campaign command (ADR-0018 §11).
+
+### Amendment 1 (2026-10-03; W0 rev 6 section 6; R-98, DR-E1, `req-01M41J1E3PDYAG1WTAGH004MZ8`)
+
+Recorded by the Coordinator (`coord-opus-e1e4`) with W0 rev 6, before X-E's first record commit, as R-98 directs. W0 section 6 is the contract. This note records where it departs from the text above.
+- **§4, the record body.** "the synthetic run id and grading id" is withdrawn. The body is the key (`task`, `task_version`, `identity_hash`, `platform`) and the measured content (`scores`, `expected`, `readiness_failures`, and `probe` and `variants` where they apply), with no field that varies between two honest trials. The committed record is a pure function of its key and its measured content.
+- **§4, the grain.** "One file is exactly one discrimination trial" reads: one file is exactly one discrimination **result** of one task version under one engine identity on one platform; a later trial at the same key confirms it (equal bytes) or exposes a determinism defect (HB-RDY-010), and is never a second record.
+- **§4, reconciliation.** The copy is no longer identified by `(run_id, grading_id)` inside the record. The local, git-ignored `runs/<run_id>/discrimination-link.json` (`bench-discrimination-link/1`) names the record and the run; it is written only after the record was created or confirmed, never after a disagreement. Read-time reconciliation uses the newest link for the record; with no usable link it prints `reconciled: no (<reason>)` and neither fails nor passes. A difference against the run's current pass is still "discrimination record stale" (HB-RDY-004).
+- **§2a holds for the record with no exception.** Equal bytes are a confirmation and different bytes a determinism defect, the same one definition of "already done" as every other create-only file. W0 rev 2's option (a) (compare a field subset) is withdrawn.
 
 ## Alternatives considered
 
