@@ -1,7 +1,8 @@
 --------------------------- MODULE run_lifecycle ---------------------------
 (***************************************************************************)
 (* The lifecycle of one harness-bench run (spec US-44; ADR-0006, ADR-0007). *)
-(* Version 4 (native cells and R-21 cancel grace, ADR-0013).               *)
+(* Version 5 (native cells and R-21 cancel grace, ADR-0013; turns and turn   *)
+(* snapshots, ADR-0015 section 7; crash-atomic archive writes, ADR-0015 5a). *)
 (*                                                                         *)
 (* One run engine process that can crash and be resumed; cells (each a    *)
 (* native process tree in its own Job Object, `proc`) that can fail on    *)
@@ -29,13 +30,18 @@ CONSTANTS
     MaxCrashes,     \* engine crashes explored
     Passes,         \* grading pass ids (each process mints its own)
     Graders,        \* processes that may grade: {"engine"} or {"engine", "bench"}
+    NumTurns,       \* user turns per cell: 1, or 2 (ADR-0015 bounds a task to two turns)
     BUG             \* "none" or one seeded defect name
 
 ASSUME Parallelism \in Nat \ {0}
 ASSUME "engine" \in Graders /\ Graders \subseteq {"engine", "bench"}
+ASSUME NumTurns \in 1..2
 
 Controls   == {"stop", "answer"}
-Outcomes   == {"none", "done", "timedout", "failed", "stopped", "crashfail"}
+Outcomes   == {"none", "done", "timedout", "failed", "stopped", "crashfail", "crashbetween"}
+Turns      == 1..NumTurns
+NoCopy     == NumTurns            \* copying[c] when no copy is in progress (outside Arts)
+Arts       == 0..(NumTurns - 1)   \* archive artifacts: 0 is the final archive, k is the turn-k snapshot
 Reasons    == {"none", "timeout", "stop"}
 
 VARIABLES
@@ -50,10 +56,15 @@ VARIABLES
     killRequested,  \* [cell -> BOOLEAN]  cancel requested, not yet confirmed
     killReason,     \* [cell -> Reasons]  why the engine killed it (process memory)
     grace,          \* [cell -> BOOLEAN]  cancel sent; TerminateJobObject not yet issued
-    queued,         \* [cell -> BOOLEAN]  worker queued prompt_sent, not yet persisted (volatile)
-    promptSent,     \* [cell -> BOOLEAN]  ledger: cell.prompt_sent (fsynced, then acked to the worker)
-    pendingSend,    \* [cell -> BOOLEAN]  worker holds the ack and will send once (volatile)
-    prompts,        \* [cell -> Nat]      physical prompts delivered (history)
+    queued,         \* [cell -> 0..NumTurns] the turn whose prompt_sent the worker queued, not yet persisted (volatile; 0 none)
+    promptSent,     \* [cell -> [turn -> BOOLEAN]]  ledger: cell.prompt_sent{turn} (fsynced, then acked to the worker)
+    pendingSend,    \* [cell -> 0..NumTurns] the turn whose ack the worker holds and will send once (volatile; 0 none)
+    prompts,        \* [cell -> [turn -> Nat]]  physical prompts delivered (history)
+    turnEnded,      \* [cell -> [turn -> BOOLEAN]]  ledger: cell.turn_ended{turn}
+    snapEv,         \* [cell -> [turn -> BOOLEAN]]  ledger: cell.turn_snapshot_archived{turn}
+    copying,        \* [cell -> artifact | NoCopy]  the copy in progress on this incarnation (volatile)
+    tmp,            \* [cell -> [artifact -> {"none","partial"}]]  a temporary sibling folder being filled
+    fin,            \* [cell -> [artifact -> {"none","partial","complete"}]]  the final folder name on disk
     outcome,        \* [cell -> Outcomes] ledger: execution outcome
     wasStopped,     \* [cell -> BOOLEAN]  history: an outcome "stopped" was ever recorded
     archived,       \* [cell -> BOOLEAN]
@@ -71,7 +82,9 @@ VARIABLES
     gradeCount,     \* [Passes -> [Cells -> Nat]]  history
     flags           \* history of forbidden events
 
-vars == <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch, proc,
+tvars == <<turnEnded, snapEv, copying, tmp, fin>>
+
+vars == <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch, proc,
           killRequested, killReason, grace, queued, promptSent, pendingSend, prompts, outcome,
           wasStopped, archived, deleted, controlFile, controlApplied, applyCount, stopApplied,
           decision, resolutions, lock, passState, passOwner, graded, gradeCount, flags>>
@@ -88,6 +101,16 @@ Record(c, o) ==
     /\ outcome' = [outcome EXCEPT ![c] = o]
     /\ wasStopped' = [wasStopped EXCEPT ![c] = (@ \/ o = "stopped")]
 
+AnyPrompted(c) == \E k \in Turns : promptSent[c][k]
+\* A turn is in flight: its prompt went out, it has not ended, and the adapter is running.
+InFlight(c) == \E k \in Turns : prompts[c][k] >= 1 /\ ~turnEnded[c][k] /\ proc[c] = "running"
+\* ADR-0015 section 6 and ADR-0021 section 4: how resume classifies a prompted, non-terminal cell.
+CrashedTurn(c) == \E k \in Turns : promptSent[c][k] /\ ~turnEnded[c][k]
+BetweenTurns(c) == \E k \in 1..(NumTurns - 1) : turnEnded[c][k] /\ ~promptSent[c][k + 1]
+ClassOf(c) == IF CrashedTurn(c) THEN "crashfail" ELSE IF BetweenTurns(c) THEN "crashbetween" ELSE "crashfail"
+\* The ledger holds the snapshot event of every turn the cell is waiting between.
+BetweenSnapped(c) == \A k \in 1..(NumTurns - 1) : (turnEnded[c][k] /\ ~promptSent[c][k + 1]) => snapEv[c][k]
+
 Init ==
     /\ engine = "up" /\ crashes = 0 /\ epoch = 1
     /\ reconciling = FALSE /\ reconciled = {}
@@ -97,10 +120,15 @@ Init ==
     /\ killRequested = [c \in Cells |-> FALSE]
     /\ killReason = [c \in Cells |-> "none"]
     /\ grace = [c \in Cells |-> FALSE]
-    /\ queued = [c \in Cells |-> FALSE]
-    /\ promptSent = [c \in Cells |-> FALSE]
-    /\ pendingSend = [c \in Cells |-> FALSE]
-    /\ prompts = [c \in Cells |-> 0]
+    /\ queued = [c \in Cells |-> 0]
+    /\ promptSent = [c \in Cells |-> [k \in Turns |-> FALSE]]
+    /\ pendingSend = [c \in Cells |-> 0]
+    /\ prompts = [c \in Cells |-> [k \in Turns |-> 0]]
+    /\ turnEnded = [c \in Cells |-> [k \in Turns |-> FALSE]]
+    /\ snapEv = [c \in Cells |-> [k \in Turns |-> FALSE]]
+    /\ copying = [c \in Cells |-> NoCopy]
+    /\ tmp = [c \in Cells |-> [a \in Arts |-> "none"]]
+    /\ fin = [c \in Cells |-> [a \in Arts |-> "none"]]
     /\ outcome = [c \in Cells |-> "none"]
     /\ wasStopped = [c \in Cells |-> FALSE]
     /\ archived = [c \in Cells |-> FALSE]
@@ -130,7 +158,7 @@ WriteIntent(c) ==
     /\ intent' = [intent EXCEPT ![c] = TRUE]
     /\ IF stopApplied THEN Flag("launchAfterStop")
        ELSE IF decision = "open" THEN Flag("launchWhileOpen") ELSE UNCHANGED flags
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, launchEpoch, epoch, proc,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, launchEpoch, epoch, proc,
                    killRequested, killReason, queued, promptSent, pendingSend, prompts, outcome,
                    wasStopped, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
@@ -138,7 +166,7 @@ WriteIntent(c) ==
 
 StartCell(c) ==
     /\ EngineReady
-    /\ intent[c] /\ ~promptSent[c]
+    /\ intent[c] /\ (BUG = "resend_turn_on_resume" \/ ~promptSent[c][1])
     /\ (BUG = "launch_after_outcome" \/ outcome[c] = "none")
     /\ (proc[c] = "none" \/ (BUG = "launch_after_outcome" /\ proc[c] = "exited"))
     /\ (BUG = "launch_after_stop" \/ ~stopApplied)
@@ -149,7 +177,7 @@ StartCell(c) ==
     /\ launchEpoch' = [launchEpoch EXCEPT ![c] = epoch]
     /\ IF stopApplied THEN Flag("launchAfterStop")
        ELSE IF OrphanRunning THEN Flag("launchBesideOrphan") ELSE UNCHANGED flags
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, epoch, killRequested,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, epoch, killRequested,
                    killReason, queued, promptSent, pendingSend, prompts, outcome, wasStopped,
                    archived, deleted, controlFile, controlApplied, applyCount, stopApplied,
                    decision, resolutions, lock, passState, passOwner, graded, gradeCount, grace>>
@@ -157,24 +185,27 @@ StartCell(c) ==
 \* The proc could not be created (image or create failure): recorded, never prompted.
 StartFails(c) ==
     /\ EngineReady
-    /\ Active(c) /\ proc[c] = "none" /\ ~promptSent[c] /\ ~queued[c]
+    /\ Active(c) /\ proc[c] = "none" /\ ~AnyPrompted(c) /\ queued[c] = 0
     /\ Record(c, "failed")
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
                    gradeCount, flags, grace>>
 
-\* The worker queues prompt_sent for the engine thread (volatile until persisted).
-QueuePromptSent(c) ==
+\* The worker queues prompt_sent{k} for the engine thread (volatile until persisted). Turn k > 1 waits for
+\* turn k-1 to have ended and for its snapshot event to be durable (ADR-0015 section 2 (d)).
+QueuePromptSent(c, k) ==
     /\ EngineReady
     /\ proc[c] = "running" /\ ~killRequested[c]
     /\ (BUG = "launch_after_outcome" \/ outcome[c] = "none")
-    /\ ~promptSent[c] /\ ~queued[c]
-    /\ queued' = [queued EXCEPT ![c] = TRUE]
+    /\ ~promptSent[c][k] /\ queued[c] = 0 /\ pendingSend[c] = 0 /\ copying[c] = NoCopy
+    /\ \/ k = 1
+       \/ k > 1 /\ turnEnded[c][k - 1] /\ (BUG = "prompt_before_snapshot" \/ snapEv[c][k - 1])
+    /\ queued' = [queued EXCEPT ![c] = k]
     /\ pendingSend' = IF BUG = "send_before_persist"
-                        THEN [pendingSend EXCEPT ![c] = TRUE] ELSE pendingSend
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+                        THEN [pendingSend EXCEPT ![c] = k] ELSE pendingSend
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, promptSent, prompts, outcome,
                    wasStopped, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
@@ -183,11 +214,11 @@ QueuePromptSent(c) ==
 \* The engine thread appends and fsyncs prompt_sent, then acks the worker.
 PersistPromptSent(c) ==
     /\ engine = "up"
-    /\ queued[c]
-    /\ promptSent' = [promptSent EXCEPT ![c] = TRUE]
-    /\ queued' = [queued EXCEPT ![c] = FALSE]
-    /\ pendingSend' = [pendingSend EXCEPT ![c] = TRUE]
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ queued[c] # 0
+    /\ promptSent' = [promptSent EXCEPT ![c][queued[c]] = TRUE]
+    /\ pendingSend' = [pendingSend EXCEPT ![c] = queued[c]]
+    /\ queued' = [queued EXCEPT ![c] = 0]
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, prompts, outcome, wasStopped,
                    archived, deleted, controlFile, controlApplied, applyCount, stopApplied,
                    decision, resolutions, lock, passState, passOwner, graded, gradeCount,
@@ -196,22 +227,34 @@ PersistPromptSent(c) ==
 \* The worker sends the prompt once, only after the ack.
 SendPrompt(c) ==
     /\ engine = "up"
-    /\ pendingSend[c]
+    /\ pendingSend[c] # 0
     /\ proc[c] = "running" /\ ~killRequested[c]
-    /\ prompts' = [prompts EXCEPT ![c] = @ + 1]
-    /\ pendingSend' = [pendingSend EXCEPT ![c] = FALSE]
+    /\ prompts' = [prompts EXCEPT ![c][pendingSend[c]] = @ + 1]
+    /\ pendingSend' = [pendingSend EXCEPT ![c] = 0]
     /\ IF outcome[c] # "none" THEN Flag("promptAfterOutcome") ELSE UNCHANGED flags
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, outcome,
                    wasStopped, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
                    gradeCount, grace>>
 
+\* The adapter returns end_turn and the worker records turn_ended{k} (ADR-0015 section 2 (a)).
+TurnEnd(c, k) ==
+    /\ EngineReady
+    /\ proc[c] = "running" /\ ~killRequested[c]
+    /\ prompts[c][k] >= 1 /\ ~turnEnded[c][k]
+    /\ turnEnded' = [turnEnded EXCEPT ![c][k] = TRUE]
+    /\ UNCHANGED <<snapEv, copying, tmp, fin, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+                   proc, killRequested, killReason, queued, promptSent, pendingSend, prompts, outcome,
+                   wasStopped, archived, deleted, controlFile, controlApplied, applyCount,
+                   stopApplied, decision, resolutions, lock, passState, passOwner, graded,
+                   gradeCount, flags, grace>>
+
 \* Environment: the proc exits on its own (agent finished, or it failed before a prompt).
 CellExits(c) ==
     /\ proc[c] = "running" /\ ~killRequested[c]
     /\ proc' = [proc EXCEPT ![c] = "exited"]
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    killRequested, killReason, queued, promptSent, pendingSend, prompts,
                    outcome, wasStopped, archived, deleted, controlFile, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
@@ -222,7 +265,7 @@ CellDies(c) ==
     /\ proc[c] = "running" /\ killRequested[c] /\ ~grace[c]
     /\ proc' = [proc EXCEPT ![c] = "exited"]
     /\ killRequested' = [killRequested EXCEPT ![c] = FALSE]
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    killReason, queued, promptSent, pendingSend, prompts, outcome, wasStopped,
                    archived, deleted, controlFile, controlApplied, applyCount, stopApplied,
                    decision, resolutions, lock, passState, passOwner, graded, gradeCount,
@@ -234,7 +277,7 @@ GracefulExit(c) ==
     /\ proc' = [proc EXCEPT ![c] = "exited"]
     /\ killRequested' = [killRequested EXCEPT ![c] = FALSE]
     /\ grace' = [grace EXCEPT ![c] = FALSE]
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    killReason, queued, promptSent, pendingSend, prompts, outcome, wasStopped,
                    archived, deleted, controlFile, controlApplied, applyCount, stopApplied,
                    decision, resolutions, lock, passState, passOwner, graded, gradeCount, flags>>
@@ -245,7 +288,7 @@ EndGrace(c) ==
     /\ engine = "up"
     /\ proc[c] = "running" /\ killRequested[c] /\ grace[c]
     /\ grace' = [grace EXCEPT ![c] = FALSE]
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend, prompts,
                    outcome, wasStopped, archived, deleted, controlFile, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
@@ -254,14 +297,14 @@ EndGrace(c) ==
 \* The engine records how an exited proc's cell ended (never while it runs).
 RecordExit(c) ==
     /\ EngineReady
-    /\ Active(c) /\ ~killRequested[c]
+    /\ Active(c) /\ ~killRequested[c] /\ copying[c] = NoCopy
     /\ \/ proc[c] = "exited"
        \/ BUG = "record_while_running" /\ proc[c] = "running"   \* seeded: records, never kills
     /\ Record(c, CASE killReason[c] = "stop"    -> "stopped"
                    [] killReason[c] = "timeout" -> "timedout"
-                   [] prompts[c] >= 1           -> "done"
+                   [] prompts[c][NumTurns] >= 1 -> "done"
                    [] OTHER                     -> "failed")
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
@@ -275,7 +318,7 @@ EngineKill(c) ==
     /\ killRequested' = [killRequested EXCEPT ![c] = TRUE]
     /\ killReason' = [killReason EXCEPT ![c] = "timeout"]
     /\ grace' = [grace EXCEPT ![c] = TRUE]
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, queued, promptSent, pendingSend, prompts, outcome, wasStopped,
                    archived, deleted, controlFile, controlApplied, applyCount, stopApplied,
                    decision, resolutions, lock, passState, passOwner, graded, gradeCount,
@@ -286,20 +329,20 @@ EngineKill(c) ==
 
 StopCell(c) ==
     /\ EngineReady /\ stopApplied
-    /\ Active(c)
+    /\ Active(c) /\ copying[c] = NoCopy
     /\ ~(proc[c] = "running" /\ killReason[c] = "stop")
     /\ grace' = IF proc[c] = "running" /\ BUG # "record_without_kill"
                  THEN [grace EXCEPT ![c] = TRUE] ELSE grace
     /\ IF proc[c] = "running" /\ BUG = "record_without_kill"
          THEN /\ Record(c, "stopped")                        \* seeded: records, never kills
-              /\ UNCHANGED <<killRequested, killReason>>
+              /\ UNCHANGED <<tvars, killRequested, killReason>>
        ELSE IF proc[c] = "running"
          THEN /\ killRequested' = [killRequested EXCEPT ![c] = TRUE]
               /\ killReason' = [killReason EXCEPT ![c] = "stop"]
-              /\ UNCHANGED <<outcome, wasStopped>>
+              /\ UNCHANGED <<tvars, outcome, wasStopped>>
          ELSE /\ Record(c, "stopped")
-              /\ UNCHANGED <<killRequested, killReason>>
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+              /\ UNCHANGED <<tvars, killRequested, killReason>>
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, queued, promptSent, pendingSend, prompts, archived, deleted,
                    controlFile, controlApplied, applyCount, stopApplied, decision, resolutions,
                    lock, passState, passOwner, graded, gradeCount, flags>>
@@ -307,27 +350,101 @@ StopCell(c) ==
 -----------------------------------------------------------------------------
 (* Archive, then delete *)
 
-\* Archive only after the outcome is recorded and the proc is gone. The seeded bug archives as
-\* soon as a kill has been issued, without waiting for inspect to confirm the proc exited.
+\* Every archive write and every turn snapshot is a crash-atomic publish (ADR-0015 section 5a, the W0 `publish_dir`
+\* helper): fill an exclusive temporary sibling, verify it, rename it to the final name, and only then append the
+\* ledger event. Artifact 0 is the final archive; artifact k is the turn-k snapshot. The seeded `*_in_place`
+\* defects fill the final name directly. A crash loses the volatile `copying` flag and leaves the temporary
+\* sibling inert: W0 names it `<name>.tmp-<pid>-<uuid>`, so a leftover never collides with a later copy, and the
+\* sweep (a file-level test, not a model action) only removes it.
+InPlace(a) == (a = 0 /\ BUG = "archive_in_place") \/ (a > 0 /\ BUG = "snapshot_in_place")
+
+\* A live worker, or the engine's reconciliation after the adapter is gone, may snapshot a cell between turns.
+SnapAllowed(c) == Active(c) /\ ((launchEpoch[c] = epoch /\ ~reconciling) \/ (reconciling /\ proc[c] # "running"))
+
+CopyBegin(c, a) ==
+    /\ engine = "up" /\ copying[c] = NoCopy
+    /\ tmp[c][a] = "none" /\ fin[c][a] = "none"           \* a final name that exists is HB-USR-002
+    /\ IF a = 0
+         THEN /\ ~archived[c]
+              \* Archive only after the outcome is recorded and the proc is gone. The seeded bug archives as
+              \* soon as a kill has been issued, without waiting for inspect to confirm the proc exited.
+              /\ \/ outcome[c] # "none" /\ proc[c] # "running"
+                 \/ BUG = "archive_live" /\ killRequested[c]
+              /\ IF proc[c] = "running" THEN Flag("archiveLive") ELSE UNCHANGED flags
+         ELSE /\ ~snapEv[c][a] /\ SnapAllowed(c)
+              \* The snapshot starts only while the adapter is idle: turn a has ended. The seeded bug
+              \* snapshots while turn a is still in flight.
+              /\ \/ turnEnded[c][a]
+                 \/ BUG = "snapshot_in_flight" /\ prompts[c][a] >= 1 /\ proc[c] = "running"
+              /\ UNCHANGED flags
+    /\ copying' = [copying EXCEPT ![c] = a]
+    /\ tmp' = IF InPlace(a) THEN tmp ELSE [tmp EXCEPT ![c][a] = "partial"]
+    /\ fin' = IF InPlace(a) THEN [fin EXCEPT ![c][a] = "partial"] ELSE fin
+    /\ UNCHANGED <<turnEnded, snapEv, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+                   proc, killRequested, killReason, queued, promptSent, pendingSend,
+                   prompts, outcome, wasStopped, archived, deleted, controlFile, controlApplied,
+                   applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
+                   graded, gradeCount, grace>>
+
+\* Verified, then renamed (or, in place, the fill simply ends): the name now exists and is complete.
+CopyPublish(c, a) ==
+    /\ engine = "up" /\ copying[c] = a
+    /\ IF InPlace(a) THEN fin[c][a] = "partial" ELSE tmp[c][a] = "partial"
+    /\ fin' = [fin EXCEPT ![c][a] = "complete"]
+    /\ tmp' = [tmp EXCEPT ![c][a] = "none"]
+    /\ UNCHANGED <<turnEnded, snapEv, copying, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+                   proc, killRequested, killReason, queued, promptSent, pendingSend,
+                   prompts, outcome, wasStopped, archived, deleted, controlFile, controlApplied,
+                   applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
+                   graded, gradeCount, flags, grace>>
+
+\* A snapshot copy fails after bounded retry (HB-CELL-117): the attempt ends, turn k+1 is never sent, and the
+\* temporary sibling stays for the sweep.
+SnapFail(c, k) ==
+    /\ k \in Arts \ {0}
+    /\ EngineReady /\ copying[c] = k /\ tmp[c][k] = "partial"
+    /\ proc[c] = "running" /\ ~killRequested[c]
+    /\ copying' = [copying EXCEPT ![c] = NoCopy]
+    /\ tmp' = [tmp EXCEPT ![c][k] = "none"]
+    /\ proc' = [proc EXCEPT ![c] = "exited"]
+    /\ UNCHANGED <<turnEnded, snapEv, fin, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+                   killRequested, killReason, queued, promptSent, pendingSend,
+                   prompts, outcome, wasStopped, archived, deleted, controlFile, controlApplied,
+                   applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
+                   graded, gradeCount, flags, grace>>
+
+\* cell.turn_snapshot_archived{k}: appended only after the snapshot folder is published.
+SnapRecord(c, k) ==
+    /\ k \in Arts \ {0}
+    /\ engine = "up"
+    /\ fin[c][k] = "complete" /\ ~snapEv[c][k]
+    /\ snapEv' = [snapEv EXCEPT ![c][k] = TRUE]
+    /\ copying' = [copying EXCEPT ![c] = NoCopy]
+    /\ UNCHANGED <<turnEnded, tmp, fin, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+                   proc, killRequested, killReason, queued, promptSent, pendingSend,
+                   prompts, outcome, wasStopped, archived, deleted, controlFile, controlApplied,
+                   applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
+                   graded, gradeCount, flags, grace>>
+
+\* cell.archived: appended only after the final folder is published. If a crash fell between the rename and
+\* this append, the folder exists and the event is recorded on resume (W0 section 4, the recovery rule).
 Archive(c) ==
     /\ engine = "up"
-    /\ ~archived[c]
-    /\ \/ outcome[c] # "none" /\ proc[c] # "running"
-       \/ BUG = "archive_live" /\ killRequested[c]
+    /\ ~archived[c] /\ fin[c][0] = "complete"
     /\ archived' = [archived EXCEPT ![c] = TRUE]
-    /\ IF proc[c] = "running" THEN Flag("archiveLive") ELSE UNCHANGED flags
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ copying' = [copying EXCEPT ![c] = NoCopy]
+    /\ UNCHANGED <<turnEnded, snapEv, tmp, fin, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, deleted, controlFile, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
-                   graded, gradeCount, grace>>
+                   graded, gradeCount, flags, grace>>
 
 DeleteWorkspace(c) ==
     /\ engine = "up"
     /\ ~deleted[c] /\ outcome[c] # "none"
     /\ (BUG = "delete_before_archive" \/ archived[c])
     /\ deleted' = [deleted EXCEPT ![c] = TRUE]
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, controlFile, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
@@ -339,7 +456,7 @@ DeleteWorkspace(c) ==
 WriteControl(k) ==
     /\ ~controlFile[k] /\ ~controlApplied[k]
     /\ controlFile' = [controlFile EXCEPT ![k] = TRUE]
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
@@ -355,7 +472,7 @@ ApplyStop ==
     /\ stopApplied' = TRUE
     /\ decision' = IF decision = "open" THEN "resolved" ELSE decision   \* superseded (stop)
     /\ resolutions' = IF decision = "open" THEN resolutions + 1 ELSE resolutions
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile, lock,
                    passState, passOwner, graded, gradeCount, flags, grace>>
@@ -368,8 +485,8 @@ ApplyAnswer ==
     /\ applyCount' = [applyCount EXCEPT !["answer"] = @ + 1]
     /\ IF decision = "open" \/ (BUG = "double_resolution" /\ decision = "resolved")
          THEN /\ decision' = "resolved" /\ resolutions' = resolutions + 1
-         ELSE UNCHANGED <<decision, resolutions>>
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+         ELSE UNCHANGED <<tvars, decision, resolutions>>
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile, stopApplied,
                    lock, passState, passOwner, graded, gradeCount, flags, grace>>
@@ -378,7 +495,7 @@ RemoveControl(k) ==
     /\ engine = "up"
     /\ controlFile[k] /\ controlApplied[k]
     /\ controlFile' = [controlFile EXCEPT ![k] = FALSE]
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
@@ -390,7 +507,7 @@ RemoveControl(k) ==
 RaiseDecision ==
     /\ engine = "up" /\ decision = "none" /\ ~stopApplied
     /\ decision' = "open"
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile,
                    controlApplied, applyCount, stopApplied, resolutions, lock, passState,
@@ -400,7 +517,7 @@ TimeoutDefault ==
     /\ BUG # "no_timeout"
     /\ engine = "up" /\ decision = "open"
     /\ decision' = "resolved" /\ resolutions' = resolutions + 1
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile,
                    controlApplied, applyCount, stopApplied, lock, passState, passOwner,
@@ -412,15 +529,17 @@ TimeoutDefault ==
 Crash ==
     /\ engine = "up" /\ crashes < MaxCrashes
     /\ engine' = "down" /\ crashes' = crashes + 1
-    /\ queued' = [c \in Cells |-> FALSE]
-    /\ pendingSend' = [c \in Cells |-> FALSE]
+    /\ queued' = [c \in Cells |-> 0]
+    /\ pendingSend' = [c \in Cells |-> 0]
+    /\ copying' = [c \in Cells |-> NoCopy]
+    /\ tmp' = [c \in Cells |-> [a \in Arts |-> "none"]]
     /\ killReason' = [c \in Cells |-> "none"]
     /\ grace' = [c \in Cells |-> FALSE]
     /\ lock' = IF lock = "engine" THEN "free" ELSE lock
     /\ passState' = [p \in Passes |->
                        IF passOwner[p] = "engine" /\ passState[p] = "active"
                          THEN "abandoned" ELSE passState[p]]
-    /\ UNCHANGED <<reconciling, reconciled, intent, launchEpoch, epoch, proc,
+    /\ UNCHANGED <<turnEnded, snapEv, fin, reconciling, reconciled, intent, launchEpoch, epoch, proc,
                    killRequested, promptSent, prompts, outcome, wasStopped, archived, deleted,
                    controlFile, controlApplied, applyCount, stopApplied, decision,
                    resolutions, passOwner, graded, gradeCount, flags>>
@@ -429,7 +548,7 @@ Resume ==
     /\ engine = "down"
     /\ engine' = "up" /\ epoch' = epoch + 1
     /\ reconciling' = TRUE /\ reconciled' = {}
-    /\ UNCHANGED <<crashes, intent, launchEpoch, proc, killRequested, killReason, queued,
+    /\ UNCHANGED <<tvars, crashes, intent, launchEpoch, proc, killRequested, killReason, queued,
                    promptSent, pendingSend, prompts, outcome, wasStopped, archived, deleted,
                    controlFile, controlApplied, applyCount, stopApplied, decision,
                    resolutions, lock, passState, passOwner, graded, gradeCount, flags, grace>>
@@ -439,27 +558,35 @@ ReconcileKill(c) ==
     /\ engine = "up" /\ reconciling
     /\ proc[c] = "running" /\ ~killRequested[c]
     /\ killRequested' = [killRequested EXCEPT ![c] = TRUE]
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killReason, queued, promptSent, pendingSend, prompts, outcome,
                    wasStopped, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
                    gradeCount, flags, grace>>
 
 \* Reconciliation step 2 (proc gone): prompted cells fail, never relaunched; unprompted
-\* cells have their proc removed and may launch once.
+\* cells have their proc removed and may launch once. The recorded class is ADR-0015 section 6's
+\* predicate (ClassOf); a cell between turns first has its snapshot redone (ADR-0021 section 4).
+\* Seeded bugs: `relaunch_prompted` reopens every prompted cell; `resend_turn_on_resume` reopens a crashed
+\* turn k > 1; `kill_between_turns` classifies by the old predicate (prompted and not terminal).
+ResendTurn(c) == BUG = "resend_turn_on_resume" /\ \E k \in Turns \ {1} : promptSent[c][k] /\ ~turnEnded[c][k]
 ReconcileRecord(c) ==
     /\ engine = "up" /\ reconciling
-    /\ Active(c) /\ c \notin reconciled
+    /\ Active(c) /\ c \notin reconciled /\ copying[c] = NoCopy
     /\ (BUG = "reconcile_no_wait" \/ proc[c] # "running")   \* seeded: records without confirming the kill
-    /\ IF promptSent[c] /\ BUG # "relaunch_prompted"
-         THEN /\ Record(c, "crashfail")
+    /\ IF AnyPrompted(c) /\ BUG # "relaunch_prompted" /\ ~ResendTurn(c)
+         THEN /\ BetweenSnapped(c)
+              /\ Record(c, IF BUG = "kill_between_turns" THEN "crashfail" ELSE ClassOf(c))
               /\ UNCHANGED <<proc, promptSent>>
          ELSE /\ proc' = [proc EXCEPT ![c] = "none"]
               /\ promptSent' = IF BUG = "relaunch_prompted"
-                                 THEN [promptSent EXCEPT ![c] = FALSE] ELSE promptSent
+                                 THEN [promptSent EXCEPT ![c] = [k \in Turns |-> FALSE]]
+                                 ELSE IF ResendTurn(c)
+                                 THEN [promptSent EXCEPT ![c] = [k \in Turns |-> promptSent[c][k] /\ turnEnded[c][k]]]
+                                 ELSE promptSent
               /\ UNCHANGED <<outcome, wasStopped>>
     /\ reconciled' = reconciled \cup {c}
-    /\ UNCHANGED <<engine, crashes, reconciling, intent, launchEpoch, epoch, killRequested,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, intent, launchEpoch, epoch, killRequested,
                    killReason, queued, pendingSend, prompts, archived, deleted, controlFile,
                    controlApplied, applyCount, stopApplied, decision, resolutions, lock,
                    passState, passOwner, graded, gradeCount, flags, grace>>
@@ -471,7 +598,7 @@ ReopenStopped(c) ==
     /\ outcome[c] = "stopped" /\ proc[c] # "running"
     /\ outcome' = [outcome EXCEPT ![c] = "none"]
     /\ proc' = [proc EXCEPT ![c] = "none"]
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    killRequested, killReason, queued, promptSent, pendingSend, prompts,
                    wasStopped, archived, deleted, controlFile, controlApplied, applyCount,
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
@@ -482,7 +609,7 @@ ReconcileDone ==
     /\ \A c \in Cells : (Active(c) => c \in reconciled)
                            /\ (BUG = "reconcile_no_wait" \/ proc[c] # "running")
     /\ reconciling' = FALSE
-    /\ UNCHANGED <<engine, crashes, reconciled, intent, launchEpoch, epoch, proc,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciled, intent, launchEpoch, epoch, proc,
                    killRequested, killReason, queued, promptSent, pendingSend, prompts,
                    outcome, wasStopped, archived, deleted, controlFile, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
@@ -504,7 +631,7 @@ GradeStart(p, g) ==
     /\ lock' = g
     /\ passState' = [passState EXCEPT ![p] = "active"]
     /\ passOwner' = [passOwner EXCEPT ![p] = g]
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile,
                    controlApplied, applyCount, stopApplied, decision, resolutions, graded,
@@ -519,7 +646,7 @@ GradeCell(p, c) ==
     /\ graded' = [graded EXCEPT ![p] = @ \cup {c}]
     /\ gradeCount' = [gradeCount EXCEPT ![p][c] = @ + 1]
     /\ IF ~archived[c] THEN Flag("gradeUnarchived") ELSE UNCHANGED flags
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile,
                    controlApplied, applyCount, stopApplied, decision, resolutions, lock,
@@ -533,7 +660,7 @@ GradeEnd(p) ==
         \/ \A c \in Cells : archived[c] => c \in graded[p])
     /\ lock' = IF lock = passOwner[p] THEN "free" ELSE lock
     /\ passState' = [passState EXCEPT ![p] = "done"]
-    /\ UNCHANGED <<engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile,
                    controlApplied, applyCount, stopApplied, decision, resolutions, passOwner,
@@ -543,9 +670,11 @@ GradeEnd(p) ==
 Next ==
     \/ \E c \in Cells : WriteIntent(c)
     \/ \E c \in Cells :
-          \/ StartCell(c) \/ StartFails(c) \/ QueuePromptSent(c) \/ PersistPromptSent(c)
+          \/ StartCell(c) \/ StartFails(c) \/ PersistPromptSent(c)
           \/ SendPrompt(c) \/ CellExits(c) \/ CellDies(c) \/ GracefulExit(c) \/ EndGrace(c) \/ RecordExit(c)
           \/ EngineKill(c) \/ StopCell(c) \/ Archive(c) \/ DeleteWorkspace(c)
+          \/ \E k \in Turns : QueuePromptSent(c, k) \/ TurnEnd(c, k)
+          \/ \E a \in Arts : CopyBegin(c, a) \/ CopyPublish(c, a) \/ SnapFail(c, a) \/ SnapRecord(c, a)
           \/ ReconcileKill(c) \/ ReconcileRecord(c) \/ ReopenStopped(c)
     \/ \E k \in Controls : WriteControl(k) \/ RemoveControl(k)
     \/ ApplyStop \/ ApplyAnswer \/ RaiseDecision \/ TimeoutDefault
@@ -563,6 +692,7 @@ Fairness ==
     /\ \A c \in Cells :
           /\ WF_vars(StopCell(c)) /\ WF_vars(CellDies(c)) /\ WF_vars(EndGrace(c)) /\ WF_vars(RecordExit(c))
           /\ WF_vars(ReconcileKill(c)) /\ WF_vars(ReconcileRecord(c)) /\ WF_vars(Archive(c))
+          /\ \A a \in Arts : WF_vars(CopyBegin(c, a)) /\ WF_vars(CopyPublish(c, a)) /\ WF_vars(SnapRecord(c, a))
           /\ WF_vars(EngineKill(c))
     /\ \A p \in Passes :
           /\ WF_vars(GradeStart(p, "engine")) /\ WF_vars(GradeEnd(p))
@@ -585,8 +715,22 @@ TypeOK ==
     /\ grace \in [Cells -> BOOLEAN]
     /\ decision \in {"none", "open", "resolved"}
     /\ lock \in {"free", "engine", "bench"}
+    /\ queued \in [Cells -> 0..NumTurns] /\ pendingSend \in [Cells -> 0..NumTurns]
+    /\ promptSent \in [Cells -> [Turns -> BOOLEAN]] /\ turnEnded \in [Cells -> [Turns -> BOOLEAN]]
+    /\ snapEv \in [Cells -> [Turns -> BOOLEAN]] /\ copying \in [Cells -> Arts \cup {NoCopy}]
+    /\ tmp \in [Cells -> [Arts -> {"none", "partial"}]]
+    /\ fin \in [Cells -> [Arts -> {"none", "partial", "complete"}]]
 
-AtMostOnePrompt            == \A c \in Cells : prompts[c] <= 1
+PromptOncePerTurn          == \A c \in Cells, k \in Turns : prompts[c][k] <= 1
+\* ADR-0015 section 7. No turn k+1 prompt (ledger or wire) before turn k's snapshot event is durable.
+SnapshotBeforeNextTurn     == \A c \in Cells, k \in Turns \ {1} :
+                                (promptSent[c][k] \/ prompts[c][k] >= 1) => snapEv[c][k - 1]
+\* No copy runs while a turn is in flight, so the working copy is quiescent apart from stray processes.
+NoSnapshotInFlight         == \A c \in Cells : copying[c] # NoCopy => ~InFlight(c)
+\* A resumed cell is classed by prompt_sent, turn_ended and the terminal outcome, not by prompt_sent alone.
+CrashedTurnPredicate       == \A c \in Cells : outcome[c] \in {"crashfail", "crashbetween"} => outcome[c] = ClassOf(c)
+\* A final archive or snapshot name exists only after its copy was verified.
+ArchiveExistsMeansComplete == \A c \in Cells, a \in Arts : fin[c][a] # "none" => fin[c][a] = "complete"
 NoPromptAfterOutcome       == ~flags["promptAfterOutcome"]
 NoArchiveWhileLive         == ~flags["archiveLive"]
 NothingDeletedUnarchived   == \A c \in Cells : deleted[c] => archived[c]
@@ -606,6 +750,10 @@ NoOutcomeWhileRunning      == \A c \in Cells : outcome[c] # "none" => proc[c] # 
 \* deleted, so safety does not pass merely because the run stalls early.
 NotAllCellsFinished        == ~(\A c \in Cells : deleted[c] /\ \E p \in Passes : c \in graded[p])
 NoGraceState               == \A c \in Cells : ~grace[c]
+\* Witnesses for NumTurns = 2 (each must be VIOLATED): a cell completes both turns after the turn-1 snapshot, and a
+\* resume classes a cell that was between turns, with its snapshot recorded.
+NotAllTurnsDelivered       == ~(\E c \in Cells : outcome[c] = "done" /\ turnEnded[c][NumTurns] /\ (NumTurns = 1 \/ snapEv[c][1]))
+NotCrashBetween            == ~(\E c \in Cells : outcome[c] = "crashbetween" /\ snapEv[c][1])
 
 (* Liveness *)
 DecisionEventuallyResolved == (decision = "open") ~> (decision = "resolved")
@@ -613,7 +761,7 @@ StopReachesTerminal        == controlFile["stop"] ~>
                                 (stopApplied /\ \A c \in Cells :
                                    (intent[c] => outcome[c] # "none" /\ proc[c] # "running"))
 EndedCellsGetArchived      == \A c \in Cells : (outcome[c] # "none") ~> archived[c]
-PromptedCellsEnd           == \A c \in Cells : promptSent[c] ~> (outcome[c] # "none")
+PromptedCellsEnd           == \A c \in Cells : AnyPrompted(c) ~> (outcome[c] # "none")
 \* With GradedOncePerPass, "each cell is graded exactly once" (US-44) in the engine's pass.
 ArchivedCellsGetGraded     == \A c \in Cells :
                                 archived[c] ~> (\E p \in Passes : c \in graded[p] /\ passState[p] = "done")
