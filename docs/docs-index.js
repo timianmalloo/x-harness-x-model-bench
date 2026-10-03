@@ -2251,7 +2251,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8a267c00da2b82e5c7054ea1bd0ba117a932fabda71ff8df017d885b091ba288"
+      "sourceSha256": "9421f6075f4a08aa6812800c417a4f2647aa74f4d86903b2100cc6e8dfdf362e"
     },
     {
       "id": "design-eval-power-verdicts",
@@ -2574,7 +2574,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "dd272b09298bc8cf17beeeb8f970d5d362451188dd1e5afce2996eac116d18c6"
+      "sourceSha256": "72398da67a1424bb87a7d3ca1786a9e72bb609c6f439e4d504fe9f61c18a4925"
     },
     {
       "id": "design-eval-security-tasks",
@@ -3567,7 +3567,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3fcbf941d7d24b458a7bd652d55e2f0d0ea35a730fc56b162fa375dcdb1e77df"
+      "sourceSha256": "1c30970592e57fbd31b27c703ea9f07401ca980a3805cdf12f0190e232a46a01"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -5505,7 +5505,40 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "1da6989fde0ee0bd334d3b52691892ea569d64afbf6f199c29ab5426e77873ca"
+      "sourceSha256": "2fa2b201653db884e9294ae9adeb4d871deb185e1cc701719579edcaaa6d68ba"
+    },
+    {
+      "id": "brief-eval-x-d1-followon",
+      "path": "docs/coordination/eval-wave2-e1/x-d1-followon.md",
+      "title": "X-D1 follow-on: turn the partial D1 green under the rev 6.4 rulings (Sonnet, same tree)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-D1 on Codex ended partial at 3cea81d9 with ten assertion-red tests. This Sonnet follow-on, in the same tree, implements the two direction scans in tests/import_graph.py and the two-place catalog_hash hunk in grade/runner.py (W0 rev 6.4, R6.4a and R6.4b), then runs the join gate.",
+      "tags": [],
+      "links": [
+        {
+          "to": "brief-eval-x-d",
+          "rel": "implements"
+        },
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-identity",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "98abf6cf67f881acf4878e5e3c0da7034e59d1e4d286473b574eecb54a1bfbe9"
     },
     {
       "id": "brief-eval-x-e",
@@ -6420,7 +6453,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "892d9cd49622f7d6aa6169fa3d57b2b6f0f27c768b4870d78d937bb55262c6cd"
+      "sourceSha256": "3d513410527d8a9419a83a036db50960a71954553e02cd71d22873d37743f1af"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -7315,5 +7348,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "3208fbd5fc002482a6d98f2557649857f42c76f1aedbf4b164427af32e801829"
+  "graphSha256": "92b89a3cd5293c83a947af1933316ad1e19b8db608aafb22921431dd371f86f4"
 };
