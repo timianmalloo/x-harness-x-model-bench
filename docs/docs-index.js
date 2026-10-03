@@ -2481,7 +2481,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4a5ee2894f494ca728719ef7b6ff491f482e6fe5d9e6cec5b14bfa10fdf42f0f"
+      "sourceSha256": "dd272b09298bc8cf17beeeb8f970d5d362451188dd1e5afce2996eac116d18c6"
     },
     {
       "id": "design-eval-security-tasks",
@@ -6183,7 +6183,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation: Wave 2, phase E1 (walking skeleton build)",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "The rules every E1 build worker follows, the routing of the fourteen E1 items to harness and pinned model (R-87, R-88 confirmed to Codex, R-91, R-92), the real dependency DAG, the launch order by critical path, the dispatch shape per track (one external turn red and green, or a Sonnet follow-on), and one brief per item. Nine briefs are written; five wait on designs that have not passed their gate.",
+      "summary": "The rules every E1 build worker follows, the routing of the fourteen E1 items to harness and pinned model (R-87, R-88 confirmed to Codex, R-91, R-92), the real dependency DAG, the launch order by critical path, the dispatch shape per track (one external turn red and green, or a Sonnet follow-on), and one brief per item. Nine briefs are written; five wait on designs that have not passed their gate. Part 2 (W0 rev 6, Coordinator session #6): the X-C, X-H1, X-H2, X-E and X-INT briefs, TOOL-GSM-B, the rev-6 alignment of part 1, the external compilations, the Grok transport finding, and the DAG and launch order as of 2026-10-03 evening.",
       "tags": [
         "coordination",
         "briefs",
@@ -6210,7 +6210,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7"
+      "sourceSha256": "892d9cd49622f7d6aa6169fa3d57b2b6f0f27c768b4870d78d937bb55262c6cd"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -7105,5 +7105,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "9d68277b19e229ddd5bf0de4687d35bdf2877ad7521e0b67bae3bc15541a01df"
+  "graphSha256": "af5d68f35e46129a179b105d107f8d98282d796914489e1da61a0e17e106dff1"
 };

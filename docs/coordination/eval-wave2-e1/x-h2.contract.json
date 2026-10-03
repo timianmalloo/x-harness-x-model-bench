@@ -40,7 +40,7 @@
         "permissions": "observed-only"
       },
       "prompts": [
-        "COMPILE-OWED:docs/coordination/eval-wave2-e1/x-h2.md"
+        "al-01M41NRKDW17XAP6WS7AFPQF9K"
       ],
       "fallback": "A red-only end, a deadline or a failed served-model read: the green follow-on runs as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) in this worker's tree (R-87 Option 1); the plan's fallback for every Agy track, after an Owner review"
     }
