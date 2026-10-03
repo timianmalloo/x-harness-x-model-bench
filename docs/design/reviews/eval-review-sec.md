@@ -109,3 +109,43 @@ Scope: the RV-SEC rows of "Delta re-read list (rev 3 + rev 4)" and "Who re-reads
 Held without finding: the wsgi environ, app-output capture, start bound (row 6, a measured 0), RF-9 copy helper, `make_writable` link rule (text only; the code is not built).
 
 GATE w0-seam-contracts rev 4 and rev 5 delta · Security & Identity · PASS WITH CONDITIONS · 13 findings (rv-sec-w1e-e1e4, 2026-10-03)
+
+## W0 rev 6 delta (main, 4e817553), 2026-10-03
+
+Scope: the RV-SEC row of "Who re-reads what (rev 6)": s3 `check_segment`, `paths` drive/root, frame ids, E4 listener; s4 `lock.held` guard, folder sweep, `RunLock.acquire`; s6 `plan_hash` as the parsed field, non-measurement refusals, record-name witness; s10 D3. Read from `docs/design/eval-seam-contracts.md` on main and checked against `cli.py:153-155`, `plan.py:143-144,372-379`, `oslock.py:49,67-79`. Session rv-sec-w0r6-e1e4. Persona security-identity-architect, Adversary Mode, T2.
+
+Closure of my r45 conditions (13 findings):
+
+| r45 finding | state in rev 6 | verdict |
+| --- | --- | --- |
+| case ids vs `nul` fixture (major) | s3: `check_segment` refuses on `fullmatch`, `:`, trailing dot or space, and a device-name stem; red fixtures `nul`, `NUL`/`com1` under a permissive `rx`, `lpt9.log`, `a:b`, `x.`, `x `, `"ok\n"`; mutant "drop rule 3". The case-id regex accepts `nul`, so the plain `nul` fixture is red until rule 3 exists and green only with it. `con`, `aux` are refused by the same rule (listed) but have no named fixture. | closed; see F1, F2 |
+| same class for `campaign_id`, variants, overlay (major) | one validator, four callers named (case ids, variant names, overlay components, `campaign_id`); s6 and s2 point at it | closed |
+| sweep guard (major) | `lock.held` is `_fd >= 0` on the caller's own object; two-process red test (B holds with a temp in flight, A releases then sweeps, A raises, temp survives). `is_held(path)` withdrawn. Matches `oslock.py` (`_fd = -1` on release, line 70). | closed in part, decision A |
+| `acquire` non-regular refusal (minor) | moved into `RunLock.acquire` for every lock | closed (text; code is X-B1's) |
+| `plan_hash` re-read window (major) | ledger value is `load_confirmed(run_dir)["plan_hash"]`; `run_side_check` compares with the dict the engine parsed and opens no file; mutant "re-reads the file" caught by a swap between parse and check. Verified against `cli.py:155` and `plan.py:372-379`: a plan edited with its field recomputed passes `load_confirmed`, so the named test that the ledger value refuses it is the control that matters. | closed |
+| discrimination run attached (major) | HB-CMP-010 on `attach`, `pilot attach`, `run_side_check`; HB-PLN-004 on `bench run`, report, board; `status` labels; T-E19 drives each with a real discrimination run | closed; see F3 |
+| git witness for records (minor) | name equals key from body, `task` equals folder, tracked-but-missing is a finding (HB-CMP-003) | closed; history rewrite stays open (decision B) |
+| D3 (major) | handle-list test over build, start and probe host; AST rule "every `subprocess` call in `bench_check.py` is inside `spawn_deliverable`"; red fixture a temp copy with a bare `subprocess.run` | closed; see F4 |
+| `paths` drive and root (minor) | `PureWindowsPath(p).drive` or `.root` non-empty, plus `..`; both forms added to the bad-path tests | closed |
+| listener and `{fake_url}` (minor) | no host argument, literal `127.0.0.1`, `SO_EXCLUSIVEADDRUSE`, string `args` only, egress named as ADR-0013's | closed |
+| variants file rules; `clauses.json` (minor) | one `VARIANTS`, 64 KiB cap, `SyntaxError`/`RecursionError`/`MemoryError` is HB-RDY-005, `edits[].file` on the overlay rule, `clauses.json` parsed after the scan, declared text only | closed |
+| frame ids (minor) | reader rejects an id with no pending request (X-F) | closed |
+| SR-L1 | no surface | none |
+
+Decisions on the two items accepted in part:
+
+- **A. Sweep path-match pinned by each caller's test: acceptable, with a condition.** `atomic` cannot know which folder a lock guards, so a path check there would be a second, wrong model. Deletion is already bounded by `TEMP_RE` and the single reparse guard, and there are three in-tree callers (X-C four folders, X-E one, X-K1 one). Condition 1: each caller's test is red-first on the wrong pairing (a held lock of another folder passed with this folder; deleting the caller's pairing line turns it red), not only on the happy pairing.
+- **B. Fresh-clone forgery as a named residual: acceptable.** A hand-written record needs the same user, who can edit the tree, the harness and the ledger anyway (ADR-0013's boundary). R-98 makes a differing replay HB-RDY-010 and leaves the file untouched; reconciliation only prints a note and never counts as a pass; the pilot ring is a second measurement (Inferred). The record carries no secret. It stays acceptable only while no verdict, gate or leaderboard consumes a discrimination record as a measured result; R6-6 refuses discrimination runs everywhere a run id is read. The committed-history rewrite (RV-SEC W1-C 4) is still W1-C's "fix or name"; not closed here, carried as the same residual (Inferred; same user).
+
+New findings from the delta:
+
+| # | location | finding | severity | evidence | fix | confidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| F1 | s3 `check_segment` rule 3 | "Stem = the text before the first `.`" misses `nul .txt` and `NUL..x`: Windows strips trailing spaces and dots from the stem, so these can still reach the device. Rule 2 tests only the end of the whole name. `CONIN$` and `CONOUT$` are also reserved; `$` is reachable by overlay components, which use a permissive `rx`. | minor | text of rule 3 | Stem is `name.split(".")[0].rstrip(" ")`, case-folded; add `conin$`, `conout$`. Add `nul .txt` and `CONOUT$` to the red fixtures. | Inferred (Windows behaviour, not run here) |
+| F2 | s3 fixtures | `"ok\n"` goes red only under a pattern ending in `$`, so it separates `fullmatch` from `match` only if the fixture's `rx` is one. `con` and `aux` are not fixtures, so two of the four names in my condition are asserted by no test. | minor | fixture list | Name the `rx` (`^[a-z0-9]+$`) for that case; add `con` and `aux` as plain fixtures with the default regex. | Verified (text) |
+| F3 | SR-E3 1 / R6-6 | The refusal reads `plan.kind != "measurement"`. Plans written before X-A1 have no `kind` (none in `plan.py` today). The text never says an absent field is `measurement`, so six readers could compare it six ways. | minor | `plan.py` (no `kind`); s5 row 286 says "default" | State once: absent means `measurement`; any other value, known or not, is refused. One helper, not six comparisons. | Verified (absence); effect Inferred |
+| F4 | s10 D3 AST rule | The rule names `subprocess` calls. `from subprocess import Popen as P`, `import subprocess as sp`, `os.spawn*`, `os.system` and `os.popen` fall outside a literal match, while the allowlist change admits the whole file. | minor | s10 D3 | Resolve aliases through `tests/import_graph.py` (the allowlist text already does) and include `os.spawn*`, `os.system`, `os.popen`. Add an aliased-import form to the red fixture. | Inferred |
+
+Conditions: (1) each caller of `sweep_temps` carries a red test for the wrong lock-to-folder pairing (X-C, X-E, X-K1); (2) F1 and F2 land in X-F's `check_segment` fixture list; (3) F3 in X-A1's `kind` reader; (4) F4 in X-F's D3 test. Nothing blocks the build.
+
+GATE w0-seam-contracts rev 6 · Security & Identity · PASS WITH CONDITIONS · 4 findings (rv-sec-w0r6-e1e4, 2026-10-03)
