@@ -1,1 +1,2 @@
 {"agent": "w1j-multiturn-e1e4", "at": 1791049879.1825597, "kind": "session-start", "path": "-", "seq": 1, "session": "w1j-multiturn-e1e4", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-design-eval-multi-turn"}
+{"action": "add", "agent": "w1j-multiturn-e1e4", "at": 1791050733.9065344, "deadline_at": 1791051633.9065344, "id": "req-01M41F2PAKH97KH6BDGXCTA1KK", "kind": "request", "path": "-", "seq": 2, "session": "w1j-multiturn-e1e4", "to": "coord-opus-e1e4", "type": "request", "wi": "WI-0"}
