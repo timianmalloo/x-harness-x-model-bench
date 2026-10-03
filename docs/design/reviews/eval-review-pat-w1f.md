@@ -7,7 +7,6 @@ owner: "@timianmalloo"
 tags: [review, patterns-expert, evaluation-campaign, wave-1, w1-f]
 links:
   - { to: design-eval-seam-contracts, rel: relates-to }
-  - { to: design-eval-property-grader, rel: relates-to }
 review-by: "2026-10-17"
 summary: >-
   RV-PAT review of design/eval-property-grader (441da4ba, e41289a2) against W0 rev 2 (3c1c9827). Patterns named
