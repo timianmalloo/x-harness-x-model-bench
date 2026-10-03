@@ -2,16 +2,50 @@ schema: bench-task/1
 id: SM2
 scenario: 5                 # W0 decision: property tasks are scenario 5 (docs/design/eval-seam-contracts.md section 1)
 title: "Simplicity task 2 on a second codebase (W1-L)"
-status: stub
-language: tbd
+status: draft               # Stays draft until X-LG's diffstats measures size_reference_lines and the ceilings and X-J2b's create edit form joins; then a real-host discrimination record reproduces every value in `expected` (W1-L 5.3; B-SM2)
+language: python
 source:
   kind: authored
-  upstream: "harness-bench property task"
-  repo: tbd
-  commit: tbd
+  upstream: "harness-bench property task on jmespath.py"
+  repo: "https://github.com/jmespath/jmespath.py"
+  commit: "2812594e69d43098ef60f81f4efc404c071b0418"   # main at authoring, git rev-parse HEAD of a fresh clone, 2026-10-03; its tree is 9c54fa72fc42fbef72011798bc3eba3610934541
+  workspace_from: source        # E5 precedent: the engine's own task_source() builds the base; nothing vendored
+  license: MIT
+  copyright: "Copyright (c) 2013 Amazon.com, Inc. or its affiliates"
 budget:
-  minutes: 45               # provisional (W0); the task's design fixes it (1-60)
+  minutes: 45                # the W0 provisional value and the BOM entry's value; no measurement behind another figure
   usd_cap: null
+blast_radius: ["jmespath/__init__.py"]
+model_map: null
+scripted_user: false
+formal: null
 property:
-  name: simplicity           # W0 section 2; the task's design fills the other property fields
-graders: []                 # DR-4 (a), provisional: [correctness, property] once grade/property.py exists
+  name: simplicity
+  latent_requirement: "A small addition to a library must be the smallest code that meets the ask, with no new type, option or layer the ask never named."
+  evidence_paths: ["jmespath/__init__.py"]
+  # `option` is not a latent term here (it differs from SM1): this prompt must name the `options` parameter, so the bare term would hit.
+  latent_terms: [minimal, simple, smallest, "no extra", "without adding", YAGNI, abstraction, configur, "extra option", "new option", strategy, factory]
+  primary_metric: property_check_pass
+  size_reference_lines: 3    # Inferred: hand count of the reference's added product lines (W1-L 5.1) until X-LG's diffstats measures it (HASH-A, B-SM2)
+  ceilings:
+    size_vs_reference: "3.0000"   # Inferred: admits the 9-line honest solution (9 / 3), exactly on the ceiling
+    new_abstractions: 0
+    new_dependencies: 0
+    outside_radius_lines: 4       # Inferred: keeps an honest solution passing (W1-L assume A5; checked against `alt` in the ready follow-on)
+  fault_contract: {}
+graders: [correctness, property]
+oracle:
+  summary: "Hidden unittest cases for search_many (stdlib only); then diffstats counts the final tree against the base. No oracle/check: the strategy is the check (SR-L3)."
+  runner: unittest
+  command: ["{python}", "-m", "unittest", "-v", "test_search_many_hidden"]
+expected:
+  reference:
+    property_check_pass: 1       # derived by W0 section 3: hidden tests pass (5/5) and every ceiling clause holds. Not a grader output.
+    size_vs_reference: "1.0000"  # a TAUTOLOGY: 3 / size_reference_lines 3 by definition, not a discriminating observation (RV-TA W1-L 12)
+    new_abstractions: 0          # hand count: the reference adds no ClassDef
+    new_dependencies: 0          # hand count: the reference adds no import
+  naive:
+    property_check_pass: 0       # the naive passes the 5 hidden tests but adds three classes, so new_abstractions 3 > 0
+    size_vs_reference: "8.0000"  # Inferred (B-SM2): hand count of the naive's 24 added product lines / 3; the design requires at least 8
+    new_abstractions: 3          # by construction: BatchConfig, ResultCollector, BatchSearcher
+    new_dependencies: 0          # dataclasses and typing are stdlib
