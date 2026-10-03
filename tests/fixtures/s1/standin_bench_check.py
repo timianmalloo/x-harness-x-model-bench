@@ -85,7 +85,7 @@ class ProbeHost:
         app["args"] = _resolve(app.get("args", {}), self.state_dir)
         argv = [sys.executable, "-S", "-u", os.path.abspath(__file__), "--probe-host", "--root", ctx.deliverable,
                 "--app", json.dumps(app, sort_keys=True, separators=(",", ":"))]
-        self._log = open(self.log_path, "wb")
+        self._log = open(self.log_path, "wb")  # noqa: SIM115 - held open for the host process's life, closed in close()
         self.proc = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self._log,
                                      close_fds=True, env={k: os.environ[k] for k in ("PATH", "SYSTEMROOT", "TEMP", "TMP")
                                                           if k in os.environ} | {"PYTHONDONTWRITEBYTECODE": "1"})
