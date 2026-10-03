@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T21:19:24Z",
+  "generated": "2026-10-03T22:46:44Z",
   "audit": [
     {
       "actor": null,
@@ -76988,55 +76988,123 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41QV25RVY1JF5E41Z3QZ9HN",
-      "shortname": "coord7-xd1-pack3",
-      "datetime": "2026-10-03T20:38:41Z",
-      "session": "coord-opus-e1e4",
-      "prompt": "Coordinator #7: part A (X-D1 requests req-01M41KBT..., req-01M41KRK...; follow-on; a control against unanswered requests) and part B (pack part 3: E2 X-J1, X-J2, X-RW; E3 X-A3, X-G3, X-K1, X-K2; E4 X-LB, X-LG, X-RS, X-NG, X-SM, X-I-S2; X-CV; W1-K design brief). Mid-task: W1-J rev 2's three requests (rev 6.5) and RV-TA W1-L rev 2 R2-1..R2-8 plus the v-laundered naming conflict.",
-      "summary": "Part A ce924261 (R6.4a/b, x-d1-followon.md, COORD-B second instance, README controls). W0 rev 6.5 f3f08735 (three W1-J requests). Part B 1925a8c8: W0 rev 6.6, W1-L Erratum 1, docs/coordination/eval-wave2-e234/ (README, 15 briefs, w1-k.md, 7 contracts COMPILE-OWED). No compiles: nothing external is dispatchable yet.",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
       "actor": "claude-opus-5-5",
       "artifacts": [
         "docs/coordination/eval-wave2-e234/README.md",
         "docs/coordination/eval-wave2-e1/x-d1-followon.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Answer X-D1's two overdue seam requests and write its follow-on (part A); write Wave 2 pack part 3 for E2-E4 (part B)",
+      "datetime": "2026-10-03T20:38:41Z",
       "done_when": "Both requests resolved and the follow-on committed; E2-E4 README and briefs committed, blocked ones marked, only dispatchable ones compiled",
+      "fan_out": 0,
+      "goal": "Answer X-D1's two overdue seam requests and write its follow-on (part A); write Wave 2 pack part 3 for E2-E4 (part B)",
+      "id": "al-01M41QV25RVY1JF5E41Z3QZ9HN",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Coordinator #7: part A (X-D1 requests req-01M41KBT..., req-01M41KRK...; follow-on; a control against unanswered requests) and part B (pack part 3: E2 X-J1, X-J2, X-RW; E3 X-A3, X-G3, X-K1, X-K2; E4 X-LB, X-LG, X-RS, X-NG, X-SM, X-I-S2; X-CV; W1-K design brief). Mid-task: W1-J rev 2's three requests (rev 6.5) and RV-TA W1-L rev 2 R2-1..R2-8 plus the v-laundered naming conflict.",
+      "session": "coord-opus-e1e4",
+      "shortname": "coord7-xd1-pack3",
+      "skill": "execute-with-coordination",
+      "summary": "Part A ce924261 (R6.4a/b, x-d1-followon.md, COORD-B second instance, README controls). W0 rev 6.5 f3f08735 (three W1-J requests). Part B 1925a8c8: W0 rev 6.6, W1-L Erratum 1, docs/coordination/eval-wave2-e234/ (README, 15 briefs, w1-k.md, 7 contracts COMPILE-OWED). No compiles: nothing external is dispatchable yet.",
+      "tags": [],
       "tier": "T1",
-      "fan_out": 0
+      "tool": null
     },
     {
-      "id": "al-01M41T5MAEK44BZ5P2PQ27BH5W",
-      "shortname": "coord-requests-e1e4-8",
-      "datetime": "2026-10-03T21:19:24Z",
-      "session": "coord-opus-e1e4",
-      "prompt": "Coordinator #8: answer every open request addressed to coord-opus-e1e4 (X-D1 FYI on rev-6 registry texts; X-SM launderlines flips vs size_vs_reference), fix W0 section 7 in rev 6.7 if needed, note X-SM's other findings in W1-L Erratum 2, then hand back.",
-      "summary": "Resolved req-01M41R3B0HZXP9X31VT6BTF11X (confirmed; texts byte-equal) and req-01M41RY339MV3Y56RQ1BKMPFCW (W0 rev 6.7 R6.7a, W1-L Erratum 2, 669d4f54).",
-      "kind": "manual",
-      "skill": null,
-      "tool": null,
       "actor": "Coordinator #8 (claude-opus-5-5)",
       "artifacts": [
         "docs/design/eval-seam-contracts.md",
         "docs/design/eval-property-tasks.md"
       ],
+      "change": "cl-01M41T5B62RH5KVYMG80HWF5KK",
+      "datetime": "2026-10-03T21:19:24Z",
+      "done_when": "coord request list shows no open request to coord-opus-e1e4; any W0/erratum change committed with derive/validate and audit",
+      "git": {
+        "branch": "coord/eval-w0-rev67-launder",
+        "pushed": null,
+        "sha": "669d4f5495b2dab964da549a386b37624c5d295a",
+        "short": "669d4f549"
+      },
+      "goal": "Queue for coord-opus-e1e4 empty, each request answered with a verified ruling",
+      "id": "al-01M41T5MAEK44BZ5P2PQ27BH5W",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Coordinator #8: answer every open request addressed to coord-opus-e1e4 (X-D1 FYI on rev-6 registry texts; X-SM launderlines flips vs size_vs_reference), fix W0 section 7 in rev 6.7 if needed, note X-SM's other findings in W1-L Erratum 2, then hand back.",
+      "session": "coord-opus-e1e4",
+      "shortname": "coord-requests-e1e4-8",
+      "skill": null,
+      "summary": "Resolved req-01M41R3B0HZXP9X31VT6BTF11X (confirmed; texts byte-equal) and req-01M41RY339MV3Y56RQ1BKMPFCW (W0 rev 6.7 R6.7a, W1-L Erratum 2, 669d4f54).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-multi-turn.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:53:15Z",
+      "done_when": "Gate PASS incl. Distributed Systems and SRE; TLC run with PromptOncePerTurn, SnapshotBeforeNextTurn, NoSnapshotInFlight, CrashedTurnPredicate, ArchiveExistsMeansComplete, each seeded variant rejected",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-J multi-turn attempt, turn snapshots and the TLA+ model (ADR-0015), producing docs/design/eval-multi-turn.md",
+      "id": "al-01M41N7WVBBY9T3MA38FFKFDBH",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-j-multi-turn.md",
+      "session": "w1j-multiturn-e1e4",
+      "shortname": "design-slice-eval-multi-turn",
+      "skill": "design-slice",
+      "summary": "Designed the multi-turn attempt, turn snapshots and the TLA+ model (W1-J): turn-<n> snapshot folder, snapshot key part on archive_files, driver open/send/close, one budget; model v5 with NumTurns, phased archive writes, 6 new seeded variants; TLC passes, 28/28 variants rejected, US-44 bounds pass (363,738,864 distinct states).",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-multi-turn.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T21:04:41Z",
+      "done_when": "every finding dispositioned; check_models --quick green; one-commit model unit",
+      "duration_seconds": 3536.0,
+      "fan_out": 0,
+      "goal": "W1-J rev 2 gate revision",
+      "id": "al-01M41SANHWAK67KW3WWXSNNF5K",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-j-multi-turn.md (author gate revision, rev 2)",
+      "session": "w1j-multiturn-r2-e1e4",
+      "shortname": "design-slice-eval-multi-turn-rev2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T20:05:45Z",
+      "summary": "Applied all five W1-J gate reviews: independent CrashedTurnPredicate and reverse variant, WIDER data rows with two listed logic lines, turn_ended for every returned turn, skeleton commit order, status.py, retry sweep; TLC quick 29/29 variants and 4/4 witnesses, two-crash and US-44 runs pass",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M41Z56BXFH5NJQ2SFNK4VG4X",
+      "shortname": "design-slice-eval-resume",
+      "datetime": "2026-10-03T22:46:33Z",
+      "session": "w1k-resume-e1e4",
+      "prompt": "docs/coordination/eval-wave2-e234/w1-k.md",
+      "summary": "W1-K design: resume protocol and classifier, NoResumeAfterStop and settled resume branches in the TLA+ model (TLC 33/33 variants, US-44 bounds pass), alarm channel (scheduled task, toast, optional ntfy), X-K1/X-K2 split",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-resume.md"
+      ],
       "tags": [],
       "outcome": "success",
-      "goal": "Queue for coord-opus-e1e4 empty, each request answered with a verified ruling",
-      "done_when": "coord request list shows no open request to coord-opus-e1e4; any W0/erratum change committed with derive/validate and audit",
-      "tier": "T1",
-      "change": "cl-01M41T5B62RH5KVYMG80HWF5KK",
-      "git": {
-        "sha": "669d4f5495b2dab964da549a386b37624c5d295a",
-        "short": "669d4f549",
-        "branch": "coord/eval-w0-rev67-launder",
-        "pushed": null
-      }
+      "compiled": false,
+      "goal": "Design plan-level resume, liveness and the alarm channel (ADR-0021)",
+      "done_when": "Gate-ready design: section 4 rows mapped to node ids, NoResumeAfterStop with TLC output and rejected variant, provisional branches settled, resume record, alarm channel and runbook path, X-K1/X-K2 seam, surface list",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
@@ -78140,24 +78208,14 @@ window.AUDIT_DATA = {
       "title": "W1-L rev 2: whole-tree simplicity counts, verified_before_use not built, R-97 resolver, skeleton-first helpers"
     },
     {
-      "id": "cl-01M41QV1DM2XZZX837Z59AHWYK",
-      "datetime": "2026-10-03T20:38:40Z",
-      "session": "coord-opus-e1e4",
-      "kind": "decision",
-      "skill": null,
-      "title": "W0 rev 6.4-6.6: X-D1 seams, W1-J rev 2 seams, RV-TA W1-L rev 2 and laundering names",
-      "prompt": null,
-      "summary": "Five open requests resolved; W0 rev 6.4 (ce924261), 6.5 (f3f08735), 6.6 (1925a8c8); W1-D Erratum 1, W1-L Erratum 1.",
-      "rationale": "R6.4a/b grant X-D1's two requests (scans in tests/import_graph.py; runner.py line 60). R6.5a-c grant W1-J rev 2's three (turn_ended.next, status.py on X-J1's E2 surface, baseline on turn_ended{1}) with one-definition conditions. R6.6 fixes W1-L R2-1..R2-4 before the task authors start; launderlines/launderclass/laundertest replace the two v-laundered names with opposite meanings.",
       "artifacts": [
         "docs/design/eval-seam-contracts.md"
       ],
-      "tags": [],
+      "datetime": "2026-10-03T20:38:40Z",
       "git": {
-        "before": "198d2fb8",
         "after": "1925a8c88554d2e17208e29d665485ffb0ba78fc",
+        "before": "198d2fb8",
         "branch": "coord/eval-xd1-rulings-pack3",
-        "pushed": null,
         "commits": [
           "1925a8c8 docs(coordination): W0 seam contracts rev 6.6 (RV-TA W1-L rev 2 R2-1..R2-4, laundering-variant names), W1-L Erratum 1, Wave 2 pack part 3 (E2-E4 briefs, W1-K design brief, DAG, launch order)",
           "f3f08735 docs(design): W0 seam contracts rev 6.5 - W1-J rev 2 seams (turn_ended.next, status.py on X-J1's E2 surface, job_active_baseline on turn_ended{1})",
@@ -78170,34 +78228,111 @@ window.AUDIT_DATA = {
           "9df8c33d design(eval): W1-L rev 2 - apply RV-TA/PAT/SIM findings, W0 rev 5, R-97; EV-5 note",
           "fce2b0d6 merge: main into design/eval-property-tasks (W0 rev 5, R-98)",
           "5da93d91 design(eval): W1-L property tasks - resilience, rework, no-guessing, simplicity (x2 each), gate pending"
-        ]
-      }
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M41QV1DM2XZZX837Z59AHWYK",
+      "kind": "decision",
+      "prompt": null,
+      "rationale": "R6.4a/b grant X-D1's two requests (scans in tests/import_graph.py; runner.py line 60). R6.5a-c grant W1-J rev 2's three (turn_ended.next, status.py on X-J1's E2 surface, baseline on turn_ended{1}) with one-definition conditions. R6.6 fixes W1-L R2-1..R2-4 before the task authors start; launderlines/launderclass/laundertest replace the two v-laundered names with opposite meanings.",
+      "session": "coord-opus-e1e4",
+      "skill": null,
+      "summary": "Five open requests resolved; W0 rev 6.4 (ce924261), 6.5 (f3f08735), 6.6 (1925a8c8); W1-D Erratum 1, W1-L Erratum 1.",
+      "tags": [],
+      "title": "W0 rev 6.4-6.6: X-D1 seams, W1-J rev 2 seams, RV-TA W1-L rev 2 and laundering names"
     },
     {
-      "id": "cl-01M41T5B62RH5KVYMG80HWF5KK",
-      "datetime": "2026-10-03T21:19:15Z",
-      "session": "coord-opus-e1e4",
-      "kind": "decision",
-      "skill": null,
-      "title": "W0 rev 6.7: launderlines flips the full differing set; W1-L Erratum 2",
-      "prompt": null,
-      "summary": "Two open requests resolved. X-D1 FYI confirmed (registry texts byte-equal to W0; mutant retarget accepted). X-SM: W0 rev 6.7 R6.7a (669d4f54) sets launderlines flips [property_check_pass, size_vs_reference]; W1-L Erratum 2 records launderclass shape, SM2 latent terms, residual R-S2.",
-      "rationale": "R6-8 defines flips as every differing metric id; launderlines' 3 in-radius lines move size_vs_reference (1.5000/1.3333) within the ceiling, so the rev 6.6 list was an instance error, not a rule change. Narrowing flips to clause-deciding metrics would change R6-8 and was refused. The clause-(b) mutant still dies. is_test_path kept (R6.6b); the test-helper false negative is a measured-reopen residual.",
       "artifacts": [
         "docs/design/eval-seam-contracts.md",
         "docs/design/eval-property-tasks.md",
         "docs/coordination/eval-wave2-e234/x-sm.md"
       ],
-      "tags": [],
+      "datetime": "2026-10-03T21:19:15Z",
       "git": {
-        "before": "372296b0",
         "after": "669d4f5495b2dab964da549a386b37624c5d295a",
+        "before": "372296b0",
         "branch": "coord/eval-w0-rev67-launder",
-        "pushed": null,
         "commits": [
           "669d4f54 docs(design): W0 seam contracts rev 6.7 (launderlines flips the full differing set) and W1-L Erratum 2 (X-SM findings)"
-        ]
-      }
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M41T5B62RH5KVYMG80HWF5KK",
+      "kind": "decision",
+      "prompt": null,
+      "rationale": "R6-8 defines flips as every differing metric id; launderlines' 3 in-radius lines move size_vs_reference (1.5000/1.3333) within the ceiling, so the rev 6.6 list was an instance error, not a rule change. Narrowing flips to clause-deciding metrics would change R6-8 and was refused. The clause-(b) mutant still dies. is_test_path kept (R6.6b); the test-helper false negative is a measured-reopen residual.",
+      "session": "coord-opus-e1e4",
+      "skill": null,
+      "summary": "Two open requests resolved. X-D1 FYI confirmed (registry texts byte-equal to W0; mutant retarget accepted). X-SM: W0 rev 6.7 R6.7a (669d4f54) sets launderlines flips [property_check_pass, size_vs_reference]; W1-L Erratum 2 records launderclass shape, SM2 latent terms, residual R-S2.",
+      "tags": [],
+      "title": "W0 rev 6.7: launderlines flips the full differing set; W1-L Erratum 2"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-multi-turn.md"
+      ],
+      "datetime": "2026-10-03T19:53:17Z",
+      "git": {
+        "after": "1c72006533871d770c6a9308e7132623a7639e2b",
+        "before": null,
+        "branch": "design/eval-multi-turn",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41N7YBJR6NQPV63F36Y58QC",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-j-multi-turn.md",
+      "rationale": "ADR-0015 left the snapshot path and the code shape open; the model must pass TLC before X-J1 starts. Folder turn-<n> avoids the attempt-* globs of five readers; final rows omit the snapshot field so every existing archive_hash is unchanged; the budget clock starts once; the lifecycle model gains NumTurns, phased crash-atomic archive writes and six seeded variants.",
+      "session": "w1j-multiturn-e1e4",
+      "skill": "design-slice",
+      "summary": "W1-J design: data model, snapshot contract, driver/engine shape, TLA+ model v5 with TLC evidence, test plan with the four testability checks.",
+      "tags": [],
+      "title": "Multi-turn attempt: turn-<n> snapshot folder, snapshot key part, one budget, lifecycle model v5"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-multi-turn.md"
+      ],
+      "datetime": "2026-10-03T21:04:50Z",
+      "git": {
+        "after": "332a7b6bb3fba11ea43ad8ba27c28a35fdaaa2d4",
+        "before": null,
+        "branch": "design/eval-multi-turn",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41SAYPAD61GHWPRBGQ1KH6T",
+      "kind": "design",
+      "prompt": "w1-j-multi-turn.md rev 2",
+      "rationale": null,
+      "session": "w1j-multiturn-r2-e1e4",
+      "skill": "design-slice",
+      "summary": "Design and model revised against the five gate reviews; TLC passes, 29/29 variants rejected",
+      "tags": [],
+      "title": "W1-J rev 2: CrashedTurnPredicate independent of ClassOf; turn_ended for every returned turn; check_models WIDER rows"
+    },
+    {
+      "id": "cl-01M41Z5HBZW97QECK9XN4FSQNH",
+      "datetime": "2026-10-03T22:46:44Z",
+      "session": "w1k-resume-e1e4",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "Resume refuses after a stop; between-turns decided by the recorded turn_ended.next; alarm is a scheduled toast task",
+      "prompt": "docs/coordination/eval-wave2-e234/w1-k.md",
+      "summary": "W1-K: resume protocol (refusal order, three stop rows, abandoned-segment markers that stay readable, pure classifier C0-C7), TLA+ v6 (NoResumeAfterStop, StopCrashed liveness disjunct, next-based between-turns), alarm check and channel",
+      "rationale": "ADR-0021 left the stop-crash residue, the named job, the PID and run.completed-with-pending-cells unspecified; the code facts were read and the gaps closed",
+      "artifacts": [
+        "docs/design/eval-resume.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": null,
+        "after": "66ec885ff2e19f21af82dcaf16731ad293ca6d24",
+        "branch": "design/eval-resume",
+        "pushed": null,
+        "commits": []
+      },
+      "audit_ref": "al-01M41Z56BXFH5NJQ2SFNK4VG4X"
     }
   ],
   "messages": [
@@ -78452,6 +78587,24 @@ window.AUDIT_DATA = {
       "kind": "blocked",
       "ref": "3cea81d97850d0bebb1f298c85ef0a4683e25a4e",
       "session": "x-d1-e1e4"
+    },
+    {
+      "id": "mail-01M41T6XBBBMGT5XS29FHVZSNN",
+      "ts": "2026-10-03T21:20:06Z",
+      "from": "leader-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41T6XB206JRN9V1AGFN92X9",
+      "session": "leader-e1e4"
+    },
+    {
+      "id": "mail-01M41T763KCDP4W95JZWYBEJ3C",
+      "ts": "2026-10-03T21:20:15Z",
+      "from": "owner-fable",
+      "to": "leader-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41T6XB206JRN9V1AGFN92X9",
+      "session": "owner-fable"
     }
   ]
 };
