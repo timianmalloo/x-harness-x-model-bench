@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:29:10Z",
+  "generated": "2026-10-03T17:31:57Z",
   "audit": [
     {
       "actor": null,
@@ -65393,85 +65393,225 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41C40RDZ8FMB09MAPVGZMH4",
-      "shortname": "ruling R-92 (DR-6, Grok served grok-4.6 at Q0)",
-      "datetime": "2026-10-03T17:13:51Z",
-      "session": "owner-fable",
-      "prompt": "Owner seat: rule DR-6, Grok 1.0.41 served grok-4.6 under -m grok-4.7 at Q0 (w4-lr served grok-4.7 a week ago, same argv); options (a) hold the Grok tracks while the operator looks then move passed designs to Sonnet, (b) reroute now to Agy or Sonnet, (c) accept grok-4.6, (d) re-qualify after an operator check with a deadline, falling back to (b); state the operator's one-line ask.",
-      "summary": "R-92 DR-6 (d) bounded. Verified: identical argv in q0-e1e4 and w4-lr contracts; per-response model_id w4-lr grok-4.7-build x61 (09-28) vs Q0 grok-4.6-build x8 (10-03); eleven earlier sessions current_model_id grok-4.7; grok models now lists grok-4.7 as default (entitlement intact: service-side routing of one session); the runner checks served model for Copilot only. One Grok re-qualification run by the Leader now, qualified only if every response model_id is grok-4.7*; if unsupported when W1-G or W1-B passes, X-G1/X-B1 (then X-H1, ENV-A) go to Sonnet under R-87/R-91 (this ruling is their Owner review); X-G3 by a new request. (a) refused (holds on the operator for a cause records cannot show), (b)-now refused (no Grok track starts before W1-G/W1-B; Agy cap), (c) refused (served model drifted under an explicit pin; US-13 class). Conditions: served model read per response and scripted before the second dispatch; a later drift is a recorded finding; defect class 'pin passed, served model unchecked'; operator line for the report.",
-      "kind": "manual",
-      "skill": null,
-      "tool": null,
       "actor": "Owner seat (Fable, claude-fable-5-1)",
       "artifacts": [
         "docs/notes/rulings.md"
       ],
+      "datetime": "2026-10-03T17:13:51Z",
+      "done_when": "Ruling 92 in docs/notes/rulings.md via coord decide rule, the request resolved, committed on owner/ruling-r92",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/ruling-r92",
+        "pushed": null,
+        "sha": "357bce48e289fb6335f47c9de1e72f0bb350874b",
+        "short": "357bce48e"
+      },
+      "goal": "Rule DR-6 (req-01M41BS9Y7D1ANHSNDYM9N2H08, labelled DR-5 by its author): Grok served grok-4.6 under the grok-4.7 pin at Q0; route the four Grok tracks",
+      "id": "al-01M41C40RDZ8FMB09MAPVGZMH4",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Owner seat: rule DR-6, Grok 1.0.41 served grok-4.6 under -m grok-4.7 at Q0 (w4-lr served grok-4.7 a week ago, same argv); options (a) hold the Grok tracks while the operator looks then move passed designs to Sonnet, (b) reroute now to Agy or Sonnet, (c) accept grok-4.6, (d) re-qualify after an operator check with a deadline, falling back to (b); state the operator's one-line ask.",
+      "session": "owner-fable",
+      "shortname": "ruling R-92 (DR-6, Grok served grok-4.6 at Q0)",
+      "skill": null,
+      "summary": "R-92 DR-6 (d) bounded. Verified: identical argv in q0-e1e4 and w4-lr contracts; per-response model_id w4-lr grok-4.7-build x61 (09-28) vs Q0 grok-4.6-build x8 (10-03); eleven earlier sessions current_model_id grok-4.7; grok models now lists grok-4.7 as default (entitlement intact: service-side routing of one session); the runner checks served model for Copilot only. One Grok re-qualification run by the Leader now, qualified only if every response model_id is grok-4.7*; if unsupported when W1-G or W1-B passes, X-G1/X-B1 (then X-H1, ENV-A) go to Sonnet under R-87/R-91 (this ruling is their Owner review); X-G3 by a new request. (a) refused (holds on the operator for a cause records cannot show), (b)-now refused (no Grok track starts before W1-G/W1-B; Agy cap), (c) refused (served model drifted under an explicit pin; US-13 class). Conditions: served model read per response and scripted before the second dispatch; a later drift is a recorded finding; defect class 'pin passed, served model unchecked'; operator line for the report.",
       "tags": [
         "ruling",
         "eval-campaign"
       ],
-      "outcome": "success",
-      "goal": "Rule DR-6 (req-01M41BS9Y7D1ANHSNDYM9N2H08, labelled DR-5 by its author): Grok served grok-4.6 under the grok-4.7 pin at Q0; route the four Grok tracks",
-      "done_when": "Ruling 92 in docs/notes/rulings.md via coord decide rule, the request resolved, committed on owner/ruling-r92",
       "tier": "T0",
-      "fan_out": 0,
-      "git": {
-        "sha": "357bce48e289fb6335f47c9de1e72f0bb350874b",
-        "short": "357bce48e",
-        "branch": "owner/ruling-r92",
-        "pushed": null
-      }
+      "tool": null
     },
     {
-      "id": "al-01M41CW7V9HENARXVFVTT2RGRF",
-      "shortname": "w0-rev2",
-      "datetime": "2026-10-03T17:27:05Z",
-      "session": "coord-opus-e1e4",
-      "prompt": "Coordinator seat coord-opus-e1e4 (phase hand-off). Task: W0 revision 2. Apply the five W0 lens reviews (RV-TA, RV-SEC, RV-DS BLOCK; RV-PAT, RV-SIM PASS WITH CONDITIONS) to docs/design/eval-seam-contracts.md in an own coord worktree; every blocking finding and every accepted major; a Review disposition table with one row per finding per lens; widening findings go to the Owner as a DR; answer W1-F's seam requests; update Wave 1 briefs only where a revised section changes their inputs; update the plan's Tracks and harness-table cells to the served Sonnet id (R-91); docs-graph derive + validate, render html, audit entry, commit by named paths. Mid-task from the Leader: rebase onto main after the Q0 record and R-92; record the Grok Q0b re-qualification (q0g-e1e4, grok-4.7-build served) in the harness table and name the R-92 served-model reader as a step.",
-      "summary": "W0 seam contracts revision 2 on branch design/eval-w0-rev2. Applied all four blocking findings: TA-1 (G1 E1 allowlist adds report/cli_table.py and report/context_growth.py; X-A1 migrates views.py:525, grade/_changes.py:84 and cli.py _workspace_builder in the guard commit), TA-4 (ordered grader outcomes, line framing, stdin closed on every path, exit 0/3), SEC-1 (in-process redefined as a probe-host child; the check never imports agent code), DS-1 (attach freezes the pre-registration; bench run refuses with HB-CMP-010). Majors: 31 accepted (5 in part, the rejected parts reasoned), 0 rejected outright. Every finding of the five lenses has a row in the Review disposition table. W1-F seam requests req-01M41C0N, req-01M41C0Z and req-01M41C57 granted (section 3, the G5 guard, two test_architecture allowlist entries, cases.json). DR-7 sent to owner-fable (req-01M41CV2MN: grid-run hidden-test disagreement count). Twelve Wave 1 briefs carry a rev-2 input note; the README pin reads the served Sonnet id. Plan: R-91 served-id cells (30 Tracks cells, the harness table and the model pins), R-92 Q0b Grok re-qualification in the harness table, the new order-of-operations step 7a (tools/grok_served_model.py, before the first E1 Grok dispatch; not yet written), and R-90's ten-to-eleven metric rows. docs-graph derive and validate exit 0; HTML views rendered. Workers: none dispatched by this session; Sonnet served id per R-91 is claude-sonnet-5-5.",
-      "kind": "manual",
-      "skill": null,
-      "tool": null,
       "actor": "claude-opus-5-5 (Coordinator)",
       "artifacts": [
         "docs/design/eval-seam-contracts.md",
         "docs/coordination/coordination-eval-campaign.md"
       ],
+      "datetime": "2026-10-03T17:27:05Z",
+      "done_when": "branch commits by named paths; derive and validate exit 0; html rendered; audit entry; report handed back",
+      "fan_out": 0,
+      "git": {
+        "branch": "design/eval-w0-rev2",
+        "pushed": null,
+        "sha": "f6848adebd3139166e6eb68e3bc7b13c0d52e826",
+        "short": "f6848adeb"
+      },
+      "goal": "W0 rev 2 applying every blocking and accepted major finding of the five W0 reviews, with dispositions, W1-F seam answers, brief input notes, and the R-91/R-92 plan cells",
+      "id": "al-01M41CW7V9HENARXVFVTT2RGRF",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Coordinator seat coord-opus-e1e4 (phase hand-off). Task: W0 revision 2. Apply the five W0 lens reviews (RV-TA, RV-SEC, RV-DS BLOCK; RV-PAT, RV-SIM PASS WITH CONDITIONS) to docs/design/eval-seam-contracts.md in an own coord worktree; every blocking finding and every accepted major; a Review disposition table with one row per finding per lens; widening findings go to the Owner as a DR; answer W1-F's seam requests; update Wave 1 briefs only where a revised section changes their inputs; update the plan's Tracks and harness-table cells to the served Sonnet id (R-91); docs-graph derive + validate, render html, audit entry, commit by named paths. Mid-task from the Leader: rebase onto main after the Q0 record and R-92; record the Grok Q0b re-qualification (q0g-e1e4, grok-4.7-build served) in the harness table and name the R-92 served-model reader as a step.",
+      "session": "coord-opus-e1e4",
+      "shortname": "w0-rev2",
+      "skill": null,
+      "summary": "W0 seam contracts revision 2 on branch design/eval-w0-rev2. Applied all four blocking findings: TA-1 (G1 E1 allowlist adds report/cli_table.py and report/context_growth.py; X-A1 migrates views.py:525, grade/_changes.py:84 and cli.py _workspace_builder in the guard commit), TA-4 (ordered grader outcomes, line framing, stdin closed on every path, exit 0/3), SEC-1 (in-process redefined as a probe-host child; the check never imports agent code), DS-1 (attach freezes the pre-registration; bench run refuses with HB-CMP-010). Majors: 31 accepted (5 in part, the rejected parts reasoned), 0 rejected outright. Every finding of the five lenses has a row in the Review disposition table. W1-F seam requests req-01M41C0N, req-01M41C0Z and req-01M41C57 granted (section 3, the G5 guard, two test_architecture allowlist entries, cases.json). DR-7 sent to owner-fable (req-01M41CV2MN: grid-run hidden-test disagreement count). Twelve Wave 1 briefs carry a rev-2 input note; the README pin reads the served Sonnet id. Plan: R-91 served-id cells (30 Tracks cells, the harness table and the model pins), R-92 Q0b Grok re-qualification in the harness table, the new order-of-operations step 7a (tools/grok_served_model.py, before the first E1 Grok dispatch; not yet written), and R-90's ten-to-eleven metric rows. docs-graph derive and validate exit 0; HTML views rendered. Workers: none dispatched by this session; Sonnet served id per R-91 is claude-sonnet-5-5.",
       "tags": [
         "evaluation-campaign",
         "w0"
       ],
-      "outcome": "success",
-      "goal": "W0 rev 2 applying every blocking and accepted major finding of the five W0 reviews, with dispositions, W1-F seam answers, brief input notes, and the R-91/R-92 plan cells",
-      "done_when": "branch commits by named paths; derive and validate exit 0; html rendered; audit entry; report handed back",
       "tier": "T2",
-      "fan_out": 0,
-      "git": {
-        "sha": "f6848adebd3139166e6eb68e3bc7b13c0d52e826",
-        "short": "f6848adeb",
-        "branch": "design/eval-w0-rev2",
-        "pushed": null
-      }
+      "tool": null
     },
     {
-      "id": "al-01M41D022CSQNXWGQBG0K8ZRXJ",
-      "shortname": "design-slice-review-ta-w0r2",
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta.md"
+      ],
+      "compiled": false,
       "datetime": "2026-10-03T17:29:10Z",
-      "session": "rv-ta-e1e4",
+      "done_when": "gate line appended",
+      "fan_out": 0,
+      "goal": "Re-review W0 rev 2",
+      "id": "al-01M41D022CSQNXWGQBG0K8ZRXJ",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "Leader: re-review W0 rev 2, delta only",
+      "session": "rv-ta-e1e4",
+      "shortname": "design-slice-review-ta-w0r2",
+      "skill": "design-slice-review",
       "summary": "TA re-review of W0 rev 2: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ds.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:29:14Z",
+      "done_when": "gate line appended",
+      "fan_out": 0,
+      "goal": "DS re-review W0 rev2",
+      "id": "al-01M41D062XRBDFD02XDB4Z6NCT",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "W0 rev 2 delta re-review",
+      "session": "rv-ds-e1e4",
+      "shortname": "design-slice-review-eval-ds-w0r2",
+      "skill": "design-slice-review",
+      "summary": "DS gate on W0 rev 2: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:29:15Z",
+      "done_when": "rev-2 gate line appended",
+      "fan_out": 0,
+      "goal": "Re-review W0 rev 2 delta",
+      "id": "al-01M41D06WC91G41B0S6GVF00BM",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader: re-review W0 rev 2 delta",
+      "session": "rv-sec-e1e4",
+      "shortname": "design-slice-review-eval-sec-w0r2",
+      "skill": "design-slice-review",
+      "summary": "Security re-review of W0 rev 2: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1f.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:29:42Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "review W1-F",
+      "id": "al-01M41D11RDV3B93VAB60SW2Z50",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader: review W1-F",
+      "session": "rv-pat-e1e4",
+      "shortname": "design-slice-review-pat-w1f",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT W1-F: 11 findings, PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1f.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:29:53Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "review W1-F",
+      "id": "al-01M41D1C23G3JDKK8GASYE3G14",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader message: review W1-F against W0 rev 2",
+      "session": "rv-sim-e1e4",
+      "shortname": "design-slice-review-sim-w1f",
+      "skill": "design-slice-review",
+      "summary": "Simplifier review of W1-F: 9 findings, PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "datetime": "2026-10-03T17:30:44Z",
+      "done_when": "Ruling 93 in docs/notes/rulings.md via coord decide rule, the request resolved, committed on owner/ruling-r93",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/ruling-r93",
+        "pushed": null,
+        "sha": "3c1c98278e08c948215a4bf7dacdd960be37aa30",
+        "short": "3c1c98278"
+      },
+      "goal": "Rule DR-7 (req-01M41CV2MNPQENPMEMP01QF3ZY): whether grid runs show R-90's hidden-test disagreement count in the EV-20 header or only the pilot gate carries it",
+      "id": "al-01M41D2XESE56QHPSQSVBB2K89",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Owner seat: rule DR-7, should grid runs surface the hidden-test disagreement count (property evidence vs pass_at_1) in the EV-20 header, or is the pilot gate item enough; (a) pilot only per R-90 condition 3, (b) one header line in report/campaign_section.py from X-E's function; context W0 rev 2 section 7 condition 3 and RV-DS 10.",
+      "session": "owner-fable",
+      "shortname": "ruling R-93 (DR-7, grid-level hidden-test disagreement count)",
+      "skill": null,
+      "summary": "R-93 DR-7: (b) in substance. Grid runs surface the count (R-90 c3: never silently resolved; Reliability NFR pattern: pilot-gate classes counted per grid, reported not hidden), but in section 3 beside ADR-0020 s2's exclusions as a warning with cell ids, not in the EV-20 header, whose field list is spec-fixed to campaign identity and eligibility. It changes no verdict, exclusion or eligibility (a disagreement rule would be a pre-registration exclusion rule, P1's). Pilot gate keeps its GateItem. Conditions: rendered only when n>0 so EVU-4 holds; red-first DOM check on a seeded-disagreement fixture (X-H2, named by W1-H); copy says warning not verdict input; derived at report time, no store.",
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "tier": "T0",
+      "tool": null
+    },
+    {
+      "id": "al-01M41D559W6W2NKVWZFAT38JDM",
+      "shortname": "design-slice-review-sec-w1f",
+      "datetime": "2026-10-03T17:31:57Z",
+      "session": "rv-sec-w1f-e1e4",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md (W1-F)",
+      "summary": "SEC gate on W1-F: PASS WITH CONDITIONS, 8 findings",
       "kind": "skill",
       "skill": "design-slice-review",
       "tool": null,
       "actor": null,
       "artifacts": [
-        "docs/design/reviews/eval-review-ta.md"
+        "docs/design/reviews/eval-review-sec-w1f.md"
       ],
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Re-review W0 rev 2",
-      "done_when": "gate line appended",
+      "goal": "SEC review of W1-F",
+      "done_when": "gate line written",
       "tier": "T2",
       "fan_out": 0
     }
