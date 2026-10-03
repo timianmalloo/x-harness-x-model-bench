@@ -45,6 +45,7 @@ Gate PASS incl. Security and Distributed Systems; lock-then-read for every comma
 
 ## Inputs (read these; quote what you rely on)
 - `docs/design/eval-seam-contracts.md`: §5 (the plan's `campaign` block, built by X-C and passed to `build_plan`), §6 (ledger kinds and fields, content-addressed files, `campaign_id` pattern), §8 (`campaign.read` for X-H2), §10 (the ADR-0018 §11(b) quote), §11 HB-CMP-001..009, §13 (cli.py, ledger.py, status.py owners)
+  - **W0 revision 2 changes these inputs:** §6: the pre-registration freeze order (attach freezes; HB-CMP-009; `bench run` refuses with HB-CMP-010), the lock protocol (own lock, then a try-probe; HB-CMP-004, HB-GRD-007), the `campaign.lock` line in `.gitignore` (yours, §13), the sweep of `*.tmp-*` under the lock and `verify` ignoring them (§4), and a justification for each ledger kind. §2: the readiness call in `cli.py` `cmd_validate` (a seam from X-E). §7 condition 3: you pass X-E's disagreement list to `gates.pilot`.
 - docs/adr/0016-campaign-record.md (all); docs/adr/0017-engine-identity-and-freeze.md §3-§6; docs/adr/0018-hidden-check-harness.md §11
 - docs/specs/enterprise-evaluation.md: domain model (lines 117-220), EV-13, EV-14, EV-16, EV-20, Part B user flow UF-E1 and the CLI copy
 - docs/adr/0006-append-only-run-ledger-and-derived-results.md (the physical rules you reuse)

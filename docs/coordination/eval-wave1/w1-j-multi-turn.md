@@ -47,6 +47,7 @@ Gate PASS incl. Distributed Systems and SRE; **TLC run** with `PromptOncePerTurn
 
 ## Inputs (read these; quote what you rely on)
 - `docs/design/eval-seam-contracts.md`: §4 (publish_dir for snapshots), §5 (`tasks.<id>.turns`), §11 HB-LED-008 and HB-CELL-117, §12 (every E2 row), §13 (E2 owners: X-J1), §14 (you name the snapshot folder path)
+  - **W0 revision 2 changes these inputs:** §4: `publish_dir(final, fill, verify)`; exclusive uuid temps; the rename-to-rows recovery rule (your test, with W1-B).
 - docs/adr/0015-multi-turn-attempt-and-turn-snapshots.md (all); docs/adr/0007-deterministic-run-engine.md; docs/adr/0013 §2; docs/adr/0021 §4 (the per-turn rows)
 - docs/notes/spike-e4-post-turn-prompt.md
 - docs/design/run-lifecycle-model.md (how TLC was run before, and the model's bounds)

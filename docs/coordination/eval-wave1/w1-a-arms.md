@@ -45,6 +45,7 @@ Gate line with Patterns, Simplifier and Test Architect PASS; the grid-4 re-plan 
 
 ## Inputs (read these; quote what you rely on)
 - `docs/design/eval-seam-contracts.md`: §5 (bench-matrix/2, bench-plan/2, accessors, label constraint, launch balance), §10 G1 (the pack-reader guard and its E1 allowlist), §11 HB-PLN-001..003, §13 (plan.py, config.py, views.py owners), §14 (label text; whether `full` keeps the property tasks)
+  - **W0 revision 2 changes these inputs:** §10 G1: the E1 allowlist adds `report/cli_table.py` and `report/context_growth.py`; you migrate `views.py:525`, `grade/_changes.py:84` and `cli.py` `_workspace_builder` (yours in E1, §13) in the guard's commit. §5: `launch_seed` stored in the plan, the role definition, the comparisons reader rule, the `cell_id` golden test over the committed bench-plan/1 fixtures. §1 and §14: nothing refuses a non-`ready` task today; you decide the rule.
 - docs/adr/0014-arm-replaces-pack-setting.md (all)
 - docs/specs/enterprise-evaluation.md EV-17 (and EV-9, EV-15 for the E3 split)
 - docs/architecture-evaluation-campaign.md: component *Arms in the plan*; the E1 and E3 phasing rows

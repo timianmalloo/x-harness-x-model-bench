@@ -1,0 +1,5 @@
+{"agent": "owner-fable", "at": 1791045475.0841603, "kind": "session-start", "path": "-", "seq": 1, "session": "owner-fable", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-owner-rulings-r87-r89"}
+{"agent": "owner-fable", "at": 1791046761.9762418, "kind": "session-start", "path": "-", "seq": 2, "session": "owner-fable", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-owner-ruling-r90"}
+{"action": "resolve", "agent": "owner-fable", "at": 1791046850.861311, "id": "req-01M41B3C7C7FY80DCZZ6A3TVES", "kind": "request", "outcome": "resolution", "path": "-", "seq": 3, "session": "owner-fable", "type": "request", "wi": "WI-0"}
+{"at": 1791046850.8686476, "from": "owner-fable", "kind": "ruling", "mail_id": "mail-01M41BC69MS8CGCKGCBHE13TAV", "ref": "req-01M41B3C7C7FY80DCZZ6A3TVES", "session": "owner-fable", "to": "coord-opus-e1e4", "type": "mail"}
+{"agent": "owner-fable", "at": 1791047134.82171, "kind": "session-start", "path": "-", "seq": 5, "session": "owner-fable", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-owner-ruling-r91"}

@@ -57,7 +57,7 @@ The lens reviewers in the brief each write one gate line. The slice passes when 
 
 | brief | session | model (pin) | owns |
 | --- | --- | --- | --- |
-| `w1-a-arms.md` | `w1a-arms-e1e4` | Sonnet `claude-sonnet-5` | `docs/design/eval-arms.md` |
+| `w1-a-arms.md` | `w1a-arms-e1e4` | Sonnet (`model: sonnet`, served `claude-sonnet-5-5`, R-91) | `docs/design/eval-arms.md` |
 | `w1-b-atomic-publish.md` | `w1b-publish-e1e4` | Sonnet | `docs/design/eval-atomic-publish.md` |
 | `w1-c-campaign-record.md` | `w1c-campaign-e1e4` | Sonnet | `docs/design/eval-campaign-record.md` |
 | `w1-d-identity.md` | `w1d-identity-e1e4` | Sonnet | `docs/design/eval-identity.md` |
@@ -78,4 +78,4 @@ The lens reviewers in the brief each write one gate line. The slice passes when 
 3. Each freed slot goes, in this order: (a) the reviewers of a returned slice, critical-path slices first (G, F, then A, D, B, I); (b) batch b: W1-H, W1-C, W1-E, W1-J, W1-L; (c) W1-K once W1-J's model is on `main`; (d) SP-LB whenever the operator is present (it holds a slot only for the script). RV-SRE starts with W1-D's review.
 4. Each author's follow-up (applying findings) takes a slot like a new dispatch.
 
-**Launching (R-87 Option 1).** The Agent tool with `model: sonnet` (or `model: opus` for W1-F), never a default. The prompt is the brief's absolute path and the line "Read it and follow it." Read the served model id back from the first spawn's transcript (R-87 condition 3); if it is not `claude-sonnet-5`, stop Sonnet dispatch and tell the Coordinator.
+**Launching (R-87 Option 1).** The Agent tool with `model: sonnet` (or `model: opus` for W1-F), never a default. The prompt is the brief's absolute path and the line "Read it and follow it." Read the served model id back from the first spawn's transcript (R-87 condition 3); if it is not `claude-sonnet-5-5` (R-91 condition 4), stop Sonnet dispatch and tell the Coordinator.
