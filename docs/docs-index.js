@@ -4254,7 +4254,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "68339d1b87cb8b6fcc0b597c3875e40c45856c5af3638c6efd711e1701b2fb2b"
+      "sourceSha256": "c9a61f54cf9f85f2939533b7bf5c30ed0ff9c6ed9de98ba9b502dd3148ef7a27"
     },
     {
       "id": "review-eval-sec-w1b",
@@ -4317,6 +4317,37 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "a3757d6ce6731cd6180552d45504592b69bc251c9557de511549053c7c98b43a"
+    },
+    {
+      "id": "review-eval-sec-w1e",
+      "path": "docs/design/reviews/eval-review-sec-w1e.md",
+      "title": "Security & Identity review of W1-E: discriminate, the synthetic profile and readiness (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Security & Identity gate on W1-E (design/eval-discriminate, 549f7bc4) judged against W0 rev 5 and R-98. Variants are data-only and the overlay is mostly safe, but the overlay misses destination links and Windows name forms, the variant edits have no path containment, the synthetic environment is a denylist that contradicts itself, and the attach path does not refuse a discrimination run. PASS WITH CONDITIONS, 10 findings.",
+      "tags": [
+        "review",
+        "security",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-e"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sec",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "89e40f91a92bd46f8371806d74554bd9ff040ff776bf00655485a55eff57447d"
     },
     {
       "id": "review-eval-sec-w1f",
@@ -6749,5 +6780,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "0368ad7fb368ab66fe7c0f398d2360e87ed773c0ab52dfaa23c27c6093821bd1"
+  "graphSha256": "a6f6876f548d89d68f92e01672be380980b0f97f9599233c82ccf280a4200c28"
 };

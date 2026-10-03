@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T19:16:26Z",
+  "generated": "2026-10-03T19:26:15Z",
   "audit": [
     {
       "actor": null,
@@ -74380,6 +74380,28 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "id": "al-01M41KPEQAHT93G7T4XQW0P0JG",
+      "shortname": "design-slice-review-sec-w0-r45-w1e",
+      "datetime": "2026-10-03T19:26:15Z",
+      "session": "rv-sec-w1e-e1e4",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md (W0 rev 4-5 delta and W1-E)",
+      "summary": "Security gates: W0 rev 4-5 delta PASS WITH CONDITIONS (13), W1-E PASS WITH CONDITIONS (10)",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1e.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Gate W0 delta and W1-E for Security & Identity",
+      "done_when": "Two gate lines committed on review/eval-sec-w1e",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
