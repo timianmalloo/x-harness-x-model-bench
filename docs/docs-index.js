@@ -3584,6 +3584,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "c33ac9d8f236927e6121743dd55d504e18253c268c91cef111867c973d182657"
     },
     {
+      "id": "review-eval-pat-w1i",
+      "path": "docs/design/reviews/eval-review-pat-w1i.md",
+      "title": "Patterns Expert review of W1-I, security tasks S1 and S2 (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of design/eval-security-tasks (2fc8906b) against W0 rev 2, R-87..R-94 and the W1-F rev 2 property grader. One blocking seam disagreement: S1 needs app.kind wsgi with a factory, which W1-F rev 2 does not build in E1 and tells W1-I not to use. Patterns, folder shape, expected values and naming otherwise fit.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-i"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b2451ce2c599676479ac43eaa5d8dbe031a7e3f79a94f04ea495008870943362"
+    },
+    {
       "id": "review-eval-sec",
       "path": "docs/design/reviews/eval-review-sec.md",
       "title": "Security & Identity lens review: Evaluation Campaign design slices (Adversary Mode)",
@@ -3670,6 +3697,37 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "3a6bca265279c14fc75952442488a7253d6b844c3d8429b6e03ce3e41d4a05b4"
+    },
+    {
+      "id": "review-eval-sec-w1i",
+      "path": "docs/design/reviews/eval-review-sec-w1i.md",
+      "title": "Security & Identity review of W1-I: security tasks S1 and S2 (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Security & Identity gate on W1-I (design/eval-security-tasks, 2fc8906b) against W0 rev 2 and R-87..R-94. The latent requirement is latent, the probes run in the probe-host child, both tasks declare no build and use MIT bases pinned by full commit. The secret-leak probes scan one of two tokens, S2's signed cookies are pickle-based, and the new `app` keys are not in W0. PASS WITH CONDITIONS, 8 findings.",
+      "tags": [
+        "review",
+        "security",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-i"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sec",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "d286b2c9ef11f1e8da31814acf3050e406632059c11df71aab9860afb37325f7"
     },
     {
       "id": "review-eval-sim",
@@ -5520,5 +5578,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "c45d192d9b8f2652424f5c829b8ec015d61dcdcb187aa379a8a1d305ed9dbb40"
+  "graphSha256": "d92f5689d1b0836f3903b0a2f84bd54ba1bad7efdba9c50ef661fa10b5174444"
 };
