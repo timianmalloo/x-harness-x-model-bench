@@ -46,7 +46,7 @@ Recorded by the Coordinator (`coord-opus-e1e4`) with W0 rev 3. W1-G's gate is op
 - **Item 4, "can move the 0.6 `board_golden`".** For the committed fixtures it cannot: `board.export` does not import `pack_improvement`, and neither fixture holds a scenario-7 cell (W1-G F7). The append-only `corrected_from` record therefore stays a written contingency. It is built only if X-G3's before/after run shows a moved golden hash; the existing freeze check fails on a moved hash, so the trigger is a red gate, not a memory (Coordinator ruling, W0 rev 3 section 7, on RV-SIM W1-G 2).
 - **Item 4, "`bench verify` can show the chain".** `bench verify` verifies a run's ledger and does not read `bench/catalog-freeze.yaml` (W1-G F9). The chain, if one is ever recorded, is shown by the US-4 control's printed lines.
 - **Item 5, the expected set.** The required set is the property grader's narrowed set, `runner.applicable(catalog, graders, prop)["property"]` (W0 section 2, R-90 condition 1).
-- **Item 3, how the formal grader records `pass_at_1`.** Provisional on the Owner decision request `req-01M41E37FGK5CRZ7NCK3RA20JV`: an optional catalog key `also_graded_by: [formal]` on `pass_at_1`, and a metric's owner for a task is the first of `[grader, *also_graded_by]` that the task names.
+- **Item 3, how the formal grader records `pass_at_1`.** R-95: `also_graded_by: [formal]`. An optional catalog key `also_graded_by: [formal]` on `pass_at_1`, and a metric's owner for a task is the first of `[grader, *also_graded_by]` that the task names.
 
 ## Alternatives considered
 

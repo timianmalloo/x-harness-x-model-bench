@@ -756,7 +756,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b4affef7efd9943abb53a493634f064ce4e4c0df83a29793e38ce9ad6f885509"
+      "sourceSha256": "8eee493ff9b2b2363be00f20281732ab9e5486e00a2a61e9cd59df1e3fe98da0"
     },
     {
       "id": "adr-0017-engine-identity-and-freeze",
@@ -870,7 +870,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8869f917fa5e1fcb241d47f9cd972565982c1cc17436a690745b7968ce8153a0"
+      "sourceSha256": "80559667245cbe4eddbed9f889418a73d9c12d30d393916cfbe06b24f4c08944"
     },
     {
       "id": "adr-0020-power-and-verdicts-stdlib",
@@ -1376,6 +1376,33 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "5ef416d018179c6637ba358a9fe1787d392f2211b744f725440b8b73b1e43c1d"
+    },
+    {
+      "id": "note-20261003-deviation-coord-transport-grok-session-new",
+      "path": "docs/notes/deviation-coord-transport-grok-session-new.md",
+      "title": "Repo-local deviation - coord_transport accepts Grok watcher acks during session/new",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2027-04-03",
+      "reviewSuggested": [],
+      "summary": "docs/ai-forward-pack/scripts/coord_transport.py is patched locally so Grok's own skills/workflows watcher acknowledgement is accepted while session/new is in flight. Upstream (ai-forward) needs the same hunk.",
+      "tags": [
+        "ai-forward-pack",
+        "deviation",
+        "grok",
+        "acp",
+        "transport"
+      ],
+      "links": [
+        {
+          "to": "note-20261003-spike-e1-job-alone",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "33a86b139ebe6a7a3a028f07e678b7b1ab264eda2fb5073361897fbea72f5bfc"
     },
     {
       "id": "note-20261003-spike-e1-handle-list",
@@ -1886,7 +1913,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9e9a2965716a0db1920841bdc5cf8196dc905fee0cca1cc1d7b922e3fd670645"
+      "sourceSha256": "4bf1fe95dffaac7f64f692a9be2df8b5cd0c53d26ccfcbae88fc15627b478cbe"
     },
     {
       "id": "design-eval-arms",
@@ -2116,6 +2143,70 @@ window.DOCS_INDEX = {
       "sourceSha256": "0b5cff38703dc03b75420c16279c50cb8fd147a5a72d3d99e31bc0a035034810"
     },
     {
+      "id": "design-eval-discriminate",
+      "path": "docs/design/eval-discriminate.md",
+      "title": "W1-E design: discriminate, the synthetic profile and the readiness check (EV-7; X-E)",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 design slice W1-E; builds in E1 (X-E: discriminate.py, readiness.py, synthetic_agent.py)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Designs the one path by which a property task becomes ready: bench discriminate runs the task's reference, its naive solution and its defect variants as synthetic cells through the real engine, working-copy builder, archiver and grading pass (and so, for check-based properties, the real probe host), and writes a create-once, idempotent discrimination record; readiness.py then refuses `ready` unless that record exists, matches the current task version and engine, was made by the real host where the property has one, and every expected value is observed. Settles the record's data model (no run id in its body, so a legitimate retry is a no-op; R-98), the synthetic agent (a stdlib ACP process behind Launcher; engine.py unchanged, Verified by spike S-E1), the one overlay path rule, the disagreement and clock-failure readers, the sweeper, and names every red-first test with its fixture, real-wiring partner and mutant. Revision 2 applies the four first-round reviews.",
+      "tags": [
+        "benchmark",
+        "discrimination",
+        "readiness",
+        "synthetic-agent",
+        "evaluation-campaign",
+        "w1-e"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0016-campaign-record",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0018-hidden-check-harness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0019-catalog-0-7-property-metrics",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-property-grader",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-atomic-publish",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-security-tasks",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "008437404b45b0b3328917767710ec3a299871230386130f26c7f292a34afe57"
+    },
+    {
       "id": "design-eval-identity",
       "path": "docs/design/eval-identity.md",
       "title": "W1-D design: engine identity, freeze and per-launch recheck",
@@ -2160,7 +2251,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8a267c00da2b82e5c7054ea1bd0ba117a932fabda71ff8df017d885b091ba288"
+      "sourceSha256": "9421f6075f4a08aa6812800c417a4f2647aa74f4d86903b2100cc6e8dfdf362e"
     },
     {
       "id": "design-eval-power-verdicts",
@@ -2316,6 +2407,72 @@ window.DOCS_INDEX = {
       "sourceSha256": "c18ce4b2d3ba321f0b76097b0ad2976333c5facc15f0eb67aef0b5b0c1722c5a"
     },
     {
+      "id": "design-eval-property-tasks",
+      "path": "docs/design/eval-property-tasks.md",
+      "title": "Design W1-L: the remaining property tasks (resilience, rework, no-guessing, simplicity; two each)",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation E2/E4: Wave 1 design slice W1-L (rework by X-RW in E2; the rest in E4)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Eight tasks specified to the level an author can build without a question: for each of RS1/RS2 (resilience), RW1/RW2 (rework), NG1/NG2 (no-guessing) and SM1/SM2 (simplicity) a real MIT or Apache base at a pinned 40-hex commit (eight distinct bases, all imported under python -S), the latent requirement, the prompt shape, hidden tests with a wrong-app fixture for every test, the check or strategy, reference and naive shapes, expected values with provenance (Inferred until the real host reproduces them), and the seeded-defect variants that flip each probe, case clause or metric. Revision 2 applies the three first-round lens reviews and W0 rev 5: three new graders (noguess with hallucinated_symbol_errors per R-97; diffstats; rework) plus the resilience cases, the whole-tree simplicity counts with the outside-radius clause and v-laundered, verified_before_use not built in E4, skeleton-first commits for the helpers, and one parametrised task-test module. Gate: rev 2 pending RV-TA.",
+      "tags": [
+        "benchmark",
+        "property-tasks",
+        "resilience",
+        "rework",
+        "no-guessing",
+        "simplicity",
+        "evaluation-campaign",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-property-grader",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-security-tasks",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0015-multi-turn-attempt-and-turn-snapshots",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0018-hidden-check-harness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0019-catalog-0-7-property-metrics",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        },
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "09a145e0a264601d4bf174e018234dc7740ec867d011ed45c15418ccbbd79706"
+    },
+    {
       "id": "design-eval-seam-contracts",
       "path": "docs/design/eval-seam-contracts.md",
       "title": "W0 seam contracts: the interfaces every Evaluation Campaign slice designs and builds against",
@@ -2325,7 +2482,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation: W0 (serial spine item 2), before Wave 1",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "Revision 5 (the W1-E and W1-L seam answers SR-E1, SR-E2, SR-L1..SR-L4, the W1-L review rulings and R-97; rev-5 change table and re-read list at the end; DR-E1 open on the discrimination record body). Revision 4 (the batch-b seam answers and the RV-PAT, RV-SIM, RV-SEC and RV-DS cross-slice findings on W1-B, W1-C, W1-D and W1-H; rev-4 change table and the delta re-read list at the end; rev 3's table kept). The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
+      "summary": "Revision 6 (R-98: the discrimination record body drops `run_id` and `grading_id`, ADR-0016 Amendment 1; and the conditions of the five W0 rev 4/5 delta reviews; rev-6 change table and re-read list at the end). Revision 5 (the W1-E and W1-L seam answers SR-E1, SR-E2, SR-L1..SR-L4, the W1-L review rulings and R-97; rev-5 change table and re-read list at the end; DR-E1, then open, is ruled by R-98 and applied in rev 6). Revision 4 (the batch-b seam answers and the RV-PAT, RV-SIM, RV-SEC and RV-DS cross-slice findings on W1-B, W1-C, W1-D and W1-H; rev-4 change table and the delta re-read list at the end; rev 3's table kept). The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
       "tags": [
         "benchmark",
         "campaign",
@@ -2417,7 +2574,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "c75d1bdd99cdace712a4604da9aa46474822319d2ca73836af60f9fbbc1972a7"
+      "sourceSha256": "72398da67a1424bb87a7d3ca1786a9e72bb609c6f439e4d504fe9f61c18a4925"
     },
     {
       "id": "design-eval-security-tasks",
@@ -2478,7 +2635,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "6da3d7bdbe67556acf6469df6b636271f47db3313fb619405c40178479c656a4"
+      "sourceSha256": "93b474584bcd4844385345f9f440d7b041c260738094034ca4ab0e5232025331"
     },
     {
       "id": "design-formal-grader",
@@ -3410,7 +3567,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "33254fc4f422e6000a11d7213e9d02c4634de82bd1679c5c6af9b56e3f67fee8"
+      "sourceSha256": "1c30970592e57fbd31b27c703ea9f07401ca980a3805cdf12f0190e232a46a01"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -3919,7 +4076,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "e69173cadc79609b475999dedd6a7a537c2f9b50669f08202809d75aa2581ae4"
+      "sourceSha256": "2e738331996f46eb30416c1ee5a11d6aed1fed5b7cf677b60a300e7a8d3ea9c2"
     },
     {
       "id": "review-eval-ds-w1b",
@@ -3964,6 +4121,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "1bce63791bbba85e0eb55e47af0b8f06bf90131a3dc75d712f6af432ccf8defe"
     },
     {
+      "id": "review-eval-ds-w1j",
+      "path": "docs/design/reviews/eval-review-ds-w1j.md",
+      "title": "W1-J multi-turn attempt, turn snapshots and TLA+ model: Distributed Systems lens review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of docs/design/eval-multi-turn.md (design/eval-multi-turn, 08fabe34, 6b838ff2) and models/run_lifecycle.tla by the Distributed Systems lens. The turn loop, the ack barrier and the snapshot order hold, and the model fits the engine's sequential worker. Three majors: snapshot recovery has no E2 code path, the sweep seam is stale, and two of the five invariants have no code mirror. PASS WITH CONDITIONS.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "d70e401df96961909a7dbcf6a8fc12b4d21da47122ae7ce9aa25bb7e0292125e"
+    },
+    {
       "id": "review-eval-pat",
       "path": "docs/design/reviews/eval-review-pat.md",
       "title": "Patterns Expert review of the Evaluation Campaign design slices (Adversary Mode)",
@@ -3987,7 +4165,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3f23e95945420a4ee6366c6ddaf6a4e55eba309640d2adb82d0da09a0608d689"
+      "sourceSha256": "18c21e232bd2506fa8cc02c361491fffccd6db12006110fa278c0653d98c904b"
     },
     {
       "id": "review-eval-pat-w1a",
@@ -4097,6 +4275,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "7da33ff71d59e17bf028b3732ab744578caad0d450be6c98b5c7488d6433bbde"
     },
     {
+      "id": "review-eval-pat-w1e",
+      "path": "docs/design/reviews/eval-review-pat-w1e.md",
+      "title": "Patterns Expert review of W1-E, discriminate and readiness (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of design/eval-discriminate (549f7bc4) against W0 rev 5 and R-98. The SyntheticLauncher Strategy and the overlay rule conform. Twelve findings: the baseline compare still defines \"a manifest seen from one task\" a second time, the variant compare has no readiness row or code, three copies of the overlay path rule, a re-implemented env filter, the clauses.json hand-off by path arithmetic, and R-98 residue. BLOCK until applied.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-e"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "241c30e969a19d20da3dd758b06738e495f9fb2dea3a51e11fdd8acb5e703cd8"
+    },
+    {
       "id": "review-eval-pat-w1f",
       "path": "docs/design/reviews/eval-review-pat-w1f.md",
       "title": "Patterns Expert review of W1-F, the property grader (Adversary Mode)",
@@ -4204,6 +4409,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "325ed61a2612279876fc84935fa81ca59c7aa6f26bb89407ba4a3311242c7ea3"
     },
     {
+      "id": "review-eval-pat-w1j",
+      "path": "docs/design/reviews/eval-review-pat-w1j.md",
+      "title": "W1-J multi-turn: Patterns Expert lens review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of docs/design/eval-multi-turn.md (branch design/eval-multi-turn, 6b838ff2) by the Patterns Expert lens: session protocol, the _attempt turn loop, the snapshot as a Memento, the turn-<n> archive layout, KEYS and the final-rows filter, the shared append_missing_rows helper (a seam disagreement with W1-B), and the check_models.py extension. RV-TA's findings are not repeated.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "0820df82326c77df02683b9cd20f7d2cc707197ea7c89272ef29de5157afc16e"
+    },
+    {
       "id": "review-eval-pat-w1l",
       "path": "docs/design/reviews/eval-review-pat-w1l.md",
       "title": "Patterns Expert review of W1-L, the eight property tasks (Adversary Mode)",
@@ -4254,7 +4480,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "68339d1b87cb8b6fcc0b597c3875e40c45856c5af3638c6efd711e1701b2fb2b"
+      "sourceSha256": "14ae047db1757d5186e8d30ae44e1a1ba5d1b8a5a6e69fe7edfe55d91721ccf4"
     },
     {
       "id": "review-eval-sec-w1b",
@@ -4317,6 +4543,37 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "a3757d6ce6731cd6180552d45504592b69bc251c9557de511549053c7c98b43a"
+    },
+    {
+      "id": "review-eval-sec-w1e",
+      "path": "docs/design/reviews/eval-review-sec-w1e.md",
+      "title": "Security & Identity review of W1-E: discriminate, the synthetic profile and readiness (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Security & Identity gate on W1-E (design/eval-discriminate, 549f7bc4) judged against W0 rev 5 and R-98. Variants are data-only and the overlay is mostly safe, but the overlay misses destination links and Windows name forms, the variant edits have no path containment, the synthetic environment is a denylist that contradicts itself, and the attach path does not refuse a discrimination run. PASS WITH CONDITIONS, 10 findings.",
+      "tags": [
+        "review",
+        "security",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-e"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sec",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "89e40f91a92bd46f8371806d74554bd9ff040ff776bf00655485a55eff57447d"
     },
     {
       "id": "review-eval-sec-w1f",
@@ -4399,7 +4656,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "6498292143c8251d7eacdd9887b620b175937d91c7c69224f58467d473a63c2f"
+      "sourceSha256": "c6be0e7d4145dd1fcd2e234a164a452b53865a3a38867fa0280aaae2e881dc76"
     },
     {
       "id": "review-eval-sim-w1a",
@@ -4486,6 +4743,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "c862b5fa4bdd0dc807da71facdea81ca7c5c0fa4cc7b2c8839eaddf8d481ac64"
     },
     {
+      "id": "review-eval-sim-w1e",
+      "path": "docs/design/reviews/eval-review-sim-w1e.md",
+      "title": "Simplifier review of W1-E (discriminate, synthetic profile, readiness)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Adversary Mode, soft veto) on design/eval-discriminate 549f7bc4 against W0 rev 5 and R-98. PASS WITH CONDITIONS: the SyntheticLauncher, variants-as-cells and the HB-RDY set are the smallest correct mechanism for E1; defer the empty FROZEN registry (HB-RDY-009) to E4, fold about ten test nodes, key the run link by record name, and drop the build re-hash.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b1640f5c6c09d40b7f2776d7cde366b5e07f445130d69098148ffcd01416430e"
+    },
+    {
       "id": "review-eval-sim-w1f",
       "path": "docs/design/reviews/eval-review-sim-w1f.md",
       "title": "Simplifier lens review of W1-F, the property grader",
@@ -4570,6 +4848,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "a97c88934f6ac7af7f54eff8fc95d769ce89b0702cfc78f842975db0fbe5afe6"
     },
     {
+      "id": "review-eval-sim-w1j",
+      "path": "docs/design/reviews/eval-review-sim-w1j.md",
+      "title": "Simplifier lens review of W1-J, multi-turn attempt and the TLA+ model",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-multi-turn.md (design/eval-multi-turn, 08fabe34, 6b838ff2) against W0 rev 6 and the rulings on main. The mechanism earns its place for E2. The check_models.py change can shrink to data rows by reusing the existing WIDER substitution, the US-44 run should be one-time evidence, one of the two in-place variants is the same guard, and the resume-owned parts wait for W1-K.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "be3d70f4fd74e78422394d9d06b72a133c2360746f4099ee7f464be2e074a271"
+    },
+    {
       "id": "review-eval-sim-w1l",
       "path": "docs/design/reviews/eval-review-sim-w1l.md",
       "title": "Simplifier review of W1-L (property tasks and four graders)",
@@ -4618,6 +4917,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "5e3029dbb2a5d8e339f0be0e3f87abfd191a10bd9becba6945130197d89e7d8a"
     },
     {
+      "id": "review-eval-sre-w1j",
+      "path": "docs/design/reviews/eval-review-sre-w1j.md",
+      "title": "W1-J multi-turn design review: SRE lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "SRE (Adversary Mode) review of W1-J at 6b838ff2 against W0 rev 6. Per-turn timing, snapshot cost and spend summing are measurable by default, and the budget fix and end_turn-only rule are right. But the turn loop writes no turn_ended for the very turns that stop the attempt, bench status restarts its clock at turn 2, and the copy-cost spike did not measure the fsync-and-verify path. PASS WITH CONDITIONS.",
+      "tags": [
+        "review",
+        "sre",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-j"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "13c7180017ca42ed74ed764d8435d9a46f5aa7a7e14f60dd4480d2f61a008ba6"
+    },
+    {
       "id": "review-eval-ta",
       "path": "docs/design/reviews/eval-review-ta.md",
       "title": "Evaluation Campaign design reviews: Test Architect lens",
@@ -4641,7 +4967,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f4ca3375121735995f75cbc84a8c5e96cd9e65a03f39bc9607ef2bb3f08c999d"
+      "sourceSha256": "58aa306fe773223a7bc01e3fdab56fb115aab774568cff79990bd9f9a10cfe52"
     },
     {
       "id": "review-eval-ta-w1a",
@@ -4752,6 +5078,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "56d9113537b7ed9b5fe31112d6906f43b44c370c8a502c4cc40657c84a430193"
     },
     {
+      "id": "review-eval-ta-w1e",
+      "path": "docs/design/reviews/eval-review-ta-w1e.md",
+      "title": "W1-E discriminate design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-E (design/eval-discriminate, 549f7bc4) against W0 rev 5 and R-98. BLOCK: R-HOST and the variant compare assume a check that three of five properties do not have; the campaign identity compare is stale against rev 5 for_task; untrustworthy records trap a legitimate retry. The SCAN-A fixture, T-E1a/T-E1b and the skeleton-first commit are sound in shape.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-e"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "3ee65cc973e552602ae14800354c658ad777f2208ddd748f769867e40c52eee6"
+    },
+    {
       "id": "review-eval-ta-w1f",
       "path": "docs/design/reviews/eval-review-ta-w1f.md",
       "title": "W1-F property grader design review: Test Architect lens",
@@ -4860,6 +5213,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "60320ec9b40537661e3c2b375e345ef2a436d47b0b472498db323d9b882b8c7d"
     },
     {
+      "id": "review-eval-ta-w1j",
+      "path": "docs/design/reviews/eval-review-ta-w1j.md",
+      "title": "W1-J multi-turn design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-J (multi-turn attempt, turn snapshots, TLA+ model v5) against W0 rev 6 and the rulings on main. PASS WITH CONDITIONS: the model evidence is real and each ADR-0015 section 7 invariant has its own variant, but the check_models.py change exceeds its grant and is not on the branch, the two engine-bug tests are red for the wrong reason, and the final-row omission is pinned on the reader side only.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-j"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "bbb97953c678b2652d7e7fd02a39c8f7fe52601b98e81c277a2bddf303394ae5"
+    },
+    {
       "id": "review-eval-ta-w1l",
       "path": "docs/design/reviews/eval-review-ta-w1l.md",
       "title": "W1-L property tasks (eight) design review: Test Architect lens",
@@ -4884,7 +5264,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "531914453a403250281744a7351623525ea6d9488e95a5da71171811ed91702b"
+      "sourceSha256": "6870ca4c300824c59bed200083ce50b9dde2b55b55a5d4ef12ca8afed49eef89"
     },
     {
       "id": "brief-eval-env-a",
@@ -4954,6 +5334,35 @@ window.DOCS_INDEX = {
       "sourceSha256": "57c3960e70475246ed81a4d1ff337fade7d0c94bd1e6461b0df37d0cff99f401"
     },
     {
+      "id": "brief-eval-tool-gsm-b",
+      "path": "docs/coordination/eval-wave2-e1/tool-gsm-b.md",
+      "title": "Brief TOOL-GSM-B: the Grok served-model reader on a deadline-killed session",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "tools/grok_served_model.py falls back to the assistant rows of chat_history.jsonl when usage.json is absent, says which file it read, and still exits non-zero when nothing is recorded or the ids disagree with the pin.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "brief-eval-tool-gsm",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "dccd13b36f97db865ed77191495949124dfc56a9df3f419b14e3e2e1cf0e2773"
+    },
+    {
       "id": "brief-eval-x-a1",
       "path": "docs/coordination/eval-wave2-e1/x-a1.md",
       "title": "Brief X-A1: arms in the plan, ring plumbing, the pack-reader guard (E1 build)",
@@ -4980,7 +5389,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "39479e4591c9fe9dcac7e31ceef2d62806334c5d78d91e97bac655756c95c1ee"
+      "sourceSha256": "6252a059c23b39058f30bda99d149f90ce4ed4360f61d4d8350c543c452304b0"
     },
     {
       "id": "brief-eval-x-b1",
@@ -5009,7 +5418,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "151b2f470840a34fe8955f89700014c522f696116006a5daf7e613cf7c9732f8"
+      "sourceSha256": "34d80e00c9f8ceb4e966f04f49c1aefad2afdcb5c70fcf39498f529db8806f30"
     },
     {
       "id": "brief-eval-x-b2",
@@ -5041,6 +5450,35 @@ window.DOCS_INDEX = {
       "sourceSha256": "a16f73aeebe362c4dd5e74b5d5c60566d0bd106fe6baff2168c70d890e10c348"
     },
     {
+      "id": "brief-eval-x-c",
+      "path": "docs/coordination/eval-wave2-e1/x-c.md",
+      "title": "Brief X-C: campaign record, `bench campaign` and the run-side check (E1 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-C builds campaign.py, the bench campaign commands, the lock protocol, verify with its git witness, the run-side check inside the engine, the campaign status document and the after-grading hook of W1-C rev 2, under W0 rev 6, on Agy gemini-3.8-flash-high, in three dispatches, each red and green in one turn.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-campaign-record",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "5341f3282ed2f90a9cd35177724d382d7c4dc12ebfdc89a3ebda9a801b134d93"
+    },
+    {
       "id": "brief-eval-x-d",
       "path": "docs/coordination/eval-wave2-e1/x-d.md",
       "title": "Brief X-D: engine identity, launch recheck, E1 registry rows (E1 build)",
@@ -5067,7 +5505,69 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2d1658478d8d8c6887f6b5d1223c3d04aece0790c13bbf84b0353fee0f128844"
+      "sourceSha256": "2fa2b201653db884e9294ae9adeb4d871deb185e1cc701719579edcaaa6d68ba"
+    },
+    {
+      "id": "brief-eval-x-d1-followon",
+      "path": "docs/coordination/eval-wave2-e1/x-d1-followon.md",
+      "title": "X-D1 follow-on: turn the partial D1 green under the rev 6.4 rulings (Sonnet, same tree)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-D1 on Codex ended partial at 3cea81d9 with ten assertion-red tests. This Sonnet follow-on, in the same tree, implements the two direction scans in tests/import_graph.py and the two-place catalog_hash hunk in grade/runner.py (W0 rev 6.4, R6.4a and R6.4b), then runs the join gate.",
+      "tags": [],
+      "links": [
+        {
+          "to": "brief-eval-x-d",
+          "rel": "implements"
+        },
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-identity",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "98abf6cf67f881acf4878e5e3c0da7034e59d1e4d286473b574eecb54a1bfbe9"
+    },
+    {
+      "id": "brief-eval-x-e",
+      "path": "docs/coordination/eval-wave2-e1/x-e.md",
+      "title": "Brief X-E: discriminate, synthetic agent and readiness (E1 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-E builds discriminate.py, readiness.py and synthetic_agent.py of W1-E rev 2 under W0 rev 6 and R-98, red first, on Sonnet: the skeleton first, then the engine-only tests, then the host tests once X-F's host has joined.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-discriminate",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "120b01ea1e0d5cdcba769c21dc327006b732ab72453026d84e786bfd424e1547"
     },
     {
       "id": "brief-eval-x-f",
@@ -5096,7 +5596,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "42653e5707f81c7a2601798cb36336eac8df739b5d0ea1c99841f5fd565b8306"
+      "sourceSha256": "a8de3e141c1d32c14490a6a35ec66e7fae243b9855f6a7e040159a77c4af22a3"
     },
     {
       "id": "brief-eval-x-g1",
@@ -5128,6 +5628,68 @@ window.DOCS_INDEX = {
       "sourceSha256": "ddcdd5487396d265418362d5708a8f123beab54ff110f2bd208c900296a79648"
     },
     {
+      "id": "brief-eval-x-h1",
+      "path": "docs/coordination/eval-wave2-e1/x-h1.md",
+      "title": "Brief X-H1: power, verdicts, dominance, ring gates (E1 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-H1 builds power.py, verdicts.py and gates.py of W1-H rev 2 (stdlib only, pure functions) under W0 rev 6 on Grok grok-4.7 high, in three turns: power, then verdicts and gates as two parallel turns, each red and green in one turn.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-power-verdicts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0020-power-and-verdicts-stdlib",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "bc2325d78f60f85a3962358971b49414ff24961cdb41a1d8979ac1a7b5187068"
+    },
+    {
+      "id": "brief-eval-x-h2",
+      "path": "docs/coordination/eval-wave2-e1/x-h2.md",
+      "title": "Brief X-H2: report section 3, the R-93 line, the plan_packs header (E1 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-H2 builds report/campaign_section.py (verdict rows, legend, exclusions block, NA counts, the three-state R-93 line) and the report/html.py hook with the plan_packs header lines, on Agy gemini-3.8-flash-high, one turn red and green.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-power-verdicts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "2bc4517590a50534f3c043cf0c615c0054cf5c560767ec67aa0323f25fcce714"
+    },
+    {
       "id": "brief-eval-x-i",
       "path": "docs/coordination/eval-wave2-e1/x-i.md",
       "title": "Brief X-I: security task S1 (E1 build)",
@@ -5155,6 +5717,35 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "d2f5e31b97b000bf14fbe830b3f1514fc0a7184e3a9554fcae4c2bff9d5571ea"
+    },
+    {
+      "id": "brief-eval-x-int",
+      "path": "docs/coordination/eval-wave2-e1/x-int.md",
+      "title": "Brief X-INT: the E1 end-to-end walking skeleton (E1 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-INT proves the joined E1 tracks end to end through the real CLI: the campaign happy path, the T-E19 reader refusals, a two-arm report, and the arm-reader assume, on Sonnet, with the real cells credential-marked.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "coordination-eval-campaign",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "4cb06a998dbf4f14babca317eb9c828edf2e7ac3e18d5808264ca62f49c6c9b9"
     },
     {
       "id": "coordination-eval-brief-rv-ds",
@@ -5835,7 +6426,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation: Wave 2, phase E1 (walking skeleton build)",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "The rules every E1 build worker follows, the routing of the fourteen E1 items to harness and pinned model (R-87, R-88 confirmed to Codex, R-91, R-92), the real dependency DAG, the launch order by critical path, the dispatch shape per track (one external turn red and green, or a Sonnet follow-on), and one brief per item. Nine briefs are written; five wait on designs that have not passed their gate.",
+      "summary": "The rules every E1 build worker follows, the routing of the fourteen E1 items to harness and pinned model (R-87, R-88 confirmed to Codex, R-91, R-92), the real dependency DAG, the launch order by critical path, the dispatch shape per track (one external turn red and green, or a Sonnet follow-on), and one brief per item. Nine briefs are written; five wait on designs that have not passed their gate. Part 2 (W0 rev 6, Coordinator session #6): the X-C, X-H1, X-H2, X-E and X-INT briefs, TOOL-GSM-B, the rev-6 alignment of part 1, the external compilations, the Grok transport finding, and the DAG and launch order as of 2026-10-03 evening.",
       "tags": [
         "coordination",
         "briefs",
@@ -5862,7 +6453,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "e2e149d6c67eca61922e3543511dbb6a4d4ef022b268ce246d7d988d375f7266"
+      "sourceSha256": "3d513410527d8a9419a83a036db50960a71954553e02cd71d22873d37743f1af"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -6470,7 +7061,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TD\n  O([Open report]) --> H[Header + campaign block: question, arms, pre-registration hash, baseline, fixes, MDE]\n  O -->|run in no campaign| NC([No verdict section; harness-bench report as before])\n  H -->|run ineligible| IN([Verdict section states reason and differing items; no verdicts])\n  H --> T[Verdict table: property x harness, per comparison]\n  T -->|better or worse| E1[Effect, interval, MDE mark, token ratio]\n  T -->|no difference >= MDE| E2([Interval inside the MDE band; reader can rule out effects of MDE size])\n  T -->|inconclusive| E3([Reason: underpowered or not recorded, with counts; reader sees what more data would need])\n  E1 -->|dominance rule met| D([A dominates B: keep A for this harness])\n  E1 -->|better but costlier| C([better at xN tokens: reader weighs value against cost])\n  T -->|activate a verdict| RUNS[Runs filtered to its pairs] --> UF3([Harness-bench UF-3: cell card])\n  T -->|activate excluded n| XL[Excluded cells: id, arm, cause] --> UF3\n  O -->|pack section read directly| PK([Pack section: header and every intention verdict labelled exploratory; link to section 3])\n  UF3 -->|archive absent| NA([Archive not in this copy + path])\n  H -->|analysis not pre-registered| EX([Labelled exploratory wherever shown; not a verdict])"
         }
       ],
-      "sourceSha256": "a6b2110475049b1bceb5252b93fed89dc6b5c653ae3fec30aec2975c0f1d91b2"
+      "sourceSha256": "dc44b25711edc3125b255de5df1e911a90cda089f18f7b433b26037d467392d1"
     },
     {
       "id": "spec-harness-bench",
@@ -6648,6 +7239,14 @@ window.DOCS_INDEX = {
       "artifactId": "design-eval-catalog-0-7"
     },
     {
+      "id": "surface-design-eval-discriminate",
+      "path": "docs/design/eval-discriminate.html",
+      "title": "Eval Discriminate",
+      "kind": "design-preview",
+      "description": "Inspect a rendered design or design-language preview.",
+      "artifactId": "design-eval-discriminate"
+    },
+    {
       "id": "surface-design-eval-property-grader",
       "path": "docs/design/eval-property-grader.html",
       "title": "Eval Property Grader",
@@ -6749,5 +7348,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "0368ad7fb368ab66fe7c0f398d2360e87ed773c0ab52dfaa23c27c6093821bd1"
+  "graphSha256": "92b89a3cd5293c83a947af1933316ad1e19b8db608aafb22921431dd371f86f4"
 };
