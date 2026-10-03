@@ -1854,7 +1854,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4e907d89627f0bb44616109ae745c5793edf8e2ba1d3132afa0a36f2d18c73db"
+      "sourceSha256": "f9267759fb6d42eb850f9cd36a4954809bf437e56885344c97069d86003479c2"
     },
     {
       "id": "design-eval-seam-contracts",
@@ -3359,6 +3359,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "32f235bdd9ef5a50f339b185b9f5b27a48dbb164b03913b0a07c5bf58f1e5fd8"
+    },
+    {
+      "id": "review-eval-sim",
+      "path": "docs/design/reviews/eval-review-sim.md",
+      "title": "Simplifier lens review of the Evaluation Campaign designs (RV-SIM)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "The Simplifier's Adversary Mode findings on the Evaluation Campaign design slices, one section per slice, appended per batch. Soft veto on unjustified complexity. First section: W0 seam contracts at main 5092455c.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "6498292143c8251d7eacdd9887b620b175937d91c7c69224f58467d473a63c2f"
     },
     {
       "id": "coordination-eval-brief-rv-ds",
@@ -4874,5 +4895,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "9a475383318089580b65bae5b370c6cda232bd4d9a0db0003e11025170068161"
+  "graphSha256": "7b443b5b3792801d2ba0a84bb072cba3d2423a04aa727acf6f10b8f77e9ee27a"
 };
