@@ -54,3 +54,4 @@
 {"action": "resolve", "agent": "coord-opus-e1e4", "at": 1791054371.3508363, "id": "req-01M41GWMCQDK3724G8CZ2VR40M", "kind": "request", "outcome": "resolution", "path": "-", "seq": 54, "session": "coord-opus-e1e4", "type": "request", "wi": "WI-0"}
 {"action": "resolve", "agent": "coord-opus-e1e4", "at": 1791054371.6689627, "id": "req-01M41GWMT35CEXNPNZXMYD9KP0", "kind": "request", "outcome": "resolution", "path": "-", "seq": 55, "session": "coord-opus-e1e4", "type": "request", "wi": "WI-0"}
 {"action": "resolve", "agent": "coord-opus-e1e4", "at": 1791054371.9447086, "id": "req-01M41H679VVB248H3XANMY1PKN", "kind": "request", "outcome": "resolution", "path": "-", "seq": 56, "session": "coord-opus-e1e4", "type": "request", "wi": "WI-0"}
+{"agent": "coord-opus-e1e4", "at": 1791056270.4186711, "kind": "session-start", "path": "-", "seq": 57, "session": "coord-opus-e1e4", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-coord-eval-w0-rev6-pack2"}

@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T19:47:37Z",
+  "generated": "2026-10-03T19:49:31Z",
   "audit": [
     {
       "actor": null,
@@ -74522,26 +74522,94 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41MXJ9Q2071PTTBKK8DSXZF",
-      "shortname": "design-slice-review-eval-pat-w1e-r2",
-      "datetime": "2026-10-03T19:47:37Z",
-      "session": "rv-pat-e2-e1e4",
-      "prompt": "docs/coordination/eval-wave1/rv-pat.md (W1-E rev 2)",
-      "summary": "RV-PAT rev 2 re-review of W1-E: PASS WITH CONDITIONS, 5 findings",
-      "kind": "skill",
-      "skill": "design-slice-review",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/design/reviews/eval-review-pat-w1e.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "re-review W1-E rev 2",
+      "datetime": "2026-10-03T19:47:37Z",
       "done_when": "gate line appended",
+      "fan_out": 0,
+      "goal": "re-review W1-E rev 2",
+      "id": "al-01M41MXJ9Q2071PTTBKK8DSXZF",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md (W1-E rev 2)",
+      "session": "rv-pat-e2-e1e4",
+      "shortname": "design-slice-review-eval-pat-w1e-r2",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT rev 2 re-review of W1-E: PASS WITH CONDITIONS, 5 findings",
+      "tags": [],
       "tier": "T2",
-      "fan_out": 0
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1e.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:48:24Z",
+      "done_when": "rev-2 section and gate line appended",
+      "fan_out": 0,
+      "goal": "Verify blocking findings closed and tests meet 2a floor",
+      "id": "al-01M41MZ0CGQXEQHQQE11KCGZ0R",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-E rev 2 re-review)",
+      "session": "rv-ta-e2-e1e4",
+      "shortname": "design-slice-review-eval-ta-w1e-r2",
+      "skill": "design-slice-review",
+      "summary": "TA re-review of W1-E rev 2: 14 round-1 findings closed (one reopened as R2-1); 7 new; PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-discriminate.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:44:08Z",
+      "done_when": "Gate PASS incl. Security; the SCAN-A red fixture named; the synthetic agent mechanism",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-E discriminate, synthetic profile and readiness (EV-7)",
+      "id": "al-01M41H9B0QJVMYRQGTZ0BQ6AQA",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-e-discriminate.md",
+      "session": "w1e-discrim-e1e4",
+      "shortname": "design-slice-eval-discriminate",
+      "skill": "design-slice",
+      "summary": "W1-E design: discriminate, synthetic agent (spike S-E1), idempotent record, overlay rule, real-host readiness, variants, readers, sweeper, test plan",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-discriminate.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:44:02Z",
+      "done_when": "every finding has a disposition row; Gate record has four first-round lines plus rev 2 pending; derive and validate exit 0",
+      "duration_seconds": 395.0,
+      "fan_out": 0,
+      "goal": "Apply the four W1-E reviews in rev 2",
+      "id": "al-01M41MQ0VT8PZN6NQWQP75KATR",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-e-discriminate.md (rev 2 follow-up: apply RV-TA, RV-PAT, RV-SEC, RV-SIM reviews; W0 rev 5; R-98)",
+      "session": "w1e-discrim-r2-e1e4",
+      "shortname": "design-slice-eval-discriminate-rev2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T19:37:27Z",
+      "summary": "W1-E rev 2: 40 review findings dispositioned; R-98 record (no ids, link after created-or-equal); for_task identity; CHECK_PROPERTIES scoping; one overlay path rule; grader-allowlist env; tests folded to 25 plus 3 join checks; SR-E3 filed",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     }
   ],
   "changes": [
@@ -75010,26 +75078,6 @@ window.AUDIT_DATA = {
       "title": "Evaluation-campaign architecture: arms in the plan, two-turn attempts, campaign record, hidden-check harness, plan-level resume"
     },
     {
-      "artifacts": [],
-      "datetime": "2026-10-03T18:08:18Z",
-      "git": {
-        "after": "ae21488b361d0e39e815d3708896701fe62ed348",
-        "before": null,
-        "branch": "design/eval-campaign-record",
-        "commits": [],
-        "pushed": null
-      },
-      "id": "cl-01M41F7QC1QJ9KGHK8CTM8B5KP",
-      "kind": "design",
-      "prompt": null,
-      "rationale": null,
-      "session": null,
-      "skill": "design-slice",
-      "summary": "W1-C design for X-C: derived state, per-command guards, measured lock safety, F-1 checks at plan and attach",
-      "tags": [],
-      "title": "Campaign record design: closed 11-kind ledger folded to state, own-then-probe locks, git-prefix verify, attach freeze with chain identity check"
-    },
-    {
       "artifacts": [
         "docs/design/eval-security-tasks.md"
       ],
@@ -75230,6 +75278,48 @@ window.AUDIT_DATA = {
       "summary": "34 review findings dispositioned; recover_archive specified not built in E1; HB-LED-009 refused; site scan re-derived (12 sites, 11 keys) with red fixtures; rename_with_retry public; seam request S-B4",
       "tags": [],
       "title": "W1-B rev 2: recovery moves to X-K1, sweep lock enforced, create_once identity-checked, one WIN-A retry helper"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-discriminate.md"
+      ],
+      "datetime": "2026-10-03T18:44:26Z",
+      "git": {
+        "after": "b88746d9f6ab43bb94c7f2a5d0197f845d2565e4",
+        "before": null,
+        "branch": "design/eval-discriminate",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41H9WD09F4V22981XF71CDD",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-e-discriminate.md",
+      "rationale": "Obligations O1-O7 routed by RV-TA W1-I, RV-DS W0/W1-B, RV-PAT W1-I, R-93/R-96 and seam V67; status is inside the task version hash so the flip to ready precedes the record",
+      "session": "w1e-discrim-e1e4",
+      "skill": "design-slice",
+      "summary": "docs/design/eval-discriminate.md; seam requests req-01M41H86JNZ3XPT1T1RJZJE35X, req-01M41H86X2ENXFWMWGTHTDDHMN",
+      "tags": [],
+      "title": "W1-E: discrimination record without run ids, no synthetic profile file, variants as synthetic cells, R-HOST readiness"
+    },
+    {
+      "artifacts": [],
+      "datetime": "2026-10-03T18:08:18Z",
+      "git": {
+        "after": "ae21488b361d0e39e815d3708896701fe62ed348",
+        "before": null,
+        "branch": "design/eval-campaign-record",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41F7QC1QJ9KGHK8CTM8B5KP",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "W1-C design for X-C: derived state, per-command guards, measured lock safety, F-1 checks at plan and attach",
+      "tags": [],
+      "title": "Campaign record design: closed 11-kind ledger folded to state, own-then-probe locks, git-prefix verify, attach freeze with chain identity check"
     },
     {
       "artifacts": [
@@ -75517,6 +75607,26 @@ window.AUDIT_DATA = {
       "summary": "Rev 5 answers SR-E1, SR-E2, SR-L1..SR-L4, rules RV-TA W1-L 1 (simplicity laundering, no EV-6 change) and SR-L1 (verified_before_use not built in E4), grants W1-C OI-5, records R-97; DR-E1 open.",
       "tags": [],
       "title": "W0 seam contracts rev 5"
+    },
+    {
+      "id": "cl-01M41MQ5ZA1MDT23D4DPF37HSW",
+      "datetime": "2026-10-03T19:44:08Z",
+      "session": null,
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "W1-E rev 2: discrimination record per R-98, check-less scoping, single overlay rule",
+      "prompt": null,
+      "summary": "Applied RV-TA/PAT/SEC/SIM first-round findings: no run ids in the record body, link after created-or-equal, identity.for_task, CHECK_PROPERTIES scoping, one safe_relpath/overlay_files, grader-allowlist env, no-record on HB-RDY-011, HB-RDY-009 deferred to E4.",
+      "rationale": null,
+      "artifacts": [],
+      "tags": [],
+      "git": {
+        "before": null,
+        "after": "926cee3eee04249aeaf1fdb38f1868df9e37e92b",
+        "branch": "design/eval-discriminate",
+        "pushed": null,
+        "commits": []
+      }
     }
   ],
   "messages": [
@@ -75744,6 +75854,24 @@ window.AUDIT_DATA = {
       "kind": "decision-request",
       "ref": "req-01M41J1E3PDYAG1WTAGH004MZ8",
       "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M41KCSK8BWQZ17N2WC4TETTF",
+      "ts": "2026-10-03T19:20:59Z",
+      "from": "owner-fable",
+      "to": "coord-opus-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41J1E3PDYAG1WTAGH004MZ8",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41M3DP1N9TXFCK7D5M9JJDS",
+      "ts": "2026-10-03T19:33:20Z",
+      "from": "x-d1-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41KBTSTZ738NAGXNK0SRVXH",
+      "session": "x-d1-e1e4"
     }
   ]
 };

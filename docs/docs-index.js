@@ -2116,6 +2116,70 @@ window.DOCS_INDEX = {
       "sourceSha256": "0b5cff38703dc03b75420c16279c50cb8fd147a5a72d3d99e31bc0a035034810"
     },
     {
+      "id": "design-eval-discriminate",
+      "path": "docs/design/eval-discriminate.md",
+      "title": "W1-E design: discriminate, the synthetic profile and the readiness check (EV-7; X-E)",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 design slice W1-E; builds in E1 (X-E: discriminate.py, readiness.py, synthetic_agent.py)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Designs the one path by which a property task becomes ready: bench discriminate runs the task's reference, its naive solution and its defect variants as synthetic cells through the real engine, working-copy builder, archiver and grading pass (and so, for check-based properties, the real probe host), and writes a create-once, idempotent discrimination record; readiness.py then refuses `ready` unless that record exists, matches the current task version and engine, was made by the real host where the property has one, and every expected value is observed. Settles the record's data model (no run id in its body, so a legitimate retry is a no-op; R-98), the synthetic agent (a stdlib ACP process behind Launcher; engine.py unchanged, Verified by spike S-E1), the one overlay path rule, the disagreement and clock-failure readers, the sweeper, and names every red-first test with its fixture, real-wiring partner and mutant. Revision 2 applies the four first-round reviews.",
+      "tags": [
+        "benchmark",
+        "discrimination",
+        "readiness",
+        "synthetic-agent",
+        "evaluation-campaign",
+        "w1-e"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0016-campaign-record",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0018-hidden-check-harness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0019-catalog-0-7-property-metrics",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-property-grader",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-atomic-publish",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-security-tasks",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "008437404b45b0b3328917767710ec3a299871230386130f26c7f292a34afe57"
+    },
+    {
       "id": "design-eval-identity",
       "path": "docs/design/eval-identity.md",
       "title": "W1-D design: engine identity, freeze and per-launch recheck",
@@ -4855,7 +4919,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f924094bd5de5f9b54decac835607f45e74dad1bdab9e1644b137b574c40ec93"
+      "sourceSha256": "3ee65cc973e552602ae14800354c658ad777f2208ddd748f769867e40c52eee6"
     },
     {
       "id": "review-eval-ta-w1f",
@@ -6754,6 +6818,14 @@ window.DOCS_INDEX = {
       "artifactId": "design-eval-catalog-0-7"
     },
     {
+      "id": "surface-design-eval-discriminate",
+      "path": "docs/design/eval-discriminate.html",
+      "title": "Eval Discriminate",
+      "kind": "design-preview",
+      "description": "Inspect a rendered design or design-language preview.",
+      "artifactId": "design-eval-discriminate"
+    },
+    {
       "id": "surface-design-eval-property-grader",
       "path": "docs/design/eval-property-grader.html",
       "title": "Eval Property Grader",
@@ -6855,5 +6927,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "da9559d8afa53597b83d84bd7e2df6f5be3e7ff8801fe0dba56a780a1d81f1a7"
+  "graphSha256": "9d7974be47edd7ce400b3b9b2b3ea2e6b6edf6e9f65ef1b46aaf2a4456076359"
 };
