@@ -5928,7 +5928,7 @@ window.DOCS_INDEX = {
       "phase": "",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "X-I-S2 runs the S2 spike W1-I section 12 requires (prompt, latent requirement, probes each proven live, the pickle-cookie rules), records it for RV-SEC and RV-TA, then authors tasks/S2 to draft on Claude Sonnet; ready after X-F joins and catalog 0.7 is frozen.",
+      "summary": "X-I-S2 runs the S2 spike W1-I section 12 requires (prompt, latent requirement, probes each proven live, the session rules as amended by R-99: login route only, no bottle or pickle import, inert bytes only, tamper-refusal in place of forged-session), records it for RV-SEC and RV-TA, then authors tasks/S2 to draft on Claude Sonnet; ready after X-F joins and catalog 0.7 is frozen.",
       "tags": [],
       "links": [
         {
@@ -5941,7 +5941,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b423de0800a6598b2839a2bcfe9bcda6aa3d3dd8ebac7c4df339644eb5b20705"
+      "sourceSha256": "6a4af9946908a86586de98b4f7f17a5d2a1183d46f2a6db671f20bcb766f2dbd"
     },
     {
       "id": "brief-eval-x-int",
@@ -5975,14 +5975,14 @@ window.DOCS_INDEX = {
     {
       "id": "brief-eval-x-j1",
       "path": "docs/coordination/eval-wave2-e234/x-j1.md",
-      "title": "Brief X-J1: the multi-turn engine (E2 build) - BLOCKED on W1-J's gate",
+      "title": "Brief X-J1: the multi-turn engine (E2 build) - unblocked by W1-J rev 2; starts after X-D joins",
       "type": "plan",
       "status": "proposed",
       "owner": "@timianmalloo",
       "phase": "",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "X-J1 builds W1-J's multi-turn engine (driver, turn loop, per-turn snapshots, lifecycle conformance) on Codex gpt-6.1-sol in five turns. Blocked until W1-J passes its gate and merges; carries the four E1 conditions and W0 rev 6.2/6.5's rows as acceptance items.",
+      "summary": "X-J1 builds W1-J rev 2's multi-turn engine (open_session/send_turn/Session.close, the turn loop with turn_ended.next, per-turn snapshots through publish_dir, append_missing_rows, the lifecycle turn rules) on Codex gpt-6.1-sol in five turns cut to W1-J section 11's commit order. W1-J's gate passed (merged f23d35ed). X-J1a starts after X-D (X-D1 and its D2 engine recheck) has joined, because X-D owns engine.py in E1 and engine.py edits are serialised.",
       "tags": [],
       "links": [
         {
@@ -5992,22 +5992,26 @@ window.DOCS_INDEX = {
         {
           "to": "design-eval-seam-contracts",
           "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "depends-on"
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4d2ea3024118f8f7d2555ce6f8d123462f0c74a19959c6cbcc9075cfac2b42e7"
+      "sourceSha256": "8db0a5c2e1827c4a648d7351a3444473be142d955e724cce2644e7abd32bf437"
     },
     {
       "id": "brief-eval-x-j2",
       "path": "docs/coordination/eval-wave2-e234/x-j2.md",
-      "title": "Brief X-J2: _changes, the rework grader, per-turn synthetic cells and multi-turn discrimination (E2) - J2b BLOCKED on W1-J",
+      "title": "Brief X-J2: _changes, the rework grader, per-turn synthetic cells and multi-turn discrimination (E2) - unblocked by W1-J rev 2",
       "type": "plan",
       "status": "proposed",
       "owner": "@timianmalloo",
       "phase": "",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "X-J2 lands grade/_changes.py's four counting functions (J2a, unblocked by design), then rework.py, per-turn synthetic cells, the multi-turn discrimination path and the variant reader's two new edit forms (J2b, blocked on W1-J), on Agy gemini-3.8-flash-high.",
+      "summary": "X-J2 lands grade/_changes.py's four counting functions (J2a, waits on the X-F and X-A1a joins), then rework.py, per-turn synthetic cells, the multi-turn discrimination path and the variant reader's two new edit forms (J2b, unblocked by W1-J rev 2's gate; waits on X-J2a, X-E, X-LB0 and X-J1's turn record), on Agy gemini-3.8-flash-high.",
       "tags": [],
       "links": [
         {
@@ -6021,10 +6025,14 @@ window.DOCS_INDEX = {
         {
           "to": "design-eval-seam-contracts",
           "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "depends-on"
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f5765ee627e52b3cc6fdda7a459217fd37232e701ddc00d21eca7c58a7ef6c5e"
+      "sourceSha256": "c7e06322ddf6c16c0451c42c4d03b2f780dcfce7062383fa6a85b7c956e70d7f"
     },
     {
       "id": "brief-eval-x-k1",
@@ -6968,7 +6976,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation: Wave 2, phases E2 (multi-turn), E3 (arms, catalog freeze, resume), E4 (remaining property tasks), convergence",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "Pack part 3 (Coordinator session #7): the routing of the sixteen E2-E4 items and X-CV to harness and pinned model, the real DAG, the launch order by critical path, the gate state of each design, and one brief per item, plus the W1-K design brief. Four Sonnet items can start now (X-NG, X-SM, X-RW authoring; the X-I-S2 spike). Every external brief is written but waits on a design gate or an E1 join, so nothing external is compiled yet (CO-S0 runs at dispatch). W0 rev 6.6 carries the rulings these briefs build on: RV-TA W1-L rev 2 R2-1..R2-4, and the laundering-variant names.",
+      "summary": "Pack part 3 (Coordinator session #7): the routing of the sixteen E2-E4 items and X-CV to harness and pinned model, the real DAG, the launch order by critical path, the gate state of each design, and one brief per item, plus the W1-K design brief. Four Sonnet items can start now (X-NG, X-SM, X-RW authoring; the X-I-S2 spike). Every external brief is written but waits on a design gate or an E1 join, so nothing external is compiled yet (CO-S0 runs at dispatch). W0 rev 6.6 carries the rulings these briefs build on: RV-TA W1-L rev 2 R2-1..R2-4, and the laundering-variant names. Coordinator #9: W1-J rev 2 passed its gate and merged (f23d35ed), so X-J1 and X-J2 are unblocked by design; x-j1.md is re-cut on W1-J rev 2's final names and commit order; X-J1a and X-J2a are compiled (CO-S0); X-J1a starts only after X-D has joined, because X-D owns engine.py in E1. The X-I-S2 brief carries R-99's session rules.",
       "tags": [
         "coordination",
         "briefs",
@@ -7001,7 +7009,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "229b8540d49e8751e0a849016d9752096fa71a264e977123003bfd87e73ea699"
+      "sourceSha256": "e1135f8b34e259affe091b5495f8f9f7e910e4a07b590a608877523a5087202b"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -7904,5 +7912,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "7f80802f05438b5b7a0bc7f5ce55cbf887596f529dd3a3af07f073a177cb6172"
+  "graphSha256": "ce11c73a35e690ea52fb4f54fecd33ab9c1b3d3508ea0b06fd5566e5a625fde7"
 };
