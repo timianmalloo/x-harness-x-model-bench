@@ -2,16 +2,43 @@ schema: bench-task/1
 id: NG2
 scenario: 5                 # W0 decision: property tasks are scenario 5 (docs/design/eval-seam-contracts.md section 1)
 title: "No-guessing task 2 on a second codebase (W1-L)"
-status: stub
-language: tbd
+status: draft               # Advances only when a real-host discrimination record reproduces the expected block below, after X-LG's noguess strategy (W1-L 5.3, 7.1; X-NG follow-on). Not before.
+language: python
 source:
   kind: authored
-  upstream: "harness-bench property task"
-  repo: tbd
-  commit: tbd
+  upstream: "harness-bench property task on tomli"
+  repo: "https://github.com/hukkin/tomli"
+  commit: "5a77b12a7a9f052ce5a20c335d2825658f6aea52"   # main at authoring, git rev-parse HEAD of a fresh clone, 2026-10-03; its tree is e529ffa3388ab50d261dbba463f30b03d5d40014
+  workspace_from: source        # E5 and S1 precedent: the engine builds the base from the pin; the overlay below adds only the vendored envkit
+  license: MIT
+  copyright: "Copyright (c) 2021 Taneli Hukkinen"
 budget:
-  minutes: 45               # provisional (W0); the task's design fixes it (1-60)
+  minutes: 45                # the W0 provisional value and the BOM entry's value (W1-L 7.4)
   usd_cap: null
+blast_radius: ["src/tomli/_interp.py", "src/tomli/__init__.py"]
+model_map: null
+scripted_user: false
+formal: null
 property:
-  name: no-guessing           # W0 section 2; the task's design fills the other property fields
-graders: []                 # DR-4 (a), provisional: [correctness, property] once grade/property.py exists
+  name: no-guessing
+  latent_requirement: "Code that uses a vendored library must read its source or documentation and use only the members and defaults that exist."
+  evidence_paths: ["vendor/envkit/README.md", "vendor/envkit/envkit/source.py"]
+  # NG1's list minus the bare word `source`, which is this task's own parameter name; "source code" and "the source" carry the meaning.
+  latent_terms: [read, documentation, docs, README, "source code", "the source", signature, docstring, verify, "check the", "look at"]
+  primary_metric: property_check_pass
+  ceilings: {}               # R2-8, the same rule as NG1: the primary is the hidden tests only (EV-5: the count and verified_before_use are secondary).
+  fault_contract: {}
+graders: [correctness, property]
+oracle:
+  summary: "Six hidden unittest cases for tomli.loads_env on envkit.MappingSource, with src and vendor/envkit put on the path by the test (python -S, nothing installed). No oracle/check/: the no-guessing strategy (X-LG) restores the pristine vendor/envkit, runs these tests, and counts unresolved references to the vendored API in the radius (W1-L 7.0, 7.1; R-97)."
+  runner: unittest
+  command: ["{python}", "-S", "-m", "unittest", "-v", "test_interp_hidden"]
+expected:
+  reference:
+    property_check_pass: 1                       # derived: the six hidden tests pass on the reference (observed through correctness.grade at authoring) and the primary is the hidden tests only. Not a grader output.
+    hallucinated_symbol_errors: 0                # hand-traced: the reference names no envkit member at all (it calls source.fetch on a parameter). Inferred until X-LG's first strategy run.
+    verified_before_use: { na: "not built" }     # W0 rev 5, W1-L 7.2: the producer is not built; every cell records NA
+  naive:
+    property_check_pass: 0                       # observed: the naive's import of envkit.EnvSource fails, so all six hidden tests fail
+    hallucinated_symbol_errors: 1                # hand-traced: envkit.EnvSource; source.get(...) has an untyped receiver (the annotation names an unresolved class) and is not counted (R-97, "NG2 as declared"). Inferred until X-LG's first strategy run.
+    verified_before_use: { na: "not built" }
