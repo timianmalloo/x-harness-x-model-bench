@@ -1,0 +1,48 @@
+---
+id: review-eval-sim-w1l
+title: "Simplifier review of W1-L (property tasks and four graders)"
+type: doc
+status: draft
+owner: "@timianmalloo"
+links:
+  - { to: design-eval-seam-contracts, rel: relates-to }
+review-by: "2026-10-17"
+summary: >-
+  RV-SIM (Adversary Mode, soft veto) on design/eval-property-tasks 5da93d91. PASS WITH CONDITIONS: cut
+  verified_before_use until SR-L1, defer the noguess resolver, fix the E2/E4 phase inversion of product_lines and
+  in_radius, remove dead resilience cases and duplicate variants, and fold the per-task test rows into readiness.
+---
+
+# Simplifier review: W1-L, the remaining property tasks
+
+Reviewed: `docs/design/eval-property-tasks.md` @ `design/eval-property-tasks` 5da93d91, against W0 rev 3 (sections 1, 3, 7, 13), R-87..R-96 and W1-F ("Not built in E1"). Code opened: `telemetry/__init__.py:61-68` (ToolCall has no target; Verified), `grade/drift.py:73,131` (`_in_radius` is private to drift; Verified). Session `rv-sim-w1l-e1e4`.
+
+## W1-L
+
+| # | Location | Finding | Severity | Evidence | Fix | Confidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | s7.2, s3, s15 (`test_vbu_*`), s16 SR-L1 | `verified_before_use` should not exist as specified yet. Today it is NA for every cell: ToolCall has no target, and synthetic cells have no trajectory (G2), so both expected values are NA. No reference or naive can show it moving, and it cannot be red-first tested on a real cell. Its input fix (SR-L1) edits `telemetry/*`, which R-94 made run class: an identity change for a metric no E1-E3 run reads. The predicate is also wrong where it matters: a shell `cat vendor/...` is `tool_class` shell, not `read`, so an agent that reads by shell scores a false 0 (a plausible wrong number, the IO rule the doc itself cites). | major | G1 `telemetry/__init__.py:61-68`; s7.2 predicate "a `read` row whose `target`"; R-94 | Keep the metric id (W0 s7 fixes it). Replace s7.2 with: "NA `not built`; designed when SR-L1 is ruled and a real trajectory exists". Delete the four `test_vbu_*` rows and the predicate. Keep SR-L1 filed, not blocking. Re-specify with shell targets in scope in E4. | Verified (code), Inferred (shell false 0) |
+| 2 | s2 G6, s4, s7.1 | `noguess.py` with its resolver subprocess (`-S`, `inspect.signature`, keyword rule `lib.Cls.__init__:kw`) is the biggest build here for one count on two tasks, and is provisional on an open Owner request (DR-L1). On both naives the count adds nothing the primary does not: the import fails, every hidden test is red. It earns its place only on `v-default` and `v-kw`. | major | s7.3 "The import fails, so every hidden test fails (primary 0)" | Defer s7.1 to "decided at E4 entry after DR-L1". Keep one sentence of meaning (final-tree unresolved names). Drop the keyword rule and `v-kw` until the member-name rule has run once. | Inferred |
+| 3 | s3 "Single definitions", s4 table, s16, s18 | **Phase inversion; disagrees with W0 s13 and with W1-L's own s4.** `rework` (E2, X-J2) calls `diffstats.product_lines` and `in_radius`, but both land in X-LG's first E4 commit (`_changes.py` is X-LG's hub in E4). RW1 is E2, so X-J2 cannot build on a function that arrives two phases later. The fallback (X-J2 writes its own) makes the two-definitions defect the doc forbids (DM7). Today `drift._in_radius` is private (`drift.py:73`). | major | s3 "moved ... in X-LG's first E4 commit"; s4 RW1 "E2 (X-RW) ... `rework.py` (X-J2)"; `drift.py:73` | Land `product_lines` and `_changes.in_radius` with X-J2 in E2 (or a one-commit X-LG/X-J2 seam), with `product_lines` in `grade/_changes.py`, not `diffstats.py`. `diffstats` and `rework` both import it. Name W0 s13 and the owner in the Coordinator request. | Verified (code, doc text) |
+| 4 | s9.2 cases and variants | Dead cases under the doc's own branch rule (F1: "a case no variant flips fails the branch rule"). RS1: `f-ok` and `f-5xx-burst` are flipped by no listed variant (there is no `v-no-retry`). RS2: `g-ok` and `g-ordering` are flipped by none (`v-clear-early` flips `g-5xx-persistent`, not ordering). | major | s9.2 variant table; s9.3 variant list | Delete `f-ok`/`g-ok` as cases (the happy path is H-1/S-2), or add the one variant that flips each. Add `v-no-retry` (the naive's own behaviour). Drop `g-ordering` unless a variant breaks order. | Verified (doc text) |
+| 5 | s9.2 cases and variant table | Duplicated checks. `f-slow-first`, `f-hang`, `f-recover` are flipped by exactly the same variants on the same clause. `v-no-key` and `v-key-per-attempt` flip the same cases on the same clause with violations 2 either way. A pair no input separates is one test. | minor | s9.2 table rows 1, 2, 4, 5 | Keep `f-slow-first` (effect plus time) and `f-hang`; cut `f-recover` unless a variant flips only it. Keep `v-no-key`; keep `v-key-per-attempt` only if it differs on a named case. | Verified (doc text) |
+| 6 | s8.1 `new_dependencies`, s8.2 `v-dep` | Nearly redundant. Tasks run `-S` with no site-packages and declare no build (s5.2), so a new third-party import fails the hidden tests before the metric reads; `v-dep` flips it only on a dead branch. The pyproject scan and "already imported anywhere in the base tree" are an exemption table with no case in these two tasks. | minor | s5.2 "a third-party import fails (`did not start`)" | Keep the id (W0 fixed). Implement as the set difference of top-level imports against `sys.stdlib_module_names` plus the package. Drop the pyproject/setup.py scan and the base-tree exemption until a task needs them. | Inferred |
+| 7 | s5.1 product-line rule | The docstring exclusion does earn its place at a 3.0 ceiling over a 2-line reference (a 6-line docstring alone busts it), but the doc does not say so. Cap it: blank, comment-only and docstring lines, nothing more. `v-docstring` is the one test that proves it. | minor | s8.2 `v-docstring`; ceiling 3.0000 | Keep. Add the sentence giving that reason. | Verified (doc text) |
+| 8 | s15 per-task test rows | About 9 test families x 8 tasks across four new files. `hidden_tests_fail_on_stub` duplicates `each_wrong_app_turns_exactly_its_test_red` (the row admits it proves nothing the fixtures do not). `real_host_reproduces_expected` duplicates the discrimination record readiness already requires, and its "registration removed" mutant belongs once in a strategy-registration test, not eight times. `pin_is_a_full_commit`, `notice_and_license_exist`, `declares_no_build` are one readiness rule each. | major | s15 rows 2, 3, 4, 5, 9; `tests-earn-their-place` | One parametrised module over the eight task ids. Cut `hidden_tests_fail_on_stub` and the per-task `real_host_reproduces_expected`. Fold pin, NOTICE and no-build into readiness (X-E), one red fixture each. Keep wrong-app, variant-flip, latent-term, no-oracle-string and the strategy tests. | Inferred |
+| 9 | s6, s7, s9 depth versus phase | Seven of eight tasks are E4; only RW1 is E2. The doc fixes cases, variants, expected strings, fake caps and bounds (`bound_ms: 4500`, Inferred) for E4 tasks whose dependencies (SP-LB, X-LB, SR-L1, SR-L2, SR-L3, DR-L1) are all open. Not code, so no E1 violation, but any ruling on those changes s7 and s9: E2 rework. | minor | s4 table; s16 | Mark s7 and s9 `provisional (SR-L1, SR-L2, DR-L1, SP-LB)` in the heading and say the E4 author may re-cut cases. RW1 and the pins stay firm. | Verified (doc text) |
+| 10 | s10 telemetry | Three new evidence files (`rework.json`, `diffstats.json`, `noguess.json`) beside `property.json`: one more writer per strategy, three readers. | minor | s10 | Put each strategy's inputs in the existing `property.json` evidence block (W1-F's): one file, one rebuild test. | Inferred |
+| 11 | s2 G8, eight bases | "Eight distinct bases" over-satisfies DR-T1/EV-1, which need two different codebases per property, not eight across properties. SP-L1 is already run; the cost is eight pins, NOTICE files and tree hashes. | minor | W0 s1 "each property's two tasks use different codebases" | Keep. Note a later task may reuse a base across properties. No rework now. | Verified (W0 text) |
+| 12 | s6.1 `turn1_tests_pass` | It is a second `correctness.grade` run on the snapshot; the primary's "turn-1 still passes" clause is a separate final-tree run. The metric id is W0-fixed, so it stays. | minor | s6.1 steps 1-2 | Keep. State that step 2 reuses one result object per tree. | Inferred |
+
+## What earns its place (checked, no finding)
+
+The `rework` strategy and `v-duplicate` (the blind spot RQ-1 is real; a test, not a ratio, closes it). The three-metric `diffstats` over one `product_lines`. `v-bloat`, `v-class`, `v-docstring` for SM. The authored NG vendored libraries (the renamed members are the task). "Numbers in the prompt, mechanisms latent" (RQ-2). The doc's own cuts: no jitter, no shared probe library, no `static` case.
+
+## Direct answers
+
+- **Does each task, probe, variant and metric earn its place?** Tasks and metrics yes. Dead cases (4), duplicate cases and variants (5) and the per-task test families (8) do not.
+- **Are the four graders the smallest correct mechanism?** `rework` yes. `diffstats` yes, minus the dependency scan (6). `noguess` no: defer the resolver (2). The `resilience` strategy is W1-F's; its cases need cuts 4 and 5.
+- **Built before its phase?** Nothing is built. Specification depth for E4 tasks runs ahead of its open dependencies (9). One true phase inversion: `product_lines` and `in_radius` for E2's `rework` (3).
+- **Should `verified_before_use` exist until SR-L1?** No (1). Keep the id, mark it `not built`, drop the predicate and tests, and design it against a real trajectory in E4.
+
+GATE W1-L · Simplifier · PASS WITH CONDITIONS · 12 findings (rv-sim-w1l-e1e4, 2026-10-03)

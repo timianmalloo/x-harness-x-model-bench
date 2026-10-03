@@ -38,3 +38,22 @@ PERSONA: security-identity-architect, Adversary Mode, T2. Not repeated: RV-TA an
 **Conditions.** Apply findings 1, 2, 3, 5 and 7 (7 may go as a seam request); resolve 4 by fix or by a named residual. Findings 6 and 8-10 may follow in the build.
 
 GATE W1-C · Security & Identity · PASS WITH CONDITIONS · 10 findings (rv-sec-w1c-e1e4, 2026-10-03)
+
+## Revision 2 re-review, delta only (rv-sec-w1c-e1e4, 2026-10-03; 8a718b7a)
+
+Checked against the rev 2 text (`git show 8a718b7a:docs/design/eval-campaign-record.md`) and `oslock.py`. Conditions 1, 2, 3, 4, 5 and 7 are each met in the text.
+
+| # | verdict | evidence (rev 2) |
+| --- | --- | --- |
+| 1 id before any path | Met. | s5: ids validated in the parser `type=` callbacks and again at `session` entry (`campaign_id`, `run_id`, `--grading-id`, task ids; `status.RUN_ID` has no separator and no leading dot); s6 step 0 validates and `lstat`s "without creating anything", and every command but `create` needs an existing ledger (HB-CMP-005, "the lock's mkdir has not run"). `oslock.acquire` is the only mkdir/O_CREAT and runs at step 1, after step 0. Reads (`status`, `verify`, `register` preview) take no lock and create nothing. Tests N-1, C-3. |
+| 2 lstat chain | Met. | s6 step 0 and s7 step 0: folder, ledger, three sub-folders, lock, each content file, `bench/discrimination/` and each task dir; L-8 with M-L8. The `lstat`-to-open race is named as FM-17, accepted. |
+| 3 witness | Met. | s7 step 5 keys on content, not status letters (staged states no longer matter); 5e `ls-files -v` `h`/`S`; 5f `--ignored` scan; 5g the three `.gitignore` lines by exact text; V-11, V-12 with mutants. |
+| 4 history | Met. | 5b commit-pair prefix walk, first-parent; a merge fails closed; V-4c; FM-15 keeps only the uncommitted full rewrite as residual. |
+| 5 attach tree check | Met. | `check_plan` recomputes the hash from `components` and compares the working tree's run side, before the freeze; C-49 covers a subset plan (finding 6). |
+| 7 plan binding | Met. | `plan_hash` on both attach rows; `run_side_check` inside the engine compares it; P-6. Cell-set coverage stays OI-2 (W1-H), not a W1-C gap. |
+
+New, minor (does not block): 5a speaks of a ledger "in HEAD" but not of one deleted from the working tree. 5c covers a deleted non-ledger path. `create` then sees "no ledger" and could start a fresh campaign over a committed id. Fix: a committed ledger absent from the working tree is a finding (HB-CMP-003) for every command including `create`, and `status` reports it so, not as HB-CMP-005. Test: delete a committed ledger, run `create`. Confidence: Inferred (from 5a and s6 step 0 text; confirm with the test).
+
+Findings 6, 8, 9 and 10 are applied in the text (disposition rows, S-4, `re.escape`).
+
+GATE W1-C · Security & Identity · PASS · 1 finding (rv-sec-w1c-e1e4, 2026-10-03, rev 2)

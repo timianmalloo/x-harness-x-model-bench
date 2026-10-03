@@ -23,6 +23,7 @@ summary: >-
 # ADR-0020: Power analysis, verdicts, dominance and ring gates are pure stdlib functions
 
 - **Status:** Proposed
+- **Amended (2026-10-03, W0 rev 3 s8; R-96):** `stats.rng(plan seed, key)` reads `stats.rng(seed_for(prereg_hash, property, harness, (ref, treat)), key)`; the seed is derived, 60 bits, never stored in the plan. See "Amendment 1" before *Alternatives considered*. The decision text above is unchanged.
 - **Date:** 2026-10-03
 - **Deciders:** @timianmalloo; authored by Claude Code with the Tech Lead and Test Architect lenses
 - **Context spec/architecture:** `docs/specs/enterprise-evaluation.md` (EV-12, EV-14, EV-15, EV-18, EV-19); ADR-0006 (*Derived, never stored*); `stats.py` (seeded streams).
@@ -41,6 +42,12 @@ EV-12 needs sample sizes that match closed-form references within ±1 and MDEs w
 4. **Ring gates (EV-14, EV-15).** One pure function per tag over a ring run's view: `pilot` returns the named failing items (blocked/failed/infrastructure cells, grader errors, EV-11 metrics, NOT_RECORDED primaries, BND-A losses, tasks without a primary); `pack-regression` returns per property `regression signal` or `no regression detected at <MDE>`, never verdict words (EVX-6).
 5. **Derived, never stored.** Every output above is recomputed on read (ADR-0006); the campaign stores only inputs and decisions.
 6. **Controls.** Closed-form reference cases (93; 53; 115) with tolerances; the same values from an independent hand-coded formula with literal z constants inside the test (not the module); a seeded-wrong variant (one-sided z) that must fail; the 400-pair normal-approximation reference (±0.01); seeded coverage simulations (1,000 datasets, 93-97 %) for the verdict interval and the ratio; hand-computed verdict and dominance tables with the boundary rows (EV-18, EV-19).
+
+### Amendment 1 (2026-10-03; W0 rev 3 section 8, `req-01M41EPKRBCVQ28MS96CHNTDRZ`; R-96 ruling 3)
+
+Recorded by the Coordinator (`coord-opus-e1e4`) with W0 rev 4, before X-H1's first commit, so X-H1 codes against an ADR that says what W0 says. W0 section 8 is the contract. This note records where it departs from the text above.
+- **§2, the seed.** "Streams from `stats.rng(plan seed, key)`" reads `stats.rng(seed_for(prereg_hash, prop, harness, (ref, treat)), key)`, where `seed_for = int(sha256(f"{prereg_hash}|{prop}|{harness}|{ref}|{treat}").hexdigest()[:15], 16)`. There are two reasons. A verdict may read pairs from several attached grid runs, so a per-plan `launch_seed` is not one value per verdict (W0 rev 2, RV-DS 11). And 15 hex digits (60 bits) keep the seed below 2^63, which `stats.Params` requires (`stats.py:58-59`); 16 digits failed about half the time (measured: 49.9 % of 100,000). The seed is derived on read and never stored (decision 5).
+- **§2, the level under `holm`** (R-96 ruling 1; recorded here so the ADR and W0 agree). Under `correction.method = holm`, "the pre-registered level and correction" means the interval at `1 - alpha/m`, which is Holm's first step. `alpha_per_test` is `alpha/m` for `bonferroni` and `holm`, and `alpha` for `none`. No step-down runs. The power output, the verdict view and report section 3 carry `alpha_per_test` and the `level_rule` string. The pre-registration records the method as the operator wrote it.
 
 ## Alternatives considered
 
