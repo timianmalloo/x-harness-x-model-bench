@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T23:01:30Z",
+  "generated": "2026-10-03T23:17:35Z",
   "audit": [
     {
       "actor": null,
@@ -77555,28 +77555,140 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M4200C9YVA5W1B8REQVHM1AB",
-      "shortname": "design-slice-eval-resume-rev1-1",
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-resume.md"
+      ],
+      "compiled": false,
       "datetime": "2026-10-03T23:01:23Z",
-      "session": "w1k-resume-r2-e1e4",
+      "done_when": "Design and model amended, TLC re-run green, gate pending five lenses",
+      "duration_seconds": 812.0,
+      "fan_out": 0,
+      "goal": "Apply R-100 to the W1-K design before the lens reviews",
+      "id": "al-01M4200C9YVA5W1B8REQVHM1AB",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "docs/coordination/eval-wave2-e234/w1-k.md (rev 1.1: apply R-100)",
+      "session": "w1k-resume-r2-e1e4",
+      "shortname": "design-slice-eval-resume-rev1-1",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T22:47:51Z",
       "summary": "Applied Ruling 100 (B): finish-the-stop resume; NoLaunchAfterStop; D-K9 withdrawn; model, variants, W12 and sections amended; TLC quick 34/34, exit 0",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1k.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T23:04:05Z",
+      "done_when": "review file and gate line committed",
+      "fan_out": 0,
+      "goal": "TA gate on W1-K",
+      "id": "al-01M42059PF52EZNR9P877FAN15",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md",
+      "session": "rv-ta-w1k-e1e4",
+      "shortname": "design-slice-review-ta-w1k",
+      "skill": "design-slice-review",
+      "summary": "TA review of W1-K: PASS WITH CONDITIONS, 9 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1k.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T23:05:24Z",
+      "done_when": "two review files with gate lines committed",
+      "fan_out": 0,
+      "goal": "Review W1-K under two lenses",
+      "id": "al-01M4207QKD6JEWH4FN280RRABS",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Review W1-K under Patterns and Simplifier lenses",
+      "session": "rv-patsim-w1k-e1e4",
+      "shortname": "design-slice-review-w1k-patsim",
+      "skill": "design-slice-review",
+      "summary": "Two lens reviews of eval-resume rev 1.1: both PASS WITH CONDITIONS (7 and 8 findings)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sre-w1k.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T23:05:36Z",
+      "done_when": "review file and gate line committed",
+      "fan_out": 0,
+      "goal": "SRE review of W1-K",
+      "id": "al-01M420834R8XY0Z7FXPRA8Y43Z",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sre.md (W1-K)",
+      "session": "rv-sre-w1k-e1e4",
+      "shortname": "design-review-sre-w1k",
+      "skill": "design-slice-review",
+      "summary": "SRE lens review of W1-K: 12 findings, PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ds-w1k.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T23:05:59Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "DS lens review of W1-K",
+      "id": "al-01M4208SW5YZ1XY9PXMZA04CX7",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ds.md (W1-K)",
+      "session": "rv-ds-w1k-e1e4",
+      "shortname": "design-slice-review-ds-w1k",
+      "skill": "design-slice-review",
+      "summary": "DS review of W1-K rev 1.1: PASS WITH CONDITIONS, 11 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M420Y0T6AJ1YSZASTY4KYWS9",
+      "shortname": "W1-K rev 1.2 gate revision",
+      "datetime": "2026-10-03T23:17:35Z",
+      "session": "w1k-resume-r3-e1e4",
+      "prompt": "W1-K gate revision rev 1.2: merge main, apply R-101 (finish-the-stop takes the engine's tail), R-102 (one has_work, ntfy primary), TA/DS/SRE/PAT/SIM reviews; cmd_run hunk moved to X-K1",
+      "summary": "eval-resume.md rev 1.2: R-101 closes F-1 (steps 4 and 8, 5.3, W12 asserts grading and one run.completed); R-102 has_work (D-K12) shared with alarm, ntfy primary with edge state file, delivery log, no printed topic, toast deferred to E5; DS rebuild of run-level state, lock heartbeat, creation-time pid check, ordinal rule, refusal 3(c), pid-alive defers; TA C7/C4 stop cells, sweep stop axis, mutant changes; SIM windows folded into the sweep, 5 classifier mutants dropped, HB-ALM-003 and report header deferred to E5. cmd_run hunk moved to X-K1 (seam req-01M420GY3H75665W0N5T04NHRQ). No model change; check_models not re-run. derive and validate exit 0.",
       "kind": "skill",
       "skill": "design-slice",
       "tool": null,
-      "actor": null,
+      "actor": "claude-sonnet-5-5",
       "artifacts": [
         "docs/design/eval-resume.md"
       ],
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Apply R-100 to the W1-K design before the lens reviews",
-      "done_when": "Design and model amended, TLC re-run green, gate pending five lenses",
+      "goal": "Apply R-101, R-102 and five lens reviews to eval-resume.md as rev 1.2",
+      "done_when": "Every finding has a disposition row; five gate lines copied; derive/validate exit 0",
       "tier": "T2",
       "fan_out": 0,
-      "started_at": "2026-10-03T22:47:51Z",
-      "duration_seconds": 812.0
+      "started_at": "2026-10-03T23:10:26Z",
+      "duration_seconds": 429.0
     }
   ],
   "changes": [
@@ -79165,6 +79277,24 @@ window.AUDIT_DATA = {
       "to": "w1k-resume-e1e4",
       "kind": "ruling",
       "ref": "req-01M41V2MC1RTCBB4APR3TSXEYP",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M42049AD31SG1SRC3X617WH1",
+      "ts": "2026-10-03T23:03:31Z",
+      "from": "leader-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M42049A4NZ66MG3XNXBX10D6",
+      "session": "leader-e1e4"
+    },
+    {
+      "id": "mail-01M4204QM7DT24HE9XJHGY6D5W",
+      "ts": "2026-10-03T23:03:46Z",
+      "from": "owner-fable",
+      "to": "leader-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M42049A4NZ66MG3XNXBX10D6",
       "session": "owner-fable"
     }
   ]

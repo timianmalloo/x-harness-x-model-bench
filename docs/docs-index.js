@@ -1939,7 +1939,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "dd3c4ea1d4ce9c0700a179e0ed36d91e06d698d014b66e25c1272e008602c201"
+      "sourceSha256": "ab75ff5897c05cd8558caa500547fb691729ad068badfa233bc866222f941a04"
     },
     {
       "id": "design-eval-arms",
@@ -2566,7 +2566,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation: Wave 1 (E3 build tracks X-K1, X-K2)",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "How a restarted `bench run <run_id>` resumes: a pure classifier over the ledger maps every recorded cell state to one ADR-0021 section 4 action; the refusals run in a fixed order under the run lock; the dead engine's segments are marked abandoned, never written into; one `run.resumed` row per resume is the whole resume record (counts are derived). A resume of a stopped run finishes the stop (R-100): it launches nothing, records `stopped` for every intent-without-outcome cell, archives and exits 3; the model's invariant is `NoLaunchAfterStop`, and no liveness property carries a crash exception. The TLA+ model also settles the two resume branches W1-J left provisional by the recorded `next` of each turn, and TLC rejects every new seeded variant. Liveness is `last_progress_at` read from the ledger tail; the alarm is a scheduled Windows task that raises a toast (and an optional phone push) on a non-zero `bench status --alarm-after`, with a stamp file for the alarm of the alarm.",
+      "summary": "How a restarted `bench run <run_id>` resumes: a pure classifier over the ledger maps every recorded cell state to one ADR-0021 section 4 action; one predicate `resume.has_work` is the only definition of remaining work, shared by the resume and the alarm (R-102); the refusals (including an unrepairable archive) run in a fixed order under the run lock, before any row is written; the dead engine's segments are marked abandoned, never written into; one `run.resumed` row per resume is the whole resume record (counts are derived). A resume of a stopped run finishes the stop (R-100) with the engine's own post-stop tail (R-101): it launches nothing, records `stopped` for every intent-without-outcome cell, archives, grades, writes `run.completed{grading}` and exits 3; the model's invariant is `NoLaunchAfterStop`, and no liveness property carries a crash exception. The TLA+ model also settles the two resume branches W1-J left provisional by the recorded `next` of each turn, and TLC rejects every new seeded variant. Liveness is the newest `recorded_at` over the segment tails; the alarm is a scheduled Windows task whose primary and required channel for an unattended run is an ntfy phone push (R-102), edge-triggered with a delivery log; the toast is optional and joins at the E5 drill.",
       "tags": [
         "evaluation-campaign",
         "resume",
@@ -2615,7 +2615,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "cb3670951f9dab086d044b509101386d65dfa6167d7f98822fe4ba1d8ed9b0dd"
+      "sourceSha256": "8517db2563c008917ffc02f8d969c073626b4716a9637145a5ceb70e6b760bb1"
     },
     {
       "id": "design-eval-seam-contracts",
@@ -4287,6 +4287,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "d70e401df96961909a7dbcf6a8fc12b4d21da47122ae7ce9aa25bb7e0292125e"
     },
     {
+      "id": "review-eval-ds-w1k",
+      "path": "docs/design/reviews/eval-review-ds-w1k.md",
+      "title": "W1-K resume, liveness and the alarm channel: Distributed Systems lens review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of docs/design/eval-resume.md rev 1.1 (design/eval-resume, 315cf1d4) and models/run_lifecycle.tla against W0 rev 6.8, R-100, R-101 and ADR-0021 Amendment 1. The stop windows, finish-the-stop, NoLaunchAfterStop and the classifier hold. R-101 settles F-1 and removes the seal and alarm hazards it would have caused, but leaves the design text stale. Seven majors: stale R-101 text and the step 4 pending definition, run-level state not rebuilt on resume, no lock heartbeat during resume, pid reuse ignores the recorded creation time, segment ordinal and ordering, the HB-LED-005 wedge, and the pid-alive exit. PASS WITH CONDITIONS.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "5ebaf54b8e1ccacef5192f971ece7beeef77ffaf40fcc22d02dfa226130585ca"
+    },
+    {
       "id": "review-eval-pat",
       "path": "docs/design/reviews/eval-review-pat.md",
       "title": "Patterns Expert review of the Evaluation Campaign design slices (Adversary Mode)",
@@ -4573,6 +4594,33 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "0820df82326c77df02683b9cd20f7d2cc707197ea7c89272ef29de5157afc16e"
+    },
+    {
+      "id": "review-eval-pat-w1k",
+      "path": "docs/design/reviews/eval-review-pat-w1k.md",
+      "title": "Patterns Expert review of W1-K, resume, liveness and the alarm (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of design/eval-resume rev 1.1 (315cf1d4) against W0 rev 6.8, R-100 and ADR-0021 with Amendment 1. The reconcile-from-log and the one-input classifier are sound; one seam defect (X-K1 cannot reach its own tests), one contradiction (a finished stop still alarms), and five smaller pattern gaps. No pattern is named in the doc.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-k"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "56c52b805ffbf97db1f169cf3209fab2cc45e45ebfeddf3b536703b3a377d624"
     },
     {
       "id": "review-eval-pat-w1l",
@@ -5014,6 +5062,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "be3d70f4fd74e78422394d9d06b72a133c2360746f4099ee7f464be2e074a271"
     },
     {
+      "id": "review-eval-sim-w1k",
+      "path": "docs/design/reviews/eval-review-sim-w1k.md",
+      "title": "Simplifier review of W1-K, resume, liveness and the alarm (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM review of design/eval-resume rev 1.1 (315cf1d4). The reconcile design is the smallest correct core; the proof is larger than it needs to be (the prefix sweep already kills the classifier mutants), and the alarm channel ships two deliveries where one reaches the sleeping operator. Soft veto: conditions, no block.",
+      "tags": [
+        "review",
+        "simplifier",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-k"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "429696d3b1db788fab0e26112c4bc9cdf94fd666c7235a320517c911a883c940"
+    },
+    {
       "id": "review-eval-sim-w1l",
       "path": "docs/design/reviews/eval-review-sim-w1l.md",
       "title": "Simplifier review of W1-L (property tasks and four graders)",
@@ -5087,6 +5162,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "13c7180017ca42ed74ed764d8435d9a46f5aa7a7e14f60dd4480d2f61a008ba6"
+    },
+    {
+      "id": "review-eval-sre-w1k",
+      "path": "docs/design/reviews/eval-review-sre-w1k.md",
+      "title": "W1-K resume, liveness and the alarm channel: SRE lens review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of docs/design/eval-resume.md (branch design/eval-resume, 315cf1d4, rev 1.1) by the SRE lens: the alarm and the resume disagree on what \"pending\" means, the last_progress_at segment pick is wrong after a grading pass, the default alarm channel does not reach a sleeping operator, and the wrapper can leak the ntfy topic. Twelve findings, condition-setting.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "6dbb1b345f2d9c0aca3332938e0ee35c2611ccb9906582d0a48c128a65539c86"
     },
     {
       "id": "review-eval-ta",
@@ -5383,6 +5479,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "bbb97953c678b2652d7e7fd02a39c8f7fe52601b98e81c277a2bddf303394ae5"
+    },
+    {
+      "id": "review-eval-ta-w1k",
+      "path": "docs/design/reviews/eval-review-ta-w1k.md",
+      "title": "W1-K resume, liveness and the alarm channel: Test Architect lens review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of docs/design/eval-resume.md (design/eval-resume, 315cf1d4, rev 1.1) and models/run_lifecycle.tla by the Test Architect lens. The window map, the prefix sweep and the TLC evidence are strong. Conditions: the stop path has no C7 or C4 cell in its tests, finish-the-stop idempotence (W12e) contradicts the unsealed new segments, X-K1's gate entry tests need X-K2's cmd_run hunk, two reds are mutant-shaped, and F-1 leaves one liveness property vacuous for the code. PASS WITH CONDITIONS.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "1101de66319e5f7b558a39ebea06eac08203cb2d82627a4204fbf18f3636c815"
     },
     {
       "id": "review-eval-ta-w1l",
@@ -7981,5 +8098,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "b5484e1dba84fdbee92f71c59aa99d94c1c33cb0f4f200234346b85b03e9b4b1"
+  "graphSha256": "bef6d23f8d0b50a86cf819b30facae389423afcd95cac6ab390bef874e1223c3"
 };
