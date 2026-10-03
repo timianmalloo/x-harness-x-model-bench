@@ -1983,7 +1983,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation E1: Wave 1 design slice W1-F (built by X-F in E1; loopback by X-LB in E4)",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "Revision 2, conformed to W0 rev 2. One registered `property` grader (R-90): runner.applicable narrows it to the task's property; it runs the hidden tests through correctness.grade() and then the task's hidden check in a fresh, reparse-safe copy, in a new Job Object, started DETACHED with the base interpreter under -S and the grading environment allowlist. The check never imports agent code: probes go through a probe-host child whose pipes the check owns (the module-body forgery is committed as a fixture with its positive control). The grader accepts one line from a live, lone check, acknowledges it with one byte, and classifies by W0's seven ordered rows, with the suspend rule on each phase's span. E1 builds the security strategy, probe cases and `callable` apps only. Gate: rev 2 pending.",
+      "summary": "Revision 2, conformed to W0 rev 2. One registered `property` grader (R-90): runner.applicable narrows it to the task's property; it runs the hidden tests through correctness.grade() and then the task's hidden check in a fresh, reparse-safe copy, in a new Job Object, started DETACHED with the base interpreter under -S and the grading environment allowlist. The check never imports agent code: probes go through a probe-host child whose pipes the check owns (the module-body forgery is committed as a fixture with its positive control). The grader accepts one line from a live, lone check, acknowledges it with one byte, and classifies by W0's seven ordered rows, with the suspend rule on each phase's span. E1 builds the security strategy, probe cases, and `callable` and `wsgi` apps. Revision 3 (W0 rev 3, ruling C-1) adds the `wsgi` kind with W0's frames, a complete PEP 3333 environ, a factory with `{state_dir}` args, `paths`, app output kept off the protocol channel, and the start bound; spike SP-F3 re-ran the forgery against a wsgi host. Gate: rev 3 delta pending RV-TA, RV-SEC.",
       "tags": [
         "benchmark",
         "grading",
@@ -2074,7 +2074,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ee86fee9a13fb656a204a655b794e776831055a17eb00e86f897dce39248e262"
+      "sourceSha256": "c18ce4b2d3ba321f0b76097b0ad2976333c5facc15f0eb67aef0b5b0c1722c5a"
     },
     {
       "id": "design-eval-seam-contracts",
@@ -3704,6 +3704,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "5251732e1cd4289428039c0593ca2bcf0102f5de6d2e399b5f41af19a333478d"
     },
     {
+      "id": "review-eval-ds-w1c",
+      "path": "docs/design/reviews/eval-review-ds-w1c.md",
+      "title": "W1-C campaign record and bench campaign: Distributed Systems lens review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of docs/design/eval-campaign-record.md (design/eval-campaign-record, ae21488b, 61338062) by the Distributed Systems lens. DS-1, F2 and F8 hold. Two majors: the torn-tail repair breaks the ledger-prefix rule after a commit, and the run side of conclude has no lock-then-probe partner. PASS WITH CONDITIONS.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "1bce63791bbba85e0eb55e47af0b8f06bf90131a3dc75d712f6af432ccf8defe"
+    },
+    {
       "id": "review-eval-pat",
       "path": "docs/design/reviews/eval-review-pat.md",
       "title": "Patterns Expert review of the Evaluation Campaign design slices (Adversary Mode)",
@@ -3967,7 +3988,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5665e66315039cf611d9c8fa7f7b9c0b1285fdfc6d3c5e57dc20640175987e95"
+      "sourceSha256": "68339d1b87cb8b6fcc0b597c3875e40c45856c5af3638c6efd711e1701b2fb2b"
     },
     {
       "id": "review-eval-sec-w1b",
@@ -4060,7 +4081,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3a6bca265279c14fc75952442488a7253d6b844c3d8429b6e03ce3e41d4a05b4"
+      "sourceSha256": "18dce2da2879aae256e87796b1574fc932971d049d81dc98e9560bf7a4785290"
     },
     {
       "id": "review-eval-sec-w1i",
@@ -4157,6 +4178,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "be00c56fc382061170f39bd21fcc7eeafc8c064fbb4100188b64e39c0dead710"
     },
     {
+      "id": "review-eval-sim-w1c",
+      "path": "docs/design/reviews/eval-review-sim-w1c.md",
+      "title": "Simplifier lens review of W1-C, campaign record and bench campaign",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-campaign-record.md (design/eval-campaign-record, ae21488b, 61338062) against W0 rev 3 and R-87..R-96. OI-4 answered: ring_run.attached.tag is constant and can go in the SR-C2 request. status and verify are specified both as read-only and as full lock-probe-sweep sessions.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "9b10d9156950d3ad3726972d605bcb28670275889eb8ad1478f6f98f3c080448"
+    },
+    {
       "id": "review-eval-sim-w1d",
       "path": "docs/design/reviews/eval-review-sim-w1d.md",
       "title": "Simplifier lens review of W1-D, engine identity",
@@ -4218,6 +4260,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "884d2fa0b86d7e0e0bb2a50e1f1d05093778cf7750b02c3d12b49360f297f621"
+    },
+    {
+      "id": "review-eval-sim-w1h",
+      "path": "docs/design/reviews/eval-review-sim-w1h.md",
+      "title": "Simplifier lens review of W1-H, power, verdicts, gates and report section 3",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-power-verdicts.md (design/eval-power-verdicts, 2a9faa3c, b5509d66) against W0 rev 3 and R-87..R-96. The core is the smallest correct shape. About a third of the label, statement and sweep rows duplicate another row's mutant; one seam with W1-C (pilot arity, admission) is open.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "f51e5bd95ac3a1c9151effb97dd8438a9be7ccecf0caaa66582e358155680613"
     },
     {
       "id": "review-eval-sim-w1i",
@@ -4291,7 +4354,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "0b00511fbc81f9dfcea0fbc2fdc36dbbc7e4c8b273f2c38248dcaa6d328fbcde"
+      "sourceSha256": "f4ca3375121735995f75cbc84a8c5e96cd9e65a03f39bc9607ef2bb3f08c999d"
     },
     {
       "id": "review-eval-ta-w1a",
@@ -4399,7 +4462,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "218e6fe8bdf9182f9e5f9a52aa75b17228f0f92ed2e7a0fb04b8e870831f87fa"
+      "sourceSha256": "56d9113537b7ed9b5fe31112d6906f43b44c370c8a502c4cc40657c84a430193"
     },
     {
       "id": "review-eval-ta-w1f",
@@ -4426,7 +4489,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "87ef42f05959e3fc15a32c08c3961ded84c6c97f6551d661d51d538592619e09"
+      "sourceSha256": "33124234b26a7c0ad855539c8e39f6b86c2cb274c77313f47cefa734009c60eb"
     },
     {
       "id": "review-eval-ta-w1g",
@@ -6047,5 +6110,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "c2302cffe84d68c1cec59bbc69f34d04b38a36b61682311e7abc88ed4f182035"
+  "graphSha256": "003fc2ea4454f5cc91ff32eae2ebbb7045e402f2d165bcf30809e367e8c62990"
 };

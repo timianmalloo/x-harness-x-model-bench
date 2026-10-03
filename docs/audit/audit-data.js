@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:25:41Z",
+  "generated": "2026-10-03T18:29:34Z",
   "audit": [
     {
       "actor": null,
@@ -66382,26 +66382,180 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41G7HGSGQXE3PHHSV19T3NC",
-      "shortname": "design-slice-review-eval-sec-w1c",
-      "datetime": "2026-10-03T18:25:41Z",
-      "session": "rv-sec-w1c-e1e4",
-      "prompt": "docs/coordination/eval-wave1/rv-sec.md",
-      "summary": "Security gate on W1-C: PASS WITH CONDITIONS, 10 findings",
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1h.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:24:14Z",
+      "done_when": "two review files with gate lines",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-H and W1-C",
+      "id": "al-01M41G4WA0X67R5PGH62JKRCDG",
       "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "session": "rv-sim-hc-e1e4",
+      "shortname": "review-sim-w1h",
       "skill": "design-slice-review",
-      "tool": null,
+      "summary": "Simplifier review of W1-H: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1c.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:24:14Z",
+      "done_when": "two review files with gate lines",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-H and W1-C",
+      "id": "al-01M41G4WXG026Z0MH6P12SBMBS",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "session": "rv-sim-hc-e1e4",
+      "shortname": "review-sim-w1c",
+      "skill": "design-slice-review",
+      "summary": "Simplifier review of W1-C: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ds-w1c.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:25:13Z",
+      "done_when": "gate line written and committed",
+      "fan_out": 0,
+      "goal": "DS lens review of W1-C",
+      "id": "al-01M41G6PKG1R95CYZCP8V85P5G",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ds.md",
+      "session": "rv-ds-w1c-e1e4",
+      "shortname": "design-slice-review-eval-ds-w1c",
+      "skill": "design-slice-review",
+      "summary": "DS review of W1-C: PASS WITH CONDITIONS, 7 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [
         "docs/design/reviews/eval-review-sec-w1c.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Security review of W1-C",
+      "datetime": "2026-10-03T18:25:41Z",
       "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "Security review of W1-C",
+      "id": "al-01M41G7HGSGQXE3PHHSV19T3NC",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md",
+      "session": "rv-sec-w1c-e1e4",
+      "shortname": "design-slice-review-eval-sec-w1c",
+      "skill": "design-slice-review",
+      "summary": "Security gate on W1-C: PASS WITH CONDITIONS, 10 findings",
+      "tags": [],
       "tier": "T2",
-      "fan_out": 0
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1d.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:27:03Z",
+      "done_when": "gate line appended",
+      "fan_out": 0,
+      "goal": "re-review W1-D rev 2",
+      "id": "al-01M41GA22KNR8QFC0767K105V3",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-D rev 2 re-review)",
+      "session": "rv-ta-d2-e1e4",
+      "shortname": "design-slice-review-w1d-r2-ta",
+      "skill": "design-slice-review",
+      "summary": "RV-TA rev 2 of W1-D: PASS WITH CONDITIONS; T-25 assume refuted (T9-2 stubs Engine)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1f.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:27:19Z",
+      "done_when": "two gate lines appended on review/eval-sec-f3",
+      "fan_out": 0,
+      "goal": "Delta-review W0 rev 3 s3 and W1-F rev 3 for security",
+      "id": "al-01M41GAH3C8KT9WQFY1825VZYF",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md (delta: W0 rev 3 s3, W1-F rev 3)",
+      "session": "rv-sec-f3-e1e4",
+      "shortname": "review-sec-w1f-r3-w0-s3",
+      "skill": "design-slice-review",
+      "summary": "Security delta gates: W0 rev 3 s3 PASS (3 findings); W1-F rev 3 PASS WITH CONDITIONS (6 findings)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1f.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:28:31Z",
+      "done_when": "two gate lines appended",
+      "fan_out": 0,
+      "goal": "delta-review W0 rev 3 s3 and W1-F rev 3",
+      "id": "al-01M41GCQJA9GGPNEAYAAGG4MFR",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (delta: W0 rev 3 s3, W1-F rev 3)",
+      "session": "rv-ta-f3-e1e4",
+      "shortname": "design-slice-review-ta-w1f-r3",
+      "skill": "design-slice-review",
+      "summary": "TA delta gates: W1-F rev 3 PASS WITH CONDITIONS (6), W0 rev 3 s3 PASS WITH CONDITIONS (2)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-grader.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:22:39Z",
+      "done_when": "delta designed with floor-compliant tests incl. a real-wiring WSGI test; forgery re-run on wsgi; disposition rows; gate record rev 3 delta pending RV-TA, RV-SEC; validate exit 0",
+      "fan_out": 0,
+      "goal": "Revise W1-F for W0 rev 3 ruling C-1: wsgi kind, frames, five probe-host items, start bound",
+      "id": "al-01M41G1ZG2T4BXKBTDDZ15VWAB",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md (rev 3 delta: C-1 wsgi, W0 rev 3 frames, five probe-host items, start bound)",
+      "session": "w1f-property-r3-e1e4",
+      "shortname": "design-slice-eval-property-grader-r3",
+      "skill": "design-slice",
+      "summary": "W1-F rev 3 delta: app.kind wsgi built in E1 with W0 frames, PEP 3333 environ, factory/args/{state_dir}, paths, app output off the protocol channel (host start sequence), start bound = bounds_ms[interface]; spike SP-F3 re-ran the forgery against a wsgi host (refused 9/9); 14 rev-3 test rows against the testability floor; gate rev 3 delta pending RV-TA, RV-SEC",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     }
   ],
   "changes": [
@@ -67070,6 +67224,28 @@ window.AUDIT_DATA = {
       "summary": "34 review findings dispositioned; recover_archive specified not built in E1; HB-LED-009 refused; site scan re-derived (12 sites, 11 keys) with red fixtures; rename_with_retry public; seam request S-B4",
       "tags": [],
       "title": "W1-B rev 2: recovery moves to X-K1, sweep lock enforced, create_once identity-checked, one WIN-A retry helper"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-property-grader.md"
+      ],
+      "datetime": "2026-10-03T18:22:49Z",
+      "git": {
+        "after": "1ceea651bceeada8e8406e1633afaa930d48a9f3",
+        "before": "1ceea651",
+        "branch": "design/eval-property-grader-r3",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41G29KMV71MS5ES0EWJ30Q0",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md (rev 3 delta)",
+      "rationale": "C-1: S1 is a WSGI factory; W0 rev 3 granted req-01M41DPBSM9 and req-01M41DT67 in part. Start kept outside the case span because SP-F3 saw a 486 ms honest start.",
+      "session": "w1f-property-r3-e1e4",
+      "skill": "design-slice",
+      "summary": "The probe host gains the wsgi kind with W0 rev 3 frames, an explicit PEP 3333 environ, a factory called with {state_dir}-resolved args, paths after the root, and a start sequence that moves fds 0-2 before agent code so app output lands in out_dir/check/host/<case>.log; the start is bounded by bounds_ms[interface] and a miss is did not start; SP-F3 re-ran the forgery against a wsgi host (refused).",
+      "tags": [],
+      "title": "W1-F rev 3: wsgi probe host in E1 (ruling C-1), app output off the protocol channel, start bound outside the case span"
     }
   ],
   "messages": [
