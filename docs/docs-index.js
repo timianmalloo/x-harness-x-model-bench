@@ -2163,6 +2163,56 @@ window.DOCS_INDEX = {
       "sourceSha256": "8a267c00da2b82e5c7054ea1bd0ba117a932fabda71ff8df017d885b091ba288"
     },
     {
+      "id": "design-eval-power-verdicts",
+      "path": "docs/design/eval-power-verdicts.md",
+      "title": "Design: power, verdicts, dominance, ring gates and report section 3 (W1-H; X-H1, X-H2)",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 design slice W1-H (build in E1)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Pure stdlib design for X-H1 (power.py, verdicts.py, gates.py) and the section-3 view for X-H2. Settles the derived-view data model (nothing persisted), pins the three reference sizes (93, 53, 115) exactly with an independent formula and a seeded-wrong variant, the stratified paired bootstrap and the verdict and dominance rules as boundary tables with named mutants, nine pilot gate kinds each with a red fixture, the EV-8 admission function, the R-93 three-state warning line, the R-96 level rule (holm is sized like Bonferroni, disclosed), and the NA-never-dropped rule. Revision 2 applies the three gate reviews (all PASS WITH CONDITIONS). Reports measured spikes, two defects found in W0 text (seed width, resolved in rev 3) and the residual risks.",
+      "tags": [
+        "benchmark",
+        "statistics",
+        "power-analysis",
+        "verdict",
+        "dominance",
+        "ring-gate",
+        "report",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0020-power-and-verdicts-stdlib",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "433e03284f6dde833b0505aab5d171cec193650cad5d8931673b96488d47e8cd"
+    },
+    {
       "id": "design-eval-property-grader",
       "path": "docs/design/eval-property-grader.md",
       "title": "Design W1-F: the hidden-check runner and the property grader (boundary B7, security-sensitive)",
@@ -6678,5 +6728,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "743567b2c0a96956303136d5aac9169e1d5f4ff1824f686b3f681a017f49bba5"
+  "graphSha256": "da24f7561a0fc6e0b8fa3822d85b56e2de39d9d2f1098945c83754db4e36432d"
 };

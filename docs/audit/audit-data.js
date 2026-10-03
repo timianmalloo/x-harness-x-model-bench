@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T19:02:16Z",
+  "generated": "2026-10-03T19:02:52Z",
   "audit": [
     {
       "actor": null,
@@ -66902,6 +66902,52 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-power-verdicts.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:06:13Z",
+      "done_when": "Gate PASS; reference cases 93/53/115 with independent formula and seeded-wrong variant; verdict and dominance tables with boundary rows; section 3 E1 shape",
+      "fan_out": 0,
+      "goal": "Design W1-H power, verdicts, dominance, ring gates and report section 3",
+      "id": "al-01M41F3WMPXCMY7BVW5N1R84P0",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-h-power-verdicts.md",
+      "session": "w1h-power-e1e4",
+      "shortname": "design-slice-eval-power-verdicts",
+      "skill": "design-slice",
+      "summary": "W1-H design: power, verdicts, dominance, ring gates, report section 3; spikes S1-S7; 3 seam requests, 1 decision request",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-power-verdicts.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:01:42Z",
+      "done_when": "Every finding has a disposition row; gate lines copied verbatim; derive/validate exit 0",
+      "duration_seconds": 893.0,
+      "fan_out": 0,
+      "goal": "Apply the W1-H gate findings and R-96 in rev 2",
+      "id": "al-01M41J9G6BHQDMZAV3Z0KFY09B",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-h-power-verdicts.md (rev 2 follow-up: apply TA, PAT, SIM findings, R-96, W0 rev 4)",
+      "session": "w1h-power-r2-e1e4",
+      "shortname": "design-slice-eval-power-verdicts-r2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T18:46:49Z",
+      "summary": "W1-H rev 2: every finding dispositioned; R-96 level_rule and second holm row; R-93 three-state; admission; nine gate kinds; skeleton out-of-domain; deleted redundant rows and sweeps",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     }
   ],
   "changes": [
@@ -67792,24 +67838,66 @@ window.AUDIT_DATA = {
       "title": "W0 seam contracts rev 4 and ADR-0020 Amendment 1"
     },
     {
-      "id": "cl-01M41J0J9DX77CK7QV58G5D23W",
-      "datetime": "2026-10-03T18:56:49Z",
-      "session": null,
-      "kind": "design",
-      "skill": "design-slice",
-      "title": "W1-C rev 2: a fix in registered demotes to baselined; content-keyed git witness over commit pairs; plan_hash binding; lock-free reads",
-      "prompt": "W1-C author follow-up rev 2",
-      "summary": "Closes the RV-PAT block (no re-pilot path) and the RV-SEC and RV-DS conditions; pilot_current removed as implied by the state",
-      "rationale": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-10-03T18:56:49Z",
       "git": {
-        "before": null,
         "after": "6099a0a36e9d53e6061b7e46735fc3682a089e0a",
+        "before": null,
         "branch": "design/eval-campaign-record",
-        "pushed": null,
-        "commits": []
-      }
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41J0J9DX77CK7QV58G5D23W",
+      "kind": "design",
+      "prompt": "W1-C author follow-up rev 2",
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Closes the RV-PAT block (no re-pilot path) and the RV-SEC and RV-DS conditions; pilot_current removed as implied by the state",
+      "tags": [],
+      "title": "W1-C rev 2: a fix in registered demotes to baselined; content-keyed git witness over commit pairs; plan_hash binding; lock-free reads"
+    },
+    {
+      "artifacts": [],
+      "datetime": "2026-10-03T18:06:24Z",
+      "git": {
+        "after": "2a9faa3c7bc67bab04a9a22766138eb64ada4235",
+        "before": null,
+        "branch": "design/eval-power-verdicts",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41F47BBJEGNXQ13X30ZTAGS",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Verdicts use a task-stratified, corrected-level percentile bootstrap (exact integer statistic); holm sized as bonferroni (provisional, decision request open); an NA count never changes a label (W0 rev 3); verdict cache refused in E1 with a measured trigger.",
+      "tags": [],
+      "title": "W1-H verdict method"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-power-verdicts.md"
+      ],
+      "datetime": "2026-10-03T19:01:58Z",
+      "git": {
+        "after": "109f8c0b7c2ba1a5aaaf9df0cbc270d4c7655a66",
+        "before": null,
+        "branch": "design/eval-power-verdicts",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41J9ZHQ5X84M8YXCEQDKQ7A",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Applies RV-TA, RV-PAT, RV-SIM findings and R-96 to the W1-H design; no code.",
+      "tags": [],
+      "title": "W1-H rev 2: holm sized at alpha/m with level_rule disclosed; gate kinds merged to nine; admission in gates.py"
     }
   ],
   "messages": [
