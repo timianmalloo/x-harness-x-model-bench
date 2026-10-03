@@ -2557,6 +2557,67 @@ window.DOCS_INDEX = {
       "sourceSha256": "b14637314c7501ad8ce14c5b9d741f65331dc4544c28b17107039ddb33753158"
     },
     {
+      "id": "design-eval-resume",
+      "path": "docs/design/eval-resume.md",
+      "title": "Design: plan-level resume, liveness and the alarm channel (W1-K, ADR-0021)",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 (E3 build tracks X-K1, X-K2)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "How a restarted `bench run <run_id>` resumes: a pure classifier over the ledger maps every recorded cell state to one ADR-0021 section 4 action; one predicate `resume.has_work` is the only definition of remaining work, shared by the resume and the alarm (R-102); the refusals (including an unrepairable archive) run in a fixed order under the run lock, before any row is written; the dead engine's segments are marked abandoned, never written into; one `run.resumed` row per resume is the whole resume record (counts are derived). A resume of a stopped run finishes the stop (R-100) with the engine's own post-stop tail (R-101): it launches nothing, records `stopped` for every intent-without-outcome cell, archives, grades, writes `run.completed{grading}` and exits 3; the model's invariant is `NoLaunchAfterStop`, and no liveness property carries a crash exception. The TLA+ model also settles the two resume branches W1-J left provisional by the recorded `next` of each turn, and TLC rejects every new seeded variant. Liveness is the newest `recorded_at` over the segment tails; the alarm is a scheduled Windows task whose primary and required channel for an unattended run is an ntfy phone push (R-102), edge-triggered with a delivery log; the toast is optional and joins at the E5 drill.",
+      "tags": [
+        "evaluation-campaign",
+        "resume",
+        "liveness",
+        "alarm",
+        "sre",
+        "tla",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0021-plan-level-resume-and-liveness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0015-multi-turn-attempt-and-turn-snapshots",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0007-run-engine",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-atomic-publish",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-run-lifecycle-model",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "8517db2563c008917ffc02f8d969c073626b4716a9637145a5ceb70e6b760bb1"
+    },
+    {
       "id": "design-eval-seam-contracts",
       "path": "docs/design/eval-seam-contracts.md",
       "title": "W0 seam contracts: the interfaces every Evaluation Campaign slice designs and builds against",
@@ -7936,6 +7997,14 @@ window.DOCS_INDEX = {
       "artifactId": "design-eval-property-grader"
     },
     {
+      "id": "surface-design-eval-resume",
+      "path": "docs/design/eval-resume.html",
+      "title": "Eval Resume",
+      "kind": "design-preview",
+      "description": "Inspect a rendered design or design-language preview.",
+      "artifactId": "design-eval-resume"
+    },
+    {
       "id": "surface-design-eval-seam-contracts",
       "path": "docs/design/eval-seam-contracts.html",
       "title": "Eval Seam Contracts",
@@ -8029,5 +8098,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "a3e7f0797a71cc4cba60e2831b926d4c5ef91a343811bc320a007ab9a3a4d238"
+  "graphSha256": "fd8f5185d7fec10c03459a8f2d6148126a84c26aaeec9f3a7e9d340ff98d9a55"
 };
