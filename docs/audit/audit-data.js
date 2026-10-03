@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-02T15:18:40Z",
+  "generated": "2026-10-03T15:00:24Z",
   "audit": [
     {
       "actor": null,
@@ -64578,6 +64578,29 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-02T15:14:32Z",
       "duration_seconds": 248.0
+    },
+    {
+      "id": "al-01M414FN2TZ3YKP2M42GEJY6WP",
+      "shortname": "specify-enterprise-evaluation",
+      "datetime": "2026-10-03T15:00:24Z",
+      "session": "coord-opus-cq",
+      "prompt": "write this up as an HTML proposal in the proposals dir then /specify the approach then lets review",
+      "summary": "docs/specs/enterprise-evaluation.md: 20 stories (EV-1..EV-20), Evaluation Campaign context, 10 property tasks (2 per property x 5), 3 harnesses x 3 arms in one run, pilot + regression rings, engine freeze after authoring, power analysis checked against reference cases; gate 2 rounds: Test Architect PASS (veto cleared), Data&Persistence/UX-IA/UX-A11y/Simplifier PASS WITH CONDITIONS (applied; Simplifier scope overruled by operator); decisions DR-T1..T5, DR-E1..E4 recorded 2026-10-03; handoff /define-architecture then /design-slice",
+      "kind": "skill",
+      "skill": "specify",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/specs/enterprise-evaluation.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "tier": "T2",
+      "fan_out": 6,
+      "duration_source": "session-start-hook",
+      "started_at": "2026-10-03T14:58:16Z",
+      "duration_seconds": 128.0
     }
   ],
   "changes": [

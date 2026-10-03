@@ -103,7 +103,7 @@ ol.steps li{margin:6px 0}
 <div class="card"><h3>1. The benchmark cannot see what the pack is for <span class="tag miss">the main gap</span></h3>
 <p>Most tasks are saturated: both arms pass, so rigor has nothing to improve (grid-4's closing section lists A1&ndash;A3, C1, D1&ndash;D3, E4&ndash;E7, F1, F2 as <em>saturated</em>). The judge metrics that would show quality &mdash; spec quality, ADR quality, error handling, assumption disclosure &mdash; are <em>not recorded</em> in every grid. No task tests security, compliance, privacy, resilience, rework cost, or the Spike Protocol. The "inconclusive" list dominates every report.</p></div>
 <div class="card"><h3>2. No statistical power</h3>
-<p>Two repetitions over 23 tasks leave every leaderboard row tied (<code>1=</code>) and almost every pack effect "no detectable effect". Run-to-run variance is large: with the same pack-off arm, tokens per cell moved between grid-3 and grid-4 by &minus;14% (Codex) to +24% (Claude Code). Only large effects can show.</p></div>
+<p>Two repetitions over 23 tasks leave every leaderboard row tied (<code>1=</code>) and almost every pack effect "no detectable effect". Run-to-run variance is large: with the same pack-off arm, the leaderboard's tokens per valid cell moved between grid-3 and grid-4 by &minus;14% (Codex) to +24% (Claude Code). Over all cells, not only valid ones, the figures differ (Codex +9%) &mdash; the population matters, so the power analysis must name its own. Only large effects can show.</p></div>
 <div class="card"><h3>3. Every grid until grid-4 lost data to infrastructure defects</h3>
 <ul>
 <li>grid-1: 24 Claude Code cells skipped (OAuth refresh-token rotation).</li>
@@ -121,7 +121,7 @@ ol.steps li{margin:6px 0}
 
 <h2 id="evidence">What the evidence says about the pack</h2>
 <div class="wrap"><table>
-<caption>Pack on vs pack off, grid-4 (pack ccc5160, catalog 0.6)</caption>
+<caption>Pack on vs pack off, grid-4 (pack ccc5160, catalog 0.6; tokens are the leaderboard's per valid cell)</caption>
 <thead><tr><th>Harness</th><th>Tokens on / off</th><th>pass@1 &Delta;</th><th>Correctness &Delta;</th><th>Drift &Delta;</th></tr></thead>
 <tbody>
 <tr><td>Claude Code (claude-opus-5-5)</td><td class="n">681k / 232k</td><td class="n">+0.09 [0.00, 0.24]</td><td class="n"><span class="tag hit">+4.1 [0.5, 7.9]</span></td><td class="n">&minus;6.1 [&minus;13.9, 0.0]</td></tr>

@@ -3180,6 +3180,77 @@ window.DOCS_INDEX = {
       "sourceSha256": "5bf27c31afd69bf9fe3681e0d905e57900c4a908b1ac789cb9d76ac8049cf383"
     },
     {
+      "id": "spec-enterprise-evaluation",
+      "path": "docs/specs/enterprise-evaluation.md",
+      "title": "Spec: Enterprise/Production evaluation, a campaign that gives each pack property a verdict per harness",
+      "type": "spec",
+      "status": "in-review",
+      "owner": "@timianmalloo",
+      "phase": "Benchmark target (proposal benchmark-state-and-target, approach A-D; sequence steps 1-6)",
+      "reviewBy": "2027-04-01",
+      "reviewSuggested": [],
+      "summary": "The what and why of an evaluation campaign that can answer, with a stated confidence, whether a pack revision gives better Enterprise/Production outcomes per unit of cost than pack-off and another pack revision, on each harness. It adds ten property tasks (two each for security, resilience, rework, no-guessing and simplicity), each with a hidden mechanical check proven through the engine. It also adds metrics that must record, a reference-checked power analysis and pre-registration, a pilot ring, a pack-regression ring, an engine freeze after authoring, a three-arm comparison grid in one run, and a per-property verdict in the report. The operator's decisions of 2026-10-03 and the specify gate's findings are recorded. It refines the harness-bench spec and surfaces twelve conflicts with it.",
+      "tags": [
+        "benchmark",
+        "spec",
+        "enterprise",
+        "pack-effect",
+        "power-analysis",
+        "pre-registration",
+        "ring",
+        "verdict"
+      ],
+      "links": [
+        {
+          "to": "spec-harness-bench",
+          "rel": "refines"
+        },
+        {
+          "to": "proposal-benchmark-state-and-target",
+          "rel": "implements"
+        },
+        {
+          "to": "proposal-enterprise-production-portfolio",
+          "rel": "relates-to"
+        },
+        {
+          "to": "proposal-pack-onoff-analysis",
+          "rel": "relates-to"
+        },
+        {
+          "to": "proposal-cross-harness-benchmarking",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-pack-improvement-section",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "Conceptual domain model (DM1 / DM4 / DM14)",
+          "mermaid": "flowchart LR\n  subgraph Camp[\"Evaluation Campaign (new)\"]\n    C[Campaign] --> PR[Pre-registration]\n    C --> EB[Engine baseline]\n    C --> DF[Recorded defect fix]\n    C --> PA[Power analysis, by input hash]\n  end\n  subgraph Cat[\"Benchmark Catalog (extended)\"]\n    TV[Task version + hidden check] --> DR[Discrimination record]\n    RV[Ring: tagged matrix, hashed]\n    MC[Metric catalog version]\n  end\n  subgraph Exec[\"Run Execution (amended)\"]\n    Run --> Plan[Plan: one pack revision per pack-on arm]\n    Run --> Cell[Cell: task version, combo, arm, rep]\n  end\n  subgraph Ev[\"Evidence (amended)\"]\n    Arch[Cell archive + turn snapshots]\n  end\n  Cell -. produces .-> Arch\n  subgraph Gr[\"Grading\"]\n    SS[Score set]\n  end\n  subgraph Rep[\"Reporting (extended)\"]\n    PV[Property verdict, derived]\n  end\n  C -. references by id .-> RV\n  C -. references by id .-> Run\n  PR -. names .-> TV\n  PR -. names primary metric in .-> MC\n  DR -. valid for .-> EB\n  Cell --> SS\n  SS --> PV\n  PR -. decides rules of .-> PV\n  PA -. reads variance of .-> SS"
+        },
+        {
+          "kind": "flowchart",
+          "title": "User flows",
+          "mermaid": "flowchart TD\n  A([P1 starts a campaign: draft]) --> AU[Author 10 property tasks; catalog 0.7; changes free]\n  AU --> RD{Every task ready: discrimination record with expected values?}\n  RD -->|no| RE[Names each task and the failing item] --> FIX1[P2 fixes the task, freely] --> RD\n  RD -->|yes| SP{Post-turn spike passed on all 3 harnesses?}\n  SP -->|no| SPF[Names the harness and the evidence] --> FIX2[Engine change, freely, before baseline] --> SP\n  SP -->|yes| B[Record engine baseline]\n  B -->|precondition missing| BR[Baseline refused, naming it] --> AU\n  B --> RR{Records reproduce at the baseline?}\n  RR -->|no| RRF[Names task and metric] --> DF0[Recorded defect fix, or abandon and re-author] --> RR\n  RR -->|yes| PP[Prior power analysis: MDE, pairs, cells, hours, tokens; assumed inputs marked]\n  PP --> PIL[Pilot ring: plan shown, P1 confirms]\n  PIL --> G{Pilot gate}\n  G -->|fails| GF[Named items: metric, task, cause] --> DF[Fix recorded as a defect fix with its class] --> PIL\n  G -->|passes| ADM{Admission: pack-off saturated or floor?}\n  ADM -->|some tasks| DROP[Named tasks not admitted] --> FP\n  ADM -->|none| FP[Final power analysis from pilot rates]\n  FP -->|capacity below requirement| CAP[Reachable MDE shown] -->|P1 accepts MDE or changes plan| FP\n  CAP -->|P1 abandons| AB([Campaign abandoned; pilot results kept])\n  FP --> PR[Pre-registration shown with hash]\n  PR -->|P1 declines| FP\n  PR -->|P1 confirms| GRID[Comparison grid: three arms, interleaved]\n  GRID -->|stop or crash| UF1([As harness-bench UF-1: stopped or incomplete; resume])\n  GRID -->|defect found| DF2[Fix recorded] --> RG[Every campaign run re-graded] --> VER\n  GRID -->|single cell lost or blocked, run continues| CL[Cell named with cause; decision request if US-15 applies] --> XN[Counted in its verdict's excluded n, with id and reason; listed in completion summary and validity banner] --> GRID\n  GRID -->|all cells terminal| VER{Eligible?}\n  VER -->|engine drift or pre-registration mismatch| INEL([No verdicts; reason and differing items])\n  VER -->|eligible| OUT([Verdict table in summary and report])"
+        },
+        {
+          "kind": "flowchart",
+          "title": "User flows",
+          "mermaid": "flowchart TD\n  A([P4 has a candidate pack revision]) --> P[Ring plan: incumbent, candidate, pack-off; bound shown]\n  P -->|bound over 8 h| OB[Shown as over budget] -->|P4 proceeds or cancels| P\n  P -->|confirm| R[Ring runs and is graded]\n  R -->|candidate fails to install| INST([Cells blocked with cause; no result; fix upstream])\n  R --> GT{Ring gate}\n  GT -->|fails| GF([Named items; result withheld; rerun after fix])\n  GT -->|passes| RES{Per property}\n  RES -->|interval wholly worse| SIG([regression signal: effect, interval, evidence])\n  RES -->|otherwise| NR([no regression detected at the ring MDE])\n  A -->|ring template edited| NV[New ring hash; comparison with earlier hashes refused] --> P"
+        },
+        {
+          "kind": "flowchart",
+          "title": "User flows",
+          "mermaid": "flowchart TD\n  O([Open report]) --> H[Header + campaign block: question, arms, pre-registration hash, baseline, fixes, MDE]\n  O -->|run in no campaign| NC([No verdict section; harness-bench report as before])\n  H -->|run ineligible| IN([Verdict section states reason and differing items; no verdicts])\n  H --> T[Verdict table: property x harness, per comparison]\n  T -->|better or worse| E1[Effect, interval, MDE mark, token ratio]\n  T -->|no difference >= MDE| E2([Interval inside the MDE band; reader can rule out effects of MDE size])\n  T -->|inconclusive| E3([Reason: underpowered or not recorded, with counts; reader sees what more data would need])\n  E1 -->|dominance rule met| D([A dominates B: keep A for this harness])\n  E1 -->|better but costlier| C([better at xN tokens: reader weighs value against cost])\n  T -->|activate a verdict| RUNS[Runs filtered to its pairs] --> UF3([Harness-bench UF-3: cell card])\n  T -->|activate excluded n| XL[Excluded cells: id, arm, cause] --> UF3\n  O -->|pack section read directly| PK([Pack section: header and every intention verdict labelled exploratory; link to section 3])\n  UF3 -->|archive absent| NA([Archive not in this copy + path])\n  H -->|analysis not pre-registered| EX([Labelled exploratory wherever shown; not a verdict])"
+        }
+      ],
+      "sourceSha256": "66ae3be2bfe42a8fe683d69ffa9b3d2dff857cf662f2e529dbd0a6cb362fcb6c"
+    },
+    {
       "id": "spec-harness-bench",
       "path": "docs/specs/harness-bench.md",
       "title": "Spec: harness-bench, a cross-harness, cross-model benchmark with the pack as a factor",
@@ -3395,5 +3466,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "349ebd75922f5b07ca68e90d544fb3890de97a29fba78dcb8b7b7f25f0cf628e"
+  "graphSha256": "e3fa4c4a82600825b77693ff0053c7e27655689203c0bf29af5134d4e71d03da"
 };
