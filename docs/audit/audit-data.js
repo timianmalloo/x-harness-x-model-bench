@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T19:53:17Z",
+  "generated": "2026-10-03T21:04:50Z",
   "audit": [
     {
       "actor": null,
@@ -65916,12 +65916,11106 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41N7WVBBY9T3MA38FFKFDBH",
-      "shortname": "design-slice-eval-multi-turn",
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-multi-turn.md"
+      ],
+      "compiled": false,
       "datetime": "2026-10-03T19:53:15Z",
-      "session": "w1j-multiturn-e1e4",
+      "done_when": "Gate PASS incl. Distributed Systems and SRE; TLC run with PromptOncePerTurn, SnapshotBeforeNextTurn, NoSnapshotInFlight, CrashedTurnPredicate, ArchiveExistsMeansComplete, each seeded variant rejected",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-J multi-turn attempt, turn snapshots and the TLA+ model (ADR-0015), producing docs/design/eval-multi-turn.md",
+      "id": "al-01M41N7WVBBY9T3MA38FFKFDBH",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "docs/coordination/eval-wave1/w1-j-multi-turn.md",
+      "session": "w1j-multiturn-e1e4",
+      "shortname": "design-slice-eval-multi-turn",
+      "skill": "design-slice",
       "summary": "Designed the multi-turn attempt, turn snapshots and the TLA+ model (W1-J): turn-<n> snapshot folder, snapshot key part on archive_files, driver open/send/close, one budget; model v5 with NumTurns, phased archive writes, 6 new seeded variants; TLC passes, 28/28 variants rejected, US-44 bounds pass (363,738,864 distinct states).",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "Claude Sonnet 5.5",
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1i.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:52:19Z",
+      "id": "al-01M41EAESV42T3VKA1QYP389RR",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Simplifier review of W1-I security tasks S1 and S2",
+      "session": "rv-sim-w1i-e1e4",
+      "shortname": "RV-SIM W1-I review",
+      "skill": "design-slice-review",
+      "summary": "8 findings, PASS WITH CONDITIONS; all five probe-host asks needed by S1, none S2-only; S2 probe list premature",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1i.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:52:21Z",
+      "done_when": "report committed with gate line",
+      "fan_out": 0,
+      "goal": "Patterns review of W1-I",
+      "id": "al-01M41EAGE75491PTBZAJBXCD14",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md (W1-I)",
+      "session": "rv-pat-w1i-e1e4",
+      "shortname": "design-slice-review-pat-w1i",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT review of W1-I: BLOCK, 1 blocking seam finding (wsgi not built in E1)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1i.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:53:06Z",
+      "id": "al-01M41EBW5M2SS30RGJT1ZJ4JSN",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Review W1-I security tasks design as Test Architect (brief rv-ta.md)",
+      "session": "rv-ta-w1i-e1e4",
+      "shortname": "review-ta-w1i",
+      "skill": "design-slice-review",
+      "summary": "Test Architect review of W1-I security tasks: BLOCK, 9 findings",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": "claude-sonnet-5-5",
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1i.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:54:30Z",
+      "id": "al-01M41EEECHHJQ3RCZPJ06E1FMP",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Security review of W1-I (S1 microdot, S2 bottle) against W0 rev 2",
+      "session": "rv-sec-w1i-e1e4",
+      "shortname": "review-sec-w1i",
+      "skill": "design-slice-review",
+      "summary": "GATE W1-I Security PASS WITH CONDITIONS, 8 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-grader.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:19:40Z",
+      "done_when": "Gate PASS with Security & Identity as hard-veto reviewer; the four ADR-0018 red tests and the race test named; job-alone constraints adopted (sys._base_executable, DETACHED_PROCESS, one-byte ack)",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-F hidden-check runner and property grader, producing docs/design/eval-property-grader.md",
+      "id": "al-01M41CEN2C02BQ55YW4MA3JCJ7",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md",
+      "session": "w1f-property-e1e4",
+      "shortname": "design-slice-eval-property-grader",
+      "skill": "design-slice",
+      "summary": "W1-F design for the hidden-check runner and property grader: data model, contracts, probe host (RV-SEC F1), handshake, outcome precedence (RV-TA s3), FMA, STRIDE per ADR-0018 row, telemetry, test plan by node id; spikes SP-F1/F2; seam requests req-01M41C0NFEXQA0XVH4FTK9YDBD, req-01M41C0ZCPJ13PQ77KNC5AHQMZ, req-01M41C57K2VVC7C4JGEJC18FR1; gate pending",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-grader.md",
+        "tests/test_property_forgery_fixture.py"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:48:07Z",
+      "done_when": "every finding has a disposition row; TA blocking 1 and 2 specified with named tests and the mutation entry; SEC conditions met (fixture committed, seam request, junction test); validate exit 0; named-path commits",
+      "fan_out": 0,
+      "goal": "Apply the four W1-F reviews to docs/design/eval-property-grader.md, W0 rev 2 winning, with a review-disposition table",
+      "id": "al-01M41E2RBZ9HAV9Q77EGHWRV86",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md (rev 2 follow-up: apply the four W1-F reviews)",
+      "session": "w1f-property-r2-e1e4",
+      "shortname": "design-slice-eval-property-grader-r2",
+      "skill": "design-slice",
+      "summary": "W1-F revision 2: all 38 review findings dispositioned; conformed to W0 rev 2; SP-F2 fixture, positive control and shipped-shape refusal committed and run 9/9; two seam requests sent; gate pending RV-TA re-review and RV-SEC conditions",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:59:34Z",
+      "done_when": "request list shows none open to coord-opus-e1e4; rev 3 on design/eval-w0-rev3 with derive/validate exit 0",
+      "fan_out": 0,
+      "goal": "Every open seam request to coord-opus-e1e4 ruled and W0 rev 3 committed with gate record and ADR amendment notes",
+      "id": "al-01M41EQQN7G37BQBB9ZK4SS8CB",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Coordinator #3: answer the seam queue (13 requests) and the Leader-routed Wave 1 lens seams; apply them to W0 as rev 3 with a change table, the five rev-2 gate lines, and ADR amendment notes for ADR-0014/0018/0019; plus the Wave 1 testability floor and the inline AGENT_SESSION rule.",
+      "session": "coord-opus-e1e4",
+      "shortname": "w0-seam-contracts-rev3",
+      "skill": "execute-with-coordination",
+      "summary": "13 seam requests resolved (9 granted, 4 granted in part, 0 refused outright; refused parts: HB-LED-009, verdict-label change, X-G1 file grant). One Owner request (W1-G owner rule vs R-90 c1/c6). Ruling C-1: wsgi kind built in E1 for S1. W0 rev 3 sections 1-14, change table, re-read list; ADR-0014/0018/0019 Amendment 1 notes; README testability floor and inline AGENT_SESSION; classes TEST-B, COORD-D.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "datetime": "2026-10-03T18:04:00Z",
+      "done_when": "Ruling 95 in docs/notes/rulings.md via coord decide rule from the owner/ruling-r95 worktree, the request resolved, an audit entry appended, committed",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/ruling-r95",
+        "pushed": null,
+        "sha": "1ceea651bceeada8e8406e1633afaa930d48a9f3",
+        "short": "1ceea651b"
+      },
+      "goal": "Rule DR-9 (req-01M41E37FGK5CRZ7NCK3RA20JV): whether R-90 conditions 1 and 6 are amended so applicable() resolves a metric owner through also_graded_by",
+      "id": "al-01M41EZVA5RM6TAWHCQPRZ9MCH",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Owner seat: rule req-01M41E37FGK5CRZ7NCK3RA20JV from the Coordinator: may R-90 conditions 1 and 6 be amended so runner.applicable also resolves a metric's owner through an optional catalog key also_graded_by, letting the formal grader record scenario-7 pass_at_1 (ADR-0019 item 3)? Options A amend, B defer to 0.8, C new id formal_pass_at_1. Context W0 rev 3 s7, W1-G design, reviews ta/pat/sim, R-90. Work in an own worktree owner/ruling-r95.",
+      "session": "owner-fable",
+      "shortname": "ruling R-95 (DR-9, also_graded_by owner rule amends R-90 c1 and c6)",
+      "skill": null,
+      "summary": "R-95 DR-9: (A) granted, (B) and (C) refused. Verified: applicable keys by one grader string (runner.py:161-168), duplicate ids refused (config.py:150-152), outside keys fail the pass with HB-GRD-004 (runner.py:358, errors.py:67), board primary reads pass_at_1 by id (board.py:190,194), ADR-0019 item 3 is accepted and already marks its mechanism provisional on this request. R-90 c6 fixed who records the metric, not the entry's bytes; c1 fixed one function for three readers, and the owner clause lives in that function, so the purpose is kept. Conditions: non-owner guard proven through a real run_pass on G1- and G2-shaped tasks (X-F owns the clause and T-R3..T-R5); also_graded_by validated at once in validate_catalog (grader module, differs from grader, no repeats); reader sweep complete incl. the task-changed fallback where the owner is correctness and the NA folder is pinned by test; amendment text in R-90 c5's dispatch paragraph, W0 s7 drops provisional, ADR-0019:49 updated by X-G1; sequencing as the Coordinator set it.",
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "tier": "T0",
+      "tool": null
+    },
+    {
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "datetime": "2026-10-03T18:09:46Z",
+      "done_when": "Ruling 96 in docs/notes/rulings.md via coord decide rule from the owner/ruling-r96 worktree, the request resolved, an audit entry appended, committed",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/ruling-r96",
+        "pushed": null,
+        "sha": "f41d2f205271d823403e8186705b11021d1c1cc3",
+        "short": "f41d2f205"
+      },
+      "goal": "Rule DR-10 (req-01M41EPSB7E91C4APYT1QGN3FV): holm on interval verdicts; rule the R-93 not-recorded flag; name the ADR-0020 s2 amendment author",
+      "id": "al-01M41FADEXXHBT2JTQYBWBRF1N",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Owner seat: (1) rule req-01M41EPSB7E91C4APYT1QGN3FV from W1-H: how correction.method=holm acts on interval verdicts; A size and level like Bonferroni (alpha/m), B Holm step-down on bootstrap p-values; (2) flag: W1-H adds a hidden-test agreement not recorded state to the R-93 line, inside R-93 or a new ruling; (3) ADR-0020 s2 still says plan seed, W0 rev 3 replaced it with seed_for; say who writes the amendment note. Own worktree owner/ruling-r96.",
+      "session": "owner-fable",
+      "shortname": "ruling R-96 (DR-10, holm on interval verdicts; R-93 None state; ADR-0020 s2 note)",
+      "skill": null,
+      "summary": "R-96 DR-10: (A) granted, (B) refused. ADR-0020 s2 verdicts are interval-only (p-value verdicts rejected at 0020:49); Holm's first step is alpha/m and every later step is more liberal, so the 1-alpha/m interval is never more liberal than any Holm step and its verdicts are a subset of Holm's rejections; a step-down adds a cross-verdict dependency the per-(property,harness,comparison) grain lacks and yields no interval for the MDE comparison. holm stays registrable (W0 rev 3 enum, spec :685 illustration) with alpha_per_test as the one definition, disclosed as level_rule at registration and in section 3; the verdict endpoints under holm must equal bonferroni's (second test row). R-93 flag: the None state is inside R-93 (never silently resolved; IO: not recorded, never a plausible wrong number), recorded as a clarification of R-93 c1 with three states; R-H3 closes. ADR-0020 s2 plan seed -> seed_for: the Coordinator writes Amendment 1 in the W0 rev 3 form (eval-seam-contracts.md:661), before X-H1's first commit.",
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "tier": "T0",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1i.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:12:02Z",
+      "id": "al-01M41FEHHFK4K45C5QKG2H721V",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Delta re-review of W1-I rev 2 as Test Architect",
+      "session": "rv-ta-w1i-e1e4",
+      "shortname": "review-ta-w1i-r2",
+      "skill": "design-slice-review",
+      "summary": "W1-I rev 2: PASS WITH CONDITIONS, 4 findings",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1i.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:13:13Z",
+      "done_when": "rev 2 section with gate line committed",
+      "fan_out": 0,
+      "goal": "delta re-review",
+      "id": "al-01M41FGQAJEFG4N7VD0WM71YPX",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader: RV-PAT re-review of W1-I rev 2",
+      "session": "rv-pat-w1i-e1e4",
+      "shortname": "design-slice-review-pat-w1i-r2",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT W1-I rev 2: PASS, all 7 findings resolved",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-security-tasks.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:48:16Z",
+      "done_when": "Gate PASS incl. Security; two real codebases on different bases (DR-T1); the latent requirement; in-process probes; reference and naive solutions; expected values with provenance (GLD-A)",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-I security tasks S1 and S2 producing docs/design/eval-security-tasks.md",
+      "id": "al-01M41E30XX2G0GYMDGEKPAXD0A",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-i-security-tasks.md",
+      "session": "w1i-security-e1e4",
+      "shortname": "design-slice-eval-security-tasks",
+      "skill": "design-slice",
+      "summary": "Designed security tasks S1 (microdot, fully specified) and S2 (bottle, base and probes named): latent guards, 10 in-process probes with BENCHCANARY values, reference and naive solutions, expected values with provenance, nine defect variants, offline-build declaration, two seam requests; gate pending",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-security-tasks.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:10:38Z",
+      "done_when": "every finding dispositioned; gate record has first-round lines plus rev 2 pending RV-TA, RV-PAT",
+      "duration_seconds": 502.0,
+      "fan_out": 0,
+      "goal": "apply the four W1-I first-round reviews",
+      "id": "al-01M41FBZKFAZF0N889PA25YV52",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-i-security-tasks.md (rev 2 follow-up applying RV-TA, RV-PAT, RV-SEC, RV-SIM)",
+      "session": "w1i-security-r2-e1e4",
+      "shortname": "design-slice-eval-security-tasks-rev2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T18:02:16Z",
+      "summary": "W1-I rev 2: S1 aligned to W0 rev 3 (wsgi, frames), eight probes, both tokens scanned, wrong-app fixtures, hardened variant test, S2 cut, review disposition table",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1g.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:15:58Z",
+      "done_when": "gate line appended",
+      "fan_out": 0,
+      "goal": "Re-review W1-G delta",
+      "id": "al-01M41FNR1K3MKJRXYKY12FBKM5",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "W1-G rev 2 re-review",
+      "session": "rv-ta-w1g-e1e4",
+      "shortname": "design-slice-review-ta-w1g-r2",
+      "skill": "design-slice-review",
+      "summary": "TA re-review W1-G rev 2: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-catalog-0-7.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:37:59Z",
+      "done_when": "Gate PASS; the eleven metric entries with anchors (R-79 forms); the scenario-7 pass rule for G2; the US-4 control; the append-only corrected_from record",
+      "fan_out": 0,
+      "goal": "W1-G catalog 0.7 (ADR-0019), scenario-7 pass@1 and the missing-pass@1 fix",
+      "id": "al-01M41DG6B6QQ397PSVDPZEAGCF",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-g-catalog.md",
+      "session": "w1g-catalog-e1e4",
+      "shortname": "design-slice-eval-catalog-0-7",
+      "skill": "design-slice",
+      "summary": "Designed catalog 0.7: eleven property metrics in full YAML (no new area), also_graded_by dispatch for scenario-7 pass_at_1 with formal.pass_rule, absence-is-not-failure fix and sweep (ABS-A), cross-version US-4 control and append-only corrected_from record; gate pending",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-catalog-0-7.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:12:56Z",
+      "done_when": "every finding has a disposition row; Gate record has the three first-round lines plus rev 2 pending RV-TA; validate exit 0",
+      "fan_out": 0,
+      "goal": "Apply the three W1-G reviews and the W0 rev 3 and R-95 rulings to the catalog 0.7 design",
+      "id": "al-01M41FG66QB873BZEQYFKTPCDG",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-g-catalog.md (rev 2 follow-up: apply RV-TA, RV-PAT, RV-SIM, W0 rev 3, R-95)",
+      "session": "w1g-catalog-r2-e1e4",
+      "shortname": "design-slice-eval-catalog-0-7-rev2",
+      "skill": "design-slice",
+      "summary": "W1-G rev 2: Control 1 hardened with red cases and 0.6 definitions read from git, n_recorded split, owner rule per R-95, corrected_from as a written contingency, testability floor, review disposition table",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1h.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:17:47Z",
+      "done_when": "two review files with gate lines committed",
+      "fan_out": 0,
+      "goal": "Test Architect gate on W1-H and W1-C",
+      "id": "al-01M41FS2E079PYRJWTQBFBDKPZ",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-H and W1-C)",
+      "session": "rv-ta-hc-e1e4",
+      "shortname": "review-ta-w1h-w1c",
+      "skill": "design-slice-review",
+      "summary": "RV-TA reviews: W1-H PASS WITH CONDITIONS (10), W1-C PASS WITH CONDITIONS (9)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1h.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:20:56Z",
+      "done_when": "two review files with gate lines committed",
+      "fan_out": 0,
+      "goal": "Patterns review of W1-H and W1-C",
+      "id": "al-01M41FYVQ42WY27V6KQ3TKSKR9",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md (W1-H, W1-C)",
+      "session": "rv-pat-hc-e1e4",
+      "shortname": "design-slice-review-pat-w1h-w1c",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT reviews: W1-H PASS WITH CONDITIONS (6), W1-C BLOCK (8)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1b.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:21:53Z",
+      "id": "al-01M41G0JR9XQ8JED1AE0VBAGEF",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "RV-TA delta re-review of W1-B rev 2",
+      "session": "rv-ta-bd-e1e4",
+      "shortname": "ta-review-w1b-r2",
+      "skill": "design-slice-review",
+      "summary": "RV-TA W1-B rev 2: PASS WITH CONDITIONS (3 minor findings)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-atomic-publish.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:40:44Z",
+      "done_when": "Gate PASS incl. Security and Distributed Systems; the D1 and D3 red tests named; the Windows no-directory-fsync branch stated; the defect class text for exists means complete",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-B crash-atomic publish, producing docs/design/eval-atomic-publish.md",
+      "id": "al-01M41DN7FNGSCBEYQ6A1K3HF5M",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-b-atomic-publish.md",
+      "session": "w1b-publish-e1e4",
+      "shortname": "design-slice-eval-atomic-publish",
+      "skill": "design-slice",
+      "summary": "W1-B design: create_once, publish_dir, sweep, recovery rule, archive rework, tests by node id, spike E1-S2",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-atomic-publish.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:20:13Z",
+      "done_when": "Every finding has a disposition row; Gate record has the five first-round lines plus rev 2 pending RV-TA; derive and validate exit 0",
+      "duration_seconds": 773.0,
+      "fan_out": 0,
+      "goal": "Apply the W1-B lens-review findings and Coordinator answers",
+      "id": "al-01M41FXH5HKYBZWKFGBP84JG6E",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "W1-B rev 2 follow-up: apply five lens reviews and W0 rev 3 (brief docs/coordination/eval-wave1/w1-b-atomic-publish.md)",
+      "session": "w1b-publish-r2-e1e4",
+      "shortname": "design-slice-eval-atomic-publish-rev2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T18:07:20Z",
+      "summary": "Revised the W1-B design: 34 findings dispositioned, recover_archive moved to X-K1, HB-LED-009 dropped, site scan re-derived with red fixtures, identity check and enforced sweep lock, public rename_with_retry, seam request S-B4",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1h.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:24:14Z",
+      "done_when": "two review files with gate lines",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-H and W1-C",
+      "id": "al-01M41G4WA0X67R5PGH62JKRCDG",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "session": "rv-sim-hc-e1e4",
+      "shortname": "review-sim-w1h",
+      "skill": "design-slice-review",
+      "summary": "Simplifier review of W1-H: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1c.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:24:14Z",
+      "done_when": "two review files with gate lines",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-H and W1-C",
+      "id": "al-01M41G4WXG026Z0MH6P12SBMBS",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "session": "rv-sim-hc-e1e4",
+      "shortname": "review-sim-w1c",
+      "skill": "design-slice-review",
+      "summary": "Simplifier review of W1-C: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ds-w1c.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:25:13Z",
+      "done_when": "gate line written and committed",
+      "fan_out": 0,
+      "goal": "DS lens review of W1-C",
+      "id": "al-01M41G6PKG1R95CYZCP8V85P5G",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ds.md",
+      "session": "rv-ds-w1c-e1e4",
+      "shortname": "design-slice-review-eval-ds-w1c",
+      "skill": "design-slice-review",
+      "summary": "DS review of W1-C: PASS WITH CONDITIONS, 7 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1c.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:25:41Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "Security review of W1-C",
+      "id": "al-01M41G7HGSGQXE3PHHSV19T3NC",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md",
+      "session": "rv-sec-w1c-e1e4",
+      "shortname": "design-slice-review-eval-sec-w1c",
+      "skill": "design-slice-review",
+      "summary": "Security gate on W1-C: PASS WITH CONDITIONS, 10 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1d.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:27:03Z",
+      "done_when": "gate line appended",
+      "fan_out": 0,
+      "goal": "re-review W1-D rev 2",
+      "id": "al-01M41GA22KNR8QFC0767K105V3",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-D rev 2 re-review)",
+      "session": "rv-ta-d2-e1e4",
+      "shortname": "design-slice-review-w1d-r2-ta",
+      "skill": "design-slice-review",
+      "summary": "RV-TA rev 2 of W1-D: PASS WITH CONDITIONS; T-25 assume refuted (T9-2 stubs Engine)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1f.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:27:19Z",
+      "done_when": "two gate lines appended on review/eval-sec-f3",
+      "fan_out": 0,
+      "goal": "Delta-review W0 rev 3 s3 and W1-F rev 3 for security",
+      "id": "al-01M41GAH3C8KT9WQFY1825VZYF",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md (delta: W0 rev 3 s3, W1-F rev 3)",
+      "session": "rv-sec-f3-e1e4",
+      "shortname": "review-sec-w1f-r3-w0-s3",
+      "skill": "design-slice-review",
+      "summary": "Security delta gates: W0 rev 3 s3 PASS (3 findings); W1-F rev 3 PASS WITH CONDITIONS (6 findings)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1f.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:28:31Z",
+      "done_when": "two gate lines appended",
+      "fan_out": 0,
+      "goal": "delta-review W0 rev 3 s3 and W1-F rev 3",
+      "id": "al-01M41GCQJA9GGPNEAYAAGG4MFR",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (delta: W0 rev 3 s3, W1-F rev 3)",
+      "session": "rv-ta-f3-e1e4",
+      "shortname": "design-slice-review-ta-w1f-r3",
+      "skill": "design-slice-review",
+      "summary": "TA delta gates: W1-F rev 3 PASS WITH CONDITIONS (6), W0 rev 3 s3 PASS WITH CONDITIONS (2)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-grader.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:22:39Z",
+      "done_when": "delta designed with floor-compliant tests incl. a real-wiring WSGI test; forgery re-run on wsgi; disposition rows; gate record rev 3 delta pending RV-TA, RV-SEC; validate exit 0",
+      "fan_out": 0,
+      "goal": "Revise W1-F for W0 rev 3 ruling C-1: wsgi kind, frames, five probe-host items, start bound",
+      "id": "al-01M41G1ZG2T4BXKBTDDZ15VWAB",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md (rev 3 delta: C-1 wsgi, W0 rev 3 frames, five probe-host items, start bound)",
+      "session": "w1f-property-r3-e1e4",
+      "shortname": "design-slice-eval-property-grader-r3",
+      "skill": "design-slice",
+      "summary": "W1-F rev 3 delta: app.kind wsgi built in E1 with W0 frames, PEP 3333 environ, factory/args/{state_dir}, paths, app output off the protocol channel (host start sequence), start bound = bounds_ms[interface]; spike SP-F3 re-ran the forgery against a wsgi host (refused 9/9); 14 rev-3 test rows against the testability floor; gate rev 3 delta pending RV-TA, RV-SEC",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-identity.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:42:10Z",
+      "done_when": "Gate PASS incl. SRE; run/grade table reviewed; launch recheck and identity_check_ms",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-D engine identity, freeze and per-launch recheck",
+      "id": "al-01M41DQVDC2MA6XY4YFM12V39V",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-d-identity.md",
+      "session": "w1d-identity-e1e4",
+      "shortname": "design-slice-eval-identity",
+      "skill": "design-slice",
+      "summary": "W1-D design: identity manifest, full run/grade table (no tooling class), launch recheck, grade_identity_hash in E1, guards",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-identity.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:24:26Z",
+      "done_when": "every finding has a disposition row; Gate record carries the four lines plus rev 2 pending RV-TA",
+      "duration_seconds": 557.0,
+      "fan_out": 0,
+      "goal": "Apply the four W1-D reviews and R-94",
+      "id": "al-01M41G58M9N7248NZ8X96XPYFZ",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-d-identity.md (rev 2 follow-up)",
+      "session": "w1d-identity-r2-e1e4",
+      "shortname": "design-slice-eval-identity-r2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T18:15:09Z",
+      "summary": "W1-D rev 2: R-94 applied, 30 review findings dispositioned, ADR-0017 Amendment 1, real-wiring and red-fixture test plan",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:34:06Z",
+      "done_when": "section appended with gate line",
+      "fan_out": 0,
+      "goal": "delta check of W0 rev 3 s5 and s10",
+      "id": "al-01M41GPYDF9M5N0NXWKHJ3CD8S",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md: W0 rev 3 s5/s10 delta check",
+      "session": "rv-pat-w0r3-e1e4",
+      "shortname": "design-slice-review-pat-w0r3",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT delta review of W0 rev 3 sections 5 and 10: PASS WITH CONDITIONS, 8 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-arms.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:43:34Z",
+      "done_when": "Gate line with Patterns, Simplifier and Test Architect PASS; the grid-4 re-plan equivalence test (EV-17) specified by node id; the E1 / E3 split stated",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-A arms v2 (ADR-0014), producing docs/design/eval-arms.md",
+      "id": "al-01M41DTDY3J8ABY33NTC0N6YVM",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "C:\\Projects\\x-harness-x-model-bench\\docs\\coordination\\eval-wave1\\w1-a-arms.md",
+      "session": "w1a-arms-e1e4",
+      "shortname": "design-slice-eval-arms",
+      "skill": "design-slice",
+      "summary": "W1-A arms v2 design: bench-matrix/2, bench-plan/2, blocked launch order with bounded redraw, ready rule, AST pack-reader guard, E1/E3 split, EV-17 test map; four spikes, two W0 errata, four seam requests",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-arms.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:34:01Z",
+      "done_when": "every finding has a disposition row; gate lines verbatim; validate exit 0",
+      "duration_seconds": 12.0,
+      "fan_out": 0,
+      "goal": "Apply the W1-A gate conditions on top of W0 rev 3",
+      "id": "al-01M41GPSXV3S5EJB729HWTYE3P",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-a-arms.md (follow-up rev 2: apply RV-TA, RV-SIM, RV-PAT conditions)",
+      "session": "w1a-arms-r2-e1e4",
+      "shortname": "design-slice-eval-arms-r2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T18:33:49Z",
+      "summary": "W1-A rev 2: 22 review findings dispositioned; plan_pack and HB-PLN-005 readers; G1 count ratchet and literal ratchet; real-git builder test; grid-4 entry point and provenance; Latin-square rejected; trims",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/notes/spike-s-lb-loopback.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:34:42Z",
+      "done_when": "four steps, one command per mode, empty results table",
+      "fan_out": 0,
+      "goal": "S-LB script and note",
+      "id": "al-01M41GR1Z6XB21ED0TJVP5GJT5",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/sp-lb-loopback.md",
+      "session": "splb-loopback-e1e4",
+      "shortname": "spike-s-lb-loopback",
+      "skill": "spike",
+      "summary": "Wrote S-LB script and note method; not run (operator absent)",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/adr/0020-power-and-verdicts-stdlib.md",
+        "docs/coordination/eval-wave2-e1/README.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:43:58Z",
+      "done_when": "committed on coord/eval-w0-rev4-wave2; derive/validate exit 0; requests resolved; handback sent",
+      "fan_out": 1,
+      "goal": "Answer coord-opus-e1e4 seams, write ADR-0020 Am. 1 and W0 rev 4 with delta re-read list, and the Wave 2 E1 dispatch pack",
+      "id": "al-01M41H90J96K9V1343P7M6YN2P",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Coordinator #4: answer open seams, ADR-0020 Amendment 1, W0 rev 4 with change table and delta re-read list, Wave 2 E1 dispatch pack",
+      "session": "coord-opus-e1e4",
+      "shortname": "coord-w0-rev4-wave2-e1",
+      "skill": "execute-with-coordination",
+      "summary": "W0 rev 4: 6 seam requests resolved (5 granted, SR-C1 in part: oslock.py to X-B1 not X-C); cross-slice rulings on W1-C/W1-H (pilot arity, expected_na, admission, plan_hash, run_side_check via engine campaign_check, lock-free reads, content-keyed git witness); RV-PAT rev3 delta conditions; ADR-0020 Amendment 1; Wave 2 E1 pack: README (routing, DAG, launch order) + 9 briefs + 6 coord-run/1 contracts (compile ids owed); 5 briefs owed on W1-C/W1-E/W1-H",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1l.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:47:20Z",
+      "done_when": "review file and gate line committed",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-L",
+      "id": "al-01M41HF6GCAX8ZDPSENYBQESZ1",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md (W1-L)",
+      "session": "rv-sim-w1l-e1e4",
+      "shortname": "design-slice-review-sim-w1l",
+      "skill": "design-slice-review",
+      "summary": "Simplifier review of W1-L: PASS WITH CONDITIONS, 12 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1l.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:50:03Z",
+      "done_when": "report file committed with gate line",
+      "fan_out": 0,
+      "goal": "Patterns review of W1-L",
+      "id": "al-01M41HM5PWW9JX4HBZF5YAK41E",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md (W1-L)",
+      "session": "rv-pat-w1l-e1e4",
+      "shortname": "design-slice-review-pat-w1l",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT review of W1-L: PASS WITH CONDITIONS, 7 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1l.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:50:41Z",
+      "done_when": "review file with gate line committed",
+      "fan_out": 0,
+      "goal": "TA review of W1-L",
+      "id": "al-01M41HNAQ0Y96P8ZMTR09Y2Q9M",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-L)",
+      "session": "rv-ta-w1l-e1e4",
+      "shortname": "design-slice-review-eval-ta-w1l",
+      "skill": "design-slice-review",
+      "summary": "Test Architect review of W1-L: BLOCK, 13 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "datetime": "2026-10-03T18:55:05Z",
+      "done_when": "Ruling 97 in docs/notes/rulings.md via coord decide rule from the owner/ruling-r97 worktree, the request resolved, an audit entry appended, committed",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/ruling-r97",
+        "pushed": null,
+        "sha": "a49c56dae86f7fcd1605f68f25f3a9e0d8740e42",
+        "short": "a49c56dae"
+      },
+      "goal": "Rule DR-L1 (req-01M41GWNS06F362RJ78XB7AXY5): the meaning and producer of hallucinated_symbol_errors; verify W1-L's no-source claim in code; name the amendment-note author",
+      "id": "al-01M41HXCD95CQYNFPVEG03TAQ2",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Owner seat: rule coord request req-01M41GWNS06F362RJ78XB7AXY5 (DR-L1, from W1-L): the meaning of hallucinated_symbol_errors. EV-5 refers to build-log errors, which have no source in the bench. W1-L recommends option A, a final-tree static count. Verify the no-source claim in code before ruling, and state whether the spec or ADR-0019 needs an amendment note and who writes it. Own worktree owner/ruling-r97.",
+      "session": "owner-fable",
+      "shortname": "ruling R-97 (DR-L1, hallucinated_symbol_errors is a final-tree unresolved-reference count; EV-5 note by W1-L)",
+      "skill": null,
+      "summary": "R-97 DR-L1: (A) granted with the meaning fixed, (B) refused. hallucinated_symbol_errors = distinct unresolved references to the vendored API in the final tree inside the blast radius, a grading-pass (source D) measure, never a trajectory count. Verified: ToolCall carries no output (telemetry/__init__.py:61-69, normalize.py:177-180), so B has no source; but the bench does have a grading-pass build.log (grade/correctness.py:313-355): compileall for Python (syntax only, cannot name a missing member), dotnet build for .NET (can). W1-L's no-source claim is right for the trajectory and for Python, too broad as stated. Conditions: one producer per language named in noguess.py (static resolver for Python; build.log for a compiled language, not built in E4, NA never 0); resolver failure is NA never 0 (test_hse_resolver_failure_is_na); wording 'unresolved vendored-API references in the final tree' replaces 'build-log errors' in the catalog anchor_note (X-G1); expected values stay Inferred until X-NG's first strategy run. Spec EV-5 gets an appended note citing R-97, written by W1-L in its gate revision; ADR-0019 needs none.",
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "tier": "T0",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1c.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:00:31Z",
+      "done_when": "rev-2 section with gate line committed",
+      "fan_out": 0,
+      "goal": "Delta re-review of W1-C rev 2",
+      "id": "al-01M41J7A8XEAV3CBPX59XRPR14",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader: re-review W1-C rev 2, delta only",
+      "session": "rv-pat-hc-e1e4",
+      "shortname": "design-slice-review-pat-w1c-r2",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT W1-C rev 2: PASS, 1 minor",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1c.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:01:27Z",
+      "done_when": "gate line appended",
+      "fan_out": 0,
+      "goal": "Verify SEC conditions in rev 2",
+      "id": "al-01M41J918EF6Q008YASHH3DC37",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader: W1-C rev 2 delta re-review",
+      "session": "rv-sec-w1c-e1e4",
+      "shortname": "design-slice-review-eval-sec-w1c-r2",
+      "skill": "design-slice-review",
+      "summary": "Security gate W1-C rev 2: PASS, 1 minor",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-campaign-record.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:08:06Z",
+      "done_when": "Gate PASS incl. Security and Distributed Systems; lock-then-read for every command; tamper tests named",
+      "fan_out": 0,
+      "goal": "Run design-slice for W1-C campaign record and bench campaign",
+      "id": "al-01M41F7B2GD7YSBCJ2C9R7GQFP",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-c-campaign-record.md",
+      "session": "w1c-campaign-e1e4",
+      "shortname": "design-slice-eval-campaign-record",
+      "skill": "design-slice",
+      "summary": "W1-C design: campaign ledger, state table, commands with guards and tests, lock protocol (measured), freeze, F-1 identity checks, verify, eligibility, test plan with mutants",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-campaign-record.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:56:48Z",
+      "done_when": "Every finding has a disposition row; Gate record has the five first-round lines plus rev 2 pending RV-PAT, RV-SEC",
+      "duration_seconds": 604.0,
+      "fan_out": 0,
+      "goal": "Apply review findings to W1-C",
+      "id": "al-01M41J0H8QXR2VGA19SRS9FM37",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "W1-C author follow-up rev 2 (brief docs/coordination/eval-wave1/w1-c-campaign-record.md)",
+      "session": "w1c-campaign-r2-e1e4",
+      "shortname": "design-slice-eval-campaign-record-rev2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T18:46:44Z",
+      "summary": "Applied the five W1-C lens reviews (43 findings) and W0 rev 4: re-pilot path after a fix, content-keyed git witness, id and link validation, plan_hash binding, run-side check in the engine, lock-free reads, mutant ledger, S-C5 positive control",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-power-verdicts.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:06:13Z",
+      "done_when": "Gate PASS; reference cases 93/53/115 with independent formula and seeded-wrong variant; verdict and dominance tables with boundary rows; section 3 E1 shape",
+      "fan_out": 0,
+      "goal": "Design W1-H power, verdicts, dominance, ring gates and report section 3",
+      "id": "al-01M41F3WMPXCMY7BVW5N1R84P0",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-h-power-verdicts.md",
+      "session": "w1h-power-e1e4",
+      "shortname": "design-slice-eval-power-verdicts",
+      "skill": "design-slice",
+      "summary": "W1-H design: power, verdicts, dominance, ring gates, report section 3; spikes S1-S7; 3 seam requests, 1 decision request",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-power-verdicts.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:01:42Z",
+      "done_when": "Every finding has a disposition row; gate lines copied verbatim; derive/validate exit 0",
+      "duration_seconds": 893.0,
+      "fan_out": 0,
+      "goal": "Apply the W1-H gate findings and R-96 in rev 2",
+      "id": "al-01M41J9G6BHQDMZAV3Z0KFY09B",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-h-power-verdicts.md (rev 2 follow-up: apply TA, PAT, SIM findings, R-96, W0 rev 4)",
+      "session": "w1h-power-r2-e1e4",
+      "shortname": "design-slice-eval-power-verdicts-r2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T18:46:49Z",
+      "summary": "W1-H rev 2: every finding dispositioned; R-96 level_rule and second holm row; R-93 three-state; admission; nine gate kinds; skeleton out-of-domain; deleted redundant rows and sweeps",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T19:08:46Z",
+      "id": "al-01M41JPEEAN903A1PN0DBXCXVJ",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-d1-e1e4 on branch build/eval-x-d1, harness Codex, model gpt-6.1-sol with effort high (codex-cli 0.160.0). Build dispatch D1 only of the brief below, in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then this brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-D: engine identity and the launch recheck\n\n**Harness** Codex via `coord-runner` (Leader, R-87), `gpt-6.1-sol`, effort high, codex-cli 0.160.0 (R-88 condition 1: Q0 qualified Codex before W1-D's gate; README §5) · **contract** `x-d.contract.json` (D1; D2 reuses it with the suffix `2`) · **deadline** 3,300 s per dispatch · **budget** 200 calls · 200k · 2 dispatches · 3 h · **fallback** a red-only end or a failed read-back: the green follow-on runs as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same worker tree (R-87 Option 1; R-88 is the Owner review).\n\n**Design:** `docs/design/eval-identity.md` (W1-D rev 2, on `main`, `301a8705`), with ADR-0017 *Amendment 1* (R-94). **W0 rev 5** (rev 4 plus the rev-5 change table; your rows: §6 `for_task`, `builds=None`, the `profiles/<h>` set; §11 HB-RDY-011, HB-PLN-004 text). **W0 rev 4:** sections 6 (identity API, launch recheck, **the `campaign_check=` keyword**), 9, 10 (G2, G2b, G3, D3 as a two-path frozenset), 11 (every E1 row, **registry first**), 12, 13.\n\n## Owned paths (E1 hub owner, W0 §13)\n`src/harness_bench/identity.py` (new), `engine.py` (E1), `errors.py` (E1), `grade/runner.py` lines 108-112 only (`catalog_hash` becomes an import from `identity`), `tests/test_identity.py` (new), `tests/test_engine.py` (E1), `tests/test_architecture.py`, `tests/import_graph.py` (new), `tests/mutations/engine.json` (E1), `tests/mutations/cli.json` (the \"cli drops the kwarg\" mutant only).\n\n## Dispatch D1 (`x-d1-e1e4`, `build/eval-x-d1`): the first commit every other track waits on\nOne turn: a red commit, then a green commit.\n- `errors.py`: **every** E1 row of W0 §11 (HB-LED-007, HB-IDN-001/002, HB-PLN-001/002/004/005, HB-PWR-001, HB-CHK-001..004, HB-GRD-007, HB-RDY-001..011 (rev 5 adds HB-RDY-011, SR-E1 4), HB-CMP-001..010 with HB-CMP-010's rev 4 meaning; HB-PLN-004 with its rev 5 text, which also names a `synthetic` combo in a measurement plan). The registry rejects an unknown code (`errors.py:118`), so X-A1, X-B1, X-C, X-E, X-F and X-H1 test their codes only after this joins.\n- `identity.CLASSES` seeded for every existing `src/` file (69 at W1-D's scan) and every planned module of W0 §9; `telemetry/*` run, `gateway` a grade component (R-94); G2 (`test_every_src_file_has_a_class`, with the `unclassed`/`stale` red fixtures T-8..T-10b) and G2b (direction test; `RUN_IMPORTS_GRADE_ALLOWED` holds exactly the three `config.py` pairs, T-12d).\n- `tests/import_graph.py` extracted from `test_architecture.py:98-99`; G3 over the W0 §9 \"yes\" set with its three red fixtures; `SUBPROCESS_CALLERS = frozenset({\"procs.py\", \"grade/bench_check.py\"})` through the alias resolver; the R-60 set gains `grade/property`.\n- `catalog_hash` moved to `identity.py`; `grade/runner.py:108-112` becomes the import (your only hunk in X-F's file).\n\n## Dispatch D2 (`x-d2-e1e4`, `build/eval-x-d2`), after D1 joins\n- **W0 rev 5 §6 (SR-E1 3):** `manifest(root, tasks, builds=None)` writes **no** `builds/*` key; `profiles/<h>` covers every `h` in `profiles.HARNESSES` (plan-independent); `for_task(m, task)` drops every `builds/*` key and every `tasks/<id>` except `tasks/<task>`. Test: `identity_hash(manifest(root, [t], builds=None)) == identity_hash(for_task(manifest(root, [t, u], builds=b), t))`, with the mutant \"`for_task` keeps `builds/*`\".\n- `manifest`, `identity_hash`, `side`, `diff`, `launch_check` (W0 §6; `manifest` takes `plan[\"builds\"]`, imports no `tools` module); R-94 pins T-3 (`telemetry/normalize.py` edit moves run side only) and T-4 (`test_gateway_is_a_grade_component`).\n- `engine.py`: the recheck when a campaign run starts and before each `cell.launch_intent`; `run.launch_stopped{code: HB-IDN-001, reason, diff}`; `identity_check_ms` on the `cell.launch_intent` row via `self._check_ms`, absent (not 0) when no check ran.\n- **`campaign_check: Callable[[], None] | None` (W0 rev 4 §6, RV-DS W1-C 2):** called once, after the run lock (`engine.py:374`) is held and before the first `cell.launch_intent`; a raise stops the run before any launch. Test with a fake callable. X-C writes the real function and the `cli.py` line.\n\n## Acceptance items (design tests and live gate conditions)\n1. **RV-TA W1-D rev 2, R2-1/R2-2:** T-25 builds its own fixture (a real confirmed plan with one cell and a campaign block, a real `Engine`, only `preflight.check` stubbed, a `src/` run-class file edited) and its no-drift twin T-25b; the mutant \"cli drops the kwarg\" in `tests/mutations/cli.json`.\n2. **RV-TA 2, 3:** pure `unclassed`/`stale` take the table (T-8..T-10, T-10b); T-12 with six import forms, T-12c the stale pair, T-12d the edges equal the three pairs.\n3. **RV-TA 5, 6; RV-SRE 1, 3, 4:** `identity_check_ms` via a fake clock (T-30), absent not 0 (T-29); the check once per tick with a 2 s cap (T-16, T-31); the stop row exact (T-26, T-28, T-32).\n4. **RV-TA 7, RV-SRE 8 (E1 exit evidence, at the demo):** the demo reports median, max and the cold value of `identity_check_ms`.\n5. `test_side_partitions_every_component`; the manifest carries no `os.environ` value and no path (RV-SEC 11).\n6. The differ names `grade/formal.py changed` (plan exit evidence).\n\nNot yours: `Status.stop_reason`/`stop_diff` (X-C, W0 rev 4 §6), `grading.started` fields (X-F).\n\n## Exit\nREADME §3 join gate per dispatch; served model read from the Codex native record. Report per README §4.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-d1-e1e4 on branch build/eval-x-d1, harness Codex, mode…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T19:09:46Z",
+      "id": "al-01M41JR8NZCGPZW37X5RV1Q1SA",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-enva-e1e4 on branch build/eval-env-a, harness Grok, model grok-4.7 with --reasoning-effort high. Build the ENV-A fix of the brief below, in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then this brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# ENV-A: the ambient-credential fix\n\n**Harness** Grok via `coord-runner` (Leader, R-87), `grok-4.7`, `--reasoning-effort high`, `XAI_API_KEY` removed · **contract** `env-a.contract.json` · **deadline** 1,200 s · **dispatch** one turn, red then green · **budget** 30 calls · 80k · 1 · 0.5 h · **fallback** a red-only end or a failed served-model read: the green follow-on as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree (R-92 is the Owner review).\n\n**The class** (`docs/lessons/defect-classes.md`, the candidate \"a hermetic test reads an ambient credential from the operator's shell\", class id **ENV-C**, renamed from a duplicate `ENV-A`; cite ENV-C in your report and commits): with `HB_CLAUDE_OAUTH_TOKEN` set to a dummy value, three tests fail on `main`: `tests/test_gateway_headless.py::test_t_gw_10_the_credential_is_present_during_the_call_and_gone_after_it`, `::test_t_gw_10_the_credential_is_gone_after_a_timeout_and_after_an_exception_past_the_copy`, `tests/test_profiles.py::test_the_launcher_reports_no_model_setter_and_a_copied_login[claude-code]`.\n\n## Owned paths\n`tests/conftest.py` (E1 owner: this track; another track needs a seam request), `tests/test_env_isolation.py` (new). **Not yours:** `tests/test_profiles.py` (X-E's in E1), `tests/test_gateway_headless.py`; the fix must make them pass **without editing them**.\n\n## Depends on\nTOOL-GSM joined (this is a later Grok dispatch, R-92).\n\n## Work\n1. **Sweep first, recorded in the report:** `git grep -n -E \"OAUTH_TOKEN|_API_KEY|GH_TOKEN\" -- tests src/harness_bench/profiles.py` and the profile denylist (`profiles.DROP_EXACT`, `profiles.DROP_PREFIXES`). The credential list is **one** definition: import it from the production source if one exists; if none does, write it once in `conftest.py` and say so.\n2. **Red:** `tests/test_env_isolation.py` sets each listed variable to a dummy value with `monkeypatch.setenv` in a subprocess-free way (re-run the three named tests through `pytest.main` in-process, or call their bodies) and asserts they pass; plus one test that a test marked `credentials` still sees the variable. Red today by assertion.\n3. **Green:** an autouse fixture in `tests/conftest.py` that `monkeypatch.delenv(name, raising=False)` for every listed name, skipped for tests marked `credentials`.\n\n## Acceptance items\n1. The three named tests pass with `HB_CLAUDE_OAUTH_TOKEN=dummy` set in the shell, and with it unset.\n2. A mutant that removes the fixture is killed by `tests/test_env_isolation.py`.\n3. The defect-class text for the Coordinator: instances, sweep result, control (this fixture and its test), status `controlled` proposed.\n\n## Exit\nREADME §3 join gate, run **twice**: with the token unset and with `HB_CLAUDE_OAUTH_TOKEN=dummy`. `python tools/grok_served_model.py <session dir>` exits 0. Report per README §4.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-enva-e1e4 on branch build/eval-env-a, harness Grok, mo…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T19:09:48Z",
+      "id": "al-01M41JRAX0HMQ76B1HHVNP390F",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-g1-e1e4 on branch build/eval-x-g1, harness Grok, model grok-4.7 with --reasoning-effort high. Build X-G1 of the brief below, in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then this brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-G1: catalog 0.7.dev\n\n**Harness** Grok via `coord-runner` (Leader, R-87), `grok-4.7`, `--reasoning-effort high`, `XAI_API_KEY` removed · **contract** `x-g1.contract.json` · **deadline** 1,200 s · **dispatch** one turn, red then green · **budget** 40 calls · 100k · 1 · 0.7 h · **fallback** the green follow-on as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree (R-92 is the Owner review).\n\n**Design:** `docs/design/eval-catalog-0-7.md` (W1-G rev 2, on `main`). **W0 rev 5:** §7 (R-97). **W0 rev 4:** section 7 (the table of eleven ids, kind, better, scale, `property:` tag; R-95's owner rule).\n\n## Owned paths\n`bench/metrics.yaml` (E1 owner), `tests/test_catalog_version.py`, `docs/adr/0019-catalog-0-7-property-metrics.md` (only the item-3 note, by R-95 condition 4). **Not yours:** `grade/property.py` (X-F; never create it), `config.py` (X-A1's validation checks), `grade/runner.py` (X-F builds the owner clause and T-R3..T-R6), `bench/catalog-freeze.yaml` (Leader, R-86).\n\n## Depends on\n**X-F0 joined** (`grade/property.py` exists; `validate_repo` refuses a metric whose grader has no module, `config.py:158`). R-95 ✓.\n\n## Work\n- `version: \"0.7.dev\"`; the eleven metrics of W0 §7 with weight 0, source D, the anchors and areas W1-G fixes (R-79 forms), each property-specific one tagged `property: <name>`; `property_check_pass` untagged.\n- `pass_at_1` gains `also_graded_by: [formal]` (R-95). In the same commit, ADR-0019's item-3 note changes from \"provisional on the request\" to \"R-95: `also_graded_by: [formal]`\".\n- Every 0.6 metric's definition is unchanged except that one key; the US-4 control stays green.\n- **R-97 condition 3 (W0 rev 5 §7):** `hallucinated_symbol_errors`'s `anchor_note` says \"unresolved vendored-API references in the final tree\"; the words \"build-log errors\" do not appear in it. The anchor `[5, 0]` stays provisional (W1-G U2). A test asserts the phrase is absent.\n\n## Acceptance items\n1. Red first: `tests/test_catalog_version.py` asserts the eleven ids with their kind, better, scale and tag (W1-G's T-C nodes), red today by assertion.\n2. The eleven metrics validate under `0.7.dev` (R-90); `bench validate` exit 0 on the joined tree.\n3. **RV-TA W1-G R2-2:** the design's §11 note that T-P4/T-P6 carry the `n_recorded` sweep proof is the author's; you do not edit the design. X-G3 (E3) owns T-U1b (RV-TA R2-1).\n4. T-R3..T-R6 are X-F's (W0 rev 4 §7); do not write them.\n\n## Exit\nREADME §3 join gate; `python tools/grok_served_model.py <session dir>` exits 0 (the first Grok dispatch: if TOOL-GSM has not joined yet, the Leader reads the same fields by hand, as Q0b did, and records them). Report per README §4.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-g1-e1e4 on branch build/eval-x-g1, harness Grok, model…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T19:09:51Z",
+      "id": "al-01M41JRD8M6GT6142HRJVHJRBF",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-b1a-e1e4 on branch build/eval-x-b1a, harness Grok, model grok-4.7 with --reasoning-effort high. Build dispatch B1a only of the brief below, in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then this brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-B1: crash-atomic writes and the lock helper\n\n**Harness** Grok via `coord-runner` (Leader, R-87), `grok-4.7`, `--reasoning-effort high`, grok 1.0.41, launched with `XAI_API_KEY` removed · **contract** `x-b1.contract.json` (B1a; B1b and B1c reuse it with the suffixes `b`, `c`) · **deadline** 1,200 s per dispatch · **budget** 40 calls · 100k per dispatch · 3 dispatches · 1.5 h total · **fallback** a red-only end, a timeout, or a served-model read that is not all `grok-4.7*`: the green follow-on runs as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree (R-87 Option 1; R-92 is the Owner review).\n\n**Design:** `docs/design/eval-atomic-publish.md` (W1-B rev 2, on `main`, gate passed), sections 3, 4, 10, 11, 12.2, 17. **W0 rev 4:** sections 4 (as granted to S-B4), 6 (`acquire_then_probe`), 11, 13.\n\n## Owned paths\n`src/harness_bench/atomic.py` (new), `tests/test_atomic.py` (new), `tests/test_atomic_sites.py` (new), `tests/mutations/atomic.json` (new), `src/harness_bench/oslock.py` (E1: `acquire_then_probe` only), `tests/test_oslock.py` (the helper's tests), `src/harness_bench/workspace.py` (the `_land` hunk and the `make_writable` import only), `tests/mutations/workspace.json`. **Not yours:** `tests/test_workspace.py` (X-A1's; W1-B: it stays green unedited), `archive.py` (X-B2), `docs/lessons/defect-classes.md` (send W1-B §12.2's RIG-D instance to the Coordinator as text).\n\n## Dispatches (each based on `main`; each lands red then green in one turn)\n- **B1a** (`x-b1a-e1e4`, `build/eval-x-b1a`): `atomic.py` per W1-B §17 order: the naive skeleton (every public name, neutral wrong values) as the red commit's base, then `create_once`, `TEMP_RE`, `is_temp_name`, `stale_temps`, `sweep_temps(target, lock)` (raises `ValueError` unless `oslock.is_held(lock.path)`), `make_writable` (lstat first, never through a link, adds `S_IWUSR`), `rename_with_retry` with `RENAME_BACKOFF`. Depends on X-D1 (HB-LED-007 in the registry).\n- **B1b** (`x-b1b-e1e4`): `publish_dir`; `workspace._land` calls `rename_with_retry(tmp, dest, replace=True, settled=lambda: valid(dest))` and drops its own loop; the WIN-A mutant moves; `tests/test_atomic_sites.py` (the scan, 12 sites in 11 keys, three red-fixture tests; the three grader `copytree` entries stay until X-F deletes them).\n- **B1c** (`x-b1c-e1e4`): `oslock.acquire_then_probe(own, own_code, others, *, between=None) -> RunLock` (W0 rev 4 §6): `between` runs after the first operation and before the second; tests with `Barrier(2).wait(timeout=10)`: never both proceed; both-refused leaves every file unchanged; the swap mutant (probe before acquire) is killed by the barrier test.\n\n## Acceptance items (design tests and live gate conditions)\n1. The W1-B §10.2 nodes and the §10.3 mutation set M1..M27 plus M14b, each naming its killing test (MUT-B keeps the ids honest).\n2. **RV-TA W1-B R2-3:** a mutation run on a Windows host **and** a POSIX host, both in the proof pack (M14 dies only on Windows, M14b only on POSIX): `test_posix_flag_default_follows_the_platform`, `test_the_real_publish_dir_fsyncs_the_folder_only_on_posix`. The POSIX half runs in CI's macOS job; say which run killed which.\n3. **RV-SEC W1-B 5(c):** one recorded run of the three unmeasured symlink behaviours (`os.unlink` on a Windows directory symlink, `O_EXCL` onto a dangling symlink on Windows, the sweep of a symlink temp) on a host with symlink rights (macOS CI or Windows Developer Mode); `test_the_posix_job_does_not_skip_the_symlink_variants` and the CI rule that a skipped symlink variant fails the macOS job. Unmeasured on this host (winerror 1314).\n4. **RV-SEC 2:** `create_once` keeps the fd open and compares `st_dev`/`st_ino` after the link (M22); reads through one descriptor with `O_NOFOLLOW` where available (M27).\n5. **RV-DS 1:** `_discard_temp` swallows an unlink failure after a successful link and logs `atomic.temp_leaked` (M23). **RV-DS 4:** M25 (the lock check). **RV-DS 5:** `rename_retries`, `rename_ms`, `publish_failed(phase=rename)` asserted.\n6. The kill tests `test_a_kill_between_write_and_link_leaves_no_final_file` and (B1b) `test_a_kill_mid_copy_leaves_no_final_folder_and_the_redo_succeeds`.\n\n## Exit\nREADME §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). Report per README §4.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-b1a-e1e4 on branch build/eval-x-b1a, harness Grok, mod…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T19:09:54Z",
+      "id": "al-01M41JRGAEJS1NP4DZR46TF5HW",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-b2-e1e4 on branch build/eval-x-b2, harness Agy, model gemini-3.8-flash-high. Build X-B2 of the brief below, in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then this brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-B2: crash-atomic archive\n\n**Harness** Agy via `coord-runner` (Leader, R-87), `gemini-3.8-flash-high`, agy 1.2.13, `--mode accept-edits` · **contract** `x-b2.contract.json` · **deadline** 3,300 s · **dispatch** one turn, red then green · **budget** 120 calls · 150k · 1 · 1.5 h · **fallback** the green follow-on as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree, after an Owner review.\n\n**Design:** `docs/design/eval-atomic-publish.md` §6 (archive rework), §10 (the archive nodes and A1..A4), §12.1 (the defect class). **W0 rev 4:** section 4 (`publish_dir`, \"Readers of the archive folder\", `recover_archive` is X-K1's in E3), 13.\n\n## Owned paths\n`src/harness_bench/archive.py` (E1), `report/judges.py` (the `attempt_dirs` line at `:216` only), `tests/test_archive.py`, `tests/mutations/archive.json`, and in `tests/test_engine.py` only `test_the_engine_archive_goes_through_publish_dir` and in `tests/test_views.py` only `test_bench_verify_passes_a_run_archived_by_the_atomic_path` — both files belong to other E1 owners (X-D, X-A1), so send each as a seam request to them **or** place both tests in `tests/test_archive.py` if they need no private fixture of those files; say which in your report.\n\n## Depends on\n**X-B1b joined** (`atomic.publish_dir`); X-D1 (codes).\n\n## Acceptance items\n1. **Red first against today's `archive_cell`:** a kill during an archive copy, then a resume completes without `HB-USR-002` (D1); a `*.tmp-*` sibling is redone; red by assertion.\n2. `archive_cell` goes through `atomic.publish_dir` with a `verify` that compares the file set and each file's rows; the real-wiring test fails if the call is removed.\n3. `archive.attempt_dirs(run_dir, cell_id)` (`re.fullmatch(r\"attempt-(\\d+)\")`, sorted by number) is the one reader; `report/judges.py:216` uses it; a leaked `attempt-1.tmp-…` no longer raises `ValueError` there.\n4. `archive.make_writable` stays a re-export of `atomic.make_writable` (W0 §4).\n5. The mutants A1..A4 in `tests/mutations/archive.json`, each naming its killing test.\n6. The \"exists means complete\" defect-class text (W1-B §12.1) goes to the Coordinator in your report; you do not edit `docs/lessons/defect-classes.md`.\n\n## Exit\nREADME §3 join gate; served model read from Agy's `cli.log`. Report per README §4.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-b2-e1e4 on branch build/eval-x-b2, harness Agy, model …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T19:09:56Z",
+      "id": "al-01M41JRJAKNDA6TV8D0JG5F9SB",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-a1a-e1e4 on branch build/eval-x-a1a, harness Codex, model gpt-6.1-sol with effort high (codex-cli 0.160.0). Build dispatch A1a only of the brief below, in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then this brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-A1: arms and ring plumbing\n\n**Harness** Codex via `coord-runner` (Leader, R-87), `gpt-6.1-sol`, effort high, codex-cli 0.160.0 (R-88 condition 1, README §5) · **contract** `x-a1.contract.json` (A1a; A1b reuses it with the suffix `b`) · **deadline** 3,300 s per dispatch · **budget** 220 calls · 200k · 2 dispatches · 3 h · **fallback** a red-only end: the green follow-on runs as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree (R-88 is the Owner review).\n\n**Design:** `docs/design/eval-arms.md` (W1-A rev 2, on `main`, `92e977b2`). **W0 rev 5:** §2 (`CHECK_PROPERTIES`), §6 (the synthetic hunk), §11 (HB-PLN-004 text). **W0 rev 4:** sections 1, 5 (quoted ids incl. `comparisons`, no top-level `pack`, `plan_pack(plan, *, strict=False)`), 7 (`PROPERTY_NAMES`, the two `validate_catalog` checks, R-95 condition 2), 10 G1 (AST tokens, equality ratchet, pins after the migrations), 11, 13.\n\n## Owned paths (E1 hub owner, W0 §13)\n`src/harness_bench/plan.py`, `config.py`, `views.py`, `grade/_changes.py` (line 84 only), `cli.py` (the function `_workspace_builder` only), `board.py` and `report/summaries.py` (the one-line `plan_pack` migrations and `board._build_pack_effect`'s status text only), `report/pack_improvement.py` (the `cell_arm` line at 746-747 only), `bench/rings/pilot.yaml` (new; R-89: `cc-opus`, `model: claude-opus-5-5` explicit, k = 3), `tests/test_plan.py`, `test_config.py`, `test_workspace.py`, `test_views.py`, `test_changes_cache.py` (the `pre_turn_commit` case), `tests/test_arms_guard.py` (new), `tests/fixtures/plans/grid4-cells.json` (new), `tests/mutations/plan.json`. **Not yours:** `workspace.py` source (X-B1's `_land` hunk), `cli.py` `cmd_plan` (X-C pastes W1-A §3.9), `report/html.py` (X-H2 takes your header lines).\n\n## Depends on\nW1-A ✓; **X-D1** joined (HB-PLN-001/002/004/005 in the registry).\n\n## Dispatches\n- **A1a** (`x-a1a-e1e4`, `build/eval-x-a1a`): `config.py` (bench-matrix/2 validation, quoted-id refusal in `arms` and `comparisons`, upcast, `ARM_OFF`, `ARM_ID`, ring validation, `PROPERTY_NAMES`, the `property:` tag check, the `also_graded_by` check: a grader module, differs from `grader`, no repeats); `plan.py` (bench-plan/2 writer, `Cell.arm`, label, `arms`, `comparisons`, `launch_seed`, `kind`, `campaign` verbatim, `ring`, `cell_arm`, `arm_pack`, `plan_pack`, `launch_order`, `launch_balance`, `draw_launch_order`, the ready rule by plan kind, `parse_binding`, `resolve_arms`); the grid-4 golden. **W0 rev 5 (SR-E1 2, SR-L3):** `\"synthetic\"` joins `config.HARNESSES`; `config.CHECK_PROPERTIES = frozenset({\"security\", \"resilience\"})` beside `PROPERTY_NAMES`; `plan.SYNTHETIC_PROFILE_RECORD` (a constant dict) returned by `plan.profile_record(root, \"synthetic\")`; `build_plan` refuses a **measurement** plan that names a `synthetic` combo with HB-PLN-004 (one refusal by plan kind, listing every offender). Run the full suite: any test that pins `config.HARNESSES` is yours to update in the same commit.\n- **A1b** (`x-a1b-e1e4`): `views.py:525`, `grade/_changes.py:84`, `cli._workspace_builder`, the three plan-level readers and `pack_improvement.py:746-747`, `board._build_pack_effect` text, `bench/rings/pilot.yaml`, G1 with its fixtures and the pinned counts taken **after** these migrations.\n\n## Acceptance items (W1-A rev 2's test plan §10 plus the live gate conditions it states as applied; check each against the merged text)\n1. EV-17: `test_grid4_replan_gives_the_same_task_combo_arm_rep_set_and_cell_ids` runs `build_plan` over the fixture matrix with injected versions (RV-TA 6), and the fixture carries its provenance (`runs/grid-4/plan.json` and its sha256, no generator; RV-TA 7).\n2. Launch balance: refused at exactly 1/20 deviation, with a `<` → `<=` mutant (RV-TA 5); the 2×4 and 3×4 shapes in the redraw test; the cap refusal text does not claim \"at least 2 blocks\" for more than two arms (RV-PAT 3, 4).\n3. G1: one red fixture per form (`x[\"pack\"]`, `.get`, `.pop`, `in`, `getattr`, `itemgetter`, attribute, keyword), a comment-only and a docstring-only file that must not match; `test_pack_hits_equal_the_pinned_counts` asserts equality (RV-PAT W0 delta 3); RV-TA 1's `Constant(\"on\"/\"off\")` scan with its red fixture and the `report/assets/*.js` text scan.\n4. **`test_plan_py_imports_no_campaign_or_identity_module` stays, with a red fixture** (W0 rev 4 ruling on RV-TA 3 vs RV-SIM 7: G2b cannot catch `identity`, which is run class).\n5. RV-TA 2: one test through the real `cli._workspace_builder` with two real pack repos, asserting each arm's diff equals its manifest.\n6. RV-TA 8: the red commit lands stubs that raise or return neutral wrong values for `launch_order`, `cell_arm`, `draw_launch_order`, so tests fail on behaviour.\n7. `test_plan_level_readers_state_the_true_pack_or_refuse`: `board` raises HB-PLN-005 with `strict=True`; the display readers render `several packs`.\n8. HB-PLN-004 names every offender (no cap; RV-SIM 4); a discrimination plan admits `draft` and refuses `stub`; a measurement plan with a `synthetic` combo is refused and names the combo (W0 rev 5), with a red fixture and the mutant \"skip the harness check\"; `profile_record(root, \"synthetic\")` returns the constant (today it raises `ValueError`, `profiles.py:176`).\n9. RV-PAT 6 (for X-E, recorded here so it is not lost): `status: ready` has one predicate; you do not write `ready` anywhere.\n\n## Exit\nREADME §3 join gate per dispatch; served model read from the Codex native record. Report per README §4.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-a1a-e1e4 on branch build/eval-x-a1a, harness Codex, mo…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d1.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes on the final commit, each command on its own line.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model is read from the Codex native record and is the first line of the report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "served model read from the Codex native record"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatch D2 (manifest, launch recheck, campaign_check keyword): a later dispatch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch D1 only"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Status.stop_reason/stop_diff (X-C) and grading.started fields (X-F).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Not yours: `Status.stop_reason`/`stop_diff` (X-C, W0 rev 4 §6), `grading.started` fields (X-F)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "a red-only end or a failed served-model read: the green follow-on runs as Claude Code Sonnet (model: sonnet) in the same worker tree (R-87 Option 1)",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-d1",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d1.",
+            "The README section 3 join gate passes on the final commit, each command on its own line.",
+            "The served model is read from the Codex native record and is the first line of the report.",
+            "The served model id is the first line of the final report."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Build dispatch D1 of X-D on build/eval-x-d1: every E1 HB row (HB-RDY-011 included) in errors.py, the CLASSES seed with G2 and G2b, tests/import_graph.py with G3 and the two named allowlist entries, and the catalog_hash move; red commit then green commit.",
+          "main_line_budget": "200 calls, 3,300 s",
+          "not_in_scope": [
+            "Dispatch D2 (manifest, launch recheck, campaign_check keyword): a later dispatch.",
+            "Status.stop_reason/stop_diff (X-C) and grading.started fields (X-F)."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.02,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JPEEAN903A1PN0DBXCXVJ",
+        "raw_sha256": "044589a4cb997aad1cdbccb5b145859e932c935859ede1b100a0e5f05abb8b13",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gpt-6.1-sol"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-d.contract.json",
+            "reason": null,
+            "sha256": "1f7841905575e326774915d70a6fce84c5627761fafda9981b2d0f891832af08",
+            "status": "resolved",
+            "token": "x-d.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-identity.md",
+            "reason": null,
+            "sha256": "8a267c00da2b82e5c7054ea1bd0ba117a932fabda71ff8df017d885b091ba288",
+            "status": "resolved",
+            "token": "docs/design/eval-identity.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "301a8705"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "for_task"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "builds=None"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles/<h"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "campaign_check="
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/engine.py",
+            "reason": null,
+            "sha256": "b50f336e0b450540d3bce1144669427c82673d42d23b0a165c0ae47b39d94492",
+            "status": "resolved",
+            "token": "engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "67e763d8e3a20d4b2fe09181e61c845e72b5110cd0a2417fb6cf2e8cf4d66251",
+            "status": "resolved",
+            "token": "errors.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "65d4fdfe3805f235ba957d7d5b4de74e5651b334040eda8e8e6f383da0c2849a",
+            "status": "resolved",
+            "token": "grade/runner.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "catalog_hash"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_engine.py",
+            "reason": null,
+            "sha256": "2b2574063780c13ce130974fdf02589825038c68b4f4f6c16571976e208c26d2",
+            "status": "resolved",
+            "token": "tests/test_engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "39ea39cefd95ce7c05d5c7d784f3df6c78f942d31d8148a5569fce8be7673b60",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/import_graph.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/engine.json",
+            "reason": null,
+            "sha256": "134d907b5325bc553dd9d0b46598ed1eaef3bf5950f7ee7e0390143ea72e4260",
+            "status": "resolved",
+            "token": "tests/mutations/engine.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/cli.json",
+            "reason": null,
+            "sha256": "4f82f15399ec860f251733197304788562b660e54449b950b325acdfac686dd8",
+            "status": "resolved",
+            "token": "tests/mutations/cli.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-d1-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-d1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "synthetic"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "errors.py:118"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity.CLASSES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "telemetry/*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gateway"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_every_src_file_has_a_class"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "unclassed"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stale"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "RUN_IMPORTS_GRADE_ALLOWED"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19",
+            "status": "resolved",
+            "token": "config.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_architecture.py:98-99"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "SUBPROCESS_CALLERS = frozenset({\"procs.py\", \"grade/bench_check.py\"}"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/property"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/runner.py:108-112"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-d2-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-d2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "manifest(root, tasks, builds=None"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "builds/*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "h"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles.HARNESSES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "for_task(m, task"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/<id"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/<task"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity_hash(manifest(root, [t], builds=None)) == identity_hash(for_task(manifest(root, [t, u], builds=b), t"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "manifest"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity_hash"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "side"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "diff"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "launch_check"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan[\"builds"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/normalize.py",
+            "reason": null,
+            "sha256": "8ff140592bd0e579b9c8a27cff0758a9e3626b6f8a4f76e104d9ebfa0d02cbd2",
+            "status": "resolved",
+            "token": "telemetry/normalize.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_gateway_is_a_grade_component"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cell.launch_intent"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "run.launch_stopped{code: HB-IDN-001, reason, diff}"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity_check_ms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "self._check_ms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "campaign_check: Callable[[], None] | None"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "engine.py:374"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "3017d46c6393d25bfb494ac6ea972345af088ac5a8dfe3fd23ad34cc5e033ed8",
+            "status": "resolved",
+            "token": "cli.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Engine"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "preflight.check"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_side_partitions_every_component"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "os.environ"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/formal.py changed"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Status.stop_reason"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stop_diff"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grading.started"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB-IDN-001/002"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB-PLN-001/002/004/005"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "unclassed`/`stale"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "frozenset({\"procs.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/bench_check.py\"}"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "R2-1/R2-2:**"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/formal.py",
+            "reason": null,
+            "sha256": "13658664be989d9649853bca7be4e856492212567c02f4a5bce0fb1241b650eb",
+            "status": "resolved",
+            "token": "grade/formal.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Status.stop_reason`/`stop_diff"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T19:10:50Z",
+      "dispatchable": true,
+      "id": "al-01M41JT6N45CZMDRDZS17BCS5V",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Build dispatch D1 of X-D on build/eval-x-d1: every E1 HB row (HB-RDY-011 included) in errors.py, the CLASSES seed with G2 and G2b, tests/import_graph.py with G3 and the two named allowlist entries, and the catalog_hash move; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d1.; The README section 3 join gate passes on the final commit, each command on its own line.; The served model is read from the Codex native record and is the first line of the report.; The served model id is the first line of the final report.\nNot in scope: Dispatch D2 (manifest, launch recheck, campaign_check keyword): a later dispatch.; Status.stop_reason/stop_diff (X-C) and grading.started fields (X-F).\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: 200 calls, 3,300 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d1. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes on the final commit, each command on its own line. | phrase: README §3 join gate per dispatch |\n| done_when: The served model is read from the Codex native record and is the first line of the report. | phrase: served model read from the Codex native record |\n| not_in_scope: Dispatch D2 (manifest, launch recheck, campaign_check keyword): a later dispatch. | phrase: Build dispatch D1 only |\n| not_in_scope: Status.stop_reason/stop_diff (X-C) and grading.started fields (X-F). | phrase: Not yours: `Status.stop_reason`/`stop_diff` (X-C, W0 rev 4 §6), `grading.started` fields (X-F). |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\nReferences\n- coord-runner: unresolved (not found)\n- gpt-6.1-sol: unresolved (not found)\n- x-d.contract.json: docs/coordination/eval-wave2-e1/x-d.contract.json sha256 1f7841905575e326774915d70a6fce84c5627761fafda9981b2d0f891832af08\n- 2: unresolved (not found)\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-identity.md: docs/design/eval-identity.md sha256 8a267c00da2b82e5c7054ea1bd0ba117a932fabda71ff8df017d885b091ba288\n- main: unresolved (not found)\n- 301a8705: unresolved (not found)\n- for_task: unresolved (not found)\n- builds=None: unresolved (not found)\n- profiles/<h: unresolved (not found)\n- campaign_check=: unresolved (not found)\n- src/harness_bench/identity.py: unresolved (not found)\n- engine.py: src/harness_bench/engine.py sha256 b50f336e0b450540d3bce1144669427c82673d42d23b0a165c0ae47b39d94492\n- errors.py: src/harness_bench/errors.py sha256 67e763d8e3a20d4b2fe09181e61c845e72b5110cd0a2417fb6cf2e8cf4d66251\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 65d4fdfe3805f235ba957d7d5b4de74e5651b334040eda8e8e6f383da0c2849a\n- catalog_hash: unresolved (not found)\n- identity: unresolved (not found)\n- tests/test_identity.py: unresolved (not found)\n- tests/test_engine.py: tests/test_engine.py sha256 2b2574063780c13ce130974fdf02589825038c68b4f4f6c16571976e208c26d2\n- tests/test_architecture.py: tests/test_architecture.py sha256 39ea39cefd95ce7c05d5c7d784f3df6c78f942d31d8148a5569fce8be7673b60\n- tests/import_graph.py: unresolved (not found)\n- tests/mutations/engine.json: tests/mutations/engine.json sha256 134d907b5325bc553dd9d0b46598ed1eaef3bf5950f7ee7e0390143ea72e4260\n- tests/mutations/cli.json: tests/mutations/cli.json sha256 4f82f15399ec860f251733197304788562b660e54449b950b325acdfac686dd8\n- x-d1-e1e4: unresolved (not found)\n- build/eval-x-d1: unresolved (not found)\n- synthetic: unresolved (not found)\n- errors.py:118: unresolved (not found)\n- identity.CLASSES: unresolved (not found)\n- src/: unresolved (not found)\n- telemetry/*: unresolved (not found)\n- gateway: unresolved (not found)\n- test_every_src_file_has_a_class: unresolved (not found)\n- unclassed: unresolved (not found)\n- stale: unresolved (not found)\n- RUN_IMPORTS_GRADE_ALLOWED: unresolved (not found)\n- config.py: src/harness_bench/config.py sha256 2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19\n- test_architecture.py:98-99: unresolved (not found)\n- SUBPROCESS_CALLERS = frozenset({\"procs.py\", \"grade/bench_check.py\"}: unresolved (not found)\n- grade/property: unresolved (not found)\n- identity.py: unresolved (not found)\n- grade/runner.py:108-112: unresolved (not found)\n- x-d2-e1e4: unresolved (not found)\n- build/eval-x-d2: unresolved (not found)\n- manifest(root, tasks, builds=None: unresolved (not found)\n- builds/*: unresolved (not found)\n- h: unresolved (not found)\n- profiles.HARNESSES: unresolved (not found)\n- for_task(m, task: unresolved (not found)\n- tasks/<id: unresolved (not found)\n- tasks/<task: unresolved (not found)\n- identity_hash(manifest(root, [t], builds=None)) == identity_hash(for_task(manifest(root, [t, u], builds=b), t: unresolved (not found)\n- manifest: unresolved (not found)\n- identity_hash: unresolved (not found)\n- side: unresolved (not found)\n- diff: unresolved (not found)\n- launch_check: unresolved (not found)\n- plan[\"builds: unresolved (not found)\n- tools: unresolved (not found)\n- telemetry/normalize.py: src/harness_bench/telemetry/normalize.py sha256 8ff140592bd0e579b9c8a27cff0758a9e3626b6f8a4f76e104d9ebfa0d02cbd2\n- test_gateway_is_a_grade_component: unresolved (not found)\n- cell.launch_intent: unresolved (not found)\n- run.launch_stopped{code: HB-IDN-001, reason, diff}: unresolved (not found)\n- identity_check_ms: unresolved (not found)\n- self._check_ms: unresolved (not found)\n- campaign_check: Callable[[], None] | None: unresolved (not found)\n- engine.py:374: unresolved (not found)\n- cli.py: src/harness_bench/cli.py sha256 3017d46c6393d25bfb494ac6ea972345af088ac5a8dfe3fd23ad34cc5e033ed8\n- Engine: unresolved (not found)\n- preflight.check: unresolved (not found)\n- test_side_partitions_every_component: unresolved (not found)\n- os.environ: unresolved (not found)\n- grade/formal.py changed: unresolved (not found)\n- Status.stop_reason: unresolved (not found)\n- stop_diff: unresolved (not found)\n- grading.started: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- HB-IDN-001/002: unresolved (not found)\n- HB-PLN-001/002/004/005: unresolved (not found)\n- unclassed`/`stale: unresolved (not found)\n- frozenset({\"procs.py: unresolved (not found)\n- grade/bench_check.py\"}: unresolved (not found)\n- R2-1/R2-2:**: unresolved (not found)\n- grade/formal.py: src/harness_bench/grade/formal.py sha256 13658664be989d9649853bca7be4e856492212567c02f4a5bce0fb1241b650eb\n- Status.stop_reason`/`stop_diff: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-d1\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: a red-only end or a failed served-model read: the green follow-on runs as Claude Code Sonnet (model: sonnet) in the same worker tree (R-87 Option 1)\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JPEEAN903A1PN0DBXCXVJ\nraw sha256: 044589a4cb997aad1cdbccb5b145859e932c935859ede1b100a0e5f05abb8b13\ncompiler model: claude-opus-5-5\nengine seconds: 0.02\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-d1-e1e4 on branch build/eval-x-d1, harness Codex, mode…",
+      "skill": null,
+      "summary": "compiled al-01M41JPEEAN903A1PN0DBXCXVJ for codex v1: 6 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes on the final commit, each command on its own line.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model is read from the Codex native record and is the first line of the report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "served model read from the Codex native record"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatch A1b (readers, G1 guard, migrations, pilot.yaml): a later dispatch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch A1a only"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "workspace.py source, cli.py cmd_plan and report/html.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`workspace.py` source (X-B1's `_land` hunk), `cli.py` `cmd_plan` (X-C pastes W1-A §3.9), `report/html.py` (X-H2 takes your header lines)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "a red-only end: the green follow-on runs as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-a1a",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a.",
+            "The README section 3 join gate passes on the final commit, each command on its own line.",
+            "The served model is read from the Codex native record and is the first line of the report.",
+            "The served model id is the first line of the final report."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Build dispatch A1a of X-A1 on build/eval-x-a1a: config.py bench-matrix/2 validation with PROPERTY_NAMES, CHECK_PROPERTIES and synthetic in HARNESSES; plan.py bench-plan/2 with SYNTHETIC_PROFILE_RECORD and the ready rule by plan kind; the grid-4 golden; red commit then green commit.",
+          "main_line_budget": "220 calls, 3,300 s",
+          "not_in_scope": [
+            "Dispatch A1b (readers, G1 guard, migrations, pilot.yaml): a later dispatch.",
+            "workspace.py source, cli.py cmd_plan and report/html.py."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.013,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JRJAKNDA6TV8D0JG5F9SB",
+        "raw_sha256": "a18762f65902fa9f776e0aa159d11978497d30b26b428c6d6d9cdb6d33a0d9d3",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gpt-6.1-sol"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-a1.contract.json",
+            "reason": null,
+            "sha256": "b733271ab78a3fabd28199df06f0f74a2d8ab1501aa2b046384ae0b3d2caf9eb",
+            "status": "resolved",
+            "token": "x-a1.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "b"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-arms.md",
+            "reason": null,
+            "sha256": "6b96dee39670f518834044ffa1fe16bc1e4956939b50163ebb378ff8ca6cdb84",
+            "status": "resolved",
+            "token": "docs/design/eval-arms.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "92e977b2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "CHECK_PROPERTIES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "comparisons"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pack"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan_pack(plan, *, strict=False"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "PROPERTY_NAMES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "validate_catalog"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196",
+            "status": "resolved",
+            "token": "src/harness_bench/plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19",
+            "status": "resolved",
+            "token": "config.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/_changes.py",
+            "reason": null,
+            "sha256": "d573c0a57360f960bd6915caae3c0eb36e07d7a79ed168b1e1617679e0eefba7",
+            "status": "resolved",
+            "token": "grade/_changes.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "3017d46c6393d25bfb494ac6ea972345af088ac5a8dfe3fd23ad34cc5e033ed8",
+            "status": "resolved",
+            "token": "cli.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_workspace_builder"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/board.py",
+            "reason": null,
+            "sha256": "cc546371acb9185ae3d953d4d270436907fc2b08c76bef37ef8bea9932628972",
+            "status": "resolved",
+            "token": "board.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/summaries.py",
+            "reason": null,
+            "sha256": "d2964dfd39b11ef81c7290fcaecca5af60d1f37b46d84ca5a65503c0cff5dd67",
+            "status": "resolved",
+            "token": "report/summaries.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan_pack"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "board._build_pack_effect"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/pack_improvement.py",
+            "reason": null,
+            "sha256": "200ec725c7cf0e8adb9df92505ac928bd5b0a5cf6edcdd5a728353ebf8f946c8",
+            "status": "resolved",
+            "token": "report/pack_improvement.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cell_arm"
+          },
+          {
+            "nearest": "bench/profiles/copilot.yaml",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/rings/pilot.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cc-opus"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: claude-opus-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_plan.py",
+            "reason": null,
+            "sha256": "9522437767685abc8ae5ce86f4e951f672bb9eceaa36a7d79651bc27791360ed",
+            "status": "resolved",
+            "token": "tests/test_plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_config.py",
+            "reason": null,
+            "sha256": "a7bbcfa88547eb702f699cbb83b2b883bef78a70250e43726aade6b2fdb83296",
+            "status": "resolved",
+            "token": "test_config.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_workspace.py",
+            "reason": null,
+            "sha256": "ebc50d39c946add698477f74b57590abbc5bbc099b6422f795bd0badd6e05c97",
+            "status": "resolved",
+            "token": "test_workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_views.py",
+            "reason": null,
+            "sha256": "dbb238335908729014a566fc8703c830fb1ee11e415f8005862f25ac1f2d4b94",
+            "status": "resolved",
+            "token": "test_views.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_changes_cache.py",
+            "reason": null,
+            "sha256": "929579db3ddd2b5b07627c13c750c6f6bc993c7c60cbec8f42f8bf64df54604f",
+            "status": "resolved",
+            "token": "test_changes_cache.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pre_turn_commit"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/plans/grid4-cells.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/plan.json",
+            "reason": null,
+            "sha256": "8a8308f48da23cd8538eb32c9e90b430a9335d945f48146ecd66ed7ad7d37690",
+            "status": "resolved",
+            "token": "tests/mutations/plan.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/workspace.py",
+            "reason": null,
+            "sha256": "6ef2182d7c9758775531dd4623feb3d2bbd3f55bfa8d167cfeae65c995eafb74",
+            "status": "resolved",
+            "token": "workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_land"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cmd_plan"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/html.py",
+            "reason": null,
+            "sha256": "91b1d6543041fa57c9541faf8c4c1df201c9d3f4e362a8b3c0491d21df60e020",
+            "status": "resolved",
+            "token": "report/html.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-a1a-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-a1a"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "arms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ARM_OFF"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ARM_ID"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "property"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "also_graded_by"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grader"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196",
+            "status": "resolved",
+            "token": "plan.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Cell.arm"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "launch_seed"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "kind"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "campaign"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ring"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "arm_pack"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "launch_order"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "launch_balance"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "draw_launch_order"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "parse_binding"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "resolve_arms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "synthetic"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "config.HARNESSES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "config.CHECK_PROPERTIES = frozenset({\"security\", \"resilience\"}"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan.SYNTHETIC_PROFILE_RECORD"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan.profile_record(root, \"synthetic"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build_plan"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-a1b-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "views.py:525"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/_changes.py:84"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cli._workspace_builder"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pack_improvement.py:746-747"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_grid4_replan_gives_the_same_task_combo_arm_rep_set_and_cell_ids"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/grid-4/plan.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "="
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x[\"pack"
+          },
+          {
+            "nearest": ".git",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".get"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".pop"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "in"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "getattr"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "itemgetter"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_pack_hits_equal_the_pinned_counts"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Constant(\"on\"/\"off"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/assets/*.js"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_plan_py_imports_no_campaign_or_identity_module"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_plan_level_readers_state_the_true_pack_or_refuse"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "board"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "strict=True"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "several packs"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "draft"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stub"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profile_record(root, \"synthetic"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ValueError"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles.py:176"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "status: ready"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ready"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB-PLN-001/002/004/005"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench-matrix/2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench-plan/2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "1/20"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T19:10:50Z",
+      "dispatchable": true,
+      "id": "al-01M41JT7C4KKT46EXQM0ZVV5J3",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Build dispatch A1a of X-A1 on build/eval-x-a1a: config.py bench-matrix/2 validation with PROPERTY_NAMES, CHECK_PROPERTIES and synthetic in HARNESSES; plan.py bench-plan/2 with SYNTHETIC_PROFILE_RECORD and the ready rule by plan kind; the grid-4 golden; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a.; The README section 3 join gate passes on the final commit, each command on its own line.; The served model is read from the Codex native record and is the first line of the report.; The served model id is the first line of the final report.\nNot in scope: Dispatch A1b (readers, G1 guard, migrations, pilot.yaml): a later dispatch.; workspace.py source, cli.py cmd_plan and report/html.py.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: 220 calls, 3,300 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes on the final commit, each command on its own line. | phrase: README §3 join gate per dispatch |\n| done_when: The served model is read from the Codex native record and is the first line of the report. | phrase: served model read from the Codex native record |\n| not_in_scope: Dispatch A1b (readers, G1 guard, migrations, pilot.yaml): a later dispatch. | phrase: Build dispatch A1a only |\n| not_in_scope: workspace.py source, cli.py cmd_plan and report/html.py. | phrase: `workspace.py` source (X-B1's `_land` hunk), `cli.py` `cmd_plan` (X-C pastes W1-A §3.9), `report/html.py` (X-H2 takes your header lines) |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\nReferences\n- coord-runner: unresolved (not found)\n- gpt-6.1-sol: unresolved (not found)\n- x-a1.contract.json: docs/coordination/eval-wave2-e1/x-a1.contract.json sha256 b733271ab78a3fabd28199df06f0f74a2d8ab1501aa2b046384ae0b3d2caf9eb\n- b: unresolved (not found)\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-arms.md: docs/design/eval-arms.md sha256 6b96dee39670f518834044ffa1fe16bc1e4956939b50163ebb378ff8ca6cdb84\n- main: unresolved (not found)\n- 92e977b2: unresolved (not found)\n- CHECK_PROPERTIES: unresolved (not found)\n- comparisons: unresolved (not found)\n- pack: unresolved (not found)\n- plan_pack(plan, *, strict=False: unresolved (not found)\n- PROPERTY_NAMES: unresolved (not found)\n- validate_catalog: unresolved (not found)\n- src/harness_bench/plan.py: src/harness_bench/plan.py sha256 c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196\n- config.py: src/harness_bench/config.py sha256 2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19\n- views.py: unresolved (ambiguous: 2 matches)\n- grade/_changes.py: src/harness_bench/grade/_changes.py sha256 d573c0a57360f960bd6915caae3c0eb36e07d7a79ed168b1e1617679e0eefba7\n- cli.py: src/harness_bench/cli.py sha256 3017d46c6393d25bfb494ac6ea972345af088ac5a8dfe3fd23ad34cc5e033ed8\n- _workspace_builder: unresolved (not found)\n- board.py: src/harness_bench/board.py sha256 cc546371acb9185ae3d953d4d270436907fc2b08c76bef37ef8bea9932628972\n- report/summaries.py: src/harness_bench/report/summaries.py sha256 d2964dfd39b11ef81c7290fcaecca5af60d1f37b46d84ca5a65503c0cff5dd67\n- plan_pack: unresolved (not found)\n- board._build_pack_effect: unresolved (not found)\n- report/pack_improvement.py: src/harness_bench/report/pack_improvement.py sha256 200ec725c7cf0e8adb9df92505ac928bd5b0a5cf6edcdd5a728353ebf8f946c8\n- cell_arm: unresolved (not found)\n- bench/rings/pilot.yaml: unresolved (not found; nearest: bench/profiles/copilot.yaml)\n- cc-opus: unresolved (not found)\n- model: claude-opus-5-5: unresolved (not found)\n- tests/test_plan.py: tests/test_plan.py sha256 9522437767685abc8ae5ce86f4e951f672bb9eceaa36a7d79651bc27791360ed\n- test_config.py: tests/test_config.py sha256 a7bbcfa88547eb702f699cbb83b2b883bef78a70250e43726aade6b2fdb83296\n- test_workspace.py: tests/test_workspace.py sha256 ebc50d39c946add698477f74b57590abbc5bbc099b6422f795bd0badd6e05c97\n- test_views.py: tests/test_views.py sha256 dbb238335908729014a566fc8703c830fb1ee11e415f8005862f25ac1f2d4b94\n- test_changes_cache.py: tests/test_changes_cache.py sha256 929579db3ddd2b5b07627c13c750c6f6bc993c7c60cbec8f42f8bf64df54604f\n- pre_turn_commit: unresolved (not found)\n- tests/test_arms_guard.py: unresolved (not found)\n- tests/fixtures/plans/grid4-cells.json: unresolved (not found)\n- tests/mutations/plan.json: tests/mutations/plan.json sha256 8a8308f48da23cd8538eb32c9e90b430a9335d945f48146ecd66ed7ad7d37690\n- workspace.py: src/harness_bench/workspace.py sha256 6ef2182d7c9758775531dd4623feb3d2bbd3f55bfa8d167cfeae65c995eafb74\n- _land: unresolved (not found)\n- cmd_plan: unresolved (not found)\n- report/html.py: src/harness_bench/report/html.py sha256 91b1d6543041fa57c9541faf8c4c1df201c9d3f4e362a8b3c0491d21df60e020\n- x-a1a-e1e4: unresolved (not found)\n- build/eval-x-a1a: unresolved (not found)\n- arms: unresolved (not found)\n- ARM_OFF: unresolved (not found)\n- ARM_ID: unresolved (not found)\n- property: unresolved (not found)\n- also_graded_by: unresolved (not found)\n- grader: unresolved (not found)\n- plan.py: src/harness_bench/plan.py sha256 c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196\n- Cell.arm: unresolved (not found)\n- launch_seed: unresolved (not found)\n- kind: unresolved (not found)\n- campaign: unresolved (not found)\n- ring: unresolved (not found)\n- arm_pack: unresolved (not found)\n- launch_order: unresolved (not found)\n- launch_balance: unresolved (not found)\n- draw_launch_order: unresolved (not found)\n- parse_binding: unresolved (not found)\n- resolve_arms: unresolved (not found)\n- synthetic: unresolved (not found)\n- config.HARNESSES: unresolved (not found)\n- config.CHECK_PROPERTIES = frozenset({\"security\", \"resilience\"}: unresolved (not found)\n- plan.SYNTHETIC_PROFILE_RECORD: unresolved (not found)\n- plan.profile_record(root, \"synthetic: unresolved (not found)\n- build_plan: unresolved (not found)\n- x-a1b-e1e4: unresolved (not found)\n- views.py:525: unresolved (not found)\n- grade/_changes.py:84: unresolved (not found)\n- cli._workspace_builder: unresolved (not found)\n- pack_improvement.py:746-747: unresolved (not found)\n- test_grid4_replan_gives_the_same_task_combo_arm_rep_set_and_cell_ids: unresolved (not found)\n- runs/grid-4/plan.json: unresolved (not found)\n- =: unresolved (not found)\n- x[\"pack: unresolved (not found)\n- .get: unresolved (not found; nearest: .git)\n- .pop: unresolved (not found)\n- in: unresolved (not found)\n- getattr: unresolved (not found)\n- itemgetter: unresolved (not found)\n- test_pack_hits_equal_the_pinned_counts: unresolved (not found)\n- Constant(\"on\"/\"off: unresolved (not found)\n- report/assets/*.js: unresolved (not found)\n- test_plan_py_imports_no_campaign_or_identity_module: unresolved (not found)\n- identity: unresolved (not found)\n- test_plan_level_readers_state_the_true_pack_or_refuse: unresolved (not found)\n- board: unresolved (not found)\n- strict=True: unresolved (not found)\n- several packs: unresolved (not found)\n- draft: unresolved (not found)\n- stub: unresolved (not found)\n- profile_record(root, \"synthetic: unresolved (not found)\n- ValueError: unresolved (not found)\n- profiles.py:176: unresolved (not found)\n- status: ready: unresolved (not found)\n- ready: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- HB-PLN-001/002/004/005: unresolved (not found)\n- bench-matrix/2: unresolved (not found)\n- bench-plan/2: unresolved (not found)\n- 1/20: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-a1a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: a red-only end: the green follow-on runs as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JRJAKNDA6TV8D0JG5F9SB\nraw sha256: a18762f65902fa9f776e0aa159d11978497d30b26b428c6d6d9cdb6d33a0d9d3\ncompiler model: claude-opus-5-5\nengine seconds: 0.013\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-a1a-e1e4 on branch build/eval-x-a1a, harness Codex, mo…",
+      "skill": null,
+      "summary": "compiled al-01M41JRJAKNDA6TV8D0JG5F9SB for codex v1: 6 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-g1.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The eleven metrics validate under 0.7.dev and bench validate exits 0 on the joined tree.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The eleven metrics validate under `0.7.dev` (R-90); `bench validate` exit 0 on the joined tree."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The hallucinated_symbol_errors anchor_note no longer says build-log errors.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the words \"build-log errors\" do not appear in it"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate; `python tools/grok_served_model.py <session dir>` exits 0"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "grade/property.py, config.py, grade/runner.py and bench/catalog-freeze.yaml.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`grade/property.py` (X-F; never create it), `config.py` (X-A1's validation checks), `grade/runner.py` (X-F builds the owner clause and T-R3..T-R6), `bench/catalog-freeze.yaml` (Leader, R-86)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "1,200 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-g1",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "100k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-g1.",
+            "The eleven metrics validate under 0.7.dev and bench validate exits 0 on the joined tree.",
+            "The hallucinated_symbol_errors anchor_note no longer says build-log errors.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Build X-G1 on build/eval-x-g1: catalog 0.7.dev with the eleven property metrics, also_graded_by on pass_at_1 with the ADR-0019 item-3 note, and the R-97 anchor_note wording; red commit then green commit.",
+          "main_line_budget": "40 calls, 1,200 s",
+          "not_in_scope": [
+            "grade/property.py, config.py, grade/runner.py and bench/catalog-freeze.yaml."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JRAX0HMQ76B1HHVNP390F",
+        "raw_sha256": "3942fdd56b6a369cfd0b3d9d2bdfc1e22321a3567ae8db4bea777eb2342e1bf5",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--reasoning-effort high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "XAI_API_KEY"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-g1.contract.json",
+            "reason": null,
+            "sha256": "18799ffa8d0e010c64c89cb0ad0bda169dd5a81889c49c6c6b4a1b1be3bccb95",
+            "status": "resolved",
+            "token": "x-g1.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-catalog-0-7.md",
+            "reason": null,
+            "sha256": "0b5cff38703dc03b75420c16279c50cb8fd147a5a72d3d99e31bc0a035034810",
+            "status": "resolved",
+            "token": "docs/design/eval-catalog-0-7.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "property"
+          },
+          {
+            "nearest": null,
+            "path": "bench/metrics.yaml",
+            "reason": null,
+            "sha256": "b04abc705a4d6b6abc7eb51f8b017fd9d82d5a11dc0e5ce1f3ca697b7e982488",
+            "status": "resolved",
+            "token": "bench/metrics.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_catalog_version.py",
+            "reason": null,
+            "sha256": "637709eec74f58c203ee0ca16dde43abb62780ccc2941054c25bc1a034817344",
+            "status": "resolved",
+            "token": "tests/test_catalog_version.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/adr/0019-catalog-0-7-property-metrics.md",
+            "reason": null,
+            "sha256": "8869f917fa5e1fcb241d47f9cd972565982c1cc17436a690745b7968ce8153a0",
+            "status": "resolved",
+            "token": "docs/adr/0019-catalog-0-7-property-metrics.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/property.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19",
+            "status": "resolved",
+            "token": "config.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "65d4fdfe3805f235ba957d7d5b4de74e5651b334040eda8e8e6f383da0c2849a",
+            "status": "resolved",
+            "token": "grade/runner.py"
+          },
+          {
+            "nearest": null,
+            "path": "bench/catalog-freeze.yaml",
+            "reason": null,
+            "sha256": "2566fdd7b5f121248ad353cdcd357ce8c1d9a30fb234bd994ce26f2f712ddef0",
+            "status": "resolved",
+            "token": "bench/catalog-freeze.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "validate_repo"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "config.py:158"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "version: \"0.7.dev"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "property: <name"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "property_check_pass"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pass_at_1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "also_graded_by: [formal"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "hallucinated_symbol_errors"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "anchor_note"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "5, 0"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "0.7.dev"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench validate"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "n_recorded"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-g1"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "T-P4/T-P6"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T19:10:51Z",
+      "dispatchable": true,
+      "id": "al-01M41JT877GNGE082GA9X6YTRN",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Build X-G1 on build/eval-x-g1: catalog 0.7.dev with the eleven property metrics, also_graded_by on pass_at_1 with the ADR-0019 item-3 note, and the R-97 anchor_note wording; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-g1.; The eleven metrics validate under 0.7.dev and bench validate exits 0 on the joined tree.; The hallucinated_symbol_errors anchor_note no longer says build-log errors.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.\nNot in scope: grade/property.py, config.py, grade/runner.py and bench/catalog-freeze.yaml.\nTier: T1\nFan-out cap: 0\nContext ceiling: 100k tokens\nMain-line budget: 40 calls, 1,200 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-g1. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The eleven metrics validate under 0.7.dev and bench validate exits 0 on the joined tree. | phrase: The eleven metrics validate under `0.7.dev` (R-90); `bench validate` exit 0 on the joined tree. |\n| done_when: The hallucinated_symbol_errors anchor_note no longer says build-log errors. | phrase: the words \"build-log errors\" do not appear in it |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate; `python tools/grok_served_model.py <session dir>` exits 0 |\n| not_in_scope: grade/property.py, config.py, grade/runner.py and bench/catalog-freeze.yaml. | phrase: `grade/property.py` (X-F; never create it), `config.py` (X-A1's validation checks), `grade/runner.py` (X-F builds the owner clause and T-R3..T-R6), `bench/catalog-freeze.yaml` (Leader, R-86) |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\nReferences\n- coord-runner: unresolved (not found)\n- grok-4.7: unresolved (not found)\n- --reasoning-effort high: unresolved (not found)\n- XAI_API_KEY: unresolved (not found)\n- x-g1.contract.json: docs/coordination/eval-wave2-e1/x-g1.contract.json sha256 18799ffa8d0e010c64c89cb0ad0bda169dd5a81889c49c6c6b4a1b1be3bccb95\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-catalog-0-7.md: docs/design/eval-catalog-0-7.md sha256 0b5cff38703dc03b75420c16279c50cb8fd147a5a72d3d99e31bc0a035034810\n- main: unresolved (not found)\n- property: unresolved (not found)\n- bench/metrics.yaml: bench/metrics.yaml sha256 b04abc705a4d6b6abc7eb51f8b017fd9d82d5a11dc0e5ce1f3ca697b7e982488\n- tests/test_catalog_version.py: tests/test_catalog_version.py sha256 637709eec74f58c203ee0ca16dde43abb62780ccc2941054c25bc1a034817344\n- docs/adr/0019-catalog-0-7-property-metrics.md: docs/adr/0019-catalog-0-7-property-metrics.md sha256 8869f917fa5e1fcb241d47f9cd972565982c1cc17436a690745b7968ce8153a0\n- grade/property.py: unresolved (not found)\n- config.py: src/harness_bench/config.py sha256 2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 65d4fdfe3805f235ba957d7d5b4de74e5651b334040eda8e8e6f383da0c2849a\n- bench/catalog-freeze.yaml: bench/catalog-freeze.yaml sha256 2566fdd7b5f121248ad353cdcd357ce8c1d9a30fb234bd994ce26f2f712ddef0\n- validate_repo: unresolved (not found)\n- config.py:158: unresolved (not found)\n- version: \"0.7.dev: unresolved (not found)\n- property: <name: unresolved (not found)\n- property_check_pass: unresolved (not found)\n- pass_at_1: unresolved (not found)\n- also_graded_by: [formal: unresolved (not found)\n- hallucinated_symbol_errors: unresolved (not found)\n- anchor_note: unresolved (not found)\n- 5, 0: unresolved (not found)\n- 0.7.dev: unresolved (not found)\n- bench validate: unresolved (not found)\n- n_recorded: unresolved (not found)\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-x-g1: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- T-P4/T-P6: unresolved (not found)\n- tools/grok_served_model.py: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-g1\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 1,200 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JRAX0HMQ76B1HHVNP390F\nraw sha256: 3942fdd56b6a369cfd0b3d9d2bdfc1e22321a3567ae8db4bea777eb2342e1bf5\ncompiler model: claude-opus-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-g1-e1e4 on branch build/eval-x-g1, harness Grok, model…",
+      "skill": null,
+      "summary": "compiled al-01M41JRAX0HMQ76B1HHVNP390F for claude-code v1: 6 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92)."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch B1a only"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "1,200 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-b1a",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "100k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Build dispatch B1a of X-B1 on build/eval-x-b1a: atomic.py core per W1-B section 17 (create_once, TEMP_RE, is_temp_name, stale_temps, sweep_temps with the lock check, make_writable, rename_with_retry); red commit then green commit.",
+          "main_line_budget": "40 calls, 1,200 s",
+          "not_in_scope": [
+            "Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.014,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JRD8M6GT6142HRJVHJRBF",
+        "raw_sha256": "d70372ed0ce5dece56b729329779a9f90f531e5dcff75e09d49ee1ad6e1700cb",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--reasoning-effort high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "XAI_API_KEY"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b1.contract.json",
+            "reason": null,
+            "sha256": "b82516583f32dc4b460a303a0750d65d42560148ffce4c5df19c04c8b772ff5c",
+            "status": "resolved",
+            "token": "x-b1.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "b"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "c"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-atomic-publish.md",
+            "reason": null,
+            "sha256": "4706e446d39f829dfaa8bf399dd337646353d79baf5ff7fa33e8f8bea7c986ee",
+            "status": "resolved",
+            "token": "docs/design/eval-atomic-publish.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "acquire_then_probe"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/atomic.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/oslock.py",
+            "reason": null,
+            "sha256": "02f2aa86bed5061dfbc2994741f0d0f0d8e624b5b07c29fa5a86010ebdc98571",
+            "status": "resolved",
+            "token": "src/harness_bench/oslock.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_oslock.py",
+            "reason": null,
+            "sha256": "09b1ee2b4a441da03f6bd7d9100f6db16df5f47dc9ed359ab707cda7614b6100",
+            "status": "resolved",
+            "token": "tests/test_oslock.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/workspace.py",
+            "reason": null,
+            "sha256": "6ef2182d7c9758775531dd4623feb3d2bbd3f55bfa8d167cfeae65c995eafb74",
+            "status": "resolved",
+            "token": "src/harness_bench/workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_land"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "make_writable"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/workspace.json",
+            "reason": null,
+            "sha256": "f6e56abb11b9343ef0223c8082ed71d570a24d088f42a327d999ff8d87c05f21",
+            "status": "resolved",
+            "token": "tests/mutations/workspace.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_workspace.py",
+            "reason": null,
+            "sha256": "ebc50d39c946add698477f74b57590abbc5bbc099b6422f795bd0badd6e05c97",
+            "status": "resolved",
+            "token": "tests/test_workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/archive.py",
+            "reason": null,
+            "sha256": "788c614b4bd4e4594b109b3a4a241276017cd0b7d33d45fc56e4c9890f6cedc5",
+            "status": "resolved",
+            "token": "archive.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-b1a-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-b1a"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "create_once"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "TEMP_RE"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "is_temp_name"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stale_temps"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "sweep_temps(target, lock"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ValueError"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oslock.is_held(lock.path"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "S_IWUSR"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "rename_with_retry"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "RENAME_BACKOFF"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-b1b-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "publish_dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "workspace._land"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "rename_with_retry(tmp, dest, replace=True, settled=lambda: valid(dest"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "copytree"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-b1c-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oslock.acquire_then_probe(own, own_code, others, *, between=None) -> RunLock"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "between"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Barrier(2).wait(timeout=10"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_posix_flag_default_follows_the_platform"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_the_real_publish_dir_fsyncs_the_folder_only_on_posix"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "os.unlink"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "O_EXCL"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_the_posix_job_does_not_skip_the_symlink_variants"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "st_dev"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "st_ino"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "O_NOFOLLOW"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_discard_temp"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "atomic.temp_leaked"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "rename_retries"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "rename_ms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "publish_failed(phase=rename"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_a_kill_between_write_and_link_leaves_no_final_file"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_a_kill_mid_copy_leaves_no_final_folder_and_the_redo_succeeds"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "st_dev`/`st_ino"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T19:10:52Z",
+      "dispatchable": true,
+      "id": "al-01M41JT90JTSGFF5TZPFEE4A1G",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Build dispatch B1a of X-B1 on build/eval-x-b1a: atomic.py core per W1-B section 17 (create_once, TEMP_RE, is_temp_name, stale_temps, sweep_temps with the lock check, make_writable, rename_with_retry); red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.\nNot in scope: Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches.\nTier: T2\nFan-out cap: 0\nContext ceiling: 100k tokens\nMain-line budget: 40 calls, 1,200 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). |\n| not_in_scope: Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches. | phrase: Build dispatch B1a only |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\nReferences\n- coord-runner: unresolved (not found)\n- grok-4.7: unresolved (not found)\n- --reasoning-effort high: unresolved (not found)\n- XAI_API_KEY: unresolved (not found)\n- x-b1.contract.json: docs/coordination/eval-wave2-e1/x-b1.contract.json sha256 b82516583f32dc4b460a303a0750d65d42560148ffce4c5df19c04c8b772ff5c\n- b: unresolved (not found)\n- c: unresolved (not found)\n- grok-4.7*: unresolved (not found)\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-atomic-publish.md: docs/design/eval-atomic-publish.md sha256 4706e446d39f829dfaa8bf399dd337646353d79baf5ff7fa33e8f8bea7c986ee\n- main: unresolved (not found)\n- acquire_then_probe: unresolved (not found)\n- src/harness_bench/atomic.py: unresolved (not found)\n- tests/test_atomic.py: unresolved (not found)\n- tests/test_atomic_sites.py: unresolved (not found)\n- tests/mutations/atomic.json: unresolved (not found)\n- src/harness_bench/oslock.py: src/harness_bench/oslock.py sha256 02f2aa86bed5061dfbc2994741f0d0f0d8e624b5b07c29fa5a86010ebdc98571\n- tests/test_oslock.py: tests/test_oslock.py sha256 09b1ee2b4a441da03f6bd7d9100f6db16df5f47dc9ed359ab707cda7614b6100\n- src/harness_bench/workspace.py: src/harness_bench/workspace.py sha256 6ef2182d7c9758775531dd4623feb3d2bbd3f55bfa8d167cfeae65c995eafb74\n- _land: unresolved (not found)\n- make_writable: unresolved (not found)\n- tests/mutations/workspace.json: tests/mutations/workspace.json sha256 f6e56abb11b9343ef0223c8082ed71d570a24d088f42a327d999ff8d87c05f21\n- tests/test_workspace.py: tests/test_workspace.py sha256 ebc50d39c946add698477f74b57590abbc5bbc099b6422f795bd0badd6e05c97\n- archive.py: src/harness_bench/archive.py sha256 788c614b4bd4e4594b109b3a4a241276017cd0b7d33d45fc56e4c9890f6cedc5\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b\n- x-b1a-e1e4: unresolved (not found)\n- build/eval-x-b1a: unresolved (not found)\n- atomic.py: unresolved (not found)\n- create_once: unresolved (not found)\n- TEMP_RE: unresolved (not found)\n- is_temp_name: unresolved (not found)\n- stale_temps: unresolved (not found)\n- sweep_temps(target, lock: unresolved (not found)\n- ValueError: unresolved (not found)\n- oslock.is_held(lock.path: unresolved (not found)\n- S_IWUSR: unresolved (not found)\n- rename_with_retry: unresolved (not found)\n- RENAME_BACKOFF: unresolved (not found)\n- x-b1b-e1e4: unresolved (not found)\n- publish_dir: unresolved (not found)\n- workspace._land: unresolved (not found)\n- rename_with_retry(tmp, dest, replace=True, settled=lambda: valid(dest: unresolved (not found)\n- copytree: unresolved (not found)\n- x-b1c-e1e4: unresolved (not found)\n- oslock.acquire_then_probe(own, own_code, others, *, between=None) -> RunLock: unresolved (not found)\n- between: unresolved (not found)\n- Barrier(2).wait(timeout=10: unresolved (not found)\n- test_posix_flag_default_follows_the_platform: unresolved (not found)\n- test_the_real_publish_dir_fsyncs_the_folder_only_on_posix: unresolved (not found)\n- os.unlink: unresolved (not found)\n- O_EXCL: unresolved (not found)\n- test_the_posix_job_does_not_skip_the_symlink_variants: unresolved (not found)\n- st_dev: unresolved (not found)\n- st_ino: unresolved (not found)\n- O_NOFOLLOW: unresolved (not found)\n- _discard_temp: unresolved (not found)\n- atomic.temp_leaked: unresolved (not found)\n- rename_retries: unresolved (not found)\n- rename_ms: unresolved (not found)\n- publish_failed(phase=rename: unresolved (not found)\n- test_a_kill_between_write_and_link_leaves_no_final_file: unresolved (not found)\n- test_a_kill_mid_copy_leaves_no_final_folder_and_the_redo_succeeds: unresolved (not found)\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- st_dev`/`st_ino: unresolved (not found)\n- tools/grok_served_model.py: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-b1a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 1,200 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JRD8M6GT6142HRJVHJRBF\nraw sha256: d70372ed0ce5dece56b729329779a9f90f531e5dcff75e09d49ee1ad6e1700cb\ncompiler model: claude-opus-5-5\nengine seconds: 0.014\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-b1a-e1e4 on branch build/eval-x-b1a, harness Grok, mod…",
+      "skill": null,
+      "summary": "compiled al-01M41JRD8M6GT6142HRJVHJRBF for claude-code v1: 4 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-env-a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The three named tests pass with HB_CLAUDE_OAUTH_TOKEN=dummy set and with it unset.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The three named tests pass with `HB_CLAUDE_OAUTH_TOKEN=dummy` set in the shell, and with it unset."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A mutant that removes the fixture is killed by tests/test_env_isolation.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A mutant that removes the fixture is killed by `tests/test_env_isolation.py`."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`python tools/grok_served_model.py <session dir>` exits 0"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing tests/test_profiles.py or tests/test_gateway_headless.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`tests/test_profiles.py` (X-E's in E1), `tests/test_gateway_headless.py`"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "1,200 s",
+          "fallback": "a red-only end or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-env-a",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "80k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-env-a.",
+            "The three named tests pass with HB_CLAUDE_OAUTH_TOKEN=dummy set and with it unset.",
+            "A mutant that removes the fixture is killed by tests/test_env_isolation.py.",
+            "The Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Build the ENV-A fix on build/eval-env-a (defect class ENV-C): an autouse conftest fixture that clears every listed credential name except for tests marked credentials, with tests/test_env_isolation.py; red commit then green commit.",
+          "main_line_budget": "30 calls, 1,200 s",
+          "not_in_scope": [
+            "Editing tests/test_profiles.py or tests/test_gateway_headless.py."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.012,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JR8NZCGPZW37X5RV1Q1SA",
+        "raw_sha256": "961efa5b4df3bd786fc20bdb960528fe2a9e6d320f30f8b79890eb7ccfb23dcc",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--reasoning-effort high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "XAI_API_KEY"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/env-a.contract.json",
+            "reason": null,
+            "sha256": "24f67402f61c4f3616ac45a21e12e4f0b994f8b142b027b40ba9457adef462b6",
+            "status": "resolved",
+            "token": "env-a.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ENV-A"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_CLAUDE_OAUTH_TOKEN"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_gateway_headless.py::test_t_gw_10_the_credential_is_present_during_the_call_and_gone_after_it"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "::test_t_gw_10_the_credential_is_gone_after_a_timeout_and_after_an_exception_past_the_copy"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_profiles.py::test_the_launcher_reports_no_model_setter_and_a_copied_login[claude-code"
+          },
+          {
+            "nearest": null,
+            "path": "tests/conftest.py",
+            "reason": null,
+            "sha256": "fee195665dc6d1e49863e375e7dc97d13726e6b2e068a7f59daffd5eb8deb6b6",
+            "status": "resolved",
+            "token": "tests/conftest.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_env_isolation.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_profiles.py",
+            "reason": null,
+            "sha256": "5ef6b8aed6743ed0ddc9f95f3a9af69927186312ed82a879b7f9503afebf5130",
+            "status": "resolved",
+            "token": "tests/test_profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_gateway_headless.py",
+            "reason": null,
+            "sha256": "663ada1b225b5883c36097c5cefc35a5155a56083bc3899b076a52da0ccd8076",
+            "status": "resolved",
+            "token": "tests/test_gateway_headless.py"
+          },
+          {
+            "nearest": "src/harness_bench/profiles.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git grep -n -E \"OAUTH_TOKEN|_API_KEY|GH_TOKEN\" -- tests src/harness_bench/profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles.DROP_EXACT"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles.DROP_PREFIXES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "conftest.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "monkeypatch.setenv"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pytest.main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "credentials"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "monkeypatch.delenv(name, raising=False"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_CLAUDE_OAUTH_TOKEN=dummy"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "controlled"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-env-a"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/profiles.py",
+            "reason": null,
+            "sha256": "dc384ad7b422d9dd12d254062fd2c9aeeb6f72d5fbc564fbb31e09e3dbd5defe",
+            "status": "resolved",
+            "token": "src/harness_bench/profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T19:10:53Z",
+      "dispatchable": true,
+      "id": "al-01M41JT9TR4QHRMVZEW5VPQ03V",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Build the ENV-A fix on build/eval-env-a (defect class ENV-C): an autouse conftest fixture that clears every listed credential name except for tests marked credentials, with tests/test_env_isolation.py; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-env-a.; The three named tests pass with HB_CLAUDE_OAUTH_TOKEN=dummy set and with it unset.; A mutant that removes the fixture is killed by tests/test_env_isolation.py.; The Grok served-model reader exits 0.; The served model id is the first line of the final report.\nNot in scope: Editing tests/test_profiles.py or tests/test_gateway_headless.py.\nTier: T1\nFan-out cap: 0\nContext ceiling: 80k tokens\nMain-line budget: 30 calls, 1,200 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-env-a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The three named tests pass with HB_CLAUDE_OAUTH_TOKEN=dummy set and with it unset. | phrase: The three named tests pass with `HB_CLAUDE_OAUTH_TOKEN=dummy` set in the shell, and with it unset. |\n| done_when: A mutant that removes the fixture is killed by tests/test_env_isolation.py. | phrase: A mutant that removes the fixture is killed by `tests/test_env_isolation.py`. |\n| done_when: The Grok served-model reader exits 0. | phrase: `python tools/grok_served_model.py <session dir>` exits 0 |\n| not_in_scope: Editing tests/test_profiles.py or tests/test_gateway_headless.py. | phrase: `tests/test_profiles.py` (X-E's in E1), `tests/test_gateway_headless.py` |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\nReferences\n- coord-runner: unresolved (not found)\n- grok-4.7: unresolved (not found)\n- --reasoning-effort high: unresolved (not found)\n- XAI_API_KEY: unresolved (not found)\n- env-a.contract.json: docs/coordination/eval-wave2-e1/env-a.contract.json sha256 24f67402f61c4f3616ac45a21e12e4f0b994f8b142b027b40ba9457adef462b6\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b\n- ENV-A: unresolved (not found)\n- HB_CLAUDE_OAUTH_TOKEN: unresolved (not found)\n- main: unresolved (not found)\n- tests/test_gateway_headless.py::test_t_gw_10_the_credential_is_present_during_the_call_and_gone_after_it: unresolved (not found)\n- ::test_t_gw_10_the_credential_is_gone_after_a_timeout_and_after_an_exception_past_the_copy: unresolved (not found)\n- tests/test_profiles.py::test_the_launcher_reports_no_model_setter_and_a_copied_login[claude-code: unresolved (not found)\n- tests/conftest.py: tests/conftest.py sha256 fee195665dc6d1e49863e375e7dc97d13726e6b2e068a7f59daffd5eb8deb6b6\n- tests/test_env_isolation.py: unresolved (not found)\n- tests/test_profiles.py: tests/test_profiles.py sha256 5ef6b8aed6743ed0ddc9f95f3a9af69927186312ed82a879b7f9503afebf5130\n- tests/test_gateway_headless.py: tests/test_gateway_headless.py sha256 663ada1b225b5883c36097c5cefc35a5155a56083bc3899b076a52da0ccd8076\n- git grep -n -E \"OAUTH_TOKEN|_API_KEY|GH_TOKEN\" -- tests src/harness_bench/profiles.py: unresolved (not found; nearest: src/harness_bench/profiles.py)\n- profiles.DROP_EXACT: unresolved (not found)\n- profiles.DROP_PREFIXES: unresolved (not found)\n- conftest.py: unresolved (ambiguous: 3 matches)\n- monkeypatch.setenv: unresolved (not found)\n- pytest.main: unresolved (not found)\n- credentials: unresolved (not found)\n- monkeypatch.delenv(name, raising=False: unresolved (not found)\n- HB_CLAUDE_OAUTH_TOKEN=dummy: unresolved (not found)\n- controlled: unresolved (not found)\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-env-a: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- src/harness_bench/profiles.py: src/harness_bench/profiles.py sha256 dc384ad7b422d9dd12d254062fd2c9aeeb6f72d5fbc564fbb31e09e3dbd5defe\n- tools/grok_served_model.py: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-env-a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 1,200 s\nfallback: a red-only end or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JR8NZCGPZW37X5RV1Q1SA\nraw sha256: 961efa5b4df3bd786fc20bdb960528fe2a9e6d320f30f8b79890eb7ccfb23dcc\ncompiler model: claude-opus-5-5\nengine seconds: 0.012\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-enva-e1e4 on branch build/eval-env-a, harness Grok, mo…",
+      "skill": null,
+      "summary": "compiled al-01M41JR8NZCGPZW37X5RV1Q1SA for claude-code v1: 6 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "archive_cell goes through atomic.publish_dir with a verify of the file set and each file's rows.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`archive_cell` goes through `atomic.publish_dir` with a `verify` that compares the file set and each file's rows"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes; the served model is read from Agy's cli.log.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate; served model read from Agy's `cli.log`."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing docs/lessons/defect-classes.md.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "you do not edit `docs/lessons/defect-classes.md`"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-b2",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2.",
+            "archive_cell goes through atomic.publish_dir with a verify of the file set and each file's rows.",
+            "The README section 3 join gate passes; the served model is read from Agy's cli.log.",
+            "The served model id is the first line of the final report."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Build X-B2 on build/eval-x-b2: archive_cell through atomic.publish_dir with a verify of the file set and rows, archive.attempt_dirs as the one reader used by report/judges.py, and mutants A1..A4; red commit then green commit.",
+          "main_line_budget": "120 calls, 3,300 s",
+          "not_in_scope": [
+            "Editing docs/lessons/defect-classes.md."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.016,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JRGAEJS1NP4DZR46TF5HW",
+        "raw_sha256": "e5bb8870b116cfda98551ccc16e5aee80b42e8117af775537f81714006d92093",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gemini-3.8-flash-high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--mode accept-edits"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b2.contract.json",
+            "reason": null,
+            "sha256": "66982d45b5c7bb68d1b03cc88c111a24b90ff9b9931e4bbbe137fd94b6a16c0b",
+            "status": "resolved",
+            "token": "x-b2.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-atomic-publish.md",
+            "reason": null,
+            "sha256": "4706e446d39f829dfaa8bf399dd337646353d79baf5ff7fa33e8f8bea7c986ee",
+            "status": "resolved",
+            "token": "docs/design/eval-atomic-publish.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "publish_dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "recover_archive"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/archive.py",
+            "reason": null,
+            "sha256": "788c614b4bd4e4594b109b3a4a241276017cd0b7d33d45fc56e4c9890f6cedc5",
+            "status": "resolved",
+            "token": "src/harness_bench/archive.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/judges.py",
+            "reason": null,
+            "sha256": "30b8de3c690430923075040f43b81d0f1bda166606e987d969594dbd1e4786f9",
+            "status": "resolved",
+            "token": "report/judges.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "attempt_dirs"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":216"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_archive.py",
+            "reason": null,
+            "sha256": "37f00d199456e779774171c4f523ecc5cd6e18d75d3a4d829af009121f7bdf54",
+            "status": "resolved",
+            "token": "tests/test_archive.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/archive.json",
+            "reason": null,
+            "sha256": "78305eb8407a0ff5f1ee1bba1a4befc8940c8d56349a52d45e794fa79c510152",
+            "status": "resolved",
+            "token": "tests/mutations/archive.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_engine.py",
+            "reason": null,
+            "sha256": "2b2574063780c13ce130974fdf02589825038c68b4f4f6c16571976e208c26d2",
+            "status": "resolved",
+            "token": "tests/test_engine.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_the_engine_archive_goes_through_publish_dir"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_views.py",
+            "reason": null,
+            "sha256": "dbb238335908729014a566fc8703c830fb1ee11e415f8005862f25ac1f2d4b94",
+            "status": "resolved",
+            "token": "tests/test_views.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_bench_verify_passes_a_run_archived_by_the_atomic_path"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "atomic.publish_dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "archive_cell"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB-USR-002"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "*.tmp-*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "verify"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "archive.attempt_dirs(run_dir, cell_id"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "re.fullmatch(r\"attempt-(\\d+"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/judges.py:216"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "attempt-1.tmp-…"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ValueError"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "archive.make_writable"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "atomic.make_writable"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cli.log"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-b2"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T19:10:53Z",
+      "dispatchable": true,
+      "id": "al-01M41JTAHD7Y5Z3MVRYTE9NNQ5",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Build X-B2 on build/eval-x-b2: archive_cell through atomic.publish_dir with a verify of the file set and rows, archive.attempt_dirs as the one reader used by report/judges.py, and mutants A1..A4; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2.; archive_cell goes through atomic.publish_dir with a verify of the file set and each file's rows.; The README section 3 join gate passes; the served model is read from Agy's cli.log.; The served model id is the first line of the final report.\nNot in scope: Editing docs/lessons/defect-classes.md.\nTier: T2\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: 120 calls, 3,300 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2. | phrase: in one turn: a red commit, then a green commit |\n| done_when: archive_cell goes through atomic.publish_dir with a verify of the file set and each file's rows. | phrase: `archive_cell` goes through `atomic.publish_dir` with a `verify` that compares the file set and each file's rows |\n| done_when: The README section 3 join gate passes; the served model is read from Agy's cli.log. | phrase: README §3 join gate; served model read from Agy's `cli.log`. |\n| not_in_scope: Editing docs/lessons/defect-classes.md. | phrase: you do not edit `docs/lessons/defect-classes.md` |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\nReferences\n- coord-runner: unresolved (not found)\n- gemini-3.8-flash-high: unresolved (not found)\n- --mode accept-edits: unresolved (not found)\n- x-b2.contract.json: docs/coordination/eval-wave2-e1/x-b2.contract.json sha256 66982d45b5c7bb68d1b03cc88c111a24b90ff9b9931e4bbbe137fd94b6a16c0b\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-atomic-publish.md: docs/design/eval-atomic-publish.md sha256 4706e446d39f829dfaa8bf399dd337646353d79baf5ff7fa33e8f8bea7c986ee\n- publish_dir: unresolved (not found)\n- recover_archive: unresolved (not found)\n- src/harness_bench/archive.py: src/harness_bench/archive.py sha256 788c614b4bd4e4594b109b3a4a241276017cd0b7d33d45fc56e4c9890f6cedc5\n- report/judges.py: src/harness_bench/report/judges.py sha256 30b8de3c690430923075040f43b81d0f1bda166606e987d969594dbd1e4786f9\n- attempt_dirs: unresolved (not found)\n- :216: unresolved (not found)\n- tests/test_archive.py: tests/test_archive.py sha256 37f00d199456e779774171c4f523ecc5cd6e18d75d3a4d829af009121f7bdf54\n- tests/mutations/archive.json: tests/mutations/archive.json sha256 78305eb8407a0ff5f1ee1bba1a4befc8940c8d56349a52d45e794fa79c510152\n- tests/test_engine.py: tests/test_engine.py sha256 2b2574063780c13ce130974fdf02589825038c68b4f4f6c16571976e208c26d2\n- test_the_engine_archive_goes_through_publish_dir: unresolved (not found)\n- tests/test_views.py: tests/test_views.py sha256 dbb238335908729014a566fc8703c830fb1ee11e415f8005862f25ac1f2d4b94\n- test_bench_verify_passes_a_run_archived_by_the_atomic_path: unresolved (not found)\n- atomic.publish_dir: unresolved (not found)\n- archive_cell: unresolved (not found)\n- HB-USR-002: unresolved (not found)\n- *.tmp-*: unresolved (not found)\n- verify: unresolved (not found)\n- archive.attempt_dirs(run_dir, cell_id: unresolved (not found)\n- re.fullmatch(r\"attempt-(\\d+: unresolved (not found)\n- report/judges.py:216: unresolved (not found)\n- attempt-1.tmp-…: unresolved (not found)\n- ValueError: unresolved (not found)\n- archive.make_writable: unresolved (not found)\n- atomic.make_writable: unresolved (not found)\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b\n- cli.log: unresolved (not found)\n- build/eval-x-b2: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-b2\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JRGAEJS1NP4DZR46TF5HW\nraw sha256: e5bb8870b116cfda98551ccc16e5aee80b42e8117af775537f81714006d92093\ncompiler model: claude-opus-5-5\nengine seconds: 0.016\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-b2-e1e4 on branch build/eval-x-b2, harness Agy, model …",
+      "skill": null,
+      "summary": "compiled al-01M41JRGAEJS1NP4DZR46TF5HW for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T19:11:53Z",
+      "id": "al-01M41JW4X1KPP5MK14BG2Q867H",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-d1-e1e4 on branch build/eval-x-d1, harness Codex, model gpt-6.1-sol with effort high (codex-cli 0.160.0). Build dispatch D1 only of the brief docs/coordination/eval-wave2-e1/x-d.md (its text follows), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-D: engine identity and the launch recheck\n\n**Harness** Codex via `coord-runner` (Leader, R-87), `gpt-6.1-sol`, effort high, codex-cli 0.160.0 (R-88 condition 1: Q0 qualified Codex before W1-D's gate; README §5) · **contract** `x-d.contract.json` (D1; D2 reuses it with the suffix `2`) · **deadline** 3,300 s per dispatch · **budget** 200 calls · 200k · 2 dispatches · 3 h · **fallback** a red-only end or a failed read-back: the green follow-on runs as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same worker tree (R-87 Option 1; R-88 is the Owner review).\n\n**Design:** `docs/design/eval-identity.md` (W1-D rev 2, on `main`, `301a8705`), with ADR-0017 *Amendment 1* (R-94). **W0 rev 5** (rev 4 plus the rev-5 change table; your rows: §6 `for_task`, `builds=None`, the `profiles/<h>` set; §11 HB-RDY-011, HB-PLN-004 text). **W0 rev 4:** sections 6 (identity API, launch recheck, **the `campaign_check=` keyword**), 9, 10 (G2, G2b, G3, D3 as a two-path frozenset), 11 (every E1 row, **registry first**), 12, 13.\n\n## Owned paths (E1 hub owner, W0 §13)\n`src/harness_bench/identity.py` (new), `engine.py` (E1), `errors.py` (E1), `grade/runner.py` lines 108-112 only (`catalog_hash` becomes an import from `identity`), `tests/test_identity.py` (new), `tests/test_engine.py` (E1), `tests/test_architecture.py`, `tests/import_graph.py` (new), `tests/mutations/engine.json` (E1), `tests/mutations/cli.json` (the \"cli drops the kwarg\" mutant only).\n\n## Dispatch D1 (`x-d1-e1e4`, `build/eval-x-d1`): the first commit every other track waits on\nOne turn: a red commit, then a green commit.\n- `errors.py`: **every** E1 row of W0 §11 (HB-LED-007, HB-IDN-001/002, HB-PLN-001/002/004/005, HB-PWR-001, HB-CHK-001..004, HB-GRD-007, HB-RDY-001..011 (rev 5 adds HB-RDY-011, SR-E1 4), HB-CMP-001..010 with HB-CMP-010's rev 4 meaning; HB-PLN-004 with its rev 5 text, which also names a `synthetic` combo in a measurement plan). The registry rejects an unknown code (`errors.py:118`), so X-A1, X-B1, X-C, X-E, X-F and X-H1 test their codes only after this joins.\n- `identity.CLASSES` seeded for every existing `src/` file (69 at W1-D's scan) and every planned module of W0 §9; `telemetry/*` run, `gateway` a grade component (R-94); G2 (`test_every_src_file_has_a_class`, with the `unclassed`/`stale` red fixtures T-8..T-10b) and G2b (direction test; `RUN_IMPORTS_GRADE_ALLOWED` holds exactly the three `config.py` pairs, T-12d).\n- `tests/import_graph.py` extracted from `test_architecture.py:98-99`; G3 over the W0 §9 \"yes\" set with its three red fixtures; `SUBPROCESS_CALLERS = frozenset({\"procs.py\", \"grade/bench_check.py\"})` through the alias resolver; the R-60 set gains `grade/property`.\n- `catalog_hash` moved to `identity.py`; `grade/runner.py:108-112` becomes the import (your only hunk in X-F's file).\n\n## Dispatch D2 (`x-d2-e1e4`, `build/eval-x-d2`), after D1 joins\n- **W0 rev 5 §6 (SR-E1 3):** `manifest(root, tasks, builds=None)` writes **no** `builds/*` key; `profiles/<h>` covers every `h` in `profiles.HARNESSES` (plan-independent); `for_task(m, task)` drops every `builds/*` key and every `tasks/<id>` except `tasks/<task>`. Test: `identity_hash(manifest(root, [t], builds=None)) == identity_hash(for_task(manifest(root, [t, u], builds=b), t))`, with the mutant \"`for_task` keeps `builds/*`\".\n- `manifest`, `identity_hash`, `side`, `diff`, `launch_check` (W0 §6; `manifest` takes `plan[\"builds\"]`, imports no `tools` module); R-94 pins T-3 (`telemetry/normalize.py` edit moves run side only) and T-4 (`test_gateway_is_a_grade_component`).\n- `engine.py`: the recheck when a campaign run starts and before each `cell.launch_intent`; `run.launch_stopped{code: HB-IDN-001, reason, diff}`; `identity_check_ms` on the `cell.launch_intent` row via `self._check_ms`, absent (not 0) when no check ran.\n- **`campaign_check: Callable[[], None] | None` (W0 rev 4 §6, RV-DS W1-C 2):** called once, after the run lock (`engine.py:374`) is held and before the first `cell.launch_intent`; a raise stops the run before any launch. Test with a fake callable. X-C writes the real function and the `cli.py` line.\n\n## Acceptance items (design tests and live gate conditions)\n1. **RV-TA W1-D rev 2, R2-1/R2-2:** T-25 builds its own fixture (a real confirmed plan with one cell and a campaign block, a real `Engine`, only `preflight.check` stubbed, a `src/` run-class file edited) and its no-drift twin T-25b; the mutant \"cli drops the kwarg\" in `tests/mutations/cli.json`.\n2. **RV-TA 2, 3:** pure `unclassed`/`stale` take the table (T-8..T-10, T-10b); T-12 with six import forms, T-12c the stale pair, T-12d the edges equal the three pairs.\n3. **RV-TA 5, 6; RV-SRE 1, 3, 4:** `identity_check_ms` via a fake clock (T-30), absent not 0 (T-29); the check once per tick with a 2 s cap (T-16, T-31); the stop row exact (T-26, T-28, T-32).\n4. **RV-TA 7, RV-SRE 8 (E1 exit evidence, at the demo):** the demo reports median, max and the cold value of `identity_check_ms`.\n5. `test_side_partitions_every_component`; the manifest carries no `os.environ` value and no path (RV-SEC 11).\n6. The differ names `grade/formal.py changed` (plan exit evidence).\n\nNot yours: `Status.stop_reason`/`stop_diff` (X-C, W0 rev 4 §6), `grading.started` fields (X-F).\n\n## Exit\nREADME §3 join gate per dispatch; served model read from the Codex native record. Report per README §4.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-d1-e1e4 on branch build/eval-x-d1, harness Codex, mode…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T19:11:56Z",
+      "id": "al-01M41JW7Z23R1P950A0GS98ZQX",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-a1a-e1e4 on branch build/eval-x-a1a, harness Codex, model gpt-6.1-sol with effort high (codex-cli 0.160.0). Build dispatch A1a only of the brief docs/coordination/eval-wave2-e1/x-a1.md (its text follows), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-A1: arms and ring plumbing\n\n**Harness** Codex via `coord-runner` (Leader, R-87), `gpt-6.1-sol`, effort high, codex-cli 0.160.0 (R-88 condition 1, README §5) · **contract** `x-a1.contract.json` (A1a; A1b reuses it with the suffix `b`) · **deadline** 3,300 s per dispatch · **budget** 220 calls · 200k · 2 dispatches · 3 h · **fallback** a red-only end: the green follow-on runs as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree (R-88 is the Owner review).\n\n**Design:** `docs/design/eval-arms.md` (W1-A rev 2, on `main`, `92e977b2`). **W0 rev 5:** §2 (`CHECK_PROPERTIES`), §6 (the synthetic hunk), §11 (HB-PLN-004 text). **W0 rev 4:** sections 1, 5 (quoted ids incl. `comparisons`, no top-level `pack`, `plan_pack(plan, *, strict=False)`), 7 (`PROPERTY_NAMES`, the two `validate_catalog` checks, R-95 condition 2), 10 G1 (AST tokens, equality ratchet, pins after the migrations), 11, 13.\n\n## Owned paths (E1 hub owner, W0 §13)\n`src/harness_bench/plan.py`, `config.py`, `views.py`, `grade/_changes.py` (line 84 only), `cli.py` (the function `_workspace_builder` only), `board.py` and `report/summaries.py` (the one-line `plan_pack` migrations and `board._build_pack_effect`'s status text only), `report/pack_improvement.py` (the `cell_arm` line at 746-747 only), `bench/rings/pilot.yaml` (new; R-89: `cc-opus`, `model: claude-opus-5-5` explicit, k = 3), `tests/test_plan.py`, `test_config.py`, `test_workspace.py`, `test_views.py`, `test_changes_cache.py` (the `pre_turn_commit` case), `tests/test_arms_guard.py` (new), `tests/fixtures/plans/grid4-cells.json` (new), `tests/mutations/plan.json`. **Not yours:** `workspace.py` source (X-B1's `_land` hunk), `cli.py` `cmd_plan` (X-C pastes W1-A §3.9), `report/html.py` (X-H2 takes your header lines).\n\n## Depends on\nW1-A ✓; **X-D1** joined (HB-PLN-001/002/004/005 in the registry).\n\n## Dispatches\n- **A1a** (`x-a1a-e1e4`, `build/eval-x-a1a`): `config.py` (bench-matrix/2 validation, quoted-id refusal in `arms` and `comparisons`, upcast, `ARM_OFF`, `ARM_ID`, ring validation, `PROPERTY_NAMES`, the `property:` tag check, the `also_graded_by` check: a grader module, differs from `grader`, no repeats); `plan.py` (bench-plan/2 writer, `Cell.arm`, label, `arms`, `comparisons`, `launch_seed`, `kind`, `campaign` verbatim, `ring`, `cell_arm`, `arm_pack`, `plan_pack`, `launch_order`, `launch_balance`, `draw_launch_order`, the ready rule by plan kind, `parse_binding`, `resolve_arms`); the grid-4 golden. **W0 rev 5 (SR-E1 2, SR-L3):** `\"synthetic\"` joins `config.HARNESSES`; `config.CHECK_PROPERTIES = frozenset({\"security\", \"resilience\"})` beside `PROPERTY_NAMES`; `plan.SYNTHETIC_PROFILE_RECORD` (a constant dict) returned by `plan.profile_record(root, \"synthetic\")`; `build_plan` refuses a **measurement** plan that names a `synthetic` combo with HB-PLN-004 (one refusal by plan kind, listing every offender). Run the full suite: any test that pins `config.HARNESSES` is yours to update in the same commit.\n- **A1b** (`x-a1b-e1e4`): `views.py:525`, `grade/_changes.py:84`, `cli._workspace_builder`, the three plan-level readers and `pack_improvement.py:746-747`, `board._build_pack_effect` text, `bench/rings/pilot.yaml`, G1 with its fixtures and the pinned counts taken **after** these migrations.\n\n## Acceptance items (W1-A rev 2's test plan §10 plus the live gate conditions it states as applied; check each against the merged text)\n1. EV-17: `test_grid4_replan_gives_the_same_task_combo_arm_rep_set_and_cell_ids` runs `build_plan` over the fixture matrix with injected versions (RV-TA 6), and the fixture carries its provenance (`runs/grid-4/plan.json` and its sha256, no generator; RV-TA 7).\n2. Launch balance: refused at exactly 1/20 deviation, with a `<` → `<=` mutant (RV-TA 5); the 2×4 and 3×4 shapes in the redraw test; the cap refusal text does not claim \"at least 2 blocks\" for more than two arms (RV-PAT 3, 4).\n3. G1: one red fixture per form (`x[\"pack\"]`, `.get`, `.pop`, `in`, `getattr`, `itemgetter`, attribute, keyword), a comment-only and a docstring-only file that must not match; `test_pack_hits_equal_the_pinned_counts` asserts equality (RV-PAT W0 delta 3); RV-TA 1's `Constant(\"on\"/\"off\")` scan with its red fixture and the `report/assets/*.js` text scan.\n4. **`test_plan_py_imports_no_campaign_or_identity_module` stays, with a red fixture** (W0 rev 4 ruling on RV-TA 3 vs RV-SIM 7: G2b cannot catch `identity`, which is run class).\n5. RV-TA 2: one test through the real `cli._workspace_builder` with two real pack repos, asserting each arm's diff equals its manifest.\n6. RV-TA 8: the red commit lands stubs that raise or return neutral wrong values for `launch_order`, `cell_arm`, `draw_launch_order`, so tests fail on behaviour.\n7. `test_plan_level_readers_state_the_true_pack_or_refuse`: `board` raises HB-PLN-005 with `strict=True`; the display readers render `several packs`.\n8. HB-PLN-004 names every offender (no cap; RV-SIM 4); a discrimination plan admits `draft` and refuses `stub`; a measurement plan with a `synthetic` combo is refused and names the combo (W0 rev 5), with a red fixture and the mutant \"skip the harness check\"; `profile_record(root, \"synthetic\")` returns the constant (today it raises `ValueError`, `profiles.py:176`).\n9. RV-PAT 6 (for X-E, recorded here so it is not lost): `status: ready` has one predicate; you do not write `ready` anywhere.\n\n## Exit\nREADME §3 join gate per dispatch; served model read from the Codex native record. Report per README §4.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-a1a-e1e4 on branch build/eval-x-a1a, harness Codex, mo…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T19:12:00Z",
+      "id": "al-01M41JWB1KRGXW71ZGJZAN9ZTX",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-g1-e1e4 on branch build/eval-x-g1, harness Grok, model grok-4.7 with --reasoning-effort high. Build X-G1 of the brief docs/coordination/eval-wave2-e1/x-g1.md (its text follows), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-G1: catalog 0.7.dev\n\n**Harness** Grok via `coord-runner` (Leader, R-87), `grok-4.7`, `--reasoning-effort high`, `XAI_API_KEY` removed · **contract** `x-g1.contract.json` · **deadline** 1,200 s · **dispatch** one turn, red then green · **budget** 40 calls · 100k · 1 · 0.7 h · **fallback** the green follow-on as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree (R-92 is the Owner review).\n\n**Design:** `docs/design/eval-catalog-0-7.md` (W1-G rev 2, on `main`). **W0 rev 5:** §7 (R-97). **W0 rev 4:** section 7 (the table of eleven ids, kind, better, scale, `property:` tag; R-95's owner rule).\n\n## Owned paths\n`bench/metrics.yaml` (E1 owner), `tests/test_catalog_version.py`, `docs/adr/0019-catalog-0-7-property-metrics.md` (only the item-3 note, by R-95 condition 4). **Not yours:** `grade/property.py` (X-F; never create it), `config.py` (X-A1's validation checks), `grade/runner.py` (X-F builds the owner clause and T-R3..T-R6), `bench/catalog-freeze.yaml` (Leader, R-86).\n\n## Depends on\n**X-F0 joined** (`grade/property.py` exists; `validate_repo` refuses a metric whose grader has no module, `config.py:158`). R-95 ✓.\n\n## Work\n- `version: \"0.7.dev\"`; the eleven metrics of W0 §7 with weight 0, source D, the anchors and areas W1-G fixes (R-79 forms), each property-specific one tagged `property: <name>`; `property_check_pass` untagged.\n- `pass_at_1` gains `also_graded_by: [formal]` (R-95). In the same commit, ADR-0019's item-3 note changes from \"provisional on the request\" to \"R-95: `also_graded_by: [formal]`\".\n- Every 0.6 metric's definition is unchanged except that one key; the US-4 control stays green.\n- **R-97 condition 3 (W0 rev 5 §7):** `hallucinated_symbol_errors`'s `anchor_note` says \"unresolved vendored-API references in the final tree\"; the words \"build-log errors\" do not appear in it. The anchor `[5, 0]` stays provisional (W1-G U2). A test asserts the phrase is absent.\n\n## Acceptance items\n1. Red first: `tests/test_catalog_version.py` asserts the eleven ids with their kind, better, scale and tag (W1-G's T-C nodes), red today by assertion.\n2. The eleven metrics validate under `0.7.dev` (R-90); `bench validate` exit 0 on the joined tree.\n3. **RV-TA W1-G R2-2:** the design's §11 note that T-P4/T-P6 carry the `n_recorded` sweep proof is the author's; you do not edit the design. X-G3 (E3) owns T-U1b (RV-TA R2-1).\n4. T-R3..T-R6 are X-F's (W0 rev 4 §7); do not write them.\n\n## Exit\nREADME §3 join gate; `python tools/grok_served_model.py <session dir>` exits 0 (the first Grok dispatch: if TOOL-GSM has not joined yet, the Leader reads the same fields by hand, as Q0b did, and records them). Report per README §4.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-g1-e1e4 on branch build/eval-x-g1, harness Grok, model…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T19:12:02Z",
+      "id": "al-01M41JWDM5FBGR7H8FSTCDVSXZ",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-b1a-e1e4 on branch build/eval-x-b1a, harness Grok, model grok-4.7 with --reasoning-effort high. Build dispatch B1a only of the brief docs/coordination/eval-wave2-e1/x-b1.md (its text follows), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-B1: crash-atomic writes and the lock helper\n\n**Harness** Grok via `coord-runner` (Leader, R-87), `grok-4.7`, `--reasoning-effort high`, grok 1.0.41, launched with `XAI_API_KEY` removed · **contract** `x-b1.contract.json` (B1a; B1b and B1c reuse it with the suffixes `b`, `c`) · **deadline** 1,200 s per dispatch · **budget** 40 calls · 100k per dispatch · 3 dispatches · 1.5 h total · **fallback** a red-only end, a timeout, or a served-model read that is not all `grok-4.7*`: the green follow-on runs as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree (R-87 Option 1; R-92 is the Owner review).\n\n**Design:** `docs/design/eval-atomic-publish.md` (W1-B rev 2, on `main`, gate passed), sections 3, 4, 10, 11, 12.2, 17. **W0 rev 4:** sections 4 (as granted to S-B4), 6 (`acquire_then_probe`), 11, 13.\n\n## Owned paths\n`src/harness_bench/atomic.py` (new), `tests/test_atomic.py` (new), `tests/test_atomic_sites.py` (new), `tests/mutations/atomic.json` (new), `src/harness_bench/oslock.py` (E1: `acquire_then_probe` only), `tests/test_oslock.py` (the helper's tests), `src/harness_bench/workspace.py` (the `_land` hunk and the `make_writable` import only), `tests/mutations/workspace.json`. **Not yours:** `tests/test_workspace.py` (X-A1's; W1-B: it stays green unedited), `archive.py` (X-B2), `docs/lessons/defect-classes.md` (send W1-B §12.2's RIG-D instance to the Coordinator as text).\n\n## Dispatches (each based on `main`; each lands red then green in one turn)\n- **B1a** (`x-b1a-e1e4`, `build/eval-x-b1a`): `atomic.py` per W1-B §17 order: the naive skeleton (every public name, neutral wrong values) as the red commit's base, then `create_once`, `TEMP_RE`, `is_temp_name`, `stale_temps`, `sweep_temps(target, lock)` (raises `ValueError` unless `oslock.is_held(lock.path)`), `make_writable` (lstat first, never through a link, adds `S_IWUSR`), `rename_with_retry` with `RENAME_BACKOFF`. Depends on X-D1 (HB-LED-007 in the registry).\n- **B1b** (`x-b1b-e1e4`): `publish_dir`; `workspace._land` calls `rename_with_retry(tmp, dest, replace=True, settled=lambda: valid(dest))` and drops its own loop; the WIN-A mutant moves; `tests/test_atomic_sites.py` (the scan, 12 sites in 11 keys, three red-fixture tests; the three grader `copytree` entries stay until X-F deletes them).\n- **B1c** (`x-b1c-e1e4`): `oslock.acquire_then_probe(own, own_code, others, *, between=None) -> RunLock` (W0 rev 4 §6): `between` runs after the first operation and before the second; tests with `Barrier(2).wait(timeout=10)`: never both proceed; both-refused leaves every file unchanged; the swap mutant (probe before acquire) is killed by the barrier test.\n\n## Acceptance items (design tests and live gate conditions)\n1. The W1-B §10.2 nodes and the §10.3 mutation set M1..M27 plus M14b, each naming its killing test (MUT-B keeps the ids honest).\n2. **RV-TA W1-B R2-3:** a mutation run on a Windows host **and** a POSIX host, both in the proof pack (M14 dies only on Windows, M14b only on POSIX): `test_posix_flag_default_follows_the_platform`, `test_the_real_publish_dir_fsyncs_the_folder_only_on_posix`. The POSIX half runs in CI's macOS job; say which run killed which.\n3. **RV-SEC W1-B 5(c):** one recorded run of the three unmeasured symlink behaviours (`os.unlink` on a Windows directory symlink, `O_EXCL` onto a dangling symlink on Windows, the sweep of a symlink temp) on a host with symlink rights (macOS CI or Windows Developer Mode); `test_the_posix_job_does_not_skip_the_symlink_variants` and the CI rule that a skipped symlink variant fails the macOS job. Unmeasured on this host (winerror 1314).\n4. **RV-SEC 2:** `create_once` keeps the fd open and compares `st_dev`/`st_ino` after the link (M22); reads through one descriptor with `O_NOFOLLOW` where available (M27).\n5. **RV-DS 1:** `_discard_temp` swallows an unlink failure after a successful link and logs `atomic.temp_leaked` (M23). **RV-DS 4:** M25 (the lock check). **RV-DS 5:** `rename_retries`, `rename_ms`, `publish_failed(phase=rename)` asserted.\n6. The kill tests `test_a_kill_between_write_and_link_leaves_no_final_file` and (B1b) `test_a_kill_mid_copy_leaves_no_final_folder_and_the_redo_succeeds`.\n\n## Exit\nREADME §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). Report per README §4.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-b1a-e1e4 on branch build/eval-x-b1a, harness Grok, mod…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T19:12:06Z",
+      "id": "al-01M41JWH49CM57GVNZ98ZD5W79",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-enva-e1e4 on branch build/eval-env-a, harness Grok, model grok-4.7 with --reasoning-effort high. Build the ENV-A fix of the brief docs/coordination/eval-wave2-e1/env-a.md (its text follows), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# ENV-A: the ambient-credential fix\n\n**Harness** Grok via `coord-runner` (Leader, R-87), `grok-4.7`, `--reasoning-effort high`, `XAI_API_KEY` removed · **contract** `env-a.contract.json` · **deadline** 1,200 s · **dispatch** one turn, red then green · **budget** 30 calls · 80k · 1 · 0.5 h · **fallback** a red-only end or a failed served-model read: the green follow-on as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree (R-92 is the Owner review).\n\n**The class** (`docs/lessons/defect-classes.md`, the candidate \"a hermetic test reads an ambient credential from the operator's shell\", class id **ENV-C**, renamed from a duplicate `ENV-A`; cite ENV-C in your report and commits): with `HB_CLAUDE_OAUTH_TOKEN` set to a dummy value, three tests fail on `main`: `tests/test_gateway_headless.py::test_t_gw_10_the_credential_is_present_during_the_call_and_gone_after_it`, `::test_t_gw_10_the_credential_is_gone_after_a_timeout_and_after_an_exception_past_the_copy`, `tests/test_profiles.py::test_the_launcher_reports_no_model_setter_and_a_copied_login[claude-code]`.\n\n## Owned paths\n`tests/conftest.py` (E1 owner: this track; another track needs a seam request), `tests/test_env_isolation.py` (new). **Not yours:** `tests/test_profiles.py` (X-E's in E1), `tests/test_gateway_headless.py`; the fix must make them pass **without editing them**.\n\n## Depends on\nTOOL-GSM joined (this is a later Grok dispatch, R-92).\n\n## Work\n1. **Sweep first, recorded in the report:** `git grep -n -E \"OAUTH_TOKEN|_API_KEY|GH_TOKEN\" -- tests src/harness_bench/profiles.py` and the profile denylist (`profiles.DROP_EXACT`, `profiles.DROP_PREFIXES`). The credential list is **one** definition: import it from the production source if one exists; if none does, write it once in `conftest.py` and say so.\n2. **Red:** `tests/test_env_isolation.py` sets each listed variable to a dummy value with `monkeypatch.setenv` in a subprocess-free way (re-run the three named tests through `pytest.main` in-process, or call their bodies) and asserts they pass; plus one test that a test marked `credentials` still sees the variable. Red today by assertion.\n3. **Green:** an autouse fixture in `tests/conftest.py` that `monkeypatch.delenv(name, raising=False)` for every listed name, skipped for tests marked `credentials`.\n\n## Acceptance items\n1. The three named tests pass with `HB_CLAUDE_OAUTH_TOKEN=dummy` set in the shell, and with it unset.\n2. A mutant that removes the fixture is killed by `tests/test_env_isolation.py`.\n3. The defect-class text for the Coordinator: instances, sweep result, control (this fixture and its test), status `controlled` proposed.\n\n## Exit\nREADME §3 join gate, run **twice**: with the token unset and with `HB_CLAUDE_OAUTH_TOKEN=dummy`. `python tools/grok_served_model.py <session dir>` exits 0. Report per README §4.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-enva-e1e4 on branch build/eval-env-a, harness Grok, mo…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T19:12:08Z",
+      "id": "al-01M41JWKRTWS49TBFSF805EG23",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-b2-e1e4 on branch build/eval-x-b2, harness Agy, model gemini-3.8-flash-high. Build X-B2 of the brief docs/coordination/eval-wave2-e1/x-b2.md (its text follows), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-B2: crash-atomic archive\n\n**Harness** Agy via `coord-runner` (Leader, R-87), `gemini-3.8-flash-high`, agy 1.2.13, `--mode accept-edits` · **contract** `x-b2.contract.json` · **deadline** 3,300 s · **dispatch** one turn, red then green · **budget** 120 calls · 150k · 1 · 1.5 h · **fallback** the green follow-on as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree, after an Owner review.\n\n**Design:** `docs/design/eval-atomic-publish.md` §6 (archive rework), §10 (the archive nodes and A1..A4), §12.1 (the defect class). **W0 rev 4:** section 4 (`publish_dir`, \"Readers of the archive folder\", `recover_archive` is X-K1's in E3), 13.\n\n## Owned paths\n`src/harness_bench/archive.py` (E1), `report/judges.py` (the `attempt_dirs` line at `:216` only), `tests/test_archive.py`, `tests/mutations/archive.json`, and in `tests/test_engine.py` only `test_the_engine_archive_goes_through_publish_dir` and in `tests/test_views.py` only `test_bench_verify_passes_a_run_archived_by_the_atomic_path` — both files belong to other E1 owners (X-D, X-A1), so send each as a seam request to them **or** place both tests in `tests/test_archive.py` if they need no private fixture of those files; say which in your report.\n\n## Depends on\n**X-B1b joined** (`atomic.publish_dir`); X-D1 (codes).\n\n## Acceptance items\n1. **Red first against today's `archive_cell`:** a kill during an archive copy, then a resume completes without `HB-USR-002` (D1); a `*.tmp-*` sibling is redone; red by assertion.\n2. `archive_cell` goes through `atomic.publish_dir` with a `verify` that compares the file set and each file's rows; the real-wiring test fails if the call is removed.\n3. `archive.attempt_dirs(run_dir, cell_id)` (`re.fullmatch(r\"attempt-(\\d+)\")`, sorted by number) is the one reader; `report/judges.py:216` uses it; a leaked `attempt-1.tmp-…` no longer raises `ValueError` there.\n4. `archive.make_writable` stays a re-export of `atomic.make_writable` (W0 §4).\n5. The mutants A1..A4 in `tests/mutations/archive.json`, each naming its killing test.\n6. The \"exists means complete\" defect-class text (W1-B §12.1) goes to the Coordinator in your report; you do not edit `docs/lessons/defect-classes.md`.\n\n## Exit\nREADME §3 join gate; served model read from Agy's `cli.log`. Report per README §4.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-b2-e1e4 on branch build/eval-x-b2, harness Agy, model …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d1.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes on the final commit, each command on its own line.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model is read from the Codex native record and is the first line of the report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "served model read from the Codex native record"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatch D2 (manifest, launch recheck, campaign_check keyword): a later dispatch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch D1 only"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Status.stop_reason/stop_diff (X-C) and grading.started fields (X-F).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Not yours: `Status.stop_reason`/`stop_diff` (X-C, W0 rev 4 §6), `grading.started` fields (X-F)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "a red-only end or a failed served-model read: the green follow-on runs as Claude Code Sonnet (model: sonnet) in the same worker tree (R-87 Option 1)",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-d1",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d1.",
+            "The README section 3 join gate passes on the final commit, each command on its own line.",
+            "The served model is read from the Codex native record and is the first line of the report.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-d.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch D1 of X-D on build/eval-x-d1: every E1 HB row (HB-RDY-011 included) in errors.py, the CLASSES seed with G2 and G2b, tests/import_graph.py with G3 and the two named allowlist entries, and the catalog_hash move; red commit then green commit.",
+          "main_line_budget": "200 calls, 3,300 s",
+          "not_in_scope": [
+            "Dispatch D2 (manifest, launch recheck, campaign_check keyword): a later dispatch.",
+            "Status.stop_reason/stop_diff (X-C) and grading.started fields (X-F)."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.025,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JW4X1KPP5MK14BG2Q867H",
+        "raw_sha256": "16826d99324d43ea6f49d87a5882f36d4f272a3ac29d2414dd351793da472335",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gpt-6.1-sol"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-d.contract.json",
+            "reason": null,
+            "sha256": "1f7841905575e326774915d70a6fce84c5627761fafda9981b2d0f891832af08",
+            "status": "resolved",
+            "token": "x-d.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-identity.md",
+            "reason": null,
+            "sha256": "8a267c00da2b82e5c7054ea1bd0ba117a932fabda71ff8df017d885b091ba288",
+            "status": "resolved",
+            "token": "docs/design/eval-identity.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "301a8705"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "for_task"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "builds=None"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles/<h"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "campaign_check="
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/engine.py",
+            "reason": null,
+            "sha256": "b50f336e0b450540d3bce1144669427c82673d42d23b0a165c0ae47b39d94492",
+            "status": "resolved",
+            "token": "engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "67e763d8e3a20d4b2fe09181e61c845e72b5110cd0a2417fb6cf2e8cf4d66251",
+            "status": "resolved",
+            "token": "errors.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "65d4fdfe3805f235ba957d7d5b4de74e5651b334040eda8e8e6f383da0c2849a",
+            "status": "resolved",
+            "token": "grade/runner.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "catalog_hash"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_engine.py",
+            "reason": null,
+            "sha256": "2b2574063780c13ce130974fdf02589825038c68b4f4f6c16571976e208c26d2",
+            "status": "resolved",
+            "token": "tests/test_engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "39ea39cefd95ce7c05d5c7d784f3df6c78f942d31d8148a5569fce8be7673b60",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/import_graph.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/engine.json",
+            "reason": null,
+            "sha256": "134d907b5325bc553dd9d0b46598ed1eaef3bf5950f7ee7e0390143ea72e4260",
+            "status": "resolved",
+            "token": "tests/mutations/engine.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/cli.json",
+            "reason": null,
+            "sha256": "4f82f15399ec860f251733197304788562b660e54449b950b325acdfac686dd8",
+            "status": "resolved",
+            "token": "tests/mutations/cli.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-d1-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-d1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "synthetic"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "errors.py:118"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity.CLASSES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "telemetry/*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gateway"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_every_src_file_has_a_class"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "unclassed"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stale"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "RUN_IMPORTS_GRADE_ALLOWED"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19",
+            "status": "resolved",
+            "token": "config.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_architecture.py:98-99"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "SUBPROCESS_CALLERS = frozenset({\"procs.py\", \"grade/bench_check.py\"}"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/property"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/runner.py:108-112"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-d2-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-d2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "manifest(root, tasks, builds=None"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "builds/*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "h"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles.HARNESSES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "for_task(m, task"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/<id"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/<task"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity_hash(manifest(root, [t], builds=None)) == identity_hash(for_task(manifest(root, [t, u], builds=b), t"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "manifest"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity_hash"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "side"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "diff"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "launch_check"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan[\"builds"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/normalize.py",
+            "reason": null,
+            "sha256": "8ff140592bd0e579b9c8a27cff0758a9e3626b6f8a4f76e104d9ebfa0d02cbd2",
+            "status": "resolved",
+            "token": "telemetry/normalize.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_gateway_is_a_grade_component"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cell.launch_intent"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "run.launch_stopped{code: HB-IDN-001, reason, diff}"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity_check_ms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "self._check_ms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "campaign_check: Callable[[], None] | None"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "engine.py:374"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "3017d46c6393d25bfb494ac6ea972345af088ac5a8dfe3fd23ad34cc5e033ed8",
+            "status": "resolved",
+            "token": "cli.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Engine"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "preflight.check"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_side_partitions_every_component"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "os.environ"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/formal.py changed"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Status.stop_reason"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stop_diff"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grading.started"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-d.md",
+            "reason": null,
+            "sha256": "c9bf47e3f10ae67b67eff502f3eacf2cbc01cf65e21c583906114e00458a82d3",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-d.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB-IDN-001/002"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB-PLN-001/002/004/005"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "unclassed`/`stale"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "frozenset({\"procs.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/bench_check.py\"}"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "R2-1/R2-2:**"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/formal.py",
+            "reason": null,
+            "sha256": "13658664be989d9649853bca7be4e856492212567c02f4a5bce0fb1241b650eb",
+            "status": "resolved",
+            "token": "grade/formal.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Status.stop_reason`/`stop_diff"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T19:12:21Z",
+      "dispatchable": true,
+      "id": "al-01M41JX06P8TETKP1XTWD8GP2F",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-d.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch D1 of X-D on build/eval-x-d1: every E1 HB row (HB-RDY-011 included) in errors.py, the CLASSES seed with G2 and G2b, tests/import_graph.py with G3 and the two named allowlist entries, and the catalog_hash move; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d1.; The README section 3 join gate passes on the final commit, each command on its own line.; The served model is read from the Codex native record and is the first line of the report.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatch D2 (manifest, launch recheck, campaign_check keyword): a later dispatch.; Status.stop_reason/stop_diff (X-C) and grading.started fields (X-F).\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: 200 calls, 3,300 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d1. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes on the final commit, each command on its own line. | phrase: README §3 join gate per dispatch |\n| done_when: The served model is read from the Codex native record and is the first line of the report. | phrase: served model read from the Codex native record |\n| not_in_scope: Dispatch D2 (manifest, launch recheck, campaign_check keyword): a later dispatch. | phrase: Build dispatch D1 only |\n| not_in_scope: Status.stop_reason/stop_diff (X-C) and grading.started fields (X-F). | phrase: Not yours: `Status.stop_reason`/`stop_diff` (X-C, W0 rev 4 §6), `grading.started` fields (X-F). |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\nReferences\n- coord-runner: unresolved (not found)\n- gpt-6.1-sol: unresolved (not found)\n- x-d.contract.json: docs/coordination/eval-wave2-e1/x-d.contract.json sha256 1f7841905575e326774915d70a6fce84c5627761fafda9981b2d0f891832af08\n- 2: unresolved (not found)\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-identity.md: docs/design/eval-identity.md sha256 8a267c00da2b82e5c7054ea1bd0ba117a932fabda71ff8df017d885b091ba288\n- main: unresolved (not found)\n- 301a8705: unresolved (not found)\n- for_task: unresolved (not found)\n- builds=None: unresolved (not found)\n- profiles/<h: unresolved (not found)\n- campaign_check=: unresolved (not found)\n- src/harness_bench/identity.py: unresolved (not found)\n- engine.py: src/harness_bench/engine.py sha256 b50f336e0b450540d3bce1144669427c82673d42d23b0a165c0ae47b39d94492\n- errors.py: src/harness_bench/errors.py sha256 67e763d8e3a20d4b2fe09181e61c845e72b5110cd0a2417fb6cf2e8cf4d66251\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 65d4fdfe3805f235ba957d7d5b4de74e5651b334040eda8e8e6f383da0c2849a\n- catalog_hash: unresolved (not found)\n- identity: unresolved (not found)\n- tests/test_identity.py: unresolved (not found)\n- tests/test_engine.py: tests/test_engine.py sha256 2b2574063780c13ce130974fdf02589825038c68b4f4f6c16571976e208c26d2\n- tests/test_architecture.py: tests/test_architecture.py sha256 39ea39cefd95ce7c05d5c7d784f3df6c78f942d31d8148a5569fce8be7673b60\n- tests/import_graph.py: unresolved (not found)\n- tests/mutations/engine.json: tests/mutations/engine.json sha256 134d907b5325bc553dd9d0b46598ed1eaef3bf5950f7ee7e0390143ea72e4260\n- tests/mutations/cli.json: tests/mutations/cli.json sha256 4f82f15399ec860f251733197304788562b660e54449b950b325acdfac686dd8\n- x-d1-e1e4: unresolved (not found)\n- build/eval-x-d1: unresolved (not found)\n- synthetic: unresolved (not found)\n- errors.py:118: unresolved (not found)\n- identity.CLASSES: unresolved (not found)\n- src/: unresolved (not found)\n- telemetry/*: unresolved (not found)\n- gateway: unresolved (not found)\n- test_every_src_file_has_a_class: unresolved (not found)\n- unclassed: unresolved (not found)\n- stale: unresolved (not found)\n- RUN_IMPORTS_GRADE_ALLOWED: unresolved (not found)\n- config.py: src/harness_bench/config.py sha256 2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19\n- test_architecture.py:98-99: unresolved (not found)\n- SUBPROCESS_CALLERS = frozenset({\"procs.py\", \"grade/bench_check.py\"}: unresolved (not found)\n- grade/property: unresolved (not found)\n- identity.py: unresolved (not found)\n- grade/runner.py:108-112: unresolved (not found)\n- x-d2-e1e4: unresolved (not found)\n- build/eval-x-d2: unresolved (not found)\n- manifest(root, tasks, builds=None: unresolved (not found)\n- builds/*: unresolved (not found)\n- h: unresolved (not found)\n- profiles.HARNESSES: unresolved (not found)\n- for_task(m, task: unresolved (not found)\n- tasks/<id: unresolved (not found)\n- tasks/<task: unresolved (not found)\n- identity_hash(manifest(root, [t], builds=None)) == identity_hash(for_task(manifest(root, [t, u], builds=b), t: unresolved (not found)\n- manifest: unresolved (not found)\n- identity_hash: unresolved (not found)\n- side: unresolved (not found)\n- diff: unresolved (not found)\n- launch_check: unresolved (not found)\n- plan[\"builds: unresolved (not found)\n- tools: unresolved (not found)\n- telemetry/normalize.py: src/harness_bench/telemetry/normalize.py sha256 8ff140592bd0e579b9c8a27cff0758a9e3626b6f8a4f76e104d9ebfa0d02cbd2\n- test_gateway_is_a_grade_component: unresolved (not found)\n- cell.launch_intent: unresolved (not found)\n- run.launch_stopped{code: HB-IDN-001, reason, diff}: unresolved (not found)\n- identity_check_ms: unresolved (not found)\n- self._check_ms: unresolved (not found)\n- campaign_check: Callable[[], None] | None: unresolved (not found)\n- engine.py:374: unresolved (not found)\n- cli.py: src/harness_bench/cli.py sha256 3017d46c6393d25bfb494ac6ea972345af088ac5a8dfe3fd23ad34cc5e033ed8\n- Engine: unresolved (not found)\n- preflight.check: unresolved (not found)\n- test_side_partitions_every_component: unresolved (not found)\n- os.environ: unresolved (not found)\n- grade/formal.py changed: unresolved (not found)\n- Status.stop_reason: unresolved (not found)\n- stop_diff: unresolved (not found)\n- grading.started: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-d.md: docs/coordination/eval-wave2-e1/x-d.md sha256 c9bf47e3f10ae67b67eff502f3eacf2cbc01cf65e21c583906114e00458a82d3\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- HB-IDN-001/002: unresolved (not found)\n- HB-PLN-001/002/004/005: unresolved (not found)\n- unclassed`/`stale: unresolved (not found)\n- frozenset({\"procs.py: unresolved (not found)\n- grade/bench_check.py\"}: unresolved (not found)\n- R2-1/R2-2:**: unresolved (not found)\n- grade/formal.py: src/harness_bench/grade/formal.py sha256 13658664be989d9649853bca7be4e856492212567c02f4a5bce0fb1241b650eb\n- Status.stop_reason`/`stop_diff: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-d1\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: a red-only end or a failed served-model read: the green follow-on runs as Claude Code Sonnet (model: sonnet) in the same worker tree (R-87 Option 1)\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JW4X1KPP5MK14BG2Q867H\nraw sha256: 16826d99324d43ea6f49d87a5882f36d4f272a3ac29d2414dd351793da472335\ncompiler model: claude-opus-5-5\nengine seconds: 0.025\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-d1-e1e4 on branch build/eval-x-d1, harness Codex, mode…",
+      "skill": null,
+      "summary": "compiled al-01M41JW4X1KPP5MK14BG2Q867H for codex v1: 7 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes on the final commit, each command on its own line.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model is read from the Codex native record and is the first line of the report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "served model read from the Codex native record"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatch A1b (readers, G1 guard, migrations, pilot.yaml): a later dispatch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch A1a only"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "workspace.py source, cli.py cmd_plan and report/html.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`workspace.py` source (X-B1's `_land` hunk), `cli.py` `cmd_plan` (X-C pastes W1-A §3.9), `report/html.py` (X-H2 takes your header lines)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "a red-only end: the green follow-on runs as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-a1a",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a.",
+            "The README section 3 join gate passes on the final commit, each command on its own line.",
+            "The served model is read from the Codex native record and is the first line of the report.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-a1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch A1a of X-A1 on build/eval-x-a1a: config.py bench-matrix/2 validation with PROPERTY_NAMES, CHECK_PROPERTIES and synthetic in HARNESSES; plan.py bench-plan/2 with SYNTHETIC_PROFILE_RECORD and the ready rule by plan kind; the grid-4 golden; red commit then green commit.",
+          "main_line_budget": "220 calls, 3,300 s",
+          "not_in_scope": [
+            "Dispatch A1b (readers, G1 guard, migrations, pilot.yaml): a later dispatch.",
+            "workspace.py source, cli.py cmd_plan and report/html.py."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.029,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JW7Z23R1P950A0GS98ZQX",
+        "raw_sha256": "49c6a6af2c51eb0dce3fd2aa4b7603d195905e4ad894bf1c64632dff92f80455",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gpt-6.1-sol"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-a1.contract.json",
+            "reason": null,
+            "sha256": "b733271ab78a3fabd28199df06f0f74a2d8ab1501aa2b046384ae0b3d2caf9eb",
+            "status": "resolved",
+            "token": "x-a1.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "b"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-arms.md",
+            "reason": null,
+            "sha256": "6b96dee39670f518834044ffa1fe16bc1e4956939b50163ebb378ff8ca6cdb84",
+            "status": "resolved",
+            "token": "docs/design/eval-arms.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "92e977b2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "CHECK_PROPERTIES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "comparisons"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pack"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan_pack(plan, *, strict=False"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "PROPERTY_NAMES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "validate_catalog"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196",
+            "status": "resolved",
+            "token": "src/harness_bench/plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19",
+            "status": "resolved",
+            "token": "config.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/_changes.py",
+            "reason": null,
+            "sha256": "d573c0a57360f960bd6915caae3c0eb36e07d7a79ed168b1e1617679e0eefba7",
+            "status": "resolved",
+            "token": "grade/_changes.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "3017d46c6393d25bfb494ac6ea972345af088ac5a8dfe3fd23ad34cc5e033ed8",
+            "status": "resolved",
+            "token": "cli.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_workspace_builder"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/board.py",
+            "reason": null,
+            "sha256": "cc546371acb9185ae3d953d4d270436907fc2b08c76bef37ef8bea9932628972",
+            "status": "resolved",
+            "token": "board.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/summaries.py",
+            "reason": null,
+            "sha256": "d2964dfd39b11ef81c7290fcaecca5af60d1f37b46d84ca5a65503c0cff5dd67",
+            "status": "resolved",
+            "token": "report/summaries.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan_pack"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "board._build_pack_effect"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/pack_improvement.py",
+            "reason": null,
+            "sha256": "200ec725c7cf0e8adb9df92505ac928bd5b0a5cf6edcdd5a728353ebf8f946c8",
+            "status": "resolved",
+            "token": "report/pack_improvement.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cell_arm"
+          },
+          {
+            "nearest": "bench/profiles/copilot.yaml",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/rings/pilot.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cc-opus"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: claude-opus-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_plan.py",
+            "reason": null,
+            "sha256": "9522437767685abc8ae5ce86f4e951f672bb9eceaa36a7d79651bc27791360ed",
+            "status": "resolved",
+            "token": "tests/test_plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_config.py",
+            "reason": null,
+            "sha256": "a7bbcfa88547eb702f699cbb83b2b883bef78a70250e43726aade6b2fdb83296",
+            "status": "resolved",
+            "token": "test_config.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_workspace.py",
+            "reason": null,
+            "sha256": "ebc50d39c946add698477f74b57590abbc5bbc099b6422f795bd0badd6e05c97",
+            "status": "resolved",
+            "token": "test_workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_views.py",
+            "reason": null,
+            "sha256": "dbb238335908729014a566fc8703c830fb1ee11e415f8005862f25ac1f2d4b94",
+            "status": "resolved",
+            "token": "test_views.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_changes_cache.py",
+            "reason": null,
+            "sha256": "929579db3ddd2b5b07627c13c750c6f6bc993c7c60cbec8f42f8bf64df54604f",
+            "status": "resolved",
+            "token": "test_changes_cache.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pre_turn_commit"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/plans/grid4-cells.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/plan.json",
+            "reason": null,
+            "sha256": "8a8308f48da23cd8538eb32c9e90b430a9335d945f48146ecd66ed7ad7d37690",
+            "status": "resolved",
+            "token": "tests/mutations/plan.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/workspace.py",
+            "reason": null,
+            "sha256": "6ef2182d7c9758775531dd4623feb3d2bbd3f55bfa8d167cfeae65c995eafb74",
+            "status": "resolved",
+            "token": "workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_land"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cmd_plan"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/html.py",
+            "reason": null,
+            "sha256": "91b1d6543041fa57c9541faf8c4c1df201c9d3f4e362a8b3c0491d21df60e020",
+            "status": "resolved",
+            "token": "report/html.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-a1a-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-a1a"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "arms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ARM_OFF"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ARM_ID"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "property"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "also_graded_by"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grader"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196",
+            "status": "resolved",
+            "token": "plan.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Cell.arm"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "launch_seed"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "kind"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "campaign"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ring"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "arm_pack"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "launch_order"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "launch_balance"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "draw_launch_order"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "parse_binding"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "resolve_arms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "synthetic"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "config.HARNESSES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "config.CHECK_PROPERTIES = frozenset({\"security\", \"resilience\"}"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan.SYNTHETIC_PROFILE_RECORD"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan.profile_record(root, \"synthetic"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build_plan"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-a1b-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "views.py:525"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/_changes.py:84"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cli._workspace_builder"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pack_improvement.py:746-747"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_grid4_replan_gives_the_same_task_combo_arm_rep_set_and_cell_ids"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/grid-4/plan.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "="
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x[\"pack"
+          },
+          {
+            "nearest": ".git",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".get"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".pop"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "in"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "getattr"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "itemgetter"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_pack_hits_equal_the_pinned_counts"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Constant(\"on\"/\"off"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/assets/*.js"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_plan_py_imports_no_campaign_or_identity_module"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_plan_level_readers_state_the_true_pack_or_refuse"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "board"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "strict=True"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "several packs"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "draft"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stub"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profile_record(root, \"synthetic"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ValueError"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles.py:176"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "status: ready"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ready"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-a1.md",
+            "reason": null,
+            "sha256": "bac3922ba66ae076a93b63567f7b7b3e974e08d98423609343decb178323ac14",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-a1.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB-PLN-001/002/004/005"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench-matrix/2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench-plan/2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "1/20"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T19:12:23Z",
+      "dispatchable": true,
+      "id": "al-01M41JX1G7Z511DJZXRQE1DXC7",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-a1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch A1a of X-A1 on build/eval-x-a1a: config.py bench-matrix/2 validation with PROPERTY_NAMES, CHECK_PROPERTIES and synthetic in HARNESSES; plan.py bench-plan/2 with SYNTHETIC_PROFILE_RECORD and the ready rule by plan kind; the grid-4 golden; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a.; The README section 3 join gate passes on the final commit, each command on its own line.; The served model is read from the Codex native record and is the first line of the report.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatch A1b (readers, G1 guard, migrations, pilot.yaml): a later dispatch.; workspace.py source, cli.py cmd_plan and report/html.py.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: 220 calls, 3,300 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes on the final commit, each command on its own line. | phrase: README §3 join gate per dispatch |\n| done_when: The served model is read from the Codex native record and is the first line of the report. | phrase: served model read from the Codex native record |\n| not_in_scope: Dispatch A1b (readers, G1 guard, migrations, pilot.yaml): a later dispatch. | phrase: Build dispatch A1a only |\n| not_in_scope: workspace.py source, cli.py cmd_plan and report/html.py. | phrase: `workspace.py` source (X-B1's `_land` hunk), `cli.py` `cmd_plan` (X-C pastes W1-A §3.9), `report/html.py` (X-H2 takes your header lines) |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\nReferences\n- coord-runner: unresolved (not found)\n- gpt-6.1-sol: unresolved (not found)\n- x-a1.contract.json: docs/coordination/eval-wave2-e1/x-a1.contract.json sha256 b733271ab78a3fabd28199df06f0f74a2d8ab1501aa2b046384ae0b3d2caf9eb\n- b: unresolved (not found)\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-arms.md: docs/design/eval-arms.md sha256 6b96dee39670f518834044ffa1fe16bc1e4956939b50163ebb378ff8ca6cdb84\n- main: unresolved (not found)\n- 92e977b2: unresolved (not found)\n- CHECK_PROPERTIES: unresolved (not found)\n- comparisons: unresolved (not found)\n- pack: unresolved (not found)\n- plan_pack(plan, *, strict=False: unresolved (not found)\n- PROPERTY_NAMES: unresolved (not found)\n- validate_catalog: unresolved (not found)\n- src/harness_bench/plan.py: src/harness_bench/plan.py sha256 c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196\n- config.py: src/harness_bench/config.py sha256 2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19\n- views.py: unresolved (ambiguous: 2 matches)\n- grade/_changes.py: src/harness_bench/grade/_changes.py sha256 d573c0a57360f960bd6915caae3c0eb36e07d7a79ed168b1e1617679e0eefba7\n- cli.py: src/harness_bench/cli.py sha256 3017d46c6393d25bfb494ac6ea972345af088ac5a8dfe3fd23ad34cc5e033ed8\n- _workspace_builder: unresolved (not found)\n- board.py: src/harness_bench/board.py sha256 cc546371acb9185ae3d953d4d270436907fc2b08c76bef37ef8bea9932628972\n- report/summaries.py: src/harness_bench/report/summaries.py sha256 d2964dfd39b11ef81c7290fcaecca5af60d1f37b46d84ca5a65503c0cff5dd67\n- plan_pack: unresolved (not found)\n- board._build_pack_effect: unresolved (not found)\n- report/pack_improvement.py: src/harness_bench/report/pack_improvement.py sha256 200ec725c7cf0e8adb9df92505ac928bd5b0a5cf6edcdd5a728353ebf8f946c8\n- cell_arm: unresolved (not found)\n- bench/rings/pilot.yaml: unresolved (not found; nearest: bench/profiles/copilot.yaml)\n- cc-opus: unresolved (not found)\n- model: claude-opus-5-5: unresolved (not found)\n- tests/test_plan.py: tests/test_plan.py sha256 9522437767685abc8ae5ce86f4e951f672bb9eceaa36a7d79651bc27791360ed\n- test_config.py: tests/test_config.py sha256 a7bbcfa88547eb702f699cbb83b2b883bef78a70250e43726aade6b2fdb83296\n- test_workspace.py: tests/test_workspace.py sha256 ebc50d39c946add698477f74b57590abbc5bbc099b6422f795bd0badd6e05c97\n- test_views.py: tests/test_views.py sha256 dbb238335908729014a566fc8703c830fb1ee11e415f8005862f25ac1f2d4b94\n- test_changes_cache.py: tests/test_changes_cache.py sha256 929579db3ddd2b5b07627c13c750c6f6bc993c7c60cbec8f42f8bf64df54604f\n- pre_turn_commit: unresolved (not found)\n- tests/test_arms_guard.py: unresolved (not found)\n- tests/fixtures/plans/grid4-cells.json: unresolved (not found)\n- tests/mutations/plan.json: tests/mutations/plan.json sha256 8a8308f48da23cd8538eb32c9e90b430a9335d945f48146ecd66ed7ad7d37690\n- workspace.py: src/harness_bench/workspace.py sha256 6ef2182d7c9758775531dd4623feb3d2bbd3f55bfa8d167cfeae65c995eafb74\n- _land: unresolved (not found)\n- cmd_plan: unresolved (not found)\n- report/html.py: src/harness_bench/report/html.py sha256 91b1d6543041fa57c9541faf8c4c1df201c9d3f4e362a8b3c0491d21df60e020\n- x-a1a-e1e4: unresolved (not found)\n- build/eval-x-a1a: unresolved (not found)\n- arms: unresolved (not found)\n- ARM_OFF: unresolved (not found)\n- ARM_ID: unresolved (not found)\n- property: unresolved (not found)\n- also_graded_by: unresolved (not found)\n- grader: unresolved (not found)\n- plan.py: src/harness_bench/plan.py sha256 c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196\n- Cell.arm: unresolved (not found)\n- launch_seed: unresolved (not found)\n- kind: unresolved (not found)\n- campaign: unresolved (not found)\n- ring: unresolved (not found)\n- arm_pack: unresolved (not found)\n- launch_order: unresolved (not found)\n- launch_balance: unresolved (not found)\n- draw_launch_order: unresolved (not found)\n- parse_binding: unresolved (not found)\n- resolve_arms: unresolved (not found)\n- synthetic: unresolved (not found)\n- config.HARNESSES: unresolved (not found)\n- config.CHECK_PROPERTIES = frozenset({\"security\", \"resilience\"}: unresolved (not found)\n- plan.SYNTHETIC_PROFILE_RECORD: unresolved (not found)\n- plan.profile_record(root, \"synthetic: unresolved (not found)\n- build_plan: unresolved (not found)\n- x-a1b-e1e4: unresolved (not found)\n- views.py:525: unresolved (not found)\n- grade/_changes.py:84: unresolved (not found)\n- cli._workspace_builder: unresolved (not found)\n- pack_improvement.py:746-747: unresolved (not found)\n- test_grid4_replan_gives_the_same_task_combo_arm_rep_set_and_cell_ids: unresolved (not found)\n- runs/grid-4/plan.json: unresolved (not found)\n- =: unresolved (not found)\n- x[\"pack: unresolved (not found)\n- .get: unresolved (not found; nearest: .git)\n- .pop: unresolved (not found)\n- in: unresolved (not found)\n- getattr: unresolved (not found)\n- itemgetter: unresolved (not found)\n- test_pack_hits_equal_the_pinned_counts: unresolved (not found)\n- Constant(\"on\"/\"off: unresolved (not found)\n- report/assets/*.js: unresolved (not found)\n- test_plan_py_imports_no_campaign_or_identity_module: unresolved (not found)\n- identity: unresolved (not found)\n- test_plan_level_readers_state_the_true_pack_or_refuse: unresolved (not found)\n- board: unresolved (not found)\n- strict=True: unresolved (not found)\n- several packs: unresolved (not found)\n- draft: unresolved (not found)\n- stub: unresolved (not found)\n- profile_record(root, \"synthetic: unresolved (not found)\n- ValueError: unresolved (not found)\n- profiles.py:176: unresolved (not found)\n- status: ready: unresolved (not found)\n- ready: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-a1.md: docs/coordination/eval-wave2-e1/x-a1.md sha256 bac3922ba66ae076a93b63567f7b7b3e974e08d98423609343decb178323ac14\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- HB-PLN-001/002/004/005: unresolved (not found)\n- bench-matrix/2: unresolved (not found)\n- bench-plan/2: unresolved (not found)\n- 1/20: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-a1a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: a red-only end: the green follow-on runs as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JW7Z23R1P950A0GS98ZQX\nraw sha256: 49c6a6af2c51eb0dce3fd2aa4b7603d195905e4ad894bf1c64632dff92f80455\ncompiler model: claude-opus-5-5\nengine seconds: 0.029\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-a1a-e1e4 on branch build/eval-x-a1a, harness Codex, mo…",
+      "skill": null,
+      "summary": "compiled al-01M41JW7Z23R1P950A0GS98ZQX for codex v1: 7 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-g1.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The eleven metrics validate under 0.7.dev and bench validate exits 0 on the joined tree.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The eleven metrics validate under `0.7.dev` (R-90); `bench validate` exit 0 on the joined tree."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The hallucinated_symbol_errors anchor_note no longer says build-log errors.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the words \"build-log errors\" do not appear in it"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate; `python tools/grok_served_model.py <session dir>` exits 0"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "grade/property.py, config.py, grade/runner.py and bench/catalog-freeze.yaml.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`grade/property.py` (X-F; never create it), `config.py` (X-A1's validation checks), `grade/runner.py` (X-F builds the owner clause and T-R3..T-R6), `bench/catalog-freeze.yaml` (Leader, R-86)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "1,200 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-g1",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "100k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-g1.",
+            "The eleven metrics validate under 0.7.dev and bench validate exits 0 on the joined tree.",
+            "The hallucinated_symbol_errors anchor_note no longer says build-log errors.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-g1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build X-G1 on build/eval-x-g1: catalog 0.7.dev with the eleven property metrics, also_graded_by on pass_at_1 with the ADR-0019 item-3 note, and the R-97 anchor_note wording; red commit then green commit.",
+          "main_line_budget": "40 calls, 1,200 s",
+          "not_in_scope": [
+            "grade/property.py, config.py, grade/runner.py and bench/catalog-freeze.yaml."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.022,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JWB1KRGXW71ZGJZAN9ZTX",
+        "raw_sha256": "67c56e5133e8548faab402096b72b22757e215a6d1ac2892c214a6b10a1be065",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--reasoning-effort high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "XAI_API_KEY"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-g1.contract.json",
+            "reason": null,
+            "sha256": "18799ffa8d0e010c64c89cb0ad0bda169dd5a81889c49c6c6b4a1b1be3bccb95",
+            "status": "resolved",
+            "token": "x-g1.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-catalog-0-7.md",
+            "reason": null,
+            "sha256": "0b5cff38703dc03b75420c16279c50cb8fd147a5a72d3d99e31bc0a035034810",
+            "status": "resolved",
+            "token": "docs/design/eval-catalog-0-7.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "property"
+          },
+          {
+            "nearest": null,
+            "path": "bench/metrics.yaml",
+            "reason": null,
+            "sha256": "b04abc705a4d6b6abc7eb51f8b017fd9d82d5a11dc0e5ce1f3ca697b7e982488",
+            "status": "resolved",
+            "token": "bench/metrics.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_catalog_version.py",
+            "reason": null,
+            "sha256": "637709eec74f58c203ee0ca16dde43abb62780ccc2941054c25bc1a034817344",
+            "status": "resolved",
+            "token": "tests/test_catalog_version.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/adr/0019-catalog-0-7-property-metrics.md",
+            "reason": null,
+            "sha256": "8869f917fa5e1fcb241d47f9cd972565982c1cc17436a690745b7968ce8153a0",
+            "status": "resolved",
+            "token": "docs/adr/0019-catalog-0-7-property-metrics.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/property.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19",
+            "status": "resolved",
+            "token": "config.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "65d4fdfe3805f235ba957d7d5b4de74e5651b334040eda8e8e6f383da0c2849a",
+            "status": "resolved",
+            "token": "grade/runner.py"
+          },
+          {
+            "nearest": null,
+            "path": "bench/catalog-freeze.yaml",
+            "reason": null,
+            "sha256": "2566fdd7b5f121248ad353cdcd357ce8c1d9a30fb234bd994ce26f2f712ddef0",
+            "status": "resolved",
+            "token": "bench/catalog-freeze.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "validate_repo"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "config.py:158"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "version: \"0.7.dev"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "property: <name"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "property_check_pass"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pass_at_1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "also_graded_by: [formal"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "hallucinated_symbol_errors"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "anchor_note"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "5, 0"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "0.7.dev"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench validate"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "n_recorded"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-g1"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-g1.md",
+            "reason": null,
+            "sha256": "1f2ef51b0e0b28763e6b8d7c8e66351f6ec7968e58daeb48b4eb9bd9a34c83e9",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-g1.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "T-P4/T-P6"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T19:12:24Z",
+      "dispatchable": true,
+      "id": "al-01M41JX2G67CJTAJEJJ6752NW9",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-g1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build X-G1 on build/eval-x-g1: catalog 0.7.dev with the eleven property metrics, also_graded_by on pass_at_1 with the ADR-0019 item-3 note, and the R-97 anchor_note wording; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-g1.; The eleven metrics validate under 0.7.dev and bench validate exits 0 on the joined tree.; The hallucinated_symbol_errors anchor_note no longer says build-log errors.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: grade/property.py, config.py, grade/runner.py and bench/catalog-freeze.yaml.\nTier: T1\nFan-out cap: 0\nContext ceiling: 100k tokens\nMain-line budget: 40 calls, 1,200 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-g1. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The eleven metrics validate under 0.7.dev and bench validate exits 0 on the joined tree. | phrase: The eleven metrics validate under `0.7.dev` (R-90); `bench validate` exit 0 on the joined tree. |\n| done_when: The hallucinated_symbol_errors anchor_note no longer says build-log errors. | phrase: the words \"build-log errors\" do not appear in it |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate; `python tools/grok_served_model.py <session dir>` exits 0 |\n| not_in_scope: grade/property.py, config.py, grade/runner.py and bench/catalog-freeze.yaml. | phrase: `grade/property.py` (X-F; never create it), `config.py` (X-A1's validation checks), `grade/runner.py` (X-F builds the owner clause and T-R3..T-R6), `bench/catalog-freeze.yaml` (Leader, R-86) |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\nReferences\n- coord-runner: unresolved (not found)\n- grok-4.7: unresolved (not found)\n- --reasoning-effort high: unresolved (not found)\n- XAI_API_KEY: unresolved (not found)\n- x-g1.contract.json: docs/coordination/eval-wave2-e1/x-g1.contract.json sha256 18799ffa8d0e010c64c89cb0ad0bda169dd5a81889c49c6c6b4a1b1be3bccb95\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-catalog-0-7.md: docs/design/eval-catalog-0-7.md sha256 0b5cff38703dc03b75420c16279c50cb8fd147a5a72d3d99e31bc0a035034810\n- main: unresolved (not found)\n- property: unresolved (not found)\n- bench/metrics.yaml: bench/metrics.yaml sha256 b04abc705a4d6b6abc7eb51f8b017fd9d82d5a11dc0e5ce1f3ca697b7e982488\n- tests/test_catalog_version.py: tests/test_catalog_version.py sha256 637709eec74f58c203ee0ca16dde43abb62780ccc2941054c25bc1a034817344\n- docs/adr/0019-catalog-0-7-property-metrics.md: docs/adr/0019-catalog-0-7-property-metrics.md sha256 8869f917fa5e1fcb241d47f9cd972565982c1cc17436a690745b7968ce8153a0\n- grade/property.py: unresolved (not found)\n- config.py: src/harness_bench/config.py sha256 2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 65d4fdfe3805f235ba957d7d5b4de74e5651b334040eda8e8e6f383da0c2849a\n- bench/catalog-freeze.yaml: bench/catalog-freeze.yaml sha256 2566fdd7b5f121248ad353cdcd357ce8c1d9a30fb234bd994ce26f2f712ddef0\n- validate_repo: unresolved (not found)\n- config.py:158: unresolved (not found)\n- version: \"0.7.dev: unresolved (not found)\n- property: <name: unresolved (not found)\n- property_check_pass: unresolved (not found)\n- pass_at_1: unresolved (not found)\n- also_graded_by: [formal: unresolved (not found)\n- hallucinated_symbol_errors: unresolved (not found)\n- anchor_note: unresolved (not found)\n- 5, 0: unresolved (not found)\n- 0.7.dev: unresolved (not found)\n- bench validate: unresolved (not found)\n- n_recorded: unresolved (not found)\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-x-g1: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-g1.md: docs/coordination/eval-wave2-e1/x-g1.md sha256 1f2ef51b0e0b28763e6b8d7c8e66351f6ec7968e58daeb48b4eb9bd9a34c83e9\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- T-P4/T-P6: unresolved (not found)\n- tools/grok_served_model.py: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-g1\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 1,200 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JWB1KRGXW71ZGJZAN9ZTX\nraw sha256: 67c56e5133e8548faab402096b72b22757e215a6d1ac2892c214a6b10a1be065\ncompiler model: claude-opus-5-5\nengine seconds: 0.022\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-g1-e1e4 on branch build/eval-x-g1, harness Grok, model…",
+      "skill": null,
+      "summary": "compiled al-01M41JWB1KRGXW71ZGJZAN9ZTX for claude-code v1: 7 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92)."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch B1a only"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "1,200 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-b1a",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "100k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1a of X-B1 on build/eval-x-b1a: atomic.py core per W1-B section 17 (create_once, TEMP_RE, is_temp_name, stale_temps, sweep_temps with the lock check, make_writable, rename_with_retry); red commit then green commit.",
+          "main_line_budget": "40 calls, 1,200 s",
+          "not_in_scope": [
+            "Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.013,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JWDM5FBGR7H8FSTCDVSXZ",
+        "raw_sha256": "d99cafae71c97d17eb7b7fbf78c29738c330db034913676d5a52d10daf945d00",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--reasoning-effort high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "XAI_API_KEY"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b1.contract.json",
+            "reason": null,
+            "sha256": "b82516583f32dc4b460a303a0750d65d42560148ffce4c5df19c04c8b772ff5c",
+            "status": "resolved",
+            "token": "x-b1.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "b"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "c"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-atomic-publish.md",
+            "reason": null,
+            "sha256": "4706e446d39f829dfaa8bf399dd337646353d79baf5ff7fa33e8f8bea7c986ee",
+            "status": "resolved",
+            "token": "docs/design/eval-atomic-publish.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "acquire_then_probe"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/atomic.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/oslock.py",
+            "reason": null,
+            "sha256": "02f2aa86bed5061dfbc2994741f0d0f0d8e624b5b07c29fa5a86010ebdc98571",
+            "status": "resolved",
+            "token": "src/harness_bench/oslock.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_oslock.py",
+            "reason": null,
+            "sha256": "09b1ee2b4a441da03f6bd7d9100f6db16df5f47dc9ed359ab707cda7614b6100",
+            "status": "resolved",
+            "token": "tests/test_oslock.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/workspace.py",
+            "reason": null,
+            "sha256": "6ef2182d7c9758775531dd4623feb3d2bbd3f55bfa8d167cfeae65c995eafb74",
+            "status": "resolved",
+            "token": "src/harness_bench/workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_land"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "make_writable"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/workspace.json",
+            "reason": null,
+            "sha256": "f6e56abb11b9343ef0223c8082ed71d570a24d088f42a327d999ff8d87c05f21",
+            "status": "resolved",
+            "token": "tests/mutations/workspace.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_workspace.py",
+            "reason": null,
+            "sha256": "ebc50d39c946add698477f74b57590abbc5bbc099b6422f795bd0badd6e05c97",
+            "status": "resolved",
+            "token": "tests/test_workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/archive.py",
+            "reason": null,
+            "sha256": "788c614b4bd4e4594b109b3a4a241276017cd0b7d33d45fc56e4c9890f6cedc5",
+            "status": "resolved",
+            "token": "archive.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-b1a-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-b1a"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "create_once"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "TEMP_RE"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "is_temp_name"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stale_temps"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "sweep_temps(target, lock"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ValueError"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oslock.is_held(lock.path"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "S_IWUSR"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "rename_with_retry"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "RENAME_BACKOFF"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-b1b-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "publish_dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "workspace._land"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "rename_with_retry(tmp, dest, replace=True, settled=lambda: valid(dest"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "copytree"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-b1c-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oslock.acquire_then_probe(own, own_code, others, *, between=None) -> RunLock"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "between"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Barrier(2).wait(timeout=10"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_posix_flag_default_follows_the_platform"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_the_real_publish_dir_fsyncs_the_folder_only_on_posix"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "os.unlink"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "O_EXCL"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_the_posix_job_does_not_skip_the_symlink_variants"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "st_dev"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "st_ino"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "O_NOFOLLOW"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_discard_temp"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "atomic.temp_leaked"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "rename_retries"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "rename_ms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "publish_failed(phase=rename"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_a_kill_between_write_and_link_leaves_no_final_file"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_a_kill_mid_copy_leaves_no_final_folder_and_the_redo_succeeds"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b1.md",
+            "reason": null,
+            "sha256": "151b2f470840a34fe8955f89700014c522f696116006a5daf7e613cf7c9732f8",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-b1.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "st_dev`/`st_ino"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T19:12:25Z",
+      "dispatchable": true,
+      "id": "al-01M41JX3PQW2EA9Z4KKSFW3764",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1a of X-B1 on build/eval-x-b1a: atomic.py core per W1-B section 17 (create_once, TEMP_RE, is_temp_name, stale_temps, sweep_temps with the lock check, make_writable, rename_with_retry); red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches.\nTier: T2\nFan-out cap: 0\nContext ceiling: 100k tokens\nMain-line budget: 40 calls, 1,200 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). |\n| not_in_scope: Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches. | phrase: Build dispatch B1a only |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\nReferences\n- coord-runner: unresolved (not found)\n- grok-4.7: unresolved (not found)\n- --reasoning-effort high: unresolved (not found)\n- XAI_API_KEY: unresolved (not found)\n- x-b1.contract.json: docs/coordination/eval-wave2-e1/x-b1.contract.json sha256 b82516583f32dc4b460a303a0750d65d42560148ffce4c5df19c04c8b772ff5c\n- b: unresolved (not found)\n- c: unresolved (not found)\n- grok-4.7*: unresolved (not found)\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-atomic-publish.md: docs/design/eval-atomic-publish.md sha256 4706e446d39f829dfaa8bf399dd337646353d79baf5ff7fa33e8f8bea7c986ee\n- main: unresolved (not found)\n- acquire_then_probe: unresolved (not found)\n- src/harness_bench/atomic.py: unresolved (not found)\n- tests/test_atomic.py: unresolved (not found)\n- tests/test_atomic_sites.py: unresolved (not found)\n- tests/mutations/atomic.json: unresolved (not found)\n- src/harness_bench/oslock.py: src/harness_bench/oslock.py sha256 02f2aa86bed5061dfbc2994741f0d0f0d8e624b5b07c29fa5a86010ebdc98571\n- tests/test_oslock.py: tests/test_oslock.py sha256 09b1ee2b4a441da03f6bd7d9100f6db16df5f47dc9ed359ab707cda7614b6100\n- src/harness_bench/workspace.py: src/harness_bench/workspace.py sha256 6ef2182d7c9758775531dd4623feb3d2bbd3f55bfa8d167cfeae65c995eafb74\n- _land: unresolved (not found)\n- make_writable: unresolved (not found)\n- tests/mutations/workspace.json: tests/mutations/workspace.json sha256 f6e56abb11b9343ef0223c8082ed71d570a24d088f42a327d999ff8d87c05f21\n- tests/test_workspace.py: tests/test_workspace.py sha256 ebc50d39c946add698477f74b57590abbc5bbc099b6422f795bd0badd6e05c97\n- archive.py: src/harness_bench/archive.py sha256 788c614b4bd4e4594b109b3a4a241276017cd0b7d33d45fc56e4c9890f6cedc5\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b\n- x-b1a-e1e4: unresolved (not found)\n- build/eval-x-b1a: unresolved (not found)\n- atomic.py: unresolved (not found)\n- create_once: unresolved (not found)\n- TEMP_RE: unresolved (not found)\n- is_temp_name: unresolved (not found)\n- stale_temps: unresolved (not found)\n- sweep_temps(target, lock: unresolved (not found)\n- ValueError: unresolved (not found)\n- oslock.is_held(lock.path: unresolved (not found)\n- S_IWUSR: unresolved (not found)\n- rename_with_retry: unresolved (not found)\n- RENAME_BACKOFF: unresolved (not found)\n- x-b1b-e1e4: unresolved (not found)\n- publish_dir: unresolved (not found)\n- workspace._land: unresolved (not found)\n- rename_with_retry(tmp, dest, replace=True, settled=lambda: valid(dest: unresolved (not found)\n- copytree: unresolved (not found)\n- x-b1c-e1e4: unresolved (not found)\n- oslock.acquire_then_probe(own, own_code, others, *, between=None) -> RunLock: unresolved (not found)\n- between: unresolved (not found)\n- Barrier(2).wait(timeout=10: unresolved (not found)\n- test_posix_flag_default_follows_the_platform: unresolved (not found)\n- test_the_real_publish_dir_fsyncs_the_folder_only_on_posix: unresolved (not found)\n- os.unlink: unresolved (not found)\n- O_EXCL: unresolved (not found)\n- test_the_posix_job_does_not_skip_the_symlink_variants: unresolved (not found)\n- st_dev: unresolved (not found)\n- st_ino: unresolved (not found)\n- O_NOFOLLOW: unresolved (not found)\n- _discard_temp: unresolved (not found)\n- atomic.temp_leaked: unresolved (not found)\n- rename_retries: unresolved (not found)\n- rename_ms: unresolved (not found)\n- publish_failed(phase=rename: unresolved (not found)\n- test_a_kill_between_write_and_link_leaves_no_final_file: unresolved (not found)\n- test_a_kill_mid_copy_leaves_no_final_folder_and_the_redo_succeeds: unresolved (not found)\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-b1.md: docs/coordination/eval-wave2-e1/x-b1.md sha256 151b2f470840a34fe8955f89700014c522f696116006a5daf7e613cf7c9732f8\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- st_dev`/`st_ino: unresolved (not found)\n- tools/grok_served_model.py: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-b1a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 1,200 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JWDM5FBGR7H8FSTCDVSXZ\nraw sha256: d99cafae71c97d17eb7b7fbf78c29738c330db034913676d5a52d10daf945d00\ncompiler model: claude-opus-5-5\nengine seconds: 0.013\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-b1a-e1e4 on branch build/eval-x-b1a, harness Grok, mod…",
+      "skill": null,
+      "summary": "compiled al-01M41JWDM5FBGR7H8FSTCDVSXZ for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-env-a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The three named tests pass with HB_CLAUDE_OAUTH_TOKEN=dummy set and with it unset.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The three named tests pass with `HB_CLAUDE_OAUTH_TOKEN=dummy` set in the shell, and with it unset."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A mutant that removes the fixture is killed by tests/test_env_isolation.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A mutant that removes the fixture is killed by `tests/test_env_isolation.py`."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`python tools/grok_served_model.py <session dir>` exits 0"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing tests/test_profiles.py or tests/test_gateway_headless.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`tests/test_profiles.py` (X-E's in E1), `tests/test_gateway_headless.py`"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "1,200 s",
+          "fallback": "a red-only end or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-env-a",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "80k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-env-a.",
+            "The three named tests pass with HB_CLAUDE_OAUTH_TOKEN=dummy set and with it unset.",
+            "A mutant that removes the fixture is killed by tests/test_env_isolation.py.",
+            "The Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/env-a.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build the ENV-A fix on build/eval-env-a (defect class ENV-C): an autouse conftest fixture that clears every listed credential name except for tests marked credentials, with tests/test_env_isolation.py; red commit then green commit.",
+          "main_line_budget": "30 calls, 1,200 s",
+          "not_in_scope": [
+            "Editing tests/test_profiles.py or tests/test_gateway_headless.py."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.014,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JWH49CM57GVNZ98ZD5W79",
+        "raw_sha256": "6cfd4a8bd6336f53562c346a8148992d442bb72477f065049a33749265147fd5",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--reasoning-effort high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "XAI_API_KEY"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/env-a.contract.json",
+            "reason": null,
+            "sha256": "24f67402f61c4f3616ac45a21e12e4f0b994f8b142b027b40ba9457adef462b6",
+            "status": "resolved",
+            "token": "env-a.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ENV-A"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_CLAUDE_OAUTH_TOKEN"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_gateway_headless.py::test_t_gw_10_the_credential_is_present_during_the_call_and_gone_after_it"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "::test_t_gw_10_the_credential_is_gone_after_a_timeout_and_after_an_exception_past_the_copy"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_profiles.py::test_the_launcher_reports_no_model_setter_and_a_copied_login[claude-code"
+          },
+          {
+            "nearest": null,
+            "path": "tests/conftest.py",
+            "reason": null,
+            "sha256": "fee195665dc6d1e49863e375e7dc97d13726e6b2e068a7f59daffd5eb8deb6b6",
+            "status": "resolved",
+            "token": "tests/conftest.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_env_isolation.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_profiles.py",
+            "reason": null,
+            "sha256": "5ef6b8aed6743ed0ddc9f95f3a9af69927186312ed82a879b7f9503afebf5130",
+            "status": "resolved",
+            "token": "tests/test_profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_gateway_headless.py",
+            "reason": null,
+            "sha256": "663ada1b225b5883c36097c5cefc35a5155a56083bc3899b076a52da0ccd8076",
+            "status": "resolved",
+            "token": "tests/test_gateway_headless.py"
+          },
+          {
+            "nearest": "src/harness_bench/profiles.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git grep -n -E \"OAUTH_TOKEN|_API_KEY|GH_TOKEN\" -- tests src/harness_bench/profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles.DROP_EXACT"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles.DROP_PREFIXES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "conftest.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "monkeypatch.setenv"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pytest.main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "credentials"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "monkeypatch.delenv(name, raising=False"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_CLAUDE_OAUTH_TOKEN=dummy"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "controlled"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-env-a"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/env-a.md",
+            "reason": null,
+            "sha256": "196d3a1ad63d33bcefa652054491a2831be239de652213f0dfd2d10bcd77d7ca",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/env-a.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/profiles.py",
+            "reason": null,
+            "sha256": "dc384ad7b422d9dd12d254062fd2c9aeeb6f72d5fbc564fbb31e09e3dbd5defe",
+            "status": "resolved",
+            "token": "src/harness_bench/profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T19:12:26Z",
+      "dispatchable": true,
+      "id": "al-01M41JX4E3Y85MKT11APTKCMM2",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/env-a.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build the ENV-A fix on build/eval-env-a (defect class ENV-C): an autouse conftest fixture that clears every listed credential name except for tests marked credentials, with tests/test_env_isolation.py; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-env-a.; The three named tests pass with HB_CLAUDE_OAUTH_TOKEN=dummy set and with it unset.; A mutant that removes the fixture is killed by tests/test_env_isolation.py.; The Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Editing tests/test_profiles.py or tests/test_gateway_headless.py.\nTier: T1\nFan-out cap: 0\nContext ceiling: 80k tokens\nMain-line budget: 30 calls, 1,200 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-env-a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The three named tests pass with HB_CLAUDE_OAUTH_TOKEN=dummy set and with it unset. | phrase: The three named tests pass with `HB_CLAUDE_OAUTH_TOKEN=dummy` set in the shell, and with it unset. |\n| done_when: A mutant that removes the fixture is killed by tests/test_env_isolation.py. | phrase: A mutant that removes the fixture is killed by `tests/test_env_isolation.py`. |\n| done_when: The Grok served-model reader exits 0. | phrase: `python tools/grok_served_model.py <session dir>` exits 0 |\n| not_in_scope: Editing tests/test_profiles.py or tests/test_gateway_headless.py. | phrase: `tests/test_profiles.py` (X-E's in E1), `tests/test_gateway_headless.py` |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\nReferences\n- coord-runner: unresolved (not found)\n- grok-4.7: unresolved (not found)\n- --reasoning-effort high: unresolved (not found)\n- XAI_API_KEY: unresolved (not found)\n- env-a.contract.json: docs/coordination/eval-wave2-e1/env-a.contract.json sha256 24f67402f61c4f3616ac45a21e12e4f0b994f8b142b027b40ba9457adef462b6\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b\n- ENV-A: unresolved (not found)\n- HB_CLAUDE_OAUTH_TOKEN: unresolved (not found)\n- main: unresolved (not found)\n- tests/test_gateway_headless.py::test_t_gw_10_the_credential_is_present_during_the_call_and_gone_after_it: unresolved (not found)\n- ::test_t_gw_10_the_credential_is_gone_after_a_timeout_and_after_an_exception_past_the_copy: unresolved (not found)\n- tests/test_profiles.py::test_the_launcher_reports_no_model_setter_and_a_copied_login[claude-code: unresolved (not found)\n- tests/conftest.py: tests/conftest.py sha256 fee195665dc6d1e49863e375e7dc97d13726e6b2e068a7f59daffd5eb8deb6b6\n- tests/test_env_isolation.py: unresolved (not found)\n- tests/test_profiles.py: tests/test_profiles.py sha256 5ef6b8aed6743ed0ddc9f95f3a9af69927186312ed82a879b7f9503afebf5130\n- tests/test_gateway_headless.py: tests/test_gateway_headless.py sha256 663ada1b225b5883c36097c5cefc35a5155a56083bc3899b076a52da0ccd8076\n- git grep -n -E \"OAUTH_TOKEN|_API_KEY|GH_TOKEN\" -- tests src/harness_bench/profiles.py: unresolved (not found; nearest: src/harness_bench/profiles.py)\n- profiles.DROP_EXACT: unresolved (not found)\n- profiles.DROP_PREFIXES: unresolved (not found)\n- conftest.py: unresolved (ambiguous: 3 matches)\n- monkeypatch.setenv: unresolved (not found)\n- pytest.main: unresolved (not found)\n- credentials: unresolved (not found)\n- monkeypatch.delenv(name, raising=False: unresolved (not found)\n- HB_CLAUDE_OAUTH_TOKEN=dummy: unresolved (not found)\n- controlled: unresolved (not found)\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-env-a: unresolved (not found)\n- docs/coordination/eval-wave2-e1/env-a.md: docs/coordination/eval-wave2-e1/env-a.md sha256 196d3a1ad63d33bcefa652054491a2831be239de652213f0dfd2d10bcd77d7ca\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- src/harness_bench/profiles.py: src/harness_bench/profiles.py sha256 dc384ad7b422d9dd12d254062fd2c9aeeb6f72d5fbc564fbb31e09e3dbd5defe\n- tools/grok_served_model.py: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-env-a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 1,200 s\nfallback: a red-only end or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JWH49CM57GVNZ98ZD5W79\nraw sha256: 6cfd4a8bd6336f53562c346a8148992d442bb72477f065049a33749265147fd5\ncompiler model: claude-opus-5-5\nengine seconds: 0.014\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-enva-e1e4 on branch build/eval-env-a, harness Grok, mo…",
+      "skill": null,
+      "summary": "compiled al-01M41JWH49CM57GVNZ98ZD5W79 for claude-code v1: 7 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "archive_cell goes through atomic.publish_dir with a verify of the file set and each file's rows.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`archive_cell` goes through `atomic.publish_dir` with a `verify` that compares the file set and each file's rows"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes; the served model is read from Agy's cli.log.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate; served model read from Agy's `cli.log`."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing docs/lessons/defect-classes.md.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "you do not edit `docs/lessons/defect-classes.md`"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-b2",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2.",
+            "archive_cell goes through atomic.publish_dir with a verify of the file set and each file's rows.",
+            "The README section 3 join gate passes; the served model is read from Agy's cli.log.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-b2.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build X-B2 on build/eval-x-b2: archive_cell through atomic.publish_dir with a verify of the file set and rows, archive.attempt_dirs as the one reader used by report/judges.py, and mutants A1..A4; red commit then green commit.",
+          "main_line_budget": "120 calls, 3,300 s",
+          "not_in_scope": [
+            "Editing docs/lessons/defect-classes.md."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.014,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JWKRTWS49TBFSF805EG23",
+        "raw_sha256": "2ba71fddfb35d91bd445d349cd6d0b2aa9343a5c0244c546d7330de7f9cc63cd",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gemini-3.8-flash-high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--mode accept-edits"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b2.contract.json",
+            "reason": null,
+            "sha256": "66982d45b5c7bb68d1b03cc88c111a24b90ff9b9931e4bbbe137fd94b6a16c0b",
+            "status": "resolved",
+            "token": "x-b2.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-atomic-publish.md",
+            "reason": null,
+            "sha256": "4706e446d39f829dfaa8bf399dd337646353d79baf5ff7fa33e8f8bea7c986ee",
+            "status": "resolved",
+            "token": "docs/design/eval-atomic-publish.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "publish_dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "recover_archive"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/archive.py",
+            "reason": null,
+            "sha256": "788c614b4bd4e4594b109b3a4a241276017cd0b7d33d45fc56e4c9890f6cedc5",
+            "status": "resolved",
+            "token": "src/harness_bench/archive.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/judges.py",
+            "reason": null,
+            "sha256": "30b8de3c690430923075040f43b81d0f1bda166606e987d969594dbd1e4786f9",
+            "status": "resolved",
+            "token": "report/judges.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "attempt_dirs"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":216"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_archive.py",
+            "reason": null,
+            "sha256": "37f00d199456e779774171c4f523ecc5cd6e18d75d3a4d829af009121f7bdf54",
+            "status": "resolved",
+            "token": "tests/test_archive.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/archive.json",
+            "reason": null,
+            "sha256": "78305eb8407a0ff5f1ee1bba1a4befc8940c8d56349a52d45e794fa79c510152",
+            "status": "resolved",
+            "token": "tests/mutations/archive.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_engine.py",
+            "reason": null,
+            "sha256": "2b2574063780c13ce130974fdf02589825038c68b4f4f6c16571976e208c26d2",
+            "status": "resolved",
+            "token": "tests/test_engine.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_the_engine_archive_goes_through_publish_dir"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_views.py",
+            "reason": null,
+            "sha256": "dbb238335908729014a566fc8703c830fb1ee11e415f8005862f25ac1f2d4b94",
+            "status": "resolved",
+            "token": "tests/test_views.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_bench_verify_passes_a_run_archived_by_the_atomic_path"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "atomic.publish_dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "archive_cell"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB-USR-002"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "*.tmp-*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "verify"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "archive.attempt_dirs(run_dir, cell_id"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "re.fullmatch(r\"attempt-(\\d+"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/judges.py:216"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "attempt-1.tmp-…"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ValueError"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "archive.make_writable"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "atomic.make_writable"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cli.log"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-b2"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b2.md",
+            "reason": null,
+            "sha256": "a16f73aeebe362c4dd5e74b5d5c60566d0bd106fe6baff2168c70d890e10c348",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-b2.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T19:12:27Z",
+      "dispatchable": true,
+      "id": "al-01M41JX5J2A1XH7TZ7BTY8MW70",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-b2.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build X-B2 on build/eval-x-b2: archive_cell through atomic.publish_dir with a verify of the file set and rows, archive.attempt_dirs as the one reader used by report/judges.py, and mutants A1..A4; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2.; archive_cell goes through atomic.publish_dir with a verify of the file set and each file's rows.; The README section 3 join gate passes; the served model is read from Agy's cli.log.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Editing docs/lessons/defect-classes.md.\nTier: T2\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: 120 calls, 3,300 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2. | phrase: in one turn: a red commit, then a green commit |\n| done_when: archive_cell goes through atomic.publish_dir with a verify of the file set and each file's rows. | phrase: `archive_cell` goes through `atomic.publish_dir` with a `verify` that compares the file set and each file's rows |\n| done_when: The README section 3 join gate passes; the served model is read from Agy's cli.log. | phrase: README §3 join gate; served model read from Agy's `cli.log`. |\n| not_in_scope: Editing docs/lessons/defect-classes.md. | phrase: you do not edit `docs/lessons/defect-classes.md` |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\nReferences\n- coord-runner: unresolved (not found)\n- gemini-3.8-flash-high: unresolved (not found)\n- --mode accept-edits: unresolved (not found)\n- x-b2.contract.json: docs/coordination/eval-wave2-e1/x-b2.contract.json sha256 66982d45b5c7bb68d1b03cc88c111a24b90ff9b9931e4bbbe137fd94b6a16c0b\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-atomic-publish.md: docs/design/eval-atomic-publish.md sha256 4706e446d39f829dfaa8bf399dd337646353d79baf5ff7fa33e8f8bea7c986ee\n- publish_dir: unresolved (not found)\n- recover_archive: unresolved (not found)\n- src/harness_bench/archive.py: src/harness_bench/archive.py sha256 788c614b4bd4e4594b109b3a4a241276017cd0b7d33d45fc56e4c9890f6cedc5\n- report/judges.py: src/harness_bench/report/judges.py sha256 30b8de3c690430923075040f43b81d0f1bda166606e987d969594dbd1e4786f9\n- attempt_dirs: unresolved (not found)\n- :216: unresolved (not found)\n- tests/test_archive.py: tests/test_archive.py sha256 37f00d199456e779774171c4f523ecc5cd6e18d75d3a4d829af009121f7bdf54\n- tests/mutations/archive.json: tests/mutations/archive.json sha256 78305eb8407a0ff5f1ee1bba1a4befc8940c8d56349a52d45e794fa79c510152\n- tests/test_engine.py: tests/test_engine.py sha256 2b2574063780c13ce130974fdf02589825038c68b4f4f6c16571976e208c26d2\n- test_the_engine_archive_goes_through_publish_dir: unresolved (not found)\n- tests/test_views.py: tests/test_views.py sha256 dbb238335908729014a566fc8703c830fb1ee11e415f8005862f25ac1f2d4b94\n- test_bench_verify_passes_a_run_archived_by_the_atomic_path: unresolved (not found)\n- atomic.publish_dir: unresolved (not found)\n- archive_cell: unresolved (not found)\n- HB-USR-002: unresolved (not found)\n- *.tmp-*: unresolved (not found)\n- verify: unresolved (not found)\n- archive.attempt_dirs(run_dir, cell_id: unresolved (not found)\n- re.fullmatch(r\"attempt-(\\d+: unresolved (not found)\n- report/judges.py:216: unresolved (not found)\n- attempt-1.tmp-…: unresolved (not found)\n- ValueError: unresolved (not found)\n- archive.make_writable: unresolved (not found)\n- atomic.make_writable: unresolved (not found)\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b\n- cli.log: unresolved (not found)\n- build/eval-x-b2: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-b2.md: docs/coordination/eval-wave2-e1/x-b2.md sha256 a16f73aeebe362c4dd5e74b5d5c60566d0bd106fe6baff2168c70d890e10c348\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-b2\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JWKRTWS49TBFSF805EG23\nraw sha256: 2ba71fddfb35d91bd445d349cd6d0b2aa9343a5c0244c546d7330de7f9cc63cd\ncompiler model: claude-opus-5-5\nengine seconds: 0.014\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-b2-e1e4 on branch build/eval-x-b2, harness Agy, model …",
+      "skill": null,
+      "summary": "compiled al-01M41JWKRTWS49TBFSF805EG23 for claude-code v1: 6 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-03T19:14:56Z",
+      "duration_seconds": 388.0,
+      "fan_out": 0,
+      "id": "al-01M41K1Q3JNX89S75P06V9KQ50",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Compile the six external Wave 2 E1 briefs (x-d D1, x-a1 A1a: codex template; x-g1, x-b1 B1a, env-a, x-b2: claude-code template) for their pinned harness and model (CO-S0).",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-wave2-e1-contracts",
+      "skill": "compile",
+      "started_at": "2026-10-03T19:08:28Z",
+      "summary": "Six compilations, gate pass, dispatchable, no assumptions or decision requests: x-d al-01M41JX06P8TETKP1XTWD8GP2F, x-a1 al-01M41JX1G7Z511DJZXRQE1DXC7, x-g1 al-01M41JX2G67CJTAJEJJ6752NW9, x-b1 al-01M41JX3PQW2EA9Z4KKSFW3764, env-a al-01M41JX4E3Y85MKT11APTKCMM2, x-b2 al-01M41JX5J2A1XH7TZ7BTY8MW70. A first set (al-01M41JT6..JTAH) omitted the brief path from the rendered goal and is superseded, unused. Contracts' prompts replaced.",
+      "tags": [],
+      "tier": "T0",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-03T19:15:17Z",
+      "done_when": "rev 5 change table and re-read lists; six contracts carry compiled ids; derive and validate exit 0; named-path commits",
+      "fan_out": 0,
+      "goal": "W0 rev 5 with seams ruled, compiled contracts, TIME-B class and brief, on coord/eval-w0-rev5-wave2b",
+      "id": "al-01M41K2BV4XKG0TG0S7AN14118",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Coordinator session #5: Task 1 W1-E seams SR-E1/SR-E2 and W1-L seams SR-L1..SR-L3 as W0 rev 5 (DR to owner-fable if ADR-0016 s4 meaning changes), rename the duplicate ENV-A candidate; Task 2 compile the six external dispatch prompts (CO-S0); Task 3 Wave 2 pack part 2 (X-H1, X-C, X-H2, X-E, X-INT) if budget allows. Mid-turn: SR-L4, RV-TA W1-L 1 and 2, R-97, W1-C OI-5, the TIME-B class and slice.",
+      "session": "coord-opus-e1e4",
+      "shortname": "coord-w0-rev5-wave2-compile",
+      "skill": "execute-with-coordination",
+      "summary": "W0 rev 5: SR-E1 granted in part (DR-E1 req-01M41J1E3PDYAG1WTAGH004MZ8 raised on dropping run_id/grading_id; option (a) stands), SR-E2 granted, SR-L1 refused as asked (verified_before_use not built in E4), SR-L2 granted (E4), SR-L3 granted (config.CHECK_PROPERTIES), SR-L4 granted (_changes in E2 by X-J2), RV-TA W1-L 1 ruled without an EV-6 change, OI-5 granted, R-97 recorded. tasks/README.md overlay, variants and ready-order paragraphs. ENV-C rename (ENV-B was taken). Six compiled ids in the contracts. TIME-B candidate class and time-b.md brief. Pack part 2 (X-H1, X-C, X-H2, X-E, X-INT) not written: handed back for a second session.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "datetime": "2026-10-03T19:21:20Z",
+      "done_when": "Ruling 98 in docs/notes/rulings.md via coord decide rule from the owner/ruling-r98 worktree, the request resolved, an audit entry appended, committed",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/ruling-r98",
+        "pushed": null,
+        "sha": "9879623f037613116d65ce25da0000e6f60ac10a",
+        "short": "9879623f0"
+      },
+      "goal": "Rule DR-E1 (req-01M41J1E3PDYAG1WTAGH004MZ8): whether the discrimination record body holds run_id and grading_id; name the ADR-0016 amendment author",
+      "id": "al-01M41KDDX1Y6C2Q2BEGDGTMP8H",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Leader to Owner: rule coord request req-01M41J1E3PDYAG1WTAGH004MZ8 (DR-E1, from Coordinator #5) as the next number. Should the discrimination record's body drop run_id and grading_id? ADR-0016 s4 puts them in the body; RV-DS (W0 F2) and W1-E want the body idempotent so a retry writes equal bytes and does not hit HB-LED-007; W1-E reconciles via a local runs/<run>/discrimination-link.json. Option (a) stands meanwhile. If you rule to drop the ids, say who writes the ADR-0016 amendment note. Own worktree owner/ruling-r98.",
+      "session": "owner-fable",
+      "shortname": "ruling R-98 (DR-E1, discrimination record body drops run_id/grading_id; link file local; ADR-0016 Amendment 1 by the Coordinator)",
+      "skill": null,
+      "summary": "R-98 DR-E1: (A) granted, (B) refused. The body drops run_id and grading_id: ADR-0016 s2a's one bytes-equal meaning of already-done cannot hold with a per-production id in the body (RV-DS W0 F2), and option (b)'s subset compare is a second definition of one predicate (DM7). The ids served only read-time reconciliation, which needs a local run anyway; the link moves to runs/<run>/discrimination-link.json (W1-E 4.3). Verified: no record exists (bench/discrimination absent on main), create_once not yet in src, no reader of the body. Grain restated: one file is one discrimination result of one key; a later trial confirms (equal bytes) or is HB-RDY-010. Conditions: link written only after created-or-equal, never after HB-RDY-010 (red test beside T-E6); HB-RDY-010 names the metric before HB-LED-007; reconciliation never degrades to a pass (newest link by its stamp; no link/run/pass prints reconciled: no); no option-(a) branch survives in X-E; bench campaign verify unaffected. ADR-0016 Amendment 1 (decision text unchanged) and the W0 s6 rewrite: the Coordinator with W0 rev 6, before X-E's first record commit.",
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "tier": "T0",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1e.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:25:24Z",
+      "done_when": "two gate lines written and committed",
+      "fan_out": 0,
+      "goal": "TA gate lines for W0 delta and W1-E",
+      "id": "al-01M41KMWKJM21ZR9N41TQ7MFNP",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md",
+      "session": "rv-ta-w1e-e1e4",
+      "shortname": "design-slice-review-ta-w1e",
+      "skill": "design-slice-review",
+      "summary": "RV-TA: W0 revs 3-5 delta PASS WITH CONDITIONS (7); W1-E BLOCK (14)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1e.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:26:15Z",
+      "done_when": "Two gate lines committed on review/eval-sec-w1e",
+      "fan_out": 0,
+      "goal": "Gate W0 delta and W1-E for Security & Identity",
+      "id": "al-01M41KPEQAHT93G7T4XQW0P0JG",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md (W0 rev 4-5 delta and W1-E)",
+      "session": "rv-sec-w1e-e1e4",
+      "shortname": "design-slice-review-sec-w0-r45-w1e",
+      "skill": "design-slice-review",
+      "summary": "Security gates: W0 rev 4-5 delta PASS WITH CONDITIONS (13), W1-E PASS WITH CONDITIONS (10)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1e.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:32:27Z",
+      "done_when": "two gate lines written and committed",
+      "fan_out": 0,
+      "goal": "Simplifier gates on W0 rev5 s6/s7 and W1-E",
+      "id": "al-01M41M1T110Y0GDNQRP2AFGX3J",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "session": "rv-sim-w1e-e1e4",
+      "shortname": "design-slice-review-sim-w1e",
+      "skill": "design-slice-review",
+      "summary": "RV-SIM gates: W0 rev5 s6/s7 PASS WITH CONDITIONS (4), W1-E PASS WITH CONDITIONS (4)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1e.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:34:42Z",
+      "done_when": "Two gate lines committed on review/eval-pat-w1e",
+      "fan_out": 0,
+      "goal": "Gate lines for W0 rev 4-5 and W1-E",
+      "id": "al-01M41M5Y194V71FAHZS1Q6M8C0",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md (W0 rev 4-5 delta, W1-E)",
+      "session": "rv-pat-w1e-e1e4",
+      "shortname": "review-pat-w1e",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT: W0 rev 4-5 PASS WITH CONDITIONS (7); W1-E BLOCK (12)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ds.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:39:55Z",
+      "done_when": "Dated section and gate line appended",
+      "fan_out": 0,
+      "goal": "Review W0 rev 4/5 from the DS lens",
+      "id": "al-01M41MFEYW7VSSJ2Z74HJMH8Q8",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ds.md (W0 rev 4/5 delta)",
+      "session": "rv-ds-w0r45-e1e4",
+      "shortname": "design-slice-review-eval-ds-w0r45",
+      "skill": "design-slice-review",
+      "summary": "RV-DS delta review of W0 rev 4/5: PASS WITH CONDITIONS, 9 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1e.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:47:37Z",
+      "done_when": "gate line appended",
+      "fan_out": 0,
+      "goal": "re-review W1-E rev 2",
+      "id": "al-01M41MXJ9Q2071PTTBKK8DSXZF",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md (W1-E rev 2)",
+      "session": "rv-pat-e2-e1e4",
+      "shortname": "design-slice-review-eval-pat-w1e-r2",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT rev 2 re-review of W1-E: PASS WITH CONDITIONS, 5 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1e.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:48:24Z",
+      "done_when": "rev-2 section and gate line appended",
+      "fan_out": 0,
+      "goal": "Verify blocking findings closed and tests meet 2a floor",
+      "id": "al-01M41MZ0CGQXEQHQQE11KCGZ0R",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-E rev 2 re-review)",
+      "session": "rv-ta-e2-e1e4",
+      "shortname": "design-slice-review-eval-ta-w1e-r2",
+      "skill": "design-slice-review",
+      "summary": "TA re-review of W1-E rev 2: 14 round-1 findings closed (one reopened as R2-1); 7 new; PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-discriminate.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:44:08Z",
+      "done_when": "Gate PASS incl. Security; the SCAN-A red fixture named; the synthetic agent mechanism",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-E discriminate, synthetic profile and readiness (EV-7)",
+      "id": "al-01M41H9B0QJVMYRQGTZ0BQ6AQA",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-e-discriminate.md",
+      "session": "w1e-discrim-e1e4",
+      "shortname": "design-slice-eval-discriminate",
+      "skill": "design-slice",
+      "summary": "W1-E design: discriminate, synthetic agent (spike S-E1), idempotent record, overlay rule, real-host readiness, variants, readers, sweeper, test plan",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-discriminate.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:44:02Z",
+      "done_when": "every finding has a disposition row; Gate record has four first-round lines plus rev 2 pending; derive and validate exit 0",
+      "duration_seconds": 395.0,
+      "fan_out": 0,
+      "goal": "Apply the four W1-E reviews in rev 2",
+      "id": "al-01M41MQ0VT8PZN6NQWQP75KATR",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-e-discriminate.md (rev 2 follow-up: apply RV-TA, RV-PAT, RV-SEC, RV-SIM reviews; W0 rev 5; R-98)",
+      "session": "w1e-discrim-r2-e1e4",
+      "shortname": "design-slice-eval-discriminate-rev2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T19:37:27Z",
+      "summary": "W1-E rev 2: 40 review findings dispositioned; R-98 record (no ids, link after created-or-equal); for_task identity; CHECK_PROPERTIES scoping; one overlay path rule; grader-allowlist env; tests folded to 25 plus 3 join checks; SR-E3 filed",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:55:16Z",
+      "done_when": "Section appended with gate line",
+      "fan_out": 0,
+      "goal": "Review W0 rev 6 for the security lens",
+      "id": "al-01M41NBJ8CQBGSA56ZBN0G79X9",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md (W0 rev 6 delta)",
+      "session": "rv-sec-w0r6-e1e4",
+      "shortname": "design-slice-review-w0-rev6-sec",
+      "skill": "design-slice-review",
+      "summary": "RV-SEC W0 rev 6: PASS WITH CONDITIONS, 4 minor findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:56:02Z",
+      "done_when": "section appended with gate line",
+      "fan_out": 0,
+      "goal": "review W0 rev 6 for the TA lens",
+      "id": "al-01M41NCZA3Q42HH6C0DMH2EQ6F",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W0 rev 6 delta)",
+      "session": "rv-ta-w0r6-e1e4",
+      "shortname": "design-slice-review-ta-w0r6",
+      "skill": "design-slice-review",
+      "summary": "RV-TA W0 rev 6 delta review: PASS WITH CONDITIONS, 6 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1j.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:57:33Z",
+      "done_when": "review file and gate line committed",
+      "fan_out": 0,
+      "goal": "RV-TA gate review of W1-J",
+      "id": "al-01M41NFRN0HXSFCMH1HYBAXKEJ",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-J)",
+      "session": "rv-ta-w1j-e1e4",
+      "shortname": "design-slice-review-ta-w1j",
+      "skill": "design-slice-review",
+      "summary": "RV-TA review of W1-J multi-turn: PASS WITH CONDITIONS, 10 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sre-w1j.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:58:33Z",
+      "done_when": "review file and gate line committed",
+      "fan_out": 0,
+      "goal": "SRE review of W1-J",
+      "id": "al-01M41NHKDNNM4ZGTPEVPBXWTVH",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sre.md (W1-J)",
+      "session": "rv-sre-j-e1e4",
+      "shortname": "design-slice-review-sre-w1j",
+      "skill": "design-slice-review",
+      "summary": "SRE review of W1-J multi-turn: PASS WITH CONDITIONS, 9 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1j.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T20:00:23Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "Patterns review of W1-J",
+      "id": "al-01M41NMY21BNYBKP42RQ8P4G46",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md (W1-J)",
+      "session": "rv-pat-w1j-e1e4",
+      "shortname": "design-slice-review-pat-w1j",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT review of W1-J multi-turn: PASS WITH CONDITIONS, 8 findings, one seam disagreement with W1-B",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1j.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T20:00:43Z",
+      "done_when": "review file and gate line committed",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-J",
+      "id": "al-01M41NNJ5VJV0XSTWAG0EJP3YY",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md (W1-J)",
+      "session": "rv-sim-w1j-e1e4",
+      "shortname": "design-slice-review-w1j-sim",
+      "skill": "design-slice-review",
+      "summary": "RV-SIM review of W1-J: PASS WITH CONDITIONS, 10 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ds.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T20:02:00Z",
+      "done_when": "two gate lines written",
+      "fan_out": 0,
+      "goal": "RV-DS review of W0 rev 6 and W1-J",
+      "id": "al-01M41NQXKY5AYF5911CHD3R5PG",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ds.md (W0 rev 6 delta, W1-J)",
+      "session": "rv-ds-j-e1e4",
+      "shortname": "design-slice-review-ds-w0r6-w1j",
+      "skill": "design-slice-review",
+      "summary": "RV-DS gate lines: W0 rev 6 PASS WITH CONDITIONS (5 findings); W1-J PASS WITH CONDITIONS (9 findings); TLC one cell two crashes two turns passes",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:01:21Z",
+      "id": "al-01M41NPQ4M98QME5K1AFRW8HPA",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-c1-e1e4 on branch build/eval-x-c1, harness Agy, model gemini-3.8-flash-high. Build dispatch C1 only of the brief docs/coordination/eval-wave2-e1/x-c.md, in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-c1-e1e4 on branch build/eval-x-c1, harness Agy, model …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:13Z",
+      "id": "al-01M41NR9H1ECEDMRJK7SHKY61J",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-c1-e1e4 on branch build/eval-x-c1, harness Agy, model gemini-3.8-flash-high. Build dispatch C1 only of the brief docs/coordination/eval-wave2-e1/x-c.md (ledger, record, verify), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-c1-e1e4 on branch build/eval-x-c1, harness Agy, model …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c1.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatches C2 (commands, locks, the run-side check) and C3 (pilot, register, status, plan, hook): later dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch C1 only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-c1",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "600k tokens across 3 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c1.",
+            "The README section 3 join gate passes.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-c.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch C1 of X-C on build/eval-x-c1: ledger, record, verify; red commit then green commit.",
+          "main_line_budget": "450 calls across 3 dispatches, 3,300 s per dispatch",
+          "not_in_scope": [
+            "Dispatches C2 (commands, locks, the run-side check) and C3 (pilot, register, status, plan, hook): later dispatches."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.014,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NR9H1ECEDMRJK7SHKY61J",
+        "raw_sha256": "0877e21fe2967bd3b8ae94642923cfa46a878a9c334124bc71901b7af9635811",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-c1"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-c.md",
+            "reason": null,
+            "sha256": "5341f3282ed2f90a9cd35177724d382d7c4dc12ebfdc89a3ebda9a801b134d93",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-c.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:13Z",
+      "dispatchable": true,
+      "id": "al-01M41NR9YEHGCK0XN2QB83804H",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-c.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch C1 of X-C on build/eval-x-c1: ledger, record, verify; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c1.; The README section 3 join gate passes.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatches C2 (commands, locks, the run-side check) and C3 (pilot, register, status, plan, hook): later dispatches.\nTier: T2\nFan-out cap: 0\nContext ceiling: 600k tokens across 3 dispatches\nMain-line budget: 450 calls across 3 dispatches, 3,300 s per dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c1. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes. | phrase: README §3 join gate per dispatch. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Dispatches C2 (commands, locks, the run-side check) and C3 (pilot, register, status, plan, hook): later dispatches. | phrase: Build dispatch C1 only |\nReferences\n- build/eval-x-c1: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-c.md: docs/coordination/eval-wave2-e1/x-c.md sha256 5341f3282ed2f90a9cd35177724d382d7c4dc12ebfdc89a3ebda9a801b134d93\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-c1\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NR9H1ECEDMRJK7SHKY61J\nraw sha256: 0877e21fe2967bd3b8ae94642923cfa46a878a9c334124bc71901b7af9635811\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.014\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-c1-e1e4 on branch build/eval-x-c1, harness Agy, model …",
+      "skill": null,
+      "summary": "compiled al-01M41NR9H1ECEDMRJK7SHKY61J for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:13Z",
+      "id": "al-01M41NRAB81CXERZRBPPQN8D8G",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-h2-e1e4 on branch build/eval-x-h2, harness Agy, model gemini-3.8-flash-high. Build dispatch X-H2 only of the brief docs/coordination/eval-wave2-e1/x-h2.md (report section 3 (campaign_section.py and the html.render hook)), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-h2-e1e4 on branch build/eval-x-h2, harness Agy, model …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:21Z",
+      "id": "al-01M41NRHDPG4H9FJ6RCZCZW16M",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-c2-e1e4 on branch build/eval-x-c2, harness Agy, model gemini-3.8-flash-high. Build dispatch C2 only of the brief docs/coordination/eval-wave2-e1/x-c.md (commands, locks, the run-side check), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-c2-e1e4 on branch build/eval-x-c2, harness Agy, model …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c2.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatches C1 (ledger, record, verify) and C3 (pilot, register, status, plan, hook): other dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch C2 only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-c2",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "600k tokens across 3 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c2.",
+            "The README section 3 join gate passes.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-c.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch C2 of X-C on build/eval-x-c2: commands, locks, the run-side check; red commit then green commit.",
+          "main_line_budget": "450 calls across 3 dispatches, 3,300 s per dispatch",
+          "not_in_scope": [
+            "Dispatches C1 (ledger, record, verify) and C3 (pilot, register, status, plan, hook): other dispatches."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.01,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRHDPG4H9FJ6RCZCZW16M",
+        "raw_sha256": "5f99f5dc028f3bf98587ddb804661290aa90703b0846e56eaf97308c6efba899",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-c2"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-c.md",
+            "reason": null,
+            "sha256": "5341f3282ed2f90a9cd35177724d382d7c4dc12ebfdc89a3ebda9a801b134d93",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-c.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:21Z",
+      "dispatchable": true,
+      "id": "al-01M41NRHZF6BP0CN92R6R35WV1",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-c.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch C2 of X-C on build/eval-x-c2: commands, locks, the run-side check; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c2.; The README section 3 join gate passes.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatches C1 (ledger, record, verify) and C3 (pilot, register, status, plan, hook): other dispatches.\nTier: T2\nFan-out cap: 0\nContext ceiling: 600k tokens across 3 dispatches\nMain-line budget: 450 calls across 3 dispatches, 3,300 s per dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c2. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes. | phrase: README §3 join gate per dispatch. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Dispatches C1 (ledger, record, verify) and C3 (pilot, register, status, plan, hook): other dispatches. | phrase: Build dispatch C2 only |\nReferences\n- build/eval-x-c2: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-c.md: docs/coordination/eval-wave2-e1/x-c.md sha256 5341f3282ed2f90a9cd35177724d382d7c4dc12ebfdc89a3ebda9a801b134d93\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-c2\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRHDPG4H9FJ6RCZCZW16M\nraw sha256: 5f99f5dc028f3bf98587ddb804661290aa90703b0846e56eaf97308c6efba899\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.01\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-c2-e1e4 on branch build/eval-x-c2, harness Agy, model …",
+      "skill": null,
+      "summary": "compiled al-01M41NRHDPG4H9FJ6RCZCZW16M for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:22Z",
+      "id": "al-01M41NRJ9F74CDMY2DV52WKXAS",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-c3-e1e4 on branch build/eval-x-c3, harness Agy, model gemini-3.8-flash-high. Build dispatch C3 only of the brief docs/coordination/eval-wave2-e1/x-c.md (pilot, register, status, plan, hook), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-c3-e1e4 on branch build/eval-x-c3, harness Agy, model …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c3.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatches C1 (ledger, record, verify) and C2 (commands, locks, the run-side check): earlier dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch C3 only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-c3",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "600k tokens across 3 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c3.",
+            "The README section 3 join gate passes.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-c.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch C3 of X-C on build/eval-x-c3: pilot, register, status, plan, hook; red commit then green commit.",
+          "main_line_budget": "450 calls across 3 dispatches, 3,300 s per dispatch",
+          "not_in_scope": [
+            "Dispatches C1 (ledger, record, verify) and C2 (commands, locks, the run-side check): earlier dispatches."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.01,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRJ9F74CDMY2DV52WKXAS",
+        "raw_sha256": "9cc861e7dbbfd7648a5c6f2e70393c6d3b296d0b6fc75284ef9db70c76a449db",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-c3"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-c.md",
+            "reason": null,
+            "sha256": "5341f3282ed2f90a9cd35177724d382d7c4dc12ebfdc89a3ebda9a801b134d93",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-c.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:22Z",
+      "dispatchable": true,
+      "id": "al-01M41NRJPH6Q66CZBXRFQHXZV7",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-c.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch C3 of X-C on build/eval-x-c3: pilot, register, status, plan, hook; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c3.; The README section 3 join gate passes.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatches C1 (ledger, record, verify) and C2 (commands, locks, the run-side check): earlier dispatches.\nTier: T2\nFan-out cap: 0\nContext ceiling: 600k tokens across 3 dispatches\nMain-line budget: 450 calls across 3 dispatches, 3,300 s per dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c3. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes. | phrase: README §3 join gate per dispatch. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Dispatches C1 (ledger, record, verify) and C2 (commands, locks, the run-side check): earlier dispatches. | phrase: Build dispatch C3 only |\nReferences\n- build/eval-x-c3: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-c.md: docs/coordination/eval-wave2-e1/x-c.md sha256 5341f3282ed2f90a9cd35177724d382d7c4dc12ebfdc89a3ebda9a801b134d93\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-c3\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRJ9F74CDMY2DV52WKXAS\nraw sha256: 9cc861e7dbbfd7648a5c6f2e70393c6d3b296d0b6fc75284ef9db70c76a449db\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.01\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-c3-e1e4 on branch build/eval-x-c3, harness Agy, model …",
+      "skill": null,
+      "summary": "compiled al-01M41NRJ9F74CDMY2DV52WKXAS for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:22Z",
+      "id": "al-01M41NRK0HSDZYNSHYA14HYT7V",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-h2-e1e4 on branch build/eval-x-h2, harness Agy, model gemini-3.8-flash-high. Build dispatch X-H2 only of the brief docs/coordination/eval-wave2-e1/x-h2.md (report section 3 (campaign_section.py and the html.render hook)), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-h2-e1e4 on branch build/eval-x-h2, harness Agy, model …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h2.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any other dispatch or track: not part of this dispatch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch X-H2 only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-h2",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h2.",
+            "The README section 3 join gate passes.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-h2.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch X-H2 of X-H2 on build/eval-x-h2: report section 3 (campaign_section.py and the html.render hook); red commit then green commit.",
+          "main_line_budget": "120 calls, 3,300 s",
+          "not_in_scope": [
+            "Any other dispatch or track: not part of this dispatch."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.01,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRK0HSDZYNSHYA14HYT7V",
+        "raw_sha256": "717fc1e5efe4ad591692cf77095dde7c6be61d94137a4aade41dd5ed9ee884b6",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-h2"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-h2.md",
+            "reason": null,
+            "sha256": "2bc4517590a50534f3c043cf0c615c0054cf5c560767ec67aa0323f25fcce714",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-h2.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "campaign_section.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:23Z",
+      "dispatchable": true,
+      "id": "al-01M41NRKDW17XAP6WS7AFPQF9K",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-h2.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch X-H2 of X-H2 on build/eval-x-h2: report section 3 (campaign_section.py and the html.render hook); red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h2.; The README section 3 join gate passes.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Any other dispatch or track: not part of this dispatch.\nTier: T2\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: 120 calls, 3,300 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h2. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes. | phrase: README §3 join gate per dispatch. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Any other dispatch or track: not part of this dispatch. | phrase: Build dispatch X-H2 only |\nReferences\n- build/eval-x-h2: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-h2.md: docs/coordination/eval-wave2-e1/x-h2.md sha256 2bc4517590a50534f3c043cf0c615c0054cf5c560767ec67aa0323f25fcce714\n- campaign_section.py: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-h2\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRK0HSDZYNSHYA14HYT7V\nraw sha256: 717fc1e5efe4ad591692cf77095dde7c6be61d94137a4aade41dd5ed9ee884b6\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.01\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-h2-e1e4 on branch build/eval-x-h2, harness Agy, model …",
+      "skill": null,
+      "summary": "compiled al-01M41NRK0HSDZYNSHYA14HYT7V for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:23Z",
+      "id": "al-01M41NRKWC67NWDP7ZVDYQGM17",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-h1a-e1e4 on branch build/eval-x-h1a, harness Grok, model grok-4.7 with --reasoning-effort high. Build dispatch turn a only of the brief docs/coordination/eval-wave2-e1/x-h1.md (power (power.py)), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-h1a-e1e4 on branch build/eval-x-h1a, harness Grok, mod…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Turns b (verdicts.py) and c (gates.py): later turns.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch turn a only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "2,400 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-h1a",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "250k tokens across 3 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1a.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-h1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch turn a of X-H1 on build/eval-x-h1a: power (power.py); red commit then green commit.",
+          "main_line_budget": "60 calls, 2,400 s",
+          "not_in_scope": [
+            "Turns b (verdicts.py) and c (gates.py): later turns."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.01,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRKWC67NWDP7ZVDYQGM17",
+        "raw_sha256": "bb052a5dc9a4873e62c75135f0b174d0a0a9c13b8c4e730fd8f78bc3a5dec429",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-h1a"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-h1.md",
+            "reason": null,
+            "sha256": "bc2325d78f60f85a3962358971b49414ff24961cdb41a1d8979ac1a7b5187068",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-h1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "power.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/grok_served_model.py",
+            "reason": null,
+            "sha256": "927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f",
+            "status": "resolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:24Z",
+      "dispatchable": true,
+      "id": "al-01M41NRM9X2NVDN5QASJ391EBH",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-h1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch turn a of X-H1 on build/eval-x-h1a: power (power.py); red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1a.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Turns b (verdicts.py) and c (gates.py): later turns.\nTier: T2\nFan-out cap: 0\nContext ceiling: 250k tokens across 3 dispatches\nMain-line budget: 60 calls, 2,400 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Turns b (verdicts.py) and c (gates.py): later turns. | phrase: Build dispatch turn a only |\nReferences\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-x-h1a: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-h1.md: docs/coordination/eval-wave2-e1/x-h1.md sha256 bc2325d78f60f85a3962358971b49414ff24961cdb41a1d8979ac1a7b5187068\n- power.py: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\n- tools/grok_served_model.py: tools/grok_served_model.py sha256 927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-h1a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 2,400 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRKWC67NWDP7ZVDYQGM17\nraw sha256: bb052a5dc9a4873e62c75135f0b174d0a0a9c13b8c4e730fd8f78bc3a5dec429\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.01\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-h1a-e1e4 on branch build/eval-x-h1a, harness Grok, mod…",
+      "skill": null,
+      "summary": "compiled al-01M41NRKWC67NWDP7ZVDYQGM17 for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:24Z",
+      "id": "al-01M41NRMKW4J002M8NWBSDXPKA",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-h1b-e1e4 on branch build/eval-x-h1b, harness Grok, model grok-4.7 with --reasoning-effort high. Build dispatch turn b only of the brief docs/coordination/eval-wave2-e1/x-h1.md (verdicts (verdicts.py)), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-h1b-e1e4 on branch build/eval-x-h1b, harness Grok, mod…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1b.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Turns a (power.py) and c (gates.py): other turns.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch turn b only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "2,400 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-h1b",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "250k tokens across 3 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1b.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-h1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch turn b of X-H1 on build/eval-x-h1b: verdicts (verdicts.py); red commit then green commit.",
+          "main_line_budget": "60 calls, 2,400 s",
+          "not_in_scope": [
+            "Turns a (power.py) and c (gates.py): other turns."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRMKW4J002M8NWBSDXPKA",
+        "raw_sha256": "2984e57fd9ad1e9d19e6cd4621499558019db6fb8e419e050d0618b0949d5e09",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-h1b"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-h1.md",
+            "reason": null,
+            "sha256": "bc2325d78f60f85a3962358971b49414ff24961cdb41a1d8979ac1a7b5187068",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-h1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "verdicts.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/grok_served_model.py",
+            "reason": null,
+            "sha256": "927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f",
+            "status": "resolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:24Z",
+      "dispatchable": true,
+      "id": "al-01M41NRN2E7T3EYKPQG5MA0GY5",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-h1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch turn b of X-H1 on build/eval-x-h1b: verdicts (verdicts.py); red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1b.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Turns a (power.py) and c (gates.py): other turns.\nTier: T2\nFan-out cap: 0\nContext ceiling: 250k tokens across 3 dispatches\nMain-line budget: 60 calls, 2,400 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1b. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Turns a (power.py) and c (gates.py): other turns. | phrase: Build dispatch turn b only |\nReferences\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-x-h1b: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-h1.md: docs/coordination/eval-wave2-e1/x-h1.md sha256 bc2325d78f60f85a3962358971b49414ff24961cdb41a1d8979ac1a7b5187068\n- verdicts.py: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\n- tools/grok_served_model.py: tools/grok_served_model.py sha256 927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-h1b\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 2,400 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRMKW4J002M8NWBSDXPKA\nraw sha256: 2984e57fd9ad1e9d19e6cd4621499558019db6fb8e419e050d0618b0949d5e09\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-h1b-e1e4 on branch build/eval-x-h1b, harness Grok, mod…",
+      "skill": null,
+      "summary": "compiled al-01M41NRMKW4J002M8NWBSDXPKA for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:25Z",
+      "id": "al-01M41NRNCKAW1PM4DBQQ81EE0S",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-h1c-e1e4 on branch build/eval-x-h1c, harness Grok, model grok-4.7 with --reasoning-effort high. Build dispatch turn c only of the brief docs/coordination/eval-wave2-e1/x-h1.md (gates (gates.py)), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-h1c-e1e4 on branch build/eval-x-h1c, harness Grok, mod…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1c.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Turns a (power.py) and b (verdicts.py): other turns.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch turn c only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "2,400 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-h1c",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "250k tokens across 3 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1c.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-h1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch turn c of X-H1 on build/eval-x-h1c: gates (gates.py); red commit then green commit.",
+          "main_line_budget": "60 calls, 2,400 s",
+          "not_in_scope": [
+            "Turns a (power.py) and b (verdicts.py): other turns."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRNCKAW1PM4DBQQ81EE0S",
+        "raw_sha256": "90b7f151f412a41d4d1db04d0b300e0c792a69929f4d7ced08b5af4cfecd49dc",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-h1c"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-h1.md",
+            "reason": null,
+            "sha256": "bc2325d78f60f85a3962358971b49414ff24961cdb41a1d8979ac1a7b5187068",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-h1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gates.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/grok_served_model.py",
+            "reason": null,
+            "sha256": "927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f",
+            "status": "resolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:25Z",
+      "dispatchable": true,
+      "id": "al-01M41NRNTRMPPATGS64P2FTP0V",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-h1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch turn c of X-H1 on build/eval-x-h1c: gates (gates.py); red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1c.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Turns a (power.py) and b (verdicts.py): other turns.\nTier: T2\nFan-out cap: 0\nContext ceiling: 250k tokens across 3 dispatches\nMain-line budget: 60 calls, 2,400 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1c. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Turns a (power.py) and b (verdicts.py): other turns. | phrase: Build dispatch turn c only |\nReferences\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-x-h1c: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-h1.md: docs/coordination/eval-wave2-e1/x-h1.md sha256 bc2325d78f60f85a3962358971b49414ff24961cdb41a1d8979ac1a7b5187068\n- gates.py: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\n- tools/grok_served_model.py: tools/grok_served_model.py sha256 927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-h1c\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 2,400 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRNCKAW1PM4DBQQ81EE0S\nraw sha256: 90b7f151f412a41d4d1db04d0b300e0c792a69929f4d7ced08b5af4cfecd49dc\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-h1c-e1e4 on branch build/eval-x-h1c, harness Grok, mod…",
+      "skill": null,
+      "summary": "compiled al-01M41NRNCKAW1PM4DBQQ81EE0S for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:26Z",
+      "id": "al-01M41NRP8V7T09C4ZXHPAC4SWJ",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-b1a-e1e4 on branch build/eval-x-b1a, harness Grok, model grok-4.7 with --reasoning-effort high. Build dispatch B1a only of the brief docs/coordination/eval-wave2-e1/x-b1.md (atomic.py core per W1-B section 17 with the W0 rev 6 sweep_temps(folder, lock) and RunLock.held), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-b1a-e1e4 on branch build/eval-x-b1a, harness Grok, mod…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch B1a only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "1,200 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-b1a",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "100k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1a of X-B1 on build/eval-x-b1a: atomic.py core per W1-B section 17 with the W0 rev 6 sweep_temps(folder, lock) and RunLock.held; red commit then green commit.",
+          "main_line_budget": "40 calls, 1,200 s",
+          "not_in_scope": [
+            "Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRP8V7T09C4ZXHPAC4SWJ",
+        "raw_sha256": "e5fba27403c870845ad6297e2efa9c7df881ae32be91fd6645046be862444c8b",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-b1a"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b1.md",
+            "reason": null,
+            "sha256": "34d80e00c9f8ceb4e966f04f49c1aefad2afdcb5c70fcf39498f529db8806f30",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-b1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/grok_served_model.py",
+            "reason": null,
+            "sha256": "927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f",
+            "status": "resolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:26Z",
+      "dispatchable": true,
+      "id": "al-01M41NRPQMNPJXB170E87T32NE",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1a of X-B1 on build/eval-x-b1a: atomic.py core per W1-B section 17 with the W0 rev 6 sweep_temps(folder, lock) and RunLock.held; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches.\nTier: T2\nFan-out cap: 0\nContext ceiling: 100k tokens\nMain-line budget: 40 calls, 1,200 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches. | phrase: Build dispatch B1a only |\nReferences\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-x-b1a: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-b1.md: docs/coordination/eval-wave2-e1/x-b1.md sha256 34d80e00c9f8ceb4e966f04f49c1aefad2afdcb5c70fcf39498f529db8806f30\n- atomic.py: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\n- tools/grok_served_model.py: tools/grok_served_model.py sha256 927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-b1a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 1,200 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRP8V7T09C4ZXHPAC4SWJ\nraw sha256: e5fba27403c870845ad6297e2efa9c7df881ae32be91fd6645046be862444c8b\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-b1a-e1e4 on branch build/eval-x-b1a, harness Grok, mod…",
+      "skill": null,
+      "summary": "compiled al-01M41NRP8V7T09C4ZXHPAC4SWJ for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:27Z",
+      "id": "al-01M41NRQ1RPDFZ7BS4X3XXCHB5",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-b1b-e1e4 on branch build/eval-x-b1b, harness Grok, model grok-4.7 with --reasoning-effort high. Build dispatch B1b only of the brief docs/coordination/eval-wave2-e1/x-b1.md (publish_dir, workspace._land and tests/test_atomic_sites.py), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-b1b-e1e4 on branch build/eval-x-b1b, harness Grok, mod…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1b.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatches B1a (atomic.py core) and B1c (oslock.acquire_then_probe): other dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch B1b only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "1,200 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-b1b",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "100k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1b.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1b of X-B1 on build/eval-x-b1b: publish_dir, workspace._land and tests/test_atomic_sites.py; red commit then green commit.",
+          "main_line_budget": "40 calls, 1,200 s",
+          "not_in_scope": [
+            "Dispatches B1a (atomic.py core) and B1c (oslock.acquire_then_probe): other dispatches."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRQ1RPDFZ7BS4X3XXCHB5",
+        "raw_sha256": "5296c55db2aa91f2b6e206bbcdd1be2c1a4282c21166e04e1ccb20a0902a0b1d",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-b1b"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b1.md",
+            "reason": null,
+            "sha256": "34d80e00c9f8ceb4e966f04f49c1aefad2afdcb5c70fcf39498f529db8806f30",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-b1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/grok_served_model.py",
+            "reason": null,
+            "sha256": "927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f",
+            "status": "resolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:27Z",
+      "dispatchable": true,
+      "id": "al-01M41NRQGXEH11C49W8B95C72K",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1b of X-B1 on build/eval-x-b1b: publish_dir, workspace._land and tests/test_atomic_sites.py; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1b.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatches B1a (atomic.py core) and B1c (oslock.acquire_then_probe): other dispatches.\nTier: T2\nFan-out cap: 0\nContext ceiling: 100k tokens\nMain-line budget: 40 calls, 1,200 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1b. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Dispatches B1a (atomic.py core) and B1c (oslock.acquire_then_probe): other dispatches. | phrase: Build dispatch B1b only |\nReferences\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-x-b1b: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-b1.md: docs/coordination/eval-wave2-e1/x-b1.md sha256 34d80e00c9f8ceb4e966f04f49c1aefad2afdcb5c70fcf39498f529db8806f30\n- tests/test_atomic_sites.py: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\n- tools/grok_served_model.py: tools/grok_served_model.py sha256 927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-b1b\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 1,200 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRQ1RPDFZ7BS4X3XXCHB5\nraw sha256: 5296c55db2aa91f2b6e206bbcdd1be2c1a4282c21166e04e1ccb20a0902a0b1d\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-b1b-e1e4 on branch build/eval-x-b1b, harness Grok, mod…",
+      "skill": null,
+      "summary": "compiled al-01M41NRQ1RPDFZ7BS4X3XXCHB5 for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:27Z",
+      "id": "al-01M41NRQZHSBE4NVGHV35GGV1T",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-b1c-e1e4 on branch build/eval-x-b1c, harness Grok, model grok-4.7 with --reasoning-effort high. Build dispatch B1c only of the brief docs/coordination/eval-wave2-e1/x-b1.md (oslock.acquire_then_probe), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-b1c-e1e4 on branch build/eval-x-b1c, harness Grok, mod…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1c.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatches B1a (atomic.py core) and B1b (publish_dir, workspace._land): earlier dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch B1c only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "1,200 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-b1c",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "100k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1c.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1c of X-B1 on build/eval-x-b1c: oslock.acquire_then_probe; red commit then green commit.",
+          "main_line_budget": "40 calls, 1,200 s",
+          "not_in_scope": [
+            "Dispatches B1a (atomic.py core) and B1b (publish_dir, workspace._land): earlier dispatches."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRQZHSBE4NVGHV35GGV1T",
+        "raw_sha256": "01ea5c6a91c337e086521131e81866bb8965d45d9f0061a4e96c25bc539e1f8b",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-b1c"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b1.md",
+            "reason": null,
+            "sha256": "34d80e00c9f8ceb4e966f04f49c1aefad2afdcb5c70fcf39498f529db8806f30",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-b1.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/grok_served_model.py",
+            "reason": null,
+            "sha256": "927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f",
+            "status": "resolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:28Z",
+      "dispatchable": true,
+      "id": "al-01M41NRRGFA4GC81E2TBSH0J91",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1c of X-B1 on build/eval-x-b1c: oslock.acquire_then_probe; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1c.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatches B1a (atomic.py core) and B1b (publish_dir, workspace._land): earlier dispatches.\nTier: T2\nFan-out cap: 0\nContext ceiling: 100k tokens\nMain-line budget: 40 calls, 1,200 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1c. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Dispatches B1a (atomic.py core) and B1b (publish_dir, workspace._land): earlier dispatches. | phrase: Build dispatch B1c only |\nReferences\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-x-b1c: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-b1.md: docs/coordination/eval-wave2-e1/x-b1.md sha256 34d80e00c9f8ceb4e966f04f49c1aefad2afdcb5c70fcf39498f529db8806f30\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\n- tools/grok_served_model.py: tools/grok_served_model.py sha256 927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-b1c\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 1,200 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRQZHSBE4NVGHV35GGV1T\nraw sha256: 01ea5c6a91c337e086521131e81866bb8965d45d9f0061a4e96c25bc539e1f8b\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-b1c-e1e4 on branch build/eval-x-b1c, harness Grok, mod…",
+      "skill": null,
+      "summary": "compiled al-01M41NRQZHSBE4NVGHV35GGV1T for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:29Z",
+      "id": "al-01M41NRS1HA0PBV28D2889WX2K",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-a1a-e1e4 on branch build/eval-x-a1a, harness Codex, model gpt-6.1-sol with effort high. Build dispatch A1a only of the brief docs/coordination/eval-wave2-e1/x-a1.md (config.py, the plan.py writer and accessors with W0 rev 6 plan_packs, plan_pack and kind_of, SYNTHETIC_PROFILE_RECORD, the HB-PLN-004 plan-kind refusal and the grid-4 golden), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-a1a-e1e4 on branch build/eval-x-a1a, harness Codex, mo…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatch A1b (the readers, views kind refusal, G1, pilot.yaml): a later dispatch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch A1a only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-a1a",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens across 2 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a.",
+            "The README section 3 join gate passes.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-a1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch A1a of X-A1 on build/eval-x-a1a: config.py, the plan.py writer and accessors with W0 rev 6 plan_packs, plan_pack and kind_of, SYNTHETIC_PROFILE_RECORD, the HB-PLN-004 plan-kind refusal and the grid-4 golden; red commit then green commit.",
+          "main_line_budget": "220 calls across 2 dispatches, 3,300 s per dispatch",
+          "not_in_scope": [
+            "Dispatch A1b (the readers, views kind refusal, G1, pilot.yaml): a later dispatch."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRS1HA0PBV28D2889WX2K",
+        "raw_sha256": "ebfe35f095a82b323e92ef4e72b24a7c97f2d7ae756560d334444200e06eb61c",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-a1a"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-a1.md",
+            "reason": null,
+            "sha256": "6252a059c23b39058f30bda99d149f90ce4ed4360f61d4d8350c543c452304b0",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-a1.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19",
+            "status": "resolved",
+            "token": "config.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196",
+            "status": "resolved",
+            "token": "plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:29Z",
+      "dispatchable": true,
+      "id": "al-01M41NRSQN7CVAF72MCDF68X9E",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-a1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch A1a of X-A1 on build/eval-x-a1a: config.py, the plan.py writer and accessors with W0 rev 6 plan_packs, plan_pack and kind_of, SYNTHETIC_PROFILE_RECORD, the HB-PLN-004 plan-kind refusal and the grid-4 golden; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a.; The README section 3 join gate passes.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatch A1b (the readers, views kind refusal, G1, pilot.yaml): a later dispatch.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens across 2 dispatches\nMain-line budget: 220 calls across 2 dispatches, 3,300 s per dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes. | phrase: README §3 join gate per dispatch. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Dispatch A1b (the readers, views kind refusal, G1, pilot.yaml): a later dispatch. | phrase: Build dispatch A1a only |\nReferences\n- build/eval-x-a1a: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-a1.md: docs/coordination/eval-wave2-e1/x-a1.md sha256 6252a059c23b39058f30bda99d149f90ce4ed4360f61d4d8350c543c452304b0\n- config.py: src/harness_bench/config.py sha256 2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19\n- plan.py: src/harness_bench/plan.py sha256 c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-a1a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRS1HA0PBV28D2889WX2K\nraw sha256: ebfe35f095a82b323e92ef4e72b24a7c97f2d7ae756560d334444200e06eb61c\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-a1a-e1e4 on branch build/eval-x-a1a, harness Codex, mo…",
+      "skill": null,
+      "summary": "compiled al-01M41NRS1HA0PBV28D2889WX2K for codex v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:30Z",
+      "id": "al-01M41NRT5AY3REZ2A0JHGNS2GK",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-a1b-e1e4 on branch build/eval-x-a1b, harness Codex, model gpt-6.1-sol with effort high. Build dispatch A1b only of the brief docs/coordination/eval-wave2-e1/x-a1.md (the readers, views.py kind refusal, _changes.py, cli._workspace_builder, G1 with the pinned counts and bench/rings/pilot.yaml), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-a1b-e1e4 on branch build/eval-x-a1b, harness Codex, mo…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1b.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatch A1a (config.py, plan.py): the earlier dispatch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch A1b only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-a1b",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens across 2 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1b.",
+            "The README section 3 join gate passes.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-a1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch A1b of X-A1 on build/eval-x-a1b: the readers, views.py kind refusal, _changes.py, cli._workspace_builder, G1 with the pinned counts and bench/rings/pilot.yaml; red commit then green commit.",
+          "main_line_budget": "220 calls across 2 dispatches, 3,300 s per dispatch",
+          "not_in_scope": [
+            "Dispatch A1a (config.py, plan.py): the earlier dispatch."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRT5AY3REZ2A0JHGNS2GK",
+        "raw_sha256": "75b1e18eedf19b50d0e942c5bd856fdfae2c2eb3851f589c954f8e1921666d27",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-a1b"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-a1.md",
+            "reason": null,
+            "sha256": "6252a059c23b39058f30bda99d149f90ce4ed4360f61d4d8350c543c452304b0",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-a1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/_changes.py",
+            "reason": null,
+            "sha256": "d573c0a57360f960bd6915caae3c0eb36e07d7a79ed168b1e1617679e0eefba7",
+            "status": "resolved",
+            "token": "_changes.py"
+          },
+          {
+            "nearest": "bench/profiles/copilot.yaml",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/rings/pilot.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:30Z",
+      "dispatchable": true,
+      "id": "al-01M41NRTJE0W2ZY0HRSH4W71N8",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-a1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch A1b of X-A1 on build/eval-x-a1b: the readers, views.py kind refusal, _changes.py, cli._workspace_builder, G1 with the pinned counts and bench/rings/pilot.yaml; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1b.; The README section 3 join gate passes.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatch A1a (config.py, plan.py): the earlier dispatch.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens across 2 dispatches\nMain-line budget: 220 calls across 2 dispatches, 3,300 s per dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1b. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes. | phrase: README §3 join gate per dispatch. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Dispatch A1a (config.py, plan.py): the earlier dispatch. | phrase: Build dispatch A1b only |\nReferences\n- build/eval-x-a1b: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-a1.md: docs/coordination/eval-wave2-e1/x-a1.md sha256 6252a059c23b39058f30bda99d149f90ce4ed4360f61d4d8350c543c452304b0\n- views.py: unresolved (ambiguous: 2 matches)\n- _changes.py: src/harness_bench/grade/_changes.py sha256 d573c0a57360f960bd6915caae3c0eb36e07d7a79ed168b1e1617679e0eefba7\n- bench/rings/pilot.yaml: unresolved (not found; nearest: bench/profiles/copilot.yaml)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-a1b\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRT5AY3REZ2A0JHGNS2GK\nraw sha256: 75b1e18eedf19b50d0e942c5bd856fdfae2c2eb3851f589c954f8e1921666d27\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-a1b-e1e4 on branch build/eval-x-a1b, harness Codex, mo…",
+      "skill": null,
+      "summary": "compiled al-01M41NRT5AY3REZ2A0JHGNS2GK for codex v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:30Z",
+      "id": "al-01M41NRTWHMEGXT393ZAAVEBBQ",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-d2-e1e4 on branch build/eval-x-d2, harness Codex, model gpt-6.1-sol with effort high. Build dispatch D2 only of the brief docs/coordination/eval-wave2-e1/x-d.md (for_task, manifest, identity_hash, side, diff, launch_check, the engine recheck and campaign_check), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-d2-e1e4 on branch build/eval-x-d2, harness Codex, mode…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d2.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatch D1 (errors.py rows, identity.CLASSES): the earlier dispatch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch D2 only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-d2",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens across 2 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d2.",
+            "The README section 3 join gate passes.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-d.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch D2 of X-D on build/eval-x-d2: for_task, manifest, identity_hash, side, diff, launch_check, the engine recheck and campaign_check; red commit then green commit.",
+          "main_line_budget": "200 calls across 2 dispatches, 3,300 s per dispatch",
+          "not_in_scope": [
+            "Dispatch D1 (errors.py rows, identity.CLASSES): the earlier dispatch."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRTWHMEGXT393ZAAVEBBQ",
+        "raw_sha256": "378ca016a1dc74afc79a7a9613eda5722c3041c7dba935ac38742262c6d473e3",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-d2"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-d.md",
+            "reason": null,
+            "sha256": "1da6989fde0ee0bd334d3b52691892ea569d64afbf6f199c29ab5426e77873ca",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-d.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:31Z",
+      "dispatchable": true,
+      "id": "al-01M41NRVGHHR6A5JN8SVGAH4D0",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-d.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch D2 of X-D on build/eval-x-d2: for_task, manifest, identity_hash, side, diff, launch_check, the engine recheck and campaign_check; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d2.; The README section 3 join gate passes.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatch D1 (errors.py rows, identity.CLASSES): the earlier dispatch.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens across 2 dispatches\nMain-line budget: 200 calls across 2 dispatches, 3,300 s per dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d2. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes. | phrase: README §3 join gate per dispatch. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Dispatch D1 (errors.py rows, identity.CLASSES): the earlier dispatch. | phrase: Build dispatch D2 only |\nReferences\n- build/eval-x-d2: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-d.md: docs/coordination/eval-wave2-e1/x-d.md sha256 1da6989fde0ee0bd334d3b52691892ea569d64afbf6f199c29ab5426e77873ca\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-d2\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRTWHMEGXT393ZAAVEBBQ\nraw sha256: 378ca016a1dc74afc79a7a9613eda5722c3041c7dba935ac38742262c6d473e3\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-d2-e1e4 on branch build/eval-x-d2, harness Codex, mode…",
+      "skill": null,
+      "summary": "compiled al-01M41NRTWHMEGXT393ZAAVEBBQ for codex v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/coordination/eval-wave2-e1/README.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T20:04:24Z",
+      "done_when": "W0 rev 6 committed and handed back; X-C, X-H1, X-H2, X-E, X-INT briefs and 13 compilations committed; README DAG and launch order updated; transport race in the register",
+      "fan_out": 5,
+      "git": {
+        "branch": "coord/eval-w0-rev6-pack2",
+        "pushed": null,
+        "sha": "e988fd60354a4451f2c284c0469039b50a2c7229",
+        "short": "e988fd603"
+      },
+      "goal": "W0 rev 6 (R-98, delta-review conditions) and Wave 2 E1 pack part 2 (briefs, compiled prompts, DAG, Grok transport finding)",
+      "id": "al-01M41NW9M3WA6BSY86MZ7VPAKG",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Coordinator #6: Part A W0 rev 6 (R-98, ADR-0016 Am. 1, delta-review conditions); Part B pack part 2 briefs, external prompts, Grok transport race finding, README DAG and launch order.",
+      "session": "coord-opus-e1e4",
+      "shortname": "coord6-w0-rev6-pack2",
+      "skill": "execute-with-coordination",
+      "summary": "Branch coord/eval-w0-rev6-pack2: f5808497 (rev 6, merged as 1c9eaafc), d97f8dcb (part-2 briefs, rev 6.1, erratum, classes), 24ac479f (rev 6.2), e988fd60 (13 compilations, README, rev 6.3). Seam requests resolved: SR-E3, SR-L5 (E4), SR-L6. New candidate classes XPORT-A, OBS-A, FIXT-A, MUT-C.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1l.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T20:06:28Z",
+      "done_when": "Rev-2 section and gate line appended",
+      "fan_out": 0,
+      "goal": "Verify W1-L rev 2 closes the round-1 TA blockers and the readiness control",
+      "id": "al-01M41P034NF49ZVN9V89ZJ3PKB",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-L rev 2 round)",
+      "session": "rv-ta-l2-e1e4",
+      "shortname": "design-slice-review-ta-w1l-r2",
+      "skill": "design-slice-review",
+      "summary": "RV-TA round 2 on W1-L rev 2: PASS WITH CONDITIONS, 8 findings; round-1 blockers closed",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-tasks.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:43:06Z",
+      "done_when": "Gate PASS; per task base, latent requirement, hidden check, reference and naive, expected values; new graders named",
+      "fan_out": 0,
+      "goal": "Run design-slice for W1-L producing docs/design/eval-property-tasks.md",
+      "id": "al-01M41H7EC69FXDDYM5SW89CPDW",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-l-property-tasks.md",
+      "session": "w1l-tasks-e1e4",
+      "shortname": "design-slice-eval-property-tasks",
+      "skill": "design-slice",
+      "summary": "Specified eight property tasks (RS1/2, RW1/2, NG1/2, SM1/2): bases, pins, latent requirements, hidden tests, variants, new graders; seam requests SR-L1..L3, DR-L1",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-tasks.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:51:45Z",
+      "done_when": "every finding has a disposition row; derive/validate exit 0",
+      "duration_seconds": 599.0,
+      "fan_out": 0,
+      "goal": "apply the W1-L gate findings",
+      "id": "al-01M41N54G4PJP9GGT54DJ9E44W",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-l-property-tasks.md (rev 2 follow-up)",
+      "session": "w1l-tasks-r2-e1e4",
+      "shortname": "design-slice-eval-property-tasks-r2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T19:41:46Z",
+      "summary": "W1-L rev 2: applied RV-TA/RV-PAT/RV-SIM first-round findings and W0 rev 5/R-97; EV-5 note appended; SR-L5/SR-L6 filed",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M41SANHWAK67KW3WWXSNNF5K",
+      "shortname": "design-slice-eval-multi-turn-rev2",
+      "datetime": "2026-10-03T21:04:41Z",
+      "session": "w1j-multiturn-r2-e1e4",
+      "prompt": "docs/coordination/eval-wave1/w1-j-multi-turn.md (author gate revision, rev 2)",
+      "summary": "Applied all five W1-J gate reviews: independent CrashedTurnPredicate and reverse variant, WIDER data rows with two listed logic lines, turn_ended for every returned turn, skeleton commit order, status.py, retry sweep; TLC quick 29/29 variants and 4/4 witnesses, two-crash and US-44 runs pass",
       "kind": "skill",
       "skill": "design-slice",
       "tool": null,
@@ -65932,10 +77026,12 @@ window.AUDIT_DATA = {
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Run /design-slice for W1-J multi-turn attempt, turn snapshots and the TLA+ model (ADR-0015), producing docs/design/eval-multi-turn.md",
-      "done_when": "Gate PASS incl. Distributed Systems and SRE; TLC run with PromptOncePerTurn, SnapshotBeforeNextTurn, NoSnapshotInFlight, CrashedTurnPredicate, ArchiveExistsMeansComplete, each seeded variant rejected",
+      "goal": "W1-J rev 2 gate revision",
+      "done_when": "every finding dispositioned; check_models --quick green; one-commit model unit",
       "tier": "T2",
-      "fan_out": 0
+      "fan_out": 0,
+      "started_at": "2026-10-03T20:05:45Z",
+      "duration_seconds": 3536.0
     }
   ],
   "changes": [
@@ -66302,124 +77398,781 @@ window.AUDIT_DATA = {
       "title": "Row-17 gateway: Fable judge (text), Codex judge not qualified (DR-GW-1), cells-root call folders, stdin, request+invocation key, verified-provenance write-once store, verdict_uses outcome+code"
     },
     {
-      "id": "cl-01M3JM1RR2C0VJZYHT4ZJQPFFP",
-      "datetime": "2026-09-27T23:43:50Z",
-      "session": "w4-stats-design",
-      "kind": "design",
-      "skill": "design-slice",
-      "title": "Row 19 statistics design: two-stage percentile bootstrap, component-tier ranking with pass@1 gate, derived-only",
-      "prompt": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only.\nMeasured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).\nDone when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible); the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0); the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases; the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label; the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog); where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable; the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee; the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed); the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named; the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document; any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved; docs-graph derive and validate pass; Commit the document.\nNot in scope: implementing anything; the full report's UI (row 20, a separate ui-design pass); the full grid (wave 5); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\n\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-stats-design (use absolute paths or cd into it in each shell command).",
-      "summary": "docs/design/phase4-statistics.md: normalisation by catalog anchors, gated composite, bootstrap over tasks then repetitions, ranking tiers from interval overlap merged by pass@1 dominance, pack effect and comparison via one paired-delta function; nothing stored",
-      "rationale": "Measured: 0.024 s per interval (stdlib Decimal suffices); two-stage covers 0.97 at 6x3 vs cluster-only 0.88, so the conservative method serves US-36's refuse-to-separate aim; count-based ranks break US-36 (i) on non-transitive overlap",
       "artifacts": [
         "docs/design/phase4-statistics.md"
       ],
-      "tags": [],
+      "datetime": "2026-09-27T23:43:50Z",
       "git": {
-        "before": "3d06948",
         "after": "30af0a5087d4c51083fec2cd1ab3f120bb9a8fa0",
+        "before": "3d06948",
         "branch": "w4-stats-design",
-        "pushed": null,
         "commits": [
           "30af0a5 design(stats): phase-4 statistics first draft - composites, two-stage percentile bootstrap, ranking with ties, pack effect, run comparison; DR-S-1..6 open"
-        ]
-      }
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M3JM1RR2C0VJZYHT4ZJQPFFP",
+      "kind": "design",
+      "prompt": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only.\nMeasured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).\nDone when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible); the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0); the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases; the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label; the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog); where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable; the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee; the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed); the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named; the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document; any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved; docs-graph derive and validate pass; Commit the document.\nNot in scope: implementing anything; the full report's UI (row 20, a separate ui-design pass); the full grid (wave 5); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\n\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-stats-design (use absolute paths or cd into it in each shell command).",
+      "rationale": "Measured: 0.024 s per interval (stdlib Decimal suffices); two-stage covers 0.97 at 6x3 vs cluster-only 0.88, so the conservative method serves US-36's refuse-to-separate aim; count-based ranks break US-36 (i) on non-transitive overlap",
+      "session": "w4-stats-design",
+      "skill": "design-slice",
+      "summary": "docs/design/phase4-statistics.md: normalisation by catalog anchors, gated composite, bootstrap over tasks then repetitions, ranking tiers from interval overlap merged by pass@1 dominance, pack effect and comparison via one paired-delta function; nothing stored",
+      "tags": [],
+      "title": "Row 19 statistics design: two-stage percentile bootstrap, component-tier ranking with pass@1 gate, derived-only"
     },
     {
-      "id": "cl-01M3MENFS0Z3SF72CSHC7CRQNB",
-      "datetime": "2026-09-28T16:48:13Z",
-      "session": "w4-report-design",
-      "kind": "design",
-      "skill": "design-slice",
-      "title": "Row 20 report: a pure projection pre-rendered as HTML and SVG under a hashed-script CSP; summaries gated by a mechanical claim check; only R8 waits on EGRESS s2",
-      "prompt": "Compiled brief al-01M3MDD0MN10YWDK3MMHYVYAAQ (row 20)",
-      "summary": "Design + mockup committed; F-1 surfaced; DR-R-1..9 with defaults",
-      "rationale": "Offline, zero-request, readable without JS (US-40, spec :988); summaries cannot publish an unverifiable or zero-crossing claim (US-42, US-37 c2); live model spend isolated to one slice after EGRESS s2",
       "artifacts": [
         "docs/design/phase4-report.md"
       ],
-      "tags": [],
+      "datetime": "2026-09-28T16:48:13Z",
       "git": {
-        "before": "2a8057ed5622030692d03ac96c5035b1448d6eef",
         "after": "623db6de7bd5ef972713490ff437688f16bdf251",
+        "before": "2a8057ed5622030692d03ac96c5035b1448d6eef",
         "branch": "w4-report-design",
-        "pushed": null,
         "commits": [
           "623db6d docs(design): row-20 report design, round-1 gate fold-in (Test Architect 7 items, UX 1 blocker + 3 majors)",
           "e618adb docs(design): phase-4 report and summaries design, first draft, with mockup (row 20)"
-        ]
-      }
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M3MENFS0Z3SF72CSHC7CRQNB",
+      "kind": "design",
+      "prompt": "Compiled brief al-01M3MDD0MN10YWDK3MMHYVYAAQ (row 20)",
+      "rationale": "Offline, zero-request, readable without JS (US-40, spec :988); summaries cannot publish an unverifiable or zero-crossing claim (US-42, US-37 c2); live model spend isolated to one slice after EGRESS s2",
+      "session": "w4-report-design",
+      "skill": "design-slice",
+      "summary": "Design + mockup committed; F-1 surfaced; DR-R-1..9 with defaults",
+      "tags": [],
+      "title": "Row 20 report: a pure projection pre-rendered as HTML and SVG under a hashed-script CSP; summaries gated by a mechanical claim check; only R8 waits on EGRESS s2"
     },
     {
-      "id": "cl-01M3QQM2N1YTHZY4Q54W01QV9Z",
-      "datetime": "2026-09-29T23:22:27Z",
-      "session": "worker-sonnet-formal",
-      "kind": "design",
-      "skill": "design-slice",
-      "title": "Design the formal grader (grade/formal.py) for G1/G2: four US-32 scores, statement integrity, bug confirmation",
-      "prompt": "Design the formal grader (spec S-08g) with the /design-slice skill, so a later /implement slice can build src/harness_bench/grade/formal.py and tasks G1 (TLA+) and G2 (Lean 4) can be authored; the design is the deliverable, not code. Done when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining the four scores of US-32, statement integrity, trace conformance, bug-seeded variants, bug confirmation, the toolchain invocation (warm-before-clock, closing S-12's tla2tools gap), the report surfaces, the ledger facts, error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (persona reviews incl. Test Architect), each verdict recorded in the doc; any decision the design cannot settle becomes a decision request with a recommended default; the doc is committed; docs-graph.py validate passes. Not in scope: implementing formal.py; authoring G1 or G2; changing any code; any file under runs/; any push.",
-      "summary": "docs/design/formal-grader.md, revision 2 (post-gate): grade/formal.py's six metric definitions (formal_checks_clean, statement_integrity, model_conformance, model_non_vacuity, bugs_confirmed, bug_claim_precision) for G1 (TLA+) and G2 (Lean 4), with an exact per-task NA-cascade table, the toolchain-invocation contract via correctness.run_step (closing the D3 procs-allowlist question), a warm-before-clock fix for S-12's tla2tools gap, a STRIDE-lite analysis, a G2 statement-integrity hash that reuses Lean's own #check output, two whole-cell golden-master tests, and a red-first test plan with named mutants. Three real persona reviews ran in parallel (Test Architect, Security & Identity Architect, The Simplifier), each BLOCK on revision 1; all Blockers (2 TA, 3 Security) and the Simplifier's Major are fixed in revision 2, recorded in the Gate record. Two decision requests remain open (DR-FM1: the TLA+ trace-replay mechanism is unspiked, needs a pre-implementation spike; DR-FM2: no judge rubric yet for a not-seeded bug claim). Security/privacy rollups (docs/security/threat-model.md, privacy-review.md) updated with this design's boundaries and findings. docs-graph.py validate: 0 defects.",
-      "rationale": "S-08g is on T-G1/T-G2's critical path and US-32/US-33 require four separate formal scores plus bug confirmation, not a single pass/fail. Three adversarial persona reviews (Test Architect, Security & Identity Architect, The Simplifier) found real gaps in revision 1 -- most materially an untrusted-content-to-tool path (agent-authored TLA+/Lean executed by the grading host) with three unmitigated boundaries -- all closed in revision 2 before the gate cleared.",
       "artifacts": [
         "docs/design/formal-grader.md"
       ],
-      "tags": [],
+      "audit_ref": "al-01M3QQK2HDKRCQJJ411ANYCTJ8",
+      "datetime": "2026-09-29T23:22:27Z",
       "git": {
-        "before": "f31ce5bf8316c4ce44442386a184b10273b30a79",
         "after": "f31ce5bf8316c4ce44442386a184b10273b30a79",
+        "before": "f31ce5bf8316c4ce44442386a184b10273b30a79",
         "branch": "w5-formal",
-        "pushed": null,
-        "commits": []
+        "commits": [],
+        "pushed": null
       },
-      "audit_ref": "al-01M3QQK2HDKRCQJJ411ANYCTJ8"
+      "id": "cl-01M3QQM2N1YTHZY4Q54W01QV9Z",
+      "kind": "design",
+      "prompt": "Design the formal grader (spec S-08g) with the /design-slice skill, so a later /implement slice can build src/harness_bench/grade/formal.py and tasks G1 (TLA+) and G2 (Lean 4) can be authored; the design is the deliverable, not code. Done when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining the four scores of US-32, statement integrity, trace conformance, bug-seeded variants, bug confirmation, the toolchain invocation (warm-before-clock, closing S-12's tla2tools gap), the report surfaces, the ledger facts, error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (persona reviews incl. Test Architect), each verdict recorded in the doc; any decision the design cannot settle becomes a decision request with a recommended default; the doc is committed; docs-graph.py validate passes. Not in scope: implementing formal.py; authoring G1 or G2; changing any code; any file under runs/; any push.",
+      "rationale": "S-08g is on T-G1/T-G2's critical path and US-32/US-33 require four separate formal scores plus bug confirmation, not a single pass/fail. Three adversarial persona reviews (Test Architect, Security & Identity Architect, The Simplifier) found real gaps in revision 1 -- most materially an untrusted-content-to-tool path (agent-authored TLA+/Lean executed by the grading host) with three unmitigated boundaries -- all closed in revision 2 before the gate cleared.",
+      "session": "worker-sonnet-formal",
+      "skill": "design-slice",
+      "summary": "docs/design/formal-grader.md, revision 2 (post-gate): grade/formal.py's six metric definitions (formal_checks_clean, statement_integrity, model_conformance, model_non_vacuity, bugs_confirmed, bug_claim_precision) for G1 (TLA+) and G2 (Lean 4), with an exact per-task NA-cascade table, the toolchain-invocation contract via correctness.run_step (closing the D3 procs-allowlist question), a warm-before-clock fix for S-12's tla2tools gap, a STRIDE-lite analysis, a G2 statement-integrity hash that reuses Lean's own #check output, two whole-cell golden-master tests, and a red-first test plan with named mutants. Three real persona reviews ran in parallel (Test Architect, Security & Identity Architect, The Simplifier), each BLOCK on revision 1; all Blockers (2 TA, 3 Security) and the Simplifier's Major are fixed in revision 2, recorded in the Gate record. Two decision requests remain open (DR-FM1: the TLA+ trace-replay mechanism is unspiked, needs a pre-implementation spike; DR-FM2: no judge rubric yet for a not-seeded bug claim). Security/privacy rollups (docs/security/threat-model.md, privacy-review.md) updated with this design's boundaries and findings. docs-graph.py validate: 0 defects.",
+      "tags": [],
+      "title": "Design the formal grader (grade/formal.py) for G1/G2: four US-32 scores, statement integrity, bug confirmation"
     },
     {
-      "id": "cl-01M4174STB9ETP4BC69DZ93SQW",
-      "datetime": "2026-10-03T15:46:54Z",
-      "session": null,
-      "kind": "architecture",
-      "skill": "define-architecture",
-      "title": "Evaluation-campaign architecture: arms in the plan, two-turn attempts, campaign record, hidden-check harness, plan-level resume",
-      "prompt": "start /define-architecture",
-      "summary": "ADR-0014..0021 and amendments to ADR-0006/0007/0010/0011/0013",
-      "rationale": "The gated enterprise-evaluation spec needs three arms in one run, a two-turn rework task, a pre-registered campaign with an engine freeze, and hidden mechanical checks; the council required crash-atomic writes, per-turn resume, plan-level resume, a token-free allowlisted check environment and a forgery-proof result path",
       "artifacts": [
         "docs/architecture-evaluation-campaign.md",
         "docs/adr/0014-arm-replaces-pack-setting.md",
         "docs/adr/0021-plan-level-resume-and-liveness.md"
       ],
-      "tags": [],
+      "datetime": "2026-10-03T15:46:54Z",
       "git": {
-        "before": "bc768ed2",
         "after": "2ad01b291b7c8f859d88edaf8c4f449d3b832838",
+        "before": "bc768ed2",
         "branch": "main",
-        "pushed": false,
         "commits": [
           "2ad01b29 docs(adr-0015): link the merged spike E4 note (depends-on) and regenerate the docs index",
           "0de4b5c0 join spike E4 (DR-E4, R-E6): a second ACP session/prompt on the same session after end_turn works on claude-code (claude-opus-5-5), codex (gpt-6-sol) and copilot (gpt-6-sol) on Windows - same session id, no errors, per-turn usage in each prompt response, context carry strongly indicated; macOS unverified; the engine changes it needs are named in ADR-0015. Claude Sonnet 5 worker (Leader join on Claude Opus 5.5)",
           "99be853f chore(spike): dispose the e4 PoC script (spike scaffolding is not kept; the note records the method and evidence)",
           "1cf8fed3 docs(architecture): evaluation-campaign amendment (gated, 3 council rounds) - companion docs/architecture-evaluation-campaign.md refining arch-harness-bench, ADR-0014 arm replaces pack setting (cell = task version x combo x arm x rep; cell_id keeps its pack key carrying the arm id so grids 1-4 load and re-plan unchanged), ADR-0015 two turns on one ACP session with crash-atomic turn snapshots and a per-turn crash predicate (TLA+), ADR-0016 campaign record (hash-chained ledger, create_once records, rings as bench-matrix/2), ADR-0017 engine identity manifest and freeze (post-fix cells re-run, operator DI6), ADR-0018 hidden-check harness (HOST_ENV allowlist, explicit handle list, write-once-last-and-alone result with a tamper cross-check; Windows now, macOS follow-up), ADR-0019 catalog 0.7 (scenario-7 pass@1; append-only golden correction), ADR-0020 stdlib power and verdicts (reference cases reproduced), ADR-0021 plan-level resume and liveness; amendment text in ADR-0006/0007/0010/0011/0013; phases E1 walking skeleton, E2/E3/E4 in parallel, E5 first campaign. Council: Security PASS, Distributed Systems PASS, SRE/Data&Persistence/Enterprise/Simplifier/Patterns PASS WITH CONDITIONS (applied); authors did not clear their own vetoes. Claude Opus 5.5 author, Claude Sonnet 5 council (Leader on Claude Opus 5.5)",
           "ebf21cee spike(e4): a second session/prompt in the same ACP session, after end_turn (R-E6, DR-E4)"
-        ]
-      }
+        ],
+        "pushed": false
+      },
+      "id": "cl-01M4174STB9ETP4BC69DZ93SQW",
+      "kind": "architecture",
+      "prompt": "start /define-architecture",
+      "rationale": "The gated enterprise-evaluation spec needs three arms in one run, a two-turn rework task, a pre-registered campaign with an engine freeze, and hidden mechanical checks; the council required crash-atomic writes, per-turn resume, plan-level resume, a token-free allowlisted check environment and a forgery-proof result path",
+      "session": null,
+      "skill": "define-architecture",
+      "summary": "ADR-0014..0021 and amendments to ADR-0006/0007/0010/0011/0013",
+      "tags": [],
+      "title": "Evaluation-campaign architecture: arms in the plan, two-turn attempts, campaign record, hidden-check harness, plan-level resume"
     },
     {
-      "id": "cl-01M41N7YBJR6NQPV63F36Y58QC",
+      "artifacts": [
+        "docs/design/eval-multi-turn.md"
+      ],
       "datetime": "2026-10-03T19:53:17Z",
+      "git": {
+        "after": "1c72006533871d770c6a9308e7132623a7639e2b",
+        "before": null,
+        "branch": "design/eval-multi-turn",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41N7YBJR6NQPV63F36Y58QC",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-j-multi-turn.md",
+      "rationale": "ADR-0015 left the snapshot path and the code shape open; the model must pass TLC before X-J1 starts. Folder turn-<n> avoids the attempt-* globs of five readers; final rows omit the snapshot field so every existing archive_hash is unchanged; the budget clock starts once; the lifecycle model gains NumTurns, phased crash-atomic archive writes and six seeded variants.",
       "session": "w1j-multiturn-e1e4",
+      "skill": "design-slice",
+      "summary": "W1-J design: data model, snapshot contract, driver/engine shape, TLA+ model v5 with TLC evidence, test plan with the four testability checks.",
+      "tags": [],
+      "title": "Multi-turn attempt: turn-<n> snapshot folder, snapshot key part, one budget, lifecycle model v5"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-security-tasks.md"
+      ],
+      "datetime": "2026-10-03T17:48:26Z",
+      "git": {
+        "after": "be1a074857356c12cf775427266ca0941f447e0d",
+        "before": "be1a0748",
+        "branch": "design/eval-security-tasks",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41E3B1P0ZXTMJWTB0WTQ7E0",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-i-security-tasks.md",
+      "rationale": "web.py rejected (third-party import under -S). Payload sets must close the SQL parenthesis (a probe designed against the wrong template was dead). Bound x20 of measured 80 ms.",
+      "session": "w1i-security-e1e4",
+      "skill": "design-slice",
+      "summary": "Two security property tasks on two different public stdlib-only bases (microdot, bottle). S1 specified end to end; S2 base and probes named. Probes proven live by nine seeded-defect variants; expected values hand-derived and confirmed by a stand-in driver. No build step so builds are offline by construction.",
+      "tags": [],
+      "title": "W1-I: S1 on microdot, S2 on bottle; ten in-process probes; expected 1.0000 / 0.4000"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-property-grader.md"
+      ],
+      "datetime": "2026-10-03T17:19:39Z",
+      "git": {
+        "after": "5092455c9bb3f00821671edfedb546218286873d",
+        "before": "5092455c",
+        "branch": "design/eval-property-grader",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41CEMSZVTB7AHE5VSWQSRXP",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md",
+      "rationale": "ADR-0018 s1 and s10a hold only if no agent code runs in the deciding process; spikes SP-F1/F2 verified the sweep, the handshake and the forgery",
+      "session": "w1f-property-e1e4",
+      "skill": "design-slice",
+      "summary": "Design docs/design/eval-property-grader.md: runner.applicable narrows by property tag (R-90); hidden tests via correctness.grade() then a fresh hashed check copy; DETACHED base-interpreter check with one-byte ack; in-process probes run in a bench_check probe-host child (RV-SEC F1 forgery reproduced 3/3 by spike SP-F2); precedence HB-CHK-004>003>002(hash)>002(10a)>001>measured 0>scores; Kleene primary; _env.py one allowlist; egress task_canary. Gate pending RV-PAT, RV-SIM, RV-TA, RV-SEC.",
+      "tags": [],
+      "title": "W1-F: property grader keeps agent code out of the check process (probe-host child), accepts one acknowledged document from a lone check, and classifies by one fixed precedence"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-property-grader.md",
+        "tests/test_property_forgery_fixture.py"
+      ],
+      "datetime": "2026-10-03T17:48:07Z",
+      "git": {
+        "after": "13011c961ce3114597432725d16854a0ede6af10",
+        "before": "13011c96",
+        "branch": "design/eval-property-grader",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41E2R397305FHW1J1A72D6N",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md (rev 2 follow-up: apply the four W1-F reviews)",
+      "rationale": "W0 rev 2 is the contract; divergences only by seam request (req-01M41DM7XQG9GYVR32TJ762V67 NA handling to X-H1/X-E; req-01M41DM80KBD42GYARADW4V6HZ env import cycle).",
+      "session": "w1f-property-r2-e1e4",
+      "skill": "design-slice",
+      "summary": "Applied 38 findings of RV-TA (BLOCK), RV-SEC, RV-PAT, RV-SIM. W0 rev 2 wins: the seven-row outcome table with Classification.row, rows 1-5 NA for every metric, suspend detector per phase span, 64 KiB line, hidden_tests_pass and at_scale, fault/static/wsgi/resilience not built in E1. Added the clean-exit row-3 test and mutation entry, reparse-safe copy, bounded probe-host start and reader. Committed the SP-F2 forgery fixture with its positive control (9/9 each).",
+      "tags": [],
+      "title": "W1-F rev 2: property grader conformed to W0 rev 2 (seven rows, tamper NA, per-phase suspend, 64 KiB, E1 probe-only)"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/adr/0014-arm-replaces-pack-setting.md",
+        "docs/adr/0018-hidden-check-harness.md",
+        "docs/adr/0019-catalog-0-7-property-metrics.md"
+      ],
+      "datetime": "2026-10-03T17:59:35Z",
+      "git": {
+        "after": "d053385c697f884b9099f3555747ff7192bca9fc",
+        "before": "e466acb5",
+        "branch": "design/eval-w0-rev3",
+        "commits": [
+          "d053385c docs(coordination): Wave 1 testability floor and inline AGENT_SESSION rule; classes TEST-B, COORD-D"
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M41EQQXPA4B3E384EMFHADMV",
+      "kind": "design",
+      "prompt": null,
+      "rationale": "One revision so every slice re-reads one contract; refusals keep ADR-0020 and W0 s4 meanings; the R-90 amendment goes to the Owner.",
+      "session": "coord-opus-e1e4",
+      "skill": "execute-with-coordination",
+      "summary": "Rev 3 answers 13 seam requests and 11 routed lens findings: wsgi kind in E1 (C-1), probe-host additions and start bound, NA never dropped, DOTNET_HOST_ENV to _env.py, reparse-safe grading copy, sweep_temps/TEMP_RE (no HB-LED-009), recover_archive to X-K1, quoted arm ids, grid4 golden, no top-level pack + plan_pack + HB-PLN-004/005, G1 AST ratchet, run-side effective identity in the plan, catalog_hash in identity.py, G2 every file + direction test, R-93/R-94 recorded, W1-G owner rule provisional on an Owner request, (e) exception deferred.",
+      "tags": [],
+      "title": "W0 seam contracts rev 3: Wave 1 seam answers"
+    },
+    {
+      "artifacts": [],
+      "datetime": "2026-10-03T18:10:46Z",
+      "git": {
+        "after": "8bde0c531441a8d460675ccb8af839281c27074f",
+        "before": null,
+        "branch": "design/eval-security-tasks",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41FC7AKVR1X94SC030Q4H6F",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Applied RV-TA/PAT/SEC/SIM first-round findings to docs/design/eval-security-tasks.md",
+      "tags": [],
+      "title": "W1-I rev 2: eight probes, wsgi per W0 rev 3 C-1, S2 cut to classes"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-catalog-0-7.md"
+      ],
+      "datetime": "2026-10-03T17:38:09Z",
+      "git": {
+        "after": "3c1c98278e08c948215a4bf7dacdd960be37aa30",
+        "before": null,
+        "branch": "design/eval-catalog-0-7",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41DGGB8793Z5DGA7Y1TKWWN",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-g-catalog.md",
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Settles how catalog 0.7 is built: no new area (config requires seven), one optional also_graded_by key so the formal grader owns pass_at_1 for G2, a three-valued pass rule in task.yaml, absence excluded from pass counts (ABS-A), and a cross-version US-4 control with a chain-linked correction record",
+      "tags": [],
+      "title": "Catalog 0.7 design: property metrics in existing areas, also_graded_by owner rule, formal.pass_rule, recorded-pairs pass counts, chain-linked corrected_from"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-catalog-0-7.md"
+      ],
+      "datetime": "2026-10-03T18:13:20Z",
+      "git": {
+        "after": "0fc300af8ea1088b14789f984dafc1e58deca65b",
+        "before": null,
+        "branch": "design/eval-catalog-0-7",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41FGXTZ46GPDVWGTMX4H5AS",
+      "kind": "design",
+      "prompt": "w1-g-catalog.md rev 2 follow-up",
+      "rationale": "RV-TA BLOCK on controls with no failing case; Coordinator deferral of the (e) exception; R-95 grants the owner rule",
+      "session": "w1g-catalog-r2-e1e4",
+      "skill": "design-slice",
+      "summary": "Applies RV-TA/PAT/SIM, W0 rev 3 and R-95; Control 1 gets red cases and reads 0.6 definitions from d6dda42d; (e) exception and corrected_from become a written contingency",
+      "tags": [],
+      "title": "Catalog 0.7 design rev 2: cross-version control from git, n_recorded, owner rule ruled (R-95), correction record deferred"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-atomic-publish.md"
+      ],
+      "datetime": "2026-10-03T17:40:54Z",
+      "git": {
+        "after": "b46bf907c5d035691d44bcc04c302149e8864030",
+        "before": null,
+        "branch": "design/eval-atomic-publish",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41DNH6Q8HPW9V20350SV052",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-b-atomic-publish.md",
+      "rationale": "ADR-0015 5a and ADR-0016 2a rest on primitives measured in spikes E1-S1 and E1-S2; RV-DS 5,6,7,9, RV-SEC 10, RV-PAT 5 dispositions become tests.",
+      "session": "w1b-publish-e1e4",
+      "skill": "design-slice",
+      "summary": "Designs atomic.py (create_once, publish_dir, sweep_temps) and the archive.py rework: final name appears only after a verified copy; rows hash source bytes; folder-then-rows-then-event recovery rule with states S0-S6; O_BINARY required on Windows; leaked temps hidden from git, verify and attempt readers.",
+      "tags": [],
+      "title": "Crash-atomic publish: temp-then-rename for folders, temp-then-link for files, one recovery rule, strict verify"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-atomic-publish.md"
+      ],
+      "datetime": "2026-10-03T18:20:21Z",
+      "git": {
+        "after": "32548ed921664e2db3fcde42634ac4e241c93e78",
+        "before": null,
+        "branch": "design/eval-atomic-publish",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41FXSDXPNN8VVXE51S86BT4",
+      "kind": "design",
+      "prompt": "W1-B rev 2 follow-up",
+      "rationale": "Apply the five W1-B lens reviews and the Coordinator answers; RV-TA BLOCK findings 2 and 3 fixed with real-path tests and red fixtures",
+      "session": "w1b-publish-r2-e1e4",
+      "skill": "design-slice",
+      "summary": "34 review findings dispositioned; recover_archive specified not built in E1; HB-LED-009 refused; site scan re-derived (12 sites, 11 keys) with red fixtures; rename_with_retry public; seam request S-B4",
+      "tags": [],
+      "title": "W1-B rev 2: recovery moves to X-K1, sweep lock enforced, create_once identity-checked, one WIN-A retry helper"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-discriminate.md"
+      ],
+      "datetime": "2026-10-03T18:44:26Z",
+      "git": {
+        "after": "b88746d9f6ab43bb94c7f2a5d0197f845d2565e4",
+        "before": null,
+        "branch": "design/eval-discriminate",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41H9WD09F4V22981XF71CDD",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-e-discriminate.md",
+      "rationale": "Obligations O1-O7 routed by RV-TA W1-I, RV-DS W0/W1-B, RV-PAT W1-I, R-93/R-96 and seam V67; status is inside the task version hash so the flip to ready precedes the record",
+      "session": "w1e-discrim-e1e4",
+      "skill": "design-slice",
+      "summary": "docs/design/eval-discriminate.md; seam requests req-01M41H86JNZ3XPT1T1RJZJE35X, req-01M41H86X2ENXFWMWGTHTDDHMN",
+      "tags": [],
+      "title": "W1-E: discrimination record without run ids, no synthetic profile file, variants as synthetic cells, R-HOST readiness"
+    },
+    {
+      "artifacts": [],
+      "datetime": "2026-10-03T18:08:18Z",
+      "git": {
+        "after": "ae21488b361d0e39e815d3708896701fe62ed348",
+        "before": null,
+        "branch": "design/eval-campaign-record",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41F7QC1QJ9KGHK8CTM8B5KP",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "W1-C design for X-C: derived state, per-command guards, measured lock safety, F-1 checks at plan and attach",
+      "tags": [],
+      "title": "Campaign record design: closed 11-kind ledger folded to state, own-then-probe locks, git-prefix verify, attach freeze with chain identity check"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-property-grader.md"
+      ],
+      "datetime": "2026-10-03T18:22:49Z",
+      "git": {
+        "after": "1ceea651bceeada8e8406e1633afaa930d48a9f3",
+        "before": "1ceea651",
+        "branch": "design/eval-property-grader-r3",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41G29KMV71MS5ES0EWJ30Q0",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md (rev 3 delta)",
+      "rationale": "C-1: S1 is a WSGI factory; W0 rev 3 granted req-01M41DPBSM9 and req-01M41DT67 in part. Start kept outside the case span because SP-F3 saw a 486 ms honest start.",
+      "session": "w1f-property-r3-e1e4",
+      "skill": "design-slice",
+      "summary": "The probe host gains the wsgi kind with W0 rev 3 frames, an explicit PEP 3333 environ, a factory called with {state_dir}-resolved args, paths after the root, and a start sequence that moves fds 0-2 before agent code so app output lands in out_dir/check/host/<case>.log; the start is bounded by bounds_ms[interface] and a miss is did not start; SP-F3 re-ran the forgery against a wsgi host (refused).",
+      "tags": [],
+      "title": "W1-F rev 3: wsgi probe host in E1 (ruling C-1), app output off the protocol channel, start bound outside the case span"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-identity.md"
+      ],
+      "datetime": "2026-10-03T17:42:21Z",
+      "git": {
+        "after": "eed6ca33ce50c7596d4c0089b6cd3e9a726b2d2a",
+        "before": null,
+        "branch": "design/eval-identity",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41DR63WXF09NXV46J77EXQ4",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-d-identity.md",
+      "rationale": "Derived numbers are part of the measurement; engine imports telemetry.normalize on the cell path; measured 13 ms per check.",
+      "session": "w1d-identity-e1e4",
+      "skill": "design-slice",
+      "summary": "Keep run/grade only (no tooling class); procs run, egress grade; telemetry/* run (Owner request); recheck injected via EngineConfig.identity_check before each launch, identity_check_ms on cell.launch_intent; grade_identity_hash in E1; platform stays sys.platform.",
+      "tags": [],
+      "title": "Engine identity: two classes kept, telemetry run-side, per-launch run-side recheck"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-identity.md"
+      ],
+      "datetime": "2026-10-03T18:24:37Z",
+      "git": {
+        "after": "849809790b32063e93a0049e09f32f226b089bfe",
+        "before": null,
+        "branch": "design/eval-identity",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41G5JME3QDPDW97327M3B47",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-d-identity.md (rev 2 follow-up)",
+      "rationale": null,
+      "session": "w1d-identity-r2-e1e4",
+      "skill": "design-slice",
+      "summary": "R-94 applied (telemetry/* run, gateway grade, ADR-0017 Amendment 1); launch check once per tick with a 2 s cap and one retry; real-wiring test T-25; pure coverage and direction scans with red fixtures; run-class edit cost priced; 30 findings dispositioned",
+      "tags": [],
+      "title": "W1-D rev 2: telemetry run, gateway grade, one retry, real-wiring test"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-arms.md"
+      ],
+      "datetime": "2026-10-03T17:43:46Z",
+      "git": {
+        "after": "1722e06d5956c3276e108adb96ea1cadfdc2cdce",
+        "before": null,
+        "branch": "design/eval-arms",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41DTSMG4Q0GSM3AYVPS967K",
+      "kind": "design",
+      "prompt": "C:\\Projects\\x-harness-x-model-bench\\docs\\coordination\\eval-wave1\\w1-a-arms.md",
+      "rationale": "SP-A1..A5 measured results; ADR-0014 section 4 assertion kept; W0 errata filed as seam requests",
+      "session": "w1a-arms-e1e4",
+      "skill": "design-slice",
+      "summary": "W1-A design for ADR-0014: arm replaces pack setting; cell_id recipe unchanged (grid-4 276 ids reproduced by spike); launch seed stored, redrawn up to 100 times to meet the 5 percent bound (pilot shape fails 25 percent of first draws); HB-PLN-004 added; guard G1 as AST with E1 allowlist; E1/E3 split and every on/off literal site mapped",
+      "tags": [],
+      "title": "Arms v2: every plan is bench-plan/2, blocked hash-keyed launch order with bounded redraw, measurement plans refuse non-ready tasks, AST pack-reader guard"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-arms.md"
+      ],
+      "audit_ref": "al-01M41GPSXV3S5EJB729HWTYE3P",
+      "datetime": "2026-10-03T18:34:30Z",
+      "git": {
+        "after": "9a0aa49b3998295edc0846d1a00ccb9b38206fe0",
+        "before": null,
+        "branch": "design/eval-arms",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41GQP7XAQHFKJW658RSDA2H",
+      "kind": "design",
+      "prompt": "w1-a-arms.md follow-up rev 2",
+      "rationale": "Gate passed with conditions; findings are advice applied without widening the slice",
+      "session": "w1a-arms-r2-e1e4",
+      "skill": "design-slice",
+      "summary": "Applies RV-TA/SIM/PAT conditions on W0 rev 3: plan_pack readers, count ratchet plus literal ratchet, real-git builder test, trims",
+      "tags": [],
+      "title": "W1-A rev 2: G1 ratchets, plan_pack readers, test-plan trims"
+    },
+    {
+      "artifacts": [],
+      "datetime": "2026-10-03T18:34:53Z",
+      "git": {
+        "after": "9fad1bb3695a108a041ec883b6f9fae0abedb8f8",
+        "before": null,
+        "branch": "spike/s-lb-loopback",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41GRCVSCTTRHGM0K8QWZ79V",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "spike",
+      "summary": "Script and note method written; results await the operator run.",
+      "tags": [],
+      "title": "S-LB loopback firewall spike prepared, not run"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/adr/0020-power-and-verdicts-stdlib.md"
+      ],
+      "audit_ref": "al-01M41H90J96K9V1343P7M6YN2P",
+      "datetime": "2026-10-03T18:44:08Z",
+      "git": {
+        "after": "3fc5e4a78874e8bba301524e30ab128b51c78062",
+        "before": "9c9056df",
+        "branch": "coord/eval-w0-rev4-wave2",
+        "commits": [
+          "3fc5e4a7 Merge branch 'main' into coord/eval-w0-rev4-wave2",
+          "a49c56da chore(coord): regenerate docs index after the SP-LB merge; ledger rows",
+          "57f5576e merge: SP-LB loopback firewall spike - script and method, not run (operator required) (spike/s-lb-loopback)",
+          "6144ee74 Merge branch 'main' into coord/eval-w0-rev4-wave2",
+          "df542eec spike(s-lb): explicit check= on subprocess.run (PLW1510)",
+          "f4009cd4 docs(design): W0 rev 4 - RV-PAT rev 3 delta conditions (plan_pack_label, G1 equality ratchet), W1-B R2-1 test owner, W1-A TA 3 over SIM 7, F rev 3 section 3 additions",
+          "92e977b2 merge: W1-A follow-up (G1 pins after migration, equality assertion; plan_pack strict only for board.py) (design/eval-arms)",
+          "c53f4e78 design(eval): W1-A rev 2 - equality ratchet pinned after migration; plan_pack strict only in board.py (provisional)",
+          "5e0521f9 chore(coord): regenerate docs index after the W1-A merge; ledger rows",
+          "2fef0b80 merge: W1-A arms v2 design (gate passed: TA, SIM, PAT PWC; rev 2 applies all 22 findings) (design/eval-arms)",
+          "73993060 spike(s-lb): loopback firewall script and note method; not run, operator required",
+          "96804061 merge: RV-PAT delta check of W0 rev 3 sections 5 and 10 - PASS WITH CONDITIONS (review/eval-pat-w0r3)",
+          "496cb9b7 design(eval): W1-A arms rev 2 - apply RV-TA, RV-SIM, RV-PAT conditions on W0 rev 3",
+          "d50856fa chore(audit): regenerate audit-data view",
+          "d7f73e10 review(eval): RV-PAT delta check of W0 rev 3 s5/s10 - PASS WITH CONDITIONS",
+          "2d9ec47d docs(design): W0 seam contracts rev 4 - batch-b seam answers (SR-C1 in part, SR-C2, S-B4, W1-D r2, W1-H, W1-J), cross-slice rulings on W1-C/W1-H, R-95/R-96, rev 3+4 delta re-read list",
+          "9fad1bb3 chore(coord): regenerate docs index after the W1-D merge; ledger rows",
+          "301a8705 merge: W1-D engine identity design (gate passed: TA PWC rev 2 with T-25 fixed, SIM, SRE, PAT PWC; ADR-0017 Amendment 1 per R-94) (design/eval-identity)",
+          "9273a5d8 chore(coord): regenerate docs index after the W1-F rev 3 merge; ledger rows",
+          "f4bc19ba merge: W1-F rev 3 wsgi delta (gate: TA, SEC PASS WITH CONDITIONS; conditions carried to X-F) (design/eval-property-grader-r3)",
+          "3eb73d30 merge: RV-TA - W1-F rev 3 and W0 rev 3 section 3 PASS WITH CONDITIONS (review/eval-ta-f3)",
+          "7d6f6833 design(eval-identity): T-25 own fixture with the real engine, T-25b twin, RV-TA rev-2 gate line",
+          "0116a3b9 chore(audit): regenerate audit-data after the rv-ta-f3 entry",
+          "c4acad4a review(ta): rev 3 delta - W1-F PASS WITH CONDITIONS (6), W0 s3 PASS WITH CONDITIONS (2)",
+          "b88746d9 merge: RV-SEC - W0 rev 3 section 3 PASS; W1-F rev 3 PASS WITH CONDITIONS (review/eval-sec-f3)",
+          "20cc0412 merge: main into design/eval-identity (RV-TA rev 2)",
+          "cb9def7f merge: RV-TA re-review of W1-D rev 2 - PASS WITH CONDITIONS (T-25 fixture must be rebuilt: the assumed fixture fakes the engine) (review/eval-ta-w1d-r2)",
+          "140e013d chore(audit): regenerate audit-data view",
+          "93345006 review(sec): W0 rev 3 s3 and W1-F rev 3 delta gates",
+          "0b4ba063 chore(audit): regenerate audit-data after RV-TA W1-D r2",
+          "79d1a7c5 review(eval): RV-TA re-review of W1-D rev 2 - PASS WITH CONDITIONS; T-25 assume refuted",
+          "d47965b1 merge: RV-SEC review of W1-C - PASS WITH CONDITIONS (path escape via unvalidated id; HEAD-only ledger compare) (review/eval-sec-w1c)",
+          "9a0aa49b Merge branch 'main' into design/eval-arms",
+          "dc49f6d4 merge: RV-DS review of W1-C - PASS WITH CONDITIONS (review/eval-ds-w1c)",
+          "3dd28822 review(eval): Security & Identity review of W1-C (PASS WITH CONDITIONS)",
+          "864b8af9 review(eval): Distributed Systems review of W1-C - PASS WITH CONDITIONS",
+          "abbc848a merge: RV-SIM reviews of W1-H and W1-C - both PASS WITH CONDITIONS (review/eval-sim-hc)",
+          "7f04613b design(eval-identity): W1-D rev 2, R-94 applied, four reviews dispositioned, ADR-0017 Amendment 1",
+          "f29869e6 docs(adr): ADR-0020 Amendment 1 - seed_for replaces the plan seed; holm level at alpha/m (R-96)",
+          "73c454b8 review(eval): RV-SIM on W1-H and W1-C - both PASS WITH CONDITIONS; OI-4 answered (tag constant)",
+          "f125430a docs(design): W1-F rev 3 delta - wsgi probe host in E1 (ruling C-1), W0 rev 3 frames, five host items, start bound",
+          "84980979 merge: main into design/eval-identity (W0 rev 3, R-87..R-96)",
+          "ab13f0eb design(eval-arms): W1-A arms v2 design slice (ADR-0014), gate pending",
+          "71a15a0b design(eval-identity): W1-D engine identity, freeze and per-launch recheck"
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M41H9AXYB1KA3AG3RG9KG72N",
+      "kind": "design",
+      "prompt": null,
+      "rationale": "One definition per protocol (DM7); close check-then-act windows (RV-DS W1-C 2); bind attached plans by content (RV-SEC W1-C 7); keep W0's three-argument pilot call valid",
+      "session": "coord-opus-e1e4",
+      "skill": "execute-with-coordination",
+      "summary": "Batch-b seams answered; oslock.acquire_then_probe owned by X-B1 with a set of others; plan_hash on attach rows; run-side campaign check after the run lock via an injected engine keyword; gates.pilot expected_na keyword-only; gates.admission (EV-8); status/verify lock-free; git witness keyed on content; ADR-0020 seed_for and holm alpha/m recorded",
+      "tags": [],
+      "title": "W0 seam contracts rev 4 and ADR-0020 Amendment 1"
+    },
+    {
+      "artifacts": [],
+      "datetime": "2026-10-03T18:56:49Z",
+      "git": {
+        "after": "6099a0a36e9d53e6061b7e46735fc3682a089e0a",
+        "before": null,
+        "branch": "design/eval-campaign-record",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41J0J9DX77CK7QV58G5D23W",
+      "kind": "design",
+      "prompt": "W1-C author follow-up rev 2",
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Closes the RV-PAT block (no re-pilot path) and the RV-SEC and RV-DS conditions; pilot_current removed as implied by the state",
+      "tags": [],
+      "title": "W1-C rev 2: a fix in registered demotes to baselined; content-keyed git witness over commit pairs; plan_hash binding; lock-free reads"
+    },
+    {
+      "artifacts": [],
+      "datetime": "2026-10-03T18:06:24Z",
+      "git": {
+        "after": "2a9faa3c7bc67bab04a9a22766138eb64ada4235",
+        "before": null,
+        "branch": "design/eval-power-verdicts",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41F47BBJEGNXQ13X30ZTAGS",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Verdicts use a task-stratified, corrected-level percentile bootstrap (exact integer statistic); holm sized as bonferroni (provisional, decision request open); an NA count never changes a label (W0 rev 3); verdict cache refused in E1 with a measured trigger.",
+      "tags": [],
+      "title": "W1-H verdict method"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-power-verdicts.md"
+      ],
+      "datetime": "2026-10-03T19:01:58Z",
+      "git": {
+        "after": "109f8c0b7c2ba1a5aaaf9df0cbc270d4c7655a66",
+        "before": null,
+        "branch": "design/eval-power-verdicts",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41J9ZHQ5X84M8YXCEQDKQ7A",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Applies RV-TA, RV-PAT, RV-SIM findings and R-96 to the W1-H design; no code.",
+      "tags": [],
+      "title": "W1-H rev 2: holm sized at alpha/m with level_rule disclosed; gate kinds merged to nine; admission in gates.py"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md"
+      ],
+      "audit_ref": "al-01M41K2BV4XKG0TG0S7AN14118",
+      "datetime": "2026-10-03T19:15:18Z",
+      "git": {
+        "after": "78b6892f3e833f0b6005450ac70e376a21eb047d",
+        "before": "5fcd8a7c",
+        "branch": "coord/eval-w0-rev5-wave2b",
+        "commits": [
+          "78b6892f docs(design): W0 seam contracts rev 5 (SR-E1, SR-E2, SR-L1..SR-L4, W1-L RV-TA rulings, W1-C OI-5, R-97); DR-E1 raised; part-1 briefs aligned; ENV-C rename"
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M41K2CGWGXTVB1GNAFENG776",
+      "kind": "design",
+      "prompt": "W0 rev 5 (Coordinator session #5)",
+      "rationale": "Seams ruled at the Coordinator seat; the one ADR-text question (ADR-0016 s4 record body) goes to the Owner.",
+      "session": "coord-opus-e1e4",
+      "skill": "execute-with-coordination",
+      "summary": "Rev 5 answers SR-E1, SR-E2, SR-L1..SR-L4, rules RV-TA W1-L 1 (simplicity laundering, no EV-6 change) and SR-L1 (verified_before_use not built in E4), grants W1-C OI-5, records R-97; DR-E1 open.",
+      "tags": [],
+      "title": "W0 seam contracts rev 5"
+    },
+    {
+      "artifacts": [],
+      "datetime": "2026-10-03T19:44:08Z",
+      "git": {
+        "after": "926cee3eee04249aeaf1fdb38f1868df9e37e92b",
+        "before": null,
+        "branch": "design/eval-discriminate",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41MQ5ZA1MDT23D4DPF37HSW",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Applied RV-TA/PAT/SEC/SIM first-round findings: no run ids in the record body, link after created-or-equal, identity.for_task, CHECK_PROPERTIES scoping, one safe_relpath/overlay_files, grader-allowlist env, no-record on HB-RDY-011, HB-RDY-009 deferred to E4.",
+      "tags": [],
+      "title": "W1-E rev 2: discrimination record per R-98, check-less scoping, single overlay rule"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/adr/0016-campaign-record.md"
+      ],
+      "datetime": "2026-10-03T20:04:24Z",
+      "git": {
+        "after": "e988fd60354a4451f2c284c0469039b50a2c7229",
+        "before": "507e5d4a",
+        "branch": "coord/eval-w0-rev6-pack2",
+        "commits": [
+          "e988fd60 docs(coordination): pack part 2 - 13 compiled external prompts (CO-S0), README routing/DAG/launch order; W0 rev 6.3 (RV-DS on rev 6 and W1-J; SR-J2 check_models ruled: WIDER data first, one commit)",
+          "24ac479f docs(design): W0 rev 6.2 - the W1-J seams SR-J1, SR-J3, SR-J4 (one append_missing_rows owned by X-J1; turns {n, prompt, sha256}; job_active_baseline after the lazy helper)",
+          "d97f8dcb docs(coordination): Wave 2 E1 pack part 2 briefs (X-C, X-H1, X-H2, X-E, X-INT, TOOL-GSM-B), part-1 briefs on W0 rev 6; W0 rev 6.1; W1-I Erratum 1; classes XPORT-A, OBS-A, FIXT-A, MUT-C",
+          "4e817553 chore(coord): regenerate docs index after the W0 rev 6 merge; ledger rows",
+          "1c9eaafc merge: W0 rev 6 (R-98 record body, SR-E3, delta-review conditions R6-1..R6-18) and ADR-0016 Amendment 1 (coord/eval-w0-rev6-pack2, part A)",
+          "f5808497 docs(design): W0 seam contracts rev 6 (R-98, SR-E3, the rev 4/5 delta conditions of RV-TA/SEC/DS/PAT/SIM); ADR-0016 Amendment 1",
+          "d91a88bd chore(coord): regenerate docs index after the W1-E merge; ledger rows",
+          "2bd4401d merge: W1-E discriminate, synthetic profile and readiness design (gate passed: TA, PAT PWC rev 2; SEC, SIM PWC) (design/eval-discriminate)",
+          "0f609cbe merge: RV-TA re-review of W1-E rev 2 - PASS WITH CONDITIONS (review/eval-ta-w1e-r2)",
+          "76c2a6b5 review(ta): refresh audit-data view",
+          "b8cc111f merge: RV-PAT re-review of W1-E rev 2 - PASS WITH CONDITIONS (review/eval-pat-w1e-r2)",
+          "9afbd81f review(ta): RV-TA W1-E rev 2 re-review (PASS WITH CONDITIONS)",
+          "47806482 merge: X-I - security task S1 through the stand-in host (stays stub until X-F's real probe host; RV-TA W1-I D1/D4) (build/eval-x-i)",
+          "499e131e review(pat): RV-PAT W1-E rev 2 re-review (PASS WITH CONDITIONS)",
+          "ea3ce9f4 feat(S1): reference, naive, check, 15 defect variants, 7 wrong-app fixtures, evidence (green through the stand-in host; task stays stub)",
+          "45224a42 design(eval): W1-E rev 2 - apply RV-TA/PAT/SEC/SIM reviews, R-98, W0 rev 5",
+          "926cee3e merge: main into design/eval-discriminate (W0 rev 5, R-98)",
+          "69f1242d test(S1): red tests for the S1 task - hidden tests, wrong apps, probes, variants (33 red on assertions against the skeleton)",
+          "21163389 feat(S1): task skeleton - 501 stubs, neutral check, empty variant and wrong-app tables, stand-in bench_check (X-I, W1-I rev 2)",
+          "549f7bc4 design(eval): W1-E discriminate, synthetic agent and readiness (EV-7)"
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M41NW9BBVVY4FAYX8Y4NR7MJ",
+      "kind": "design",
+      "prompt": null,
+      "rationale": "R-98 directs the Coordinator to amend ADR-0016 and rewrite W0 s6 before X-E's first record; the review conditions bind before the owning builds.",
+      "session": "coord-opus-e1e4",
+      "skill": "execute-with-coordination",
+      "summary": "R-98 applied (record body without run/grading ids, bytes-equal already-done, link with record_stem); SR-E3 granted; the rev 4/5 delta conditions of five lenses (R6-1..R6-18); rev 6.1 TA/SEC on rev 6; rev 6.2 W1-J SR-J1/J3/J4; rev 6.3 DS on rev 6 and W1-J, SR-J2 check_models ruling.",
+      "tags": [],
+      "title": "W0 seam contracts rev 6 to 6.3; ADR-0016 Amendment 1"
+    },
+    {
+      "artifacts": [],
+      "datetime": "2026-10-03T18:43:16Z",
+      "git": {
+        "after": "d47965b1f9e9638cff9acedc8169d6fd56694965",
+        "before": null,
+        "branch": "design/eval-property-tasks",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41H7QVEXEJXVQ8RHTS2A4N3",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Specified RS1/2, RW1/2, NG1/2, SM1/2; hallucination count is final-tree static and verified_before_use is NA without tool targets, both provisional on DR-L1 and SR-L1",
+      "tags": [],
+      "title": "W1-L: eight property tasks on eight distinct MIT/Apache bases"
+    },
+    {
+      "artifacts": [],
+      "datetime": "2026-10-03T19:51:51Z",
+      "git": {
+        "after": "fce2b0d6a98812f5003e94b703d68d178f29d4be",
+        "before": null,
+        "branch": "design/eval-property-tasks",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41N5A0GKTTD70953CQQKAED",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Applies 32 first-round review findings and W0 rev 5; eight property tasks re-specified with full wrong-app coverage and re-traced RS variants",
+      "tags": [],
+      "title": "W1-L rev 2: whole-tree simplicity counts, verified_before_use not built, R-97 resolver, skeleton-first helpers"
+    },
+    {
+      "id": "cl-01M41SAYPAD61GHWPRBGQ1KH6T",
+      "datetime": "2026-10-03T21:04:50Z",
+      "session": "w1j-multiturn-r2-e1e4",
       "kind": "design",
       "skill": "design-slice",
-      "title": "Multi-turn attempt: turn-<n> snapshot folder, snapshot key part, one budget, lifecycle model v5",
-      "prompt": "docs/coordination/eval-wave1/w1-j-multi-turn.md",
-      "summary": "W1-J design: data model, snapshot contract, driver/engine shape, TLA+ model v5 with TLC evidence, test plan with the four testability checks.",
-      "rationale": "ADR-0015 left the snapshot path and the code shape open; the model must pass TLC before X-J1 starts. Folder turn-<n> avoids the attempt-* globs of five readers; final rows omit the snapshot field so every existing archive_hash is unchanged; the budget clock starts once; the lifecycle model gains NumTurns, phased crash-atomic archive writes and six seeded variants.",
+      "title": "W1-J rev 2: CrashedTurnPredicate independent of ClassOf; turn_ended for every returned turn; check_models WIDER rows",
+      "prompt": "w1-j-multi-turn.md rev 2",
+      "summary": "Design and model revised against the five gate reviews; TLC passes, 29/29 variants rejected",
+      "rationale": null,
       "artifacts": [
         "docs/design/eval-multi-turn.md"
       ],
       "tags": [],
       "git": {
         "before": null,
-        "after": "1c72006533871d770c6a9308e7132623a7639e2b",
+        "after": "332a7b6bb3fba11ea43ad8ba27c28a35fdaaa2d4",
         "branch": "design/eval-multi-turn",
         "pushed": null,
         "commits": []
@@ -66534,6 +78287,150 @@ window.AUDIT_DATA = {
       "kind": "decision-request",
       "ref": "req-01M41BS9Y7D1ANHSNDYM9N2H08",
       "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M41C40NC7E7S5NG8CKX9BD0E",
+      "ts": "2026-10-03T17:13:51Z",
+      "from": "owner-fable",
+      "to": "coord-opus-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41BS9Y7D1ANHSNDYM9N2H08",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41CV2MWGYW2HGQ5CQ63WJES",
+      "ts": "2026-10-03T17:26:27Z",
+      "from": "coord-opus-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41CV2MNPQENPMEMP01QF3ZY",
+      "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M41D2XB9KZ7DC50YYE2TP8MM",
+      "ts": "2026-10-03T17:30:43Z",
+      "from": "owner-fable",
+      "to": "coord-opus-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41CV2MNPQENPMEMP01QF3ZY",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41DJ574PMT6CXTZ07KYCT73",
+      "ts": "2026-10-03T17:39:03Z",
+      "from": "w1d-identity-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41DJ56WN77QNKFCW34GMG3A",
+      "session": "w1d-identity-e1e4"
+    },
+    {
+      "id": "mail-01M41E19DJNZNP9GKWHAT8CNPS",
+      "ts": "2026-10-03T17:47:19Z",
+      "from": "owner-fable",
+      "to": "w1d-identity-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41DJ56WN77QNKFCW34GMG3A",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41E37FRZPRF65SWNBYJ41KN",
+      "ts": "2026-10-03T17:48:22Z",
+      "from": "coord-opus-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41E37FGK5CRZ7NCK3RA20JV",
+      "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M41ED1JXN48J1TQYPE869PMJ",
+      "ts": "2026-10-03T17:53:44Z",
+      "from": "coord-opus-e1e4",
+      "to": "leader-e1e4",
+      "kind": "ruling",
+      "ref": null,
+      "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M41EPSBFHPV1FM5A4680W5S9",
+      "ts": "2026-10-03T17:59:03Z",
+      "from": "w1h-power-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41EPSB7E91C4APYT1QGN3FV",
+      "session": "w1h-power-e1e4"
+    },
+    {
+      "id": "mail-01M41EZV3CGRSXDQP6H6QNXQ8B",
+      "ts": "2026-10-03T18:04:00Z",
+      "from": "owner-fable",
+      "to": "coord-opus-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41E37FGK5CRZ7NCK3RA20JV",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41FAD88W1Q8J756YKGV87GV",
+      "ts": "2026-10-03T18:09:46Z",
+      "from": "owner-fable",
+      "to": "w1h-power-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41EPSB7E91C4APYT1QGN3FV",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41GWNSJR4N1NADEDDZW2SH6",
+      "ts": "2026-10-03T18:37:13Z",
+      "from": "w1l-tasks-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41GWNS06F362RJ78XB7AXY5",
+      "session": "w1l-tasks-e1e4"
+    },
+    {
+      "id": "mail-01M41HWKJXRZ1X4Q2VRRJRGV7K",
+      "ts": "2026-10-03T18:54:40Z",
+      "from": "owner-fable",
+      "to": "w1l-tasks-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41GWNS06F362RJ78XB7AXY5",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41J1E4FEEDSYYM1JY9S49QJ",
+      "ts": "2026-10-03T18:57:18Z",
+      "from": "coord-opus-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41J1E3PDYAG1WTAGH004MZ8",
+      "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M41KCSK8BWQZ17N2WC4TETTF",
+      "ts": "2026-10-03T19:20:59Z",
+      "from": "owner-fable",
+      "to": "coord-opus-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41J1E3PDYAG1WTAGH004MZ8",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41M3DP1N9TXFCK7D5M9JJDS",
+      "ts": "2026-10-03T19:33:20Z",
+      "from": "x-d1-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41KBTSTZ738NAGXNK0SRVXH",
+      "session": "x-d1-e1e4"
+    },
+    {
+      "id": "mail-01M41NX2FBZSXS4ZCH0A5FK3KV",
+      "ts": "2026-10-03T20:04:49Z",
+      "from": "x-d1-e1e4",
+      "to": "leader-e1e4",
+      "kind": "blocked",
+      "ref": "3cea81d97850d0bebb1f298c85ef0a4683e25a4e",
+      "session": "x-d1-e1e4"
     }
   ]
 };
