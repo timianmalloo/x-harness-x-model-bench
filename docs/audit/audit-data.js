@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T21:32:34Z",
+  "generated": "2026-10-03T22:42:59Z",
   "audit": [
     {
       "actor": null,
@@ -77501,6 +77501,36 @@ window.AUDIT_DATA = {
       "started_at": "2026-10-03T21:22:19Z",
       "duration_seconds": 614.0,
       "change": "cl-01M41TXDN4Y4WA99A575T5G09C"
+    },
+    {
+      "id": "al-01M41YYNDQ16PFGNN6M4W86AV5",
+      "shortname": "coord-requests-e1e4-10",
+      "datetime": "2026-10-03T22:42:59Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Coordinator #10: answer the three W1-K requests addressed to coord-opus-e1e4 (views.py/model docs E3 owner; X-K2 alarm paths; report header resumes), apply as W0 rev 6.8; record the scenario6 stub-map mutant survival in defect-classes with a control and a fix-slice owner. Leader addendum: R-100 merged; write ADR-0021 Amendment 1 (s2 bullet 2, s9, D-K1/D-K2/D-K4/D-K5) and re-point W0 s11 HB-RUN-008 in the same commit.",
+      "summary": "Resolved req-01M41XGYS25EXAHKPZV5EE1QT2, req-01M41XGZ3WV678S30APNX8HBMK, req-01M41XGZF3ACCY2QB5Y3ATYDQK (W0 rev 6.8 R6.8a-c, 3538661f); R6.8d and ADR-0021 Amendment 1 (R-100); MUT-D candidate (stub-map mutant observed surviving on 557cfe25).",
+      "kind": "manual",
+      "skill": null,
+      "tool": null,
+      "actor": "Coordinator #10 (claude-opus-5-5)",
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/adr/0021-plan-level-resume-and-liveness.md",
+        "docs/lessons/defect-classes.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "goal": "Queue for coord-opus-e1e4 empty; rev 6.8 and ADR-0021 Amendment 1 committed; the mutant finding registered",
+      "done_when": "coord request list shows no open request to coord-opus-e1e4; rev 6.8 committed with derive/validate and audit",
+      "tier": "T1",
+      "fan_out": 0,
+      "change": "cl-01M41YY8QAT7CJDTA57GNDVAWX",
+      "git": {
+        "sha": "3538661f3a3bed5f4a6aa8ad350a87e447b91693",
+        "short": "3538661f3",
+        "branch": "coord/eval-w0-rev68-w1k",
+        "pushed": null
+      }
     }
   ],
   "changes": [
@@ -78731,6 +78761,32 @@ window.AUDIT_DATA = {
         "pushed": null,
         "commits": []
       }
+    },
+    {
+      "id": "cl-01M41YY8QAT7CJDTA57GNDVAWX",
+      "datetime": "2026-10-03T22:42:46Z",
+      "session": "coord-opus-e1e4",
+      "kind": "decision",
+      "skill": null,
+      "title": "W0 rev 6.8: W1-K seams (views.py E3, X-K2 alarm paths, report resume header) and R-100 (ADR-0021 Amendment 1, HB-RUN-008 re-pointed); MUT-D candidate",
+      "prompt": null,
+      "summary": "Three W1-K requests resolved in W0 rev 6.8 (3538661f): R6.8a views.py E3 to X-K1 and X-A3 in disjoint hunks, model docs already X-K1's; R6.8b X-K2 owns tools/alarm-task.ps1, tests/test_alarm_task.py, docs/runbooks/resume-and-alarm.md with four conditions; R6.8c the report/html.py resume header is one X-K2 hunk after X-A3c and X-K1 join. R6.8d and ADR-0021 Amendment 1 record R-100 (finish-the-stop, NoLaunchAfterStop, HB-RUN-008 the exit-3 reason) and D-K1, D-K2, D-K4, D-K5. MUT-D candidate: scenario6 stub-map mutant survives on main.",
+      "rationale": "One owner per hunk keeps hub files serial: X-A3's brief already claimed a views.py rename that W0 did not list, so both E3 writers are recorded as disjoint hunks. The report header hunk goes to X-K2 (one wording with bench status) rather than delaying X-A3 on X-K1's join. R-100 conditions 1 and 4 assign the ADR note and the HB-RUN-008 text to the Coordinator. The stub-map mutant was re-run and observed surviving; its fixture is valid under model_map_problems.",
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/adr/0021-plan-level-resume-and-liveness.md",
+        "docs/lessons/defect-classes.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "557cfe25",
+        "after": "3538661f3a3bed5f4a6aa8ad350a87e447b91693",
+        "branch": "coord/eval-w0-rev68-w1k",
+        "pushed": null,
+        "commits": [
+          "3538661f docs(design): W0 seam contracts rev 6.8 (W1-K seams, R-100), ADR-0021 Amendment 1, MUT-D candidate"
+        ]
+      }
     }
   ],
   "messages": [
@@ -79003,6 +79059,15 @@ window.AUDIT_DATA = {
       "kind": "ruling",
       "ref": "req-01M41T6XB206JRN9V1AGFN92X9",
       "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41V2MD1QSGVXNDBCM96BWAR",
+      "ts": "2026-10-03T21:35:14Z",
+      "from": "w1k-resume-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41V2MC1RTCBB4APR3TSXEYP",
+      "session": "w1k-resume-e1e4"
     }
   ]
 };
