@@ -1,3 +1,18 @@
+---
+id: note-20261003-spike-s2-bottle-cookie-reads
+title: "S2 spike (stopped) - verified reads of bottle signed-cookie code"
+type: decision-note
+status: accepted
+owner: "@timianmalloo"
+tags: [spike, s2, security, bottle]
+links:
+  - { to: design-eval-security-tasks, rel: relates-to }
+review-by: "2026-10-17"
+summary: >-
+  Three verified line reads of bottle.py at the S2 pin (pickle-based signed cookies); the S2 spike was stopped and
+  S2's probe class goes to the Owner for a redesign that never constructs deserialization payloads.
+---
+
 # S2 spike: verified reads of bottle's signed-cookie code
 
 Pin: `bottlepy/bottle` @ `cbd569c447b3fd53f194cef9a306146ce6a07a59`, file `bottle.py`. Read on 2026-10-03 in a fresh clone at that commit. Status: **Verified** (the lines were opened and read).
