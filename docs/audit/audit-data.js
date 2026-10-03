@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T16:55:43Z",
+  "generated": "2026-10-03T17:19:40Z",
   "audit": [
     {
       "actor": null,
@@ -65145,56 +65145,108 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41A9ZG2XPDFEYPH20672ZV5",
-      "shortname": "rulings R-87..R-89 (DR-1..DR-3, eval campaign)",
-      "datetime": "2026-10-03T16:42:09Z",
-      "session": "owner-fable",
-      "prompt": "Owner seat: rule on DR-1 (who drives coord-runner; how Sonnet tracks launch), DR-2 (the Codex route while B-1 is open), DR-3 (E1 pilot and mini-grid combo and k) from the merged plan 77a714a3 and the kickoff al-01M418621NVAK4DJNDQ98XG5X6.",
-      "summary": "R-87 DR-1 (a): the Leader invokes prepare/attest/run/status per external dispatch, the Coordinator owns the dispatch content; (b) refused (epoch churn, coord-runner.py:891), (c) refused; Sonnet tracks are Agent-tool spawns with model: sonnet in coord worktree new trees, Coordinator-spawned where it has the Agent tool; the runner's claude harness has 0 of 106 runs so it is unqualified until Q0. R-88 DR-2 (c): X-A1 and X-D fall back to Sonnet when their designs pass while B-1 is open (this is the kickoff's Owner review for those two); J1/K1 stay Codex gpt-6.1-sol after Q0; (b) refused (unpinned model, retired AGENT_SESSION -> RUN-OWNER). R-89 DR-3 (a): measured runs/grid-4 (276 cells) mean wall per cell cc-opus 176.6 s < copilot-sol 195.2 < codex-sol 231.6; the pilot ring and mini grid run on cc-opus (claude-opus-5-5) with k = 3; min recorded pairs <= 3 at pre-registration; operator confirms or overrides at the demo.",
-      "kind": "manual",
-      "skill": null,
-      "tool": null,
       "actor": "Owner seat (Fable, claude-fable-5-1)",
       "artifacts": [
         "docs/notes/rulings.md"
       ],
+      "datetime": "2026-10-03T16:42:09Z",
+      "done_when": "three rulings appended to docs/notes/rulings.md on branch owner/rulings-r87-r89, committed with this audit entry",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/rulings-r87-r89",
+        "pushed": null,
+        "sha": "77a714a37057e3d058856c0e22cb3130b20c7aa9",
+        "short": "77a714a37"
+      },
+      "goal": "Rule on DR-1..DR-3 of docs/coordination/coordination-eval-campaign.md as R-87..R-89",
+      "id": "al-01M41A9ZG2XPDFEYPH20672ZV5",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Owner seat: rule on DR-1 (who drives coord-runner; how Sonnet tracks launch), DR-2 (the Codex route while B-1 is open), DR-3 (E1 pilot and mini-grid combo and k) from the merged plan 77a714a3 and the kickoff al-01M418621NVAK4DJNDQ98XG5X6.",
+      "session": "owner-fable",
+      "shortname": "rulings R-87..R-89 (DR-1..DR-3, eval campaign)",
+      "skill": null,
+      "summary": "R-87 DR-1 (a): the Leader invokes prepare/attest/run/status per external dispatch, the Coordinator owns the dispatch content; (b) refused (epoch churn, coord-runner.py:891), (c) refused; Sonnet tracks are Agent-tool spawns with model: sonnet in coord worktree new trees, Coordinator-spawned where it has the Agent tool; the runner's claude harness has 0 of 106 runs so it is unqualified until Q0. R-88 DR-2 (c): X-A1 and X-D fall back to Sonnet when their designs pass while B-1 is open (this is the kickoff's Owner review for those two); J1/K1 stay Codex gpt-6.1-sol after Q0; (b) refused (unpinned model, retired AGENT_SESSION -> RUN-OWNER). R-89 DR-3 (a): measured runs/grid-4 (276 cells) mean wall per cell cc-opus 176.6 s < copilot-sol 195.2 < codex-sol 231.6; the pilot ring and mini grid run on cc-opus (claude-opus-5-5) with k = 3; min recorded pairs <= 3 at pre-registration; operator confirms or overrides at the demo.",
       "tags": [
         "ruling",
         "eval-campaign"
       ],
-      "outcome": "success",
-      "goal": "Rule on DR-1..DR-3 of docs/coordination/coordination-eval-campaign.md as R-87..R-89",
-      "done_when": "three rulings appended to docs/notes/rulings.md on branch owner/rulings-r87-r89, committed with this audit entry",
       "tier": "T0",
-      "fan_out": 0,
-      "git": {
-        "sha": "77a714a37057e3d058856c0e22cb3130b20c7aa9",
-        "short": "77a714a37",
-        "branch": "owner/rulings-r87-r89",
-        "pushed": null
-      }
+      "tool": null
     },
     {
-      "id": "al-01M41B2T6WA7SH725GN28ZNV2X",
-      "shortname": "coordinate-eval-campaign-w0",
-      "datetime": "2026-10-03T16:55:43Z",
-      "session": "coord-opus-e1e4",
-      "prompt": "Coordinator coord-opus-e1e4: run /execute-with-coordination against docs/coordination/coordination-eval-campaign.md; scope W0 (seam contracts, BOM and task.yaml stubs, hub owners, modules with run/grade class, reserved HB codes, guard fields), then the Wave 1 dispatch pack (W1-A..W1-L, SP-LB, six lens reviewers); added by the Leader: the Q0 contract for codex/agy/grok. No dispatch, no coord-runner, no Q0 run.",
-      "summary": "W0 docs/design/eval-seam-contracts.md (+html), BOM 0.6 with ten property stubs S1..SM2 (scenario 5), tasks/README property section, test_plan full-grid count 816; 19 briefs in docs/coordination/eval-wave1/; Q0 contract docs/coordination/eval-q0/. DR-4 raised (property_check_pass composition), provisional (a). No worker dispatched.",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/design/eval-seam-contracts.md",
         "docs/coordination/eval-wave1/README.md",
         "docs/coordination/eval-q0/q0-contract.json"
       ],
+      "compiled": false,
+      "datetime": "2026-10-03T16:55:43Z",
+      "done_when": "W0, briefs and Q0 contract committed on coord/eval-w0-seam-contracts; docs-graph validate exit 0",
+      "fan_out": 0,
+      "goal": "Author W0 and the Wave 1 dispatch pack and the Q0 contract without dispatching",
+      "id": "al-01M41B2T6WA7SH725GN28ZNV2X",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Coordinator coord-opus-e1e4: run /execute-with-coordination against docs/coordination/coordination-eval-campaign.md; scope W0 (seam contracts, BOM and task.yaml stubs, hub owners, modules with run/grade class, reserved HB codes, guard fields), then the Wave 1 dispatch pack (W1-A..W1-L, SP-LB, six lens reviewers); added by the Leader: the Q0 contract for codex/agy/grok. No dispatch, no coord-runner, no Q0 run.",
+      "session": "coord-opus-e1e4",
+      "shortname": "coordinate-eval-campaign-w0",
+      "skill": "execute-with-coordination",
+      "summary": "W0 docs/design/eval-seam-contracts.md (+html), BOM 0.6 with ten property stubs S1..SM2 (scenario 5), tasks/README property section, test_plan full-grid count 816; 19 briefs in docs/coordination/eval-wave1/; Q0 contract docs/coordination/eval-q0/. DR-4 raised (property_check_pass composition), provisional (a). No worker dispatched.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "datetime": "2026-10-03T17:01:06Z",
+      "done_when": "Ruling 90 in docs/notes/rulings.md via coord decide rule, the request resolved, committed on owner/ruling-r90",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/ruling-r90",
+        "pushed": null,
+        "sha": "ce1aa06ab58712c8a2ae5a27050b5f02bb6fc83b",
+        "short": "ce1aa06ab"
+      },
+      "goal": "Rule DR-4 (req-01M41B3C7C7FY80DCZZ6A3TVES) as R-90",
+      "id": "al-01M41BCN3BBCSFAA4W2CA4MQ6C",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Owner seat: rule DR-4, how property_check_pass composes the stated ask's hidden tests with the property's own checks, given one grader cannot read another's output in a pass; W0 docs/design/eval-seam-contracts.md section 7 at 1700ca0f; include the ten-vs-eleven metric count.",
+      "session": "owner-fable",
+      "shortname": "ruling R-90 (DR-4, property_check_pass composition)",
+      "skill": null,
+      "summary": "R-90 DR-4 (a): one property grader records the eleven ADR-0019 property metrics, narrowed by the task's property.name through one catalog property: tag applied by runner.applicable and read by readiness (one definition); it runs the hidden tests through correctness.grade() in its own grading copy (rework needs tests on the turn-1 snapshot, which only this grader can do); tasks keep correctness so pass_at_1 stays; (c) refused (runner.py:12-23: no grader reads another's output); (b) deferred pending the measured cost of the double test run; the double run's disagreement with pass_at_1 is a pilot-gate finding. Count: eleven; the plan's ten at :134/:183/:209 is a miscount the Coordinator corrects.",
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "tier": "T0",
+      "tool": null
+    },
+    {
+      "id": "al-01M41CEN2C02BQ55YW4MA3JCJ7",
+      "shortname": "design-slice-eval-property-grader",
+      "datetime": "2026-10-03T17:19:40Z",
+      "session": "w1f-property-e1e4",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md",
+      "summary": "W1-F design for the hidden-check runner and property grader: data model, contracts, probe host (RV-SEC F1), handshake, outcome precedence (RV-TA s3), FMA, STRIDE per ADR-0018 row, telemetry, test plan by node id; spikes SP-F1/F2; seam requests req-01M41C0NFEXQA0XVH4FTK9YDBD, req-01M41C0ZCPJ13PQ77KNC5AHQMZ, req-01M41C57K2VVC7C4JGEJC18FR1; gate pending",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-grader.md"
+      ],
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Author W0 and the Wave 1 dispatch pack and the Q0 contract without dispatching",
-      "done_when": "W0, briefs and Q0 contract committed on coord/eval-w0-seam-contracts; docs-graph validate exit 0",
+      "goal": "Run /design-slice for W1-F hidden-check runner and property grader, producing docs/design/eval-property-grader.md",
+      "done_when": "Gate PASS with Security & Identity as hard-veto reviewer; the four ADR-0018 red tests and the race test named; job-alone constraints adopted (sys._base_executable, DETACHED_PROCESS, one-byte ack)",
       "tier": "T2",
       "fan_out": 0
     }
@@ -65662,6 +65714,28 @@ window.AUDIT_DATA = {
           "1cf8fed3 docs(architecture): evaluation-campaign amendment (gated, 3 council rounds) - companion docs/architecture-evaluation-campaign.md refining arch-harness-bench, ADR-0014 arm replaces pack setting (cell = task version x combo x arm x rep; cell_id keeps its pack key carrying the arm id so grids 1-4 load and re-plan unchanged), ADR-0015 two turns on one ACP session with crash-atomic turn snapshots and a per-turn crash predicate (TLA+), ADR-0016 campaign record (hash-chained ledger, create_once records, rings as bench-matrix/2), ADR-0017 engine identity manifest and freeze (post-fix cells re-run, operator DI6), ADR-0018 hidden-check harness (HOST_ENV allowlist, explicit handle list, write-once-last-and-alone result with a tamper cross-check; Windows now, macOS follow-up), ADR-0019 catalog 0.7 (scenario-7 pass@1; append-only golden correction), ADR-0020 stdlib power and verdicts (reference cases reproduced), ADR-0021 plan-level resume and liveness; amendment text in ADR-0006/0007/0010/0011/0013; phases E1 walking skeleton, E2/E3/E4 in parallel, E5 first campaign. Council: Security PASS, Distributed Systems PASS, SRE/Data&Persistence/Enterprise/Simplifier/Patterns PASS WITH CONDITIONS (applied); authors did not clear their own vetoes. Claude Opus 5.5 author, Claude Sonnet 5 council (Leader on Claude Opus 5.5)",
           "ebf21cee spike(e4): a second session/prompt in the same ACP session, after end_turn (R-E6, DR-E4)"
         ]
+      }
+    },
+    {
+      "id": "cl-01M41CEMSZVTB7AHE5VSWQSRXP",
+      "datetime": "2026-10-03T17:19:39Z",
+      "session": "w1f-property-e1e4",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "W1-F: property grader keeps agent code out of the check process (probe-host child), accepts one acknowledged document from a lone check, and classifies by one fixed precedence",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md",
+      "summary": "Design docs/design/eval-property-grader.md: runner.applicable narrows by property tag (R-90); hidden tests via correctness.grade() then a fresh hashed check copy; DETACHED base-interpreter check with one-byte ack; in-process probes run in a bench_check probe-host child (RV-SEC F1 forgery reproduced 3/3 by spike SP-F2); precedence HB-CHK-004>003>002(hash)>002(10a)>001>measured 0>scores; Kleene primary; _env.py one allowlist; egress task_canary. Gate pending RV-PAT, RV-SIM, RV-TA, RV-SEC.",
+      "rationale": "ADR-0018 s1 and s10a hold only if no agent code runs in the deciding process; spikes SP-F1/F2 verified the sweep, the handshake and the forgery",
+      "artifacts": [
+        "docs/design/eval-property-grader.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "5092455c",
+        "after": "5092455c9bb3f00821671edfedb546218286873d",
+        "branch": "design/eval-property-grader",
+        "pushed": null,
+        "commits": []
       }
     }
   ],
