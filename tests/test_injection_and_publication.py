@@ -230,7 +230,7 @@ def test_without_an_operator_the_section_scan_still_runs_on_the_os_login(tmp_pat
     html.write(run_dir, views.load(run_dir), set(), root=root)
     record = _record(run_dir)
     assert record["egress"] == "partial: email not supplied"
-    assert record["sections"] and all(s["scanned"] == ["token_shape", "username", "home_path"]
+    assert record["sections"] and all(s["scanned"] == ["token_shape", "username", "home_path", "task_canary"]
                                       for s in record["sections"])
     assert record["canaries"]["version"] == "not scanned"  # this caller left the production set out
 
