@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T20:07:13Z",
+  "generated": "2026-10-03T20:38:41Z",
   "audit": [
     {
       "actor": null,
@@ -76986,6 +76986,29 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "id": "al-01M41QV25RVY1JF5E41Z3QZ9HN",
+      "shortname": "coord7-xd1-pack3",
+      "datetime": "2026-10-03T20:38:41Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Coordinator #7: part A (X-D1 requests req-01M41KBT..., req-01M41KRK...; follow-on; a control against unanswered requests) and part B (pack part 3: E2 X-J1, X-J2, X-RW; E3 X-A3, X-G3, X-K1, X-K2; E4 X-LB, X-LG, X-RS, X-NG, X-SM, X-I-S2; X-CV; W1-K design brief). Mid-task: W1-J rev 2's three requests (rev 6.5) and RV-TA W1-L rev 2 R2-1..R2-8 plus the v-laundered naming conflict.",
+      "summary": "Part A ce924261 (R6.4a/b, x-d1-followon.md, COORD-B second instance, README controls). W0 rev 6.5 f3f08735 (three W1-J requests). Part B 1925a8c8: W0 rev 6.6, W1-L Erratum 1, docs/coordination/eval-wave2-e234/ (README, 15 briefs, w1-k.md, 7 contracts COMPILE-OWED). No compiles: nothing external is dispatchable yet.",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "docs/coordination/eval-wave2-e234/README.md",
+        "docs/coordination/eval-wave2-e1/x-d1-followon.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Answer X-D1's two overdue seam requests and write its follow-on (part A); write Wave 2 pack part 3 for E2-E4 (part B)",
+      "done_when": "Both requests resolved and the follow-on committed; E2-E4 README and briefs committed, blocked ones marked, only dispatchable ones compiled",
+      "tier": "T1",
+      "fan_out": 0
     }
   ],
   "changes": [
@@ -78087,6 +78110,40 @@ window.AUDIT_DATA = {
       "summary": "Applies 32 first-round review findings and W0 rev 5; eight property tasks re-specified with full wrong-app coverage and re-traced RS variants",
       "tags": [],
       "title": "W1-L rev 2: whole-tree simplicity counts, verified_before_use not built, R-97 resolver, skeleton-first helpers"
+    },
+    {
+      "id": "cl-01M41QV1DM2XZZX837Z59AHWYK",
+      "datetime": "2026-10-03T20:38:40Z",
+      "session": "coord-opus-e1e4",
+      "kind": "decision",
+      "skill": null,
+      "title": "W0 rev 6.4-6.6: X-D1 seams, W1-J rev 2 seams, RV-TA W1-L rev 2 and laundering names",
+      "prompt": null,
+      "summary": "Five open requests resolved; W0 rev 6.4 (ce924261), 6.5 (f3f08735), 6.6 (1925a8c8); W1-D Erratum 1, W1-L Erratum 1.",
+      "rationale": "R6.4a/b grant X-D1's two requests (scans in tests/import_graph.py; runner.py line 60). R6.5a-c grant W1-J rev 2's three (turn_ended.next, status.py on X-J1's E2 surface, baseline on turn_ended{1}) with one-definition conditions. R6.6 fixes W1-L R2-1..R2-4 before the task authors start; launderlines/launderclass/laundertest replace the two v-laundered names with opposite meanings.",
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "198d2fb8",
+        "after": "1925a8c88554d2e17208e29d665485ffb0ba78fc",
+        "branch": "coord/eval-xd1-rulings-pack3",
+        "pushed": null,
+        "commits": [
+          "1925a8c8 docs(coordination): W0 seam contracts rev 6.6 (RV-TA W1-L rev 2 R2-1..R2-4, laundering-variant names), W1-L Erratum 1, Wave 2 pack part 3 (E2-E4 briefs, W1-K design brief, DAG, launch order)",
+          "f3f08735 docs(design): W0 seam contracts rev 6.5 - W1-J rev 2 seams (turn_ended.next, status.py on X-J1's E2 surface, job_active_baseline on turn_ended{1})",
+          "3962dd97 merge: X-D1 seam rulings (W0 rev 6.4 R6.4a, R6.4b), the X-D1 follow-on instruction, README controls against unanswered requests (coord/eval-xd1-rulings-pack3 part A, ce924261)",
+          "ce924261 docs(coordination): W0 rev 6.4 rulings on X-D1's two seam requests; X-D1 Sonnet follow-on; COORD-B second instance and the open-request control",
+          "623b63a5 chore(coord): regenerate docs index after the W1-L merge; ledger rows",
+          "c8f57b8d merge: W1-L property tasks design (gate passed: TA PWC rev 2, PAT, SIM PWC; EV-5 R-97 amendment note) (design/eval-property-tasks)",
+          "e0b90c68 merge: RV-TA re-review of W1-L rev 2 - PASS WITH CONDITIONS (review/eval-ta-w1l-r2)",
+          "d4ae23c1 review(eval): RV-TA W1-L rev 2, PASS WITH CONDITIONS, 8 findings",
+          "9df8c33d design(eval): W1-L rev 2 - apply RV-TA/PAT/SIM findings, W0 rev 5, R-97; EV-5 note",
+          "fce2b0d6 merge: main into design/eval-property-tasks (W0 rev 5, R-98)",
+          "5da93d91 design(eval): W1-L property tasks - resilience, rework, no-guessing, simplicity (x2 each), gate pending"
+        ]
+      }
     }
   ],
   "messages": [
