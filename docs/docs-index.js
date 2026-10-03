@@ -3608,6 +3608,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "6498292143c8251d7eacdd9887b620b175937d91c7c69224f58467d473a63c2f"
     },
     {
+      "id": "review-eval-sim-w1b",
+      "path": "docs/design/reviews/eval-review-sim-w1b.md",
+      "title": "Simplifier lens review of W1-B, crash-atomic publish",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-atomic-publish.md (design/eval-atomic-publish, 67e7dc83) against W0 rev 2 section 4 and R-87..R-93 on main. The two helpers, the strict verify and the temp reader fix earn their place; recover_archive is built two phases early and the test and telemetry surface has removable pieces.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "be00c56fc382061170f39bd21fcc7eeafc8c064fbb4100188b64e39c0dead710"
+    },
+    {
       "id": "review-eval-sim-w1f",
       "path": "docs/design/reviews/eval-review-sim-w1f.md",
       "title": "Simplifier lens review of W1-F, the property grader",
@@ -3627,6 +3648,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "e02b9c406c50e4ac255322f67b483331ebc51b943a7b5c0e97b4f27fee167473"
+    },
+    {
+      "id": "review-eval-sim-w1g",
+      "path": "docs/design/reviews/eval-review-sim-w1g.md",
+      "title": "Simplifier lens review of W1-G, catalog 0.7",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-catalog-0-7.md (design/eval-catalog-0-7, b0987941) against W0 rev 2 and R-87..R-93 on main. also_graded_by is the smallest correct mechanism; the (e) exception and corrected_from record are built for a case the design itself shows cannot occur.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "884d2fa0b86d7e0e0bb2a50e1f1d05093778cf7750b02c3d12b49360f297f621"
     },
     {
       "id": "review-eval-ta",
@@ -3653,6 +3695,33 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "0b00511fbc81f9dfcea0fbc2fdc36dbbc7e4c8b273f2c38248dcaa6d328fbcde"
+    },
+    {
+      "id": "review-eval-ta-w1a",
+      "path": "docs/design/reviews/eval-review-ta-w1a.md",
+      "title": "W1-A arms v2 design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-A against W0 rev 2 and R-87..R-93. The EV-17 map is complete and the grid-4 fixture is independent of the new code (derived from the live plan). PASS WITH CONDITIONS: no control that checks the on/off literal sweep outside Python, a real-wiring gap behind a faked install_pack, an architecture test with no red case, and a boundary case for the balance bound.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-a"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "8c74630765c213725014dd41cd1564a01166cdf414a2e480734a367e7d272451"
     },
     {
       "id": "review-eval-ta-w1f",
@@ -5222,5 +5291,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "9920f59bc909fdcfdbccebdd753385172401119f459e05b840b5d7166fc31f5d"
+  "graphSha256": "01384b00724c66ee8c30a03dd95d9760b65062cd482bc40ca6e2c5d034a928a9"
 };
