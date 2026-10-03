@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:47:34Z",
+  "generated": "2026-10-03T17:49:52Z",
   "audit": [
     {
       "actor": null,
@@ -65740,37 +65740,81 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41E1QZ8SHA7RXF6GK9CZAHZ",
-      "shortname": "ruling R-94 (DR-8, telemetry/* run side; gateway component)",
-      "datetime": "2026-10-03T17:47:34Z",
-      "session": "owner-fable",
-      "prompt": "Owner seat: rule req-01M41DJ56WN77QNKFCW34GMG3A from W1-D (eval-identity, 71a15a0b): ADR-0017 s1 lists telemetry/* as grade but engine.py and driver.py use it on the cell path; recommendation A (telemetry/* to run; add bench/gateway.yaml as grade-class component gateway); author's correction: 6 import edges in 3 modules, not 5 allowlist entries. Verify in code, rule as R-94, say whether an ADR amendment note is needed and who writes it.",
-      "summary": "R-94 DR-8: (A) granted, (B) and (C) refused. Verified: engine._read_records (engine.py:661,854) runs the harness reader (profiles.py:261-262, READERS) at every cell end and feeds _classify (cause) and _spend (SPEND, the spend-cap stop); driver.py:237,246,290 classify through normalize; so all five telemetry files alter what a cell records: run side. Edge count verified at 6 (driver->telemetry/__init__, driver->normalize, engine->normalize, profiles->claude_code, codex, copilot). bench/gateway.yaml read only by grade/judge, report/judges, gateway/calibration and validate-time config: grade component gateway, empty when absent. (B) would make the eligibility rule report a false match. ADR amendment note needed: W1-D writes Amendment 1 on design/eval-identity in ADR-0006's form, lands with its gate merge; W0 s9 note via the Coordinator's seam answer. Conditions: red-first tests pinning both classes; allowlist stays at the 3 config.py pairs; gateway absent->present is a grade-side fix by design; cost measured through defect_fix.admitted run-scope telemetry-only rows.",
-      "kind": "manual",
-      "skill": null,
-      "tool": null,
       "actor": "Owner seat (Fable, claude-fable-5-1)",
       "artifacts": [
         "docs/notes/rulings.md"
       ],
+      "datetime": "2026-10-03T17:47:34Z",
+      "done_when": "Ruling 94 in docs/notes/rulings.md via coord decide rule, the request resolved, an audit entry appended, committed on owner/ruling-r94",
+      "duration_seconds": 20.0,
+      "duration_source": "session-start-hook",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/ruling-r94",
+        "pushed": null,
+        "sha": "4b0069a278787fbb4365b85631919b873ab05ed4",
+        "short": "4b0069a27"
+      },
+      "goal": "Rule DR-8 (req-01M41DJ56WN77QNKFCW34GMG3A): whether ADR-0017 s1 is amended so telemetry/* is run side and bench/gateway.yaml is a grade-side component",
+      "id": "al-01M41E1QZ8SHA7RXF6GK9CZAHZ",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Owner seat: rule req-01M41DJ56WN77QNKFCW34GMG3A from W1-D (eval-identity, 71a15a0b): ADR-0017 s1 lists telemetry/* as grade but engine.py and driver.py use it on the cell path; recommendation A (telemetry/* to run; add bench/gateway.yaml as grade-class component gateway); author's correction: 6 import edges in 3 modules, not 5 allowlist entries. Verify in code, rule as R-94, say whether an ADR amendment note is needed and who writes it.",
+      "session": "owner-fable",
+      "shortname": "ruling R-94 (DR-8, telemetry/* run side; gateway component)",
+      "skill": null,
+      "started_at": "2026-10-03T17:47:14Z",
+      "summary": "R-94 DR-8: (A) granted, (B) and (C) refused. Verified: engine._read_records (engine.py:661,854) runs the harness reader (profiles.py:261-262, READERS) at every cell end and feeds _classify (cause) and _spend (SPEND, the spend-cap stop); driver.py:237,246,290 classify through normalize; so all five telemetry files alter what a cell records: run side. Edge count verified at 6 (driver->telemetry/__init__, driver->normalize, engine->normalize, profiles->claude_code, codex, copilot). bench/gateway.yaml read only by grade/judge, report/judges, gateway/calibration and validate-time config: grade component gateway, empty when absent. (B) would make the eligibility rule report a false match. ADR amendment note needed: W1-D writes Amendment 1 on design/eval-identity in ADR-0006's form, lands with its gate merge; W0 s9 note via the Coordinator's seam answer. Conditions: red-first tests pinning both classes; allowlist stays at the 3 config.py pairs; gateway absent->present is a grade-side fix by design; cost measured through defect_fix.admitted run-scope telemetry-only rows.",
       "tags": [
         "ruling",
         "eval-campaign"
       ],
-      "outcome": "success",
-      "goal": "Rule DR-8 (req-01M41DJ56WN77QNKFCW34GMG3A): whether ADR-0017 s1 is amended so telemetry/* is run side and bench/gateway.yaml is a grade-side component",
-      "done_when": "Ruling 94 in docs/notes/rulings.md via coord decide rule, the request resolved, an audit entry appended, committed on owner/ruling-r94",
       "tier": "T0",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1b.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:47:06Z",
+      "done_when": "gate line written",
       "fan_out": 0,
-      "duration_source": "session-start-hook",
-      "started_at": "2026-10-03T17:47:14Z",
-      "duration_seconds": 20.0,
-      "git": {
-        "sha": "4b0069a278787fbb4365b85631919b873ab05ed4",
-        "short": "4b0069a27",
-        "branch": "owner/ruling-r94",
-        "pushed": null
-      }
+      "goal": "SEC review of W1-B",
+      "id": "al-01M41E0WKQDV5PCDHS0GFCXG1M",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md (W1-B)",
+      "session": "rv-sec-w1b-e1e4",
+      "shortname": "design-slice-review-sec-w1b",
+      "skill": "design-slice-review",
+      "summary": "SEC gate on W1-B: PASS WITH CONDITIONS, 8 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M41E5YP6HHH206H7J8B0CDKK",
+      "shortname": "design-slice-review-sec-w1f-r2",
+      "datetime": "2026-10-03T17:49:52Z",
+      "session": "rv-sec-w1f-e1e4",
+      "prompt": "Leader: W1-F rev 2 delta",
+      "summary": "SEC W1-F rev 2: conditions met, PASS WITH CONDITIONS",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1f.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "re-check 3 conditions",
+      "done_when": "gate line",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
@@ -66347,51 +66391,6 @@ window.AUDIT_DATA = {
       "kind": "decision-request",
       "ref": "req-01M41BS9Y7D1ANHSNDYM9N2H08",
       "session": "coord-opus-e1e4"
-    },
-    {
-      "id": "mail-01M41C40NC7E7S5NG8CKX9BD0E",
-      "ts": "2026-10-03T17:13:51Z",
-      "from": "owner-fable",
-      "to": "coord-opus-e1e4",
-      "kind": "ruling",
-      "ref": "req-01M41BS9Y7D1ANHSNDYM9N2H08",
-      "session": "owner-fable"
-    },
-    {
-      "id": "mail-01M41CV2MWGYW2HGQ5CQ63WJES",
-      "ts": "2026-10-03T17:26:27Z",
-      "from": "coord-opus-e1e4",
-      "to": "owner-fable",
-      "kind": "decision-request",
-      "ref": "req-01M41CV2MNPQENPMEMP01QF3ZY",
-      "session": "coord-opus-e1e4"
-    },
-    {
-      "id": "mail-01M41D2XB9KZ7DC50YYE2TP8MM",
-      "ts": "2026-10-03T17:30:43Z",
-      "from": "owner-fable",
-      "to": "coord-opus-e1e4",
-      "kind": "ruling",
-      "ref": "req-01M41CV2MNPQENPMEMP01QF3ZY",
-      "session": "owner-fable"
-    },
-    {
-      "id": "mail-01M41DJ574PMT6CXTZ07KYCT73",
-      "ts": "2026-10-03T17:39:03Z",
-      "from": "w1d-identity-e1e4",
-      "to": "owner-fable",
-      "kind": "decision-request",
-      "ref": "req-01M41DJ56WN77QNKFCW34GMG3A",
-      "session": "w1d-identity-e1e4"
-    },
-    {
-      "id": "mail-01M41E19DJNZNP9GKWHAT8CNPS",
-      "ts": "2026-10-03T17:47:19Z",
-      "from": "owner-fable",
-      "to": "w1d-identity-e1e4",
-      "kind": "ruling",
-      "ref": "req-01M41DJ56WN77QNKFCW34GMG3A",
-      "session": "owner-fable"
     }
   ]
 };
