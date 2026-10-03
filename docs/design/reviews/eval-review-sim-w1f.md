@@ -6,7 +6,6 @@ status: draft
 owner: "@timianmalloo"
 links:
   - { to: design-eval-seam-contracts, rel: relates-to }
-  - { to: design-eval-property-grader, rel: relates-to }
 review-by: "2026-10-17"
 summary: >-
   RV-SIM (Simplifier, soft veto) findings on docs/design/eval-property-grader.md (design/eval-property-grader,

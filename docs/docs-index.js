@@ -3490,14 +3490,10 @@ window.DOCS_INDEX = {
         {
           "to": "design-eval-seam-contracts",
           "rel": "relates-to"
-        },
-        {
-          "to": "design-eval-property-grader",
-          "rel": "relates-to"
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f9de79c2dc4e53bc285c818c570127431120c7f1898ce194345adabbf55b519d"
+      "sourceSha256": "e02b9c406c50e4ac255322f67b483331ebc51b943a7b5c0e97b4f27fee167473"
     },
     {
       "id": "review-eval-ta",
@@ -5039,5 +5035,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "c28a5718f31b10bfe0de48a3149f42b7eff6510c405230cd350d137a4c92f48c"
+  "graphSha256": "39d14c1b03a6492e222fa292a33e0721956ce98ce736067fc7c4d717c165b65a"
 };
