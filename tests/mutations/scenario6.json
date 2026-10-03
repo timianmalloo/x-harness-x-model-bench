@@ -79,7 +79,8 @@
   "find": "t.get(\"status\") in (\"draft\", \"ready\") and t.get(\"model_map\")",
   "replace": "t.get(\"model_map\")",
   "tests": [
-   "tests/test_model_map.py::test_a_stub_map_is_a_placeholder_and_the_plan_still_refuses_it"
+   "tests/test_model_map.py::test_a_stub_map_is_a_placeholder_and_the_plan_still_refuses_it",
+   "tests/test_model_map.py::test_a_stub_map_that_would_fail_validation_is_not_checked_until_draft"
   ]
  },
  {
