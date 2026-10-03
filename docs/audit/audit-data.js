@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:45:41Z",
+  "generated": "2026-10-03T17:47:34Z",
   "audit": [
     {
       "actor": null,
@@ -65636,67 +65636,141 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41DQ2NBGSFMYYP469Q4SA7A",
-      "shortname": "design-slice-review-ta-w1g",
-      "datetime": "2026-10-03T17:41:44Z",
-      "session": "rv-ta-w1g-e1e4",
-      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-G)",
-      "summary": "TA review of W1-G catalog 0.7: BLOCK, 10 findings",
-      "kind": "skill",
-      "skill": "design-slice-review",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/design/reviews/eval-review-ta-w1g.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Review W1-G as Test Architect",
+      "datetime": "2026-10-03T17:41:44Z",
       "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "Review W1-G as Test Architect",
+      "id": "al-01M41DQ2NBGSFMYYP469Q4SA7A",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-G)",
+      "session": "rv-ta-w1g-e1e4",
+      "shortname": "design-slice-review-ta-w1g",
+      "skill": "design-slice-review",
+      "summary": "TA review of W1-G catalog 0.7: BLOCK, 10 findings",
+      "tags": [],
       "tier": "T2",
-      "fan_out": 0
+      "tool": null
     },
     {
-      "id": "al-01M41DS16KDRQS89AB4F0G7S1B",
-      "shortname": "design-slice-review-eval-ds-w1b",
-      "datetime": "2026-10-03T17:42:48Z",
-      "session": "rv-ds-e1e4",
-      "prompt": "review W1-B",
-      "summary": "DS gate W1-B PASS WITH CONDITIONS",
-      "kind": "skill",
-      "skill": "design-slice-review",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/design/reviews/eval-review-ds-w1b.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "DS review W1-B",
+      "datetime": "2026-10-03T17:42:48Z",
       "done_when": "gate line",
+      "fan_out": 0,
+      "goal": "DS review W1-B",
+      "id": "al-01M41DS16KDRQS89AB4F0G7S1B",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "review W1-B",
+      "session": "rv-ds-e1e4",
+      "shortname": "design-slice-review-eval-ds-w1b",
+      "skill": "design-slice-review",
+      "summary": "DS gate W1-B PASS WITH CONDITIONS",
+      "tags": [],
       "tier": "T2",
-      "fan_out": 0
+      "tool": null
     },
     {
-      "id": "al-01M41DYA3NRH8G2K8RY018FXTJ",
-      "shortname": "rv-pat-gb",
-      "datetime": "2026-10-03T17:45:41Z",
-      "session": "rv-pat-gb-e1e4",
-      "prompt": "review W1-G and W1-B per rv-pat brief",
-      "summary": "RV-PAT reviews of W1-G (PASS WITH CONDITIONS, 8) and W1-B (PASS WITH CONDITIONS, 6)",
-      "kind": "skill",
-      "skill": "design-slice-review",
-      "tool": null,
       "actor": "rv-pat",
       "artifacts": [
         "docs/design/reviews/eval-review-pat-w1g.md",
         "docs/design/reviews/eval-review-pat-w1b.md"
       ],
-      "tags": [],
+      "compiled": false,
+      "datetime": "2026-10-03T17:45:41Z",
+      "id": "al-01M41DYA3NRH8G2K8RY018FXTJ",
+      "kind": "skill",
       "outcome": "success",
-      "compiled": false
+      "prompt": "review W1-G and W1-B per rv-pat brief",
+      "session": "rv-pat-gb-e1e4",
+      "shortname": "rv-pat-gb",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT reviews of W1-G (PASS WITH CONDITIONS, 8) and W1-B (PASS WITH CONDITIONS, 6)",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1g.md"
+      ],
+      "datetime": "2026-10-03T17:46:15Z",
+      "done_when": "two review files with gate lines committed on review/eval-sim-gb",
+      "fan_out": 0,
+      "goal": "Simplifier-lens review of W1-G and W1-B",
+      "id": "al-01M41DZAK6MV7PQP38T6SDQ2GQ",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "RV-SIM review of W1-G catalog 0.7 and W1-B atomic publish",
+      "session": "rv-sim-gb-e1e4",
+      "shortname": "rv-sim-gb",
+      "skill": "design-slice-review",
+      "summary": "Simplifier reviews: W1-G PASS WITH CONDITIONS (7), W1-B PASS WITH CONDITIONS (8)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1b.md",
+        "docs/design/reviews/eval-review-ta-w1d.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:46:51Z",
+      "id": "al-01M41E0EMK4G3FFXN1BD2SXZ83",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "RV-TA review of W1-B (atomic publish) and W1-D (identity) per rv-ta brief",
+      "session": "rv-ta-bd-e1e4",
+      "shortname": "ta-review-w1b-w1d",
+      "skill": "design-slice-review",
+      "summary": "RV-TA reviews: W1-B BLOCK (7 findings), W1-D BLOCK (8 findings)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M41E1QZ8SHA7RXF6GK9CZAHZ",
+      "shortname": "ruling R-94 (DR-8, telemetry/* run side; gateway component)",
+      "datetime": "2026-10-03T17:47:34Z",
+      "session": "owner-fable",
+      "prompt": "Owner seat: rule req-01M41DJ56WN77QNKFCW34GMG3A from W1-D (eval-identity, 71a15a0b): ADR-0017 s1 lists telemetry/* as grade but engine.py and driver.py use it on the cell path; recommendation A (telemetry/* to run; add bench/gateway.yaml as grade-class component gateway); author's correction: 6 import edges in 3 modules, not 5 allowlist entries. Verify in code, rule as R-94, say whether an ADR amendment note is needed and who writes it.",
+      "summary": "R-94 DR-8: (A) granted, (B) and (C) refused. Verified: engine._read_records (engine.py:661,854) runs the harness reader (profiles.py:261-262, READERS) at every cell end and feeds _classify (cause) and _spend (SPEND, the spend-cap stop); driver.py:237,246,290 classify through normalize; so all five telemetry files alter what a cell records: run side. Edge count verified at 6 (driver->telemetry/__init__, driver->normalize, engine->normalize, profiles->claude_code, codex, copilot). bench/gateway.yaml read only by grade/judge, report/judges, gateway/calibration and validate-time config: grade component gateway, empty when absent. (B) would make the eligibility rule report a false match. ADR amendment note needed: W1-D writes Amendment 1 on design/eval-identity in ADR-0006's form, lands with its gate merge; W0 s9 note via the Coordinator's seam answer. Conditions: red-first tests pinning both classes; allowlist stays at the 3 config.py pairs; gateway absent->present is a grade-side fix by design; cost measured through defect_fix.admitted run-scope telemetry-only rows.",
+      "kind": "manual",
+      "skill": null,
+      "tool": null,
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "outcome": "success",
+      "goal": "Rule DR-8 (req-01M41DJ56WN77QNKFCW34GMG3A): whether ADR-0017 s1 is amended so telemetry/* is run side and bench/gateway.yaml is a grade-side component",
+      "done_when": "Ruling 94 in docs/notes/rulings.md via coord decide rule, the request resolved, an audit entry appended, committed on owner/ruling-r94",
+      "tier": "T0",
+      "fan_out": 0,
+      "duration_source": "session-start-hook",
+      "started_at": "2026-10-03T17:47:14Z",
+      "duration_seconds": 20.0,
+      "git": {
+        "sha": "4b0069a278787fbb4365b85631919b873ab05ed4",
+        "short": "4b0069a27",
+        "branch": "owner/ruling-r94",
+        "pushed": null
+      }
     }
   ],
   "changes": [
@@ -66273,6 +66347,51 @@ window.AUDIT_DATA = {
       "kind": "decision-request",
       "ref": "req-01M41BS9Y7D1ANHSNDYM9N2H08",
       "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M41C40NC7E7S5NG8CKX9BD0E",
+      "ts": "2026-10-03T17:13:51Z",
+      "from": "owner-fable",
+      "to": "coord-opus-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41BS9Y7D1ANHSNDYM9N2H08",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41CV2MWGYW2HGQ5CQ63WJES",
+      "ts": "2026-10-03T17:26:27Z",
+      "from": "coord-opus-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41CV2MNPQENPMEMP01QF3ZY",
+      "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M41D2XB9KZ7DC50YYE2TP8MM",
+      "ts": "2026-10-03T17:30:43Z",
+      "from": "owner-fable",
+      "to": "coord-opus-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41CV2MNPQENPMEMP01QF3ZY",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41DJ574PMT6CXTZ07KYCT73",
+      "ts": "2026-10-03T17:39:03Z",
+      "from": "w1d-identity-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41DJ56WN77QNKFCW34GMG3A",
+      "session": "w1d-identity-e1e4"
+    },
+    {
+      "id": "mail-01M41E19DJNZNP9GKWHAT8CNPS",
+      "ts": "2026-10-03T17:47:19Z",
+      "from": "owner-fable",
+      "to": "w1d-identity-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41DJ56WN77QNKFCW34GMG3A",
+      "session": "owner-fable"
     }
   ]
 };
