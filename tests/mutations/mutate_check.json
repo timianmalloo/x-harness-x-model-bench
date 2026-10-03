@@ -9,9 +9,23 @@
   {
     "name": "the refusal is skipped",
     "file": "tools/mutate_check.py",
-    "find": "    refused = _refuse_if_sidecar()\n",
-    "replace": "    refused = None\n",
+    "find": "        refused = _refuse_if_sidecar()\n",
+    "replace": "        refused = None\n",
     "tests": ["tests/test_mutate_check.py::test_a_run_refuses_to_start_while_a_sidecar_exists"]
+  },
+  {
+    "name": "the environment pre-check is skipped",
+    "file": "tools/mutate_check.py",
+    "find": "    refused = _environment_refusal()\n",
+    "replace": "    refused = None\n",
+    "tests": ["tests/test_mutate_check.py::test_a_run_refuses_to_start_when_harness_bench_cannot_be_imported"]
+  },
+  {
+    "name": "an all-error run reports the plain table summary",
+    "file": "tools/mutate_check.py",
+    "find": "    if _OUTCOMES and set(_OUTCOMES) == {\"error\"}:\n",
+    "replace": "    if False:\n",
+    "tests": ["tests/test_mutate_check.py::test_a_run_where_every_mutant_errors_says_the_environment_is_suspected"]
   },
   {
     "name": "the test-path part dropped",
