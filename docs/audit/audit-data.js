@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:13:13Z",
+  "generated": "2026-10-03T18:13:58Z",
   "audit": [
     {
       "actor": null,
@@ -66061,104 +66061,150 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41EZVA5RM6TAWHCQPRZ9MCH",
-      "shortname": "ruling R-95 (DR-9, also_graded_by owner rule amends R-90 c1 and c6)",
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
       "datetime": "2026-10-03T18:04:00Z",
-      "session": "owner-fable",
-      "prompt": "Owner seat: rule req-01M41E37FGK5CRZ7NCK3RA20JV from the Coordinator: may R-90 conditions 1 and 6 be amended so runner.applicable also resolves a metric's owner through an optional catalog key also_graded_by, letting the formal grader record scenario-7 pass_at_1 (ADR-0019 item 3)? Options A amend, B defer to 0.8, C new id formal_pass_at_1. Context W0 rev 3 s7, W1-G design, reviews ta/pat/sim, R-90. Work in an own worktree owner/ruling-r95.",
-      "summary": "R-95 DR-9: (A) granted, (B) and (C) refused. Verified: applicable keys by one grader string (runner.py:161-168), duplicate ids refused (config.py:150-152), outside keys fail the pass with HB-GRD-004 (runner.py:358, errors.py:67), board primary reads pass_at_1 by id (board.py:190,194), ADR-0019 item 3 is accepted and already marks its mechanism provisional on this request. R-90 c6 fixed who records the metric, not the entry's bytes; c1 fixed one function for three readers, and the owner clause lives in that function, so the purpose is kept. Conditions: non-owner guard proven through a real run_pass on G1- and G2-shaped tasks (X-F owns the clause and T-R3..T-R5); also_graded_by validated at once in validate_catalog (grader module, differs from grader, no repeats); reader sweep complete incl. the task-changed fallback where the owner is correctness and the NA folder is pinned by test; amendment text in R-90 c5's dispatch paragraph, W0 s7 drops provisional, ADR-0019:49 updated by X-G1; sequencing as the Coordinator set it.",
-      "kind": "manual",
-      "skill": null,
-      "tool": null,
-      "actor": "Owner seat (Fable, claude-fable-5-1)",
-      "artifacts": [
-        "docs/notes/rulings.md"
-      ],
-      "tags": [
-        "ruling",
-        "eval-campaign"
-      ],
-      "outcome": "success",
-      "goal": "Rule DR-9 (req-01M41E37FGK5CRZ7NCK3RA20JV): whether R-90 conditions 1 and 6 are amended so applicable() resolves a metric owner through also_graded_by",
       "done_when": "Ruling 95 in docs/notes/rulings.md via coord decide rule from the owner/ruling-r95 worktree, the request resolved, an audit entry appended, committed",
-      "tier": "T0",
       "fan_out": 0,
       "git": {
-        "sha": "1ceea651bceeada8e8406e1633afaa930d48a9f3",
-        "short": "1ceea651b",
         "branch": "owner/ruling-r95",
-        "pushed": null
-      }
-    },
-    {
-      "id": "al-01M41FADEXXHBT2JTQYBWBRF1N",
-      "shortname": "ruling R-96 (DR-10, holm on interval verdicts; R-93 None state; ADR-0020 s2 note)",
-      "datetime": "2026-10-03T18:09:46Z",
-      "session": "owner-fable",
-      "prompt": "Owner seat: (1) rule req-01M41EPSB7E91C4APYT1QGN3FV from W1-H: how correction.method=holm acts on interval verdicts; A size and level like Bonferroni (alpha/m), B Holm step-down on bootstrap p-values; (2) flag: W1-H adds a hidden-test agreement not recorded state to the R-93 line, inside R-93 or a new ruling; (3) ADR-0020 s2 still says plan seed, W0 rev 3 replaced it with seed_for; say who writes the amendment note. Own worktree owner/ruling-r96.",
-      "summary": "R-96 DR-10: (A) granted, (B) refused. ADR-0020 s2 verdicts are interval-only (p-value verdicts rejected at 0020:49); Holm's first step is alpha/m and every later step is more liberal, so the 1-alpha/m interval is never more liberal than any Holm step and its verdicts are a subset of Holm's rejections; a step-down adds a cross-verdict dependency the per-(property,harness,comparison) grain lacks and yields no interval for the MDE comparison. holm stays registrable (W0 rev 3 enum, spec :685 illustration) with alpha_per_test as the one definition, disclosed as level_rule at registration and in section 3; the verdict endpoints under holm must equal bonferroni's (second test row). R-93 flag: the None state is inside R-93 (never silently resolved; IO: not recorded, never a plausible wrong number), recorded as a clarification of R-93 c1 with three states; R-H3 closes. ADR-0020 s2 plan seed -> seed_for: the Coordinator writes Amendment 1 in the W0 rev 3 form (eval-seam-contracts.md:661), before X-H1's first commit.",
+        "pushed": null,
+        "sha": "1ceea651bceeada8e8406e1633afaa930d48a9f3",
+        "short": "1ceea651b"
+      },
+      "goal": "Rule DR-9 (req-01M41E37FGK5CRZ7NCK3RA20JV): whether R-90 conditions 1 and 6 are amended so applicable() resolves a metric owner through also_graded_by",
+      "id": "al-01M41EZVA5RM6TAWHCQPRZ9MCH",
       "kind": "manual",
+      "outcome": "success",
+      "prompt": "Owner seat: rule req-01M41E37FGK5CRZ7NCK3RA20JV from the Coordinator: may R-90 conditions 1 and 6 be amended so runner.applicable also resolves a metric's owner through an optional catalog key also_graded_by, letting the formal grader record scenario-7 pass_at_1 (ADR-0019 item 3)? Options A amend, B defer to 0.8, C new id formal_pass_at_1. Context W0 rev 3 s7, W1-G design, reviews ta/pat/sim, R-90. Work in an own worktree owner/ruling-r95.",
+      "session": "owner-fable",
+      "shortname": "ruling R-95 (DR-9, also_graded_by owner rule amends R-90 c1 and c6)",
       "skill": null,
-      "tool": null,
-      "actor": "Owner seat (Fable, claude-fable-5-1)",
-      "artifacts": [
-        "docs/notes/rulings.md"
-      ],
+      "summary": "R-95 DR-9: (A) granted, (B) and (C) refused. Verified: applicable keys by one grader string (runner.py:161-168), duplicate ids refused (config.py:150-152), outside keys fail the pass with HB-GRD-004 (runner.py:358, errors.py:67), board primary reads pass_at_1 by id (board.py:190,194), ADR-0019 item 3 is accepted and already marks its mechanism provisional on this request. R-90 c6 fixed who records the metric, not the entry's bytes; c1 fixed one function for three readers, and the owner clause lives in that function, so the purpose is kept. Conditions: non-owner guard proven through a real run_pass on G1- and G2-shaped tasks (X-F owns the clause and T-R3..T-R5); also_graded_by validated at once in validate_catalog (grader module, differs from grader, no repeats); reader sweep complete incl. the task-changed fallback where the owner is correctness and the NA folder is pinned by test; amendment text in R-90 c5's dispatch paragraph, W0 s7 drops provisional, ADR-0019:49 updated by X-G1; sequencing as the Coordinator set it.",
       "tags": [
         "ruling",
         "eval-campaign"
       ],
-      "outcome": "success",
-      "goal": "Rule DR-10 (req-01M41EPSB7E91C4APYT1QGN3FV): holm on interval verdicts; rule the R-93 not-recorded flag; name the ADR-0020 s2 amendment author",
-      "done_when": "Ruling 96 in docs/notes/rulings.md via coord decide rule from the owner/ruling-r96 worktree, the request resolved, an audit entry appended, committed",
       "tier": "T0",
-      "fan_out": 0,
-      "git": {
-        "sha": "f41d2f205271d823403e8186705b11021d1c1cc3",
-        "short": "f41d2f205",
-        "branch": "owner/ruling-r96",
-        "pushed": null
-      }
+      "tool": null
     },
     {
-      "id": "al-01M41FEHHFK4K45C5QKG2H721V",
-      "shortname": "review-ta-w1i-r2",
-      "datetime": "2026-10-03T18:12:02Z",
-      "session": "rv-ta-w1i-e1e4",
-      "prompt": "Delta re-review of W1-I rev 2 as Test Architect",
-      "summary": "W1-I rev 2: PASS WITH CONDITIONS, 4 findings",
-      "kind": "skill",
-      "skill": "design-slice-review",
-      "tool": null,
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "datetime": "2026-10-03T18:09:46Z",
+      "done_when": "Ruling 96 in docs/notes/rulings.md via coord decide rule from the owner/ruling-r96 worktree, the request resolved, an audit entry appended, committed",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/ruling-r96",
+        "pushed": null,
+        "sha": "f41d2f205271d823403e8186705b11021d1c1cc3",
+        "short": "f41d2f205"
+      },
+      "goal": "Rule DR-10 (req-01M41EPSB7E91C4APYT1QGN3FV): holm on interval verdicts; rule the R-93 not-recorded flag; name the ADR-0020 s2 amendment author",
+      "id": "al-01M41FADEXXHBT2JTQYBWBRF1N",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Owner seat: (1) rule req-01M41EPSB7E91C4APYT1QGN3FV from W1-H: how correction.method=holm acts on interval verdicts; A size and level like Bonferroni (alpha/m), B Holm step-down on bootstrap p-values; (2) flag: W1-H adds a hidden-test agreement not recorded state to the R-93 line, inside R-93 or a new ruling; (3) ADR-0020 s2 still says plan seed, W0 rev 3 replaced it with seed_for; say who writes the amendment note. Own worktree owner/ruling-r96.",
+      "session": "owner-fable",
+      "shortname": "ruling R-96 (DR-10, holm on interval verdicts; R-93 None state; ADR-0020 s2 note)",
+      "skill": null,
+      "summary": "R-96 DR-10: (A) granted, (B) refused. ADR-0020 s2 verdicts are interval-only (p-value verdicts rejected at 0020:49); Holm's first step is alpha/m and every later step is more liberal, so the 1-alpha/m interval is never more liberal than any Holm step and its verdicts are a subset of Holm's rejections; a step-down adds a cross-verdict dependency the per-(property,harness,comparison) grain lacks and yields no interval for the MDE comparison. holm stays registrable (W0 rev 3 enum, spec :685 illustration) with alpha_per_test as the one definition, disclosed as level_rule at registration and in section 3; the verdict endpoints under holm must equal bonferroni's (second test row). R-93 flag: the None state is inside R-93 (never silently resolved; IO: not recorded, never a plausible wrong number), recorded as a clarification of R-93 c1 with three states; R-H3 closes. ADR-0020 s2 plan seed -> seed_for: the Coordinator writes Amendment 1 in the W0 rev 3 form (eval-seam-contracts.md:661), before X-H1's first commit.",
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "tier": "T0",
+      "tool": null
+    },
+    {
       "actor": null,
       "artifacts": [
         "docs/design/reviews/eval-review-ta-w1i.md"
       ],
-      "tags": [],
+      "compiled": false,
+      "datetime": "2026-10-03T18:12:02Z",
+      "id": "al-01M41FEHHFK4K45C5QKG2H721V",
+      "kind": "skill",
       "outcome": "success",
-      "compiled": false
+      "prompt": "Delta re-review of W1-I rev 2 as Test Architect",
+      "session": "rv-ta-w1i-e1e4",
+      "shortname": "review-ta-w1i-r2",
+      "skill": "design-slice-review",
+      "summary": "W1-I rev 2: PASS WITH CONDITIONS, 4 findings",
+      "tags": [],
+      "tool": null
     },
     {
-      "id": "al-01M41FGQAJEFG4N7VD0WM71YPX",
-      "shortname": "design-slice-review-pat-w1i-r2",
-      "datetime": "2026-10-03T18:13:13Z",
-      "session": "rv-pat-w1i-e1e4",
-      "prompt": "Leader: RV-PAT re-review of W1-I rev 2",
-      "summary": "RV-PAT W1-I rev 2: PASS, all 7 findings resolved",
-      "kind": "skill",
-      "skill": "design-slice-review",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/design/reviews/eval-review-pat-w1i.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "delta re-review",
+      "datetime": "2026-10-03T18:13:13Z",
       "done_when": "rev 2 section with gate line committed",
+      "fan_out": 0,
+      "goal": "delta re-review",
+      "id": "al-01M41FGQAJEFG4N7VD0WM71YPX",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader: RV-PAT re-review of W1-I rev 2",
+      "session": "rv-pat-w1i-e1e4",
+      "shortname": "design-slice-review-pat-w1i-r2",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT W1-I rev 2: PASS, all 7 findings resolved",
+      "tags": [],
       "tier": "T2",
-      "fan_out": 0
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-security-tasks.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:48:16Z",
+      "done_when": "Gate PASS incl. Security; two real codebases on different bases (DR-T1); the latent requirement; in-process probes; reference and naive solutions; expected values with provenance (GLD-A)",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-I security tasks S1 and S2 producing docs/design/eval-security-tasks.md",
+      "id": "al-01M41E30XX2G0GYMDGEKPAXD0A",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-i-security-tasks.md",
+      "session": "w1i-security-e1e4",
+      "shortname": "design-slice-eval-security-tasks",
+      "skill": "design-slice",
+      "summary": "Designed security tasks S1 (microdot, fully specified) and S2 (bottle, base and probes named): latent guards, 10 in-process probes with BENCHCANARY values, reference and naive solutions, expected values with provenance, nine defect variants, offline-build declaration, two seam requests; gate pending",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-security-tasks.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:10:38Z",
+      "done_when": "every finding dispositioned; gate record has first-round lines plus rev 2 pending RV-TA, RV-PAT",
+      "duration_seconds": 502.0,
+      "fan_out": 0,
+      "goal": "apply the four W1-I first-round reviews",
+      "id": "al-01M41FBZKFAZF0N889PA25YV52",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-i-security-tasks.md (rev 2 follow-up applying RV-TA, RV-PAT, RV-SEC, RV-SIM)",
+      "session": "w1i-security-r2-e1e4",
+      "shortname": "design-slice-eval-security-tasks-rev2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T18:02:16Z",
+      "summary": "W1-I rev 2: S1 aligned to W0 rev 3 (wsgi, frames), eight probes, both tokens scanned, wrong-app fixtures, hardened variant test, S2 cut, review disposition table",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     }
   ],
   "changes": [
@@ -66628,6 +66674,28 @@ window.AUDIT_DATA = {
     },
     {
       "artifacts": [
+        "docs/design/eval-security-tasks.md"
+      ],
+      "datetime": "2026-10-03T17:48:26Z",
+      "git": {
+        "after": "be1a074857356c12cf775427266ca0941f447e0d",
+        "before": "be1a0748",
+        "branch": "design/eval-security-tasks",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41E3B1P0ZXTMJWTB0WTQ7E0",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-i-security-tasks.md",
+      "rationale": "web.py rejected (third-party import under -S). Payload sets must close the SQL parenthesis (a probe designed against the wrong template was dead). Bound x20 of measured 80 ms.",
+      "session": "w1i-security-e1e4",
+      "skill": "design-slice",
+      "summary": "Two security property tasks on two different public stdlib-only bases (microdot, bottle). S1 specified end to end; S2 base and probes named. Probes proven live by nine seeded-defect variants; expected values hand-derived and confirmed by a stand-in driver. No build step so builds are offline by construction.",
+      "tags": [],
+      "title": "W1-I: S1 on microdot, S2 on bottle; ten in-process probes; expected 1.0000 / 0.4000"
+    },
+    {
+      "artifacts": [
         "docs/design/eval-property-grader.md"
       ],
       "datetime": "2026-10-03T17:19:39Z",
@@ -66697,6 +66765,26 @@ window.AUDIT_DATA = {
       "summary": "Rev 3 answers 13 seam requests and 11 routed lens findings: wsgi kind in E1 (C-1), probe-host additions and start bound, NA never dropped, DOTNET_HOST_ENV to _env.py, reparse-safe grading copy, sweep_temps/TEMP_RE (no HB-LED-009), recover_archive to X-K1, quoted arm ids, grid4 golden, no top-level pack + plan_pack + HB-PLN-004/005, G1 AST ratchet, run-side effective identity in the plan, catalog_hash in identity.py, G2 every file + direction test, R-93/R-94 recorded, W1-G owner rule provisional on an Owner request, (e) exception deferred.",
       "tags": [],
       "title": "W0 seam contracts rev 3: Wave 1 seam answers"
+    },
+    {
+      "id": "cl-01M41FC7AKVR1X94SC030Q4H6F",
+      "datetime": "2026-10-03T18:10:46Z",
+      "session": null,
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "W1-I rev 2: eight probes, wsgi per W0 rev 3 C-1, S2 cut to classes",
+      "prompt": null,
+      "summary": "Applied RV-TA/PAT/SEC/SIM first-round findings to docs/design/eval-security-tasks.md",
+      "rationale": null,
+      "artifacts": [],
+      "tags": [],
+      "git": {
+        "before": null,
+        "after": "8bde0c531441a8d460675ccb8af839281c27074f",
+        "branch": "design/eval-security-tasks",
+        "pushed": null,
+        "commits": []
+      }
     }
   ],
   "messages": [
@@ -66879,6 +66967,24 @@ window.AUDIT_DATA = {
       "kind": "decision-request",
       "ref": "req-01M41EPSB7E91C4APYT1QGN3FV",
       "session": "w1h-power-e1e4"
+    },
+    {
+      "id": "mail-01M41EZV3CGRSXDQP6H6QNXQ8B",
+      "ts": "2026-10-03T18:04:00Z",
+      "from": "owner-fable",
+      "to": "coord-opus-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41E37FGK5CRZ7NCK3RA20JV",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41FAD88W1Q8J756YKGV87GV",
+      "ts": "2026-10-03T18:09:46Z",
+      "from": "owner-fable",
+      "to": "w1h-power-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41EPSB7E91C4APYT1QGN3FV",
+      "session": "owner-fable"
     }
   ]
 };
