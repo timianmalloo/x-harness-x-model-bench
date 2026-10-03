@@ -72,7 +72,7 @@ A track starts when its design gate has passed, its design is on `main`, and eve
 
 | item | depends on (and why) |
 | --- | --- |
-| W1-K (design) | W1-J merged (the `.tla` files W1-K extends with `NoResumeAfterStop`; the per-turn rows X-K1 reconciles) |
+| W1-K (design) | W1-J merged (the `.tla` files W1-K extends with `NoLaunchAfterStop` (R-100); the per-turn rows X-K1 reconciles) |
 | X-J1a..e | W1-J gate ✓ (`f23d35ed`); **X-D joined, X-D1 and X-D2** (X-D owns `engine.py` in E1, its D2 dispatch being the engine recheck; edits to `engine.py` are serialised, so X-J1a starts only after X-D has joined); X-C (`status.py`, `ledger.py`, E1); X-B2 (`archive.py` E1, the snapshot primitive); X-B1b (`publish_dir`); X-A1a (`plan.py`, for `turns`) |
 | X-J2a (`_changes` four functions, `drift.py` hunk) | W1-L ✓ (SR-L4, SR-L6); X-F joined (`_changes.grading_copy` hunk; `grade/runner.py` E1) and X-A1a (line 84) — the hub file's E1 writers |
 | X-J2b (`rework.py`, per-turn synthetic, multi-turn discrimination, variant edit forms) | W1-J gate ✓; X-J2a; X-E joined (`discriminate.py`, `synthetic_agent.py`, `profiles.py` E1); X-J1 contract (built against fixtures until X-J1 joins; the turn-1 snapshot test needs X-J1 joined); X-LB0 (`property.hidden_tests` for `rework.grade`) |

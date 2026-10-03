@@ -17,7 +17,8 @@ summary: >-
   A restarted `bench run` for an existing run id resumes it: it verifies the ledger, proves each cell terminal
   from its recorded outcome event, reconciles every non-terminal cell by ADR-0007's rules extended per turn
   (ADR-0015), relaunches only never-prompted cells in the frozen plan order, and grades once every cell is
-  terminal. It refuses a resume after a stop or under a drifted run-side identity. `bench status` exposes
+  terminal. It refuses a resume under a drifted run-side identity; a resume of a stopped run finishes the stop
+  and launches nothing (Amendment 1, R-100). `bench status` exposes
   last_progress_at, and `bench status --alarm-after` gives a scheduled check a non-zero exit when progress
   stalls. A per-launch disk check and a stated worst-case cell and grading time complete the multi-night story.
 ---
@@ -25,6 +26,7 @@ summary: >-
 # ADR-0021: Plan-level resume of a run, with per-turn reconciliation and a progress signal
 
 - **Status:** Proposed (added at the architecture council, SRE blocking finding)
+- **Amended (2026-10-03, W0 rev 6.8; R-100):** a resume of a stopped run finishes the stop instead of being refused; the invariant is "no launch after a stop"; four statements corrected against the code (D-K1, D-K2, D-K4, D-K5). See "Amendment 1" before *Alternatives considered*. The decision text below is unchanged.
 - **Date:** 2026-10-03
 - **Deciders:** @timianmalloo; authored by Claude Code with the SRE, Distributed Systems and Data & Persistence lenses
 - **Context spec/architecture:** `docs/specs/enterprise-evaluation.md` (DR-E5 multi-night grid; US-18 resume); ADR-0007 §1-§2, §5 (heartbeat, resume cases); ADR-0015 §5a-§7.
@@ -70,6 +72,16 @@ DR-E5 makes the comparison grid multi-night (about 2 nights at grid-4's throughp
 - **Worst-case slot occupancy per cell** = `budget_seconds` (one budget covers every turn, ADR-0015 §3) + archive and snapshot copy time (measured, recorded on the spans). **Worst-case grading per cell** = Σ over the task's graders of `grading_step_timeout` (the hidden check's outer bound is one of them, ADR-0018 §5). `bench plan` shows both envelopes beside the measured means from the named source runs, so a night is planned against the worst case and judged against the mean.
 
 **9. Lifecycle model.** The TLA+ model already checks crash and resume (US-44); it gains the per-turn cases of §4 through ADR-0015 §7 (`CrashedTurnPredicate`), and the "no resume after a stop" refusal as an invariant.
+
+### Amendment 1 (2026-10-03; W0 rev 6.8; R-100, DR-K1, `req-01M41V2MC1RTCBB4APR3TSXEYP`)
+
+Recorded by the Coordinator (`coord-opus-e1e4`) with W0 rev 6.8, as R-100 condition 1 directs, before X-K1's first commit. W1-K (`docs/design/eval-resume.md`) is the detailed statement. This note records where the text above is replaced. Each correction cites the code W1-K read on `66ec885f`.
+- **§2 bullet 2 (R-100).** It reads: "The run has a stop row (D-K4's three): the resume runs in finish-the-stop mode: it launches nothing, reconciles, archives, and exits 3. The invariant is **no launch after a stop**." In finish-the-stop mode the resume records `stopped` (cause `None`, no SPEND) for every cell that has `launch_intent` and no outcome, writes `run.stopped` in its own segment when no `run.stopped` row exists, and writes no `run.completed` and no grading pass. `HB-RUN-008` is the stopped run's exit-3 reason, not a refusal (W0 §11). The alternative, refusing the resume, is withdrawn: it left cells non-terminal for good, against §3 and §6.
+- **§2 bullet 2, the stop predicate (D-K4).** "A `run.stopped` or `stop` event" reads: `run.stopped`, **or** `control.applied{control: "stop", effect: "applied"}`, **or** `decision.resolved{option: "stop"}`. The engine appends the control or decision row before `run.stopped` (`engine.py:353-356, 449-453, 518-524`), so a crash between them leaves no `run.stopped`. `run.launch_stopped` alone (disk low, spend cap) is **not** a stop; that run resumes once the cause is cleared.
+- **§2 bullet 1 (D-K1).** "Refused, naming the PID" reads: refused, naming the heartbeat age and the lock path. `RunLock.acquire` writes no PID (`oslock.py:52-61`), and `msvcrt.locking` stops a second process from reading bytes under the lock.
+- **§4 row 2 (D-K2).** "Terminate the named job if present, confirm empty" reads: confirm that the recorded process (`attempt.process_started.pid`) is gone, waiting at most `pid_wait_s`. The Job Object is unnamed and kill-on-close (`procs.py:216, 220`), so the OS has ended the tree when the engine dies. On win32 the check is `OpenProcess(SYNCHRONIZE)` and a zero-timeout wait, never `os.kill(pid, 0)`.
+- **§1 and §6, "complete" (D-K5).** A run that holds `run.completed` can still be resumed: a launch stop ends the loop and writes `run.completed` with cells never launched (`engine.py:413-425`). A run is complete iff a `run.completed` row follows the last `run.resumed` row (or there is no `run.resumed` row). A resume of a run with no pending cell and a valid grading pass is a no-op (exit 0, no segment).
+- **§9.** "The 'no resume after a stop' refusal as an invariant" reads: "no launch after a stop" as an invariant, `NoLaunchAfterStop` on the model's existing `launchAfterStop` flag. No liveness property gains a stop-crash exception (R-100 condition 2).
 
 ## Alternatives considered
 

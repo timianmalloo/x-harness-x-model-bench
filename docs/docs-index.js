@@ -918,7 +918,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation E3 (needed by E5's multi-night grid)",
       "reviewBy": "2027-10-03",
       "reviewSuggested": [],
-      "summary": "A restarted `bench run` for an existing run id resumes it: it verifies the ledger, proves each cell terminal from its recorded outcome event, reconciles every non-terminal cell by ADR-0007's rules extended per turn (ADR-0015), relaunches only never-prompted cells in the frozen plan order, and grades once every cell is terminal. It refuses a resume after a stop or under a drifted run-side identity. `bench status` exposes last_progress_at, and `bench status --alarm-after` gives a scheduled check a non-zero exit when progress stalls. A per-launch disk check and a stated worst-case cell and grading time complete the multi-night story.",
+      "summary": "A restarted `bench run` for an existing run id resumes it: it verifies the ledger, proves each cell terminal from its recorded outcome event, reconciles every non-terminal cell by ADR-0007's rules extended per turn (ADR-0015), relaunches only never-prompted cells in the frozen plan order, and grades once every cell is terminal. It refuses a resume under a drifted run-side identity; a resume of a stopped run finishes the stop and launches nothing (Amendment 1, R-100). `bench status` exposes last_progress_at, and `bench status --alarm-after` gives a scheduled check a non-zero exit when progress stalls. A per-launch disk check and a stated worst-case cell and grading time complete the multi-night story.",
       "tags": [
         "benchmark",
         "run-engine",
@@ -950,7 +950,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "a21a64ebc37fb049fb8019ca181c3e0e5d9702befd3ea04ae668ea18d930b598"
+      "sourceSha256": "223ed173edb0e6aed2026d30001a0bcaa87645861fb7bf7d788c43fcd6a346a7"
     },
     {
       "id": "arch-evaluation-campaign",
@@ -2658,7 +2658,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2e32a2812750251b4f208c33477243da1304394741c335475fb3e4145501a218"
+      "sourceSha256": "c865bc681dc42a4fbfcc3028b7b0a3373434e8bc56bd14b9ad70622e0b343e9d"
     },
     {
       "id": "design-eval-security-tasks",
@@ -3651,7 +3651,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "1c30970592e57fbd31b27c703ea9f07401ca980a3805cdf12f0190e232a46a01"
+      "sourceSha256": "1a07a2bd770fc842a77e6b2eae43d2431e3c4003c257cd0e71c0ff3db10ce4f7"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -5647,7 +5647,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d073d0344827093ff48cf82c6e0f1ae16badc1b1c6f5f3838d5a8a3564f12f97"
+      "sourceSha256": "5abec8c5bb5d8e175361745f4f0bcda768537a44ea1a9909accf49b57ba574a0"
     },
     {
       "id": "brief-eval-x-d",
@@ -6057,7 +6057,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "e4f0bf43fb6386d30d5abf0ae0faff643298f26ad5aefa01077fe601007a762f"
+      "sourceSha256": "fb5d4e1549f37d5e6e347c3e47362bb69a48fbda3549d87e39aef0e2a5b9fd37"
     },
     {
       "id": "brief-eval-x-k2",
@@ -6082,7 +6082,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "233321c3c0ce69f31626f1a427ee39ca89963c8f68513c880fa19aa48d44aa11"
+      "sourceSha256": "d30eb2f6e5320b13813cbe7d150b0ca74eb9f9d75d9ea1b862b045582ecc1473"
     },
     {
       "id": "brief-eval-x-lb",
@@ -7009,7 +7009,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "e1135f8b34e259affe091b5495f8f9f7e910e4a07b590a608877523a5087202b"
+      "sourceSha256": "4cc220d2b7ae4db62a5a9bce495aafd913f9e9ed69767864031e7ce0392a6f84"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -7912,5 +7912,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "c32929f2efda376d6544d95c8341ab3e79762b6176e733b380f94a18c4381489"
+  "graphSha256": "a9e0adbeb86fa5f662fd2bbafd6367b26317484f26bf9bbc325e816912975967"
 };
