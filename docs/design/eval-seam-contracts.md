@@ -175,7 +175,7 @@ cases:
 Tests: one red-first test per row, plus one per adjacent pair, to prove the order (a malformed line refused, then exit 3 → row 5; a forged line plus a hang → row 2).
 
 **NA is never a dropped cell (rev 3, req-01M41DM7X, granted in part; RV-SEC W1-F 2, RV-TA W1-F 8).** A deliverable can turn a measured 0 into NA (leave an unsweepable process, kill the check), and the grader cannot know which happened. So W0 keeps NA, and the consumers fail closed:
-- `gates.pilot` emits `GateItem(kind="check-tampered", ident=<cell_id>)` for every cell with an HB-CHK-002 row, and `GateItem(kind="suspend-detector-blind", ident=<cell_id>)` for every phase span whose `unbiased_ok` is false (the suspend detector could not read the unbiased clock). X-H1.
+- `gates.pilot` emits `GateItem(kind="check-tampered", ident=<cell_id>)` for every cell with an HB-CHK-002 row, and `GateItem(kind="suspend-detector-blind", ident=<cell_id>)` for every cell with a phase span whose `unbiased_ok` is false (the suspend detector could not read the unbiased clock). X-H1; the cell list comes from X-E's `readiness.unbiased_failures` (section 8, req-01M41EPKV).
 - The report shows the NA count, by reason, beside every property metric and every verdict row. X-H2.
 - An NA cell appears in `Verdict.excluded` with its reason (section 8; ADR-0020's shape). **Refused:** changing a verdict's label because of an NA count. That rule is ADR-0020's and would need the Owner.
 
@@ -398,11 +398,16 @@ def verdict(prop: str, harness: str, comparison: tuple[str, str], pairs: Sequenc
 #   verdict sorts pairs by (task, rep) before any use, so input order never changes a resample (rev 2, RV-DS 11)
 #   streams: stats.rng(seed, key)
 def seed_for(prereg_hash: str, prop: str, harness: str, comparison: tuple[str, str]) -> int
-#   int(sha256(f"{prereg_hash}|{prop}|{harness}|{ref}|{treat}").hexdigest()[:16], 16): one seed per verdict, valid
+#   int(sha256(f"{prereg_hash}|{prop}|{harness}|{ref}|{treat}").hexdigest()[:15], 16): one seed per verdict, valid
 #   across several attached runs (rev 2, RV-DS 11; replaces revision 1's "the plan's launch_seed")
+#   rev 3 (req-01M41EPKR): 15 hex digits = 60 bits; rev 2's [:16] gave a value >= 2**63 about half the time (measured
+#   49.9 % of 100000), which stats.Params refuses (stats.py:58-59, HB-USR-002)
 
 # gates.py
-def pilot(view, hidden_test_disagreements: Sequence[str]) -> list[GateItem]   # GateItem(kind, ident, detail); empty = pass (EV-14)
+def pilot(view, hidden_test_disagreements: Sequence[str], unbiased_failures: Sequence[str]) -> list[GateItem]
+#   GateItem(kind, ident, detail); empty = pass (EV-14). rev 3 (req-01M41EPKV): unbiased_failures comes from X-E's
+#   readiness.unbiased_failures(run_dir, grading_id) -> list[str] (cell ids with any span unbiased_ok false, read from
+#   property.json), the same pattern as hidden_test_disagreements; HB-CHK-002 is read from the view's score reasons
 #   kinds: W1-H enumerates them; fixed here: "hidden-tests-nondeterministic" (section 7, R-90 condition 3),
 #   "check-tampered" and "suspend-detector-blind" (rev 3, section 3 "NA is never a dropped cell")
 def pack_regression(view, mde: Mapping[str, Decimal]) -> Mapping[str, str]  # "regression signal" | "no regression detected at <MDE>"
@@ -639,6 +644,8 @@ Every seam request addressed to `coord-opus-e1e4` on 2026-10-03, and every Wave 
 | `req-01M41DMZZXE2KY9XDJJ5QZCX51` (S-B2, S-B3) | W1-B | granted: three `.gitignore` lines (X-C); `archive.attempt_dirs` the one reader | 4, 6, 13 |
 | `req-01M41DPBSM9GET14FC3K4N785S` | W1-I | granted: `factory`, `args`, `paths`, `{state_dir}`, the PEP 3333 environ, app output off the protocol channel | 3 |
 | `req-01M41DT67G68NQ7Y7D8YQM1A98` | W1-I | granted in part: start bound = `bounds_ms[interface]` (not a case bound); `start_ms` recorded | 3 |
+| `req-01M41EPKRBCVQ28MS96CHNTDRZ` | W1-H | granted: `seed_for` takes 15 hex digits (60 bits) | 8 |
+| `req-01M41EPKVYZQ9NH97HEJR7M5PY` | W1-H | granted: `pilot` gains `unbiased_failures`; X-E's `readiness.unbiased_failures` | 3, 8 |
 | Coordinator ruling C-1 (RV-PAT W1-I 1-3) | Leader | `app.kind: wsgi` built in E1 by X-F (option (a)); wsgi frame field names fixed | 3 |
 | RV-PAT W1-A 1, 5 | Leader | bench-plan/2 drops the top-level `pack`; `plan_pack` accessor; four readers migrated in E1; HB-PLN-005 | 5, 11, 13 |
 | RV-PAT W1-A 2 | Leader | G1 tokens widened to every `"pack"` constant, attribute and keyword; allowlist is a per-file count ratchet | 10 |
@@ -664,8 +671,8 @@ Every seam request addressed to `coord-opus-e1e4` on 2026-10-03, and every Wave 
 | W1-G / X-G1, X-G3 | 7 (all rev-3 bullets) |
 | W1-B / X-B1, X-B2 | 4, 11 (HB-LED-009 refused), 13 (`judges.py`) |
 | W1-C / X-C | 4 (`sweep_temps`, `is_temp_name` in `verify`), 6 (`.gitignore`, effective identity at plan time and attach, `identity_check=` keyword), 13 (`cmd_plan` wiring) |
-| W1-H / X-H1, X-H2 | 3 (NA rule), 8 (two new GateItem kinds, report obligations), 7 (R-93 warning line), 13 (`html.py` header lines) |
-| W1-E / X-E | 3 (NA rule), 3 `paths` readiness check (HB-RDY-005) |
+| W1-H / X-H1, X-H2 | 3 (NA rule), 8 (two new GateItem kinds, `pilot`'s third parameter, `seed_for` 60 bits, report obligations), 7 (R-93 warning line), 13 (`html.py` header lines) |
+| W1-E / X-E | 3 (NA rule), 3 `paths` readiness check (HB-RDY-005), 8 (`readiness.unbiased_failures`) |
 | W1-K / X-K1 | 4 (`sweep_temps`; `recover_archive` is now X-K1's) |
 | X-A3 (E3) | 4 (`attempt_dirs`), 5 (`plan_pack` readers to migrate), 10 (G1 counts to zero) |
 
