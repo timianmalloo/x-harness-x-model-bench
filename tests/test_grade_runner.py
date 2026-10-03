@@ -470,7 +470,7 @@ def catalog_of(root) -> dict:
 
 def test_a_security_task_graded_by_property_writes_exactly_two_property_rows_and_the_pass_completes(root, tmp_path, monkeypatch):  # T-R1
     set_task(root, graders=["correctness", "property"], property={"name": "security"})
-    with_grader(monkeypatch, "property", stub_returning({"exploit_probes_blocked": Score(Decimal("1"), None)}))
+    with_grader(monkeypatch, "property", stub_returning({"exploit_probes_blocked": Score(Decimal(1), None)}))
     rows = graded(root, tmp_path)
     assert {r["metric_id"] for r in rows} - CORRECTNESS == PROPERTY_ROWS
     assert sorted(r["metric_id"] for r in rows).count("property_check_pass") == 1
