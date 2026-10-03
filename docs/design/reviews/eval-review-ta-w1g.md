@@ -54,3 +54,27 @@ W0 section 7 conditions 1 (applicable narrowing), 5 (security task gives exactly
 `GATE W1-G · Test Architect · BLOCK · 10 findings (rv-ta-w1g-e1e4, 2026-10-03)`
 
 Clearing conditions: findings 1, 2 and 3 (each is a control with no failing case); findings 4, 6 and 8 should be resolved in the same follow-up; 5, 7, 9 and 10 may be recorded.
+
+## Revision 2 re-review (delta only) - 2026-10-03
+
+Target: `design/eval-catalog-0-7` at `30bda577` (main merged: W0 rev 3, R-95). Read: the Review disposition, sections 4.4, 4.5, 11, and `git cat-file -t d6dda42d` (returns `commit`, Verified).
+
+| rev-1 finding | disposition check | result |
+| --- | --- | --- |
+| 1 (no red case) | T-U1a..d and T-U2 added; skeleton commit returns `[]` so they fail on `assert problems`, not on import. T-U2 injects a bad export because the real pipeline cannot produce the row; that is the honest shape. | Closed |
+| 2 (0.6 golden unpinned; rubrics) | Step 1 hashes the 0.6 goldens (views and board) against `versions['0.6']`; T-U1c covers an edited and a regenerated golden. 0.6 definitions come from `git archive d6dda42d metrics.yaml rubrics`, hash equals the pin (SP-4); an unreachable commit fails, never skips. | Closed |
+| 3 (e exception untested) | Superseded: the Coordinator cut the exception from E1 (W0 rev 3); it is a written contingency with a red-gate trigger, per-clause failing tests listed if built. (e) is unchanged and its existing test still applies. | Closed by scope cut |
+| 4 (commit regex) | Contingency spec requires `git cat-file`. Not built, so not tested; acceptable. | Closed |
+| 5 (board not compared) | Control 1 step 3 compares both surfaces; T-U1b changes a weight and expects the board export named. | Closed |
+| 6 (`n - passes` sites) | `n_recorded` splits `n_pairs`; `:966`, `:1053`, `:1244-1245` read recorded pairs; T-P4 asserts `harm_groups_failed_pairs`, T-P6 swaps the two fields, T-A1 and T-A2 have red fixtures. | Closed |
+| 7, 9, 10 | Per-arm counts in the headline; no `--correct` flag; one-substitution normaliser. | Closed |
+| 8 (seam) | R-95 rules the owner rule; `prop` name and validation lines adopted; T-R1..R5 assigned to X-F. Whether W1-F carries T-R3..R5 is W1-F's gate, not this one. | Closed here |
+
+New findings:
+
+| # | finding | severity | fix | confidence |
+| --- | --- | --- | --- | --- |
+| R2-1 | T-U1b (weight changed on a 0.6 `correctness` metric) must be shown to move the board export before it is relied on; if the weight-0 safeguard makes it move nothing on these fixtures it is vacuous. The design asserts the board moves but did not run it. | minor (condition) | X-G3 observes the red on the skeleton run and records the problem text. | Inferred |
+| R2-2 | T-A2 passes "only where the operand is `n_recorded` or a recorded-only `n`": a textual scan cannot tell a recorded-only `n` from an all-pairs `n` (`:966`, `:1244`). T-P4's behavioural assertion is what covers it; say so, and keep the scan a floor. | minor (condition) | Note in section 11 that T-P4/T-P6 carry the proof. | Verified (design text) |
+
+`GATE W1-G · Test Architect · PASS WITH CONDITIONS · 2 findings (rv-ta-w1g-e1e4, 2026-10-03)`

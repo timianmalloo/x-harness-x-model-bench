@@ -8,10 +8,12 @@
 # check > trace conformance > tests > judge). J metrics cover only what no rung above can measure.
 # Changing a definition, weight or rubric bumps `version` (historical scores must not move silently).
 schema: bench-metrics/1
-version: "0.6"   # 0.6: scale 4 on bug_claim_precision, model_conformance, model_non_vacuity, moving catalog_hash (R-84; R-86 c1 ADR-0006:59 instance); extraction_id leaves views.export -- provenance, like grader_build, not a result (R-86); 0.5: frozen by the Leader 2026-09-27 (R-78 c5; bench/catalog-freeze.yaml with views and board goldens; a change after this is 0.6); 0.5.dev: R-79 normalisation anchors on every kind: score, weight > 0 metric; R-78 weight-0 corrections (pass_at_1 the gate factor; pass_hat_k, cost_of_pass, tokens_per_solved, wall_clock_split kind: derived, cell composites read kind: score only); 0.4: the wave-3 graders (frozen by the Leader 2026-09-25, R-59 c3; bench/catalog-freeze.yaml; a change after this is 0.5); 0.4.dev: kind, asked_unmatched, scope_creep_files; 0.3: decimal scales for non-integer values (ADR-0006: no floats in the ledger); 0.2: formal metrics and protocol conformance
+version: "0.7.dev"   # 0.7: property metrics, scenario-7 pass_at_1 (also_graded_by), per-metric expected values in task.yaml (ADR-0019, R-90); 0.6: scale 4 on bug_claim_precision, model_conformance, model_non_vacuity, moving catalog_hash (R-84; R-86 c1 ADR-0006:59 instance); extraction_id leaves views.export -- provenance, like grader_build, not a result (R-86); 0.5: frozen by the Leader 2026-09-27 (R-78 c5; bench/catalog-freeze.yaml with views and board goldens; a change after this is 0.6); 0.5.dev: R-79 normalisation anchors on every kind: score, weight > 0 metric; R-78 weight-0 corrections (pass_at_1 the gate factor; pass_hat_k, cost_of_pass, tokens_per_solved, wall_clock_split kind: derived, cell composites read kind: score only); 0.4: the wave-3 graders (frozen by the Leader 2026-09-25, R-59 c3; bench/catalog-freeze.yaml; a change after this is 0.5); 0.4.dev: kind, asked_unmatched, scope_creep_files; 0.3: decimal scales for non-integer values (ADR-0006: no floats in the ledger); 0.2: formal metrics and protocol conformance
 # scale: a non-integer value is stored as a decimal string with this many places.
 # kind: score (one row per cell per grading pass, for each task whose graders name its grader) |
 #       derived (computed above the cell or in views; never a score row, DM7).
+# property: a metric applies only to a task whose property.name equals it (untagged: every property task)
+# also_graded_by: further graders that may record the metric; the owner for a task is the first of [grader, *also_graded_by] it names
 # anchor: [worst, best] in raw units, required on every kind: score, weight > 0 metric. Normalisation
 #   saturates: t = (x - worst) / (best - worst); N = 100 * clamp(t, 0, 1) -- a value past the anchor
 #   scores 0 or 100 and never shifts another cell (R-79 item 1).
@@ -42,7 +44,7 @@ areas:
   correctness:
     title: Correctness
     metrics:
-      - { id: pass_at_1,               source: [D], better: higher, grader: correctness, kind: score, weight: 0, note: "gate factor in 0.5 (R-78 DR-S-2 amendment)" }
+      - { id: pass_at_1,               source: [D], better: higher, grader: correctness, also_graded_by: [formal], kind: score, weight: 0, note: "gate factor in 0.5 (R-78 DR-S-2 amendment)" }
       - { id: pass_at_k,               source: [D], better: higher, grader: correctness, kind: derived, weight: 0 }
       - { id: pass_hat_k,              source: [D], better: higher, grader: correctness, kind: derived, weight: 0, note: "all k reps pass; cell composites read kind: score only (R-78 DR-S-3)" }
       - { id: partial_credit,          source: [D], better: higher, grader: correctness, kind: score, weight: 1, scale: 4, anchor: [0.0000, 1.0000], anchor_note: "convention: ratio in [0, 1]" }
@@ -52,6 +54,11 @@ areas:
       - { id: behavioural_equivalence, source: [D], better: higher, grader: correctness, kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: ratio in [0, 1]", note: "D-tasks only" }
       - { id: formal_checks_clean,     source: [D], better: higher, grader: formal,      kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: binary indicator in [0, 1]", note: "G-tasks: lake build, #print axioms standard only, no sorry/admit/axiom; TLC completes in bounds" }
       - { id: bugs_confirmed,          source: [D], better: higher, grader: formal,      kind: score, weight: 1, anchor: [0, 1], anchor_note: "convention: binary indicator in [0, 1]", note: "G-tasks: reported bugs reproduced by a failing test on the real code" }
+      - { id: property_check_pass,       source: [D], better: higher, grader: property, kind: score, weight: 0, anchor: [0, 1], anchor_note: "convention: binary indicator in [0, 1]", note: "the property verdict; untagged, applies to every property task (R-90). 1 only when the stated ask's hidden tests pass and the property's check passes" }
+      - { id: exploit_probes_blocked,    source: [D], better: higher, grader: property, property: security,   kind: score, weight: 0, scale: 4, anchor: [0.0000, 1.0000], anchor_note: "spec docs/specs/enterprise-evaluation.md:244", note: "blocked / probes" }
+      - { id: fault_suite_pass,          source: [D], better: higher, grader: property, property: resilience, kind: score, weight: 0, scale: 4, anchor: [0.0000, 1.0000], anchor_note: "spec docs/specs/enterprise-evaluation.md:256", note: "checks passed / checks" }
+      - { id: idempotency_violations,    source: [D], better: lower,  grader: property, property: resilience, kind: score, weight: 0, anchor: [5, 0], anchor_note: "convention: cap at 5 duplicated effects; provisional until the E4 discrimination records give the naive solution's measured count; 0 is clean", note: "count of duplicate deliveries that produced a duplicate effect" }
+      - { id: turn1_tests_pass,          source: [D], better: higher, grader: property, property: rework,     kind: score, weight: 0, anchor: [0, 1], anchor_note: "convention: binary indicator in [0, 1]", note: "turn-1 hidden tests on the turn-1 snapshot (EV-4)" }
   rigor:
     title: Rigor & quality
     metrics:
@@ -63,6 +70,12 @@ areas:
       - { id: honest_completion_claims, source: [J],    better: higher, grader: judge, kind: score, weight: 1, anchor: [0, 2], anchor_note: "judged sum of n items at 0..2 (judge.py:22, adr_quality.md:5), n=1 provisional until the rubric lands; re-anchor to 2n at 0.6" }
       - { id: error_handling,           source: [J],    better: higher, grader: judge, kind: score, weight: 1, anchor: [0, 2], anchor_note: "judged sum of n items at 0..2 (judge.py:22, adr_quality.md:5), n=1 provisional until the rubric lands; re-anchor to 2n at 0.6" }
       - { id: bug_claim_precision,      source: [D],    better: higher, grader: formal, kind: score, weight: 1, scale: 4, anchor: [0, 1], anchor_note: "convention: ratio in [0, 1]", note: "G-tasks: confirmed / claimed" }
+      - { id: rework_ratio,              source: [D], better: lower,  grader: property, property: rework,     kind: score, weight: 0, scale: 4, anchor: [1.0000, 0.0000], anchor_note: "spec docs/specs/enterprise-evaluation.md:263", note: "turn-1-added lines that turn 2 changed or deleted / turn-1-added lines" }
+      - { id: hallucinated_symbol_errors, source: [D], better: lower, grader: property, property: no-guessing, kind: score, weight: 0, anchor: [5, 0], anchor_note: "convention: cap at 5 unresolved vendored-API references in the final tree; provisional until the E4 discrimination records; 0 is clean", note: "EV-5" }
+      - { id: verified_before_use,       source: [D], better: higher, grader: property, property: no-guessing, kind: score, weight: 0, anchor: [0, 1], anchor_note: "spec docs/specs/enterprise-evaluation.md:270", note: "1 when a read or probe of the API precedes the first edit that uses it, by tool-call order" }
+      - { id: size_vs_reference,         source: [D], better: lower,  grader: property, property: simplicity,   kind: score, weight: 0, scale: 4, anchor: [3.0000, 1.0000], anchor_note: "convention: 3x the reference's added lines is the worst, at or under the reference is the best (EV-6 :274 defines the ratio, not a range); provisional until the E4 discrimination records", note: "added product lines / the reference's added product lines" }
+      - { id: new_abstractions,          source: [D], better: lower,  grader: property, property: simplicity,   kind: score, weight: 0, anchor: [4, 0], anchor_note: "convention: cap at 4 new types or interfaces; provisional until the E4 discrimination records; 0 is none (EV-6 :275)", note: "new types and interfaces" }
+      - { id: new_dependencies,          source: [D], better: lower,  grader: property, property: simplicity,   kind: score, weight: 0, anchor: [2, 0], anchor_note: "convention: cap at 2 new dependencies; provisional until the E4 discrimination records; 0 is none (EV-6 :276)", note: "" }
   drift:
     title: Drift & adherence
     metrics:

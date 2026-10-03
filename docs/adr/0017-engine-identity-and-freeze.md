@@ -26,6 +26,7 @@ summary: >-
 - **Date:** 2026-10-03
 - **Deciders:** @timianmalloo (DR-T3, 2026-10-03); authored by Claude Code with the Enterprise Architect and Data & Persistence lenses
 - **Context spec/architecture:** `docs/specs/enterprise-evaluation.md` (EV-16, EV-20, Campaign invariant; the copy row "engine differs from the campaign baseline (grade.formal changed, no recorded fix)").
+- **Amended (2026-10-03, ruling R-94; design `eval-identity` section 4.2):** `telemetry/*` moves to the run side; `gateway` (`bench/gateway.yaml`) is a grade-side component. See "Amendment 1" below.
 
 ## Context
 
@@ -65,6 +66,16 @@ EV-16 freezes "the bench commit, catalog version, BOM version, price list versio
 - **Positive:** docs and record commits never break a freeze; every ineligibility names its cause; fixes are scoped and chained, so the effective identity is computable offline.
 - **Negative / accepted trade-offs:** a refactor that touches any `src/` file after the baseline is either a recorded fix or makes runs ineligible (that is the freeze working); the manifest has a few hundred entries.
 - **Follow-ups / new risks:** the run/grade classification is load-bearing and needs review at the gate; `uv.lock` changes from unrelated tooling count (correct: a dependency changed).
+
+### Amendment 1 (2026-10-03, ruling R-94 / DR-8; design `eval-identity` section 4.2)
+
+Section 1's text above is not rewritten; this amendment is appended and governs where they differ.
+
+- **The list, restated.** Run side: `engine`, `driver`, `workspace`, `archive`, `procs`, `profiles`, `tools`, `builds`, `tasks`, `platform`, `python`, **`telemetry/*`**, and the other modules a measured cell executes or is planned from. Grade side: `grade/*`, `views`, `stats`, `report/*`, `catalog`, `prices`, and the new component **`gateway`** = `file_hash(bench/gateway.yaml)`, `""` when the file is absent. A module used by both sides is run (run dominates).
+- **Why.** Telemetry was listed as grade because extraction looked like grading, but the engine reads every native record at cell end for the recorded cause and the spend-cap stop (`engine.py:661`, `_read_records` `:852`; `profiles.py:262`), so a change to it can alter what a measured cell records while it executes, which is s1's own test for run side. `gateway` fixes the judge model and invocation behind every judged score and no existing component covered it.
+- **Accepted cost.** A telemetry fix after a baseline is `scope: run`, so cells launched before it are re-run (operator decision DI6, s6). The measured price is `defect_fix.admitted` rows with `scope: run` whose `changes` keys all lie under `src/harness_bench/telemetry/`. `bench/gateway.yaml` appearing after a baseline is a grade-side fix: every campaign run's verdicts are withheld until a new grading pass.
+- **Controls.** `identity.py` lists every `telemetry/*` file as run and `gateway` as grade; `tests/test_identity.py` pins both (an edit to `telemetry/normalize.py` changes the run-side hash and not the grade-side hash; a `bench/gateway.yaml` edit, and absent to present, does the reverse). The direction test (no run-class file imports a grade-class one) holds an allowlist of exactly three `config.py` validate-time pairs; a fourth is a decision request.
+- **Follow-up closed.** This is the first review of the "classification is load-bearing" follow-up; it found one mis-listed glob and one missing component, both corrected here.
 
 ## Evidence
 

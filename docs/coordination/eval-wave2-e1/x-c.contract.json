@@ -1,0 +1,48 @@
+{
+  "schema": "coord-run/1",
+  "run_id": "w2-c1-e1e4",
+  "owner": "leader-e1e4",
+  "parallelism": 1,
+  "workers": [
+    {
+      "session": "x-c1-e1e4",
+      "branch": "build/eval-x-c1",
+      "harness": "agy",
+      "transport": "agy",
+      "argv": [
+        "agy",
+        "--model",
+        "gemini-3.8-flash-high",
+        "--add-dir",
+        "{worktree}",
+        "--mode",
+        "accept-edits",
+        "--input-format",
+        "stream-json",
+        "--output-format",
+        "stream-json"
+      ],
+      "binding_files": [
+        "AGENTS.md",
+        ".agents/hooks.json"
+      ],
+      "deadline_seconds": 3300,
+      "output_limit": 4194304,
+      "evidence": [
+        {
+          "kind": "commit"
+        }
+      ],
+      "required_capabilities": {
+        "worktree_isolation": "observed-only",
+        "instructions": "observed-only",
+        "hooks": "observed-only",
+        "permissions": "observed-only"
+      },
+      "prompts": [
+        "al-01M41NR9YEHGCK0XN2QB83804H"
+      ],
+      "fallback": "A red-only end, a deadline or a failed served-model read: the green follow-on runs as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) in this worker's tree (R-87 Option 1); the plan's fallback for every Agy track, after an Owner review"
+    }
+  ]
+}

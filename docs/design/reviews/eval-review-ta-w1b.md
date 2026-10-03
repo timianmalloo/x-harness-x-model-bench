@@ -50,3 +50,29 @@ The kill tests use a real child and `os._exit` over a real filesystem (D4). The 
 `GATE W1-B · Test Architect · BLOCK · 7 findings (rv-ta-bd-e1e4, 2026-10-03)`
 
 Clearing conditions: findings 2 and 3 (each is a control with no failing case). Findings 1, 4 and 5 should be resolved in the same follow-up; 6 and 7 may be recorded.
+
+## Revision 2 (delta re-review, 2026-10-03)
+
+Session `rv-ta-bd-e1e4`. Branch `design/eval-atomic-publish` at `d19bab8d` (main merged at `32548ed9`), section 18 rows TA 1-7 read against sections 5, 6, 10.1-10.4. Only the delta was reviewed. Verified = opened or run here.
+
+| first-round finding | result |
+| --- | --- |
+| 1 D1 red by AttributeError | **Closed.** X-B2 commit 0 extracts `_copy_hashed`; the D1 and corrupted-copy rows now carry a "Red because" assertion (`attempt-1` exists with two files and the redo raises `HB-USR-002`; `archive_cell` returns instead of raising). Inferred: not run, the code does not exist yet. |
+| 2 `_POSIX` patched by its own test | **Closed.** `test_posix_flag_default_follows_the_platform` is unpatched; `test_the_real_publish_dir_fsyncs_the_folder_only_on_posix` wraps the real `_fsync_dir`. M14 (`True`) dies on Windows, M14b (`False`) on POSIX. See R2-3. |
+| 3 call-site scan | **Closed.** I ran an independent AST scan (verbs, `.rename/.hardlink_to`, one-argument `.replace`, import aliases) over `src/harness_bench` at `d19bab8d`: 12 hits, 11 `(module, function, verb)` keys, the same as the allowlist table, including `store.move_orphan` and `engine._read_controls`. Three red-fixture tests exist (verbs and aliases with negatives, stale and unlisted entry, no-op `verify`). The `_land` entry is forced out by the stale-entry test. |
+| 4 telemetry values | **Closed** for `atomic.publish` values, `rename_retries == 2`, `publish_failed` phases, `create_once` conflict and `temp_leaked`. `archive.recovered` moved to X-K1 (R2-2). |
+| 5 portable retry | **Closed.** `test_a_rename_refused_n_times` covers twice-then-succeeds, always, and `FileExistsError` (one call, M21). |
+| 6 S6, F28, mid-failure | **Closed.** S6 is the one stop condition in the specification; F28 and the `os.fsync`-raises param have tests. |
+| 7 import test, hypothesis oracle | **Accepted as declined.** A cycle fails at import. A non-cyclic import of `ledger` is not caught, but W0 section 9 gives `atomic` no such dependency and a reader sees it in review. |
+
+Mutant count: M1-M27 plus M14b is 28, every one named in a Catches cell, and the MUT-B test keeps the ids honest. The new tests (identity swap M22, `temp_leaked` M23, no `finally` M24, lock check M25, `make_writable` link M26) each fail on a named input.
+
+| # | location | finding | severity | evidence | fix | confidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| R2-1 | W0 section 4 vs 18 and 5 | **Two lines of W0 disagree.** W0 line 220 says `recover_archive` is built by X-K1 in E3; line 221 still says "W1-B and W1-J carry the test" for the crash-window rule. W1-B now carries no such test. | minor | `eval-seam-contracts.md:220-221` | Add to seam S-B4: line 221 reads "X-K1 (and W1-J for snapshots) carry the test". | Verified |
+| R2-2 | 5, 16 | Between E1 and E3 a crash between the rename and the row appends has a defined rule and **no test and no code**. The ruling accepts this. It is a residual, not a defect, provided X-K1's design inherits the listed nodes (three recorded-row states, rebuild assertion, two mismatch cases, the stop condition, two mutants, `archive.recovered`). | minor | 5 "Advice for X-K1" | Record the list as an entry condition of the W1-K gate. | Verified |
+| R2-3 | 10.2 M14/M14b, 10.3 | Each of M14 and M14b can be killed on one host only. The design says the proof pack names which run killed which; that is the control. | minor | 10.3 | Make "mutation run on a Windows host and a POSIX host, both recorded" an X-B1 exit item. | Verified |
+
+`GATE W1-B · Test Architect · PASS WITH CONDITIONS · 3 findings (rv-ta-bd-e1e4, 2026-10-03, rev 2)`
+
+Conditions: R2-1 through the S-B4 request, R2-2 at the W1-K gate, R2-3 in X-B1's proof pack. All seven first-round findings are closed; the earlier BLOCK is lifted.

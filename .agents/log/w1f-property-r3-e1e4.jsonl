@@ -1,0 +1,2 @@
+{"agent": "w1f-property-r3-e1e4", "at": 1791050527.0533311, "kind": "session-start", "path": "-", "seq": 1, "session": "w1f-property-r3-e1e4", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-design-eval-property-grader-r3"}
+{"agent": "w1f-property-r3-e1e4", "at": 1791051211.1061697, "kind": "claim", "path": "docs/design/eval-property-grader.md", "seq": 2, "session": "w1f-property-r3-e1e4", "ttl": 300.0, "wi": "w1f-property-r3-e1e4"}

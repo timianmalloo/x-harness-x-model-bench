@@ -652,13 +652,77 @@ summary: >-
 - **Control:** `tests/test_grade_formal.py::test_g2_formal_checks_clean_lake_build_output_is_not_a_binary_artifact` (a `Proofs/` tree with real `.lake/build/**` output and `lake-manifest.json`, otherwise clean, scores `1`; observed red before the fix, exactly the grid-3 shape) and `::test_g2_formal_checks_clean_a_stray_binary_outside_lake_still_fails` (parametrized `x.olean`/`foo.so`: a binary anywhere else, even beside a genuine `.lake/` tree, still scores `0` — proving the exemption is narrow, not "anything near `.lake` passes"). The general rule (CI2 derive): whenever a task's own instructions mandate running a tool in a scanned directory, name that tool's build-output in one shared constant the scan excludes and the disposable-copy step strips, and add a positive fixture that runs (or fakes) the mandated tool before asserting the scan passes — a scan fixtured only with hand-placed violations never proves it tolerates compliance.
 - **Status:** `controlled`
 
-### ENV-A: a hermetic test reads an ambient credential from the operator's shell (candidate)
+### ENV-C: a hermetic test reads an ambient credential from the operator's shell (candidate)
+- **Id note:** filed on 2026-10-03 as a second `ENV-A`; renamed `ENV-C` by `coord-opus-e1e4` (W0 rev 5 branch). The README's proposed `ENV-B` was already taken (line 488, the build-environment class). The ENV-A track keeps its brief name.
 - **Signature:** a test that asserts a credential is copied, present or absent reads the real variable from the process environment instead of setting or clearing it. It passes in a clean shell and fails in any shell that carries the credential, so the suite's result depends on who runs it.
 - **Why it survives:** CI and most worker shells have no `HB_CLAUDE_OAUTH_TOKEN`, so the suite is green there. The operator's and the Leader's shells carry it, and a red there reads as flake.
 - **Instances:**
   - `2026-10-03` (Q0 join, found by the Leader; reproduced by `coord-opus-e1e4` on main `5092455c`): with `HB_CLAUDE_OAUTH_TOKEN` set to a dummy value, 3 tests fail: `tests/test_gateway_headless.py::test_t_gw_10_the_credential_is_present_during_the_call_and_gone_after_it`, `::test_t_gw_10_the_credential_is_gone_after_a_timeout_and_after_an_exception_past_the_copy`, and `tests/test_profiles.py::test_the_launcher_reports_no_model_setter_and_a_copied_login[claude-code]`. With it unset, all 5 selected tests pass. Pre-existing on main.
 - **Sweep:** owed (the fix slice): every test that names a credential variable (`grep -rn "OAUTH_TOKEN\|_API_KEY\|GH_TOKEN" tests/`) either sets it with `monkeypatch.setenv` or clears it with `monkeypatch.delenv(..., raising=False)`.
 - **Control (proposed):** an autouse fixture in `tests/conftest.py` that removes every name on the credential list for every test not marked `credentials`, plus a test that sets the variable and asserts these three still pass. Route: a small Grok slice once Grok is qualified (DR-5), else a Sonnet slice.
+- **Status:** `candidate`
+
+### TIME-B: a test asserts an outcome that holds only while real sleeps and real work keep their idle-machine order (candidate)
+- **Signature:** a test's assertion depends on wall-clock timing it does not control: a fake that sleeps for real (`{"sleep": 3}`) is assumed to still be running when other work finishes, or a duration is asserted against a fixed bound. Under `pytest -n auto` CPU contention stretches the other work past the sleep, so the order flips and the assertion fails. Sibling of TIME-A (a `Timer` aimed at a phase); TIME-A's control covered only `threading.Timer` in `tests/test_driver.py`.
+- **Why it survives:** run alone, or with two files under `-n auto`, the idle-machine order holds (245 of 245, three runs). Only a full-suite run (about 2,240 tests) adds enough load, and then one run fails a different test than the next.
+- **Instances:**
+  - `2026-10-03` (Leader, two full-suite runs on Wave 2 worker trees): `tests/test_engine.py::test_the_breaker_leaves_running_cells_running` failed in both runs; `tests/test_driver.py::test_every_message_type_the_fake_emits_is_paired_and_every_pairing_is_emitted` failed in one. On `main`, those two files alone under `-n auto`, three runs: 245 passed each time. The mechanism per test is Inferred until the fix slice reproduces it (brief `docs/coordination/eval-wave2-e1/time-b.md`).
+- **Sweep:** owed (the fix slice): every test under `tests/` that calls `time.sleep`, passes a real `sleep`/delay to a fake, or asserts on `time.monotonic()`/`time.time()` differences, each classified as clock-controlled, event-driven, or a named exception.
+- **Control (proposed):** a scan test that fails on a real-sleep or wall-clock assertion in `tests/` outside a named allowlist constant (each entry with its reason), plus the injected clock or event-driven wait in the two named tests. A red-first reproduction (a forced delay) proves each fix.
+- **Status:** `candidate`
+
+### TEST-B: a design names a red-first test that cannot fail for the reason it states (candidate)
+- **Signature:** a design slice lists a test as "red first", but nothing in the design shows which assertion fails today and why. Five shapes recur: (a) the test patches or imports a symbol that does not exist yet, so it fails with `AttributeError` or `ImportError`, not on its assertion; (b) a guard or scan test has no red fixture, so deleting the rule stays green; (c) an engine or CLI test uses a fake, so removing the real wiring line breaks no test; (d) two rules give the same observable result, so neither can fail alone; (e) an allowlist or "every reader migrated" claim is asserted without a scan of the tree.
+- **Why it survives:** the author writes the test list from the contract, not from today's code. A test name reads as a proof, and the Stage 4 self-check asks "is there a test", not "what does it fail on today". The gap shows only when an adversarial reviewer runs or reads the test against the base commit.
+- **Instances:**
+  - `2026-10-03` (Evaluation Campaign Wave 1, batch a): RV-TA blocked every first-pass design: W1-F (`docs/design/reviews/eval-review-ta-w1f.md`: a clean-exit tamper test missing, outcome rows 3 and 4 not separable, shape d), W1-G (`eval-review-ta-w1g.md`: control 1, the 0.6 golden digests, the (e) exception tests), W1-B and W1-D (reviews filed by RV-TA on the same day; W1-D: `cli.py` passing the launch check is covered only by a fake, shape c).
+- **Sweep:** every remaining Wave 1 design (batch b: W1-H, W1-C, W1-E, W1-J, W1-L, then W1-K) and every revision of a batch-a design.
+- **Control:** the *Testability floor* in `docs/coordination/eval-wave1/README.md` section 2a: for each named test the design states the failing assertion and why, the red fixture of every guard, the real-wiring test beside every fake, the mutant that separates each adjacent rule pair, and the scan behind every allowlist. RV-TA checks it first. Rung: always-loaded instruction for Wave 1 workers. Upgrade trigger: a batch-b design blocked on one of the five shapes after this rule is on main; then the `design-slice` Definition of Done gains the five items.
+- **Status:** `candidate`
+
+### COORD-D: a per-call environment rule read as a one-time setup (candidate)
+- **Signature:** an instruction says to set shell state "in every shell call" (`export AGENT_SESSION=…`), and the agent sets it once. The agent's harness starts a fresh shell for each tool call, so the state is gone by the next call. A control that reads the state (the commit floor) then finds it unset, prints an advisory and lets the commit through.
+- **Why it survives:** the export succeeds, and the later commit succeeds too. The only sign is one advisory line in a long tool output. The rule's wording ("in every shell call") is correct but describes a state, not an action on the line that needs it.
+- **Instances:**
+  - `2026-10-03` (Evaluation Campaign Wave 1): at least five worker commits printed "AGENT_SESSION is unset" (reported by the Leader), so the commit boundary only advised for them.
+- **Sweep:** owed (the Leader): the `coord-core.py` advisories in today's worker logs (`.agents/log/*.jsonl`) and commit hooks output, to count the commits that passed unattributed.
+- **Control:** `docs/coordination/eval-wave1/README.md` section 1 step 2 now requires an **inline prefix** on every `git commit` and every coord call (`AGENT_SESSION=<id> git commit …`) and says why. Rung: always-loaded instruction. Upgrade trigger: one more unattributed commit after this rule is on main; then the commit floor refuses (not advises) when `AGENT_SESSION` is unset in a registered worker tree.
+- **Status:** `candidate`
+
+### XPORT-A: a protocol client tolerates an interleaved message only in the phase where it was first seen (candidate)
+- **Signature:** a JSON-RPC client waits for the response to one request and treats any other message as a protocol error, except for a known out-of-band message that it tolerates in a single phase. The agent sends that message in another phase too, and the dispatch fails before any work starts.
+- **Why it survives:** the tolerance was added for the phase where the message was first seen, and its test drives only that phase. The race is intermittent: whether the message arrives before or after the response depends on the agent's startup timing, so one green qualification turn proves nothing.
+- **Instances:**
+  - `2026-10-03` (Evaluation Campaign Wave 2): Grok's skills-reload acknowledgement arrived **before the `session/new` response**. The runner's Grok compatibility in `docs/ai-forward-pack/scripts/coord_transport.py` accepts that message only inside `session/prompt`. Measured: 2 of 3 Grok dispatches failed this way, each in under 10 s (`w2-g1-e1e4`, `w2-enva-e1e4`). The retry `w2-g1b-e1e4` got past `session/new`, committed red `a08a4060` and green `76deb253`, and then hit its 1,200 s deadline (reported by the Leader).
+- **Sweep:** owed by the fix slice: every request/response wait in `coord_transport.py` (`initialize`, `session/new`, `session/prompt`, any cancel), and every other harness's compatibility shim, for a tolerance tied to one phase.
+- **Control:** a red-first test in the pack's transport tests: a fake agent sends the acknowledgement before the `session/new` response, and before the `initialize` response, and the client must complete both; then one tolerance that every wait applies, not one per phase. Fix slice `xport-grok-e1e4` (Claude Sonnet, branch `fix/grok-session-new-race`, launched by the Leader). It is a **repo-local deviation** of the pack's script, so it is recorded as a deviation for `updatepack` to merge. Pushing it to the ai-forward repo needs the operator. Meanwhile, Grok tracks wait for the fix (Leader, 2026-10-03); they are not rerouted to Sonnet. Rung: test. Upgrade trigger: the fix upstream, then this entry moves to the pack's register.
+- **Status:** `candidate`
+
+### OBS-A: a measurement read from a file written only on a clean exit (candidate)
+- **Signature:** a reader takes a value from one source that the producer writes only when it ends normally (a session summary, a usage file). On the failure path (a deadline kill, a crash) the file is absent, so the reader reports "not recorded" in exactly the case where the value is needed most, even though another durable source holds it.
+- **Why it survives:** the reader was tested on sessions that ended normally. "Not recorded" is the correct degraded output, so nothing looks broken; the gap shows only when someone reads the other source by hand.
+- **Instances:**
+  - `2026-10-03` (Evaluation Campaign Wave 2): `tools/grok_served_model.py` (TOOL-GSM, the R-92 condition 1 reader) exits 2 "not recorded" on the deadline-killed session `w2-g1b-e1e4`, because Grok writes `usage.json` only at the session's end. The Leader read the served model from `chat_history.jsonl`'s assistant rows (`grok-4.7-build`, 43 rows), so the pin held, but the join rule could not be met by its tool.
+- **Sweep:** the other served-model readers named by the join gate (Codex `rollout-*.jsonl` `model`, Agy `cli.log`), and every reader of a file that a harness writes only at session end.
+- **Control:** TOOL-GSM-B (`docs/coordination/eval-wave2-e1/tool-gsm-b.md`): when `usage.json` is absent the reader falls back to the assistant rows' model ids, names the source it read, and still exits non-zero when the ids disagree with the pin or no source exists. Its tests include a deadline-killed session fixture. Rung: test.
+- **Status:** `candidate`
+
+### FIXT-A: a design states its own fixtures' measured behaviour without running them (candidate)
+- **Signature:** a design gives a quantitative claim about how its own fixtures behave ("all 8 hidden tests fail on the base", "a crash flips every probe") with no run behind it. The build then measures a different number, and a test or an expected value written from the claim is wrong.
+- **Why it survives:** the claim reads as a property of the design, not as a measurement, so neither the author nor the reviewers ask for a run. It is the fixture-level form of asserting the shape of one's own code from memory (E15).
+- **Instances:**
+  - `2026-10-03` (Evaluation Campaign, X-I building S1 against W1-I): the 501 stub fails 7 of 8 hidden tests, not 8; a crash variant flips 5 probes, not 8; test 8's `socket.socket` patch failed every correct app on Windows; the reference and naive returned 500 on non-JSON bodies. Recorded as *Erratum 1* in `docs/design/eval-security-tasks.md`.
+- **Sweep:** the merged designs with authored fixtures: W1-E (synthetic overlays, variants), W1-L (RW, NG, SM tasks), W1-F (probe-host fixtures). The rule below applies to their builds.
+- **Control:** the wrong-app and crash fixtures X-I built measure these claims now. A Testability-floor line in `docs/coordination/eval-wave2-e1/README.md` section 2: **every quantitative claim about a fixture's behaviour is marked Inferred until a fixture run measures it, and the build report gives the measured number beside it.** Rung: always-loaded instruction for E1 workers. Upgrade trigger: one more design-stated fixture number contradicted by a build; then the `design-slice` Definition of Done gains the item.
+- **Status:** `candidate`
+
+### MUT-C: a gate's environment failure reported as its per-item verdicts (candidate)
+- **Signature:** a gate that runs many items (mutants, cases) in a subprocess reports each item's result. When the environment itself is wrong (the wrong interpreter, a missing package), every item fails the same way, and the gate prints a verdict per item instead of one environment error.
+- **Why it survives:** "error" is a legitimate per-item verdict, so a table of 80 errors looks like a result. The tool never checks that its own interpreter can import the code under test.
+- **Instances:**
+  - `2026-10-03` (Evaluation Campaign Wave 2, the Leader's join of X-G1): `python tools/mutate_check.py` under the global interpreter (no `harness_bench`) reported all 80 `grade.json` mutants as `error`. Re-run under `uv run`.
+- **Sweep:** the other join-gate tools that spawn the project's tests: `tools/check_models.py`, `run-verify-gates.py`, `conductor-join.py`; and every brief's join-gate line.
+- **Control:** (1) the join-gate line in `docs/coordination/eval-wave2-e1/README.md` section 3 and every part-2 brief reads `uv run python tools/mutate_check.py --touched main`; (2) TOOL-GSM-B section B2: `mutate_check` imports `harness_bench` before any mutant and exits 2 with the interpreter named, and an all-`error` run exits non-zero as "environment suspected". Rung: test. Upgrade trigger: the same shape in another gate tool.
 - **Status:** `candidate`
 
 ---

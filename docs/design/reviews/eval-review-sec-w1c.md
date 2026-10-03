@@ -1,0 +1,59 @@
+---
+id: review-eval-sec-w1c
+title: "Security & Identity review of W1-C: campaign record and bench campaign (Adversary Mode)"
+type: doc
+status: draft
+owner: "@timianmalloo"
+tags: [review, security, evaluation-campaign, wave-1, w1-c]
+links:
+  - { to: design-eval-seam-contracts, rel: relates-to }
+  - { to: review-eval-sec, rel: refines }
+review-by: "2026-10-17"
+summary: >-
+  Security & Identity gate on W1-C (design/eval-campaign-record, ae21488b + 61338062) against W0 rev 3 and R-87..R-96.
+  Tamper tests, lock-as-regular-file and the three ignore lines are mostly sound. Open: unvalidated campaign id writes
+  outside the folder, symlinked ledger or folders, a status-code-keyed git witness blind to ignored paths, and attach
+  freezing on a chain-derived stamp while binding no plan content.
+---
+
+# Security & Identity review of W1-C (rv-sec-w1c-e1e4, 2026-10-03)
+
+PERSONA: security-identity-architect, Adversary Mode, T2. Not repeated: RV-TA and RV-PAT findings (staged `A `, `MM`, `AM` misread as tampering is concurred; the fix is folded into finding 3). Confidence: V Verified (file opened), I Inferred (confirming check named).
+
+| # | location | finding | sev | evidence | fix | conf |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | s5 `create`; s6 `session` step 2 | The id regex runs on `create` only. Every other command builds `bench/campaigns/<id>/campaign.lock` and acquires it **before** the unknown-id check (step 3). `RunLock.acquire` does `parent.mkdir(parents=True)` then `O_CREAT`. So `bench campaign status ../../x` creates folders and a lock file outside `bench/campaigns`; a typo creates a stray folder that `.gitignore` hides. `run_id`, `--grading-id` and `<task>` are also joined into paths unvalidated (read-only, but they feed `gate_input_hash`). | major | `oslock.py` `acquire`: `path.parent.mkdir(parents=True, exist_ok=True); os.open(path, O_RDWR\|O_CREAT)` | Validate id, run id, grading id and task once, at `session` entry. Require the resolved folder under `bench/campaigns`. For non-`create` commands, stat the ledger before taking the lock, so an unknown id creates nothing. Test: `status ..` and `status nope` leave the tree byte-identical. | V |
+| 2 | s6 step 1; s7 | Only `campaign.lock` is `lstat`-ed. The campaign folder, `ledger.jsonl`, `identity/ prereg/ power/` and `bench/discrimination/<task>` can be links or junctions. `SegmentWriter` appends and `create_once` links through them, so a command writes outside the folder. An untracked linked `ledger.jsonl` shows `??` and passes step 5. `os.open` has no `O_NOFOLLOW`, so lstat-then-open is also a race (residual). | major | s7 step 5 allows `??`; step 4 hashes bytes through links | In `session` and `verify`: `lstat` the campaign folder, its three sub-folders, `ledger.jsonl` and each content file; regular file or real folder only, else HB-CMP-003 naming it. Tests beside L-5: link as ledger; link as `identity/`. | V (code), I (link behaviour; confirm on the POSIX job) |
+| 3 | s7 step 5 | The git witness keys on status codes and on what git is told to show. (a) Staged `A `, `MM`, `AM` are misread (PAT). Better rule: ignore the code. For a path in HEAD: ledger = HEAD bytes are a prefix, content = bytes equal. For a path not in HEAD: name = hash. (b) **Ignored paths are invisible.** An edit to `.gitignore` (tracked, not watched by the check), `.git/info/exclude`, `git update-index --assume-unchanged` or `--skip-worktree` hides a modified committed ledger or content file. V-3, V-4 and V-9 all run with default ignore state. | major | s7 step 5: `git status --porcelain -uall -- bench/campaigns bench/discrimination` | Add: `git ls-files -v` flags `h` or `S` in these folders are findings; any ignored path there other than a temp name or `campaign.lock` is a finding (`git status --ignored`); the three `.gitignore` lines are checked by exact text. Red fixtures: assume-unchanged edit; an extra `.gitignore` line covering `bench/campaigns/`. | V (rule text), I (git behaviour; confirm with the S-C3 spike harness) |
+| 4 | s11 FM-15 | Only HEAD is compared. One commit that rewrites a ledger prefix (new chain, recomputed hashes) passes, because HEAD is then the tampered prefix. Boundary 2 (hostile code during a pass) can run `git commit`. | major | FM-15 accepts the uncommitted case only | Walk `git log --format=%H -- <ledger>` and check each blob is a prefix of the next (one `git show` per commit), or write the committed-rewrite case into FM-15 as a named accepted residual. Test: two commits, the second rewrites a prefix. | V |
+| 5 | s5 `attach`, s8 | `check_plan` compares `plan.campaign.identity.hash` with the chain. `plan --campaign` stamps from the chain, so a hand-built or stale plan carries the chain hash while the **tree** has drifted; `attach` never reads the tree. `attach` appends `grid.attached` and the pre-registration is frozen (HB-CMP-009, no way back). The drift is found only at the first launch (HB-IDN-001), after the freeze, and the campaign must be abandoned. C-37 covers only the reverse (stamp from tree). | major | s5 attach and plan; s6 freeze order; P-4 | In `attach`, under the lock, also compute `side(manifest(...), "run")` of the tree and refuse HB-CMP-010 on a diff, the same call as plan time. Test: chain-hash stamp plus drifted tree; assert no row and `register` still allowed. | V |
+| 6 | s5 plan time, s8 | The plan-time check calls `manifest(root, tasks, builds)`; the doc does not say which `tasks` and `builds`. The full run-side hash includes `tasks/<id>` and `builds/<h>` (W0 identity table). A subset plan, or a host with other builds, differs from the baseline hash with no engine drift (false refusal); or the check runs on a subset and drift in an unplanned task goes unseen. | minor | s5 `bench plan --campaign`; W0 identity table | State: tasks = the baseline's list, builds = the plan's; or compare per component and ignore components the plan does not use. Test with a subset plan. | I (confirm with W1-D `side` and `manifest`) |
+| 7 | s5 attach, `check_plan`; s6 | The ledger binds the plan by run id only. `plan.json` is gitignored and editable after attach. `check_plan` re-runs at `bench run` but checks campaign id, hashes, arm commits and "no launch", not cells, tasks, harnesses or seeds. A post-attach edit can drop tasks or arms (cherry-picking) and pass. The block's `components` are not re-hashed against `hash`, so forged `components` with the right `hash` pass any reader of `components`. OI-2 (the prereg names no grid) is the same hole. | major | s5 attach; W0 sec 5 `campaign` block; OI-2 | `check_plan` recomputes `identity_hash` from `block.components`, and compares the plan's (task, harness, arm) cell set with admitted tasks x final power inputs. A stored plan hash would be a W0 field: seam request to the Coordinator (W0 forbids a new field today). | V |
+| 8 | s5 `fix` | The fix names `commit` (an ancestor of HEAD) but `after` is read from the working tree, which may be dirty. The recorded identity can differ from `git show <commit>`; the trail then cites a commit that is not what ran. `baseline` requires a clean tree; `fix` does not. | minor | s5 fix, s5 baseline | Require the named components clean and equal to `<commit>`'s blobs, else HB-CMP-007. | V |
+| 9 | s7 sweep | The sweep deletes under `bench/discrimination/<task>/`, outside the campaign folder, from a `bench campaign` command. Which task dirs it visits is not stated; a junction as a task dir redirects `sweep_temps(dir / base)`. S-3 covers a junction inside a temp, not as the parent. | minor | s7 "The sweep"; S-1..S-3 | Enumerate task dirs from the baseline's task list, `lstat` each, skip links with a named warning. Add S-4 (junction as task dir). | I |
+| 10 | s5 `fix` | The defect class goes into a heading regex unescaped; `.*` or `(` in `--class` breaks or widens the match (C-11 tests a substring only). | minor | s5 fix | Require `^[A-Z]+-[A-Z0-9]+$`, then `re.escape`. Test: `--class ".*"`. | V |
+
+**Checked and sound.** The lock as a regular file (L-5, W-4) closes my W1-B finding 8, except the lstat-to-open race (finding 2). The three `.gitignore` lines are the set I asked for in W1-B condition 1; V-6, V-7 and G-1 make hidden temps a named warning, with the `campaign.lock.bak` negative in G-1. V-1..V-10 and S-1..S-3 have real git and real sweep wiring; the gaps are findings 3, 4 and 9. Own-lock-then-probe with 0 of 90 both-proceed is sound. The plan-time compare reads the chain (P-1) and attach compares with the chain (C-37); the gap is finding 5. Only the paths in findings 1, 2 and 9 write outside the campaign folder; `bench plan --campaign` is lock-free and read-only. Seam: W0 sec 6 and this design agree on the hash that attach checks; W0 has no plan-content binding (finding 7).
+
+**Conditions.** Apply findings 1, 2, 3, 5 and 7 (7 may go as a seam request); resolve 4 by fix or by a named residual. Findings 6 and 8-10 may follow in the build.
+
+GATE W1-C · Security & Identity · PASS WITH CONDITIONS · 10 findings (rv-sec-w1c-e1e4, 2026-10-03)
+
+## Revision 2 re-review, delta only (rv-sec-w1c-e1e4, 2026-10-03; 8a718b7a)
+
+Checked against the rev 2 text (`git show 8a718b7a:docs/design/eval-campaign-record.md`) and `oslock.py`. Conditions 1, 2, 3, 4, 5 and 7 are each met in the text.
+
+| # | verdict | evidence (rev 2) |
+| --- | --- | --- |
+| 1 id before any path | Met. | s5: ids validated in the parser `type=` callbacks and again at `session` entry (`campaign_id`, `run_id`, `--grading-id`, task ids; `status.RUN_ID` has no separator and no leading dot); s6 step 0 validates and `lstat`s "without creating anything", and every command but `create` needs an existing ledger (HB-CMP-005, "the lock's mkdir has not run"). `oslock.acquire` is the only mkdir/O_CREAT and runs at step 1, after step 0. Reads (`status`, `verify`, `register` preview) take no lock and create nothing. Tests N-1, C-3. |
+| 2 lstat chain | Met. | s6 step 0 and s7 step 0: folder, ledger, three sub-folders, lock, each content file, `bench/discrimination/` and each task dir; L-8 with M-L8. The `lstat`-to-open race is named as FM-17, accepted. |
+| 3 witness | Met. | s7 step 5 keys on content, not status letters (staged states no longer matter); 5e `ls-files -v` `h`/`S`; 5f `--ignored` scan; 5g the three `.gitignore` lines by exact text; V-11, V-12 with mutants. |
+| 4 history | Met. | 5b commit-pair prefix walk, first-parent; a merge fails closed; V-4c; FM-15 keeps only the uncommitted full rewrite as residual. |
+| 5 attach tree check | Met. | `check_plan` recomputes the hash from `components` and compares the working tree's run side, before the freeze; C-49 covers a subset plan (finding 6). |
+| 7 plan binding | Met. | `plan_hash` on both attach rows; `run_side_check` inside the engine compares it; P-6. Cell-set coverage stays OI-2 (W1-H), not a W1-C gap. |
+
+New, minor (does not block): 5a speaks of a ledger "in HEAD" but not of one deleted from the working tree. 5c covers a deleted non-ledger path. `create` then sees "no ledger" and could start a fresh campaign over a committed id. Fix: a committed ledger absent from the working tree is a finding (HB-CMP-003) for every command including `create`, and `status` reports it so, not as HB-CMP-005. Test: delete a committed ledger, run `create`. Confidence: Inferred (from 5a and s6 step 0 text; confirm with the test).
+
+Findings 6, 8, 9 and 10 are applied in the text (disposition rows, S-4, `re.escape`).
+
+GATE W1-C · Security & Identity · PASS · 1 finding (rv-sec-w1c-e1e4, 2026-10-03, rev 2)

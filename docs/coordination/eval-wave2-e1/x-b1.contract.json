@@ -1,0 +1,45 @@
+{
+  "schema": "coord-run/1",
+  "run_id": "w2-b1a-e1e4",
+  "owner": "leader-e1e4",
+  "parallelism": 1,
+  "workers": [
+    {
+      "session": "x-b1a-e1e4",
+      "branch": "build/eval-x-b1a",
+      "harness": "grok",
+      "transport": "acp",
+      "argv": [
+        "grok",
+        "agent",
+        "--no-leader",
+        "-m",
+        "grok-4.7",
+        "--reasoning-effort",
+        "high",
+        "stdio"
+      ],
+      "binding_files": [
+        "AGENTS.md",
+        ".grok/hooks/ai-forward.json"
+      ],
+      "deadline_seconds": 1200,
+      "output_limit": 4194304,
+      "evidence": [
+        {
+          "kind": "commit"
+        }
+      ],
+      "required_capabilities": {
+        "worktree_isolation": "observed-only",
+        "instructions": "observed-only",
+        "hooks": "observed-only",
+        "permissions": "observed-only"
+      },
+      "prompts": [
+        "al-01M41NRPQMNPJXB170E87T32NE"
+      ],
+      "fallback": "A red-only end, a deadline or a failed served-model read: the green follow-on runs as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) in this worker's tree (R-87 Option 1); R-92 is X-B1's Owner review; B1b and B1c reuse this contract with run_id, session and branch suffixed b and c"
+    }
+  ]
+}

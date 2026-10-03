@@ -21,6 +21,7 @@ summary: >-
 # ADR-0019: Catalog 0.7: property metrics, scenario-7 pass@1, expected values
 
 - **Status:** Proposed
+- **Amended (2026-10-03, W1-G design `design-eval-catalog-0-7` section 14 U5; W0 rev 3):** see "Amendment 1" before *Alternatives considered*. The decision text above is unchanged.
 - **Date:** 2026-10-03
 - **Deciders:** @timianmalloo; authored by Claude Code with the Data & Persistence and Test Architect lenses
 - **Context spec/architecture:** `docs/specs/enterprise-evaluation.md` (EV-1, EV-7, EV-10, EV-11, EV-14 "the grid-4 G2 shape"); R-59 (content-addressed catalog), R-86 (version rules); `bench/catalog-freeze.yaml`.
@@ -37,6 +38,15 @@ summary: >-
 4. **Missing is not a fail (defect fix).** `_passed` and every pass count treat a missing or NOT_RECORDED `pass_at_1` as *not recorded*: excluded from pass and fail counts and listed under EV-11's "not recorded in this run". This is a view change: it can move the 0.6 `board_golden` for runs with scenario-7 cells, so the change is recorded in the freeze file **append-only** (council P2): the old hash is never overwritten; the version's entry gains the new value with `corrected_from: {hash: <old>, defect_class: <id>, commit: <sha>}` beside it, and the golden check accepts the newest value while `bench verify` can show the chain. It also carries its defect class (a new class in `docs/lessons/defect-classes.md`, "absence read as failure", with the sweep over every `scores.get(...)` comparison).
 5. **Expected values.** A property task's `task.yaml` declares `expected: {reference: {<metric>: <value>}, naive: {<metric>: <value>}}` with a provenance comment per value (GLD-A), inside the task version hash. Readiness (EV-7) compares by exact equality at the catalog scale; `expected NA: <reason>` is the only exemption (EV-11).
 6. **US-4 control.** A test grades the frozen grid-3 and grid-4 fixture archives under 0.7 and asserts every 0.6 metric's value unchanged and the new metrics absent for tasks whose graders do not name them (EV-10).
+
+### Amendment 1 (2026-10-03; W1-G design `docs/design/eval-catalog-0-7.md` F4, F7, F9, section 14 U5; W0 rev 3 section 7)
+
+Recorded by the Coordinator (`coord-opus-e1e4`) with W0 rev 3. W1-G's gate is open (RV-TA BLOCK); this note records facts W1-G verified, not its open findings.
+- **Item 6 and EV-10, the fixtures.** There is no committed grid-3 or grid-4 archive: `runs/` is git-ignored. The US-4 control runs over the committed fixtures `tests/fixtures/ledger/c44dd2b-no-heads` and `tests/fixtures/ledger/heads` (W1-G F4).
+- **Item 4, "can move the 0.6 `board_golden`".** For the committed fixtures it cannot: `board.export` does not import `pack_improvement`, and neither fixture holds a scenario-7 cell (W1-G F7). The append-only `corrected_from` record therefore stays a written contingency. It is built only if X-G3's before/after run shows a moved golden hash; the existing freeze check fails on a moved hash, so the trigger is a red gate, not a memory (Coordinator ruling, W0 rev 3 section 7, on RV-SIM W1-G 2).
+- **Item 4, "`bench verify` can show the chain".** `bench verify` verifies a run's ledger and does not read `bench/catalog-freeze.yaml` (W1-G F9). The chain, if one is ever recorded, is shown by the US-4 control's printed lines.
+- **Item 5, the expected set.** The required set is the property grader's narrowed set, `runner.applicable(catalog, graders, prop)["property"]` (W0 section 2, R-90 condition 1).
+- **Item 3, how the formal grader records `pass_at_1`.** R-95: `also_graded_by: [formal]`. An optional catalog key `also_graded_by: [formal]` on `pass_at_1`, and a metric's owner for a task is the first of `[grader, *also_graded_by]` that the task names.
 
 ## Alternatives considered
 
