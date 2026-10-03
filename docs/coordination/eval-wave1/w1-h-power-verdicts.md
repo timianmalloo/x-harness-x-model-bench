@@ -45,6 +45,7 @@ Gate PASS; reference cases 93 / 53 / 115 with the independent formula and the se
 
 ## Inputs (read these; quote what you rely on)
 - `docs/design/eval-seam-contracts.md`: §6 (prereg fields incl. `min_pairs`), §8 (the power, verdict and gate signatures), §11 HB-PWR-001, §13 (report/html.py owner X-H2 in E1)
+  - **W0 revision 2 changes these inputs:** §8: `verdict` sorts pairs by `(task, rep)`; `seed_for(prereg_hash, …)` replaces the plan's `launch_seed` as the verdict seed; `VerdictLabel(StrEnum)`; `Pair` is Decimal only; `required_pairs` is a list of rows; `gates.pilot(view, hidden_test_disagreements)` and the GateItem kind `hidden-tests-nondeterministic`.
 - docs/adr/0020-power-and-verdicts-stdlib.md (all)
 - docs/specs/enterprise-evaluation.md EV-12, EV-14, EV-15, EV-18, EV-19, EV-20 and *Power-analysis inputs* (line 439 on)
 - Code: src/harness_bench/stats.py (rng, paired bootstrap), report/html.py (section hooks), report/pack_improvement.py (the existing task-paired bootstrap)

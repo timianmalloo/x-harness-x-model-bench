@@ -45,6 +45,7 @@ Gate PASS incl. Security and Distributed Systems; the D1 and D3 red tests named;
 
 ## Inputs (read these; quote what you rely on)
 - `docs/design/eval-seam-contracts.md`: §4 (the `atomic.py` API: create_once, publish_dir, stale_temps), §11 HB-LED-007, §13 (archive.py owner X-B2; atomic.py X-B1), §12 (E2 snapshot use by X-J1)
+  - **W0 revision 2 changes these inputs:** §4 is rewritten: both helpers create `<name>.tmp-<pid>-<uuid4 hex>` temps exclusively; `publish_dir(final, fill, verify)` checks that `final` exists, explicitly, on every platform; `stale_temps` covers files and folders, lstat-first, and refuses reparse points; fsync goes through the write handle; the caller's rename-to-rows recovery rule.
 - docs/adr/0015-multi-turn-attempt-and-turn-snapshots.md §5a; docs/adr/0016-campaign-record.md §2a; docs/adr/0021-plan-level-resume-and-liveness.md §4 (the `*.tmp-*` and complete-folder rows)
 - docs/notes/spike-e1-ntfs-atomic-publish.md (measured NTFS behaviour; quote it)
 - Code: src/harness_bench/archive.py (all, esp. 55-112); engine.py:580-600, 800-815 (archive call and `cell.archive_failed`); views.py:686

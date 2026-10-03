@@ -45,6 +45,7 @@ Gate PASS incl. Security; the SCAN-A red fixture named; the synthetic agent mech
 
 ## Inputs (read these; quote what you rely on)
 - `docs/design/eval-seam-contracts.md`: §2 (task.yaml property and expected fields), §6 (the discrimination record and the synthetic profile), §9 (discriminate.py, readiness.py, synthetic_agent.py), §11 HB-RDY-001..009, §13 (profiles.py owner X-E; config.py and `HARNESSES` by seam to X-A1), §14 (the synthetic agent mechanism)
+  - **W0 revision 2 changes these inputs:** §2: the `expected` set is the property grader's narrowed set through `runner.applicable(catalog, graders, property)` (imported, never copied); the `at_scale` normaliser; the readiness call moves to `cli.py` `cmd_validate` (a seam to X-C, not X-A1); check `env` names are checked against `TOOLCHAIN_ENV`, `HB_CHECK_*` and the profiles denylist. §6: a second production at an existing key compares and does not write (HB-RDY-010). §7 condition 3: you own `readiness.hidden_test_disagreements`. §9: `discriminate.py` and `synthetic_agent.py` are grade.
 - docs/adr/0016-campaign-record.md §4-§5; docs/adr/0019-catalog-0-7-property-metrics.md item 5
 - docs/specs/enterprise-evaluation.md EV-1, EV-7, EV-11
 - docs/lessons/defect-classes.md: ORCL-A, ORCL-B, HASH-A, SCAN-A, GLD-A

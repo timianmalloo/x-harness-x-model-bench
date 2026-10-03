@@ -46,6 +46,7 @@ Gate PASS incl. Distributed Systems and SRE; every ADR-0021 §4 row mapped to a 
 
 ## Inputs (read these; quote what you rely on)
 - `docs/design/eval-seam-contracts.md`: §11 HB-CELL-118, HB-CELL-119, HB-RUN-008, HB-RUN-009, HB-ALM-001..003 (and reuse of HB-RUN-004, HB-RUN-005, HB-IDN-001), §12 (the resume record), §13 (E3 owners X-K1, X-K2), §14 (the alarm channel)
+  - **W0 revision 2 changes these inputs:** §4: `stale_temps` now covers `create_once` temp files as well as folders, lstat-first, and logs each deletion; your resume sweep uses it.
 - docs/adr/0021-plan-level-resume-and-liveness.md (all); docs/adr/0007 §1, §2, §5; docs/adr/0015 §5a-§7
 - W1-J's model on `main` (models/run_lifecycle.tla). If it is not there yet, design §1-§8 first and stop before the model step; report "waiting for W1-J"
 - Code: src/harness_bench/engine.py:379-416 (sleep detector, heartbeat, disk floor), oslock.py (heartbeat_age), preflight.py:4, 47, status.py, cli.py

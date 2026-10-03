@@ -44,7 +44,8 @@ Gate PASS; for resilience ×2, no-guessing ×2, simplicity ×2 and rework ×2: b
 `docs/docs-index.js`, `docs/audit/audit-log.jsonl` and `docs/audit/change-log.jsonl` are derived or register files: regenerate or append, never claim.
 
 ## Inputs (read these; quote what you rely on)
-- `docs/design/eval-seam-contracts.md`: §1, §2, §3, §7 (DR-4 provisional (a): the strategy helpers `grade/rework.py`, `grade/noguess.py`, `grade/diffstats.py` named in §9)
+- `docs/design/eval-seam-contracts.md`: §1, §2, §3, §7 (DR-4 ruled (a), R-90: the strategy helpers `grade/rework.py`, `grade/noguess.py`, `grade/diffstats.py` named in §9)
+  - **W0 revision 2 changes these inputs:** §3: `in-process` redefined (a probe-host child), `measures` versus `cases`, the `property_check_pass` predicate (you may narrow it per property), case bounds from measured reference durations. §7: R-90. §9: the strategy helpers stay separate files.
 - docs/specs/enterprise-evaluation.md EV-1, EV-3, EV-4, EV-5, EV-6, EV-7; decisions DR-T1, DR-E4, DR-E6
 - docs/adr/0015 §1, §8 (turns, graded snapshots); docs/adr/0018 §3 (loopback, after SP-LB), §5, §6; docs/adr/0019 item 2
 - tasks/README.md (Property tasks), the eight stubs tasks/{RS1,RS2,RW1,RW2,NG1,NG2,SM1,SM2}/task.yaml

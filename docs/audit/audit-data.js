@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:13:51Z",
+  "generated": "2026-10-03T17:27:05Z",
   "audit": [
     {
       "actor": null,
@@ -65419,6 +65419,37 @@ window.AUDIT_DATA = {
         "sha": "357bce48e289fb6335f47c9de1e72f0bb350874b",
         "short": "357bce48e",
         "branch": "owner/ruling-r92",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M41CW7V9HENARXVFVTT2RGRF",
+      "shortname": "w0-rev2",
+      "datetime": "2026-10-03T17:27:05Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Coordinator seat coord-opus-e1e4 (phase hand-off). Task: W0 revision 2. Apply the five W0 lens reviews (RV-TA, RV-SEC, RV-DS BLOCK; RV-PAT, RV-SIM PASS WITH CONDITIONS) to docs/design/eval-seam-contracts.md in an own coord worktree; every blocking finding and every accepted major; a Review disposition table with one row per finding per lens; widening findings go to the Owner as a DR; answer W1-F's seam requests; update Wave 1 briefs only where a revised section changes their inputs; update the plan's Tracks and harness-table cells to the served Sonnet id (R-91); docs-graph derive + validate, render html, audit entry, commit by named paths. Mid-task from the Leader: rebase onto main after the Q0 record and R-92; record the Grok Q0b re-qualification (q0g-e1e4, grok-4.7-build served) in the harness table and name the R-92 served-model reader as a step.",
+      "summary": "W0 seam contracts revision 2 on branch design/eval-w0-rev2. Applied all four blocking findings: TA-1 (G1 E1 allowlist adds report/cli_table.py and report/context_growth.py; X-A1 migrates views.py:525, grade/_changes.py:84 and cli.py _workspace_builder in the guard commit), TA-4 (ordered grader outcomes, line framing, stdin closed on every path, exit 0/3), SEC-1 (in-process redefined as a probe-host child; the check never imports agent code), DS-1 (attach freezes the pre-registration; bench run refuses with HB-CMP-010). Majors: 31 accepted (5 in part, the rejected parts reasoned), 0 rejected outright. Every finding of the five lenses has a row in the Review disposition table. W1-F seam requests req-01M41C0N, req-01M41C0Z and req-01M41C57 granted (section 3, the G5 guard, two test_architecture allowlist entries, cases.json). DR-7 sent to owner-fable (req-01M41CV2MN: grid-run hidden-test disagreement count). Twelve Wave 1 briefs carry a rev-2 input note; the README pin reads the served Sonnet id. Plan: R-91 served-id cells (30 Tracks cells, the harness table and the model pins), R-92 Q0b Grok re-qualification in the harness table, the new order-of-operations step 7a (tools/grok_served_model.py, before the first E1 Grok dispatch; not yet written), and R-90's ten-to-eleven metric rows. docs-graph derive and validate exit 0; HTML views rendered. Workers: none dispatched by this session; Sonnet served id per R-91 is claude-sonnet-5-5.",
+      "kind": "manual",
+      "skill": null,
+      "tool": null,
+      "actor": "claude-opus-5-5 (Coordinator)",
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/coordination/coordination-eval-campaign.md"
+      ],
+      "tags": [
+        "evaluation-campaign",
+        "w0"
+      ],
+      "outcome": "success",
+      "goal": "W0 rev 2 applying every blocking and accepted major finding of the five W0 reviews, with dispositions, W1-F seam answers, brief input notes, and the R-91/R-92 plan cells",
+      "done_when": "branch commits by named paths; derive and validate exit 0; html rendered; audit entry; report handed back",
+      "tier": "T2",
+      "fan_out": 0,
+      "git": {
+        "sha": "f6848adebd3139166e6eb68e3bc7b13c0d52e826",
+        "short": "f6848adeb",
+        "branch": "design/eval-w0-rev2",
         "pushed": null
       }
     }
