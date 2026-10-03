@@ -26,7 +26,7 @@ summary: >-
 # ADR-0021: Plan-level resume of a run, with per-turn reconciliation and a progress signal
 
 - **Status:** Proposed (added at the architecture council, SRE blocking finding)
-- **Amended (2026-10-03, W0 rev 6.8; R-100):** a resume of a stopped run finishes the stop instead of being refused; the invariant is "no launch after a stop"; four statements corrected against the code (D-K1, D-K2, D-K4, D-K5). See "Amendment 1" before *Alternatives considered*. The decision text below is unchanged.
+- **Amended (2026-10-03, W0 rev 6.8; R-100):** a resume of a stopped run finishes the stop instead of being refused; the invariant is "no launch after a stop"; four statements corrected against the code (D-K1, D-K2, D-K4, D-K5); with W0 rev 6.9, R-102 adds two §7 lines (`resume.has_work`; a push at minimum, the toast optional). See "Amendment 1" before *Alternatives considered*. The decision text below is unchanged.
 - **Date:** 2026-10-03
 - **Deciders:** @timianmalloo; authored by Claude Code with the SRE, Distributed Systems and Data & Persistence lenses
 - **Context spec/architecture:** `docs/specs/enterprise-evaluation.md` (DR-E5 multi-night grid; US-18 resume); ADR-0007 §1-§2, §5 (heartbeat, resume cases); ADR-0015 §5a-§7.
@@ -82,6 +82,8 @@ Recorded by the Coordinator (`coord-opus-e1e4`) with W0 rev 6.8, as R-100 condit
 - **§4 row 2 (D-K2).** "Terminate the named job if present, confirm empty" reads: confirm that the recorded process (`attempt.process_started.pid`) is gone, waiting at most `pid_wait_s`. The Job Object is unnamed and kill-on-close (`procs.py:216, 220`), so the OS has ended the tree when the engine dies. On win32 the check is `OpenProcess(SYNCHRONIZE)` and a zero-timeout wait, never `os.kill(pid, 0)`.
 - **§1 and §6, "complete" (D-K5).** A run that holds `run.completed` can still be resumed: a launch stop ends the loop and writes `run.completed` with cells never launched (`engine.py:413-425`). A run is complete iff a `run.completed` row follows the last `run.resumed` row (or there is no `run.resumed` row). A resume of a run with no pending cell and a valid grading pass is a no-op (exit 0, no segment).
 - **§9.** "The 'no resume after a stop' refusal as an invariant" reads: "no launch after a stop" as an invariant, `NoLaunchAfterStop` on the model's existing `launchAfterStop` flag. No liveness property gains a stop-crash exception (R-100 condition 2).
+- **§7, "while cells are pending" (R-102 item 1, DR-K3; added with W0 rev 6.9).** It reads: "while `resume.has_work` holds". `has_work(plan, rows)` in `resume.py` is the one definition of work left, shared by the resume (its "nothing to do" is `not has_work`), the alarm and `bench status`; a cell with no `launch_intent` counts as work only while no stop row exists. Neither the alarm nor status carries a definition of pending of its own (R-100 condition 6 as R-102 restates it).
+- **§7, the delivery channel (R-102 item 2; added with W0 rev 6.9).** "A Windows toast at minimum, and a push to the operator's phone if one is configured" reads: "a push to the operator's phone the operator acknowledges at the drill, at minimum; a desktop toast is an optional local echo". The push is ntfy, required for an unattended run; the egress is one HTTPS POST of `{run id, HB-ALM code, cause, age}`, accepted for the alarm only. The drill and `bench campaign register`'s refusal are unchanged.
 
 ## Alternatives considered
 

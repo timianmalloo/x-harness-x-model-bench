@@ -1,0 +1,6 @@
+{"agent": "x-b1a-e1e4", "at": 1791068821.076732, "kind": "session-start", "path": "-", "seq": 1, "session": "x-b1a-e1e4", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-eval-x-b1a"}
+{"agent": "x-b1a-e1e4", "at": 1791069450.1491349, "kind": "claim", "long_edit": "B1a atomic.py core", "path": "src/harness_bench/atomic.py", "seq": 2, "session": "x-b1a-e1e4", "ttl": 900.0, "wi": "x-b1a-e1e4"}
+{"agent": "x-b1a-e1e4", "at": 1791069450.3954365, "kind": "claim", "long_edit": "B1a atomic tests", "path": "tests/test_atomic.py", "seq": 3, "session": "x-b1a-e1e4", "ttl": 900.0, "wi": "x-b1a-e1e4"}
+{"agent": "x-b1a-e1e4", "at": 1791069450.770964, "kind": "claim", "long_edit": "B1a mutation set", "path": "tests/mutations/atomic.json", "seq": 4, "session": "x-b1a-e1e4", "ttl": 900.0, "wi": "x-b1a-e1e4"}
+{"agent": "x-b1a-e1e4", "at": 1791069451.297642, "kind": "claim", "long_edit": "B1a RunLock.held and acquire lstat", "path": "src/harness_bench/oslock.py", "seq": 5, "session": "x-b1a-e1e4", "ttl": 900.0, "wi": "x-b1a-e1e4"}
+{"agent": "x-b1a-e1e4", "at": 1791069451.7501154, "kind": "claim", "long_edit": "B1a lock helper tests", "path": "tests/test_oslock.py", "seq": 6, "session": "x-b1a-e1e4", "ttl": 900.0, "wi": "x-b1a-e1e4"}
