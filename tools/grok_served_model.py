@@ -9,7 +9,10 @@ Prints ids and counts only.
 
 Exit 0: every response id starts with the pin and at least one response was read.
 Exit 1: a response id does not (each is named with its count), or a response row has no id.
-Exit 2: a file is missing or unreadable ("not recorded", never a plausible pass), or the arguments are bad.
+Exit 2: chat_history.jsonl is missing, unreadable or holds no assistant row ("not recorded", never a plausible
+pass), a present file is not JSON, or the arguments are bad.
+usage.json and summary.json are cross-checks: when absent (a deadline-killed session writes no usage.json) the
+line says "(absent)" and the response rows still decide.
 """
 
 from __future__ import annotations
@@ -23,6 +26,7 @@ from urllib.parse import quote
 
 PIN = "grok-4.7"
 NONE = "(none)"
+ABSENT = "(absent)"
 DEFAULT_ROOT = Path.home() / ".grok" / "sessions"
 
 
@@ -71,18 +75,25 @@ def usage_ids(usage: Path) -> list[str]:
 def check(session_dir: Path, pin: str) -> tuple[int, str]:
     if not session_dir.is_dir():
         return 2, f"not recorded: {session_dir} is not a directory\n"
+    usage_path = session_dir / "usage.json"
+    summary_path = session_dir / "summary.json"
     try:
         responses = response_ids(session_dir / "chat_history.jsonl")
-        used = usage_ids(session_dir / "usage.json")
-        current = _json(session_dir / "summary.json").get("current_model_id")
+        # usage.json is written only at a clean end (a deadline kill leaves none); summary.json is a
+        # cross-check. Absent is not an error: the response rows decide.
+        used = usage_ids(usage_path) if usage_path.exists() else None
+        current = _json(summary_path).get("current_model_id") if summary_path.exists() else ABSENT
     except NotRecorded as exc:
         return 2, f"not recorded: {exc}\n"
     if not responses:
         return 2, "not recorded: chat_history.jsonl holds no assistant response\n"
     bad = {model: n for model, n in responses.items() if not model.startswith(pin)}
-    lines = [f"chat_history.jsonl responses: {', '.join(f'{m} x{n}' for m, n in sorted(responses.items()))}",
-             f"usage.json models: {', '.join(used) or NONE}",
-             f"summary.json current_model_id: {current if isinstance(current, str) else NONE}"]
+    lines = []
+    if used is None:
+        lines.append("source=chat_history (usage.json absent)")
+    lines += [f"chat_history.jsonl responses: {', '.join(f'{m} x{n}' for m, n in sorted(responses.items()))}",
+              f"usage.json models: {ABSENT if used is None else ', '.join(used) or NONE}",
+              f"summary.json current_model_id: {current if isinstance(current, str) else NONE}"]
     if bad:
         lines.append(f"FAIL: pin {pin}; served " + ", ".join(f"{m} x{n}" for m, n in sorted(bad.items())))
         return 1, "\n".join(lines) + "\n"

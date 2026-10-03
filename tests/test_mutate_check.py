@@ -718,3 +718,45 @@ def test_every_named_test_in_the_mutation_sets_exists():
                         source.read_text(encoding="utf-8"), re.MULTILINE)):
                     stale.append(f"{spec.name}: {m['name']} -> {node}")
     assert stale == []
+
+
+# MUT-C: an interpreter that cannot import harness_bench made every mutant "error"; the tool must refuse instead.
+
+
+def _one_mutant_spec(repo: Path) -> Path:
+    (repo / "m.py").write_bytes(b"X = 1\n")
+    (repo / "test_m.py").write_bytes(b"import m\n\n\ndef test_x():\n    assert m.X == 1\n")
+    spec = repo / "spec.json"
+    spec.write_text(json.dumps([{"name": "one", "file": "m.py", "find": "X = 1", "replace": "X = 2",
+                                 "tests": ["test_m.py::test_x"]}]), encoding="utf-8")
+    return spec
+
+
+def test_a_run_refuses_to_start_when_harness_bench_cannot_be_imported(tmp_path, monkeypatch, capsys):
+    repo = _git_init(tmp_path / "repo")
+    spec = _one_mutant_spec(repo)
+    monkeypatch.setattr(mutate_check, "ROOT", repo)
+
+    def broken() -> None:
+        raise ImportError("No module named 'harness_bench'")
+
+    monkeypatch.setattr(mutate_check, "_import_harness_bench", broken)
+    ran: list[str] = []
+    monkeypatch.setattr(mutate_check, "_run_set", lambda spec: ran.append("ran") or 0)
+    rc = mutate_check.main([str(spec)])
+    out = capsys.readouterr().out
+    assert rc == 2
+    assert sys.executable in out
+    assert "uv run python tools/mutate_check.py" in out
+    assert ran == []
+
+
+def test_a_run_where_every_mutant_errors_says_the_environment_is_suspected(tmp_path, monkeypatch, capsys):
+    repo = _git_init(tmp_path / "repo")
+    spec = _one_mutant_spec(repo)
+    (repo / "test_m.py").write_bytes(b"def test_x(:\n")  # collection error: the mutant ends "error"
+    monkeypatch.setattr(mutate_check, "ROOT", repo)
+    rc = mutate_check.main([str(spec)])
+    out = capsys.readouterr().out
+    assert rc != 0
+    assert "all mutants errored: environment suspected" in out

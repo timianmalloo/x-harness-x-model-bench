@@ -268,6 +268,7 @@ Each criterion is written so that a test can fail it. "The engine" means the har
 - **Given** a no-guessing task **When** its base tree is inspected **Then** it vendors an authored, unpublished API. At least one member is renamed and one default differs from the common convention, and the true contract is readable in the tree (source or docs).
 - **Given** the hidden tests **When** they run **Then** they exercise the changed members and the changed default. The reference passes. The naive solution, written against the conventional contract, fails.
 - **Given** a graded cell **When** scored **Then** it records `hallucinated_symbol_errors` (build-log errors naming a member that does not exist) and `verified_before_use` (1 when a read of the API's source or docs, or a probe run, comes before the first edit that uses the API, by tool-call order). Both are secondary.
+- **Note (2026-10-03, R-97 / DR-L1; the decision text above is unchanged):** `hallucinated_symbol_errors` is measured by the grading pass over the final tree: unresolved references to the vendored API (a static resolver for Python; the build log for a compiled language). R-97.
 
 **EV-6 — As P1, I want simplicity tasks, so that an over-engineered solution that passes the tests scores as a failure.**
 - **Given** a simplicity task **When** graded **Then** it records:
