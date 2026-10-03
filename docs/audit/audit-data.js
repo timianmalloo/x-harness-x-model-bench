@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:37:32Z",
+  "generated": "2026-10-03T18:55:06Z",
   "audit": [
     {
       "actor": null,
@@ -66692,6 +66692,36 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T1",
       "tool": null
+    },
+    {
+      "id": "al-01M41HXCD95CQYNFPVEG03TAQ2",
+      "shortname": "ruling R-97 (DR-L1, hallucinated_symbol_errors is a final-tree unresolved-reference count; EV-5 note by W1-L)",
+      "datetime": "2026-10-03T18:55:05Z",
+      "session": "owner-fable",
+      "prompt": "Owner seat: rule coord request req-01M41GWNS06F362RJ78XB7AXY5 (DR-L1, from W1-L): the meaning of hallucinated_symbol_errors. EV-5 refers to build-log errors, which have no source in the bench. W1-L recommends option A, a final-tree static count. Verify the no-source claim in code before ruling, and state whether the spec or ADR-0019 needs an amendment note and who writes it. Own worktree owner/ruling-r97.",
+      "summary": "R-97 DR-L1: (A) granted with the meaning fixed, (B) refused. hallucinated_symbol_errors = distinct unresolved references to the vendored API in the final tree inside the blast radius, a grading-pass (source D) measure, never a trajectory count. Verified: ToolCall carries no output (telemetry/__init__.py:61-69, normalize.py:177-180), so B has no source; but the bench does have a grading-pass build.log (grade/correctness.py:313-355): compileall for Python (syntax only, cannot name a missing member), dotnet build for .NET (can). W1-L's no-source claim is right for the trajectory and for Python, too broad as stated. Conditions: one producer per language named in noguess.py (static resolver for Python; build.log for a compiled language, not built in E4, NA never 0); resolver failure is NA never 0 (test_hse_resolver_failure_is_na); wording 'unresolved vendored-API references in the final tree' replaces 'build-log errors' in the catalog anchor_note (X-G1); expected values stay Inferred until X-NG's first strategy run. Spec EV-5 gets an appended note citing R-97, written by W1-L in its gate revision; ADR-0019 needs none.",
+      "kind": "manual",
+      "skill": null,
+      "tool": null,
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "outcome": "success",
+      "goal": "Rule DR-L1 (req-01M41GWNS06F362RJ78XB7AXY5): the meaning and producer of hallucinated_symbol_errors; verify W1-L's no-source claim in code; name the amendment-note author",
+      "done_when": "Ruling 97 in docs/notes/rulings.md via coord decide rule from the owner/ruling-r97 worktree, the request resolved, an audit entry appended, committed",
+      "tier": "T0",
+      "fan_out": 0,
+      "git": {
+        "sha": "a49c56dae86f7fcd1605f68f25f3a9e0d8740e42",
+        "short": "a49c56dae",
+        "branch": "owner/ruling-r97",
+        "pushed": null
+      }
     }
   ],
   "changes": [
