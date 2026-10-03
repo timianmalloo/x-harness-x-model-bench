@@ -1854,7 +1854,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "57d4eb4ca1786bd4b012c42cbb0a2263628f17448d0ab1b2c2fa1cd516db026a"
+      "sourceSha256": "680e38878d542a547ed590eb1de940254e554c8d1b42a449ffe6db9db20d814c"
     },
     {
       "id": "design-eval-seam-contracts",
@@ -3399,7 +3399,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9e9de15f0f0e0a3c65e3cc32b87b0122da2773daef6d399386535a8c80869fe5"
+      "sourceSha256": "e69173cadc79609b475999dedd6a7a537c2f9b50669f08202809d75aa2581ae4"
     },
     {
       "id": "review-eval-pat",
@@ -3428,6 +3428,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "cac2581e19b119c1e877e7ca86db14203662fd2f012ae25732366558a495c930"
     },
     {
+      "id": "review-eval-pat-w1f",
+      "path": "docs/design/reviews/eval-review-pat-w1f.md",
+      "title": "Patterns Expert review of W1-F, the property grader (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of design/eval-property-grader (441da4ba, e41289a2) against W0 rev 2 (3c1c9827). Patterns named correctly, four divergences from W0 rev 2 flagged as seams, no blocker.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-f"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "01c7cc579b70df928bcc210eb0ba15aa7a36ba039c6751ca67f72510eb413c61"
+    },
+    {
       "id": "review-eval-sec",
       "path": "docs/design/reviews/eval-review-sec.md",
       "title": "Security & Identity lens review: Evaluation Campaign design slices (Adversary Mode)",
@@ -3451,7 +3478,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2a70d02cbc2de5b67584c890192a4635b731ecedb108c15de5c3c5b2454080ea"
+      "sourceSha256": "5665e66315039cf611d9c8fa7f7b9c0b1285fdfc6d3c5e57dc20640175987e95"
     },
     {
       "id": "review-eval-sim",
@@ -3473,6 +3500,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "6498292143c8251d7eacdd9887b620b175937d91c7c69224f58467d473a63c2f"
+    },
+    {
+      "id": "review-eval-sim-w1f",
+      "path": "docs/design/reviews/eval-review-sim-w1f.md",
+      "title": "Simplifier lens review of W1-F, the property grader",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-property-grader.md (design/eval-property-grader, 441da4ba and e41289a2) checked against W0 rev 2 on main 3c1c9827.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "e02b9c406c50e4ac255322f67b483331ebc51b943a7b5c0e97b4f27fee167473"
     },
     {
       "id": "review-eval-ta",
@@ -3499,6 +3547,33 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "0b00511fbc81f9dfcea0fbc2fdc36dbbc7e4c8b273f2c38248dcaa6d328fbcde"
+    },
+    {
+      "id": "review-eval-ta-w1f",
+      "path": "docs/design/reviews/eval-review-ta-w1f.md",
+      "title": "W1-F property grader design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-F against W0 rev 2. The ADR-0018 red tests are named and can fail. Two blocking gaps: the hidden-tests phase has no suspend control (W0 s3 requires one per phase), and the clean-exit tamper test (my W0 rev 2 condition) is not specified. The design also still disagrees with W0 rev 2 at four points.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-f"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "886af10708ebef8494dd494c384dae81303cde6e64658f846aa608270096236d"
     },
     {
       "id": "coordination-eval-brief-rv-ds",
@@ -5014,5 +5089,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "4daf8d55d8006eac6191d5790dc5e2b39bad25dc5910e9c0b3c0bffddb15905e"
+  "graphSha256": "49386279b74806cca9fed71d4a8f8f0fff079a4d01b153b8751d6667585425f3"
 };
