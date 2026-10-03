@@ -652,7 +652,8 @@ summary: >-
 - **Control:** `tests/test_grade_formal.py::test_g2_formal_checks_clean_lake_build_output_is_not_a_binary_artifact` (a `Proofs/` tree with real `.lake/build/**` output and `lake-manifest.json`, otherwise clean, scores `1`; observed red before the fix, exactly the grid-3 shape) and `::test_g2_formal_checks_clean_a_stray_binary_outside_lake_still_fails` (parametrized `x.olean`/`foo.so`: a binary anywhere else, even beside a genuine `.lake/` tree, still scores `0` — proving the exemption is narrow, not "anything near `.lake` passes"). The general rule (CI2 derive): whenever a task's own instructions mandate running a tool in a scanned directory, name that tool's build-output in one shared constant the scan excludes and the disposable-copy step strips, and add a positive fixture that runs (or fakes) the mandated tool before asserting the scan passes — a scan fixtured only with hand-placed violations never proves it tolerates compliance.
 - **Status:** `controlled`
 
-### ENV-A: a hermetic test reads an ambient credential from the operator's shell (candidate)
+### ENV-C: a hermetic test reads an ambient credential from the operator's shell (candidate)
+- **Id note:** filed on 2026-10-03 as a second `ENV-A`; renamed `ENV-C` by `coord-opus-e1e4` (W0 rev 5 branch). The README's proposed `ENV-B` was already taken (line 488, the build-environment class). The ENV-A track keeps its brief name.
 - **Signature:** a test that asserts a credential is copied, present or absent reads the real variable from the process environment instead of setting or clearing it. It passes in a clean shell and fails in any shell that carries the credential, so the suite's result depends on who runs it.
 - **Why it survives:** CI and most worker shells have no `HB_CLAUDE_OAUTH_TOKEN`, so the suite is green there. The operator's and the Leader's shells carry it, and a red there reads as flake.
 - **Instances:**

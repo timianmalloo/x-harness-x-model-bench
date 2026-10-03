@@ -21,7 +21,7 @@ summary: >-
 
 # Wave 2 E1 dispatch pack
 
-You were given a brief in this folder. Read this file, then your brief, then the design it names. All three bind you. Where they differ, your brief wins over this file, and **W0 rev 4** (`docs/design/eval-seam-contracts.md`) wins over a design.
+You were given a brief in this folder. Read this file, then your brief, then the design it names. All three bind you. Where they differ, your brief wins over this file, and **W0 rev 5** (`docs/design/eval-seam-contracts.md`) wins over a design.
 
 **Seats.** Leader `leader-e1e4` (epoch 13; merges, pushes, runs every external dispatch through `.tools/coord/runner-leader.sh`, R-87). Owner `owner-fable` (rulings into `docs/notes/rulings.md`). Coordinator `coord-opus-e1e4` (W0, seams, join review). If the epoch changes, stop at your next commit and report.
 
@@ -31,7 +31,7 @@ You were given a brief in this folder. Read this file, then your brief, then the
 1. `python docs/ai-forward-pack/scripts/audit-log.py start --session <your session> --skill implement`.
 2. **Prefix every `git commit` and every coord call inline:** `AGENT_SESSION=<your session> git commit …` (class COORD-D: an `export` does not survive to the next tool call).
 3. If your cwd is not your brief's tree: from the primary run `python $C worktree new --branch <your branch> --session <your session>` and use absolute paths into the printed tree. Never `coord install`, never `EnterWorktree`, never `checkout`/`switch` in the primary.
-4. In the tree: `python $C doctor`. Check W0 rev 4 is in your base: `git log --oneline -1 --grep "W0 seam contracts rev 4"` prints a commit. If not, stop: "W0 rev 4 not on main".
+4. In the tree: `python $C doctor`. Check W0 rev 5 is in your base: `git log --oneline -1 --grep "W0 seam contracts rev 5"` prints a commit. If not, stop: "W0 rev 5 not on main".
 5. Check every item of your brief's **Depends on** is on `main` (`git log --oneline main -- <path>`). If one is missing, stop and report which.
 
 ## 2. While working
@@ -125,4 +125,4 @@ A track starts when its design gate has passed, its design is on `main`, and eve
 - **W1-C carries an RV-PAT BLOCK** (no re-pilot path after a fix in `registered`); its rev 2 can rely on W0 rev 4's rulings listed in the rev-4 change table. X-C's brief is written after its gate.
 - **W1-H rev 2** must apply R-96 and W0 rev 4 §8 before X-H1 and X-H2 briefs; **ADR-0020 Amendment 1** (commit on this branch) must be on `main` before X-H1's first commit.
 - **Compile ids are owed** for every external contract (§5).
-- **Defect register finding:** `docs/lessons/defect-classes.md` has two classes with the id `ENV-A` (line 465, an environment baseline; line 655, the ambient-credential candidate). The ENV-A track uses the brief name only; the Coordinator renames the candidate (proposed `ENV-B`) when it commits the register at the ENV-A join.
+- **Defect register finding (closed, W0 rev 5 branch):** the duplicate `ENV-A` (the ambient-credential candidate) is renamed **ENV-C**, because `ENV-B` already exists (`docs/lessons/defect-classes.md`, the build-environment class). The ENV-A track keeps its brief name and cites ENV-C.
