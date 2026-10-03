@@ -47,3 +47,21 @@ W1-I's `app.factory/paths/args` and `leak-2` depend on W1-F's probe host; W0 sec
 `GATE W1-I · Test Architect · BLOCK · 9 findings (rv-ta-w1i-e1e4, 2026-10-03)`
 
 Clearing conditions: findings 1 and 2 (each is a control that can pass for the wrong reason). Findings 3, 4 and 6 should be resolved in the same follow-up; 5, 7, 8 and 9 may be recorded.
+
+## Rev 2 delta review (2026-10-03)
+
+Target: `design/eval-security-tasks` `e95af01a` (rev 2, over main `8bde0c53`). Delta only: the nine first-round findings and the two questions the Leader asked. Nothing executed; rev 2 states it re-ran nothing, so 0.3750 and m9-m13 are hand-derived (Inferred).
+
+| # | item | result | evidence |
+| --- | --- | --- | --- |
+| 1 | Blocking 1 (hidden tests red by ImportError) | **Cleared in part.** Five wrong-app fixtures plus a 501 stub in the skeleton commit make the base-red an assertion, not an ImportError (floor item 1). Tests 1, 3, 7 have no fixture (SIM cut). Test 7 is the near-miss-token test that replaced `authz-4`, so a weak assertion there goes unseen and the security signal moved into it. | 5.6 residual; 15 skeleton |
+| 2 | Blocking 2 (variant test) | **Cleared.** All four assertions are in; `crash-variant` and `dead-probe` give red cases for the test itself. | 15; F18 |
+| 3 | m9-m13 | Right branches. Two weak points: m12's clause is "a or b (the test records which)", which is not an assertion; and m9 writes a relative file, which flips `leak-3` only if the host's cwd is the deliverable root (SEC 3 leaves that open). | Appendix C |
+| 4 | Finding 5 not applied | **Accepted.** The file fed a test that RV-SIM cut; the naive test now checks the exploited set and `at_scale(3/8)` against `task.yaml`, and `evidence.md` marks rows traced before any run. Provenance is thinner but no longer owes a control. | disposition TA 5 |
+| 5 | Stub-until-reproduced as readiness control | **Acceptable, with two conditions.** (a) It must be enforced, not a convention: the `status: stub` comment says "X-I advances", so X-E's readiness (HB-RDY-003) must refuse `ready` without a discrimination record from the real host. (b) `test_s1_real_host_reproduces_the_expected_values` covers the reference and naive only; the variant test runs in the readiness ring with no named host, so m9-m13 and the clauses are never shown live on the real host. | 5.10; 15 |
+
+New findings: **D1** (major) run the variant test against the real host before `ready`, or add its clauses to the real-host test. **D2** (minor) pin m12's clause to one value or list both and assert membership. **D3** (minor) add a wrong-app fixture for test 7 (accepts a prefix token), one substitution; and state m9's path as absolute-to-deliverable or tied to the cwd rule. **D4** (minor) the readiness refusal of `ready` without a real-host record is named in X-E's design (HB-RDY-003 expectation), not only here. D1 and D4 are the conditions of (5).
+
+`GATE W1-I · Test Architect · PASS WITH CONDITIONS · 4 findings (rv-ta-w1i-e1e4, 2026-10-03)`
+
+Conditions: D1 and D4 before S1 leaves `stub`; D2 and D3 with the X-I skeleton commit.

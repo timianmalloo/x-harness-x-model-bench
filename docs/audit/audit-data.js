@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:09:47Z",
+  "generated": "2026-10-03T18:12:02Z",
   "audit": [
     {
       "actor": null,
@@ -66119,6 +66119,24 @@ window.AUDIT_DATA = {
         "branch": "owner/ruling-r96",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M41FEHHFK4K45C5QKG2H721V",
+      "shortname": "review-ta-w1i-r2",
+      "datetime": "2026-10-03T18:12:02Z",
+      "session": "rv-ta-w1i-e1e4",
+      "prompt": "Delta re-review of W1-I rev 2 as Test Architect",
+      "summary": "W1-I rev 2: PASS WITH CONDITIONS, 4 findings",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1i.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false
     }
   ],
   "changes": [
