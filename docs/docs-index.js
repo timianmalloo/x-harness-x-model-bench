@@ -1378,6 +1378,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "5ef416d018179c6637ba358a9fe1787d392f2211b744f725440b8b73b1e43c1d"
     },
     {
+      "id": "note-20261003-deviation-coord-transport-grok-session-new",
+      "path": "docs/notes/deviation-coord-transport-grok-session-new.md",
+      "title": "Repo-local deviation - coord_transport accepts Grok watcher acks during session/new",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2027-04-03",
+      "reviewSuggested": [],
+      "summary": "docs/ai-forward-pack/scripts/coord_transport.py is patched locally so Grok's own skills/workflows watcher acknowledgement is accepted while session/new is in flight. Upstream (ai-forward) needs the same hunk.",
+      "tags": [
+        "ai-forward-pack",
+        "deviation",
+        "grok",
+        "acp",
+        "transport"
+      ],
+      "links": [
+        {
+          "to": "note-spike-e1-job-alone",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "054f0800fe8ab750d12a713b83136b2a293230f8f31df53114e39c12adedfe1d"
+    },
+    {
       "id": "note-20261003-spike-e1-handle-list",
       "path": "docs/notes/spike-e1-handle-list.md",
       "title": "Spike E1-S2 - the deliverable's explicit handle list on Windows (close_fds + redirected stdio) and the DuplicateHandle forgery",
@@ -4761,6 +4788,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "5e3029dbb2a5d8e339f0be0e3f87abfd191a10bd9becba6945130197d89e7d8a"
     },
     {
+      "id": "review-eval-sre-w1j",
+      "path": "docs/design/reviews/eval-review-sre-w1j.md",
+      "title": "W1-J multi-turn design review: SRE lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "SRE (Adversary Mode) review of W1-J at 6b838ff2 against W0 rev 6. Per-turn timing, snapshot cost and spend summing are measurable by default, and the budget fix and end_turn-only rule are right. But the turn loop writes no turn_ended for the very turns that stop the attempt, bench status restarts its clock at turn 2, and the copy-cost spike did not measure the fsync-and-verify path. PASS WITH CONDITIONS.",
+      "tags": [
+        "review",
+        "sre",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-j"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "13c7180017ca42ed74ed764d8435d9a46f5aa7a7e14f60dd4480d2f61a008ba6"
+    },
+    {
       "id": "review-eval-ta",
       "path": "docs/design/reviews/eval-review-ta.md",
       "title": "Evaluation Campaign design reviews: Test Architect lens",
@@ -4784,7 +4838,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ede49e2195cb4be9ef955be4a4a0fe3985097b7e93476b6c20edf5c2c360c2e7"
+      "sourceSha256": "58aa306fe773223a7bc01e3fdab56fb115aab774568cff79990bd9f9a10cfe52"
     },
     {
       "id": "review-eval-ta-w1a",
@@ -6927,5 +6981,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "b42dd1486ad58394b6081bed243f9f3b848f76a7a32c34e5cb584d702a12e2b9"
+  "graphSha256": "ca78fc39e7c04eb2c86a76c027e2bbf40bd6756b375a0db3447b838b05ecef19"
 };
