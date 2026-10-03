@@ -1378,6 +1378,119 @@ window.DOCS_INDEX = {
       "sourceSha256": "5ef416d018179c6637ba358a9fe1787d392f2211b744f725440b8b73b1e43c1d"
     },
     {
+      "id": "note-20261003-spike-e1-handle-list",
+      "path": "docs/notes/spike-e1-handle-list.md",
+      "title": "Spike E1-S2 - the deliverable's explicit handle list on Windows (close_fds + redirected stdio) and the DuplicateHandle forgery",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2027-04-03",
+      "reviewSuggested": [],
+      "summary": "CPython 3.14.6's subprocess already passes PROC_THREAD_ATTRIBUTE_HANDLE_LIST holding only the three stdio handles when close_fds=True and any stdio is redirected (subprocess.py:1498-1521), which is how procs.spawn creates the adapter today. Run on this host: a child created that way could not reach the parent's inheritable pipe by the passed handle value or by scanning handle values; the positive control (close_fds=False) could. A child that opened the parent with PROCESS_DUP_HANDLE and duplicated the pipe handle wrote a forged line into it, confirming the ADR-0018 section 10a threat.",
+      "tags": [
+        "spike",
+        "windows",
+        "handle-list",
+        "adr-0018",
+        "security",
+        "b7"
+      ],
+      "links": [
+        {
+          "to": "adr-0018-hidden-check-harness",
+          "rel": "relates-to"
+        },
+        {
+          "to": "adr-0013-native-cells",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-e1-evaluation-walking-skeleton",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "abac9d0d54a3164987431cfd05e6f783c6cf09d2af87990c42dd7eef04737893"
+    },
+    {
+      "id": "note-20261003-spike-e1-job-alone",
+      "path": "docs/notes/spike-e1-job-alone.md",
+      "title": "Spike E1-S3 - reading the Job Object's process list to prove the hidden check is alone",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2027-04-03",
+      "reviewSuggested": [],
+      "summary": "procs.Job.pids() (JobObjectBasicProcessIdList) and the same query with a NULL handle from inside the check both work, but \"the check is alone\" is only a sound test when the check and the deliverable are started with the base interpreter and DETACHED_PROCESS. Under the venv launcher the job holds the launcher, the interpreter and a third process, and the launcher puts the interpreter in a nested job, so the check's own view misses the deliverable. With DETACHED_PROCESS and the base interpreter, both views were exactly {check} before and after the deliverable and {check, deliverable} while it ran (3 of 3). An honest check's exit came only 4-8 ms after the grader saw its document, so the grader cannot rely on reader timing: the check waits for a one-byte acknowledgement before exiting.",
+      "tags": [
+        "spike",
+        "windows",
+        "job-object",
+        "adr-0018",
+        "security",
+        "b7"
+      ],
+      "links": [
+        {
+          "to": "adr-0018-hidden-check-harness",
+          "rel": "relates-to"
+        },
+        {
+          "to": "note-spike-isolation-permissions",
+          "rel": "refines"
+        },
+        {
+          "to": "note-spike-phase1-probes",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-e1-evaluation-walking-skeleton",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "af24028cc71e2a98eaf6c48cd324e089d02729338824e31dab31f63fa6c41d40"
+    },
+    {
+      "id": "note-20261003-spike-e1-ntfs-atomic-publish",
+      "path": "docs/notes/spike-e1-ntfs-atomic-publish.md",
+      "title": "Spike E1-S1 - os.link fail-if-exists, directory rename and fsync on NTFS (create_once, crash-atomic archive)",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2027-04-03",
+      "reviewSuggested": [],
+      "summary": "On this host (Windows 11 Pro 10.0.26200, NTFS C:, CPython 3.14.6): os.link onto an existing name raises FileExistsError (winerror 183) and keeps the original bytes; os.rename of a directory onto any existing directory raises FileExistsError 183; a process killed mid-copy leaves only the temporary sibling and no final folder. os.fsync needs a writable file descriptor, and a directory cannot be opened for fsync at all (PermissionError), so ADR-0015 section 5a's \"fsync the folder\" is POSIX-only. Power-loss durability was not tested.",
+      "tags": [
+        "spike",
+        "ntfs",
+        "crash-atomic",
+        "create-once",
+        "archive",
+        "adr-0015",
+        "adr-0016"
+      ],
+      "links": [
+        {
+          "to": "adr-0016-campaign-record",
+          "rel": "relates-to"
+        },
+        {
+          "to": "adr-0015-multi-turn-attempt-and-turn-snapshots",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-e1-evaluation-walking-skeleton",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "0e6292d7e11ad4f1d3f4316a8f9bb12fd87ad7cebd9228d7c5bad902308753d9"
+    },
+    {
       "id": "note-20261003-spike-e4-post-turn-prompt",
       "path": "docs/notes/spike-e4-post-turn-prompt.md",
       "title": "Spike E4 - a second session/prompt in the same ACP session after end_turn",
@@ -2673,7 +2786,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "269cbcb311dd7644fb7bfe4d2219b565506bbcca0e80253b49c79879927158e8"
+      "sourceSha256": "35a7eaa2dc2f9fc75887ae91f0779e646d15d250f9e698d0fcbada49a54cbf97"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -3992,5 +4105,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "50c919946d0f2ff3c106ba0b8d5577b7d17fff876b285fa046d499dab1344397"
+  "graphSha256": "03f8bcb4f4082a3350a93ab0f7633f0e7624cf288a3a7a47749e9e103c224b97"
 };
