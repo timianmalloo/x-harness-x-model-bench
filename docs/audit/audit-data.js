@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:44:09Z",
+  "generated": "2026-10-03T19:01:58Z",
   "audit": [
     {
       "actor": null,
@@ -66061,6 +66061,28 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-power-verdicts.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:06:13Z",
+      "done_when": "Gate PASS; reference cases 93/53/115 with independent formula and seeded-wrong variant; verdict and dominance tables with boundary rows; section 3 E1 shape",
+      "fan_out": 0,
+      "goal": "Design W1-H power, verdicts, dominance, ring gates and report section 3",
+      "id": "al-01M41F3WMPXCMY7BVW5N1R84P0",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-h-power-verdicts.md",
+      "session": "w1h-power-e1e4",
+      "shortname": "design-slice-eval-power-verdicts",
+      "skill": "design-slice",
+      "summary": "W1-H design: power, verdicts, dominance, ring gates, report section 3; spikes S1-S7; 3 seam requests, 1 decision request",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
       "actor": "Owner seat (Fable, claude-fable-5-1)",
       "artifacts": [
         "docs/notes/rulings.md"
@@ -66694,28 +66716,52 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41H90J96K9V1343P7M6YN2P",
-      "shortname": "coord-w0-rev4-wave2-e1",
-      "datetime": "2026-10-03T18:43:58Z",
-      "session": "coord-opus-e1e4",
-      "prompt": "Coordinator #4: answer open seams, ADR-0020 Amendment 1, W0 rev 4 with change table and delta re-read list, Wave 2 E1 dispatch pack",
-      "summary": "W0 rev 4: 6 seam requests resolved (5 granted, SR-C1 in part: oslock.py to X-B1 not X-C); cross-slice rulings on W1-C/W1-H (pilot arity, expected_na, admission, plan_hash, run_side_check via engine campaign_check, lock-free reads, content-keyed git witness); RV-PAT rev3 delta conditions; ADR-0020 Amendment 1; Wave 2 E1 pack: README (routing, DAG, launch order) + 9 briefs + 6 coord-run/1 contracts (compile ids owed); 5 briefs owed on W1-C/W1-E/W1-H",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/design/eval-seam-contracts.md",
         "docs/adr/0020-power-and-verdicts-stdlib.md",
         "docs/coordination/eval-wave2-e1/README.md"
       ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:43:58Z",
+      "done_when": "committed on coord/eval-w0-rev4-wave2; derive/validate exit 0; requests resolved; handback sent",
+      "fan_out": 1,
+      "goal": "Answer coord-opus-e1e4 seams, write ADR-0020 Am. 1 and W0 rev 4 with delta re-read list, and the Wave 2 E1 dispatch pack",
+      "id": "al-01M41H90J96K9V1343P7M6YN2P",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Coordinator #4: answer open seams, ADR-0020 Amendment 1, W0 rev 4 with change table and delta re-read list, Wave 2 E1 dispatch pack",
+      "session": "coord-opus-e1e4",
+      "shortname": "coord-w0-rev4-wave2-e1",
+      "skill": "execute-with-coordination",
+      "summary": "W0 rev 4: 6 seam requests resolved (5 granted, SR-C1 in part: oslock.py to X-B1 not X-C); cross-slice rulings on W1-C/W1-H (pilot arity, expected_na, admission, plan_hash, run_side_check via engine campaign_check, lock-free reads, content-keyed git witness); RV-PAT rev3 delta conditions; ADR-0020 Amendment 1; Wave 2 E1 pack: README (routing, DAG, launch order) + 9 briefs + 6 coord-run/1 contracts (compile ids owed); 5 briefs owed on W1-C/W1-E/W1-H",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "id": "al-01M41J9G6BHQDMZAV3Z0KFY09B",
+      "shortname": "design-slice-eval-power-verdicts-r2",
+      "datetime": "2026-10-03T19:01:42Z",
+      "session": "w1h-power-r2-e1e4",
+      "prompt": "docs/coordination/eval-wave1/w1-h-power-verdicts.md (rev 2 follow-up: apply TA, PAT, SIM findings, R-96, W0 rev 4)",
+      "summary": "W1-H rev 2: every finding dispositioned; R-96 level_rule and second holm row; R-93 three-state; admission; nine gate kinds; skeleton out-of-domain; deleted redundant rows and sweeps",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-power-verdicts.md"
+      ],
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Answer coord-opus-e1e4 seams, write ADR-0020 Am. 1 and W0 rev 4 with delta re-read list, and the Wave 2 E1 dispatch pack",
-      "done_when": "committed on coord/eval-w0-rev4-wave2; derive/validate exit 0; requests resolved; handback sent",
-      "tier": "T1",
-      "fan_out": 1
+      "goal": "Apply the W1-H gate findings and R-96 in rev 2",
+      "done_when": "Every finding has a disposition row; gate lines copied verbatim; derive/validate exit 0",
+      "tier": "T2",
+      "fan_out": 0,
+      "started_at": "2026-10-03T18:46:49Z",
+      "duration_seconds": 893.0
     }
   ],
   "changes": [
@@ -67185,28 +67231,6 @@ window.AUDIT_DATA = {
     },
     {
       "artifacts": [
-        "docs/design/eval-security-tasks.md"
-      ],
-      "datetime": "2026-10-03T17:48:26Z",
-      "git": {
-        "after": "be1a074857356c12cf775427266ca0941f447e0d",
-        "before": "be1a0748",
-        "branch": "design/eval-security-tasks",
-        "commits": [],
-        "pushed": null
-      },
-      "id": "cl-01M41E3B1P0ZXTMJWTB0WTQ7E0",
-      "kind": "design",
-      "prompt": "docs/coordination/eval-wave1/w1-i-security-tasks.md",
-      "rationale": "web.py rejected (third-party import under -S). Payload sets must close the SQL parenthesis (a probe designed against the wrong template was dead). Bound x20 of measured 80 ms.",
-      "session": "w1i-security-e1e4",
-      "skill": "design-slice",
-      "summary": "Two security property tasks on two different public stdlib-only bases (microdot, bottle). S1 specified end to end; S2 base and probes named. Probes proven live by nine seeded-defect variants; expected values hand-derived and confirmed by a stand-in driver. No build step so builds are offline by construction.",
-      "tags": [],
-      "title": "W1-I: S1 on microdot, S2 on bottle; ten in-process probes; expected 1.0000 / 0.4000"
-    },
-    {
-      "artifacts": [
         "docs/design/eval-property-grader.md"
       ],
       "datetime": "2026-10-03T17:19:39Z",
@@ -67276,6 +67300,48 @@ window.AUDIT_DATA = {
       "summary": "Rev 3 answers 13 seam requests and 11 routed lens findings: wsgi kind in E1 (C-1), probe-host additions and start bound, NA never dropped, DOTNET_HOST_ENV to _env.py, reparse-safe grading copy, sweep_temps/TEMP_RE (no HB-LED-009), recover_archive to X-K1, quoted arm ids, grid4 golden, no top-level pack + plan_pack + HB-PLN-004/005, G1 AST ratchet, run-side effective identity in the plan, catalog_hash in identity.py, G2 every file + direction test, R-93/R-94 recorded, W1-G owner rule provisional on an Owner request, (e) exception deferred.",
       "tags": [],
       "title": "W0 seam contracts rev 3: Wave 1 seam answers"
+    },
+    {
+      "artifacts": [],
+      "datetime": "2026-10-03T18:06:24Z",
+      "git": {
+        "after": "2a9faa3c7bc67bab04a9a22766138eb64ada4235",
+        "before": null,
+        "branch": "design/eval-power-verdicts",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41F47BBJEGNXQ13X30ZTAGS",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Verdicts use a task-stratified, corrected-level percentile bootstrap (exact integer statistic); holm sized as bonferroni (provisional, decision request open); an NA count never changes a label (W0 rev 3); verdict cache refused in E1 with a measured trigger.",
+      "tags": [],
+      "title": "W1-H verdict method"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-security-tasks.md"
+      ],
+      "datetime": "2026-10-03T17:48:26Z",
+      "git": {
+        "after": "be1a074857356c12cf775427266ca0941f447e0d",
+        "before": "be1a0748",
+        "branch": "design/eval-security-tasks",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41E3B1P0ZXTMJWTB0WTQ7E0",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-i-security-tasks.md",
+      "rationale": "web.py rejected (third-party import under -S). Payload sets must close the SQL parenthesis (a probe designed against the wrong template was dead). Bound x20 of measured 80 ms.",
+      "session": "w1i-security-e1e4",
+      "skill": "design-slice",
+      "summary": "Two security property tasks on two different public stdlib-only bases (microdot, bottle). S1 specified end to end; S2 base and probes named. Probes proven live by nine seeded-defect variants; expected values hand-derived and confirmed by a stand-in driver. No build step so builds are offline by construction.",
+      "tags": [],
+      "title": "W1-I: S1 on microdot, S2 on bottle; ten in-process probes; expected 1.0000 / 0.4000"
     },
     {
       "artifacts": [],
@@ -67517,25 +67583,16 @@ window.AUDIT_DATA = {
       "title": "S-LB loopback firewall spike prepared, not run"
     },
     {
-      "id": "cl-01M41H9AXYB1KA3AG3RG9KG72N",
-      "datetime": "2026-10-03T18:44:08Z",
-      "session": "coord-opus-e1e4",
-      "kind": "design",
-      "skill": "execute-with-coordination",
-      "title": "W0 seam contracts rev 4 and ADR-0020 Amendment 1",
-      "prompt": null,
-      "summary": "Batch-b seams answered; oslock.acquire_then_probe owned by X-B1 with a set of others; plan_hash on attach rows; run-side campaign check after the run lock via an injected engine keyword; gates.pilot expected_na keyword-only; gates.admission (EV-8); status/verify lock-free; git witness keyed on content; ADR-0020 seed_for and holm alpha/m recorded",
-      "rationale": "One definition per protocol (DM7); close check-then-act windows (RV-DS W1-C 2); bind attached plans by content (RV-SEC W1-C 7); keep W0's three-argument pilot call valid",
       "artifacts": [
         "docs/design/eval-seam-contracts.md",
         "docs/adr/0020-power-and-verdicts-stdlib.md"
       ],
-      "tags": [],
+      "audit_ref": "al-01M41H90J96K9V1343P7M6YN2P",
+      "datetime": "2026-10-03T18:44:08Z",
       "git": {
-        "before": "9c9056df",
         "after": "3fc5e4a78874e8bba301524e30ab128b51c78062",
+        "before": "9c9056df",
         "branch": "coord/eval-w0-rev4-wave2",
-        "pushed": null,
         "commits": [
           "3fc5e4a7 Merge branch 'main' into coord/eval-w0-rev4-wave2",
           "a49c56da chore(coord): regenerate docs index after the SP-LB merge; ledger rows",
@@ -67581,9 +67638,40 @@ window.AUDIT_DATA = {
           "84980979 merge: main into design/eval-identity (W0 rev 3, R-87..R-96)",
           "ab13f0eb design(eval-arms): W1-A arms v2 design slice (ADR-0014), gate pending",
           "71a15a0b design(eval-identity): W1-D engine identity, freeze and per-launch recheck"
-        ]
+        ],
+        "pushed": null
       },
-      "audit_ref": "al-01M41H90J96K9V1343P7M6YN2P"
+      "id": "cl-01M41H9AXYB1KA3AG3RG9KG72N",
+      "kind": "design",
+      "prompt": null,
+      "rationale": "One definition per protocol (DM7); close check-then-act windows (RV-DS W1-C 2); bind attached plans by content (RV-SEC W1-C 7); keep W0's three-argument pilot call valid",
+      "session": "coord-opus-e1e4",
+      "skill": "execute-with-coordination",
+      "summary": "Batch-b seams answered; oslock.acquire_then_probe owned by X-B1 with a set of others; plan_hash on attach rows; run-side campaign check after the run lock via an injected engine keyword; gates.pilot expected_na keyword-only; gates.admission (EV-8); status/verify lock-free; git witness keyed on content; ADR-0020 seed_for and holm alpha/m recorded",
+      "tags": [],
+      "title": "W0 seam contracts rev 4 and ADR-0020 Amendment 1"
+    },
+    {
+      "id": "cl-01M41J9ZHQ5X84M8YXCEQDKQ7A",
+      "datetime": "2026-10-03T19:01:58Z",
+      "session": null,
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "W1-H rev 2: holm sized at alpha/m with level_rule disclosed; gate kinds merged to nine; admission in gates.py",
+      "prompt": null,
+      "summary": "Applies RV-TA, RV-PAT, RV-SIM findings and R-96 to the W1-H design; no code.",
+      "rationale": null,
+      "artifacts": [
+        "docs/design/eval-power-verdicts.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": null,
+        "after": "109f8c0b7c2ba1a5aaaf9df0cbc270d4c7655a66",
+        "branch": "design/eval-power-verdicts",
+        "pushed": null,
+        "commits": []
+      }
     }
   ],
   "messages": [
