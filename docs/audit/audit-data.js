@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T20:00:54Z",
+  "generated": "2026-10-03T20:06:28Z",
   "audit": [
     {
       "actor": null,
@@ -74720,6 +74720,50 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1j.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T20:00:43Z",
+      "done_when": "review file and gate line committed",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-J",
+      "id": "al-01M41NNJ5VJV0XSTWAG0EJP3YY",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md (W1-J)",
+      "session": "rv-sim-w1j-e1e4",
+      "shortname": "design-slice-review-w1j-sim",
+      "skill": "design-slice-review",
+      "summary": "RV-SIM review of W1-J: PASS WITH CONDITIONS, 10 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M41P034NF49ZVN9V89ZJ3PKB",
+      "shortname": "design-slice-review-ta-w1l-r2",
+      "datetime": "2026-10-03T20:06:28Z",
+      "session": "rv-ta-l2-e1e4",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-L rev 2 round)",
+      "summary": "RV-TA round 2 on W1-L rev 2: PASS WITH CONDITIONS, 8 findings; round-1 blockers closed",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1l.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Verify W1-L rev 2 closes the round-1 TA blockers and the readiness control",
+      "done_when": "Rev-2 section and gate line appended",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [

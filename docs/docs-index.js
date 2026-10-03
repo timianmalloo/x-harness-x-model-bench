@@ -4761,6 +4761,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "a97c88934f6ac7af7f54eff8fc95d769ce89b0702cfc78f842975db0fbe5afe6"
     },
     {
+      "id": "review-eval-sim-w1j",
+      "path": "docs/design/reviews/eval-review-sim-w1j.md",
+      "title": "Simplifier lens review of W1-J, multi-turn attempt and the TLA+ model",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-multi-turn.md (design/eval-multi-turn, 08fabe34, 6b838ff2) against W0 rev 6 and the rulings on main. The mechanism earns its place for E2. The check_models.py change can shrink to data rows by reusing the existing WIDER substitution, the US-44 run should be one-time evidence, one of the two in-place variants is the same guard, and the resume-owned parts wait for W1-K.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "be3d70f4fd74e78422394d9d06b72a133c2360746f4099ee7f464be2e074a271"
+    },
+    {
       "id": "review-eval-sim-w1l",
       "path": "docs/design/reviews/eval-review-sim-w1l.md",
       "title": "Simplifier review of W1-L (property tasks and four graders)",
@@ -5156,7 +5177,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "531914453a403250281744a7351623525ea6d9488e95a5da71171811ed91702b"
+      "sourceSha256": "6870ca4c300824c59bed200083ce50b9dde2b55b55a5d4ef12ca8afed49eef89"
     },
     {
       "id": "brief-eval-env-a",
@@ -7029,5 +7050,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "dceb01a5b3c8ff369e6a71bb774769c3719c550c3f8cd526f32f5022486d756f"
+  "graphSha256": "ef1221084521fd93d4fe9051eddc5b68a23c964fa1f691a3c37b9dcc8e3aebef"
 };
