@@ -5030,6 +5030,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "60320ec9b40537661e3c2b375e345ef2a436d47b0b472498db323d9b882b8c7d"
     },
     {
+      "id": "review-eval-ta-w1j",
+      "path": "docs/design/reviews/eval-review-ta-w1j.md",
+      "title": "W1-J multi-turn design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-J (multi-turn attempt, turn snapshots, TLA+ model v5) against W0 rev 6 and the rulings on main. PASS WITH CONDITIONS: the model evidence is real and each ADR-0015 section 7 invariant has its own variant, but the check_models.py change exceeds its grant and is not on the branch, the two engine-bug tests are red for the wrong reason, and the final-row omission is pinned on the reader side only.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-j"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "bbb97953c678b2652d7e7fd02a39c8f7fe52601b98e81c277a2bddf303394ae5"
+    },
+    {
       "id": "review-eval-ta-w1l",
       "path": "docs/design/reviews/eval-review-ta-w1l.md",
       "title": "W1-L property tasks (eight) design review: Test Architect lens",
@@ -6927,5 +6954,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "896545a9b1c300ecee1156517801acc12a269c4d0adde71e2a77ae361d754294"
+  "graphSha256": "17e8b92bd90935484eac8faa0a99cfdccda3ef71876d24afa0d844b3d779d968"
 };
