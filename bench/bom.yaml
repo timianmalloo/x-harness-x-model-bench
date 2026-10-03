@@ -4,7 +4,7 @@
 # Scenario 7 joins the smoke BOM after the formal-toolchain spike (spec S-12).
 # Status lives in each task's task.yaml, not here.
 schema: bench-bom/1
-version: "0.5"   # 0.2: scenario 7 (formalize and find bugs), G1-G2. 0.3: E6 replaces E1 in the smoke BOM (R-40). 0.4: B3 and C2 authored substitutes (R-7 c2/c4, landed by R-82). 0.5: E1-E3 are the TB2 tasks R-83's survey selected (docs/notes/tb2-native-survey.md), budgets from their task.toml agent timeouts (R-83 c4)
+version: "0.6"   # 0.6: the ten property-task stubs S1..SM2 (W0, docs/design/eval-seam-contracts.md section 1). 0.2: scenario 7 (formalize and find bugs), G1-G2. 0.3: E6 replaces E1 in the smoke BOM (R-40). 0.4: B3 and C2 authored substitutes (R-7 c2/c4, landed by R-82). 0.5: E1-E3 are the TB2 tasks R-83's survey selected (docs/notes/tb2-native-survey.md), budgets from their task.toml agent timeouts (R-83 c4)
 scenarios:
   1: Specify from an ambiguous prompt
   2: Specify from a primer spec
@@ -52,6 +52,18 @@ tasks:
   # Scenario 7: formalize and find bugs (ai-forward coord-core.py lease protocol)
   - { id: G1, scenario: 7, smoke: false, budget_minutes: 45, source: ai-forward, title: "TLA+ model of the coord-core lease protocol; find the seeded bug" }
   - { id: G2, scenario: 7, smoke: false, budget_minutes: 45, source: ai-forward, title: "Lean 4 proofs of fixed statements about the lease fold" }
+  # Property tasks (enterprise evaluation, EV-1..EV-6): scenario 5, two per property on different codebases (DR-T1).
+  # W0 stubs; each authoring track edits only its own line and its own tasks/<ID>/.
+  - { id: S1, scenario: 5, smoke: false, budget_minutes: 45, source: authored, title: "Security task 1: latent guard against injection, authorization bypass and secret leak (W1-I)" }
+  - { id: S2, scenario: 5, smoke: false, budget_minutes: 45, source: authored, title: "Security task 2 on a second codebase (W1-I; ready in E4)" }
+  - { id: RS1, scenario: 5, smoke: false, budget_minutes: 45, source: authored, title: "Resilience task 1: bounded timeouts, retries and idempotency under a loopback fault fake (W1-L)" }
+  - { id: RS2, scenario: 5, smoke: false, budget_minutes: 45, source: authored, title: "Resilience task 2 on a second codebase (W1-L)" }
+  - { id: RW1, scenario: 5, smoke: false, budget_minutes: 60, source: authored, title: "Rework task 1: two turns; turn 2 punishes a short-sighted turn-1 design (W1-L)" }
+  - { id: RW2, scenario: 5, smoke: false, budget_minutes: 60, source: authored, title: "Rework task 2 on a second codebase (W1-L)" }
+  - { id: NG1, scenario: 5, smoke: false, budget_minutes: 45, source: authored, title: "No-guessing task 1: a vendored API with a renamed member and a changed default (W1-L)" }
+  - { id: NG2, scenario: 5, smoke: false, budget_minutes: 45, source: authored, title: "No-guessing task 2 on a second codebase (W1-L)" }
+  - { id: SM1, scenario: 5, smoke: false, budget_minutes: 45, source: authored, title: "Simplicity task 1: the tests pass without an unrequested layer (W1-L)" }
+  - { id: SM2, scenario: 5, smoke: false, budget_minutes: 45, source: authored, title: "Simplicity task 2 on a second codebase (W1-L)" }
   # Fixtures: operator-authored, never in the smoke or full grid; selectable by id only.
   - { id: X1, scenario: 5, smoke: false, fixture: true, budget_minutes: 5, source: authored, title: "Fixture: implement slugify (phase-1 walking skeleton)" }
   - { id: Q1, scenario: 5, smoke: false, fixture: true, budget_minutes: 5, source: authored, title: "Fixture: out-of-profile tool probe (R-45/R-46 qualification)" }

@@ -1854,7 +1854,91 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9a74dc7c4ac879a5b9ebbf7ecd57d10e119d6893f94c0a64714e09952344281e"
+      "sourceSha256": "4e907d89627f0bb44616109ae745c5793edf8e2ba1d3132afa0a36f2d18c73db"
+    },
+    {
+      "id": "design-eval-seam-contracts",
+      "path": "docs/design/eval-seam-contracts.md",
+      "title": "W0 seam contracts: the interfaces every Evaluation Campaign slice designs and builds against",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: W0 (serial spine item 2), before Wave 1",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input and result, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows, the identity manifest, the discrimination record, the catalog 0.7 metric ids, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard.",
+      "tags": [
+        "benchmark",
+        "campaign",
+        "seam-contracts",
+        "coordination",
+        "w0",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "coordination-eval-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0014-arm-and-cell-grain",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0015-multi-turn-attempt-and-turn-snapshots",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0016-campaign-record",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0017-engine-identity-and-freeze",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0018-hidden-check-harness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0019-catalog-0-7-property-metrics",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0020-power-and-verdicts-stdlib",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0021-plan-level-resume-and-liveness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-20261003-spike-e1-ntfs-atomic-publish",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-20261003-spike-e1-job-alone",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-20261003-spike-e1-handle-list",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "99c2e6c6193641085c71e6e419d52b532c2b7715b10a7e683339edb970df0b33"
     },
     {
       "id": "design-formal-grader",
@@ -3277,6 +3361,576 @@ window.DOCS_INDEX = {
       "sourceSha256": "32f235bdd9ef5a50f339b185b9f5b27a48dbb164b03913b0a07c5bf58f1e5fd8"
     },
     {
+      "id": "coordination-eval-brief-rv-ds",
+      "path": "docs/coordination/eval-wave1/rv-ds.md",
+      "title": "RV-DS brief: Distributed Systems lens reviewer (Adversary Mode)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 dispatch",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Self-contained Wave 1 dispatch brief (rv-ds): session, branch, pinned model, owned paths, inputs, W0 sections, gate lenses, budget, exit evidence, fallback and not-in-scope. The launcher passes only this file's path.",
+      "tags": [
+        "coordination",
+        "brief",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "c814ad5fcdb1ca745c689e3c45557d78ff3b3ebcccc0bc9637e56316ceba74ef"
+    },
+    {
+      "id": "coordination-eval-brief-rv-pat",
+      "path": "docs/coordination/eval-wave1/rv-pat.md",
+      "title": "RV-PAT brief: Patterns Expert lens reviewer (Adversary Mode)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 dispatch",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Self-contained Wave 1 dispatch brief (rv-pat): session, branch, pinned model, owned paths, inputs, W0 sections, gate lenses, budget, exit evidence, fallback and not-in-scope. The launcher passes only this file's path.",
+      "tags": [
+        "coordination",
+        "brief",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "9325c72019a7b2b4c0860d0144deec14541bf478def131f35751b0fabac8e1ad"
+    },
+    {
+      "id": "coordination-eval-brief-rv-sec",
+      "path": "docs/coordination/eval-wave1/rv-sec.md",
+      "title": "RV-SEC brief: Security & Identity lens reviewer (Adversary Mode)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 dispatch",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Self-contained Wave 1 dispatch brief (rv-sec): session, branch, pinned model, owned paths, inputs, W0 sections, gate lenses, budget, exit evidence, fallback and not-in-scope. The launcher passes only this file's path.",
+      "tags": [
+        "coordination",
+        "brief",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "079f38c5bd3e24703a0d27f226e19988456f98f4e631bd0815f8b5f8f5fec9e0"
+    },
+    {
+      "id": "coordination-eval-brief-rv-sim",
+      "path": "docs/coordination/eval-wave1/rv-sim.md",
+      "title": "RV-SIM brief: Simplifier lens reviewer (Adversary Mode)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 dispatch",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Self-contained Wave 1 dispatch brief (rv-sim): session, branch, pinned model, owned paths, inputs, W0 sections, gate lenses, budget, exit evidence, fallback and not-in-scope. The launcher passes only this file's path.",
+      "tags": [
+        "coordination",
+        "brief",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "5163b00fcbfdbc0b4a569396338ff4e96f17ea04ed7c5c74b6ed96b265fef2f2"
+    },
+    {
+      "id": "coordination-eval-brief-rv-sre",
+      "path": "docs/coordination/eval-wave1/rv-sre.md",
+      "title": "RV-SRE brief: SRE lens reviewer (Adversary Mode)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 dispatch",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Self-contained Wave 1 dispatch brief (rv-sre): session, branch, pinned model, owned paths, inputs, W0 sections, gate lenses, budget, exit evidence, fallback and not-in-scope. The launcher passes only this file's path.",
+      "tags": [
+        "coordination",
+        "brief",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "bd2c0504b529a879104fe8e7cb4a9821edc9ba0b36223c4bbaf0589e16952c36"
+    },
+    {
+      "id": "coordination-eval-brief-rv-ta",
+      "path": "docs/coordination/eval-wave1/rv-ta.md",
+      "title": "RV-TA brief: Test Architect lens reviewer (Adversary Mode)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 dispatch",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Self-contained Wave 1 dispatch brief (rv-ta): session, branch, pinned model, owned paths, inputs, W0 sections, gate lenses, budget, exit evidence, fallback and not-in-scope. The launcher passes only this file's path.",
+      "tags": [
+        "coordination",
+        "brief",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "20a050af94ccb1a7f7bbdcad7bf0267a4db4c5e7840cf0857f7b078fe28b9e89"
+    },
+    {
+      "id": "coordination-eval-brief-sp-lb-loopback",
+      "path": "docs/coordination/eval-wave1/sp-lb-loopback.md",
+      "title": "SP-LB brief: loopback firewall spike (Windows; the operator runs it)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 dispatch",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Self-contained Wave 1 dispatch brief (sp-lb-loopback): session, branch, pinned model, owned paths, inputs, W0 sections, gate lenses, budget, exit evidence, fallback and not-in-scope. The launcher passes only this file's path.",
+      "tags": [
+        "coordination",
+        "brief",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "5c1cc3ee649e1f4e0f181bdb9c1fc6f9ce7ca888a075abad4b3ffdf6dfe21ac2"
+    },
+    {
+      "id": "coordination-eval-brief-w1-a-arms",
+      "path": "docs/coordination/eval-wave1/w1-a-arms.md",
+      "title": "W1-A brief: arms v2 (ADR-0014)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 dispatch",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Self-contained Wave 1 dispatch brief (w1-a-arms): session, branch, pinned model, owned paths, inputs, W0 sections, gate lenses, budget, exit evidence, fallback and not-in-scope. The launcher passes only this file's path.",
+      "tags": [
+        "coordination",
+        "brief",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "d3ab5a6b39cf0942f178146b989e3080874367d2746dd6f6afc82fa64e93dcd0"
+    },
+    {
+      "id": "coordination-eval-brief-w1-b-atomic-publish",
+      "path": "docs/coordination/eval-wave1/w1-b-atomic-publish.md",
+      "title": "W1-B brief: crash-atomic publish (archive rename + create_once)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 dispatch",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Self-contained Wave 1 dispatch brief (w1-b-atomic-publish): session, branch, pinned model, owned paths, inputs, W0 sections, gate lenses, budget, exit evidence, fallback and not-in-scope. The launcher passes only this file's path.",
+      "tags": [
+        "coordination",
+        "brief",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "5168597c6b0183cceee7655cd053c76846f34476dec23d58fd81eab0433e35b3"
+    },
+    {
+      "id": "coordination-eval-brief-w1-c-campaign-record",
+      "path": "docs/coordination/eval-wave1/w1-c-campaign-record.md",
+      "title": "W1-C brief: campaign record and `bench campaign`",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 dispatch",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Self-contained Wave 1 dispatch brief (w1-c-campaign-record): session, branch, pinned model, owned paths, inputs, W0 sections, gate lenses, budget, exit evidence, fallback and not-in-scope. The launcher passes only this file's path.",
+      "tags": [
+        "coordination",
+        "brief",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "4d1e6ceaefbf1a90b1aa3276bc124be9184a2612d4adaa5df1601bf52cbee629"
+    },
+    {
+      "id": "coordination-eval-brief-w1-d-identity",
+      "path": "docs/coordination/eval-wave1/w1-d-identity.md",
+      "title": "W1-D brief: engine identity, freeze and per-launch recheck",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 dispatch",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Self-contained Wave 1 dispatch brief (w1-d-identity): session, branch, pinned model, owned paths, inputs, W0 sections, gate lenses, budget, exit evidence, fallback and not-in-scope. The launcher passes only this file's path.",
+      "tags": [
+        "coordination",
+        "brief",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "1c36c7b98f742f571bd72336768ff07b65ea8e23274fd8f197b1c24b05b2f3c0"
+    },
+    {
+      "id": "coordination-eval-brief-w1-e-discriminate",
+      "path": "docs/coordination/eval-wave1/w1-e-discriminate.md",
+      "title": "W1-E brief: discriminate, synthetic profile and readiness (EV-7)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 dispatch",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Self-contained Wave 1 dispatch brief (w1-e-discriminate): session, branch, pinned model, owned paths, inputs, W0 sections, gate lenses, budget, exit evidence, fallback and not-in-scope. The launcher passes only this file's path.",
+      "tags": [
+        "coordination",
+        "brief",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "43a57b357b745a5a928a9b8e36be36fe7d2fe09ed00a4ac1ed8f08c2787c8a8b"
+    },
+    {
+      "id": "coordination-eval-brief-w1-f-property-grader",
+      "path": "docs/coordination/eval-wave1/w1-f-property-grader.md",
+      "title": "W1-F brief: hidden-check runner and property grader (security-sensitive)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 dispatch",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Self-contained Wave 1 dispatch brief (w1-f-property-grader): session, branch, pinned model, owned paths, inputs, W0 sections, gate lenses, budget, exit evidence, fallback and not-in-scope. The launcher passes only this file's path.",
+      "tags": [
+        "coordination",
+        "brief",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "7845000902c4a62227c7e9270329f13a068f1f01eec5b768af04e9aa4d6d72da"
+    },
+    {
+      "id": "coordination-eval-brief-w1-g-catalog",
+      "path": "docs/coordination/eval-wave1/w1-g-catalog.md",
+      "title": "W1-G brief: catalog 0.7 (ADR-0019), scenario-7 pass@1 and the missing-pass@1 fix",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 dispatch",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Self-contained Wave 1 dispatch brief (w1-g-catalog): session, branch, pinned model, owned paths, inputs, W0 sections, gate lenses, budget, exit evidence, fallback and not-in-scope. The launcher passes only this file's path.",
+      "tags": [
+        "coordination",
+        "brief",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "185764e4b471ffc8f425f768c58a8b399ff649d267f3358416bdfade52c5a9a6"
+    },
+    {
+      "id": "coordination-eval-brief-w1-h-power-verdicts",
+      "path": "docs/coordination/eval-wave1/w1-h-power-verdicts.md",
+      "title": "W1-H brief: power, verdicts, dominance, ring gates and report section 3",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 dispatch",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Self-contained Wave 1 dispatch brief (w1-h-power-verdicts): session, branch, pinned model, owned paths, inputs, W0 sections, gate lenses, budget, exit evidence, fallback and not-in-scope. The launcher passes only this file's path.",
+      "tags": [
+        "coordination",
+        "brief",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "8e477bd13559d653d4385d7a1491ae0be39c7fe16643375d4646c94a49043984"
+    },
+    {
+      "id": "coordination-eval-brief-w1-i-security-tasks",
+      "path": "docs/coordination/eval-wave1/w1-i-security-tasks.md",
+      "title": "W1-I brief: security tasks S1 and S2 (task design)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 dispatch",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Self-contained Wave 1 dispatch brief (w1-i-security-tasks): session, branch, pinned model, owned paths, inputs, W0 sections, gate lenses, budget, exit evidence, fallback and not-in-scope. The launcher passes only this file's path.",
+      "tags": [
+        "coordination",
+        "brief",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "2fb5c6d262ffcb4ae4fa2bb0b22695db5aa9de8b068e8d0c0cd198a302db8292"
+    },
+    {
+      "id": "coordination-eval-brief-w1-j-multi-turn",
+      "path": "docs/coordination/eval-wave1/w1-j-multi-turn.md",
+      "title": "W1-J brief: multi-turn attempt, turn snapshots and the TLA+ model (ADR-0015)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 dispatch",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Self-contained Wave 1 dispatch brief (w1-j-multi-turn): session, branch, pinned model, owned paths, inputs, W0 sections, gate lenses, budget, exit evidence, fallback and not-in-scope. The launcher passes only this file's path.",
+      "tags": [
+        "coordination",
+        "brief",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "edf0ae6de4cb40222b57e640795fa4334a8a0749bdd1ca3ee40160556740fa81"
+    },
+    {
+      "id": "coordination-eval-brief-w1-k-resume",
+      "path": "docs/coordination/eval-wave1/w1-k-resume.md",
+      "title": "W1-K brief: plan-level resume, liveness and the alarm channel (ADR-0021)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 dispatch",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Self-contained Wave 1 dispatch brief (w1-k-resume): session, branch, pinned model, owned paths, inputs, W0 sections, gate lenses, budget, exit evidence, fallback and not-in-scope. The launcher passes only this file's path.",
+      "tags": [
+        "coordination",
+        "brief",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "c348b139535a31c1d3e4d365ac94eb334c2575ec1e5cf7599c22177e36408000"
+    },
+    {
+      "id": "coordination-eval-brief-w1-l-property-tasks",
+      "path": "docs/coordination/eval-wave1/w1-l-property-tasks.md",
+      "title": "W1-L brief: the remaining property tasks: resilience, rework, no-guessing, simplicity (×2 each)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 dispatch",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Self-contained Wave 1 dispatch brief (w1-l-property-tasks): session, branch, pinned model, owned paths, inputs, W0 sections, gate lenses, budget, exit evidence, fallback and not-in-scope. The launcher passes only this file's path.",
+      "tags": [
+        "coordination",
+        "brief",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "6fd71cbbd65d638bddd1f62c450f08b104e5ffccf0f04d9074e21f0bc5058638"
+    },
+    {
       "id": "coordination-eval-campaign",
       "path": "docs/coordination/coordination-eval-campaign.md",
       "title": "Coordination plan - Evaluation Campaign build (phases E1-E4)",
@@ -3310,6 +3964,70 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "1d00bfc93fcc99855c85571f47606626255859fecbb057d509515f5b102ecb2a"
+    },
+    {
+      "id": "coordination-eval-q0",
+      "path": "docs/coordination/eval-q0/README.md",
+      "title": "Q0: harness qualification for the Evaluation Campaign build (Codex 0.160.0, Agy 1.2.13, Grok 1.0.41)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: serial spine item 1 (Q0)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "The Q0 runner contract (q0-contract.json) and the Leader's command sequence through the operator-approved wrapper: one smoke turn each for Codex 0.160.0 / gpt-6.1-sol, Agy 1.2.13 / gemini-3.8-flash-high and Grok 1.0.41 / grok-4.7 (high), in one run with parallelism 3, then the served model read back per worker.",
+      "tags": [
+        "coordination",
+        "qualification",
+        "coord-runner",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "3911e5a596c38ef5d1515447046678e6216e977007742a951dd1477ddf12796c"
+    },
+    {
+      "id": "coordination-eval-wave1-briefs",
+      "path": "docs/coordination/eval-wave1/README.md",
+      "title": "Wave 1 dispatch pack: design-slice and lens-reviewer briefs (Evaluation Campaign)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 (design slices W1-A..W1-L, spike SP-LB, lens reviewers RV-*)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "The rules every Wave 1 worker follows, plus one self-contained brief per design track (W1-A..W1-L), the loopback spike (SP-LB) and the six lens reviewers. A launcher passes only the brief's path; the brief tells the worker to read this file first.",
+      "tags": [
+        "coordination",
+        "briefs",
+        "wave-1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "8d73f7e1ddb94fe85b2caf3dbada58d9f954385e7f56efb55f38d3b5223d0aa3"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -4071,6 +4789,14 @@ window.DOCS_INDEX = {
       "artifactId": "audit-log"
     },
     {
+      "id": "surface-design-eval-seam-contracts",
+      "path": "docs/design/eval-seam-contracts.html",
+      "title": "Eval Seam Contracts",
+      "kind": "design-preview",
+      "description": "Inspect a rendered design or design-language preview.",
+      "artifactId": "design-eval-seam-contracts"
+    },
+    {
       "id": "surface-design-mockups-phase4-report",
       "path": "docs/design/mockups/phase4-report.html",
       "title": "harness-bench report mockup (row 20)",
@@ -4148,5 +4874,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "fceceede3987a44d5eaf47fef356031888edaca3f67b0d710bf21cf40fb9e9ca"
+  "graphSha256": "9a475383318089580b65bae5b370c6cda232bd4d9a0db0003e11025170068161"
 };

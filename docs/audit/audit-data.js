@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T16:42:09Z",
+  "generated": "2026-10-03T16:55:43Z",
   "audit": [
     {
       "actor": null,
@@ -65173,6 +65173,30 @@ window.AUDIT_DATA = {
         "branch": "owner/rulings-r87-r89",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M41B2T6WA7SH725GN28ZNV2X",
+      "shortname": "coordinate-eval-campaign-w0",
+      "datetime": "2026-10-03T16:55:43Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Coordinator coord-opus-e1e4: run /execute-with-coordination against docs/coordination/coordination-eval-campaign.md; scope W0 (seam contracts, BOM and task.yaml stubs, hub owners, modules with run/grade class, reserved HB codes, guard fields), then the Wave 1 dispatch pack (W1-A..W1-L, SP-LB, six lens reviewers); added by the Leader: the Q0 contract for codex/agy/grok. No dispatch, no coord-runner, no Q0 run.",
+      "summary": "W0 docs/design/eval-seam-contracts.md (+html), BOM 0.6 with ten property stubs S1..SM2 (scenario 5), tasks/README property section, test_plan full-grid count 816; 19 briefs in docs/coordination/eval-wave1/; Q0 contract docs/coordination/eval-q0/. DR-4 raised (property_check_pass composition), provisional (a). No worker dispatched.",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/coordination/eval-wave1/README.md",
+        "docs/coordination/eval-q0/q0-contract.json"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Author W0 and the Wave 1 dispatch pack and the Q0 contract without dispatching",
+      "done_when": "W0, briefs and Q0 contract committed on coord/eval-w0-seam-contracts; docs-graph validate exit 0",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [

@@ -1,0 +1,57 @@
+{
+  "schema": "coord-run/1",
+  "run_id": "q0-e1e4",
+  "owner": "leader-e1e4",
+  "parallelism": 3,
+  "workers": [
+    {
+      "session": "worker-codex-q0e",
+      "branch": "q0-codex-e1e4",
+      "harness": "codex",
+      "transport": "acp",
+      "argv": ["node", "C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@agentclientprotocol/codex-acp/dist/index.js"],
+      "binding_files": [
+        "AGENTS.md",
+        "C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@agentclientprotocol/codex-acp/dist/index.js",
+        "C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@agentclientprotocol/codex-acp/package.json",
+        "C:/Users/malla/AppData/Roaming/npm/node_modules/@openai/codex/node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe",
+        "C:/Users/malla/.codex/config.toml"
+      ],
+      "runtime": {"unattended": true, "mailbox": false, "max_turns": 1, "max_retries": 0, "permissions": "deny", "mode_id": "agent-full-access"},
+      "deadline_seconds": 600,
+      "output_limit": 4194304,
+      "evidence": [{"kind": "file", "path": "docs/notes/qualify-worker.md", "max_bytes": 4096}, {"kind": "commit"}],
+      "required_capabilities": {"worktree_isolation": "observed-only", "instructions": "observed-only", "hooks": "observed-only", "permissions": "observed-only"},
+      "prompts": ["al-01M38J29Z3V8YNRWCNF44W9XDC"],
+      "fallback": "R-88: X-J1 and X-K1 get a new decision request (no pre-authorised Sonnet fallback); X-A1 and X-D run Claude Sonnet"
+    },
+    {
+      "session": "worker-agy-q0e",
+      "branch": "q0-agy-e1e4",
+      "harness": "agy",
+      "transport": "agy",
+      "argv": ["agy", "--model", "gemini-3.8-flash-high", "--add-dir", "{worktree}", "--mode", "accept-edits", "--input-format", "stream-json", "--output-format", "stream-json"],
+      "binding_files": ["AGENTS.md", ".agents/hooks.json"],
+      "deadline_seconds": 600,
+      "output_limit": 4194304,
+      "evidence": [{"kind": "file", "path": "docs/notes/qualify-worker.md", "max_bytes": 4096}, {"kind": "commit"}],
+      "required_capabilities": {"worktree_isolation": "observed-only", "instructions": "observed-only", "hooks": "observed-only", "permissions": "observed-only"},
+      "prompts": ["al-01M38J29Z3V8YNRWCNF44W9XDC"],
+      "fallback": "Agy tracks take Claude Sonnet after Owner review (plan: every track's fallback)"
+    },
+    {
+      "session": "worker-grok-q0e",
+      "branch": "q0-grok-e1e4",
+      "harness": "grok",
+      "transport": "acp",
+      "argv": ["grok", "agent", "--no-leader", "-m", "grok-4.7", "--reasoning-effort", "high", "stdio"],
+      "binding_files": ["AGENTS.md", ".grok/hooks/ai-forward.json"],
+      "deadline_seconds": 600,
+      "output_limit": 4194304,
+      "evidence": [{"kind": "file", "path": "docs/notes/qualify-worker.md", "max_bytes": 4096}, {"kind": "commit"}],
+      "required_capabilities": {"worktree_isolation": "observed-only", "instructions": "observed-only", "hooks": "observed-only", "permissions": "observed-only"},
+      "prompts": ["al-01M38J29Z3V8YNRWCNF44W9XDC"],
+      "fallback": "Grok tracks take Claude Sonnet after Owner review (plan: every track's fallback)"
+    }
+  ]
+}
