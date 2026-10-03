@@ -1,1 +1,2 @@
 {"agent": "rv-sim-e1e4", "at": 1791047144.642635, "kind": "session-start", "path": "-", "seq": 1, "session": "rv-sim-e1e4", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-review-eval-sim"}
+{"agent": "rv-sim-e1e4", "at": 1791048563.4107294, "kind": "session-start", "path": "-", "seq": 2, "session": "rv-sim-e1e4", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-review-eval-sim-w1f"}

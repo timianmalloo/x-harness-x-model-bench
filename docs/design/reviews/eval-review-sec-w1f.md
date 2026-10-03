@@ -57,3 +57,19 @@ Conditions for PASS: (1) finding 1, the committed fixture, positive control and 
 RESIDUAL RISK: in-process injection into the check by deliberate tooling (ADR-0018 s10a, accepted); probe-host code reading the check source (accepted); network reach of the deliverable and build (accepted, offline declared per task). CLEARS-THE-VETO: yes on the conditions above, none of which needs a W0 change.
 
 GATE W1-F · Security & Identity · PASS WITH CONDITIONS · 8 findings (rv-sec-w1f-e1e4, 2026-10-03)
+
+## W1-F rev 2 re-review (delta only), 2026-10-03: `design/eval-property-grader` at ba678630 (with 13011c96, ec94645c)
+
+Scope: my three conditions only. The fixture tests were run, not read from the summary: `PYTHONPATH=src python -m pytest tests/test_property_forgery_fixture.py` gave 3 passed (exit 0).
+
+| condition | rev 2 result | evidence |
+| --- | --- | --- |
+| 1. Committed forgery fixture, positive control, 3 trials | Met. `forge_module.py` carries the exact body (write forged line, read ack byte, `os._exit(0)`). Three nodes, each 3 trials: `..._is_accepted_when_imported_in_check` (control: forged `blocked` accepted, row 7), `..._in_probe_host_is_refused` (`did not start`, row 6, never `blocked`), `test_probe_host_control_answers_with_the_raw_response` (`exploited`, so the refusal is not vacuous). Caveat: the grader here is a stand-in re-implementing W0 rows 2 and 4-7; rows 1 and 3 are not exercised. X-F must re-run the same fixtures through the real grader (stated in the test docstring and design s14). | `tests/test_property_forgery_fixture.py`, `tests/fixtures/property/`; run above |
+| 2. NA never silently dropped | Met as a seam request, not yet enforced. `req-01M41DM7XQG9GYVR32TJ762V67` asks X-H1/X-E to treat any HB-CHK-002 count above zero as a pilot-gate and verdict-validity item and to show the NA count beside every property metric; the grader records `row`, `code` and `unbiased_ok` per span. The control lives in X-H1/X-E, so it stays a condition on their gates. | design s16, A11 row |
+| 3. Reparse-safe copy and removal | Met in design. s5.2 specifies `_copy_tree` (scandir, no entry into reparse points, junctions skipped and listed relatively), removal that unlinks and never `chmod`s a reparse point, G16 measured on 3.14.6 and 3.12.10, N10 and F14 rows, and `test_grading_copy_with_junction_leaves_target_untouched` (copy has no sentinel, junction recorded, sentinel bytes and modes unchanged after removal). The test is a plan node, built by X-F, red first. | design s5.2, G16, N10, s14 |
+
+New: RF-9 (note, not a W1-F blocker). `_changes.grading_copy`, `correctness.py:207` and `formal.py:280` use `copytree`, which follows a junction (G16). The hidden-tests phase therefore still copies through a junction. I agree with the class finding. Severity major for the Coordinator: one fix in one shared helper serves every grader; until then a junction in an archive can pull outside files into a tests copy. Whether an archive can carry a junction is Inferred.
+
+Conditions that remain: X-F re-runs the fixtures through the real grader and lands the junction test; X-H1/X-E honour the HB-CHK-002 request; the Coordinator schedules the RF-9 helper fix.
+
+GATE W1-F rev 2 · Security & Identity · PASS WITH CONDITIONS · 1 finding (rv-sec-w1f-e1e4, 2026-10-03)
