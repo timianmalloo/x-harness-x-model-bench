@@ -189,7 +189,7 @@ def test_bench_plan_refuses_a_scenario6_cell_whose_every_role_is_its_pin(tmp_pat
         _build(root, bom)
     assert err.value.code == "HB-USR-002"
     assert err.value.message == ("scenario 6: every role of X1's model_map for vendor openai equals the pin of "
-                                 "X1.codex-sol.pack-on.r1 (gpt-6-sol), so routing cannot be told from no routing (R-73 item 5)")
+                                 "X1.codex-sol.arm-off.r1 (gpt-6-sol), so routing cannot be told from no routing (R-73 item 5)")
 
 
 def test_bench_plan_accepts_a_scenario6_map_with_one_role_off_the_pin(tmp_path):
@@ -205,5 +205,5 @@ def test_bench_plan_refuses_a_scenario6_cell_with_no_role_for_its_vendor(tmp_pat
     root, bom = _scenario6_root(tmp_path, {"a@anthropic": "claude-sonnet-5", "b@anthropic": "claude-opus-5-5"})
     with pytest.raises(BenchError) as err:
         _build(root, bom)
-    assert re.fullmatch(r"scenario 6: X1's model_map names no role for vendor openai \(cell X1\.codex-sol\.pack-on\.r1\)"
+    assert re.fullmatch(r"scenario 6: X1's model_map names no role for vendor openai \(cell X1\.codex-sol\.arm-off\.r1\)"
                         r" \(R-73 item 5\)", err.value.message)
