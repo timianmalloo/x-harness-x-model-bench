@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:08:01Z",
+  "generated": "2026-10-03T17:13:51Z",
   "audit": [
     {
       "actor": null,
@@ -65367,6 +65367,60 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/coordination/eval-q0/README.md",
+        "docs/coordination/coordination-eval-campaign.md",
+        "docs/lessons/defect-classes.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:08:15Z",
+      "done_when": "harness table and run record committed; candidate filed",
+      "fan_out": 0,
+      "goal": "Verify and record Q0",
+      "id": "al-01M41BSRWH4Y17X9KE40CHAK3Z",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader: verify Q0 exit evidence (served models, commits), record it in the harness table, file the ambient-credential test finding as a defect-class candidate, clean up the q0 trees",
+      "session": "coord-opus-e1e4",
+      "shortname": "q0-verify-e1e4",
+      "skill": "execute-with-coordination",
+      "summary": "Codex 0.160.0 gpt-6.1-sol and Agy 1.2.13 gemini-3.8-flash-high qualified (observed-only, native records); Grok served grok-4.6 not grok-4.7: unsupported, DR-5 raised (req-01M41BS9Y7D1ANHSNDYM9N2H08); ENV-A candidate reproduced (3 tests)",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "id": "al-01M41C40RDZ8FMB09MAPVGZMH4",
+      "shortname": "ruling R-92 (DR-6, Grok served grok-4.6 at Q0)",
+      "datetime": "2026-10-03T17:13:51Z",
+      "session": "owner-fable",
+      "prompt": "Owner seat: rule DR-6, Grok 1.0.41 served grok-4.6 under -m grok-4.7 at Q0 (w4-lr served grok-4.7 a week ago, same argv); options (a) hold the Grok tracks while the operator looks then move passed designs to Sonnet, (b) reroute now to Agy or Sonnet, (c) accept grok-4.6, (d) re-qualify after an operator check with a deadline, falling back to (b); state the operator's one-line ask.",
+      "summary": "R-92 DR-6 (d) bounded. Verified: identical argv in q0-e1e4 and w4-lr contracts; per-response model_id w4-lr grok-4.7-build x61 (09-28) vs Q0 grok-4.6-build x8 (10-03); eleven earlier sessions current_model_id grok-4.7; grok models now lists grok-4.7 as default (entitlement intact: service-side routing of one session); the runner checks served model for Copilot only. One Grok re-qualification run by the Leader now, qualified only if every response model_id is grok-4.7*; if unsupported when W1-G or W1-B passes, X-G1/X-B1 (then X-H1, ENV-A) go to Sonnet under R-87/R-91 (this ruling is their Owner review); X-G3 by a new request. (a) refused (holds on the operator for a cause records cannot show), (b)-now refused (no Grok track starts before W1-G/W1-B; Agy cap), (c) refused (served model drifted under an explicit pin; US-13 class). Conditions: served model read per response and scripted before the second dispatch; a later drift is a recorded finding; defect class 'pin passed, served model unchecked'; operator line for the report.",
+      "kind": "manual",
+      "skill": null,
+      "tool": null,
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "outcome": "success",
+      "goal": "Rule DR-6 (req-01M41BS9Y7D1ANHSNDYM9N2H08, labelled DR-5 by its author): Grok served grok-4.6 under the grok-4.7 pin at Q0; route the four Grok tracks",
+      "done_when": "Ruling 92 in docs/notes/rulings.md via coord decide rule, the request resolved, committed on owner/ruling-r92",
+      "tier": "T0",
+      "fan_out": 0,
+      "git": {
+        "sha": "357bce48e289fb6335f47c9de1e72f0bb350874b",
+        "short": "357bce48e",
+        "branch": "owner/ruling-r92",
+        "pushed": null
+      }
     }
   ],
   "changes": [
