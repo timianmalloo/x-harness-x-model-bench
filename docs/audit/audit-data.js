@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T19:32:28Z",
+  "generated": "2026-10-03T19:39:55Z",
   "audit": [
     {
       "actor": null,
@@ -74474,6 +74474,28 @@ window.AUDIT_DATA = {
       "compiled": false,
       "goal": "Simplifier gates on W0 rev5 s6/s7 and W1-E",
       "done_when": "two gate lines written and committed",
+      "tier": "T2",
+      "fan_out": 0
+    },
+    {
+      "id": "al-01M41MFEYW7VSSJ2Z74HJMH8Q8",
+      "shortname": "design-slice-review-eval-ds-w0r45",
+      "datetime": "2026-10-03T19:39:55Z",
+      "session": "rv-ds-w0r45-e1e4",
+      "prompt": "docs/coordination/eval-wave1/rv-ds.md (W0 rev 4/5 delta)",
+      "summary": "RV-DS delta review of W0 rev 4/5: PASS WITH CONDITIONS, 9 findings",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ds.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Review W0 rev 4/5 from the DS lens",
+      "done_when": "Dated section and gate line appended",
       "tier": "T2",
       "fan_out": 0
     }
