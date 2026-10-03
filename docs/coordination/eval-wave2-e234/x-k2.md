@@ -20,7 +20,7 @@ summary: "X-K2 builds bench status --alarm-after, last_progress_at, the alarm ch
 **Design:** W1-K (once gated); ADR-0021 §7; W0 rev 6.6 §9 (`alarm.py`: grade), §10 (the alarm guard row), §11 (HB-ALM-001..003), §13.
 
 ## Owned paths (E3 hub owner)
-`status.py` (E3), `cli.py` (E3, including the `bench run <run_id>` resume entry line X-K1 needs), `alarm.py` (new), the runbook entry (path fixed in W1-K), `tests/test_status.py` (E3), `tests/test_alarm.py` (new).
+`status.py` (E3), `cli.py` (E3, including the `bench run <run_id>` resume entry line X-K1 needs), `alarm.py` (new), `tools/alarm-task.ps1`, `tests/test_alarm_task.py` and `docs/runbooks/resume-and-alarm.md` (new; W0 rev 6.8 §13 with its four conditions), the `report/html.py` resume header hunk (second dispatch, after X-A3c and X-K1 join; W0 rev 6.8 §13), `tests/test_report_resume.py` (new), `tests/test_status.py` (E3), `tests/test_alarm.py` (new).
 
 ## Acceptance items
 1. ADR-0021 §7, quoted: "`bench status <run_id> --alarm-after <seconds>` exits non-zero, naming the cause, when the heartbeat is stale **or** `now − last_progress_at` exceeds the threshold while cells are pending": the stale-progress fixture exits non-zero (HB-ALM-001, HB-ALM-002); the `last_alarm_check_at` warning (HB-ALM-003).

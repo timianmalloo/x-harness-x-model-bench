@@ -18,7 +18,10 @@ summary: >-
   the real DAG, the launch order by critical path, the gate state of each design, and one brief per item, plus the
   W1-K design brief. Four Sonnet items can start now (X-NG, X-SM, X-RW authoring; the X-I-S2 spike). Every external brief is written but waits on a
   design gate or an E1 join, so nothing external is compiled yet (CO-S0 runs at dispatch). W0 rev 6.6 carries the
-  rulings these briefs build on: RV-TA W1-L rev 2 R2-1..R2-4, and the laundering-variant names.
+  rulings these briefs build on: RV-TA W1-L rev 2 R2-1..R2-4, and the laundering-variant names. Coordinator #9: W1-J rev 2
+  passed its gate and merged (f23d35ed), so X-J1 and X-J2 are unblocked by design; x-j1.md is re-cut on W1-J rev 2's
+  final names and commit order; X-J1a and X-J2a are compiled (CO-S0); X-J1a starts only after X-D has joined, because
+  X-D owns engine.py in E1. The X-I-S2 brief carries R-99's session rules.
 ---
 
 # Wave 2 E2-E4 dispatch pack (part 3)
@@ -35,17 +38,17 @@ summary: >-
 | --- | --- | --- |
 | W1-A arms (rev 2), W1-G catalog 0.7, W1-I security tasks | passed (E1) | X-A3, X-G3 and X-I-S2 have a design; X-A3 and X-G3 still wait on E1 joins |
 | W1-L property tasks (rev 2) | **passed**, merged `c8f57b8d` (TA PWC rev 2, PAT, SIM PWC). RV-TA's R2-1..R2-5 had to be fixed before the task authors start: **done** in W0 rev 6.6 and W1-L *Erratum 1* (this branch). R2-6..R2-8 are acceptance items in the task briefs | X-RW, X-NG, X-SM, X-LG are unblocked by design; X-RS also waits on SP-LB |
-| W1-J multi-turn (rev 2) | **in its gate revision** (branch `design/eval-multi-turn`; W0 rev 6.5 answered its three seams) | X-J1, X-J2 **blocked**; RW1 `ready` blocked |
-| W1-K resume, liveness, alarm | **not written**; its design brief is `w1-k.md`, dispatched after W1-J merges | X-K1, X-K2 **blocked** |
+| W1-J multi-turn (rev 2) | **passed**, merged `f23d35ed` (TA, PAT, SIM, SRE, DS PWC; rev 2 applies every finding; `check_models --quick` 29/29, 4/4 witnesses; Coordinator #9) | X-J1, X-J2 **unblocked by design**; each still waits on its E1 joins (§3). RW1 `ready` waits on X-J1 and X-J2b joining |
+| W1-K resume, liveness, alarm | **not written**; its design brief is `w1-k.md`, dispatchable now that W1-J has merged | X-K1, X-K2 **blocked** |
 | SP-LB loopback spike | script written, **not run** (`docs/notes/spike-s-lb-loopback.md`: "operator required") | X-LB **blocked** on the operator run; X-RS starts when SP-LB's result merges |
 
 ## 2. Routing (harness and pinned model, never a default)
 
 | item | brief | session · branch | harness · model (pinned) | dispatches | brief status |
 | --- | --- | --- | --- | --- | --- |
-| W1-K resume design | `w1-k.md` | `w1k-resume-e1e4` · `design/eval-resume` | Claude Code · Sonnet (`model: sonnet`, served `claude-sonnet-5-5`, R-91) | one session | **written; dispatch after W1-J merges** |
-| X-J1 multi-turn engine | `x-j1.md` | `x-j1{a..e}-e1e4` · `build/eval-x-j1{a..e}` | Codex · `gpt-6.1-sol` high (codex-cli 0.160.0) | five turns, each red and green, each joined before the next | **blocked: W1-J gate**; contract `x-j1.contract.json` |
-| X-J2 rework grader, per-turn synthetic, multi-turn discrimination | `x-j2.md` | `x-j2{a,b}-e1e4` · `build/eval-x-j2{a,b}` | Agy · `gemini-3.8-flash-high` | two turns | **blocked: W1-J gate**; contract |
+| W1-K resume design | `w1-k.md` | `w1k-resume-e1e4` · `design/eval-resume` | Claude Code · Sonnet (`model: sonnet`, served `claude-sonnet-5-5`, R-91) | one session | **written; dispatchable (W1-J merged `f23d35ed`)** |
+| X-J1 multi-turn engine | `x-j1.md` | `x-j1{a..e}-e1e4` · `build/eval-x-j1{a..e}` | Codex · `gpt-6.1-sol` high (codex-cli 0.160.0), 3,600 s per turn | five turns (re-cut on W1-J §11), each red and green, each joined before the next | **written, re-cut; J1a compiled** (§6); **waits on X-D (D1 and D2), X-C, X-B2, X-B1b, X-A1a joined**; contract `x-j1.contract.json` |
+| X-J2 rework grader, per-turn synthetic, multi-turn discrimination | `x-j2.md` | `x-j2{a,b}-e1e4` · `build/eval-x-j2{a,b}` | Agy · `gemini-3.8-flash-high` | two turns | **written; J2a compiled** (§6); J2a waits on X-F, X-A1a joined; J2b on X-J2a, X-E, X-LB0 (and X-J1 for its turn-1 snapshot test); contract |
 | X-RW rework tasks RW1 (E2), RW2 (E4) | `x-rw.md` | `x-rw-e1e4` · `build/eval-x-rw` | Claude Code · Sonnet (R-91) | Sonnet session, then a follow-on for `ready` after X-J2 joins | **written; authoring dispatchable now** |
 | X-A3 three arms, rings, readers, `_passed` fix | `x-a3.md` | `x-a3{a,b,c}-e1e4` · `build/eval-x-a3{a,b,c}` | Agy · `gemini-3.8-flash-high` | three turns | written; **waits on E1 joins** (X-A1b, X-H2); contract |
 | X-G3 scenario-7 `pass_at_1`, 0.7 freeze prep | `x-g3.md` | `x-g3-e1e4` · `build/eval-x-g3` | Grok · `grok-4.7`, `--reasoning-effort high` | one turn (2,400 s), red and green | written; **waits on X-A3a** (the `_passed` fix); contract |
@@ -69,10 +72,10 @@ A track starts when its design gate has passed, its design is on `main`, and eve
 
 | item | depends on (and why) |
 | --- | --- |
-| W1-K (design) | W1-J merged (the `.tla` files W1-K extends with `NoResumeAfterStop`; the per-turn rows X-K1 reconciles) |
-| X-J1a..e | W1-J gate ✗; X-D2 (the `engine.py` recheck; E1 hub owner before X-J1); X-C (`status.py`, `ledger.py`, E1); X-B2 (`archive.py` E1, the snapshot primitive); X-B1b (`publish_dir`); X-A1a (`plan.py`, for `turns`) |
+| W1-K (design) | W1-J merged (the `.tla` files W1-K extends with `NoLaunchAfterStop` (R-100); the per-turn rows X-K1 reconciles) |
+| X-J1a..e | W1-J gate ✓ (`f23d35ed`); **X-D joined, X-D1 and X-D2** (X-D owns `engine.py` in E1, its D2 dispatch being the engine recheck; edits to `engine.py` are serialised, so X-J1a starts only after X-D has joined); X-C (`status.py`, `ledger.py`, E1); X-B2 (`archive.py` E1, the snapshot primitive); X-B1b (`publish_dir`); X-A1a (`plan.py`, for `turns`) |
 | X-J2a (`_changes` four functions, `drift.py` hunk) | W1-L ✓ (SR-L4, SR-L6); X-F joined (`_changes.grading_copy` hunk; `grade/runner.py` E1) and X-A1a (line 84) — the hub file's E1 writers |
-| X-J2b (`rework.py`, per-turn synthetic, multi-turn discrimination, variant edit forms) | W1-J gate ✗; X-J2a; X-E joined (`discriminate.py`, `synthetic_agent.py`, `profiles.py` E1); X-J1 contract (built against fixtures until X-J1 joins; the turn-1 snapshot test needs X-J1 joined); X-LB0 (`property.hidden_tests` for `rework.grade`) |
+| X-J2b (`rework.py`, per-turn synthetic, multi-turn discrimination, variant edit forms) | W1-J gate ✓; X-J2a; X-E joined (`discriminate.py`, `synthetic_agent.py`, `profiles.py` E1); X-J1 contract (built against fixtures until X-J1 joins; the turn-1 snapshot test needs X-J1 joined); X-LB0 (`property.hidden_tests` for `rework.grade`) |
 | X-RW authoring | W1-L ✓; W0 rev 6.6 ✓ (this branch) |
 | X-RW `ready` (RW1) | X-J1, X-J2b joined |
 | X-A3a (`_passed` fix, ADR-0019 item 4) | W1-A ✓, W1-G ✓; X-H2 joined (`report/html.py` E1); X-A1b joined (`plan.py`, `config.py` E1 owner) |
@@ -90,7 +93,7 @@ A track starts when its design gate has passed, its design is on `main`, and eve
 | X-I-S2 | W1-I ✓ for the spike; RV-SEC and RV-TA on the spike note before authoring; `ready` after X-F joins and the 0.7 freeze (W1-I §4) |
 | X-CV | every E2-E4 item joined; the Leader's freeze committed |
 
-**Critical path (Inferred durations from the plan, which ran 2-14× long in phase 1):** W1-J gate → X-J1 (5 turns, about 5 h) → X-K1 (4 turns, 4.5 h) → X-CV (2 h + machine time). W1-K starts at W1-J's merge and runs beside X-J1, so it is off the path unless its gate takes longer than X-J1. Nearly as long: E1's X-H2 and X-A1b → X-A3 (3 turns) → X-G3 → freeze. The E4 task tracks are off the critical path if their authoring runs now.
+**Critical path (Inferred durations from the plan, which ran 2-14× long in phase 1):** X-D joined (W1-J's gate has passed) → X-J1 (5 turns, about 5 h) → X-K1 (4 turns, 4.5 h) → X-CV (2 h + machine time). W1-K starts at W1-J's merge and runs beside X-J1, so it is off the path unless its gate takes longer than X-J1. Nearly as long: E1's X-H2 and X-A1b → X-A3 (3 turns) → X-G3 → freeze. The E4 task tracks are off the critical path if their authoring runs now.
 
 ## 4. Launch order (cap 6 running across E1 and part 3; at most 2 per external harness; critical path first)
 
@@ -98,9 +101,9 @@ E1 items keep priority over part 3 (E1 README §7) until X-INT. Part 3 fills fre
 
 1. **Now, Sonnet (no compile):** X-NG, X-SM, X-RW (RW1 then RW2) authoring, and the X-I-S2 spike, in that order when slots free. Each stops at `draft` (X-I-S2 at its spike note) with its report.
 1a. **When X-F has joined:** X-LB0 (Sonnet, short; X-J2b and X-LG need it).
-2. **When W1-J merges:** W1-K (Sonnet design). The Coordinator compiles X-J1a and X-J2b (CO-S0).
-3. **When X-D2, X-C, X-B2, X-B1b, X-A1a have joined and W1-J has merged:** X-J1a (Codex), then X-J1b..e, each joined before the next.
-4. **When X-F and X-A1a have joined:** X-J2a (Agy; it gates X-LG and X-SM's `ready`).
+2. **Now (W1-J merged `f23d35ed`):** W1-K (Sonnet design). X-J1a and X-J2a are compiled (§6, Coordinator #9).
+3. **After X-D1 joins** (and X-D2, the D2 engine recheck: X-D owns `engine.py` in E1, and edits to `engine.py` are serialised, so X-J1 never runs beside an open X-D tree), **and when X-C, X-B2, X-B1b, X-A1a have joined:** X-J1a (Codex, compiled), then X-J1b..e, each joined before the next and each compiled when its predecessor joins.
+4. **When X-F and X-A1a have joined:** X-J2a (Agy, compiled; it gates X-LG and X-SM's `ready`). X-J2b is compiled when X-J2a, X-E and X-LB0 have joined.
 5. **When X-H2 and X-A1b have joined:** X-A3a (Agy) → X-G3 (Grok) → the Leader's freeze; X-A3b, X-A3c beside X-G3.
 6. **When X-J2a has joined:** X-LG (Agy, three turns).
 7. **When the operator has run SP-LB and it passed:** X-LB1 (Sonnet) and X-RS authoring (Sonnet).
@@ -126,3 +129,10 @@ E1 items keep priority over part 3 (E1 README §7) until X-INT. Part 3 fills fre
 - **The four E1 conditions on X-J1** (E1 README §8) are now acceptance items in `x-j1.md`. R6.5a fixes "no `turn_ended` for a stopping turn"; R6.5b fixes the status clock. The budget clock and last-turn spend stay X-J1's own fixes.
 - **SP-LB needs the operator** (blocker B-2). It holds X-LB and X-RS, which are off the critical path; ask for the session when convenient.
 - **No compile ids in part 3.** CO-S0 runs per track when it is startable (§2, Contracts).
+
+**Coordinator #9 (2026-10-03, base `66ec885f`, W0 rev 6.7):**
+- **W1-J's gate has passed** (`f23d35ed`). `x-j1.md` is re-cut on W1-J rev 2 §11's commit order (K1..K4) and carries its final names and conditions as acceptance items: the budget clock at `turn == 1` through `lifecycle.is_cell_start`; spend summed across turns; `turn_ended` with `next` for stopping turns (R6.5a); `status.py` reads the first `prompt_sent` (R6.5b); `job_active_baseline` at turn 1's first update (R6.5c); `append_missing_rows` owned by X-J1; E2 snapshot recovery; spikes S-J4 and S-J5 run by X-J1. The deadline is 3,600 s per turn. `x-j2.md` J2b is unblocked by design and reads `snapshot_folder`/`snapshot_of`.
+- **Compiled (CO-S0):** X-J1a (Codex template) and X-J2a (claude-code template; no Agy template exists, as in E1). The compile ids are in `x-j1.contract.json` and `x-j2.contract.json` (`prompts`), not here, so this README's hash in each compilation's references stays the hash of the file the worker reads. J1b..e and J2b each need their own compilation before dispatch.
+- **Launch order:** X-J1a starts after X-D1 joins (and X-D2): X-D owns `engine.py` in E1, and edits to `engine.py` are serialised (§3, §4 step 3).
+- **R-99 (DR-S2):** `x-i-s2.md` step 1 item 2 now carries the login-route-only, no-`bottle`/`pickle`-import, inert-bytes-only and tamper-refusal rules. W1-I §12 *Erratum 2* stays X-I's to write.
+- **For the Leader:** when X-J1c and X-J1e report S-J5 and S-J4, the Coordinator updates W1-J §12's result column from the report.

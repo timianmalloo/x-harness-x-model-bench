@@ -7,6 +7,7 @@ import uuid
 from pathlib import Path
 
 import pytest
+from ambient_credentials import listed_credential_names
 from slow_ring import dotnet_gate
 
 from harness_bench import archive, procs
@@ -55,6 +56,15 @@ def base():
 def require_dotnet() -> None:
     """Use in every `@pytest.mark.slow` test that runs the real dotnet."""
     dotnet_gate(os.environ)
+
+
+@pytest.fixture(autouse=True)
+def clear_ambient_credentials(request, monkeypatch):
+    """Hermetic tests do not see ambient credentials. A ``credentials`` test keeps the operator environment."""
+    if request.node.get_closest_marker("credentials") is None:
+        for name in listed_credential_names():
+            monkeypatch.delenv(name, raising=False)
+    yield
 
 
 def pytest_configure(config):

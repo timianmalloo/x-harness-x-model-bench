@@ -2,16 +2,44 @@ schema: bench-task/1
 id: RW1
 scenario: 5                 # W0 decision: property tasks are scenario 5 (docs/design/eval-seam-contracts.md section 1)
 title: "Rework task 1: two turns; turn 2 punishes a short-sighted turn-1 design (W1-L)"
-status: stub
-language: tbd
+status: draft               # Stays draft until a real-host multi-turn discrimination record reproduces `expected` (W1-L 5.3; X-J1 and X-J2b must join first, W0 rev 6.6 R6.6c). Not X-RW's call alone.
+language: python
 source:
   kind: authored
-  upstream: "harness-bench property task"
-  repo: tbd
-  commit: tbd
+  upstream: "harness-bench property task on humanfriendly"
+  repo: "https://github.com/xolox/python-humanfriendly"
+  commit: "6758ac61f906cd8528682003070a57febe4ad3cf"   # master at authoring, git rev-parse HEAD of a fresh clone, 2026-10-03; its tree is d25f96a3910d75bd867ee5e000d61d1b7997c402
+  workspace_from: source        # E5 and S1 precedent: the engine's own task_source() builds the base; nothing vendored
+  license: MIT
+  copyright: "Copyright (c) 2021 Peter Odding"
 budget:
-  minutes: 60               # provisional (W0); the task's design fixes it (1-60)
+  minutes: 60                # the W0 provisional value and the BOM entry's value; both turns share it (W1-L 6.2)
   usd_cap: null
+blast_radius: ["humanfriendly/*.py"]
+model_map: null
+scripted_user: false
+formal: null
+turns: ["turns/2.md"]          # turn 1 is prompt.md (ADR-0015 section 1)
+graded_snapshots: [turn-1]     # ADR-0015 section 8
 property:
-  name: rework           # W0 section 2; the task's design fills the other property fields
-graders: []                 # DR-4 (a), provisional: [correctness, property] once grade/property.py exists
+  name: rework
+  latent_requirement: "A formatter for one currency must keep the currency's symbol, decimals and separators in data, so a second currency adds data and not code paths."
+  evidence_paths: ["humanfriendly/__init__.py"]
+  latent_terms: [currency, currencies, locale, euro, yen, EUR, JPY, per-currency, table, generalis, generaliz]
+  primary_metric: property_check_pass
+  ceilings: { rework_ratio: "0.3000" }
+  fault_contract: {}
+graders: [correctness, property]
+oracle:
+  summary: "Hidden unittest files per turn (tests/turn1, tests/turn2; stdlib only). The strategy runs turn 1's file on the turn-1 snapshot and both files on the final tree, then measures rework_ratio over the turn-1-added product lines (W1-L 6.1). The discovery pattern matches only the hidden files, never humanfriendly/tests.py."
+  runner: unittest
+  command: ["{python}", "-S", "-m", "unittest", "discover", "-v", "-s", ".", "-t", ".", "-p", "test_money*.py"]
+expected:
+  reference:
+    property_check_pass: 1                       # Inferred: both hidden-test files pass on the reference and its ratio is below the 0.3000 ceiling (W0 section 3 truth table). Not a grader output.
+    turn1_tests_pass: 1                          # Inferred: turn 1's hidden file passes on the reference turn-1 snapshot
+    rework_ratio: "0.0625"                  # Inferred: hand count of the committed reference diff, 1 of 16 turn-1 product lines changed (oracle/evidence.md); not a grader output
+  naive:
+    property_check_pass: 0                       # Inferred: the naive passes every hidden test and its rework_ratio is above the ceiling, so the conjunction is 0
+    turn1_tests_pass: 1
+    rework_ratio: "0.7143"                  # Inferred: hand count of the committed naive diff, 5 of 7 turn-1 product lines changed (oracle/evidence.md); not a grader output

@@ -20,11 +20,11 @@ summary: "X-K1 builds plan-level resume (ADR-0021) on Codex gpt-6.1-sol in four 
 **Design:** W1-K (once gated); ADR-0021; W0 rev 6.6 §4 (X-K1 sweeps the archive root and each `archive/<cell id>/` under the run lock, with the wrong-pairing red test; `recover_archive` built here, calling `archive.append_missing_rows`), §11 (HB-CELL-118, HB-CELL-119, HB-RUN-008, HB-RUN-009; HB-RUN-004 and HB-RUN-005 reused), §12 (`free_bytes` on `cell.launch_intent`; the resume record), §13.
 
 ## Owned paths (E3 hub owner)
-`resume.py` (new, run class), `engine.py` (E3), `errors.py` (E3), `identity.py` (E3), `lifecycle.py` (E3), `archive.py` (`recover_archive` only), `tests/test_resume.py` (new), `tests/test_engine.py` (E3).
+`resume.py` (new, run class), `engine.py` (E3), `errors.py` (E3), `identity.py` (E3), `lifecycle.py` (E3), `archive.py` (`recover_archive` only), `views.py` (`segment_rows`, `completed`, the verify abandoned-head rule; W0 rev 6.8 §13), `docs/design/run-lifecycle-model.md` and `models/README.md` (the W1-K §8 rows), `tests/test_resume.py` (new), `tests/test_engine.py` (E3).
 
 ## Acceptance items (campaign plan; refined by W1-K)
 1. Kill in each state, then resume, for **every row of ADR-0021 §4**, including the per-turn rows and the turn-1 snapshot-crashed row.
-2. Refusals after a stop (HB-RUN-008), a live lock (HB-RUN-005), a drifted identity (HB-IDN-001) and a failed verify (HB-RUN-009, naming the segment); `segment.abandoned`; the per-launch disk check (ADR-0021 §8, HB-RUN-004, `free_bytes`).
+2. A resume after a stop finishes the stop and exits 3 with HB-RUN-008 (R-100; ADR-0021 Amendment 1); refusals for a live lock (HB-RUN-005), a drifted identity (HB-IDN-001) and a failed verify (HB-RUN-009, naming the segment); `segment.abandoned`; the per-launch disk check (ADR-0021 §8, HB-RUN-004, `free_bytes`).
 3. `recover_archive` holds no second comparison: it returns W1-B's `Recovery(result, missing_rows)` from `append_missing_rows` (DM7).
 4. The resume-owned model branches marked provisional in W1-J (`BetweenSnapped`, `ClassOf`'s else-branch) are settled by W1-K's TLC, not here.
 

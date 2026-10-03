@@ -591,7 +591,7 @@ These ids are reserved, never reused. Each W1 design confirms or drops its rows;
 | HB-CELL-117 | `failed (archive)`: a turn snapshot copy failed after bounded retry (infrastructure) | X-J1 · E2 |
 | HB-CELL-118 | `failed (coordinator crash)` (infrastructure) | X-K1 · E3 |
 | HB-CELL-119 | `failed (coordinator crash between turns)` (infrastructure) | X-K1 · E3 |
-| HB-RUN-008 | resume refused: the run was stopped | X-K1 · E3 |
+| HB-RUN-008 | rev 6.8 (R-100 condition 4; was "resume refused: the run was stopped"): **the stopped run's exit-3 reason, not a refusal.** A resume of a run with a stop row (D-K4's three) finishes the stop and exits 3 with "run is stopped: n cells recorded stopped, m archived, 0 launched"; an idempotent re-run emits it with zero actions. Identity (HB-IDN-001) and verify (HB-RUN-009) are checked before the stop branch | X-K1 · E3 |
 | HB-RUN-009 | resume refused: `bench verify` failed (names the segment) | X-K1 · E3 |
 | HB-PLN-003 | comparison refused: ring hashes differ (names the differences, EV-15) | X-A3 · E3 |
 | HB-ALM-001 | alarm: heartbeat stale | X-K2 · E3 |
@@ -634,7 +634,7 @@ This is the authoritative copy (the plan's table is its planning record). Anothe
 | `errors.py` | X-D | X-J1 | X-K1 | X-LG |
 | `identity.py` | X-D | X-J1 | X-K1 | X-LG |
 | `archive.py` | X-B2 | X-J1 | — | — |
-| `views.py` | X-A1 | X-J1 | — | — |
+| `views.py` | X-A1 | X-J1 | rev 6.8 (req-01M41XGYS25EXAHKPZV5EE1QT2): **X-K1**: `segment_rows`, `load`'s `completed` rule (D-K5) and the `verify` abandoned-head rule (W1-K §2, §3.6, §8). **X-A3**: the `CellView.pack` rename only (`CellView`, `_cell_view`; its brief). Disjoint hunks; neither edits the other's functions. Both take the file from X-J1 at its join (this section's hand-over rule); whichever joins later rebases on the earlier. Each adds its own tests to `tests/test_views.py` and `tests/mutations/views.json` | — |
 | `ledger.py` | X-C | X-J1 | — | — |
 | `plan.py` | X-A1 | X-J1 (`turns` only) | X-A3 | — |
 | `grade/runner.py` | X-F, except lines 108-112 (`catalog_hash` → an import; X-D's first commit, rev 3) and line 60's `plan` import (drops `tree_hash`; rev 6.4) and the after-grading `verify` hook hunk (X-C, after X-F joins; rev 4, SR-C2 e) | X-J2 | — | X-LG |
@@ -645,7 +645,7 @@ This is the authoritative copy (the plan's table is its planning record). Anothe
 | `grade/property.py`, `grade/bench_check.py` | X-F | — | — | X-LB |
 | `procs.py`, `egress.py` | X-F | — | — | — |
 | `profiles.py` | X-E | X-J2 | — | — |
-| `report/html.py` | X-H2 (rev 3: plus the header's `plan_pack` lines handed over by X-A1, SR-3) | — | X-A3 | — |
+| `report/html.py` | X-H2 (rev 3: plus the header's `plan_pack` lines handed over by X-A1, SR-3) | — | X-A3, except one hunk: rev 6.8 (req-01M41XGZF3ACCY2QB5Y3ATYDQK) the header's resume lines (ADR-0021 §6, W1-K §8) are **X-K2**'s, in its second dispatch, after **X-A3c and X-K1 have joined**; they read `resume.history`. Conditions: a run with no `run.resumed` row renders the header unchanged (the existing report goldens stay byte-identical); the line text comes from the one function `bench status` uses for "resumed n times" (no second wording), escaped by `_e`; X-K2's test is a new `tests/test_report_resume.py` (no edit to X-A3's test files). If X-A3c has not joined when X-K2's second dispatch is ready, the hunk waits for a short third X-K2 dispatch, and the CLI text lands without it | — |
 | `board.py`, `report/pack_improvement.py`, `report/summaries.py` | rev 3: X-A1, only the `plan_pack` one-line migrations (section 5) and `board._build_pack_effect`'s status text (SR-3) | — | X-A3 | — |
 | `report/cli_table.py`, `report/context_growth.py` | — | — | X-A3 | — |
 | `report/judges.py` (rev 3) | X-B2 (`archive.attempt_dirs`, S-B3) | — | — | — |
@@ -654,9 +654,10 @@ This is the authoritative copy (the plan's table is its planning record). Anothe
 | `workspace.py` (rev 4, S-B4 1) | X-B1: the `_land` hunk (it calls `atomic.rename_with_retry`; `RENAME_BACKOFF` moves) and the `make_writable` import only. `tests/test_workspace.py` stays X-A1's and X-B1 does not edit it (W1-B: its tests stay green unchanged) | — | — | — |
 | `tests/mutations/workspace.json` (rev 4) | X-B1 (the WIN-A mutant is re-pointed at the `_land` line) | — | — | — |
 | `tests/test_atomic_sites.py` (rev 4) | X-B1; X-F deletes the three grader `copytree` allowlist entries in its RF-9 commit (one granted hunk) | — | — | — |
-| `tools/check_models.py` (rev 6.3, SR-J2 ruled: RV-SIM's `WIDER` route for the turn variants as data; only the lines that cannot be data are granted as logic, listed with a reason in W1-J's gate revision; the `.tla`, the turns `.cfg` and this file land in **one commit**, proved by `tests/test_check_models.py` and `check_models.py --quick` green on the merged tree), `tests/test_check_models.py`, `models/README.md`, `docs/design/run-lifecycle-model.md` (rev 4, req-01M41F2PAKH97KH6BDGXCTA1KK) | Wave 1: W1-J (data rows only: the new seeded variants in `VARIANTS`, the `AtMostOnePrompt` → `PromptOncePerTurn` rename, the `turns` cfg, the mapping table; no change to the checker's logic) | X-J1 | W1-K (`NoResumeAfterStop`, by seam), then X-K1 | — |
+| `tools/check_models.py` (rev 6.3, SR-J2 ruled: RV-SIM's `WIDER` route for the turn variants as data; only the lines that cannot be data are granted as logic, listed with a reason in W1-J's gate revision; the `.tla`, the turns `.cfg` and this file land in **one commit**, proved by `tests/test_check_models.py` and `check_models.py --quick` green on the merged tree), `tests/test_check_models.py`, `models/README.md`, `docs/design/run-lifecycle-model.md` (rev 4, req-01M41F2PAKH97KH6BDGXCTA1KK) | Wave 1: W1-J (data rows only: the new seeded variants in `VARIANTS`, the `AtMostOnePrompt` → `PromptOncePerTurn` rename, the `turns` cfg, the mapping table; no change to the checker's logic) | X-J1 | W1-K (`NoLaunchAfterStop`, R-100; by seam), then X-K1. Rev 6.8 (req-01M41XGYS25EXAHKPZV5EE1QT2): X-K1 appends the W1-K §8 mapping rows to `docs/design/run-lifecycle-model.md` and the `models/README.md` line (W1-K §13, K7) | — |
+| `tools/alarm-task.ps1`, `tests/test_alarm_task.py`, `docs/runbooks/resume-and-alarm.md` (new; rev 6.8, req-01M41XGZ3WV678S30APNX8HBMK; the alarm channel, W1-K §6.3) | — | — | **X-K2**, second dispatch. Conditions: (1) `test_alarm_task.py` is `native`-marked (Windows only: it runs on the windows-latest CI job and skips with its reason on macOS) and drives the script only with `-DryRun` and a stub `bench`, so no test shows a toast or reaches the network; (2) the ntfy topic is read only from the user variable `HB_ALARM_NTFY_TOPIC` and is never printed, logged or put in the payload, and a test asserts the dry-run output does not contain the topic value; (3) the script runs under `powershell.exe` 5.1 (W1-K spike S-K1), which the runbook's `schtasks` line names; (4) the runbook carries V2 frontmatter and joins the docs index | — |
 | `.gitignore` (the `campaign.lock` line and, rev 3, the two `*.tmp-*` lines) | X-C | — | — | — |
-| `lifecycle.py`, `models/run_lifecycle.tla` and `.cfg` | — | W1-J (model and TLC first), then X-J1 | W1-K (`NoResumeAfterStop`), then X-K1 | — |
+| `lifecycle.py`, `models/run_lifecycle.tla` and `.cfg` | — | W1-J (model and TLC first), then X-J1 | W1-K (`NoLaunchAfterStop`, R-100), then X-K1 | — |
 | `bench/metrics.yaml` | X-G1 | — | X-G3 | — |
 | `bench/bom.yaml` | W0 (the ten stubs); then each task track edits only its own entry | ← | ← | ← |
 | `tasks/README.md` (property section) | W0; then by seam request | ← | ← | ← |
@@ -928,8 +929,12 @@ R-98, SR-E3 and the conditions of the five W0 rev 4/5 delta reviews (last sectio
 | R6.6b | RV-TA W1-L R2-2, R2-3; SR-L6 entered | `is_test_path(path, base_paths)`: test basenames incl. `tests.py`, `test.py`; a test-directory file counts as test only if the base tree has it | 13 |
 | R6.6c | RV-TA W1-L R2-4 | X-J2 owns the multi-turn discrimination path in E2 (`discriminate.py`, `synthetic_agent.py`, per-turn overlays); RS needs no new discriminate code (X-LB's loopback sits behind the same `PropertyCheck`, Inferred until X-LB's discrimination test); W1-L floor item 3 cites W1-E T-E11/T-E12, its seeded fixture single-turn (X-NG) until X-J2 joins | 13; W1-L Erratum 1 |
 | R6.7a | X-SM req-01M41RY339MV3Y56RQ1BKMPFCW (Coordinator #8) | `launderlines` carries `flips: [property_check_pass, size_vs_reference]` (its 3 in-radius lines move `size_vs_reference` within the ceiling); R6-8's definition of `flips` is unchanged, so no decision request | 7; W1-L Erratum 2 |
+| R6.8a | W1-K req-01M41XGYS25EXAHKPZV5EE1QT2 (Coordinator #10) | `views.py` in E3: X-K1 (`segment_rows`, `completed`, the verify abandoned-head rule) and X-A3 (the `CellView.pack` rename its brief already named), disjoint hunks after X-J1's join; the model docs were already X-K1's in E3 (rev 4 row), and the K7 rows are named | 13 |
+| R6.8b | W1-K req-01M41XGZ3WV678S30APNX8HBMK | three new paths for X-K2 (`tools/alarm-task.ps1`, `tests/test_alarm_task.py`, `docs/runbooks/resume-and-alarm.md`) with four conditions (Windows-only `-DryRun` test, the topic never printed, `powershell.exe` 5.1, frontmatter) | 13 |
+| R6.8c | W1-K req-01M41XGZF3ACCY2QB5Y3ATYDQK | the `report/html.py` resume header lines: one X-K2 hunk after X-A3c and X-K1 join; no-resume header byte-identical; one wording with `bench status` | 13 |
+| R6.8d | R-100 (DR-K1) conditions 1 and 4 | HB-RUN-008 is the stopped run's exit-3 reason, not a refusal; `NoResumeAfterStop` reads `NoLaunchAfterStop` in the hub rows | 11, 13 |
 
-**ADR amendment note recorded with rev 6** (appended; no decision text edited): ADR-0016 *Amendment 1* (R-98: §4's run id and grading id withdrawn, the grain restated as a result, the local link as the reconciliation path, §2a holding with no exception). It lands with rev 6, before X-E's first record commit.
+**ADR amendment note recorded with rev 6** (appended; no decision text edited): ADR-0016 *Amendment 1* (R-98: §4's run id and grading id withdrawn, the grain restated as a result, the local link as the reconciliation path, §2a holding with no exception). It lands with rev 6, before X-E's first record commit. **With rev 6.8:** ADR-0021 *Amendment 1* (R-100: §2 bullet 2 finish-the-stop and the three-row stop predicate, D-K4; §2 bullet 1 heartbeat age and lock path, D-K1; §4 row 2 the recorded process gone, D-K2; "complete" after a resume, D-K5; §9 "no launch after a stop"). It lands before X-K1's first commit.
 
 ### Who re-reads what (rev 6 is a contract change)
 

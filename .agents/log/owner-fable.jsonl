@@ -26,3 +26,6 @@
 {"agent": "owner-fable", "at": 1791061973.075525, "kind": "session-start", "path": "-", "seq": 26, "session": "owner-fable", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-owner-ruling-r99"}
 {"action": "resolve", "agent": "owner-fable", "at": 1791062415.4660828, "id": "req-01M41T6XB206JRN9V1AGFN92X9", "kind": "request", "outcome": "resolution", "path": "-", "seq": 27, "session": "owner-fable", "type": "request", "wi": "WI-0"}
 {"at": 1791062415.4756005, "from": "owner-fable", "kind": "ruling", "mail_id": "mail-01M41T763KCDP4W95JZWYBEJ3C", "ref": "req-01M41T6XB206JRN9V1AGFN92X9", "session": "owner-fable", "to": "leader-e1e4", "type": "mail"}
+{"agent": "owner-fable", "at": 1791066532.4397275, "kind": "session-start", "path": "-", "seq": 29, "session": "owner-fable", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-owner-ruling-r100"}
+{"action": "resolve", "agent": "owner-fable", "at": 1791066825.0168471, "id": "req-01M41V2MC1RTCBB4APR3TSXEYP", "kind": "request", "outcome": "resolution", "path": "-", "seq": 30, "session": "owner-fable", "type": "request", "wi": "WI-0"}
+{"at": 1791066825.07355, "from": "owner-fable", "kind": "ruling", "mail_id": "mail-01M41YDRBHF72J02CX3BN7VEB6", "ref": "req-01M41V2MC1RTCBB4APR3TSXEYP", "session": "owner-fable", "to": "w1k-resume-e1e4", "type": "mail"}
