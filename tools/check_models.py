@@ -34,8 +34,8 @@ TIMEOUT = 3600
 MODEL = "run_lifecycle"
 # Seeded bug -> the invariant ("inv") or temporal property ("prop") that must reject it.
 VARIANTS = {
-    "relaunch_prompted": ("inv", "AtMostOnePrompt"),
-    "send_before_persist": ("inv", "AtMostOnePrompt"),
+    "relaunch_prompted": ("inv", "PromptOncePerTurn"),
+    "send_before_persist": ("inv", "PromptOncePerTurn"),
     "launch_after_outcome": ("inv", "NoPromptAfterOutcome"),
     "archive_live": ("inv", "NoArchiveWhileLive"),
     "delete_before_archive": ("inv", "NothingDeletedUnarchived"),
@@ -56,6 +56,14 @@ VARIANTS = {
     "no_budget_kill": ("prop", "PromptedCellsEnd"),
     "grade_skipped": ("prop", "ArchivedCellsGetGraded"),
     "no_escalate": ("prop", "StopReachesTerminal"),
+    # ADR-0015 section 7, the turn rules. Those that need a second turn run at NumTurns = 2 through WIDER.
+    "resend_turn_on_resume": ("inv", "PromptOncePerTurn"),
+    "prompt_before_snapshot": ("inv", "SnapshotBeforeNextTurn"),
+    "snapshot_in_flight": ("inv", "NoSnapshotInFlight"),
+    "kill_between_turns": ("inv", "CrashedTurnPredicate"),
+    "crashed_turn_as_between": ("inv", "CrashedTurnPredicate"),
+    "archive_in_place": ("inv", "ArchiveExistsMeansComplete"),
+    "snapshot_in_place": ("inv", "ArchiveExistsMeansComplete"),
 }
 # The real design and the variants run at small bounds (2 cells, parallelism 1, 1 crash, 1 pass, the
 # engine and `bench grade` both grading); two-pass variants use the grading config. Every seeded
@@ -65,8 +73,14 @@ SMALL = {"Cells = {c1, c2, c3}": "Cells = {c1, c2}", "Parallelism = 2": "Paralle
 DEEP = {"MaxCrashes = 1": "MaxCrashes = 2"}
 TWO_PASS = {"no_lock"}             # variants that need two grading passes use the grading config
 # Variants whose defect needs a free slot beside an orphan run at parallelism 2.
-WIDER = {"reconcile_no_wait": {"Parallelism = 1": "Parallelism = 2"}}
-WITNESSES = {"witness": "NotAllCellsFinished", "grace-witness": "NoGraceState"}
+# Variants and witnesses (keyed by label) whose defect needs a second turn run at NumTurns = 2.
+TWO_TURNS = {"NumTurns = 1": "NumTurns = 2"}
+WIDER = {"reconcile_no_wait": {"Parallelism = 1": "Parallelism = 2"},
+         "resend_turn_on_resume": TWO_TURNS, "prompt_before_snapshot": TWO_TURNS, "snapshot_in_flight": TWO_TURNS,
+         "kill_between_turns": TWO_TURNS, "crashed_turn_as_between": TWO_TURNS, "snapshot_in_place": TWO_TURNS,
+         "turns-witness": TWO_TURNS, "between-witness": TWO_TURNS}
+WITNESSES = {"witness": "NotAllCellsFinished", "grace-witness": "NoGraceState",
+             "turns-witness": "NotAllTurnsDelivered", "between-witness": "NotCrashBetween"}
 
 
 def ensure_jar() -> Path:
@@ -145,7 +159,8 @@ def main(argv: list[str]) -> int:
     failures = []
 
     grading = (MODELS / f"{MODEL}.grading.cfg").read_text(encoding="utf-8")
-    runs = [("liveness", liveness), ("grading", grading), ("safety-small", small)]
+    turns = (MODELS / f"{MODEL}.turns.cfg").read_text(encoding="utf-8")   # logic line L1: the two-turn real-design run
+    runs = [("liveness", liveness), ("grading", grading), ("safety-small", small), ("safety-turns", turns)]
     if "--quick" not in argv:
         runs.append(("safety", safety))
     if "--deep" in argv:
@@ -162,7 +177,7 @@ def main(argv: list[str]) -> int:
 
     witnessed = 0
     for label, name in WITNESSES.items():
-        code, out, secs = tlc(only_invariant(small, name), label)
+        code, out, secs = tlc(only_invariant(substitute(small, WIDER.get(label, {})), name), label)   # logic line L2
         reached = f"Invariant {name} is violated" in out
         print(f"{'ok  ' if reached else 'FAIL'} {label:<24} {name} violated ({secs:.0f}s)", flush=True)
         if reached:

@@ -12,6 +12,7 @@ TLA+ specs that TLC checks in CI. They are written before the code they describe
 Configurations:
 - `run_lifecycle.safety.cfg`: safety at the US-44 bounds.
 - `run_lifecycle.grading.cfg`: grading mutual exclusion at two passes.
-- `run_lifecycle.liveness.cfg`: liveness at one cell.
+- `run_lifecycle.liveness.cfg`: liveness at one cell (two turns).
+- `run_lifecycle.turns.cfg`: two-turn cells (ADR-0015 section 7): the turn invariants at 2 cells, 1 crash.
 
 Run `python tools/check_models.py` (`--quick` for small bounds only, `--deep` to add 2 crashes). The script fetches the pinned `tla2tools.jar` into `.tools/` and checks its sha256. It needs Java 11 or later.

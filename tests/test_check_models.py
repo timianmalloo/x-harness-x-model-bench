@@ -36,9 +36,9 @@ def test_every_checked_property_has_a_seeded_variant():
 
 def test_variant_config_checks_only_its_target():
     safety = (ROOT / "models" / "run_lifecycle.safety.cfg").read_text(encoding="utf-8")
-    cfg = check_models.only_invariant(safety, "AtMostOnePrompt")
+    cfg = check_models.only_invariant(safety, "PromptOncePerTurn")
     listed = cfg.split("INVARIANTS", 1)[1].split("CHECK_DEADLOCK", 1)[0].split()
-    assert listed == ["AtMostOnePrompt"]
+    assert listed == ["PromptOncePerTurn"]
 
 
 def test_substitute_refuses_a_missing_line():
@@ -55,7 +55,8 @@ def test_every_seeded_variant_targets_a_declared_property():
 
 def test_grace_variant_and_both_reachability_witnesses_are_checked():
     assert check_models.VARIANTS["no_escalate"] == ("prop", "StopReachesTerminal")
-    assert check_models.WITNESSES == {"witness": "NotAllCellsFinished", "grace-witness": "NoGraceState"}
+    assert check_models.WITNESSES == {"witness": "NotAllCellsFinished", "grace-witness": "NoGraceState",
+                                      "turns-witness": "NotAllTurnsDelivered", "between-witness": "NotCrashBetween"}
 
 
 def test_an_unregistered_seeded_bug_is_rejected_by_the_reverse_check():

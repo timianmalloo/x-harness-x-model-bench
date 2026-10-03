@@ -68,6 +68,8 @@ It is **not** the engine, and it does not model: the agent's work inside a cell,
 | `GradeStart/GradeCell/GradeEnd` | grading · `grading.started`, score rows, `grading.completed`, under `grade.lock`, each process with its own `grading_id`. The engine starts its one pass only when every cell has ended and been archived (or was never launched because of a stop), and ends it only after grading every archived cell; `bench grade` may run a pass at any time | 1 |
 | *(internal progress, no model action)* | cell · `cell.workspace_built`; attempt · `attempt.handshake_done` — stutter steps for the model; used for phase timings | 1 |
 | `StopCell(c)` | stop → request cancel and start the grace for every running cell; `cell.outcome{stopped}` follows confirmation that the job is empty; unlaunched cells stay unstarted | 2 |
+| `TurnEnd(c,k)` | the worker records cell · `cell.turn_ended{turn, stop_reason, next}` for every turn that returned, before the continue decision (ADR-0015, design `eval-multi-turn.md` section 4.2) | E2 |
+| `CopyBegin` / `CopyPublish` / `SnapRecord(c,k)` / `SnapFail(c,k)` | `publish_dir` fills a temp sibling, verifies and renames; rows then cell · `cell.turn_snapshot_archived{turn, snapshot_hash}`; a failed copy is `failed (archive)` HB-CELL-117. Replay rules: `PromptOncePerTurn`, `SnapshotBeforeNextTurn`, `SnapshotAfterTurnEnd`, `CrashedTurnPredicate` (provisional for W1-K) | E2 |
 | `WriteControl(k)` / `ApplyStop` / `ApplyAnswer` / `RemoveControl(k)` | control file (temp + rename) / control · `control.applied{uuid}` / file removed | 2 |
 | `RaiseDecision` / `TimeoutDefault` | decision · `decision.opened` / `decision.resolved{default}` | 2 |
 | `Crash` / `Resume` | process death / run · `run.resumed{epoch}` | 5 |

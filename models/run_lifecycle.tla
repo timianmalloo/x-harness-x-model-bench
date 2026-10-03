@@ -3,6 +3,9 @@
 (* The lifecycle of one harness-bench run (spec US-44; ADR-0006, ADR-0007). *)
 (* Version 5 (native cells and R-21 cancel grace, ADR-0013; turns and turn   *)
 (* snapshots, ADR-0015 section 7; crash-atomic archive writes, ADR-0015 5a). *)
+(* Provisional for W1-K (resume), which owns these two rules at its join:   *)
+(* the `BetweenSnapped` redo in ReconcileRecord and the final ELSE branch of *)
+(* `ClassOf` (all turns ended, no outcome: crashfail).                      *)
 (*                                                                         *)
 (* One run engine process that can crash and be resumed; cells (each a    *)
 (* native process tree in its own Job Object, `proc`) that can fail on    *)
@@ -238,10 +241,12 @@ SendPrompt(c) ==
                    stopApplied, decision, resolutions, lock, passState, passOwner, graded,
                    gradeCount, grace>>
 
-\* The adapter returns end_turn and the worker records turn_ended{k} (ADR-0015 section 2 (a)).
+\* The adapter returns a stop reason and the worker records turn_ended{k} (ADR-0015 section 2 (a)), for every turn
+\* that was sent, whatever its stop reason or a pending kill (w1-j rev 2: RV-SRE 1, RV-PAT F2, RV-DS 4). The record
+\* says the turn ran; whether turn k+1 follows is the engine's rule, not this action's.
 TurnEnd(c, k) ==
     /\ EngineReady
-    /\ proc[c] = "running" /\ ~killRequested[c]
+    /\ proc[c] = "running"
     /\ prompts[c][k] >= 1 /\ ~turnEnded[c][k]
     /\ turnEnded' = [turnEnded EXCEPT ![c][k] = TRUE]
     /\ UNCHANGED <<snapEv, copying, tmp, fin, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
@@ -568,7 +573,8 @@ ReconcileKill(c) ==
 \* cells have their proc removed and may launch once. The recorded class is ADR-0015 section 6's
 \* predicate (ClassOf); a cell between turns first has its snapshot redone (ADR-0021 section 4).
 \* Seeded bugs: `relaunch_prompted` reopens every prompted cell; `resend_turn_on_resume` reopens a crashed
-\* turn k > 1; `kill_between_turns` classifies by the old predicate (prompted and not terminal).
+\* turn k > 1; `kill_between_turns` classifies by the old predicate (prompted and not terminal);
+\* `crashed_turn_as_between` is the reverse error: a crashed turn classed as between turns.
 ResendTurn(c) == BUG = "resend_turn_on_resume" /\ \E k \in Turns \ {1} : promptSent[c][k] /\ ~turnEnded[c][k]
 ReconcileRecord(c) ==
     /\ engine = "up" /\ reconciling
@@ -576,7 +582,9 @@ ReconcileRecord(c) ==
     /\ (BUG = "reconcile_no_wait" \/ proc[c] # "running")   \* seeded: records without confirming the kill
     /\ IF AnyPrompted(c) /\ BUG # "relaunch_prompted" /\ ~ResendTurn(c)
          THEN /\ BetweenSnapped(c)
-              /\ Record(c, IF BUG = "kill_between_turns" THEN "crashfail" ELSE ClassOf(c))
+              /\ Record(c, IF BUG = "kill_between_turns" THEN "crashfail"
+                          ELSE IF BUG = "crashed_turn_as_between" /\ CrashedTurn(c) THEN "crashbetween"
+                          ELSE ClassOf(c))
               /\ UNCHANGED <<proc, promptSent>>
          ELSE /\ proc' = [proc EXCEPT ![c] = "none"]
               /\ promptSent' = IF BUG = "relaunch_prompted"
@@ -727,8 +735,16 @@ SnapshotBeforeNextTurn     == \A c \in Cells, k \in Turns \ {1} :
                                 (promptSent[c][k] \/ prompts[c][k] >= 1) => snapEv[c][k - 1]
 \* No copy runs while a turn is in flight, so the working copy is quiescent apart from stray processes.
 NoSnapshotInFlight         == \A c \in Cells : copying[c] # NoCopy => ~InFlight(c)
-\* A resumed cell is classed by prompt_sent, turn_ended and the terminal outcome, not by prompt_sent alone.
-CrashedTurnPredicate       == \A c \in Cells : outcome[c] \in {"crashfail", "crashbetween"} => outcome[c] = ClassOf(c)
+\* ADR-0015 section 7, stated from the ledger facts and independent of ClassOf (w1-j rev 2, RV-TA 2): a recorded
+\* crash outcome is crashfail when a turn was sent and has not ended; a cell with no such turn that waits between
+\* turns is crashbetween, and only such a cell is. Three implications, so a wrong ClassOf fails in either direction.
+CrashedLit(c) == \E k \in Turns : promptSent[c][k] /\ ~turnEnded[c][k]
+WaitingLit(c) == (\A k \in Turns : promptSent[c][k] => turnEnded[c][k])
+                 /\ \E k \in 1..(NumTurns - 1) : turnEnded[c][k] /\ ~promptSent[c][k + 1]
+CrashedTurnPredicate       == \A c \in Cells : outcome[c] \in {"crashfail", "crashbetween"} =>
+                                /\ (CrashedLit(c) => outcome[c] = "crashfail")
+                                /\ (WaitingLit(c) => outcome[c] = "crashbetween")
+                                /\ (outcome[c] = "crashbetween" => WaitingLit(c))
 \* A final archive or snapshot name exists only after its copy was verified.
 ArchiveExistsMeansComplete == \A c \in Cells, a \in Arts : fin[c][a] # "none" => fin[c][a] = "complete"
 NoPromptAfterOutcome       == ~flags["promptAfterOutcome"]
