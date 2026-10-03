@@ -1854,7 +1854,94 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4e907d89627f0bb44616109ae745c5793edf8e2ba1d3132afa0a36f2d18c73db"
+      "sourceSha256": "f9267759fb6d42eb850f9cd36a4954809bf437e56885344c97069d86003479c2"
+    },
+    {
+      "id": "design-eval-property-grader",
+      "path": "docs/design/eval-property-grader.md",
+      "title": "Design W1-F: the hidden-check runner and the property grader (boundary B7, security-sensitive)",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation E1: Wave 1 design slice W1-F (built by X-F in E1; loopback by X-LB in E4)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "One registered `property` grader (R-90): runner.applicable narrows it to the task's property; it runs the hidden tests through correctness.grade() in their own copy, then the task's hidden check in a fresh copy, in a new Job Object, started DETACHED with the base interpreter and the grading environment allowlist. The check never imports agent code: in-process probes go through a bench_check probe-host child (RV-SEC F1; the forgery was reproduced 3/3 by spike SP-F2). The grader accepts one result document from a live, lone check, acknowledges it with one byte, then classifies by a fixed precedence into the closed outcome set (HB-CHK-001..004, a measured 0, or scores). Every ADR-0018 STRIDE row has a control, a test node and a disposition. Gate pending.",
+      "tags": [
+        "benchmark",
+        "grading",
+        "property-grader",
+        "hidden-check",
+        "security",
+        "trust-boundary",
+        "b7",
+        "evaluation-campaign",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0018-hidden-check-harness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0010-untrusted-cell-output",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0012-proportionate-security",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0013-native-cells",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0019-catalog-0-7-property-metrics",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-20261003-spike-e1-job-alone",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-20261003-spike-e1-handle-list",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-spike-phase1-probes",
+          "rel": "depends-on"
+        },
+        {
+          "to": "note-20260924-spike-a9-host-sleep",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-phase3-graders",
+          "rel": "refines"
+        },
+        {
+          "to": "coordination-eval-campaign",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "e63d1964905a25c75e5cd6bb2c200a91a706d7012527e4df130842d19c80ac55"
     },
     {
       "id": "design-eval-seam-contracts",
@@ -4874,5 +4961,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "9a475383318089580b65bae5b370c6cda232bd4d9a0db0003e11025170068161"
+  "graphSha256": "1b0952a7f653cd699fe915c59c3bdc1a938c4bc790b2c91a36b07f714528894c"
 };
