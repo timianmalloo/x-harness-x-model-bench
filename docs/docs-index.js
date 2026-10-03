@@ -986,6 +986,35 @@ window.DOCS_INDEX = {
       "sourceSha256": "5ef416d018179c6637ba358a9fe1787d392f2211b744f725440b8b73b1e43c1d"
     },
     {
+      "id": "note-20261003-spike-e4-post-turn-prompt",
+      "path": "docs/notes/spike-e4-post-turn-prompt.md",
+      "title": "Spike E4 - a second session/prompt in the same ACP session after end_turn",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-12-24",
+      "reviewSuggested": [],
+      "summary": "Verified on all three harnesses (Windows host; macOS unverified): the ACP session itself accepts a second session/prompt on the same sessionId after turn 1 ends with stopReason end_turn, with no second handshake and stdin never closed between turns. Turn 2 completed end_turn on claude-code (claude-opus-5-5), codex (gpt-6-sol) and copilot (gpt-6-sol), and each adapter's growing cachedReadTokens across the turn boundary shows turn 1's context carried into turn 2. The production engine does not do this today: driver.run_turn sends exactly one prompt and returns (src/harness_bench/driver.py:300), and engine.py's _attempt closes stdin immediately after it returns (src/harness_bench/engine.py:752), inside a finally that always runs (engine.py:728-732). Supporting DR-E4's two-turn rework task needs driver/engine changes, named below, not just a second RPC call.",
+      "tags": [
+        "spike",
+        "acp",
+        "multi-turn",
+        "rework",
+        "risk-R-E6",
+        "DR-E4",
+        "EV-4"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "07917835d700372f139f4dff998db93acf736dcede8f9ff54b35791b3507156c"
+    },
+    {
       "id": "note-catalog-0.5-anchors",
       "path": "docs/notes/catalog-0.5-anchors.md",
       "title": "Catalog 0.5.dev normalisation anchors and weight corrections (R-78 condition 1, R-79)",
@@ -3466,5 +3495,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "331a3236140b81ccf4a447933cefa68344271f8766719717a37ea50045d18d6b"
+  "graphSha256": "fcce9201e48502bbd0cb4c468523bb4d2a5e2160634b4ce7d3d7b38bba5bb25f"
 };
