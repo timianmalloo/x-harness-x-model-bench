@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:49:49Z",
+  "generated": "2026-10-03T17:52:21Z",
   "audit": [
     {
       "actor": null,
@@ -65874,6 +65874,28 @@ window.AUDIT_DATA = {
       "tags": [],
       "outcome": "success",
       "compiled": false
+    },
+    {
+      "id": "al-01M41EAGE75491PTBZAJBXCD14",
+      "shortname": "design-slice-review-pat-w1i",
+      "datetime": "2026-10-03T17:52:21Z",
+      "session": "rv-pat-w1i-e1e4",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md (W1-I)",
+      "summary": "RV-PAT review of W1-I: BLOCK, 1 blocking seam finding (wsgi not built in E1)",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1i.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Patterns review of W1-I",
+      "done_when": "report committed with gate line",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
