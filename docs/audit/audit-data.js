@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:44:09Z",
+  "generated": "2026-10-03T18:56:50Z",
   "audit": [
     {
       "actor": null,
@@ -65959,6 +65959,28 @@ window.AUDIT_DATA = {
     {
       "actor": null,
       "artifacts": [
+        "docs/design/eval-campaign-record.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:08:06Z",
+      "done_when": "Gate PASS incl. Security and Distributed Systems; lock-then-read for every command; tamper tests named",
+      "fan_out": 0,
+      "goal": "Run design-slice for W1-C campaign record and bench campaign",
+      "id": "al-01M41F7B2GD7YSBCJ2C9R7GQFP",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-c-campaign-record.md",
+      "session": "w1c-campaign-e1e4",
+      "shortname": "design-slice-eval-campaign-record",
+      "skill": "design-slice",
+      "summary": "W1-C design: campaign ledger, state table, commands with guards and tests, lock protocol (measured), freeze, F-1 identity checks, verify, eligibility, test plan with mutants",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
         "docs/design/reviews/eval-review-ta-w1i.md"
       ],
       "compiled": false,
@@ -66694,28 +66716,52 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41H90J96K9V1343P7M6YN2P",
-      "shortname": "coord-w0-rev4-wave2-e1",
-      "datetime": "2026-10-03T18:43:58Z",
-      "session": "coord-opus-e1e4",
-      "prompt": "Coordinator #4: answer open seams, ADR-0020 Amendment 1, W0 rev 4 with change table and delta re-read list, Wave 2 E1 dispatch pack",
-      "summary": "W0 rev 4: 6 seam requests resolved (5 granted, SR-C1 in part: oslock.py to X-B1 not X-C); cross-slice rulings on W1-C/W1-H (pilot arity, expected_na, admission, plan_hash, run_side_check via engine campaign_check, lock-free reads, content-keyed git witness); RV-PAT rev3 delta conditions; ADR-0020 Amendment 1; Wave 2 E1 pack: README (routing, DAG, launch order) + 9 briefs + 6 coord-run/1 contracts (compile ids owed); 5 briefs owed on W1-C/W1-E/W1-H",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/design/eval-seam-contracts.md",
         "docs/adr/0020-power-and-verdicts-stdlib.md",
         "docs/coordination/eval-wave2-e1/README.md"
       ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:43:58Z",
+      "done_when": "committed on coord/eval-w0-rev4-wave2; derive/validate exit 0; requests resolved; handback sent",
+      "fan_out": 1,
+      "goal": "Answer coord-opus-e1e4 seams, write ADR-0020 Am. 1 and W0 rev 4 with delta re-read list, and the Wave 2 E1 dispatch pack",
+      "id": "al-01M41H90J96K9V1343P7M6YN2P",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Coordinator #4: answer open seams, ADR-0020 Amendment 1, W0 rev 4 with change table and delta re-read list, Wave 2 E1 dispatch pack",
+      "session": "coord-opus-e1e4",
+      "shortname": "coord-w0-rev4-wave2-e1",
+      "skill": "execute-with-coordination",
+      "summary": "W0 rev 4: 6 seam requests resolved (5 granted, SR-C1 in part: oslock.py to X-B1 not X-C); cross-slice rulings on W1-C/W1-H (pilot arity, expected_na, admission, plan_hash, run_side_check via engine campaign_check, lock-free reads, content-keyed git witness); RV-PAT rev3 delta conditions; ADR-0020 Amendment 1; Wave 2 E1 pack: README (routing, DAG, launch order) + 9 briefs + 6 coord-run/1 contracts (compile ids owed); 5 briefs owed on W1-C/W1-E/W1-H",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "id": "al-01M41J0H8QXR2VGA19SRS9FM37",
+      "shortname": "design-slice-eval-campaign-record-rev2",
+      "datetime": "2026-10-03T18:56:48Z",
+      "session": "w1c-campaign-r2-e1e4",
+      "prompt": "W1-C author follow-up rev 2 (brief docs/coordination/eval-wave1/w1-c-campaign-record.md)",
+      "summary": "Applied the five W1-C lens reviews (43 findings) and W0 rev 4: re-pilot path after a fix, content-keyed git witness, id and link validation, plan_hash binding, run-side check in the engine, lock-free reads, mutant ledger, S-C5 positive control",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-campaign-record.md"
+      ],
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Answer coord-opus-e1e4 seams, write ADR-0020 Am. 1 and W0 rev 4 with delta re-read list, and the Wave 2 E1 dispatch pack",
-      "done_when": "committed on coord/eval-w0-rev4-wave2; derive/validate exit 0; requests resolved; handback sent",
-      "tier": "T1",
-      "fan_out": 1
+      "goal": "Apply review findings to W1-C",
+      "done_when": "Every finding has a disposition row; Gate record has the five first-round lines plus rev 2 pending RV-PAT, RV-SEC",
+      "tier": "T2",
+      "fan_out": 0,
+      "started_at": "2026-10-03T18:46:44Z",
+      "duration_seconds": 604.0
     }
   ],
   "changes": [
@@ -67184,6 +67230,26 @@ window.AUDIT_DATA = {
       "title": "Evaluation-campaign architecture: arms in the plan, two-turn attempts, campaign record, hidden-check harness, plan-level resume"
     },
     {
+      "artifacts": [],
+      "datetime": "2026-10-03T18:08:18Z",
+      "git": {
+        "after": "ae21488b361d0e39e815d3708896701fe62ed348",
+        "before": null,
+        "branch": "design/eval-campaign-record",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41F7QC1QJ9KGHK8CTM8B5KP",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "W1-C design for X-C: derived state, per-command guards, measured lock safety, F-1 checks at plan and attach",
+      "tags": [],
+      "title": "Campaign record design: closed 11-kind ledger folded to state, own-then-probe locks, git-prefix verify, attach freeze with chain identity check"
+    },
+    {
       "artifacts": [
         "docs/design/eval-security-tasks.md"
       ],
@@ -67517,25 +67583,16 @@ window.AUDIT_DATA = {
       "title": "S-LB loopback firewall spike prepared, not run"
     },
     {
-      "id": "cl-01M41H9AXYB1KA3AG3RG9KG72N",
-      "datetime": "2026-10-03T18:44:08Z",
-      "session": "coord-opus-e1e4",
-      "kind": "design",
-      "skill": "execute-with-coordination",
-      "title": "W0 seam contracts rev 4 and ADR-0020 Amendment 1",
-      "prompt": null,
-      "summary": "Batch-b seams answered; oslock.acquire_then_probe owned by X-B1 with a set of others; plan_hash on attach rows; run-side campaign check after the run lock via an injected engine keyword; gates.pilot expected_na keyword-only; gates.admission (EV-8); status/verify lock-free; git witness keyed on content; ADR-0020 seed_for and holm alpha/m recorded",
-      "rationale": "One definition per protocol (DM7); close check-then-act windows (RV-DS W1-C 2); bind attached plans by content (RV-SEC W1-C 7); keep W0's three-argument pilot call valid",
       "artifacts": [
         "docs/design/eval-seam-contracts.md",
         "docs/adr/0020-power-and-verdicts-stdlib.md"
       ],
-      "tags": [],
+      "audit_ref": "al-01M41H90J96K9V1343P7M6YN2P",
+      "datetime": "2026-10-03T18:44:08Z",
       "git": {
-        "before": "9c9056df",
         "after": "3fc5e4a78874e8bba301524e30ab128b51c78062",
+        "before": "9c9056df",
         "branch": "coord/eval-w0-rev4-wave2",
-        "pushed": null,
         "commits": [
           "3fc5e4a7 Merge branch 'main' into coord/eval-w0-rev4-wave2",
           "a49c56da chore(coord): regenerate docs index after the SP-LB merge; ledger rows",
@@ -67581,9 +67638,38 @@ window.AUDIT_DATA = {
           "84980979 merge: main into design/eval-identity (W0 rev 3, R-87..R-96)",
           "ab13f0eb design(eval-arms): W1-A arms v2 design slice (ADR-0014), gate pending",
           "71a15a0b design(eval-identity): W1-D engine identity, freeze and per-launch recheck"
-        ]
+        ],
+        "pushed": null
       },
-      "audit_ref": "al-01M41H90J96K9V1343P7M6YN2P"
+      "id": "cl-01M41H9AXYB1KA3AG3RG9KG72N",
+      "kind": "design",
+      "prompt": null,
+      "rationale": "One definition per protocol (DM7); close check-then-act windows (RV-DS W1-C 2); bind attached plans by content (RV-SEC W1-C 7); keep W0's three-argument pilot call valid",
+      "session": "coord-opus-e1e4",
+      "skill": "execute-with-coordination",
+      "summary": "Batch-b seams answered; oslock.acquire_then_probe owned by X-B1 with a set of others; plan_hash on attach rows; run-side campaign check after the run lock via an injected engine keyword; gates.pilot expected_na keyword-only; gates.admission (EV-8); status/verify lock-free; git witness keyed on content; ADR-0020 seed_for and holm alpha/m recorded",
+      "tags": [],
+      "title": "W0 seam contracts rev 4 and ADR-0020 Amendment 1"
+    },
+    {
+      "id": "cl-01M41J0J9DX77CK7QV58G5D23W",
+      "datetime": "2026-10-03T18:56:49Z",
+      "session": null,
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "W1-C rev 2: a fix in registered demotes to baselined; content-keyed git witness over commit pairs; plan_hash binding; lock-free reads",
+      "prompt": "W1-C author follow-up rev 2",
+      "summary": "Closes the RV-PAT block (no re-pilot path) and the RV-SEC and RV-DS conditions; pilot_current removed as implied by the state",
+      "rationale": null,
+      "artifacts": [],
+      "tags": [],
+      "git": {
+        "before": null,
+        "after": "6099a0a36e9d53e6061b7e46735fc3682a089e0a",
+        "branch": "design/eval-campaign-record",
+        "pushed": null,
+        "commits": []
+      }
     }
   ],
   "messages": [
