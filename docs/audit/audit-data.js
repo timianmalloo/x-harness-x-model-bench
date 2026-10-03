@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T16:06:20Z",
+  "generated": "2026-10-03T16:34:06Z",
   "audit": [
     {
       "actor": null,
@@ -65105,6 +65105,29 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M419V7HQKF1HTB5W0QYH4NT7",
+      "shortname": "coordination-eval-campaign",
+      "datetime": "2026-10-03T16:34:06Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "You are the **Coordinator** seat (Claude Opus 5.5, model id claude-opus-5-5) for the federated Evaluation Campaign build in C:\\Projects\\x-harness-x-model-bench. Your session id is `coord-opus-e1e4`; export AGENT_SESSION=coord-opus-e1e4 for every coord command. On Windows use `python`, never `python3`.\n\n## Seats (fixed; do not change)\n- Leader: Claude Code session `leader-e1e4` (claude-opus-5-5). It holds the leader lease (epoch 13; do NOT pin, reclaim or release it). It does every merge to main and every push. It talks to the operator. You never commit to main and never push.\n- Owner: Claude Fable (claude-fable-5-1), session `owner-fable`. It answers decision requests and seam disputes with rulings in docs/notes/rulings.md. The next ruling is R-87.\n- You: you decompose the work, write the contracts and slice briefs, arbitrate seams, review joins, and keep the work graph.\n\n## Your task now: run the /prepare-for-coordination skill, and only that\nRead `.claude/skills/prepare-for-coordination/SKILL.md` and follow it end to end (Stages 0–9, the definition of done, docs-graph derive, and the audit entry). The kickoff prompt is compiled and dispatchable: it is the audit-log `kind:prompt` entry added in commit 7df63873 (docs/audit/audit-log.jsonl). Read it verbatim from there. Its goal state, decomposition (Wave 0 contracts; Wave 1 design slices A–L plus spikes S-LB and N4; Wave 2 federated implementation; the phase order E1, then E2/E3/E4 in parallel), gates, constraints, routing and Not-in-scope are binding. Refine them; never widen them.\n\nThe inputs are authoritative; read them before planning: docs/specs/enterprise-evaluation.md; docs/architecture-evaluation-campaign.md; docs/adr/0014..0021; docs/architecture.md and ADR-0001..0013 (as needed); docs/notes/spike-e4-post-turn-prompt.md; docs/notes/spike-e1-{handle-list,job-alone,ntfs-atomic-publish}.md; docs/lessons/defect-classes.md; tasks/README.md; bench/metrics.yaml. The precedent is docs/coordination/coordination-phase1-finish.md and its -run.md. Read the run record for the harness facts that were qualified: the Codex wrapper script, the agy hooks, the grok version floor, the Agent-tool worktree refusal, and the leader TTL cap.\n\nThe layer state measured by the Leader at 16:13Z: registry ok (11 patterns); merge driver effective; **1 artifact OWED regeneration**; requests 0 open; no live leases; worktrees: primary only. Re-measure it yourself with `coord doctor`.\n\n## Constraints for this step\n- Work in your own worktree (`python docs/ai-forward-pack/scripts/coord-core.py worktree new ...`). Never use the EnterWorktree tool. Commit named paths only, never `git add -A` or `-a`. Leave your branch for the Leader to merge.\n- The plan's order of operations must reflect these points:\n  - the Leader holds the lease and merges;\n  - each worker gets its own `coord worktree new` tree and branch;\n  - Codex/Agy/Grok are dispatched through docs/ai-forward-pack/scripts/coord-runner.py (and the operator-approved Codex wrapper, if it still exists; check it);\n  - every track pins its model explicitly (Sonnet = claude-sonnet-5; Codex = gpt-6.1-sol; Agy = gemini-3.8-flash-high; Grok = grok-4.7 with reasoning-effort high). Never GitHub Copilot.\n  - Each track has a stated fallback: Claude Sonnet after an Owner review.\n  - Fan-out cap: 6 concurrent workers, at most 2 per external harness.\n  - Context ceilings: the Coordinator 400k per session (a fresh session per phase); workers 150–200k per slice.\n- Record harness capability per track as enforced / observed-only / unsupported, only from what you verify. Codex served gpt-6.1-sol on codex-cli 0.160.0 on 2026-10-03, per the operator. Confirm that the runner's profile points at that version. If it does not, say so as a blocker.\n- Wave 0 (the seam-contracts doc) is part of the serial spine. You may draft it in this step if that is the cheapest correct order, but the plan must stand on its own.\n- If anything needs an Owner ruling, do not invent the answer. Write it as a decision request (DR-n) in the plan, and list it in your final report so the Leader can convene the Owner.\n- Do not dispatch any worker in this step. Do not run any benchmark grid.\n\n## Return to the Leader (keep it short; the Leader's context is the scarce resource)\n1. Your branch name and its commits (sha + subject).\n2. The tracks table (track · what it does · harness · model · depends on), and the struck tracks.\n3. The serial spine in one line per item.\n4. Open decision requests (DR-n), each with its options and your recommendation.\n5. Blockers on the operator, if any (e.g. a harness not qualified, a missing allow rule).\n6. The measured `coord doctor` result, and whether the OWED artifact was regenerated.\nDo not paste file contents.",
+      "summary": "Plan for E1-E4: Q0 harness qualification, W0 seam contracts with hub-file owners per phase, 12 design slices + 6 lens reviewers + SP-LB, ~25 federated implementation tracks by DAG (E1 to demo; E2/E3/E4 parallel; engine.py J before K), convergence X-CV. Struck: N4 (already Verified), separate TLA+ track, per-slice reviewers, S2 in E1, seam-stub coding track. DR-1..3 for the Owner; blocker B-1: Codex wrapper pins codex-cli 0.156.0/gpt-6-sol and a retired AGENT_SESSION. Owed docs-index regenerated byte-identical.",
+      "kind": "skill",
+      "skill": "prepare-for-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/coordination/coordination-eval-campaign.md",
+        "docs/coordination/coordination-eval-campaign.html"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Emit the coordination plan (md + html) for the Evaluation Campaign build E1-E4 on the Coordinator's own branch",
+      "done_when": "coord doctor measured; artifact classes recorded; plan md+html committed; docs-graph derived; audit entry appended",
+      "tier": "T1",
+      "fan_out": 0
     }
   ],
   "changes": [
