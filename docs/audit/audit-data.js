@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T16:42:09Z",
+  "generated": "2026-10-03T17:01:06Z",
   "audit": [
     {
       "actor": null,
@@ -65171,6 +65171,36 @@ window.AUDIT_DATA = {
         "sha": "77a714a37057e3d058856c0e22cb3130b20c7aa9",
         "short": "77a714a37",
         "branch": "owner/rulings-r87-r89",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M41BCN3BBCSFAA4W2CA4MQ6C",
+      "shortname": "ruling R-90 (DR-4, property_check_pass composition)",
+      "datetime": "2026-10-03T17:01:06Z",
+      "session": "owner-fable",
+      "prompt": "Owner seat: rule DR-4, how property_check_pass composes the stated ask's hidden tests with the property's own checks, given one grader cannot read another's output in a pass; W0 docs/design/eval-seam-contracts.md section 7 at 1700ca0f; include the ten-vs-eleven metric count.",
+      "summary": "R-90 DR-4 (a): one property grader records the eleven ADR-0019 property metrics, narrowed by the task's property.name through one catalog property: tag applied by runner.applicable and read by readiness (one definition); it runs the hidden tests through correctness.grade() in its own grading copy (rework needs tests on the turn-1 snapshot, which only this grader can do); tasks keep correctness so pass_at_1 stays; (c) refused (runner.py:12-23: no grader reads another's output); (b) deferred pending the measured cost of the double test run; the double run's disagreement with pass_at_1 is a pilot-gate finding. Count: eleven; the plan's ten at :134/:183/:209 is a miscount the Coordinator corrects.",
+      "kind": "manual",
+      "skill": null,
+      "tool": null,
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "outcome": "success",
+      "goal": "Rule DR-4 (req-01M41B3C7C7FY80DCZZ6A3TVES) as R-90",
+      "done_when": "Ruling 90 in docs/notes/rulings.md via coord decide rule, the request resolved, committed on owner/ruling-r90",
+      "tier": "T0",
+      "fan_out": 0,
+      "git": {
+        "sha": "ce1aa06ab58712c8a2ae5a27050b5f02bb6fc83b",
+        "short": "ce1aa06ab",
+        "branch": "owner/ruling-r90",
         "pushed": null
       }
     }
