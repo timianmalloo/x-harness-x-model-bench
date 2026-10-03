@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:04:00Z",
+  "generated": "2026-10-03T18:09:47Z",
   "audit": [
     {
       "actor": null,
@@ -66087,6 +66087,36 @@ window.AUDIT_DATA = {
         "sha": "1ceea651bceeada8e8406e1633afaa930d48a9f3",
         "short": "1ceea651b",
         "branch": "owner/ruling-r95",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M41FADEXXHBT2JTQYBWBRF1N",
+      "shortname": "ruling R-96 (DR-10, holm on interval verdicts; R-93 None state; ADR-0020 s2 note)",
+      "datetime": "2026-10-03T18:09:46Z",
+      "session": "owner-fable",
+      "prompt": "Owner seat: (1) rule req-01M41EPSB7E91C4APYT1QGN3FV from W1-H: how correction.method=holm acts on interval verdicts; A size and level like Bonferroni (alpha/m), B Holm step-down on bootstrap p-values; (2) flag: W1-H adds a hidden-test agreement not recorded state to the R-93 line, inside R-93 or a new ruling; (3) ADR-0020 s2 still says plan seed, W0 rev 3 replaced it with seed_for; say who writes the amendment note. Own worktree owner/ruling-r96.",
+      "summary": "R-96 DR-10: (A) granted, (B) refused. ADR-0020 s2 verdicts are interval-only (p-value verdicts rejected at 0020:49); Holm's first step is alpha/m and every later step is more liberal, so the 1-alpha/m interval is never more liberal than any Holm step and its verdicts are a subset of Holm's rejections; a step-down adds a cross-verdict dependency the per-(property,harness,comparison) grain lacks and yields no interval for the MDE comparison. holm stays registrable (W0 rev 3 enum, spec :685 illustration) with alpha_per_test as the one definition, disclosed as level_rule at registration and in section 3; the verdict endpoints under holm must equal bonferroni's (second test row). R-93 flag: the None state is inside R-93 (never silently resolved; IO: not recorded, never a plausible wrong number), recorded as a clarification of R-93 c1 with three states; R-H3 closes. ADR-0020 s2 plan seed -> seed_for: the Coordinator writes Amendment 1 in the W0 rev 3 form (eval-seam-contracts.md:661), before X-H1's first commit.",
+      "kind": "manual",
+      "skill": null,
+      "tool": null,
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "outcome": "success",
+      "goal": "Rule DR-10 (req-01M41EPSB7E91C4APYT1QGN3FV): holm on interval verdicts; rule the R-93 not-recorded flag; name the ADR-0020 s2 amendment author",
+      "done_when": "Ruling 96 in docs/notes/rulings.md via coord decide rule from the owner/ruling-r96 worktree, the request resolved, an audit entry appended, committed",
+      "tier": "T0",
+      "fan_out": 0,
+      "git": {
+        "sha": "f41d2f205271d823403e8186705b11021d1c1cc3",
+        "short": "f41d2f205",
+        "branch": "owner/ruling-r96",
         "pushed": null
       }
     }
