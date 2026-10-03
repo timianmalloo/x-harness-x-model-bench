@@ -3632,6 +3632,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "5251732e1cd4289428039c0593ca2bcf0102f5de6d2e399b5f41af19a333478d"
     },
     {
+      "id": "review-eval-ds-w1c",
+      "path": "docs/design/reviews/eval-review-ds-w1c.md",
+      "title": "W1-C campaign record and bench campaign: Distributed Systems lens review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of docs/design/eval-campaign-record.md (design/eval-campaign-record, ae21488b, 61338062) by the Distributed Systems lens. DS-1, F2 and F8 hold. Two majors: the torn-tail repair breaks the ledger-prefix rule after a commit, and the run side of conclude has no lock-then-probe partner. PASS WITH CONDITIONS.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "1bce63791bbba85e0eb55e47af0b8f06bf90131a3dc75d712f6af432ccf8defe"
+    },
+    {
       "id": "review-eval-pat",
       "path": "docs/design/reviews/eval-review-pat.md",
       "title": "Patterns Expert review of the Evaluation Campaign design slices (Adversary Mode)",
@@ -4245,6 +4266,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "419eae4b6c538261f2df8886c398978b0fb458cc0ff45ed486e089ecb4f65f2d"
     },
     {
+      "id": "review-eval-ta-w1c",
+      "path": "docs/design/reviews/eval-review-ta-w1c.md",
+      "title": "W1-C campaign record and bench campaign design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-C against W0 rev 3, the section 2a testability floor and R-87..R-95. The transition table, the per-command guard / idempotency / refusal / test columns, the git-prefix verify rule and the real-wiring tests (P-3, P-4) are strong. PASS WITH CONDITIONS: skeleton landing order for X-B and X-D is unstated so about 15 tests are red by a missing module, 17 mutants are bare ids, the register-side race has no mutant, and the \"measured over 90 races\" claim has no positive control.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-c"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "550632ad0091f31cf2acb8bc82b6da5f3c812df7b28de7e4b1cdd652bc5ac6fd"
+    },
+    {
       "id": "review-eval-ta-w1d",
       "path": "docs/design/reviews/eval-review-ta-w1d.md",
       "title": "W1-D engine identity design review: Test Architect lens",
@@ -4324,6 +4372,33 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "684469f7893d3d5bdf763648f189faf86d5cb8840c9e22c8b73a8151c461ec38"
+    },
+    {
+      "id": "review-eval-ta-w1h",
+      "path": "docs/design/reviews/eval-review-ta-w1h.md",
+      "title": "W1-H power, verdicts, gates and report section 3 design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-H against W0 rev 3, the section 2a testability floor and R-87..R-96. Exact pins for 93/53/115, the label and statement tables, the conservation test and the R-93 DOM test are strong. PASS WITH CONDITIONS: three named mutants are not killed by the row that names them, one precedence pair has an equivalent mutant, rows that pass on the skeleton can be made red by a better skeleton, the coverage test has a one-sigma margin, and R-96 adds conditions the plan does not yet test.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-h"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "ce30415edd1a56756cec1db3385f29a724821b47f51e6614ce30caedf2f3f7e9"
     },
     {
       "id": "review-eval-ta-w1i",
@@ -5890,5 +5965,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "b5bfb0cfa9366288659723016f1c245e7d66a1038f23fd680705e61191d4d4b8"
+  "graphSha256": "82e5cd54c12fa071a0159656f85e50221b4e19eafd33e5493d19fc116268d0fd"
 };
