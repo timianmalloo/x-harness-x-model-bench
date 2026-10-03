@@ -1,0 +1,3 @@
+{"type": "system", "content": "synthetic"}
+{"type": "assistant", "content": "", "tool_calls": [], "model_fingerprint": "fp_synthetic", "reasoning_effort": "high", "model_id": "grok-4.7-build"}
+{"type": "assistant", "content": "", "tool_calls": [], "model_fingerprint": "fp_synthetic", "reasoning_effort": "high", "model_id": "grok-4.6-build"}

@@ -6,7 +6,7 @@ status: accepted
 owner: "@timianmalloo"
 tags: [ai-forward-pack, deviation, grok, acp, transport]
 links:
-  - { to: note-spike-e1-job-alone, rel: relates-to }
+  - { to: note-20261003-spike-e1-job-alone, rel: relates-to }
 review-by: "2027-04-03"
 summary: >-
   docs/ai-forward-pack/scripts/coord_transport.py is patched locally so Grok's own skills/workflows watcher

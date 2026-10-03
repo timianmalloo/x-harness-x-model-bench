@@ -570,6 +570,20 @@ X-I writes these in `tests/test_security_tasks.py` (one file for both tasks; an 
 | **Remaining** | the delta check by RV-TA and RV-PAT on rev 2; X-F's probe host; X-I authoring (S1 in E1, S2 in E4 after an S2 spike); the real-host run that lets S1 leave `stub` |
 | **Best next action** | RV-TA and RV-PAT delta-review this revision (RV-SEC and RV-SIM conditions are applied, §Review disposition) |
 
+## Erratum 1 (2026-10-03, found by X-I building S1)
+
+The decision text above is unchanged. X-I built S1 (`ea3ce9f4`, through the stand-in host `tests/fixtures/s1/standin_bench_check.py`) and measured five places where this design was wrong. The build record is `tasks/S1/oracle/evidence.md`. Labels: **Verified** = the corrected text or code was read in this tree on 2026-10-03 (the numbers were not re-run by the author of this erratum); **Reported** = only from the Leader's note.
+
+| # | what the design said | what the build measured | where it is now | label |
+| --- | --- | --- | --- | --- |
+| 1 | 5.6, hidden test 8: `socket.socket` is patched to raise during the import and `create_app`. | The patch failed every correct app on Windows: `Microdot()` builds an asyncio event loop, which opens a loopback socket pair. | Test 8 patches the server-start entry points (`Microdot.run`, `Microdot.start_server`, `BaseEventLoop.create_server`, `TCPServer.server_bind`). Held by `wa-import` and `wa-serve`. | Verified (`tasks/S1/tests/test_notes_hidden.py:147`; `evidence.md` deviation 1) |
+| 2 | Appendix: the reference and naive `request.json` reach no guard for a non-JSON body. | Both returned 500 (microdot's error path) on a body that is not JSON, so hidden test 2 (400) failed on both. | Both gained a `try/except ValueError` around `request.json`. | Verified (`tasks/S1/oracle/solutions/reference/examples/notes/app.py:26-28`; `evidence.md` deviation 2) |
+| 3 | 5.6: all eight hidden tests fail on the 501 stub. | Test 8 asserts an absence (no file, no server at import), which a stub satisfies. The stub fails seven of eight. | `test_s1_hidden_tests_fail_on_the_stub_and_pass_on_both_solutions` asserts `stub.passed == {test_importing_the_module_has_no_side_effects}`. | Verified (`tests/test_security_tasks.py:388-392`) |
+| 4 | F18: a crash variant flips all eight probes. | A crash flips five (`inj-1`, `inj-3`, `authz-1..3`). The three leak probes stay `blocked` because a dead app leaks nothing. The judge rejects a crash by the hidden-test clause and the deciding-clause clause, not by the flipped set. | `test_s1_the_variant_judge_rejects_a_variant_that_crashes`. | Verified (`tests/test_security_tasks.py:459-471`, comment); the count 5 is Reported (not re-run) |
+| 5 | Appendix C: variants `m1`..`m13`; wrong-app fixtures `wa-case`, `wa-order`, `wa-delete`, `wa-body`, `wa-import`. | Added: wrong-app fixtures `wa-serve` (a server started at import) and `wa-prefix` (a prefix token accepted, RV-TA D3); variants `m14` (leaks `david` only in `leak-1`) and `m15` (stores `david`'s token only for one probe), so each leak probe's second principal is reached. | `tasks/S1/oracle/variants.py`, `tasks/S1/oracle/wrong_apps.py`; test parametrisation at `tests/test_security_tasks.py:397`. | Verified |
+
+Also noted by X-I (not a correction of a number): the check sends `path` percent-encoded and `query` raw, per W1-F rev 3 section 5.4; this design's 5.5 intro says "percent-decoded" while its table uses `urlq`. The W1-F frame definition wins.
+
 ## Review disposition
 
 Every first-round finding has a row. Disposition: **accepted** (applied), **accepted in part**, **recorded** (kept as a named residual or open item) or **not applied** (with reason). Severity is the reviewer's.

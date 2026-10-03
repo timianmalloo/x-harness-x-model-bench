@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T19:55:16Z",
+  "generated": "2026-10-03T20:07:13Z",
   "audit": [
     {
       "actor": null,
@@ -74612,26 +74612,2380 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41NBJ8CQBGSA56ZBN0G79X9",
-      "shortname": "design-slice-review-w0-rev6-sec",
-      "datetime": "2026-10-03T19:55:16Z",
-      "session": "rv-sec-w0r6-e1e4",
-      "prompt": "docs/coordination/eval-wave1/rv-sec.md (W0 rev 6 delta)",
-      "summary": "RV-SEC W0 rev 6: PASS WITH CONDITIONS, 4 minor findings",
-      "kind": "skill",
-      "skill": "design-slice-review",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/design/reviews/eval-review-sec.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Review W0 rev 6 for the security lens",
+      "datetime": "2026-10-03T19:55:16Z",
       "done_when": "Section appended with gate line",
+      "fan_out": 0,
+      "goal": "Review W0 rev 6 for the security lens",
+      "id": "al-01M41NBJ8CQBGSA56ZBN0G79X9",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md (W0 rev 6 delta)",
+      "session": "rv-sec-w0r6-e1e4",
+      "shortname": "design-slice-review-w0-rev6-sec",
+      "skill": "design-slice-review",
+      "summary": "RV-SEC W0 rev 6: PASS WITH CONDITIONS, 4 minor findings",
+      "tags": [],
       "tier": "T2",
-      "fan_out": 0
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:56:02Z",
+      "done_when": "section appended with gate line",
+      "fan_out": 0,
+      "goal": "review W0 rev 6 for the TA lens",
+      "id": "al-01M41NCZA3Q42HH6C0DMH2EQ6F",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W0 rev 6 delta)",
+      "session": "rv-ta-w0r6-e1e4",
+      "shortname": "design-slice-review-ta-w0r6",
+      "skill": "design-slice-review",
+      "summary": "RV-TA W0 rev 6 delta review: PASS WITH CONDITIONS, 6 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1j.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:57:33Z",
+      "done_when": "review file and gate line committed",
+      "fan_out": 0,
+      "goal": "RV-TA gate review of W1-J",
+      "id": "al-01M41NFRN0HXSFCMH1HYBAXKEJ",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-J)",
+      "session": "rv-ta-w1j-e1e4",
+      "shortname": "design-slice-review-ta-w1j",
+      "skill": "design-slice-review",
+      "summary": "RV-TA review of W1-J multi-turn: PASS WITH CONDITIONS, 10 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sre-w1j.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:58:33Z",
+      "done_when": "review file and gate line committed",
+      "fan_out": 0,
+      "goal": "SRE review of W1-J",
+      "id": "al-01M41NHKDNNM4ZGTPEVPBXWTVH",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sre.md (W1-J)",
+      "session": "rv-sre-j-e1e4",
+      "shortname": "design-slice-review-sre-w1j",
+      "skill": "design-slice-review",
+      "summary": "SRE review of W1-J multi-turn: PASS WITH CONDITIONS, 9 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1j.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T20:00:23Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "Patterns review of W1-J",
+      "id": "al-01M41NMY21BNYBKP42RQ8P4G46",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md (W1-J)",
+      "session": "rv-pat-w1j-e1e4",
+      "shortname": "design-slice-review-pat-w1j",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT review of W1-J multi-turn: PASS WITH CONDITIONS, 8 findings, one seam disagreement with W1-B",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1j.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T20:00:43Z",
+      "done_when": "review file and gate line committed",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-J",
+      "id": "al-01M41NNJ5VJV0XSTWAG0EJP3YY",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md (W1-J)",
+      "session": "rv-sim-w1j-e1e4",
+      "shortname": "design-slice-review-w1j-sim",
+      "skill": "design-slice-review",
+      "summary": "RV-SIM review of W1-J: PASS WITH CONDITIONS, 10 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ds.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T20:02:00Z",
+      "done_when": "two gate lines written",
+      "fan_out": 0,
+      "goal": "RV-DS review of W0 rev 6 and W1-J",
+      "id": "al-01M41NQXKY5AYF5911CHD3R5PG",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ds.md (W0 rev 6 delta, W1-J)",
+      "session": "rv-ds-j-e1e4",
+      "shortname": "design-slice-review-ds-w0r6-w1j",
+      "skill": "design-slice-review",
+      "summary": "RV-DS gate lines: W0 rev 6 PASS WITH CONDITIONS (5 findings); W1-J PASS WITH CONDITIONS (9 findings); TLC one cell two crashes two turns passes",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:01:21Z",
+      "id": "al-01M41NPQ4M98QME5K1AFRW8HPA",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-c1-e1e4 on branch build/eval-x-c1, harness Agy, model gemini-3.8-flash-high. Build dispatch C1 only of the brief docs/coordination/eval-wave2-e1/x-c.md, in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-c1-e1e4 on branch build/eval-x-c1, harness Agy, model …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:13Z",
+      "id": "al-01M41NR9H1ECEDMRJK7SHKY61J",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-c1-e1e4 on branch build/eval-x-c1, harness Agy, model gemini-3.8-flash-high. Build dispatch C1 only of the brief docs/coordination/eval-wave2-e1/x-c.md (ledger, record, verify), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-c1-e1e4 on branch build/eval-x-c1, harness Agy, model …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c1.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatches C2 (commands, locks, the run-side check) and C3 (pilot, register, status, plan, hook): later dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch C1 only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-c1",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "600k tokens across 3 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c1.",
+            "The README section 3 join gate passes.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-c.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch C1 of X-C on build/eval-x-c1: ledger, record, verify; red commit then green commit.",
+          "main_line_budget": "450 calls across 3 dispatches, 3,300 s per dispatch",
+          "not_in_scope": [
+            "Dispatches C2 (commands, locks, the run-side check) and C3 (pilot, register, status, plan, hook): later dispatches."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.014,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NR9H1ECEDMRJK7SHKY61J",
+        "raw_sha256": "0877e21fe2967bd3b8ae94642923cfa46a878a9c334124bc71901b7af9635811",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-c1"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-c.md",
+            "reason": null,
+            "sha256": "5341f3282ed2f90a9cd35177724d382d7c4dc12ebfdc89a3ebda9a801b134d93",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-c.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:13Z",
+      "dispatchable": true,
+      "id": "al-01M41NR9YEHGCK0XN2QB83804H",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-c.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch C1 of X-C on build/eval-x-c1: ledger, record, verify; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c1.; The README section 3 join gate passes.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatches C2 (commands, locks, the run-side check) and C3 (pilot, register, status, plan, hook): later dispatches.\nTier: T2\nFan-out cap: 0\nContext ceiling: 600k tokens across 3 dispatches\nMain-line budget: 450 calls across 3 dispatches, 3,300 s per dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c1. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes. | phrase: README §3 join gate per dispatch. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Dispatches C2 (commands, locks, the run-side check) and C3 (pilot, register, status, plan, hook): later dispatches. | phrase: Build dispatch C1 only |\nReferences\n- build/eval-x-c1: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-c.md: docs/coordination/eval-wave2-e1/x-c.md sha256 5341f3282ed2f90a9cd35177724d382d7c4dc12ebfdc89a3ebda9a801b134d93\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-c1\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NR9H1ECEDMRJK7SHKY61J\nraw sha256: 0877e21fe2967bd3b8ae94642923cfa46a878a9c334124bc71901b7af9635811\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.014\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-c1-e1e4 on branch build/eval-x-c1, harness Agy, model …",
+      "skill": null,
+      "summary": "compiled al-01M41NR9H1ECEDMRJK7SHKY61J for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:13Z",
+      "id": "al-01M41NRAB81CXERZRBPPQN8D8G",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-h2-e1e4 on branch build/eval-x-h2, harness Agy, model gemini-3.8-flash-high. Build dispatch X-H2 only of the brief docs/coordination/eval-wave2-e1/x-h2.md (report section 3 (campaign_section.py and the html.render hook)), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-h2-e1e4 on branch build/eval-x-h2, harness Agy, model …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:21Z",
+      "id": "al-01M41NRHDPG4H9FJ6RCZCZW16M",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-c2-e1e4 on branch build/eval-x-c2, harness Agy, model gemini-3.8-flash-high. Build dispatch C2 only of the brief docs/coordination/eval-wave2-e1/x-c.md (commands, locks, the run-side check), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-c2-e1e4 on branch build/eval-x-c2, harness Agy, model …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c2.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatches C1 (ledger, record, verify) and C3 (pilot, register, status, plan, hook): other dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch C2 only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-c2",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "600k tokens across 3 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c2.",
+            "The README section 3 join gate passes.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-c.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch C2 of X-C on build/eval-x-c2: commands, locks, the run-side check; red commit then green commit.",
+          "main_line_budget": "450 calls across 3 dispatches, 3,300 s per dispatch",
+          "not_in_scope": [
+            "Dispatches C1 (ledger, record, verify) and C3 (pilot, register, status, plan, hook): other dispatches."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.01,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRHDPG4H9FJ6RCZCZW16M",
+        "raw_sha256": "5f99f5dc028f3bf98587ddb804661290aa90703b0846e56eaf97308c6efba899",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-c2"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-c.md",
+            "reason": null,
+            "sha256": "5341f3282ed2f90a9cd35177724d382d7c4dc12ebfdc89a3ebda9a801b134d93",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-c.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:21Z",
+      "dispatchable": true,
+      "id": "al-01M41NRHZF6BP0CN92R6R35WV1",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-c.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch C2 of X-C on build/eval-x-c2: commands, locks, the run-side check; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c2.; The README section 3 join gate passes.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatches C1 (ledger, record, verify) and C3 (pilot, register, status, plan, hook): other dispatches.\nTier: T2\nFan-out cap: 0\nContext ceiling: 600k tokens across 3 dispatches\nMain-line budget: 450 calls across 3 dispatches, 3,300 s per dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c2. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes. | phrase: README §3 join gate per dispatch. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Dispatches C1 (ledger, record, verify) and C3 (pilot, register, status, plan, hook): other dispatches. | phrase: Build dispatch C2 only |\nReferences\n- build/eval-x-c2: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-c.md: docs/coordination/eval-wave2-e1/x-c.md sha256 5341f3282ed2f90a9cd35177724d382d7c4dc12ebfdc89a3ebda9a801b134d93\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-c2\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRHDPG4H9FJ6RCZCZW16M\nraw sha256: 5f99f5dc028f3bf98587ddb804661290aa90703b0846e56eaf97308c6efba899\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.01\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-c2-e1e4 on branch build/eval-x-c2, harness Agy, model …",
+      "skill": null,
+      "summary": "compiled al-01M41NRHDPG4H9FJ6RCZCZW16M for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:22Z",
+      "id": "al-01M41NRJ9F74CDMY2DV52WKXAS",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-c3-e1e4 on branch build/eval-x-c3, harness Agy, model gemini-3.8-flash-high. Build dispatch C3 only of the brief docs/coordination/eval-wave2-e1/x-c.md (pilot, register, status, plan, hook), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-c3-e1e4 on branch build/eval-x-c3, harness Agy, model …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c3.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatches C1 (ledger, record, verify) and C2 (commands, locks, the run-side check): earlier dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch C3 only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-c3",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "600k tokens across 3 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c3.",
+            "The README section 3 join gate passes.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-c.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch C3 of X-C on build/eval-x-c3: pilot, register, status, plan, hook; red commit then green commit.",
+          "main_line_budget": "450 calls across 3 dispatches, 3,300 s per dispatch",
+          "not_in_scope": [
+            "Dispatches C1 (ledger, record, verify) and C2 (commands, locks, the run-side check): earlier dispatches."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.01,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRJ9F74CDMY2DV52WKXAS",
+        "raw_sha256": "9cc861e7dbbfd7648a5c6f2e70393c6d3b296d0b6fc75284ef9db70c76a449db",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-c3"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-c.md",
+            "reason": null,
+            "sha256": "5341f3282ed2f90a9cd35177724d382d7c4dc12ebfdc89a3ebda9a801b134d93",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-c.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:22Z",
+      "dispatchable": true,
+      "id": "al-01M41NRJPH6Q66CZBXRFQHXZV7",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-c.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch C3 of X-C on build/eval-x-c3: pilot, register, status, plan, hook; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c3.; The README section 3 join gate passes.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatches C1 (ledger, record, verify) and C2 (commands, locks, the run-side check): earlier dispatches.\nTier: T2\nFan-out cap: 0\nContext ceiling: 600k tokens across 3 dispatches\nMain-line budget: 450 calls across 3 dispatches, 3,300 s per dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-c3. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes. | phrase: README §3 join gate per dispatch. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Dispatches C1 (ledger, record, verify) and C2 (commands, locks, the run-side check): earlier dispatches. | phrase: Build dispatch C3 only |\nReferences\n- build/eval-x-c3: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-c.md: docs/coordination/eval-wave2-e1/x-c.md sha256 5341f3282ed2f90a9cd35177724d382d7c4dc12ebfdc89a3ebda9a801b134d93\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-c3\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRJ9F74CDMY2DV52WKXAS\nraw sha256: 9cc861e7dbbfd7648a5c6f2e70393c6d3b296d0b6fc75284ef9db70c76a449db\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.01\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-c3-e1e4 on branch build/eval-x-c3, harness Agy, model …",
+      "skill": null,
+      "summary": "compiled al-01M41NRJ9F74CDMY2DV52WKXAS for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:22Z",
+      "id": "al-01M41NRK0HSDZYNSHYA14HYT7V",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-h2-e1e4 on branch build/eval-x-h2, harness Agy, model gemini-3.8-flash-high. Build dispatch X-H2 only of the brief docs/coordination/eval-wave2-e1/x-h2.md (report section 3 (campaign_section.py and the html.render hook)), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-h2-e1e4 on branch build/eval-x-h2, harness Agy, model …",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h2.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any other dispatch or track: not part of this dispatch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch X-H2 only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-h2",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h2.",
+            "The README section 3 join gate passes.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-h2.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch X-H2 of X-H2 on build/eval-x-h2: report section 3 (campaign_section.py and the html.render hook); red commit then green commit.",
+          "main_line_budget": "120 calls, 3,300 s",
+          "not_in_scope": [
+            "Any other dispatch or track: not part of this dispatch."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.01,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRK0HSDZYNSHYA14HYT7V",
+        "raw_sha256": "717fc1e5efe4ad591692cf77095dde7c6be61d94137a4aade41dd5ed9ee884b6",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-h2"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-h2.md",
+            "reason": null,
+            "sha256": "2bc4517590a50534f3c043cf0c615c0054cf5c560767ec67aa0323f25fcce714",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-h2.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "campaign_section.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:23Z",
+      "dispatchable": true,
+      "id": "al-01M41NRKDW17XAP6WS7AFPQF9K",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-h2.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch X-H2 of X-H2 on build/eval-x-h2: report section 3 (campaign_section.py and the html.render hook); red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h2.; The README section 3 join gate passes.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Any other dispatch or track: not part of this dispatch.\nTier: T2\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: 120 calls, 3,300 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h2. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes. | phrase: README §3 join gate per dispatch. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Any other dispatch or track: not part of this dispatch. | phrase: Build dispatch X-H2 only |\nReferences\n- build/eval-x-h2: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-h2.md: docs/coordination/eval-wave2-e1/x-h2.md sha256 2bc4517590a50534f3c043cf0c615c0054cf5c560767ec67aa0323f25fcce714\n- campaign_section.py: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-h2\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRK0HSDZYNSHYA14HYT7V\nraw sha256: 717fc1e5efe4ad591692cf77095dde7c6be61d94137a4aade41dd5ed9ee884b6\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.01\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-h2-e1e4 on branch build/eval-x-h2, harness Agy, model …",
+      "skill": null,
+      "summary": "compiled al-01M41NRK0HSDZYNSHYA14HYT7V for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:23Z",
+      "id": "al-01M41NRKWC67NWDP7ZVDYQGM17",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-h1a-e1e4 on branch build/eval-x-h1a, harness Grok, model grok-4.7 with --reasoning-effort high. Build dispatch turn a only of the brief docs/coordination/eval-wave2-e1/x-h1.md (power (power.py)), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-h1a-e1e4 on branch build/eval-x-h1a, harness Grok, mod…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Turns b (verdicts.py) and c (gates.py): later turns.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch turn a only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "2,400 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-h1a",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "250k tokens across 3 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1a.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-h1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch turn a of X-H1 on build/eval-x-h1a: power (power.py); red commit then green commit.",
+          "main_line_budget": "60 calls, 2,400 s",
+          "not_in_scope": [
+            "Turns b (verdicts.py) and c (gates.py): later turns."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.01,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRKWC67NWDP7ZVDYQGM17",
+        "raw_sha256": "bb052a5dc9a4873e62c75135f0b174d0a0a9c13b8c4e730fd8f78bc3a5dec429",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-h1a"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-h1.md",
+            "reason": null,
+            "sha256": "bc2325d78f60f85a3962358971b49414ff24961cdb41a1d8979ac1a7b5187068",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-h1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "power.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/grok_served_model.py",
+            "reason": null,
+            "sha256": "927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f",
+            "status": "resolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:24Z",
+      "dispatchable": true,
+      "id": "al-01M41NRM9X2NVDN5QASJ391EBH",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-h1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch turn a of X-H1 on build/eval-x-h1a: power (power.py); red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1a.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Turns b (verdicts.py) and c (gates.py): later turns.\nTier: T2\nFan-out cap: 0\nContext ceiling: 250k tokens across 3 dispatches\nMain-line budget: 60 calls, 2,400 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Turns b (verdicts.py) and c (gates.py): later turns. | phrase: Build dispatch turn a only |\nReferences\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-x-h1a: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-h1.md: docs/coordination/eval-wave2-e1/x-h1.md sha256 bc2325d78f60f85a3962358971b49414ff24961cdb41a1d8979ac1a7b5187068\n- power.py: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\n- tools/grok_served_model.py: tools/grok_served_model.py sha256 927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-h1a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 2,400 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRKWC67NWDP7ZVDYQGM17\nraw sha256: bb052a5dc9a4873e62c75135f0b174d0a0a9c13b8c4e730fd8f78bc3a5dec429\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.01\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-h1a-e1e4 on branch build/eval-x-h1a, harness Grok, mod…",
+      "skill": null,
+      "summary": "compiled al-01M41NRKWC67NWDP7ZVDYQGM17 for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:24Z",
+      "id": "al-01M41NRMKW4J002M8NWBSDXPKA",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-h1b-e1e4 on branch build/eval-x-h1b, harness Grok, model grok-4.7 with --reasoning-effort high. Build dispatch turn b only of the brief docs/coordination/eval-wave2-e1/x-h1.md (verdicts (verdicts.py)), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-h1b-e1e4 on branch build/eval-x-h1b, harness Grok, mod…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1b.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Turns a (power.py) and c (gates.py): other turns.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch turn b only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "2,400 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-h1b",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "250k tokens across 3 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1b.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-h1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch turn b of X-H1 on build/eval-x-h1b: verdicts (verdicts.py); red commit then green commit.",
+          "main_line_budget": "60 calls, 2,400 s",
+          "not_in_scope": [
+            "Turns a (power.py) and c (gates.py): other turns."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRMKW4J002M8NWBSDXPKA",
+        "raw_sha256": "2984e57fd9ad1e9d19e6cd4621499558019db6fb8e419e050d0618b0949d5e09",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-h1b"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-h1.md",
+            "reason": null,
+            "sha256": "bc2325d78f60f85a3962358971b49414ff24961cdb41a1d8979ac1a7b5187068",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-h1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "verdicts.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/grok_served_model.py",
+            "reason": null,
+            "sha256": "927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f",
+            "status": "resolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:24Z",
+      "dispatchable": true,
+      "id": "al-01M41NRN2E7T3EYKPQG5MA0GY5",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-h1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch turn b of X-H1 on build/eval-x-h1b: verdicts (verdicts.py); red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1b.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Turns a (power.py) and c (gates.py): other turns.\nTier: T2\nFan-out cap: 0\nContext ceiling: 250k tokens across 3 dispatches\nMain-line budget: 60 calls, 2,400 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1b. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Turns a (power.py) and c (gates.py): other turns. | phrase: Build dispatch turn b only |\nReferences\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-x-h1b: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-h1.md: docs/coordination/eval-wave2-e1/x-h1.md sha256 bc2325d78f60f85a3962358971b49414ff24961cdb41a1d8979ac1a7b5187068\n- verdicts.py: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\n- tools/grok_served_model.py: tools/grok_served_model.py sha256 927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-h1b\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 2,400 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRMKW4J002M8NWBSDXPKA\nraw sha256: 2984e57fd9ad1e9d19e6cd4621499558019db6fb8e419e050d0618b0949d5e09\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-h1b-e1e4 on branch build/eval-x-h1b, harness Grok, mod…",
+      "skill": null,
+      "summary": "compiled al-01M41NRMKW4J002M8NWBSDXPKA for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:25Z",
+      "id": "al-01M41NRNCKAW1PM4DBQQ81EE0S",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-h1c-e1e4 on branch build/eval-x-h1c, harness Grok, model grok-4.7 with --reasoning-effort high. Build dispatch turn c only of the brief docs/coordination/eval-wave2-e1/x-h1.md (gates (gates.py)), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-h1c-e1e4 on branch build/eval-x-h1c, harness Grok, mod…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1c.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Turns a (power.py) and b (verdicts.py): other turns.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch turn c only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "2,400 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-h1c",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "250k tokens across 3 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1c.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-h1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch turn c of X-H1 on build/eval-x-h1c: gates (gates.py); red commit then green commit.",
+          "main_line_budget": "60 calls, 2,400 s",
+          "not_in_scope": [
+            "Turns a (power.py) and b (verdicts.py): other turns."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRNCKAW1PM4DBQQ81EE0S",
+        "raw_sha256": "90b7f151f412a41d4d1db04d0b300e0c792a69929f4d7ced08b5af4cfecd49dc",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-h1c"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-h1.md",
+            "reason": null,
+            "sha256": "bc2325d78f60f85a3962358971b49414ff24961cdb41a1d8979ac1a7b5187068",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-h1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gates.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/grok_served_model.py",
+            "reason": null,
+            "sha256": "927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f",
+            "status": "resolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:25Z",
+      "dispatchable": true,
+      "id": "al-01M41NRNTRMPPATGS64P2FTP0V",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-h1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch turn c of X-H1 on build/eval-x-h1c: gates (gates.py); red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1c.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Turns a (power.py) and b (verdicts.py): other turns.\nTier: T2\nFan-out cap: 0\nContext ceiling: 250k tokens across 3 dispatches\nMain-line budget: 60 calls, 2,400 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1c. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Turns a (power.py) and b (verdicts.py): other turns. | phrase: Build dispatch turn c only |\nReferences\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-x-h1c: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-h1.md: docs/coordination/eval-wave2-e1/x-h1.md sha256 bc2325d78f60f85a3962358971b49414ff24961cdb41a1d8979ac1a7b5187068\n- gates.py: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\n- tools/grok_served_model.py: tools/grok_served_model.py sha256 927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-h1c\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 2,400 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRNCKAW1PM4DBQQ81EE0S\nraw sha256: 90b7f151f412a41d4d1db04d0b300e0c792a69929f4d7ced08b5af4cfecd49dc\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-h1c-e1e4 on branch build/eval-x-h1c, harness Grok, mod…",
+      "skill": null,
+      "summary": "compiled al-01M41NRNCKAW1PM4DBQQ81EE0S for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:26Z",
+      "id": "al-01M41NRP8V7T09C4ZXHPAC4SWJ",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-b1a-e1e4 on branch build/eval-x-b1a, harness Grok, model grok-4.7 with --reasoning-effort high. Build dispatch B1a only of the brief docs/coordination/eval-wave2-e1/x-b1.md (atomic.py core per W1-B section 17 with the W0 rev 6 sweep_temps(folder, lock) and RunLock.held), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-b1a-e1e4 on branch build/eval-x-b1a, harness Grok, mod…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch B1a only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "1,200 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-b1a",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "100k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1a of X-B1 on build/eval-x-b1a: atomic.py core per W1-B section 17 with the W0 rev 6 sweep_temps(folder, lock) and RunLock.held; red commit then green commit.",
+          "main_line_budget": "40 calls, 1,200 s",
+          "not_in_scope": [
+            "Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRP8V7T09C4ZXHPAC4SWJ",
+        "raw_sha256": "e5fba27403c870845ad6297e2efa9c7df881ae32be91fd6645046be862444c8b",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-b1a"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b1.md",
+            "reason": null,
+            "sha256": "34d80e00c9f8ceb4e966f04f49c1aefad2afdcb5c70fcf39498f529db8806f30",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-b1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/grok_served_model.py",
+            "reason": null,
+            "sha256": "927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f",
+            "status": "resolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:26Z",
+      "dispatchable": true,
+      "id": "al-01M41NRPQMNPJXB170E87T32NE",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1a of X-B1 on build/eval-x-b1a: atomic.py core per W1-B section 17 with the W0 rev 6 sweep_temps(folder, lock) and RunLock.held; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches.\nTier: T2\nFan-out cap: 0\nContext ceiling: 100k tokens\nMain-line budget: 40 calls, 1,200 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches. | phrase: Build dispatch B1a only |\nReferences\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-x-b1a: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-b1.md: docs/coordination/eval-wave2-e1/x-b1.md sha256 34d80e00c9f8ceb4e966f04f49c1aefad2afdcb5c70fcf39498f529db8806f30\n- atomic.py: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\n- tools/grok_served_model.py: tools/grok_served_model.py sha256 927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-b1a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 1,200 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRP8V7T09C4ZXHPAC4SWJ\nraw sha256: e5fba27403c870845ad6297e2efa9c7df881ae32be91fd6645046be862444c8b\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-b1a-e1e4 on branch build/eval-x-b1a, harness Grok, mod…",
+      "skill": null,
+      "summary": "compiled al-01M41NRP8V7T09C4ZXHPAC4SWJ for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:27Z",
+      "id": "al-01M41NRQ1RPDFZ7BS4X3XXCHB5",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-b1b-e1e4 on branch build/eval-x-b1b, harness Grok, model grok-4.7 with --reasoning-effort high. Build dispatch B1b only of the brief docs/coordination/eval-wave2-e1/x-b1.md (publish_dir, workspace._land and tests/test_atomic_sites.py), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-b1b-e1e4 on branch build/eval-x-b1b, harness Grok, mod…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1b.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatches B1a (atomic.py core) and B1c (oslock.acquire_then_probe): other dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch B1b only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "1,200 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-b1b",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "100k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1b.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1b of X-B1 on build/eval-x-b1b: publish_dir, workspace._land and tests/test_atomic_sites.py; red commit then green commit.",
+          "main_line_budget": "40 calls, 1,200 s",
+          "not_in_scope": [
+            "Dispatches B1a (atomic.py core) and B1c (oslock.acquire_then_probe): other dispatches."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRQ1RPDFZ7BS4X3XXCHB5",
+        "raw_sha256": "5296c55db2aa91f2b6e206bbcdd1be2c1a4282c21166e04e1ccb20a0902a0b1d",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-b1b"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b1.md",
+            "reason": null,
+            "sha256": "34d80e00c9f8ceb4e966f04f49c1aefad2afdcb5c70fcf39498f529db8806f30",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-b1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/grok_served_model.py",
+            "reason": null,
+            "sha256": "927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f",
+            "status": "resolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:27Z",
+      "dispatchable": true,
+      "id": "al-01M41NRQGXEH11C49W8B95C72K",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1b of X-B1 on build/eval-x-b1b: publish_dir, workspace._land and tests/test_atomic_sites.py; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1b.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatches B1a (atomic.py core) and B1c (oslock.acquire_then_probe): other dispatches.\nTier: T2\nFan-out cap: 0\nContext ceiling: 100k tokens\nMain-line budget: 40 calls, 1,200 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1b. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Dispatches B1a (atomic.py core) and B1c (oslock.acquire_then_probe): other dispatches. | phrase: Build dispatch B1b only |\nReferences\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-x-b1b: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-b1.md: docs/coordination/eval-wave2-e1/x-b1.md sha256 34d80e00c9f8ceb4e966f04f49c1aefad2afdcb5c70fcf39498f529db8806f30\n- tests/test_atomic_sites.py: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\n- tools/grok_served_model.py: tools/grok_served_model.py sha256 927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-b1b\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 1,200 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRQ1RPDFZ7BS4X3XXCHB5\nraw sha256: 5296c55db2aa91f2b6e206bbcdd1be2c1a4282c21166e04e1ccb20a0902a0b1d\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-b1b-e1e4 on branch build/eval-x-b1b, harness Grok, mod…",
+      "skill": null,
+      "summary": "compiled al-01M41NRQ1RPDFZ7BS4X3XXCHB5 for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:27Z",
+      "id": "al-01M41NRQZHSBE4NVGHV35GGV1T",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-b1c-e1e4 on branch build/eval-x-b1c, harness Grok, model grok-4.7 with --reasoning-effort high. Build dispatch B1c only of the brief docs/coordination/eval-wave2-e1/x-b1.md (oslock.acquire_then_probe), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-b1c-e1e4 on branch build/eval-x-b1c, harness Grok, mod…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1c.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatches B1a (atomic.py core) and B1b (publish_dir, workspace._land): earlier dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch B1c only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "1,200 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-b1c",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "100k tokens",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1c.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1c of X-B1 on build/eval-x-b1c: oslock.acquire_then_probe; red commit then green commit.",
+          "main_line_budget": "40 calls, 1,200 s",
+          "not_in_scope": [
+            "Dispatches B1a (atomic.py core) and B1b (publish_dir, workspace._land): earlier dispatches."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRQZHSBE4NVGHV35GGV1T",
+        "raw_sha256": "01ea5c6a91c337e086521131e81866bb8965d45d9f0061a4e96c25bc539e1f8b",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-b1c"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b1.md",
+            "reason": null,
+            "sha256": "34d80e00c9f8ceb4e966f04f49c1aefad2afdcb5c70fcf39498f529db8806f30",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-b1.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/grok_served_model.py",
+            "reason": null,
+            "sha256": "927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f",
+            "status": "resolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:28Z",
+      "dispatchable": true,
+      "id": "al-01M41NRRGFA4GC81E2TBSH0J91",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1c of X-B1 on build/eval-x-b1c: oslock.acquire_then_probe; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1c.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatches B1a (atomic.py core) and B1b (publish_dir, workspace._land): earlier dispatches.\nTier: T2\nFan-out cap: 0\nContext ceiling: 100k tokens\nMain-line budget: 40 calls, 1,200 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1c. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Dispatches B1a (atomic.py core) and B1b (publish_dir, workspace._land): earlier dispatches. | phrase: Build dispatch B1c only |\nReferences\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-x-b1c: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-b1.md: docs/coordination/eval-wave2-e1/x-b1.md sha256 34d80e00c9f8ceb4e966f04f49c1aefad2afdcb5c70fcf39498f529db8806f30\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\n- tools/grok_served_model.py: tools/grok_served_model.py sha256 927fc898011546230e10f7b70766bd6a81e2012dcc5c959b2b617450f7f4ae4f\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-b1c\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 1,200 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRQZHSBE4NVGHV35GGV1T\nraw sha256: 01ea5c6a91c337e086521131e81866bb8965d45d9f0061a4e96c25bc539e1f8b\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-b1c-e1e4 on branch build/eval-x-b1c, harness Grok, mod…",
+      "skill": null,
+      "summary": "compiled al-01M41NRQZHSBE4NVGHV35GGV1T for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:29Z",
+      "id": "al-01M41NRS1HA0PBV28D2889WX2K",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-a1a-e1e4 on branch build/eval-x-a1a, harness Codex, model gpt-6.1-sol with effort high. Build dispatch A1a only of the brief docs/coordination/eval-wave2-e1/x-a1.md (config.py, the plan.py writer and accessors with W0 rev 6 plan_packs, plan_pack and kind_of, SYNTHETIC_PROFILE_RECORD, the HB-PLN-004 plan-kind refusal and the grid-4 golden), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-a1a-e1e4 on branch build/eval-x-a1a, harness Codex, mo…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatch A1b (the readers, views kind refusal, G1, pilot.yaml): a later dispatch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch A1a only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-a1a",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens across 2 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a.",
+            "The README section 3 join gate passes.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-a1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch A1a of X-A1 on build/eval-x-a1a: config.py, the plan.py writer and accessors with W0 rev 6 plan_packs, plan_pack and kind_of, SYNTHETIC_PROFILE_RECORD, the HB-PLN-004 plan-kind refusal and the grid-4 golden; red commit then green commit.",
+          "main_line_budget": "220 calls across 2 dispatches, 3,300 s per dispatch",
+          "not_in_scope": [
+            "Dispatch A1b (the readers, views kind refusal, G1, pilot.yaml): a later dispatch."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRS1HA0PBV28D2889WX2K",
+        "raw_sha256": "ebfe35f095a82b323e92ef4e72b24a7c97f2d7ae756560d334444200e06eb61c",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-a1a"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-a1.md",
+            "reason": null,
+            "sha256": "6252a059c23b39058f30bda99d149f90ce4ed4360f61d4d8350c543c452304b0",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-a1.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19",
+            "status": "resolved",
+            "token": "config.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196",
+            "status": "resolved",
+            "token": "plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:29Z",
+      "dispatchable": true,
+      "id": "al-01M41NRSQN7CVAF72MCDF68X9E",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-a1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch A1a of X-A1 on build/eval-x-a1a: config.py, the plan.py writer and accessors with W0 rev 6 plan_packs, plan_pack and kind_of, SYNTHETIC_PROFILE_RECORD, the HB-PLN-004 plan-kind refusal and the grid-4 golden; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a.; The README section 3 join gate passes.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatch A1b (the readers, views kind refusal, G1, pilot.yaml): a later dispatch.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens across 2 dispatches\nMain-line budget: 220 calls across 2 dispatches, 3,300 s per dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes. | phrase: README §3 join gate per dispatch. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Dispatch A1b (the readers, views kind refusal, G1, pilot.yaml): a later dispatch. | phrase: Build dispatch A1a only |\nReferences\n- build/eval-x-a1a: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-a1.md: docs/coordination/eval-wave2-e1/x-a1.md sha256 6252a059c23b39058f30bda99d149f90ce4ed4360f61d4d8350c543c452304b0\n- config.py: src/harness_bench/config.py sha256 2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19\n- plan.py: src/harness_bench/plan.py sha256 c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-a1a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRS1HA0PBV28D2889WX2K\nraw sha256: ebfe35f095a82b323e92ef4e72b24a7c97f2d7ae756560d334444200e06eb61c\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-a1a-e1e4 on branch build/eval-x-a1a, harness Codex, mo…",
+      "skill": null,
+      "summary": "compiled al-01M41NRS1HA0PBV28D2889WX2K for codex v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:30Z",
+      "id": "al-01M41NRT5AY3REZ2A0JHGNS2GK",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-a1b-e1e4 on branch build/eval-x-a1b, harness Codex, model gpt-6.1-sol with effort high. Build dispatch A1b only of the brief docs/coordination/eval-wave2-e1/x-a1.md (the readers, views.py kind refusal, _changes.py, cli._workspace_builder, G1 with the pinned counts and bench/rings/pilot.yaml), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-a1b-e1e4 on branch build/eval-x-a1b, harness Codex, mo…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1b.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatch A1a (config.py, plan.py): the earlier dispatch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch A1b only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-a1b",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens across 2 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1b.",
+            "The README section 3 join gate passes.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-a1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch A1b of X-A1 on build/eval-x-a1b: the readers, views.py kind refusal, _changes.py, cli._workspace_builder, G1 with the pinned counts and bench/rings/pilot.yaml; red commit then green commit.",
+          "main_line_budget": "220 calls across 2 dispatches, 3,300 s per dispatch",
+          "not_in_scope": [
+            "Dispatch A1a (config.py, plan.py): the earlier dispatch."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRT5AY3REZ2A0JHGNS2GK",
+        "raw_sha256": "75b1e18eedf19b50d0e942c5bd856fdfae2c2eb3851f589c954f8e1921666d27",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-a1b"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-a1.md",
+            "reason": null,
+            "sha256": "6252a059c23b39058f30bda99d149f90ce4ed4360f61d4d8350c543c452304b0",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-a1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/_changes.py",
+            "reason": null,
+            "sha256": "d573c0a57360f960bd6915caae3c0eb36e07d7a79ed168b1e1617679e0eefba7",
+            "status": "resolved",
+            "token": "_changes.py"
+          },
+          {
+            "nearest": "bench/profiles/copilot.yaml",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/rings/pilot.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:30Z",
+      "dispatchable": true,
+      "id": "al-01M41NRTJE0W2ZY0HRSH4W71N8",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-a1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch A1b of X-A1 on build/eval-x-a1b: the readers, views.py kind refusal, _changes.py, cli._workspace_builder, G1 with the pinned counts and bench/rings/pilot.yaml; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1b.; The README section 3 join gate passes.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatch A1a (config.py, plan.py): the earlier dispatch.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens across 2 dispatches\nMain-line budget: 220 calls across 2 dispatches, 3,300 s per dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1b. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes. | phrase: README §3 join gate per dispatch. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Dispatch A1a (config.py, plan.py): the earlier dispatch. | phrase: Build dispatch A1b only |\nReferences\n- build/eval-x-a1b: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-a1.md: docs/coordination/eval-wave2-e1/x-a1.md sha256 6252a059c23b39058f30bda99d149f90ce4ed4360f61d4d8350c543c452304b0\n- views.py: unresolved (ambiguous: 2 matches)\n- _changes.py: src/harness_bench/grade/_changes.py sha256 d573c0a57360f960bd6915caae3c0eb36e07d7a79ed168b1e1617679e0eefba7\n- bench/rings/pilot.yaml: unresolved (not found; nearest: bench/profiles/copilot.yaml)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-a1b\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRT5AY3REZ2A0JHGNS2GK\nraw sha256: 75b1e18eedf19b50d0e942c5bd856fdfae2c2eb3851f589c954f8e1921666d27\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-a1b-e1e4 on branch build/eval-x-a1b, harness Codex, mo…",
+      "skill": null,
+      "summary": "compiled al-01M41NRT5AY3REZ2A0JHGNS2GK for codex v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T20:02:30Z",
+      "id": "al-01M41NRTWHMEGXT393ZAAVEBBQ",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-d2-e1e4 on branch build/eval-x-d2, harness Codex, model gpt-6.1-sol with effort high. Build dispatch D2 only of the brief docs/coordination/eval-wave2-e1/x-d.md (for_task, manifest, identity_hash, side, diff, launch_check, the engine recheck and campaign_check), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-d2-e1e4 on branch build/eval-x-d2, harness Codex, mode…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d2.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatch D1 (errors.py rows, identity.CLASSES): the earlier dispatch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch D2 only"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-d2",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens across 2 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d2.",
+            "The README section 3 join gate passes.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-d.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch D2 of X-D on build/eval-x-d2: for_task, manifest, identity_hash, side, diff, launch_check, the engine recheck and campaign_check; red commit then green commit.",
+          "main_line_budget": "200 calls across 2 dispatches, 3,300 s per dispatch",
+          "not_in_scope": [
+            "Dispatch D1 (errors.py rows, identity.CLASSES): the earlier dispatch."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-sonnet-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41NRTWHMEGXT393ZAAVEBBQ",
+        "raw_sha256": "378ca016a1dc74afc79a7a9613eda5722c3041c7dba935ac38742262c6d473e3",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-d2"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-d.md",
+            "reason": null,
+            "sha256": "1da6989fde0ee0bd334d3b52691892ea569d64afbf6f199c29ab5426e77873ca",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-d.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T20:02:31Z",
+      "dispatchable": true,
+      "id": "al-01M41NRVGHHR6A5JN8SVGAH4D0",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-d.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch D2 of X-D on build/eval-x-d2: for_task, manifest, identity_hash, side, diff, launch_check, the engine recheck and campaign_check; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d2.; The README section 3 join gate passes.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatch D1 (errors.py rows, identity.CLASSES): the earlier dispatch.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens across 2 dispatches\nMain-line budget: 200 calls across 2 dispatches, 3,300 s per dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d2. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes. | phrase: README §3 join gate per dispatch. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\n| not_in_scope: Dispatch D1 (errors.py rows, identity.CLASSES): the earlier dispatch. | phrase: Build dispatch D2 only |\nReferences\n- build/eval-x-d2: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-d.md: docs/coordination/eval-wave2-e1/x-d.md sha256 1da6989fde0ee0bd334d3b52691892ea569d64afbf6f199c29ab5426e77873ca\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 37d3d1b292e85e29cbc96df1b8a3434c244306c3a90cca8e916029fda4a373d7\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-d2\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41NRTWHMEGXT393ZAAVEBBQ\nraw sha256: 378ca016a1dc74afc79a7a9613eda5722c3041c7dba935ac38742262c6d473e3\ncompiler model: claude-sonnet-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-d2-e1e4 on branch build/eval-x-d2, harness Codex, mode…",
+      "skill": null,
+      "summary": "compiled al-01M41NRTWHMEGXT393ZAAVEBBQ for codex v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/coordination/eval-wave2-e1/README.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T20:04:24Z",
+      "done_when": "W0 rev 6 committed and handed back; X-C, X-H1, X-H2, X-E, X-INT briefs and 13 compilations committed; README DAG and launch order updated; transport race in the register",
+      "fan_out": 5,
+      "git": {
+        "branch": "coord/eval-w0-rev6-pack2",
+        "pushed": null,
+        "sha": "e988fd60354a4451f2c284c0469039b50a2c7229",
+        "short": "e988fd603"
+      },
+      "goal": "W0 rev 6 (R-98, delta-review conditions) and Wave 2 E1 pack part 2 (briefs, compiled prompts, DAG, Grok transport finding)",
+      "id": "al-01M41NW9M3WA6BSY86MZ7VPAKG",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Coordinator #6: Part A W0 rev 6 (R-98, ADR-0016 Am. 1, delta-review conditions); Part B pack part 2 briefs, external prompts, Grok transport race finding, README DAG and launch order.",
+      "session": "coord-opus-e1e4",
+      "shortname": "coord6-w0-rev6-pack2",
+      "skill": "execute-with-coordination",
+      "summary": "Branch coord/eval-w0-rev6-pack2: f5808497 (rev 6, merged as 1c9eaafc), d97f8dcb (part-2 briefs, rev 6.1, erratum, classes), 24ac479f (rev 6.2), e988fd60 (13 compilations, README, rev 6.3). Seam requests resolved: SR-E3, SR-L5 (E4), SR-L6. New candidate classes XPORT-A, OBS-A, FIXT-A, MUT-C.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1l.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T20:06:28Z",
+      "done_when": "Rev-2 section and gate line appended",
+      "fan_out": 0,
+      "goal": "Verify W1-L rev 2 closes the round-1 TA blockers and the readiness control",
+      "id": "al-01M41P034NF49ZVN9V89ZJ3PKB",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-L rev 2 round)",
+      "session": "rv-ta-l2-e1e4",
+      "shortname": "design-slice-review-ta-w1l-r2",
+      "skill": "design-slice-review",
+      "summary": "RV-TA round 2 on W1-L rev 2: PASS WITH CONDITIONS, 8 findings; round-1 blockers closed",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-tasks.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:43:06Z",
+      "done_when": "Gate PASS; per task base, latent requirement, hidden check, reference and naive, expected values; new graders named",
+      "fan_out": 0,
+      "goal": "Run design-slice for W1-L producing docs/design/eval-property-tasks.md",
+      "id": "al-01M41H7EC69FXDDYM5SW89CPDW",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-l-property-tasks.md",
+      "session": "w1l-tasks-e1e4",
+      "shortname": "design-slice-eval-property-tasks",
+      "skill": "design-slice",
+      "summary": "Specified eight property tasks (RS1/2, RW1/2, NG1/2, SM1/2): bases, pins, latent requirements, hidden tests, variants, new graders; seam requests SR-L1..L3, DR-L1",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-tasks.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:51:45Z",
+      "done_when": "every finding has a disposition row; derive/validate exit 0",
+      "duration_seconds": 599.0,
+      "fan_out": 0,
+      "goal": "apply the W1-L gate findings",
+      "id": "al-01M41N54G4PJP9GGT54DJ9E44W",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-l-property-tasks.md (rev 2 follow-up)",
+      "session": "w1l-tasks-r2-e1e4",
+      "shortname": "design-slice-eval-property-tasks-r2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T19:41:46Z",
+      "summary": "W1-L rev 2: applied RV-TA/RV-PAT/RV-SIM first-round findings and W0 rev 5/R-97; EV-5 note appended; SR-L5/SR-L6 filed",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     }
   ],
   "changes": [
@@ -75631,24 +77985,108 @@ window.AUDIT_DATA = {
       "title": "W0 seam contracts rev 5"
     },
     {
-      "id": "cl-01M41MQ5ZA1MDT23D4DPF37HSW",
-      "datetime": "2026-10-03T19:44:08Z",
-      "session": null,
-      "kind": "design",
-      "skill": "design-slice",
-      "title": "W1-E rev 2: discrimination record per R-98, check-less scoping, single overlay rule",
-      "prompt": null,
-      "summary": "Applied RV-TA/PAT/SEC/SIM first-round findings: no run ids in the record body, link after created-or-equal, identity.for_task, CHECK_PROPERTIES scoping, one safe_relpath/overlay_files, grader-allowlist env, no-record on HB-RDY-011, HB-RDY-009 deferred to E4.",
-      "rationale": null,
       "artifacts": [],
-      "tags": [],
+      "datetime": "2026-10-03T19:44:08Z",
       "git": {
-        "before": null,
         "after": "926cee3eee04249aeaf1fdb38f1868df9e37e92b",
+        "before": null,
         "branch": "design/eval-discriminate",
-        "pushed": null,
-        "commits": []
-      }
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41MQ5ZA1MDT23D4DPF37HSW",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Applied RV-TA/PAT/SEC/SIM first-round findings: no run ids in the record body, link after created-or-equal, identity.for_task, CHECK_PROPERTIES scoping, one safe_relpath/overlay_files, grader-allowlist env, no-record on HB-RDY-011, HB-RDY-009 deferred to E4.",
+      "tags": [],
+      "title": "W1-E rev 2: discrimination record per R-98, check-less scoping, single overlay rule"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/adr/0016-campaign-record.md"
+      ],
+      "datetime": "2026-10-03T20:04:24Z",
+      "git": {
+        "after": "e988fd60354a4451f2c284c0469039b50a2c7229",
+        "before": "507e5d4a",
+        "branch": "coord/eval-w0-rev6-pack2",
+        "commits": [
+          "e988fd60 docs(coordination): pack part 2 - 13 compiled external prompts (CO-S0), README routing/DAG/launch order; W0 rev 6.3 (RV-DS on rev 6 and W1-J; SR-J2 check_models ruled: WIDER data first, one commit)",
+          "24ac479f docs(design): W0 rev 6.2 - the W1-J seams SR-J1, SR-J3, SR-J4 (one append_missing_rows owned by X-J1; turns {n, prompt, sha256}; job_active_baseline after the lazy helper)",
+          "d97f8dcb docs(coordination): Wave 2 E1 pack part 2 briefs (X-C, X-H1, X-H2, X-E, X-INT, TOOL-GSM-B), part-1 briefs on W0 rev 6; W0 rev 6.1; W1-I Erratum 1; classes XPORT-A, OBS-A, FIXT-A, MUT-C",
+          "4e817553 chore(coord): regenerate docs index after the W0 rev 6 merge; ledger rows",
+          "1c9eaafc merge: W0 rev 6 (R-98 record body, SR-E3, delta-review conditions R6-1..R6-18) and ADR-0016 Amendment 1 (coord/eval-w0-rev6-pack2, part A)",
+          "f5808497 docs(design): W0 seam contracts rev 6 (R-98, SR-E3, the rev 4/5 delta conditions of RV-TA/SEC/DS/PAT/SIM); ADR-0016 Amendment 1",
+          "d91a88bd chore(coord): regenerate docs index after the W1-E merge; ledger rows",
+          "2bd4401d merge: W1-E discriminate, synthetic profile and readiness design (gate passed: TA, PAT PWC rev 2; SEC, SIM PWC) (design/eval-discriminate)",
+          "0f609cbe merge: RV-TA re-review of W1-E rev 2 - PASS WITH CONDITIONS (review/eval-ta-w1e-r2)",
+          "76c2a6b5 review(ta): refresh audit-data view",
+          "b8cc111f merge: RV-PAT re-review of W1-E rev 2 - PASS WITH CONDITIONS (review/eval-pat-w1e-r2)",
+          "9afbd81f review(ta): RV-TA W1-E rev 2 re-review (PASS WITH CONDITIONS)",
+          "47806482 merge: X-I - security task S1 through the stand-in host (stays stub until X-F's real probe host; RV-TA W1-I D1/D4) (build/eval-x-i)",
+          "499e131e review(pat): RV-PAT W1-E rev 2 re-review (PASS WITH CONDITIONS)",
+          "ea3ce9f4 feat(S1): reference, naive, check, 15 defect variants, 7 wrong-app fixtures, evidence (green through the stand-in host; task stays stub)",
+          "45224a42 design(eval): W1-E rev 2 - apply RV-TA/PAT/SEC/SIM reviews, R-98, W0 rev 5",
+          "926cee3e merge: main into design/eval-discriminate (W0 rev 5, R-98)",
+          "69f1242d test(S1): red tests for the S1 task - hidden tests, wrong apps, probes, variants (33 red on assertions against the skeleton)",
+          "21163389 feat(S1): task skeleton - 501 stubs, neutral check, empty variant and wrong-app tables, stand-in bench_check (X-I, W1-I rev 2)",
+          "549f7bc4 design(eval): W1-E discriminate, synthetic agent and readiness (EV-7)"
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M41NW9BBVVY4FAYX8Y4NR7MJ",
+      "kind": "design",
+      "prompt": null,
+      "rationale": "R-98 directs the Coordinator to amend ADR-0016 and rewrite W0 s6 before X-E's first record; the review conditions bind before the owning builds.",
+      "session": "coord-opus-e1e4",
+      "skill": "execute-with-coordination",
+      "summary": "R-98 applied (record body without run/grading ids, bytes-equal already-done, link with record_stem); SR-E3 granted; the rev 4/5 delta conditions of five lenses (R6-1..R6-18); rev 6.1 TA/SEC on rev 6; rev 6.2 W1-J SR-J1/J3/J4; rev 6.3 DS on rev 6 and W1-J, SR-J2 check_models ruling.",
+      "tags": [],
+      "title": "W0 seam contracts rev 6 to 6.3; ADR-0016 Amendment 1"
+    },
+    {
+      "artifacts": [],
+      "datetime": "2026-10-03T18:43:16Z",
+      "git": {
+        "after": "d47965b1f9e9638cff9acedc8169d6fd56694965",
+        "before": null,
+        "branch": "design/eval-property-tasks",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41H7QVEXEJXVQ8RHTS2A4N3",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Specified RS1/2, RW1/2, NG1/2, SM1/2; hallucination count is final-tree static and verified_before_use is NA without tool targets, both provisional on DR-L1 and SR-L1",
+      "tags": [],
+      "title": "W1-L: eight property tasks on eight distinct MIT/Apache bases"
+    },
+    {
+      "artifacts": [],
+      "datetime": "2026-10-03T19:51:51Z",
+      "git": {
+        "after": "fce2b0d6a98812f5003e94b703d68d178f29d4be",
+        "before": null,
+        "branch": "design/eval-property-tasks",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41N5A0GKTTD70953CQQKAED",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Applies 32 first-round review findings and W0 rev 5; eight property tasks re-specified with full wrong-app coverage and re-traced RS variants",
+      "tags": [],
+      "title": "W1-L rev 2: whole-tree simplicity counts, verified_before_use not built, R-97 resolver, skeleton-first helpers"
     }
   ],
   "messages": [
@@ -75893,6 +78331,15 @@ window.AUDIT_DATA = {
       "to": "owner-fable",
       "kind": "decision-request",
       "ref": "req-01M41KBTSTZ738NAGXNK0SRVXH",
+      "session": "x-d1-e1e4"
+    },
+    {
+      "id": "mail-01M41NX2FBZSXS4ZCH0A5FK3KV",
+      "ts": "2026-10-03T20:04:49Z",
+      "from": "x-d1-e1e4",
+      "to": "leader-e1e4",
+      "kind": "blocked",
+      "ref": "3cea81d97850d0bebb1f298c85ef0a4683e25a4e",
       "session": "x-d1-e1e4"
     }
   ]
