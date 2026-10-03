@@ -4710,6 +4710,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "60320ec9b40537661e3c2b375e345ef2a436d47b0b472498db323d9b882b8c7d"
     },
     {
+      "id": "review-eval-ta-w1l",
+      "path": "docs/design/reviews/eval-review-ta-w1l.md",
+      "title": "W1-L property tasks (eight) design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-L (RS1/RS2, RW1/RW2, NG1/NG2, SM1/SM2 and four graders) against W0 rev 3, R-87..R-96 and the W1-I pattern. BLOCK on four items: simplicity primary is launderable through a file outside the radius, verified_before_use returns a plausible 0 for shell reads, the grader-helper tests are red by ImportError, and the wrong-app fixtures leave about a third of the hidden tests unguarded.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-l"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "531914453a403250281744a7351623525ea6d9488e95a5da71171811ed91702b"
+    },
+    {
       "id": "coordination-eval-brief-rv-ds",
       "path": "docs/coordination/eval-wave1/rv-ds.md",
       "title": "RV-DS brief: Distributed Systems lens reviewer (Adversary Mode)",
@@ -6255,5 +6282,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "426b6d97eb19ef9ec417b73480c62ab7cde16c961f5f06b5b863e107662fc589"
+  "graphSha256": "dff41d4a82dcb41bba280298d886d652dac9501dd9d4129294de2c4c232a65e1"
 };

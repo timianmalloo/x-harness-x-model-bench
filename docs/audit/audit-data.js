@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:37:32Z",
+  "generated": "2026-10-03T18:50:42Z",
   "audit": [
     {
       "actor": null,
@@ -66692,6 +66692,28 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T1",
       "tool": null
+    },
+    {
+      "id": "al-01M41HNAQ0Y96P8ZMTR09Y2Q9M",
+      "shortname": "design-slice-review-eval-ta-w1l",
+      "datetime": "2026-10-03T18:50:41Z",
+      "session": "rv-ta-w1l-e1e4",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-L)",
+      "summary": "Test Architect review of W1-L: BLOCK, 13 findings",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1l.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "TA review of W1-L",
+      "done_when": "review file with gate line committed",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
