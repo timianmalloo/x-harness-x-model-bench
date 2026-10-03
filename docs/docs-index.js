@@ -2557,6 +2557,67 @@ window.DOCS_INDEX = {
       "sourceSha256": "b14637314c7501ad8ce14c5b9d741f65331dc4544c28b17107039ddb33753158"
     },
     {
+      "id": "design-eval-resume",
+      "path": "docs/design/eval-resume.md",
+      "title": "Design: plan-level resume, liveness and the alarm channel (W1-K, ADR-0021)",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 (E3 build tracks X-K1, X-K2)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "How a restarted `bench run <run_id>` resumes: a pure classifier over the ledger maps every recorded cell state to one ADR-0021 section 4 action; the refusals run in a fixed order under the run lock; the dead engine's segments are marked abandoned, never written into; one `run.resumed` row per resume is the whole resume record (counts are derived). The TLA+ model gains `NoResumeAfterStop`, settles the two resume branches W1-J left provisional by the recorded `next` of each turn, and TLC rejects every new seeded variant. Liveness is `last_progress_at` read from the ledger tail; the alarm is a scheduled Windows task that raises a toast (and an optional phone push) on a non-zero `bench status --alarm-after`, with a stamp file for the alarm of the alarm.",
+      "tags": [
+        "evaluation-campaign",
+        "resume",
+        "liveness",
+        "alarm",
+        "sre",
+        "tla",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0021-plan-level-resume-and-liveness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0015-multi-turn-attempt-and-turn-snapshots",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0007-run-engine",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-atomic-publish",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-run-lifecycle-model",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "3ee8161c8126f84c72b7a8c94990087935b8d08fb8301869a89a5132a554db98"
+    },
+    {
       "id": "design-eval-seam-contracts",
       "path": "docs/design/eval-seam-contracts.md",
       "title": "W0 seam contracts: the interfaces every Evaluation Campaign slice designs and builds against",
@@ -7811,6 +7872,14 @@ window.DOCS_INDEX = {
       "artifactId": "design-eval-property-grader"
     },
     {
+      "id": "surface-design-eval-resume",
+      "path": "docs/design/eval-resume.html",
+      "title": "Eval Resume",
+      "kind": "design-preview",
+      "description": "Inspect a rendered design or design-language preview.",
+      "artifactId": "design-eval-resume"
+    },
+    {
       "id": "surface-design-eval-seam-contracts",
       "path": "docs/design/eval-seam-contracts.html",
       "title": "Eval Seam Contracts",
@@ -7904,5 +7973,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "7f80802f05438b5b7a0bc7f5ce55cbf887596f529dd3a3af07f073a177cb6172"
+  "graphSha256": "2e9ca5ca94cdd4ad6fb50f4cec7866bf6bdda9e1c9c9992af5623058d1386580"
 };

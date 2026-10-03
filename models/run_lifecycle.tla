@@ -1,11 +1,11 @@
 --------------------------- MODULE run_lifecycle ---------------------------
 (***************************************************************************)
 (* The lifecycle of one harness-bench run (spec US-44; ADR-0006, ADR-0007). *)
-(* Version 5 (native cells and R-21 cancel grace, ADR-0013; turns and turn   *)
-(* snapshots, ADR-0015 section 7; crash-atomic archive writes, ADR-0015 5a). *)
-(* Provisional for W1-K (resume), which owns these two rules at its join:   *)
-(* the `BetweenSnapped` redo in ReconcileRecord and the final ELSE branch of *)
-(* `ClassOf` (all turns ended, no outcome: crashfail).                      *)
+(* Version 6 (native cells and R-21 cancel grace, ADR-0013; turns and turn   *)
+(* snapshots, ADR-0015 section 7; crash-atomic archive writes, ADR-0015 5a;  *)
+(* resume, ADR-0021 sections 2, 4 and 9: W1-K settled the two branches W1-J  *)
+(* left provisional, the `BetweenSnapped` redo and the final ELSE of         *)
+(* `ClassOf`, by the recorded `next` of each turn, and added NoResumeAfterStop).*)
 (*                                                                         *)
 (* One run engine process that can crash and be resumed; cells (each a    *)
 (* native process tree in its own Job Object, `proc`) that can fail on    *)
@@ -46,6 +46,7 @@ Turns      == 1..NumTurns
 NoCopy     == NumTurns            \* copying[c] when no copy is in progress (outside Arts)
 Arts       == 0..(NumTurns - 1)   \* archive artifacts: 0 is the final archive, k is the turn-k snapshot
 Reasons    == {"none", "timeout", "stop"}
+NextKinds  == {"none", "snapshot", "final", "stop"}
 
 VARIABLES
     engine,         \* "up" | "down"
@@ -64,6 +65,7 @@ VARIABLES
     pendingSend,    \* [cell -> 0..NumTurns] the turn whose ack the worker holds and will send once (volatile; 0 none)
     prompts,        \* [cell -> [turn -> Nat]]  physical prompts delivered (history)
     turnEnded,      \* [cell -> [turn -> BOOLEAN]]  ledger: cell.turn_ended{turn}
+    turnNext,       \* [cell -> [turn -> NextKinds]]  ledger: cell.turn_ended{turn}.next, the engine's decision (W0 rev 6.5)
     snapEv,         \* [cell -> [turn -> BOOLEAN]]  ledger: cell.turn_snapshot_archived{turn}
     copying,        \* [cell -> artifact | NoCopy]  the copy in progress on this incarnation (volatile)
     tmp,            \* [cell -> [artifact -> {"none","partial"}]]  a temporary sibling folder being filled
@@ -85,7 +87,7 @@ VARIABLES
     gradeCount,     \* [Passes -> [Cells -> Nat]]  history
     flags           \* history of forbidden events
 
-tvars == <<turnEnded, snapEv, copying, tmp, fin>>
+tvars == <<turnEnded, turnNext, snapEv, copying, tmp, fin>>
 
 vars == <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch, proc,
           killRequested, killReason, grace, queued, promptSent, pendingSend, prompts, outcome,
@@ -93,7 +95,7 @@ vars == <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, 
           decision, resolutions, lock, passState, passOwner, graded, gradeCount, flags>>
 
 FlagNames == {"launchAfterStop", "launchWhileOpen", "gradeUnarchived", "archiveLive",
-              "promptAfterOutcome", "launchBesideOrphan"}
+              "promptAfterOutcome", "launchBesideOrphan", "resumeAfterStop"}
 
 -----------------------------------------------------------------------------
 Active(c)  == intent[c] /\ outcome[c] = "none"
@@ -109,10 +111,19 @@ AnyPrompted(c) == \E k \in Turns : promptSent[c][k]
 InFlight(c) == \E k \in Turns : prompts[c][k] >= 1 /\ ~turnEnded[c][k] /\ proc[c] = "running"
 \* ADR-0015 section 6 and ADR-0021 section 4: how resume classifies a prompted, non-terminal cell.
 CrashedTurn(c) == \E k \in Turns : promptSent[c][k] /\ ~turnEnded[c][k]
-BetweenTurns(c) == \E k \in 1..(NumTurns - 1) : turnEnded[c][k] /\ ~promptSent[c][k + 1]
+\* ADR-0021 section 4, settled by W1-K. A cell is between turns only when the engine's recorded decision at turn k's end
+\* was `snapshot` (a turn k+1 was to follow) and no prompt_sent{k+1} exists. A turn that ended with next = stop or final
+\* is not between turns: no snapshot was taken and no turn k+1 was owed, so the class is crashfail, the final ELSE.
+\* The ELSE therefore means one shape: every planned turn ended (or a turn ended with next = stop) and the outcome was
+\* never recorded. It stays crashfail and is never read as "done" (the outcome needs exit status and extraction,
+\* which a resume cannot recompute without guessing).
+BetweenTurns(c) == \E k \in 1..(NumTurns - 1) : turnEnded[c][k] /\ (BUG = "between_ignores_next" \/ turnNext[c][k] = "snapshot")
+                                               /\ ~promptSent[c][k + 1]
 ClassOf(c) == IF CrashedTurn(c) THEN "crashfail" ELSE IF BetweenTurns(c) THEN "crashbetween" ELSE "crashfail"
-\* The ledger holds the snapshot event of every turn the cell is waiting between.
-BetweenSnapped(c) == \A k \in 1..(NumTurns - 1) : (turnEnded[c][k] /\ ~promptSent[c][k + 1]) => snapEv[c][k]
+\* The ledger holds the snapshot event of every turn the cell is waiting between (ADR-0021 section 4, snapshot row:
+\* redo the copy first). Stated from the real predicate, so the seeded `between_ignores_next` reaches ClassOf alone.
+BetweenSnapped(c) == \A k \in 1..(NumTurns - 1) :
+                       (turnEnded[c][k] /\ turnNext[c][k] = "snapshot" /\ ~promptSent[c][k + 1]) => snapEv[c][k]
 
 Init ==
     /\ engine = "up" /\ crashes = 0 /\ epoch = 1
@@ -128,6 +139,7 @@ Init ==
     /\ pendingSend = [c \in Cells |-> 0]
     /\ prompts = [c \in Cells |-> [k \in Turns |-> 0]]
     /\ turnEnded = [c \in Cells |-> [k \in Turns |-> FALSE]]
+    /\ turnNext = [c \in Cells |-> [k \in Turns |-> "none"]]
     /\ snapEv = [c \in Cells |-> [k \in Turns |-> FALSE]]
     /\ copying = [c \in Cells |-> NoCopy]
     /\ tmp = [c \in Cells |-> [a \in Arts |-> "none"]]
@@ -249,6 +261,10 @@ TurnEnd(c, k) ==
     /\ proc[c] = "running"
     /\ prompts[c][k] >= 1 /\ ~turnEnded[c][k]
     /\ turnEnded' = [turnEnded EXCEPT ![c][k] = TRUE]
+    \* `next` is the engine's decision at the turn's end (W0 rev 6.5): a following turn (snapshot), the last planned
+    \* turn (final), or a stop, budget kill or deadline that ends the cell (stop). It is recorded, not recomputed.
+    /\ turnNext' = [turnNext EXCEPT ![c][k] = IF k = NumTurns THEN "final"
+                                              ELSE IF killRequested[c] \/ stopApplied THEN "stop" ELSE "snapshot"]
     /\ UNCHANGED <<snapEv, copying, tmp, fin, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend, prompts, outcome,
                    wasStopped, archived, deleted, controlFile, controlApplied, applyCount,
@@ -377,6 +393,11 @@ CopyBegin(c, a) ==
                  \/ BUG = "archive_live" /\ killRequested[c]
               /\ IF proc[c] = "running" THEN Flag("archiveLive") ELSE UNCHANGED flags
          ELSE /\ ~snapEv[c][a] /\ SnapAllowed(c)
+              \* A snapshot is taken only when the engine decided a next turn follows (turn_ended.next = snapshot).
+              \* The seeded bug snapshots a turn that ended with next = stop.
+              /\ \/ BUG = "snapshot_when_stopping"
+                 \/ turnNext[c][a] = "snapshot"
+                 \/ BUG = "snapshot_in_flight" /\ turnNext[c][a] = "none"   \* the in-flight bug runs before any `next` exists
               \* The snapshot starts only while the adapter is idle: turn a has ended. The seeded bug
               \* snapshots while turn a is still in flight.
               /\ \/ turnEnded[c][a]
@@ -385,7 +406,7 @@ CopyBegin(c, a) ==
     /\ copying' = [copying EXCEPT ![c] = a]
     /\ tmp' = IF InPlace(a) THEN tmp ELSE [tmp EXCEPT ![c][a] = "partial"]
     /\ fin' = IF InPlace(a) THEN [fin EXCEPT ![c][a] = "partial"] ELSE fin
-    /\ UNCHANGED <<turnEnded, snapEv, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<turnEnded, turnNext, snapEv, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
@@ -397,7 +418,7 @@ CopyPublish(c, a) ==
     /\ IF InPlace(a) THEN fin[c][a] = "partial" ELSE tmp[c][a] = "partial"
     /\ fin' = [fin EXCEPT ![c][a] = "complete"]
     /\ tmp' = [tmp EXCEPT ![c][a] = "none"]
-    /\ UNCHANGED <<turnEnded, snapEv, copying, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<turnEnded, turnNext, snapEv, copying, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
@@ -412,7 +433,7 @@ SnapFail(c, k) ==
     /\ copying' = [copying EXCEPT ![c] = NoCopy]
     /\ tmp' = [tmp EXCEPT ![c][k] = "none"]
     /\ proc' = [proc EXCEPT ![c] = "exited"]
-    /\ UNCHANGED <<turnEnded, snapEv, fin, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<turnEnded, turnNext, snapEv, fin, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
@@ -425,7 +446,7 @@ SnapRecord(c, k) ==
     /\ fin[c][k] = "complete" /\ ~snapEv[c][k]
     /\ snapEv' = [snapEv EXCEPT ![c][k] = TRUE]
     /\ copying' = [copying EXCEPT ![c] = NoCopy]
-    /\ UNCHANGED <<turnEnded, tmp, fin, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<turnEnded, turnNext, tmp, fin, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, archived, deleted, controlFile, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
@@ -438,7 +459,7 @@ Archive(c) ==
     /\ ~archived[c] /\ fin[c][0] = "complete"
     /\ archived' = [archived EXCEPT ![c] = TRUE]
     /\ copying' = [copying EXCEPT ![c] = NoCopy]
-    /\ UNCHANGED <<turnEnded, snapEv, tmp, fin, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
+    /\ UNCHANGED <<turnEnded, turnNext, snapEv, tmp, fin, engine, crashes, reconciling, reconciled, intent, launchEpoch, epoch,
                    proc, killRequested, killReason, queued, promptSent, pendingSend,
                    prompts, outcome, wasStopped, deleted, controlFile, controlApplied,
                    applyCount, stopApplied, decision, resolutions, lock, passState, passOwner,
@@ -544,19 +565,25 @@ Crash ==
     /\ passState' = [p \in Passes |->
                        IF passOwner[p] = "engine" /\ passState[p] = "active"
                          THEN "abandoned" ELSE passState[p]]
-    /\ UNCHANGED <<turnEnded, snapEv, fin, reconciling, reconciled, intent, launchEpoch, epoch, proc,
+    /\ UNCHANGED <<turnEnded, turnNext, snapEv, fin, reconciling, reconciled, intent, launchEpoch, epoch, proc,
                    killRequested, promptSent, prompts, outcome, wasStopped, archived, deleted,
                    controlFile, controlApplied, applyCount, stopApplied, decision,
                    resolutions, passOwner, graded, gradeCount, flags>>
 
+\* ADR-0021 section 2: a resume is refused after a stop. The refusal reads three ledger rows (run.stopped,
+\* control.applied{stop}, decision.resolved{option: stop}); `stopApplied` abstracts them as one step, which is the
+\* earliest of the three, so the model refuses at least as early as the code. The seeded `resume_after_stop` lifts it.
 Resume ==
     /\ engine = "down"
+    \* `relaunch_stopped` also lifts it: reopening a stopped cell needs a resume after a stop to happen at all.
+    /\ (BUG \in {"resume_after_stop", "relaunch_stopped"} \/ ~stopApplied)
     /\ engine' = "up" /\ epoch' = epoch + 1
     /\ reconciling' = TRUE /\ reconciled' = {}
+    /\ IF stopApplied THEN Flag("resumeAfterStop") ELSE UNCHANGED flags
     /\ UNCHANGED <<tvars, crashes, intent, launchEpoch, proc, killRequested, killReason, queued,
                    promptSent, pendingSend, prompts, outcome, wasStopped, archived, deleted,
                    controlFile, controlApplied, applyCount, stopApplied, decision,
-                   resolutions, lock, passState, passOwner, graded, gradeCount, flags, grace>>
+                   resolutions, lock, passState, passOwner, graded, gradeCount, grace>>
 
 \* Reconciliation step 1: kill every running proc carrying the run's label, whatever its outcome.
 ReconcileKill(c) ==
@@ -581,7 +608,7 @@ ReconcileRecord(c) ==
     /\ Active(c) /\ c \notin reconciled /\ copying[c] = NoCopy
     /\ (BUG = "reconcile_no_wait" \/ proc[c] # "running")   \* seeded: records without confirming the kill
     /\ IF AnyPrompted(c) /\ BUG # "relaunch_prompted" /\ ~ResendTurn(c)
-         THEN /\ BetweenSnapped(c)
+         THEN /\ (BUG = "between_without_snapshot" \/ BetweenSnapped(c))
               /\ Record(c, IF BUG = "kill_between_turns" THEN "crashfail"
                           ELSE IF BUG = "crashed_turn_as_between" /\ CrashedTurn(c) THEN "crashbetween"
                           ELSE ClassOf(c))
@@ -725,6 +752,7 @@ TypeOK ==
     /\ lock \in {"free", "engine", "bench"}
     /\ queued \in [Cells -> 0..NumTurns] /\ pendingSend \in [Cells -> 0..NumTurns]
     /\ promptSent \in [Cells -> [Turns -> BOOLEAN]] /\ turnEnded \in [Cells -> [Turns -> BOOLEAN]]
+    /\ turnNext \in [Cells -> [Turns -> NextKinds]]
     /\ snapEv \in [Cells -> [Turns -> BOOLEAN]] /\ copying \in [Cells -> Arts \cup {NoCopy}]
     /\ tmp \in [Cells -> [Arts -> {"none", "partial"}]]
     /\ fin \in [Cells -> [Arts -> {"none", "partial", "complete"}]]
@@ -740,7 +768,7 @@ NoSnapshotInFlight         == \A c \in Cells : copying[c] # NoCopy => ~InFlight(
 \* turns is crashbetween, and only such a cell is. Three implications, so a wrong ClassOf fails in either direction.
 CrashedLit(c) == \E k \in Turns : promptSent[c][k] /\ ~turnEnded[c][k]
 WaitingLit(c) == (\A k \in Turns : promptSent[c][k] => turnEnded[c][k])
-                 /\ \E k \in 1..(NumTurns - 1) : turnEnded[c][k] /\ ~promptSent[c][k + 1]
+                 /\ \E k \in 1..(NumTurns - 1) : turnEnded[c][k] /\ turnNext[c][k] = "snapshot" /\ ~promptSent[c][k + 1]
 CrashedTurnPredicate       == \A c \in Cells : outcome[c] \in {"crashfail", "crashbetween"} =>
                                 /\ (CrashedLit(c) => outcome[c] = "crashfail")
                                 /\ (WaitingLit(c) => outcome[c] = "crashbetween")
@@ -761,6 +789,15 @@ DecisionResolvedOnce       == resolutions <= 1
 NoLaunchWhileDecisionOpen  == ~flags["launchWhileOpen"]
 NoLaunchBesideOrphan       == ~flags["launchBesideOrphan"]
 NoOutcomeWhileRunning      == \A c \in Cells : outcome[c] # "none" => proc[c] # "running"
+\* ADR-0021 section 2 and 9 (W1-K): the engine is never resumed after a stop.
+NoResumeAfterStop          == ~flags["resumeAfterStop"]
+\* ADR-0021 section 4, the snapshot row and the between-turns row: a cell recorded crashbetween has the snapshot event
+\* of the turn it was waiting after, and that turn's recorded decision was `snapshot`.
+BetweenRecordedWithSnapshot == \A c \in Cells : outcome[c] = "crashbetween" =>
+                                 \E k \in 1..(NumTurns - 1) : turnEnded[c][k] /\ turnNext[c][k] = "snapshot"
+                                                              /\ ~promptSent[c][k + 1] /\ snapEv[c][k]
+\* A turn-k snapshot exists only when the engine decided that a turn k+1 follows (turn_ended.next = snapshot).
+SnapshotOnlyWhenNext       == \A c \in Cells, k \in Turns \ {NumTurns} : snapEv[c][k] => turnNext[c][k] = "snapshot"
 
 \* Reachability witness (must be VIOLATED by the real design): every cell can end graded and
 \* deleted, so safety does not pass merely because the run stalls early.
@@ -772,13 +809,18 @@ NotAllTurnsDelivered       == ~(\E c \in Cells : outcome[c] = "done" /\ turnEnde
 NotCrashBetween            == ~(\E c \in Cells : outcome[c] = "crashbetween" /\ snapEv[c][1])
 
 (* Liveness *)
+\* ADR-0021 section 2 refuses a resume after a stop, so an engine that crashed after a stop never comes back: the run
+\* stays here, its unfinished cells are named by the refusal (HB-RUN-008), and no liveness promise outlives it. Each
+\* property below therefore holds on every behaviour except those that end in this accepted state. The disjunct is
+\* not free: a seeded variant must still be caught on a behaviour that never reaches it (they all are, with no crash).
+StopCrashed                == engine = "down" /\ stopApplied
 DecisionEventuallyResolved == (decision = "open") ~> (decision = "resolved")
 StopReachesTerminal        == controlFile["stop"] ~>
-                                (stopApplied /\ \A c \in Cells :
-                                   (intent[c] => outcome[c] # "none" /\ proc[c] # "running"))
-EndedCellsGetArchived      == \A c \in Cells : (outcome[c] # "none") ~> archived[c]
-PromptedCellsEnd           == \A c \in Cells : AnyPrompted(c) ~> (outcome[c] # "none")
+                                (stopApplied /\ (StopCrashed \/ \A c \in Cells :
+                                   (intent[c] => outcome[c] # "none" /\ proc[c] # "running")))
+EndedCellsGetArchived      == \A c \in Cells : (outcome[c] # "none") ~> (archived[c] \/ StopCrashed)
+PromptedCellsEnd           == \A c \in Cells : AnyPrompted(c) ~> (outcome[c] # "none" \/ StopCrashed)
 \* With GradedOncePerPass, "each cell is graded exactly once" (US-44) in the engine's pass.
 ArchivedCellsGetGraded     == \A c \in Cells :
-                                archived[c] ~> (\E p \in Passes : c \in graded[p] /\ passState[p] = "done")
+                                archived[c] ~> (StopCrashed \/ \E p \in Passes : c \in graded[p] /\ passState[p] = "done")
 =============================================================================
