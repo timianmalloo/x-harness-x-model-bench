@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T19:16:26Z",
+  "generated": "2026-10-03T19:25:24Z",
   "audit": [
     {
       "actor": null,
@@ -74380,6 +74380,28 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "id": "al-01M41KMWKJM21ZR9N41TQ7MFNP",
+      "shortname": "design-slice-review-ta-w1e",
+      "datetime": "2026-10-03T19:25:24Z",
+      "session": "rv-ta-w1e-e1e4",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md",
+      "summary": "RV-TA: W0 revs 3-5 delta PASS WITH CONDITIONS (7); W1-E BLOCK (14)",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1e.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "TA gate lines for W0 delta and W1-E",
+      "done_when": "two gate lines written and committed",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
