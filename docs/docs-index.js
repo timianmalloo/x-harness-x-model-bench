@@ -3402,6 +3402,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "e69173cadc79609b475999dedd6a7a537c2f9b50669f08202809d75aa2581ae4"
     },
     {
+      "id": "review-eval-ds-w1b",
+      "path": "docs/design/reviews/eval-review-ds-w1b.md",
+      "title": "W1-B crash-atomic publish: Distributed Systems lens review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of docs/design/eval-atomic-publish.md (branch design/eval-atomic-publish, 67e7dc83) by the Distributed Systems lens: the four W0 dispositions taken on trust (DS-5, DS-6, DS-7, DS-9), the bounded rename retry, and five minor findings.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "5251732e1cd4289428039c0593ca2bcf0102f5de6d2e399b5f41af19a333478d"
+    },
+    {
       "id": "review-eval-pat",
       "path": "docs/design/reviews/eval-review-pat.md",
       "title": "Patterns Expert review of the Evaluation Campaign design slices (Adversary Mode)",
@@ -5147,5 +5168,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "ef5d6c555b7f7fe0f693d9e1f3b3ddfa30d836175a3f111c2211722d93f8b311"
+  "graphSha256": "923c0d2f0d0df3bd1866d1f94c5c4ac2ca8612eff10d80dbd713d04e8f8c0e4e"
 };
