@@ -414,7 +414,8 @@ def test_ng_pin_tree_matches_the_engine_built_base(task_id):
     listed = set(subprocess.run(["git", "ls-tree", "-r", "--name-only", SPECS[task_id]["pin"]], cwd=clone, capture_output=True,
                                 text=True, check=True).stdout.split())
     built = {p.relative_to(base).as_posix() for p in base.rglob("*") if p.is_file() and ".git" not in p.relative_to(base).parts}
-    overlay = {p.relative_to(task_dir(task_id) / "workspace").as_posix() for p in (task_dir(task_id) / "workspace").rglob("*") if p.is_file()}
+    overlay = {p.relative_to(task_dir(task_id) / "workspace").as_posix() for p in (task_dir(task_id) / "workspace").rglob("*")
+               if p.is_file() and "__pycache__" not in p.parts}  # bytecode the reflect/load_lib tests write is no overlay
     assert built - listed == overlay
     assert listed - built == set()
 
