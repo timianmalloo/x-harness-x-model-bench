@@ -1,12 +1,12 @@
 {
   "schema": "coord-run/1",
-  "run_id": "w2-b1a-e1e4",
+  "run_id": "w2-h1a-e1e4",
   "owner": "leader-e1e4",
   "parallelism": 1,
   "workers": [
     {
-      "session": "x-b1a-e1e4",
-      "branch": "build/eval-x-b1a",
+      "session": "x-h1a-e1e4",
+      "branch": "build/eval-x-h1a",
       "harness": "grok",
       "transport": "acp",
       "argv": [
@@ -23,7 +23,7 @@
         "AGENTS.md",
         ".grok/hooks/ai-forward.json"
       ],
-      "deadline_seconds": 1200,
+      "deadline_seconds": 2400,
       "output_limit": 4194304,
       "evidence": [
         {
@@ -37,9 +37,9 @@
         "permissions": "observed-only"
       },
       "prompts": [
-        "al-01M41NRPQMNPJXB170E87T32NE"
+        "al-01M41NRM9X2NVDN5QASJ391EBH"
       ],
-      "fallback": "A red-only end, a deadline or a failed served-model read: the green follow-on runs as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) in this worker's tree (R-87 Option 1); R-92 is X-B1's Owner review; B1b and B1c reuse this contract with run_id, session and branch suffixed b and c"
+      "fallback": "A red-only end, a deadline or a failed served-model read: the green follow-on runs as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) in this worker's tree (R-87 Option 1); R-92 is X-H1's Owner review. Turns b and c reuse this contract with the suffixes b and c (session, branch, run_id), each with its own compilation"
     }
   ]
 }

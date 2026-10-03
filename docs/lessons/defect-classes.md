@@ -689,6 +689,42 @@ summary: >-
 - **Control:** `docs/coordination/eval-wave1/README.md` section 1 step 2 now requires an **inline prefix** on every `git commit` and every coord call (`AGENT_SESSION=<id> git commit …`) and says why. Rung: always-loaded instruction. Upgrade trigger: one more unattributed commit after this rule is on main; then the commit floor refuses (not advises) when `AGENT_SESSION` is unset in a registered worker tree.
 - **Status:** `candidate`
 
+### XPORT-A: a protocol client tolerates an interleaved message only in the phase where it was first seen (candidate)
+- **Signature:** a JSON-RPC client waits for the response to one request and treats any other message as a protocol error, except for a known out-of-band message that it tolerates in a single phase. The agent sends that message in another phase too, and the dispatch fails before any work starts.
+- **Why it survives:** the tolerance was added for the phase where the message was first seen, and its test drives only that phase. The race is intermittent: whether the message arrives before or after the response depends on the agent's startup timing, so one green qualification turn proves nothing.
+- **Instances:**
+  - `2026-10-03` (Evaluation Campaign Wave 2): Grok's skills-reload acknowledgement arrived **before the `session/new` response**. The runner's Grok compatibility in `docs/ai-forward-pack/scripts/coord_transport.py` accepts that message only inside `session/prompt`. Measured: 2 of 3 Grok dispatches failed this way, each in under 10 s (`w2-g1-e1e4`, `w2-enva-e1e4`). The retry `w2-g1b-e1e4` got past `session/new`, committed red `a08a4060` and green `76deb253`, and then hit its 1,200 s deadline (reported by the Leader).
+- **Sweep:** owed by the fix slice: every request/response wait in `coord_transport.py` (`initialize`, `session/new`, `session/prompt`, any cancel), and every other harness's compatibility shim, for a tolerance tied to one phase.
+- **Control:** a red-first test in the pack's transport tests: a fake agent sends the acknowledgement before the `session/new` response, and before the `initialize` response, and the client must complete both; then one tolerance that every wait applies, not one per phase. Fix slice `xport-grok-e1e4` (Claude Sonnet, branch `fix/grok-session-new-race`, launched by the Leader). It is a **repo-local deviation** of the pack's script, so it is recorded as a deviation for `updatepack` to merge. Pushing it to the ai-forward repo needs the operator. Meanwhile, Grok tracks wait for the fix (Leader, 2026-10-03); they are not rerouted to Sonnet. Rung: test. Upgrade trigger: the fix upstream, then this entry moves to the pack's register.
+- **Status:** `candidate`
+
+### OBS-A: a measurement read from a file written only on a clean exit (candidate)
+- **Signature:** a reader takes a value from one source that the producer writes only when it ends normally (a session summary, a usage file). On the failure path (a deadline kill, a crash) the file is absent, so the reader reports "not recorded" in exactly the case where the value is needed most, even though another durable source holds it.
+- **Why it survives:** the reader was tested on sessions that ended normally. "Not recorded" is the correct degraded output, so nothing looks broken; the gap shows only when someone reads the other source by hand.
+- **Instances:**
+  - `2026-10-03` (Evaluation Campaign Wave 2): `tools/grok_served_model.py` (TOOL-GSM, the R-92 condition 1 reader) exits 2 "not recorded" on the deadline-killed session `w2-g1b-e1e4`, because Grok writes `usage.json` only at the session's end. The Leader read the served model from `chat_history.jsonl`'s assistant rows (`grok-4.7-build`, 43 rows), so the pin held, but the join rule could not be met by its tool.
+- **Sweep:** the other served-model readers named by the join gate (Codex `rollout-*.jsonl` `model`, Agy `cli.log`), and every reader of a file that a harness writes only at session end.
+- **Control:** TOOL-GSM-B (`docs/coordination/eval-wave2-e1/tool-gsm-b.md`): when `usage.json` is absent the reader falls back to the assistant rows' model ids, names the source it read, and still exits non-zero when the ids disagree with the pin or no source exists. Its tests include a deadline-killed session fixture. Rung: test.
+- **Status:** `candidate`
+
+### FIXT-A: a design states its own fixtures' measured behaviour without running them (candidate)
+- **Signature:** a design gives a quantitative claim about how its own fixtures behave ("all 8 hidden tests fail on the base", "a crash flips every probe") with no run behind it. The build then measures a different number, and a test or an expected value written from the claim is wrong.
+- **Why it survives:** the claim reads as a property of the design, not as a measurement, so neither the author nor the reviewers ask for a run. It is the fixture-level form of asserting the shape of one's own code from memory (E15).
+- **Instances:**
+  - `2026-10-03` (Evaluation Campaign, X-I building S1 against W1-I): the 501 stub fails 7 of 8 hidden tests, not 8; a crash variant flips 5 probes, not 8; test 8's `socket.socket` patch failed every correct app on Windows; the reference and naive returned 500 on non-JSON bodies. Recorded as *Erratum 1* in `docs/design/eval-security-tasks.md`.
+- **Sweep:** the merged designs with authored fixtures: W1-E (synthetic overlays, variants), W1-L (RW, NG, SM tasks), W1-F (probe-host fixtures). The rule below applies to their builds.
+- **Control:** the wrong-app and crash fixtures X-I built measure these claims now. A Testability-floor line in `docs/coordination/eval-wave2-e1/README.md` section 2: **every quantitative claim about a fixture's behaviour is marked Inferred until a fixture run measures it, and the build report gives the measured number beside it.** Rung: always-loaded instruction for E1 workers. Upgrade trigger: one more design-stated fixture number contradicted by a build; then the `design-slice` Definition of Done gains the item.
+- **Status:** `candidate`
+
+### MUT-C: a gate's environment failure reported as its per-item verdicts (candidate)
+- **Signature:** a gate that runs many items (mutants, cases) in a subprocess reports each item's result. When the environment itself is wrong (the wrong interpreter, a missing package), every item fails the same way, and the gate prints a verdict per item instead of one environment error.
+- **Why it survives:** "error" is a legitimate per-item verdict, so a table of 80 errors looks like a result. The tool never checks that its own interpreter can import the code under test.
+- **Instances:**
+  - `2026-10-03` (Evaluation Campaign Wave 2, the Leader's join of X-G1): `python tools/mutate_check.py` under the global interpreter (no `harness_bench`) reported all 80 `grade.json` mutants as `error`. Re-run under `uv run`.
+- **Sweep:** the other join-gate tools that spawn the project's tests: `tools/check_models.py`, `run-verify-gates.py`, `conductor-join.py`; and every brief's join-gate line.
+- **Control:** (1) the join-gate line in `docs/coordination/eval-wave2-e1/README.md` section 3 and every part-2 brief reads `uv run python tools/mutate_check.py --touched main`; (2) TOOL-GSM-B section B2: `mutate_check` imports `harness_bench` before any mutant and exits 2 with the interpreter named, and an all-`error` run exits non-zero as "environment suspected". Rung: test. Upgrade trigger: the same shape in another gate tool.
+- **Status:** `candidate`
+
 ---
 
 ## Inherited classes (seeded from the pack)
