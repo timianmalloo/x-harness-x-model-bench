@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:29:34Z",
+  "generated": "2026-10-03T18:30:13Z",
   "audit": [
     {
       "actor": null,
@@ -66556,6 +66556,52 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-identity.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:42:10Z",
+      "done_when": "Gate PASS incl. SRE; run/grade table reviewed; launch recheck and identity_check_ms",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-D engine identity, freeze and per-launch recheck",
+      "id": "al-01M41DQVDC2MA6XY4YFM12V39V",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-d-identity.md",
+      "session": "w1d-identity-e1e4",
+      "shortname": "design-slice-eval-identity",
+      "skill": "design-slice",
+      "summary": "W1-D design: identity manifest, full run/grade table (no tooling class), launch recheck, grade_identity_hash in E1, guards",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-identity.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:24:26Z",
+      "done_when": "every finding has a disposition row; Gate record carries the four lines plus rev 2 pending RV-TA",
+      "duration_seconds": 557.0,
+      "fan_out": 0,
+      "goal": "Apply the four W1-D reviews and R-94",
+      "id": "al-01M41G58M9N7248NZ8X96XPYFZ",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-d-identity.md (rev 2 follow-up)",
+      "session": "w1d-identity-r2-e1e4",
+      "shortname": "design-slice-eval-identity-r2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T18:15:09Z",
+      "summary": "W1-D rev 2: R-94 applied, 30 review findings dispositioned, ADR-0017 Amendment 1, real-wiring and red-fixture test plan",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     }
   ],
   "changes": [
@@ -67246,6 +67292,50 @@ window.AUDIT_DATA = {
       "summary": "The probe host gains the wsgi kind with W0 rev 3 frames, an explicit PEP 3333 environ, a factory called with {state_dir}-resolved args, paths after the root, and a start sequence that moves fds 0-2 before agent code so app output lands in out_dir/check/host/<case>.log; the start is bounded by bounds_ms[interface] and a miss is did not start; SP-F3 re-ran the forgery against a wsgi host (refused).",
       "tags": [],
       "title": "W1-F rev 3: wsgi probe host in E1 (ruling C-1), app output off the protocol channel, start bound outside the case span"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-identity.md"
+      ],
+      "datetime": "2026-10-03T17:42:21Z",
+      "git": {
+        "after": "eed6ca33ce50c7596d4c0089b6cd3e9a726b2d2a",
+        "before": null,
+        "branch": "design/eval-identity",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41DR63WXF09NXV46J77EXQ4",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-d-identity.md",
+      "rationale": "Derived numbers are part of the measurement; engine imports telemetry.normalize on the cell path; measured 13 ms per check.",
+      "session": "w1d-identity-e1e4",
+      "skill": "design-slice",
+      "summary": "Keep run/grade only (no tooling class); procs run, egress grade; telemetry/* run (Owner request); recheck injected via EngineConfig.identity_check before each launch, identity_check_ms on cell.launch_intent; grade_identity_hash in E1; platform stays sys.platform.",
+      "tags": [],
+      "title": "Engine identity: two classes kept, telemetry run-side, per-launch run-side recheck"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-identity.md"
+      ],
+      "datetime": "2026-10-03T18:24:37Z",
+      "git": {
+        "after": "849809790b32063e93a0049e09f32f226b089bfe",
+        "before": null,
+        "branch": "design/eval-identity",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41G5JME3QDPDW97327M3B47",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-d-identity.md (rev 2 follow-up)",
+      "rationale": null,
+      "session": "w1d-identity-r2-e1e4",
+      "skill": "design-slice",
+      "summary": "R-94 applied (telemetry/* run, gateway grade, ADR-0017 Amendment 1); launch check once per tick with a 2 s cap and one retry; real-wiring test T-25; pure coverage and direction scans with red fixtures; run-class edit cost priced; 30 findings dispositioned",
+      "tags": [],
+      "title": "W1-D rev 2: telemetry run, gateway grade, one retry, real-wiring test"
     }
   ],
   "messages": [

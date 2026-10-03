@@ -791,7 +791,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "a7ca9f0a61f7bc7f6b1657a189020d642372f91d20e760a91ebc9f26d4215247"
+      "sourceSha256": "f31526502ab5ba0794656bd4da87ed0bf827e936e35bdbfccf6df9bf0c8a98a9"
     },
     {
       "id": "adr-0018-hidden-check-harness",
@@ -1972,6 +1972,53 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "0b5cff38703dc03b75420c16279c50cb8fd147a5a72d3d99e31bc0a035034810"
+    },
+    {
+      "id": "design-eval-identity",
+      "path": "docs/design/eval-identity.md",
+      "title": "W1-D design: engine identity, freeze and per-launch recheck",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 (W1-D; builds as X-D in E1)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Designs identity.py (manifest, hash, side, diff, the one CLASSES table), the per-launch run-side recheck in engine.py with identity_check_ms, grading.started.grade_identity_hash (E1), and the guards. Rev 2 applies R-94 (telemetry/* run, gateway grade; ADR-0017 Amendment 1) and the four first-round reviews: a real-wiring test, red fixtures for every scan, one retry mechanism with a wall-clock cap, and a cost model that prices run-class edits. All 69 existing files and 18 planned modules classed; no third \"tooling\" class.",
+      "tags": [
+        "benchmark",
+        "campaign",
+        "identity",
+        "freeze",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0017-engine-identity-and-freeze",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0016-campaign-record",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0021-plan-level-resume-and-liveness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "8a267c00da2b82e5c7054ea1bd0ba117a932fabda71ff8df017d885b091ba288"
     },
     {
       "id": "design-eval-property-grader",
@@ -6110,5 +6157,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "003fc2ea4454f5cc91ff32eae2ebbb7045e402f2d165bcf30809e367e8c62990"
+  "graphSha256": "9bccbb8d851827d64215d7d37a4d61c01aabe667799b41b274d46ffcf3188aab"
 };
