@@ -4641,7 +4641,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f4ca3375121735995f75cbc84a8c5e96cd9e65a03f39bc9607ef2bb3f08c999d"
+      "sourceSha256": "ede49e2195cb4be9ef955be4a4a0fe3985097b7e93476b6c20edf5c2c360c2e7"
     },
     {
       "id": "review-eval-ta-w1a",
@@ -4750,6 +4750,33 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "56d9113537b7ed9b5fe31112d6906f43b44c370c8a502c4cc40657c84a430193"
+    },
+    {
+      "id": "review-eval-ta-w1e",
+      "path": "docs/design/reviews/eval-review-ta-w1e.md",
+      "title": "W1-E discriminate design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-E (design/eval-discriminate, 549f7bc4) against W0 rev 5 and R-98. BLOCK: R-HOST and the variant compare assume a check that three of five properties do not have; the campaign identity compare is stale against rev 5 for_task; untrustworthy records trap a legitimate retry. The SCAN-A fixture, T-E1a/T-E1b and the skeleton-first commit are sound in shape.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-e"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "f924094bd5de5f9b54decac835607f45e74dad1bdab9e1644b137b574c40ec93"
     },
     {
       "id": "review-eval-ta-w1f",
@@ -6749,5 +6776,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "0368ad7fb368ab66fe7c0f398d2360e87ed773c0ab52dfaa23c27c6093821bd1"
+  "graphSha256": "2bd528edf88b0a2db123de807b48eb65172def723b2f3be931763232a8398c3b"
 };
