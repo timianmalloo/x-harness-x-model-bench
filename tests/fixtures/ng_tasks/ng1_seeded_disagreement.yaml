@@ -1,0 +1,16 @@
+# The single-turn seeded-disagreement fixture of W1-L floor item 3 (Erratum 1, R2-4; X-NG).
+# A copy of NG1 whose declared `expected` differs from the observed value in exactly one metric. Readiness must refuse it with
+# HB-RDY-003 naming the metric and both values (W1-E T-E11 and T-E12). It runs in the `ready` follow-on, once X-LG's
+# strategy and X-E's readiness are on main; until then tests/test_ng_tasks.py only proves the fixture is a one-metric
+# disagreement with NG1's real observed value.
+base_task: NG1
+override:
+  expected:
+    reference:
+      hallucinated_symbol_errors: 1
+refusal:
+  code: HB-RDY-003
+  role: reference
+  metric: hallucinated_symbol_errors
+  declared: 1
+  observed: 0
