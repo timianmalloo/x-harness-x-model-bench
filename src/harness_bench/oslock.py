@@ -48,6 +48,10 @@ class RunLock:
         self.path = path
         self._fd = fd
 
+    @property
+    def held(self) -> bool:
+        return True
+
     @classmethod
     def acquire(cls, path: Path, code: str = "HB-GRD-001") -> Self:
         """Take the lock or raise BenchError(code). `code` names what a held lock means to the caller."""
