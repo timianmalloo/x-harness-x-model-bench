@@ -1,5 +1,6 @@
 import functools
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -9,7 +10,7 @@ from pathlib import Path
 import pytest
 from slow_ring import dotnet_gate
 
-from harness_bench import archive, procs
+from harness_bench import archive, procs, profiles
 
 # A folder with no agent instruction file in any ancestor (HB-PRE-002). The operator's profile, where
 # pytest's tmp_path lives, holds ~/.claude/CLAUDE.md, so cells cannot be built there.
@@ -55,6 +56,28 @@ def base():
 def require_dotnet() -> None:
     """Use in every `@pytest.mark.slow` test that runs the real dotnet."""
     dotnet_gate(os.environ)
+
+
+# ENV-C. profiles.DROP_EXACT is the cell denylist: credentials mixed with session markers and paths.
+# Nothing in production lists credential variable names alone, so this is that list, once.
+_CREDENTIAL_SWEEP = re.compile(r"OAUTH_TOKEN|_API_KEY|GH_TOKEN")
+
+
+def listed_credential_names() -> tuple[str, ...]:
+    """Denylist entries that carry a token or an API key, the cell oauth name, and any live sweep hit."""
+    names = {name for name in profiles.DROP_EXACT if "TOKEN" in name or "API_KEY" in name}
+    names.add(profiles.CELL_OAUTH_ENV)
+    names.update(key for key in os.environ if _CREDENTIAL_SWEEP.search(key.upper()))
+    return tuple(sorted(names))
+
+
+@pytest.fixture(autouse=True)
+def clear_ambient_credentials(request, monkeypatch):
+    """Hermetic tests do not see ambient credentials. A ``credentials`` test keeps the operator environment."""
+    if request.node.get_closest_marker("credentials") is None:
+        for name in ():  # skeleton: the names exist; nothing is cleared yet
+            monkeypatch.delenv(name, raising=False)
+    yield
 
 
 def pytest_configure(config):
