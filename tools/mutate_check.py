@@ -305,6 +305,33 @@ def _restore_original(rel: str, original: bytes) -> None:
     _remove_sidecar()
 
 
+def _import_harness_bench() -> None:
+    import harness_bench  # noqa: F401
+
+
+def _environment_refusal() -> int | None:
+    """MUT-C: mutants run under sys.executable; if it cannot import the project, every verdict is an environment error."""
+    try:
+        _import_harness_bench()
+    except ImportError:
+        print(
+            f"refusing to start: {sys.executable} cannot import harness_bench; "
+            "run it as `uv run python tools/mutate_check.py`",
+            flush=True,
+        )
+        return 2
+    return None
+
+
+def _report(survivors: int) -> int:
+    """Print the run summary. A run whose every mutant errored is an environment failure, not a table of verdicts."""
+    if _OUTCOMES and set(_OUTCOMES) == {"error"}:
+        print("all mutants errored: environment suspected", flush=True)
+        return 1
+    print(f"{survivors} not killed" if survivors else "every mutation killed", flush=True)
+    return 1 if survivors else 0
+
+
 def _refuse_if_sidecar() -> int | None:
     record = _read_sidecar()
     if record is None:
@@ -393,6 +420,9 @@ def _changed_paths(base: str) -> list[str]:
     return [line.replace("\\", "/") for line in result.stdout.splitlines() if line.strip()]
 
 
+_OUTCOMES: list[str] = []
+
+
 def _run_set(spec: list[dict]) -> int:
     """Run one mutation set. Returns how many mutants were not killed. Caller checked the sidecar."""
     survivors = 0
@@ -425,6 +455,7 @@ def _run_set(spec: list[dict]) -> int:
                 outcome = verdict(result.returncode, output, m["tests"])
             except subprocess.TimeoutExpired:
                 outcome = "timeout"
+            _OUTCOMES.append(outcome)
             print(f"{outcome:<8} {m['name']}", flush=True)
             if outcome == "not run":
                 reason = _pytest_reason(output)
@@ -453,10 +484,10 @@ def _cmd_touched(base: str, list_only: bool) -> int:
     if list_only:
         return 0
     survivors = 0
+    _OUTCOMES.clear()
     for rel in selected:
         survivors += _run_set(json.loads((ROOT / rel).read_text(encoding="utf-8")))
-    print(f"{survivors} not killed" if survivors else "every mutation killed", flush=True)
-    return 1 if survivors else 0
+    return _report(survivors)
 
 
 def main(argv: list[str]) -> int:
@@ -467,7 +498,9 @@ def main(argv: list[str]) -> int:
         return _cmd_check_clean()
     if argv and argv[0] == "--cosmic-ray":
         return _main_cosmic_ray(argv[1:])
-    refused = _refuse_if_sidecar()
+    refused = _environment_refusal()
+    if refused is None:
+        refused = _refuse_if_sidecar()
     if refused is not None:
         return refused
     if argv and argv[0] == "--touched":
@@ -476,9 +509,8 @@ def main(argv: list[str]) -> int:
             return 2
         return _cmd_touched(argv[1], list_only=len(argv) == 3)
     spec = json.loads(Path(argv[0]).read_text(encoding="utf-8"))
-    survivors = _run_set(spec)
-    print(f"{survivors} not killed" if survivors else "every mutation killed", flush=True)
-    return 1 if survivors else 0
+    _OUTCOMES.clear()
+    return _report(_run_set(spec))
 
 
 if __name__ == "__main__":
