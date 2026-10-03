@@ -117,6 +117,9 @@ changes or deletes, so insertion-only work scores 0. The three defences are test
 1. T1-3 uses `Decimal('2.675')`, not the string `'2.675'` (see above).
 2. The variants edit the turn-2 file wherever possible, since the final tree is base + `turn-1/` + `turn-2/` and a turn-2 file
    replaces the turn-1 file whole.
+4. Every overlay changes one docstring example (the home-directory path in `format_path`'s sample output) to a placeholder, because `bench validate`
+   refuses a home-directory path in any task file (`config.PROFILE_PATH`). A docstring line is not a product line, so no
+   count changes.
 3. The latent-term scan covers `prompt.md` only. `turns/2.md` must say `format_money(amount, currency)`, which contains
    `currency`, a latent term; W1-L 6.2's turn-2 shape does the same.
 

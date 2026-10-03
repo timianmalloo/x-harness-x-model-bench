@@ -639,7 +639,7 @@ def format_path(pathname):
     >>> from os.path import join
     >>> vimrc = join(environ['HOME'], '.vimrc')
     >>> vimrc
-    '/home/peter/.vimrc'
+    '/home/<user>/.vimrc'
     >>> from humanfriendly import format_path
     >>> format_path(vimrc)
     '~/.vimrc'
