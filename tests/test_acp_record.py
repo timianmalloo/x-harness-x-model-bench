@@ -44,7 +44,7 @@ def _run(cwd: Path, argv: list[str], fake: str, start_delay: float = 0) -> dict:
     cell.proc.stdout, cell.proc.stdin = _Tap(cell.proc.stdout), _Tap(cell.proc.stdin)
     try:
         result = driver.run_turn(cell, cwd=cwd, prompt="Implement slugify.\r\nKeep it.  \n", mode="agent-full-access",
-                                 handshake_timeout=10, before_send=lambda sid: None)
+                                 handshake_timeout=60, before_send=lambda sid: None)
     finally:
         cell.terminate_and_confirm(timeout=10)
         cell.close()

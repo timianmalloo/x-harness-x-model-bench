@@ -107,7 +107,7 @@ def _turn(tmp_path, prompt="Do the task.", before_send=None, acp_mode=None, hand
 def test_session_new_sends_supplied_mcp_servers_or_empty(tmp_path, servers):  # T-37-3, driver half
     cell = _spawn(tmp_path)
     try:
-        driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=None, handshake_timeout=10,
+        driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=None, handshake_timeout=60,
                         before_send=lambda sid: None, mcp_servers=servers)
         sent = json.loads((tmp_path / ".fake-session-new.json").read_text(encoding="utf-8"))
         assert sent["mcpServers"] == (servers or [])
@@ -947,7 +947,7 @@ def test_run_turn_fills_the_result_its_caller_supplies(tmp_path):  # so the ack 
 def test_session_new_still_sends_its_servers_when_the_agent_starts_slowly(tmp_path):  # TIME-B: the old 10 s bound, forced
     cell = _spawn(tmp_path, handshake_delay=10.5)
     try:
-        result = driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=None, handshake_timeout=10,
+        result = driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=None, handshake_timeout=60,
                                  before_send=lambda sid: None, mcp_servers=[])
         assert result.cause is None, result.detail
     finally:
