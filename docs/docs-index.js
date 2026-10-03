@@ -2470,7 +2470,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "09a145e0a264601d4bf174e018234dc7740ec867d011ed45c15418ccbbd79706"
+      "sourceSha256": "6ecda5f7cd5a8e19686d0887865ef3197b58f744d5dcdac110f36cbfeae185ee"
     },
     {
       "id": "design-eval-seam-contracts",
@@ -2574,7 +2574,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "72398da67a1424bb87a7d3ca1786a9e72bb609c6f439e4d504fe9f61c18a4925"
+      "sourceSha256": "e965180f8d94e036b7503a521a8b001e1e44059e3e8da54771e4a2ec282fe492"
     },
     {
       "id": "design-eval-security-tasks",
@@ -5363,6 +5363,35 @@ window.DOCS_INDEX = {
       "sourceSha256": "dccd13b36f97db865ed77191495949124dfc56a9df3f419b14e3e2e1cf0e2773"
     },
     {
+      "id": "brief-eval-w1-k",
+      "path": "docs/coordination/eval-wave2-e234/w1-k.md",
+      "title": "Design brief W1-K: resume, liveness and the alarm (dispatch after W1-J merges)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "The design slice for ADR-0021's plan-level resume, liveness and alarm, run with /design-slice on Claude Sonnet after W1-J merges. It extends W1-J's TLA+ model with NoResumeAfterStop, maps every ADR-0021 section 4 row to a kill-then-resume test, and chooses the alarm channel. X-K1 and X-K2 build from it.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "coordination-eval-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "162a11f1ab46627f23ef9d657676b86b64aa2ce2fc6bccfed5fb7e9bc5b182f9"
+    },
+    {
       "id": "brief-eval-x-a1",
       "path": "docs/coordination/eval-wave2-e1/x-a1.md",
       "title": "Brief X-A1: arms in the plan, ring plumbing, the pack-reader guard (E1 build)",
@@ -5390,6 +5419,39 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "6252a059c23b39058f30bda99d149f90ce4ed4360f61d4d8350c543c452304b0"
+    },
+    {
+      "id": "brief-eval-x-a3",
+      "path": "docs/coordination/eval-wave2-e234/x-a3.md",
+      "title": "Brief X-A3: three arms, rings, comparison readers and the _passed fix (E3 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-A3 lands ADR-0019 item 4's _passed fix first (X-G3 waits on it), then three-arm plans, rings and the comparison-pair readers of W1-A's E3 half, on Agy gemini-3.8-flash-high in three turns.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-arms",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-catalog-0-7",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "7286c23fdbee0a7a69a1047c40a8e2689639b80d7741916fd1378971c6f93328"
     },
     {
       "id": "brief-eval-x-b1",
@@ -5477,6 +5539,31 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "5341f3282ed2f90a9cd35177724d382d7c4dc12ebfdc89a3ebda9a801b134d93"
+    },
+    {
+      "id": "brief-eval-x-cv",
+      "path": "docs/coordination/eval-wave2-e234/x-cv.md",
+      "title": "Brief X-CV: the convergence check, the final ten discrimination records, the proof note",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-CV runs after every E2-E4 item has joined and the 0.7 freeze is committed: the whole ADR-0021 section 4 table, TLC with every invariant, then the ten discrimination records at the final engine identity (the Leader), on Claude Sonnet.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "coordination-eval-campaign",
+          "rel": "implements"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "d073d0344827093ff48cf82c6e0f1ae16badc1b1c6f5f3838d5a8a3564f12f97"
     },
     {
       "id": "brief-eval-x-d",
@@ -5628,6 +5715,35 @@ window.DOCS_INDEX = {
       "sourceSha256": "ddcdd5487396d265418362d5708a8f123beab54ff110f2bd208c900296a79648"
     },
     {
+      "id": "brief-eval-x-g3",
+      "path": "docs/coordination/eval-wave2-e234/x-g3.md",
+      "title": "Brief X-G3: scenario-7 pass_at_1 under the declared rule and the 0.7 freeze prep (E3 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-G3 records scenario-7 pass_at_1 under G2's declared pass rule and prepares the 0.7 fixtures for the US-4 control, on Grok grok-4.7, after X-A3a's _passed fix joins; the Leader then runs freeze_catalog.py (R-86).",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-catalog-0-7",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "c4e4b5c33a924ede96d6f0eeb2fb2c28f83eb31197939d7eb1a154d07d9da136"
+    },
+    {
       "id": "brief-eval-x-h1",
       "path": "docs/coordination/eval-wave2-e1/x-h1.md",
       "title": "Brief X-H1: power, verdicts, dominance, ring gates (E1 build)",
@@ -5719,6 +5835,31 @@ window.DOCS_INDEX = {
       "sourceSha256": "d2f5e31b97b000bf14fbe830b3f1514fc0a7184e3a9554fcae4c2bff9d5571ea"
     },
     {
+      "id": "brief-eval-x-i-s2",
+      "path": "docs/coordination/eval-wave2-e234/x-i-s2.md",
+      "title": "Brief X-I-S2: the second security task S2 on bottle (E4) - spike and authoring now, ready after X-F and the 0.7 freeze",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-I-S2 runs the S2 spike W1-I section 12 requires (prompt, latent requirement, probes each proven live, the pickle-cookie rules), records it for RV-SEC and RV-TA, then authors tasks/S2 to draft on Claude Sonnet; ready after X-F joins and catalog 0.7 is frozen.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b423de0800a6598b2839a2bcfe9bcda6aa3d3dd8ebac7c4df339644eb5b20705"
+    },
+    {
       "id": "brief-eval-x-int",
       "path": "docs/coordination/eval-wave2-e1/x-int.md",
       "title": "Brief X-INT: the E1 end-to-end walking skeleton (E1 build)",
@@ -5746,6 +5887,284 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "4cb06a998dbf4f14babca317eb9c828edf2e7ac3e18d5808264ca62f49c6c9b9"
+    },
+    {
+      "id": "brief-eval-x-j1",
+      "path": "docs/coordination/eval-wave2-e234/x-j1.md",
+      "title": "Brief X-J1: the multi-turn engine (E2 build) - BLOCKED on W1-J's gate",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-J1 builds W1-J's multi-turn engine (driver, turn loop, per-turn snapshots, lifecycle conformance) on Codex gpt-6.1-sol in five turns. Blocked until W1-J passes its gate and merges; carries the four E1 conditions and W0 rev 6.2/6.5's rows as acceptance items.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "4d2ea3024118f8f7d2555ce6f8d123462f0c74a19959c6cbcc9075cfac2b42e7"
+    },
+    {
+      "id": "brief-eval-x-j2",
+      "path": "docs/coordination/eval-wave2-e234/x-j2.md",
+      "title": "Brief X-J2: _changes, the rework grader, per-turn synthetic cells and multi-turn discrimination (E2) - J2b BLOCKED on W1-J",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-J2 lands grade/_changes.py's four counting functions (J2a, unblocked by design), then rework.py, per-turn synthetic cells, the multi-turn discrimination path and the variant reader's two new edit forms (J2b, blocked on W1-J), on Agy gemini-3.8-flash-high.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-property-tasks",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "f5765ee627e52b3cc6fdda7a459217fd37232e701ddc00d21eca7c58a7ef6c5e"
+    },
+    {
+      "id": "brief-eval-x-k1",
+      "path": "docs/coordination/eval-wave2-e234/x-k1.md",
+      "title": "Brief X-K1: resume in the engine (E3 build) - BLOCKED on W1-K and X-J1",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-K1 builds plan-level resume (ADR-0021) on Codex gpt-6.1-sol in four turns. Blocked until W1-K passes its gate and X-J1 has joined (serial spine 6). The Coordinator writes the turn split from W1-K's test map.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "e4f0bf43fb6386d30d5abf0ae0faff643298f26ad5aefa01077fe601007a762f"
+    },
+    {
+      "id": "brief-eval-x-k2",
+      "path": "docs/coordination/eval-wave2-e234/x-k2.md",
+      "title": "Brief X-K2: liveness and the alarm (E3 build) - BLOCKED on W1-K",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-K2 builds bench status --alarm-after, last_progress_at, the alarm channel W1-K chooses, and the resume entry line in cli.py, on Agy gemini-3.8-flash-high in two turns. Blocked until W1-K passes its gate.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "233321c3c0ce69f31626f1a427ee39ca89963c8f68513c880fa19aa48d44aa11"
+    },
+    {
+      "id": "brief-eval-x-lb",
+      "path": "docs/coordination/eval-wave2-e234/x-lb.md",
+      "title": "Brief X-LB: SR-L5 property additions (LB0) and the loopback fake harness (LB1, BLOCKED on SP-LB) (E4 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-LB is the E4 owner of grade/property.py and bench_check.py. LB0 lands SR-L5's four small additions (needed by X-J2b and X-LG) after X-F joins; LB1 builds the loopback fake behind the PropertyCheck contract once the operator's SP-LB run passes. Claude Sonnet, security-adjacent.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-property-tasks",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "508923efcdfd9b876a9a3f85d1de7e62ee961a579406328d41c523422c51bac3"
+    },
+    {
+      "id": "brief-eval-x-lg",
+      "path": "docs/coordination/eval-wave2-e234/x-lg.md",
+      "title": "Brief X-LG: the no-guessing and simplicity graders (E4 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-LG builds grade/noguess.py (hallucinated_symbol_errors, R-97; verified_before_use NA not built) and grade/diffstats.py (size_vs_reference, new_abstractions, new_dependencies, the outside-radius scope clause) on Agy gemini-3.8-flash-high in three turns, after E1's hub files, X-J2a and X-LB0 join.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-property-tasks",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "1c9cf03613301cdc7c8701711e2e9207f2721ccbad9be49b151c537f0fad1c90"
+    },
+    {
+      "id": "brief-eval-x-ng",
+      "path": "docs/coordination/eval-wave2-e234/x-ng.md",
+      "title": "Brief X-NG: no-guessing tasks NG1, NG2 (E4) - authoring now, ready after X-LG",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-NG authors tasks/NG1 and tasks/NG2 to W1-L section 7 with Erratum 1 and W0 rev 6.6, on Claude Sonnet, to draft; the ready flip follows X-LG's noguess strategy.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-property-tasks",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "23ecf30121f0cc53f3350608f7c001a2f2bc8f0dfa56ebc84fce5a9fa701ab08"
+    },
+    {
+      "id": "brief-eval-x-rs",
+      "path": "docs/coordination/eval-wave2-e234/x-rs.md",
+      "title": "Brief X-RS: resilience tasks RS1, RS2 (E4) - waits on SP-LB's result; ready after X-LB",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-RS authors tasks/RS1 and tasks/RS2 to W1-L section 9 (provisional on SP-LB and X-LB) with Erratum 1, on Claude Sonnet. Starts when SP-LB's operator run has passed and merged; ready after X-LB.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-property-tasks",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "fb004e69750494fa69426a68992fb92b0888845182c2c49bbec9a884cab26300"
+    },
+    {
+      "id": "brief-eval-x-rw",
+      "path": "docs/coordination/eval-wave2-e234/x-rw.md",
+      "title": "Brief X-RW: rework tasks RW1 (E2) and RW2 (E4) - authoring now, ready after X-J1 and X-J2b",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-RW authors tasks/RW1 and tasks/RW2 to W1-L sections 6.2-6.3 with Erratum 1 and W0 rev 6.6, on Claude Sonnet. Authoring stops at draft; the ready flip is a follow-on after X-J1 and X-J2b join.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-property-tasks",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "726274580db23083f2baae0cba4d523ec53192ab4c79b84cef2010f724463826"
+    },
+    {
+      "id": "brief-eval-x-sm",
+      "path": "docs/coordination/eval-wave2-e234/x-sm.md",
+      "title": "Brief X-SM: simplicity tasks SM1, SM2 (E4) - authoring now, ready after X-LG and X-J2b",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-SM authors tasks/SM1 and tasks/SM2 to W1-L section 8 with Erratum 1 and W0 rev 6.6 (launderlines, launderclass, laundertest), on Claude Sonnet, to draft; ready follows X-LG and X-J2b.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-property-tasks",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "7c5853f74f62df75f2e70f12b4255e4086596d9216ffeb9ae5a42e75ce7b7f14"
     },
     {
       "id": "coordination-eval-brief-rv-ds",
@@ -6454,6 +6873,51 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "3d513410527d8a9419a83a036db50960a71954553e02cd71d22873d37743f1af"
+    },
+    {
+      "id": "coordination-eval-wave2-e234-briefs",
+      "path": "docs/coordination/eval-wave2-e234/README.md",
+      "title": "Wave 2 E2-E4 dispatch pack: briefs, routing, DAG and launch order (Evaluation Campaign, pack part 3)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 2, phases E2 (multi-turn), E3 (arms, catalog freeze, resume), E4 (remaining property tasks), convergence",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Pack part 3 (Coordinator session #7): the routing of the sixteen E2-E4 items and X-CV to harness and pinned model, the real DAG, the launch order by critical path, the gate state of each design, and one brief per item, plus the W1-K design brief. Four Sonnet items can start now (X-NG, X-SM, X-RW authoring; the X-I-S2 spike). Every external brief is written but waits on a design gate or an E1 join, so nothing external is compiled yet (CO-S0 runs at dispatch). W0 rev 6.6 carries the rulings these briefs build on: RV-TA W1-L rev 2 R2-1..R2-4, and the laundering-variant names.",
+      "tags": [
+        "coordination",
+        "briefs",
+        "wave-2",
+        "e2",
+        "e3",
+        "e4",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-property-tasks",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "229b8540d49e8751e0a849016d9752096fa71a264e977123003bfd87e73ea699"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -7348,5 +7812,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "92b89a3cd5293c83a947af1933316ad1e19b8db608aafb22921431dd371f86f4"
+  "graphSha256": "2570e413829aab668f881b71fdacc4bd4ab3dded983853339fdc7c19c6a7849a"
 };
