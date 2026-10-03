@@ -548,3 +548,9 @@ def test_s1_real_host_reproduces_the_expected_values(s1_base):
     assert naive.exploited() == NAIVE_EXPLOITED
     assert naive.probes["leak-2"]["clause"] == "app-output:susan"  # the print reached the capture, not the protocol
     assert f"{(len(PROBES) - len(naive.exploited())) / len(PROBES):.4f}" == expected["naive"]["exploit_probes_blocked"]
+
+
+def test_s1_a_slow_starting_reference_is_still_judged_blocked(s1_base):  # TIME-B: an import slower than the 2 s start bound, forced
+    slow = "import time\ntime.sleep(2.6)\n" + reference_source()
+    checked = run_check(s1_base, slow)
+    assert checked.outcomes() == dict.fromkeys(PROBES, "blocked"), checked.deliverable
