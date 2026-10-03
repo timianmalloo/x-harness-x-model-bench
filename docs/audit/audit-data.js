@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:52:19Z",
+  "generated": "2026-10-03T18:44:09Z",
   "audit": [
     {
       "actor": null,
@@ -65916,23 +65916,806 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41EAESV42T3VKA1QYP389RR",
-      "shortname": "RV-SIM W1-I review",
-      "datetime": "2026-10-03T17:52:19Z",
-      "session": "rv-sim-w1i-e1e4",
-      "prompt": "Simplifier review of W1-I security tasks S1 and S2",
-      "summary": "8 findings, PASS WITH CONDITIONS; all five probe-host asks needed by S1, none S2-only; S2 probe list premature",
-      "kind": "skill",
-      "skill": "design-slice-review",
-      "tool": null,
       "actor": "Claude Sonnet 5.5",
       "artifacts": [
         "docs/design/reviews/eval-review-sim-w1i.md"
       ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:52:19Z",
+      "id": "al-01M41EAESV42T3VKA1QYP389RR",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Simplifier review of W1-I security tasks S1 and S2",
+      "session": "rv-sim-w1i-e1e4",
+      "shortname": "RV-SIM W1-I review",
+      "skill": "design-slice-review",
+      "summary": "8 findings, PASS WITH CONDITIONS; all five probe-host asks needed by S1, none S2-only; S2 probe list premature",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1i.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:52:21Z",
+      "done_when": "report committed with gate line",
+      "fan_out": 0,
+      "goal": "Patterns review of W1-I",
+      "id": "al-01M41EAGE75491PTBZAJBXCD14",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md (W1-I)",
+      "session": "rv-pat-w1i-e1e4",
+      "shortname": "design-slice-review-pat-w1i",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT review of W1-I: BLOCK, 1 blocking seam finding (wsgi not built in E1)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1i.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:53:06Z",
+      "id": "al-01M41EBW5M2SS30RGJT1ZJ4JSN",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Review W1-I security tasks design as Test Architect (brief rv-ta.md)",
+      "session": "rv-ta-w1i-e1e4",
+      "shortname": "review-ta-w1i",
+      "skill": "design-slice-review",
+      "summary": "Test Architect review of W1-I security tasks: BLOCK, 9 findings",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": "claude-sonnet-5-5",
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1i.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:54:30Z",
+      "id": "al-01M41EEECHHJQ3RCZPJ06E1FMP",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Security review of W1-I (S1 microdot, S2 bottle) against W0 rev 2",
+      "session": "rv-sec-w1i-e1e4",
+      "shortname": "review-sec-w1i",
+      "skill": "design-slice-review",
+      "summary": "GATE W1-I Security PASS WITH CONDITIONS, 8 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-grader.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:19:40Z",
+      "done_when": "Gate PASS with Security & Identity as hard-veto reviewer; the four ADR-0018 red tests and the race test named; job-alone constraints adopted (sys._base_executable, DETACHED_PROCESS, one-byte ack)",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-F hidden-check runner and property grader, producing docs/design/eval-property-grader.md",
+      "id": "al-01M41CEN2C02BQ55YW4MA3JCJ7",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md",
+      "session": "w1f-property-e1e4",
+      "shortname": "design-slice-eval-property-grader",
+      "skill": "design-slice",
+      "summary": "W1-F design for the hidden-check runner and property grader: data model, contracts, probe host (RV-SEC F1), handshake, outcome precedence (RV-TA s3), FMA, STRIDE per ADR-0018 row, telemetry, test plan by node id; spikes SP-F1/F2; seam requests req-01M41C0NFEXQA0XVH4FTK9YDBD, req-01M41C0ZCPJ13PQ77KNC5AHQMZ, req-01M41C57K2VVC7C4JGEJC18FR1; gate pending",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-grader.md",
+        "tests/test_property_forgery_fixture.py"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:48:07Z",
+      "done_when": "every finding has a disposition row; TA blocking 1 and 2 specified with named tests and the mutation entry; SEC conditions met (fixture committed, seam request, junction test); validate exit 0; named-path commits",
+      "fan_out": 0,
+      "goal": "Apply the four W1-F reviews to docs/design/eval-property-grader.md, W0 rev 2 winning, with a review-disposition table",
+      "id": "al-01M41E2RBZ9HAV9Q77EGHWRV86",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md (rev 2 follow-up: apply the four W1-F reviews)",
+      "session": "w1f-property-r2-e1e4",
+      "shortname": "design-slice-eval-property-grader-r2",
+      "skill": "design-slice",
+      "summary": "W1-F revision 2: all 38 review findings dispositioned; conformed to W0 rev 2; SP-F2 fixture, positive control and shipped-shape refusal committed and run 9/9; two seam requests sent; gate pending RV-TA re-review and RV-SEC conditions",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:59:34Z",
+      "done_when": "request list shows none open to coord-opus-e1e4; rev 3 on design/eval-w0-rev3 with derive/validate exit 0",
+      "fan_out": 0,
+      "goal": "Every open seam request to coord-opus-e1e4 ruled and W0 rev 3 committed with gate record and ADR amendment notes",
+      "id": "al-01M41EQQN7G37BQBB9ZK4SS8CB",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Coordinator #3: answer the seam queue (13 requests) and the Leader-routed Wave 1 lens seams; apply them to W0 as rev 3 with a change table, the five rev-2 gate lines, and ADR amendment notes for ADR-0014/0018/0019; plus the Wave 1 testability floor and the inline AGENT_SESSION rule.",
+      "session": "coord-opus-e1e4",
+      "shortname": "w0-seam-contracts-rev3",
+      "skill": "execute-with-coordination",
+      "summary": "13 seam requests resolved (9 granted, 4 granted in part, 0 refused outright; refused parts: HB-LED-009, verdict-label change, X-G1 file grant). One Owner request (W1-G owner rule vs R-90 c1/c6). Ruling C-1: wsgi kind built in E1 for S1. W0 rev 3 sections 1-14, change table, re-read list; ADR-0014/0018/0019 Amendment 1 notes; README testability floor and inline AGENT_SESSION; classes TEST-B, COORD-D.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "datetime": "2026-10-03T18:04:00Z",
+      "done_when": "Ruling 95 in docs/notes/rulings.md via coord decide rule from the owner/ruling-r95 worktree, the request resolved, an audit entry appended, committed",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/ruling-r95",
+        "pushed": null,
+        "sha": "1ceea651bceeada8e8406e1633afaa930d48a9f3",
+        "short": "1ceea651b"
+      },
+      "goal": "Rule DR-9 (req-01M41E37FGK5CRZ7NCK3RA20JV): whether R-90 conditions 1 and 6 are amended so applicable() resolves a metric owner through also_graded_by",
+      "id": "al-01M41EZVA5RM6TAWHCQPRZ9MCH",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Owner seat: rule req-01M41E37FGK5CRZ7NCK3RA20JV from the Coordinator: may R-90 conditions 1 and 6 be amended so runner.applicable also resolves a metric's owner through an optional catalog key also_graded_by, letting the formal grader record scenario-7 pass_at_1 (ADR-0019 item 3)? Options A amend, B defer to 0.8, C new id formal_pass_at_1. Context W0 rev 3 s7, W1-G design, reviews ta/pat/sim, R-90. Work in an own worktree owner/ruling-r95.",
+      "session": "owner-fable",
+      "shortname": "ruling R-95 (DR-9, also_graded_by owner rule amends R-90 c1 and c6)",
+      "skill": null,
+      "summary": "R-95 DR-9: (A) granted, (B) and (C) refused. Verified: applicable keys by one grader string (runner.py:161-168), duplicate ids refused (config.py:150-152), outside keys fail the pass with HB-GRD-004 (runner.py:358, errors.py:67), board primary reads pass_at_1 by id (board.py:190,194), ADR-0019 item 3 is accepted and already marks its mechanism provisional on this request. R-90 c6 fixed who records the metric, not the entry's bytes; c1 fixed one function for three readers, and the owner clause lives in that function, so the purpose is kept. Conditions: non-owner guard proven through a real run_pass on G1- and G2-shaped tasks (X-F owns the clause and T-R3..T-R5); also_graded_by validated at once in validate_catalog (grader module, differs from grader, no repeats); reader sweep complete incl. the task-changed fallback where the owner is correctness and the NA folder is pinned by test; amendment text in R-90 c5's dispatch paragraph, W0 s7 drops provisional, ADR-0019:49 updated by X-G1; sequencing as the Coordinator set it.",
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "tier": "T0",
+      "tool": null
+    },
+    {
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "datetime": "2026-10-03T18:09:46Z",
+      "done_when": "Ruling 96 in docs/notes/rulings.md via coord decide rule from the owner/ruling-r96 worktree, the request resolved, an audit entry appended, committed",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/ruling-r96",
+        "pushed": null,
+        "sha": "f41d2f205271d823403e8186705b11021d1c1cc3",
+        "short": "f41d2f205"
+      },
+      "goal": "Rule DR-10 (req-01M41EPSB7E91C4APYT1QGN3FV): holm on interval verdicts; rule the R-93 not-recorded flag; name the ADR-0020 s2 amendment author",
+      "id": "al-01M41FADEXXHBT2JTQYBWBRF1N",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Owner seat: (1) rule req-01M41EPSB7E91C4APYT1QGN3FV from W1-H: how correction.method=holm acts on interval verdicts; A size and level like Bonferroni (alpha/m), B Holm step-down on bootstrap p-values; (2) flag: W1-H adds a hidden-test agreement not recorded state to the R-93 line, inside R-93 or a new ruling; (3) ADR-0020 s2 still says plan seed, W0 rev 3 replaced it with seed_for; say who writes the amendment note. Own worktree owner/ruling-r96.",
+      "session": "owner-fable",
+      "shortname": "ruling R-96 (DR-10, holm on interval verdicts; R-93 None state; ADR-0020 s2 note)",
+      "skill": null,
+      "summary": "R-96 DR-10: (A) granted, (B) refused. ADR-0020 s2 verdicts are interval-only (p-value verdicts rejected at 0020:49); Holm's first step is alpha/m and every later step is more liberal, so the 1-alpha/m interval is never more liberal than any Holm step and its verdicts are a subset of Holm's rejections; a step-down adds a cross-verdict dependency the per-(property,harness,comparison) grain lacks and yields no interval for the MDE comparison. holm stays registrable (W0 rev 3 enum, spec :685 illustration) with alpha_per_test as the one definition, disclosed as level_rule at registration and in section 3; the verdict endpoints under holm must equal bonferroni's (second test row). R-93 flag: the None state is inside R-93 (never silently resolved; IO: not recorded, never a plausible wrong number), recorded as a clarification of R-93 c1 with three states; R-H3 closes. ADR-0020 s2 plan seed -> seed_for: the Coordinator writes Amendment 1 in the W0 rev 3 form (eval-seam-contracts.md:661), before X-H1's first commit.",
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "tier": "T0",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1i.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:12:02Z",
+      "id": "al-01M41FEHHFK4K45C5QKG2H721V",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Delta re-review of W1-I rev 2 as Test Architect",
+      "session": "rv-ta-w1i-e1e4",
+      "shortname": "review-ta-w1i-r2",
+      "skill": "design-slice-review",
+      "summary": "W1-I rev 2: PASS WITH CONDITIONS, 4 findings",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1i.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:13:13Z",
+      "done_when": "rev 2 section with gate line committed",
+      "fan_out": 0,
+      "goal": "delta re-review",
+      "id": "al-01M41FGQAJEFG4N7VD0WM71YPX",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader: RV-PAT re-review of W1-I rev 2",
+      "session": "rv-pat-w1i-e1e4",
+      "shortname": "design-slice-review-pat-w1i-r2",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT W1-I rev 2: PASS, all 7 findings resolved",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-security-tasks.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:48:16Z",
+      "done_when": "Gate PASS incl. Security; two real codebases on different bases (DR-T1); the latent requirement; in-process probes; reference and naive solutions; expected values with provenance (GLD-A)",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-I security tasks S1 and S2 producing docs/design/eval-security-tasks.md",
+      "id": "al-01M41E30XX2G0GYMDGEKPAXD0A",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-i-security-tasks.md",
+      "session": "w1i-security-e1e4",
+      "shortname": "design-slice-eval-security-tasks",
+      "skill": "design-slice",
+      "summary": "Designed security tasks S1 (microdot, fully specified) and S2 (bottle, base and probes named): latent guards, 10 in-process probes with BENCHCANARY values, reference and naive solutions, expected values with provenance, nine defect variants, offline-build declaration, two seam requests; gate pending",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-security-tasks.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:10:38Z",
+      "done_when": "every finding dispositioned; gate record has first-round lines plus rev 2 pending RV-TA, RV-PAT",
+      "duration_seconds": 502.0,
+      "fan_out": 0,
+      "goal": "apply the four W1-I first-round reviews",
+      "id": "al-01M41FBZKFAZF0N889PA25YV52",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-i-security-tasks.md (rev 2 follow-up applying RV-TA, RV-PAT, RV-SEC, RV-SIM)",
+      "session": "w1i-security-r2-e1e4",
+      "shortname": "design-slice-eval-security-tasks-rev2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T18:02:16Z",
+      "summary": "W1-I rev 2: S1 aligned to W0 rev 3 (wsgi, frames), eight probes, both tokens scanned, wrong-app fixtures, hardened variant test, S2 cut, review disposition table",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1g.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:15:58Z",
+      "done_when": "gate line appended",
+      "fan_out": 0,
+      "goal": "Re-review W1-G delta",
+      "id": "al-01M41FNR1K3MKJRXYKY12FBKM5",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "W1-G rev 2 re-review",
+      "session": "rv-ta-w1g-e1e4",
+      "shortname": "design-slice-review-ta-w1g-r2",
+      "skill": "design-slice-review",
+      "summary": "TA re-review W1-G rev 2: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-catalog-0-7.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:37:59Z",
+      "done_when": "Gate PASS; the eleven metric entries with anchors (R-79 forms); the scenario-7 pass rule for G2; the US-4 control; the append-only corrected_from record",
+      "fan_out": 0,
+      "goal": "W1-G catalog 0.7 (ADR-0019), scenario-7 pass@1 and the missing-pass@1 fix",
+      "id": "al-01M41DG6B6QQ397PSVDPZEAGCF",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-g-catalog.md",
+      "session": "w1g-catalog-e1e4",
+      "shortname": "design-slice-eval-catalog-0-7",
+      "skill": "design-slice",
+      "summary": "Designed catalog 0.7: eleven property metrics in full YAML (no new area), also_graded_by dispatch for scenario-7 pass_at_1 with formal.pass_rule, absence-is-not-failure fix and sweep (ABS-A), cross-version US-4 control and append-only corrected_from record; gate pending",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-catalog-0-7.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:12:56Z",
+      "done_when": "every finding has a disposition row; Gate record has the three first-round lines plus rev 2 pending RV-TA; validate exit 0",
+      "fan_out": 0,
+      "goal": "Apply the three W1-G reviews and the W0 rev 3 and R-95 rulings to the catalog 0.7 design",
+      "id": "al-01M41FG66QB873BZEQYFKTPCDG",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-g-catalog.md (rev 2 follow-up: apply RV-TA, RV-PAT, RV-SIM, W0 rev 3, R-95)",
+      "session": "w1g-catalog-r2-e1e4",
+      "shortname": "design-slice-eval-catalog-0-7-rev2",
+      "skill": "design-slice",
+      "summary": "W1-G rev 2: Control 1 hardened with red cases and 0.6 definitions read from git, n_recorded split, owner rule per R-95, corrected_from as a written contingency, testability floor, review disposition table",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1h.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:17:47Z",
+      "done_when": "two review files with gate lines committed",
+      "fan_out": 0,
+      "goal": "Test Architect gate on W1-H and W1-C",
+      "id": "al-01M41FS2E079PYRJWTQBFBDKPZ",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-H and W1-C)",
+      "session": "rv-ta-hc-e1e4",
+      "shortname": "review-ta-w1h-w1c",
+      "skill": "design-slice-review",
+      "summary": "RV-TA reviews: W1-H PASS WITH CONDITIONS (10), W1-C PASS WITH CONDITIONS (9)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1h.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:20:56Z",
+      "done_when": "two review files with gate lines committed",
+      "fan_out": 0,
+      "goal": "Patterns review of W1-H and W1-C",
+      "id": "al-01M41FYVQ42WY27V6KQ3TKSKR9",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md (W1-H, W1-C)",
+      "session": "rv-pat-hc-e1e4",
+      "shortname": "design-slice-review-pat-w1h-w1c",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT reviews: W1-H PASS WITH CONDITIONS (6), W1-C BLOCK (8)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1b.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:21:53Z",
+      "id": "al-01M41G0JR9XQ8JED1AE0VBAGEF",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "RV-TA delta re-review of W1-B rev 2",
+      "session": "rv-ta-bd-e1e4",
+      "shortname": "ta-review-w1b-r2",
+      "skill": "design-slice-review",
+      "summary": "RV-TA W1-B rev 2: PASS WITH CONDITIONS (3 minor findings)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-atomic-publish.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:40:44Z",
+      "done_when": "Gate PASS incl. Security and Distributed Systems; the D1 and D3 red tests named; the Windows no-directory-fsync branch stated; the defect class text for exists means complete",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-B crash-atomic publish, producing docs/design/eval-atomic-publish.md",
+      "id": "al-01M41DN7FNGSCBEYQ6A1K3HF5M",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-b-atomic-publish.md",
+      "session": "w1b-publish-e1e4",
+      "shortname": "design-slice-eval-atomic-publish",
+      "skill": "design-slice",
+      "summary": "W1-B design: create_once, publish_dir, sweep, recovery rule, archive rework, tests by node id, spike E1-S2",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-atomic-publish.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:20:13Z",
+      "done_when": "Every finding has a disposition row; Gate record has the five first-round lines plus rev 2 pending RV-TA; derive and validate exit 0",
+      "duration_seconds": 773.0,
+      "fan_out": 0,
+      "goal": "Apply the W1-B lens-review findings and Coordinator answers",
+      "id": "al-01M41FXH5HKYBZWKFGBP84JG6E",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "W1-B rev 2 follow-up: apply five lens reviews and W0 rev 3 (brief docs/coordination/eval-wave1/w1-b-atomic-publish.md)",
+      "session": "w1b-publish-r2-e1e4",
+      "shortname": "design-slice-eval-atomic-publish-rev2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T18:07:20Z",
+      "summary": "Revised the W1-B design: 34 findings dispositioned, recover_archive moved to X-K1, HB-LED-009 dropped, site scan re-derived with red fixtures, identity check and enforced sweep lock, public rename_with_retry, seam request S-B4",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1h.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:24:14Z",
+      "done_when": "two review files with gate lines",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-H and W1-C",
+      "id": "al-01M41G4WA0X67R5PGH62JKRCDG",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "session": "rv-sim-hc-e1e4",
+      "shortname": "review-sim-w1h",
+      "skill": "design-slice-review",
+      "summary": "Simplifier review of W1-H: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1c.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:24:14Z",
+      "done_when": "two review files with gate lines",
+      "fan_out": 0,
+      "goal": "Simplifier review of W1-H and W1-C",
+      "id": "al-01M41G4WXG026Z0MH6P12SBMBS",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "session": "rv-sim-hc-e1e4",
+      "shortname": "review-sim-w1c",
+      "skill": "design-slice-review",
+      "summary": "Simplifier review of W1-C: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ds-w1c.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:25:13Z",
+      "done_when": "gate line written and committed",
+      "fan_out": 0,
+      "goal": "DS lens review of W1-C",
+      "id": "al-01M41G6PKG1R95CYZCP8V85P5G",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ds.md",
+      "session": "rv-ds-w1c-e1e4",
+      "shortname": "design-slice-review-eval-ds-w1c",
+      "skill": "design-slice-review",
+      "summary": "DS review of W1-C: PASS WITH CONDITIONS, 7 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1c.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:25:41Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "Security review of W1-C",
+      "id": "al-01M41G7HGSGQXE3PHHSV19T3NC",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md",
+      "session": "rv-sec-w1c-e1e4",
+      "shortname": "design-slice-review-eval-sec-w1c",
+      "skill": "design-slice-review",
+      "summary": "Security gate on W1-C: PASS WITH CONDITIONS, 10 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1d.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:27:03Z",
+      "done_when": "gate line appended",
+      "fan_out": 0,
+      "goal": "re-review W1-D rev 2",
+      "id": "al-01M41GA22KNR8QFC0767K105V3",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-D rev 2 re-review)",
+      "session": "rv-ta-d2-e1e4",
+      "shortname": "design-slice-review-w1d-r2-ta",
+      "skill": "design-slice-review",
+      "summary": "RV-TA rev 2 of W1-D: PASS WITH CONDITIONS; T-25 assume refuted (T9-2 stubs Engine)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1f.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:27:19Z",
+      "done_when": "two gate lines appended on review/eval-sec-f3",
+      "fan_out": 0,
+      "goal": "Delta-review W0 rev 3 s3 and W1-F rev 3 for security",
+      "id": "al-01M41GAH3C8KT9WQFY1825VZYF",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md (delta: W0 rev 3 s3, W1-F rev 3)",
+      "session": "rv-sec-f3-e1e4",
+      "shortname": "review-sec-w1f-r3-w0-s3",
+      "skill": "design-slice-review",
+      "summary": "Security delta gates: W0 rev 3 s3 PASS (3 findings); W1-F rev 3 PASS WITH CONDITIONS (6 findings)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1f.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:28:31Z",
+      "done_when": "two gate lines appended",
+      "fan_out": 0,
+      "goal": "delta-review W0 rev 3 s3 and W1-F rev 3",
+      "id": "al-01M41GCQJA9GGPNEAYAAGG4MFR",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (delta: W0 rev 3 s3, W1-F rev 3)",
+      "session": "rv-ta-f3-e1e4",
+      "shortname": "design-slice-review-ta-w1f-r3",
+      "skill": "design-slice-review",
+      "summary": "TA delta gates: W1-F rev 3 PASS WITH CONDITIONS (6), W0 rev 3 s3 PASS WITH CONDITIONS (2)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-grader.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:22:39Z",
+      "done_when": "delta designed with floor-compliant tests incl. a real-wiring WSGI test; forgery re-run on wsgi; disposition rows; gate record rev 3 delta pending RV-TA, RV-SEC; validate exit 0",
+      "fan_out": 0,
+      "goal": "Revise W1-F for W0 rev 3 ruling C-1: wsgi kind, frames, five probe-host items, start bound",
+      "id": "al-01M41G1ZG2T4BXKBTDDZ15VWAB",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md (rev 3 delta: C-1 wsgi, W0 rev 3 frames, five probe-host items, start bound)",
+      "session": "w1f-property-r3-e1e4",
+      "shortname": "design-slice-eval-property-grader-r3",
+      "skill": "design-slice",
+      "summary": "W1-F rev 3 delta: app.kind wsgi built in E1 with W0 frames, PEP 3333 environ, factory/args/{state_dir}, paths, app output off the protocol channel (host start sequence), start bound = bounds_ms[interface]; spike SP-F3 re-ran the forgery against a wsgi host (refused 9/9); 14 rev-3 test rows against the testability floor; gate rev 3 delta pending RV-TA, RV-SEC",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-identity.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:42:10Z",
+      "done_when": "Gate PASS incl. SRE; run/grade table reviewed; launch recheck and identity_check_ms",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-D engine identity, freeze and per-launch recheck",
+      "id": "al-01M41DQVDC2MA6XY4YFM12V39V",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-d-identity.md",
+      "session": "w1d-identity-e1e4",
+      "shortname": "design-slice-eval-identity",
+      "skill": "design-slice",
+      "summary": "W1-D design: identity manifest, full run/grade table (no tooling class), launch recheck, grade_identity_hash in E1, guards",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-identity.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:24:26Z",
+      "done_when": "every finding has a disposition row; Gate record carries the four lines plus rev 2 pending RV-TA",
+      "duration_seconds": 557.0,
+      "fan_out": 0,
+      "goal": "Apply the four W1-D reviews and R-94",
+      "id": "al-01M41G58M9N7248NZ8X96XPYFZ",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-d-identity.md (rev 2 follow-up)",
+      "session": "w1d-identity-r2-e1e4",
+      "shortname": "design-slice-eval-identity-r2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T18:15:09Z",
+      "summary": "W1-D rev 2: R-94 applied, 30 review findings dispositioned, ADR-0017 Amendment 1, real-wiring and red-fixture test plan",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:34:06Z",
+      "done_when": "section appended with gate line",
+      "fan_out": 0,
+      "goal": "delta check of W0 rev 3 s5 and s10",
+      "id": "al-01M41GPYDF9M5N0NXWKHJ3CD8S",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md: W0 rev 3 s5/s10 delta check",
+      "session": "rv-pat-w0r3-e1e4",
+      "shortname": "design-slice-review-pat-w0r3",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT delta review of W0 rev 3 sections 5 and 10: PASS WITH CONDITIONS, 8 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-arms.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:43:34Z",
+      "done_when": "Gate line with Patterns, Simplifier and Test Architect PASS; the grid-4 re-plan equivalence test (EV-17) specified by node id; the E1 / E3 split stated",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-A arms v2 (ADR-0014), producing docs/design/eval-arms.md",
+      "id": "al-01M41DTDY3J8ABY33NTC0N6YVM",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "C:\\Projects\\x-harness-x-model-bench\\docs\\coordination\\eval-wave1\\w1-a-arms.md",
+      "session": "w1a-arms-e1e4",
+      "shortname": "design-slice-eval-arms",
+      "skill": "design-slice",
+      "summary": "W1-A arms v2 design: bench-matrix/2, bench-plan/2, blocked launch order with bounded redraw, ready rule, AST pack-reader guard, E1/E3 split, EV-17 test map; four spikes, two W0 errata, four seam requests",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-arms.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:34:01Z",
+      "done_when": "every finding has a disposition row; gate lines verbatim; validate exit 0",
+      "duration_seconds": 12.0,
+      "fan_out": 0,
+      "goal": "Apply the W1-A gate conditions on top of W0 rev 3",
+      "id": "al-01M41GPSXV3S5EJB729HWTYE3P",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/w1-a-arms.md (follow-up rev 2: apply RV-TA, RV-SIM, RV-PAT conditions)",
+      "session": "w1a-arms-r2-e1e4",
+      "shortname": "design-slice-eval-arms-r2",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T18:33:49Z",
+      "summary": "W1-A rev 2: 22 review findings dispositioned; plan_pack and HB-PLN-005 readers; G1 count ratchet and literal ratchet; real-git builder test; grid-4 entry point and provenance; Latin-square rejected; trims",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/notes/spike-s-lb-loopback.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:34:42Z",
+      "done_when": "four steps, one command per mode, empty results table",
+      "fan_out": 0,
+      "goal": "S-LB script and note",
+      "id": "al-01M41GR1Z6XB21ED0TJVP5GJT5",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/sp-lb-loopback.md",
+      "session": "splb-loopback-e1e4",
+      "shortname": "spike-s-lb-loopback",
+      "skill": "spike",
+      "summary": "Wrote S-LB script and note method; not run (operator absent)",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "id": "al-01M41H90J96K9V1343P7M6YN2P",
+      "shortname": "coord-w0-rev4-wave2-e1",
+      "datetime": "2026-10-03T18:43:58Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Coordinator #4: answer open seams, ADR-0020 Amendment 1, W0 rev 4 with change table and delta re-read list, Wave 2 E1 dispatch pack",
+      "summary": "W0 rev 4: 6 seam requests resolved (5 granted, SR-C1 in part: oslock.py to X-B1 not X-C); cross-slice rulings on W1-C/W1-H (pilot arity, expected_na, admission, plan_hash, run_side_check via engine campaign_check, lock-free reads, content-keyed git witness); RV-PAT rev3 delta conditions; ADR-0020 Amendment 1; Wave 2 E1 pack: README (routing, DAG, launch order) + 9 briefs + 6 coord-run/1 contracts (compile ids owed); 5 briefs owed on W1-C/W1-E/W1-H",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/adr/0020-power-and-verdicts-stdlib.md",
+        "docs/coordination/eval-wave2-e1/README.md"
+      ],
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "tier": "T2"
+      "goal": "Answer coord-opus-e1e4 seams, write ADR-0020 Am. 1 and W0 rev 4 with delta re-read list, and the Wave 2 E1 dispatch pack",
+      "done_when": "committed on coord/eval-w0-rev4-wave2; derive/validate exit 0; requests resolved; handback sent",
+      "tier": "T1",
+      "fan_out": 1
     }
   ],
   "changes": [
@@ -66299,106 +67082,508 @@ window.AUDIT_DATA = {
       "title": "Row-17 gateway: Fable judge (text), Codex judge not qualified (DR-GW-1), cells-root call folders, stdin, request+invocation key, verified-provenance write-once store, verdict_uses outcome+code"
     },
     {
-      "id": "cl-01M3JM1RR2C0VJZYHT4ZJQPFFP",
-      "datetime": "2026-09-27T23:43:50Z",
-      "session": "w4-stats-design",
-      "kind": "design",
-      "skill": "design-slice",
-      "title": "Row 19 statistics design: two-stage percentile bootstrap, component-tier ranking with pass@1 gate, derived-only",
-      "prompt": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only.\nMeasured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).\nDone when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible); the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0); the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases; the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label; the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog); where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable; the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee; the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed); the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named; the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document; any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved; docs-graph derive and validate pass; Commit the document.\nNot in scope: implementing anything; the full report's UI (row 20, a separate ui-design pass); the full grid (wave 5); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\n\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-stats-design (use absolute paths or cd into it in each shell command).",
-      "summary": "docs/design/phase4-statistics.md: normalisation by catalog anchors, gated composite, bootstrap over tasks then repetitions, ranking tiers from interval overlap merged by pass@1 dominance, pack effect and comparison via one paired-delta function; nothing stored",
-      "rationale": "Measured: 0.024 s per interval (stdlib Decimal suffices); two-stage covers 0.97 at 6x3 vs cluster-only 0.88, so the conservative method serves US-36's refuse-to-separate aim; count-based ranks break US-36 (i) on non-transitive overlap",
       "artifacts": [
         "docs/design/phase4-statistics.md"
       ],
-      "tags": [],
+      "datetime": "2026-09-27T23:43:50Z",
       "git": {
-        "before": "3d06948",
         "after": "30af0a5087d4c51083fec2cd1ab3f120bb9a8fa0",
+        "before": "3d06948",
         "branch": "w4-stats-design",
-        "pushed": null,
         "commits": [
           "30af0a5 design(stats): phase-4 statistics first draft - composites, two-stage percentile bootstrap, ranking with ties, pack effect, run comparison; DR-S-1..6 open"
-        ]
-      }
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M3JM1RR2C0VJZYHT4ZJQPFFP",
+      "kind": "design",
+      "prompt": "Goal: the detailed design for wave 4 row 19, statistics (docs/coordination/coordination-finish-harness-bench.md, \"Waves 3-5\": \"19 statistics\"), written with the design-slice workflow (.claude/skills/design-slice/SKILL.md and its reference/flow.md), ready for red-first implementation slices; design only.\nMeasured (Leader, 2026-09-27): catalog 0.4 is frozen (bench/catalog-freeze.yaml); the smoke run smoke-1 (36 cells) and the F1 Codex re-runs smoke-1-f1codex and smoke-1-f1codex-2 are graded; `bench report` prints \"interval not computed (statistics are phase 4)\" in the leaderboard's Interval column (src/harness_bench/report/, src/harness_bench/views.py leaderboard); the spec's statistics requirements are in docs/specs/harness-bench.md: the Pack effect term (line ~227), \"Derived, never stored as truth\" (~255), US-36 ranking with ties and intervals (~506-508: overlapping 95% bootstrap intervals on the correctness-gated composite share a rank shown as `2=`; an interval entirely below another never ranks above; same results and seed give identical intervals, at least 2,000 resamples, seed recorded), US-37 pack effect (~510-513: on minus off per area and combo with a 95% bootstrap interval over tasks x repetitions; an interval crossing zero is labelled `no detectable effect`; contamination-prone tasks E1-E3 excluded and the exclusion stated), the run comparison (~520), and the conflict table row C1 (~677, the ranking rule).\nDone when: docs/design/phase4-statistics.md exists with V2 frontmatter (docs-graph conventions) and holds: the data model first (DDD: what one resample unit is, the grain of every derived quantity, additive vs non-additive, what is derived at read time and never stored, where the seed and resample count are recorded so a report is reproducible); the bootstrap procedure named precisely (percentile or BCa, the resampling unit, the stratification across tasks and repetitions, how NA cells enter or leave, the minimum n below which an interval is `not computed` with the reason, never 0); the ranking-with-ties rule (US-36, conflict C1) as an algorithm with its edge cases; the pack-effect computation (US-37) including the E1-E3 exclusion and the `no detectable effect` label; the comparison of two runs (spec ~520) and its preconditions (same combos, BOM, catalog); where each result reaches the report (views, CLI table, HTML) and what the report prints when a quantity is not computable; the contracts (function signatures, inputs, outputs, error codes) and the determinism guarantee; the test plan per the Testing Strategy trigger table (property tests with hypothesis for the bootstrap, exact fixtures for ties, a determinism test on the seed); the implementation slices in dependency order, each small enough for one worker slice, with its red-first test named; the Patterns-Expert-vs-Simplifier and Test Architect gate findings recorded in the document; any spec conflict found is surfaced in the document as a decision request (DR-S-n) with a recommended default, not silently resolved; docs-graph derive and validate pass; Commit the document.\nNot in scope: implementing anything; the full report's UI (row 20, a separate ui-design pass); the full grid (wave 5); any file under runs/; any push.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: one design session; commit the document as soon as its first complete draft exists, then refine through the gate.\n\nGrounding: docs/specs/harness-bench.md (the lines above); docs/design/phase3-graders.md and phase3-cost.md (house style, how derived metrics are specified); bench/metrics.yaml (areas, composites, scales); src/harness_bench/views.py (leaderboard, RunView); src/harness_bench/report/; docs/notes/rulings.md (search R-59 for the probe/current pass rule); docs/lessons/defect-classes.md (read the index); .claude/knowledge/domain-and-data-modelling.md; .claude/knowledge/testing-strategy.md. Use python, not python3 (Windows). Work only inside the worktree C:/Projects/x-harness-x-model-bench-w4-stats-design (use absolute paths or cd into it in each shell command).",
+      "rationale": "Measured: 0.024 s per interval (stdlib Decimal suffices); two-stage covers 0.97 at 6x3 vs cluster-only 0.88, so the conservative method serves US-36's refuse-to-separate aim; count-based ranks break US-36 (i) on non-transitive overlap",
+      "session": "w4-stats-design",
+      "skill": "design-slice",
+      "summary": "docs/design/phase4-statistics.md: normalisation by catalog anchors, gated composite, bootstrap over tasks then repetitions, ranking tiers from interval overlap merged by pass@1 dominance, pack effect and comparison via one paired-delta function; nothing stored",
+      "tags": [],
+      "title": "Row 19 statistics design: two-stage percentile bootstrap, component-tier ranking with pass@1 gate, derived-only"
     },
     {
-      "id": "cl-01M3MENFS0Z3SF72CSHC7CRQNB",
-      "datetime": "2026-09-28T16:48:13Z",
-      "session": "w4-report-design",
-      "kind": "design",
-      "skill": "design-slice",
-      "title": "Row 20 report: a pure projection pre-rendered as HTML and SVG under a hashed-script CSP; summaries gated by a mechanical claim check; only R8 waits on EGRESS s2",
-      "prompt": "Compiled brief al-01M3MDD0MN10YWDK3MMHYVYAAQ (row 20)",
-      "summary": "Design + mockup committed; F-1 surfaced; DR-R-1..9 with defaults",
-      "rationale": "Offline, zero-request, readable without JS (US-40, spec :988); summaries cannot publish an unverifiable or zero-crossing claim (US-42, US-37 c2); live model spend isolated to one slice after EGRESS s2",
       "artifacts": [
         "docs/design/phase4-report.md"
       ],
-      "tags": [],
+      "datetime": "2026-09-28T16:48:13Z",
       "git": {
-        "before": "2a8057ed5622030692d03ac96c5035b1448d6eef",
         "after": "623db6de7bd5ef972713490ff437688f16bdf251",
+        "before": "2a8057ed5622030692d03ac96c5035b1448d6eef",
         "branch": "w4-report-design",
-        "pushed": null,
         "commits": [
           "623db6d docs(design): row-20 report design, round-1 gate fold-in (Test Architect 7 items, UX 1 blocker + 3 majors)",
           "e618adb docs(design): phase-4 report and summaries design, first draft, with mockup (row 20)"
-        ]
-      }
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M3MENFS0Z3SF72CSHC7CRQNB",
+      "kind": "design",
+      "prompt": "Compiled brief al-01M3MDD0MN10YWDK3MMHYVYAAQ (row 20)",
+      "rationale": "Offline, zero-request, readable without JS (US-40, spec :988); summaries cannot publish an unverifiable or zero-crossing claim (US-42, US-37 c2); live model spend isolated to one slice after EGRESS s2",
+      "session": "w4-report-design",
+      "skill": "design-slice",
+      "summary": "Design + mockup committed; F-1 surfaced; DR-R-1..9 with defaults",
+      "tags": [],
+      "title": "Row 20 report: a pure projection pre-rendered as HTML and SVG under a hashed-script CSP; summaries gated by a mechanical claim check; only R8 waits on EGRESS s2"
     },
     {
-      "id": "cl-01M3QQM2N1YTHZY4Q54W01QV9Z",
-      "datetime": "2026-09-29T23:22:27Z",
-      "session": "worker-sonnet-formal",
-      "kind": "design",
-      "skill": "design-slice",
-      "title": "Design the formal grader (grade/formal.py) for G1/G2: four US-32 scores, statement integrity, bug confirmation",
-      "prompt": "Design the formal grader (spec S-08g) with the /design-slice skill, so a later /implement slice can build src/harness_bench/grade/formal.py and tasks G1 (TLA+) and G2 (Lean 4) can be authored; the design is the deliverable, not code. Done when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining the four scores of US-32, statement integrity, trace conformance, bug-seeded variants, bug confirmation, the toolchain invocation (warm-before-clock, closing S-12's tla2tools gap), the report surfaces, the ledger facts, error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (persona reviews incl. Test Architect), each verdict recorded in the doc; any decision the design cannot settle becomes a decision request with a recommended default; the doc is committed; docs-graph.py validate passes. Not in scope: implementing formal.py; authoring G1 or G2; changing any code; any file under runs/; any push.",
-      "summary": "docs/design/formal-grader.md, revision 2 (post-gate): grade/formal.py's six metric definitions (formal_checks_clean, statement_integrity, model_conformance, model_non_vacuity, bugs_confirmed, bug_claim_precision) for G1 (TLA+) and G2 (Lean 4), with an exact per-task NA-cascade table, the toolchain-invocation contract via correctness.run_step (closing the D3 procs-allowlist question), a warm-before-clock fix for S-12's tla2tools gap, a STRIDE-lite analysis, a G2 statement-integrity hash that reuses Lean's own #check output, two whole-cell golden-master tests, and a red-first test plan with named mutants. Three real persona reviews ran in parallel (Test Architect, Security & Identity Architect, The Simplifier), each BLOCK on revision 1; all Blockers (2 TA, 3 Security) and the Simplifier's Major are fixed in revision 2, recorded in the Gate record. Two decision requests remain open (DR-FM1: the TLA+ trace-replay mechanism is unspiked, needs a pre-implementation spike; DR-FM2: no judge rubric yet for a not-seeded bug claim). Security/privacy rollups (docs/security/threat-model.md, privacy-review.md) updated with this design's boundaries and findings. docs-graph.py validate: 0 defects.",
-      "rationale": "S-08g is on T-G1/T-G2's critical path and US-32/US-33 require four separate formal scores plus bug confirmation, not a single pass/fail. Three adversarial persona reviews (Test Architect, Security & Identity Architect, The Simplifier) found real gaps in revision 1 -- most materially an untrusted-content-to-tool path (agent-authored TLA+/Lean executed by the grading host) with three unmitigated boundaries -- all closed in revision 2 before the gate cleared.",
       "artifacts": [
         "docs/design/formal-grader.md"
       ],
-      "tags": [],
+      "audit_ref": "al-01M3QQK2HDKRCQJJ411ANYCTJ8",
+      "datetime": "2026-09-29T23:22:27Z",
       "git": {
-        "before": "f31ce5bf8316c4ce44442386a184b10273b30a79",
         "after": "f31ce5bf8316c4ce44442386a184b10273b30a79",
+        "before": "f31ce5bf8316c4ce44442386a184b10273b30a79",
         "branch": "w5-formal",
-        "pushed": null,
-        "commits": []
+        "commits": [],
+        "pushed": null
       },
-      "audit_ref": "al-01M3QQK2HDKRCQJJ411ANYCTJ8"
+      "id": "cl-01M3QQM2N1YTHZY4Q54W01QV9Z",
+      "kind": "design",
+      "prompt": "Design the formal grader (spec S-08g) with the /design-slice skill, so a later /implement slice can build src/harness_bench/grade/formal.py and tasks G1 (TLA+) and G2 (Lean 4) can be authored; the design is the deliverable, not code. Done when: /design-slice runs to completion for S-08g and writes its design doc under docs/design/ (with the repo's frontmatter and index sync) defining the four scores of US-32, statement integrity, trace conformance, bug-seeded variants, bug confirmation, the toolchain invocation (warm-before-clock, closing S-12's tla2tools gap), the report surfaces, the ledger facts, error codes, and a red-first test plan with named mutants; the design passes the gates /design-slice requires (persona reviews incl. Test Architect), each verdict recorded in the doc; any decision the design cannot settle becomes a decision request with a recommended default; the doc is committed; docs-graph.py validate passes. Not in scope: implementing formal.py; authoring G1 or G2; changing any code; any file under runs/; any push.",
+      "rationale": "S-08g is on T-G1/T-G2's critical path and US-32/US-33 require four separate formal scores plus bug confirmation, not a single pass/fail. Three adversarial persona reviews (Test Architect, Security & Identity Architect, The Simplifier) found real gaps in revision 1 -- most materially an untrusted-content-to-tool path (agent-authored TLA+/Lean executed by the grading host) with three unmitigated boundaries -- all closed in revision 2 before the gate cleared.",
+      "session": "worker-sonnet-formal",
+      "skill": "design-slice",
+      "summary": "docs/design/formal-grader.md, revision 2 (post-gate): grade/formal.py's six metric definitions (formal_checks_clean, statement_integrity, model_conformance, model_non_vacuity, bugs_confirmed, bug_claim_precision) for G1 (TLA+) and G2 (Lean 4), with an exact per-task NA-cascade table, the toolchain-invocation contract via correctness.run_step (closing the D3 procs-allowlist question), a warm-before-clock fix for S-12's tla2tools gap, a STRIDE-lite analysis, a G2 statement-integrity hash that reuses Lean's own #check output, two whole-cell golden-master tests, and a red-first test plan with named mutants. Three real persona reviews ran in parallel (Test Architect, Security & Identity Architect, The Simplifier), each BLOCK on revision 1; all Blockers (2 TA, 3 Security) and the Simplifier's Major are fixed in revision 2, recorded in the Gate record. Two decision requests remain open (DR-FM1: the TLA+ trace-replay mechanism is unspiked, needs a pre-implementation spike; DR-FM2: no judge rubric yet for a not-seeded bug claim). Security/privacy rollups (docs/security/threat-model.md, privacy-review.md) updated with this design's boundaries and findings. docs-graph.py validate: 0 defects.",
+      "tags": [],
+      "title": "Design the formal grader (grade/formal.py) for G1/G2: four US-32 scores, statement integrity, bug confirmation"
     },
     {
-      "id": "cl-01M4174STB9ETP4BC69DZ93SQW",
-      "datetime": "2026-10-03T15:46:54Z",
-      "session": null,
-      "kind": "architecture",
-      "skill": "define-architecture",
-      "title": "Evaluation-campaign architecture: arms in the plan, two-turn attempts, campaign record, hidden-check harness, plan-level resume",
-      "prompt": "start /define-architecture",
-      "summary": "ADR-0014..0021 and amendments to ADR-0006/0007/0010/0011/0013",
-      "rationale": "The gated enterprise-evaluation spec needs three arms in one run, a two-turn rework task, a pre-registered campaign with an engine freeze, and hidden mechanical checks; the council required crash-atomic writes, per-turn resume, plan-level resume, a token-free allowlisted check environment and a forgery-proof result path",
       "artifacts": [
         "docs/architecture-evaluation-campaign.md",
         "docs/adr/0014-arm-replaces-pack-setting.md",
         "docs/adr/0021-plan-level-resume-and-liveness.md"
       ],
-      "tags": [],
+      "datetime": "2026-10-03T15:46:54Z",
       "git": {
-        "before": "bc768ed2",
         "after": "2ad01b291b7c8f859d88edaf8c4f449d3b832838",
+        "before": "bc768ed2",
         "branch": "main",
-        "pushed": false,
         "commits": [
           "2ad01b29 docs(adr-0015): link the merged spike E4 note (depends-on) and regenerate the docs index",
           "0de4b5c0 join spike E4 (DR-E4, R-E6): a second ACP session/prompt on the same session after end_turn works on claude-code (claude-opus-5-5), codex (gpt-6-sol) and copilot (gpt-6-sol) on Windows - same session id, no errors, per-turn usage in each prompt response, context carry strongly indicated; macOS unverified; the engine changes it needs are named in ADR-0015. Claude Sonnet 5 worker (Leader join on Claude Opus 5.5)",
           "99be853f chore(spike): dispose the e4 PoC script (spike scaffolding is not kept; the note records the method and evidence)",
           "1cf8fed3 docs(architecture): evaluation-campaign amendment (gated, 3 council rounds) - companion docs/architecture-evaluation-campaign.md refining arch-harness-bench, ADR-0014 arm replaces pack setting (cell = task version x combo x arm x rep; cell_id keeps its pack key carrying the arm id so grids 1-4 load and re-plan unchanged), ADR-0015 two turns on one ACP session with crash-atomic turn snapshots and a per-turn crash predicate (TLA+), ADR-0016 campaign record (hash-chained ledger, create_once records, rings as bench-matrix/2), ADR-0017 engine identity manifest and freeze (post-fix cells re-run, operator DI6), ADR-0018 hidden-check harness (HOST_ENV allowlist, explicit handle list, write-once-last-and-alone result with a tamper cross-check; Windows now, macOS follow-up), ADR-0019 catalog 0.7 (scenario-7 pass@1; append-only golden correction), ADR-0020 stdlib power and verdicts (reference cases reproduced), ADR-0021 plan-level resume and liveness; amendment text in ADR-0006/0007/0010/0011/0013; phases E1 walking skeleton, E2/E3/E4 in parallel, E5 first campaign. Council: Security PASS, Distributed Systems PASS, SRE/Data&Persistence/Enterprise/Simplifier/Patterns PASS WITH CONDITIONS (applied); authors did not clear their own vetoes. Claude Opus 5.5 author, Claude Sonnet 5 council (Leader on Claude Opus 5.5)",
           "ebf21cee spike(e4): a second session/prompt in the same ACP session, after end_turn (R-E6, DR-E4)"
+        ],
+        "pushed": false
+      },
+      "id": "cl-01M4174STB9ETP4BC69DZ93SQW",
+      "kind": "architecture",
+      "prompt": "start /define-architecture",
+      "rationale": "The gated enterprise-evaluation spec needs three arms in one run, a two-turn rework task, a pre-registered campaign with an engine freeze, and hidden mechanical checks; the council required crash-atomic writes, per-turn resume, plan-level resume, a token-free allowlisted check environment and a forgery-proof result path",
+      "session": null,
+      "skill": "define-architecture",
+      "summary": "ADR-0014..0021 and amendments to ADR-0006/0007/0010/0011/0013",
+      "tags": [],
+      "title": "Evaluation-campaign architecture: arms in the plan, two-turn attempts, campaign record, hidden-check harness, plan-level resume"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-security-tasks.md"
+      ],
+      "datetime": "2026-10-03T17:48:26Z",
+      "git": {
+        "after": "be1a074857356c12cf775427266ca0941f447e0d",
+        "before": "be1a0748",
+        "branch": "design/eval-security-tasks",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41E3B1P0ZXTMJWTB0WTQ7E0",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-i-security-tasks.md",
+      "rationale": "web.py rejected (third-party import under -S). Payload sets must close the SQL parenthesis (a probe designed against the wrong template was dead). Bound x20 of measured 80 ms.",
+      "session": "w1i-security-e1e4",
+      "skill": "design-slice",
+      "summary": "Two security property tasks on two different public stdlib-only bases (microdot, bottle). S1 specified end to end; S2 base and probes named. Probes proven live by nine seeded-defect variants; expected values hand-derived and confirmed by a stand-in driver. No build step so builds are offline by construction.",
+      "tags": [],
+      "title": "W1-I: S1 on microdot, S2 on bottle; ten in-process probes; expected 1.0000 / 0.4000"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-property-grader.md"
+      ],
+      "datetime": "2026-10-03T17:19:39Z",
+      "git": {
+        "after": "5092455c9bb3f00821671edfedb546218286873d",
+        "before": "5092455c",
+        "branch": "design/eval-property-grader",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41CEMSZVTB7AHE5VSWQSRXP",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md",
+      "rationale": "ADR-0018 s1 and s10a hold only if no agent code runs in the deciding process; spikes SP-F1/F2 verified the sweep, the handshake and the forgery",
+      "session": "w1f-property-e1e4",
+      "skill": "design-slice",
+      "summary": "Design docs/design/eval-property-grader.md: runner.applicable narrows by property tag (R-90); hidden tests via correctness.grade() then a fresh hashed check copy; DETACHED base-interpreter check with one-byte ack; in-process probes run in a bench_check probe-host child (RV-SEC F1 forgery reproduced 3/3 by spike SP-F2); precedence HB-CHK-004>003>002(hash)>002(10a)>001>measured 0>scores; Kleene primary; _env.py one allowlist; egress task_canary. Gate pending RV-PAT, RV-SIM, RV-TA, RV-SEC.",
+      "tags": [],
+      "title": "W1-F: property grader keeps agent code out of the check process (probe-host child), accepts one acknowledged document from a lone check, and classifies by one fixed precedence"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-property-grader.md",
+        "tests/test_property_forgery_fixture.py"
+      ],
+      "datetime": "2026-10-03T17:48:07Z",
+      "git": {
+        "after": "13011c961ce3114597432725d16854a0ede6af10",
+        "before": "13011c96",
+        "branch": "design/eval-property-grader",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41E2R397305FHW1J1A72D6N",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md (rev 2 follow-up: apply the four W1-F reviews)",
+      "rationale": "W0 rev 2 is the contract; divergences only by seam request (req-01M41DM7XQG9GYVR32TJ762V67 NA handling to X-H1/X-E; req-01M41DM80KBD42GYARADW4V6HZ env import cycle).",
+      "session": "w1f-property-r2-e1e4",
+      "skill": "design-slice",
+      "summary": "Applied 38 findings of RV-TA (BLOCK), RV-SEC, RV-PAT, RV-SIM. W0 rev 2 wins: the seven-row outcome table with Classification.row, rows 1-5 NA for every metric, suspend detector per phase span, 64 KiB line, hidden_tests_pass and at_scale, fault/static/wsgi/resilience not built in E1. Added the clean-exit row-3 test and mutation entry, reparse-safe copy, bounded probe-host start and reader. Committed the SP-F2 forgery fixture with its positive control (9/9 each).",
+      "tags": [],
+      "title": "W1-F rev 2: property grader conformed to W0 rev 2 (seven rows, tamper NA, per-phase suspend, 64 KiB, E1 probe-only)"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/adr/0014-arm-replaces-pack-setting.md",
+        "docs/adr/0018-hidden-check-harness.md",
+        "docs/adr/0019-catalog-0-7-property-metrics.md"
+      ],
+      "datetime": "2026-10-03T17:59:35Z",
+      "git": {
+        "after": "d053385c697f884b9099f3555747ff7192bca9fc",
+        "before": "e466acb5",
+        "branch": "design/eval-w0-rev3",
+        "commits": [
+          "d053385c docs(coordination): Wave 1 testability floor and inline AGENT_SESSION rule; classes TEST-B, COORD-D"
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M41EQQXPA4B3E384EMFHADMV",
+      "kind": "design",
+      "prompt": null,
+      "rationale": "One revision so every slice re-reads one contract; refusals keep ADR-0020 and W0 s4 meanings; the R-90 amendment goes to the Owner.",
+      "session": "coord-opus-e1e4",
+      "skill": "execute-with-coordination",
+      "summary": "Rev 3 answers 13 seam requests and 11 routed lens findings: wsgi kind in E1 (C-1), probe-host additions and start bound, NA never dropped, DOTNET_HOST_ENV to _env.py, reparse-safe grading copy, sweep_temps/TEMP_RE (no HB-LED-009), recover_archive to X-K1, quoted arm ids, grid4 golden, no top-level pack + plan_pack + HB-PLN-004/005, G1 AST ratchet, run-side effective identity in the plan, catalog_hash in identity.py, G2 every file + direction test, R-93/R-94 recorded, W1-G owner rule provisional on an Owner request, (e) exception deferred.",
+      "tags": [],
+      "title": "W0 seam contracts rev 3: Wave 1 seam answers"
+    },
+    {
+      "artifacts": [],
+      "datetime": "2026-10-03T18:10:46Z",
+      "git": {
+        "after": "8bde0c531441a8d460675ccb8af839281c27074f",
+        "before": null,
+        "branch": "design/eval-security-tasks",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41FC7AKVR1X94SC030Q4H6F",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Applied RV-TA/PAT/SEC/SIM first-round findings to docs/design/eval-security-tasks.md",
+      "tags": [],
+      "title": "W1-I rev 2: eight probes, wsgi per W0 rev 3 C-1, S2 cut to classes"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-catalog-0-7.md"
+      ],
+      "datetime": "2026-10-03T17:38:09Z",
+      "git": {
+        "after": "3c1c98278e08c948215a4bf7dacdd960be37aa30",
+        "before": null,
+        "branch": "design/eval-catalog-0-7",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41DGGB8793Z5DGA7Y1TKWWN",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-g-catalog.md",
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Settles how catalog 0.7 is built: no new area (config requires seven), one optional also_graded_by key so the formal grader owns pass_at_1 for G2, a three-valued pass rule in task.yaml, absence excluded from pass counts (ABS-A), and a cross-version US-4 control with a chain-linked correction record",
+      "tags": [],
+      "title": "Catalog 0.7 design: property metrics in existing areas, also_graded_by owner rule, formal.pass_rule, recorded-pairs pass counts, chain-linked corrected_from"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-catalog-0-7.md"
+      ],
+      "datetime": "2026-10-03T18:13:20Z",
+      "git": {
+        "after": "0fc300af8ea1088b14789f984dafc1e58deca65b",
+        "before": null,
+        "branch": "design/eval-catalog-0-7",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41FGXTZ46GPDVWGTMX4H5AS",
+      "kind": "design",
+      "prompt": "w1-g-catalog.md rev 2 follow-up",
+      "rationale": "RV-TA BLOCK on controls with no failing case; Coordinator deferral of the (e) exception; R-95 grants the owner rule",
+      "session": "w1g-catalog-r2-e1e4",
+      "skill": "design-slice",
+      "summary": "Applies RV-TA/PAT/SIM, W0 rev 3 and R-95; Control 1 gets red cases and reads 0.6 definitions from d6dda42d; (e) exception and corrected_from become a written contingency",
+      "tags": [],
+      "title": "Catalog 0.7 design rev 2: cross-version control from git, n_recorded, owner rule ruled (R-95), correction record deferred"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-atomic-publish.md"
+      ],
+      "datetime": "2026-10-03T17:40:54Z",
+      "git": {
+        "after": "b46bf907c5d035691d44bcc04c302149e8864030",
+        "before": null,
+        "branch": "design/eval-atomic-publish",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41DNH6Q8HPW9V20350SV052",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-b-atomic-publish.md",
+      "rationale": "ADR-0015 5a and ADR-0016 2a rest on primitives measured in spikes E1-S1 and E1-S2; RV-DS 5,6,7,9, RV-SEC 10, RV-PAT 5 dispositions become tests.",
+      "session": "w1b-publish-e1e4",
+      "skill": "design-slice",
+      "summary": "Designs atomic.py (create_once, publish_dir, sweep_temps) and the archive.py rework: final name appears only after a verified copy; rows hash source bytes; folder-then-rows-then-event recovery rule with states S0-S6; O_BINARY required on Windows; leaked temps hidden from git, verify and attempt readers.",
+      "tags": [],
+      "title": "Crash-atomic publish: temp-then-rename for folders, temp-then-link for files, one recovery rule, strict verify"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-atomic-publish.md"
+      ],
+      "datetime": "2026-10-03T18:20:21Z",
+      "git": {
+        "after": "32548ed921664e2db3fcde42634ac4e241c93e78",
+        "before": null,
+        "branch": "design/eval-atomic-publish",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41FXSDXPNN8VVXE51S86BT4",
+      "kind": "design",
+      "prompt": "W1-B rev 2 follow-up",
+      "rationale": "Apply the five W1-B lens reviews and the Coordinator answers; RV-TA BLOCK findings 2 and 3 fixed with real-path tests and red fixtures",
+      "session": "w1b-publish-r2-e1e4",
+      "skill": "design-slice",
+      "summary": "34 review findings dispositioned; recover_archive specified not built in E1; HB-LED-009 refused; site scan re-derived (12 sites, 11 keys) with red fixtures; rename_with_retry public; seam request S-B4",
+      "tags": [],
+      "title": "W1-B rev 2: recovery moves to X-K1, sweep lock enforced, create_once identity-checked, one WIN-A retry helper"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-property-grader.md"
+      ],
+      "datetime": "2026-10-03T18:22:49Z",
+      "git": {
+        "after": "1ceea651bceeada8e8406e1633afaa930d48a9f3",
+        "before": "1ceea651",
+        "branch": "design/eval-property-grader-r3",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41G29KMV71MS5ES0EWJ30Q0",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md (rev 3 delta)",
+      "rationale": "C-1: S1 is a WSGI factory; W0 rev 3 granted req-01M41DPBSM9 and req-01M41DT67 in part. Start kept outside the case span because SP-F3 saw a 486 ms honest start.",
+      "session": "w1f-property-r3-e1e4",
+      "skill": "design-slice",
+      "summary": "The probe host gains the wsgi kind with W0 rev 3 frames, an explicit PEP 3333 environ, a factory called with {state_dir}-resolved args, paths after the root, and a start sequence that moves fds 0-2 before agent code so app output lands in out_dir/check/host/<case>.log; the start is bounded by bounds_ms[interface] and a miss is did not start; SP-F3 re-ran the forgery against a wsgi host (refused).",
+      "tags": [],
+      "title": "W1-F rev 3: wsgi probe host in E1 (ruling C-1), app output off the protocol channel, start bound outside the case span"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-identity.md"
+      ],
+      "datetime": "2026-10-03T17:42:21Z",
+      "git": {
+        "after": "eed6ca33ce50c7596d4c0089b6cd3e9a726b2d2a",
+        "before": null,
+        "branch": "design/eval-identity",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41DR63WXF09NXV46J77EXQ4",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-d-identity.md",
+      "rationale": "Derived numbers are part of the measurement; engine imports telemetry.normalize on the cell path; measured 13 ms per check.",
+      "session": "w1d-identity-e1e4",
+      "skill": "design-slice",
+      "summary": "Keep run/grade only (no tooling class); procs run, egress grade; telemetry/* run (Owner request); recheck injected via EngineConfig.identity_check before each launch, identity_check_ms on cell.launch_intent; grade_identity_hash in E1; platform stays sys.platform.",
+      "tags": [],
+      "title": "Engine identity: two classes kept, telemetry run-side, per-launch run-side recheck"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-identity.md"
+      ],
+      "datetime": "2026-10-03T18:24:37Z",
+      "git": {
+        "after": "849809790b32063e93a0049e09f32f226b089bfe",
+        "before": null,
+        "branch": "design/eval-identity",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41G5JME3QDPDW97327M3B47",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave1/w1-d-identity.md (rev 2 follow-up)",
+      "rationale": null,
+      "session": "w1d-identity-r2-e1e4",
+      "skill": "design-slice",
+      "summary": "R-94 applied (telemetry/* run, gateway grade, ADR-0017 Amendment 1); launch check once per tick with a 2 s cap and one retry; real-wiring test T-25; pure coverage and direction scans with red fixtures; run-class edit cost priced; 30 findings dispositioned",
+      "tags": [],
+      "title": "W1-D rev 2: telemetry run, gateway grade, one retry, real-wiring test"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-arms.md"
+      ],
+      "datetime": "2026-10-03T17:43:46Z",
+      "git": {
+        "after": "1722e06d5956c3276e108adb96ea1cadfdc2cdce",
+        "before": null,
+        "branch": "design/eval-arms",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41DTSMG4Q0GSM3AYVPS967K",
+      "kind": "design",
+      "prompt": "C:\\Projects\\x-harness-x-model-bench\\docs\\coordination\\eval-wave1\\w1-a-arms.md",
+      "rationale": "SP-A1..A5 measured results; ADR-0014 section 4 assertion kept; W0 errata filed as seam requests",
+      "session": "w1a-arms-e1e4",
+      "skill": "design-slice",
+      "summary": "W1-A design for ADR-0014: arm replaces pack setting; cell_id recipe unchanged (grid-4 276 ids reproduced by spike); launch seed stored, redrawn up to 100 times to meet the 5 percent bound (pilot shape fails 25 percent of first draws); HB-PLN-004 added; guard G1 as AST with E1 allowlist; E1/E3 split and every on/off literal site mapped",
+      "tags": [],
+      "title": "Arms v2: every plan is bench-plan/2, blocked hash-keyed launch order with bounded redraw, measurement plans refuse non-ready tasks, AST pack-reader guard"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-arms.md"
+      ],
+      "audit_ref": "al-01M41GPSXV3S5EJB729HWTYE3P",
+      "datetime": "2026-10-03T18:34:30Z",
+      "git": {
+        "after": "9a0aa49b3998295edc0846d1a00ccb9b38206fe0",
+        "before": null,
+        "branch": "design/eval-arms",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41GQP7XAQHFKJW658RSDA2H",
+      "kind": "design",
+      "prompt": "w1-a-arms.md follow-up rev 2",
+      "rationale": "Gate passed with conditions; findings are advice applied without widening the slice",
+      "session": "w1a-arms-r2-e1e4",
+      "skill": "design-slice",
+      "summary": "Applies RV-TA/SIM/PAT conditions on W0 rev 3: plan_pack readers, count ratchet plus literal ratchet, real-git builder test, trims",
+      "tags": [],
+      "title": "W1-A rev 2: G1 ratchets, plan_pack readers, test-plan trims"
+    },
+    {
+      "artifacts": [],
+      "datetime": "2026-10-03T18:34:53Z",
+      "git": {
+        "after": "9fad1bb3695a108a041ec883b6f9fae0abedb8f8",
+        "before": null,
+        "branch": "spike/s-lb-loopback",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41GRCVSCTTRHGM0K8QWZ79V",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "spike",
+      "summary": "Script and note method written; results await the operator run.",
+      "tags": [],
+      "title": "S-LB loopback firewall spike prepared, not run"
+    },
+    {
+      "id": "cl-01M41H9AXYB1KA3AG3RG9KG72N",
+      "datetime": "2026-10-03T18:44:08Z",
+      "session": "coord-opus-e1e4",
+      "kind": "design",
+      "skill": "execute-with-coordination",
+      "title": "W0 seam contracts rev 4 and ADR-0020 Amendment 1",
+      "prompt": null,
+      "summary": "Batch-b seams answered; oslock.acquire_then_probe owned by X-B1 with a set of others; plan_hash on attach rows; run-side campaign check after the run lock via an injected engine keyword; gates.pilot expected_na keyword-only; gates.admission (EV-8); status/verify lock-free; git witness keyed on content; ADR-0020 seed_for and holm alpha/m recorded",
+      "rationale": "One definition per protocol (DM7); close check-then-act windows (RV-DS W1-C 2); bind attached plans by content (RV-SEC W1-C 7); keep W0's three-argument pilot call valid",
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/adr/0020-power-and-verdicts-stdlib.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "9c9056df",
+        "after": "3fc5e4a78874e8bba301524e30ab128b51c78062",
+        "branch": "coord/eval-w0-rev4-wave2",
+        "pushed": null,
+        "commits": [
+          "3fc5e4a7 Merge branch 'main' into coord/eval-w0-rev4-wave2",
+          "a49c56da chore(coord): regenerate docs index after the SP-LB merge; ledger rows",
+          "57f5576e merge: SP-LB loopback firewall spike - script and method, not run (operator required) (spike/s-lb-loopback)",
+          "6144ee74 Merge branch 'main' into coord/eval-w0-rev4-wave2",
+          "df542eec spike(s-lb): explicit check= on subprocess.run (PLW1510)",
+          "f4009cd4 docs(design): W0 rev 4 - RV-PAT rev 3 delta conditions (plan_pack_label, G1 equality ratchet), W1-B R2-1 test owner, W1-A TA 3 over SIM 7, F rev 3 section 3 additions",
+          "92e977b2 merge: W1-A follow-up (G1 pins after migration, equality assertion; plan_pack strict only for board.py) (design/eval-arms)",
+          "c53f4e78 design(eval): W1-A rev 2 - equality ratchet pinned after migration; plan_pack strict only in board.py (provisional)",
+          "5e0521f9 chore(coord): regenerate docs index after the W1-A merge; ledger rows",
+          "2fef0b80 merge: W1-A arms v2 design (gate passed: TA, SIM, PAT PWC; rev 2 applies all 22 findings) (design/eval-arms)",
+          "73993060 spike(s-lb): loopback firewall script and note method; not run, operator required",
+          "96804061 merge: RV-PAT delta check of W0 rev 3 sections 5 and 10 - PASS WITH CONDITIONS (review/eval-pat-w0r3)",
+          "496cb9b7 design(eval): W1-A arms rev 2 - apply RV-TA, RV-SIM, RV-PAT conditions on W0 rev 3",
+          "d50856fa chore(audit): regenerate audit-data view",
+          "d7f73e10 review(eval): RV-PAT delta check of W0 rev 3 s5/s10 - PASS WITH CONDITIONS",
+          "2d9ec47d docs(design): W0 seam contracts rev 4 - batch-b seam answers (SR-C1 in part, SR-C2, S-B4, W1-D r2, W1-H, W1-J), cross-slice rulings on W1-C/W1-H, R-95/R-96, rev 3+4 delta re-read list",
+          "9fad1bb3 chore(coord): regenerate docs index after the W1-D merge; ledger rows",
+          "301a8705 merge: W1-D engine identity design (gate passed: TA PWC rev 2 with T-25 fixed, SIM, SRE, PAT PWC; ADR-0017 Amendment 1 per R-94) (design/eval-identity)",
+          "9273a5d8 chore(coord): regenerate docs index after the W1-F rev 3 merge; ledger rows",
+          "f4bc19ba merge: W1-F rev 3 wsgi delta (gate: TA, SEC PASS WITH CONDITIONS; conditions carried to X-F) (design/eval-property-grader-r3)",
+          "3eb73d30 merge: RV-TA - W1-F rev 3 and W0 rev 3 section 3 PASS WITH CONDITIONS (review/eval-ta-f3)",
+          "7d6f6833 design(eval-identity): T-25 own fixture with the real engine, T-25b twin, RV-TA rev-2 gate line",
+          "0116a3b9 chore(audit): regenerate audit-data after the rv-ta-f3 entry",
+          "c4acad4a review(ta): rev 3 delta - W1-F PASS WITH CONDITIONS (6), W0 s3 PASS WITH CONDITIONS (2)",
+          "b88746d9 merge: RV-SEC - W0 rev 3 section 3 PASS; W1-F rev 3 PASS WITH CONDITIONS (review/eval-sec-f3)",
+          "20cc0412 merge: main into design/eval-identity (RV-TA rev 2)",
+          "cb9def7f merge: RV-TA re-review of W1-D rev 2 - PASS WITH CONDITIONS (T-25 fixture must be rebuilt: the assumed fixture fakes the engine) (review/eval-ta-w1d-r2)",
+          "140e013d chore(audit): regenerate audit-data view",
+          "93345006 review(sec): W0 rev 3 s3 and W1-F rev 3 delta gates",
+          "0b4ba063 chore(audit): regenerate audit-data after RV-TA W1-D r2",
+          "79d1a7c5 review(eval): RV-TA re-review of W1-D rev 2 - PASS WITH CONDITIONS; T-25 assume refuted",
+          "d47965b1 merge: RV-SEC review of W1-C - PASS WITH CONDITIONS (path escape via unvalidated id; HEAD-only ledger compare) (review/eval-sec-w1c)",
+          "9a0aa49b Merge branch 'main' into design/eval-arms",
+          "dc49f6d4 merge: RV-DS review of W1-C - PASS WITH CONDITIONS (review/eval-ds-w1c)",
+          "3dd28822 review(eval): Security & Identity review of W1-C (PASS WITH CONDITIONS)",
+          "864b8af9 review(eval): Distributed Systems review of W1-C - PASS WITH CONDITIONS",
+          "abbc848a merge: RV-SIM reviews of W1-H and W1-C - both PASS WITH CONDITIONS (review/eval-sim-hc)",
+          "7f04613b design(eval-identity): W1-D rev 2, R-94 applied, four reviews dispositioned, ADR-0017 Amendment 1",
+          "f29869e6 docs(adr): ADR-0020 Amendment 1 - seed_for replaces the plan seed; holm level at alpha/m (R-96)",
+          "73c454b8 review(eval): RV-SIM on W1-H and W1-C - both PASS WITH CONDITIONS; OI-4 answered (tag constant)",
+          "f125430a docs(design): W1-F rev 3 delta - wsgi probe host in E1 (ruling C-1), W0 rev 3 frames, five host items, start bound",
+          "84980979 merge: main into design/eval-identity (W0 rev 3, R-87..R-96)",
+          "ab13f0eb design(eval-arms): W1-A arms v2 design slice (ADR-0014), gate pending",
+          "71a15a0b design(eval-identity): W1-D engine identity, freeze and per-launch recheck"
         ]
-      }
+      },
+      "audit_ref": "al-01M41H90J96K9V1343P7M6YN2P"
     }
   ],
   "messages": [
@@ -66509,6 +67694,105 @@ window.AUDIT_DATA = {
       "kind": "decision-request",
       "ref": "req-01M41BS9Y7D1ANHSNDYM9N2H08",
       "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M41C40NC7E7S5NG8CKX9BD0E",
+      "ts": "2026-10-03T17:13:51Z",
+      "from": "owner-fable",
+      "to": "coord-opus-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41BS9Y7D1ANHSNDYM9N2H08",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41CV2MWGYW2HGQ5CQ63WJES",
+      "ts": "2026-10-03T17:26:27Z",
+      "from": "coord-opus-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41CV2MNPQENPMEMP01QF3ZY",
+      "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M41D2XB9KZ7DC50YYE2TP8MM",
+      "ts": "2026-10-03T17:30:43Z",
+      "from": "owner-fable",
+      "to": "coord-opus-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41CV2MNPQENPMEMP01QF3ZY",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41DJ574PMT6CXTZ07KYCT73",
+      "ts": "2026-10-03T17:39:03Z",
+      "from": "w1d-identity-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41DJ56WN77QNKFCW34GMG3A",
+      "session": "w1d-identity-e1e4"
+    },
+    {
+      "id": "mail-01M41E19DJNZNP9GKWHAT8CNPS",
+      "ts": "2026-10-03T17:47:19Z",
+      "from": "owner-fable",
+      "to": "w1d-identity-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41DJ56WN77QNKFCW34GMG3A",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41E37FRZPRF65SWNBYJ41KN",
+      "ts": "2026-10-03T17:48:22Z",
+      "from": "coord-opus-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41E37FGK5CRZ7NCK3RA20JV",
+      "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M41ED1JXN48J1TQYPE869PMJ",
+      "ts": "2026-10-03T17:53:44Z",
+      "from": "coord-opus-e1e4",
+      "to": "leader-e1e4",
+      "kind": "ruling",
+      "ref": null,
+      "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M41EPSBFHPV1FM5A4680W5S9",
+      "ts": "2026-10-03T17:59:03Z",
+      "from": "w1h-power-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41EPSB7E91C4APYT1QGN3FV",
+      "session": "w1h-power-e1e4"
+    },
+    {
+      "id": "mail-01M41EZV3CGRSXDQP6H6QNXQ8B",
+      "ts": "2026-10-03T18:04:00Z",
+      "from": "owner-fable",
+      "to": "coord-opus-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41E37FGK5CRZ7NCK3RA20JV",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41FAD88W1Q8J756YKGV87GV",
+      "ts": "2026-10-03T18:09:46Z",
+      "from": "owner-fable",
+      "to": "w1h-power-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41EPSB7E91C4APYT1QGN3FV",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41GWNSJR4N1NADEDDZW2SH6",
+      "ts": "2026-10-03T18:37:13Z",
+      "from": "w1l-tasks-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41GWNS06F362RJ78XB7AXY5",
+      "session": "w1l-tasks-e1e4"
     }
   ]
 };
