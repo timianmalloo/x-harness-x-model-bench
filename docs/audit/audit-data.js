@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:30:13Z",
+  "generated": "2026-10-03T18:34:53Z",
   "audit": [
     {
       "actor": null,
@@ -66602,6 +66602,28 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "id": "al-01M41GR1Z6XB21ED0TJVP5GJT5",
+      "shortname": "spike-s-lb-loopback",
+      "datetime": "2026-10-03T18:34:42Z",
+      "session": "splb-loopback-e1e4",
+      "prompt": "docs/coordination/eval-wave1/sp-lb-loopback.md",
+      "summary": "Wrote S-LB script and note method; not run (operator absent)",
+      "kind": "skill",
+      "skill": "spike",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/notes/spike-s-lb-loopback.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "S-LB script and note",
+      "done_when": "four steps, one command per mode, empty results table",
+      "tier": "T1",
+      "fan_out": 0
     }
   ],
   "changes": [
@@ -67336,6 +67358,26 @@ window.AUDIT_DATA = {
       "summary": "R-94 applied (telemetry/* run, gateway grade, ADR-0017 Amendment 1); launch check once per tick with a 2 s cap and one retry; real-wiring test T-25; pure coverage and direction scans with red fixtures; run-class edit cost priced; 30 findings dispositioned",
       "tags": [],
       "title": "W1-D rev 2: telemetry run, gateway grade, one retry, real-wiring test"
+    },
+    {
+      "id": "cl-01M41GRCVSCTTRHGM0K8QWZ79V",
+      "datetime": "2026-10-03T18:34:53Z",
+      "session": null,
+      "kind": "design",
+      "skill": "spike",
+      "title": "S-LB loopback firewall spike prepared, not run",
+      "prompt": null,
+      "summary": "Script and note method written; results await the operator run.",
+      "rationale": null,
+      "artifacts": [],
+      "tags": [],
+      "git": {
+        "before": null,
+        "after": "9fad1bb3695a108a041ec883b6f9fae0abedb8f8",
+        "branch": "spike/s-lb-loopback",
+        "pushed": null,
+        "commits": []
+      }
     }
   ],
   "messages": [

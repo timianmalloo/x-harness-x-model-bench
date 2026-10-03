@@ -1520,6 +1520,38 @@ window.DOCS_INDEX = {
       "sourceSha256": "07917835d700372f139f4dff998db93acf736dcede8f9ff54b35791b3507156c"
     },
     {
+      "id": "note-20261003-spike-s-lb-loopback",
+      "path": "docs/notes/spike-s-lb-loopback.md",
+      "title": "Spike S-LB - does a loopback-only listener raise a Windows Defender Firewall prompt or rule?",
+      "type": "decision-note",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Method and operator procedure for spike S-LB. The script tools/spikes/s_lb_loopback.py was written and compiled but NOT run (no operator present; a bind could raise a firewall dialog nobody sees). Every result row is \"not run, operator required\". Until the table is filled and passes, ADR-0018 section 3 keeps its assume: and phase E1 admits in-process probes only.",
+      "tags": [
+        "spike",
+        "windows",
+        "firewall",
+        "loopback",
+        "adr-0018",
+        "e4"
+      ],
+      "links": [
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b745456c3c0f7262760a6f5b33191c3872bc86a63673f266267aa20c71bca760"
+    },
+    {
       "id": "note-catalog-0.5-anchors",
       "path": "docs/notes/catalog-0.5-anchors.md",
       "title": "Catalog 0.5.dev normalisation anchors and weight corrections (R-78 condition 1, R-79)",
@@ -6157,5 +6189,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "9bccbb8d851827d64215d7d37a4d61c01aabe667799b41b274d46ffcf3188aab"
+  "graphSha256": "e679493353079c5df7a20f007eb1e1af63b4ee2e869db2b35aae10a0361c84a5"
 };
