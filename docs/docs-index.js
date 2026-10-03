@@ -1857,6 +1857,58 @@ window.DOCS_INDEX = {
       "sourceSha256": "f4a94ef16a9889ff1923491693ecb0533e12741e2a9345905ebd65b4e864415d"
     },
     {
+      "id": "design-eval-campaign-record",
+      "path": "docs/design/eval-campaign-record.md",
+      "title": "W1-C design: the campaign record and `bench campaign`",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 (W1-C; builds as X-C in E1)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Designs campaign.py and the `bench campaign` commands: a closed 11-kind hash-chained ledger folded into a derived state, the transition table, a state guard / idempotency rule / refusal copy / test node for every command, lock-then-read with the own-lock-then-probe protocol (measured: at most one side proceeds, never both), the pre-registration freeze (attach before launch, re-register refused once attached), the effective-identity checks at plan time and at attach (W1-D F-1), `verify` with a git-prefix rule for the ledger, derived eligibility, and a test plan whose every node names the assertion that fails today, the red fixture, the real-wiring partner and the distinguishing mutant.",
+      "tags": [
+        "benchmark",
+        "campaign",
+        "ledger",
+        "freeze",
+        "locks",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0016-campaign-record",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0017-engine-identity-and-freeze",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0018-hidden-check-harness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "3d8cea8b4712a0b43c0456f184fdf121688223adbca1131adff0cc2e2d28fdd3"
+    },
+    {
       "id": "design-eval-seam-contracts",
       "path": "docs/design/eval-seam-contracts.md",
       "title": "W0 seam contracts: the interfaces every Evaluation Campaign slice designs and builds against",
@@ -3582,6 +3634,33 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "c33ac9d8f236927e6121743dd55d504e18253c268c91cef111867c973d182657"
+    },
+    {
+      "id": "review-eval-pat-w1i",
+      "path": "docs/design/reviews/eval-review-pat-w1i.md",
+      "title": "Patterns Expert review of W1-I, security tasks S1 and S2 (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of design/eval-security-tasks (2fc8906b) against W0 rev 2, R-87..R-94 and the W1-F rev 2 property grader. One blocking seam disagreement: S1 needs app.kind wsgi with a factory, which W1-F rev 2 does not build in E1 and tells W1-I not to use. Patterns, folder shape, expected values and naming otherwise fit.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-i"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b2451ce2c599676479ac43eaa5d8dbe031a7e3f79a94f04ea495008870943362"
     },
     {
       "id": "review-eval-sec",
@@ -5520,5 +5599,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "c45d192d9b8f2652424f5c829b8ec015d61dcdcb187aa379a8a1d305ed9dbb40"
+  "graphSha256": "e15004e98cffc348b516b0719184df37cc1ab6b59791fdcf52ed546784885206"
 };
