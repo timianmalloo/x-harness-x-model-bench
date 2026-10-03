@@ -1886,7 +1886,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9e9a2965716a0db1920841bdc5cf8196dc905fee0cca1cc1d7b922e3fd670645"
+      "sourceSha256": "4bf1fe95dffaac7f64f692a9be2df8b5cd0c53d26ccfcbae88fc15627b478cbe"
     },
     {
       "id": "design-eval-arms",
@@ -3987,7 +3987,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3f23e95945420a4ee6366c6ddaf6a4e55eba309640d2adb82d0da09a0608d689"
+      "sourceSha256": "18c21e232bd2506fa8cc02c361491fffccd6db12006110fa278c0653d98c904b"
     },
     {
       "id": "review-eval-pat-w1a",
@@ -4095,6 +4095,33 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "7da33ff71d59e17bf028b3732ab744578caad0d450be6c98b5c7488d6433bbde"
+    },
+    {
+      "id": "review-eval-pat-w1e",
+      "path": "docs/design/reviews/eval-review-pat-w1e.md",
+      "title": "Patterns Expert review of W1-E, discriminate and readiness (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of design/eval-discriminate (549f7bc4) against W0 rev 5 and R-98. The SyntheticLauncher Strategy and the overlay rule conform. Twelve findings: the baseline compare still defines \"a manifest seen from one task\" a second time, the variant compare has no readiness row or code, three copies of the overlay path rule, a re-implemented env filter, the clauses.json hand-off by path arithmetic, and R-98 residue. BLOCK until applied.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-e"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "0ce427afee460ac4922c59594237d2307013361d10450c53a1564b3949c545cc"
     },
     {
       "id": "review-eval-pat-w1f",
@@ -6776,5 +6803,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "2bd528edf88b0a2db123de807b48eb65172def723b2f3be931763232a8398c3b"
+  "graphSha256": "c2d46c57755a3aa30cc57e411a7f082cc67200a9348413158964d0b9ccbecbbe"
 };

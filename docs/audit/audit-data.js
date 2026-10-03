@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T19:25:24Z",
+  "generated": "2026-10-03T19:34:43Z",
   "audit": [
     {
       "actor": null,
@@ -74382,24 +74382,76 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41KMWKJM21ZR9N41TQ7MFNP",
-      "shortname": "design-slice-review-ta-w1e",
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "datetime": "2026-10-03T19:21:20Z",
+      "done_when": "Ruling 98 in docs/notes/rulings.md via coord decide rule from the owner/ruling-r98 worktree, the request resolved, an audit entry appended, committed",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/ruling-r98",
+        "pushed": null,
+        "sha": "9879623f037613116d65ce25da0000e6f60ac10a",
+        "short": "9879623f0"
+      },
+      "goal": "Rule DR-E1 (req-01M41J1E3PDYAG1WTAGH004MZ8): whether the discrimination record body holds run_id and grading_id; name the ADR-0016 amendment author",
+      "id": "al-01M41KDDX1Y6C2Q2BEGDGTMP8H",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Leader to Owner: rule coord request req-01M41J1E3PDYAG1WTAGH004MZ8 (DR-E1, from Coordinator #5) as the next number. Should the discrimination record's body drop run_id and grading_id? ADR-0016 s4 puts them in the body; RV-DS (W0 F2) and W1-E want the body idempotent so a retry writes equal bytes and does not hit HB-LED-007; W1-E reconciles via a local runs/<run>/discrimination-link.json. Option (a) stands meanwhile. If you rule to drop the ids, say who writes the ADR-0016 amendment note. Own worktree owner/ruling-r98.",
+      "session": "owner-fable",
+      "shortname": "ruling R-98 (DR-E1, discrimination record body drops run_id/grading_id; link file local; ADR-0016 Amendment 1 by the Coordinator)",
+      "skill": null,
+      "summary": "R-98 DR-E1: (A) granted, (B) refused. The body drops run_id and grading_id: ADR-0016 s2a's one bytes-equal meaning of already-done cannot hold with a per-production id in the body (RV-DS W0 F2), and option (b)'s subset compare is a second definition of one predicate (DM7). The ids served only read-time reconciliation, which needs a local run anyway; the link moves to runs/<run>/discrimination-link.json (W1-E 4.3). Verified: no record exists (bench/discrimination absent on main), create_once not yet in src, no reader of the body. Grain restated: one file is one discrimination result of one key; a later trial confirms (equal bytes) or is HB-RDY-010. Conditions: link written only after created-or-equal, never after HB-RDY-010 (red test beside T-E6); HB-RDY-010 names the metric before HB-LED-007; reconciliation never degrades to a pass (newest link by its stamp; no link/run/pass prints reconciled: no); no option-(a) branch survives in X-E; bench campaign verify unaffected. ADR-0016 Amendment 1 (decision text unchanged) and the W0 s6 rewrite: the Coordinator with W0 rev 6, before X-E's first record commit.",
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "tier": "T0",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1e.md"
+      ],
+      "compiled": false,
       "datetime": "2026-10-03T19:25:24Z",
-      "session": "rv-ta-w1e-e1e4",
+      "done_when": "two gate lines written and committed",
+      "fan_out": 0,
+      "goal": "TA gate lines for W0 delta and W1-E",
+      "id": "al-01M41KMWKJM21ZR9N41TQ7MFNP",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "docs/coordination/eval-wave1/rv-ta.md",
+      "session": "rv-ta-w1e-e1e4",
+      "shortname": "design-slice-review-ta-w1e",
+      "skill": "design-slice-review",
       "summary": "RV-TA: W0 revs 3-5 delta PASS WITH CONDITIONS (7); W1-E BLOCK (14)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M41M5Y194V71FAHZS1Q6M8C0",
+      "shortname": "review-pat-w1e",
+      "datetime": "2026-10-03T19:34:42Z",
+      "session": "rv-pat-w1e-e1e4",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md (W0 rev 4-5 delta, W1-E)",
+      "summary": "RV-PAT: W0 rev 4-5 PASS WITH CONDITIONS (7); W1-E BLOCK (12)",
       "kind": "skill",
       "skill": "design-slice-review",
       "tool": null,
       "actor": null,
       "artifacts": [
-        "docs/design/reviews/eval-review-ta-w1e.md"
+        "docs/design/reviews/eval-review-pat-w1e.md"
       ],
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "TA gate lines for W0 delta and W1-E",
-      "done_when": "two gate lines written and committed",
+      "goal": "Gate lines for W0 rev 4-5 and W1-E",
+      "done_when": "Two gate lines committed on review/eval-pat-w1e",
       "tier": "T2",
       "fan_out": 0
     }
