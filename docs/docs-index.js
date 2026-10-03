@@ -3449,6 +3449,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "cac2581e19b119c1e877e7ca86db14203662fd2f012ae25732366558a495c930"
     },
     {
+      "id": "review-eval-pat-w1b",
+      "path": "docs/design/reviews/eval-review-pat-w1b.md",
+      "title": "Patterns Expert review of W1-B, crash-atomic publish (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of design/eval-atomic-publish (67e7dc83) against W0 rev 2 and R-87..R-93. W0 finding 5 (a verify step before the rename) landed in full. One duplicated constant and retry loop against workspace.py, and minor idiom points.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-b"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "679de9c8f28e2b6684cd7282e3dc83c533ed0715fadc8d1b9ae839715a0cde46"
+    },
+    {
       "id": "review-eval-pat-w1f",
       "path": "docs/design/reviews/eval-review-pat-w1f.md",
       "title": "Patterns Expert review of W1-F, the property grader (Adversary Mode)",
@@ -3474,6 +3501,33 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "01c7cc579b70df928bcc210eb0ba15aa7a36ba039c6751ca67f72510eb413c61"
+    },
+    {
+      "id": "review-eval-pat-w1g",
+      "path": "docs/design/reviews/eval-review-pat-w1g.md",
+      "title": "Patterns Expert review of W1-G, catalog 0.7 (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of design/eval-catalog-0-7 (b0987941) against W0 rev 2 and R-87..R-93. The owner rule and also_graded_by survive the Simplifier check; one real gap (a non-owner formal grader emitting pass_at_1 trips HB-GRD-004), an incomplete reader sweep for the new key, and minor idiom points. RV-TA findings are not repeated.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-g"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "c33ac9d8f236927e6121743dd55d504e18253c268c91cef111867c973d182657"
     },
     {
       "id": "review-eval-sec",
@@ -5168,5 +5222,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "923c0d2f0d0df3bd1866d1f94c5c4ac2ca8612eff10d80dbd713d04e8f8c0e4e"
+  "graphSha256": "9920f59bc909fdcfdbccebdd753385172401119f459e05b840b5d7166fc31f5d"
 };
