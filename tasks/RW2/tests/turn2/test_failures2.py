@@ -10,6 +10,14 @@ def rearm(job):
     job.next_run = datetime.datetime.now() - datetime.timedelta(seconds=1)
 
 
+def run(scheduler):
+    """`run_pending()`, with an exception that escapes it reported as a failed assertion."""
+    try:
+        scheduler.run_pending()
+    except Exception as exc:  # noqa: BLE001 - the point of the call
+        raise AssertionError("run_pending() let %r escape" % (exc,)) from None
+
+
 def failing_job(scheduler, error=None):
     """A job that always raises `error`. Returns the job and the list its function appends one item to per call."""
     calls = []
@@ -30,7 +38,7 @@ class Failures2Tests(unittest.TestCase):
         scheduler.on_failure(lambda job, exc: order.append("c"))
         job, _ = failing_job(scheduler)
         rearm(job)
-        scheduler.run_pending()
+        run(scheduler)
         self.assertEqual(order, ["a", "b", "c"])
 
     def test_t2_2_callbacks_receive_the_job_then_the_exception(self):
@@ -40,7 +48,7 @@ class Failures2Tests(unittest.TestCase):
         error = ValueError("the one that was raised")
         job, _ = failing_job(scheduler, error)
         rearm(job)
-        scheduler.run_pending()
+        run(scheduler)
         self.assertEqual(len(seen), 1)
         self.assertEqual(len(seen[0]), 2)
         self.assertIs(seen[0][0], job)
@@ -51,7 +59,7 @@ class Failures2Tests(unittest.TestCase):
         job, calls = failing_job(scheduler)
         for _ in range(6):
             rearm(job)
-            scheduler.run_pending()
+            run(scheduler)
         self.assertEqual(len(calls), 3)
 
     def test_t2_4_resume_runs_the_job_again_and_clears_the_count(self):
@@ -59,14 +67,14 @@ class Failures2Tests(unittest.TestCase):
         job, calls = failing_job(scheduler)
         for _ in range(10):
             rearm(job)
-            scheduler.run_pending()
+            run(scheduler)
         paused_at = len(calls)
         self.assertGreaterEqual(paused_at, 1)
         self.assertLess(paused_at, 10)
         job.resume()
         self.assertEqual(job.failures, 0)
         rearm(job)
-        scheduler.run_pending()
+        run(scheduler)
         self.assertEqual(len(calls), paused_at + 1)
 
     def test_t2_5_failures_still_counts_and_resets_with_a_callback_registered(self):
@@ -82,10 +90,10 @@ class Failures2Tests(unittest.TestCase):
         job = scheduler.every(1).seconds.do(flaky)
         for expected in (1, 2):
             rearm(job)
-            scheduler.run_pending()
+            run(scheduler)
             self.assertEqual(job.failures, expected)
         rearm(job)
-        scheduler.run_pending()
+        run(scheduler)
         self.assertEqual(job.failures, 0)
 
     def test_t2_6_a_callback_that_returns_false_pauses_the_job_after_one_failure(self):
@@ -94,5 +102,5 @@ class Failures2Tests(unittest.TestCase):
         job, calls = failing_job(scheduler)
         for _ in range(3):
             rearm(job)
-            scheduler.run_pending()
+            run(scheduler)
         self.assertEqual(len(calls), 1)

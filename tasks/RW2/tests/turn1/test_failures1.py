@@ -11,6 +11,14 @@ def rearm(job):
     job.next_run = datetime.datetime.now() - datetime.timedelta(seconds=1)
 
 
+def run(scheduler):
+    """`run_pending()`, with an exception that escapes it reported as a failed assertion."""
+    try:
+        scheduler.run_pending()
+    except Exception as exc:  # noqa: BLE001 - the point of the call
+        raise AssertionError("run_pending() let %r escape" % (exc,)) from None
+
+
 class Failures1Tests(unittest.TestCase):
     def test_t1_1_other_jobs_run_after_a_job_raises(self):
         scheduler = schedule.Scheduler()
@@ -27,7 +35,7 @@ class Failures1Tests(unittest.TestCase):
         now = datetime.datetime.now()
         first.next_run = now - datetime.timedelta(seconds=2)
         second.next_run = now - datetime.timedelta(seconds=1)
-        scheduler.run_pending()
+        run(scheduler)
         self.assertEqual(ran, ["good"])
         self.assertIn(first, scheduler.get_jobs())
 
@@ -41,7 +49,7 @@ class Failures1Tests(unittest.TestCase):
         self.assertEqual(job.failures, 0)
         for expected in (1, 2):
             rearm(job)
-            scheduler.run_pending()
+            run(scheduler)
             self.assertEqual(job.failures, expected)
 
     def test_t1_3_a_success_resets_failures_to_zero(self):
@@ -56,9 +64,9 @@ class Failures1Tests(unittest.TestCase):
         job = scheduler.every(1).seconds.do(flaky)
         for _ in range(2):
             rearm(job)
-            scheduler.run_pending()
+            run(scheduler)
         self.assertEqual(job.failures, 2)
         rearm(job)
-        scheduler.run_pending()
+        run(scheduler)
         self.assertEqual(len(calls), 3)
         self.assertEqual(job.failures, 0)

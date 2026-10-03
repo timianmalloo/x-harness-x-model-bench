@@ -1,3 +1,41 @@
-"""Wrong-app fixtures for RW2 hidden tests (W1-L section 6; K5 skeleton: the table is empty until the green commit)."""
+"""Wrong-app fixtures for RW2's hidden tests (W1-L 6.3). Each entry is the final reference tree with one substitution (the edit forms of W0 rev 6.6 (g)); `reds` is the exact set of hidden tests it turns red, each by an assertion failure. Test ids are T<turn>-<n>."""
 
-WRONG_APPS = {}
+WRONG_APPS = {'wa-continue': {'reds': ['T1-1'],
+                 'edits': [{'file': 'turn-2/schedule/__init__.py',
+                            'old': 'sorted(runnable_jobs)',
+                            'new': 'sorted(runnable_jobs)[:1]'}]},
+ 'wa-count-once': {'reds': ['T1-2', 'T1-3', 'T2-3', 'T2-4', 'T2-5'],
+                   'edits': [{'file': 'turn-2/schedule/__init__.py',
+                              'old': '        job.failures += 1\n',
+                              'new': '        job.failures = 1\n'}]},
+ 'wa-noreset': {'reds': ['T1-3', 'T2-5'],
+                'edits': [{'file': 'turn-2/schedule/__init__.py',
+                           'old': '        job.failures = 0\n        if isinstance(ret, CancelJob)',
+                           'new': '        job.failures += 0\n        if isinstance(ret, CancelJob)'}]},
+ 'wa-order': {'reds': ['T2-1'],
+              'edits': [{'file': 'turn-2/schedule/__init__.py',
+                         'old': '        for callback in self._failure_callbacks:\n',
+                         'new': '        for callback in reversed(self._failure_callbacks):\n'}]},
+ 'wa-args-swapped': {'reds': ['T2-2'],
+                     'edits': [{'file': 'turn-2/schedule/__init__.py',
+                                'old': 'callback(job, exc) is False',
+                                'new': 'callback(exc, job) is False'}]},
+ 'wa-pause2': {'reds': ['T1-3', 'T2-3', 'T2-5'],
+               'edits': [{'file': 'turn-2/schedule/__init__.py',
+                          'old': 'MAX_CONSECUTIVE_FAILURES = 3',
+                          'new': 'MAX_CONSECUTIVE_FAILURES = 2'}]},
+ 'wa-noresume': {'reds': ['T2-4'],
+                 'edits': [{'file': 'turn-2/schedule/__init__.py',
+                            'old': '        self.paused = False\n        self.failures = 0\n',
+                            'new': '        self.failures = 0\n'}]},
+ 'wa-counter-broken': {'reds': ['T2-5'],
+                       'edits': [{'file': 'turn-2/schedule/__init__.py',
+                                  'old': '            if callback(job, exc) is False:\n'
+                                         '                pause = True\n',
+                                  'new': '            job.failures -= 1\n'
+                                         '            if callback(job, exc) is False:\n'
+                                         '                pause = True\n'}]},
+ 'wa-ignore-return': {'reds': ['T2-6'],
+                      'edits': [{'file': 'turn-2/schedule/__init__.py',
+                                 'old': '            if callback(job, exc) is False:\n                pause = True\n',
+                                 'new': '            callback(job, exc)\n'}]}}
