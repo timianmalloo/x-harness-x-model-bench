@@ -4514,6 +4514,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "0820df82326c77df02683b9cd20f7d2cc707197ea7c89272ef29de5157afc16e"
     },
     {
+      "id": "review-eval-pat-w1k",
+      "path": "docs/design/reviews/eval-review-pat-w1k.md",
+      "title": "Patterns Expert review of W1-K, resume, liveness and the alarm (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of design/eval-resume rev 1.1 (315cf1d4) against W0 rev 6.8, R-100 and ADR-0021 with Amendment 1. The reconcile-from-log and the one-input classifier are sound; one seam defect (X-K1 cannot reach its own tests), one contradiction (a finished stop still alarms), and five smaller pattern gaps. No pattern is named in the doc.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-k"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "56c52b805ffbf97db1f169cf3209fab2cc45e45ebfeddf3b536703b3a377d624"
+    },
+    {
       "id": "review-eval-pat-w1l",
       "path": "docs/design/reviews/eval-review-pat-w1l.md",
       "title": "Patterns Expert review of W1-L, the eight property tasks (Adversary Mode)",
@@ -4951,6 +4978,33 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "be3d70f4fd74e78422394d9d06b72a133c2360746f4099ee7f464be2e074a271"
+    },
+    {
+      "id": "review-eval-sim-w1k",
+      "path": "docs/design/reviews/eval-review-sim-w1k.md",
+      "title": "Simplifier review of W1-K, resume, liveness and the alarm (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM review of design/eval-resume rev 1.1 (315cf1d4). The reconcile design is the smallest correct core; the proof is larger than it needs to be (the prefix sweep already kills the classifier mutants), and the alarm channel ships two deliveries where one reaches the sleeping operator. Soft veto: conditions, no block.",
+      "tags": [
+        "review",
+        "simplifier",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-k"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "429696d3b1db788fab0e26112c4bc9cdf94fd666c7235a320517c911a883c940"
     },
     {
       "id": "review-eval-sim-w1l",
@@ -7912,5 +7966,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "a9e0adbeb86fa5f662fd2bbafd6367b26317484f26bf9bbc325e816912975967"
+  "graphSha256": "22fcb5df3e28ef3a0cca4c21e23a3b5662dd785776fb363623f276bd1d768f5e"
 };
