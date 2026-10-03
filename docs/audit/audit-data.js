@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:22:27Z",
+  "generated": "2026-10-03T18:27:19Z",
   "audit": [
     {
       "actor": null,
@@ -66380,6 +66380,28 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "id": "al-01M41GAH3C8KT9WQFY1825VZYF",
+      "shortname": "review-sec-w1f-r3-w0-s3",
+      "datetime": "2026-10-03T18:27:19Z",
+      "session": "rv-sec-f3-e1e4",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md (delta: W0 rev 3 s3, W1-F rev 3)",
+      "summary": "Security delta gates: W0 rev 3 s3 PASS (3 findings); W1-F rev 3 PASS WITH CONDITIONS (6 findings)",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1f.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Delta-review W0 rev 3 s3 and W1-F rev 3 for security",
+      "done_when": "two gate lines appended on review/eval-sec-f3",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
