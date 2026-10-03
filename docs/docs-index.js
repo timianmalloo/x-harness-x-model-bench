@@ -2325,7 +2325,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation: W0 (serial spine item 2), before Wave 1",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "Revision 4 (the batch-b seam answers and the RV-PAT, RV-SIM, RV-SEC and RV-DS cross-slice findings on W1-B, W1-C, W1-D and W1-H; rev-4 change table and the delta re-read list at the end; rev 3's table kept). The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
+      "summary": "Revision 5 (the W1-E and W1-L seam answers SR-E1, SR-E2, SR-L1..SR-L4, the W1-L review rulings and R-97; rev-5 change table and re-read list at the end; DR-E1 open on the discrimination record body). Revision 4 (the batch-b seam answers and the RV-PAT, RV-SIM, RV-SEC and RV-DS cross-slice findings on W1-B, W1-C, W1-D and W1-H; rev-4 change table and the delta re-read list at the end; rev 3's table kept). The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
       "tags": [
         "benchmark",
         "campaign",
@@ -2417,7 +2417,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "653d6fd080b1abf02183e8d986071f2a131683a2300ccc5082c23341c80cd601"
+      "sourceSha256": "c75d1bdd99cdace712a4604da9aa46474822319d2ca73836af60f9fbbc1972a7"
     },
     {
       "id": "design-eval-security-tasks",
@@ -3410,7 +3410,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f5677606d1b0ae3044b8005d12810e41a532bdff1cd7a9a3a199a5796693d2e0"
+      "sourceSha256": "33254fc4f422e6000a11d7213e9d02c4634de82bd1679c5c6af9b56e3f67fee8"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -4905,7 +4905,28 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "afa286acc92baee1f55f8dfc961e2e8a57704881a521f6508c764bc24697a0e6"
+      "sourceSha256": "88131b43a7d9a50dde6bbe90a328864d76924af4623c1e4d7937b9e130bbf59b"
+    },
+    {
+      "id": "brief-eval-time-b",
+      "path": "docs/coordination/eval-wave2-e1/time-b.md",
+      "title": "Brief TIME-B: two load-sensitive timing tests made deterministic, and the scan that keeps the class out",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Reproduce, then fix, the two tests that fail under full-suite -n auto load (an injected clock or an event-driven wait), and add a scan test for real-sleep and wall-clock assertions under tests/ with a named allowlist; Claude Sonnet, one session.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "e2c40321e24a778160e596893c6e0907cf8dcefcdcc20f667ddb2bd11ad04f6d"
     },
     {
       "id": "brief-eval-tool-gsm",
@@ -4959,7 +4980,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "bfc532b2581e3bca890465990349ed956885223b2bdcb584d247935d677908ef"
+      "sourceSha256": "39479e4591c9fe9dcac7e31ceef2d62806334c5d78d91e97bac655756c95c1ee"
     },
     {
       "id": "brief-eval-x-b1",
@@ -5046,7 +5067,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "51648ab2fba1867e385b22e2d05d435cc8cb2d4d11ad89ce1768d9873624fdde"
+      "sourceSha256": "2d1658478d8d8c6887f6b5d1223c3d04aece0790c13bbf84b0353fee0f128844"
     },
     {
       "id": "brief-eval-x-f",
@@ -5104,7 +5125,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f9424df257930035152175e135fb6a12aab4999a4571eeee9c98526f14f09306"
+      "sourceSha256": "ddcdd5487396d265418362d5708a8f123beab54ff110f2bd208c900296a79648"
     },
     {
       "id": "brief-eval-x-i",
@@ -5133,7 +5154,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "79fb2415deccc1a9ce11a17573ddb721213ba014c9f19a42e2e40bf2781e5055"
+      "sourceSha256": "d2f5e31b97b000bf14fbe830b3f1514fc0a7184e3a9554fcae4c2bff9d5571ea"
     },
     {
       "id": "coordination-eval-brief-rv-ds",
@@ -5841,7 +5862,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "617c4ec97f5709a9b5a6528934d744cf6b19e8b6cf8105276be68a26c40fb971"
+      "sourceSha256": "e2e149d6c67eca61922e3543511dbb6a4d4ef022b268ce246d7d988d375f7266"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -6728,5 +6749,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "da24f7561a0fc6e0b8fa3822d85b56e2de39d9d2f1098945c83754db4e36432d"
+  "graphSha256": "0368ad7fb368ab66fe7c0f398d2360e87ed773c0ab52dfaa23c27c6093821bd1"
 };
