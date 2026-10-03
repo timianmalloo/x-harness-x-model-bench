@@ -22,7 +22,7 @@ summary: "X-CV runs after every E2-E4 item has joined and the 0.7 freeze is comm
 
 ## Acceptance items
 1. The whole ADR-0021 §4 table green in `tests/test_resume_table.py`, each row a kill-then-resume test (reusing X-K1's fixtures; no second implementation).
-2. TLC with every ADR-0015 §7 invariant and `NoResumeAfterStop`; the output in the proof note. One-time evidence such as W1-J's 42-minute US-44 run is cited, never added to a ring (RV-SIM).
+2. TLC with every ADR-0015 §7 invariant and `NoLaunchAfterStop` (R-100); the output in the proof note. One-time evidence such as W1-J's 42-minute US-44 run is cited, never added to a ring (RV-SIM).
 3. **All ten discrimination records** (S1, S2, RS1, RS2, RW1, RW2, NG1, NG2, SM1, SM2) at the final engine identity: synthetic cells, no model spend; `bench validate` reports all ten `ready`. A record whose `identity_hash` is not the final one is a failure, not a warning.
 4. The proof note gives planned against actual per track (GO19), measured from the audit log's `duration_seconds` and the joins' committer times.
 
