@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:06:31Z",
+  "generated": "2026-10-03T17:08:01Z",
   "audit": [
     {
       "actor": null,
@@ -65229,34 +65229,144 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41BPK32KA2FKY9DNWS9Y855",
-      "shortname": "ruling R-91 (DR-5, Sonnet pin mismatch)",
-      "datetime": "2026-10-03T17:06:31Z",
-      "session": "owner-fable",
-      "prompt": "Owner seat: rule DR-5, the Sonnet pin mismatch: the Agent tool's only Sonnet selector is the alias sonnet, served claude-sonnet-5-5; the kickoff and R-87 pinned claude-sonnet-5; options (a) accept 5.5 recorded per track, (b) qualify the runner's claude harness with --model claude-sonnet-5, (c) split reviewers/design on (a) and coding on (b), (d) hold and ask the operator; also whether the four W0 reviews running on 5.5 count.",
-      "summary": "R-91 DR-5 (a): the Sonnet seat for Agent-tool workers is model: sonnet, served claude-sonnet-5-5, recorded per track; R-87 condition 3 re-stated against that id (the hold lifts); the four W0 reviews and RV-TA count; the deviation from the kickoff's claude-sonnet-5 goes to the operator in the next scheduled report with a cheap reversal path ((b) after Q0 qualifies the claude harness); (c) refused (a split seat), (d) refused (resolvable here; worker output enters no measurement, cells pin their own model). Verified: the Agent tool's model parameter is an enum of aliases; the plan's harness table said the alias id was not verified.",
-      "kind": "manual",
-      "skill": null,
-      "tool": null,
       "actor": "Owner seat (Fable, claude-fable-5-1)",
       "artifacts": [
         "docs/notes/rulings.md"
       ],
+      "datetime": "2026-10-03T17:06:31Z",
+      "done_when": "R-91 appended to docs/notes/rulings.md on owner/ruling-r91 and committed with this entry",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/ruling-r91",
+        "pushed": null,
+        "sha": "5092455c9bb3f00821671edfedb546218286873d",
+        "short": "5092455c9"
+      },
+      "goal": "Rule DR-5 (the Sonnet alias serves claude-sonnet-5-5, the kickoff pinned claude-sonnet-5) as R-91",
+      "id": "al-01M41BPK32KA2FKY9DNWS9Y855",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Owner seat: rule DR-5, the Sonnet pin mismatch: the Agent tool's only Sonnet selector is the alias sonnet, served claude-sonnet-5-5; the kickoff and R-87 pinned claude-sonnet-5; options (a) accept 5.5 recorded per track, (b) qualify the runner's claude harness with --model claude-sonnet-5, (c) split reviewers/design on (a) and coding on (b), (d) hold and ask the operator; also whether the four W0 reviews running on 5.5 count.",
+      "session": "owner-fable",
+      "shortname": "ruling R-91 (DR-5, Sonnet pin mismatch)",
+      "skill": null,
+      "summary": "R-91 DR-5 (a): the Sonnet seat for Agent-tool workers is model: sonnet, served claude-sonnet-5-5, recorded per track; R-87 condition 3 re-stated against that id (the hold lifts); the four W0 reviews and RV-TA count; the deviation from the kickoff's claude-sonnet-5 goes to the operator in the next scheduled report with a cheap reversal path ((b) after Q0 qualifies the claude harness); (c) refused (a split seat), (d) refused (resolvable here; worker output enters no measurement, cells pin their own model). Verified: the Agent tool's model parameter is an enum of aliases; the plan's harness table said the alias id was not verified.",
       "tags": [
         "ruling",
         "eval-campaign"
       ],
-      "outcome": "success",
-      "goal": "Rule DR-5 (the Sonnet alias serves claude-sonnet-5-5, the kickoff pinned claude-sonnet-5) as R-91",
-      "done_when": "R-91 appended to docs/notes/rulings.md on owner/ruling-r91 and committed with this entry",
       "tier": "T0",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:04:03Z",
+      "done_when": "gate line written",
       "fan_out": 0,
-      "git": {
-        "sha": "5092455c9bb3f00821671edfedb546218286873d",
-        "short": "5092455c9",
-        "branch": "owner/ruling-r91",
-        "pushed": null
-      }
+      "goal": "Review W0 as Test Architect",
+      "id": "al-01M41BJ2JBQGHRRC205KY62VFN",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md",
+      "session": "rv-ta-e1e4",
+      "shortname": "design-slice-review-ta-w0",
+      "skill": "design-slice-review",
+      "summary": "Test Architect review of W0 seam contracts: BLOCK, 14 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:05:37Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "Review W0 as Security & Identity",
+      "id": "al-01M41BMY5JFEHZERZ36YNRBE2D",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md",
+      "session": "rv-sec-e1e4",
+      "shortname": "design-slice-review-eval-sec-w0",
+      "skill": "design-slice-review",
+      "summary": "Security lens review of W0 seam contracts: BLOCK, 12 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:06:31Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "review W0",
+      "id": "al-01M41BPK9M2HP2Q73ZY4H2MRVQ",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md",
+      "session": "rv-pat-e1e4",
+      "shortname": "design-slice-review-pat-w0",
+      "skill": "design-slice-review",
+      "summary": "Patterns Expert review of W0: 13 findings, PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:06:38Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "review W0",
+      "id": "al-01M41BPSYAB6384YVR1H8KCSJE",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "session": "rv-sim-e1e4",
+      "shortname": "design-slice-review-sim-w0",
+      "skill": "design-slice-review",
+      "summary": "Simplifier review of W0: 12 findings, PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ds.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:07:33Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "DS review of W0",
+      "id": "al-01M41BRFSS2PZYB0BYYWZCQ76D",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ds.md",
+      "session": "rv-ds-e1e4",
+      "shortname": "design-slice-review-eval-ds-w0",
+      "skill": "design-slice-review",
+      "summary": "DS lens review of W0 seam contracts: BLOCK, 14 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     }
   ],
   "changes": [
@@ -65806,6 +65916,33 @@ window.AUDIT_DATA = {
       "kind": "done",
       "ref": "docs/notes/review-w3-egress-codex.md@a2481f9",
       "session": "worker-codex-regress"
+    },
+    {
+      "id": "mail-01M41B3C7NE4K6H63P7W9SSSQ4",
+      "ts": "2026-10-03T16:56:02Z",
+      "from": "coord-opus-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41B3C7C7FY80DCZZ6A3TVES",
+      "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M41BC69MS8CGCKGCBHE13TAV",
+      "ts": "2026-10-03T17:00:50Z",
+      "from": "owner-fable",
+      "to": "coord-opus-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41B3C7C7FY80DCZZ6A3TVES",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41BS9YF4KC77K075NQQ3Q7R",
+      "ts": "2026-10-03T17:08:00Z",
+      "from": "coord-opus-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41BS9Y7D1ANHSNDYM9N2H08",
+      "session": "coord-opus-e1e4"
     }
   ]
 };

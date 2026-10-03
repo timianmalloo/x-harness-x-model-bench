@@ -1854,7 +1854,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f9267759fb6d42eb850f9cd36a4954809bf437e56885344c97069d86003479c2"
+      "sourceSha256": "000847c3e2d80cd53d63a0d5d241e3926a1ba5d59004c119f4dc4a8bbdf0b543"
     },
     {
       "id": "design-eval-seam-contracts",
@@ -3359,6 +3359,100 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "32f235bdd9ef5a50f339b185b9f5b27a48dbb164b03913b0a07c5bf58f1e5fd8"
+    },
+    {
+      "id": "review-eval-ds",
+      "path": "docs/design/reviews/eval-review-ds.md",
+      "title": "Evaluation Campaign design reviews: Distributed Systems lens (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of the Wave 1 design slices by the Distributed Systems lens (rv-ds-e1e4): crash, ordering, idempotency and concurrency findings per slice, each with evidence, a smallest fix and a confidence label, and one gate line per slice. Appended per batch. First section: W0 seam contracts with Owner ruling R-90.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "9e9de15f0f0e0a3c65e3cc32b87b0122da2773daef6d399386535a8c80869fe5"
+    },
+    {
+      "id": "review-eval-pat",
+      "path": "docs/design/reviews/eval-review-pat.md",
+      "title": "Patterns Expert review of the Evaluation Campaign design slices (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "One Patterns Expert (RV-PAT) lens file for the Evaluation Campaign: one section per reviewed slice, appended per batch. Findings carry location, severity, evidence, fix and confidence. Advisory lens; a pattern survives only if the Simplifier also clears it.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "cac2581e19b119c1e877e7ca86db14203662fd2f012ae25732366558a495c930"
+    },
+    {
+      "id": "review-eval-sec",
+      "path": "docs/design/reviews/eval-review-sec.md",
+      "title": "Security & Identity lens review: Evaluation Campaign design slices (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "The Security & Identity lens's findings on the Evaluation Campaign designs, one section per slice, appended per batch. Each section ends with one gate line. Findings only: no design is edited here.",
+      "tags": [
+        "review",
+        "security",
+        "evaluation-campaign",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "2a70d02cbc2de5b67584c890192a4635b731ecedb108c15de5c3c5b2454080ea"
+    },
+    {
+      "id": "review-eval-sim",
+      "path": "docs/design/reviews/eval-review-sim.md",
+      "title": "Simplifier lens review of the Evaluation Campaign designs (RV-SIM)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "The Simplifier's Adversary Mode findings on the Evaluation Campaign design slices, one section per slice, appended per batch. Soft veto on unjustified complexity. First section: W0 seam contracts at main 5092455c.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "6498292143c8251d7eacdd9887b620b175937d91c7c69224f58467d473a63c2f"
     },
     {
       "id": "review-eval-ta",
@@ -4900,5 +4994,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "dfcc73ea35be1bfe51dbee27d483308ee5ed994798a4bf3973dbc8ce526916e7"
+  "graphSha256": "e070125ba29cfd949e9659b408a70b806a17f566d89cfe529fa17a8f8154bbd8"
 };
