@@ -870,7 +870,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8869f917fa5e1fcb241d47f9cd972565982c1cc17436a690745b7968ce8153a0"
+      "sourceSha256": "80559667245cbe4eddbed9f889418a73d9c12d30d393916cfbe06b24f4c08944"
     },
     {
       "id": "adr-0020-power-and-verdicts-stdlib",
@@ -4010,7 +4010,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f9130d83d0531d2f14173f38552764fe4df8f4003f856fefbddd6d70fb05a8d6"
+      "sourceSha256": "2e738331996f46eb30416c1ee5a11d6aed1fed5b7cf677b60a300e7a8d3ea9c2"
     },
     {
       "id": "review-eval-ds-w1b",
@@ -4053,6 +4053,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "1bce63791bbba85e0eb55e47af0b8f06bf90131a3dc75d712f6af432ccf8defe"
+    },
+    {
+      "id": "review-eval-ds-w1j",
+      "path": "docs/design/reviews/eval-review-ds-w1j.md",
+      "title": "W1-J multi-turn attempt, turn snapshots and TLA+ model: Distributed Systems lens review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of docs/design/eval-multi-turn.md (design/eval-multi-turn, 08fabe34, 6b838ff2) and models/run_lifecycle.tla by the Distributed Systems lens. The turn loop, the ack barrier and the snapshot order hold, and the model fits the engine's sequential worker. Three majors: snapshot recovery has no E2 code path, the sweep seam is stale, and two of the five invariants have no code mirror. PASS WITH CONDITIONS.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "d70e401df96961909a7dbcf6a8fc12b4d21da47122ae7ce9aa25bb7e0292125e"
     },
     {
       "id": "review-eval-pat",
@@ -7050,5 +7071,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "196a44834e975858e38215136f52affa3b49ba19f0b6bd3a427e07956a8526c3"
+  "graphSha256": "5374f229e4dafb48534bce7165a7975ad29b9319d82dcd9fe2c0ac29c87755b6"
 };
