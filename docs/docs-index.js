@@ -1854,7 +1854,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4e907d89627f0bb44616109ae745c5793edf8e2ba1d3132afa0a36f2d18c73db"
+      "sourceSha256": "f9267759fb6d42eb850f9cd36a4954809bf437e56885344c97069d86003479c2"
     },
     {
       "id": "design-eval-seam-contracts",
@@ -3359,6 +3359,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "32f235bdd9ef5a50f339b185b9f5b27a48dbb164b03913b0a07c5bf58f1e5fd8"
+    },
+    {
+      "id": "review-eval-ds",
+      "path": "docs/design/reviews/eval-review-ds.md",
+      "title": "Evaluation Campaign design reviews: Distributed Systems lens (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of the Wave 1 design slices by the Distributed Systems lens (rv-ds-e1e4): crash, ordering, idempotency and concurrency findings per slice, each with evidence, a smallest fix and a confidence label, and one gate line per slice. Appended per batch. First section: W0 seam contracts with Owner ruling R-90.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "9e9de15f0f0e0a3c65e3cc32b87b0122da2773daef6d399386535a8c80869fe5"
     },
     {
       "id": "coordination-eval-brief-rv-ds",
@@ -4874,5 +4895,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "9a475383318089580b65bae5b370c6cda232bd4d9a0db0003e11025170068161"
+  "graphSha256": "a2e26428f79370736fa71bf77281a08809f17e448002c3c96f7c0a42be58b4f6"
 };
