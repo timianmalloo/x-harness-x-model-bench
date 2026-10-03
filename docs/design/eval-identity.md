@@ -220,7 +220,7 @@ Every path degrades to field-absent, never a plausible value.
 
 ## 12. Test plan by node id (red first)
 
-**Skeleton commit (lands first, so no test fails on an import):** `identity.py` with the 3.1 API as stubs (`manifest` returns `{"schema": SCHEMA, "components": {}}`; `identity_hash`, `side`, `diff` trivial; `unclassed`, `stale`, `import_violations`, `stale_allowed` return `[]`; `CLASSES = {}`; `launch_check` returns a callable returning `CheckResult([], False)`), the two `errors.py` codes, and `EngineConfig.identity_check` unused. Every "fails today" below is an assertion against that skeleton (or against `main` for the guard entries), never an `ImportError`, `AttributeError` or `NameError`. Files: `tests/test_identity.py` (T-1..T-25), `tests/test_engine.py` (T-26..T-32), `tests/test_architecture.py` (T-33..T-35).
+**Skeleton commit (lands first, so no test fails on an import):** `identity.py` with the 3.1 API as stubs (`manifest` returns `{"schema": SCHEMA, "components": {}}`; `identity_hash`, `side`, `diff` trivial; `unclassed`, `stale`, `import_violations`, `stale_allowed` return `[]`; `CLASSES = {}`; `launch_check` returns a callable returning `CheckResult([], False)`), the two `errors.py` codes, and `EngineConfig.identity_check` unused. Every "fails today" below is an assertion against that skeleton (or against `main` for the guard entries), never an `ImportError`, `AttributeError` or `NameError`. Files: `tests/test_identity.py` (T-1..T-25b), `tests/test_engine.py` (T-26..T-32), `tests/test_architecture.py` (T-33..T-35).
 
 | id | test | the assertion that fails today, and why | red fixture | real wiring | mutant |
 | --- | --- | --- | --- | --- | --- |
@@ -247,7 +247,8 @@ Every path degrades to field-absent, never a plausible value.
 | T-16 | `test_check_stops_at_the_deadline` | a fake clock jumps 3 s on the first file: remaining keys listed `unreadable (deadline)`: the stub lists none | injected `clock` | n/a | drop the cap |
 | T-17 | `test_run_edit_stops_launch_grade_edit_does_not` | real `launch_check` on a temp tree: an `engine.py` edit gives a non-empty diff, a `grade/formal.py` edit gives an empty one: the stub is empty for both | temp copy | real `launch_check` | class swapped |
 | T-18 | `test_non_campaign_plan_has_no_check` | `launch_check(root, plan_without_campaign) is None`: the stub returns a callable | plan with no block | n/a | return a callable |
-| T-25 | `test_bench_run_stops_on_a_drifted_run_side_file` (**real wiring**, RV-TA 1) | real `cli.main([... "run", "r1"])` on a campaign plan (block hand-added with `identity.side(manifest(...))`, plan re-stamped with `plan.plan_hash`), a run-class file edited after the plan: exit 3, last `run.launch_stopped` has code `HB-IDN-001` and a `diff` naming the file, zero `cell.launch_intent`; today the run launches. `assume:` the T9-2 fixture (`test_cli.py:247-277`) reaches `engine.Engine(...).run()`; confirm by running it in the skeleton commit; if false, the fixture gains the missing launcher stub. The drift stops the run before any cell process | edited file | real `cmd_run`, real `Engine`, no fake | drop `identity_check=identity.launch_check(root, p),` in `cli.py` (`tests/mutations/cli.json`) |
+| T-25 | `test_bench_run_stops_on_a_drifted_run_side_file` (**real wiring**, RV-TA 1, R2-1) | real `cli.main([... "run", "r1"])` on **its own fixture**: a real confirmed `plan.json` with one cell and a `campaign` block (`identity.side(manifest(...))`, `plan_hash` re-stamped with `plan.plan_hash`, because `load_confirmed` rejects any edit, `plan.py:374`), the **real `engine.Engine`**, only `preflight.check` stubbed. A **run-class `src/` file** is edited after the plan (not a task file: a changed task stops `cmd_run` itself with `HB-USR-002`, `cli.py:134-136`, before the engine). Asserts exit 3, last `run.launch_stopped` in the run's `events` has code `HB-IDN-001` and a `diff` naming the file, zero `cell.launch_intent`; today the run launches. The T9-2 fixture (`test_cli.py:247-277`) stubs `engine.Engine` with `_FakeEngine`, writes `plan.json` as `{}` and stubs `load_confirmed`; it cannot be reused (RV-TA R2-1, V). Not run in this session: the fixture is specified, not executed; X-D's skeleton commit runs it first | the edited run-class file | real `cmd_run`, real `Engine`, no fake | drop `identity_check=identity.launch_check(root, p),` in `cli.py` (`tests/mutations/cli.json`) |
+| T-25b | `test_bench_run_without_drift_launches` (R2-2, the twin) | same fixture, **no edit**: exactly one `cell.launch_intent` and no `run.launch_stopped` with `HB-IDN-001`; the cell's own outcome is not asserted. Proves the fixture reaches the engine, so T-25's zero intents is not a bad fixture or a preflight failure | none (control) | real `cmd_run`, real `Engine` | `launch_check` always returns a diff: red |
 | T-26 | `test_a_drifted_file_stops_launching_with_a_named_diff` | the stop row equals `{"code": "HB-IDN-001", "reason": "engine identity drift", "diff": ["engine.py changed"], "identity_check_ms": <fake clock value>}` exactly; running cells finish; no later intent; exit 3: the engine ignores `identity_check` today | fake check | n/a | invert the diff test; drop the call |
 | T-27 | `test_drift_before_the_first_launch_records_no_intent` | zero intents, one stop row, exit 3 | fake check drifted from tick 1 | n/a | check after `_launch` |
 | T-28 | `test_a_raising_check_stops_launching` | stop row code `HB-IDN-001`, reason `engine identity check failed: OSError` | fake raises | n/a | swallow the exception |
@@ -319,6 +320,8 @@ Round 1: RV-TA (BLOCK, 8), RV-SRE (PASS WITH CONDITIONS, 8), RV-SIM (PASS WITH C
 | PAT 5 | allowlist on a prose trigger | Applied: reason, trigger and review date per pair; stale-pair test | 4.1 |
 | PAT 6 | telemetry grade must not enter the allowlist | Applied: R-94 `run`; allowlist stays 3; a flip keeps G2b red | 4.2 |
 | R-94 | telemetry run, gateway grade, Amendment 1, red-first pins | Applied: T-3, T-4, T-12d, section 15, ADR-0017 edited | 4.2, 15 |
+| R2-1 | RV-TA rev 2: T-25's `assume:` is false (the T9-2 fixture fakes the engine) | Applied: T-25 rewritten with its own fixture (real confirmed plan, real `Engine`, run-class file edit); the `assume:` is removed | 12 |
+| R2-2 | RV-TA rev 2: T-25 needs a no-drift twin | Applied: T-25b | 12 |
 
 ## Gate
 
@@ -326,7 +329,7 @@ Round 1: RV-TA (BLOCK, 8), RV-SRE (PASS WITH CONDITIONS, 8), RV-SIM (PASS WITH C
 `GATE W1-D · SRE · PASS WITH CONDITIONS · 8 findings (rv-sre-e1e4, 2026-10-03)`
 `GATE W1-D · Simplifier · PASS WITH CONDITIONS · 8 findings (rv-sim-ad-e1e4, 2026-10-03)`
 `GATE W1-D · Patterns Expert · PASS WITH CONDITIONS · 6 findings (rv-pat-ad-e1e4, 2026-10-03)`
-`rev 2 pending RV-TA`
+`GATE W1-D · Test Architect · PASS WITH CONDITIONS · 2 findings (rv-ta-d2-e1e4, 2026-10-03)`
 
 ## Status
 
