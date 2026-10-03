@@ -708,9 +708,14 @@ class _Session:
             # Grok 1.0.34 and later inject their own skills watcher acknowledgement into ACP
             # (measured on 1.0.34, and on 1.0.41 on Windows, 2026-09-24).
             # This exact, measured exception never completes our pending request.
-            if (self.grok_reload_compat and method == "session/prompt" and self.result["session_id"]
+            # REPO-LOCAL DEVIATION (docs/notes/deviation-coord-transport-grok-session-new.md): the same
+            # acknowledgement also races ahead of the session/new response (measured 2026-10-03, Grok 1.0.41,
+            # reloaded: 0), so session/new accepts it too and the reloaded count may be 0 or 1.
+            if (self.grok_reload_compat and (method == "session/new" or (method == "session/prompt"
+                                                                          and self.result["session_id"]))
                     and message.get("id") in GROK_WATCHER_IDS
-                    and message == {"jsonrpc": "2.0", "id": message["id"], "result": {"result": {"reloaded": 1}}}
+                    and message in ({"jsonrpc": "2.0", "id": message["id"], "result": {"result": {"reloaded": n}}}
+                                    for n in (0, 1))
                     and type(message["result"]["result"]["reloaded"]) is int):
                 self.result["compatibility_responses"] += 1
                 continue
