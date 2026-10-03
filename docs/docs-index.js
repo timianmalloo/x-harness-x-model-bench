@@ -3277,6 +3277,41 @@ window.DOCS_INDEX = {
       "sourceSha256": "32f235bdd9ef5a50f339b185b9f5b27a48dbb164b03913b0a07c5bf58f1e5fd8"
     },
     {
+      "id": "coordination-eval-campaign",
+      "path": "docs/coordination/coordination-eval-campaign.md",
+      "title": "Coordination plan - Evaluation Campaign build (phases E1-E4)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: E1 walking skeleton, then E2 / E3 / E4 in parallel",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Builds phases E1-E4 of the Evaluation Campaign across Claude Code (Sonnet), Codex, Agy and Grok workers under a Claude Code Leader, a Fable Owner and an Opus 5.5 Coordinator. Serial spine first: harness qualification (Codex is blocked on the operator), then one seam-contracts doc that also fixes one owner per hub file per phase. Then twelve design slices reviewed by six lens reviewers, then federated red-first implementation along the real dependency graph: E1 to its demo, then E2, E3 and E4 in parallel, with engine.py edits serialised J before K, converging on the ADR-0021 section 4 table, TLC and ten discrimination records produced at the final engine identity.",
+      "tags": [
+        "coordination",
+        "worktrees",
+        "parallelism",
+        "federation",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-phase1-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "1d00bfc93fcc99855c85571f47606626255859fecbb057d509515f5b102ecb2a"
+    },
+    {
       "id": "coordination-finish-harness-bench",
       "path": "docs/coordination/coordination-finish-harness-bench.md",
       "title": "Coordination plan - finish harness-bench (phases 2-5, the 31 outstanding to-dos)",
@@ -4051,6 +4086,14 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-benchmark-state-and-target"
     },
     {
+      "id": "surface-coordination-coordination-eval-campaign",
+      "path": "docs/coordination/coordination-eval-campaign.html",
+      "title": "Coordination Eval Campaign",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "coordination-eval-campaign"
+    },
+    {
       "id": "surface-coordination-coordination-phase1-finish",
       "path": "docs/coordination/coordination-phase1-finish.html",
       "title": "Coordination plan - finish harness-bench phase 1 (pre-merge findings, N5, mutation bar, E2E)",
@@ -4105,5 +4148,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "76ab8efe7ba9662ef8c22b80f37ea8304d5616d23c9961d12114eba9553d77f9"
+  "graphSha256": "fceceede3987a44d5eaf47fef356031888edaca3f67b0d710bf21cf40fb9e9ca"
 };
