@@ -1854,7 +1854,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4e907d89627f0bb44616109ae745c5793edf8e2ba1d3132afa0a36f2d18c73db"
+      "sourceSha256": "f9267759fb6d42eb850f9cd36a4954809bf437e56885344c97069d86003479c2"
     },
     {
       "id": "design-eval-seam-contracts",
@@ -3359,6 +3359,32 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "32f235bdd9ef5a50f339b185b9f5b27a48dbb164b03913b0a07c5bf58f1e5fd8"
+    },
+    {
+      "id": "review-eval-ta",
+      "path": "docs/design/reviews/eval-review-ta.md",
+      "title": "Evaluation Campaign design reviews: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) findings and gate lines, one section per reviewed slice. W0 first: the contracts are mostly testable, but the guard allowlists are red on arrival, the check outcome precedence is open, and W0 still reads DR-4 as open after R-90.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "51334aaf997c913934ad8218dc654aab6ecebb16ad55381578a83b7039868d13"
     },
     {
       "id": "coordination-eval-brief-rv-ds",
@@ -4874,5 +4900,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "9a475383318089580b65bae5b370c6cda232bd4d9a0db0003e11025170068161"
+  "graphSha256": "dfcc73ea35be1bfe51dbee27d483308ee5ed994798a4bf3973dbc8ce526916e7"
 };
