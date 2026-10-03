@@ -5324,6 +5324,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "bbb97953c678b2652d7e7fd02a39c8f7fe52601b98e81c277a2bddf303394ae5"
     },
     {
+      "id": "review-eval-ta-w1k",
+      "path": "docs/design/reviews/eval-review-ta-w1k.md",
+      "title": "W1-K resume, liveness and the alarm channel: Test Architect lens review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of docs/design/eval-resume.md (design/eval-resume, 315cf1d4, rev 1.1) and models/run_lifecycle.tla by the Test Architect lens. The window map, the prefix sweep and the TLC evidence are strong. Conditions: the stop path has no C7 or C4 cell in its tests, finish-the-stop idempotence (W12e) contradicts the unsealed new segments, X-K1's gate entry tests need X-K2's cmd_run hunk, two reds are mutant-shaped, and F-1 leaves one liveness property vacuous for the code. PASS WITH CONDITIONS.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "1da50c511697c4bc75353947d7f877f84a55e11384e2c8ed91289a1e90b10d87"
+    },
+    {
       "id": "review-eval-ta-w1l",
       "path": "docs/design/reviews/eval-review-ta-w1l.md",
       "title": "W1-L property tasks (eight) design review: Test Architect lens",
@@ -7912,5 +7933,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "a9e0adbeb86fa5f662fd2bbafd6367b26317484f26bf9bbc325e816912975967"
+  "graphSha256": "65c7f61203173dfae445f6345013cacc6ca555bb927a1e097d89e592a6819288"
 };
