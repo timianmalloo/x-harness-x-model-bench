@@ -1579,6 +1579,32 @@ window.DOCS_INDEX = {
       "sourceSha256": "b745456c3c0f7262760a6f5b33191c3872bc86a63673f266267aa20c71bca760"
     },
     {
+      "id": "note-20261003-spike-s2-bottle-cookie-reads",
+      "path": "docs/notes/spike-s2-bottle-cookie-reads.md",
+      "title": "S2 spike (stopped) - verified reads of bottle signed-cookie code",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Three verified line reads of bottle.py at the S2 pin (pickle-based signed cookies); the S2 spike was stopped and S2's probe class goes to the Owner for a redesign that never constructs deserialization payloads.",
+      "tags": [
+        "spike",
+        "s2",
+        "security",
+        "bottle"
+      ],
+      "links": [
+        {
+          "to": "design-eval-security-tasks",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "5c36d4aa7ee258164ee2ed2921e92228b81c85584b18ff7d17eb6d3598d6a278"
+    },
+    {
       "id": "note-catalog-0.5-anchors",
       "path": "docs/notes/catalog-0.5-anchors.md",
       "title": "Catalog 0.5.dev normalisation anchors and weight corrections (R-78 condition 1, R-79)",
@@ -7812,5 +7838,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "2570e413829aab668f881b71fdacc4bd4ab3dded983853339fdc7c19c6a7849a"
+  "graphSha256": "e47f2220206b1e38a89e05d4dc3a470b9530411e115afd469a765bfee47cedea"
 };
