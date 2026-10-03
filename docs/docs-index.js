@@ -2870,7 +2870,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "35a7eaa2dc2f9fc75887ae91f0779e646d15d250f9e698d0fcbada49a54cbf97"
+      "sourceSha256": "187d4f09758f6a375601b9ddb7a0fc2c12f0043c64dd5117e0e97a7f70879f43"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -4874,5 +4874,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "c572271e050913355b397d908f52b13076543a43818a5e91a5c146ed9433a91e"
+  "graphSha256": "12724a427ce2ac78c573a189fc8e8d061bf83344dbc7562c4492877c1a20b68e"
 };
