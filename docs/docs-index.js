@@ -3449,6 +3449,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "cac2581e19b119c1e877e7ca86db14203662fd2f012ae25732366558a495c930"
     },
     {
+      "id": "review-eval-pat-w1a",
+      "path": "docs/design/reviews/eval-review-pat-w1a.md",
+      "title": "Patterns Expert review of W1-A, arms v2 (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of design/eval-arms (ab13f0eb) against W0 rev 2 and R-87..R-93. The hash-keyed blocked order with a bounded redraw and the AST form of G1 survive; the dropped top-level pack makes four readers degrade silently (one of them not covered by SP-A3), G1's token set is narrower than its claim, and the drop is in no seam request.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-a"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "a1bef601e5f3cb91dd3f9ebbf9a55408d249813f1a74d0849ebadd9b94ce5e3d"
+    },
+    {
       "id": "review-eval-pat-w1b",
       "path": "docs/design/reviews/eval-review-pat-w1b.md",
       "title": "Patterns Expert review of W1-B, crash-atomic publish (Adversary Mode)",
@@ -3474,6 +3501,33 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "679de9c8f28e2b6684cd7282e3dc83c533ed0715fadc8d1b9ae839715a0cde46"
+    },
+    {
+      "id": "review-eval-pat-w1d",
+      "path": "docs/design/reviews/eval-review-pat-w1d.md",
+      "title": "Patterns Expert review of W1-D, engine identity (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of design/eval-identity (71a15a0b) against W0 rev 2 and R-87..R-93. The injected check, the single CLASSES table, import_graph.py and the refusal of a tooling class survive; the refusal's cost model prices only grade-side edits and omits the run-side shared kernel, the launch check's reference identity is unfiled, and the SUBPROCESS_CALLERS mapping inherits a matcher that misses aliased imports. telemetry/* is provisional.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-d"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "7da33ff71d59e17bf028b3732ab744578caad0d450be6c98b5c7488d6433bbde"
     },
     {
       "id": "review-eval-pat-w1f",
@@ -3615,7 +3669,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5c563cb767a9c366a129acb0c121b925220c29b4b55ab7619236c0679bf89b85"
+      "sourceSha256": "3a6bca265279c14fc75952442488a7253d6b844c3d8429b6e03ce3e41d4a05b4"
     },
     {
       "id": "review-eval-sim",
@@ -3742,6 +3796,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "884d2fa0b86d7e0e0bb2a50e1f1d05093778cf7750b02c3d12b49360f297f621"
+    },
+    {
+      "id": "review-eval-sim-w1i",
+      "path": "docs/design/reviews/eval-review-sim-w1i.md",
+      "title": "Simplifier lens review of W1-I, security tasks S1 and S2",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-security-tasks.md (design/eval-security-tasks, 2fc8906b) against W0 rev 2 and R-87..R-94 on main. All five probe-host asks are needed by S1 and none is S2-only. The S2 probe list is premature for E1. Ten probes reduce to nine or eight, eleven hidden tests to nine, and about six of 21 tests repeat a check that W1-F, X-E or another test already owns.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "a97c88934f6ac7af7f54eff8fc95d769ce89b0702cfc78f842975db0fbe5afe6"
     },
     {
       "id": "review-eval-sre-w1d",
@@ -5445,5 +5520,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "4217d3a48805d794275ed40f2c5bd720ee0ba4dd034d2c629e65611c949bdb09"
+  "graphSha256": "c45d192d9b8f2652424f5c829b8ec015d61dcdcb187aa379a8a1d305ed9dbb40"
 };

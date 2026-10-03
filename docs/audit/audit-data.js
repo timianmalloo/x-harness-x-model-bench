@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:49:49Z",
+  "generated": "2026-10-03T17:52:19Z",
   "audit": [
     {
       "actor": null,
@@ -65858,22 +65858,81 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41E5VD8KB9CYTACYWF4GHH0",
-      "shortname": "ta-w1f-r2",
-      "datetime": "2026-10-03T17:49:48Z",
-      "session": "rv-ta-w1f-e1e4",
-      "prompt": "RV-TA delta re-review of W1-F rev 2",
-      "summary": "Test Architect re-review of W1-F rev 2: PASS WITH CONDITIONS, 2 minor residuals",
-      "kind": "skill",
-      "skill": "design-slice-review",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/design/reviews/eval-review-ta-w1f.md"
       ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:49:48Z",
+      "id": "al-01M41E5VD8KB9CYTACYWF4GHH0",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "RV-TA delta re-review of W1-F rev 2",
+      "session": "rv-ta-w1f-e1e4",
+      "shortname": "ta-w1f-r2",
+      "skill": "design-slice-review",
+      "summary": "Test Architect re-review of W1-F rev 2: PASS WITH CONDITIONS, 2 minor residuals",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1f.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:49:52Z",
+      "done_when": "gate line",
+      "fan_out": 0,
+      "goal": "re-check 3 conditions",
+      "id": "al-01M41E5YP6HHH206H7J8B0CDKK",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader: W1-F rev 2 delta",
+      "session": "rv-sec-w1f-e1e4",
+      "shortname": "design-slice-review-sec-w1f-r2",
+      "skill": "design-slice-review",
+      "summary": "SEC W1-F rev 2: conditions met, PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1a.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:50:14Z",
+      "id": "al-01M41E6MCMNKDJAZF27C5DE4JF",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "RV-PAT review of W1-A arms v2 and W1-D engine identity (docs/coordination/eval-wave1/rv-pat.md)",
+      "session": "rv-pat-ad-e1e4",
+      "shortname": "rv-pat-ad",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT reviews of W1-A and W1-D: both PASS WITH CONDITIONS, 6 findings each",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "id": "al-01M41EAESV42T3VKA1QYP389RR",
+      "shortname": "RV-SIM W1-I review",
+      "datetime": "2026-10-03T17:52:19Z",
+      "session": "rv-sim-w1i-e1e4",
+      "prompt": "Simplifier review of W1-I security tasks S1 and S2",
+      "summary": "8 findings, PASS WITH CONDITIONS; all five probe-host asks needed by S1, none S2-only; S2 probe list premature",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": "Claude Sonnet 5.5",
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1i.md"
+      ],
       "tags": [],
       "outcome": "success",
-      "compiled": false
+      "compiled": false,
+      "tier": "T2"
     }
   ],
   "changes": [
