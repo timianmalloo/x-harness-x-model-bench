@@ -103,7 +103,7 @@ CLASSES: Mapping[str, Literal["run", "grade"]] = {
 
 # Explicitly retired on landing; stale() prevents a landed key lingering here.
 PLANNED: frozenset[str] = frozenset({
-    "atomic.py", "resume.py", "campaign.py", "power.py", "verdicts.py", "gates.py",
+    "resume.py", "campaign.py", "power.py", "verdicts.py", "gates.py",
     "discriminate.py", "readiness.py", "synthetic_agent.py", "grade/bench_check.py",
     "grade/_env.py", "report/campaign_section.py", "grade/rework.py", "alarm.py",
     "grade/noguess.py", "grade/diffstats.py",
