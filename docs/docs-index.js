@@ -1520,6 +1520,38 @@ window.DOCS_INDEX = {
       "sourceSha256": "07917835d700372f139f4dff998db93acf736dcede8f9ff54b35791b3507156c"
     },
     {
+      "id": "note-20261003-spike-s-lb-loopback",
+      "path": "docs/notes/spike-s-lb-loopback.md",
+      "title": "Spike S-LB - does a loopback-only listener raise a Windows Defender Firewall prompt or rule?",
+      "type": "decision-note",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Method and operator procedure for spike S-LB. The script tools/spikes/s_lb_loopback.py was written and compiled but NOT run (no operator present; a bind could raise a firewall dialog nobody sees). Every result row is \"not run, operator required\". Until the table is filled and passes, ADR-0018 section 3 keeps its assume: and phase E1 admits in-process probes only.",
+      "tags": [
+        "spike",
+        "windows",
+        "firewall",
+        "loopback",
+        "adr-0018",
+        "e4"
+      ],
+      "links": [
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b745456c3c0f7262760a6f5b33191c3872bc86a63673f266267aa20c71bca760"
+    },
+    {
       "id": "note-catalog-0.5-anchors",
       "path": "docs/notes/catalog-0.5-anchors.md",
       "title": "Catalog 0.5.dev normalisation anchors and weight corrections (R-78 condition 1, R-79)",
@@ -1912,7 +1944,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3338bafa6fc3f2aefd6e08b5d3dbdb1b1f7766aa30bce8849ee9625316729689"
+      "sourceSha256": "6b96dee39670f518834044ffa1fe16bc1e4956939b50163ebb378ff8ca6cdb84"
     },
     {
       "id": "design-eval-atomic-publish",
@@ -6223,5 +6255,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "f765fa47fcd4cc0ce19d58ec436cfd30b6ebd4fdddac0dfebf3608c4946f5240"
+  "graphSha256": "426b6d97eb19ef9ec417b73480c62ab7cde16c961f5f06b5b863e107662fc589"
 };
