@@ -152,7 +152,7 @@ def tool_versions(root: Path, plan: Mapping) -> dict[str, str]:
     return out
 
 
-def applicable(catalog: dict, graders: list[str]) -> dict[str, dict[str, dict]]:
+def applicable(catalog: dict, graders: list[str], prop: str | None = None) -> dict[str, dict[str, dict]]:
     """grader -> {metric id: catalog entry}: the `kind: score` metrics of `graders`, each grader once, in catalog order."""
     out: dict[str, dict[str, dict]] = {}
     for area in catalog["areas"].values():
