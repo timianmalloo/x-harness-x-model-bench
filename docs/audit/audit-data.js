@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:12:02Z",
+  "generated": "2026-10-03T18:13:13Z",
   "audit": [
     {
       "actor": null,
@@ -66137,6 +66137,28 @@ window.AUDIT_DATA = {
       "tags": [],
       "outcome": "success",
       "compiled": false
+    },
+    {
+      "id": "al-01M41FGQAJEFG4N7VD0WM71YPX",
+      "shortname": "design-slice-review-pat-w1i-r2",
+      "datetime": "2026-10-03T18:13:13Z",
+      "session": "rv-pat-w1i-e1e4",
+      "prompt": "Leader: RV-PAT re-review of W1-I rev 2",
+      "summary": "RV-PAT W1-I rev 2: PASS, all 7 findings resolved",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1i.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "delta re-review",
+      "done_when": "rev 2 section with gate line committed",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
