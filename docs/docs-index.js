@@ -1857,6 +1857,51 @@ window.DOCS_INDEX = {
       "sourceSha256": "57d4eb4ca1786bd4b012c42cbb0a2263628f17448d0ab1b2c2fa1cd516db026a"
     },
     {
+      "id": "design-eval-catalog-0-7",
+      "path": "docs/design/eval-catalog-0-7.md",
+      "title": "Catalog 0.7 (ADR-0019): the eleven property metrics, scenario-7 pass@1 and the missing-pass@1 fix",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1, design slice W1-G (builds X-G1 in E1, X-G3 and the _passed fix in E3)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Design of catalog 0.7: the eleven property metrics written out in full YAML with R-79 anchors and no new area; the dispatch rule that lets one grader record a metric another grader owns (the property: tag and the new also_graded_by key); the per-task formal.pass_rule that makes scenario-7 pass_at_1 a three-valued AND; the missing-pass@1 fix and its sweep as the new defect class ABS-A; and the US-4 control, which is a cross-version regrade against the committed 0.6 goldens plus an append-only, chain-linked corrected_from record.",
+      "tags": [
+        "benchmark",
+        "catalog",
+        "metrics",
+        "grading",
+        "us-4",
+        "evaluation-campaign",
+        "w1-g"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0019-catalog-0-7-property-metrics",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "001d9a70ea9f1078b0592517e098eba38d335a8442d6a8d6691243959bf224dc"
+    },
+    {
       "id": "design-eval-seam-contracts",
       "path": "docs/design/eval-seam-contracts.md",
       "title": "W0 seam contracts: the interfaces every Evaluation Campaign slice designs and builds against",
@@ -5014,5 +5059,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "b5107dd09987affe58c56d8808ffec7f70ccfc9d4686769359666811f765a765"
+  "graphSha256": "07b80392e5570ecd2615e084b3d843915a7938b1d6e302eae47811be61a663d9"
 };

@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:27:05Z",
+  "generated": "2026-10-03T17:38:09Z",
   "audit": [
     {
       "actor": null,
@@ -65452,6 +65452,28 @@ window.AUDIT_DATA = {
         "branch": "design/eval-w0-rev2",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M41DG6B6QQ397PSVDPZEAGCF",
+      "shortname": "design-slice-eval-catalog-0-7",
+      "datetime": "2026-10-03T17:37:59Z",
+      "session": "w1g-catalog-e1e4",
+      "prompt": "docs/coordination/eval-wave1/w1-g-catalog.md",
+      "summary": "Designed catalog 0.7: eleven property metrics in full YAML (no new area), also_graded_by dispatch for scenario-7 pass_at_1 with formal.pass_rule, absence-is-not-failure fix and sweep (ABS-A), cross-version US-4 control and append-only corrected_from record; gate pending",
+      "kind": "skill",
+      "skill": "design-slice",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-catalog-0-7.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "W1-G catalog 0.7 (ADR-0019), scenario-7 pass@1 and the missing-pass@1 fix",
+      "done_when": "Gate PASS; the eleven metric entries with anchors (R-79 forms); the scenario-7 pass rule for G2; the US-4 control; the append-only corrected_from record",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
@@ -65917,6 +65939,28 @@ window.AUDIT_DATA = {
           "1cf8fed3 docs(architecture): evaluation-campaign amendment (gated, 3 council rounds) - companion docs/architecture-evaluation-campaign.md refining arch-harness-bench, ADR-0014 arm replaces pack setting (cell = task version x combo x arm x rep; cell_id keeps its pack key carrying the arm id so grids 1-4 load and re-plan unchanged), ADR-0015 two turns on one ACP session with crash-atomic turn snapshots and a per-turn crash predicate (TLA+), ADR-0016 campaign record (hash-chained ledger, create_once records, rings as bench-matrix/2), ADR-0017 engine identity manifest and freeze (post-fix cells re-run, operator DI6), ADR-0018 hidden-check harness (HOST_ENV allowlist, explicit handle list, write-once-last-and-alone result with a tamper cross-check; Windows now, macOS follow-up), ADR-0019 catalog 0.7 (scenario-7 pass@1; append-only golden correction), ADR-0020 stdlib power and verdicts (reference cases reproduced), ADR-0021 plan-level resume and liveness; amendment text in ADR-0006/0007/0010/0011/0013; phases E1 walking skeleton, E2/E3/E4 in parallel, E5 first campaign. Council: Security PASS, Distributed Systems PASS, SRE/Data&Persistence/Enterprise/Simplifier/Patterns PASS WITH CONDITIONS (applied); authors did not clear their own vetoes. Claude Opus 5.5 author, Claude Sonnet 5 council (Leader on Claude Opus 5.5)",
           "ebf21cee spike(e4): a second session/prompt in the same ACP session, after end_turn (R-E6, DR-E4)"
         ]
+      }
+    },
+    {
+      "id": "cl-01M41DGGB8793Z5DGA7Y1TKWWN",
+      "datetime": "2026-10-03T17:38:09Z",
+      "session": null,
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "Catalog 0.7 design: property metrics in existing areas, also_graded_by owner rule, formal.pass_rule, recorded-pairs pass counts, chain-linked corrected_from",
+      "prompt": "docs/coordination/eval-wave1/w1-g-catalog.md",
+      "summary": "Settles how catalog 0.7 is built: no new area (config requires seven), one optional also_graded_by key so the formal grader owns pass_at_1 for G2, a three-valued pass rule in task.yaml, absence excluded from pass counts (ABS-A), and a cross-version US-4 control with a chain-linked correction record",
+      "rationale": null,
+      "artifacts": [
+        "docs/design/eval-catalog-0-7.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": null,
+        "after": "3c1c98278e08c948215a4bf7dacdd960be37aa30",
+        "branch": "design/eval-catalog-0-7",
+        "pushed": null,
+        "commits": []
       }
     }
   ],
