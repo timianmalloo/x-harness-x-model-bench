@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:35:31Z",
+  "generated": "2026-10-03T18:37:32Z",
   "audit": [
     {
       "actor": null,
@@ -66670,6 +66670,28 @@ window.AUDIT_DATA = {
       "tags": [],
       "tier": "T2",
       "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/notes/spike-s-lb-loopback.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:34:42Z",
+      "done_when": "four steps, one command per mode, empty results table",
+      "fan_out": 0,
+      "goal": "S-LB script and note",
+      "id": "al-01M41GR1Z6XB21ED0TJVP5GJT5",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/sp-lb-loopback.md",
+      "session": "splb-loopback-e1e4",
+      "shortname": "spike-s-lb-loopback",
+      "skill": "spike",
+      "summary": "Wrote S-LB script and note method; not run (operator absent)",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     }
   ],
   "changes": [
@@ -67449,6 +67471,26 @@ window.AUDIT_DATA = {
       "summary": "Applies RV-TA/SIM/PAT conditions on W0 rev 3: plan_pack readers, count ratchet plus literal ratchet, real-git builder test, trims",
       "tags": [],
       "title": "W1-A rev 2: G1 ratchets, plan_pack readers, test-plan trims"
+    },
+    {
+      "artifacts": [],
+      "datetime": "2026-10-03T18:34:53Z",
+      "git": {
+        "after": "9fad1bb3695a108a041ec883b6f9fae0abedb8f8",
+        "before": null,
+        "branch": "spike/s-lb-loopback",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41GRCVSCTTRHGM0K8QWZ79V",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "spike",
+      "summary": "Script and note method written; results await the operator run.",
+      "tags": [],
+      "title": "S-LB loopback firewall spike prepared, not run"
     }
   ],
   "messages": [
@@ -67649,6 +67691,15 @@ window.AUDIT_DATA = {
       "kind": "ruling",
       "ref": "req-01M41EPSB7E91C4APYT1QGN3FV",
       "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41GWNSJR4N1NADEDDZW2SH6",
+      "ts": "2026-10-03T18:37:13Z",
+      "from": "w1l-tasks-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41GWNS06F362RJ78XB7AXY5",
+      "session": "w1l-tasks-e1e4"
     }
   ]
 };
