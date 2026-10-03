@@ -19,5 +19,23 @@
     "find": "        return code & 0xFFFFFFFF if sys.platform == \"win32\" else code",
     "replace": "        return code & 0xFFFFFFFF",
     "tests": ["tests/test_procs_platform.py::test_cell_process_wait_is_not_masked_off_windows"]
-  }
+  },
+ {
+  "name": "spawn(console=False) still creates the child with CREATE_NO_WINDOW, so a console host joins the job",
+  "file": "src/harness_bench/procs.py",
+  "find": "(_CREATE_NO_WINDOW if console else _DETACHED_PROCESS)",
+  "replace": "_CREATE_NO_WINDOW",
+  "tests": [
+   "tests/test_procs.py::test_spawn_console_false_is_detached_and_job_holds_only_the_child"
+  ]
+ },
+ {
+  "name": "exit_time of a still-running process returns 0 instead of raising (a plausible wrong stamp)",
+  "file": "src/harness_bench/procs.py",
+  "find": "        if not exited.value:  # a running process reports 0",
+  "replace": "        if False:  # a running process reports 0",
+  "tests": [
+   "tests/test_procs.py::test_exit_time_of_a_running_process_raises"
+  ]
+ }
 ]

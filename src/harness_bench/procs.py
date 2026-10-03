@@ -113,7 +113,9 @@ class CellProcess:
     def exit_time(self) -> int:
         """The main process's exit time as a FILETIME (`GetProcessTimes` on the grader's own handle). Windows only;
         raises OSError elsewhere and when the process has not exited."""
-        return 0
+        if sys.platform != "win32":
+            raise OSError("exit_time is Windows-only")
+        return _exit_filetime(int(self.proc._handle))  # type: ignore[attr-defined]
 
     def close(self) -> None:
         """Close the job first (kill-on-close, or its POSIX stand-in, ends any remaining tree), then the
@@ -145,7 +147,9 @@ def spawn(argv: list[str], cwd, env, stdin=subprocess.PIPE, stdout=subprocess.PI
 
 def now_filetime() -> int:
     """The system time as a FILETIME (100 ns since 1601), the clock `CellProcess.exit_time` reads. Windows only."""
-    return 0
+    if sys.platform != "win32":
+        raise OSError("now_filetime is Windows-only")
+    return _now_filetime()
 
 
 def _parse_pgrep(stdout: str) -> set[int]:
@@ -165,6 +169,7 @@ if sys.platform == "win32":
     DIE_ON_UNHANDLED_EXCEPTION = 0x400
     _CREATE_SUSPENDED = 0x4
     _CREATE_NO_WINDOW = 0x08000000
+    _DETACHED_PROCESS = 0x8
     _PROCESS_ALL_ACCESS = 0x1F0FFF
     _HANDLE_FLAG_INHERIT = 0x1
     _BASIC_ACCOUNTING = 1
@@ -212,6 +217,22 @@ if sys.platform == "win32":
 
     class _PidList(ctypes.Structure):
         _fields_ = [("Assigned", wt.DWORD), ("InList", wt.DWORD), ("Ids", ctypes.c_size_t * _MAX_PIDS)]
+
+    _k32.GetProcessTimes.argtypes = [wt.HANDLE] + [ctypes.POINTER(ctypes.c_ulonglong)] * 4
+    _k32.GetSystemTimePreciseAsFileTime.argtypes = [ctypes.POINTER(ctypes.c_ulonglong)]
+
+    def _now_filetime() -> int:
+        t = ctypes.c_ulonglong()
+        _k32.GetSystemTimePreciseAsFileTime(ctypes.byref(t))
+        return t.value
+
+    def _exit_filetime(handle: int) -> int:
+        created, exited, kernel, user = (ctypes.c_ulonglong() for _ in range(4))
+        if not _k32.GetProcessTimes(handle, ctypes.byref(created), ctypes.byref(exited), ctypes.byref(kernel), ctypes.byref(user)):
+            raise OSError(ctypes.get_last_error(), "GetProcessTimes failed")
+        if not exited.value:  # a running process reports 0: never a plausible wrong stamp
+            raise OSError("process has not exited")
+        return exited.value
 
     # Fault seams for tests: the two calls whose failure must leave no process behind.
     def _assign(job: int, handle: int) -> bool:
@@ -289,7 +310,8 @@ if sys.platform == "win32":
         job = Job()
         try:
             proc = subprocess.Popen(argv, cwd=cwd, env=env, stdin=stdin, stdout=stdout, stderr=stderr,
-                                    creationflags=_CREATE_SUSPENDED | _CREATE_NO_WINDOW, close_fds=True)
+                                    creationflags=_CREATE_SUSPENDED | (_CREATE_NO_WINDOW if console else _DETACHED_PROCESS),
+                                    close_fds=True)
         except OSError as exc:
             job.close()
             raise SpawnError(f"cannot start {argv[0]}", getattr(exc, "winerror", None) or exc.errno) from exc
