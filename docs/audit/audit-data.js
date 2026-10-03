@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:20:56Z",
+  "generated": "2026-10-03T18:21:53Z",
   "audit": [
     {
       "actor": null,
@@ -66273,26 +66273,67 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41FYVQ42WY27V6KQ3TKSKR9",
-      "shortname": "design-slice-review-pat-w1h-w1c",
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1h.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T18:17:47Z",
+      "done_when": "two review files with gate lines committed",
+      "fan_out": 0,
+      "goal": "Test Architect gate on W1-H and W1-C",
+      "id": "al-01M41FS2E079PYRJWTQBFBDKPZ",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-H and W1-C)",
+      "session": "rv-ta-hc-e1e4",
+      "shortname": "review-ta-w1h-w1c",
+      "skill": "design-slice-review",
+      "summary": "RV-TA reviews: W1-H PASS WITH CONDITIONS (10), W1-C PASS WITH CONDITIONS (9)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1h.md"
+      ],
+      "compiled": false,
       "datetime": "2026-10-03T18:20:56Z",
-      "session": "rv-pat-hc-e1e4",
+      "done_when": "two review files with gate lines committed",
+      "fan_out": 0,
+      "goal": "Patterns review of W1-H and W1-C",
+      "id": "al-01M41FYVQ42WY27V6KQ3TKSKR9",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "docs/coordination/eval-wave1/rv-pat.md (W1-H, W1-C)",
+      "session": "rv-pat-hc-e1e4",
+      "shortname": "design-slice-review-pat-w1h-w1c",
+      "skill": "design-slice-review",
       "summary": "RV-PAT reviews: W1-H PASS WITH CONDITIONS (6), W1-C BLOCK (8)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M41G0JR9XQ8JED1AE0VBAGEF",
+      "shortname": "ta-review-w1b-r2",
+      "datetime": "2026-10-03T18:21:53Z",
+      "session": "rv-ta-bd-e1e4",
+      "prompt": "RV-TA delta re-review of W1-B rev 2",
+      "summary": "RV-TA W1-B rev 2: PASS WITH CONDITIONS (3 minor findings)",
       "kind": "skill",
       "skill": "design-slice-review",
       "tool": null,
       "actor": null,
       "artifacts": [
-        "docs/design/reviews/eval-review-pat-w1h.md"
+        "docs/design/reviews/eval-review-ta-w1b.md"
       ],
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Patterns review of W1-H and W1-C",
-      "done_when": "two review files with gate lines committed",
-      "tier": "T2",
-      "fan_out": 0
+      "tier": "T2"
     }
   ],
   "changes": [
