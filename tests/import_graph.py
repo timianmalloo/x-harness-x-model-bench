@@ -31,7 +31,16 @@ def dotted(expr: ast.expr, names: Mapping[str, str]) -> str:
 
 def imports(rel: str, tree: ast.Module) -> set[str]:
     """All absolute import targets, including lazy and typing imports."""
-    return set()
+    targets = set()
+    pkg = package(rel)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            targets |= {a.name for a in node.names}
+        elif isinstance(node, ast.ImportFrom):
+            base = list(pkg[:len(pkg) - node.level + 1]) if node.level else []
+            module = ".".join(base + ([node.module] if node.module else []))
+            targets |= {module if a.name == "*" else f"{module}.{a.name}" for a in node.names}
+    return targets
 
 
 def import_violations(root: Path, classes: Mapping[str, str], allowed: Mapping,

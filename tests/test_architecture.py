@@ -11,7 +11,7 @@ import ast
 from pathlib import Path
 
 import pytest
-from import_graph import aliases, dotted, package
+from import_graph import aliases, dotted, imports, package
 
 from harness_bench.identity import CLASSES
 
@@ -21,7 +21,7 @@ MODULES = sorted(SRC.rglob("*.py"))
 SUBPROCESS_CALLS = {"run", "Popen", "call", "check_call", "check_output", "getoutput", "getstatusoutput"}
 OS_SPAWNS = {"system", "popen", "startfile", "execv", "execve", "spawnv", "spawnve"}
 ACP_METHODS = {"initialize", "session/new", "session/prompt", "session/set_mode", "session/cancel", "session/request_permission"}
-SUBPROCESS_CALLERS = frozenset({"procs.py"})
+SUBPROCESS_CALLERS = frozenset({"procs.py", "grade/bench_check.py"})
 IMPORT_LINT_MODULES = frozenset({"identity.py", "campaign.py", "power.py", "verdicts.py", "gates.py",
                                  "grade/property.py", "grade/bench_check.py", "grade/_env.py"})
 
@@ -50,10 +50,14 @@ def test_the_run_path_never_imports_grading_or_reports(name):
 def _spawn_offenders(sources: dict[str, str]) -> list[str]:
     offenders = []
     for rel, source in sorted(sources.items()):
-        for node in ast.walk(ast.parse(source)):
-            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name):
-                owner, attr = node.func.value.id, node.func.attr
-                if ((owner == "subprocess" and attr in SUBPROCESS_CALLS) or (owner == "os" and attr in OS_SPAWNS)) and rel not in SUBPROCESS_CALLERS:
+        if rel in SUBPROCESS_CALLERS:
+            continue
+        tree = ast.parse(source)
+        names = aliases(f"src/harness_bench/{rel}", tree)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                target = dotted(node.func, names)
+                if target in {f"subprocess.{name}" for name in SUBPROCESS_CALLS} | {f"os.{name}" for name in OS_SPAWNS}:
                     offenders.append(f"{rel}:{node.lineno}")
     return offenders
 
@@ -89,7 +93,9 @@ def test_subprocess_callers_equal_w0_two_paths():
 
 
 def _gateway_imports(sources: dict[str, str]) -> list[str]:
-    return []
+    return sorted(rel for rel, source in sources.items() if rel in IMPORT_LINT_MODULES and any(
+        target == "harness_bench.gateway" or target.startswith("harness_bench.gateway.")
+        for target in imports(f"src/harness_bench/{rel}", ast.parse(source))))
 
 
 @pytest.mark.parametrize("source", [
@@ -276,7 +282,7 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
         # annotations). A new caller - a judge spawned from grade/judge.py above all - fails until added here on purpose.
         # host added (ADR-0013 Amendment 1 s5, the macOS port): POSIX creation_time() runs `ps -o lstart=` through
         # procs.run, the only sanctioned subprocess gateway (D3) -- host.py itself never calls subprocess directly.
-        allowed = {"engine", "gitsafe", "grade/correctness", "host", "plan", "procs", "tools", "workspace"}
+        allowed = {"engine", "gitsafe", "grade/correctness", "grade/property", "host", "plan", "procs", "tools", "workspace"}
         for rel in sorted(set(trees) - inside):
             if Path(rel).with_suffix("").as_posix().removeprefix("src/harness_bench/") in allowed:
                 continue

@@ -5,13 +5,34 @@ under __pycache__/; allowlist: none (CLASSES is the classification table).
 G2b root: run-class Python modules there; recursion: yes; tokens: every
 resolved grade-class import; allowlist: RUN_IMPORTS_GRADE_ALLOWED; cli.py is
 the composition root exemption. Both guards take fixture tables.
+
+D1 verification map (confidence: Verified by observed assertions):
+  W0 §11 -> test_every_e1_error_row_is_registered_with_w0_meaning:
+    registry missing-row assertion observed red before all 34 E1 rows landed.
+  W1-D T-8/T-10/T-10b/T-22 -> unclassed/stale, real-tree and W0 table tests:
+    empty-table scaffold failed; disk fixtures cover py/json/js, ghost and landed keys.
+  W1-D T-12..12d -> direction tests: assertion-red, placement ruling pending.
+  W1-D T-7 -> catalog recipe tests: recipes agree; runner import ruling pending.
+  W1-D T-33..35 -> architecture fixtures: alias bypasses, gateway imports and
+    missing allowlist entries observed red before the corresponding guard fixes.
+  Relative-import property -> deleting relative targets was killed by the named
+    property test; its shrunk counterexample is retained as a regression test.
+  Real readers -> architecture guards scan the source tree; BenchError accepts
+    every new E1 code; the catalog tests call the real plan.tree_hash recipe.
+  Data model -> one classification per source path; catalog digest is non-additive.
+    No persistent schema, event field, client type or UI changes in D1.
+  Residual -> this is a blocked red track, not a completed Proof Pack. D2's
+    manifest/launch/telemetry surfaces and the external join review are deferred.
 """
 
+import ast
 import re
 from pathlib import Path
 
 import pytest
-from import_graph import import_violations, stale_allowed
+from hypothesis import given, settings
+from hypothesis import strategies as st
+from import_graph import aliases, dotted, import_violations, imports, stale_allowed
 
 from harness_bench import errors, identity, plan
 from harness_bench.grade import runner
@@ -146,6 +167,24 @@ def test_real_tree_edges_equal_the_allowlist():
     assert stale_allowed(ROOT, identity.CLASSES, identity.RUN_IMPORTS_GRADE_ALLOWED) == []
     assert all("review 2027-10-03" in reason and "remove when" in reason
                for reason in identity.RUN_IMPORTS_GRADE_ALLOWED.values())
+
+
+@settings(max_examples=40, deadline=None, derandomize=True)
+@given(depth=st.integers(min_value=1, max_value=4), name=st.text(alphabet="abc", min_size=1, max_size=8))
+def test_relative_and_absolute_imports_resolve_to_the_same_module(depth, name):
+    rel = "src/harness_bench/" + "nested/" * depth + "caller.py"
+    absolute = ast.parse(f"from harness_bench.grade.{name} import value as v")
+    relative = ast.parse(f"from {'.' * (depth + 1)}grade.{name} import value as v")
+
+    assert imports(rel, relative) == imports(rel, absolute) == {f"harness_bench.grade.{name}.value"}
+    assert dotted(ast.parse("v()", mode="eval").body.func, aliases(rel, relative)) == f"harness_bench.grade.{name}.value"
+
+
+def test_relative_import_keeps_the_parent_package_regression():
+    # Shrunk counterexample from the observed relative-import deletion mutant.
+    tree = ast.parse("from ..grade.a import value as v")
+
+    assert imports("src/harness_bench/nested/caller.py", tree) == {"harness_bench.grade.a.value"}
 
 
 def test_catalog_component_equals_runner_catalog_hash(tmp_path):
