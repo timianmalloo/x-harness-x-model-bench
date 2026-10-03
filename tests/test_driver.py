@@ -681,7 +681,7 @@ def _message_types(agent: bytes, client: bytes) -> set[str]:
     return types
 
 
-def _tapped_turn(tmp_path, argv, env, acp_mode=None, model=None) -> set[str]:
+def _tapped_turn(tmp_path, argv, env, acp_mode=None, model=None, handshake_timeout=3) -> set[str]:
     cell = procs.spawn(argv, cwd=str(tmp_path), env=env)
     cell.proc.stdout, cell.proc.stdin = _Tap(cell.proc.stdout), _Tap(cell.proc.stdin)
     cfg = json.loads(env.get("FAKE_ACP") or "{}")
@@ -700,7 +700,7 @@ def _tapped_turn(tmp_path, argv, env, acp_mode=None, model=None) -> set[str]:
         ender = _arm_on_marker(tmp_path / ".fake-prompt.txt", "after a hang starts",
                                lambda: cell.terminate_and_confirm(timeout=10), cell, missed)
     try:
-        driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=acp_mode, handshake_timeout=3,
+        driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=acp_mode, handshake_timeout=handshake_timeout,
                         before_send=lambda sid: None, model=model)
     finally:
         still_waiting = ender is not None and _join_phase(ender)
@@ -749,7 +749,8 @@ def test_every_message_type_the_fake_emits_is_paired_and_every_pairing_is_emitte
     with ThreadPoolExecutor(max_workers=len(modes)) as pool:
         # "ok" also pins a model (Copilot's set_model, D7 W1-ACP open item 6); the other modes are unchanged
         runs = [pool.submit(_tapped_turn, tmp_path / m, [sys.executable, str(FAKE)], env[m], "agent-full-access",
-                            "gpt-6-sol" if m == "ok" else None) for m in modes]
+                            "gpt-6-sol" if m == "ok" else None,
+                            3 if m == "hang_handshake" else 60) for m in modes]  # only hang_handshake needs the short bound (it must fire)
         emitted = set().union(*(r.result() for r in runs))
     _assert_paired(emitted)
     stale = set(PAIRING) - emitted
