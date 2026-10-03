@@ -1,0 +1,27 @@
+{
+  "sessionId": "00000000-0000-4000-8000-000000000001",
+  "session": {
+    "primaryModelId": "grok-4.7-build",
+    "modelUsage": {
+      "grok-4.7-build": {
+        "modelCalls": 1
+      },
+      "grok-4.6-build": {
+        "modelCalls": 1
+      }
+    }
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "modelUsage": {
+        "grok-4.7-build": {
+          "modelCalls": 1
+        },
+        "grok-4.6-build": {
+          "modelCalls": 1
+        }
+      }
+    }
+  ]
+}

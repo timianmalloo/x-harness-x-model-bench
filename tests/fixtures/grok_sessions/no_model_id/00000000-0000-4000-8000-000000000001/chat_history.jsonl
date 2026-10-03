@@ -1,0 +1,8 @@
+{"type": "system", "content": "synthetic"}
+{"type": "user", "content": [{"type": "text", "text": "synthetic"}], "prompt_index": 0}
+{"type": "reasoning", "id": "rs_0", "summary": [], "encrypted_content": "x", "status": "completed"}
+{"type": "assistant", "content": "", "tool_calls": [], "model_fingerprint": "fp_synthetic", "reasoning_effort": "high", "model_id": "grok-4.7-build"}
+{"type": "tool_result", "tool_call_id": "call-0", "content": "exit: 0"}
+{"type": "reasoning", "id": "rs_1", "summary": [], "encrypted_content": "x", "status": "completed"}
+{"type": "assistant", "content": "", "tool_calls": [], "model_fingerprint": "fp_synthetic", "reasoning_effort": "high"}
+{"type": "tool_result", "tool_call_id": "call-1", "content": "exit: 0"}
