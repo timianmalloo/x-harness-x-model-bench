@@ -611,6 +611,11 @@ These ids are reserved, never reused. Each W1 design confirms or drops its rows;
 | launch span = the `cell.launch_intent` row (rev 3, W1-D) | `+ identity_check_ms`; E3 adds `free_bytes` | E1 · X-D; E3 · X-K1 |
 | resume record | how a resume is recorded (ADR-0021 §6: "resumed n times, with each resume's time and segment id") | E3 · X-K1, designed in W1-K |
 
+**W1-J seams (rev 6.2; RV-PAT and RV-SRE on W1-J; X-J1, E2).**
+- **Partial rows: one helper (SR-J4).** `archive.append_missing_rows(folder: Path, rows: Sequence[dict], present: Sequence[dict], code: str) -> list[dict]` is the one implementation of section 4's recovery rule for a published folder whose rows are absent or partial: it recomputes the rows from the folder, compares them with the source, appends only the missing ones, and raises `code` on any difference (HB-LED-005 for a final archive, HB-LED-008 for a turn snapshot). **Owner X-J1** (E2, `archive.py` is its hub then), because turn snapshots need it before resume exists. X-K1's `recover_archive` (E3) calls it and returns W1-B's `Recovery(result, missing_rows)` from its result; it holds no second comparison (DM7).
+- **`tasks.<id>.turns` (SR-J3, section 5): granted, `[{n, prompt, sha256}]`.** The engine sends the plan's frozen text, so the plan carries it; `sha256` is the hash of `prompt` under the task-version recipe, and `plan.load_confirmed` refuses an entry whose text does not hash to it (HB-LED-002). Owner X-J1 (`plan.py` `turns`, E2).
+- **`attempt.session_opened.job_active_baseline` (SR-J1, this section): granted, with RV-SRE's condition.** The baseline is read after the harness's lazy helper process has spawned, not at session open, and W1-J's gate revision names the read point and whether it is re-read per turn, with a test that a helper spawned after the first prompt is not counted as a leaked job.
+
 ## 13. Hub files: one owner per phase
 
 This is the authoritative copy (the plan's table is its planning record). Another track that needs a line in a hub file sends `coord request add --to <owner>`. Hand-overs between phases are joins on `main`.
@@ -904,6 +909,7 @@ R-98, SR-E3 and the conditions of the five W0 rev 4/5 delta reviews (last sectio
 | R6-17 | RV-SEC r45 minors | `paths` refuses a drive or root (`C:foo`, `\foo`); frame ids; variants file rules and caps; `clauses.json` parse after scan; E4 listener on `127.0.0.1` with `SO_EXCLUSIVEADDRUSE` | 2, 3 |
 | R6-18 | SR-E3 3 | HB-RDY-009 moves to X-LG in E4 | 11 |
 | R6.1 | RV-TA W0 r6 1-6; RV-SEC W0 r6 F1-F4 and decision A (rev 6.1, same branch as part B) | an undeclared case `timeout` is HB-RDY-011, nothing written, the retry succeeds; `check_segment` stem `rstrip`, `conin$`/`conout$`, fixtures `con`/`aux`/`nul .txt`/`CONOUT$`, `"ok\n"` under a `$` rx, one caller test each, the overlay `rx`; wrong-pairing sweep tests per caller; `plan.kind_of` (absent = measurement); X-F's check-less `property.json` test; call-site tests for the raise; D3 aliases and `os.*`; R-98 condition 4 as a join checklist item | 3, 4, 6, 8, 10, 11 |
+| R6.2 | W1-J SR-J1, SR-J3, SR-J4 (RV-PAT, RV-SRE on W1-J; routed by the Leader) | one `archive.append_missing_rows` (X-J1, E2; X-K1 calls it); `turns` entries `{n, prompt, sha256}`; `job_active_baseline` read after the lazy helper spawns | 12 |
 | — | RV-TA r45 6; RV-PAT r45 6 | `for_task` lands as a wrong-bodied skeleton first (X-D D2); X-J2's `drift.py` hunk calls `_changes.in_radius` and moves its `simplify:` marker | 6, 13 |
 
 **ADR amendment note recorded with rev 6** (appended; no decision text edited): ADR-0016 *Amendment 1* (R-98: §4's run id and grading id withdrawn, the grain restated as a result, the local link as the reconciliation path, §2a holding with no exception). It lands with rev 6, before X-E's first record commit.
