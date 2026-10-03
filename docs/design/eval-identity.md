@@ -67,13 +67,16 @@ def diff(a: dict, b: dict) -> list[str]           # sorted: "grade/formal.py cha
 # pure scans; each takes the table as a parameter so a fixture can drive it (rev 2, RV-TA 2, 3):
 def unclassed(root: Path, classes: Mapping[str, str], planned: frozenset[str]) -> list[str]   # on disk, no class
 def stale(root: Path, classes: Mapping[str, str], planned: frozenset[str]) -> list[str]       # keyed, not on disk, not planned; or on disk AND planned
-def import_violations(root: Path, classes: Mapping[str, str], allowed: Mapping, exempt: frozenset[str]) -> list[tuple[str, str]]
-def stale_allowed(root: Path, classes: Mapping[str, str], allowed: Mapping) -> list[tuple[str, str]]   # listed, no longer imported
+# Erratum 1 (W0 rev 6.4, req-01M41KBTSTZ738NAGXNK0SRVXH): the two direction scans live in tests/import_graph.py, beside
+# the resolver they need; production code cannot import a test helper. Same signatures; G2b calls them from there.
+# tests/import_graph.py:
+#   def import_violations(root: Path, classes: Mapping[str, str], allowed: Mapping, exempt: frozenset[str]) -> list[tuple[str, str]]
+#   def stale_allowed(root: Path, classes: Mapping[str, str], allowed: Mapping) -> list[tuple[str, str]]   # listed, no longer imported
 class CheckResult(NamedTuple): diff: list[str]; rechecked: bool
 def launch_check(root: Path, plan: dict, *, clock=time.monotonic, sleep=time.sleep, deadline_s: float = 2.0) -> Callable[[], CheckResult] | None
 ```
 
-`builds` is `plan["builds"]` (the `Build.record()` dicts, V `tools.py:127`); identity never imports `tools`. `launch_check` returns `None` for a plan with no `campaign` block, else a callable that compares `side(manifest(...), "run")` with `plan["campaign"]["identity"]`. `clock` and `sleep` are injected so tests control time. `unclassed`, `stale`, `import_violations` and `stale_allowed` are what G2 calls on a fixture tree and on the real tree; `manifest` calls `unclassed` and raises HB-IDN-002.
+`builds` is `plan["builds"]` (the `Build.record()` dicts, V `tools.py:127`); identity never imports `tools`. `launch_check` returns `None` for a plan with no `campaign` block, else a callable that compares `side(manifest(...), "run")` with `plan["campaign"]["identity"]`. `clock` and `sleep` are injected so tests control time. `unclassed`, `stale` (in `identity.py`) and `import_violations`, `stale_allowed` (in `tests/import_graph.py`, Erratum 1) are what G2 calls on a fixture tree and on the real tree; `manifest` calls `unclassed` and raises HB-IDN-002. `identity.py` keeps the tables the scans read (`CLASSES`, `PLANNED`, `RUN_IMPORTS_GRADE_ALLOWED`).
 
 ### 3.2 Components and recipes (all reuse existing recipes, V)
 
@@ -192,7 +195,7 @@ STRIDE-lite (boundary: the working tree to the engine; single operator, ADR-0012
 | --- | --- | --- |
 | store | `identity/<hash>.json`; `plan.campaign.identity` (run side, effective); `grading.started.{grade_identity_hash, python, platform}`; `cell.launch_intent.{identity_check_ms, identity_recheck}`; `run.launch_stopped.{reason, diff, identity_check_ms}` | X-C writes files; X-A1/X-C plan field; X-F; X-D |
 | model | `identity.py` (`CLASSES`, `PLANNED`, `RUN_IMPORTS_GRADE_ALLOWED`, the scans, `catalog_hash`) | X-D |
-| service | `engine.py` `_identity_ok`, `_stop_launching(**fields)`; `grade/runner.py` hash and the `catalog_hash` import (lines 108-112, X-D by seam); `cli.py` one kwarg (X-C) | X-D, X-F, X-C |
+| service | `engine.py` `_identity_ok`, `_stop_launching(**fields)`; `grade/runner.py` hash and the `catalog_hash` import (lines 108-112 deleted, and line 60's `plan` import drops `tree_hash` and gains a top-level `from harness_bench.identity import catalog_hash`; X-D by seam, W0 rev 6.4); `cli.py` one kwarg (X-C) | X-D, X-F, X-C |
 | projection/wire | `lifecycle.TABLE` unchanged (V: keyed by kind only, `lifecycle.py:122-127`); `status.py` gains `stop_reason`, `stop_diff` (seam) | X-C |
 | client type | `Status` gains the two fields; `STOP_CODE` validation unchanged | X-C |
 | UI | W1-H renders `diff()` strings; they are display copy, machine readers use manifest keys | W1-H |
