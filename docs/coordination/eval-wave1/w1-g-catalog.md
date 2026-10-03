@@ -44,7 +44,8 @@ Gate PASS; the ten metric entries with anchors (R-79 forms); the scenario-7 pass
 `docs/docs-index.js`, `docs/audit/audit-log.jsonl` and `docs/audit/change-log.jsonl` are derived or register files: regenerate or append, never claim.
 
 ## Inputs (read these; quote what you rely on)
-- `docs/design/eval-seam-contracts.md`: §2 (the `expected` format), §7 (the eleven ids, kind, better, scale, property tag; **DR-4 provisional (a)**), §13 (bench/metrics.yaml owner X-G1, then X-G3)
+- `docs/design/eval-seam-contracts.md`: §2 (the `expected` format), §7 (the eleven ids, kind, better, scale, property tag; **DR-4 ruled (a), R-90**), §13 (bench/metrics.yaml owner X-G1, then X-G3)
+  - **W0 revision 2 changes these inputs:** §7: DR-4 is ruled (a), R-90; `property_check_pass` is untagged; the `property:` narrowing function is fixed. §2: the `at_scale` normaliser.
 - docs/adr/0019-catalog-0-7-property-metrics.md (all)
 - docs/specs/enterprise-evaluation.md EV-10, EV-11 and the EV-2..EV-6 secondaries
 - bench/metrics.yaml (0.6, its header rules), bench/catalog-freeze.yaml, tools/freeze_catalog.py

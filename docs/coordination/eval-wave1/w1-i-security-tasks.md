@@ -44,7 +44,8 @@ Gate PASS incl. Security; two real codebases on different bases (DR-T1); the lat
 `docs/docs-index.js`, `docs/audit/audit-log.jsonl` and `docs/audit/change-log.jsonl` are derived or register files: regenerate or append, never claim.
 
 ## Inputs (read these; quote what you rely on)
-- `docs/design/eval-seam-contracts.md`: §1 (ids, scenario 5, budgets), §2 (every property field), §3 (the check contract; E1 is in-process only)
+- `docs/design/eval-seam-contracts.md`: §1 (ids, scenario 5, budgets), §2 (every property field), §3 (the check contract; E1 is in-process only, redefined in W0 rev 2)
+  - **W0 revision 2 changes these inputs:** §3: `in-process` now means a probe-host child that imports `app: {module, attr, kind}` (the check never imports your deliverable); `env` names come only from `TOOLCHAIN_ENV` and `HB_CHECK_*`; `build` runs through `spawn_deliverable` and is offline; case bounds come from the reference's measured duration; `measures` holds nothing derivable from `cases` (security: empty); the new `deliverable` result field (`ran`, `did not build`, `did not start`).
 - docs/specs/enterprise-evaluation.md EV-1, EV-2, EV-7; decisions DR-T1 and DR-E6 (two codebases)
 - docs/adr/0018-hidden-check-harness.md §2-§4, §7, §9 (canaries `BENCHCANARY-<task>-<hex>`, the egress `task canary` class)
 - tasks/README.md (the Property tasks section), tasks/S1/task.yaml and tasks/S2/task.yaml (the stubs), a precedent oracle: tasks/D2/oracle/evidence.md

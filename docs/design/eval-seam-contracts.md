@@ -99,13 +99,13 @@ graders: [correctness, property]     # R-90: every property task names both
 
 ```yaml
 schema: bench-check-cases/1
-entry: check.py                      # run as: <sys._base_executable> -E -s check/<entry> ...   (rev 2, RV-SEC 9)
-interface: import-host               # import-host | loopback   (E1: import-host only, until SP-LB passes; rev 2 renames in-process)
-bounds_ms: {import-host: 2000, loopback: 5000}    # per-interface case bound (ADR-0018 §12); loopback: E4, unread in E1
+entry: check.py                      # run as: <sys._base_executable> -S check/<entry> ...   (rev 2, RV-SEC 9; W1-F seam)
+interface: in-process                # in-process | loopback   (E1: in-process only, until SP-LB passes; rev 2 redefines in-process)
+bounds_ms: {in-process: 2000, loopback: 5000}     # per-interface case bound (ADR-0018 §12); loopback: E4, unread in E1
+app: {module: "<module>", attr: "<attr>", kind: callable}      # in-process only: what the probe host imports; kind: callable | wsgi
 deliverable:                         # how the check builds and starts the deliverable (ADR-0018 §7)
   build: ["<argv>"]                  # optional; spawned only through bench_check.spawn_deliverable (rev 2, RV-SEC 7)
-  start: ["<argv>"]                  # the interpreter or launcher; spawned only through bench_check.spawn_deliverable
-  import: "<module>:<attr>"          # import-host only: the app object the probe host imports
+  start: ["<argv>"]                  # loopback: the process; spawned only through bench_check.spawn_deliverable
   config: {host_env: HB_CHECK_HOST, port_env: HB_CHECK_PORT}   # loopback only: E4, unread in E1
 toolchain: [python]                  # a container runtime or a Linux-only tool fails readiness (EV-7)
 env: []                              # names from _env.TOOLCHAIN_ENV only, plus HB_CHECK_* (rev 2, RV-SEC 2)
@@ -115,19 +115,19 @@ cases:
 
 - **Effective case bound (rev 2, RV-TA 10):** `min(case.bound_ms, bounds_ms[interface])`. An omitted `bound_ms` means the interface bound. W1-I and W1-L set each bound from the reference solution's measured duration with a stated multiplier, recorded with the task (RV-DS 4).
 - **`env` (rev 2, RV-SEC 2; ADR-0018 §9):** a name is allowed only if it is in `grade/_env.py: TOOLCHAIN_ENV` (X-F defines it; a dotnet toolchain's names are `correctness.DOTNET_HOST_ENV`, imported, never copied) or starts with `HB_CHECK_`. Readiness refuses any other name, and any name in the profiles denylist (`profiles.DROP_EXACT`, `profiles.DROP_PREFIXES`), with HB-RDY-005. `spawn_deliverable(argv, env_extra)` raises on a key outside the declared `env` and `HB_CHECK_*`. Values come from the grader's allowlisted environment only, never `os.environ` read in the check.
-- **`import-host` (rev 2, RV-SEC 1, blocking; ADR-0018 §1, §2, §10).** The check process **never imports agent code**. ADR-0018 §1 already says "The check starts the deliverable as its own child (so it is in the same job), only through `bench_check.spawn_deliverable`". For an importable deliverable, the check spawns a **probe host** through `spawn_deliverable`: the bench-provided `bench_check.py` run in host mode under `deliverable.start`'s interpreter. The probe host imports `deliverable.import` and answers each probe request with the **raw** response, over that child's own stdin and stdout pipes (the handle list holds exactly the child's three stdio handles; stderr goes to a file in the copy). The check decides every outcome from the raw response. So a forger in the deliverable's module body can write only into the deliverable's own response channel, as a loopback deliverable could. There is still no socket ("probes call it in process: no socket at all", ADR-0018 §2: the call is made inside the probe host). W1-F fixes the request and response shape. **Red-first test** `test_import_time_forgery_cannot_reach_result`: a fixture deliverable whose module body writes a forged `bench-check-result/1` document to `sys.stdout`, reads one byte from stdin and calls `os._exit(0)`. The grader's parsed result must never be the forged document.
+- **`in-process`, redefined (rev 2, RV-SEC 1, blocking; ADR-0018 §1, §2, §10; W1-F seam `req-01M41C0N`).** The check process **never imports agent code**. ADR-0018 §1 already says "The check starts the deliverable as its own child (so it is in the same job), only through `bench_check.spawn_deliverable`". For an `in-process` task, the check spawns a **probe host** through `spawn_deliverable`: the bench-provided `bench_check.py` run in host mode. The probe host imports `app` and answers each probe with the **raw** response, as framed request and response lines over pipes the check owns. The handle list holds exactly the child's own stdio handles, and the check's result pipe is never in it. The check decides every outcome from the raw response. So a forger in the deliverable's module body can write only into the deliverable's own response channel, as a loopback deliverable could. There is still no socket ("probes call it in process: no socket at all", ADR-0018 §2: the call is made inside the probe host). The value keeps its ADR-0018 §12 name because the old meaning (importing into the check) no longer exists anywhere. W1-F fixes the frame shape and the probe host's interpreter flags; a deliverable with third-party dependencies needs its own site-packages, which W1-F and W1-I settle together. **Red-first test** `test_import_time_forgery_cannot_reach_result`: a fixture deliverable whose module body writes a forged `bench-check-result/1` document to `sys.stdout`, reads one byte from stdin and calls `os._exit(0)`. The grader's parsed result must never be the forged document (W1-F's spike SP-F1 reproduced the forgery against revision 1's text, 3 of 3).
 - **Not built in E1:** `interface: loopback`, `bounds_ms.loopback`, `deliverable.config` and `kind: fault` keep their shape for seam stability. They are unread in E1, and W1-F does not build them (rev 2, RV-SIM 7).
 
 **Invocation.** The property step runs in two phases, in this order (rev 2, RV-SEC 3):
 
-1. **Tests.** `correctness.grade(ws, task_dir, oracle, out_dir, run_dir, timeout, work_dir)` (`correctness.py:196`, R-90 condition 2), once per graded tree (the final tree; for rework also the turn-1 snapshot), each in its own sub-copy `cells_root/grading/<gid>/<cid>/property/tests-<tree>/`, with `timeout = grading_step_timeout`.
-2. **Check.** It starts only after every process of the tests phase has exited (W1-F names the primitive). Then the grader builds a **fresh** copy `cells_root/grading/<gid>/<cid>/property/check-run/` (ADR-0013 Am. 2): first `deliverable/` (the archived final tree, or a named snapshot), then `check/` (the oracle check) and `check/bench_check.py` (copied from `grade/bench_check.py`), copied **last**. It hashes `check/` (with `bench_check.py` and `cases.yaml`) at that moment. It starts the check in a new Job Object with the outer bound `grading_step_timeout`, with `DETACHED_PROCESS`, and with `grade/_env.py`'s environment:
+1. **Tests.** `correctness.grade(ws, task_dir, oracle, out_dir, run_dir, timeout, work_dir)` (`correctness.py:196`, R-90 condition 2), once per graded tree (the final tree; for rework also the turn-1 snapshot), under `cells_root/grading/<gid>/<cid>/property/tests/`, with `timeout = grading_step_timeout`.
+2. **Check.** It starts only after the tests phase's job holds no process (`procs.run` confirms the job is empty; W1-F seam). Then the grader builds a **fresh** copy `cells_root/grading/<gid>/<cid>/property/check-run/` (ADR-0013 Am. 2): first `deliverable/` (from the archive: the final tree, or a named snapshot), then `check/` (the oracle check), `check/bench_check.py` (copied from `grade/bench_check.py`) and `check/cases.json`, copied **last**. `cases.json` is the grader's parsed and validated form of `cases.yaml`, written with sorted keys, because the check is stdlib only and the stdlib has no YAML parser (W1-F seam `req-01M41C57`). Authors still write `cases.yaml`, and it stays the hashed task file. The grader hashes `check/` with `plan.tree_hash` at that moment, and again after the check exits. It starts the check in a new Job Object with the outer bound `grading_step_timeout`, with `DETACHED_PROCESS`, and with `grade/_env.py`'s environment:
 
 ```
-<sys._base_executable> -E -s check/<entry> --deliverable <abs> --cases check/cases.yaml --seed <int> --evidence <out_dir>/evidence
+<sys._base_executable> -S check/<entry> --deliverable <abs> --cases check/cases.json --seed <int> --evidence <out_dir>/check
 ```
 
-- **Evidence directory (rev 2, RV-SEC 8):** `<out_dir>/evidence`, which is outside the grading copy (`grade/__init__.py:57`: `out_dir` is the grader's only write place). Evidence is egress-scanned (US-47), with canaries in class `task canary` (R-E9), before any judge or report reads it.
+- **Evidence directory (rev 2, RV-SEC 8; W1-F seam):** `<out_dir>/check`, which is outside the grading copy (`grade/__init__.py:57`: `out_dir` is the grader's only write place). Evidence is egress-scanned (US-47), with canaries in class `task canary` (R-E9), before any judge or report reads it.
 - **Bounds per phase (rev 2, RV-DS 13):** each phase has its own `grading_step_timeout` bound (R-90 condition 2 for each test run; ADR-0018 §5 for the check). The host-suspend rule (HB-CHK-004) applies to each phase's own span. The evidence records each span. W1-F states the measured worst case of the whole step.
 - `seed = int(sha256(f"{task_version}|{cell_id}|{metric_id}").hexdigest()[:16], 16)` with `metric_id = property_check_pass` (ADR-0018 §6, recipe kept verbatim). The seed is per (cell, property check), **not per tree**: a rework cell's two test runs and its check share it (rev 2, RV-PAT 11).
 - The check calls only `bench_check.spawn_deliverable(argv, env_extra)` (explicit handle list, the allowlisted environment; §9, §10; `build`, `start` and the probe host all go through it) and `bench_check.write_result(doc)` (one write, after the job holds the check alone; §10a(a)).
@@ -136,36 +136,36 @@ cases:
 
 ```json
 {"schema": "bench-check-result/1",
- "deliverable": "started",
+ "deliverable": "ran",
  "cases": [{"id": "inj-1", "outcome": "blocked", "duration_ms": 41}],
  "measures": {}}
 ```
 
 - **Framing.** The document is one line of canonical JSON ended by `\n`, at most 64 KiB. The grader reads the check's stdout line by line on its own thread from the start, so a large write never blocks the check. "No trailing bytes" (§10a(b)) is checked at EOF, after the check exits, not before the ack.
-- **Acknowledgement (spike E1-S3; Acknowledged Message).** After the grader has validated and accepted the line, it writes one byte to the check's stdin and closes it. On a rejected line it closes stdin with no byte. The check exits 0 only after reading the byte. Stdin EOF with no byte means "not accepted": the check exits non-zero at once. So a rejected document never waits for the outer bound (RV-TA 4, RV-PAT 7).
-- `deliverable` ∈ {`started`, `build failed`, `start failed`}. "Failed" means the step ran to its own end and failed: a non-zero build exit, a start or import that raised, or a process that exited before it was ready. A build or start still running when the outer bound fires is NA `check exceeded its bound` (rev 2, RV-DS 4).
+- **Acknowledgement (spike E1-S3; Acknowledged Message).** After the grader has validated and accepted the line, it writes one byte to the check's stdin. The grader closes the check's stdin on **every** path. On a rejected line it closes stdin with no byte. The check exits **0** only after reading the byte. Stdin EOF with no byte means "refused", and the check exits **3** at once. So a rejected document never waits for the outer bound (RV-TA 4, RV-PAT 7; the exit codes are W1-F's).
+- `deliverable` ∈ {`ran`, `did not build`, `did not start`} (closed; W1-F seam). `cases` is empty unless `ran`. "Did not" means the step ran to its own end and failed: a non-zero build exit, a start or import that raised, or a process that exited before it was ready. A build or start still running when the outer bound fires is NA `check exceeded its bound` (rev 2, RV-DS 4).
 - `outcome` ∈ {`blocked`, `exploited`, `passed`, `failed`, `timeout`}. Case ids come only from `cases.yaml`. Each case appears exactly once.
-- **`measures` (rev 2, RV-SEC 5, RV-SIM 8):** a measure that is a function of `cases` is computed **by the grader** from `cases` and must not appear in `measures` (one definition): `exploit_probes_blocked` = blocked probes ÷ probes, `fault_suite_pass` = passed fault cases ÷ fault cases. `measures` carries only check-observed counts that the cases cannot express (for example `idempotency_violations`); W1-F lists which is which. A key outside the task's narrowed set, a derivable key, or a value that fails `at_scale` is `check output invalid`.
+- **`measures` (rev 2, RV-SEC 5, RV-SIM 8; W1-F seam):** a metric that is a function of `cases` is computed **by the grader** from `cases` and must not appear in `measures` (one definition): `property_check_pass` (below), `exploit_probes_blocked` = blocked probes ÷ probes, `fault_suite_pass` = passed fault cases ÷ fault cases. `measures` carries only non-derivable metric ids of the task's narrowed set (resilience: `idempotency_violations`). Any other key, or a value that fails `at_scale`, is `check output invalid`.
 
-**`property_check_pass` (rev 2, RV-TA 5; R-90 condition 2; EV-1).** It is 1 iff the final tree's hidden tests pass **and** `deliverable` is `started` **and** every declared case ended `blocked` or `passed`. Any `exploited`, `failed` or `timeout` case makes it 0, and so do `build failed` and `start failed` (EV-1's measured 0). A property may narrow this by a per-property rule in W1-F or W1-L (for example a ceiling as a `static` case). Nobody may widen it. Truth-table test: reference 1, naive 0, tamper NA, did-not-build 0.
+**`property_check_pass` (rev 2, RV-TA 5; R-90 condition 2; EV-1).** It is 1 iff the final tree's hidden tests pass **and** `deliverable` is `ran` **and** every declared case ended `blocked` or `passed`. Any `exploited`, `failed` or `timeout` case makes it 0, and so do `did not build` and `did not start` (EV-1's measured 0). A property may narrow this by a per-property rule in W1-F or W1-L (for example a ceiling as a `static` case). Nobody may widen it. Truth-table test: reference 1, naive 0, tamper NA, did-not-build 0.
 
-**Grader outcomes: evaluated in this order; the first matching row decides** (rev 2, RV-TA 4, blocking; RV-SEC 4). The order follows the evidence. A suspend explains everything after it, so it comes first. Interference observed before or during a bound is reported as interference, not hidden behind the bound. A document problem is judged only when the process facts are clean.
+**Grader outcomes: evaluated in this order; the first matching row decides** (rev 2, RV-TA 4, blocking; RV-SEC 4; the order is W1-F's, seam `req-01M41C0N`). A suspend explains everything after it. A bound kill makes every later process fact (alone, exit time, exit code) an artifact of the kill, so the bound comes next. A document is judged only when the process facts are clean.
 
 | # | condition | score row |
 | --- | --- | --- |
 | 1 | a host suspend gap in the phase's span | NA `host suspended`, re-run next pass (HB-CHK-004) |
-| 2 | the `check/` hash differs from the hash taken before the start; or a line arrived while the check was not alone in the job, or after its exit; or more than one line | NA `invalid (check tampered)` (HB-CHK-002) |
-| 3 | the outer bound fired | NA `check exceeded its bound` (HB-CHK-003) |
-| 4 | a line arrived but is malformed (schema, size, case ids, `measures` keys or values) | NA `check output invalid` (HB-CHK-001) |
-| 5 | any other §10a(b) failure: no line, a non-zero or abnormal exit after an accepted line, an exit before the line, or trailing bytes at EOF | NA `invalid (check tampered)` (HB-CHK-002) |
-| 6 | `deliverable` is `build failed` or `start failed` | `property_check_pass` = **0**, a measured failure (EV-1) |
+| 2 | the outer bound fired | NA `check exceeded its bound` (HB-CHK-003) |
+| 3 | the `check/` hash after the exit differs from the hash taken at copy time | NA `invalid (check tampered)` (HB-CHK-002) |
+| 4 | a §10a(b) failure: not alone in the job at the line's first byte; more than one line, or trailing bytes; an exit before the line arrived; no line; exit code ≠ 0 after the ack, or ≠ 3 after a refusal | NA `invalid (check tampered)` (HB-CHK-002) |
+| 5 | the line is malformed (schema, size, case ids, `measures` keys or values) | NA `check output invalid` (HB-CHK-001) |
+| 6 | `deliverable` is `did not build` or `did not start` | `property_check_pass` = **0**, a measured failure (EV-1) |
 | 7 | otherwise | the scores, by the predicate above |
 
-Tests: one red-first test per row, plus one per adjacent pair, to prove the order (a malformed line on a check that then hangs → row 4; a forged line plus the bound → row 2).
+Tests: one red-first test per row, plus one per adjacent pair, to prove the order (a malformed line refused, then exit 3 → row 5; a forged line plus a hang → row 2).
 
 - **Evidence per cell:** for each tree, `hidden_tests_pass` and `hidden_tests_ms` (R-90 condition 3); per case, the outcome and `duration_ms`; the seed; the `check/` hash before and after; each phase's span.
 - **W0 decision: a measured 0 carries no `Score.reason`.** `Score` allows a reason only with `value None` (`grade/__init__.py`, `Score.__post_init__`). EV-1's "0 with reason `deliverable did not build`", and the architecture's "the score's reason names the first failing case", are written into the evidence file, which `Score.evidence` points at (`<evidence file>:<line>`). `Score` does not change.
-- **ADR-0018 deviations recorded here (rev 2, RV-SEC 9):** (a) the check runs under `sys._base_executable -E -s`, not "the task's pinned interpreter" (the check is stdlib only; the deliverable and the probe host run under the task's own interpreter through `deliverable.start`); (b) the one-byte acknowledgement and its framing come from spike E1-S3 and are not in the ADR; (c) the probe host's stdio are pipes owned by the check, not files. W1-F's design carries the ADR-0018 amendment note that records all three.
+- **ADR-0018 deviations recorded here (rev 2, RV-SEC 9):** (a) the check runs under `sys._base_executable -S` (no site-packages at all), not "the task's pinned interpreter"; the check is stdlib only; (b) the one-byte acknowledgement, its framing and exit codes come from spike E1-S3 and W1-F, and are not in the ADR; (c) the probe host's stdio are pipes owned by the check, not files; (d) the check reads `cases.json`, the grader's normalised copy of `cases.yaml`. W1-F's design carries the ADR-0018 amendment note that records all four.
 
 ## 4. Crash-atomic writes: `src/harness_bench/atomic.py` (owner X-B1; consumers X-B2, X-C, X-E, X-J1, X-K1)
 
@@ -388,7 +388,7 @@ W1-D reviews the whole table (ADR-0017: "the run/grade classification is load-be
 | `src/harness_bench/readiness.py` | grade | X-E · E1 | — |
 | `src/harness_bench/synthetic_agent.py` (the synthetic "agent"; W1-E may move it within `src/harness_bench/`, by seam) | grade (rev 2: it runs only in synthetic cells) | X-E · E1 | — |
 | `src/harness_bench/grade/property.py` | grade | X-F · E1 | yes |
-| `src/harness_bench/grade/bench_check.py` | grade | X-F · E1 | yes, and stdlib only (G3) |
+| `src/harness_bench/grade/bench_check.py` | grade | X-F · E1 | yes (gateway lint); stdlib only by G5 |
 | `src/harness_bench/grade/_env.py` | grade | X-F · E1 | yes |
 | `src/harness_bench/report/campaign_section.py` | grade | X-H2 · E1 | — |
 | `src/harness_bench/grade/rework.py` (strategy helper, R-90 condition 4) | grade | X-J2 · E2 | — |
@@ -407,8 +407,13 @@ Each guard's doc comment states these four fields verbatim, with a **named allow
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | G1 | ADR-0014 §2: "No reader reads `pack` directly after this change; a guard test greps for it." | X-A1 · `tests/test_arms_guard.py` | `src/harness_bench/`, `*.py` only (rev 2: `report/assets/report.js:79,147` read `dataset.pack`, an HTML attribute, not a cell) | yes | `["pack"]`, `.get("pack"`, `\.pack\b` | `PACK_READERS_ALLOWED`. **E1** (rev 2, RV-TA 1): `plan.py`, `board.py`, `report/pack_improvement.py`, `report/html.py`, `report/summaries.py`, `report/cli_table.py`, `report/context_growth.py`. **E3:** X-A3 narrows it to `plan.py` | Every other reader found on `357bce48` is **migrated by X-A1 in the guard's commit**: `views.py:525` (`pack=cell["pack"]` → `cell_arm(cell)`; X-A1's hub file), `grade/_changes.py:84` (`cell.get("pack") != "on"`), and `cli.py:145-148` `_workspace_builder` (`cell["pack"]`, `p["pack"]` → `arm_pack(plan, cell_arm(cell))`; section 13 gives X-A1 this one function in X-C's hub file). X-C, X-E, X-H2, X-J1 and X-K1 read the arm only through `cell_arm` / `arm_pack`. The listed legacy readers read the view row's `pack` attribute, which `views.py` fills with the arm id. *assume:* they render a non-`on` arm id without raising. **Confirm:** X-INT renders a two-arm (`off`, `candidate`) report. **If false,** X-A3's reader migration moves into E1 |
 | G2 | ADR-0017 §1: "The classification table lives in code, once, with a test that every `src/` file has a class." | X-D · `tests/test_identity.py` | `src/harness_bench/` | yes | every `*.py` path | none (`CLASSES` is the table) | section 9 lists every planned module; X-D seeds them all. An unplanned module is a seam request |
-| G3 | Architecture amendment table: "ADR-0011 C5/C9 import lint · extended to the campaign, identity, power, verdict, gate and property-grader modules" | X-D · `tests/test_architecture.py` | the files marked "yes" in section 9 | no | (rev 2, RV-TA 3) every import **resolved through the existing AST resolver** (`tests/test_architecture.py:98-99`, which resolves `node.level`): a resolved target `harness_bench.gateway` or under it. Red fixtures: `from ..gateway import x`, `import harness_bench.gateway as g`, `from harness_bench import gateway`. (rev 2, RV-SEC 12) `grade/bench_check.py`: any resolved target outside the standard library | none | ADR-0020 §5 (pure functions) and ADR-0018 (no model call): none of them needs the gateway. `bench_check.py` runs inside the grading copy beside agent code and is copied alone, so it can import nothing from `harness_bench` |
-| G4 | ADR-0018 §9: "The allowlist is one constant moved to a shared grading module so the three graders cannot drift (DM7)." | X-F · `tests/test_property_grader.py` | `src/harness_bench/grade/` for token 1; `grade/property.py`, `grade/bench_check.py`, `grade/_env.py` for token 2 | yes | (rev 2, RV-TA 2, RV-SIM 3, RV-SEC 6) token 1: regex `\bHOST_ENV\s*=` (word-bounded, so `DOTNET_HOST_ENV = (` at `correctness.py:49` and `mutation.py:39` does not match); token 2: `os.environ` | `HOST_ENV_DEFINERS = {"grade/_env.py"}` (token 1); `ENVIRON_READERS = {"grade/_env.py"}` (token 2: only `_env.py` reads `os.environ`, to build the allowlisted environment) | In E1 only X-F edits `correctness.py` and `mutation.py`: each imports `HOST_ENV` from `_env.py`, and `mutation.py`'s `__all__` keeps re-exporting the name (a string, so no match). `DOTNET_HOST_ENV` **stays where it is**: the two tuples differ (`mutation.py:39-42` adds `PROCESSOR_ARCHITECTURE`), so merging them would change a grader's environment. That is a separate finding, not this guard. X-A1 edits only `grade/_changes.py:84` |
+| G3 | Architecture amendment table: "ADR-0011 C5/C9 import lint · extended to the campaign, identity, power, verdict, gate and property-grader modules" | X-D · `tests/test_architecture.py` | the files marked "yes" in section 9 | no | (rev 2, RV-TA 3) every import **resolved through the existing AST resolver** (`tests/test_architecture.py:98-99`, which resolves `node.level`): a resolved target `harness_bench.gateway` or under it. Red fixtures: `from ..gateway import x`, `import harness_bench.gateway as g`, `from harness_bench import gateway` | none | ADR-0020 §5 (pure functions) and ADR-0018 (no model call): none of them needs the gateway |
+| G4 | ADR-0018 §9: "The allowlist is one constant moved to a shared grading module so the three graders cannot drift (DM7)." | X-F · `tests/test_property_grader.py` | `src/harness_bench/grade/` for token 1; `grade/property.py` and `grade/_env.py` for token 2 (not `bench_check.py`: it runs inside the check's already-allowlisted environment, cannot import `_env.py` (G5), and passes that environment on; the quoted runtime test below covers it) | yes | (rev 2, RV-TA 2, RV-SIM 3, RV-SEC 6) token 1: regex `\bHOST_ENV\s*=` (word-bounded, so `DOTNET_HOST_ENV = (` at `correctness.py:49` and `mutation.py:39` does not match); token 2: `os.environ` | `HOST_ENV_DEFINERS = {"grade/_env.py"}` (token 1); `ENVIRON_READERS = {"grade/_env.py"}` (token 2: only `_env.py` reads `os.environ`, to build the allowlisted environment) | In E1 only X-F edits `correctness.py` and `mutation.py`: each imports `HOST_ENV` from `_env.py`, and `mutation.py`'s `__all__` keeps re-exporting the name (a string, so no match). `DOTNET_HOST_ENV` **stays where it is**: the two tuples differ (`mutation.py:39-42` adds `PROCESSOR_ARCHITECTURE`), so merging them would change a grader's environment. That is a separate finding, not this guard. X-A1 edits only `grade/_changes.py:84` |
+| G5 | RV-SEC 12 (no ADR trigger; W1-F seam `req-01M41C0Z`): `bench_check.py` "imports stdlib only (no `harness_bench`)" | X-F · `tests/test_property_grader.py` | `grade/bench_check.py` | no | every import, resolved as in G3, whose top-level module is not in `sys.stdlib_module_names` | none | `bench_check.py` runs inside the grading copy beside agent code and is copied alone, so it can import nothing from `harness_bench`; X-F owns both the file and the test |
+
+**Existing guards widened by named entries in E1** (W1-F seam `req-01M41C0Z`; X-D edits `tests/test_architecture.py`, its E1 hub file, in its first commit, before X-F's code lands; both are red on arrival otherwise, as read on `357bce48`):
+- D3 `test_only_procs_calls_subprocess_or_spawns` (`:44-52`, today only `procs.py` may call `subprocess`): a named constant `SUBPROCESS_CALLERS = {"procs.py", "grade/bench_check.py"}`. Reason: `bench_check.py` runs inside the check process from the grading copy, stdlib only (G5), so it cannot import `procs`; ADR-0018 §10 names `subprocess.Popen` with an explicit handle list.
+- The R-60 procs-caller set (`:228`, `allowed = {...}`) gains `grade/property`: it spawns the check through `procs.spawn` and reads the job's process list and the check's exit time.
 
 Not scan-shaped, but quoted so no slice paraphrases them (DC-189):
 - ADR-0018 §11(b): "after every grading pass of a campaign run, and before every `bench campaign` command, `bench campaign verify` checks the campaign ledger's hash chain, that every content-addressed file's name equals its hash, and `git status --porcelain bench/campaigns bench/discrimination`". X-C owns `verify`; X-F adds the after-grading hook line (seam X-C → X-F).
@@ -522,7 +527,7 @@ Correction to the plan, recorded here: `plan.py` in E2 (the `turns` field) belon
 | the run/grade cost of the grade-class tooling modules (section 9) | W1-D |
 | the synthetic agent mechanism (Inferred: a stdlib ACP fake behind `Launcher`, so no `engine.py` edit) | W1-E |
 | catalog anchors, area and the scenario-7 pass-rule field name | W1-G |
-| `TOOLCHAIN_ENV`; the probe-host request and response shape; the primitive that confirms the tests phase has no live process; which measures are check-observed (section 3); the per-property narrowing of `property_check_pass`, confirmed by its truth-table test; the ADR-0018 amendment note | W1-F |
+| `TOOLCHAIN_ENV`; the probe-host frame shape and interpreter flags; `app.kind` beyond `callable` and `wsgi`; the per-property narrowing of `property_check_pass`, confirmed by its truth-table test; the ADR-0018 amendment note | W1-F |
 | the `GateItem` kinds beyond `hidden-tests-nondeterministic` | W1-H |
 | which ledger kinds can be derived (section 6) | W1-C |
 | the alarm channel (ADR-0021 §7: "The channel is chosen at `/design-slice`") | W1-K |
@@ -536,6 +541,14 @@ W0 revision 1 was reviewed by RV-PAT, RV-SIM, RV-TA, RV-SEC and RV-DS (plan, Ord
 
 `GATE w0-seam-contracts · rev 2 · pending re-review · RV-TA (hard), RV-SEC (hard), RV-DS (hard); RV-PAT and RV-SIM PASS WITH CONDITIONS, conditions applied · DR-4 ruled (R-90) · DR-7 open (grid disagreement count; nothing built until ruled)`
 
+## Seam requests answered in revision 2 (from W1-F, `w1f-property-e1e4`)
+
+| request | ask | answer | section |
+| --- | --- | --- | --- |
+| `req-01M41C0NFEXQA0XVH4FTK9YDBD` | ten §3 amendments (probe-host child, `deliverable` field, `build` through `spawn_deliverable`, the two-phase order, the outcome order, the effective bound, derivable `measures`, `env`, `--evidence`, `-S`) | **granted in full.** Revision 2 had already made eight of the ten; W0 adopts W1-F's names and order where they differed: `in-process` kept and redefined, `app: {module, attr, kind}`, `deliverable` ∈ {`ran`, `did not build`, `did not start`}, the outcome order with the bound before the hash, exit codes 0 and 3, `out_dir/check`, `-S` | 3 |
+| `req-01M41C0ZCPJ13PQ77KNC5AHQMZ` | two named allowlist entries in `tests/test_architecture.py` (X-D) for `bench_check.py` (subprocess) and `grade/property` (procs) | **granted.** Both are confirmed red on arrival otherwise (`test_architecture.py:50`, `:228`, read). X-D adds them in its first commit. The stdlib-only assertion is X-F's own (G5) | 10 |
+| `req-01M41C57K2VVC7C4JGEJC18FR1` | the check reads `cases.json` (the grader's normalised copy), not `cases.yaml` | **granted.** The stdlib has no YAML parser, and the check is stdlib only (G5). `cases.yaml` stays the authored, hashed file | 3 |
+
 ## Review disposition
 
 One row per finding id per lens. *Accepted in part* names the rejected part and why. "Section changed" is the section of this doc that carries the change.
@@ -545,7 +558,7 @@ One row per finding id per lens. *Accepted in part* names the rejected part and 
 | TA 1 | blocking | accepted | 10 G1, 13 | — the E1 allowlist gains `cli_table.py` and `context_growth.py`; `views.py`, `_changes.py` and `cli.py` `_workspace_builder` are migrated by X-A1 in the guard's commit |
 | TA 2 | major | accepted | 10 G4 | — word-bounded token; `DOTNET_HOST_ENV` stays where it is (the two tuples differ) |
 | TA 3 | major | accepted | 10 G3 | — the AST resolver handles `node.level` (`test_architecture.py:99`, read) |
-| TA 4 | blocking | accepted | 3 (outcome order, framing, ack) | — the order is suspend, interference, bound, malformed, other §10a(b), did-not-build, score; stdin is closed on a rejected line |
+| TA 4 | blocking | accepted | 3 (outcome order, framing, ack) | — the order is suspend, bound, hash mismatch, other §10a(b), malformed, did-not-build, score (W1-F's order, from its spike); stdin is closed on every path; exit 0 after the ack, 3 after a refusal |
 | TA 5 | major | accepted | 3 (`property_check_pass`), 14 | — |
 | TA 6 | major | accepted | 4 | — |
 | TA 7 | major | accepted | 6 (discrimination record), 11 (HB-RDY-010) | — |
@@ -556,18 +569,18 @@ One row per finding id per lens. *Accepted in part* names the rejected part and 
 | TA 12 | minor | accepted | 4 | — |
 | TA 13 | minor | accepted | 5 | — the fixtures are the committed bench-plan/1 plans; `runs/grid-4` is not tracked |
 | TA 14 | minor | accepted | Gate | — |
-| SEC 1 | blocking | accepted | 3 (`import-host`) | — the check never imports agent code; a probe host child does |
+| SEC 1 | blocking | accepted | 3 (`in-process` redefined) | — the check never imports agent code; a probe-host child does. The value keeps its ADR-0018 §12 name, because the old meaning no longer exists (the reviewer's rename applied only "if in-process is kept for the old meaning") |
 | SEC 2 | major | accepted | 3 (`env`), 11 (HB-RDY-005) | — |
 | SEC 3 | major | accepted | 3 (two phases) | — |
 | SEC 4 | major | accepted | 3 (outcome row 2) | — |
 | SEC 5 | minor | accepted | 3 (`measures`) | — |
 | SEC 6 | major | accepted | 10 G4, quote list | — |
 | SEC 7 | major | accepted in part | 3, 14 | `build` goes through `spawn_deliverable` (accepted). Rejected: "readiness rejects a build that needs a package index", because readiness cannot observe a build's network reach. The task declares an offline build (W1-I), and network reach stays ADR-0018's accepted residual |
-| SEC 8 | minor | accepted | 3 | — |
-| SEC 9 | minor | accepted | 3 (interpreter flags, deviations) | — `-E -s`, not `-I`: `-I` drops the script folder from `sys.path`, so `import bench_check` would fail; the amendment note goes to W1-F |
+| SEC 8 | minor | accepted | 3 | — `out_dir/check` (W1-F's name) |
+| SEC 9 | minor | accepted | 3 (interpreter flags, deviations) | — `-S` (W1-F seam): no site-packages, global or user. Not `-I`, which drops the script folder from `sys.path`, so `import bench_check` would fail. The amendment note goes to W1-F |
 | SEC 10 | minor | accepted | 4 | — |
 | SEC 11 | minor | accepted | 6 | — ADR-0017 §1 already says `sys.platform` |
-| SEC 12 | minor | accepted | 9, 10 G3 | — |
+| SEC 12 | minor | accepted | 9, 10 G5 | — G5 is in X-F's own test file (W1-F seam), so X-D's file is not touched for it |
 | DS 1 | blocking | accepted | 6 (freeze order), 11 (HB-CMP-009, 010) | — W0 narrows ADR-0016 §3: attach freezes |
 | DS 2 | major | accepted | 6, 11 | — option (a) |
 | DS 3 | major | accepted | 3 (framing) | — |

@@ -45,6 +45,7 @@ Gate PASS incl. SRE; the run / grade classification table reviewed (ADR-0017 fol
 
 ## Inputs (read these; quote what you rely on)
 - `docs/design/eval-seam-contracts.md`: §6 (the identity API and the launch recheck), §9 (**review the whole run/grade table**: ADR-0017 calls it load-bearing), §10 G2 and G3, §11 HB-IDN-001..002, §12 (`run.launch_stopped`, `identity_check_ms`), §13 (engine.py, errors.py, identity.py, tests/test_architecture.py owner X-D), §14 (whether `grade_identity_hash` lands in E1 or E3)
+  - **W0 revision 2 changes these inputs:** §9: the class rule is refined; `discriminate.py` and `synthetic_agent.py` are now grade; no run-class module imports a grade-class one; you rule on the cost of the grade-class tooling modules (§14). §10 G3: imports are resolved through the AST resolver; `bench_check.py` imports stdlib only. §6: `platform` = `sys.platform`.
 - docs/adr/0017-engine-identity-and-freeze.md (all); docs/adr/0011-loa-conformance-in-python.md Amendment 1 (the import lint)
 - docs/architecture-evaluation-campaign.md: *Observability* rows for `identity_check_ms`
 - Code: src/harness_bench/plan.py (file_hash, tree_hash, profile_record, builds, price_list_hash); grade/runner.py (grader_build, catalog_hash); engine.py:520-540 (the launch path); tests/test_architecture.py; the file list of src/harness_bench/
