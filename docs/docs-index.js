@@ -3308,7 +3308,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4ce8017cbfc7f8210885036a1b7524687b55e18b59540bb5e042b8bb7a78a131"
+      "sourceSha256": "33254fc4f422e6000a11d7213e9d02c4634de82bd1679c5c6af9b56e3f67fee8"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -4731,6 +4731,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "88131b43a7d9a50dde6bbe90a328864d76924af4623c1e4d7937b9e130bbf59b"
     },
     {
+      "id": "brief-eval-time-b",
+      "path": "docs/coordination/eval-wave2-e1/time-b.md",
+      "title": "Brief TIME-B: two load-sensitive timing tests made deterministic, and the scan that keeps the class out",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Reproduce, then fix, the two tests that fail under full-suite -n auto load (an injected clock or an event-driven wait), and add a scan test for real-sleep and wall-clock assertions under tests/ with a named allowlist; Claude Sonnet, one session.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "e2c40321e24a778160e596893c6e0907cf8dcefcdcc20f667ddb2bd11ad04f6d"
+    },
+    {
       "id": "brief-eval-tool-gsm",
       "path": "docs/coordination/eval-wave2-e1/tool-gsm.md",
       "title": "Brief TOOL-GSM: the Grok served-model reader (R-92 condition 1)",
@@ -5664,7 +5685,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4a06d6c949d12ff000f6e34431b09e746677e503aa3994f0e64579e365145606"
+      "sourceSha256": "e2e149d6c67eca61922e3543511dbb6a4d4ef022b268ce246d7d988d375f7266"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -6543,5 +6564,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "4472bd1271eb54ee84ea666055969ccc4302c1a27fc9da512687796640050eb6"
+  "graphSha256": "7ca23c7fdfc38807dab7a16a2dcfc83a5104806e2414bb7a4d54ddd08756bbd1"
 };

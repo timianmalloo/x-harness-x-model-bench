@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T18:44:09Z",
+  "generated": "2026-10-03T19:15:24Z",
   "audit": [
     {
       "actor": null,
@@ -66716,6 +66716,7438 @@ window.AUDIT_DATA = {
       "done_when": "committed on coord/eval-w0-rev4-wave2; derive/validate exit 0; requests resolved; handback sent",
       "tier": "T1",
       "fan_out": 1
+    },
+    {
+      "id": "al-01M41JPEEAN903A1PN0DBXCXVJ",
+      "shortname": "You are session x-d1-e1e4 on branch build/eval-x-d1, harness Codex, mode…",
+      "datetime": "2026-10-03T19:08:46Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-d1-e1e4 on branch build/eval-x-d1, harness Codex, model gpt-6.1-sol with effort high (codex-cli 0.160.0). Build dispatch D1 only of the brief below, in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then this brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-D: engine identity and the launch recheck\n\n**Harness** Codex via `coord-runner` (Leader, R-87), `gpt-6.1-sol`, effort high, codex-cli 0.160.0 (R-88 condition 1: Q0 qualified Codex before W1-D's gate; README §5) · **contract** `x-d.contract.json` (D1; D2 reuses it with the suffix `2`) · **deadline** 3,300 s per dispatch · **budget** 200 calls · 200k · 2 dispatches · 3 h · **fallback** a red-only end or a failed read-back: the green follow-on runs as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same worker tree (R-87 Option 1; R-88 is the Owner review).\n\n**Design:** `docs/design/eval-identity.md` (W1-D rev 2, on `main`, `301a8705`), with ADR-0017 *Amendment 1* (R-94). **W0 rev 5** (rev 4 plus the rev-5 change table; your rows: §6 `for_task`, `builds=None`, the `profiles/<h>` set; §11 HB-RDY-011, HB-PLN-004 text). **W0 rev 4:** sections 6 (identity API, launch recheck, **the `campaign_check=` keyword**), 9, 10 (G2, G2b, G3, D3 as a two-path frozenset), 11 (every E1 row, **registry first**), 12, 13.\n\n## Owned paths (E1 hub owner, W0 §13)\n`src/harness_bench/identity.py` (new), `engine.py` (E1), `errors.py` (E1), `grade/runner.py` lines 108-112 only (`catalog_hash` becomes an import from `identity`), `tests/test_identity.py` (new), `tests/test_engine.py` (E1), `tests/test_architecture.py`, `tests/import_graph.py` (new), `tests/mutations/engine.json` (E1), `tests/mutations/cli.json` (the \"cli drops the kwarg\" mutant only).\n\n## Dispatch D1 (`x-d1-e1e4`, `build/eval-x-d1`): the first commit every other track waits on\nOne turn: a red commit, then a green commit.\n- `errors.py`: **every** E1 row of W0 §11 (HB-LED-007, HB-IDN-001/002, HB-PLN-001/002/004/005, HB-PWR-001, HB-CHK-001..004, HB-GRD-007, HB-RDY-001..011 (rev 5 adds HB-RDY-011, SR-E1 4), HB-CMP-001..010 with HB-CMP-010's rev 4 meaning; HB-PLN-004 with its rev 5 text, which also names a `synthetic` combo in a measurement plan). The registry rejects an unknown code (`errors.py:118`), so X-A1, X-B1, X-C, X-E, X-F and X-H1 test their codes only after this joins.\n- `identity.CLASSES` seeded for every existing `src/` file (69 at W1-D's scan) and every planned module of W0 §9; `telemetry/*` run, `gateway` a grade component (R-94); G2 (`test_every_src_file_has_a_class`, with the `unclassed`/`stale` red fixtures T-8..T-10b) and G2b (direction test; `RUN_IMPORTS_GRADE_ALLOWED` holds exactly the three `config.py` pairs, T-12d).\n- `tests/import_graph.py` extracted from `test_architecture.py:98-99`; G3 over the W0 §9 \"yes\" set with its three red fixtures; `SUBPROCESS_CALLERS = frozenset({\"procs.py\", \"grade/bench_check.py\"})` through the alias resolver; the R-60 set gains `grade/property`.\n- `catalog_hash` moved to `identity.py`; `grade/runner.py:108-112` becomes the import (your only hunk in X-F's file).\n\n## Dispatch D2 (`x-d2-e1e4`, `build/eval-x-d2`), after D1 joins\n- **W0 rev 5 §6 (SR-E1 3):** `manifest(root, tasks, builds=None)` writes **no** `builds/*` key; `profiles/<h>` covers every `h` in `profiles.HARNESSES` (plan-independent); `for_task(m, task)` drops every `builds/*` key and every `tasks/<id>` except `tasks/<task>`. Test: `identity_hash(manifest(root, [t], builds=None)) == identity_hash(for_task(manifest(root, [t, u], builds=b), t))`, with the mutant \"`for_task` keeps `builds/*`\".\n- `manifest`, `identity_hash`, `side`, `diff`, `launch_check` (W0 §6; `manifest` takes `plan[\"builds\"]`, imports no `tools` module); R-94 pins T-3 (`telemetry/normalize.py` edit moves run side only) and T-4 (`test_gateway_is_a_grade_component`).\n- `engine.py`: the recheck when a campaign run starts and before each `cell.launch_intent`; `run.launch_stopped{code: HB-IDN-001, reason, diff}`; `identity_check_ms` on the `cell.launch_intent` row via `self._check_ms`, absent (not 0) when no check ran.\n- **`campaign_check: Callable[[], None] | None` (W0 rev 4 §6, RV-DS W1-C 2):** called once, after the run lock (`engine.py:374`) is held and before the first `cell.launch_intent`; a raise stops the run before any launch. Test with a fake callable. X-C writes the real function and the `cli.py` line.\n\n## Acceptance items (design tests and live gate conditions)\n1. **RV-TA W1-D rev 2, R2-1/R2-2:** T-25 builds its own fixture (a real confirmed plan with one cell and a campaign block, a real `Engine`, only `preflight.check` stubbed, a `src/` run-class file edited) and its no-drift twin T-25b; the mutant \"cli drops the kwarg\" in `tests/mutations/cli.json`.\n2. **RV-TA 2, 3:** pure `unclassed`/`stale` take the table (T-8..T-10, T-10b); T-12 with six import forms, T-12c the stale pair, T-12d the edges equal the three pairs.\n3. **RV-TA 5, 6; RV-SRE 1, 3, 4:** `identity_check_ms` via a fake clock (T-30), absent not 0 (T-29); the check once per tick with a 2 s cap (T-16, T-31); the stop row exact (T-26, T-28, T-32).\n4. **RV-TA 7, RV-SRE 8 (E1 exit evidence, at the demo):** the demo reports median, max and the cold value of `identity_check_ms`.\n5. `test_side_partitions_every_component`; the manifest carries no `os.environ` value and no path (RV-SEC 11).\n6. The differ names `grade/formal.py changed` (plan exit evidence).\n\nNot yours: `Status.stop_reason`/`stop_diff` (X-C, W0 rev 4 §6), `grading.started` fields (X-F).\n\n## Exit\nREADME §3 join gate per dispatch; served model read from the Codex native record. Report per README §4.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M41JR8NZCGPZW37X5RV1Q1SA",
+      "shortname": "You are session x-enva-e1e4 on branch build/eval-env-a, harness Grok, mo…",
+      "datetime": "2026-10-03T19:09:46Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-enva-e1e4 on branch build/eval-env-a, harness Grok, model grok-4.7 with --reasoning-effort high. Build the ENV-A fix of the brief below, in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then this brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# ENV-A: the ambient-credential fix\n\n**Harness** Grok via `coord-runner` (Leader, R-87), `grok-4.7`, `--reasoning-effort high`, `XAI_API_KEY` removed · **contract** `env-a.contract.json` · **deadline** 1,200 s · **dispatch** one turn, red then green · **budget** 30 calls · 80k · 1 · 0.5 h · **fallback** a red-only end or a failed served-model read: the green follow-on as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree (R-92 is the Owner review).\n\n**The class** (`docs/lessons/defect-classes.md`, the candidate \"a hermetic test reads an ambient credential from the operator's shell\", class id **ENV-C**, renamed from a duplicate `ENV-A`; cite ENV-C in your report and commits): with `HB_CLAUDE_OAUTH_TOKEN` set to a dummy value, three tests fail on `main`: `tests/test_gateway_headless.py::test_t_gw_10_the_credential_is_present_during_the_call_and_gone_after_it`, `::test_t_gw_10_the_credential_is_gone_after_a_timeout_and_after_an_exception_past_the_copy`, `tests/test_profiles.py::test_the_launcher_reports_no_model_setter_and_a_copied_login[claude-code]`.\n\n## Owned paths\n`tests/conftest.py` (E1 owner: this track; another track needs a seam request), `tests/test_env_isolation.py` (new). **Not yours:** `tests/test_profiles.py` (X-E's in E1), `tests/test_gateway_headless.py`; the fix must make them pass **without editing them**.\n\n## Depends on\nTOOL-GSM joined (this is a later Grok dispatch, R-92).\n\n## Work\n1. **Sweep first, recorded in the report:** `git grep -n -E \"OAUTH_TOKEN|_API_KEY|GH_TOKEN\" -- tests src/harness_bench/profiles.py` and the profile denylist (`profiles.DROP_EXACT`, `profiles.DROP_PREFIXES`). The credential list is **one** definition: import it from the production source if one exists; if none does, write it once in `conftest.py` and say so.\n2. **Red:** `tests/test_env_isolation.py` sets each listed variable to a dummy value with `monkeypatch.setenv` in a subprocess-free way (re-run the three named tests through `pytest.main` in-process, or call their bodies) and asserts they pass; plus one test that a test marked `credentials` still sees the variable. Red today by assertion.\n3. **Green:** an autouse fixture in `tests/conftest.py` that `monkeypatch.delenv(name, raising=False)` for every listed name, skipped for tests marked `credentials`.\n\n## Acceptance items\n1. The three named tests pass with `HB_CLAUDE_OAUTH_TOKEN=dummy` set in the shell, and with it unset.\n2. A mutant that removes the fixture is killed by `tests/test_env_isolation.py`.\n3. The defect-class text for the Coordinator: instances, sweep result, control (this fixture and its test), status `controlled` proposed.\n\n## Exit\nREADME §3 join gate, run **twice**: with the token unset and with `HB_CLAUDE_OAUTH_TOKEN=dummy`. `python tools/grok_served_model.py <session dir>` exits 0. Report per README §4.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M41JRAX0HMQ76B1HHVNP390F",
+      "shortname": "You are session x-g1-e1e4 on branch build/eval-x-g1, harness Grok, model…",
+      "datetime": "2026-10-03T19:09:48Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-g1-e1e4 on branch build/eval-x-g1, harness Grok, model grok-4.7 with --reasoning-effort high. Build X-G1 of the brief below, in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then this brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-G1: catalog 0.7.dev\n\n**Harness** Grok via `coord-runner` (Leader, R-87), `grok-4.7`, `--reasoning-effort high`, `XAI_API_KEY` removed · **contract** `x-g1.contract.json` · **deadline** 1,200 s · **dispatch** one turn, red then green · **budget** 40 calls · 100k · 1 · 0.7 h · **fallback** the green follow-on as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree (R-92 is the Owner review).\n\n**Design:** `docs/design/eval-catalog-0-7.md` (W1-G rev 2, on `main`). **W0 rev 5:** §7 (R-97). **W0 rev 4:** section 7 (the table of eleven ids, kind, better, scale, `property:` tag; R-95's owner rule).\n\n## Owned paths\n`bench/metrics.yaml` (E1 owner), `tests/test_catalog_version.py`, `docs/adr/0019-catalog-0-7-property-metrics.md` (only the item-3 note, by R-95 condition 4). **Not yours:** `grade/property.py` (X-F; never create it), `config.py` (X-A1's validation checks), `grade/runner.py` (X-F builds the owner clause and T-R3..T-R6), `bench/catalog-freeze.yaml` (Leader, R-86).\n\n## Depends on\n**X-F0 joined** (`grade/property.py` exists; `validate_repo` refuses a metric whose grader has no module, `config.py:158`). R-95 ✓.\n\n## Work\n- `version: \"0.7.dev\"`; the eleven metrics of W0 §7 with weight 0, source D, the anchors and areas W1-G fixes (R-79 forms), each property-specific one tagged `property: <name>`; `property_check_pass` untagged.\n- `pass_at_1` gains `also_graded_by: [formal]` (R-95). In the same commit, ADR-0019's item-3 note changes from \"provisional on the request\" to \"R-95: `also_graded_by: [formal]`\".\n- Every 0.6 metric's definition is unchanged except that one key; the US-4 control stays green.\n- **R-97 condition 3 (W0 rev 5 §7):** `hallucinated_symbol_errors`'s `anchor_note` says \"unresolved vendored-API references in the final tree\"; the words \"build-log errors\" do not appear in it. The anchor `[5, 0]` stays provisional (W1-G U2). A test asserts the phrase is absent.\n\n## Acceptance items\n1. Red first: `tests/test_catalog_version.py` asserts the eleven ids with their kind, better, scale and tag (W1-G's T-C nodes), red today by assertion.\n2. The eleven metrics validate under `0.7.dev` (R-90); `bench validate` exit 0 on the joined tree.\n3. **RV-TA W1-G R2-2:** the design's §11 note that T-P4/T-P6 carry the `n_recorded` sweep proof is the author's; you do not edit the design. X-G3 (E3) owns T-U1b (RV-TA R2-1).\n4. T-R3..T-R6 are X-F's (W0 rev 4 §7); do not write them.\n\n## Exit\nREADME §3 join gate; `python tools/grok_served_model.py <session dir>` exits 0 (the first Grok dispatch: if TOOL-GSM has not joined yet, the Leader reads the same fields by hand, as Q0b did, and records them). Report per README §4.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M41JRD8M6GT6142HRJVHJRBF",
+      "shortname": "You are session x-b1a-e1e4 on branch build/eval-x-b1a, harness Grok, mod…",
+      "datetime": "2026-10-03T19:09:51Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-b1a-e1e4 on branch build/eval-x-b1a, harness Grok, model grok-4.7 with --reasoning-effort high. Build dispatch B1a only of the brief below, in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then this brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-B1: crash-atomic writes and the lock helper\n\n**Harness** Grok via `coord-runner` (Leader, R-87), `grok-4.7`, `--reasoning-effort high`, grok 1.0.41, launched with `XAI_API_KEY` removed · **contract** `x-b1.contract.json` (B1a; B1b and B1c reuse it with the suffixes `b`, `c`) · **deadline** 1,200 s per dispatch · **budget** 40 calls · 100k per dispatch · 3 dispatches · 1.5 h total · **fallback** a red-only end, a timeout, or a served-model read that is not all `grok-4.7*`: the green follow-on runs as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree (R-87 Option 1; R-92 is the Owner review).\n\n**Design:** `docs/design/eval-atomic-publish.md` (W1-B rev 2, on `main`, gate passed), sections 3, 4, 10, 11, 12.2, 17. **W0 rev 4:** sections 4 (as granted to S-B4), 6 (`acquire_then_probe`), 11, 13.\n\n## Owned paths\n`src/harness_bench/atomic.py` (new), `tests/test_atomic.py` (new), `tests/test_atomic_sites.py` (new), `tests/mutations/atomic.json` (new), `src/harness_bench/oslock.py` (E1: `acquire_then_probe` only), `tests/test_oslock.py` (the helper's tests), `src/harness_bench/workspace.py` (the `_land` hunk and the `make_writable` import only), `tests/mutations/workspace.json`. **Not yours:** `tests/test_workspace.py` (X-A1's; W1-B: it stays green unedited), `archive.py` (X-B2), `docs/lessons/defect-classes.md` (send W1-B §12.2's RIG-D instance to the Coordinator as text).\n\n## Dispatches (each based on `main`; each lands red then green in one turn)\n- **B1a** (`x-b1a-e1e4`, `build/eval-x-b1a`): `atomic.py` per W1-B §17 order: the naive skeleton (every public name, neutral wrong values) as the red commit's base, then `create_once`, `TEMP_RE`, `is_temp_name`, `stale_temps`, `sweep_temps(target, lock)` (raises `ValueError` unless `oslock.is_held(lock.path)`), `make_writable` (lstat first, never through a link, adds `S_IWUSR`), `rename_with_retry` with `RENAME_BACKOFF`. Depends on X-D1 (HB-LED-007 in the registry).\n- **B1b** (`x-b1b-e1e4`): `publish_dir`; `workspace._land` calls `rename_with_retry(tmp, dest, replace=True, settled=lambda: valid(dest))` and drops its own loop; the WIN-A mutant moves; `tests/test_atomic_sites.py` (the scan, 12 sites in 11 keys, three red-fixture tests; the three grader `copytree` entries stay until X-F deletes them).\n- **B1c** (`x-b1c-e1e4`): `oslock.acquire_then_probe(own, own_code, others, *, between=None) -> RunLock` (W0 rev 4 §6): `between` runs after the first operation and before the second; tests with `Barrier(2).wait(timeout=10)`: never both proceed; both-refused leaves every file unchanged; the swap mutant (probe before acquire) is killed by the barrier test.\n\n## Acceptance items (design tests and live gate conditions)\n1. The W1-B §10.2 nodes and the §10.3 mutation set M1..M27 plus M14b, each naming its killing test (MUT-B keeps the ids honest).\n2. **RV-TA W1-B R2-3:** a mutation run on a Windows host **and** a POSIX host, both in the proof pack (M14 dies only on Windows, M14b only on POSIX): `test_posix_flag_default_follows_the_platform`, `test_the_real_publish_dir_fsyncs_the_folder_only_on_posix`. The POSIX half runs in CI's macOS job; say which run killed which.\n3. **RV-SEC W1-B 5(c):** one recorded run of the three unmeasured symlink behaviours (`os.unlink` on a Windows directory symlink, `O_EXCL` onto a dangling symlink on Windows, the sweep of a symlink temp) on a host with symlink rights (macOS CI or Windows Developer Mode); `test_the_posix_job_does_not_skip_the_symlink_variants` and the CI rule that a skipped symlink variant fails the macOS job. Unmeasured on this host (winerror 1314).\n4. **RV-SEC 2:** `create_once` keeps the fd open and compares `st_dev`/`st_ino` after the link (M22); reads through one descriptor with `O_NOFOLLOW` where available (M27).\n5. **RV-DS 1:** `_discard_temp` swallows an unlink failure after a successful link and logs `atomic.temp_leaked` (M23). **RV-DS 4:** M25 (the lock check). **RV-DS 5:** `rename_retries`, `rename_ms`, `publish_failed(phase=rename)` asserted.\n6. The kill tests `test_a_kill_between_write_and_link_leaves_no_final_file` and (B1b) `test_a_kill_mid_copy_leaves_no_final_folder_and_the_redo_succeeds`.\n\n## Exit\nREADME §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). Report per README §4.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M41JRGAEJS1NP4DZR46TF5HW",
+      "shortname": "You are session x-b2-e1e4 on branch build/eval-x-b2, harness Agy, model …",
+      "datetime": "2026-10-03T19:09:54Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-b2-e1e4 on branch build/eval-x-b2, harness Agy, model gemini-3.8-flash-high. Build X-B2 of the brief below, in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then this brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-B2: crash-atomic archive\n\n**Harness** Agy via `coord-runner` (Leader, R-87), `gemini-3.8-flash-high`, agy 1.2.13, `--mode accept-edits` · **contract** `x-b2.contract.json` · **deadline** 3,300 s · **dispatch** one turn, red then green · **budget** 120 calls · 150k · 1 · 1.5 h · **fallback** the green follow-on as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree, after an Owner review.\n\n**Design:** `docs/design/eval-atomic-publish.md` §6 (archive rework), §10 (the archive nodes and A1..A4), §12.1 (the defect class). **W0 rev 4:** section 4 (`publish_dir`, \"Readers of the archive folder\", `recover_archive` is X-K1's in E3), 13.\n\n## Owned paths\n`src/harness_bench/archive.py` (E1), `report/judges.py` (the `attempt_dirs` line at `:216` only), `tests/test_archive.py`, `tests/mutations/archive.json`, and in `tests/test_engine.py` only `test_the_engine_archive_goes_through_publish_dir` and in `tests/test_views.py` only `test_bench_verify_passes_a_run_archived_by_the_atomic_path` — both files belong to other E1 owners (X-D, X-A1), so send each as a seam request to them **or** place both tests in `tests/test_archive.py` if they need no private fixture of those files; say which in your report.\n\n## Depends on\n**X-B1b joined** (`atomic.publish_dir`); X-D1 (codes).\n\n## Acceptance items\n1. **Red first against today's `archive_cell`:** a kill during an archive copy, then a resume completes without `HB-USR-002` (D1); a `*.tmp-*` sibling is redone; red by assertion.\n2. `archive_cell` goes through `atomic.publish_dir` with a `verify` that compares the file set and each file's rows; the real-wiring test fails if the call is removed.\n3. `archive.attempt_dirs(run_dir, cell_id)` (`re.fullmatch(r\"attempt-(\\d+)\")`, sorted by number) is the one reader; `report/judges.py:216` uses it; a leaked `attempt-1.tmp-…` no longer raises `ValueError` there.\n4. `archive.make_writable` stays a re-export of `atomic.make_writable` (W0 §4).\n5. The mutants A1..A4 in `tests/mutations/archive.json`, each naming its killing test.\n6. The \"exists means complete\" defect-class text (W1-B §12.1) goes to the Coordinator in your report; you do not edit `docs/lessons/defect-classes.md`.\n\n## Exit\nREADME §3 join gate; served model read from Agy's `cli.log`. Report per README §4.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M41JRJAKNDA6TV8D0JG5F9SB",
+      "shortname": "You are session x-a1a-e1e4 on branch build/eval-x-a1a, harness Codex, mo…",
+      "datetime": "2026-10-03T19:09:56Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-a1a-e1e4 on branch build/eval-x-a1a, harness Codex, model gpt-6.1-sol with effort high (codex-cli 0.160.0). Build dispatch A1a only of the brief below, in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then this brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-A1: arms and ring plumbing\n\n**Harness** Codex via `coord-runner` (Leader, R-87), `gpt-6.1-sol`, effort high, codex-cli 0.160.0 (R-88 condition 1, README §5) · **contract** `x-a1.contract.json` (A1a; A1b reuses it with the suffix `b`) · **deadline** 3,300 s per dispatch · **budget** 220 calls · 200k · 2 dispatches · 3 h · **fallback** a red-only end: the green follow-on runs as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree (R-88 is the Owner review).\n\n**Design:** `docs/design/eval-arms.md` (W1-A rev 2, on `main`, `92e977b2`). **W0 rev 5:** §2 (`CHECK_PROPERTIES`), §6 (the synthetic hunk), §11 (HB-PLN-004 text). **W0 rev 4:** sections 1, 5 (quoted ids incl. `comparisons`, no top-level `pack`, `plan_pack(plan, *, strict=False)`), 7 (`PROPERTY_NAMES`, the two `validate_catalog` checks, R-95 condition 2), 10 G1 (AST tokens, equality ratchet, pins after the migrations), 11, 13.\n\n## Owned paths (E1 hub owner, W0 §13)\n`src/harness_bench/plan.py`, `config.py`, `views.py`, `grade/_changes.py` (line 84 only), `cli.py` (the function `_workspace_builder` only), `board.py` and `report/summaries.py` (the one-line `plan_pack` migrations and `board._build_pack_effect`'s status text only), `report/pack_improvement.py` (the `cell_arm` line at 746-747 only), `bench/rings/pilot.yaml` (new; R-89: `cc-opus`, `model: claude-opus-5-5` explicit, k = 3), `tests/test_plan.py`, `test_config.py`, `test_workspace.py`, `test_views.py`, `test_changes_cache.py` (the `pre_turn_commit` case), `tests/test_arms_guard.py` (new), `tests/fixtures/plans/grid4-cells.json` (new), `tests/mutations/plan.json`. **Not yours:** `workspace.py` source (X-B1's `_land` hunk), `cli.py` `cmd_plan` (X-C pastes W1-A §3.9), `report/html.py` (X-H2 takes your header lines).\n\n## Depends on\nW1-A ✓; **X-D1** joined (HB-PLN-001/002/004/005 in the registry).\n\n## Dispatches\n- **A1a** (`x-a1a-e1e4`, `build/eval-x-a1a`): `config.py` (bench-matrix/2 validation, quoted-id refusal in `arms` and `comparisons`, upcast, `ARM_OFF`, `ARM_ID`, ring validation, `PROPERTY_NAMES`, the `property:` tag check, the `also_graded_by` check: a grader module, differs from `grader`, no repeats); `plan.py` (bench-plan/2 writer, `Cell.arm`, label, `arms`, `comparisons`, `launch_seed`, `kind`, `campaign` verbatim, `ring`, `cell_arm`, `arm_pack`, `plan_pack`, `launch_order`, `launch_balance`, `draw_launch_order`, the ready rule by plan kind, `parse_binding`, `resolve_arms`); the grid-4 golden. **W0 rev 5 (SR-E1 2, SR-L3):** `\"synthetic\"` joins `config.HARNESSES`; `config.CHECK_PROPERTIES = frozenset({\"security\", \"resilience\"})` beside `PROPERTY_NAMES`; `plan.SYNTHETIC_PROFILE_RECORD` (a constant dict) returned by `plan.profile_record(root, \"synthetic\")`; `build_plan` refuses a **measurement** plan that names a `synthetic` combo with HB-PLN-004 (one refusal by plan kind, listing every offender). Run the full suite: any test that pins `config.HARNESSES` is yours to update in the same commit.\n- **A1b** (`x-a1b-e1e4`): `views.py:525`, `grade/_changes.py:84`, `cli._workspace_builder`, the three plan-level readers and `pack_improvement.py:746-747`, `board._build_pack_effect` text, `bench/rings/pilot.yaml`, G1 with its fixtures and the pinned counts taken **after** these migrations.\n\n## Acceptance items (W1-A rev 2's test plan §10 plus the live gate conditions it states as applied; check each against the merged text)\n1. EV-17: `test_grid4_replan_gives_the_same_task_combo_arm_rep_set_and_cell_ids` runs `build_plan` over the fixture matrix with injected versions (RV-TA 6), and the fixture carries its provenance (`runs/grid-4/plan.json` and its sha256, no generator; RV-TA 7).\n2. Launch balance: refused at exactly 1/20 deviation, with a `<` → `<=` mutant (RV-TA 5); the 2×4 and 3×4 shapes in the redraw test; the cap refusal text does not claim \"at least 2 blocks\" for more than two arms (RV-PAT 3, 4).\n3. G1: one red fixture per form (`x[\"pack\"]`, `.get`, `.pop`, `in`, `getattr`, `itemgetter`, attribute, keyword), a comment-only and a docstring-only file that must not match; `test_pack_hits_equal_the_pinned_counts` asserts equality (RV-PAT W0 delta 3); RV-TA 1's `Constant(\"on\"/\"off\")` scan with its red fixture and the `report/assets/*.js` text scan.\n4. **`test_plan_py_imports_no_campaign_or_identity_module` stays, with a red fixture** (W0 rev 4 ruling on RV-TA 3 vs RV-SIM 7: G2b cannot catch `identity`, which is run class).\n5. RV-TA 2: one test through the real `cli._workspace_builder` with two real pack repos, asserting each arm's diff equals its manifest.\n6. RV-TA 8: the red commit lands stubs that raise or return neutral wrong values for `launch_order`, `cell_arm`, `draw_launch_order`, so tests fail on behaviour.\n7. `test_plan_level_readers_state_the_true_pack_or_refuse`: `board` raises HB-PLN-005 with `strict=True`; the display readers render `several packs`.\n8. HB-PLN-004 names every offender (no cap; RV-SIM 4); a discrimination plan admits `draft` and refuses `stub`; a measurement plan with a `synthetic` combo is refused and names the combo (W0 rev 5), with a red fixture and the mutant \"skip the harness check\"; `profile_record(root, \"synthetic\")` returns the constant (today it raises `ValueError`, `profiles.py:176`).\n9. RV-PAT 6 (for X-E, recorded here so it is not lost): `status: ready` has one predicate; you do not write `ready` anywhere.\n\n## Exit\nREADME §3 join gate per dispatch; served model read from the Codex native record. Report per README §4.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M41JT6N45CZMDRDZS17BCS5V",
+      "shortname": "compile-You are session x-d1-e1e4 on branch build/eval-x-d1, harness Codex, mode…",
+      "datetime": "2026-10-03T19:10:50Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Build dispatch D1 of X-D on build/eval-x-d1: every E1 HB row (HB-RDY-011 included) in errors.py, the CLASSES seed with G2 and G2b, tests/import_graph.py with G3 and the two named allowlist entries, and the catalog_hash move; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d1.; The README section 3 join gate passes on the final commit, each command on its own line.; The served model is read from the Codex native record and is the first line of the report.; The served model id is the first line of the final report.\nNot in scope: Dispatch D2 (manifest, launch recheck, campaign_check keyword): a later dispatch.; Status.stop_reason/stop_diff (X-C) and grading.started fields (X-F).\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: 200 calls, 3,300 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d1. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes on the final commit, each command on its own line. | phrase: README §3 join gate per dispatch |\n| done_when: The served model is read from the Codex native record and is the first line of the report. | phrase: served model read from the Codex native record |\n| not_in_scope: Dispatch D2 (manifest, launch recheck, campaign_check keyword): a later dispatch. | phrase: Build dispatch D1 only |\n| not_in_scope: Status.stop_reason/stop_diff (X-C) and grading.started fields (X-F). | phrase: Not yours: `Status.stop_reason`/`stop_diff` (X-C, W0 rev 4 §6), `grading.started` fields (X-F). |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\nReferences\n- coord-runner: unresolved (not found)\n- gpt-6.1-sol: unresolved (not found)\n- x-d.contract.json: docs/coordination/eval-wave2-e1/x-d.contract.json sha256 1f7841905575e326774915d70a6fce84c5627761fafda9981b2d0f891832af08\n- 2: unresolved (not found)\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-identity.md: docs/design/eval-identity.md sha256 8a267c00da2b82e5c7054ea1bd0ba117a932fabda71ff8df017d885b091ba288\n- main: unresolved (not found)\n- 301a8705: unresolved (not found)\n- for_task: unresolved (not found)\n- builds=None: unresolved (not found)\n- profiles/<h: unresolved (not found)\n- campaign_check=: unresolved (not found)\n- src/harness_bench/identity.py: unresolved (not found)\n- engine.py: src/harness_bench/engine.py sha256 b50f336e0b450540d3bce1144669427c82673d42d23b0a165c0ae47b39d94492\n- errors.py: src/harness_bench/errors.py sha256 67e763d8e3a20d4b2fe09181e61c845e72b5110cd0a2417fb6cf2e8cf4d66251\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 65d4fdfe3805f235ba957d7d5b4de74e5651b334040eda8e8e6f383da0c2849a\n- catalog_hash: unresolved (not found)\n- identity: unresolved (not found)\n- tests/test_identity.py: unresolved (not found)\n- tests/test_engine.py: tests/test_engine.py sha256 2b2574063780c13ce130974fdf02589825038c68b4f4f6c16571976e208c26d2\n- tests/test_architecture.py: tests/test_architecture.py sha256 39ea39cefd95ce7c05d5c7d784f3df6c78f942d31d8148a5569fce8be7673b60\n- tests/import_graph.py: unresolved (not found)\n- tests/mutations/engine.json: tests/mutations/engine.json sha256 134d907b5325bc553dd9d0b46598ed1eaef3bf5950f7ee7e0390143ea72e4260\n- tests/mutations/cli.json: tests/mutations/cli.json sha256 4f82f15399ec860f251733197304788562b660e54449b950b325acdfac686dd8\n- x-d1-e1e4: unresolved (not found)\n- build/eval-x-d1: unresolved (not found)\n- synthetic: unresolved (not found)\n- errors.py:118: unresolved (not found)\n- identity.CLASSES: unresolved (not found)\n- src/: unresolved (not found)\n- telemetry/*: unresolved (not found)\n- gateway: unresolved (not found)\n- test_every_src_file_has_a_class: unresolved (not found)\n- unclassed: unresolved (not found)\n- stale: unresolved (not found)\n- RUN_IMPORTS_GRADE_ALLOWED: unresolved (not found)\n- config.py: src/harness_bench/config.py sha256 2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19\n- test_architecture.py:98-99: unresolved (not found)\n- SUBPROCESS_CALLERS = frozenset({\"procs.py\", \"grade/bench_check.py\"}: unresolved (not found)\n- grade/property: unresolved (not found)\n- identity.py: unresolved (not found)\n- grade/runner.py:108-112: unresolved (not found)\n- x-d2-e1e4: unresolved (not found)\n- build/eval-x-d2: unresolved (not found)\n- manifest(root, tasks, builds=None: unresolved (not found)\n- builds/*: unresolved (not found)\n- h: unresolved (not found)\n- profiles.HARNESSES: unresolved (not found)\n- for_task(m, task: unresolved (not found)\n- tasks/<id: unresolved (not found)\n- tasks/<task: unresolved (not found)\n- identity_hash(manifest(root, [t], builds=None)) == identity_hash(for_task(manifest(root, [t, u], builds=b), t: unresolved (not found)\n- manifest: unresolved (not found)\n- identity_hash: unresolved (not found)\n- side: unresolved (not found)\n- diff: unresolved (not found)\n- launch_check: unresolved (not found)\n- plan[\"builds: unresolved (not found)\n- tools: unresolved (not found)\n- telemetry/normalize.py: src/harness_bench/telemetry/normalize.py sha256 8ff140592bd0e579b9c8a27cff0758a9e3626b6f8a4f76e104d9ebfa0d02cbd2\n- test_gateway_is_a_grade_component: unresolved (not found)\n- cell.launch_intent: unresolved (not found)\n- run.launch_stopped{code: HB-IDN-001, reason, diff}: unresolved (not found)\n- identity_check_ms: unresolved (not found)\n- self._check_ms: unresolved (not found)\n- campaign_check: Callable[[], None] | None: unresolved (not found)\n- engine.py:374: unresolved (not found)\n- cli.py: src/harness_bench/cli.py sha256 3017d46c6393d25bfb494ac6ea972345af088ac5a8dfe3fd23ad34cc5e033ed8\n- Engine: unresolved (not found)\n- preflight.check: unresolved (not found)\n- test_side_partitions_every_component: unresolved (not found)\n- os.environ: unresolved (not found)\n- grade/formal.py changed: unresolved (not found)\n- Status.stop_reason: unresolved (not found)\n- stop_diff: unresolved (not found)\n- grading.started: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- HB-IDN-001/002: unresolved (not found)\n- HB-PLN-001/002/004/005: unresolved (not found)\n- unclassed`/`stale: unresolved (not found)\n- frozenset({\"procs.py: unresolved (not found)\n- grade/bench_check.py\"}: unresolved (not found)\n- R2-1/R2-2:**: unresolved (not found)\n- grade/formal.py: src/harness_bench/grade/formal.py sha256 13658664be989d9649853bca7be4e856492212567c02f4a5bce0fb1241b650eb\n- Status.stop_reason`/`stop_diff: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-d1\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: a red-only end or a failed served-model read: the green follow-on runs as Claude Code Sonnet (model: sonnet) in the same worker tree (R-87 Option 1)\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JPEEAN903A1PN0DBXCXVJ\nraw sha256: 044589a4cb997aad1cdbccb5b145859e932c935859ede1b100a0e5f05abb8b13\ncompiler model: claude-opus-5-5\nengine seconds: 0.02\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M41JPEEAN903A1PN0DBXCXVJ for codex v1: 6 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d1.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes on the final commit, each command on its own line.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model is read from the Codex native record and is the first line of the report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "served model read from the Codex native record"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatch D2 (manifest, launch recheck, campaign_check keyword): a later dispatch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch D1 only"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Status.stop_reason/stop_diff (X-C) and grading.started fields (X-F).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Not yours: `Status.stop_reason`/`stop_diff` (X-C, W0 rev 4 §6), `grading.started` fields (X-F)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          }
+        ],
+        "contract_slot": {
+          "width_cap": "1",
+          "deadline": "3,300 s",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-d1",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "containment": "own worktree; the brief's owned paths only",
+          "fallback": "a red-only end or a failed served-model read: the green follow-on runs as Claude Code Sonnet (model: sonnet) in the same worker tree (R-87 Option 1)"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Build dispatch D1 of X-D on build/eval-x-d1: every E1 HB row (HB-RDY-011 included) in errors.py, the CLASSES seed with G2 and G2b, tests/import_graph.py with G3 and the two named allowlist entries, and the catalog_hash move; red commit then green commit.",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d1.",
+            "The README section 3 join gate passes on the final commit, each command on its own line.",
+            "The served model is read from the Codex native record and is the first line of the report.",
+            "The served model id is the first line of the final report."
+          ],
+          "not_in_scope": [
+            "Dispatch D2 (manifest, launch recheck, campaign_check keyword): a later dispatch.",
+            "Status.stop_reason/stop_diff (X-C) and grading.started fields (X-F)."
+          ],
+          "tier": "T2",
+          "fan_out_cap": "0",
+          "context_ceiling": "200k tokens",
+          "main_line_budget": "200 calls, 3,300 s"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.02,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JPEEAN903A1PN0DBXCXVJ",
+        "raw_sha256": "044589a4cb997aad1cdbccb5b145859e932c935859ede1b100a0e5f05abb8b13",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gpt-6.1-sol"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-d.contract.json",
+            "reason": null,
+            "sha256": "1f7841905575e326774915d70a6fce84c5627761fafda9981b2d0f891832af08",
+            "status": "resolved",
+            "token": "x-d.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-identity.md",
+            "reason": null,
+            "sha256": "8a267c00da2b82e5c7054ea1bd0ba117a932fabda71ff8df017d885b091ba288",
+            "status": "resolved",
+            "token": "docs/design/eval-identity.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "301a8705"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "for_task"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "builds=None"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles/<h"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "campaign_check="
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/engine.py",
+            "reason": null,
+            "sha256": "b50f336e0b450540d3bce1144669427c82673d42d23b0a165c0ae47b39d94492",
+            "status": "resolved",
+            "token": "engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "67e763d8e3a20d4b2fe09181e61c845e72b5110cd0a2417fb6cf2e8cf4d66251",
+            "status": "resolved",
+            "token": "errors.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "65d4fdfe3805f235ba957d7d5b4de74e5651b334040eda8e8e6f383da0c2849a",
+            "status": "resolved",
+            "token": "grade/runner.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "catalog_hash"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_engine.py",
+            "reason": null,
+            "sha256": "2b2574063780c13ce130974fdf02589825038c68b4f4f6c16571976e208c26d2",
+            "status": "resolved",
+            "token": "tests/test_engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "39ea39cefd95ce7c05d5c7d784f3df6c78f942d31d8148a5569fce8be7673b60",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/import_graph.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/engine.json",
+            "reason": null,
+            "sha256": "134d907b5325bc553dd9d0b46598ed1eaef3bf5950f7ee7e0390143ea72e4260",
+            "status": "resolved",
+            "token": "tests/mutations/engine.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/cli.json",
+            "reason": null,
+            "sha256": "4f82f15399ec860f251733197304788562b660e54449b950b325acdfac686dd8",
+            "status": "resolved",
+            "token": "tests/mutations/cli.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-d1-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-d1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "synthetic"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "errors.py:118"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity.CLASSES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "telemetry/*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gateway"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_every_src_file_has_a_class"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "unclassed"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stale"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "RUN_IMPORTS_GRADE_ALLOWED"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19",
+            "status": "resolved",
+            "token": "config.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_architecture.py:98-99"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "SUBPROCESS_CALLERS = frozenset({\"procs.py\", \"grade/bench_check.py\"}"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/property"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/runner.py:108-112"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-d2-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-d2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "manifest(root, tasks, builds=None"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "builds/*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "h"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles.HARNESSES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "for_task(m, task"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/<id"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/<task"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity_hash(manifest(root, [t], builds=None)) == identity_hash(for_task(manifest(root, [t, u], builds=b), t"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "manifest"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity_hash"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "side"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "diff"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "launch_check"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan[\"builds"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/normalize.py",
+            "reason": null,
+            "sha256": "8ff140592bd0e579b9c8a27cff0758a9e3626b6f8a4f76e104d9ebfa0d02cbd2",
+            "status": "resolved",
+            "token": "telemetry/normalize.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_gateway_is_a_grade_component"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cell.launch_intent"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "run.launch_stopped{code: HB-IDN-001, reason, diff}"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity_check_ms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "self._check_ms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "campaign_check: Callable[[], None] | None"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "engine.py:374"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "3017d46c6393d25bfb494ac6ea972345af088ac5a8dfe3fd23ad34cc5e033ed8",
+            "status": "resolved",
+            "token": "cli.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Engine"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "preflight.check"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_side_partitions_every_component"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "os.environ"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/formal.py changed"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Status.stop_reason"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stop_diff"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grading.started"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB-IDN-001/002"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB-PLN-001/002/004/005"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "unclassed`/`stale"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "frozenset({\"procs.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/bench_check.py\"}"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "R2-1/R2-2:**"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/formal.py",
+            "reason": null,
+            "sha256": "13658664be989d9649853bca7be4e856492212567c02f4a5bce0fb1241b650eb",
+            "status": "resolved",
+            "token": "grade/formal.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Status.stop_reason`/`stop_diff"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M41JT7C4KKT46EXQM0ZVV5J3",
+      "shortname": "compile-You are session x-a1a-e1e4 on branch build/eval-x-a1a, harness Codex, mo…",
+      "datetime": "2026-10-03T19:10:50Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Build dispatch A1a of X-A1 on build/eval-x-a1a: config.py bench-matrix/2 validation with PROPERTY_NAMES, CHECK_PROPERTIES and synthetic in HARNESSES; plan.py bench-plan/2 with SYNTHETIC_PROFILE_RECORD and the ready rule by plan kind; the grid-4 golden; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a.; The README section 3 join gate passes on the final commit, each command on its own line.; The served model is read from the Codex native record and is the first line of the report.; The served model id is the first line of the final report.\nNot in scope: Dispatch A1b (readers, G1 guard, migrations, pilot.yaml): a later dispatch.; workspace.py source, cli.py cmd_plan and report/html.py.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: 220 calls, 3,300 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes on the final commit, each command on its own line. | phrase: README §3 join gate per dispatch |\n| done_when: The served model is read from the Codex native record and is the first line of the report. | phrase: served model read from the Codex native record |\n| not_in_scope: Dispatch A1b (readers, G1 guard, migrations, pilot.yaml): a later dispatch. | phrase: Build dispatch A1a only |\n| not_in_scope: workspace.py source, cli.py cmd_plan and report/html.py. | phrase: `workspace.py` source (X-B1's `_land` hunk), `cli.py` `cmd_plan` (X-C pastes W1-A §3.9), `report/html.py` (X-H2 takes your header lines) |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\nReferences\n- coord-runner: unresolved (not found)\n- gpt-6.1-sol: unresolved (not found)\n- x-a1.contract.json: docs/coordination/eval-wave2-e1/x-a1.contract.json sha256 b733271ab78a3fabd28199df06f0f74a2d8ab1501aa2b046384ae0b3d2caf9eb\n- b: unresolved (not found)\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-arms.md: docs/design/eval-arms.md sha256 6b96dee39670f518834044ffa1fe16bc1e4956939b50163ebb378ff8ca6cdb84\n- main: unresolved (not found)\n- 92e977b2: unresolved (not found)\n- CHECK_PROPERTIES: unresolved (not found)\n- comparisons: unresolved (not found)\n- pack: unresolved (not found)\n- plan_pack(plan, *, strict=False: unresolved (not found)\n- PROPERTY_NAMES: unresolved (not found)\n- validate_catalog: unresolved (not found)\n- src/harness_bench/plan.py: src/harness_bench/plan.py sha256 c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196\n- config.py: src/harness_bench/config.py sha256 2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19\n- views.py: unresolved (ambiguous: 2 matches)\n- grade/_changes.py: src/harness_bench/grade/_changes.py sha256 d573c0a57360f960bd6915caae3c0eb36e07d7a79ed168b1e1617679e0eefba7\n- cli.py: src/harness_bench/cli.py sha256 3017d46c6393d25bfb494ac6ea972345af088ac5a8dfe3fd23ad34cc5e033ed8\n- _workspace_builder: unresolved (not found)\n- board.py: src/harness_bench/board.py sha256 cc546371acb9185ae3d953d4d270436907fc2b08c76bef37ef8bea9932628972\n- report/summaries.py: src/harness_bench/report/summaries.py sha256 d2964dfd39b11ef81c7290fcaecca5af60d1f37b46d84ca5a65503c0cff5dd67\n- plan_pack: unresolved (not found)\n- board._build_pack_effect: unresolved (not found)\n- report/pack_improvement.py: src/harness_bench/report/pack_improvement.py sha256 200ec725c7cf0e8adb9df92505ac928bd5b0a5cf6edcdd5a728353ebf8f946c8\n- cell_arm: unresolved (not found)\n- bench/rings/pilot.yaml: unresolved (not found; nearest: bench/profiles/copilot.yaml)\n- cc-opus: unresolved (not found)\n- model: claude-opus-5-5: unresolved (not found)\n- tests/test_plan.py: tests/test_plan.py sha256 9522437767685abc8ae5ce86f4e951f672bb9eceaa36a7d79651bc27791360ed\n- test_config.py: tests/test_config.py sha256 a7bbcfa88547eb702f699cbb83b2b883bef78a70250e43726aade6b2fdb83296\n- test_workspace.py: tests/test_workspace.py sha256 ebc50d39c946add698477f74b57590abbc5bbc099b6422f795bd0badd6e05c97\n- test_views.py: tests/test_views.py sha256 dbb238335908729014a566fc8703c830fb1ee11e415f8005862f25ac1f2d4b94\n- test_changes_cache.py: tests/test_changes_cache.py sha256 929579db3ddd2b5b07627c13c750c6f6bc993c7c60cbec8f42f8bf64df54604f\n- pre_turn_commit: unresolved (not found)\n- tests/test_arms_guard.py: unresolved (not found)\n- tests/fixtures/plans/grid4-cells.json: unresolved (not found)\n- tests/mutations/plan.json: tests/mutations/plan.json sha256 8a8308f48da23cd8538eb32c9e90b430a9335d945f48146ecd66ed7ad7d37690\n- workspace.py: src/harness_bench/workspace.py sha256 6ef2182d7c9758775531dd4623feb3d2bbd3f55bfa8d167cfeae65c995eafb74\n- _land: unresolved (not found)\n- cmd_plan: unresolved (not found)\n- report/html.py: src/harness_bench/report/html.py sha256 91b1d6543041fa57c9541faf8c4c1df201c9d3f4e362a8b3c0491d21df60e020\n- x-a1a-e1e4: unresolved (not found)\n- build/eval-x-a1a: unresolved (not found)\n- arms: unresolved (not found)\n- ARM_OFF: unresolved (not found)\n- ARM_ID: unresolved (not found)\n- property: unresolved (not found)\n- also_graded_by: unresolved (not found)\n- grader: unresolved (not found)\n- plan.py: src/harness_bench/plan.py sha256 c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196\n- Cell.arm: unresolved (not found)\n- launch_seed: unresolved (not found)\n- kind: unresolved (not found)\n- campaign: unresolved (not found)\n- ring: unresolved (not found)\n- arm_pack: unresolved (not found)\n- launch_order: unresolved (not found)\n- launch_balance: unresolved (not found)\n- draw_launch_order: unresolved (not found)\n- parse_binding: unresolved (not found)\n- resolve_arms: unresolved (not found)\n- synthetic: unresolved (not found)\n- config.HARNESSES: unresolved (not found)\n- config.CHECK_PROPERTIES = frozenset({\"security\", \"resilience\"}: unresolved (not found)\n- plan.SYNTHETIC_PROFILE_RECORD: unresolved (not found)\n- plan.profile_record(root, \"synthetic: unresolved (not found)\n- build_plan: unresolved (not found)\n- x-a1b-e1e4: unresolved (not found)\n- views.py:525: unresolved (not found)\n- grade/_changes.py:84: unresolved (not found)\n- cli._workspace_builder: unresolved (not found)\n- pack_improvement.py:746-747: unresolved (not found)\n- test_grid4_replan_gives_the_same_task_combo_arm_rep_set_and_cell_ids: unresolved (not found)\n- runs/grid-4/plan.json: unresolved (not found)\n- =: unresolved (not found)\n- x[\"pack: unresolved (not found)\n- .get: unresolved (not found; nearest: .git)\n- .pop: unresolved (not found)\n- in: unresolved (not found)\n- getattr: unresolved (not found)\n- itemgetter: unresolved (not found)\n- test_pack_hits_equal_the_pinned_counts: unresolved (not found)\n- Constant(\"on\"/\"off: unresolved (not found)\n- report/assets/*.js: unresolved (not found)\n- test_plan_py_imports_no_campaign_or_identity_module: unresolved (not found)\n- identity: unresolved (not found)\n- test_plan_level_readers_state_the_true_pack_or_refuse: unresolved (not found)\n- board: unresolved (not found)\n- strict=True: unresolved (not found)\n- several packs: unresolved (not found)\n- draft: unresolved (not found)\n- stub: unresolved (not found)\n- profile_record(root, \"synthetic: unresolved (not found)\n- ValueError: unresolved (not found)\n- profiles.py:176: unresolved (not found)\n- status: ready: unresolved (not found)\n- ready: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- HB-PLN-001/002/004/005: unresolved (not found)\n- bench-matrix/2: unresolved (not found)\n- bench-plan/2: unresolved (not found)\n- 1/20: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-a1a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: a red-only end: the green follow-on runs as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JRJAKNDA6TV8D0JG5F9SB\nraw sha256: a18762f65902fa9f776e0aa159d11978497d30b26b428c6d6d9cdb6d33a0d9d3\ncompiler model: claude-opus-5-5\nengine seconds: 0.013\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M41JRJAKNDA6TV8D0JG5F9SB for codex v1: 6 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes on the final commit, each command on its own line.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model is read from the Codex native record and is the first line of the report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "served model read from the Codex native record"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatch A1b (readers, G1 guard, migrations, pilot.yaml): a later dispatch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch A1a only"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "workspace.py source, cli.py cmd_plan and report/html.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`workspace.py` source (X-B1's `_land` hunk), `cli.py` `cmd_plan` (X-C pastes W1-A §3.9), `report/html.py` (X-H2 takes your header lines)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          }
+        ],
+        "contract_slot": {
+          "width_cap": "1",
+          "deadline": "3,300 s",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-a1a",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "containment": "own worktree; the brief's owned paths only",
+          "fallback": "a red-only end: the green follow-on runs as Claude Code Sonnet (model: sonnet) in the same tree"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Build dispatch A1a of X-A1 on build/eval-x-a1a: config.py bench-matrix/2 validation with PROPERTY_NAMES, CHECK_PROPERTIES and synthetic in HARNESSES; plan.py bench-plan/2 with SYNTHETIC_PROFILE_RECORD and the ready rule by plan kind; the grid-4 golden; red commit then green commit.",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a.",
+            "The README section 3 join gate passes on the final commit, each command on its own line.",
+            "The served model is read from the Codex native record and is the first line of the report.",
+            "The served model id is the first line of the final report."
+          ],
+          "not_in_scope": [
+            "Dispatch A1b (readers, G1 guard, migrations, pilot.yaml): a later dispatch.",
+            "workspace.py source, cli.py cmd_plan and report/html.py."
+          ],
+          "tier": "T2",
+          "fan_out_cap": "0",
+          "context_ceiling": "200k tokens",
+          "main_line_budget": "220 calls, 3,300 s"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.013,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JRJAKNDA6TV8D0JG5F9SB",
+        "raw_sha256": "a18762f65902fa9f776e0aa159d11978497d30b26b428c6d6d9cdb6d33a0d9d3",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gpt-6.1-sol"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-a1.contract.json",
+            "reason": null,
+            "sha256": "b733271ab78a3fabd28199df06f0f74a2d8ab1501aa2b046384ae0b3d2caf9eb",
+            "status": "resolved",
+            "token": "x-a1.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "b"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-arms.md",
+            "reason": null,
+            "sha256": "6b96dee39670f518834044ffa1fe16bc1e4956939b50163ebb378ff8ca6cdb84",
+            "status": "resolved",
+            "token": "docs/design/eval-arms.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "92e977b2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "CHECK_PROPERTIES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "comparisons"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pack"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan_pack(plan, *, strict=False"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "PROPERTY_NAMES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "validate_catalog"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196",
+            "status": "resolved",
+            "token": "src/harness_bench/plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19",
+            "status": "resolved",
+            "token": "config.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/_changes.py",
+            "reason": null,
+            "sha256": "d573c0a57360f960bd6915caae3c0eb36e07d7a79ed168b1e1617679e0eefba7",
+            "status": "resolved",
+            "token": "grade/_changes.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "3017d46c6393d25bfb494ac6ea972345af088ac5a8dfe3fd23ad34cc5e033ed8",
+            "status": "resolved",
+            "token": "cli.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_workspace_builder"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/board.py",
+            "reason": null,
+            "sha256": "cc546371acb9185ae3d953d4d270436907fc2b08c76bef37ef8bea9932628972",
+            "status": "resolved",
+            "token": "board.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/summaries.py",
+            "reason": null,
+            "sha256": "d2964dfd39b11ef81c7290fcaecca5af60d1f37b46d84ca5a65503c0cff5dd67",
+            "status": "resolved",
+            "token": "report/summaries.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan_pack"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "board._build_pack_effect"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/pack_improvement.py",
+            "reason": null,
+            "sha256": "200ec725c7cf0e8adb9df92505ac928bd5b0a5cf6edcdd5a728353ebf8f946c8",
+            "status": "resolved",
+            "token": "report/pack_improvement.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cell_arm"
+          },
+          {
+            "nearest": "bench/profiles/copilot.yaml",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/rings/pilot.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cc-opus"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: claude-opus-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_plan.py",
+            "reason": null,
+            "sha256": "9522437767685abc8ae5ce86f4e951f672bb9eceaa36a7d79651bc27791360ed",
+            "status": "resolved",
+            "token": "tests/test_plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_config.py",
+            "reason": null,
+            "sha256": "a7bbcfa88547eb702f699cbb83b2b883bef78a70250e43726aade6b2fdb83296",
+            "status": "resolved",
+            "token": "test_config.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_workspace.py",
+            "reason": null,
+            "sha256": "ebc50d39c946add698477f74b57590abbc5bbc099b6422f795bd0badd6e05c97",
+            "status": "resolved",
+            "token": "test_workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_views.py",
+            "reason": null,
+            "sha256": "dbb238335908729014a566fc8703c830fb1ee11e415f8005862f25ac1f2d4b94",
+            "status": "resolved",
+            "token": "test_views.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_changes_cache.py",
+            "reason": null,
+            "sha256": "929579db3ddd2b5b07627c13c750c6f6bc993c7c60cbec8f42f8bf64df54604f",
+            "status": "resolved",
+            "token": "test_changes_cache.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pre_turn_commit"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/plans/grid4-cells.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/plan.json",
+            "reason": null,
+            "sha256": "8a8308f48da23cd8538eb32c9e90b430a9335d945f48146ecd66ed7ad7d37690",
+            "status": "resolved",
+            "token": "tests/mutations/plan.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/workspace.py",
+            "reason": null,
+            "sha256": "6ef2182d7c9758775531dd4623feb3d2bbd3f55bfa8d167cfeae65c995eafb74",
+            "status": "resolved",
+            "token": "workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_land"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cmd_plan"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/html.py",
+            "reason": null,
+            "sha256": "91b1d6543041fa57c9541faf8c4c1df201c9d3f4e362a8b3c0491d21df60e020",
+            "status": "resolved",
+            "token": "report/html.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-a1a-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-a1a"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "arms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ARM_OFF"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ARM_ID"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "property"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "also_graded_by"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grader"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196",
+            "status": "resolved",
+            "token": "plan.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Cell.arm"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "launch_seed"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "kind"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "campaign"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ring"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "arm_pack"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "launch_order"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "launch_balance"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "draw_launch_order"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "parse_binding"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "resolve_arms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "synthetic"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "config.HARNESSES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "config.CHECK_PROPERTIES = frozenset({\"security\", \"resilience\"}"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan.SYNTHETIC_PROFILE_RECORD"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan.profile_record(root, \"synthetic"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build_plan"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-a1b-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "views.py:525"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/_changes.py:84"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cli._workspace_builder"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pack_improvement.py:746-747"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_grid4_replan_gives_the_same_task_combo_arm_rep_set_and_cell_ids"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/grid-4/plan.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "="
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x[\"pack"
+          },
+          {
+            "nearest": ".git",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".get"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".pop"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "in"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "getattr"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "itemgetter"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_pack_hits_equal_the_pinned_counts"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Constant(\"on\"/\"off"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/assets/*.js"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_plan_py_imports_no_campaign_or_identity_module"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_plan_level_readers_state_the_true_pack_or_refuse"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "board"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "strict=True"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "several packs"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "draft"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stub"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profile_record(root, \"synthetic"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ValueError"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles.py:176"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "status: ready"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ready"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB-PLN-001/002/004/005"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench-matrix/2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench-plan/2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "1/20"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M41JT877GNGE082GA9X6YTRN",
+      "shortname": "compile-You are session x-g1-e1e4 on branch build/eval-x-g1, harness Grok, model…",
+      "datetime": "2026-10-03T19:10:51Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Build X-G1 on build/eval-x-g1: catalog 0.7.dev with the eleven property metrics, also_graded_by on pass_at_1 with the ADR-0019 item-3 note, and the R-97 anchor_note wording; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-g1.; The eleven metrics validate under 0.7.dev and bench validate exits 0 on the joined tree.; The hallucinated_symbol_errors anchor_note no longer says build-log errors.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.\nNot in scope: grade/property.py, config.py, grade/runner.py and bench/catalog-freeze.yaml.\nTier: T1\nFan-out cap: 0\nContext ceiling: 100k tokens\nMain-line budget: 40 calls, 1,200 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-g1. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The eleven metrics validate under 0.7.dev and bench validate exits 0 on the joined tree. | phrase: The eleven metrics validate under `0.7.dev` (R-90); `bench validate` exit 0 on the joined tree. |\n| done_when: The hallucinated_symbol_errors anchor_note no longer says build-log errors. | phrase: the words \"build-log errors\" do not appear in it |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate; `python tools/grok_served_model.py <session dir>` exits 0 |\n| not_in_scope: grade/property.py, config.py, grade/runner.py and bench/catalog-freeze.yaml. | phrase: `grade/property.py` (X-F; never create it), `config.py` (X-A1's validation checks), `grade/runner.py` (X-F builds the owner clause and T-R3..T-R6), `bench/catalog-freeze.yaml` (Leader, R-86) |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\nReferences\n- coord-runner: unresolved (not found)\n- grok-4.7: unresolved (not found)\n- --reasoning-effort high: unresolved (not found)\n- XAI_API_KEY: unresolved (not found)\n- x-g1.contract.json: docs/coordination/eval-wave2-e1/x-g1.contract.json sha256 18799ffa8d0e010c64c89cb0ad0bda169dd5a81889c49c6c6b4a1b1be3bccb95\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-catalog-0-7.md: docs/design/eval-catalog-0-7.md sha256 0b5cff38703dc03b75420c16279c50cb8fd147a5a72d3d99e31bc0a035034810\n- main: unresolved (not found)\n- property: unresolved (not found)\n- bench/metrics.yaml: bench/metrics.yaml sha256 b04abc705a4d6b6abc7eb51f8b017fd9d82d5a11dc0e5ce1f3ca697b7e982488\n- tests/test_catalog_version.py: tests/test_catalog_version.py sha256 637709eec74f58c203ee0ca16dde43abb62780ccc2941054c25bc1a034817344\n- docs/adr/0019-catalog-0-7-property-metrics.md: docs/adr/0019-catalog-0-7-property-metrics.md sha256 8869f917fa5e1fcb241d47f9cd972565982c1cc17436a690745b7968ce8153a0\n- grade/property.py: unresolved (not found)\n- config.py: src/harness_bench/config.py sha256 2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 65d4fdfe3805f235ba957d7d5b4de74e5651b334040eda8e8e6f383da0c2849a\n- bench/catalog-freeze.yaml: bench/catalog-freeze.yaml sha256 2566fdd7b5f121248ad353cdcd357ce8c1d9a30fb234bd994ce26f2f712ddef0\n- validate_repo: unresolved (not found)\n- config.py:158: unresolved (not found)\n- version: \"0.7.dev: unresolved (not found)\n- property: <name: unresolved (not found)\n- property_check_pass: unresolved (not found)\n- pass_at_1: unresolved (not found)\n- also_graded_by: [formal: unresolved (not found)\n- hallucinated_symbol_errors: unresolved (not found)\n- anchor_note: unresolved (not found)\n- 5, 0: unresolved (not found)\n- 0.7.dev: unresolved (not found)\n- bench validate: unresolved (not found)\n- n_recorded: unresolved (not found)\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-x-g1: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- T-P4/T-P6: unresolved (not found)\n- tools/grok_served_model.py: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-g1\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 1,200 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JRAX0HMQ76B1HHVNP390F\nraw sha256: 3942fdd56b6a369cfd0b3d9d2bdfc1e22321a3567ae8db4bea777eb2342e1bf5\ncompiler model: claude-opus-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M41JRAX0HMQ76B1HHVNP390F for claude-code v1: 6 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-g1.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The eleven metrics validate under 0.7.dev and bench validate exits 0 on the joined tree.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The eleven metrics validate under `0.7.dev` (R-90); `bench validate` exit 0 on the joined tree."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The hallucinated_symbol_errors anchor_note no longer says build-log errors.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the words \"build-log errors\" do not appear in it"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate; `python tools/grok_served_model.py <session dir>` exits 0"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "grade/property.py, config.py, grade/runner.py and bench/catalog-freeze.yaml.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`grade/property.py` (X-F; never create it), `config.py` (X-A1's validation checks), `grade/runner.py` (X-F builds the owner clause and T-R3..T-R6), `bench/catalog-freeze.yaml` (Leader, R-86)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          }
+        ],
+        "contract_slot": {
+          "width_cap": "1",
+          "deadline": "1,200 s",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-g1",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "containment": "own worktree; the brief's owned paths only",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Build X-G1 on build/eval-x-g1: catalog 0.7.dev with the eleven property metrics, also_graded_by on pass_at_1 with the ADR-0019 item-3 note, and the R-97 anchor_note wording; red commit then green commit.",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-g1.",
+            "The eleven metrics validate under 0.7.dev and bench validate exits 0 on the joined tree.",
+            "The hallucinated_symbol_errors anchor_note no longer says build-log errors.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report."
+          ],
+          "not_in_scope": [
+            "grade/property.py, config.py, grade/runner.py and bench/catalog-freeze.yaml."
+          ],
+          "tier": "T1",
+          "fan_out_cap": "0",
+          "context_ceiling": "100k tokens",
+          "main_line_budget": "40 calls, 1,200 s"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JRAX0HMQ76B1HHVNP390F",
+        "raw_sha256": "3942fdd56b6a369cfd0b3d9d2bdfc1e22321a3567ae8db4bea777eb2342e1bf5",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--reasoning-effort high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "XAI_API_KEY"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-g1.contract.json",
+            "reason": null,
+            "sha256": "18799ffa8d0e010c64c89cb0ad0bda169dd5a81889c49c6c6b4a1b1be3bccb95",
+            "status": "resolved",
+            "token": "x-g1.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-catalog-0-7.md",
+            "reason": null,
+            "sha256": "0b5cff38703dc03b75420c16279c50cb8fd147a5a72d3d99e31bc0a035034810",
+            "status": "resolved",
+            "token": "docs/design/eval-catalog-0-7.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "property"
+          },
+          {
+            "nearest": null,
+            "path": "bench/metrics.yaml",
+            "reason": null,
+            "sha256": "b04abc705a4d6b6abc7eb51f8b017fd9d82d5a11dc0e5ce1f3ca697b7e982488",
+            "status": "resolved",
+            "token": "bench/metrics.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_catalog_version.py",
+            "reason": null,
+            "sha256": "637709eec74f58c203ee0ca16dde43abb62780ccc2941054c25bc1a034817344",
+            "status": "resolved",
+            "token": "tests/test_catalog_version.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/adr/0019-catalog-0-7-property-metrics.md",
+            "reason": null,
+            "sha256": "8869f917fa5e1fcb241d47f9cd972565982c1cc17436a690745b7968ce8153a0",
+            "status": "resolved",
+            "token": "docs/adr/0019-catalog-0-7-property-metrics.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/property.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19",
+            "status": "resolved",
+            "token": "config.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "65d4fdfe3805f235ba957d7d5b4de74e5651b334040eda8e8e6f383da0c2849a",
+            "status": "resolved",
+            "token": "grade/runner.py"
+          },
+          {
+            "nearest": null,
+            "path": "bench/catalog-freeze.yaml",
+            "reason": null,
+            "sha256": "2566fdd7b5f121248ad353cdcd357ce8c1d9a30fb234bd994ce26f2f712ddef0",
+            "status": "resolved",
+            "token": "bench/catalog-freeze.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "validate_repo"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "config.py:158"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "version: \"0.7.dev"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "property: <name"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "property_check_pass"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pass_at_1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "also_graded_by: [formal"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "hallucinated_symbol_errors"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "anchor_note"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "5, 0"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "0.7.dev"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench validate"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "n_recorded"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-g1"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "T-P4/T-P6"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M41JT90JTSGFF5TZPFEE4A1G",
+      "shortname": "compile-You are session x-b1a-e1e4 on branch build/eval-x-b1a, harness Grok, mod…",
+      "datetime": "2026-10-03T19:10:52Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Build dispatch B1a of X-B1 on build/eval-x-b1a: atomic.py core per W1-B section 17 (create_once, TEMP_RE, is_temp_name, stale_temps, sweep_temps with the lock check, make_writable, rename_with_retry); red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.\nNot in scope: Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches.\nTier: T2\nFan-out cap: 0\nContext ceiling: 100k tokens\nMain-line budget: 40 calls, 1,200 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). |\n| not_in_scope: Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches. | phrase: Build dispatch B1a only |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\nReferences\n- coord-runner: unresolved (not found)\n- grok-4.7: unresolved (not found)\n- --reasoning-effort high: unresolved (not found)\n- XAI_API_KEY: unresolved (not found)\n- x-b1.contract.json: docs/coordination/eval-wave2-e1/x-b1.contract.json sha256 b82516583f32dc4b460a303a0750d65d42560148ffce4c5df19c04c8b772ff5c\n- b: unresolved (not found)\n- c: unresolved (not found)\n- grok-4.7*: unresolved (not found)\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-atomic-publish.md: docs/design/eval-atomic-publish.md sha256 4706e446d39f829dfaa8bf399dd337646353d79baf5ff7fa33e8f8bea7c986ee\n- main: unresolved (not found)\n- acquire_then_probe: unresolved (not found)\n- src/harness_bench/atomic.py: unresolved (not found)\n- tests/test_atomic.py: unresolved (not found)\n- tests/test_atomic_sites.py: unresolved (not found)\n- tests/mutations/atomic.json: unresolved (not found)\n- src/harness_bench/oslock.py: src/harness_bench/oslock.py sha256 02f2aa86bed5061dfbc2994741f0d0f0d8e624b5b07c29fa5a86010ebdc98571\n- tests/test_oslock.py: tests/test_oslock.py sha256 09b1ee2b4a441da03f6bd7d9100f6db16df5f47dc9ed359ab707cda7614b6100\n- src/harness_bench/workspace.py: src/harness_bench/workspace.py sha256 6ef2182d7c9758775531dd4623feb3d2bbd3f55bfa8d167cfeae65c995eafb74\n- _land: unresolved (not found)\n- make_writable: unresolved (not found)\n- tests/mutations/workspace.json: tests/mutations/workspace.json sha256 f6e56abb11b9343ef0223c8082ed71d570a24d088f42a327d999ff8d87c05f21\n- tests/test_workspace.py: tests/test_workspace.py sha256 ebc50d39c946add698477f74b57590abbc5bbc099b6422f795bd0badd6e05c97\n- archive.py: src/harness_bench/archive.py sha256 788c614b4bd4e4594b109b3a4a241276017cd0b7d33d45fc56e4c9890f6cedc5\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b\n- x-b1a-e1e4: unresolved (not found)\n- build/eval-x-b1a: unresolved (not found)\n- atomic.py: unresolved (not found)\n- create_once: unresolved (not found)\n- TEMP_RE: unresolved (not found)\n- is_temp_name: unresolved (not found)\n- stale_temps: unresolved (not found)\n- sweep_temps(target, lock: unresolved (not found)\n- ValueError: unresolved (not found)\n- oslock.is_held(lock.path: unresolved (not found)\n- S_IWUSR: unresolved (not found)\n- rename_with_retry: unresolved (not found)\n- RENAME_BACKOFF: unresolved (not found)\n- x-b1b-e1e4: unresolved (not found)\n- publish_dir: unresolved (not found)\n- workspace._land: unresolved (not found)\n- rename_with_retry(tmp, dest, replace=True, settled=lambda: valid(dest: unresolved (not found)\n- copytree: unresolved (not found)\n- x-b1c-e1e4: unresolved (not found)\n- oslock.acquire_then_probe(own, own_code, others, *, between=None) -> RunLock: unresolved (not found)\n- between: unresolved (not found)\n- Barrier(2).wait(timeout=10: unresolved (not found)\n- test_posix_flag_default_follows_the_platform: unresolved (not found)\n- test_the_real_publish_dir_fsyncs_the_folder_only_on_posix: unresolved (not found)\n- os.unlink: unresolved (not found)\n- O_EXCL: unresolved (not found)\n- test_the_posix_job_does_not_skip_the_symlink_variants: unresolved (not found)\n- st_dev: unresolved (not found)\n- st_ino: unresolved (not found)\n- O_NOFOLLOW: unresolved (not found)\n- _discard_temp: unresolved (not found)\n- atomic.temp_leaked: unresolved (not found)\n- rename_retries: unresolved (not found)\n- rename_ms: unresolved (not found)\n- publish_failed(phase=rename: unresolved (not found)\n- test_a_kill_between_write_and_link_leaves_no_final_file: unresolved (not found)\n- test_a_kill_mid_copy_leaves_no_final_folder_and_the_redo_succeeds: unresolved (not found)\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- st_dev`/`st_ino: unresolved (not found)\n- tools/grok_served_model.py: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-b1a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 1,200 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JRD8M6GT6142HRJVHJRBF\nraw sha256: d70372ed0ce5dece56b729329779a9f90f531e5dcff75e09d49ee1ad6e1700cb\ncompiler model: claude-opus-5-5\nengine seconds: 0.014\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M41JRD8M6GT6142HRJVHJRBF for claude-code v1: 4 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92)."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch B1a only"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          }
+        ],
+        "contract_slot": {
+          "width_cap": "1",
+          "deadline": "1,200 s",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-b1a",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "containment": "own worktree; the brief's owned paths only",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Build dispatch B1a of X-B1 on build/eval-x-b1a: atomic.py core per W1-B section 17 (create_once, TEMP_RE, is_temp_name, stale_temps, sweep_temps with the lock check, make_writable, rename_with_retry); red commit then green commit.",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report."
+          ],
+          "not_in_scope": [
+            "Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches."
+          ],
+          "tier": "T2",
+          "fan_out_cap": "0",
+          "context_ceiling": "100k tokens",
+          "main_line_budget": "40 calls, 1,200 s"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.014,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JRD8M6GT6142HRJVHJRBF",
+        "raw_sha256": "d70372ed0ce5dece56b729329779a9f90f531e5dcff75e09d49ee1ad6e1700cb",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--reasoning-effort high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "XAI_API_KEY"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b1.contract.json",
+            "reason": null,
+            "sha256": "b82516583f32dc4b460a303a0750d65d42560148ffce4c5df19c04c8b772ff5c",
+            "status": "resolved",
+            "token": "x-b1.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "b"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "c"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-atomic-publish.md",
+            "reason": null,
+            "sha256": "4706e446d39f829dfaa8bf399dd337646353d79baf5ff7fa33e8f8bea7c986ee",
+            "status": "resolved",
+            "token": "docs/design/eval-atomic-publish.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "acquire_then_probe"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/atomic.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/oslock.py",
+            "reason": null,
+            "sha256": "02f2aa86bed5061dfbc2994741f0d0f0d8e624b5b07c29fa5a86010ebdc98571",
+            "status": "resolved",
+            "token": "src/harness_bench/oslock.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_oslock.py",
+            "reason": null,
+            "sha256": "09b1ee2b4a441da03f6bd7d9100f6db16df5f47dc9ed359ab707cda7614b6100",
+            "status": "resolved",
+            "token": "tests/test_oslock.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/workspace.py",
+            "reason": null,
+            "sha256": "6ef2182d7c9758775531dd4623feb3d2bbd3f55bfa8d167cfeae65c995eafb74",
+            "status": "resolved",
+            "token": "src/harness_bench/workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_land"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "make_writable"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/workspace.json",
+            "reason": null,
+            "sha256": "f6e56abb11b9343ef0223c8082ed71d570a24d088f42a327d999ff8d87c05f21",
+            "status": "resolved",
+            "token": "tests/mutations/workspace.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_workspace.py",
+            "reason": null,
+            "sha256": "ebc50d39c946add698477f74b57590abbc5bbc099b6422f795bd0badd6e05c97",
+            "status": "resolved",
+            "token": "tests/test_workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/archive.py",
+            "reason": null,
+            "sha256": "788c614b4bd4e4594b109b3a4a241276017cd0b7d33d45fc56e4c9890f6cedc5",
+            "status": "resolved",
+            "token": "archive.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-b1a-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-b1a"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "create_once"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "TEMP_RE"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "is_temp_name"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stale_temps"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "sweep_temps(target, lock"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ValueError"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oslock.is_held(lock.path"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "S_IWUSR"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "rename_with_retry"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "RENAME_BACKOFF"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-b1b-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "publish_dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "workspace._land"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "rename_with_retry(tmp, dest, replace=True, settled=lambda: valid(dest"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "copytree"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-b1c-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oslock.acquire_then_probe(own, own_code, others, *, between=None) -> RunLock"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "between"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Barrier(2).wait(timeout=10"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_posix_flag_default_follows_the_platform"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_the_real_publish_dir_fsyncs_the_folder_only_on_posix"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "os.unlink"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "O_EXCL"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_the_posix_job_does_not_skip_the_symlink_variants"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "st_dev"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "st_ino"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "O_NOFOLLOW"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_discard_temp"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "atomic.temp_leaked"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "rename_retries"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "rename_ms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "publish_failed(phase=rename"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_a_kill_between_write_and_link_leaves_no_final_file"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_a_kill_mid_copy_leaves_no_final_folder_and_the_redo_succeeds"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "st_dev`/`st_ino"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M41JT9TR4QHRMVZEW5VPQ03V",
+      "shortname": "compile-You are session x-enva-e1e4 on branch build/eval-env-a, harness Grok, mo…",
+      "datetime": "2026-10-03T19:10:53Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Build the ENV-A fix on build/eval-env-a (defect class ENV-C): an autouse conftest fixture that clears every listed credential name except for tests marked credentials, with tests/test_env_isolation.py; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-env-a.; The three named tests pass with HB_CLAUDE_OAUTH_TOKEN=dummy set and with it unset.; A mutant that removes the fixture is killed by tests/test_env_isolation.py.; The Grok served-model reader exits 0.; The served model id is the first line of the final report.\nNot in scope: Editing tests/test_profiles.py or tests/test_gateway_headless.py.\nTier: T1\nFan-out cap: 0\nContext ceiling: 80k tokens\nMain-line budget: 30 calls, 1,200 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-env-a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The three named tests pass with HB_CLAUDE_OAUTH_TOKEN=dummy set and with it unset. | phrase: The three named tests pass with `HB_CLAUDE_OAUTH_TOKEN=dummy` set in the shell, and with it unset. |\n| done_when: A mutant that removes the fixture is killed by tests/test_env_isolation.py. | phrase: A mutant that removes the fixture is killed by `tests/test_env_isolation.py`. |\n| done_when: The Grok served-model reader exits 0. | phrase: `python tools/grok_served_model.py <session dir>` exits 0 |\n| not_in_scope: Editing tests/test_profiles.py or tests/test_gateway_headless.py. | phrase: `tests/test_profiles.py` (X-E's in E1), `tests/test_gateway_headless.py` |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\nReferences\n- coord-runner: unresolved (not found)\n- grok-4.7: unresolved (not found)\n- --reasoning-effort high: unresolved (not found)\n- XAI_API_KEY: unresolved (not found)\n- env-a.contract.json: docs/coordination/eval-wave2-e1/env-a.contract.json sha256 24f67402f61c4f3616ac45a21e12e4f0b994f8b142b027b40ba9457adef462b6\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b\n- ENV-A: unresolved (not found)\n- HB_CLAUDE_OAUTH_TOKEN: unresolved (not found)\n- main: unresolved (not found)\n- tests/test_gateway_headless.py::test_t_gw_10_the_credential_is_present_during_the_call_and_gone_after_it: unresolved (not found)\n- ::test_t_gw_10_the_credential_is_gone_after_a_timeout_and_after_an_exception_past_the_copy: unresolved (not found)\n- tests/test_profiles.py::test_the_launcher_reports_no_model_setter_and_a_copied_login[claude-code: unresolved (not found)\n- tests/conftest.py: tests/conftest.py sha256 fee195665dc6d1e49863e375e7dc97d13726e6b2e068a7f59daffd5eb8deb6b6\n- tests/test_env_isolation.py: unresolved (not found)\n- tests/test_profiles.py: tests/test_profiles.py sha256 5ef6b8aed6743ed0ddc9f95f3a9af69927186312ed82a879b7f9503afebf5130\n- tests/test_gateway_headless.py: tests/test_gateway_headless.py sha256 663ada1b225b5883c36097c5cefc35a5155a56083bc3899b076a52da0ccd8076\n- git grep -n -E \"OAUTH_TOKEN|_API_KEY|GH_TOKEN\" -- tests src/harness_bench/profiles.py: unresolved (not found; nearest: src/harness_bench/profiles.py)\n- profiles.DROP_EXACT: unresolved (not found)\n- profiles.DROP_PREFIXES: unresolved (not found)\n- conftest.py: unresolved (ambiguous: 3 matches)\n- monkeypatch.setenv: unresolved (not found)\n- pytest.main: unresolved (not found)\n- credentials: unresolved (not found)\n- monkeypatch.delenv(name, raising=False: unresolved (not found)\n- HB_CLAUDE_OAUTH_TOKEN=dummy: unresolved (not found)\n- controlled: unresolved (not found)\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-env-a: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- src/harness_bench/profiles.py: src/harness_bench/profiles.py sha256 dc384ad7b422d9dd12d254062fd2c9aeeb6f72d5fbc564fbb31e09e3dbd5defe\n- tools/grok_served_model.py: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-env-a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 1,200 s\nfallback: a red-only end or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JR8NZCGPZW37X5RV1Q1SA\nraw sha256: 961efa5b4df3bd786fc20bdb960528fe2a9e6d320f30f8b79890eb7ccfb23dcc\ncompiler model: claude-opus-5-5\nengine seconds: 0.012\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M41JR8NZCGPZW37X5RV1Q1SA for claude-code v1: 6 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-env-a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The three named tests pass with HB_CLAUDE_OAUTH_TOKEN=dummy set and with it unset.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The three named tests pass with `HB_CLAUDE_OAUTH_TOKEN=dummy` set in the shell, and with it unset."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A mutant that removes the fixture is killed by tests/test_env_isolation.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A mutant that removes the fixture is killed by `tests/test_env_isolation.py`."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`python tools/grok_served_model.py <session dir>` exits 0"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing tests/test_profiles.py or tests/test_gateway_headless.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`tests/test_profiles.py` (X-E's in E1), `tests/test_gateway_headless.py`"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          }
+        ],
+        "contract_slot": {
+          "width_cap": "1",
+          "deadline": "1,200 s",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "per_branch_exit": "a red commit then a green commit on build/eval-env-a",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "containment": "own worktree; the brief's owned paths only",
+          "fallback": "a red-only end or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Build the ENV-A fix on build/eval-env-a (defect class ENV-C): an autouse conftest fixture that clears every listed credential name except for tests marked credentials, with tests/test_env_isolation.py; red commit then green commit.",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-env-a.",
+            "The three named tests pass with HB_CLAUDE_OAUTH_TOKEN=dummy set and with it unset.",
+            "A mutant that removes the fixture is killed by tests/test_env_isolation.py.",
+            "The Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report."
+          ],
+          "not_in_scope": [
+            "Editing tests/test_profiles.py or tests/test_gateway_headless.py."
+          ],
+          "tier": "T1",
+          "fan_out_cap": "0",
+          "context_ceiling": "80k tokens",
+          "main_line_budget": "30 calls, 1,200 s"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.012,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JR8NZCGPZW37X5RV1Q1SA",
+        "raw_sha256": "961efa5b4df3bd786fc20bdb960528fe2a9e6d320f30f8b79890eb7ccfb23dcc",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--reasoning-effort high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "XAI_API_KEY"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/env-a.contract.json",
+            "reason": null,
+            "sha256": "24f67402f61c4f3616ac45a21e12e4f0b994f8b142b027b40ba9457adef462b6",
+            "status": "resolved",
+            "token": "env-a.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ENV-A"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_CLAUDE_OAUTH_TOKEN"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_gateway_headless.py::test_t_gw_10_the_credential_is_present_during_the_call_and_gone_after_it"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "::test_t_gw_10_the_credential_is_gone_after_a_timeout_and_after_an_exception_past_the_copy"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_profiles.py::test_the_launcher_reports_no_model_setter_and_a_copied_login[claude-code"
+          },
+          {
+            "nearest": null,
+            "path": "tests/conftest.py",
+            "reason": null,
+            "sha256": "fee195665dc6d1e49863e375e7dc97d13726e6b2e068a7f59daffd5eb8deb6b6",
+            "status": "resolved",
+            "token": "tests/conftest.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_env_isolation.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_profiles.py",
+            "reason": null,
+            "sha256": "5ef6b8aed6743ed0ddc9f95f3a9af69927186312ed82a879b7f9503afebf5130",
+            "status": "resolved",
+            "token": "tests/test_profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_gateway_headless.py",
+            "reason": null,
+            "sha256": "663ada1b225b5883c36097c5cefc35a5155a56083bc3899b076a52da0ccd8076",
+            "status": "resolved",
+            "token": "tests/test_gateway_headless.py"
+          },
+          {
+            "nearest": "src/harness_bench/profiles.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git grep -n -E \"OAUTH_TOKEN|_API_KEY|GH_TOKEN\" -- tests src/harness_bench/profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles.DROP_EXACT"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles.DROP_PREFIXES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "conftest.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "monkeypatch.setenv"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pytest.main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "credentials"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "monkeypatch.delenv(name, raising=False"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_CLAUDE_OAUTH_TOKEN=dummy"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "controlled"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-env-a"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/profiles.py",
+            "reason": null,
+            "sha256": "dc384ad7b422d9dd12d254062fd2c9aeeb6f72d5fbc564fbb31e09e3dbd5defe",
+            "status": "resolved",
+            "token": "src/harness_bench/profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M41JTAHD7Y5Z3MVRYTE9NNQ5",
+      "shortname": "compile-You are session x-b2-e1e4 on branch build/eval-x-b2, harness Agy, model …",
+      "datetime": "2026-10-03T19:10:53Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Build X-B2 on build/eval-x-b2: archive_cell through atomic.publish_dir with a verify of the file set and rows, archive.attempt_dirs as the one reader used by report/judges.py, and mutants A1..A4; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2.; archive_cell goes through atomic.publish_dir with a verify of the file set and each file's rows.; The README section 3 join gate passes; the served model is read from Agy's cli.log.; The served model id is the first line of the final report.\nNot in scope: Editing docs/lessons/defect-classes.md.\nTier: T2\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: 120 calls, 3,300 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2. | phrase: in one turn: a red commit, then a green commit |\n| done_when: archive_cell goes through atomic.publish_dir with a verify of the file set and each file's rows. | phrase: `archive_cell` goes through `atomic.publish_dir` with a `verify` that compares the file set and each file's rows |\n| done_when: The README section 3 join gate passes; the served model is read from Agy's cli.log. | phrase: README §3 join gate; served model read from Agy's `cli.log`. |\n| not_in_scope: Editing docs/lessons/defect-classes.md. | phrase: you do not edit `docs/lessons/defect-classes.md` |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\nReferences\n- coord-runner: unresolved (not found)\n- gemini-3.8-flash-high: unresolved (not found)\n- --mode accept-edits: unresolved (not found)\n- x-b2.contract.json: docs/coordination/eval-wave2-e1/x-b2.contract.json sha256 66982d45b5c7bb68d1b03cc88c111a24b90ff9b9931e4bbbe137fd94b6a16c0b\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-atomic-publish.md: docs/design/eval-atomic-publish.md sha256 4706e446d39f829dfaa8bf399dd337646353d79baf5ff7fa33e8f8bea7c986ee\n- publish_dir: unresolved (not found)\n- recover_archive: unresolved (not found)\n- src/harness_bench/archive.py: src/harness_bench/archive.py sha256 788c614b4bd4e4594b109b3a4a241276017cd0b7d33d45fc56e4c9890f6cedc5\n- report/judges.py: src/harness_bench/report/judges.py sha256 30b8de3c690430923075040f43b81d0f1bda166606e987d969594dbd1e4786f9\n- attempt_dirs: unresolved (not found)\n- :216: unresolved (not found)\n- tests/test_archive.py: tests/test_archive.py sha256 37f00d199456e779774171c4f523ecc5cd6e18d75d3a4d829af009121f7bdf54\n- tests/mutations/archive.json: tests/mutations/archive.json sha256 78305eb8407a0ff5f1ee1bba1a4befc8940c8d56349a52d45e794fa79c510152\n- tests/test_engine.py: tests/test_engine.py sha256 2b2574063780c13ce130974fdf02589825038c68b4f4f6c16571976e208c26d2\n- test_the_engine_archive_goes_through_publish_dir: unresolved (not found)\n- tests/test_views.py: tests/test_views.py sha256 dbb238335908729014a566fc8703c830fb1ee11e415f8005862f25ac1f2d4b94\n- test_bench_verify_passes_a_run_archived_by_the_atomic_path: unresolved (not found)\n- atomic.publish_dir: unresolved (not found)\n- archive_cell: unresolved (not found)\n- HB-USR-002: unresolved (not found)\n- *.tmp-*: unresolved (not found)\n- verify: unresolved (not found)\n- archive.attempt_dirs(run_dir, cell_id: unresolved (not found)\n- re.fullmatch(r\"attempt-(\\d+: unresolved (not found)\n- report/judges.py:216: unresolved (not found)\n- attempt-1.tmp-…: unresolved (not found)\n- ValueError: unresolved (not found)\n- archive.make_writable: unresolved (not found)\n- atomic.make_writable: unresolved (not found)\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b\n- cli.log: unresolved (not found)\n- build/eval-x-b2: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-b2\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JRGAEJS1NP4DZR46TF5HW\nraw sha256: e5bb8870b116cfda98551ccc16e5aee80b42e8117af775537f81714006d92093\ncompiler model: claude-opus-5-5\nengine seconds: 0.016\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M41JRGAEJS1NP4DZR46TF5HW for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "archive_cell goes through atomic.publish_dir with a verify of the file set and each file's rows.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`archive_cell` goes through `atomic.publish_dir` with a `verify` that compares the file set and each file's rows"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes; the served model is read from Agy's cli.log.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate; served model read from Agy's `cli.log`."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing docs/lessons/defect-classes.md.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "you do not edit `docs/lessons/defect-classes.md`"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          }
+        ],
+        "contract_slot": {
+          "width_cap": "1",
+          "deadline": "3,300 s",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-b2",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "containment": "own worktree; the brief's owned paths only",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Build X-B2 on build/eval-x-b2: archive_cell through atomic.publish_dir with a verify of the file set and rows, archive.attempt_dirs as the one reader used by report/judges.py, and mutants A1..A4; red commit then green commit.",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2.",
+            "archive_cell goes through atomic.publish_dir with a verify of the file set and each file's rows.",
+            "The README section 3 join gate passes; the served model is read from Agy's cli.log.",
+            "The served model id is the first line of the final report."
+          ],
+          "not_in_scope": [
+            "Editing docs/lessons/defect-classes.md."
+          ],
+          "tier": "T2",
+          "fan_out_cap": "0",
+          "context_ceiling": "150k tokens",
+          "main_line_budget": "120 calls, 3,300 s"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.016,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JRGAEJS1NP4DZR46TF5HW",
+        "raw_sha256": "e5bb8870b116cfda98551ccc16e5aee80b42e8117af775537f81714006d92093",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gemini-3.8-flash-high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--mode accept-edits"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b2.contract.json",
+            "reason": null,
+            "sha256": "66982d45b5c7bb68d1b03cc88c111a24b90ff9b9931e4bbbe137fd94b6a16c0b",
+            "status": "resolved",
+            "token": "x-b2.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-atomic-publish.md",
+            "reason": null,
+            "sha256": "4706e446d39f829dfaa8bf399dd337646353d79baf5ff7fa33e8f8bea7c986ee",
+            "status": "resolved",
+            "token": "docs/design/eval-atomic-publish.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "publish_dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "recover_archive"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/archive.py",
+            "reason": null,
+            "sha256": "788c614b4bd4e4594b109b3a4a241276017cd0b7d33d45fc56e4c9890f6cedc5",
+            "status": "resolved",
+            "token": "src/harness_bench/archive.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/judges.py",
+            "reason": null,
+            "sha256": "30b8de3c690430923075040f43b81d0f1bda166606e987d969594dbd1e4786f9",
+            "status": "resolved",
+            "token": "report/judges.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "attempt_dirs"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":216"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_archive.py",
+            "reason": null,
+            "sha256": "37f00d199456e779774171c4f523ecc5cd6e18d75d3a4d829af009121f7bdf54",
+            "status": "resolved",
+            "token": "tests/test_archive.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/archive.json",
+            "reason": null,
+            "sha256": "78305eb8407a0ff5f1ee1bba1a4befc8940c8d56349a52d45e794fa79c510152",
+            "status": "resolved",
+            "token": "tests/mutations/archive.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_engine.py",
+            "reason": null,
+            "sha256": "2b2574063780c13ce130974fdf02589825038c68b4f4f6c16571976e208c26d2",
+            "status": "resolved",
+            "token": "tests/test_engine.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_the_engine_archive_goes_through_publish_dir"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_views.py",
+            "reason": null,
+            "sha256": "dbb238335908729014a566fc8703c830fb1ee11e415f8005862f25ac1f2d4b94",
+            "status": "resolved",
+            "token": "tests/test_views.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_bench_verify_passes_a_run_archived_by_the_atomic_path"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "atomic.publish_dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "archive_cell"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB-USR-002"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "*.tmp-*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "verify"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "archive.attempt_dirs(run_dir, cell_id"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "re.fullmatch(r\"attempt-(\\d+"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/judges.py:216"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "attempt-1.tmp-…"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ValueError"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "archive.make_writable"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "atomic.make_writable"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cli.log"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-b2"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M41JW4X1KPP5MK14BG2Q867H",
+      "shortname": "You are session x-d1-e1e4 on branch build/eval-x-d1, harness Codex, mode…",
+      "datetime": "2026-10-03T19:11:53Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-d1-e1e4 on branch build/eval-x-d1, harness Codex, model gpt-6.1-sol with effort high (codex-cli 0.160.0). Build dispatch D1 only of the brief docs/coordination/eval-wave2-e1/x-d.md (its text follows), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-D: engine identity and the launch recheck\n\n**Harness** Codex via `coord-runner` (Leader, R-87), `gpt-6.1-sol`, effort high, codex-cli 0.160.0 (R-88 condition 1: Q0 qualified Codex before W1-D's gate; README §5) · **contract** `x-d.contract.json` (D1; D2 reuses it with the suffix `2`) · **deadline** 3,300 s per dispatch · **budget** 200 calls · 200k · 2 dispatches · 3 h · **fallback** a red-only end or a failed read-back: the green follow-on runs as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same worker tree (R-87 Option 1; R-88 is the Owner review).\n\n**Design:** `docs/design/eval-identity.md` (W1-D rev 2, on `main`, `301a8705`), with ADR-0017 *Amendment 1* (R-94). **W0 rev 5** (rev 4 plus the rev-5 change table; your rows: §6 `for_task`, `builds=None`, the `profiles/<h>` set; §11 HB-RDY-011, HB-PLN-004 text). **W0 rev 4:** sections 6 (identity API, launch recheck, **the `campaign_check=` keyword**), 9, 10 (G2, G2b, G3, D3 as a two-path frozenset), 11 (every E1 row, **registry first**), 12, 13.\n\n## Owned paths (E1 hub owner, W0 §13)\n`src/harness_bench/identity.py` (new), `engine.py` (E1), `errors.py` (E1), `grade/runner.py` lines 108-112 only (`catalog_hash` becomes an import from `identity`), `tests/test_identity.py` (new), `tests/test_engine.py` (E1), `tests/test_architecture.py`, `tests/import_graph.py` (new), `tests/mutations/engine.json` (E1), `tests/mutations/cli.json` (the \"cli drops the kwarg\" mutant only).\n\n## Dispatch D1 (`x-d1-e1e4`, `build/eval-x-d1`): the first commit every other track waits on\nOne turn: a red commit, then a green commit.\n- `errors.py`: **every** E1 row of W0 §11 (HB-LED-007, HB-IDN-001/002, HB-PLN-001/002/004/005, HB-PWR-001, HB-CHK-001..004, HB-GRD-007, HB-RDY-001..011 (rev 5 adds HB-RDY-011, SR-E1 4), HB-CMP-001..010 with HB-CMP-010's rev 4 meaning; HB-PLN-004 with its rev 5 text, which also names a `synthetic` combo in a measurement plan). The registry rejects an unknown code (`errors.py:118`), so X-A1, X-B1, X-C, X-E, X-F and X-H1 test their codes only after this joins.\n- `identity.CLASSES` seeded for every existing `src/` file (69 at W1-D's scan) and every planned module of W0 §9; `telemetry/*` run, `gateway` a grade component (R-94); G2 (`test_every_src_file_has_a_class`, with the `unclassed`/`stale` red fixtures T-8..T-10b) and G2b (direction test; `RUN_IMPORTS_GRADE_ALLOWED` holds exactly the three `config.py` pairs, T-12d).\n- `tests/import_graph.py` extracted from `test_architecture.py:98-99`; G3 over the W0 §9 \"yes\" set with its three red fixtures; `SUBPROCESS_CALLERS = frozenset({\"procs.py\", \"grade/bench_check.py\"})` through the alias resolver; the R-60 set gains `grade/property`.\n- `catalog_hash` moved to `identity.py`; `grade/runner.py:108-112` becomes the import (your only hunk in X-F's file).\n\n## Dispatch D2 (`x-d2-e1e4`, `build/eval-x-d2`), after D1 joins\n- **W0 rev 5 §6 (SR-E1 3):** `manifest(root, tasks, builds=None)` writes **no** `builds/*` key; `profiles/<h>` covers every `h` in `profiles.HARNESSES` (plan-independent); `for_task(m, task)` drops every `builds/*` key and every `tasks/<id>` except `tasks/<task>`. Test: `identity_hash(manifest(root, [t], builds=None)) == identity_hash(for_task(manifest(root, [t, u], builds=b), t))`, with the mutant \"`for_task` keeps `builds/*`\".\n- `manifest`, `identity_hash`, `side`, `diff`, `launch_check` (W0 §6; `manifest` takes `plan[\"builds\"]`, imports no `tools` module); R-94 pins T-3 (`telemetry/normalize.py` edit moves run side only) and T-4 (`test_gateway_is_a_grade_component`).\n- `engine.py`: the recheck when a campaign run starts and before each `cell.launch_intent`; `run.launch_stopped{code: HB-IDN-001, reason, diff}`; `identity_check_ms` on the `cell.launch_intent` row via `self._check_ms`, absent (not 0) when no check ran.\n- **`campaign_check: Callable[[], None] | None` (W0 rev 4 §6, RV-DS W1-C 2):** called once, after the run lock (`engine.py:374`) is held and before the first `cell.launch_intent`; a raise stops the run before any launch. Test with a fake callable. X-C writes the real function and the `cli.py` line.\n\n## Acceptance items (design tests and live gate conditions)\n1. **RV-TA W1-D rev 2, R2-1/R2-2:** T-25 builds its own fixture (a real confirmed plan with one cell and a campaign block, a real `Engine`, only `preflight.check` stubbed, a `src/` run-class file edited) and its no-drift twin T-25b; the mutant \"cli drops the kwarg\" in `tests/mutations/cli.json`.\n2. **RV-TA 2, 3:** pure `unclassed`/`stale` take the table (T-8..T-10, T-10b); T-12 with six import forms, T-12c the stale pair, T-12d the edges equal the three pairs.\n3. **RV-TA 5, 6; RV-SRE 1, 3, 4:** `identity_check_ms` via a fake clock (T-30), absent not 0 (T-29); the check once per tick with a 2 s cap (T-16, T-31); the stop row exact (T-26, T-28, T-32).\n4. **RV-TA 7, RV-SRE 8 (E1 exit evidence, at the demo):** the demo reports median, max and the cold value of `identity_check_ms`.\n5. `test_side_partitions_every_component`; the manifest carries no `os.environ` value and no path (RV-SEC 11).\n6. The differ names `grade/formal.py changed` (plan exit evidence).\n\nNot yours: `Status.stop_reason`/`stop_diff` (X-C, W0 rev 4 §6), `grading.started` fields (X-F).\n\n## Exit\nREADME §3 join gate per dispatch; served model read from the Codex native record. Report per README §4.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M41JW7Z23R1P950A0GS98ZQX",
+      "shortname": "You are session x-a1a-e1e4 on branch build/eval-x-a1a, harness Codex, mo…",
+      "datetime": "2026-10-03T19:11:56Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-a1a-e1e4 on branch build/eval-x-a1a, harness Codex, model gpt-6.1-sol with effort high (codex-cli 0.160.0). Build dispatch A1a only of the brief docs/coordination/eval-wave2-e1/x-a1.md (its text follows), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-A1: arms and ring plumbing\n\n**Harness** Codex via `coord-runner` (Leader, R-87), `gpt-6.1-sol`, effort high, codex-cli 0.160.0 (R-88 condition 1, README §5) · **contract** `x-a1.contract.json` (A1a; A1b reuses it with the suffix `b`) · **deadline** 3,300 s per dispatch · **budget** 220 calls · 200k · 2 dispatches · 3 h · **fallback** a red-only end: the green follow-on runs as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree (R-88 is the Owner review).\n\n**Design:** `docs/design/eval-arms.md` (W1-A rev 2, on `main`, `92e977b2`). **W0 rev 5:** §2 (`CHECK_PROPERTIES`), §6 (the synthetic hunk), §11 (HB-PLN-004 text). **W0 rev 4:** sections 1, 5 (quoted ids incl. `comparisons`, no top-level `pack`, `plan_pack(plan, *, strict=False)`), 7 (`PROPERTY_NAMES`, the two `validate_catalog` checks, R-95 condition 2), 10 G1 (AST tokens, equality ratchet, pins after the migrations), 11, 13.\n\n## Owned paths (E1 hub owner, W0 §13)\n`src/harness_bench/plan.py`, `config.py`, `views.py`, `grade/_changes.py` (line 84 only), `cli.py` (the function `_workspace_builder` only), `board.py` and `report/summaries.py` (the one-line `plan_pack` migrations and `board._build_pack_effect`'s status text only), `report/pack_improvement.py` (the `cell_arm` line at 746-747 only), `bench/rings/pilot.yaml` (new; R-89: `cc-opus`, `model: claude-opus-5-5` explicit, k = 3), `tests/test_plan.py`, `test_config.py`, `test_workspace.py`, `test_views.py`, `test_changes_cache.py` (the `pre_turn_commit` case), `tests/test_arms_guard.py` (new), `tests/fixtures/plans/grid4-cells.json` (new), `tests/mutations/plan.json`. **Not yours:** `workspace.py` source (X-B1's `_land` hunk), `cli.py` `cmd_plan` (X-C pastes W1-A §3.9), `report/html.py` (X-H2 takes your header lines).\n\n## Depends on\nW1-A ✓; **X-D1** joined (HB-PLN-001/002/004/005 in the registry).\n\n## Dispatches\n- **A1a** (`x-a1a-e1e4`, `build/eval-x-a1a`): `config.py` (bench-matrix/2 validation, quoted-id refusal in `arms` and `comparisons`, upcast, `ARM_OFF`, `ARM_ID`, ring validation, `PROPERTY_NAMES`, the `property:` tag check, the `also_graded_by` check: a grader module, differs from `grader`, no repeats); `plan.py` (bench-plan/2 writer, `Cell.arm`, label, `arms`, `comparisons`, `launch_seed`, `kind`, `campaign` verbatim, `ring`, `cell_arm`, `arm_pack`, `plan_pack`, `launch_order`, `launch_balance`, `draw_launch_order`, the ready rule by plan kind, `parse_binding`, `resolve_arms`); the grid-4 golden. **W0 rev 5 (SR-E1 2, SR-L3):** `\"synthetic\"` joins `config.HARNESSES`; `config.CHECK_PROPERTIES = frozenset({\"security\", \"resilience\"})` beside `PROPERTY_NAMES`; `plan.SYNTHETIC_PROFILE_RECORD` (a constant dict) returned by `plan.profile_record(root, \"synthetic\")`; `build_plan` refuses a **measurement** plan that names a `synthetic` combo with HB-PLN-004 (one refusal by plan kind, listing every offender). Run the full suite: any test that pins `config.HARNESSES` is yours to update in the same commit.\n- **A1b** (`x-a1b-e1e4`): `views.py:525`, `grade/_changes.py:84`, `cli._workspace_builder`, the three plan-level readers and `pack_improvement.py:746-747`, `board._build_pack_effect` text, `bench/rings/pilot.yaml`, G1 with its fixtures and the pinned counts taken **after** these migrations.\n\n## Acceptance items (W1-A rev 2's test plan §10 plus the live gate conditions it states as applied; check each against the merged text)\n1. EV-17: `test_grid4_replan_gives_the_same_task_combo_arm_rep_set_and_cell_ids` runs `build_plan` over the fixture matrix with injected versions (RV-TA 6), and the fixture carries its provenance (`runs/grid-4/plan.json` and its sha256, no generator; RV-TA 7).\n2. Launch balance: refused at exactly 1/20 deviation, with a `<` → `<=` mutant (RV-TA 5); the 2×4 and 3×4 shapes in the redraw test; the cap refusal text does not claim \"at least 2 blocks\" for more than two arms (RV-PAT 3, 4).\n3. G1: one red fixture per form (`x[\"pack\"]`, `.get`, `.pop`, `in`, `getattr`, `itemgetter`, attribute, keyword), a comment-only and a docstring-only file that must not match; `test_pack_hits_equal_the_pinned_counts` asserts equality (RV-PAT W0 delta 3); RV-TA 1's `Constant(\"on\"/\"off\")` scan with its red fixture and the `report/assets/*.js` text scan.\n4. **`test_plan_py_imports_no_campaign_or_identity_module` stays, with a red fixture** (W0 rev 4 ruling on RV-TA 3 vs RV-SIM 7: G2b cannot catch `identity`, which is run class).\n5. RV-TA 2: one test through the real `cli._workspace_builder` with two real pack repos, asserting each arm's diff equals its manifest.\n6. RV-TA 8: the red commit lands stubs that raise or return neutral wrong values for `launch_order`, `cell_arm`, `draw_launch_order`, so tests fail on behaviour.\n7. `test_plan_level_readers_state_the_true_pack_or_refuse`: `board` raises HB-PLN-005 with `strict=True`; the display readers render `several packs`.\n8. HB-PLN-004 names every offender (no cap; RV-SIM 4); a discrimination plan admits `draft` and refuses `stub`; a measurement plan with a `synthetic` combo is refused and names the combo (W0 rev 5), with a red fixture and the mutant \"skip the harness check\"; `profile_record(root, \"synthetic\")` returns the constant (today it raises `ValueError`, `profiles.py:176`).\n9. RV-PAT 6 (for X-E, recorded here so it is not lost): `status: ready` has one predicate; you do not write `ready` anywhere.\n\n## Exit\nREADME §3 join gate per dispatch; served model read from the Codex native record. Report per README §4.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M41JWB1KRGXW71ZGJZAN9ZTX",
+      "shortname": "You are session x-g1-e1e4 on branch build/eval-x-g1, harness Grok, model…",
+      "datetime": "2026-10-03T19:12:00Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-g1-e1e4 on branch build/eval-x-g1, harness Grok, model grok-4.7 with --reasoning-effort high. Build X-G1 of the brief docs/coordination/eval-wave2-e1/x-g1.md (its text follows), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-G1: catalog 0.7.dev\n\n**Harness** Grok via `coord-runner` (Leader, R-87), `grok-4.7`, `--reasoning-effort high`, `XAI_API_KEY` removed · **contract** `x-g1.contract.json` · **deadline** 1,200 s · **dispatch** one turn, red then green · **budget** 40 calls · 100k · 1 · 0.7 h · **fallback** the green follow-on as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree (R-92 is the Owner review).\n\n**Design:** `docs/design/eval-catalog-0-7.md` (W1-G rev 2, on `main`). **W0 rev 5:** §7 (R-97). **W0 rev 4:** section 7 (the table of eleven ids, kind, better, scale, `property:` tag; R-95's owner rule).\n\n## Owned paths\n`bench/metrics.yaml` (E1 owner), `tests/test_catalog_version.py`, `docs/adr/0019-catalog-0-7-property-metrics.md` (only the item-3 note, by R-95 condition 4). **Not yours:** `grade/property.py` (X-F; never create it), `config.py` (X-A1's validation checks), `grade/runner.py` (X-F builds the owner clause and T-R3..T-R6), `bench/catalog-freeze.yaml` (Leader, R-86).\n\n## Depends on\n**X-F0 joined** (`grade/property.py` exists; `validate_repo` refuses a metric whose grader has no module, `config.py:158`). R-95 ✓.\n\n## Work\n- `version: \"0.7.dev\"`; the eleven metrics of W0 §7 with weight 0, source D, the anchors and areas W1-G fixes (R-79 forms), each property-specific one tagged `property: <name>`; `property_check_pass` untagged.\n- `pass_at_1` gains `also_graded_by: [formal]` (R-95). In the same commit, ADR-0019's item-3 note changes from \"provisional on the request\" to \"R-95: `also_graded_by: [formal]`\".\n- Every 0.6 metric's definition is unchanged except that one key; the US-4 control stays green.\n- **R-97 condition 3 (W0 rev 5 §7):** `hallucinated_symbol_errors`'s `anchor_note` says \"unresolved vendored-API references in the final tree\"; the words \"build-log errors\" do not appear in it. The anchor `[5, 0]` stays provisional (W1-G U2). A test asserts the phrase is absent.\n\n## Acceptance items\n1. Red first: `tests/test_catalog_version.py` asserts the eleven ids with their kind, better, scale and tag (W1-G's T-C nodes), red today by assertion.\n2. The eleven metrics validate under `0.7.dev` (R-90); `bench validate` exit 0 on the joined tree.\n3. **RV-TA W1-G R2-2:** the design's §11 note that T-P4/T-P6 carry the `n_recorded` sweep proof is the author's; you do not edit the design. X-G3 (E3) owns T-U1b (RV-TA R2-1).\n4. T-R3..T-R6 are X-F's (W0 rev 4 §7); do not write them.\n\n## Exit\nREADME §3 join gate; `python tools/grok_served_model.py <session dir>` exits 0 (the first Grok dispatch: if TOOL-GSM has not joined yet, the Leader reads the same fields by hand, as Q0b did, and records them). Report per README §4.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M41JWDM5FBGR7H8FSTCDVSXZ",
+      "shortname": "You are session x-b1a-e1e4 on branch build/eval-x-b1a, harness Grok, mod…",
+      "datetime": "2026-10-03T19:12:02Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-b1a-e1e4 on branch build/eval-x-b1a, harness Grok, model grok-4.7 with --reasoning-effort high. Build dispatch B1a only of the brief docs/coordination/eval-wave2-e1/x-b1.md (its text follows), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-B1: crash-atomic writes and the lock helper\n\n**Harness** Grok via `coord-runner` (Leader, R-87), `grok-4.7`, `--reasoning-effort high`, grok 1.0.41, launched with `XAI_API_KEY` removed · **contract** `x-b1.contract.json` (B1a; B1b and B1c reuse it with the suffixes `b`, `c`) · **deadline** 1,200 s per dispatch · **budget** 40 calls · 100k per dispatch · 3 dispatches · 1.5 h total · **fallback** a red-only end, a timeout, or a served-model read that is not all `grok-4.7*`: the green follow-on runs as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree (R-87 Option 1; R-92 is the Owner review).\n\n**Design:** `docs/design/eval-atomic-publish.md` (W1-B rev 2, on `main`, gate passed), sections 3, 4, 10, 11, 12.2, 17. **W0 rev 4:** sections 4 (as granted to S-B4), 6 (`acquire_then_probe`), 11, 13.\n\n## Owned paths\n`src/harness_bench/atomic.py` (new), `tests/test_atomic.py` (new), `tests/test_atomic_sites.py` (new), `tests/mutations/atomic.json` (new), `src/harness_bench/oslock.py` (E1: `acquire_then_probe` only), `tests/test_oslock.py` (the helper's tests), `src/harness_bench/workspace.py` (the `_land` hunk and the `make_writable` import only), `tests/mutations/workspace.json`. **Not yours:** `tests/test_workspace.py` (X-A1's; W1-B: it stays green unedited), `archive.py` (X-B2), `docs/lessons/defect-classes.md` (send W1-B §12.2's RIG-D instance to the Coordinator as text).\n\n## Dispatches (each based on `main`; each lands red then green in one turn)\n- **B1a** (`x-b1a-e1e4`, `build/eval-x-b1a`): `atomic.py` per W1-B §17 order: the naive skeleton (every public name, neutral wrong values) as the red commit's base, then `create_once`, `TEMP_RE`, `is_temp_name`, `stale_temps`, `sweep_temps(target, lock)` (raises `ValueError` unless `oslock.is_held(lock.path)`), `make_writable` (lstat first, never through a link, adds `S_IWUSR`), `rename_with_retry` with `RENAME_BACKOFF`. Depends on X-D1 (HB-LED-007 in the registry).\n- **B1b** (`x-b1b-e1e4`): `publish_dir`; `workspace._land` calls `rename_with_retry(tmp, dest, replace=True, settled=lambda: valid(dest))` and drops its own loop; the WIN-A mutant moves; `tests/test_atomic_sites.py` (the scan, 12 sites in 11 keys, three red-fixture tests; the three grader `copytree` entries stay until X-F deletes them).\n- **B1c** (`x-b1c-e1e4`): `oslock.acquire_then_probe(own, own_code, others, *, between=None) -> RunLock` (W0 rev 4 §6): `between` runs after the first operation and before the second; tests with `Barrier(2).wait(timeout=10)`: never both proceed; both-refused leaves every file unchanged; the swap mutant (probe before acquire) is killed by the barrier test.\n\n## Acceptance items (design tests and live gate conditions)\n1. The W1-B §10.2 nodes and the §10.3 mutation set M1..M27 plus M14b, each naming its killing test (MUT-B keeps the ids honest).\n2. **RV-TA W1-B R2-3:** a mutation run on a Windows host **and** a POSIX host, both in the proof pack (M14 dies only on Windows, M14b only on POSIX): `test_posix_flag_default_follows_the_platform`, `test_the_real_publish_dir_fsyncs_the_folder_only_on_posix`. The POSIX half runs in CI's macOS job; say which run killed which.\n3. **RV-SEC W1-B 5(c):** one recorded run of the three unmeasured symlink behaviours (`os.unlink` on a Windows directory symlink, `O_EXCL` onto a dangling symlink on Windows, the sweep of a symlink temp) on a host with symlink rights (macOS CI or Windows Developer Mode); `test_the_posix_job_does_not_skip_the_symlink_variants` and the CI rule that a skipped symlink variant fails the macOS job. Unmeasured on this host (winerror 1314).\n4. **RV-SEC 2:** `create_once` keeps the fd open and compares `st_dev`/`st_ino` after the link (M22); reads through one descriptor with `O_NOFOLLOW` where available (M27).\n5. **RV-DS 1:** `_discard_temp` swallows an unlink failure after a successful link and logs `atomic.temp_leaked` (M23). **RV-DS 4:** M25 (the lock check). **RV-DS 5:** `rename_retries`, `rename_ms`, `publish_failed(phase=rename)` asserted.\n6. The kill tests `test_a_kill_between_write_and_link_leaves_no_final_file` and (B1b) `test_a_kill_mid_copy_leaves_no_final_folder_and_the_redo_succeeds`.\n\n## Exit\nREADME §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). Report per README §4.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M41JWH49CM57GVNZ98ZD5W79",
+      "shortname": "You are session x-enva-e1e4 on branch build/eval-env-a, harness Grok, mo…",
+      "datetime": "2026-10-03T19:12:06Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-enva-e1e4 on branch build/eval-env-a, harness Grok, model grok-4.7 with --reasoning-effort high. Build the ENV-A fix of the brief docs/coordination/eval-wave2-e1/env-a.md (its text follows), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# ENV-A: the ambient-credential fix\n\n**Harness** Grok via `coord-runner` (Leader, R-87), `grok-4.7`, `--reasoning-effort high`, `XAI_API_KEY` removed · **contract** `env-a.contract.json` · **deadline** 1,200 s · **dispatch** one turn, red then green · **budget** 30 calls · 80k · 1 · 0.5 h · **fallback** a red-only end or a failed served-model read: the green follow-on as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree (R-92 is the Owner review).\n\n**The class** (`docs/lessons/defect-classes.md`, the candidate \"a hermetic test reads an ambient credential from the operator's shell\", class id **ENV-C**, renamed from a duplicate `ENV-A`; cite ENV-C in your report and commits): with `HB_CLAUDE_OAUTH_TOKEN` set to a dummy value, three tests fail on `main`: `tests/test_gateway_headless.py::test_t_gw_10_the_credential_is_present_during_the_call_and_gone_after_it`, `::test_t_gw_10_the_credential_is_gone_after_a_timeout_and_after_an_exception_past_the_copy`, `tests/test_profiles.py::test_the_launcher_reports_no_model_setter_and_a_copied_login[claude-code]`.\n\n## Owned paths\n`tests/conftest.py` (E1 owner: this track; another track needs a seam request), `tests/test_env_isolation.py` (new). **Not yours:** `tests/test_profiles.py` (X-E's in E1), `tests/test_gateway_headless.py`; the fix must make them pass **without editing them**.\n\n## Depends on\nTOOL-GSM joined (this is a later Grok dispatch, R-92).\n\n## Work\n1. **Sweep first, recorded in the report:** `git grep -n -E \"OAUTH_TOKEN|_API_KEY|GH_TOKEN\" -- tests src/harness_bench/profiles.py` and the profile denylist (`profiles.DROP_EXACT`, `profiles.DROP_PREFIXES`). The credential list is **one** definition: import it from the production source if one exists; if none does, write it once in `conftest.py` and say so.\n2. **Red:** `tests/test_env_isolation.py` sets each listed variable to a dummy value with `monkeypatch.setenv` in a subprocess-free way (re-run the three named tests through `pytest.main` in-process, or call their bodies) and asserts they pass; plus one test that a test marked `credentials` still sees the variable. Red today by assertion.\n3. **Green:** an autouse fixture in `tests/conftest.py` that `monkeypatch.delenv(name, raising=False)` for every listed name, skipped for tests marked `credentials`.\n\n## Acceptance items\n1. The three named tests pass with `HB_CLAUDE_OAUTH_TOKEN=dummy` set in the shell, and with it unset.\n2. A mutant that removes the fixture is killed by `tests/test_env_isolation.py`.\n3. The defect-class text for the Coordinator: instances, sweep result, control (this fixture and its test), status `controlled` proposed.\n\n## Exit\nREADME §3 join gate, run **twice**: with the token unset and with `HB_CLAUDE_OAUTH_TOKEN=dummy`. `python tools/grok_served_model.py <session dir>` exits 0. Report per README §4.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M41JWKRTWS49TBFSF805EG23",
+      "shortname": "You are session x-b2-e1e4 on branch build/eval-x-b2, harness Agy, model …",
+      "datetime": "2026-10-03T19:12:08Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-b2-e1e4 on branch build/eval-x-b2, harness Agy, model gemini-3.8-flash-high. Build X-B2 of the brief docs/coordination/eval-wave2-e1/x-b2.md (its text follows), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief, then the design it names; all three bind you. Report your served model id on the first line of your final message.\n\n# X-B2: crash-atomic archive\n\n**Harness** Agy via `coord-runner` (Leader, R-87), `gemini-3.8-flash-high`, agy 1.2.13, `--mode accept-edits` · **contract** `x-b2.contract.json` · **deadline** 3,300 s · **dispatch** one turn, red then green · **budget** 120 calls · 150k · 1 · 1.5 h · **fallback** the green follow-on as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree, after an Owner review.\n\n**Design:** `docs/design/eval-atomic-publish.md` §6 (archive rework), §10 (the archive nodes and A1..A4), §12.1 (the defect class). **W0 rev 4:** section 4 (`publish_dir`, \"Readers of the archive folder\", `recover_archive` is X-K1's in E3), 13.\n\n## Owned paths\n`src/harness_bench/archive.py` (E1), `report/judges.py` (the `attempt_dirs` line at `:216` only), `tests/test_archive.py`, `tests/mutations/archive.json`, and in `tests/test_engine.py` only `test_the_engine_archive_goes_through_publish_dir` and in `tests/test_views.py` only `test_bench_verify_passes_a_run_archived_by_the_atomic_path` — both files belong to other E1 owners (X-D, X-A1), so send each as a seam request to them **or** place both tests in `tests/test_archive.py` if they need no private fixture of those files; say which in your report.\n\n## Depends on\n**X-B1b joined** (`atomic.publish_dir`); X-D1 (codes).\n\n## Acceptance items\n1. **Red first against today's `archive_cell`:** a kill during an archive copy, then a resume completes without `HB-USR-002` (D1); a `*.tmp-*` sibling is redone; red by assertion.\n2. `archive_cell` goes through `atomic.publish_dir` with a `verify` that compares the file set and each file's rows; the real-wiring test fails if the call is removed.\n3. `archive.attempt_dirs(run_dir, cell_id)` (`re.fullmatch(r\"attempt-(\\d+)\")`, sorted by number) is the one reader; `report/judges.py:216` uses it; a leaked `attempt-1.tmp-…` no longer raises `ValueError` there.\n4. `archive.make_writable` stays a re-export of `atomic.make_writable` (W0 §4).\n5. The mutants A1..A4 in `tests/mutations/archive.json`, each naming its killing test.\n6. The \"exists means complete\" defect-class text (W1-B §12.1) goes to the Coordinator in your report; you do not edit `docs/lessons/defect-classes.md`.\n\n## Exit\nREADME §3 join gate; served model read from Agy's `cli.log`. Report per README §4.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M41JX06P8TETKP1XTWD8GP2F",
+      "shortname": "compile-You are session x-d1-e1e4 on branch build/eval-x-d1, harness Codex, mode…",
+      "datetime": "2026-10-03T19:12:21Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-d.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch D1 of X-D on build/eval-x-d1: every E1 HB row (HB-RDY-011 included) in errors.py, the CLASSES seed with G2 and G2b, tests/import_graph.py with G3 and the two named allowlist entries, and the catalog_hash move; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d1.; The README section 3 join gate passes on the final commit, each command on its own line.; The served model is read from the Codex native record and is the first line of the report.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatch D2 (manifest, launch recheck, campaign_check keyword): a later dispatch.; Status.stop_reason/stop_diff (X-C) and grading.started fields (X-F).\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: 200 calls, 3,300 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d1. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes on the final commit, each command on its own line. | phrase: README §3 join gate per dispatch |\n| done_when: The served model is read from the Codex native record and is the first line of the report. | phrase: served model read from the Codex native record |\n| not_in_scope: Dispatch D2 (manifest, launch recheck, campaign_check keyword): a later dispatch. | phrase: Build dispatch D1 only |\n| not_in_scope: Status.stop_reason/stop_diff (X-C) and grading.started fields (X-F). | phrase: Not yours: `Status.stop_reason`/`stop_diff` (X-C, W0 rev 4 §6), `grading.started` fields (X-F). |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\nReferences\n- coord-runner: unresolved (not found)\n- gpt-6.1-sol: unresolved (not found)\n- x-d.contract.json: docs/coordination/eval-wave2-e1/x-d.contract.json sha256 1f7841905575e326774915d70a6fce84c5627761fafda9981b2d0f891832af08\n- 2: unresolved (not found)\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-identity.md: docs/design/eval-identity.md sha256 8a267c00da2b82e5c7054ea1bd0ba117a932fabda71ff8df017d885b091ba288\n- main: unresolved (not found)\n- 301a8705: unresolved (not found)\n- for_task: unresolved (not found)\n- builds=None: unresolved (not found)\n- profiles/<h: unresolved (not found)\n- campaign_check=: unresolved (not found)\n- src/harness_bench/identity.py: unresolved (not found)\n- engine.py: src/harness_bench/engine.py sha256 b50f336e0b450540d3bce1144669427c82673d42d23b0a165c0ae47b39d94492\n- errors.py: src/harness_bench/errors.py sha256 67e763d8e3a20d4b2fe09181e61c845e72b5110cd0a2417fb6cf2e8cf4d66251\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 65d4fdfe3805f235ba957d7d5b4de74e5651b334040eda8e8e6f383da0c2849a\n- catalog_hash: unresolved (not found)\n- identity: unresolved (not found)\n- tests/test_identity.py: unresolved (not found)\n- tests/test_engine.py: tests/test_engine.py sha256 2b2574063780c13ce130974fdf02589825038c68b4f4f6c16571976e208c26d2\n- tests/test_architecture.py: tests/test_architecture.py sha256 39ea39cefd95ce7c05d5c7d784f3df6c78f942d31d8148a5569fce8be7673b60\n- tests/import_graph.py: unresolved (not found)\n- tests/mutations/engine.json: tests/mutations/engine.json sha256 134d907b5325bc553dd9d0b46598ed1eaef3bf5950f7ee7e0390143ea72e4260\n- tests/mutations/cli.json: tests/mutations/cli.json sha256 4f82f15399ec860f251733197304788562b660e54449b950b325acdfac686dd8\n- x-d1-e1e4: unresolved (not found)\n- build/eval-x-d1: unresolved (not found)\n- synthetic: unresolved (not found)\n- errors.py:118: unresolved (not found)\n- identity.CLASSES: unresolved (not found)\n- src/: unresolved (not found)\n- telemetry/*: unresolved (not found)\n- gateway: unresolved (not found)\n- test_every_src_file_has_a_class: unresolved (not found)\n- unclassed: unresolved (not found)\n- stale: unresolved (not found)\n- RUN_IMPORTS_GRADE_ALLOWED: unresolved (not found)\n- config.py: src/harness_bench/config.py sha256 2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19\n- test_architecture.py:98-99: unresolved (not found)\n- SUBPROCESS_CALLERS = frozenset({\"procs.py\", \"grade/bench_check.py\"}: unresolved (not found)\n- grade/property: unresolved (not found)\n- identity.py: unresolved (not found)\n- grade/runner.py:108-112: unresolved (not found)\n- x-d2-e1e4: unresolved (not found)\n- build/eval-x-d2: unresolved (not found)\n- manifest(root, tasks, builds=None: unresolved (not found)\n- builds/*: unresolved (not found)\n- h: unresolved (not found)\n- profiles.HARNESSES: unresolved (not found)\n- for_task(m, task: unresolved (not found)\n- tasks/<id: unresolved (not found)\n- tasks/<task: unresolved (not found)\n- identity_hash(manifest(root, [t], builds=None)) == identity_hash(for_task(manifest(root, [t, u], builds=b), t: unresolved (not found)\n- manifest: unresolved (not found)\n- identity_hash: unresolved (not found)\n- side: unresolved (not found)\n- diff: unresolved (not found)\n- launch_check: unresolved (not found)\n- plan[\"builds: unresolved (not found)\n- tools: unresolved (not found)\n- telemetry/normalize.py: src/harness_bench/telemetry/normalize.py sha256 8ff140592bd0e579b9c8a27cff0758a9e3626b6f8a4f76e104d9ebfa0d02cbd2\n- test_gateway_is_a_grade_component: unresolved (not found)\n- cell.launch_intent: unresolved (not found)\n- run.launch_stopped{code: HB-IDN-001, reason, diff}: unresolved (not found)\n- identity_check_ms: unresolved (not found)\n- self._check_ms: unresolved (not found)\n- campaign_check: Callable[[], None] | None: unresolved (not found)\n- engine.py:374: unresolved (not found)\n- cli.py: src/harness_bench/cli.py sha256 3017d46c6393d25bfb494ac6ea972345af088ac5a8dfe3fd23ad34cc5e033ed8\n- Engine: unresolved (not found)\n- preflight.check: unresolved (not found)\n- test_side_partitions_every_component: unresolved (not found)\n- os.environ: unresolved (not found)\n- grade/formal.py changed: unresolved (not found)\n- Status.stop_reason: unresolved (not found)\n- stop_diff: unresolved (not found)\n- grading.started: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-d.md: docs/coordination/eval-wave2-e1/x-d.md sha256 c9bf47e3f10ae67b67eff502f3eacf2cbc01cf65e21c583906114e00458a82d3\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- HB-IDN-001/002: unresolved (not found)\n- HB-PLN-001/002/004/005: unresolved (not found)\n- unclassed`/`stale: unresolved (not found)\n- frozenset({\"procs.py: unresolved (not found)\n- grade/bench_check.py\"}: unresolved (not found)\n- R2-1/R2-2:**: unresolved (not found)\n- grade/formal.py: src/harness_bench/grade/formal.py sha256 13658664be989d9649853bca7be4e856492212567c02f4a5bce0fb1241b650eb\n- Status.stop_reason`/`stop_diff: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-d1\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: a red-only end or a failed served-model read: the green follow-on runs as Claude Code Sonnet (model: sonnet) in the same worker tree (R-87 Option 1)\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JW4X1KPP5MK14BG2Q867H\nraw sha256: 16826d99324d43ea6f49d87a5882f36d4f272a3ac29d2414dd351793da472335\ncompiler model: claude-opus-5-5\nengine seconds: 0.025\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M41JW4X1KPP5MK14BG2Q867H for codex v1: 7 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d1.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes on the final commit, each command on its own line.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model is read from the Codex native record and is the first line of the report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "served model read from the Codex native record"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatch D2 (manifest, launch recheck, campaign_check keyword): a later dispatch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch D1 only"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Status.stop_reason/stop_diff (X-C) and grading.started fields (X-F).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Not yours: `Status.stop_reason`/`stop_diff` (X-C, W0 rev 4 §6), `grading.started` fields (X-F)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          }
+        ],
+        "contract_slot": {
+          "width_cap": "1",
+          "deadline": "3,300 s",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-d1",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "containment": "own worktree; the brief's owned paths only",
+          "fallback": "a red-only end or a failed served-model read: the green follow-on runs as Claude Code Sonnet (model: sonnet) in the same worker tree (R-87 Option 1)"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-d.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch D1 of X-D on build/eval-x-d1: every E1 HB row (HB-RDY-011 included) in errors.py, the CLASSES seed with G2 and G2b, tests/import_graph.py with G3 and the two named allowlist entries, and the catalog_hash move; red commit then green commit.",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-d1.",
+            "The README section 3 join gate passes on the final commit, each command on its own line.",
+            "The served model is read from the Codex native record and is the first line of the report.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "not_in_scope": [
+            "Dispatch D2 (manifest, launch recheck, campaign_check keyword): a later dispatch.",
+            "Status.stop_reason/stop_diff (X-C) and grading.started fields (X-F)."
+          ],
+          "tier": "T2",
+          "fan_out_cap": "0",
+          "context_ceiling": "200k tokens",
+          "main_line_budget": "200 calls, 3,300 s"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.025,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JW4X1KPP5MK14BG2Q867H",
+        "raw_sha256": "16826d99324d43ea6f49d87a5882f36d4f272a3ac29d2414dd351793da472335",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gpt-6.1-sol"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-d.contract.json",
+            "reason": null,
+            "sha256": "1f7841905575e326774915d70a6fce84c5627761fafda9981b2d0f891832af08",
+            "status": "resolved",
+            "token": "x-d.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-identity.md",
+            "reason": null,
+            "sha256": "8a267c00da2b82e5c7054ea1bd0ba117a932fabda71ff8df017d885b091ba288",
+            "status": "resolved",
+            "token": "docs/design/eval-identity.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "301a8705"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "for_task"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "builds=None"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles/<h"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "campaign_check="
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/engine.py",
+            "reason": null,
+            "sha256": "b50f336e0b450540d3bce1144669427c82673d42d23b0a165c0ae47b39d94492",
+            "status": "resolved",
+            "token": "engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "67e763d8e3a20d4b2fe09181e61c845e72b5110cd0a2417fb6cf2e8cf4d66251",
+            "status": "resolved",
+            "token": "errors.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "65d4fdfe3805f235ba957d7d5b4de74e5651b334040eda8e8e6f383da0c2849a",
+            "status": "resolved",
+            "token": "grade/runner.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "catalog_hash"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_engine.py",
+            "reason": null,
+            "sha256": "2b2574063780c13ce130974fdf02589825038c68b4f4f6c16571976e208c26d2",
+            "status": "resolved",
+            "token": "tests/test_engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "39ea39cefd95ce7c05d5c7d784f3df6c78f942d31d8148a5569fce8be7673b60",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/import_graph.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/engine.json",
+            "reason": null,
+            "sha256": "134d907b5325bc553dd9d0b46598ed1eaef3bf5950f7ee7e0390143ea72e4260",
+            "status": "resolved",
+            "token": "tests/mutations/engine.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/cli.json",
+            "reason": null,
+            "sha256": "4f82f15399ec860f251733197304788562b660e54449b950b325acdfac686dd8",
+            "status": "resolved",
+            "token": "tests/mutations/cli.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-d1-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-d1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "synthetic"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "errors.py:118"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity.CLASSES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "telemetry/*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gateway"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_every_src_file_has_a_class"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "unclassed"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stale"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "RUN_IMPORTS_GRADE_ALLOWED"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19",
+            "status": "resolved",
+            "token": "config.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_architecture.py:98-99"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "SUBPROCESS_CALLERS = frozenset({\"procs.py\", \"grade/bench_check.py\"}"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/property"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/runner.py:108-112"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-d2-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-d2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "manifest(root, tasks, builds=None"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "builds/*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "h"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles.HARNESSES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "for_task(m, task"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/<id"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/<task"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity_hash(manifest(root, [t], builds=None)) == identity_hash(for_task(manifest(root, [t, u], builds=b), t"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "manifest"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity_hash"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "side"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "diff"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "launch_check"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan[\"builds"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/normalize.py",
+            "reason": null,
+            "sha256": "8ff140592bd0e579b9c8a27cff0758a9e3626b6f8a4f76e104d9ebfa0d02cbd2",
+            "status": "resolved",
+            "token": "telemetry/normalize.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_gateway_is_a_grade_component"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cell.launch_intent"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "run.launch_stopped{code: HB-IDN-001, reason, diff}"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity_check_ms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "self._check_ms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "campaign_check: Callable[[], None] | None"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "engine.py:374"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "3017d46c6393d25bfb494ac6ea972345af088ac5a8dfe3fd23ad34cc5e033ed8",
+            "status": "resolved",
+            "token": "cli.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Engine"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "preflight.check"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_side_partitions_every_component"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "os.environ"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/formal.py changed"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Status.stop_reason"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stop_diff"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grading.started"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-d.md",
+            "reason": null,
+            "sha256": "c9bf47e3f10ae67b67eff502f3eacf2cbc01cf65e21c583906114e00458a82d3",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-d.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB-IDN-001/002"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB-PLN-001/002/004/005"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "unclassed`/`stale"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "frozenset({\"procs.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/bench_check.py\"}"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "R2-1/R2-2:**"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/formal.py",
+            "reason": null,
+            "sha256": "13658664be989d9649853bca7be4e856492212567c02f4a5bce0fb1241b650eb",
+            "status": "resolved",
+            "token": "grade/formal.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Status.stop_reason`/`stop_diff"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M41JX1G7Z511DJZXRQE1DXC7",
+      "shortname": "compile-You are session x-a1a-e1e4 on branch build/eval-x-a1a, harness Codex, mo…",
+      "datetime": "2026-10-03T19:12:23Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-a1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch A1a of X-A1 on build/eval-x-a1a: config.py bench-matrix/2 validation with PROPERTY_NAMES, CHECK_PROPERTIES and synthetic in HARNESSES; plan.py bench-plan/2 with SYNTHETIC_PROFILE_RECORD and the ready rule by plan kind; the grid-4 golden; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a.; The README section 3 join gate passes on the final commit, each command on its own line.; The served model is read from the Codex native record and is the first line of the report.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatch A1b (readers, G1 guard, migrations, pilot.yaml): a later dispatch.; workspace.py source, cli.py cmd_plan and report/html.py.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: 220 calls, 3,300 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes on the final commit, each command on its own line. | phrase: README §3 join gate per dispatch |\n| done_when: The served model is read from the Codex native record and is the first line of the report. | phrase: served model read from the Codex native record |\n| not_in_scope: Dispatch A1b (readers, G1 guard, migrations, pilot.yaml): a later dispatch. | phrase: Build dispatch A1a only |\n| not_in_scope: workspace.py source, cli.py cmd_plan and report/html.py. | phrase: `workspace.py` source (X-B1's `_land` hunk), `cli.py` `cmd_plan` (X-C pastes W1-A §3.9), `report/html.py` (X-H2 takes your header lines) |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\nReferences\n- coord-runner: unresolved (not found)\n- gpt-6.1-sol: unresolved (not found)\n- x-a1.contract.json: docs/coordination/eval-wave2-e1/x-a1.contract.json sha256 b733271ab78a3fabd28199df06f0f74a2d8ab1501aa2b046384ae0b3d2caf9eb\n- b: unresolved (not found)\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-arms.md: docs/design/eval-arms.md sha256 6b96dee39670f518834044ffa1fe16bc1e4956939b50163ebb378ff8ca6cdb84\n- main: unresolved (not found)\n- 92e977b2: unresolved (not found)\n- CHECK_PROPERTIES: unresolved (not found)\n- comparisons: unresolved (not found)\n- pack: unresolved (not found)\n- plan_pack(plan, *, strict=False: unresolved (not found)\n- PROPERTY_NAMES: unresolved (not found)\n- validate_catalog: unresolved (not found)\n- src/harness_bench/plan.py: src/harness_bench/plan.py sha256 c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196\n- config.py: src/harness_bench/config.py sha256 2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19\n- views.py: unresolved (ambiguous: 2 matches)\n- grade/_changes.py: src/harness_bench/grade/_changes.py sha256 d573c0a57360f960bd6915caae3c0eb36e07d7a79ed168b1e1617679e0eefba7\n- cli.py: src/harness_bench/cli.py sha256 3017d46c6393d25bfb494ac6ea972345af088ac5a8dfe3fd23ad34cc5e033ed8\n- _workspace_builder: unresolved (not found)\n- board.py: src/harness_bench/board.py sha256 cc546371acb9185ae3d953d4d270436907fc2b08c76bef37ef8bea9932628972\n- report/summaries.py: src/harness_bench/report/summaries.py sha256 d2964dfd39b11ef81c7290fcaecca5af60d1f37b46d84ca5a65503c0cff5dd67\n- plan_pack: unresolved (not found)\n- board._build_pack_effect: unresolved (not found)\n- report/pack_improvement.py: src/harness_bench/report/pack_improvement.py sha256 200ec725c7cf0e8adb9df92505ac928bd5b0a5cf6edcdd5a728353ebf8f946c8\n- cell_arm: unresolved (not found)\n- bench/rings/pilot.yaml: unresolved (not found; nearest: bench/profiles/copilot.yaml)\n- cc-opus: unresolved (not found)\n- model: claude-opus-5-5: unresolved (not found)\n- tests/test_plan.py: tests/test_plan.py sha256 9522437767685abc8ae5ce86f4e951f672bb9eceaa36a7d79651bc27791360ed\n- test_config.py: tests/test_config.py sha256 a7bbcfa88547eb702f699cbb83b2b883bef78a70250e43726aade6b2fdb83296\n- test_workspace.py: tests/test_workspace.py sha256 ebc50d39c946add698477f74b57590abbc5bbc099b6422f795bd0badd6e05c97\n- test_views.py: tests/test_views.py sha256 dbb238335908729014a566fc8703c830fb1ee11e415f8005862f25ac1f2d4b94\n- test_changes_cache.py: tests/test_changes_cache.py sha256 929579db3ddd2b5b07627c13c750c6f6bc993c7c60cbec8f42f8bf64df54604f\n- pre_turn_commit: unresolved (not found)\n- tests/test_arms_guard.py: unresolved (not found)\n- tests/fixtures/plans/grid4-cells.json: unresolved (not found)\n- tests/mutations/plan.json: tests/mutations/plan.json sha256 8a8308f48da23cd8538eb32c9e90b430a9335d945f48146ecd66ed7ad7d37690\n- workspace.py: src/harness_bench/workspace.py sha256 6ef2182d7c9758775531dd4623feb3d2bbd3f55bfa8d167cfeae65c995eafb74\n- _land: unresolved (not found)\n- cmd_plan: unresolved (not found)\n- report/html.py: src/harness_bench/report/html.py sha256 91b1d6543041fa57c9541faf8c4c1df201c9d3f4e362a8b3c0491d21df60e020\n- x-a1a-e1e4: unresolved (not found)\n- build/eval-x-a1a: unresolved (not found)\n- arms: unresolved (not found)\n- ARM_OFF: unresolved (not found)\n- ARM_ID: unresolved (not found)\n- property: unresolved (not found)\n- also_graded_by: unresolved (not found)\n- grader: unresolved (not found)\n- plan.py: src/harness_bench/plan.py sha256 c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196\n- Cell.arm: unresolved (not found)\n- launch_seed: unresolved (not found)\n- kind: unresolved (not found)\n- campaign: unresolved (not found)\n- ring: unresolved (not found)\n- arm_pack: unresolved (not found)\n- launch_order: unresolved (not found)\n- launch_balance: unresolved (not found)\n- draw_launch_order: unresolved (not found)\n- parse_binding: unresolved (not found)\n- resolve_arms: unresolved (not found)\n- synthetic: unresolved (not found)\n- config.HARNESSES: unresolved (not found)\n- config.CHECK_PROPERTIES = frozenset({\"security\", \"resilience\"}: unresolved (not found)\n- plan.SYNTHETIC_PROFILE_RECORD: unresolved (not found)\n- plan.profile_record(root, \"synthetic: unresolved (not found)\n- build_plan: unresolved (not found)\n- x-a1b-e1e4: unresolved (not found)\n- views.py:525: unresolved (not found)\n- grade/_changes.py:84: unresolved (not found)\n- cli._workspace_builder: unresolved (not found)\n- pack_improvement.py:746-747: unresolved (not found)\n- test_grid4_replan_gives_the_same_task_combo_arm_rep_set_and_cell_ids: unresolved (not found)\n- runs/grid-4/plan.json: unresolved (not found)\n- =: unresolved (not found)\n- x[\"pack: unresolved (not found)\n- .get: unresolved (not found; nearest: .git)\n- .pop: unresolved (not found)\n- in: unresolved (not found)\n- getattr: unresolved (not found)\n- itemgetter: unresolved (not found)\n- test_pack_hits_equal_the_pinned_counts: unresolved (not found)\n- Constant(\"on\"/\"off: unresolved (not found)\n- report/assets/*.js: unresolved (not found)\n- test_plan_py_imports_no_campaign_or_identity_module: unresolved (not found)\n- identity: unresolved (not found)\n- test_plan_level_readers_state_the_true_pack_or_refuse: unresolved (not found)\n- board: unresolved (not found)\n- strict=True: unresolved (not found)\n- several packs: unresolved (not found)\n- draft: unresolved (not found)\n- stub: unresolved (not found)\n- profile_record(root, \"synthetic: unresolved (not found)\n- ValueError: unresolved (not found)\n- profiles.py:176: unresolved (not found)\n- status: ready: unresolved (not found)\n- ready: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-a1.md: docs/coordination/eval-wave2-e1/x-a1.md sha256 bac3922ba66ae076a93b63567f7b7b3e974e08d98423609343decb178323ac14\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- HB-PLN-001/002/004/005: unresolved (not found)\n- bench-matrix/2: unresolved (not found)\n- bench-plan/2: unresolved (not found)\n- 1/20: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-a1a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: a red-only end: the green follow-on runs as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JW7Z23R1P950A0GS98ZQX\nraw sha256: 49c6a6af2c51eb0dce3fd2aa4b7603d195905e4ad894bf1c64632dff92f80455\ncompiler model: claude-opus-5-5\nengine seconds: 0.029\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M41JW7Z23R1P950A0GS98ZQX for codex v1: 7 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes on the final commit, each command on its own line.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model is read from the Codex native record and is the first line of the report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "served model read from the Codex native record"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatch A1b (readers, G1 guard, migrations, pilot.yaml): a later dispatch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch A1a only"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "workspace.py source, cli.py cmd_plan and report/html.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`workspace.py` source (X-B1's `_land` hunk), `cli.py` `cmd_plan` (X-C pastes W1-A §3.9), `report/html.py` (X-H2 takes your header lines)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          }
+        ],
+        "contract_slot": {
+          "width_cap": "1",
+          "deadline": "3,300 s",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-a1a",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "containment": "own worktree; the brief's owned paths only",
+          "fallback": "a red-only end: the green follow-on runs as Claude Code Sonnet (model: sonnet) in the same tree"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-a1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch A1a of X-A1 on build/eval-x-a1a: config.py bench-matrix/2 validation with PROPERTY_NAMES, CHECK_PROPERTIES and synthetic in HARNESSES; plan.py bench-plan/2 with SYNTHETIC_PROFILE_RECORD and the ready rule by plan kind; the grid-4 golden; red commit then green commit.",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1a.",
+            "The README section 3 join gate passes on the final commit, each command on its own line.",
+            "The served model is read from the Codex native record and is the first line of the report.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "not_in_scope": [
+            "Dispatch A1b (readers, G1 guard, migrations, pilot.yaml): a later dispatch.",
+            "workspace.py source, cli.py cmd_plan and report/html.py."
+          ],
+          "tier": "T2",
+          "fan_out_cap": "0",
+          "context_ceiling": "200k tokens",
+          "main_line_budget": "220 calls, 3,300 s"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.029,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JW7Z23R1P950A0GS98ZQX",
+        "raw_sha256": "49c6a6af2c51eb0dce3fd2aa4b7603d195905e4ad894bf1c64632dff92f80455",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gpt-6.1-sol"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-a1.contract.json",
+            "reason": null,
+            "sha256": "b733271ab78a3fabd28199df06f0f74a2d8ab1501aa2b046384ae0b3d2caf9eb",
+            "status": "resolved",
+            "token": "x-a1.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "b"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-arms.md",
+            "reason": null,
+            "sha256": "6b96dee39670f518834044ffa1fe16bc1e4956939b50163ebb378ff8ca6cdb84",
+            "status": "resolved",
+            "token": "docs/design/eval-arms.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "92e977b2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "CHECK_PROPERTIES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "comparisons"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pack"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan_pack(plan, *, strict=False"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "PROPERTY_NAMES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "validate_catalog"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196",
+            "status": "resolved",
+            "token": "src/harness_bench/plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19",
+            "status": "resolved",
+            "token": "config.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/_changes.py",
+            "reason": null,
+            "sha256": "d573c0a57360f960bd6915caae3c0eb36e07d7a79ed168b1e1617679e0eefba7",
+            "status": "resolved",
+            "token": "grade/_changes.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "3017d46c6393d25bfb494ac6ea972345af088ac5a8dfe3fd23ad34cc5e033ed8",
+            "status": "resolved",
+            "token": "cli.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_workspace_builder"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/board.py",
+            "reason": null,
+            "sha256": "cc546371acb9185ae3d953d4d270436907fc2b08c76bef37ef8bea9932628972",
+            "status": "resolved",
+            "token": "board.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/summaries.py",
+            "reason": null,
+            "sha256": "d2964dfd39b11ef81c7290fcaecca5af60d1f37b46d84ca5a65503c0cff5dd67",
+            "status": "resolved",
+            "token": "report/summaries.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan_pack"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "board._build_pack_effect"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/pack_improvement.py",
+            "reason": null,
+            "sha256": "200ec725c7cf0e8adb9df92505ac928bd5b0a5cf6edcdd5a728353ebf8f946c8",
+            "status": "resolved",
+            "token": "report/pack_improvement.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cell_arm"
+          },
+          {
+            "nearest": "bench/profiles/copilot.yaml",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/rings/pilot.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cc-opus"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: claude-opus-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_plan.py",
+            "reason": null,
+            "sha256": "9522437767685abc8ae5ce86f4e951f672bb9eceaa36a7d79651bc27791360ed",
+            "status": "resolved",
+            "token": "tests/test_plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_config.py",
+            "reason": null,
+            "sha256": "a7bbcfa88547eb702f699cbb83b2b883bef78a70250e43726aade6b2fdb83296",
+            "status": "resolved",
+            "token": "test_config.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_workspace.py",
+            "reason": null,
+            "sha256": "ebc50d39c946add698477f74b57590abbc5bbc099b6422f795bd0badd6e05c97",
+            "status": "resolved",
+            "token": "test_workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_views.py",
+            "reason": null,
+            "sha256": "dbb238335908729014a566fc8703c830fb1ee11e415f8005862f25ac1f2d4b94",
+            "status": "resolved",
+            "token": "test_views.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_changes_cache.py",
+            "reason": null,
+            "sha256": "929579db3ddd2b5b07627c13c750c6f6bc993c7c60cbec8f42f8bf64df54604f",
+            "status": "resolved",
+            "token": "test_changes_cache.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pre_turn_commit"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/plans/grid4-cells.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/plan.json",
+            "reason": null,
+            "sha256": "8a8308f48da23cd8538eb32c9e90b430a9335d945f48146ecd66ed7ad7d37690",
+            "status": "resolved",
+            "token": "tests/mutations/plan.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/workspace.py",
+            "reason": null,
+            "sha256": "6ef2182d7c9758775531dd4623feb3d2bbd3f55bfa8d167cfeae65c995eafb74",
+            "status": "resolved",
+            "token": "workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_land"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cmd_plan"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/html.py",
+            "reason": null,
+            "sha256": "91b1d6543041fa57c9541faf8c4c1df201c9d3f4e362a8b3c0491d21df60e020",
+            "status": "resolved",
+            "token": "report/html.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-a1a-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-a1a"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "arms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ARM_OFF"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ARM_ID"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "property"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "also_graded_by"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grader"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "c27d0bc667c3baeb48438440c3ada92bc5daf01265f21a2aa0579fc2bacbf196",
+            "status": "resolved",
+            "token": "plan.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Cell.arm"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "launch_seed"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "kind"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "campaign"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ring"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "arm_pack"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "launch_order"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "launch_balance"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "draw_launch_order"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "parse_binding"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "resolve_arms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "synthetic"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "config.HARNESSES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "config.CHECK_PROPERTIES = frozenset({\"security\", \"resilience\"}"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan.SYNTHETIC_PROFILE_RECORD"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan.profile_record(root, \"synthetic"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build_plan"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-a1b-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "views.py:525"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/_changes.py:84"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cli._workspace_builder"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pack_improvement.py:746-747"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_grid4_replan_gives_the_same_task_combo_arm_rep_set_and_cell_ids"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "runs/grid-4/plan.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "="
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x[\"pack"
+          },
+          {
+            "nearest": ".git",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".get"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".pop"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "in"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "getattr"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "itemgetter"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_pack_hits_equal_the_pinned_counts"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Constant(\"on\"/\"off"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/assets/*.js"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_plan_py_imports_no_campaign_or_identity_module"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "identity"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_plan_level_readers_state_the_true_pack_or_refuse"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "board"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "strict=True"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "several packs"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "draft"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stub"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profile_record(root, \"synthetic"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ValueError"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles.py:176"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "status: ready"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ready"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-a1.md",
+            "reason": null,
+            "sha256": "bac3922ba66ae076a93b63567f7b7b3e974e08d98423609343decb178323ac14",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-a1.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB-PLN-001/002/004/005"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench-matrix/2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench-plan/2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "1/20"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M41JX2G67CJTAJEJJ6752NW9",
+      "shortname": "compile-You are session x-g1-e1e4 on branch build/eval-x-g1, harness Grok, model…",
+      "datetime": "2026-10-03T19:12:24Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-g1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build X-G1 on build/eval-x-g1: catalog 0.7.dev with the eleven property metrics, also_graded_by on pass_at_1 with the ADR-0019 item-3 note, and the R-97 anchor_note wording; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-g1.; The eleven metrics validate under 0.7.dev and bench validate exits 0 on the joined tree.; The hallucinated_symbol_errors anchor_note no longer says build-log errors.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: grade/property.py, config.py, grade/runner.py and bench/catalog-freeze.yaml.\nTier: T1\nFan-out cap: 0\nContext ceiling: 100k tokens\nMain-line budget: 40 calls, 1,200 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-g1. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The eleven metrics validate under 0.7.dev and bench validate exits 0 on the joined tree. | phrase: The eleven metrics validate under `0.7.dev` (R-90); `bench validate` exit 0 on the joined tree. |\n| done_when: The hallucinated_symbol_errors anchor_note no longer says build-log errors. | phrase: the words \"build-log errors\" do not appear in it |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate; `python tools/grok_served_model.py <session dir>` exits 0 |\n| not_in_scope: grade/property.py, config.py, grade/runner.py and bench/catalog-freeze.yaml. | phrase: `grade/property.py` (X-F; never create it), `config.py` (X-A1's validation checks), `grade/runner.py` (X-F builds the owner clause and T-R3..T-R6), `bench/catalog-freeze.yaml` (Leader, R-86) |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\nReferences\n- coord-runner: unresolved (not found)\n- grok-4.7: unresolved (not found)\n- --reasoning-effort high: unresolved (not found)\n- XAI_API_KEY: unresolved (not found)\n- x-g1.contract.json: docs/coordination/eval-wave2-e1/x-g1.contract.json sha256 18799ffa8d0e010c64c89cb0ad0bda169dd5a81889c49c6c6b4a1b1be3bccb95\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-catalog-0-7.md: docs/design/eval-catalog-0-7.md sha256 0b5cff38703dc03b75420c16279c50cb8fd147a5a72d3d99e31bc0a035034810\n- main: unresolved (not found)\n- property: unresolved (not found)\n- bench/metrics.yaml: bench/metrics.yaml sha256 b04abc705a4d6b6abc7eb51f8b017fd9d82d5a11dc0e5ce1f3ca697b7e982488\n- tests/test_catalog_version.py: tests/test_catalog_version.py sha256 637709eec74f58c203ee0ca16dde43abb62780ccc2941054c25bc1a034817344\n- docs/adr/0019-catalog-0-7-property-metrics.md: docs/adr/0019-catalog-0-7-property-metrics.md sha256 8869f917fa5e1fcb241d47f9cd972565982c1cc17436a690745b7968ce8153a0\n- grade/property.py: unresolved (not found)\n- config.py: src/harness_bench/config.py sha256 2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 65d4fdfe3805f235ba957d7d5b4de74e5651b334040eda8e8e6f383da0c2849a\n- bench/catalog-freeze.yaml: bench/catalog-freeze.yaml sha256 2566fdd7b5f121248ad353cdcd357ce8c1d9a30fb234bd994ce26f2f712ddef0\n- validate_repo: unresolved (not found)\n- config.py:158: unresolved (not found)\n- version: \"0.7.dev: unresolved (not found)\n- property: <name: unresolved (not found)\n- property_check_pass: unresolved (not found)\n- pass_at_1: unresolved (not found)\n- also_graded_by: [formal: unresolved (not found)\n- hallucinated_symbol_errors: unresolved (not found)\n- anchor_note: unresolved (not found)\n- 5, 0: unresolved (not found)\n- 0.7.dev: unresolved (not found)\n- bench validate: unresolved (not found)\n- n_recorded: unresolved (not found)\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-x-g1: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-g1.md: docs/coordination/eval-wave2-e1/x-g1.md sha256 1f2ef51b0e0b28763e6b8d7c8e66351f6ec7968e58daeb48b4eb9bd9a34c83e9\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- T-P4/T-P6: unresolved (not found)\n- tools/grok_served_model.py: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-g1\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 1,200 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JWB1KRGXW71ZGJZAN9ZTX\nraw sha256: 67c56e5133e8548faab402096b72b22757e215a6d1ac2892c214a6b10a1be065\ncompiler model: claude-opus-5-5\nengine seconds: 0.022\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M41JWB1KRGXW71ZGJZAN9ZTX for claude-code v1: 7 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-g1.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The eleven metrics validate under 0.7.dev and bench validate exits 0 on the joined tree.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The eleven metrics validate under `0.7.dev` (R-90); `bench validate` exit 0 on the joined tree."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The hallucinated_symbol_errors anchor_note no longer says build-log errors.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the words \"build-log errors\" do not appear in it"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate; `python tools/grok_served_model.py <session dir>` exits 0"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "grade/property.py, config.py, grade/runner.py and bench/catalog-freeze.yaml.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`grade/property.py` (X-F; never create it), `config.py` (X-A1's validation checks), `grade/runner.py` (X-F builds the owner clause and T-R3..T-R6), `bench/catalog-freeze.yaml` (Leader, R-86)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          }
+        ],
+        "contract_slot": {
+          "width_cap": "1",
+          "deadline": "1,200 s",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-g1",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "containment": "own worktree; the brief's owned paths only",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-g1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build X-G1 on build/eval-x-g1: catalog 0.7.dev with the eleven property metrics, also_graded_by on pass_at_1 with the ADR-0019 item-3 note, and the R-97 anchor_note wording; red commit then green commit.",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-g1.",
+            "The eleven metrics validate under 0.7.dev and bench validate exits 0 on the joined tree.",
+            "The hallucinated_symbol_errors anchor_note no longer says build-log errors.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "not_in_scope": [
+            "grade/property.py, config.py, grade/runner.py and bench/catalog-freeze.yaml."
+          ],
+          "tier": "T1",
+          "fan_out_cap": "0",
+          "context_ceiling": "100k tokens",
+          "main_line_budget": "40 calls, 1,200 s"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.022,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JWB1KRGXW71ZGJZAN9ZTX",
+        "raw_sha256": "67c56e5133e8548faab402096b72b22757e215a6d1ac2892c214a6b10a1be065",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--reasoning-effort high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "XAI_API_KEY"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-g1.contract.json",
+            "reason": null,
+            "sha256": "18799ffa8d0e010c64c89cb0ad0bda169dd5a81889c49c6c6b4a1b1be3bccb95",
+            "status": "resolved",
+            "token": "x-g1.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-catalog-0-7.md",
+            "reason": null,
+            "sha256": "0b5cff38703dc03b75420c16279c50cb8fd147a5a72d3d99e31bc0a035034810",
+            "status": "resolved",
+            "token": "docs/design/eval-catalog-0-7.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "property"
+          },
+          {
+            "nearest": null,
+            "path": "bench/metrics.yaml",
+            "reason": null,
+            "sha256": "b04abc705a4d6b6abc7eb51f8b017fd9d82d5a11dc0e5ce1f3ca697b7e982488",
+            "status": "resolved",
+            "token": "bench/metrics.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_catalog_version.py",
+            "reason": null,
+            "sha256": "637709eec74f58c203ee0ca16dde43abb62780ccc2941054c25bc1a034817344",
+            "status": "resolved",
+            "token": "tests/test_catalog_version.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/adr/0019-catalog-0-7-property-metrics.md",
+            "reason": null,
+            "sha256": "8869f917fa5e1fcb241d47f9cd972565982c1cc17436a690745b7968ce8153a0",
+            "status": "resolved",
+            "token": "docs/adr/0019-catalog-0-7-property-metrics.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/property.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "2617af67a765cfb3722568ca3462dbf385b25c7f4cbeef53ddd5ca74a79fbb19",
+            "status": "resolved",
+            "token": "config.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "65d4fdfe3805f235ba957d7d5b4de74e5651b334040eda8e8e6f383da0c2849a",
+            "status": "resolved",
+            "token": "grade/runner.py"
+          },
+          {
+            "nearest": null,
+            "path": "bench/catalog-freeze.yaml",
+            "reason": null,
+            "sha256": "2566fdd7b5f121248ad353cdcd357ce8c1d9a30fb234bd994ce26f2f712ddef0",
+            "status": "resolved",
+            "token": "bench/catalog-freeze.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "validate_repo"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "config.py:158"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "version: \"0.7.dev"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "property: <name"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "property_check_pass"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pass_at_1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "also_graded_by: [formal"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "hallucinated_symbol_errors"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "anchor_note"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "5, 0"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "0.7.dev"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench validate"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "n_recorded"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-g1"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-g1.md",
+            "reason": null,
+            "sha256": "1f2ef51b0e0b28763e6b8d7c8e66351f6ec7968e58daeb48b4eb9bd9a34c83e9",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-g1.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "T-P4/T-P6"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M41JX3PQW2EA9Z4KKSFW3764",
+      "shortname": "compile-You are session x-b1a-e1e4 on branch build/eval-x-b1a, harness Grok, mod…",
+      "datetime": "2026-10-03T19:12:25Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1a of X-B1 on build/eval-x-b1a: atomic.py core per W1-B section 17 (create_once, TEMP_RE, is_temp_name, stale_temps, sweep_temps with the lock check, make_writable, rename_with_retry); red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches.\nTier: T2\nFan-out cap: 0\nContext ceiling: 100k tokens\nMain-line budget: 40 calls, 1,200 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). |\n| not_in_scope: Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches. | phrase: Build dispatch B1a only |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\nReferences\n- coord-runner: unresolved (not found)\n- grok-4.7: unresolved (not found)\n- --reasoning-effort high: unresolved (not found)\n- XAI_API_KEY: unresolved (not found)\n- x-b1.contract.json: docs/coordination/eval-wave2-e1/x-b1.contract.json sha256 b82516583f32dc4b460a303a0750d65d42560148ffce4c5df19c04c8b772ff5c\n- b: unresolved (not found)\n- c: unresolved (not found)\n- grok-4.7*: unresolved (not found)\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-atomic-publish.md: docs/design/eval-atomic-publish.md sha256 4706e446d39f829dfaa8bf399dd337646353d79baf5ff7fa33e8f8bea7c986ee\n- main: unresolved (not found)\n- acquire_then_probe: unresolved (not found)\n- src/harness_bench/atomic.py: unresolved (not found)\n- tests/test_atomic.py: unresolved (not found)\n- tests/test_atomic_sites.py: unresolved (not found)\n- tests/mutations/atomic.json: unresolved (not found)\n- src/harness_bench/oslock.py: src/harness_bench/oslock.py sha256 02f2aa86bed5061dfbc2994741f0d0f0d8e624b5b07c29fa5a86010ebdc98571\n- tests/test_oslock.py: tests/test_oslock.py sha256 09b1ee2b4a441da03f6bd7d9100f6db16df5f47dc9ed359ab707cda7614b6100\n- src/harness_bench/workspace.py: src/harness_bench/workspace.py sha256 6ef2182d7c9758775531dd4623feb3d2bbd3f55bfa8d167cfeae65c995eafb74\n- _land: unresolved (not found)\n- make_writable: unresolved (not found)\n- tests/mutations/workspace.json: tests/mutations/workspace.json sha256 f6e56abb11b9343ef0223c8082ed71d570a24d088f42a327d999ff8d87c05f21\n- tests/test_workspace.py: tests/test_workspace.py sha256 ebc50d39c946add698477f74b57590abbc5bbc099b6422f795bd0badd6e05c97\n- archive.py: src/harness_bench/archive.py sha256 788c614b4bd4e4594b109b3a4a241276017cd0b7d33d45fc56e4c9890f6cedc5\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b\n- x-b1a-e1e4: unresolved (not found)\n- build/eval-x-b1a: unresolved (not found)\n- atomic.py: unresolved (not found)\n- create_once: unresolved (not found)\n- TEMP_RE: unresolved (not found)\n- is_temp_name: unresolved (not found)\n- stale_temps: unresolved (not found)\n- sweep_temps(target, lock: unresolved (not found)\n- ValueError: unresolved (not found)\n- oslock.is_held(lock.path: unresolved (not found)\n- S_IWUSR: unresolved (not found)\n- rename_with_retry: unresolved (not found)\n- RENAME_BACKOFF: unresolved (not found)\n- x-b1b-e1e4: unresolved (not found)\n- publish_dir: unresolved (not found)\n- workspace._land: unresolved (not found)\n- rename_with_retry(tmp, dest, replace=True, settled=lambda: valid(dest: unresolved (not found)\n- copytree: unresolved (not found)\n- x-b1c-e1e4: unresolved (not found)\n- oslock.acquire_then_probe(own, own_code, others, *, between=None) -> RunLock: unresolved (not found)\n- between: unresolved (not found)\n- Barrier(2).wait(timeout=10: unresolved (not found)\n- test_posix_flag_default_follows_the_platform: unresolved (not found)\n- test_the_real_publish_dir_fsyncs_the_folder_only_on_posix: unresolved (not found)\n- os.unlink: unresolved (not found)\n- O_EXCL: unresolved (not found)\n- test_the_posix_job_does_not_skip_the_symlink_variants: unresolved (not found)\n- st_dev: unresolved (not found)\n- st_ino: unresolved (not found)\n- O_NOFOLLOW: unresolved (not found)\n- _discard_temp: unresolved (not found)\n- atomic.temp_leaked: unresolved (not found)\n- rename_retries: unresolved (not found)\n- rename_ms: unresolved (not found)\n- publish_failed(phase=rename: unresolved (not found)\n- test_a_kill_between_write_and_link_leaves_no_final_file: unresolved (not found)\n- test_a_kill_mid_copy_leaves_no_final_folder_and_the_redo_succeeds: unresolved (not found)\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-b1.md: docs/coordination/eval-wave2-e1/x-b1.md sha256 151b2f470840a34fe8955f89700014c522f696116006a5daf7e613cf7c9732f8\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- st_dev`/`st_ino: unresolved (not found)\n- tools/grok_served_model.py: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-b1a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 1,200 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JWDM5FBGR7H8FSTCDVSXZ\nraw sha256: d99cafae71c97d17eb7b7fbf78c29738c330db034913676d5a52d10daf945d00\ncompiler model: claude-opus-5-5\nengine seconds: 0.013\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M41JWDM5FBGR7H8FSTCDVSXZ for claude-code v1: 5 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92)."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch B1a only"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          }
+        ],
+        "contract_slot": {
+          "width_cap": "1",
+          "deadline": "1,200 s",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-b1a",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "containment": "own worktree; the brief's owned paths only",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1a of X-B1 on build/eval-x-b1a: atomic.py core per W1-B section 17 (create_once, TEMP_RE, is_temp_name, stale_temps, sweep_temps with the lock check, make_writable, rename_with_retry); red commit then green commit.",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1a.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "not_in_scope": [
+            "Dispatches B1b (publish_dir, workspace._land) and B1c (oslock.acquire_then_probe): later dispatches."
+          ],
+          "tier": "T2",
+          "fan_out_cap": "0",
+          "context_ceiling": "100k tokens",
+          "main_line_budget": "40 calls, 1,200 s"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.013,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JWDM5FBGR7H8FSTCDVSXZ",
+        "raw_sha256": "d99cafae71c97d17eb7b7fbf78c29738c330db034913676d5a52d10daf945d00",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--reasoning-effort high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "XAI_API_KEY"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b1.contract.json",
+            "reason": null,
+            "sha256": "b82516583f32dc4b460a303a0750d65d42560148ffce4c5df19c04c8b772ff5c",
+            "status": "resolved",
+            "token": "x-b1.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "b"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "c"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-atomic-publish.md",
+            "reason": null,
+            "sha256": "4706e446d39f829dfaa8bf399dd337646353d79baf5ff7fa33e8f8bea7c986ee",
+            "status": "resolved",
+            "token": "docs/design/eval-atomic-publish.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "acquire_then_probe"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/atomic.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/oslock.py",
+            "reason": null,
+            "sha256": "02f2aa86bed5061dfbc2994741f0d0f0d8e624b5b07c29fa5a86010ebdc98571",
+            "status": "resolved",
+            "token": "src/harness_bench/oslock.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_oslock.py",
+            "reason": null,
+            "sha256": "09b1ee2b4a441da03f6bd7d9100f6db16df5f47dc9ed359ab707cda7614b6100",
+            "status": "resolved",
+            "token": "tests/test_oslock.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/workspace.py",
+            "reason": null,
+            "sha256": "6ef2182d7c9758775531dd4623feb3d2bbd3f55bfa8d167cfeae65c995eafb74",
+            "status": "resolved",
+            "token": "src/harness_bench/workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_land"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "make_writable"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/workspace.json",
+            "reason": null,
+            "sha256": "f6e56abb11b9343ef0223c8082ed71d570a24d088f42a327d999ff8d87c05f21",
+            "status": "resolved",
+            "token": "tests/mutations/workspace.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_workspace.py",
+            "reason": null,
+            "sha256": "ebc50d39c946add698477f74b57590abbc5bbc099b6422f795bd0badd6e05c97",
+            "status": "resolved",
+            "token": "tests/test_workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/archive.py",
+            "reason": null,
+            "sha256": "788c614b4bd4e4594b109b3a4a241276017cd0b7d33d45fc56e4c9890f6cedc5",
+            "status": "resolved",
+            "token": "archive.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-b1a-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-b1a"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "create_once"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "TEMP_RE"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "is_temp_name"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "stale_temps"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "sweep_temps(target, lock"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ValueError"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oslock.is_held(lock.path"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "S_IWUSR"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "rename_with_retry"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "RENAME_BACKOFF"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-b1b-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "publish_dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "workspace._land"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "rename_with_retry(tmp, dest, replace=True, settled=lambda: valid(dest"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "copytree"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-b1c-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oslock.acquire_then_probe(own, own_code, others, *, between=None) -> RunLock"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "between"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Barrier(2).wait(timeout=10"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_posix_flag_default_follows_the_platform"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_the_real_publish_dir_fsyncs_the_folder_only_on_posix"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "os.unlink"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "O_EXCL"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_the_posix_job_does_not_skip_the_symlink_variants"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "st_dev"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "st_ino"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "O_NOFOLLOW"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_discard_temp"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "atomic.temp_leaked"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "rename_retries"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "rename_ms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "publish_failed(phase=rename"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_a_kill_between_write_and_link_leaves_no_final_file"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_a_kill_mid_copy_leaves_no_final_folder_and_the_redo_succeeds"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b1.md",
+            "reason": null,
+            "sha256": "151b2f470840a34fe8955f89700014c522f696116006a5daf7e613cf7c9732f8",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-b1.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "st_dev`/`st_ino"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M41JX4E3Y85MKT11APTKCMM2",
+      "shortname": "compile-You are session x-enva-e1e4 on branch build/eval-env-a, harness Grok, mo…",
+      "datetime": "2026-10-03T19:12:26Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/env-a.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build the ENV-A fix on build/eval-env-a (defect class ENV-C): an autouse conftest fixture that clears every listed credential name except for tests marked credentials, with tests/test_env_isolation.py; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-env-a.; The three named tests pass with HB_CLAUDE_OAUTH_TOKEN=dummy set and with it unset.; A mutant that removes the fixture is killed by tests/test_env_isolation.py.; The Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Editing tests/test_profiles.py or tests/test_gateway_headless.py.\nTier: T1\nFan-out cap: 0\nContext ceiling: 80k tokens\nMain-line budget: 30 calls, 1,200 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-env-a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The three named tests pass with HB_CLAUDE_OAUTH_TOKEN=dummy set and with it unset. | phrase: The three named tests pass with `HB_CLAUDE_OAUTH_TOKEN=dummy` set in the shell, and with it unset. |\n| done_when: A mutant that removes the fixture is killed by tests/test_env_isolation.py. | phrase: A mutant that removes the fixture is killed by `tests/test_env_isolation.py`. |\n| done_when: The Grok served-model reader exits 0. | phrase: `python tools/grok_served_model.py <session dir>` exits 0 |\n| not_in_scope: Editing tests/test_profiles.py or tests/test_gateway_headless.py. | phrase: `tests/test_profiles.py` (X-E's in E1), `tests/test_gateway_headless.py` |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\nReferences\n- coord-runner: unresolved (not found)\n- grok-4.7: unresolved (not found)\n- --reasoning-effort high: unresolved (not found)\n- XAI_API_KEY: unresolved (not found)\n- env-a.contract.json: docs/coordination/eval-wave2-e1/env-a.contract.json sha256 24f67402f61c4f3616ac45a21e12e4f0b994f8b142b027b40ba9457adef462b6\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b\n- ENV-A: unresolved (not found)\n- HB_CLAUDE_OAUTH_TOKEN: unresolved (not found)\n- main: unresolved (not found)\n- tests/test_gateway_headless.py::test_t_gw_10_the_credential_is_present_during_the_call_and_gone_after_it: unresolved (not found)\n- ::test_t_gw_10_the_credential_is_gone_after_a_timeout_and_after_an_exception_past_the_copy: unresolved (not found)\n- tests/test_profiles.py::test_the_launcher_reports_no_model_setter_and_a_copied_login[claude-code: unresolved (not found)\n- tests/conftest.py: tests/conftest.py sha256 fee195665dc6d1e49863e375e7dc97d13726e6b2e068a7f59daffd5eb8deb6b6\n- tests/test_env_isolation.py: unresolved (not found)\n- tests/test_profiles.py: tests/test_profiles.py sha256 5ef6b8aed6743ed0ddc9f95f3a9af69927186312ed82a879b7f9503afebf5130\n- tests/test_gateway_headless.py: tests/test_gateway_headless.py sha256 663ada1b225b5883c36097c5cefc35a5155a56083bc3899b076a52da0ccd8076\n- git grep -n -E \"OAUTH_TOKEN|_API_KEY|GH_TOKEN\" -- tests src/harness_bench/profiles.py: unresolved (not found; nearest: src/harness_bench/profiles.py)\n- profiles.DROP_EXACT: unresolved (not found)\n- profiles.DROP_PREFIXES: unresolved (not found)\n- conftest.py: unresolved (ambiguous: 3 matches)\n- monkeypatch.setenv: unresolved (not found)\n- pytest.main: unresolved (not found)\n- credentials: unresolved (not found)\n- monkeypatch.delenv(name, raising=False: unresolved (not found)\n- HB_CLAUDE_OAUTH_TOKEN=dummy: unresolved (not found)\n- controlled: unresolved (not found)\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-env-a: unresolved (not found)\n- docs/coordination/eval-wave2-e1/env-a.md: docs/coordination/eval-wave2-e1/env-a.md sha256 196d3a1ad63d33bcefa652054491a2831be239de652213f0dfd2d10bcd77d7ca\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\n- src/harness_bench/profiles.py: src/harness_bench/profiles.py sha256 dc384ad7b422d9dd12d254062fd2c9aeeb6f72d5fbc564fbb31e09e3dbd5defe\n- tools/grok_served_model.py: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-env-a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 1,200 s\nfallback: a red-only end or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JWH49CM57GVNZ98ZD5W79\nraw sha256: 6cfd4a8bd6336f53562c346a8148992d442bb72477f065049a33749265147fd5\ncompiler model: claude-opus-5-5\nengine seconds: 0.014\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M41JWH49CM57GVNZ98ZD5W79 for claude-code v1: 7 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-env-a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The three named tests pass with HB_CLAUDE_OAUTH_TOKEN=dummy set and with it unset.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The three named tests pass with `HB_CLAUDE_OAUTH_TOKEN=dummy` set in the shell, and with it unset."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A mutant that removes the fixture is killed by tests/test_env_isolation.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A mutant that removes the fixture is killed by `tests/test_env_isolation.py`."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`python tools/grok_served_model.py <session dir>` exits 0"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing tests/test_profiles.py or tests/test_gateway_headless.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`tests/test_profiles.py` (X-E's in E1), `tests/test_gateway_headless.py`"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          }
+        ],
+        "contract_slot": {
+          "width_cap": "1",
+          "deadline": "1,200 s",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "per_branch_exit": "a red commit then a green commit on build/eval-env-a",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "containment": "own worktree; the brief's owned paths only",
+          "fallback": "a red-only end or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/env-a.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build the ENV-A fix on build/eval-env-a (defect class ENV-C): an autouse conftest fixture that clears every listed credential name except for tests marked credentials, with tests/test_env_isolation.py; red commit then green commit.",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-env-a.",
+            "The three named tests pass with HB_CLAUDE_OAUTH_TOKEN=dummy set and with it unset.",
+            "A mutant that removes the fixture is killed by tests/test_env_isolation.py.",
+            "The Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "not_in_scope": [
+            "Editing tests/test_profiles.py or tests/test_gateway_headless.py."
+          ],
+          "tier": "T1",
+          "fan_out_cap": "0",
+          "context_ceiling": "80k tokens",
+          "main_line_budget": "30 calls, 1,200 s"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.014,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JWH49CM57GVNZ98ZD5W79",
+        "raw_sha256": "6cfd4a8bd6336f53562c346a8148992d442bb72477f065049a33749265147fd5",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--reasoning-effort high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "XAI_API_KEY"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/env-a.contract.json",
+            "reason": null,
+            "sha256": "24f67402f61c4f3616ac45a21e12e4f0b994f8b142b027b40ba9457adef462b6",
+            "status": "resolved",
+            "token": "env-a.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ENV-A"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_CLAUDE_OAUTH_TOKEN"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_gateway_headless.py::test_t_gw_10_the_credential_is_present_during_the_call_and_gone_after_it"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "::test_t_gw_10_the_credential_is_gone_after_a_timeout_and_after_an_exception_past_the_copy"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_profiles.py::test_the_launcher_reports_no_model_setter_and_a_copied_login[claude-code"
+          },
+          {
+            "nearest": null,
+            "path": "tests/conftest.py",
+            "reason": null,
+            "sha256": "fee195665dc6d1e49863e375e7dc97d13726e6b2e068a7f59daffd5eb8deb6b6",
+            "status": "resolved",
+            "token": "tests/conftest.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_env_isolation.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_profiles.py",
+            "reason": null,
+            "sha256": "5ef6b8aed6743ed0ddc9f95f3a9af69927186312ed82a879b7f9503afebf5130",
+            "status": "resolved",
+            "token": "tests/test_profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_gateway_headless.py",
+            "reason": null,
+            "sha256": "663ada1b225b5883c36097c5cefc35a5155a56083bc3899b076a52da0ccd8076",
+            "status": "resolved",
+            "token": "tests/test_gateway_headless.py"
+          },
+          {
+            "nearest": "src/harness_bench/profiles.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git grep -n -E \"OAUTH_TOKEN|_API_KEY|GH_TOKEN\" -- tests src/harness_bench/profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles.DROP_EXACT"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles.DROP_PREFIXES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 3 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "conftest.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "monkeypatch.setenv"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pytest.main"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "credentials"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "monkeypatch.delenv(name, raising=False"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_CLAUDE_OAUTH_TOKEN=dummy"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "controlled"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-env-a"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/env-a.md",
+            "reason": null,
+            "sha256": "196d3a1ad63d33bcefa652054491a2831be239de652213f0dfd2d10bcd77d7ca",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/env-a.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/profiles.py",
+            "reason": null,
+            "sha256": "dc384ad7b422d9dd12d254062fd2c9aeeb6f72d5fbc564fbb31e09e3dbd5defe",
+            "status": "resolved",
+            "token": "src/harness_bench/profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M41JX5J2A1XH7TZ7BTY8MW70",
+      "shortname": "compile-You are session x-b2-e1e4 on branch build/eval-x-b2, harness Agy, model …",
+      "datetime": "2026-10-03T19:12:27Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-b2.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build X-B2 on build/eval-x-b2: archive_cell through atomic.publish_dir with a verify of the file set and rows, archive.attempt_dirs as the one reader used by report/judges.py, and mutants A1..A4; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2.; archive_cell goes through atomic.publish_dir with a verify of the file set and each file's rows.; The README section 3 join gate passes; the served model is read from Agy's cli.log.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Editing docs/lessons/defect-classes.md.\nTier: T2\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: 120 calls, 3,300 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2. | phrase: in one turn: a red commit, then a green commit |\n| done_when: archive_cell goes through atomic.publish_dir with a verify of the file set and each file's rows. | phrase: `archive_cell` goes through `atomic.publish_dir` with a `verify` that compares the file set and each file's rows |\n| done_when: The README section 3 join gate passes; the served model is read from Agy's cli.log. | phrase: README §3 join gate; served model read from Agy's `cli.log`. |\n| not_in_scope: Editing docs/lessons/defect-classes.md. | phrase: you do not edit `docs/lessons/defect-classes.md` |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items |\nReferences\n- coord-runner: unresolved (not found)\n- gemini-3.8-flash-high: unresolved (not found)\n- --mode accept-edits: unresolved (not found)\n- x-b2.contract.json: docs/coordination/eval-wave2-e1/x-b2.contract.json sha256 66982d45b5c7bb68d1b03cc88c111a24b90ff9b9931e4bbbe137fd94b6a16c0b\n- model: sonnet: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/design/eval-atomic-publish.md: docs/design/eval-atomic-publish.md sha256 4706e446d39f829dfaa8bf399dd337646353d79baf5ff7fa33e8f8bea7c986ee\n- publish_dir: unresolved (not found)\n- recover_archive: unresolved (not found)\n- src/harness_bench/archive.py: src/harness_bench/archive.py sha256 788c614b4bd4e4594b109b3a4a241276017cd0b7d33d45fc56e4c9890f6cedc5\n- report/judges.py: src/harness_bench/report/judges.py sha256 30b8de3c690430923075040f43b81d0f1bda166606e987d969594dbd1e4786f9\n- attempt_dirs: unresolved (not found)\n- :216: unresolved (not found)\n- tests/test_archive.py: tests/test_archive.py sha256 37f00d199456e779774171c4f523ecc5cd6e18d75d3a4d829af009121f7bdf54\n- tests/mutations/archive.json: tests/mutations/archive.json sha256 78305eb8407a0ff5f1ee1bba1a4befc8940c8d56349a52d45e794fa79c510152\n- tests/test_engine.py: tests/test_engine.py sha256 2b2574063780c13ce130974fdf02589825038c68b4f4f6c16571976e208c26d2\n- test_the_engine_archive_goes_through_publish_dir: unresolved (not found)\n- tests/test_views.py: tests/test_views.py sha256 dbb238335908729014a566fc8703c830fb1ee11e415f8005862f25ac1f2d4b94\n- test_bench_verify_passes_a_run_archived_by_the_atomic_path: unresolved (not found)\n- atomic.publish_dir: unresolved (not found)\n- archive_cell: unresolved (not found)\n- HB-USR-002: unresolved (not found)\n- *.tmp-*: unresolved (not found)\n- verify: unresolved (not found)\n- archive.attempt_dirs(run_dir, cell_id: unresolved (not found)\n- re.fullmatch(r\"attempt-(\\d+: unresolved (not found)\n- report/judges.py:216: unresolved (not found)\n- attempt-1.tmp-…: unresolved (not found)\n- ValueError: unresolved (not found)\n- archive.make_writable: unresolved (not found)\n- atomic.make_writable: unresolved (not found)\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b\n- cli.log: unresolved (not found)\n- build/eval-x-b2: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-b2.md: docs/coordination/eval-wave2-e1/x-b2.md sha256 a16f73aeebe362c4dd5e74b5d5c60566d0bd106fe6baff2168c70d890e10c348\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-b2\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41JWKRTWS49TBFSF805EG23\nraw sha256: 2ba71fddfb35d91bd445d349cd6d0b2aa9343a5c0244c546d7330de7f9cc63cd\ncompiler model: claude-opus-5-5\nengine seconds: 0.014\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M41JWKRTWS49TBFSF805EG23 for claude-code v1: 6 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "archive_cell goes through atomic.publish_dir with a verify of the file set and each file's rows.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "`archive_cell` goes through `atomic.publish_dir` with a `verify` that compares the file set and each file's rows"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes; the served model is read from Agy's cli.log.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate; served model read from Agy's `cli.log`."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing docs/lessons/defect-classes.md.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "you do not edit `docs/lessons/defect-classes.md`"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items"
+            }
+          }
+        ],
+        "contract_slot": {
+          "width_cap": "1",
+          "deadline": "3,300 s",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-b2",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "containment": "own worktree; the brief's owned paths only",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-b2.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build X-B2 on build/eval-x-b2: archive_cell through atomic.publish_dir with a verify of the file set and rows, archive.attempt_dirs as the one reader used by report/judges.py, and mutants A1..A4; red commit then green commit.",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2.",
+            "archive_cell goes through atomic.publish_dir with a verify of the file set and each file's rows.",
+            "The README section 3 join gate passes; the served model is read from Agy's cli.log.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "not_in_scope": [
+            "Editing docs/lessons/defect-classes.md."
+          ],
+          "tier": "T2",
+          "fan_out_cap": "0",
+          "context_ceiling": "150k tokens",
+          "main_line_budget": "120 calls, 3,300 s"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.014,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41JWKRTWS49TBFSF805EG23",
+        "raw_sha256": "2ba71fddfb35d91bd445d349cd6d0b2aa9343a5c0244c546d7330de7f9cc63cd",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gemini-3.8-flash-high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--mode accept-edits"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b2.contract.json",
+            "reason": null,
+            "sha256": "66982d45b5c7bb68d1b03cc88c111a24b90ff9b9931e4bbbe137fd94b6a16c0b",
+            "status": "resolved",
+            "token": "x-b2.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model: sonnet"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-atomic-publish.md",
+            "reason": null,
+            "sha256": "4706e446d39f829dfaa8bf399dd337646353d79baf5ff7fa33e8f8bea7c986ee",
+            "status": "resolved",
+            "token": "docs/design/eval-atomic-publish.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "publish_dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "recover_archive"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/archive.py",
+            "reason": null,
+            "sha256": "788c614b4bd4e4594b109b3a4a241276017cd0b7d33d45fc56e4c9890f6cedc5",
+            "status": "resolved",
+            "token": "src/harness_bench/archive.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/judges.py",
+            "reason": null,
+            "sha256": "30b8de3c690430923075040f43b81d0f1bda166606e987d969594dbd1e4786f9",
+            "status": "resolved",
+            "token": "report/judges.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "attempt_dirs"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":216"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_archive.py",
+            "reason": null,
+            "sha256": "37f00d199456e779774171c4f523ecc5cd6e18d75d3a4d829af009121f7bdf54",
+            "status": "resolved",
+            "token": "tests/test_archive.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/archive.json",
+            "reason": null,
+            "sha256": "78305eb8407a0ff5f1ee1bba1a4befc8940c8d56349a52d45e794fa79c510152",
+            "status": "resolved",
+            "token": "tests/mutations/archive.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_engine.py",
+            "reason": null,
+            "sha256": "2b2574063780c13ce130974fdf02589825038c68b4f4f6c16571976e208c26d2",
+            "status": "resolved",
+            "token": "tests/test_engine.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_the_engine_archive_goes_through_publish_dir"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_views.py",
+            "reason": null,
+            "sha256": "dbb238335908729014a566fc8703c830fb1ee11e415f8005862f25ac1f2d4b94",
+            "status": "resolved",
+            "token": "tests/test_views.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_bench_verify_passes_a_run_archived_by_the_atomic_path"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "atomic.publish_dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "archive_cell"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB-USR-002"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "*.tmp-*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "verify"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "archive.attempt_dirs(run_dir, cell_id"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "re.fullmatch(r\"attempt-(\\d+"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/judges.py:216"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "attempt-1.tmp-…"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ValueError"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "archive.make_writable"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "atomic.make_writable"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "1eed79f883688a833c55e893d4ff3c9e3854df30aac000d771cd5717c2bb538b",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cli.log"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-b2"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b2.md",
+            "reason": null,
+            "sha256": "a16f73aeebe362c4dd5e74b5d5c60566d0bd106fe6baff2168c70d890e10c348",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-b2.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "e4424f04727fb5ad5efec07741ba59d9b8ccb2868eaa3f2fb65d74b0a46f8591",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M41K1Q3JNX89S75P06V9KQ50",
+      "shortname": "compile-wave2-e1-contracts",
+      "datetime": "2026-10-03T19:14:56Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Compile the six external Wave 2 E1 briefs (x-d D1, x-a1 A1a: codex template; x-g1, x-b1 B1a, env-a, x-b2: claude-code template) for their pinned harness and model (CO-S0).",
+      "summary": "Six compilations, gate pass, dispatchable, no assumptions or decision requests: x-d al-01M41JX06P8TETKP1XTWD8GP2F, x-a1 al-01M41JX1G7Z511DJZXRQE1DXC7, x-g1 al-01M41JX2G67CJTAJEJJ6752NW9, x-b1 al-01M41JX3PQW2EA9Z4KKSFW3764, env-a al-01M41JX4E3Y85MKT11APTKCMM2, x-b2 al-01M41JX5J2A1XH7TZ7BTY8MW70. A first set (al-01M41JT6..JTAH) omitted the brief path from the rendered goal and is superseded, unused. Contracts' prompts replaced.",
+      "kind": "skill",
+      "skill": "compile",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "tier": "T0",
+      "fan_out": 0,
+      "started_at": "2026-10-03T19:08:28Z",
+      "duration_seconds": 388.0
+    },
+    {
+      "id": "al-01M41K2BV4XKG0TG0S7AN14118",
+      "shortname": "coord-w0-rev5-wave2-compile",
+      "datetime": "2026-10-03T19:15:17Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Coordinator session #5: Task 1 W1-E seams SR-E1/SR-E2 and W1-L seams SR-L1..SR-L3 as W0 rev 5 (DR to owner-fable if ADR-0016 s4 meaning changes), rename the duplicate ENV-A candidate; Task 2 compile the six external dispatch prompts (CO-S0); Task 3 Wave 2 pack part 2 (X-H1, X-C, X-H2, X-E, X-INT) if budget allows. Mid-turn: SR-L4, RV-TA W1-L 1 and 2, R-97, W1-C OI-5, the TIME-B class and slice.",
+      "summary": "W0 rev 5: SR-E1 granted in part (DR-E1 req-01M41J1E3PDYAG1WTAGH004MZ8 raised on dropping run_id/grading_id; option (a) stands), SR-E2 granted, SR-L1 refused as asked (verified_before_use not built in E4), SR-L2 granted (E4), SR-L3 granted (config.CHECK_PROPERTIES), SR-L4 granted (_changes in E2 by X-J2), RV-TA W1-L 1 ruled without an EV-6 change, OI-5 granted, R-97 recorded. tasks/README.md overlay, variants and ready-order paragraphs. ENV-C rename (ENV-B was taken). Six compiled ids in the contracts. TIME-B candidate class and time-b.md brief. Pack part 2 (X-H1, X-C, X-H2, X-E, X-INT) not written: handed back for a second session.",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "W0 rev 5 with seams ruled, compiled contracts, TIME-B class and brief, on coord/eval-w0-rev5-wave2b",
+      "done_when": "rev 5 change table and re-read lists; six contracts carry compiled ids; derive and validate exit 0; named-path commits",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
@@ -67584,6 +75016,31 @@ window.AUDIT_DATA = {
         ]
       },
       "audit_ref": "al-01M41H90J96K9V1343P7M6YN2P"
+    },
+    {
+      "id": "cl-01M41K2CGWGXTVB1GNAFENG776",
+      "datetime": "2026-10-03T19:15:18Z",
+      "session": "coord-opus-e1e4",
+      "kind": "design",
+      "skill": "execute-with-coordination",
+      "title": "W0 seam contracts rev 5",
+      "prompt": "W0 rev 5 (Coordinator session #5)",
+      "summary": "Rev 5 answers SR-E1, SR-E2, SR-L1..SR-L4, rules RV-TA W1-L 1 (simplicity laundering, no EV-6 change) and SR-L1 (verified_before_use not built in E4), grants W1-C OI-5, records R-97; DR-E1 open.",
+      "rationale": "Seams ruled at the Coordinator seat; the one ADR-text question (ADR-0016 s4 record body) goes to the Owner.",
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "5fcd8a7c",
+        "after": "78b6892f3e833f0b6005450ac70e376a21eb047d",
+        "branch": "coord/eval-w0-rev5-wave2b",
+        "pushed": null,
+        "commits": [
+          "78b6892f docs(design): W0 seam contracts rev 5 (SR-E1, SR-E2, SR-L1..SR-L4, W1-L RV-TA rulings, W1-C OI-5, R-97); DR-E1 raised; part-1 briefs aligned; ENV-C rename"
+        ]
+      },
+      "audit_ref": "al-01M41K2BV4XKG0TG0S7AN14118"
     }
   ],
   "messages": [

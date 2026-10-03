@@ -75,6 +75,7 @@ Served model id (first line, R-91 c1) · branch and SHAs (red, green) · per red
 | X-I security task S1 | `x-i.md` | `x-i-e1e4` · `build/eval-x-i` | Claude Code · Sonnet (R-91) | one Sonnet session, then a follow-on after X-F joins | written |
 | X-E discriminate, synthetic, readiness | `x-e.md` | — | Claude Code · Sonnet (R-91) | Sonnet session | **owed**: W1-E not designed |
 | X-INT E1 E2E | `x-int.md` | — | Claude Code · Sonnet (R-91) | Sonnet session | **owed**: last; written when X-C and X-E briefs are |
+| TIME-B load-sensitive timing tests (defect class TIME-B) | `time-b.md` | `x-timeb-e1e4` · `build/eval-time-b` | Claude Code · Sonnet (`model: sonnet`, served `claude-sonnet-5-5`, R-91) | one Sonnet session | written (W0 rev 5 branch) |
 
 **Why "one turn, red and green" for external tracks.** The runner bases every dispatch on the primary checkout's HEAD (`coord-runner.py:426`; the Leader's wrapper `cd`s to the primary, Q0 README item 4), so a follow-on cannot start from an unmerged red tip. Each external dispatch therefore lands its red commit and its green commit in one turn. A dispatch that ends red-only (deadline, budget) is **not** re-dispatched externally: its green follow-on runs as a Claude Sonnet sub-agent in the same worker tree (R-87 Option 1), and the Tracks row says so. A multi-turn track joins each turn before the next is prepared.
 
@@ -104,13 +105,18 @@ A track starts when its design gate has passed, its design is on `main`, and eve
 | X-C | W1-C rev 2 passed; X-B1c, X-D2, X-H1, X-A1b, X-F (the runner hook hunk is X-C's after X-F joins) |
 | X-E | W1-E passed; X-A1b, X-B1b, X-D2, X-F, X-G1, X-I |
 | X-H2 | W1-H; X-H1; X-C (built against fixtures of `campaign.read` until X-C joins) |
+| TIME-B | X-D1 (it edits one function of X-D's `tests/test_engine.py`); nothing waits on it |
 | X-INT | every E1 item |
 
 **Critical path (Inferred durations from the plan's budgets, which ran 2-14× long in phase 1):** W1-E design (not started) → X-E (3.5 h) → X-INT (1.5 h) → demo. In parallel and nearly as long: X-F0 → X-G1 (0.7 h) → X-F1..F3 (4 h) → X-E. **W1-E is now the E1 critical path.** The second chain is X-D1 → X-D2 → X-C (W1-C rev 2) → X-H2.
 
 ## 7. Launch order (cap 6 running; at most 2 per external harness; critical path first)
 
-**Batch 1 (the first dispatch batch; 5 start now, the 6th slot opens when X-D1 joins):**
+**Precondition for every dispatch below (W0 rev 5 branch):** the branch `coord/eval-w0-rev5-wave2b` is merged, so `main` carries W0 rev 5 (README §1 step 4 greps for it), the aligned briefs, and the six `kind: compilation` entries the contracts name (the runner reads them from `docs/audit/audit-log.jsonl`).
+
+**Batch 1 (the first dispatch batch, confirmed 2026-10-03 after F0 and TOOL-GSM merged):** running or startable now: X-F (Sonnet, running), X-D1 (Codex), X-I (Sonnet), X-G1 (Grok; F0 has joined), ENV-A (Grok; TOOL-GSM has joined, so R-92's reader exists for this second Grok dispatch). That is five; the sixth slot is X-A1a (Codex) when X-D1 joins. TOOL-GSM is done.
+
+**Batch 1 as first planned (kept for the record; 5 start now, the 6th slot opens when X-D1 joins):**
 1. **X-F** (Sonnet) — commit F0 first and ask the Leader to merge it at once (X-G1 waits on it).
 2. **X-D1** (Codex) — every other code track needs its registry rows.
 3. **TOOL-GSM** (Sonnet) — must join before the second Grok dispatch.
@@ -118,11 +124,12 @@ A track starts when its design gate has passed, its design is on `main`, and eve
 5. **X-G1** (Grok, the first Grok dispatch) as soon as F0 has joined (minutes after X-F starts).
 6. **X-A1a** (Codex) once X-D1 has joined.
 
-**Then, as slots free (in this order):** X-B1a (Grok, after X-D1 and TOOL-GSM) → X-D2 (Codex) → X-B1b (Grok) → X-B2 (Agy, after X-B1b) → X-B1c (Grok) → ENV-A (Grok) → X-A1b (Codex) → X-H1 (Grok, after W1-H rev 2) → X-C (Agy, after W1-C rev 2 and its deps) → X-E (Sonnet, after W1-E) → X-H2 (Agy) → X-INT (Sonnet). At most two Grok dispatches run at once; X-B1a..c and ENV-A are short.
+**Then, as slots free (in this order):** X-B1a (Grok, after X-D1 and TOOL-GSM) → X-D2 (Codex) → X-B1b (Grok) → X-B2 (Agy, after X-B1b) → X-B1c (Grok) → TIME-B (Sonnet, after X-D1) → X-A1b (Codex) → X-H1 (Grok, after W1-H rev 2) → X-C (Agy, after W1-C rev 2 and its deps) → X-E (Sonnet, after W1-E) → X-H2 (Agy) → X-INT (Sonnet). At most two Grok dispatches run at once; X-B1a..c and ENV-A are short.
 
 ## 8. Blockers and findings for the Leader
 - **W1-E has no design yet**, and X-E is on the E1 critical path. Start W1-E next.
 - **W1-C carries an RV-PAT BLOCK** (no re-pilot path after a fix in `registered`); its rev 2 can rely on W0 rev 4's rulings listed in the rev-4 change table. X-C's brief is written after its gate.
 - **W1-H rev 2** must apply R-96 and W0 rev 4 §8 before X-H1 and X-H2 briefs; **ADR-0020 Amendment 1** (commit on this branch) must be on `main` before X-H1's first commit.
-- **Compile ids are owed** for every external contract (§5).
+- **Compile ids written (W0 rev 5 branch, CO-S0):** `x-d` `al-01M41JX06P8TETKP1XTWD8GP2F` (Codex template), `x-a1` `al-01M41JX1G7Z511DJZXRQE1DXC7` (Codex), `x-g1` `al-01M41JX2G67CJTAJEJJ6752NW9`, `x-b1` `al-01M41JX3PQW2EA9Z4KKSFW3764`, `env-a` `al-01M41JX4E3Y85MKT11APTKCMM2`, `x-b2` `al-01M41JX5J2A1XH7TZ7BTY8MW70` (Grok and Agy use the `claude-code` template: no Grok or Agy template exists, as Q0's compilation did). Each names its brief path in the goal; B1b, B1c, A1b and D2 each need their own compilation before dispatch (the contract is reused with a suffix, the prompt is not).
+- **W1-C and W1-H have passed their gates** (Leader, 2026-10-03): the X-C, X-H1 and X-H2 briefs are pack part 2, with X-E and X-INT (X-E after W1-E's gate, which waits on W0 rev 5).
 - **Defect register finding (closed, W0 rev 5 branch):** the duplicate `ENV-A` (the ambient-credential candidate) is renamed **ENV-C**, because `ENV-B` already exists (`docs/lessons/defect-classes.md`, the build-environment class). The ENV-A track keeps its brief name and cites ENV-C.
