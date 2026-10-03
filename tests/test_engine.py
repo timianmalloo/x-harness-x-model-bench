@@ -947,9 +947,24 @@ def test_model_unavailable_alone_does_not_count_toward_the_breaker(base, monkeyp
 def test_the_breaker_leaves_running_cells_running(base, fast_delay):
     p = _plan(n_cells=5, parallelism=2)
     slow, *fast = p["cells"]
-    launcher = FakeLauncher({slow["label"]: {"sleep": 3},
+    release = base / "release-slow-cell"  # the slow cell ends only after the breaker has tripped (event-driven, not a sleep)
+    launcher = FakeLauncher({slow["label"]: {"wait_for": str(release), "wait_limit": 120},
                              **{c["label"]: {"mode": "provider_error", "handshake_delay": fast_delay} for c in fast}})
-    summary, events, _ = _run(base, p, launcher)
+    run_dir = base / "runs" / p["run_id"]
+
+    def release_when_stopped():
+        deadline = time.monotonic() + 100
+        while time.monotonic() < deadline:
+            try:
+                if any(e["kind"] == "run.launch_stopped" for e in _events(run_dir)):
+                    break
+            except (OSError, ValueError):  # a segment mid-write
+                pass
+            time.sleep(0.05)
+        release.write_text("go", encoding="utf-8")
+
+    threading.Thread(target=release_when_stopped, daemon=True).start()
+    summary, events, _ = _run(base, p, launcher, limit=150)
     assert [e["code"] for e in events if e["kind"] == "run.launch_stopped"] == ["HB-CELL-108"]
     assert _outcomes(events)[slow["cell_id"]]["outcome"] == "completed"
     assert sum(e["kind"] == "cell.launch_intent" for e in events) == 4
