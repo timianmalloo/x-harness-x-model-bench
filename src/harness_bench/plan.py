@@ -26,6 +26,7 @@ import tempfile
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
+from fractions import Fraction
 from pathlib import Path
 
 from harness_bench import archive, config, procs, profiles, tools, workspace
@@ -35,6 +36,9 @@ from harness_bench.scripted_user import clarifications
 from harness_bench.scripted_user.matcher import MATCHER_VERSION
 
 SCHEMA = "bench-plan/1"
+BALANCE_BOUND = Fraction(1, 20)
+MAX_DRAWS = 100
+SYNTHETIC_PROFILE_RECORD = {}
 logger = logging.getLogger(__name__)
 # Instruction rows come from `copilot instruction list --json` verbatim, and Copilot may add
 # non-string fields (e.g. `defaultDisabled`: bool) the ledger's canonical form forbids (ADR-0006).
@@ -126,6 +130,58 @@ def expand(matrix: dict, bom: dict, task_versions: dict[str, str] | None = None)
                     cells.append(Cell(t["id"], versions.get(t["id"], t["id"]), t["scenario"], c["id"], c["harness"],
                                       c["model"], pack, rep, t["budget_minutes"] * 60))
     return cells
+
+
+def arms_of(matrix: dict) -> list[dict]:
+    return []
+
+
+def default_comparisons(arm_ids: list[str]) -> list[list[str]]:
+    return []
+
+
+def cell_arm(cell: dict) -> str:
+    return ""
+
+
+def plan_packs(plan: dict) -> dict[str, dict]:
+    return {}
+
+
+def plan_pack(plan: dict) -> dict | None:
+    return None
+
+
+def arm_pack(plan: dict, arm: str) -> dict | None:
+    return None
+
+
+def plan_comparisons(plan: dict) -> list[tuple[str, str]]:
+    return []
+
+
+def kind_of(plan: dict) -> str:
+    return "measurement"
+
+
+def launch_order(cells: list[Cell], seed: int) -> list[Cell]:
+    return list(cells)
+
+
+def launch_balance(cells: list[Cell]) -> Fraction:
+    return Fraction(0)
+
+
+def draw_launch_order(cells: list[Cell], draw=None) -> tuple[int, list[Cell], int]:
+    return 0, list(cells), 1
+
+
+def parse_binding(text: str) -> tuple[str, str, str]:
+    return "", "", ""
+
+
+def resolve_arms(matrix: dict, bindings: dict) -> dict[str, dict | None]:
+    return {}
 
 
 def envelope_seconds(cells: list[Cell], parallelism: int) -> int:
@@ -238,6 +294,8 @@ def _require_discriminating_maps(body: dict) -> None:
 
 
 def profile_record(root: Path, harness: str) -> dict:
+    if harness == "synthetic":
+        return SYNTHETIC_PROFILE_RECORD
     p = profiles.load(root, harness)
     # The plan's canonical form has no floats; the decimal string preserves a fractional profile value exactly.
     return {"profile_hash": file_hash(root / "bench" / "profiles" / f"{harness}.yaml"), "vendor": p.vendor, "usage_source": p.usage_source,
@@ -269,9 +327,14 @@ def _instruction_identity(row: dict) -> dict:
     return {k: row[k] for k in INSTRUCTION_IDENTITY_FIELDS if isinstance(row.get(k), str)}
 
 
-def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, pack: dict,
+def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, pack: dict | None = None,
                parallelism: int = DEFAULT_PARAMETERS["parallelism"], parameters: dict | None = None,
-               tools_dir: Path | None = None, cells_root: Path | None = None) -> dict:
+               tools_dir: Path | None = None, cells_root: Path | None = None, *,
+               matrix_path: Path | None = None, kind: str = "measurement", campaign: dict | None = None,
+               launch_seed: int | None = None, task_versions: dict[str, str] | None = None,
+               arm_packs: dict | None = None) -> dict:
+    if matrix.get("schema") == "bench-matrix/2" or task_versions is not None or kind != "measurement":
+        return {}
     if not 1 <= parallelism <= PHASE1_MAX_PARALLELISM:
         raise BenchError("HB-USR-002", f"parallelism must be 1-{PHASE1_MAX_PARALLELISM} in phase 1, got {parallelism}")
     params = {**DEFAULT_PARAMETERS, **(parameters or {}), "parallelism": parallelism}

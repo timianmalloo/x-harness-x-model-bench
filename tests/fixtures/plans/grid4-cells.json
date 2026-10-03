@@ -1,0 +1,2326 @@
+{
+  "provenance": {
+    "source": "runs/grid-4/plan.json",
+    "sha256": "70ff69b5af51d9e8af47e6393d120e65e2e1783e138630d1904ea19c7f652f78"
+  },
+  "matrix": {
+    "bom": {
+      "file": "bench/bom.yaml",
+      "subset": [
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "B1",
+        "B2",
+        "B3",
+        "C1",
+        "C2",
+        "D1",
+        "D2",
+        "D3",
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7",
+        "F1",
+        "F2",
+        "G2"
+      ]
+    },
+    "combos": [
+      {
+        "harness": "copilot",
+        "id": "copilot-sol",
+        "model": "gpt-6-sol"
+      },
+      {
+        "harness": "codex",
+        "id": "codex-sol",
+        "model": "gpt-6-sol"
+      },
+      {
+        "harness": "claude-code",
+        "id": "cc-opus",
+        "model": "claude-opus-5-5"
+      }
+    ],
+    "packs": [
+      "on",
+      "off"
+    ],
+    "repetitions": 2,
+    "run_id": "grid-4",
+    "schema": "bench-matrix/1"
+  },
+  "task_versions": {
+    "A1": "0127daa0c4558171385ed5a662891022e501a3dc762c0737e1509ac6acd07627",
+    "A2": "dfaf79e74df08a1f11200053a4ff671723beeb5cdc2b3614141c8bb16ca11521",
+    "A3": "f287e10f18f372995f93497578c7fbbb1a3b6131ec5a80670a67ddf4e1b5cdb9",
+    "A4": "609ffb414c34634e4fd1006418800c97fd7dbce59ea7a74afc90f02ccb10acbb",
+    "A5": "7e3c5eef82a024b9d6587436c1467b6b2968bc9d5bc63365bbbb85f54dad82dd",
+    "B1": "f666b3290a99a159c58cd79777e3e2b3f7dd452467174d5fbef27e42a6fc4d0f",
+    "B2": "e8a85ec68c5db4f94eb9d2c73183aef03985a5342618a98245bf806e83f0e0f1",
+    "B3": "8838b7bd5ebeb6b569a0faa6a19783d4864ade38f409a6189f9a5e2078ca3205",
+    "C1": "d9d72e41e1d86ea93c0dd22f8ea8d3b00ff350d8a8cd8506fced8d88f3b77a2b",
+    "C2": "890cb841f0fdf8a8be7be60247b8273215c28310b8acf88619b30c1694dc39c5",
+    "D1": "b2b3170e280ec0a4bd69dfbec687d4eb0012c615d68f6e9f2ad42cc9f802e519",
+    "D2": "46c10816ed92b2a426157b50807e8c737e7ab7b67b844cc3f84cae3434cb4a7e",
+    "D3": "7cd8563cf669dae4c32ab6f5af3f64dfb6242ad6aaf620db901d91d1afd0402f",
+    "E1": "1f39fab938ebe3b689aef65336bbe0859ecf20971618a0ffb0785af8cd07ccb9",
+    "E2": "d9e82d39ab4d36c8bdb50bd5309db62fcc4b0b9879df387c2b3e1832da47edd7",
+    "E3": "7891e7d132ff35f412d567f44653bced1277da999efa498096cc9eca51fe756d",
+    "E4": "eca2a2a7bab5ef3c57fec60e351ae21bf0ac92dbb25a329137fc39e65b99814d",
+    "E5": "7d5fc47c72739d6644550694de653b11ff8516e7c304fc436580ea7e44f4cbb7",
+    "E6": "b3fd1ea1b35b5b9b6d8db893b70682d9433fc5eb675d8886803e145edb61352f",
+    "E7": "0cd9391f2881b9c0de78473ff8c222c6576db008d04d2fac3bc894fe4649127f",
+    "F1": "3094cb8930d5958662346d92297e7de234eb7c19dab0f42dc38fe827aa5eedbb",
+    "F2": "bc0792bb38f6cf73cee7a7b6d8a9755451b94d130213c9455be6745f429eef7a",
+    "G2": "dcd6325e77e6b8e5af283559555e0763f2f378c527e3f1106c91daf8460e1ef7"
+  },
+  "builds": {
+    "claude-code": {
+      "adapter_sha256": "7768f09223a942be762bd1d8bde72c936c69f79486f7ef5f131bd601e6bbb068",
+      "adapter_version": "0.81.2",
+      "agent_version": null,
+      "agent_version_reason": "ACP initialize.agentInfo.version requires a live handshake; not recorded at plan time",
+      "sha256": "fc0e3af017705624b9e1bce913f72761864ff994804514da1f5e41380fca4484",
+      "version": "2.1.282"
+    },
+    "codex": {
+      "adapter_sha256": "69a628c68e3e10323b075fee3071c4ef991b973f0a825c8191ea6aba2fc870ff",
+      "adapter_version": "1.12.0",
+      "agent_version": null,
+      "agent_version_reason": "ACP initialize.agentInfo.version requires a live handshake; not recorded at plan time",
+      "sha256": "eabc698ea3b1c430623af0cae510c3459165ed453d2a5d2dac14513cf1b25269",
+      "version": "0.156.0"
+    },
+    "copilot": {
+      "adapter_sha256": null,
+      "adapter_version": null,
+      "agent_version": null,
+      "agent_version_reason": "ACP initialize.agentInfo.version requires a live handshake; not recorded at plan time",
+      "sha256": "417d0721237ff370a415cf5c11c7523f9332f220a6ee0f5eb8e802a9662ef246",
+      "version": "1.0.89-1"
+    }
+  },
+  "pack": {
+    "commit": "ccc5160603448981d6c879a8735b79129500eb64",
+    "revision": 97,
+    "source": "C:\\Projects\\ai-forward-fix-close-artifacts"
+  },
+  "cells": [
+    {
+      "cell_id": "b32fd5dd6f0baab4",
+      "task": "A1",
+      "task_version": "0127daa0c4558171385ed5a662891022e501a3dc762c0737e1509ac6acd07627",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "ac487d6c1333e41e",
+      "task": "A1",
+      "task_version": "0127daa0c4558171385ed5a662891022e501a3dc762c0737e1509ac6acd07627",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "9de96f76bf1ce3fb",
+      "task": "A1",
+      "task_version": "0127daa0c4558171385ed5a662891022e501a3dc762c0737e1509ac6acd07627",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "600fcbb7cd5329b6",
+      "task": "A1",
+      "task_version": "0127daa0c4558171385ed5a662891022e501a3dc762c0737e1509ac6acd07627",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "426749526d9c4659",
+      "task": "A1",
+      "task_version": "0127daa0c4558171385ed5a662891022e501a3dc762c0737e1509ac6acd07627",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "30f816846fc85c80",
+      "task": "A1",
+      "task_version": "0127daa0c4558171385ed5a662891022e501a3dc762c0737e1509ac6acd07627",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "b272b74d7527da13",
+      "task": "A2",
+      "task_version": "dfaf79e74df08a1f11200053a4ff671723beeb5cdc2b3614141c8bb16ca11521",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "7d1ede438f078ac9",
+      "task": "A2",
+      "task_version": "dfaf79e74df08a1f11200053a4ff671723beeb5cdc2b3614141c8bb16ca11521",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "c1c72ab526e2583b",
+      "task": "A2",
+      "task_version": "dfaf79e74df08a1f11200053a4ff671723beeb5cdc2b3614141c8bb16ca11521",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "69b1d0e3e531cdd3",
+      "task": "A2",
+      "task_version": "dfaf79e74df08a1f11200053a4ff671723beeb5cdc2b3614141c8bb16ca11521",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "a256295cd018660e",
+      "task": "A2",
+      "task_version": "dfaf79e74df08a1f11200053a4ff671723beeb5cdc2b3614141c8bb16ca11521",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "229627d12f9484f5",
+      "task": "A2",
+      "task_version": "dfaf79e74df08a1f11200053a4ff671723beeb5cdc2b3614141c8bb16ca11521",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "b6926f6a26bf2b15",
+      "task": "A3",
+      "task_version": "f287e10f18f372995f93497578c7fbbb1a3b6131ec5a80670a67ddf4e1b5cdb9",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "5e8642c688d1a6a9",
+      "task": "A3",
+      "task_version": "f287e10f18f372995f93497578c7fbbb1a3b6131ec5a80670a67ddf4e1b5cdb9",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "25af839eb32893bb",
+      "task": "A3",
+      "task_version": "f287e10f18f372995f93497578c7fbbb1a3b6131ec5a80670a67ddf4e1b5cdb9",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "161a74f3b33d85ca",
+      "task": "A3",
+      "task_version": "f287e10f18f372995f93497578c7fbbb1a3b6131ec5a80670a67ddf4e1b5cdb9",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "57c5a7cf320f59d1",
+      "task": "A3",
+      "task_version": "f287e10f18f372995f93497578c7fbbb1a3b6131ec5a80670a67ddf4e1b5cdb9",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "3992a9e885c73352",
+      "task": "A3",
+      "task_version": "f287e10f18f372995f93497578c7fbbb1a3b6131ec5a80670a67ddf4e1b5cdb9",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "5eadd5f2b9c7d493",
+      "task": "A4",
+      "task_version": "609ffb414c34634e4fd1006418800c97fd7dbce59ea7a74afc90f02ccb10acbb",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "13ddd9eea5a74410",
+      "task": "A4",
+      "task_version": "609ffb414c34634e4fd1006418800c97fd7dbce59ea7a74afc90f02ccb10acbb",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "943959942e2232e0",
+      "task": "A4",
+      "task_version": "609ffb414c34634e4fd1006418800c97fd7dbce59ea7a74afc90f02ccb10acbb",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "803c7748b7117013",
+      "task": "A4",
+      "task_version": "609ffb414c34634e4fd1006418800c97fd7dbce59ea7a74afc90f02ccb10acbb",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "462041afa6dce91a",
+      "task": "A4",
+      "task_version": "609ffb414c34634e4fd1006418800c97fd7dbce59ea7a74afc90f02ccb10acbb",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "508803ab2a79b08a",
+      "task": "A4",
+      "task_version": "609ffb414c34634e4fd1006418800c97fd7dbce59ea7a74afc90f02ccb10acbb",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "fdf4332eb6a645a9",
+      "task": "A5",
+      "task_version": "7e3c5eef82a024b9d6587436c1467b6b2968bc9d5bc63365bbbb85f54dad82dd",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "46c86398502a65b6",
+      "task": "A5",
+      "task_version": "7e3c5eef82a024b9d6587436c1467b6b2968bc9d5bc63365bbbb85f54dad82dd",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "708a7983c77c541d",
+      "task": "A5",
+      "task_version": "7e3c5eef82a024b9d6587436c1467b6b2968bc9d5bc63365bbbb85f54dad82dd",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "55b363fcbda27148",
+      "task": "A5",
+      "task_version": "7e3c5eef82a024b9d6587436c1467b6b2968bc9d5bc63365bbbb85f54dad82dd",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "27c993bcd7a5edb6",
+      "task": "A5",
+      "task_version": "7e3c5eef82a024b9d6587436c1467b6b2968bc9d5bc63365bbbb85f54dad82dd",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "edd12c88c44250dd",
+      "task": "A5",
+      "task_version": "7e3c5eef82a024b9d6587436c1467b6b2968bc9d5bc63365bbbb85f54dad82dd",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "81a20fafe5ec68e4",
+      "task": "B1",
+      "task_version": "f666b3290a99a159c58cd79777e3e2b3f7dd452467174d5fbef27e42a6fc4d0f",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "5313104d142df395",
+      "task": "B1",
+      "task_version": "f666b3290a99a159c58cd79777e3e2b3f7dd452467174d5fbef27e42a6fc4d0f",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "1ddc7ef0031abc82",
+      "task": "B1",
+      "task_version": "f666b3290a99a159c58cd79777e3e2b3f7dd452467174d5fbef27e42a6fc4d0f",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "ea234e0aecf08c8f",
+      "task": "B1",
+      "task_version": "f666b3290a99a159c58cd79777e3e2b3f7dd452467174d5fbef27e42a6fc4d0f",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "1be8d5e3ce4a8177",
+      "task": "B1",
+      "task_version": "f666b3290a99a159c58cd79777e3e2b3f7dd452467174d5fbef27e42a6fc4d0f",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "27d2e3226efa779b",
+      "task": "B1",
+      "task_version": "f666b3290a99a159c58cd79777e3e2b3f7dd452467174d5fbef27e42a6fc4d0f",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "2b2a2ff91389a7bc",
+      "task": "B2",
+      "task_version": "e8a85ec68c5db4f94eb9d2c73183aef03985a5342618a98245bf806e83f0e0f1",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "1a4c53a1f707821b",
+      "task": "B2",
+      "task_version": "e8a85ec68c5db4f94eb9d2c73183aef03985a5342618a98245bf806e83f0e0f1",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "699856bd826e27a3",
+      "task": "B2",
+      "task_version": "e8a85ec68c5db4f94eb9d2c73183aef03985a5342618a98245bf806e83f0e0f1",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "5f58fd01d15f0a7d",
+      "task": "B2",
+      "task_version": "e8a85ec68c5db4f94eb9d2c73183aef03985a5342618a98245bf806e83f0e0f1",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "01969e2793240096",
+      "task": "B2",
+      "task_version": "e8a85ec68c5db4f94eb9d2c73183aef03985a5342618a98245bf806e83f0e0f1",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "fd4ae3259fbd36cb",
+      "task": "B2",
+      "task_version": "e8a85ec68c5db4f94eb9d2c73183aef03985a5342618a98245bf806e83f0e0f1",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "0eeecc47deee1db7",
+      "task": "B3",
+      "task_version": "8838b7bd5ebeb6b569a0faa6a19783d4864ade38f409a6189f9a5e2078ca3205",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "bf237868c091caf2",
+      "task": "B3",
+      "task_version": "8838b7bd5ebeb6b569a0faa6a19783d4864ade38f409a6189f9a5e2078ca3205",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "4ad17884783e3eba",
+      "task": "B3",
+      "task_version": "8838b7bd5ebeb6b569a0faa6a19783d4864ade38f409a6189f9a5e2078ca3205",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "dd44b0981d5f34f5",
+      "task": "B3",
+      "task_version": "8838b7bd5ebeb6b569a0faa6a19783d4864ade38f409a6189f9a5e2078ca3205",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "896a45baa9857a4f",
+      "task": "B3",
+      "task_version": "8838b7bd5ebeb6b569a0faa6a19783d4864ade38f409a6189f9a5e2078ca3205",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "2f65b6e3c07f8d5c",
+      "task": "B3",
+      "task_version": "8838b7bd5ebeb6b569a0faa6a19783d4864ade38f409a6189f9a5e2078ca3205",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "d3297da4ba7c257d",
+      "task": "C1",
+      "task_version": "d9d72e41e1d86ea93c0dd22f8ea8d3b00ff350d8a8cd8506fced8d88f3b77a2b",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "757143056c649892",
+      "task": "C1",
+      "task_version": "d9d72e41e1d86ea93c0dd22f8ea8d3b00ff350d8a8cd8506fced8d88f3b77a2b",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "72011a74e4a208ce",
+      "task": "C1",
+      "task_version": "d9d72e41e1d86ea93c0dd22f8ea8d3b00ff350d8a8cd8506fced8d88f3b77a2b",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "87c64f9f7c0df1e5",
+      "task": "C1",
+      "task_version": "d9d72e41e1d86ea93c0dd22f8ea8d3b00ff350d8a8cd8506fced8d88f3b77a2b",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "4d98dcf769bc00aa",
+      "task": "C1",
+      "task_version": "d9d72e41e1d86ea93c0dd22f8ea8d3b00ff350d8a8cd8506fced8d88f3b77a2b",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "b25b977bb4d67178",
+      "task": "C1",
+      "task_version": "d9d72e41e1d86ea93c0dd22f8ea8d3b00ff350d8a8cd8506fced8d88f3b77a2b",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "167ab8788dfcc453",
+      "task": "C2",
+      "task_version": "890cb841f0fdf8a8be7be60247b8273215c28310b8acf88619b30c1694dc39c5",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "9b458d774b13805f",
+      "task": "C2",
+      "task_version": "890cb841f0fdf8a8be7be60247b8273215c28310b8acf88619b30c1694dc39c5",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "d7e8a495b0ac1a8f",
+      "task": "C2",
+      "task_version": "890cb841f0fdf8a8be7be60247b8273215c28310b8acf88619b30c1694dc39c5",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "acab25f8093141c7",
+      "task": "C2",
+      "task_version": "890cb841f0fdf8a8be7be60247b8273215c28310b8acf88619b30c1694dc39c5",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "d8e9d278411a2e91",
+      "task": "C2",
+      "task_version": "890cb841f0fdf8a8be7be60247b8273215c28310b8acf88619b30c1694dc39c5",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "cd9eccb037988ecc",
+      "task": "C2",
+      "task_version": "890cb841f0fdf8a8be7be60247b8273215c28310b8acf88619b30c1694dc39c5",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "4a6250261f80ded4",
+      "task": "D1",
+      "task_version": "b2b3170e280ec0a4bd69dfbec687d4eb0012c615d68f6e9f2ad42cc9f802e519",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "3ff04431d3b5ac27",
+      "task": "D1",
+      "task_version": "b2b3170e280ec0a4bd69dfbec687d4eb0012c615d68f6e9f2ad42cc9f802e519",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "35af195cfe821dca",
+      "task": "D1",
+      "task_version": "b2b3170e280ec0a4bd69dfbec687d4eb0012c615d68f6e9f2ad42cc9f802e519",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "caa8ca38b1a929a8",
+      "task": "D1",
+      "task_version": "b2b3170e280ec0a4bd69dfbec687d4eb0012c615d68f6e9f2ad42cc9f802e519",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "2535962f830d7718",
+      "task": "D1",
+      "task_version": "b2b3170e280ec0a4bd69dfbec687d4eb0012c615d68f6e9f2ad42cc9f802e519",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "c3d40fa1377ba0dc",
+      "task": "D1",
+      "task_version": "b2b3170e280ec0a4bd69dfbec687d4eb0012c615d68f6e9f2ad42cc9f802e519",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "fddc36ddca313e72",
+      "task": "D2",
+      "task_version": "46c10816ed92b2a426157b50807e8c737e7ab7b67b844cc3f84cae3434cb4a7e",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "92e5594343787d61",
+      "task": "D2",
+      "task_version": "46c10816ed92b2a426157b50807e8c737e7ab7b67b844cc3f84cae3434cb4a7e",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "952cc6ef2104af5e",
+      "task": "D2",
+      "task_version": "46c10816ed92b2a426157b50807e8c737e7ab7b67b844cc3f84cae3434cb4a7e",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "e042539e19538c12",
+      "task": "D2",
+      "task_version": "46c10816ed92b2a426157b50807e8c737e7ab7b67b844cc3f84cae3434cb4a7e",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "2a7c81203fc0b055",
+      "task": "D2",
+      "task_version": "46c10816ed92b2a426157b50807e8c737e7ab7b67b844cc3f84cae3434cb4a7e",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "8707347602d6e969",
+      "task": "D2",
+      "task_version": "46c10816ed92b2a426157b50807e8c737e7ab7b67b844cc3f84cae3434cb4a7e",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "e02d85f3f21ea7d1",
+      "task": "D3",
+      "task_version": "7cd8563cf669dae4c32ab6f5af3f64dfb6242ad6aaf620db901d91d1afd0402f",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "7ebf1f1948d5af0e",
+      "task": "D3",
+      "task_version": "7cd8563cf669dae4c32ab6f5af3f64dfb6242ad6aaf620db901d91d1afd0402f",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "d36c349d40f53e68",
+      "task": "D3",
+      "task_version": "7cd8563cf669dae4c32ab6f5af3f64dfb6242ad6aaf620db901d91d1afd0402f",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "2258ec933a1f6e2a",
+      "task": "D3",
+      "task_version": "7cd8563cf669dae4c32ab6f5af3f64dfb6242ad6aaf620db901d91d1afd0402f",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "ae9fd540f5c71875",
+      "task": "D3",
+      "task_version": "7cd8563cf669dae4c32ab6f5af3f64dfb6242ad6aaf620db901d91d1afd0402f",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "97aced5330c254dc",
+      "task": "D3",
+      "task_version": "7cd8563cf669dae4c32ab6f5af3f64dfb6242ad6aaf620db901d91d1afd0402f",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "6deac59eca817207",
+      "task": "E1",
+      "task_version": "1f39fab938ebe3b689aef65336bbe0859ecf20971618a0ffb0785af8cd07ccb9",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "e073ec6ed09ebe21",
+      "task": "E1",
+      "task_version": "1f39fab938ebe3b689aef65336bbe0859ecf20971618a0ffb0785af8cd07ccb9",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "059d675140510e81",
+      "task": "E1",
+      "task_version": "1f39fab938ebe3b689aef65336bbe0859ecf20971618a0ffb0785af8cd07ccb9",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "724b9bccffb73b92",
+      "task": "E1",
+      "task_version": "1f39fab938ebe3b689aef65336bbe0859ecf20971618a0ffb0785af8cd07ccb9",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "d9773a63ce2dbd9a",
+      "task": "E1",
+      "task_version": "1f39fab938ebe3b689aef65336bbe0859ecf20971618a0ffb0785af8cd07ccb9",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "8e42169171ad604d",
+      "task": "E1",
+      "task_version": "1f39fab938ebe3b689aef65336bbe0859ecf20971618a0ffb0785af8cd07ccb9",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "9f93f6cef2947339",
+      "task": "E2",
+      "task_version": "d9e82d39ab4d36c8bdb50bd5309db62fcc4b0b9879df387c2b3e1832da47edd7",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "c1dcd5b40ce5666e",
+      "task": "E2",
+      "task_version": "d9e82d39ab4d36c8bdb50bd5309db62fcc4b0b9879df387c2b3e1832da47edd7",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "a5501256107c8edb",
+      "task": "E2",
+      "task_version": "d9e82d39ab4d36c8bdb50bd5309db62fcc4b0b9879df387c2b3e1832da47edd7",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "473dadb4c6cc00a2",
+      "task": "E2",
+      "task_version": "d9e82d39ab4d36c8bdb50bd5309db62fcc4b0b9879df387c2b3e1832da47edd7",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "12e10aaeeca3fac4",
+      "task": "E2",
+      "task_version": "d9e82d39ab4d36c8bdb50bd5309db62fcc4b0b9879df387c2b3e1832da47edd7",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "de94109e204ef8f4",
+      "task": "E2",
+      "task_version": "d9e82d39ab4d36c8bdb50bd5309db62fcc4b0b9879df387c2b3e1832da47edd7",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "8c6018bd7151a21a",
+      "task": "E3",
+      "task_version": "7891e7d132ff35f412d567f44653bced1277da999efa498096cc9eca51fe756d",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "e99c4b3a99533fe9",
+      "task": "E3",
+      "task_version": "7891e7d132ff35f412d567f44653bced1277da999efa498096cc9eca51fe756d",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "8ea60ffea1a14eb5",
+      "task": "E3",
+      "task_version": "7891e7d132ff35f412d567f44653bced1277da999efa498096cc9eca51fe756d",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "f09581dc6a300efd",
+      "task": "E3",
+      "task_version": "7891e7d132ff35f412d567f44653bced1277da999efa498096cc9eca51fe756d",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "fba4416d708f1554",
+      "task": "E3",
+      "task_version": "7891e7d132ff35f412d567f44653bced1277da999efa498096cc9eca51fe756d",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "b11384a14b346fec",
+      "task": "E3",
+      "task_version": "7891e7d132ff35f412d567f44653bced1277da999efa498096cc9eca51fe756d",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "4946c7fd116ba585",
+      "task": "E4",
+      "task_version": "eca2a2a7bab5ef3c57fec60e351ae21bf0ac92dbb25a329137fc39e65b99814d",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "fe5b5c36e06ea838",
+      "task": "E4",
+      "task_version": "eca2a2a7bab5ef3c57fec60e351ae21bf0ac92dbb25a329137fc39e65b99814d",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "9b4c563f3d520ee6",
+      "task": "E4",
+      "task_version": "eca2a2a7bab5ef3c57fec60e351ae21bf0ac92dbb25a329137fc39e65b99814d",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "876c25805fe4bdfd",
+      "task": "E4",
+      "task_version": "eca2a2a7bab5ef3c57fec60e351ae21bf0ac92dbb25a329137fc39e65b99814d",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "ce3e74ca0eb5b52e",
+      "task": "E4",
+      "task_version": "eca2a2a7bab5ef3c57fec60e351ae21bf0ac92dbb25a329137fc39e65b99814d",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "7c62b98c423e135c",
+      "task": "E4",
+      "task_version": "eca2a2a7bab5ef3c57fec60e351ae21bf0ac92dbb25a329137fc39e65b99814d",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "862de53d9585d110",
+      "task": "E5",
+      "task_version": "7d5fc47c72739d6644550694de653b11ff8516e7c304fc436580ea7e44f4cbb7",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "f1f61b966d87609f",
+      "task": "E5",
+      "task_version": "7d5fc47c72739d6644550694de653b11ff8516e7c304fc436580ea7e44f4cbb7",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "4f1d831a0ce3719a",
+      "task": "E5",
+      "task_version": "7d5fc47c72739d6644550694de653b11ff8516e7c304fc436580ea7e44f4cbb7",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "c917ac408f322bad",
+      "task": "E5",
+      "task_version": "7d5fc47c72739d6644550694de653b11ff8516e7c304fc436580ea7e44f4cbb7",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "4b73e8fdeb357686",
+      "task": "E5",
+      "task_version": "7d5fc47c72739d6644550694de653b11ff8516e7c304fc436580ea7e44f4cbb7",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "7ca2b3bc600ca3b9",
+      "task": "E5",
+      "task_version": "7d5fc47c72739d6644550694de653b11ff8516e7c304fc436580ea7e44f4cbb7",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "b948b7d642810733",
+      "task": "E6",
+      "task_version": "b3fd1ea1b35b5b9b6d8db893b70682d9433fc5eb675d8886803e145edb61352f",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "ef5bfcc1ca778231",
+      "task": "E6",
+      "task_version": "b3fd1ea1b35b5b9b6d8db893b70682d9433fc5eb675d8886803e145edb61352f",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "831a9e6308111c3d",
+      "task": "E6",
+      "task_version": "b3fd1ea1b35b5b9b6d8db893b70682d9433fc5eb675d8886803e145edb61352f",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "ccd5bc803367dccc",
+      "task": "E6",
+      "task_version": "b3fd1ea1b35b5b9b6d8db893b70682d9433fc5eb675d8886803e145edb61352f",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "99f99ffe65818c47",
+      "task": "E6",
+      "task_version": "b3fd1ea1b35b5b9b6d8db893b70682d9433fc5eb675d8886803e145edb61352f",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "c314357ae8450855",
+      "task": "E6",
+      "task_version": "b3fd1ea1b35b5b9b6d8db893b70682d9433fc5eb675d8886803e145edb61352f",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "6d20742962c9e130",
+      "task": "E7",
+      "task_version": "0cd9391f2881b9c0de78473ff8c222c6576db008d04d2fac3bc894fe4649127f",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "04c1e111e9162a9c",
+      "task": "E7",
+      "task_version": "0cd9391f2881b9c0de78473ff8c222c6576db008d04d2fac3bc894fe4649127f",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "bb2bf7df81e54b83",
+      "task": "E7",
+      "task_version": "0cd9391f2881b9c0de78473ff8c222c6576db008d04d2fac3bc894fe4649127f",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "c4a0dfe63053b0f5",
+      "task": "E7",
+      "task_version": "0cd9391f2881b9c0de78473ff8c222c6576db008d04d2fac3bc894fe4649127f",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "5d47d3aad0b7f5e5",
+      "task": "E7",
+      "task_version": "0cd9391f2881b9c0de78473ff8c222c6576db008d04d2fac3bc894fe4649127f",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "65432e02098e5f2d",
+      "task": "E7",
+      "task_version": "0cd9391f2881b9c0de78473ff8c222c6576db008d04d2fac3bc894fe4649127f",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "b765f438fb811ea0",
+      "task": "F1",
+      "task_version": "3094cb8930d5958662346d92297e7de234eb7c19dab0f42dc38fe827aa5eedbb",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "f16f81f62d49b820",
+      "task": "F1",
+      "task_version": "3094cb8930d5958662346d92297e7de234eb7c19dab0f42dc38fe827aa5eedbb",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "c4d05c98231eb3aa",
+      "task": "F1",
+      "task_version": "3094cb8930d5958662346d92297e7de234eb7c19dab0f42dc38fe827aa5eedbb",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "c53a1e207e59fcc2",
+      "task": "F1",
+      "task_version": "3094cb8930d5958662346d92297e7de234eb7c19dab0f42dc38fe827aa5eedbb",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "011d043a18924eb8",
+      "task": "F1",
+      "task_version": "3094cb8930d5958662346d92297e7de234eb7c19dab0f42dc38fe827aa5eedbb",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "880061ac0a57f7d9",
+      "task": "F1",
+      "task_version": "3094cb8930d5958662346d92297e7de234eb7c19dab0f42dc38fe827aa5eedbb",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "c4f3753f37dcc694",
+      "task": "F2",
+      "task_version": "bc0792bb38f6cf73cee7a7b6d8a9755451b94d130213c9455be6745f429eef7a",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "1b8e34a601344483",
+      "task": "F2",
+      "task_version": "bc0792bb38f6cf73cee7a7b6d8a9755451b94d130213c9455be6745f429eef7a",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "7c967dd5b8591a77",
+      "task": "F2",
+      "task_version": "bc0792bb38f6cf73cee7a7b6d8a9755451b94d130213c9455be6745f429eef7a",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "05a1c6b73b956854",
+      "task": "F2",
+      "task_version": "bc0792bb38f6cf73cee7a7b6d8a9755451b94d130213c9455be6745f429eef7a",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "de1b77af4f58faf7",
+      "task": "F2",
+      "task_version": "bc0792bb38f6cf73cee7a7b6d8a9755451b94d130213c9455be6745f429eef7a",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "5ae0b1a778374325",
+      "task": "F2",
+      "task_version": "bc0792bb38f6cf73cee7a7b6d8a9755451b94d130213c9455be6745f429eef7a",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "a7f84c066f255248",
+      "task": "G2",
+      "task_version": "dcd6325e77e6b8e5af283559555e0763f2f378c527e3f1106c91daf8460e1ef7",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "d678eb455cfa36cb",
+      "task": "G2",
+      "task_version": "dcd6325e77e6b8e5af283559555e0763f2f378c527e3f1106c91daf8460e1ef7",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "d5880f7b020c21ab",
+      "task": "G2",
+      "task_version": "dcd6325e77e6b8e5af283559555e0763f2f378c527e3f1106c91daf8460e1ef7",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 1
+    },
+    {
+      "cell_id": "99641f81341f62d7",
+      "task": "G2",
+      "task_version": "dcd6325e77e6b8e5af283559555e0763f2f378c527e3f1106c91daf8460e1ef7",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "33836ce94b916665",
+      "task": "G2",
+      "task_version": "dcd6325e77e6b8e5af283559555e0763f2f378c527e3f1106c91daf8460e1ef7",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "3e8268c99d9eb8b0",
+      "task": "G2",
+      "task_version": "dcd6325e77e6b8e5af283559555e0763f2f378c527e3f1106c91daf8460e1ef7",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 1
+    },
+    {
+      "cell_id": "85ce8df10374452e",
+      "task": "A1",
+      "task_version": "0127daa0c4558171385ed5a662891022e501a3dc762c0737e1509ac6acd07627",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "8bcabaf3f7685976",
+      "task": "A1",
+      "task_version": "0127daa0c4558171385ed5a662891022e501a3dc762c0737e1509ac6acd07627",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "17d304c23e0c84f3",
+      "task": "A1",
+      "task_version": "0127daa0c4558171385ed5a662891022e501a3dc762c0737e1509ac6acd07627",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "d21c78f5f9ada6f9",
+      "task": "A1",
+      "task_version": "0127daa0c4558171385ed5a662891022e501a3dc762c0737e1509ac6acd07627",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "3ca5ee360d51fa86",
+      "task": "A1",
+      "task_version": "0127daa0c4558171385ed5a662891022e501a3dc762c0737e1509ac6acd07627",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "fadfe75cbb95d2be",
+      "task": "A1",
+      "task_version": "0127daa0c4558171385ed5a662891022e501a3dc762c0737e1509ac6acd07627",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "6fbdb7a009d1974c",
+      "task": "A2",
+      "task_version": "dfaf79e74df08a1f11200053a4ff671723beeb5cdc2b3614141c8bb16ca11521",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "5e2aadbc94c568f3",
+      "task": "A2",
+      "task_version": "dfaf79e74df08a1f11200053a4ff671723beeb5cdc2b3614141c8bb16ca11521",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "0648867637eb9614",
+      "task": "A2",
+      "task_version": "dfaf79e74df08a1f11200053a4ff671723beeb5cdc2b3614141c8bb16ca11521",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "24ef0f79099533be",
+      "task": "A2",
+      "task_version": "dfaf79e74df08a1f11200053a4ff671723beeb5cdc2b3614141c8bb16ca11521",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "cbb1ab27bc5f9cf4",
+      "task": "A2",
+      "task_version": "dfaf79e74df08a1f11200053a4ff671723beeb5cdc2b3614141c8bb16ca11521",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "112c5afd72da4467",
+      "task": "A2",
+      "task_version": "dfaf79e74df08a1f11200053a4ff671723beeb5cdc2b3614141c8bb16ca11521",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "9409f4130fe30a46",
+      "task": "A3",
+      "task_version": "f287e10f18f372995f93497578c7fbbb1a3b6131ec5a80670a67ddf4e1b5cdb9",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "9600aceb2a3d2172",
+      "task": "A3",
+      "task_version": "f287e10f18f372995f93497578c7fbbb1a3b6131ec5a80670a67ddf4e1b5cdb9",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "b3b9fcba2942b27a",
+      "task": "A3",
+      "task_version": "f287e10f18f372995f93497578c7fbbb1a3b6131ec5a80670a67ddf4e1b5cdb9",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "81df4759850c1d8c",
+      "task": "A3",
+      "task_version": "f287e10f18f372995f93497578c7fbbb1a3b6131ec5a80670a67ddf4e1b5cdb9",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "c121e6d7c7192c9e",
+      "task": "A3",
+      "task_version": "f287e10f18f372995f93497578c7fbbb1a3b6131ec5a80670a67ddf4e1b5cdb9",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "76e8148c766f66f4",
+      "task": "A3",
+      "task_version": "f287e10f18f372995f93497578c7fbbb1a3b6131ec5a80670a67ddf4e1b5cdb9",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "c2cc9fb5941daac7",
+      "task": "A4",
+      "task_version": "609ffb414c34634e4fd1006418800c97fd7dbce59ea7a74afc90f02ccb10acbb",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "f8d5179fb1257d90",
+      "task": "A4",
+      "task_version": "609ffb414c34634e4fd1006418800c97fd7dbce59ea7a74afc90f02ccb10acbb",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "ba2d2430aa35c0be",
+      "task": "A4",
+      "task_version": "609ffb414c34634e4fd1006418800c97fd7dbce59ea7a74afc90f02ccb10acbb",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "22dbc983efb8c2bd",
+      "task": "A4",
+      "task_version": "609ffb414c34634e4fd1006418800c97fd7dbce59ea7a74afc90f02ccb10acbb",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "31408ea5a5511bec",
+      "task": "A4",
+      "task_version": "609ffb414c34634e4fd1006418800c97fd7dbce59ea7a74afc90f02ccb10acbb",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "d7996307cfe9926c",
+      "task": "A4",
+      "task_version": "609ffb414c34634e4fd1006418800c97fd7dbce59ea7a74afc90f02ccb10acbb",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "963c42d5df103a74",
+      "task": "A5",
+      "task_version": "7e3c5eef82a024b9d6587436c1467b6b2968bc9d5bc63365bbbb85f54dad82dd",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "749d485cf63a7901",
+      "task": "A5",
+      "task_version": "7e3c5eef82a024b9d6587436c1467b6b2968bc9d5bc63365bbbb85f54dad82dd",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "5ad053607c407248",
+      "task": "A5",
+      "task_version": "7e3c5eef82a024b9d6587436c1467b6b2968bc9d5bc63365bbbb85f54dad82dd",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "01aa25a32a51a952",
+      "task": "A5",
+      "task_version": "7e3c5eef82a024b9d6587436c1467b6b2968bc9d5bc63365bbbb85f54dad82dd",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "4260c6bb030045df",
+      "task": "A5",
+      "task_version": "7e3c5eef82a024b9d6587436c1467b6b2968bc9d5bc63365bbbb85f54dad82dd",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "67526ef59a068b82",
+      "task": "A5",
+      "task_version": "7e3c5eef82a024b9d6587436c1467b6b2968bc9d5bc63365bbbb85f54dad82dd",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "f7357d37cac19a04",
+      "task": "B1",
+      "task_version": "f666b3290a99a159c58cd79777e3e2b3f7dd452467174d5fbef27e42a6fc4d0f",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "472c64eba93df62f",
+      "task": "B1",
+      "task_version": "f666b3290a99a159c58cd79777e3e2b3f7dd452467174d5fbef27e42a6fc4d0f",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "0cfac0688e915639",
+      "task": "B1",
+      "task_version": "f666b3290a99a159c58cd79777e3e2b3f7dd452467174d5fbef27e42a6fc4d0f",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "c65f5dbf4b165968",
+      "task": "B1",
+      "task_version": "f666b3290a99a159c58cd79777e3e2b3f7dd452467174d5fbef27e42a6fc4d0f",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "ecf4959207a9658c",
+      "task": "B1",
+      "task_version": "f666b3290a99a159c58cd79777e3e2b3f7dd452467174d5fbef27e42a6fc4d0f",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "6a247a9440ff74e5",
+      "task": "B1",
+      "task_version": "f666b3290a99a159c58cd79777e3e2b3f7dd452467174d5fbef27e42a6fc4d0f",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "0413c04158823107",
+      "task": "B2",
+      "task_version": "e8a85ec68c5db4f94eb9d2c73183aef03985a5342618a98245bf806e83f0e0f1",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "3ff2af0787b1b1f6",
+      "task": "B2",
+      "task_version": "e8a85ec68c5db4f94eb9d2c73183aef03985a5342618a98245bf806e83f0e0f1",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "12cf21bb6b998fc1",
+      "task": "B2",
+      "task_version": "e8a85ec68c5db4f94eb9d2c73183aef03985a5342618a98245bf806e83f0e0f1",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "d708f2f85f485102",
+      "task": "B2",
+      "task_version": "e8a85ec68c5db4f94eb9d2c73183aef03985a5342618a98245bf806e83f0e0f1",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "8385c9da5f13868d",
+      "task": "B2",
+      "task_version": "e8a85ec68c5db4f94eb9d2c73183aef03985a5342618a98245bf806e83f0e0f1",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "5d419e57a0d74394",
+      "task": "B2",
+      "task_version": "e8a85ec68c5db4f94eb9d2c73183aef03985a5342618a98245bf806e83f0e0f1",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "5a1dce4cf6b9730e",
+      "task": "B3",
+      "task_version": "8838b7bd5ebeb6b569a0faa6a19783d4864ade38f409a6189f9a5e2078ca3205",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "ef58a40ca3c95e10",
+      "task": "B3",
+      "task_version": "8838b7bd5ebeb6b569a0faa6a19783d4864ade38f409a6189f9a5e2078ca3205",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "824315786e933374",
+      "task": "B3",
+      "task_version": "8838b7bd5ebeb6b569a0faa6a19783d4864ade38f409a6189f9a5e2078ca3205",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "38b5bf84d834b426",
+      "task": "B3",
+      "task_version": "8838b7bd5ebeb6b569a0faa6a19783d4864ade38f409a6189f9a5e2078ca3205",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "6841a8798e9c290f",
+      "task": "B3",
+      "task_version": "8838b7bd5ebeb6b569a0faa6a19783d4864ade38f409a6189f9a5e2078ca3205",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "38d4eb5fbfe81674",
+      "task": "B3",
+      "task_version": "8838b7bd5ebeb6b569a0faa6a19783d4864ade38f409a6189f9a5e2078ca3205",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "a481f60463ce2d7c",
+      "task": "C1",
+      "task_version": "d9d72e41e1d86ea93c0dd22f8ea8d3b00ff350d8a8cd8506fced8d88f3b77a2b",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "98ddd3f089542a4a",
+      "task": "C1",
+      "task_version": "d9d72e41e1d86ea93c0dd22f8ea8d3b00ff350d8a8cd8506fced8d88f3b77a2b",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "e0e026372fa91833",
+      "task": "C1",
+      "task_version": "d9d72e41e1d86ea93c0dd22f8ea8d3b00ff350d8a8cd8506fced8d88f3b77a2b",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "812e0f7bd6fe9cf3",
+      "task": "C1",
+      "task_version": "d9d72e41e1d86ea93c0dd22f8ea8d3b00ff350d8a8cd8506fced8d88f3b77a2b",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "e15c214b0c8fbd6a",
+      "task": "C1",
+      "task_version": "d9d72e41e1d86ea93c0dd22f8ea8d3b00ff350d8a8cd8506fced8d88f3b77a2b",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "a9ffb5f0edf3c012",
+      "task": "C1",
+      "task_version": "d9d72e41e1d86ea93c0dd22f8ea8d3b00ff350d8a8cd8506fced8d88f3b77a2b",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "5e65f5499690eb48",
+      "task": "C2",
+      "task_version": "890cb841f0fdf8a8be7be60247b8273215c28310b8acf88619b30c1694dc39c5",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "df48393f86cb0117",
+      "task": "C2",
+      "task_version": "890cb841f0fdf8a8be7be60247b8273215c28310b8acf88619b30c1694dc39c5",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "5a7991f563f6adef",
+      "task": "C2",
+      "task_version": "890cb841f0fdf8a8be7be60247b8273215c28310b8acf88619b30c1694dc39c5",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "afa7a1ad34bebdd1",
+      "task": "C2",
+      "task_version": "890cb841f0fdf8a8be7be60247b8273215c28310b8acf88619b30c1694dc39c5",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "86ea443ba149cf07",
+      "task": "C2",
+      "task_version": "890cb841f0fdf8a8be7be60247b8273215c28310b8acf88619b30c1694dc39c5",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "2f353358006967fd",
+      "task": "C2",
+      "task_version": "890cb841f0fdf8a8be7be60247b8273215c28310b8acf88619b30c1694dc39c5",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "4a1727aa33dba429",
+      "task": "D1",
+      "task_version": "b2b3170e280ec0a4bd69dfbec687d4eb0012c615d68f6e9f2ad42cc9f802e519",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "4348964cb6e088e0",
+      "task": "D1",
+      "task_version": "b2b3170e280ec0a4bd69dfbec687d4eb0012c615d68f6e9f2ad42cc9f802e519",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "4c50320d32f04569",
+      "task": "D1",
+      "task_version": "b2b3170e280ec0a4bd69dfbec687d4eb0012c615d68f6e9f2ad42cc9f802e519",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "ee2bc321c43df5b7",
+      "task": "D1",
+      "task_version": "b2b3170e280ec0a4bd69dfbec687d4eb0012c615d68f6e9f2ad42cc9f802e519",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "1b204ddfe4aa9612",
+      "task": "D1",
+      "task_version": "b2b3170e280ec0a4bd69dfbec687d4eb0012c615d68f6e9f2ad42cc9f802e519",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "1982dc62a312c8d4",
+      "task": "D1",
+      "task_version": "b2b3170e280ec0a4bd69dfbec687d4eb0012c615d68f6e9f2ad42cc9f802e519",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "8b34d0772ecffef5",
+      "task": "D2",
+      "task_version": "46c10816ed92b2a426157b50807e8c737e7ab7b67b844cc3f84cae3434cb4a7e",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "a3890380cec51e76",
+      "task": "D2",
+      "task_version": "46c10816ed92b2a426157b50807e8c737e7ab7b67b844cc3f84cae3434cb4a7e",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "8505c119b89992eb",
+      "task": "D2",
+      "task_version": "46c10816ed92b2a426157b50807e8c737e7ab7b67b844cc3f84cae3434cb4a7e",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "83239a30957e859f",
+      "task": "D2",
+      "task_version": "46c10816ed92b2a426157b50807e8c737e7ab7b67b844cc3f84cae3434cb4a7e",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "f580248ca1b68a34",
+      "task": "D2",
+      "task_version": "46c10816ed92b2a426157b50807e8c737e7ab7b67b844cc3f84cae3434cb4a7e",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "ae4131e608ba4021",
+      "task": "D2",
+      "task_version": "46c10816ed92b2a426157b50807e8c737e7ab7b67b844cc3f84cae3434cb4a7e",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "aa007bcc10cf9ced",
+      "task": "D3",
+      "task_version": "7cd8563cf669dae4c32ab6f5af3f64dfb6242ad6aaf620db901d91d1afd0402f",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "f2af4749cea8019b",
+      "task": "D3",
+      "task_version": "7cd8563cf669dae4c32ab6f5af3f64dfb6242ad6aaf620db901d91d1afd0402f",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "ebe292956f1a8c42",
+      "task": "D3",
+      "task_version": "7cd8563cf669dae4c32ab6f5af3f64dfb6242ad6aaf620db901d91d1afd0402f",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "d6b3d9b7d022ac1f",
+      "task": "D3",
+      "task_version": "7cd8563cf669dae4c32ab6f5af3f64dfb6242ad6aaf620db901d91d1afd0402f",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "4705ea2f243884e0",
+      "task": "D3",
+      "task_version": "7cd8563cf669dae4c32ab6f5af3f64dfb6242ad6aaf620db901d91d1afd0402f",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "36ebfac0805040a6",
+      "task": "D3",
+      "task_version": "7cd8563cf669dae4c32ab6f5af3f64dfb6242ad6aaf620db901d91d1afd0402f",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "1d2623ccba0ebd6f",
+      "task": "E1",
+      "task_version": "1f39fab938ebe3b689aef65336bbe0859ecf20971618a0ffb0785af8cd07ccb9",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "0ac41ba405d7239d",
+      "task": "E1",
+      "task_version": "1f39fab938ebe3b689aef65336bbe0859ecf20971618a0ffb0785af8cd07ccb9",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "70f9ef96417cdc32",
+      "task": "E1",
+      "task_version": "1f39fab938ebe3b689aef65336bbe0859ecf20971618a0ffb0785af8cd07ccb9",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "068245502b9d5fbb",
+      "task": "E1",
+      "task_version": "1f39fab938ebe3b689aef65336bbe0859ecf20971618a0ffb0785af8cd07ccb9",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "b535999d61fd894d",
+      "task": "E1",
+      "task_version": "1f39fab938ebe3b689aef65336bbe0859ecf20971618a0ffb0785af8cd07ccb9",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "32fba41dc6ada6a5",
+      "task": "E1",
+      "task_version": "1f39fab938ebe3b689aef65336bbe0859ecf20971618a0ffb0785af8cd07ccb9",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "51b6c7cba11515df",
+      "task": "E2",
+      "task_version": "d9e82d39ab4d36c8bdb50bd5309db62fcc4b0b9879df387c2b3e1832da47edd7",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "9abfcf9012c02771",
+      "task": "E2",
+      "task_version": "d9e82d39ab4d36c8bdb50bd5309db62fcc4b0b9879df387c2b3e1832da47edd7",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "4533e68cff28e4b7",
+      "task": "E2",
+      "task_version": "d9e82d39ab4d36c8bdb50bd5309db62fcc4b0b9879df387c2b3e1832da47edd7",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "4cde6e75c46568c3",
+      "task": "E2",
+      "task_version": "d9e82d39ab4d36c8bdb50bd5309db62fcc4b0b9879df387c2b3e1832da47edd7",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "4d3f4f05ba069a09",
+      "task": "E2",
+      "task_version": "d9e82d39ab4d36c8bdb50bd5309db62fcc4b0b9879df387c2b3e1832da47edd7",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "2b6ee853a716940d",
+      "task": "E2",
+      "task_version": "d9e82d39ab4d36c8bdb50bd5309db62fcc4b0b9879df387c2b3e1832da47edd7",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "b5dfa6d842f00e9a",
+      "task": "E3",
+      "task_version": "7891e7d132ff35f412d567f44653bced1277da999efa498096cc9eca51fe756d",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "2ab22e4546aa2ff3",
+      "task": "E3",
+      "task_version": "7891e7d132ff35f412d567f44653bced1277da999efa498096cc9eca51fe756d",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "6b2850b01b76d8c1",
+      "task": "E3",
+      "task_version": "7891e7d132ff35f412d567f44653bced1277da999efa498096cc9eca51fe756d",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "95729897768b6547",
+      "task": "E3",
+      "task_version": "7891e7d132ff35f412d567f44653bced1277da999efa498096cc9eca51fe756d",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "a8b79c42ed813186",
+      "task": "E3",
+      "task_version": "7891e7d132ff35f412d567f44653bced1277da999efa498096cc9eca51fe756d",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "6aadb4e6c1c85c42",
+      "task": "E3",
+      "task_version": "7891e7d132ff35f412d567f44653bced1277da999efa498096cc9eca51fe756d",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "a017539c5fa456e1",
+      "task": "E4",
+      "task_version": "eca2a2a7bab5ef3c57fec60e351ae21bf0ac92dbb25a329137fc39e65b99814d",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "58c61067f1e1d0d6",
+      "task": "E4",
+      "task_version": "eca2a2a7bab5ef3c57fec60e351ae21bf0ac92dbb25a329137fc39e65b99814d",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "ea48b57ba47c051d",
+      "task": "E4",
+      "task_version": "eca2a2a7bab5ef3c57fec60e351ae21bf0ac92dbb25a329137fc39e65b99814d",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "ed90b51df5a5eb41",
+      "task": "E4",
+      "task_version": "eca2a2a7bab5ef3c57fec60e351ae21bf0ac92dbb25a329137fc39e65b99814d",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "122a83b00cba5cea",
+      "task": "E4",
+      "task_version": "eca2a2a7bab5ef3c57fec60e351ae21bf0ac92dbb25a329137fc39e65b99814d",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "e4b4da48d7045214",
+      "task": "E4",
+      "task_version": "eca2a2a7bab5ef3c57fec60e351ae21bf0ac92dbb25a329137fc39e65b99814d",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "d610e98b02f0c34a",
+      "task": "E5",
+      "task_version": "7d5fc47c72739d6644550694de653b11ff8516e7c304fc436580ea7e44f4cbb7",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "c5eb22df50255826",
+      "task": "E5",
+      "task_version": "7d5fc47c72739d6644550694de653b11ff8516e7c304fc436580ea7e44f4cbb7",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "fecb5d5c2237d4b7",
+      "task": "E5",
+      "task_version": "7d5fc47c72739d6644550694de653b11ff8516e7c304fc436580ea7e44f4cbb7",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "132638aac8284f58",
+      "task": "E5",
+      "task_version": "7d5fc47c72739d6644550694de653b11ff8516e7c304fc436580ea7e44f4cbb7",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "98444c74659d4006",
+      "task": "E5",
+      "task_version": "7d5fc47c72739d6644550694de653b11ff8516e7c304fc436580ea7e44f4cbb7",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "2ebcd451b1bbd88e",
+      "task": "E5",
+      "task_version": "7d5fc47c72739d6644550694de653b11ff8516e7c304fc436580ea7e44f4cbb7",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "abf1f4bc7f498c20",
+      "task": "E6",
+      "task_version": "b3fd1ea1b35b5b9b6d8db893b70682d9433fc5eb675d8886803e145edb61352f",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "8709a0ab4f090676",
+      "task": "E6",
+      "task_version": "b3fd1ea1b35b5b9b6d8db893b70682d9433fc5eb675d8886803e145edb61352f",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "c3df1abb132ec6f5",
+      "task": "E6",
+      "task_version": "b3fd1ea1b35b5b9b6d8db893b70682d9433fc5eb675d8886803e145edb61352f",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "2945738daefa14b7",
+      "task": "E6",
+      "task_version": "b3fd1ea1b35b5b9b6d8db893b70682d9433fc5eb675d8886803e145edb61352f",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "cd575755ed435702",
+      "task": "E6",
+      "task_version": "b3fd1ea1b35b5b9b6d8db893b70682d9433fc5eb675d8886803e145edb61352f",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "07a122fa9ccf6029",
+      "task": "E6",
+      "task_version": "b3fd1ea1b35b5b9b6d8db893b70682d9433fc5eb675d8886803e145edb61352f",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "2324f6bff7de0bbb",
+      "task": "E7",
+      "task_version": "0cd9391f2881b9c0de78473ff8c222c6576db008d04d2fac3bc894fe4649127f",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "00780eb9ecae164a",
+      "task": "E7",
+      "task_version": "0cd9391f2881b9c0de78473ff8c222c6576db008d04d2fac3bc894fe4649127f",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "525b0251629a69e4",
+      "task": "E7",
+      "task_version": "0cd9391f2881b9c0de78473ff8c222c6576db008d04d2fac3bc894fe4649127f",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "7a4e99914a5b1930",
+      "task": "E7",
+      "task_version": "0cd9391f2881b9c0de78473ff8c222c6576db008d04d2fac3bc894fe4649127f",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "e374ab48e45a2123",
+      "task": "E7",
+      "task_version": "0cd9391f2881b9c0de78473ff8c222c6576db008d04d2fac3bc894fe4649127f",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "4429cb6e4e89a41e",
+      "task": "E7",
+      "task_version": "0cd9391f2881b9c0de78473ff8c222c6576db008d04d2fac3bc894fe4649127f",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "dfb4ae60b8a3d3a3",
+      "task": "F1",
+      "task_version": "3094cb8930d5958662346d92297e7de234eb7c19dab0f42dc38fe827aa5eedbb",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "8a5ee3623e84f3d0",
+      "task": "F1",
+      "task_version": "3094cb8930d5958662346d92297e7de234eb7c19dab0f42dc38fe827aa5eedbb",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "050c08027c79a944",
+      "task": "F1",
+      "task_version": "3094cb8930d5958662346d92297e7de234eb7c19dab0f42dc38fe827aa5eedbb",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "5999a33a5d349792",
+      "task": "F1",
+      "task_version": "3094cb8930d5958662346d92297e7de234eb7c19dab0f42dc38fe827aa5eedbb",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "ae2801105c36aa25",
+      "task": "F1",
+      "task_version": "3094cb8930d5958662346d92297e7de234eb7c19dab0f42dc38fe827aa5eedbb",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "51e8253d9f58b4e9",
+      "task": "F1",
+      "task_version": "3094cb8930d5958662346d92297e7de234eb7c19dab0f42dc38fe827aa5eedbb",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "907a4091c08b00e5",
+      "task": "F2",
+      "task_version": "bc0792bb38f6cf73cee7a7b6d8a9755451b94d130213c9455be6745f429eef7a",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "d10fff61212a2f21",
+      "task": "F2",
+      "task_version": "bc0792bb38f6cf73cee7a7b6d8a9755451b94d130213c9455be6745f429eef7a",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "ab45271cadbb762a",
+      "task": "F2",
+      "task_version": "bc0792bb38f6cf73cee7a7b6d8a9755451b94d130213c9455be6745f429eef7a",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "bab91f4a0436b1bd",
+      "task": "F2",
+      "task_version": "bc0792bb38f6cf73cee7a7b6d8a9755451b94d130213c9455be6745f429eef7a",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "2202097504e46eda",
+      "task": "F2",
+      "task_version": "bc0792bb38f6cf73cee7a7b6d8a9755451b94d130213c9455be6745f429eef7a",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "e1849a58c2176b6d",
+      "task": "F2",
+      "task_version": "bc0792bb38f6cf73cee7a7b6d8a9755451b94d130213c9455be6745f429eef7a",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "89c04d923291847d",
+      "task": "G2",
+      "task_version": "dcd6325e77e6b8e5af283559555e0763f2f378c527e3f1106c91daf8460e1ef7",
+      "combo": "copilot-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "39e5bbdf39802f65",
+      "task": "G2",
+      "task_version": "dcd6325e77e6b8e5af283559555e0763f2f378c527e3f1106c91daf8460e1ef7",
+      "combo": "codex-sol",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "fb8fc21d5434a26a",
+      "task": "G2",
+      "task_version": "dcd6325e77e6b8e5af283559555e0763f2f378c527e3f1106c91daf8460e1ef7",
+      "combo": "cc-opus",
+      "arm": "on",
+      "rep": 2
+    },
+    {
+      "cell_id": "853b77666bf935fb",
+      "task": "G2",
+      "task_version": "dcd6325e77e6b8e5af283559555e0763f2f378c527e3f1106c91daf8460e1ef7",
+      "combo": "copilot-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "aab9354d12b9510b",
+      "task": "G2",
+      "task_version": "dcd6325e77e6b8e5af283559555e0763f2f378c527e3f1106c91daf8460e1ef7",
+      "combo": "codex-sol",
+      "arm": "off",
+      "rep": 2
+    },
+    {
+      "cell_id": "6fd1ac94d4da4c9f",
+      "task": "G2",
+      "task_version": "dcd6325e77e6b8e5af283559555e0763f2f378c527e3f1106c91daf8460e1ef7",
+      "combo": "cc-opus",
+      "arm": "off",
+      "rep": 2
+    }
+  ]
+}

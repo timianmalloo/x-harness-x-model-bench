@@ -33,6 +33,10 @@ TASK_STATUSES = ("stub", "draft", "ready")
 WORKSPACE_FROM_VALUES = ("workspace", "source")
 HARNESSES = ("claude-code", "codex", "copilot", "grok", "agy")
 PACKS = ("on", "off")
+ARM_OFF = "off"
+ARM_ID = re.compile(r"[a-z][a-z0-9-]{0,15}")
+PROPERTY_NAMES = ()
+CHECK_PROPERTIES = frozenset({"security", "resilience"})
 METRIC_SOURCES = ("D", "J", "H", "P")
 # A cell budget is 1-60 minutes: every BOM task fits, so a larger one is an input error until a task needs it.
 MAX_BUDGET_MINUTES = 60

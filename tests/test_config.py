@@ -1,11 +1,102 @@
 import shutil
+from copy import deepcopy
 from pathlib import Path
 
 import yaml
+import pytest
 
 from harness_bench import config
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _arms_matrix(tmp_path):
+    return {"schema": "bench-matrix/2", "repetitions": 3, "bom": {"subset": ["X1"]},
+            "arms": [{"id": "off"}, {"id": "candidate", "pack": {
+                "source": str(tmp_path.resolve()), "commit": "c" * 40}}],
+            "combos": [{"id": "cc-opus", "harness": "claude-code", "model": "claude-opus-5-5"}]}
+
+
+def test_matrix2_pinned_arms_and_ring_roles_are_valid(tmp_path):
+    matrix = _arms_matrix(tmp_path)
+    bom = config.load_yaml(ROOT / "bench" / "bom.yaml")
+    for data in (matrix, {**matrix, "ring": {"tag": "pilot"}, "arms": [{"id": "off"}, {"id": "candidate"}]}):
+        problems = config.Problems()
+        config.validate_matrix(data, bom, problems, "matrix")
+        assert problems.items == []
+
+
+@pytest.mark.parametrize("field,value,fragment", [
+    ("schema", "bench-matrix/3", "schema"),
+    ("packs", ["on", "off"], "packs"),
+    ("arms", [], "at least 2"),
+    ("arms", [{"id": "off"}], "at least 2"),
+    ("arms", [{"id": "off"}, {"id": "off"}], "duplicate"),
+    ("arms", [{"id": False}, {"id": "candidate"}], "quote"),
+    ("arms", [{"id": "bad.id"}, {"id": "candidate"}], "id"),
+    ("arms", [{"id": "off", "pack": {}}, {"id": "candidate"}], "off"),
+    ("arms", [{"id": "off"}, {"id": "candidate"}], "ring"),
+    ("ring", {"tag": "unknown"}, "ring"),
+    ("comparisons", [[False, "candidate"]], "quote"),
+    ("comparisons", [["off", "missing"]], "declared"),
+    ("comparisons", [["candidate", "candidate"]], "different"),
+    ("comparisons", [["off", "candidate"], ["off", "candidate"]], "duplicate"),
+    ("comparisons", [["off"]], "pair"),
+    ("repetitions", True, "integer"),
+])
+def test_matrix2_refuses_each_invalid_shape(tmp_path, field, value, fragment):
+    matrix = _arms_matrix(tmp_path)
+    matrix[field] = deepcopy(value)
+    problems = config.Problems()
+    config.validate_matrix(matrix, config.load_yaml(ROOT / "bench" / "bom.yaml"), problems, "matrix")
+    assert any(fragment in item for item in problems.items), problems.items
+
+
+@pytest.mark.parametrize("source,commit", [("relative", "c" * 40), ("", "c" * 40),
+                                          (None, "c" * 40), ("absolute", "HEAD"),
+                                          ("absolute", "C" * 40), ("absolute", "c" * 39)])
+def test_matrix2_pack_requires_absolute_source_and_hex_commit(tmp_path, source, commit):
+    matrix = _arms_matrix(tmp_path)
+    matrix["arms"][1]["pack"] = {"source": str(tmp_path) if source == "absolute" else source, "commit": commit}
+    problems = config.Problems()
+    config.validate_matrix(matrix, config.load_yaml(ROOT / "bench" / "bom.yaml"), problems, "matrix")
+    assert any("source" in item or "commit" in item for item in problems.items), problems.items
+
+
+def test_matrix2_three_arms_require_comparisons(tmp_path):
+    matrix = _arms_matrix(tmp_path)
+    matrix["arms"].append({"id": "incumbent", "pack": deepcopy(matrix["arms"][1]["pack"])})
+    problems = config.Problems()
+    config.validate_matrix(matrix, config.load_yaml(ROOT / "bench" / "bom.yaml"), problems, "matrix")
+    assert any("comparisons" in item for item in problems.items)
+    matrix["comparisons"] = [["off", "candidate"], ["incumbent", "candidate"]]
+    problems = config.Problems()
+    config.validate_matrix(matrix, config.load_yaml(ROOT / "bench" / "bom.yaml"), problems, "matrix")
+    assert problems.items == []
+
+
+@pytest.mark.parametrize("field", ["arms", "comparisons", "ring"])
+def test_matrix1_refuses_matrix2_fields(field):
+    matrix = config.load_yaml(ROOT / "bench" / "matrix.phase1.yaml")
+    matrix[field] = []
+    problems = config.Problems()
+    config.validate_matrix(matrix, config.load_yaml(ROOT / "bench" / "bom.yaml"), problems, "matrix")
+    assert any(field in item for item in problems.items)
+
+
+def test_check_properties_are_declared_property_names():
+    assert config.PROPERTY_NAMES == ("security", "resilience", "rework", "no-guessing", "simplicity")
+    assert config.CHECK_PROPERTIES == frozenset({"security", "resilience"})
+    assert config.CHECK_PROPERTIES <= set(config.PROPERTY_NAMES)
+
+
+def test_synthetic_is_never_a_valid_file_matrix_harness(tmp_path):
+    matrix = _arms_matrix(tmp_path)
+    matrix["combos"][0]["harness"] = "synthetic"
+    problems = config.Problems()
+    config.validate_matrix(matrix, config.load_yaml(ROOT / "bench" / "bom.yaml"), problems, "matrix")
+    assert any("harness" in item for item in problems.items)
+    assert "synthetic" not in config.HARNESSES
 
 
 def test_repo_inputs_are_valid():
