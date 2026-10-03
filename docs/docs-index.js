@@ -1854,7 +1854,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f9267759fb6d42eb850f9cd36a4954809bf437e56885344c97069d86003479c2"
+      "sourceSha256": "680e38878d542a547ed590eb1de940254e554c8d1b42a449ffe6db9db20d814c"
     },
     {
       "id": "design-eval-property-grader",
@@ -1866,7 +1866,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation E1: Wave 1 design slice W1-F (built by X-F in E1; loopback by X-LB in E4)",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "One registered `property` grader (R-90): runner.applicable narrows it to the task's property; it runs the hidden tests through correctness.grade() in their own copy, then the task's hidden check in a fresh copy, in a new Job Object, started DETACHED with the base interpreter and the grading environment allowlist. The check never imports agent code: in-process probes go through a bench_check probe-host child (RV-SEC F1; the forgery was reproduced 3/3 by spike SP-F2). The grader accepts one result document from a live, lone check, acknowledges it with one byte, then classifies by a fixed precedence into the closed outcome set (HB-CHK-001..004, a measured 0, or scores). Every ADR-0018 STRIDE row has a control, a test node and a disposition. Gate pending.",
+      "summary": "Revision 2, conformed to W0 rev 2. One registered `property` grader (R-90): runner.applicable narrows it to the task's property; it runs the hidden tests through correctness.grade() and then the task's hidden check in a fresh, reparse-safe copy, in a new Job Object, started DETACHED with the base interpreter under -S and the grading environment allowlist. The check never imports agent code: probes go through a probe-host child whose pipes the check owns (the module-body forgery is committed as a fixture with its positive control). The grader accepts one line from a live, lone check, acknowledges it with one byte, and classifies by W0's seven ordered rows, with the suspend rule on each phase's span. E1 builds the security strategy, probe cases and `callable` apps only. Gate: rev 2 pending.",
       "tags": [
         "benchmark",
         "grading",
@@ -1938,10 +1938,26 @@ window.DOCS_INDEX = {
         {
           "to": "coordination-eval-campaign",
           "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-ta-w1f",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sec-w1f",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-pat-w1f",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sim-w1f",
+          "rel": "relates-to"
         }
       ],
       "diagrams": [],
-      "sourceSha256": "e63d1964905a25c75e5cd6bb2c200a91a706d7012527e4df130842d19c80ac55"
+      "sourceSha256": "ee86fee9a13fb656a204a655b794e776831055a17eb00e86f897dce39248e262"
     },
     {
       "id": "design-eval-seam-contracts",
@@ -1953,7 +1969,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation: W0 (serial spine item 2), before Wave 1",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input and result, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows, the identity manifest, the discrimination record, the catalog 0.7 metric ids, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard.",
+      "summary": "Revision 2. The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
       "tags": [
         "benchmark",
         "campaign",
@@ -2022,10 +2038,30 @@ window.DOCS_INDEX = {
         {
           "to": "rulings-register",
           "rel": "depends-on"
+        },
+        {
+          "to": "review-eval-ta",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sec",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-ds",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-pat",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sim",
+          "rel": "relates-to"
         }
       ],
       "diagrams": [],
-      "sourceSha256": "99c2e6c6193641085c71e6e419d52b532c2b7715b10a7e683339edb970df0b33"
+      "sourceSha256": "dd54e1963b397b840c92373598cf1c8f166384d556f42353341fa76117933a5c"
     },
     {
       "id": "design-formal-grader",
@@ -2957,7 +2993,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "35a7eaa2dc2f9fc75887ae91f0779e646d15d250f9e698d0fcbada49a54cbf97"
+      "sourceSha256": "187d4f09758f6a375601b9ddb7a0fc2c12f0043c64dd5117e0e97a7f70879f43"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -3448,6 +3484,232 @@ window.DOCS_INDEX = {
       "sourceSha256": "32f235bdd9ef5a50f339b185b9f5b27a48dbb164b03913b0a07c5bf58f1e5fd8"
     },
     {
+      "id": "review-eval-ds",
+      "path": "docs/design/reviews/eval-review-ds.md",
+      "title": "Evaluation Campaign design reviews: Distributed Systems lens (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of the Wave 1 design slices by the Distributed Systems lens (rv-ds-e1e4): crash, ordering, idempotency and concurrency findings per slice, each with evidence, a smallest fix and a confidence label, and one gate line per slice. Appended per batch. First section: W0 seam contracts with Owner ruling R-90.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "e69173cadc79609b475999dedd6a7a537c2f9b50669f08202809d75aa2581ae4"
+    },
+    {
+      "id": "review-eval-pat",
+      "path": "docs/design/reviews/eval-review-pat.md",
+      "title": "Patterns Expert review of the Evaluation Campaign design slices (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "One Patterns Expert (RV-PAT) lens file for the Evaluation Campaign: one section per reviewed slice, appended per batch. Findings carry location, severity, evidence, fix and confidence. Advisory lens; a pattern survives only if the Simplifier also clears it.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "cac2581e19b119c1e877e7ca86db14203662fd2f012ae25732366558a495c930"
+    },
+    {
+      "id": "review-eval-pat-w1f",
+      "path": "docs/design/reviews/eval-review-pat-w1f.md",
+      "title": "Patterns Expert review of W1-F, the property grader (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of design/eval-property-grader (441da4ba, e41289a2) against W0 rev 2 (3c1c9827). Patterns named correctly, four divergences from W0 rev 2 flagged as seams, no blocker.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-f"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "01c7cc579b70df928bcc210eb0ba15aa7a36ba039c6751ca67f72510eb413c61"
+    },
+    {
+      "id": "review-eval-sec",
+      "path": "docs/design/reviews/eval-review-sec.md",
+      "title": "Security & Identity lens review: Evaluation Campaign design slices (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "The Security & Identity lens's findings on the Evaluation Campaign designs, one section per slice, appended per batch. Each section ends with one gate line. Findings only: no design is edited here.",
+      "tags": [
+        "review",
+        "security",
+        "evaluation-campaign",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "5665e66315039cf611d9c8fa7f7b9c0b1285fdfc6d3c5e57dc20640175987e95"
+    },
+    {
+      "id": "review-eval-sec-w1f",
+      "path": "docs/design/reviews/eval-review-sec-w1f.md",
+      "title": "Security & Identity review of W1-F: hidden-check runner and property grader (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Security & Identity gate on W1-F (design/eval-property-grader, 441da4ba and e41289a2) against W0 rev 2. Both carried-over conditions are met in the design text; the forged-document fixture is named as a red test but the spike scripts are not committed and no positive control is named. PASS WITH CONDITIONS, 8 findings.",
+      "tags": [
+        "review",
+        "security",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-f"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sec",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "5c563cb767a9c366a129acb0c121b925220c29b4b55ab7619236c0679bf89b85"
+    },
+    {
+      "id": "review-eval-sim",
+      "path": "docs/design/reviews/eval-review-sim.md",
+      "title": "Simplifier lens review of the Evaluation Campaign designs (RV-SIM)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "The Simplifier's Adversary Mode findings on the Evaluation Campaign design slices, one section per slice, appended per batch. Soft veto on unjustified complexity. First section: W0 seam contracts at main 5092455c.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "6498292143c8251d7eacdd9887b620b175937d91c7c69224f58467d473a63c2f"
+    },
+    {
+      "id": "review-eval-sim-w1f",
+      "path": "docs/design/reviews/eval-review-sim-w1f.md",
+      "title": "Simplifier lens review of W1-F, the property grader",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-property-grader.md (design/eval-property-grader, 441da4ba and e41289a2) checked against W0 rev 2 on main 3c1c9827.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "e02b9c406c50e4ac255322f67b483331ebc51b943a7b5c0e97b4f27fee167473"
+    },
+    {
+      "id": "review-eval-ta",
+      "path": "docs/design/reviews/eval-review-ta.md",
+      "title": "Evaluation Campaign design reviews: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) findings and gate lines, one section per reviewed slice. W0 first: the contracts are mostly testable, but the guard allowlists are red on arrival, the check outcome precedence is open, and W0 still reads DR-4 as open after R-90.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "0b00511fbc81f9dfcea0fbc2fdc36dbbc7e4c8b273f2c38248dcaa6d328fbcde"
+    },
+    {
+      "id": "review-eval-ta-w1f",
+      "path": "docs/design/reviews/eval-review-ta-w1f.md",
+      "title": "W1-F property grader design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-F against W0 rev 2. The ADR-0018 red tests are named and can fail. Two blocking gaps: the hidden-tests phase has no suspend control (W0 s3 requires one per phase), and the clean-exit tamper test (my W0 rev 2 condition) is not specified. The design also still disagrees with W0 rev 2 at four points.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-f"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "886af10708ebef8494dd494c384dae81303cde6e64658f846aa608270096236d"
+    },
+    {
       "id": "coordination-eval-brief-rv-ds",
       "path": "docs/coordination/eval-wave1/rv-ds.md",
       "title": "RV-DS brief: Distributed Systems lens reviewer (Adversary Mode)",
@@ -3685,7 +3947,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d3ab5a6b39cf0942f178146b989e3080874367d2746dd6f6afc82fa64e93dcd0"
+      "sourceSha256": "9adc3887229833a8325ffb7cfb5799a17a38a406b5414d998a6f46bd55b2b80c"
     },
     {
       "id": "coordination-eval-brief-w1-b-atomic-publish",
@@ -3715,7 +3977,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5168597c6b0183cceee7655cd053c76846f34476dec23d58fd81eab0433e35b3"
+      "sourceSha256": "05dfdae47c5eec5a5f0f60f1ed7009d9c99fb92310c27c755e5679272776aa77"
     },
     {
       "id": "coordination-eval-brief-w1-c-campaign-record",
@@ -3745,7 +4007,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4d1e6ceaefbf1a90b1aa3276bc124be9184a2612d4adaa5df1601bf52cbee629"
+      "sourceSha256": "6056f0e1d9dbf7168ec1c1926dafa8701c6724567d26331b6e41089b68394e94"
     },
     {
       "id": "coordination-eval-brief-w1-d-identity",
@@ -3775,7 +4037,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "1c36c7b98f742f571bd72336768ff07b65ea8e23274fd8f197b1c24b05b2f3c0"
+      "sourceSha256": "24b608d592a74c6e0ccfabfadbc6c50939a829549b9cb6b894f860b3db17bf8e"
     },
     {
       "id": "coordination-eval-brief-w1-e-discriminate",
@@ -3805,7 +4067,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "43a57b357b745a5a928a9b8e36be36fe7d2fe09ed00a4ac1ed8f08c2787c8a8b"
+      "sourceSha256": "e2848b7bd80aa557498bd299eebb1734167cab12aea6efaa860bec06f01e88c2"
     },
     {
       "id": "coordination-eval-brief-w1-f-property-grader",
@@ -3835,7 +4097,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "7845000902c4a62227c7e9270329f13a068f1f01eec5b768af04e9aa4d6d72da"
+      "sourceSha256": "2fee4beb0fb70c623d50754b705144a5c77775f532793c57e841986bda5e6001"
     },
     {
       "id": "coordination-eval-brief-w1-g-catalog",
@@ -3865,7 +4127,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "185764e4b471ffc8f425f768c58a8b399ff649d267f3358416bdfade52c5a9a6"
+      "sourceSha256": "53ce7e020ce8c0841cd52ee11413c2b4e80e7d061067163918a1fb3b3386fc4d"
     },
     {
       "id": "coordination-eval-brief-w1-h-power-verdicts",
@@ -3895,7 +4157,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8e477bd13559d653d4385d7a1491ae0be39c7fe16643375d4646c94a49043984"
+      "sourceSha256": "009490d0e90c3ada016008869590eff5a0dc57de8da4547f0a65245514935700"
     },
     {
       "id": "coordination-eval-brief-w1-i-security-tasks",
@@ -3925,7 +4187,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2fb5c6d262ffcb4ae4fa2bb0b22695db5aa9de8b068e8d0c0cd198a302db8292"
+      "sourceSha256": "6b9e69ac42dc59d18043bf7572cf4b2e544c25abb0bad0d138e0c7cdb093d2af"
     },
     {
       "id": "coordination-eval-brief-w1-j-multi-turn",
@@ -3955,7 +4217,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "edf0ae6de4cb40222b57e640795fa4334a8a0749bdd1ca3ee40160556740fa81"
+      "sourceSha256": "db4c35d639e5e206f3f1e02530a324b6a9d926c748c536eae70c2fc10862485a"
     },
     {
       "id": "coordination-eval-brief-w1-k-resume",
@@ -3985,7 +4247,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "c348b139535a31c1d3e4d365ac94eb334c2575ec1e5cf7599c22177e36408000"
+      "sourceSha256": "72ca58384d73ab49d772963f95bf9eb4f61fdc146fc30b7a5875716703ed6fe4"
     },
     {
       "id": "coordination-eval-brief-w1-l-property-tasks",
@@ -4015,7 +4277,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "6fd71cbbd65d638bddd1f62c450f08b104e5ffccf0f04d9074e21f0bc5058638"
+      "sourceSha256": "f83531f019581701c8d02bc5050a9c78ea5586074ce8c61bd8e5c19cc9e23be4"
     },
     {
       "id": "coordination-eval-campaign",
@@ -4050,7 +4312,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "1d00bfc93fcc99855c85571f47606626255859fecbb057d509515f5b102ecb2a"
+      "sourceSha256": "6483e206fb3db8920ad65f550ae0d9aaf29906581c093d1585fb072a4c4d49a8"
     },
     {
       "id": "coordination-eval-q0",
@@ -4080,7 +4342,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3911e5a596c38ef5d1515447046678e6216e977007742a951dd1477ddf12796c"
+      "sourceSha256": "d79453c04137a69d749be6383d05625fda0eae9b586c3c8f89790701364e4ac0"
     },
     {
       "id": "coordination-eval-wave1-briefs",
@@ -4114,7 +4376,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8d73f7e1ddb94fe85b2caf3dbada58d9f954385e7f56efb55f38d3b5223d0aa3"
+      "sourceSha256": "a65992eab45e0bcfbeca7493342745a82f72c6bf1233e821dac5f0dfdcaa33ac"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -4876,6 +5138,14 @@ window.DOCS_INDEX = {
       "artifactId": "audit-log"
     },
     {
+      "id": "surface-design-eval-property-grader",
+      "path": "docs/design/eval-property-grader.html",
+      "title": "Eval Property Grader",
+      "kind": "design-preview",
+      "description": "Inspect a rendered design or design-language preview.",
+      "artifactId": "design-eval-property-grader"
+    },
+    {
       "id": "surface-design-eval-seam-contracts",
       "path": "docs/design/eval-seam-contracts.html",
       "title": "Eval Seam Contracts",
@@ -4961,5 +5231,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "1b0952a7f653cd699fe915c59c3bdc1a938c4bc790b2c91a36b07f714528894c"
+  "graphSha256": "b2a6dee04af144c3e9ecacb90f4923f992273b3faf6b4f52cd16f1422df165d7"
 };

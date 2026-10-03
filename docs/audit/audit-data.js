@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:19:40Z",
+  "generated": "2026-10-03T17:48:07Z",
   "audit": [
     {
       "actor": null,
@@ -65229,24 +65229,454 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41CEN2C02BQ55YW4MA3JCJ7",
-      "shortname": "design-slice-eval-property-grader",
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-grader.md"
+      ],
+      "compiled": false,
       "datetime": "2026-10-03T17:19:40Z",
-      "session": "w1f-property-e1e4",
+      "done_when": "Gate PASS with Security & Identity as hard-veto reviewer; the four ADR-0018 red tests and the race test named; job-alone constraints adopted (sys._base_executable, DETACHED_PROCESS, one-byte ack)",
+      "fan_out": 0,
+      "goal": "Run /design-slice for W1-F hidden-check runner and property grader, producing docs/design/eval-property-grader.md",
+      "id": "al-01M41CEN2C02BQ55YW4MA3JCJ7",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md",
+      "session": "w1f-property-e1e4",
+      "shortname": "design-slice-eval-property-grader",
+      "skill": "design-slice",
       "summary": "W1-F design for the hidden-check runner and property grader: data model, contracts, probe host (RV-SEC F1), handshake, outcome precedence (RV-TA s3), FMA, STRIDE per ADR-0018 row, telemetry, test plan by node id; spikes SP-F1/F2; seam requests req-01M41C0NFEXQA0XVH4FTK9YDBD, req-01M41C0ZCPJ13PQ77KNC5AHQMZ, req-01M41C57K2VVC7C4JGEJC18FR1; gate pending",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "datetime": "2026-10-03T17:06:31Z",
+      "done_when": "R-91 appended to docs/notes/rulings.md on owner/ruling-r91 and committed with this entry",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/ruling-r91",
+        "pushed": null,
+        "sha": "5092455c9bb3f00821671edfedb546218286873d",
+        "short": "5092455c9"
+      },
+      "goal": "Rule DR-5 (the Sonnet alias serves claude-sonnet-5-5, the kickoff pinned claude-sonnet-5) as R-91",
+      "id": "al-01M41BPK32KA2FKY9DNWS9Y855",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Owner seat: rule DR-5, the Sonnet pin mismatch: the Agent tool's only Sonnet selector is the alias sonnet, served claude-sonnet-5-5; the kickoff and R-87 pinned claude-sonnet-5; options (a) accept 5.5 recorded per track, (b) qualify the runner's claude harness with --model claude-sonnet-5, (c) split reviewers/design on (a) and coding on (b), (d) hold and ask the operator; also whether the four W0 reviews running on 5.5 count.",
+      "session": "owner-fable",
+      "shortname": "ruling R-91 (DR-5, Sonnet pin mismatch)",
+      "skill": null,
+      "summary": "R-91 DR-5 (a): the Sonnet seat for Agent-tool workers is model: sonnet, served claude-sonnet-5-5, recorded per track; R-87 condition 3 re-stated against that id (the hold lifts); the four W0 reviews and RV-TA count; the deviation from the kickoff's claude-sonnet-5 goes to the operator in the next scheduled report with a cheap reversal path ((b) after Q0 qualifies the claude harness); (c) refused (a split seat), (d) refused (resolvable here; worker output enters no measurement, cells pin their own model). Verified: the Agent tool's model parameter is an enum of aliases; the plan's harness table said the alias id was not verified.",
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "tier": "T0",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:04:03Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "Review W0 as Test Architect",
+      "id": "al-01M41BJ2JBQGHRRC205KY62VFN",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md",
+      "session": "rv-ta-e1e4",
+      "shortname": "design-slice-review-ta-w0",
+      "skill": "design-slice-review",
+      "summary": "Test Architect review of W0 seam contracts: BLOCK, 14 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:05:37Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "Review W0 as Security & Identity",
+      "id": "al-01M41BMY5JFEHZERZ36YNRBE2D",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md",
+      "session": "rv-sec-e1e4",
+      "shortname": "design-slice-review-eval-sec-w0",
+      "skill": "design-slice-review",
+      "summary": "Security lens review of W0 seam contracts: BLOCK, 12 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:06:31Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "review W0",
+      "id": "al-01M41BPK9M2HP2Q73ZY4H2MRVQ",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md",
+      "session": "rv-pat-e1e4",
+      "shortname": "design-slice-review-pat-w0",
+      "skill": "design-slice-review",
+      "summary": "Patterns Expert review of W0: 13 findings, PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:06:38Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "review W0",
+      "id": "al-01M41BPSYAB6384YVR1H8KCSJE",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "session": "rv-sim-e1e4",
+      "shortname": "design-slice-review-sim-w0",
+      "skill": "design-slice-review",
+      "summary": "Simplifier review of W0: 12 findings, PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ds.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:07:33Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "DS review of W0",
+      "id": "al-01M41BRFSS2PZYB0BYYWZCQ76D",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ds.md",
+      "session": "rv-ds-e1e4",
+      "shortname": "design-slice-review-eval-ds-w0",
+      "skill": "design-slice-review",
+      "summary": "DS lens review of W0 seam contracts: BLOCK, 14 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/coordination/eval-q0/README.md",
+        "docs/coordination/coordination-eval-campaign.md",
+        "docs/lessons/defect-classes.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:08:15Z",
+      "done_when": "harness table and run record committed; candidate filed",
+      "fan_out": 0,
+      "goal": "Verify and record Q0",
+      "id": "al-01M41BSRWH4Y17X9KE40CHAK3Z",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader: verify Q0 exit evidence (served models, commits), record it in the harness table, file the ambient-credential test finding as a defect-class candidate, clean up the q0 trees",
+      "session": "coord-opus-e1e4",
+      "shortname": "q0-verify-e1e4",
+      "skill": "execute-with-coordination",
+      "summary": "Codex 0.160.0 gpt-6.1-sol and Agy 1.2.13 gemini-3.8-flash-high qualified (observed-only, native records); Grok served grok-4.6 not grok-4.7: unsupported, DR-5 raised (req-01M41BS9Y7D1ANHSNDYM9N2H08); ENV-A candidate reproduced (3 tests)",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "datetime": "2026-10-03T17:13:51Z",
+      "done_when": "Ruling 92 in docs/notes/rulings.md via coord decide rule, the request resolved, committed on owner/ruling-r92",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/ruling-r92",
+        "pushed": null,
+        "sha": "357bce48e289fb6335f47c9de1e72f0bb350874b",
+        "short": "357bce48e"
+      },
+      "goal": "Rule DR-6 (req-01M41BS9Y7D1ANHSNDYM9N2H08, labelled DR-5 by its author): Grok served grok-4.6 under the grok-4.7 pin at Q0; route the four Grok tracks",
+      "id": "al-01M41C40RDZ8FMB09MAPVGZMH4",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Owner seat: rule DR-6, Grok 1.0.41 served grok-4.6 under -m grok-4.7 at Q0 (w4-lr served grok-4.7 a week ago, same argv); options (a) hold the Grok tracks while the operator looks then move passed designs to Sonnet, (b) reroute now to Agy or Sonnet, (c) accept grok-4.6, (d) re-qualify after an operator check with a deadline, falling back to (b); state the operator's one-line ask.",
+      "session": "owner-fable",
+      "shortname": "ruling R-92 (DR-6, Grok served grok-4.6 at Q0)",
+      "skill": null,
+      "summary": "R-92 DR-6 (d) bounded. Verified: identical argv in q0-e1e4 and w4-lr contracts; per-response model_id w4-lr grok-4.7-build x61 (09-28) vs Q0 grok-4.6-build x8 (10-03); eleven earlier sessions current_model_id grok-4.7; grok models now lists grok-4.7 as default (entitlement intact: service-side routing of one session); the runner checks served model for Copilot only. One Grok re-qualification run by the Leader now, qualified only if every response model_id is grok-4.7*; if unsupported when W1-G or W1-B passes, X-G1/X-B1 (then X-H1, ENV-A) go to Sonnet under R-87/R-91 (this ruling is their Owner review); X-G3 by a new request. (a) refused (holds on the operator for a cause records cannot show), (b)-now refused (no Grok track starts before W1-G/W1-B; Agy cap), (c) refused (served model drifted under an explicit pin; US-13 class). Conditions: served model read per response and scripted before the second dispatch; a later drift is a recorded finding; defect class 'pin passed, served model unchecked'; operator line for the report.",
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "tier": "T0",
+      "tool": null
+    },
+    {
+      "actor": "claude-opus-5-5 (Coordinator)",
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/coordination/coordination-eval-campaign.md"
+      ],
+      "datetime": "2026-10-03T17:27:05Z",
+      "done_when": "branch commits by named paths; derive and validate exit 0; html rendered; audit entry; report handed back",
+      "fan_out": 0,
+      "git": {
+        "branch": "design/eval-w0-rev2",
+        "pushed": null,
+        "sha": "f6848adebd3139166e6eb68e3bc7b13c0d52e826",
+        "short": "f6848adeb"
+      },
+      "goal": "W0 rev 2 applying every blocking and accepted major finding of the five W0 reviews, with dispositions, W1-F seam answers, brief input notes, and the R-91/R-92 plan cells",
+      "id": "al-01M41CW7V9HENARXVFVTT2RGRF",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Coordinator seat coord-opus-e1e4 (phase hand-off). Task: W0 revision 2. Apply the five W0 lens reviews (RV-TA, RV-SEC, RV-DS BLOCK; RV-PAT, RV-SIM PASS WITH CONDITIONS) to docs/design/eval-seam-contracts.md in an own coord worktree; every blocking finding and every accepted major; a Review disposition table with one row per finding per lens; widening findings go to the Owner as a DR; answer W1-F's seam requests; update Wave 1 briefs only where a revised section changes their inputs; update the plan's Tracks and harness-table cells to the served Sonnet id (R-91); docs-graph derive + validate, render html, audit entry, commit by named paths. Mid-task from the Leader: rebase onto main after the Q0 record and R-92; record the Grok Q0b re-qualification (q0g-e1e4, grok-4.7-build served) in the harness table and name the R-92 served-model reader as a step.",
+      "session": "coord-opus-e1e4",
+      "shortname": "w0-rev2",
+      "skill": null,
+      "summary": "W0 seam contracts revision 2 on branch design/eval-w0-rev2. Applied all four blocking findings: TA-1 (G1 E1 allowlist adds report/cli_table.py and report/context_growth.py; X-A1 migrates views.py:525, grade/_changes.py:84 and cli.py _workspace_builder in the guard commit), TA-4 (ordered grader outcomes, line framing, stdin closed on every path, exit 0/3), SEC-1 (in-process redefined as a probe-host child; the check never imports agent code), DS-1 (attach freezes the pre-registration; bench run refuses with HB-CMP-010). Majors: 31 accepted (5 in part, the rejected parts reasoned), 0 rejected outright. Every finding of the five lenses has a row in the Review disposition table. W1-F seam requests req-01M41C0N, req-01M41C0Z and req-01M41C57 granted (section 3, the G5 guard, two test_architecture allowlist entries, cases.json). DR-7 sent to owner-fable (req-01M41CV2MN: grid-run hidden-test disagreement count). Twelve Wave 1 briefs carry a rev-2 input note; the README pin reads the served Sonnet id. Plan: R-91 served-id cells (30 Tracks cells, the harness table and the model pins), R-92 Q0b Grok re-qualification in the harness table, the new order-of-operations step 7a (tools/grok_served_model.py, before the first E1 Grok dispatch; not yet written), and R-90's ten-to-eleven metric rows. docs-graph derive and validate exit 0; HTML views rendered. Workers: none dispatched by this session; Sonnet served id per R-91 is claude-sonnet-5-5.",
+      "tags": [
+        "evaluation-campaign",
+        "w0"
+      ],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:29:10Z",
+      "done_when": "gate line appended",
+      "fan_out": 0,
+      "goal": "Re-review W0 rev 2",
+      "id": "al-01M41D022CSQNXWGQBG0K8ZRXJ",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader: re-review W0 rev 2, delta only",
+      "session": "rv-ta-e1e4",
+      "shortname": "design-slice-review-ta-w0r2",
+      "skill": "design-slice-review",
+      "summary": "TA re-review of W0 rev 2: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ds.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:29:14Z",
+      "done_when": "gate line appended",
+      "fan_out": 0,
+      "goal": "DS re-review W0 rev2",
+      "id": "al-01M41D062XRBDFD02XDB4Z6NCT",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "W0 rev 2 delta re-review",
+      "session": "rv-ds-e1e4",
+      "shortname": "design-slice-review-eval-ds-w0r2",
+      "skill": "design-slice-review",
+      "summary": "DS gate on W0 rev 2: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:29:15Z",
+      "done_when": "rev-2 gate line appended",
+      "fan_out": 0,
+      "goal": "Re-review W0 rev 2 delta",
+      "id": "al-01M41D06WC91G41B0S6GVF00BM",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader: re-review W0 rev 2 delta",
+      "session": "rv-sec-e1e4",
+      "shortname": "design-slice-review-eval-sec-w0r2",
+      "skill": "design-slice-review",
+      "summary": "Security re-review of W0 rev 2: PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1f.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:29:42Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "review W1-F",
+      "id": "al-01M41D11RDV3B93VAB60SW2Z50",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader: review W1-F",
+      "session": "rv-pat-e1e4",
+      "shortname": "design-slice-review-pat-w1f",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT W1-F: 11 findings, PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sim-w1f.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:29:53Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "review W1-F",
+      "id": "al-01M41D1C23G3JDKK8GASYE3G14",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader message: review W1-F against W0 rev 2",
+      "session": "rv-sim-e1e4",
+      "shortname": "design-slice-review-sim-w1f",
+      "skill": "design-slice-review",
+      "summary": "Simplifier review of W1-F: 9 findings, PASS WITH CONDITIONS",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "datetime": "2026-10-03T17:30:44Z",
+      "done_when": "Ruling 93 in docs/notes/rulings.md via coord decide rule, the request resolved, committed on owner/ruling-r93",
+      "fan_out": 0,
+      "git": {
+        "branch": "owner/ruling-r93",
+        "pushed": null,
+        "sha": "3c1c98278e08c948215a4bf7dacdd960be37aa30",
+        "short": "3c1c98278"
+      },
+      "goal": "Rule DR-7 (req-01M41CV2MNPQENPMEMP01QF3ZY): whether grid runs show R-90's hidden-test disagreement count in the EV-20 header or only the pilot gate carries it",
+      "id": "al-01M41D2XESE56QHPSQSVBB2K89",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Owner seat: rule DR-7, should grid runs surface the hidden-test disagreement count (property evidence vs pass_at_1) in the EV-20 header, or is the pilot gate item enough; (a) pilot only per R-90 condition 3, (b) one header line in report/campaign_section.py from X-E's function; context W0 rev 2 section 7 condition 3 and RV-DS 10.",
+      "session": "owner-fable",
+      "shortname": "ruling R-93 (DR-7, grid-level hidden-test disagreement count)",
+      "skill": null,
+      "summary": "R-93 DR-7: (b) in substance. Grid runs surface the count (R-90 c3: never silently resolved; Reliability NFR pattern: pilot-gate classes counted per grid, reported not hidden), but in section 3 beside ADR-0020 s2's exclusions as a warning with cell ids, not in the EV-20 header, whose field list is spec-fixed to campaign identity and eligibility. It changes no verdict, exclusion or eligibility (a disagreement rule would be a pre-registration exclusion rule, P1's). Pilot gate keeps its GateItem. Conditions: rendered only when n>0 so EVU-4 holds; red-first DOM check on a seeded-disagreement fixture (X-H2, named by W1-H); copy says warning not verdict input; derived at report time, no store.",
+      "tags": [
+        "ruling",
+        "eval-campaign"
+      ],
+      "tier": "T0",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec-w1f.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:31:57Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "SEC review of W1-F",
+      "id": "al-01M41D559W6W2NKVWZFAT38JDM",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sec.md (W1-F)",
+      "session": "rv-sec-w1f-e1e4",
+      "shortname": "design-slice-review-sec-w1f",
+      "skill": "design-slice-review",
+      "summary": "SEC gate on W1-F: PASS WITH CONDITIONS, 8 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta-w1f.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T17:32:37Z",
+      "duration_seconds": 88.0,
+      "id": "al-01M41D6BRPSJ0DN0XZS015TQWN",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "RV-TA brief: review W1-F property grader design (design/eval-property-grader) against W0 rev 2",
+      "session": "rv-ta-w1f-e1e4",
+      "shortname": "ta-w1f-review",
+      "skill": "design-slice-review",
+      "started_at": "2026-10-03T17:31:09Z",
+      "summary": "Test Architect review of W1-F: BLOCK, 10 findings (2 blocking: tests-phase suspend, clean-exit tamper test)",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "id": "al-01M41E2RBZ9HAV9Q77EGHWRV86",
+      "shortname": "design-slice-eval-property-grader-r2",
+      "datetime": "2026-10-03T17:48:07Z",
+      "session": "w1f-property-r2-e1e4",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md (rev 2 follow-up: apply the four W1-F reviews)",
+      "summary": "W1-F revision 2: all 38 review findings dispositioned; conformed to W0 rev 2; SP-F2 fixture, positive control and shipped-shape refusal committed and run 9/9; two seam requests sent; gate pending RV-TA re-review and RV-SEC conditions",
       "kind": "skill",
       "skill": "design-slice",
       "tool": null,
       "actor": null,
       "artifacts": [
-        "docs/design/eval-property-grader.md"
+        "docs/design/eval-property-grader.md",
+        "tests/test_property_forgery_fixture.py"
       ],
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Run /design-slice for W1-F hidden-check runner and property grader, producing docs/design/eval-property-grader.md",
-      "done_when": "Gate PASS with Security & Identity as hard-veto reviewer; the four ADR-0018 red tests and the race test named; job-alone constraints adopted (sys._base_executable, DETACHED_PROCESS, one-byte ack)",
+      "goal": "Apply the four W1-F reviews to docs/design/eval-property-grader.md, W0 rev 2 winning, with a review-disposition table",
+      "done_when": "every finding has a disposition row; TA blocking 1 and 2 specified with named tests and the mutation entry; SEC conditions met (fixture committed, seam request, junction test); validate exit 0; named-path commits",
       "tier": "T2",
       "fan_out": 0
     }
@@ -65737,6 +66167,29 @@ window.AUDIT_DATA = {
         "pushed": null,
         "commits": []
       }
+    },
+    {
+      "id": "cl-01M41E2R397305FHW1J1A72D6N",
+      "datetime": "2026-10-03T17:48:07Z",
+      "session": "w1f-property-r2-e1e4",
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "W1-F rev 2: property grader conformed to W0 rev 2 (seven rows, tamper NA, per-phase suspend, 64 KiB, E1 probe-only)",
+      "prompt": "docs/coordination/eval-wave1/w1-f-property-grader.md (rev 2 follow-up: apply the four W1-F reviews)",
+      "summary": "Applied 38 findings of RV-TA (BLOCK), RV-SEC, RV-PAT, RV-SIM. W0 rev 2 wins: the seven-row outcome table with Classification.row, rows 1-5 NA for every metric, suspend detector per phase span, 64 KiB line, hidden_tests_pass and at_scale, fault/static/wsgi/resilience not built in E1. Added the clean-exit row-3 test and mutation entry, reparse-safe copy, bounded probe-host start and reader. Committed the SP-F2 forgery fixture with its positive control (9/9 each).",
+      "rationale": "W0 rev 2 is the contract; divergences only by seam request (req-01M41DM7XQG9GYVR32TJ762V67 NA handling to X-H1/X-E; req-01M41DM80KBD42GYARADW4V6HZ env import cycle).",
+      "artifacts": [
+        "docs/design/eval-property-grader.md",
+        "tests/test_property_forgery_fixture.py"
+      ],
+      "tags": [],
+      "git": {
+        "before": "13011c96",
+        "after": "13011c961ce3114597432725d16854a0ede6af10",
+        "branch": "design/eval-property-grader",
+        "pushed": null,
+        "commits": []
+      }
     }
   ],
   "messages": [
@@ -65820,6 +66273,33 @@ window.AUDIT_DATA = {
       "kind": "done",
       "ref": "docs/notes/review-w3-egress-codex.md@a2481f9",
       "session": "worker-codex-regress"
+    },
+    {
+      "id": "mail-01M41B3C7NE4K6H63P7W9SSSQ4",
+      "ts": "2026-10-03T16:56:02Z",
+      "from": "coord-opus-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41B3C7C7FY80DCZZ6A3TVES",
+      "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M41BC69MS8CGCKGCBHE13TAV",
+      "ts": "2026-10-03T17:00:50Z",
+      "from": "owner-fable",
+      "to": "coord-opus-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41B3C7C7FY80DCZZ6A3TVES",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41BS9YF4KC77K075NQQ3Q7R",
+      "ts": "2026-10-03T17:08:00Z",
+      "from": "coord-opus-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41BS9Y7D1ANHSNDYM9N2H08",
+      "session": "coord-opus-e1e4"
     }
   ]
 };
