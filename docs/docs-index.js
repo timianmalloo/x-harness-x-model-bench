@@ -4102,6 +4102,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "325ed61a2612279876fc84935fa81ca59c7aa6f26bb89407ba4a3311242c7ea3"
     },
     {
+      "id": "review-eval-pat-w1l",
+      "path": "docs/design/reviews/eval-review-pat-w1l.md",
+      "title": "Patterns Expert review of W1-L, the eight property tasks (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-PAT review of design/eval-property-tasks (5da93d91) against W0 rev 3, R-87..R-96, the merged W1-F strategy and registration pattern, W1-G catalog 0.7 and W1-I's task pattern. The pin, NOTICE, wrong-app and variant pattern conforms. Seven findings: an E2/E4 phasing contradiction for the shared product-line counter, an agent-editable vendored library, an under-specified fault-case predicate, and strategy and catalog fit gaps. PASS WITH CONDITIONS.",
+      "tags": [
+        "review",
+        "patterns-expert",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-l"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "10fe24ae90af7b74cfa61d438f46a9f2c93c3d13f4f7b932fcb9e83dac2e94af"
+    },
+    {
       "id": "review-eval-sec",
       "path": "docs/design/reviews/eval-review-sec.md",
       "title": "Security & Identity lens review: Evaluation Campaign design slices (Adversary Mode)",
@@ -6255,5 +6282,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "426b6d97eb19ef9ec417b73480c62ab7cde16c961f5f06b5b863e107662fc589"
+  "graphSha256": "765da73e0339c31b6078d619e5cd96110fcedc1dd29343efe13fbb28c0c507cb"
 };
