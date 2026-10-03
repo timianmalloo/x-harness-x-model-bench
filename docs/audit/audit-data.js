@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T17:27:05Z",
+  "generated": "2026-10-03T17:29:15Z",
   "audit": [
     {
       "actor": null,
@@ -65452,6 +65452,28 @@ window.AUDIT_DATA = {
         "branch": "design/eval-w0-rev2",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M41D06WC91G41B0S6GVF00BM",
+      "shortname": "design-slice-review-eval-sec-w0r2",
+      "datetime": "2026-10-03T17:29:15Z",
+      "session": "rv-sec-e1e4",
+      "prompt": "Leader: re-review W0 rev 2 delta",
+      "summary": "Security re-review of W0 rev 2: PASS WITH CONDITIONS",
+      "kind": "skill",
+      "skill": "design-slice-review",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Re-review W0 rev 2 delta",
+      "done_when": "rev-2 gate line appended",
+      "tier": "T2",
+      "fan_out": 0
     }
   ],
   "changes": [
