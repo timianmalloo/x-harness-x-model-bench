@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T22:46:44Z",
+  "generated": "2026-10-03T23:01:30Z",
   "audit": [
     {
       "actor": null,
@@ -77085,12 +77085,482 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41Z56BXFH5NJQ2SFNK4VG4X",
-      "shortname": "design-slice-eval-resume",
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-resume.md"
+      ],
+      "compiled": false,
       "datetime": "2026-10-03T22:46:33Z",
-      "session": "w1k-resume-e1e4",
+      "done_when": "Gate-ready design: section 4 rows mapped to node ids, NoResumeAfterStop with TLC output and rejected variant, provisional branches settled, resume record, alarm channel and runbook path, X-K1/X-K2 seam, surface list",
+      "fan_out": 0,
+      "goal": "Design plan-level resume, liveness and the alarm channel (ADR-0021)",
+      "id": "al-01M41Z56BXFH5NJQ2SFNK4VG4X",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "docs/coordination/eval-wave2-e234/w1-k.md",
+      "session": "w1k-resume-e1e4",
+      "shortname": "design-slice-eval-resume",
+      "skill": "design-slice",
       "summary": "W1-K design: resume protocol and classifier, NoResumeAfterStop and settled resume branches in the TLA+ model (TLC 33/33 variants, US-44 bounds pass), alarm channel (scheduled task, toast, optional ntfy), X-K1/X-K2 split",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T21:29:32Z",
+      "id": "al-01M41TR5PDHGMZ2VRWG8PG4K75",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-j1a-e1e4 on branch build/eval-x-j1a, harness Codex, model gpt-6.1-sol with effort high. Build turn J1a only of the brief docs/coordination/eval-wave2-e234/x-j1.md (the errors.py and identity.CLASSES rows; K1 the fake-agent options; K2 the skeleton that carries the bugs; K3 the whole test table red by assertion; K4(1) the budget clock through lifecycle.is_cell_start and the status.py hunk), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then docs/coordination/eval-wave2-e234/README.md, then that brief, then docs/design/eval-multi-turn.md; all bind you. Use W1-J rev 2's names exactly as the brief lists them. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's; J1a meets items 1 and 4 and leaves the K3 red tests of turns J1b..e red. Turns J1b..e are later dispatches.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-j1a-e1e4 on branch build/eval-x-j1a, harness Codex, mo…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-03T21:29:32Z",
+      "id": "al-01M41TR69W3ZWP8CA19MWRTXVV",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-j2a-e1e4 on branch build/eval-x-j2a, harness Agy, model gemini-3.8-flash-high. Build turn J2a only of the brief docs/coordination/eval-wave2-e234/x-j2.md (grade/_changes.py's four functions product_lines, in_radius, line_delta and is_test_path; the drift.py hunk that calls _changes.in_radius; the R2-2 and R2-3 fixtures and the test-directory mutant), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then docs/coordination/eval-wave2-e234/README.md, then that brief; all bind you. tests/test_grade_drift.py stays green unedited. Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's. Turn J2b is a later dispatch.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-j2a-e1e4 on branch build/eval-x-j2a, harness Agy, mode…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-j1a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Acceptance items 1 (the budget clock) and 4 (status.py reads the first prompt_sent) are met; the K3 tests of turns J1b..e stay red by assertion.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "J1a meets items 1 and 4 and leaves the K3 red tests of turns J1b..e red"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Every new name is W1-J rev 2's spelling as the brief lists it.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Use W1-J rev 2's names exactly as the brief lists them"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Turns J1b..e (turn loop, snapshots, readers and conformance, mutants and S-J4): later dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Turns J1b..e are later dispatches."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,600 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-j1a",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens across 5 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-j1a.",
+            "Acceptance items 1 (the budget clock) and 4 (status.py reads the first prompt_sent) are met; the K3 tests of turns J1b..e stay red by assertion.",
+            "Every new name is W1-J rev 2's spelling as the brief lists it.",
+            "The README section 3 join gate passes.",
+            "The served model id is the first line of the final report."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e234/x-j1.md, the E1 and E2-E4 READMEs and W1-J rev 2 (docs/design/eval-multi-turn.md), all binding (the owned paths, names and acceptance items are the brief's): build turn J1a of X-J1 on build/eval-x-j1a: the errors.py and identity.CLASSES rows, K1 the fake-agent options, K2 the skeleton that carries the bugs, K3 the whole test table red by assertion, and K4(1) the budget clock through lifecycle.is_cell_start with the status.py hunk; red commit then green commit.",
+          "main_line_budget": "320 calls across 5 dispatches, 3,600 s per dispatch",
+          "not_in_scope": [
+            "Turns J1b..e (turn loop, snapshots, readers and conformance, mutants and S-J4): later dispatches."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.026,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41TR5PDHGMZ2VRWG8PG4K75",
+        "raw_sha256": "1284b2375ef331c567f8da49aa3f51d8e7f5538fc2665dd61bfc31dc06d9127f",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-j1a"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/x-j1.md",
+            "reason": null,
+            "sha256": "8db0a5c2e1827c4a648d7351a3444473be142d955e724cce2644e7abd32bf437",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/x-j1.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "67e763d8e3a20d4b2fe09181e61c845e72b5110cd0a2417fb6cf2e8cf4d66251",
+            "status": "resolved",
+            "token": "errors.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/status.py",
+            "reason": null,
+            "sha256": "41bdba44b39d3bb84523fe66ccdcff173b85f7ad9458bf61c836a7b520406e65",
+            "status": "resolved",
+            "token": "status.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "3d513410527d8a9419a83a036db50960a71954553e02cd71d22873d37743f1af",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/README.md",
+            "reason": null,
+            "sha256": "e1135f8b34e259affe091b5495f8f9f7e910e4a07b590a608877523a5087202b",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-multi-turn.md",
+            "reason": null,
+            "sha256": "e32527dad56e2c97cd4340c492f0d1c2e679b74853f5d208139ef40ccb8ae847",
+            "status": "resolved",
+            "token": "docs/design/eval-multi-turn.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T21:31:22Z",
+      "dispatchable": true,
+      "id": "al-01M41TVHN76EXTN73R66S2Q1HM",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e234/x-j1.md, the E1 and E2-E4 READMEs and W1-J rev 2 (docs/design/eval-multi-turn.md), all binding (the owned paths, names and acceptance items are the brief's): build turn J1a of X-J1 on build/eval-x-j1a: the errors.py and identity.CLASSES rows, K1 the fake-agent options, K2 the skeleton that carries the bugs, K3 the whole test table red by assertion, and K4(1) the budget clock through lifecycle.is_cell_start with the status.py hunk; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-j1a.; Acceptance items 1 (the budget clock) and 4 (status.py reads the first prompt_sent) are met; the K3 tests of turns J1b..e stay red by assertion.; Every new name is W1-J rev 2's spelling as the brief lists it.; The README section 3 join gate passes.; The served model id is the first line of the final report.\nNot in scope: Turns J1b..e (turn loop, snapshots, readers and conformance, mutants and S-J4): later dispatches.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens across 5 dispatches\nMain-line budget: 320 calls across 5 dispatches, 3,600 s per dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-j1a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: Acceptance items 1 (the budget clock) and 4 (status.py reads the first prompt_sent) are met; the K3 tests of turns J1b..e stay red by assertion. | phrase: J1a meets items 1 and 4 and leaves the K3 red tests of turns J1b..e red |\n| done_when: Every new name is W1-J rev 2's spelling as the brief lists it. | phrase: Use W1-J rev 2's names exactly as the brief lists them |\n| done_when: The README section 3 join gate passes. | phrase: README §3 join gate per dispatch. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| not_in_scope: Turns J1b..e (turn loop, snapshots, readers and conformance, mutants and S-J4): later dispatches. | phrase: Turns J1b..e are later dispatches. |\nReferences\n- build/eval-x-j1a: unresolved (not found)\n- docs/coordination/eval-wave2-e234/x-j1.md: docs/coordination/eval-wave2-e234/x-j1.md sha256 8db0a5c2e1827c4a648d7351a3444473be142d955e724cce2644e7abd32bf437\n- errors.py: src/harness_bench/errors.py sha256 67e763d8e3a20d4b2fe09181e61c845e72b5110cd0a2417fb6cf2e8cf4d66251\n- status.py: src/harness_bench/status.py sha256 41bdba44b39d3bb84523fe66ccdcff173b85f7ad9458bf61c836a7b520406e65\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 3d513410527d8a9419a83a036db50960a71954553e02cd71d22873d37743f1af\n- docs/coordination/eval-wave2-e234/README.md: docs/coordination/eval-wave2-e234/README.md sha256 e1135f8b34e259affe091b5495f8f9f7e910e4a07b590a608877523a5087202b\n- docs/design/eval-multi-turn.md: docs/design/eval-multi-turn.md sha256 e32527dad56e2c97cd4340c492f0d1c2e679b74853f5d208139ef40ccb8ae847\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-j1a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,600 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41TR5PDHGMZ2VRWG8PG4K75\nraw sha256: 1284b2375ef331c567f8da49aa3f51d8e7f5538fc2665dd61bfc31dc06d9127f\ncompiler model: claude-opus-5-5\nengine seconds: 0.026\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-j1a-e1e4 on branch build/eval-x-j1a, harness Codex, mo…",
+      "skill": null,
+      "summary": "compiled al-01M41TR5PDHGMZ2VRWG8PG4K75 for codex v1: 6 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-j2a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/test_grade_drift.py passes with no edit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/test_grade_drift.py stays green unedited."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's J2a acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items are the brief's"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Turn J2b (rework.py, per-turn synthetic cells, multi-turn discrimination, variant edit forms): a later dispatch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Turn J2b is a later dispatch."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-j2a",
+          "termination": "one turn",
+          "transient_retry": "0",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "180k tokens across 2 dispatches",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-j2a.",
+            "tests/test_grade_drift.py passes with no edit.",
+            "Each of the brief's J2a acceptance items is met, or reported as not met with the reason.",
+            "The README section 3 join gate passes.",
+            "The served model id is the first line of the final report."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e234/x-j2.md and the E1 and E2-E4 READMEs, all binding (the owned paths and acceptance items are the brief's): build turn J2a of X-J2 on build/eval-x-j2a: grade/_changes.py's product_lines, in_radius, line_delta and is_test_path, the drift.py hunk that calls _changes.in_radius, the R2-2 and R2-3 fixtures and the test-directory mutant; red commit then green commit.",
+          "main_line_budget": "160 calls across 2 dispatches, 3,300 s per dispatch",
+          "not_in_scope": [
+            "Turn J2b (rework.py, per-turn synthetic cells, multi-turn discrimination, variant edit forms): a later dispatch."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.04,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M41TR69W3ZWP8CA19MWRTXVV",
+        "raw_sha256": "89a743e59a95e1c829bb1c17d2e232b23f36dc393e92e15c78faaeb12852d439",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-j2a"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/x-j2.md",
+            "reason": null,
+            "sha256": "c7e06322ddf6c16c0451c42c4d03b2f780dcfce7062383fa6a85b7c956e70d7f",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/x-j2.md"
+          },
+          {
+            "nearest": "src/harness_bench/grade/_changes.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/_changes.py's"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/drift.py",
+            "reason": null,
+            "sha256": "a52a8a0ad71ce498df898fab7b28c38afede891078fff63d71feaa88ad42277a",
+            "status": "resolved",
+            "token": "drift.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "3d513410527d8a9419a83a036db50960a71954553e02cd71d22873d37743f1af",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/README.md",
+            "reason": null,
+            "sha256": "e1135f8b34e259affe091b5495f8f9f7e910e4a07b590a608877523a5087202b",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_drift.py",
+            "reason": null,
+            "sha256": "71d5ce7eeca13e0f9326ccae6b88af6e6d86bb25b95c9b87d74c8124c248b67b",
+            "status": "resolved",
+            "token": "tests/test_grade_drift.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-03T21:31:23Z",
+      "dispatchable": true,
+      "id": "al-01M41TVJD31ZJY8HJ5TQQFWQTK",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e234/x-j2.md and the E1 and E2-E4 READMEs, all binding (the owned paths and acceptance items are the brief's): build turn J2a of X-J2 on build/eval-x-j2a: grade/_changes.py's product_lines, in_radius, line_delta and is_test_path, the drift.py hunk that calls _changes.in_radius, the R2-2 and R2-3 fixtures and the test-directory mutant; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-j2a.; tests/test_grade_drift.py passes with no edit.; Each of the brief's J2a acceptance items is met, or reported as not met with the reason.; The README section 3 join gate passes.; The served model id is the first line of the final report.\nNot in scope: Turn J2b (rework.py, per-turn synthetic cells, multi-turn discrimination, variant edit forms): a later dispatch.\nTier: T2\nFan-out cap: 0\nContext ceiling: 180k tokens across 2 dispatches\nMain-line budget: 160 calls across 2 dispatches, 3,300 s per dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-j2a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: tests/test_grade_drift.py passes with no edit. | phrase: tests/test_grade_drift.py stays green unedited. |\n| done_when: Each of the brief's J2a acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items are the brief's |\n| done_when: The README section 3 join gate passes. | phrase: README §3 join gate per dispatch. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| not_in_scope: Turn J2b (rework.py, per-turn synthetic cells, multi-turn discrimination, variant edit forms): a later dispatch. | phrase: Turn J2b is a later dispatch. |\nReferences\n- build/eval-x-j2a: unresolved (not found)\n- docs/coordination/eval-wave2-e234/x-j2.md: docs/coordination/eval-wave2-e234/x-j2.md sha256 c7e06322ddf6c16c0451c42c4d03b2f780dcfce7062383fa6a85b7c956e70d7f\n- grade/_changes.py's: unresolved (not found; nearest: src/harness_bench/grade/_changes.py)\n- drift.py: src/harness_bench/grade/drift.py sha256 a52a8a0ad71ce498df898fab7b28c38afede891078fff63d71feaa88ad42277a\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 3d513410527d8a9419a83a036db50960a71954553e02cd71d22873d37743f1af\n- docs/coordination/eval-wave2-e234/README.md: docs/coordination/eval-wave2-e234/README.md sha256 e1135f8b34e259affe091b5495f8f9f7e910e4a07b590a608877523a5087202b\n- tests/test_grade_drift.py: tests/test_grade_drift.py sha256 71d5ce7eeca13e0f9326ccae6b88af6e6d86bb25b95c9b87d74c8124c248b67b\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0\nper_branch_exit: a red commit then a green commit on build/eval-x-j2a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M41TR69W3ZWP8CA19MWRTXVV\nraw sha256: 89a743e59a95e1c829bb1c17d2e232b23f36dc393e92e15c78faaeb12852d439\ncompiler model: claude-opus-5-5\nengine seconds: 0.04\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are session x-j2a-e1e4 on branch build/eval-x-j2a, harness Agy, mode…",
+      "skill": null,
+      "summary": "compiled al-01M41TR69W3ZWP8CA19MWRTXVV for claude-code v1: 6 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-03T21:32:22Z",
+      "duration_seconds": 171.0,
+      "fan_out": 0,
+      "id": "al-01M41TXCHHDFX6RP8RRFYFN9S5",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Compile (CO-S0) the X-J1 contract (Codex gpt-6.1-sol, deadline >= 3600 s) and X-J2a (Agy gemini-3.8-flash-high), replacing COMPILE-OWED.",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-x-j1a-x-j2a",
+      "skill": "compile",
+      "started_at": "2026-10-03T21:29:31Z",
+      "summary": "X-J1a raw al-01M41TR5PDHGMZ2VRWG8PG4K75 -> compiled al-01M41TVHN76EXTN73R66S2Q1HM (codex, 5 done_when + 1 not_in_scope clauses, 0 assumptions, 0 DRs, dispatchable); X-J2a raw al-01M41TR69W3ZWP8CA19MWRTXVV -> compiled al-01M41TVJD31ZJY8HJ5TQQFWQTK (claude-code template, no Agy template; 5 + 1 clauses, 0 assumptions, 0 DRs, dispatchable). Gate passed first try for both.",
+      "tags": [],
+      "tier": "T0",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "change": "cl-01M41TXDN4Y4WA99A575T5G09C",
+      "datetime": "2026-10-03T21:32:33Z",
+      "done_when": "named-path commits on coord/eval-e2-unblock-r99 after derive/validate and audit",
+      "duration_seconds": 614.0,
+      "fan_out": 0,
+      "goal": "E2 unblocked on W1-J rev 2, X-J1a and X-J2a compiled, X-I-S2 amended per R-99, open requests answered",
+      "id": "al-01M41TXQ82MG360F324GW7EFMG",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Coordinator #9: unblock E2 (README, x-j1, x-j2 on W1-J rev 2), compile X-J1a and X-J2a, amend X-I-S2 step 1 item 2 per R-99, answer open requests.",
+      "session": "coord-opus-e1e4",
+      "shortname": "coord-9-e2-unblock-r99",
+      "skill": null,
+      "started_at": "2026-10-03T21:22:19Z",
+      "summary": "README, x-j1.md (re-cut, W1-J rev 2 names and conditions, 3,600 s), x-j2.md (J2b unblocked; snapshot_folder/snapshot_of), x-i-s2.md (R-99 rules) updated; compiled al-01M41TVHN76EXTN73R66S2Q1HM (X-J1a) and al-01M41TVJD31ZJY8HJ5TQQFWQTK (X-J2a) into the contracts; open requests to coord-opus-e1e4: 0 (both X-D1 seam requests already resolved). docs-graph derive 219 entries, validate exit 0.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": "Coordinator #10 (claude-opus-5-5)",
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/adr/0021-plan-level-resume-and-liveness.md",
+        "docs/lessons/defect-classes.md"
+      ],
+      "change": "cl-01M41YY8QAT7CJDTA57GNDVAWX",
+      "datetime": "2026-10-03T22:42:59Z",
+      "done_when": "coord request list shows no open request to coord-opus-e1e4; rev 6.8 committed with derive/validate and audit",
+      "fan_out": 0,
+      "git": {
+        "branch": "coord/eval-w0-rev68-w1k",
+        "pushed": null,
+        "sha": "3538661f3a3bed5f4a6aa8ad350a87e447b91693",
+        "short": "3538661f3"
+      },
+      "goal": "Queue for coord-opus-e1e4 empty; rev 6.8 and ADR-0021 Amendment 1 committed; the mutant finding registered",
+      "id": "al-01M41YYNDQ16PFGNN6M4W86AV5",
+      "kind": "manual",
+      "outcome": "success",
+      "prompt": "Coordinator #10: answer the three W1-K requests addressed to coord-opus-e1e4 (views.py/model docs E3 owner; X-K2 alarm paths; report header resumes), apply as W0 rev 6.8; record the scenario6 stub-map mutant survival in defect-classes with a control and a fix-slice owner. Leader addendum: R-100 merged; write ADR-0021 Amendment 1 (s2 bullet 2, s9, D-K1/D-K2/D-K4/D-K5) and re-point W0 s11 HB-RUN-008 in the same commit.",
+      "session": "coord-opus-e1e4",
+      "shortname": "coord-requests-e1e4-10",
+      "skill": null,
+      "summary": "Resolved req-01M41XGYS25EXAHKPZV5EE1QT2, req-01M41XGZ3WV678S30APNX8HBMK, req-01M41XGZF3ACCY2QB5Y3ATYDQK (W0 rev 6.8 R6.8a-c, 3538661f); R6.8d and ADR-0021 Amendment 1 (R-100); MUT-D candidate (stub-map mutant observed surviving on 557cfe25).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "id": "al-01M4200C9YVA5W1B8REQVHM1AB",
+      "shortname": "design-slice-eval-resume-rev1-1",
+      "datetime": "2026-10-03T23:01:23Z",
+      "session": "w1k-resume-r2-e1e4",
+      "prompt": "docs/coordination/eval-wave2-e234/w1-k.md (rev 1.1: apply R-100)",
+      "summary": "Applied Ruling 100 (B): finish-the-stop resume; NoLaunchAfterStop; D-K9 withdrawn; model, variants, W12 and sections amended; TLC quick 34/34, exit 0",
       "kind": "skill",
       "skill": "design-slice",
       "tool": null,
@@ -77101,10 +77571,12 @@ window.AUDIT_DATA = {
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Design plan-level resume, liveness and the alarm channel (ADR-0021)",
-      "done_when": "Gate-ready design: section 4 rows mapped to node ids, NoResumeAfterStop with TLC output and rejected variant, provisional branches settled, resume record, alarm channel and runbook path, X-K1/X-K2 seam, surface list",
+      "goal": "Apply R-100 to the W1-K design before the lens reviews",
+      "done_when": "Design and model amended, TLC re-run green, gate pending five lenses",
       "tier": "T2",
-      "fan_out": 0
+      "fan_out": 0,
+      "started_at": "2026-10-03T22:47:51Z",
+      "duration_seconds": 812.0
     }
   ],
   "changes": [
@@ -78312,27 +78784,98 @@ window.AUDIT_DATA = {
       "title": "W1-J rev 2: CrashedTurnPredicate independent of ClassOf; turn_ended for every returned turn; check_models WIDER rows"
     },
     {
-      "id": "cl-01M41Z5HBZW97QECK9XN4FSQNH",
-      "datetime": "2026-10-03T22:46:44Z",
-      "session": "w1k-resume-e1e4",
-      "kind": "design",
-      "skill": "design-slice",
-      "title": "Resume refuses after a stop; between-turns decided by the recorded turn_ended.next; alarm is a scheduled toast task",
-      "prompt": "docs/coordination/eval-wave2-e234/w1-k.md",
-      "summary": "W1-K: resume protocol (refusal order, three stop rows, abandoned-segment markers that stay readable, pure classifier C0-C7), TLA+ v6 (NoResumeAfterStop, StopCrashed liveness disjunct, next-based between-turns), alarm check and channel",
-      "rationale": "ADR-0021 left the stop-crash residue, the named job, the PID and run.completed-with-pending-cells unspecified; the code facts were read and the gaps closed",
       "artifacts": [
         "docs/design/eval-resume.md"
       ],
+      "audit_ref": "al-01M41Z56BXFH5NJQ2SFNK4VG4X",
+      "datetime": "2026-10-03T22:46:44Z",
+      "git": {
+        "after": "66ec885ff2e19f21af82dcaf16731ad293ca6d24",
+        "before": null,
+        "branch": "design/eval-resume",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41Z5HBZW97QECK9XN4FSQNH",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave2-e234/w1-k.md",
+      "rationale": "ADR-0021 left the stop-crash residue, the named job, the PID and run.completed-with-pending-cells unspecified; the code facts were read and the gaps closed",
+      "session": "w1k-resume-e1e4",
+      "skill": "design-slice",
+      "summary": "W1-K: resume protocol (refusal order, three stop rows, abandoned-segment markers that stay readable, pure classifier C0-C7), TLA+ v6 (NoResumeAfterStop, StopCrashed liveness disjunct, next-based between-turns), alarm check and channel",
+      "tags": [],
+      "title": "Resume refuses after a stop; between-turns decided by the recorded turn_ended.next; alarm is a scheduled toast task"
+    },
+    {
+      "artifacts": [
+        "docs/coordination/eval-wave2-e234/README.md",
+        "docs/coordination/eval-wave2-e234/x-j1.md",
+        "docs/coordination/eval-wave2-e234/x-j2.md",
+        "docs/coordination/eval-wave2-e234/x-i-s2.md"
+      ],
+      "datetime": "2026-10-03T21:32:24Z",
+      "git": {
+        "after": "66ec885ff2e19f21af82dcaf16731ad293ca6d24",
+        "before": "66ec885f",
+        "branch": "coord/eval-e2-unblock-r99",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41TXDN4Y4WA99A575T5G09C",
+      "kind": "decision",
+      "prompt": null,
+      "rationale": "W1-J gate passed; R-99 names the Coordinator as the amender of the X-I-S2 brief.",
+      "session": "coord-opus-e1e4",
+      "skill": null,
+      "summary": "W1-J rev 2 merged (f23d35ed) so X-J1 and X-J2 are unblocked by design. x-j1.md re-cut on W1-J section 11 (K1..K4) with its final names and conditions: budget clock at turn == 1 via lifecycle.is_cell_start; spend summed across turns; turn_ended with next for stopping turns (R6.5a); status.py first prompt_sent (R6.5b); job_active_baseline at turn 1's first update (R6.5c); append_missing_rows owned by X-J1; E2 snapshot recovery; S-J4/S-J5 run by X-J1. Deadline 3,600 s. X-J1a starts after X-D1 (and X-D2) joins: X-D owns engine.py in E1 and engine.py edits are serialised. x-i-s2.md step 1 item 2 per R-99: HMAC alternative withdrawn, login route only, no bottle/pickle import, inert bytes only, tamper-refusal replaces forged-session.",
+      "tags": [],
+      "title": "Coordinator #9: E2 unblocked on W1-J rev 2; X-J1a and X-J2a compiled; X-I-S2 brief amended per R-99"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/adr/0021-plan-level-resume-and-liveness.md",
+        "docs/lessons/defect-classes.md"
+      ],
+      "datetime": "2026-10-03T22:42:46Z",
+      "git": {
+        "after": "3538661f3a3bed5f4a6aa8ad350a87e447b91693",
+        "before": "557cfe25",
+        "branch": "coord/eval-w0-rev68-w1k",
+        "commits": [
+          "3538661f docs(design): W0 seam contracts rev 6.8 (W1-K seams, R-100), ADR-0021 Amendment 1, MUT-D candidate"
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M41YY8QAT7CJDTA57GNDVAWX",
+      "kind": "decision",
+      "prompt": null,
+      "rationale": "One owner per hunk keeps hub files serial: X-A3's brief already claimed a views.py rename that W0 did not list, so both E3 writers are recorded as disjoint hunks. The report header hunk goes to X-K2 (one wording with bench status) rather than delaying X-A3 on X-K1's join. R-100 conditions 1 and 4 assign the ADR note and the HB-RUN-008 text to the Coordinator. The stub-map mutant was re-run and observed surviving; its fixture is valid under model_map_problems.",
+      "session": "coord-opus-e1e4",
+      "skill": null,
+      "summary": "Three W1-K requests resolved in W0 rev 6.8 (3538661f): R6.8a views.py E3 to X-K1 and X-A3 in disjoint hunks, model docs already X-K1's; R6.8b X-K2 owns tools/alarm-task.ps1, tests/test_alarm_task.py, docs/runbooks/resume-and-alarm.md with four conditions; R6.8c the report/html.py resume header is one X-K2 hunk after X-A3c and X-K1 join. R6.8d and ADR-0021 Amendment 1 record R-100 (finish-the-stop, NoLaunchAfterStop, HB-RUN-008 the exit-3 reason) and D-K1, D-K2, D-K4, D-K5. MUT-D candidate: scenario6 stub-map mutant survives on main.",
+      "tags": [],
+      "title": "W0 rev 6.8: W1-K seams (views.py E3, X-K2 alarm paths, report resume header) and R-100 (ADR-0021 Amendment 1, HB-RUN-008 re-pointed); MUT-D candidate"
+    },
+    {
+      "id": "cl-01M4200JH83T30B8M5FCTEG6EG",
+      "datetime": "2026-10-03T23:01:30Z",
+      "session": null,
+      "kind": "design",
+      "skill": "design-slice",
+      "title": "W1-K rev 1.1: a resume of a stopped run finishes the stop (R-100)",
+      "prompt": null,
+      "summary": "Option B per Ruling 100: resume launches nothing, records stopped, archives, exits 3; invariant NoLaunchAfterStop; D-K9 withdrawn; finding F-1 (grading after finish-the-stop) recorded",
+      "rationale": null,
+      "artifacts": [],
       "tags": [],
       "git": {
         "before": null,
-        "after": "66ec885ff2e19f21af82dcaf16731ad293ca6d24",
+        "after": "733ddf14b3df1ba4570b917e6a9551ac80ffde92",
         "branch": "design/eval-resume",
         "pushed": null,
         "commits": []
-      },
-      "audit_ref": "al-01M41Z56BXFH5NJQ2SFNK4VG4X"
+      }
     }
   ],
   "messages": [
@@ -78604,6 +79147,24 @@ window.AUDIT_DATA = {
       "to": "leader-e1e4",
       "kind": "ruling",
       "ref": "req-01M41T6XB206JRN9V1AGFN92X9",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M41V2MD1QSGVXNDBCM96BWAR",
+      "ts": "2026-10-03T21:35:14Z",
+      "from": "w1k-resume-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M41V2MC1RTCBB4APR3TSXEYP",
+      "session": "w1k-resume-e1e4"
+    },
+    {
+      "id": "mail-01M41YDRBHF72J02CX3BN7VEB6",
+      "ts": "2026-10-03T22:33:45Z",
+      "from": "owner-fable",
+      "to": "w1k-resume-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M41V2MC1RTCBB4APR3TSXEYP",
       "session": "owner-fable"
     }
   ]

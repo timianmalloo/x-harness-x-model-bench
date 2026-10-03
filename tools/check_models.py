@@ -64,8 +64,9 @@ VARIANTS = {
     "crashed_turn_as_between": ("inv", "CrashedTurnPredicate"),
     "archive_in_place": ("inv", "ArchiveExistsMeansComplete"),
     "snapshot_in_place": ("inv", "ArchiveExistsMeansComplete"),
-    # ADR-0021 sections 2, 4, 9 (W1-K): resume refusal after a stop, and the recorded `next` of each turn.
-    "resume_after_stop": ("inv", "NoResumeAfterStop"),
+    # ADR-0021 sections 2, 4, 9 (W1-K, R-100): a resume after a stop finishes the stop, and the recorded `next` of each turn.
+    "stop_recorded_as_crash": ("inv", "StopResumeRecordsStopped"),   # R-100: finish-the-stop records `stopped`
+    "stop_resume_launches": ("inv", "NoLaunchAfterStop"),            # R-100: a resume after a stop launches nothing
     "between_without_snapshot": ("inv", "BetweenRecordedWithSnapshot"),
     "between_ignores_next": ("inv", "CrashedTurnPredicate"),
     "snapshot_when_stopping": ("inv", "SnapshotOnlyWhenNext"),

@@ -5,7 +5,8 @@
 (* snapshots, ADR-0015 section 7; crash-atomic archive writes, ADR-0015 5a;  *)
 (* resume, ADR-0021 sections 2, 4 and 9: W1-K settled the two branches W1-J  *)
 (* left provisional, the `BetweenSnapped` redo and the final ELSE of         *)
-(* `ClassOf`, by the recorded `next` of each turn, and added NoResumeAfterStop).*)
+(* `ClassOf`, by the recorded `next` of each turn; R-100: a resume after a    *)
+(* stop finishes the stop, so the invariant is NoLaunchAfterStop).          *)
 (*                                                                         *)
 (* One run engine process that can crash and be resumed; cells (each a    *)
 (* native process tree in its own Job Object, `proc`) that can fail on    *)
@@ -95,7 +96,7 @@ vars == <<tvars, engine, crashes, reconciling, reconciled, intent, launchEpoch, 
           decision, resolutions, lock, passState, passOwner, graded, gradeCount, flags>>
 
 FlagNames == {"launchAfterStop", "launchWhileOpen", "gradeUnarchived", "archiveLive",
-              "promptAfterOutcome", "launchBesideOrphan", "resumeAfterStop"}
+              "promptAfterOutcome", "launchBesideOrphan", "crashUnderStop"}
 
 -----------------------------------------------------------------------------
 Active(c)  == intent[c] /\ outcome[c] = "none"
@@ -184,7 +185,7 @@ StartCell(c) ==
     /\ intent[c] /\ (BUG = "resend_turn_on_resume" \/ ~promptSent[c][1])
     /\ (BUG = "launch_after_outcome" \/ outcome[c] = "none")
     /\ (proc[c] = "none" \/ (BUG = "launch_after_outcome" /\ proc[c] = "exited"))
-    /\ (BUG = "launch_after_stop" \/ ~stopApplied)
+    /\ (BUG \in {"launch_after_stop", "stop_resume_launches"} \/ ~stopApplied)
     \* Parallelism is enforced where a proc starts, counting every running proc,
     \* including one that was killed and has not yet exited (the slot is held until confirmed).
     /\ (BUG = "exceed_parallelism" \/ Cardinality(Running) < Parallelism)
@@ -570,20 +571,18 @@ Crash ==
                    controlFile, controlApplied, applyCount, stopApplied, decision,
                    resolutions, passOwner, graded, gradeCount, flags>>
 
-\* ADR-0021 section 2: a resume is refused after a stop. The refusal reads three ledger rows (run.stopped,
-\* control.applied{stop}, decision.resolved{option: stop}); `stopApplied` abstracts them as one step, which is the
-\* earliest of the three, so the model refuses at least as early as the code. The seeded `resume_after_stop` lifts it.
+\* ADR-0021 section 2 as ruled by R-100 (DR-K1): a resume after a stop is not refused; it finishes the stop. It
+\* launches nothing and records `stopped` for every intent-without-outcome cell (ReconcileRecord, under stopApplied).
+\* `stopApplied` abstracts the three stop rows (run.stopped, control.applied{stop}, decision.resolved{option: stop})
+\* as one step, the earliest of the three. The invariant is NoLaunchAfterStop, the guard WriteIntent already has.
 Resume ==
     /\ engine = "down"
-    \* `relaunch_stopped` also lifts it: reopening a stopped cell needs a resume after a stop to happen at all.
-    /\ (BUG \in {"resume_after_stop", "relaunch_stopped"} \/ ~stopApplied)
     /\ engine' = "up" /\ epoch' = epoch + 1
     /\ reconciling' = TRUE /\ reconciled' = {}
-    /\ IF stopApplied THEN Flag("resumeAfterStop") ELSE UNCHANGED flags
     /\ UNCHANGED <<tvars, crashes, intent, launchEpoch, proc, killRequested, killReason, queued,
                    promptSent, pendingSend, prompts, outcome, wasStopped, archived, deleted,
                    controlFile, controlApplied, applyCount, stopApplied, decision,
-                   resolutions, lock, passState, passOwner, graded, gradeCount, grace>>
+                   resolutions, lock, passState, passOwner, graded, gradeCount, grace, flags>>
 
 \* Reconciliation step 1: kill every running proc carrying the run's label, whatever its outcome.
 ReconcileKill(c) ==
@@ -607,24 +606,32 @@ ReconcileRecord(c) ==
     /\ engine = "up" /\ reconciling
     /\ Active(c) /\ c \notin reconciled /\ copying[c] = NoCopy
     /\ (BUG = "reconcile_no_wait" \/ proc[c] # "running")   \* seeded: records without confirming the kill
-    /\ IF AnyPrompted(c) /\ BUG # "relaunch_prompted" /\ ~ResendTurn(c)
-         THEN /\ (BUG = "between_without_snapshot" \/ BetweenSnapped(c))
-              /\ Record(c, IF BUG = "kill_between_turns" THEN "crashfail"
-                          ELSE IF BUG = "crashed_turn_as_between" /\ CrashedTurn(c) THEN "crashbetween"
-                          ELSE ClassOf(c))
+    /\ IF stopApplied /\ BUG # "stop_resume_launches"
+         THEN \* R-100: the stop row chooses the branch; the engine's kill-reason rule for `stop` is `stopped`.
+              \* A between-turns cell still has its snapshot redone first (C4).
+              /\ (~AnyPrompted(c) \/ BUG = "between_without_snapshot" \/ BetweenSnapped(c))
+              /\ Record(c, IF BUG = "stop_recorded_as_crash" THEN ClassOf(c) ELSE "stopped")
+              /\ IF BUG = "stop_recorded_as_crash" THEN Flag("crashUnderStop") ELSE UNCHANGED flags
               /\ UNCHANGED <<proc, promptSent>>
-         ELSE /\ proc' = [proc EXCEPT ![c] = "none"]
-              /\ promptSent' = IF BUG = "relaunch_prompted"
-                                 THEN [promptSent EXCEPT ![c] = [k \in Turns |-> FALSE]]
-                                 ELSE IF ResendTurn(c)
-                                 THEN [promptSent EXCEPT ![c] = [k \in Turns |-> promptSent[c][k] /\ turnEnded[c][k]]]
-                                 ELSE promptSent
-              /\ UNCHANGED <<outcome, wasStopped>>
+         ELSE /\ UNCHANGED flags
+              /\ IF AnyPrompted(c) /\ BUG # "relaunch_prompted" /\ ~ResendTurn(c)
+                   THEN /\ (BUG = "between_without_snapshot" \/ BetweenSnapped(c))
+                        /\ Record(c, IF BUG = "kill_between_turns" THEN "crashfail"
+                                    ELSE IF BUG = "crashed_turn_as_between" /\ CrashedTurn(c) THEN "crashbetween"
+                                    ELSE ClassOf(c))
+                        /\ UNCHANGED <<proc, promptSent>>
+                   ELSE /\ proc' = [proc EXCEPT ![c] = "none"]
+                        /\ promptSent' = IF BUG = "relaunch_prompted"
+                                           THEN [promptSent EXCEPT ![c] = [k \in Turns |-> FALSE]]
+                                           ELSE IF ResendTurn(c)
+                                           THEN [promptSent EXCEPT ![c] = [k \in Turns |-> promptSent[c][k] /\ turnEnded[c][k]]]
+                                           ELSE promptSent
+                        /\ UNCHANGED <<outcome, wasStopped>>
     /\ reconciled' = reconciled \cup {c}
     /\ UNCHANGED <<tvars, engine, crashes, reconciling, intent, launchEpoch, epoch, killRequested,
                    killReason, queued, pendingSend, prompts, archived, deleted, controlFile,
                    controlApplied, applyCount, stopApplied, decision, resolutions, lock,
-                   passState, passOwner, graded, gradeCount, flags, grace>>
+                   passState, passOwner, graded, gradeCount, grace>>
 
 \* Seeded bug "relaunch_stopped": reconciliation re-opens stopped cells.
 ReopenStopped(c) ==
@@ -789,8 +796,9 @@ DecisionResolvedOnce       == resolutions <= 1
 NoLaunchWhileDecisionOpen  == ~flags["launchWhileOpen"]
 NoLaunchBesideOrphan       == ~flags["launchBesideOrphan"]
 NoOutcomeWhileRunning      == \A c \in Cells : outcome[c] # "none" => proc[c] # "running"
-\* ADR-0021 section 2 and 9 (W1-K): the engine is never resumed after a stop.
-NoResumeAfterStop          == ~flags["resumeAfterStop"]
+\* R-100 (DR-K1): a resume after a stop records `stopped` for every intent-without-outcome cell, never a crash class.
+\* The flag is set only in ReconcileRecord, so a crash outcome recorded before the stop is not a violation.
+StopResumeRecordsStopped   == ~flags["crashUnderStop"]
 \* ADR-0021 section 4, the snapshot row and the between-turns row: a cell recorded crashbetween has the snapshot event
 \* of the turn it was waiting after, and that turn's recorded decision was `snapshot`.
 BetweenRecordedWithSnapshot == \A c \in Cells : outcome[c] = "crashbetween" =>
@@ -809,18 +817,13 @@ NotAllTurnsDelivered       == ~(\E c \in Cells : outcome[c] = "done" /\ turnEnde
 NotCrashBetween            == ~(\E c \in Cells : outcome[c] = "crashbetween" /\ snapEv[c][1])
 
 (* Liveness *)
-\* ADR-0021 section 2 refuses a resume after a stop, so an engine that crashed after a stop never comes back: the run
-\* stays here, its unfinished cells are named by the refusal (HB-RUN-008), and no liveness promise outlives it. Each
-\* property below therefore holds on every behaviour except those that end in this accepted state. The disjunct is
-\* not free: a seeded variant must still be caught on a behaviour that never reaches it (they all are, with no crash).
-StopCrashed                == engine = "down" /\ stopApplied
 DecisionEventuallyResolved == (decision = "open") ~> (decision = "resolved")
 StopReachesTerminal        == controlFile["stop"] ~>
-                                (stopApplied /\ (StopCrashed \/ \A c \in Cells :
-                                   (intent[c] => outcome[c] # "none" /\ proc[c] # "running")))
-EndedCellsGetArchived      == \A c \in Cells : (outcome[c] # "none") ~> (archived[c] \/ StopCrashed)
-PromptedCellsEnd           == \A c \in Cells : AnyPrompted(c) ~> (outcome[c] # "none" \/ StopCrashed)
+                                (stopApplied /\ \A c \in Cells :
+                                   (intent[c] => outcome[c] # "none" /\ proc[c] # "running"))
+EndedCellsGetArchived      == \A c \in Cells : (outcome[c] # "none") ~> archived[c]
+PromptedCellsEnd           == \A c \in Cells : AnyPrompted(c) ~> outcome[c] # "none"
 \* With GradedOncePerPass, "each cell is graded exactly once" (US-44) in the engine's pass.
 ArchivedCellsGetGraded     == \A c \in Cells :
-                                archived[c] ~> (StopCrashed \/ \E p \in Passes : c \in graded[p] /\ passState[p] = "done")
+                                archived[c] ~> (\E p \in Passes : c \in graded[p] /\ passState[p] = "done")
 =============================================================================
