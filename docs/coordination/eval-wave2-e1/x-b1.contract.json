@@ -37,7 +37,7 @@
         "permissions": "observed-only"
       },
       "prompts": [
-        "COMPILE-OWED:docs/coordination/eval-wave2-e1/x-b1.md"
+        "al-01M41JX3PQW2EA9Z4KKSFW3764"
       ],
       "fallback": "A red-only end, a deadline or a failed served-model read: the green follow-on runs as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) in this worker's tree (R-87 Option 1); R-92 is X-B1's Owner review; B1b and B1c reuse this contract with run_id, session and branch suffixed b and c"
     }
