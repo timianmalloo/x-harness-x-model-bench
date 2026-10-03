@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T19:55:16Z",
+  "generated": "2026-10-03T19:58:33Z",
   "audit": [
     {
       "actor": null,
@@ -74612,24 +74612,68 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41NBJ8CQBGSA56ZBN0G79X9",
-      "shortname": "design-slice-review-w0-rev6-sec",
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-sec.md"
+      ],
+      "compiled": false,
       "datetime": "2026-10-03T19:55:16Z",
-      "session": "rv-sec-w0r6-e1e4",
+      "done_when": "Section appended with gate line",
+      "fan_out": 0,
+      "goal": "Review W0 rev 6 for the security lens",
+      "id": "al-01M41NBJ8CQBGSA56ZBN0G79X9",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "docs/coordination/eval-wave1/rv-sec.md (W0 rev 6 delta)",
+      "session": "rv-sec-w0r6-e1e4",
+      "shortname": "design-slice-review-w0-rev6-sec",
+      "skill": "design-slice-review",
       "summary": "RV-SEC W0 rev 6: PASS WITH CONDITIONS, 4 minor findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ta.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:56:02Z",
+      "done_when": "section appended with gate line",
+      "fan_out": 0,
+      "goal": "review W0 rev 6 for the TA lens",
+      "id": "al-01M41NCZA3Q42HH6C0DMH2EQ6F",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W0 rev 6 delta)",
+      "session": "rv-ta-w0r6-e1e4",
+      "shortname": "design-slice-review-ta-w0r6",
+      "skill": "design-slice-review",
+      "summary": "RV-TA W0 rev 6 delta review: PASS WITH CONDITIONS, 6 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M41NHKDNNM4ZGTPEVPBXWTVH",
+      "shortname": "design-slice-review-sre-w1j",
+      "datetime": "2026-10-03T19:58:33Z",
+      "session": "rv-sre-j-e1e4",
+      "prompt": "docs/coordination/eval-wave1/rv-sre.md (W1-J)",
+      "summary": "SRE review of W1-J multi-turn: PASS WITH CONDITIONS, 9 findings",
       "kind": "skill",
       "skill": "design-slice-review",
       "tool": null,
       "actor": null,
       "artifacts": [
-        "docs/design/reviews/eval-review-sec.md"
+        "docs/design/reviews/eval-review-sre-w1j.md"
       ],
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Review W0 rev 6 for the security lens",
-      "done_when": "Section appended with gate line",
+      "goal": "SRE review of W1-J",
+      "done_when": "review file and gate line committed",
       "tier": "T2",
       "fan_out": 0
     }
