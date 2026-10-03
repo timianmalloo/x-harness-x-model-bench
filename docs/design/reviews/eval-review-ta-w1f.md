@@ -70,3 +70,23 @@ The aggregate and its invariant are testable. Derived measures have a rebuild te
 Blocking: 1 (clean-exit tamper test, my W0 rev 2 condition) and 2 (hidden-tests suspend). Clears when both are specified with a named test and the mutation entry, and finding 3 is reconciled with W0 rev 2.
 
 GATE design-eval-property-grader · Test Architect · BLOCK · 10 findings (rv-ta-w1f-e1e4, 2026-10-03)
+
+## Revision 2: delta re-review of `design/eval-property-grader` `ba678630` (13011c96, ec94645c), 2026-10-03
+
+Scope: my 10 findings against the Review disposition table (10 TA rows, all "accepted") and the text of s5.2, s5.6, s9, s10, s14, s15. Confidence: Verified (I opened it).
+
+| # | check | result | evidence |
+| --- | --- | --- | --- |
+| 1 (blocking) | clean-exit row-3 test and mutation | Resolved. `test_check_tree_changed_is_tampered[clean_exit]` is specified as one valid `blocked` line, alone, acked, exit 0, so only row 3 holds. The mutation entry replaces `if facts.hash_after != facts.hash_before:` with `if False:` and names that test as the killer. Every precedence test asserts `Classification.row`, so a row 3/4 swap is caught despite the shared code. Pairs `[r3_hash+r5_malformed]` (HB-CHK-002, not 001) and `[r3_hash+r4_two_lines]` are added. | s5.6 bullets and JSON; s14 row 3 and pairs |
+| 2 (blocking) | per-phase suspend | Resolved. A fresh `SleepDetector` per phase span, `slept()` read at phase end; row 1 reads `spans.tests[tree].suspended or spans.check.suspended`. `test_seeded_suspend_in_tests_phase_is_hb_chk_004_not_measured_0` (hidden tests that time out) and `[r1_tests_suspend+tests_fail]` -> row 1 are named. Both spans are in the evidence. | s5.2 step 3; s5.6 row 1; s9 F7; s14 |
+| 3 | W0 conformance | Resolved. Seven rows, 64 KiB, exit 5 with no line is row 4, NA on rows 1-5. The truth table pins "tamper with failed hidden tests is NA". | s5.3, s5.6, s14 truth table |
+| 4 | pairs | Resolved. Eleven pairs keyed by W0 row, each with its expected row; `test_classify_table` against an independent first-match reference. | s14 "pairs" |
+| 5 | N1 | Resolved. SP-F2 re-run on the pipes shape and committed (`tests/fixtures/property/`, `tests/test_property_forgery_fixture.py`, with a positive control); one expected result (row 6, `did not start`, no `blocked`, 9/9). | s10 N1, s15; `git show --stat ec94645c` |
+| 6 | F17 | Resolved. `test_exit_time_vs_first_byte[lt,eq,gt]` through seams; the 20-run test becomes a one-time pilot measurement. | s14 rows 4 and 7 |
+| 7-10 | minors | Verified true in text: T5 N/A in E1 and triggered at E4; `unbiased_ok` per span with a pilot-gate seam (req-...V67); the runner test builds its own catalog; A13 scoped to the check process. | s14, s5.6, s10 A13 |
+
+Residual (minor, not blocking):
+- The mutation set covers row 3 only. A row-1 mutation on the tests span (drop the tests-span term from the `or`) should also be in `tests/mutations/property.json`, killed by the tests-phase suspend test. X-F can add it at build time.
+- The ready-line bound for the probe host is "the case bound" (s5.5); its test is the N1 node. Confirm at build that a host that never writes the ready line yields row 6 and not row 2.
+
+GATE design-eval-property-grader · Test Architect · PASS WITH CONDITIONS · 2 findings (rv-ta-w1f-e1e4, 2026-10-03)
