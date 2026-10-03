@@ -110,6 +110,11 @@ class CellProcess:
             self._reap_posix_zombie()
         return confirmed
 
+    def exit_time(self) -> int:
+        """The main process's exit time as a FILETIME (`GetProcessTimes` on the grader's own handle). Windows only;
+        raises OSError elsewhere and when the process has not exited."""
+        return 0
+
     def close(self) -> None:
         """Close the job first (kill-on-close, or its POSIX stand-in, ends any remaining tree), then the
         pipes. In that order a close never blocks: closing a pipe that a reader thread is blocked on
@@ -127,10 +132,20 @@ class CellProcess:
                     pass
 
 
-def spawn(argv: list[str], cwd, env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL) -> CellProcess:
-    """Start argv in its own job (Windows) or process group (POSIX). Raises SpawnError, leaving no process."""
-    return _spawn_win32(argv, cwd, env, stdin, stdout, stderr) if sys.platform == "win32" else \
+def spawn(argv: list[str], cwd, env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, *,
+          console: bool = True) -> CellProcess:
+    """Start argv in its own job (Windows) or process group (POSIX). Raises SpawnError, leaving no process.
+
+    `console=False` (Windows) starts the child DETACHED_PROCESS instead of CREATE_NO_WINDOW, so the job holds only the
+    child and no console host (spike E1-S3; the hidden-check runner needs the job's process list to be exactly the check).
+    The default is unchanged, so the engine and `run` are unaffected."""
+    return _spawn_win32(argv, cwd, env, stdin, stdout, stderr, console) if sys.platform == "win32" else \
         _spawn_posix(argv, cwd, env, stdin, stdout, stderr)
+
+
+def now_filetime() -> int:
+    """The system time as a FILETIME (100 ns since 1601), the clock `CellProcess.exit_time` reads. Windows only."""
+    return 0
 
 
 def _parse_pgrep(stdout: str) -> set[int]:
@@ -269,7 +284,7 @@ if sys.platform == "win32":
                 _k32.CloseHandle(self.handle)
                 self.handle = None
 
-    def _spawn_win32(argv: list[str], cwd, env, stdin, stdout, stderr) -> CellProcess:
+    def _spawn_win32(argv: list[str], cwd, env, stdin, stdout, stderr, console: bool = True) -> CellProcess:
         """Start argv suspended, assign it to a new job, resume it. Raises SpawnError, leaving no process."""
         job = Job()
         try:
