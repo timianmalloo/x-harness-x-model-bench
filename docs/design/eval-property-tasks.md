@@ -539,6 +539,14 @@ Applied here so the task authors start from text that meets W0. W0 rev 6.6 wins 
 - **R2-5 (`cacheerror`), R2-6 (`g-ordering`).** X-RS's first commit: state the isolation (a fresh process per hidden test and per case, or a flag that H-3/H-4 cannot set) and write `g-ordering`'s schedule, then re-trace the seven RS2 rows. The first variant run is the measurement.
 - **R2-7, R2-8.** Each task track: one stub per task that returns a unique sentinel, and `test_<id>_stub_fails_every_hidden_test`; section 15's column reads "green on landing; red fixture X" where that is the truth. X-NG: one sentence per NG task, the same rule for both (the primary is the hidden tests only, or `ceilings.hallucinated_symbol_errors: 0`), and the primary's value in the `hallucinated` row.
 
+### Erratum 2 (Coordinator #8, W0 rev 6.7; X-SM's findings, `req-01M41RY339MV3Y56RQ1BKMPFCW`)
+
+X-SM found these while authoring SM1 and SM2. W0 rev 6.7 wins where this design differs.
+- **`launderlines` carrier (W0 rev 6.7 §7).** `flips: [property_check_pass, size_vs_reference]`, `clauses: {property_check_pass: scope}`. Its 3 in-radius lines give `size_vs_reference` `1.5000` (SM1) and `1.3333` (SM2), not the reference's `1.0000`, so section 2's rule (every metric id that differs) names both. Section 8.2's "only `outside_radius_lines` fails" holds for clauses. In section 15, `test_sm_each_metric_and_clause_has_a_flipping_variant` reads "each fails exactly one clause"; each variant's `flips` is its full differing set.
+- **`launderclass` (W0 rev 6.6 §7).** Two classes in 2 outside lines, not section 8.2's one empty `class _Marker`. The whole-tree `new_abstractions` is 2; only clause (a) fails; the 2 outside lines are within the allowance of 4.
+- **SM2's latent terms.** SM2's prompt names the `options` parameter, so the bare term `option` matches its own prompt. Section 15's floor item (5) ("0 hits") was false for SM2. SM2 replaces `option` with `extra option` and `new option`; SM1 keeps `option` (its prompt has no match).
+- **Residual R-S2: a test helper under a test directory.** Under `is_test_path` (W0 rev 6.6, R6.6b), a new `tests/_helpers.py` that is not in the base tree is a product file. Its lines count against `outside_radius_lines: 4`, and a class in it counts against `new_abstractions`. So an honest solution that moves test scaffolding into a helper can score `property_check_pass` 0. Accepted as a residual, not changed: both prompts name the one test file to write, this is the price of `laundertest` (R2-3), and a change to `is_test_path` changes R6.6b, which is a decision request to the Owner. *Confirm:* assume A5's `alt` runs; a measured honest solution that fails only through a test-directory helper reopens it.
+
 ## 17. Conformance, residuals and "Done when" met
 
 - **Assume A1.** The behaviours of sections 6-9 hold on CPython 3.14.6. *Confirm:* the first discrimination run on the pinned interpreter. *Breaks if false:* readiness fails (HB-RDY-003).

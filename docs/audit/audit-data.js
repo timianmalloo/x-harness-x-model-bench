@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T20:39:22Z",
+  "generated": "2026-10-03T21:19:24Z",
   "audit": [
     {
       "actor": null,
@@ -77009,6 +77009,34 @@ window.AUDIT_DATA = {
       "done_when": "Both requests resolved and the follow-on committed; E2-E4 README and briefs committed, blocked ones marked, only dispatchable ones compiled",
       "tier": "T1",
       "fan_out": 0
+    },
+    {
+      "id": "al-01M41T5MAEK44BZ5P2PQ27BH5W",
+      "shortname": "coord-requests-e1e4-8",
+      "datetime": "2026-10-03T21:19:24Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Coordinator #8: answer every open request addressed to coord-opus-e1e4 (X-D1 FYI on rev-6 registry texts; X-SM launderlines flips vs size_vs_reference), fix W0 section 7 in rev 6.7 if needed, note X-SM's other findings in W1-L Erratum 2, then hand back.",
+      "summary": "Resolved req-01M41R3B0HZXP9X31VT6BTF11X (confirmed; texts byte-equal) and req-01M41RY339MV3Y56RQ1BKMPFCW (W0 rev 6.7 R6.7a, W1-L Erratum 2, 669d4f54).",
+      "kind": "manual",
+      "skill": null,
+      "tool": null,
+      "actor": "Coordinator #8 (claude-opus-5-5)",
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/design/eval-property-tasks.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "goal": "Queue for coord-opus-e1e4 empty, each request answered with a verified ruling",
+      "done_when": "coord request list shows no open request to coord-opus-e1e4; any W0/erratum change committed with derive/validate and audit",
+      "tier": "T1",
+      "change": "cl-01M41T5B62RH5KVYMG80HWF5KK",
+      "git": {
+        "sha": "669d4f5495b2dab964da549a386b37624c5d295a",
+        "short": "669d4f549",
+        "branch": "coord/eval-w0-rev67-launder",
+        "pushed": null
+      }
     }
   ],
   "changes": [
@@ -78142,6 +78170,32 @@ window.AUDIT_DATA = {
           "9df8c33d design(eval): W1-L rev 2 - apply RV-TA/PAT/SIM findings, W0 rev 5, R-97; EV-5 note",
           "fce2b0d6 merge: main into design/eval-property-tasks (W0 rev 5, R-98)",
           "5da93d91 design(eval): W1-L property tasks - resilience, rework, no-guessing, simplicity (x2 each), gate pending"
+        ]
+      }
+    },
+    {
+      "id": "cl-01M41T5B62RH5KVYMG80HWF5KK",
+      "datetime": "2026-10-03T21:19:15Z",
+      "session": "coord-opus-e1e4",
+      "kind": "decision",
+      "skill": null,
+      "title": "W0 rev 6.7: launderlines flips the full differing set; W1-L Erratum 2",
+      "prompt": null,
+      "summary": "Two open requests resolved. X-D1 FYI confirmed (registry texts byte-equal to W0; mutant retarget accepted). X-SM: W0 rev 6.7 R6.7a (669d4f54) sets launderlines flips [property_check_pass, size_vs_reference]; W1-L Erratum 2 records launderclass shape, SM2 latent terms, residual R-S2.",
+      "rationale": "R6-8 defines flips as every differing metric id; launderlines' 3 in-radius lines move size_vs_reference (1.5000/1.3333) within the ceiling, so the rev 6.6 list was an instance error, not a rule change. Narrowing flips to clause-deciding metrics would change R6-8 and was refused. The clause-(b) mutant still dies. is_test_path kept (R6.6b); the test-helper false negative is a measured-reopen residual.",
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/design/eval-property-tasks.md",
+        "docs/coordination/eval-wave2-e234/x-sm.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "372296b0",
+        "after": "669d4f5495b2dab964da549a386b37624c5d295a",
+        "branch": "coord/eval-w0-rev67-launder",
+        "pushed": null,
+        "commits": [
+          "669d4f54 docs(design): W0 seam contracts rev 6.7 (launderlines flips the full differing set) and W1-L Erratum 2 (X-SM findings)"
         ]
       }
     }

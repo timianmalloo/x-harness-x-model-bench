@@ -1579,6 +1579,32 @@ window.DOCS_INDEX = {
       "sourceSha256": "b745456c3c0f7262760a6f5b33191c3872bc86a63673f266267aa20c71bca760"
     },
     {
+      "id": "note-20261003-spike-s2-bottle-cookie-reads",
+      "path": "docs/notes/spike-s2-bottle-cookie-reads.md",
+      "title": "S2 spike (stopped) - verified reads of bottle signed-cookie code",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Three verified line reads of bottle.py at the S2 pin (pickle-based signed cookies); the S2 spike was stopped and S2's probe class goes to the Owner for a redesign that never constructs deserialization payloads.",
+      "tags": [
+        "spike",
+        "s2",
+        "security",
+        "bottle"
+      ],
+      "links": [
+        {
+          "to": "design-eval-security-tasks",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "5c36d4aa7ee258164ee2ed2921e92228b81c85584b18ff7d17eb6d3598d6a278"
+    },
+    {
       "id": "note-catalog-0.5-anchors",
       "path": "docs/notes/catalog-0.5-anchors.md",
       "title": "Catalog 0.5.dev normalisation anchors and weight corrections (R-78 condition 1, R-79)",
@@ -1913,7 +1939,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4bf1fe95dffaac7f64f692a9be2df8b5cd0c53d26ccfcbae88fc15627b478cbe"
+      "sourceSha256": "c411280ccee54cda16a67100d4762e01b82c39a48dc8fef59769925442798be5"
     },
     {
       "id": "design-eval-arms",
@@ -2254,6 +2280,64 @@ window.DOCS_INDEX = {
       "sourceSha256": "9421f6075f4a08aa6812800c417a4f2647aa74f4d86903b2100cc6e8dfdf362e"
     },
     {
+      "id": "design-eval-multi-turn",
+      "path": "docs/design/eval-multi-turn.md",
+      "title": "Design: multi-turn attempt, turn snapshots and the TLA+ model (W1-J, ADR-0015)",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 (E2 build track X-J1)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "How a cell holds a second user turn on one ACP session: the driver splits into open, send-turn and close; the engine snapshots the working copy between turns into archive/<cell>/turn-<n>/ through the crash-atomic publish of W0 section 4 before turn n+1's prompt_sent is durable; archive_files gains a snapshot key part that old rows read as final, so every existing verify result is unchanged; the budget clock starts once, at turn 1. The lifecycle model gains a turn index, a snapshot protocol and phased archive writes. TLC passes it and rejects every seeded variant of the five ADR-0015 section 7 invariants.",
+      "tags": [
+        "evaluation-campaign",
+        "multi-turn",
+        "snapshot",
+        "run-engine",
+        "archive",
+        "lifecycle",
+        "tla",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0015-multi-turn-attempt-and-turn-snapshots",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0007-run-engine",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0013-native-cells",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-run-lifecycle-model",
+          "rel": "refines"
+        },
+        {
+          "to": "note-20261003-spike-e4-post-turn-prompt",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "e32527dad56e2c97cd4340c492f0d1c2e679b74853f5d208139ef40ccb8ae847"
+    },
+    {
       "id": "design-eval-power-verdicts",
       "path": "docs/design/eval-power-verdicts.md",
       "title": "Design: power, verdicts, dominance, ring gates and report section 3 (W1-H; X-H1, X-H2)",
@@ -2470,7 +2554,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "6ecda5f7cd5a8e19686d0887865ef3197b58f744d5dcdac110f36cbfeae185ee"
+      "sourceSha256": "b14637314c7501ad8ce14c5b9d741f65331dc4544c28b17107039ddb33753158"
     },
     {
       "id": "design-eval-seam-contracts",
@@ -2574,7 +2658,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "e965180f8d94e036b7503a521a8b001e1e44059e3e8da54771e4a2ec282fe492"
+      "sourceSha256": "2e32a2812750251b4f208c33477243da1304394741c335475fb3e4145501a218"
     },
     {
       "id": "design-eval-security-tasks",
@@ -3462,7 +3546,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "52d7d305c96d90c65de701503a8ccf26a2a0e0ad3c180e917fbc0c1413676b77"
+      "sourceSha256": "c2ee1c2cb82c0eb2c1986915d883410898b43527715dae9d0a2e61d8c6a36977"
     },
     {
       "id": "audit-log",
@@ -6164,7 +6248,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "7c5853f74f62df75f2e70f12b4255e4086596d9216ffeb9ae5a42e75ce7b7f14"
+      "sourceSha256": "94ec74e5552cb4703ec2b068af7f1f29e1187e99ba6fbd01be4a7dd62976eb4f"
     },
     {
       "id": "coordination-eval-brief-rv-ds",
@@ -7711,6 +7795,14 @@ window.DOCS_INDEX = {
       "artifactId": "design-eval-discriminate"
     },
     {
+      "id": "surface-design-eval-multi-turn",
+      "path": "docs/design/eval-multi-turn.html",
+      "title": "Eval Multi Turn",
+      "kind": "design-preview",
+      "description": "Inspect a rendered design or design-language preview.",
+      "artifactId": "design-eval-multi-turn"
+    },
+    {
       "id": "surface-design-eval-property-grader",
       "path": "docs/design/eval-property-grader.html",
       "title": "Eval Property Grader",
@@ -7812,5 +7904,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "2570e413829aab668f881b71fdacc4bd4ab3dded983853339fdc7c19c6a7849a"
+  "graphSha256": "7f80802f05438b5b7a0bc7f5ce55cbf887596f529dd3a3af07f073a177cb6172"
 };
