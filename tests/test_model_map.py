@@ -80,15 +80,36 @@ def test_the_resolver_admits_no_bare_key_and_no_plan_without_a_frozen_vendor():
                                    {"task": "X1", "harness": "codex"}) == {}
 
 
-def test_no_second_parser_of_the_vendor_key():  # R-73 c2: one definition of `<role>@<vendor>` (DM-A)
+def _vendor_key_parsers(sources):
     parsers = set()
-    for path in sorted(SRC.rglob("*.py")):
-        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+    for rel, source in sources.items():
+        tree = ast.parse(source)
+        # W1-A §3.6's role=source@commit grammar is a separate domain from role@vendor.
+        exempt = {id(node) for function in ast.walk(tree) if rel == "plan.py"
+                  and isinstance(function, ast.FunctionDef) and function.name == "parse_binding"
+                  for node in ast.walk(function)}
+        for node in ast.walk(tree):
             if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                    and id(node) not in exempt
                     and node.func.attr in ("split", "rsplit", "partition", "rpartition", "index", "find")
                     and any(isinstance(a, ast.Constant) and a.value == "@" for a in node.args)):
-                parsers.add(path.relative_to(SRC).as_posix())
-    assert parsers == {"config.py"}
+                parsers.add(rel)
+    return parsers
+
+
+def test_no_second_parser_of_the_vendor_key():  # R-73 c2: one definition of `<role>@<vendor>` (DM-A)
+    # Root src/harness_bench; recursive Python files; @ separator parsers; exemption only plan.parse_binding.
+    sources = {p.relative_to(SRC).as_posix(): p.read_text(encoding="utf-8") for p in sorted(SRC.rglob("*.py"))}
+    assert _vendor_key_parsers(sources) == {"config.py"}
+
+
+def test_vendor_parser_guard_catches_a_duplicate_and_only_exempts_role_binding():
+    binding = 'def parse_binding(text):\n    return text.rpartition("@")'
+    duplicate = 'def parse_vendor_key(key):\n    return key.split("@")'
+    assert _vendor_key_parsers({"plan.py": binding}) == set()
+    assert _vendor_key_parsers({"other.py": binding}) == {"other.py"}
+    assert _vendor_key_parsers({"plan.py": binding + "\n" + duplicate}) == {"plan.py"}
+    assert _vendor_key_parsers({"config.py": duplicate, "other.py": duplicate}) == {"config.py", "other.py"}
 
 
 # --- condition 1: bench validate ----------------------------------------------------------------------------------
