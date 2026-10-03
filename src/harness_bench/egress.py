@@ -44,7 +44,7 @@ CANARIES = ("HB-US13-COPILOT-INSTRUCTION", "hb-us13-copilot-skill", "hb-us13-age
 CANARIES_VERSION = "us13-1"  # bump when CANARIES changes, so a record names the set it was scanned for
 CANARIES_US48 = "not planted (Harbor, phase 2)"
 DESTINATION = re.compile(r"[a-z][a-z0-9._-]{0,31}(?::[a-z0-9._-]{1,31})?")
-CLASSES = ("credential", "token_shape", "token_prefix", "email", "username", "home_path", "canary", "unscannable")
+CLASSES = ("credential", "token_shape", "token_prefix", "email", "username", "home_path", "canary", "task_canary", "unscannable")
 # Shapes the report's scan (report/html.py SECRET_SHAPES) does not yet name (D&P Major 2).
 EXTRA_SHAPES = (
     re.compile(r"\bgithub_pat_[A-Za-z0-9_]{20,}"),  # GitHub fine-grained tokens
@@ -55,6 +55,7 @@ EXTRA_SHAPES = (
 SHAPES = tuple(re.compile(p.pattern, re.IGNORECASE) for p in (*report_html.SECRET_SHAPES, *EXTRA_SHAPES))
 TOKEN_BODY = r"[A-Za-z0-9_\-]{16,}"  # after an operator prefix: a token body, not prose about the prefix
 # simplify: fixed bounds; raise them if a real judge payload is ever withheld as unscannable.
+TASK_CANARY = re.compile(r"\bBENCHCANARY-[A-Z0-9]{1,8}-[0-9a-f]{16,}\b")  # R-E9: a planted shape, no value needed
 MAX_LAYERS = 4
 MAX_VIEWS = 64
 PRINTABLE_SHARE = 0.8  # simplify: a decoded run at least this printable is text; tune on a real false view
@@ -259,6 +260,7 @@ def check(payload: str, *, destination: str, operator: Operator, secrets: Sequen
             "username": lambda: _word(views, operator.username),
             "home_path": lambda: _path(views, operator.home),
             "canary": (lambda: _exact(views, canaries)) if canaries else None,
+            "task_canary": lambda: any(TASK_CANARY.search(v) for v in views),
         }
         scanned = tuple(name for name in CLASSES if scans.get(name))
         found = tuple(name for name in scanned if scans[name]())

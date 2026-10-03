@@ -388,6 +388,7 @@ def test_an_operator_without_an_email_scans_every_other_class_and_never_names_em
         "token_shape",
         "username",
         "home_path",
+        "task_canary",
     )
     assert egress.check(
         _plant(operator.username), destination=DEST, operator=operator
@@ -415,7 +416,13 @@ def test_the_operator_is_required():
 
 def test_the_verdict_names_what_was_scanned_so_clean_differs_from_not_scanned():
     bare = egress.check(PAYLOAD, destination=DEST, operator=_operator())
-    assert bare.scanned == ("token_shape", "email", "username", "home_path")
+    assert bare.scanned == (
+        "token_shape",
+        "email",
+        "username",
+        "home_path",
+        "task_canary",
+    )
     full = egress.check(
         PAYLOAD,
         destination=DEST,
@@ -430,6 +437,7 @@ def test_the_verdict_names_what_was_scanned_so_clean_differs_from_not_scanned():
         "username",
         "home_path",
         "canary",
+        "task_canary",
     )
     assert set(full.scanned) <= set(egress.CLASSES) and full.classes == ()
 
