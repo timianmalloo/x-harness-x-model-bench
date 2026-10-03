@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T16:06:20Z",
+  "generated": "2026-10-03T16:15:18Z",
   "audit": [
     {
       "actor": null,
@@ -65105,6 +65105,21 @@ window.AUDIT_DATA = {
       },
       "mode": "pass-through",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M418RSJJN2595TJ8EFQAESRB",
+      "shortname": "Kickoff: build the Evaluation Campaign capability E1-E4 (federated; Lead…",
+      "datetime": "2026-10-03T16:15:18Z",
+      "session": "prompt-log",
+      "prompt": "Kickoff: build the Evaluation Campaign capability E1-E4 (federated; Leader Claude Code, Owner Fable, Coordinator Opus 5.5) - run /prepare-for-coordination then /execute-with-coordination",
+      "summary": "prompt logged for reuse",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
     }
   ],
   "changes": [
