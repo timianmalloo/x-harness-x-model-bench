@@ -449,14 +449,23 @@ def test_a_rename_refused_n_times(tmp_path, monkeypatch, case):
     assert sleeps == []
 
 
-def test_make_writable_adds_write_bit_keeping_other_bits(tmp_path):
+def test_make_writable_adds_write_bit_keeping_other_bits(tmp_path, monkeypatch):
     path = tmp_path / "ro"
     path.write_bytes(b"x")
     path.chmod(0o444)
+    modes: list[int] = []
+    real_chmod = os.chmod
+
+    def spy(p, mode):
+        modes.append(mode)
+        return real_chmod(p, mode)
+
+    monkeypatch.setattr(os, "chmod", spy)
     atomic.make_writable(lambda p: None, path, None)
+    assert modes and modes[0] != stat.S_IWRITE
+    assert modes[0] & stat.S_IWUSR
     mode = stat.S_IMODE(os.stat(path).st_mode)
     assert mode & stat.S_IWUSR
-    assert mode != stat.S_IWRITE
 
 
 def test_make_writable_does_not_chmod_through_a_link(tmp_path):

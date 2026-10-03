@@ -80,10 +80,15 @@ def _conflict(path: Path, message: str) -> None:
     raise BenchError("HB-LED-007", message)
 
 
-def _existing_equal(path: Path, data: bytes) -> bool:
-    lst = os.lstat(path)
-    if not stat.S_ISREG(lst.st_mode) or _is_link_entry(lst):
+def _must_be_regular(path: Path) -> os.stat_result:
+    st = os.lstat(path)
+    if not stat.S_ISREG(st.st_mode) or _is_link_entry(st):  # M7
         raise BenchError("HB-LED-007", f"{path} exists and is not a regular file")
+    return st
+
+
+def _existing_equal(path: Path, data: bytes) -> bool:
+    lst = _must_be_regular(path)
     flags = os.O_RDONLY | O_BINARY | getattr(os, "O_NOFOLLOW", 0)
     try:
         rfd = os.open(path, flags)
@@ -106,10 +111,12 @@ def _existing_equal(path: Path, data: bytes) -> bool:
 
 def _exists_non_regular(path: Path) -> bool:
     try:
-        st = os.lstat(path)
+        _must_be_regular(path)
     except FileNotFoundError:
         return False
-    return (not stat.S_ISREG(st.st_mode)) or _is_link_entry(st)
+    except BenchError:
+        return True
+    return False
 
 
 def create_once(path: Path, data: bytes) -> bool:
@@ -119,14 +126,12 @@ def create_once(path: Path, data: bytes) -> bool:
         fd = os.open(tmp, os.O_RDWR | os.O_CREAT | os.O_EXCL | O_BINARY, 0o644)
         _write_all(fd, data)
         os.fsync(fd)
+        if _exists_non_regular(path):
+            raise BenchError("HB-LED-007", f"{path} exists and is not a regular file")
         try:
             _hardlink(tmp, path)
         except FileExistsError:
             return _existing_equal(path, data)
-        except OSError:
-            if _exists_non_regular(path):
-                raise BenchError("HB-LED-007", f"{path} exists and is not a regular file") from None
-            raise
         got = os.fstat(fd)
         listed = os.lstat(path)
         if (got.st_dev, got.st_ino) != (listed.st_dev, listed.st_ino):

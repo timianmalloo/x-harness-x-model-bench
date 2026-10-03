@@ -44,8 +44,8 @@
   {
     "name": "M7: non-regular existing path is not refused",
     "file": "src/harness_bench/atomic.py",
-    "find": "            if _exists_non_regular(path):\n",
-    "replace": "            if False and _exists_non_regular(path):\n",
+    "find": "    if not stat.S_ISREG(st.st_mode) or _is_link_entry(st):  # M7\n",
+    "replace": "    if False:  # M7\n",
     "tests": ["tests/test_atomic.py::test_create_once_refuses_a_non_regular_existing_path"]
   },
   {
