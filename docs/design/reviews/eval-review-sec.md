@@ -69,3 +69,18 @@ New findings from the delta:
 Conditions for the slices that build on this: (1) W1-F carries the red-first forged-document fixture against the probe host and the 3-trial result as a committed test; (2) the `-S` and amendment note lands in W1-F's design; (3) W1-I and W1-L declare offline builds.
 
 GATE w0-seam-contracts rev 2 · Security & Identity · PASS WITH CONDITIONS · 2 findings (rv-sec-e1e4, 2026-10-03)
+
+
+## W0 rev 3 section 3 delta, 2026-10-03
+
+Scope: the owed delta check of section 3 only (wsgi kind per ruling C-1, frame field names, the `factory` / `paths` / `args` / `{state_dir}` keys, app-output routing, the start bound `bounds_ms[interface]`), read from `docs/design/eval-seam-contracts.md` on main and compared with W1-F rev 3 section 5.5 (`design/eval-property-grader-r3`, f125430a). The boundary analysis is in `docs/design/reviews/eval-review-sec-w1f.md` ("W1-F rev 3 delta"). The two documents agree on frames, keys, the start bound and output routing: no seam disagreement.
+
+| location | finding | severity | fix | confidence |
+| --- | --- | --- | --- | --- |
+| s3 `{state_dir}` | "A per-case empty folder" does not say it is created fresh and reparse-safe. An earlier case's host can pre-seed or junction the next path. | minor | Add: created with no pre-existing entry; a reparse point is unlinked, never entered. | Inferred |
+| s3 cases, `{state_dir}`, app output | The case id is used as a path segment (`state/<case id>/`, `host/<case id>.log`) and its charset is fixed nowhere. | minor | Fix a charset in s3 and refuse others with HB-RDY-005, as for `paths`. | Inferred |
+| s3 app output | "The check may scan it for a canary" reads as a complete leak probe. The scan sees the host's fds 1 and 2 only; a child process or the app's own file is outside it. | minor | Add one sentence: the scan measures accidental logging only. | Verified (text) |
+
+Held: `wsgi` is a closed `kind` value beside `callable`; `paths` and `{state_dir}` are task-authored and hashed, not agent input; `args` substitution is done by the check; the start bound ends in row 6, never a score; the protocol-channel rule (private duplicates, fds 1 and 2 moved before the import) is sufficient against import-time forgery and leaves section 10a as the stated limit.
+
+GATE w0-seam-contracts rev 3 section 3 · Security & Identity · PASS · 3 findings (rv-sec-f3-e1e4, 2026-10-03)
