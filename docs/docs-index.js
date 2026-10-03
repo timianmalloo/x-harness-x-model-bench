@@ -3601,6 +3601,60 @@ window.DOCS_INDEX = {
       "sourceSha256": "0b00511fbc81f9dfcea0fbc2fdc36dbbc7e4c8b273f2c38248dcaa6d328fbcde"
     },
     {
+      "id": "review-eval-ta-w1b",
+      "path": "docs/design/reviews/eval-review-ta-w1b.md",
+      "title": "W1-B crash-atomic publish design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-B against W0 rev 2 section 4 and R-87..R-93. The kill tests, the 26 mutant map and the recovery table are strong. BLOCK on two controls that cannot fail as specified: the call-site classification test (its allowlist contradicts the tree and it has no red fixture) and the Windows no-fsync branch test (it overwrites the constant a mutant changes).",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-b"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "419eae4b6c538261f2df8886c398978b0fb458cc0ff45ed486e089ecb4f65f2d"
+    },
+    {
+      "id": "review-eval-ta-w1d",
+      "path": "docs/design/reviews/eval-review-ta-w1d.md",
+      "title": "W1-D engine identity design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-D against W0 rev 2 sections 6, 9, 10, 12 and R-87..R-93. The direction test has five red fixtures and the engine tests are well chosen. BLOCK on the launch recheck wiring (no test fails when cli.py stops passing the check) and on the G2 coverage half (no red fixtures, and the check is not specified to take a root). The telemetry reclassification section is provisional (Owner request pending).",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-d"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "218e6fe8bdf9182f9e5f9a52aa75b17228f0f92ed2e7a0fb04b8e870831f87fa"
+    },
+    {
       "id": "review-eval-ta-w1f",
       "path": "docs/design/reviews/eval-review-ta-w1f.md",
       "title": "W1-F property grader design review: Test Architect lens",
@@ -5168,5 +5222,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "923c0d2f0d0df3bd1866d1f94c5c4ac2ca8612eff10d80dbd713d04e8f8c0e4e"
+  "graphSha256": "a640314eadb77d9982d999e21217968c739033382db9482b9487bfa88b5b0c80"
 };
