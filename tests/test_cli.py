@@ -369,7 +369,8 @@ def test_plan_confirm_freezes_builds_pack_and_prompt(capsys, root, tmp_path):
                             "--run-id", "p1", "--pack-source", str(tmp_path / "ai-forward"), "--confirm")
     assert code == 0, err
     p = json.loads((tmp_path / "runs" / "p1" / "plan.json").read_text(encoding="utf-8"))
-    assert p["pack"] == {"source": str(tmp_path / "ai-forward"), "commit": commit, "revision": 7}
+    assert p["arms"]["on"]["pack"] == {"source": str(tmp_path / "ai-forward"), "commit": commit, "revision": 7}
+    assert "pack" not in p
     assert p["builds"]["codex"]["version"] == "0.156.0" and len(p["cells"]) == 4
     assert "envelope" in out and "4 cells" in out
     assert _bench(capsys, root, tmp_path, "--tools-dir", str(tools_dir), "plan", "--matrix", str(root / "bench" / "matrix.phase1.yaml"),
