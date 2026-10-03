@@ -1378,6 +1378,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "5ef416d018179c6637ba358a9fe1787d392f2211b744f725440b8b73b1e43c1d"
     },
     {
+      "id": "note-20261003-deviation-coord-transport-grok-session-new",
+      "path": "docs/notes/deviation-coord-transport-grok-session-new.md",
+      "title": "Repo-local deviation - coord_transport accepts Grok watcher acks during session/new",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2027-04-03",
+      "reviewSuggested": [],
+      "summary": "docs/ai-forward-pack/scripts/coord_transport.py is patched locally so Grok's own skills/workflows watcher acknowledgement is accepted while session/new is in flight. Upstream (ai-forward) needs the same hunk.",
+      "tags": [
+        "ai-forward-pack",
+        "deviation",
+        "grok",
+        "acp",
+        "transport"
+      ],
+      "links": [
+        {
+          "to": "note-spike-e1-job-alone",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "054f0800fe8ab750d12a713b83136b2a293230f8f31df53114e39c12adedfe1d"
+    },
+    {
       "id": "note-20261003-spike-e1-handle-list",
       "path": "docs/notes/spike-e1-handle-list.md",
       "title": "Spike E1-S2 - the deliverable's explicit handle list on Windows (close_fds + redirected stdio) and the DuplicateHandle forgery",
@@ -4713,6 +4740,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "a97c88934f6ac7af7f54eff8fc95d769ce89b0702cfc78f842975db0fbe5afe6"
     },
     {
+      "id": "review-eval-sim-w1j",
+      "path": "docs/design/reviews/eval-review-sim-w1j.md",
+      "title": "Simplifier lens review of W1-J, multi-turn attempt and the TLA+ model",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-multi-turn.md (design/eval-multi-turn, 08fabe34, 6b838ff2) against W0 rev 6 and the rulings on main. The mechanism earns its place for E2. The check_models.py change can shrink to data rows by reusing the existing WIDER substitution, the US-44 run should be one-time evidence, one of the two in-place variants is the same guard, and the resume-owned parts wait for W1-K.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "be3d70f4fd74e78422394d9d06b72a133c2360746f4099ee7f464be2e074a271"
+    },
+    {
       "id": "review-eval-sim-w1l",
       "path": "docs/design/reviews/eval-review-sim-w1l.md",
       "title": "Simplifier review of W1-L (property tasks and four graders)",
@@ -4784,7 +4832,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ede49e2195cb4be9ef955be4a4a0fe3985097b7e93476b6c20edf5c2c360c2e7"
+      "sourceSha256": "58aa306fe773223a7bc01e3fdab56fb115aab774568cff79990bd9f9a10cfe52"
     },
     {
       "id": "review-eval-ta-w1a",
@@ -5028,6 +5076,33 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "60320ec9b40537661e3c2b375e345ef2a436d47b0b472498db323d9b882b8c7d"
+    },
+    {
+      "id": "review-eval-ta-w1j",
+      "path": "docs/design/reviews/eval-review-ta-w1j.md",
+      "title": "W1-J multi-turn design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-J (multi-turn attempt, turn snapshots, TLA+ model v5) against W0 rev 6 and the rulings on main. PASS WITH CONDITIONS: the model evidence is real and each ADR-0015 section 7 invariant has its own variant, but the check_models.py change exceeds its grant and is not on the branch, the two engine-bug tests are red for the wrong reason, and the final-row omission is pinned on the reader side only.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-j"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "bbb97953c678b2652d7e7fd02a39c8f7fe52601b98e81c277a2bddf303394ae5"
     },
     {
       "id": "review-eval-ta-w1l",
@@ -6927,5 +7002,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "b42dd1486ad58394b6081bed243f9f3b848f76a7a32c34e5cb584d702a12e2b9"
+  "graphSha256": "aff3da535099539280bc59cfd80f4110b5a46dce46435d2ecc47cb44e68a189c"
 };
