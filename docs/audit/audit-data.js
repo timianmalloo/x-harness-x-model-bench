@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T19:39:55Z",
+  "generated": "2026-10-03T19:48:24Z",
   "audit": [
     {
       "actor": null,
@@ -74456,46 +74456,90 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M41M1T110Y0GDNQRP2AFGX3J",
-      "shortname": "design-slice-review-sim-w1e",
-      "datetime": "2026-10-03T19:32:27Z",
-      "session": "rv-sim-w1e-e1e4",
-      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
-      "summary": "RV-SIM gates: W0 rev5 s6/s7 PASS WITH CONDITIONS (4), W1-E PASS WITH CONDITIONS (4)",
-      "kind": "skill",
-      "skill": "design-slice-review",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/design/reviews/eval-review-sim-w1e.md"
       ],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Simplifier gates on W0 rev5 s6/s7 and W1-E",
+      "datetime": "2026-10-03T19:32:27Z",
       "done_when": "two gate lines written and committed",
+      "fan_out": 0,
+      "goal": "Simplifier gates on W0 rev5 s6/s7 and W1-E",
+      "id": "al-01M41M1T110Y0GDNQRP2AFGX3J",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-sim.md",
+      "session": "rv-sim-w1e-e1e4",
+      "shortname": "design-slice-review-sim-w1e",
+      "skill": "design-slice-review",
+      "summary": "RV-SIM gates: W0 rev5 s6/s7 PASS WITH CONDITIONS (4), W1-E PASS WITH CONDITIONS (4)",
+      "tags": [],
       "tier": "T2",
-      "fan_out": 0
+      "tool": null
     },
     {
-      "id": "al-01M41MFEYW7VSSJ2Z74HJMH8Q8",
-      "shortname": "design-slice-review-eval-ds-w0r45",
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1e.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T19:34:42Z",
+      "done_when": "Two gate lines committed on review/eval-pat-w1e",
+      "fan_out": 0,
+      "goal": "Gate lines for W0 rev 4-5 and W1-E",
+      "id": "al-01M41M5Y194V71FAHZS1Q6M8C0",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md (W0 rev 4-5 delta, W1-E)",
+      "session": "rv-pat-w1e-e1e4",
+      "shortname": "review-pat-w1e",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT: W0 rev 4-5 PASS WITH CONDITIONS (7); W1-E BLOCK (12)",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-ds.md"
+      ],
+      "compiled": false,
       "datetime": "2026-10-03T19:39:55Z",
-      "session": "rv-ds-w0r45-e1e4",
+      "done_when": "Dated section and gate line appended",
+      "fan_out": 0,
+      "goal": "Review W0 rev 4/5 from the DS lens",
+      "id": "al-01M41MFEYW7VSSJ2Z74HJMH8Q8",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "docs/coordination/eval-wave1/rv-ds.md (W0 rev 4/5 delta)",
+      "session": "rv-ds-w0r45-e1e4",
+      "shortname": "design-slice-review-eval-ds-w0r45",
+      "skill": "design-slice-review",
       "summary": "RV-DS delta review of W0 rev 4/5: PASS WITH CONDITIONS, 9 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M41MZ0CGQXEQHQQE11KCGZ0R",
+      "shortname": "design-slice-review-eval-ta-w1e-r2",
+      "datetime": "2026-10-03T19:48:24Z",
+      "session": "rv-ta-e2-e1e4",
+      "prompt": "docs/coordination/eval-wave1/rv-ta.md (W1-E rev 2 re-review)",
+      "summary": "TA re-review of W1-E rev 2: 14 round-1 findings closed (one reopened as R2-1); 7 new; PASS WITH CONDITIONS",
       "kind": "skill",
       "skill": "design-slice-review",
       "tool": null,
       "actor": null,
       "artifacts": [
-        "docs/design/reviews/eval-review-ds.md"
+        "docs/design/reviews/eval-review-ta-w1e.md"
       ],
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Review W0 rev 4/5 from the DS lens",
-      "done_when": "Dated section and gate line appended",
+      "goal": "Verify blocking findings closed and tests meet 2a floor",
+      "done_when": "rev-2 section and gate line appended",
       "tier": "T2",
       "fan_out": 0
     }
