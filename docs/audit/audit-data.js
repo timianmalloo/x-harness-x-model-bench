@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T19:59:07Z",
+  "generated": "2026-10-03T20:00:54Z",
   "audit": [
     {
       "actor": null,
@@ -74695,6 +74695,28 @@ window.AUDIT_DATA = {
       "shortname": "design-slice-review-sre-w1j",
       "skill": "design-slice-review",
       "summary": "SRE review of W1-J multi-turn: PASS WITH CONDITIONS, 9 findings",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/reviews/eval-review-pat-w1j.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T20:00:23Z",
+      "done_when": "gate line written",
+      "fan_out": 0,
+      "goal": "Patterns review of W1-J",
+      "id": "al-01M41NMY21BNYBKP42RQ8P4G46",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave1/rv-pat.md (W1-J)",
+      "session": "rv-pat-w1j-e1e4",
+      "shortname": "design-slice-review-pat-w1j",
+      "skill": "design-slice-review",
+      "summary": "RV-PAT review of W1-J multi-turn: PASS WITH CONDITIONS, 8 findings, one seam disagreement with W1-B",
       "tags": [],
       "tier": "T2",
       "tool": null

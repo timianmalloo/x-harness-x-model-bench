@@ -4322,6 +4322,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "325ed61a2612279876fc84935fa81ca59c7aa6f26bb89407ba4a3311242c7ea3"
     },
     {
+      "id": "review-eval-pat-w1j",
+      "path": "docs/design/reviews/eval-review-pat-w1j.md",
+      "title": "W1-J multi-turn: Patterns Expert lens review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of docs/design/eval-multi-turn.md (branch design/eval-multi-turn, 6b838ff2) by the Patterns Expert lens: session protocol, the _attempt turn loop, the snapshot as a Memento, the turn-<n> archive layout, KEYS and the final-rows filter, the shared append_missing_rows helper (a seam disagreement with W1-B), and the check_models.py extension. RV-TA's findings are not repeated.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "0820df82326c77df02683b9cd20f7d2cc707197ea7c89272ef29de5157afc16e"
+    },
+    {
       "id": "review-eval-pat-w1l",
       "path": "docs/design/reviews/eval-review-pat-w1l.md",
       "title": "Patterns Expert review of W1-L, the eight property tasks (Adversary Mode)",
@@ -7008,5 +7029,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "a39e24f85e7497dbd190e8d809c96b875c384508bf1fc188cce154b7448549f0"
+  "graphSha256": "dceb01a5b3c8ff369e6a71bb774769c3719c550c3f8cd526f32f5022486d756f"
 };
