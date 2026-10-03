@@ -906,7 +906,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "fea4b3c8bc2799cfda23a80c7f7c4a422f94b09d92454be36159e6164711c1f6"
+      "sourceSha256": "5f94c6e9e7cc5bf5cb9a949c517cb1034d64747a7afa7182313697940a67aa7d"
     },
     {
       "id": "adr-0021-plan-level-resume-and-liveness",
@@ -2223,7 +2223,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation: W0 (serial spine item 2), before Wave 1",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "Revision 3 (the Wave 1 seam answers; rev-3 change table at the end). The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
+      "summary": "Revision 4 (the batch-b seam answers and the RV-PAT, RV-SIM, RV-SEC and RV-DS cross-slice findings on W1-B, W1-C, W1-D and W1-H; rev-4 change table and the delta re-read list at the end; rev 3's table kept). The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
       "tags": [
         "benchmark",
         "campaign",
@@ -2315,7 +2315,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ccb232390d0419f71662e9a3811a4e03d81f3a7b773fbb61cc1db62aa401fe2a"
+      "sourceSha256": "653d6fd080b1abf02183e8d986071f2a131683a2300ccc5082c23341c80cd601"
     },
     {
       "id": "design-eval-security-tasks",
@@ -4710,6 +4710,255 @@ window.DOCS_INDEX = {
       "sourceSha256": "60320ec9b40537661e3c2b375e345ef2a436d47b0b472498db323d9b882b8c7d"
     },
     {
+      "id": "brief-eval-env-a",
+      "path": "docs/coordination/eval-wave2-e1/env-a.md",
+      "title": "Brief ENV-A: hermetic tests never read the operator's credential (the ambient-credential fix)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "An autouse fixture that clears every credential variable for tests not marked credentials, with a test that proves the three Q0-join failures pass with the token set; Grok grok-4.7 high, one turn.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "afa286acc92baee1f55f8dfc961e2e8a57704881a521f6508c764bc24697a0e6"
+    },
+    {
+      "id": "brief-eval-tool-gsm",
+      "path": "docs/coordination/eval-wave2-e1/tool-gsm.md",
+      "title": "Brief TOOL-GSM: the Grok served-model reader (R-92 condition 1)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "A stdlib script that reads one Grok dispatch's session directory and fails unless every response was served by grok-4.7; it must join before the second Grok dispatch (R-92).",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "57c3960e70475246ed81a4d1ff337fade7d0c94bd1e6461b0df37d0cff99f401"
+    },
+    {
+      "id": "brief-eval-x-a1",
+      "path": "docs/coordination/eval-wave2-e1/x-a1.md",
+      "title": "Brief X-A1: arms in the plan, ring plumbing, the pack-reader guard (E1 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-A1 builds bench-matrix/2 and bench-plan/2, the accessors, launch order, ready rule, role binding, the G1 guard and the reader migrations of W1-A rev 2 on Codex gpt-6.1-sol, in two dispatches, each red and green in one turn.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-arms",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "bfc532b2581e3bca890465990349ed956885223b2bdcb584d247935d677908ef"
+    },
+    {
+      "id": "brief-eval-x-b1",
+      "path": "docs/coordination/eval-wave2-e1/x-b1.md",
+      "title": "Brief X-B1: create_once, publish_dir, the temp sweep and the lock helper (E1 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-B1 builds atomic.py (W1-B rev 2), the workspace._land hunk and oslock.acquire_then_probe on Grok grok-4.7 high, in three dispatches, each red and green in one turn and joined before the next.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-atomic-publish",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "151b2f470840a34fe8955f89700014c522f696116006a5daf7e613cf7c9732f8"
+    },
+    {
+      "id": "brief-eval-x-b2",
+      "path": "docs/coordination/eval-wave2-e1/x-b2.md",
+      "title": "Brief X-B2: crash-atomic final archive (E1 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-B2 reworks archive.archive_cell onto atomic.publish_dir with a strict verify and archive.attempt_dirs as the one attempt-folder reader (W1-B rev 2 section 6) on Agy gemini-3.8-flash-high, one turn red and green.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-atomic-publish",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "a16f73aeebe362c4dd5e74b5d5c60566d0bd106fe6baff2168c70d890e10c348"
+    },
+    {
+      "id": "brief-eval-x-d",
+      "path": "docs/coordination/eval-wave2-e1/x-d.md",
+      "title": "Brief X-D: engine identity, launch recheck, E1 registry rows (E1 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-D builds identity.py, the E1 errors.py rows, the guard entries and the engine launch recheck of W1-D rev 2 on Codex gpt-6.1-sol, in two dispatches, each red and green in one turn.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-identity",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "51648ab2fba1867e385b22e2d05d435cc8cb2d4d11ad89ce1768d9873624fdde"
+    },
+    {
+      "id": "brief-eval-x-f",
+      "path": "docs/coordination/eval-wave2-e1/x-f.md",
+      "title": "Brief X-F: property grader and hidden-check runner (E1 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-F builds grade/property.py, bench_check.py, _env.py and the runner, correctness, mutation, procs and egress edits of W1-F rev 3, red first, on Sonnet; F0 (the skeleton) joins first so X-G1 can start.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-property-grader",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "42653e5707f81c7a2601798cb36336eac8df739b5d0ea1c99841f5fd565b8306"
+    },
+    {
+      "id": "brief-eval-x-g1",
+      "path": "docs/coordination/eval-wave2-e1/x-g1.md",
+      "title": "Brief X-G1: catalog 0.7.dev, the eleven property metrics (E1 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-G1 adds the eleven 0.7.dev metrics with property tags and pass_at_1's also_graded_by to bench/metrics.yaml (W1-G rev 2, R-90, R-95) on Grok grok-4.7 high, one turn red and green.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-catalog-0-7",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "f9424df257930035152175e135fb6a12aab4999a4571eeee9c98526f14f09306"
+    },
+    {
+      "id": "brief-eval-x-i",
+      "path": "docs/coordination/eval-wave2-e1/x-i.md",
+      "title": "Brief X-I: security task S1 (E1 build)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "X-I authors tasks/S1 per W1-I rev 2 on Sonnet, then, in a follow-on after X-F joins, proves the reference and naive solutions through the real grader.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-security-tasks",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "79fb2415deccc1a9ce11a17573ddb721213ba014c9f19a42e2e40bf2781e5055"
+    },
+    {
       "id": "coordination-eval-brief-rv-ds",
       "path": "docs/coordination/eval-wave1/rv-ds.md",
       "title": "RV-DS brief: Distributed Systems lens reviewer (Adversary Mode)",
@@ -5377,6 +5626,45 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "e9d90123909840664872204d201be56ce41df2e05a31975af309a88b7d084c3d"
+    },
+    {
+      "id": "coordination-eval-wave2-e1-briefs",
+      "path": "docs/coordination/eval-wave2-e1/README.md",
+      "title": "Wave 2 E1 dispatch pack: build briefs, routing, DAG and launch order (Evaluation Campaign)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 2, phase E1 (walking skeleton build)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "The rules every E1 build worker follows, the routing of the fourteen E1 items to harness and pinned model (R-87, R-88 confirmed to Codex, R-91, R-92), the real dependency DAG, the launch order by critical path, the dispatch shape per track (one external turn red and green, or a Sonnet follow-on), and one brief per item. Nine briefs are written; five wait on designs that have not passed their gate.",
+      "tags": [
+        "coordination",
+        "briefs",
+        "wave-2",
+        "e1",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "coordination-eval-wave1-briefs",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "617c4ec97f5709a9b5a6528934d744cf6b19e8b6cf8105276be68a26c40fb971"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -6185,6 +6473,14 @@ window.DOCS_INDEX = {
       "description": "Inspect a rendered design or design-language preview."
     },
     {
+      "id": "surface-adr-0020-power-and-verdicts-stdlib",
+      "path": "docs/adr/0020-power-and-verdicts-stdlib.html",
+      "title": "0020 Power And Verdicts Stdlib",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "adr-0020-power-and-verdicts-stdlib"
+    },
+    {
       "id": "surface-proposals-benchmark-state-and-target",
       "path": "docs/proposals/benchmark-state-and-target.html",
       "title": "Benchmark: state and target",
@@ -6215,6 +6511,14 @@ window.DOCS_INDEX = {
       "kind": "knowledge-tool",
       "description": "Open an interactive knowledge artifact.",
       "artifactId": "proposal-enterprise-production-portfolio"
+    },
+    {
+      "id": "surface-coordination-eval-wave2-e1-env-a",
+      "path": "docs/coordination/eval-wave2-e1/env-a.html",
+      "title": "Env A",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "brief-eval-env-a"
     },
     {
       "id": "surface-case-study",
@@ -6253,7 +6557,79 @@ window.DOCS_INDEX = {
       "kind": "knowledge-tool",
       "description": "Open an interactive knowledge artifact.",
       "artifactId": "proposal-pack-onoff-analysis"
+    },
+    {
+      "id": "surface-coordination-eval-wave2-e1-readme",
+      "path": "docs/coordination/eval-wave2-e1/README.html",
+      "title": "Readme",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "coordination-eval-wave2-e1-briefs"
+    },
+    {
+      "id": "surface-coordination-eval-wave2-e1-tool-gsm",
+      "path": "docs/coordination/eval-wave2-e1/tool-gsm.html",
+      "title": "Tool Gsm",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "brief-eval-tool-gsm"
+    },
+    {
+      "id": "surface-coordination-eval-wave2-e1-x-a1",
+      "path": "docs/coordination/eval-wave2-e1/x-a1.html",
+      "title": "X A1",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "brief-eval-x-a1"
+    },
+    {
+      "id": "surface-coordination-eval-wave2-e1-x-b1",
+      "path": "docs/coordination/eval-wave2-e1/x-b1.html",
+      "title": "X B1",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "brief-eval-x-b1"
+    },
+    {
+      "id": "surface-coordination-eval-wave2-e1-x-b2",
+      "path": "docs/coordination/eval-wave2-e1/x-b2.html",
+      "title": "X B2",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "brief-eval-x-b2"
+    },
+    {
+      "id": "surface-coordination-eval-wave2-e1-x-d",
+      "path": "docs/coordination/eval-wave2-e1/x-d.html",
+      "title": "X D",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "brief-eval-x-d"
+    },
+    {
+      "id": "surface-coordination-eval-wave2-e1-x-f",
+      "path": "docs/coordination/eval-wave2-e1/x-f.html",
+      "title": "X F",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "brief-eval-x-f"
+    },
+    {
+      "id": "surface-coordination-eval-wave2-e1-x-g1",
+      "path": "docs/coordination/eval-wave2-e1/x-g1.html",
+      "title": "X G1",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "brief-eval-x-g1"
+    },
+    {
+      "id": "surface-coordination-eval-wave2-e1-x-i",
+      "path": "docs/coordination/eval-wave2-e1/x-i.html",
+      "title": "X I",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "brief-eval-x-i"
     }
   ],
-  "graphSha256": "426b6d97eb19ef9ec417b73480c62ab7cde16c961f5f06b5b863e107662fc589"
+  "graphSha256": "d4859def3d3ea97042a6f2732e7d8d154bf5cc924a1c92f953724056c9e5b72a"
 };
