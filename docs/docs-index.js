@@ -1857,6 +1857,52 @@ window.DOCS_INDEX = {
       "sourceSha256": "57d4eb4ca1786bd4b012c42cbb0a2263628f17448d0ab1b2c2fa1cd516db026a"
     },
     {
+      "id": "design-eval-arms",
+      "path": "docs/design/eval-arms.md",
+      "title": "W1-A design: arms in the plan (bench-matrix/2, bench-plan/2, blocked launch order, the pack-reader guard)",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 design slice W1-A (builds as X-A1 in E1 and X-A3 in E3)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Designs ADR-0014 for the code. One new concept, the arm, replaces the pack setting: bench-matrix/2 declares arms and bench-plan/2 freezes one pack revision per pack-bearing arm, one ordered comparison list, a stored launch seed and cells keyed by arm, with the cell_id recipe byte-identical (so grid-4 re-plans to the same 276 ids, shown by spike). Launch order is blocked by (task, combo, rep) with hash-keyed arm order; an accepted plan meets the 5 % bound, found by bounded redraw, and an unsatisfiable shape is refused (HB-PLN-001). A measurement plan refuses a task that is not ready (HB-PLN-004). The pack-reader guard is an AST scan with a named E1 allowlist; three readers migrate in its commit. The E1 / E3 split, every on/off literal site, the EV-17 test map, two W0 errata and four spikes are in the doc.",
+      "tags": [
+        "benchmark",
+        "campaign",
+        "arms",
+        "plan",
+        "matrix",
+        "launch-order",
+        "evaluation-campaign",
+        "design-slice"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0014-arm-and-cell-grain",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "9adba8714523f78f5c06bee7dc6127bb080ecb49e9c74e6387e971a27d47104f"
+    },
+    {
       "id": "design-eval-seam-contracts",
       "path": "docs/design/eval-seam-contracts.md",
       "title": "W0 seam contracts: the interfaces every Evaluation Campaign slice designs and builds against",
@@ -3399,7 +3445,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9e9de15f0f0e0a3c65e3cc32b87b0122da2773daef6d399386535a8c80869fe5"
+      "sourceSha256": "e69173cadc79609b475999dedd6a7a537c2f9b50669f08202809d75aa2581ae4"
     },
     {
       "id": "review-eval-pat",
@@ -3451,7 +3497,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2a70d02cbc2de5b67584c890192a4635b731ecedb108c15de5c3c5b2454080ea"
+      "sourceSha256": "5665e66315039cf611d9c8fa7f7b9c0b1285fdfc6d3c5e57dc20640175987e95"
     },
     {
       "id": "review-eval-sim",
@@ -4929,6 +4975,14 @@ window.DOCS_INDEX = {
       "artifactId": "audit-log"
     },
     {
+      "id": "surface-design-eval-arms",
+      "path": "docs/design/eval-arms.html",
+      "title": "Eval Arms",
+      "kind": "design-preview",
+      "description": "Inspect a rendered design or design-language preview.",
+      "artifactId": "design-eval-arms"
+    },
+    {
       "id": "surface-design-eval-seam-contracts",
       "path": "docs/design/eval-seam-contracts.html",
       "title": "Eval Seam Contracts",
@@ -5014,5 +5068,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "4daf8d55d8006eac6191d5790dc5e2b39bad25dc5910e9c0b3c0bffddb15905e"
+  "graphSha256": "d80101ce14ef0b35dc2bed1f1ad964808443b95da60ffa0ac7691ce929137447"
 };
