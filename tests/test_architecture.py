@@ -11,6 +11,9 @@ import ast
 from pathlib import Path
 
 import pytest
+from import_graph import aliases, dotted, imports, package
+
+from harness_bench.identity import CLASSES
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src" / "harness_bench"
@@ -18,6 +21,9 @@ MODULES = sorted(SRC.rglob("*.py"))
 SUBPROCESS_CALLS = {"run", "Popen", "call", "check_call", "check_output", "getoutput", "getstatusoutput"}
 OS_SPAWNS = {"system", "popen", "startfile", "execv", "execve", "spawnv", "spawnve"}
 ACP_METHODS = {"initialize", "session/new", "session/prompt", "session/set_mode", "session/cancel", "session/request_permission"}
+SUBPROCESS_CALLERS = frozenset({"procs.py", "grade/bench_check.py"})
+IMPORT_LINT_MODULES = frozenset({"identity.py", "campaign.py", "power.py", "verdicts.py", "gates.py",
+                                 "grade/property.py", "grade/bench_check.py", "grade/_env.py"})
 
 
 def _tree(path: Path) -> ast.Module:
@@ -41,15 +47,86 @@ def test_the_run_path_never_imports_grading_or_reports(name):
     assert not {i for i in imported if i.startswith(("harness_bench.grade", "harness_bench.report"))}
 
 
-def test_only_procs_calls_subprocess_or_spawns():
+def _spawn_offenders(sources: dict[str, str]) -> list[str]:
     offenders = []
-    for path in MODULES:
-        for node in ast.walk(_tree(path)):
-            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name):
-                owner, attr = node.func.value.id, node.func.attr
-                if ((owner == "subprocess" and attr in SUBPROCESS_CALLS) or (owner == "os" and attr in OS_SPAWNS)) and path != SRC / "procs.py":
-                    offenders.append(f"{path.relative_to(ROOT).as_posix()}:{node.lineno}")
+    for rel, source in sorted(sources.items()):
+        if rel in SUBPROCESS_CALLERS:
+            continue
+        tree = ast.parse(source)
+        names = aliases(f"src/harness_bench/{rel}", tree)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                target = dotted(node.func, names)
+                if target in {f"subprocess.{name}" for name in SUBPROCESS_CALLS} | {f"os.{name}" for name in OS_SPAWNS}:
+                    offenders.append(f"{rel}:{node.lineno}")
+    return offenders
+
+
+def test_only_procs_calls_subprocess_or_spawns():
+    """D3 root: src/harness_bench/; recursion: yes; tokens: resolved subprocess
+    calls in SUBPROCESS_CALLS and os calls in OS_SPAWNS; allowlist: SUBPROCESS_CALLERS.
+    W0 §10 admits bench_check.py, which is stdlib-only in the grading copy.
+    """
+    offenders = _spawn_offenders({p.relative_to(SRC).as_posix(): p.read_text(encoding="utf-8") for p in MODULES})
     assert offenders == []
+
+
+@pytest.mark.parametrize(("rel", "source", "bad"), [
+    ("grade/bench_check.py", "import subprocess\nsubprocess.Popen([])", False),
+    ("grade/bench_check.py", "from subprocess import run as r\nr([])", False),
+    ("procs.py", "import os as o\no.system('x')", False),
+    ("grade/property.py", "import subprocess\nsubprocess.Popen([])", True),
+    ("workspace.py", "from subprocess import Popen\nPopen([])", True),
+    ("workspace.py", "import subprocess as sp\nsp.run([])", True),
+    ("workspace.py", "from os import system\nsystem('x')", True),
+    ("workspace.py", "import os\nos.system('x')", True),
+    ("workspace.py", "import subprocess\nsubprocess.run([])", True),
+    ("workspace.py", "from subprocess import run as launch\nlaunch([])", True),
+    ("workspace.py", "import os\nos.getenv('x')", False),
+])
+def test_spawn_guard_resolves_aliases_and_checks_the_two_path_allowlist(rel, source, bad):
+    assert bool(_spawn_offenders({rel: source})) is bad
+
+
+def test_subprocess_callers_equal_w0_two_paths():
+    assert SUBPROCESS_CALLERS == frozenset({"procs.py", "grade/bench_check.py"})
+
+
+def _gateway_imports(sources: dict[str, str]) -> list[str]:
+    return sorted(rel for rel, source in sources.items() if rel in IMPORT_LINT_MODULES and any(
+        target == "harness_bench.gateway" or target.startswith("harness_bench.gateway.")
+        for target in imports(f"src/harness_bench/{rel}", ast.parse(source))))
+
+
+@pytest.mark.parametrize("source", [
+    "from ..gateway import x", "import harness_bench.gateway as g", "from harness_bench import gateway",
+])
+def test_gateway_lint_resolves_each_forbidden_import_form(source):
+    assert _gateway_imports({"grade/property.py": source}) == ["grade/property.py"]
+
+
+def test_identity_campaign_power_verdict_gate_property_modules_never_import_gateway():
+    """G3 root: W0 §9 yes-set (IMPORT_LINT_MODULES); recursion: no; tokens:
+    every resolved harness_bench.gateway import or descendant; allowlist: none.
+    Lazy and typing imports remain imports.
+    """
+    assert IMPORT_LINT_MODULES <= CLASSES.keys()
+    assert _gateway_imports({name: (SRC / name).read_text(encoding="utf-8") for name in IMPORT_LINT_MODULES
+                             if (SRC / name).is_file()}) == []
+
+
+def test_gateway_lint_has_the_exact_w0_yes_set():
+    text = (ROOT / "docs/design/eval-seam-contracts.md").read_text(encoding="utf-8")
+    section = text.split("## 9. Planned new modules", 1)[1].split("## 10.", 1)[0]
+    expected = {line.split("`")[1].removeprefix("src/harness_bench/") for line in section.splitlines()
+                if line.startswith("| `src/") and line.split("|")[-2].strip().startswith("yes")}
+    assert IMPORT_LINT_MODULES == expected
+    assert len(expected) == 8
+
+
+def test_gateway_lint_ignores_other_modules_and_non_gateway_imports():
+    assert _gateway_imports({"grade/property.py": "from harness_bench import procs",
+                             "discriminate.py": "from harness_bench import gateway"}) == []
 
 
 def _string_constants(path: Path) -> set[str]:
@@ -85,26 +162,6 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
     (getattr, importlib) and an annotation that lies about a backend's type.
     """
     gateway = ("harness_bench", "gateway")
-
-    def package(rel: str) -> tuple[str, ...]:
-        return tuple(Path(rel).with_suffix("").parts[1:-1])  # rel is "src/harness_bench/.../x.py"
-
-    def aliases(rel: str, tree: ast.Module) -> dict[str, str]:
-        out, pkg = {}, package(rel)
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Import):
-                out |= {(a.asname or a.name.split(".")[0]): (a.name if a.asname else a.name.split(".")[0])
-                        for a in node.names}
-            elif isinstance(node, ast.ImportFrom):
-                base = list(pkg[:len(pkg) - node.level + 1]) if node.level else []
-                module = ".".join(base + ([node.module] if node.module else []))
-                out |= {(a.asname or a.name): f"{module}.{a.name}" for a in node.names}
-        return out
-
-    def dotted(expr: ast.expr, names: dict[str, str]) -> str:
-        if isinstance(expr, ast.Name):
-            return names.get(expr.id, "")
-        return f"{dotted(expr.value, names)}.{expr.attr}" if isinstance(expr, ast.Attribute) else ""
 
     data_types = {"str", "bytes", "int", "float", "bool", "dict", "list", "tuple", "set", "frozenset", "Path"}
 
@@ -225,7 +282,7 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
         # annotations). A new caller - a judge spawned from grade/judge.py above all - fails until added here on purpose.
         # host added (ADR-0013 Amendment 1 s5, the macOS port): POSIX creation_time() runs `ps -o lstart=` through
         # procs.run, the only sanctioned subprocess gateway (D3) -- host.py itself never calls subprocess directly.
-        allowed = {"engine", "gitsafe", "grade/correctness", "host", "plan", "procs", "tools", "workspace"}
+        allowed = {"engine", "gitsafe", "grade/correctness", "grade/property", "host", "plan", "procs", "tools", "workspace"}
         for rel in sorted(set(trees) - inside):
             if Path(rel).with_suffix("").as_posix().removeprefix("src/harness_bench/") in allowed:
                 continue
@@ -282,6 +339,8 @@ def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
         # Fable re-review Major 1: outside gateway/, only today's procs callers may reach procs.
         "the-judge-grader-spawns-the-judge-cli": (True, {"src/harness_bench/grade/judge.py":
                                                          f"from harness_bench import procs\n\ndef grade(p):\n    return {run}\n"}),
+        "the-property-grader-reaches-procs": (False, {"src/harness_bench/grade/property.py":
+                                                      "from harness_bench import procs\n\ndef spawn(a):\n    return procs.spawn(a)\n"}),
         "a-new-grader-spawns-through-procs": (True, {"src/harness_bench/grade/jury.py":
                                                      f"from harness_bench import procs\n\ndef ask(p):\n    return {run}\n"}),
         "a-new-module-aliases-procs-run": (True, {"src/harness_bench/grade/mutation.py":

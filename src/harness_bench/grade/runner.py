@@ -57,7 +57,8 @@ from harness_bench.grade import (
     process,
     rigor,
 )
-from harness_bench.plan import file_hash, load_confirmed, task_version_hash, tree_hash
+from harness_bench.identity import catalog_hash
+from harness_bench.plan import file_hash, load_confirmed, task_version_hash
 from harness_bench.telemetry import Extraction, normalize
 
 logger = logging.getLogger("harness_bench.grade")
@@ -103,13 +104,6 @@ NOT_RECORDED = "not recorded"
 # Extra pins beyond python, dotnet, and dotnet-stryker: key -> argv whose last stdout line is the version.
 # dotnet-stryker is measured in tool_versions from the cached DLL (spike c6a). `--version` is not that version.
 PINNED_TOOLS: dict[str, list[str]] = {}
-
-
-def catalog_hash(root: Path) -> str:
-    """R-59 c1: plan.tree_hash over bench/metrics.yaml and every file under bench/rubrics/, paths relative to bench/."""
-    bench = root / "bench"
-    rubrics = [p for p in (bench / "rubrics").rglob("*") if p.is_file()] if (bench / "rubrics").is_dir() else []
-    return tree_hash(bench, [bench / "metrics.yaml", *rubrics])
 
 
 def _version(argv: list[str], cwd: Path) -> str:
