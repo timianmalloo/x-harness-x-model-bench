@@ -1854,7 +1854,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "680e38878d542a547ed590eb1de940254e554c8d1b42a449ffe6db9db20d814c"
+      "sourceSha256": "f4a94ef16a9889ff1923491693ecb0533e12741e2a9345905ebd65b4e864415d"
     },
     {
       "id": "design-eval-seam-contracts",
@@ -3556,6 +3556,37 @@ window.DOCS_INDEX = {
       "sourceSha256": "5665e66315039cf611d9c8fa7f7b9c0b1285fdfc6d3c5e57dc20640175987e95"
     },
     {
+      "id": "review-eval-sec-w1b",
+      "path": "docs/design/reviews/eval-review-sec-w1b.md",
+      "title": "Security & Identity review of W1-B: crash-atomic publish (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Security & Identity gate on W1-B (design/eval-atomic-publish, 67e7dc83) against W0 rev 2. W0 F10 landed (nonce temp name, exclusive create, lstat-first non-recursing sweep, tests named). Open: ignore patterns hide planted content from the tamper check, the temp-to-final link has no identity check, and the symlink branch is unmeasured with a test that can skip everywhere. PASS WITH CONDITIONS, 8 findings.",
+      "tags": [
+        "review",
+        "security",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-b"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sec",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "72070286c2458a4a228c43e457b4258dfcd4c72b5150d27482371f62e1d0d075"
+    },
+    {
       "id": "review-eval-sec-w1f",
       "path": "docs/design/reviews/eval-review-sec-w1f.md",
       "title": "Security & Identity review of W1-F: hidden-check runner and property grader (Adversary Mode)",
@@ -3608,6 +3639,27 @@ window.DOCS_INDEX = {
       "sourceSha256": "6498292143c8251d7eacdd9887b620b175937d91c7c69224f58467d473a63c2f"
     },
     {
+      "id": "review-eval-sim-w1a",
+      "path": "docs/design/reviews/eval-review-sim-w1a.md",
+      "title": "Simplifier lens review of W1-A, arms v2",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-arms.md (design/eval-arms, ab13f0eb) against W0 rev 2 and R-87..R-93 on main. The hash-keyed blocked order with a bounded redraw earns its place; HB-PLN-004 and G1 earn theirs. Three tests and one comparison table are weight that can go.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "5ce2b0abc3ef7877004b253d386bfafab795fbe68e9173d793ee018590ad446f"
+    },
+    {
       "id": "review-eval-sim-w1b",
       "path": "docs/design/reviews/eval-review-sim-w1b.md",
       "title": "Simplifier lens review of W1-B, crash-atomic publish",
@@ -3627,6 +3679,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "be00c56fc382061170f39bd21fcc7eeafc8c064fbb4100188b64e39c0dead710"
+    },
+    {
+      "id": "review-eval-sim-w1d",
+      "path": "docs/design/reviews/eval-review-sim-w1d.md",
+      "title": "Simplifier lens review of W1-D, engine identity",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "RV-SIM (Simplifier, soft veto) findings on docs/design/eval-identity.md (design/eval-identity, 71a15a0b) against W0 rev 2 and R-87..R-93 on main. The refusal of a third class is accepted; tests/import_graph.py earns its place; the second-read torn-read guard and the doubled grade-side hash need a reason or a trim. telemetry/* is provisional.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "c862b5fa4bdd0dc807da71facdea81ca7c5c0fa4cc7b2c8839eaddf8d481ac64"
     },
     {
       "id": "review-eval-sim-w1f",
@@ -3724,6 +3797,87 @@ window.DOCS_INDEX = {
       "sourceSha256": "0b00511fbc81f9dfcea0fbc2fdc36dbbc7e4c8b273f2c38248dcaa6d328fbcde"
     },
     {
+      "id": "review-eval-ta-w1a",
+      "path": "docs/design/reviews/eval-review-ta-w1a.md",
+      "title": "W1-A arms v2 design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-A against W0 rev 2 and R-87..R-93. The EV-17 map is complete and the grid-4 fixture is independent of the new code (derived from the live plan). PASS WITH CONDITIONS: no control that checks the on/off literal sweep outside Python, a real-wiring gap behind a faked install_pack, an architecture test with no red case, and a boundary case for the balance bound.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-a"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "8c74630765c213725014dd41cd1564a01166cdf414a2e480734a367e7d272451"
+    },
+    {
+      "id": "review-eval-ta-w1b",
+      "path": "docs/design/reviews/eval-review-ta-w1b.md",
+      "title": "W1-B crash-atomic publish design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-B against W0 rev 2 section 4 and R-87..R-93. The kill tests, the 26 mutant map and the recovery table are strong. BLOCK on two controls that cannot fail as specified: the call-site classification test (its allowlist contradicts the tree and it has no red fixture) and the Windows no-fsync branch test (it overwrites the constant a mutant changes).",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-b"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "419eae4b6c538261f2df8886c398978b0fb458cc0ff45ed486e089ecb4f65f2d"
+    },
+    {
+      "id": "review-eval-ta-w1d",
+      "path": "docs/design/reviews/eval-review-ta-w1d.md",
+      "title": "W1-D engine identity design review: Test Architect lens",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 gate reviews",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect (Adversary Mode) review of W1-D against W0 rev 2 sections 6, 9, 10, 12 and R-87..R-93. The direction test has five red fixtures and the engine tests are well chosen. BLOCK on the launch recheck wiring (no test fails when cli.py stops passing the check) and on the G2 coverage half (no red fixtures, and the check is not specified to take a root). The telemetry reclassification section is provisional (Owner request pending).",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "wave-1",
+        "w1-d"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "218e6fe8bdf9182f9e5f9a52aa75b17228f0f92ed2e7a0fb04b8e870831f87fa"
+    },
+    {
       "id": "review-eval-ta-w1f",
       "path": "docs/design/reviews/eval-review-ta-w1f.md",
       "title": "W1-F property grader design review: Test Architect lens",
@@ -3748,7 +3902,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "886af10708ebef8494dd494c384dae81303cde6e64658f846aa608270096236d"
+      "sourceSha256": "87ef42f05959e3fc15a32c08c3961ded84c6c97f6551d661d51d538592619e09"
     },
     {
       "id": "review-eval-ta-w1g",
@@ -5291,5 +5445,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "8238924aa784b88c66dc886dcd9635fa4d4eb5d7bc1c98a9d46969b880818320"
+  "graphSha256": "4217d3a48805d794275ed40f2c5bd720ee0ba4dd034d2c629e65611c949bdb09"
 };
