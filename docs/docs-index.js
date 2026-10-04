@@ -1605,6 +1605,37 @@ window.DOCS_INDEX = {
       "sourceSha256": "5c36d4aa7ee258164ee2ed2921e92228b81c85584b18ff7d17eb6d3598d6a278"
     },
     {
+      "id": "note-20261003-spike-s2-bottle-r99",
+      "path": "docs/notes/spike-s2-bottle-r99.md",
+      "title": "S2 spike (R-99 redesign) - probe set measured on bottle at the pin",
+      "type": "decision-note",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Measured spike for S2 under R-99: five probe classes (SQL injection, path traversal, cross-team authz, secret non-disclosure, tamper-refusal) each discriminate a reference app from a single-defect naive on bottle cbd569c4, with no probe touching the signed-cookie deserialization path. Awaiting RV-SEC and RV-TA.",
+      "tags": [
+        "spike",
+        "s2",
+        "security",
+        "bottle",
+        "r99"
+      ],
+      "links": [
+        {
+          "to": "design-eval-security-tasks",
+          "rel": "relates-to"
+        },
+        {
+          "to": "note-20261003-spike-s2-bottle-cookie-reads",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "68d17931819fc30bf0f1879f37fb1bc3706b2b041845f7c149a11ba052ee52e6"
+    },
+    {
       "id": "note-catalog-0.5-anchors",
       "path": "docs/notes/catalog-0.5-anchors.md",
       "title": "Catalog 0.5.dev normalisation anchors and weight corrections (R-78 condition 1, R-79)",
@@ -8177,5 +8208,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "d74c569245d6403bddd3557744d54dc0e11251a3313562bb16336e6e83dc492a"
+  "graphSha256": "2f243d14a1714e7dbf238623415806c74748809a0e936adf69a735da2c97461f"
 };
