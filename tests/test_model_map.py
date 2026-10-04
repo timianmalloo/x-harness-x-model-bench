@@ -80,15 +80,36 @@ def test_the_resolver_admits_no_bare_key_and_no_plan_without_a_frozen_vendor():
                                    {"task": "X1", "harness": "codex"}) == {}
 
 
-def test_no_second_parser_of_the_vendor_key():  # R-73 c2: one definition of `<role>@<vendor>` (DM-A)
+def _vendor_key_parsers(sources):
     parsers = set()
-    for path in sorted(SRC.rglob("*.py")):
-        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+    for rel, source in sources.items():
+        tree = ast.parse(source)
+        # W1-A §3.6's role=source@commit grammar is a separate domain from role@vendor.
+        exempt = {id(node) for function in ast.walk(tree) if rel == "plan.py"
+                  and isinstance(function, ast.FunctionDef) and function.name == "parse_binding"
+                  for node in ast.walk(function)}
+        for node in ast.walk(tree):
             if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                    and id(node) not in exempt
                     and node.func.attr in ("split", "rsplit", "partition", "rpartition", "index", "find")
                     and any(isinstance(a, ast.Constant) and a.value == "@" for a in node.args)):
-                parsers.add(path.relative_to(SRC).as_posix())
-    assert parsers == {"config.py"}
+                parsers.add(rel)
+    return parsers
+
+
+def test_no_second_parser_of_the_vendor_key():  # R-73 c2: one definition of `<role>@<vendor>` (DM-A)
+    # Root src/harness_bench; recursive Python files; @ separator parsers; exemption only plan.parse_binding.
+    sources = {p.relative_to(SRC).as_posix(): p.read_text(encoding="utf-8") for p in sorted(SRC.rglob("*.py"))}
+    assert _vendor_key_parsers(sources) == {"config.py"}
+
+
+def test_vendor_parser_guard_catches_a_duplicate_and_only_exempts_role_binding():
+    binding = 'def parse_binding(text):\n    return text.rpartition("@")'
+    duplicate = 'def parse_vendor_key(key):\n    return key.split("@")'
+    assert _vendor_key_parsers({"plan.py": binding}) == set()
+    assert _vendor_key_parsers({"other.py": binding}) == {"other.py"}
+    assert _vendor_key_parsers({"plan.py": binding + "\n" + duplicate}) == {"plan.py"}
+    assert _vendor_key_parsers({"config.py": duplicate, "other.py": duplicate}) == {"config.py", "other.py"}
 
 
 # --- condition 1: bench validate ----------------------------------------------------------------------------------
@@ -189,7 +210,7 @@ def test_bench_plan_refuses_a_scenario6_cell_whose_every_role_is_its_pin(tmp_pat
         _build(root, bom)
     assert err.value.code == "HB-USR-002"
     assert err.value.message == ("scenario 6: every role of X1's model_map for vendor openai equals the pin of "
-                                 "X1.codex-sol.pack-on.r1 (gpt-6-sol), so routing cannot be told from no routing (R-73 item 5)")
+                                 "X1.codex-sol.arm-off.r1 (gpt-6-sol), so routing cannot be told from no routing (R-73 item 5)")
 
 
 def test_bench_plan_accepts_a_scenario6_map_with_one_role_off_the_pin(tmp_path):
@@ -205,5 +226,5 @@ def test_bench_plan_refuses_a_scenario6_cell_with_no_role_for_its_vendor(tmp_pat
     root, bom = _scenario6_root(tmp_path, {"a@anthropic": "claude-sonnet-5", "b@anthropic": "claude-opus-5-5"})
     with pytest.raises(BenchError) as err:
         _build(root, bom)
-    assert re.fullmatch(r"scenario 6: X1's model_map names no role for vendor openai \(cell X1\.codex-sol\.pack-on\.r1\)"
+    assert re.fullmatch(r"scenario 6: X1's model_map names no role for vendor openai \(cell X1\.codex-sol\.arm-off\.r1\)"
                         r" \(R-73 item 5\)", err.value.message)

@@ -1,18 +1,401 @@
+import ast
 import hashlib
 import importlib.util
 import json
 import os
 import shutil
+from copy import deepcopy
+from dataclasses import asdict
+from fractions import Fraction
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
 from harness_bench import cli, config, gitsafe, plan, profiles, tools, workspace
 from harness_bench.errors import BenchError
 from harness_bench.ledger import canonical
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _arm_cells(blocks=3, arms=("off", "candidate")):
+    return [plan.Cell("X1", "v1", 5, "cc-opus", "claude-code", "claude-opus-5-5", arm, rep, 300)
+            for rep in range(1, blocks + 1) for arm in arms]
+
+
+def _matrix2():
+    return {"schema": "bench-matrix/2", "repetitions": 3, "ring": {"tag": "pilot"},
+            "bom": {"subset": ["X1"]}, "arms": [{"id": "off"}, {"id": "candidate"}],
+            "combos": [{"id": "cc-opus", "harness": "claude-code", "model": "claude-opus-5-5"}]}
+
+
+def _plan2(tmp_path, **overrides):
+    ring = tmp_path / "pilot.yaml"
+    ring.write_bytes(b'schema: bench-matrix/2\r\nring: {tag: pilot}\r\n')
+    args = {"root": ROOT, "matrix": _matrix2(), "bom": config.load_yaml(ROOT / "bench" / "bom.yaml"),
+            "run_id": "pilot", "builds": {"claude-code": {"version": "test"}}, "matrix_path": ring,
+            "arm_packs": {"off": None, "candidate": {"source": str(tmp_path), "commit": "c" * 40, "revision": 95}}}
+    args.update(overrides)
+    return plan.build_plan(**args)
+
+
+def test_cell_arm_preserves_legacy_ids_with_the_frozen_pack_ingredient():
+    cell = _arm_cells()[1]
+    expected = hashlib.sha256(canonical({"task_version": "v1", "combo": "cc-opus", "pack": "candidate", "rep": 1})).hexdigest()[:16]
+    assert cell.id == expected
+    assert cell.label == "X1.cc-opus.arm-candidate.r1"
+    assert getattr(cell, "arm", None) == "candidate"
+    assert "pack" not in asdict(cell)
+
+
+def test_cell_arm_reads_both_schemas_without_overriding_an_explicit_arm():
+    assert plan.cell_arm({"arm": "candidate", "pack": "on"}) == "candidate"
+    assert plan.cell_arm({"pack": "on"}) == "on"
+    assert plan.cell_arm({"pack": "off"}) == "off"
+    with pytest.raises(BenchError, match="HB-USR-002"):
+        plan.cell_arm({})
+
+
+def test_arms_of_upcasts_without_mutating_the_matrix():
+    matrix = {"schema": "bench-matrix/1", "packs": ["on", "off"]}
+    before = deepcopy(matrix)
+    assert plan.arms_of(matrix) == [{"id": "on", "pack": None}, {"id": "off", "pack": None}]
+    assert matrix == before
+    assert plan.arms_of(_matrix2()) == [{"id": "off", "pack": None}, {"id": "candidate", "pack": None}]
+
+
+@pytest.mark.parametrize("ids,expected", [([], []), (["off"], []), (["on"], []),
+    (["on", "off"], [["off", "on"]]), (["off", "candidate"], [["off", "candidate"]]),
+    (["incumbent", "candidate"], [["incumbent", "candidate"]])])
+def test_default_comparisons_is_the_single_legacy_and_two_arm_rule(ids, expected):
+    assert plan.default_comparisons(ids) == expected
+
+
+def test_default_comparisons_refuses_three_arms_without_an_explicit_list():
+    with pytest.raises(BenchError, match="HB-PLN-002"):
+        plan.default_comparisons(["off", "incumbent", "candidate"])
+
+
+def test_plan_packs_and_arm_pack_read_zero_one_two_and_legacy_packs():
+    pack = {"source": "repo", "commit": "c" * 40, "revision": 95}
+    second = {**pack, "commit": "d" * 40}
+    legacy = {"schema": "bench-plan/1", "pack": pack, "cells": [{"pack": "off"}, {"pack": "on"}]}
+    assert plan.plan_packs(legacy) == {"on": pack}
+    assert plan.plan_pack(legacy) == pack
+    assert plan.arm_pack(legacy, "on") == pack
+    assert plan.arm_pack(legacy, "off") is None
+    assert plan.plan_comparisons(legacy) == [("off", "on")]
+    assert plan.plan_comparisons({**legacy, "cells": [{"pack": "off"}]}) == []
+    for packs in ({"off": None}, {"off": None, "candidate": pack},
+                  {"off": None, "candidate": pack, "incumbent": second}):
+        body = {"schema": "bench-plan/2", "arms": {a: {"pack": p} for a, p in packs.items()},
+                "comparisons": [["off", "candidate"]]}
+        assert plan.plan_packs(body) == {a: p for a, p in packs.items() if p is not None}
+        assert plan.arm_pack(body, "off") is None
+        assert plan.plan_comparisons(body) == [("off", "candidate")]
+        if len(packs) < 3:
+            assert plan.plan_pack(body) == packs.get("candidate")
+        else:
+            with pytest.raises(BenchError) as error:
+                plan.plan_pack(body)
+            assert error.value.code == "HB-PLN-005"
+            assert "candidate" in error.value.message and "incumbent" in error.value.message
+        with pytest.raises(BenchError, match="HB-USR-002"):
+            plan.arm_pack(body, "missing")
+    with pytest.raises(BenchError, match="HB-USR-002"):
+        plan.arm_pack(legacy, "missing")
+
+
+def test_kind_of_defaults_absent_kind_and_refuses_unknown_values():
+    assert plan.kind_of({}) == "measurement"
+    assert plan.kind_of({"kind": "discrimination"}) == "discrimination"
+    for value in (None, "other", True, [], {}):
+        with pytest.raises(BenchError, match="HB-PLN-004"):
+            plan.kind_of({"kind": value})
+
+
+def test_launch_order_matches_hash_keys_and_keeps_blocks_contiguous():
+    cells = _arm_cells(3, ("off", "incumbent", "candidate"))
+    seed = 17
+    blocks = sorted(range(1, 4), key=lambda rep: hashlib.sha256(f"17|block|X1|cc-opus|{rep}".encode()).digest())
+    expected = [c.id for rep in blocks for c in sorted([c for c in cells if c.rep == rep],
+                key=lambda c: hashlib.sha256(f"17|arm|X1|cc-opus|{rep}|{plan.cell_arm(asdict(c))}".encode()).digest())]
+    assert [c.id for c in plan.launch_order(cells, seed)] == expected
+    assert [c.id for c in plan.launch_order(list(reversed(cells)), seed)] == expected
+
+
+@given(st.integers(min_value=0, max_value=2**63 - 1), st.integers(min_value=1, max_value=12))
+def test_launch_order_is_a_replayable_permutation(seed, blocks):
+    cells = _arm_cells(blocks)
+    ordered = plan.launch_order(cells, seed)
+    assert sorted(c.id for c in ordered) == sorted(c.id for c in cells)
+    assert plan.launch_order(list(reversed(cells)), seed) == ordered
+    assert all({c.rep for c in ordered[i:i + 2]} == {ordered[i].rep} for i in range(0, len(cells), 2))
+
+
+def test_launch_balance_uses_exact_arm_position_means():
+    cells = _arm_cells(5)
+    assert plan.launch_balance(cells) == Fraction(1, 20)  # ten positions; each arm mean is 1/2 from 9/2
+    assert plan.launch_balance(_arm_cells(1)) == Fraction(1, 4)
+    assert plan.launch_balance([]) == 0
+    assert plan.launch_balance(_arm_cells(3, ("off",))) == 0
+
+
+def test_the_bound_is_strict(monkeypatch):
+    monkeypatch.setattr(plan, "launch_order", lambda cells, seed: list(cells))
+    with pytest.raises(BenchError) as error:
+        plan.draw_launch_order(_arm_cells(5), draw=lambda: 4)
+    assert error.value.code == "HB-PLN-001"
+
+
+@pytest.mark.parametrize("blocks,arms", [(3, ("off", "candidate")),
+    (2, ("off", "a", "b", "c")), (3, ("off", "a", "b", "c"))])
+def test_draw_redraws_a_failed_seed_then_stores_the_first_accepted_seed(blocks, arms):
+    cells = _arm_cells(blocks, arms)
+    failed = next((seed for seed in range(1000) if plan.launch_balance(plan.launch_order(cells, seed)) >= plan.BALANCE_BOUND), None)
+    assert failed is not None
+    accepted = next(seed for seed in range(1000) if plan.launch_balance(plan.launch_order(cells, seed)) < plan.BALANCE_BOUND)
+    draws = iter([failed, accepted])
+    seed, ordered, count = plan.draw_launch_order(cells, draw=lambda: next(draws))
+    assert seed == accepted and count == 2
+    assert ordered == plan.launch_order(cells, accepted)
+    assert plan.launch_balance(ordered) < Fraction(1, 20)
+
+
+def test_draw_cap_names_shape_without_claiming_a_two_block_minimum():
+    calls = []
+    with pytest.raises(BenchError) as error:
+        plan.draw_launch_order(_arm_cells(1, ("off", "a", "b", "c")), draw=lambda: calls.append(0) or 0)
+    assert error.value.code == "HB-PLN-001"
+    assert len(calls) == plan.MAX_DRAWS == 100
+    assert "1 blocks of 4 arms" in error.value.message
+    assert "at least 2" not in error.value.message
+
+
+def test_plan2_freezes_fields_hash_order_and_campaign_verbatim(tmp_path):
+    campaign = {"campaign_id": "c", "prereg_hash": None, "identity": {"hash": "a", "components": {}}}
+    body = _plan2(tmp_path, campaign=campaign)
+    assert body.get("schema") == "bench-plan/2"
+    assert body["campaign"] == campaign
+    assert "pack" not in body
+    assert body["kind"] == "measurement"
+    assert body["ring"] == {"tag": "pilot", "hash": plan.tree_hash(tmp_path, [tmp_path / "pilot.yaml"])}
+    assert body["matrix"] == _matrix2()
+    assert len(body["cells"]) == 6
+    assert all("arm" in cell and "pack" not in cell for cell in body["cells"])
+    cells = plan.expand(body["matrix"], config.load_yaml(ROOT / "bench" / "bom.yaml"),
+                        {"X1": body["tasks"]["X1"]["version_hash"]})
+    assert [c.id for c in plan.launch_order(cells, body["launch_seed"])] == [c["cell_id"] for c in body["cells"]]
+    assert plan.launch_balance([next(c for c in cells if c.id == row["cell_id"]) for row in body["cells"]]) < Fraction(1, 20)
+    assert body["plan_hash"] == plan.plan_hash(body)
+    assert plan.load_confirmed(plan.confirm(tmp_path / "run", body).parent) == body
+
+
+def test_plan2_optional_fields_are_absent_and_explicit_bad_seed_is_refused(tmp_path):
+    matrix = _matrix2()
+    matrix.pop("ring")
+    body = _plan2(tmp_path, matrix=matrix)
+    assert "ring" not in body and "campaign" not in body
+    assert body.get("kind") == "measurement"
+    cells = _arm_cells()
+    bad = next((seed for seed in range(1000) if plan.launch_balance(plan.launch_order(cells, seed)) >= Fraction(1, 20)), None)
+    assert bad is not None
+    with pytest.raises(BenchError, match="HB-PLN-001"):
+        _plan2(tmp_path, matrix=matrix, launch_seed=bad)
+
+
+def test_build_plan_refuses_unknown_kind_through_the_shared_helper(tmp_path):
+    with pytest.raises(BenchError, match="HB-PLN-004"):
+        _plan2(tmp_path, kind="other")
+
+
+def test_build_plan_emits_measured_duration_volume_path_and_draw_count(tmp_path, caplog):
+    with caplog.at_level("INFO", logger="harness_bench.plan"):
+        body = _plan2(tmp_path)
+    record = next(row for row in caplog.records if row.message == "Plan built")
+    assert record.run_id == body["run_id"] and record.trace_id == body["trace_id"]
+    assert record.cell_count == len(body["cells"]) == 6
+    assert record.launch_seed == body["launch_seed"] and 1 <= record.launch_draws <= plan.MAX_DRAWS
+    assert record.plan_kind == "measurement" and Fraction(record.launch_balance) < Fraction(1, 20)
+    assert record.duration_ns >= 0
+
+
+def test_plan_py_imports_no_campaign_or_identity_module():
+    from import_graph import imports
+
+    def forbidden(text):
+        return {target for target in imports("src/harness_bench/plan.py", ast.parse(text))
+                if target.startswith(("harness_bench.campaign", "harness_bench.identity"))}
+
+    assert forbidden("from . import campaign") == {"harness_bench.campaign"}
+    assert forbidden("from harness_bench import identity") == {"harness_bench.identity"}
+    assert forbidden((ROOT / "src/harness_bench/plan.py").read_text(encoding="utf-8")) == set()
+
+
+def test_kind_readers_call_kind_of_instead_of_reading_kind_directly():
+    def violations(text):
+        tree = ast.parse(text)
+        permitted = {id(node) for function in ast.walk(tree) if isinstance(function, ast.FunctionDef)
+                     and function.name == "kind_of" for node in ast.walk(function)}
+
+        def plan_value(node):
+            return (isinstance(node, ast.Name) and node.id in {"plan", "p", "frozen", "confirmed", "body"}
+                    or isinstance(node, ast.Attribute) and node.attr == "plan")
+
+        return [node.lineno for node in ast.walk(tree) if id(node) not in permitted and (
+            isinstance(node, ast.Subscript) and plan_value(node.value)
+            and isinstance(node.slice, ast.Constant) and node.slice.value == "kind"
+            or isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "get"
+            and plan_value(node.func.value) and node.args and isinstance(node.args[0], ast.Constant)
+            and node.args[0].value == "kind")]
+
+    assert violations('def reader(p):\n    return p["kind"] == "measurement"') == [2]
+    assert violations('def reader(p):\n    return p.get("kind") == "measurement"') == [2]
+    assert violations('def reader(view):\n    return view.plan["kind"] == "measurement"') == [2]
+    assert violations('def archive_row(r):\n    return r["kind"] == "file"') == []
+    # Root src/harness_bench; recursive Python files; direct subscript/get on named plan carriers;
+    # kind_of alone is exempt. Ledger/archive record kinds are a different domain.
+    for path in (ROOT / "src/harness_bench").rglob("*.py"):
+        assert violations(path.read_text(encoding="utf-8")) == [], path
+
+
+def test_grid4_replan_gives_the_same_task_combo_arm_rep_set_and_cell_ids(monkeypatch):
+    fixture = json.loads((ROOT / "tests/fixtures/plans/grid4-cells.json").read_text(encoding="utf-8"))
+    assert fixture["provenance"]["source"] == "runs/grid-4/plan.json"
+    assert len(fixture["provenance"]["sha256"]) == 64
+    assert len(fixture["cells"]) == 276
+    # EV-17 proves the writer/cell recipe, not a harness probe. Existing probe tests cover this seam.
+    monkeypatch.setattr(plan, "_probe_instructions", lambda root, cells, *args: (
+        {(c.task, c.arm): 0 for c in cells if c.harness == "copilot"}, []))
+    body = plan.build_plan(ROOT, fixture["matrix"], config.load_yaml(ROOT / "bench/bom.yaml"), "grid4-replan",
+                           fixture["builds"], fixture["pack"], task_versions=fixture["task_versions"])
+    fields = ("cell_id", "task", "task_version", "combo", "arm", "rep")
+    expected = {tuple(row[field] for field in fields) for row in fixture["cells"]}
+    actual = {tuple(row[field] for field in fields) for row in body.get("cells", [])}
+    assert actual == expected
+
+
+def test_synthetic_profile_record_is_constant_without_loading_a_file(tmp_path):
+    record = plan.profile_record(tmp_path, "synthetic")
+    assert record == plan.SYNTHETIC_PROFILE_RECORD
+    assert record.get("usage_source") == "acp_turn"
+    assert record["record_glob"] is None and record["subagent_glob"] is None
+    assert record["shutdown_grace_seconds"] == "1"
+    canonical(record)
+
+
+def test_measurement_plan_names_every_nonready_task_and_synthetic_combo(tmp_path):
+    root = tmp_path / "root"
+    bom = {"version": "test", "tasks": []}
+    for n in range(15):
+        task = root / "tasks" / f"T{n}"
+        task.mkdir(parents=True)
+        (task / "task.yaml").write_text('status: draft\n', encoding="utf-8")
+        bom["tasks"].append({"id": f"T{n}", "scenario": 5, "budget_minutes": 1})
+    matrix = _matrix2()
+    matrix["bom"]["subset"] = "full"
+    matrix["combos"] = [{"id": "synthetic-reference", "harness": "synthetic", "model": "reference"},
+                        {"id": "synthetic-naive", "harness": "synthetic", "model": "naive"}]
+    with pytest.raises(BenchError) as error:
+        _plan2(tmp_path, root=root, bom=bom, matrix=matrix)
+    assert error.value.code == "HB-PLN-004"
+    assert all(f"T{n} (draft)" in error.value.message for n in range(15))
+    assert all(combo["id"] in error.value.message for combo in matrix["combos"])
+
+
+def test_a_discrimination_plan_accepts_draft_and_refuses_stub(tmp_path):
+    root = tmp_path / "root"
+    shutil.copytree(ROOT / "tasks/X1", root / "tasks/X1")
+    path = root / "tasks/X1/task.yaml"
+    text = path.read_text(encoding="utf-8")
+    path.write_text(text.replace("status: ready", "status: draft"), encoding="utf-8")
+    matrix = _matrix2()
+    matrix.pop("ring")
+    matrix["arms"] = [{"id": "off"}]
+    matrix["combos"] = [{"id": "synthetic-reference", "harness": "synthetic", "model": "reference"},
+                        {"id": "synthetic-naive", "harness": "synthetic", "model": "naive"}]
+    body = _plan2(tmp_path, root=root, matrix=matrix, kind="discrimination", arm_packs={"off": None},
+                  builds={"synthetic": {"version": "test"}})
+    assert body.get("kind") == "discrimination"
+    assert body["profiles"]["synthetic"] == plan.SYNTHETIC_PROFILE_RECORD
+    assert len(body["cells"]) == 6
+    path.write_text(text.replace("status: ready", "status: stub"), encoding="utf-8")
+    with pytest.raises(BenchError, match="HB-PLN-004"):
+        _plan2(tmp_path, root=root, matrix=matrix, kind="discrimination", arm_packs={"off": None})
+
+
+def test_measurement_plan_refuses_synthetic_even_when_every_task_is_ready(tmp_path):
+    matrix = _matrix2()
+    matrix["combos"] = [{"id": "synthetic-reference", "harness": "synthetic", "model": "synthetic-1"},
+                        {"id": "synthetic-naive", "harness": "synthetic", "model": "synthetic-1"}]
+    with pytest.raises(BenchError) as error:
+        _plan2(tmp_path, matrix=matrix, builds={"synthetic": {"version": "test"}})
+    assert error.value.code == "HB-PLN-004"
+    assert "synthetic-reference" in error.value.message and "synthetic-naive" in error.value.message
+
+
+def test_load_confirmed_reads_legacy_and_refuses_a_future_schema(tmp_path):
+    for schema in (None, "bench-plan/1", "bench-plan/9"):
+        body = {"schema": schema, "cells": [], "pack": {"revision": 1}}
+        if schema is None:
+            body.pop("schema")
+        body["plan_hash"] = plan.plan_hash(body)
+        folder = plan.confirm(tmp_path / str(schema).replace("/", "-"), body).parent
+        if schema in (None, "bench-plan/1"):
+            assert plan.load_confirmed(folder) == body
+        else:
+            with pytest.raises(BenchError, match="HB-USR-002"):
+                plan.load_confirmed(folder)
+
+
+def test_parse_binding_partitions_windows_paths_and_at_signs(tmp_path):
+    source = str(tmp_path / "repo@part")
+    assert plan.parse_binding(f"candidate={source}@{'c' * 40}") == ("candidate", source, "c" * 40)
+
+
+@pytest.mark.parametrize("text", ["", "candidate", "candidate=repo@" + "c" * 40,
+    "off=C:/repo@" + "c" * 40, "candidate=C:/repo@HEAD", "BAD=C:/repo@" + "c" * 40])
+def test_parse_binding_refuses_invalid_or_packless_bindings(text):
+    with pytest.raises(BenchError, match="HB-PLN-002"):
+        plan.parse_binding(text)
+
+
+def test_resolve_arms_accepts_legacy_roles_and_pinned_matrix_arms(tmp_path):
+    binding = (str(tmp_path), "c" * 40)
+    expected = {"off": None, "candidate": {"source": binding[0], "commit": binding[1]}}
+    assert plan.resolve_arms(_matrix2(), {"candidate": binding}) == expected
+    matrix = _matrix2()
+    matrix["arms"][1]["pack"] = expected["candidate"]
+    assert plan.resolve_arms(matrix, {}) == expected
+    assert plan.resolve_arms({"schema": "bench-matrix/1", "packs": ["on", "off"]}, {"on": binding}) == {
+        "on": expected["candidate"], "off": None}
+
+
+@pytest.mark.parametrize("case", ["unbound", "unknown", "off", "pinned", "relative", "commit", "duplicate", "second-off"])
+def test_resolve_arms_refuses_each_binding_error(tmp_path, case):
+    matrix = _matrix2()
+    bindings = {"candidate": (str(tmp_path), "c" * 40)}
+    if case == "unbound":
+        bindings = {}
+    elif case == "unknown":
+        bindings["missing"] = bindings["candidate"]
+    elif case == "off":
+        bindings["off"] = bindings["candidate"]
+    elif case == "pinned":
+        matrix["arms"][1]["pack"] = {"source": str(tmp_path), "commit": "d" * 40}
+    elif case == "relative":
+        bindings["candidate"] = ("relative", "c" * 40)
+    elif case == "commit":
+        bindings["candidate"] = (str(tmp_path), "HEAD")
+    elif case == "duplicate":
+        matrix["arms"].append({"id": "candidate"})
+    else:
+        matrix["arms"].append({"id": "off"})
+    with pytest.raises(BenchError, match="HB-PLN-002"):
+        plan.resolve_arms(matrix, bindings)
 
 
 def test_wave1_matrix_parses_and_walking_skeleton_selects_it():
@@ -52,7 +435,7 @@ def _inputs(subset):
 def test_full_grid_matches_proposal_run_count():
     # Proposal: 24 tasks x 4 combos x pack on/off x 3 reps = 576 runs, plus the ten property-task stubs of BOM 0.6
     # (W0, docs/design/eval-seam-contracts.md section 1): 34 x 4 x 2 x 3 = 816. Fixture tasks are never in it.
-    # Whether `full` should keep the property tasks is W1-A's open item (eval-seam-contracts.md section 14).
+    # expand enumerates; build_plan separately refuses nonready tasks (W1-A §3.5).
     m, bom = _inputs("full")
     assert len(plan.expand(m, bom)) == 816
 
@@ -75,7 +458,7 @@ def test_combos_are_interleaved_innermost():
     cells = plan.expand(m, bom)
     n = len(m["combos"])
     assert [c.combo for c in cells[:n]] == [c["id"] for c in m["combos"]]
-    assert len({(c.task, c.pack, c.rep) for c in cells[:n]}) == 1
+    assert len({(c.task, c.arm, c.rep) for c in cells[:n]}) == 1
 
 
 def test_fixture_task_is_selectable_by_id_only():
@@ -127,8 +510,8 @@ def _phase1_plan(**over):
 def test_phase1_plan_has_four_cells_and_every_recorded_field():
     p = _phase1_plan()
     assert len(p["cells"]) == 4
-    assert {(c["combo"], c["pack"]) for c in p["cells"]} == {("cc-sonnet", "on"), ("cc-sonnet", "off"), ("codex-sol", "on"), ("codex-sol", "off")}
-    for key in ("schema", "run_id", "plan_hash", "trace_id", "matrix_hash", "tasks", "builds", "pack", "parameters",
+    assert {(c["combo"], c["arm"]) for c in p["cells"]} == {("cc-sonnet", "on"), ("cc-sonnet", "off"), ("codex-sol", "on"), ("codex-sol", "off")}
+    for key in ("schema", "run_id", "plan_hash", "trace_id", "matrix_hash", "tasks", "builds", "arms", "parameters",
                 "price_list_hash", "envelope_seconds"):
         assert key in p, key
     assert len(p["trace_id"]) == 32 and int(p["trace_id"], 16)
@@ -426,11 +809,11 @@ def test_copilot_plan_lists_once_per_task_pack_build_and_freezes_counts(monkeypa
     assert resolved_dirs == [args["tools_dir"]]
     assert all(ws.is_relative_to(args["cells_root"]) for _, ws, _ in calls)
     assert not list(args["cells_root"].glob("bench-plan-*"))
-    assert {(c["pack"], c["instruction_count"]) for c in p["cells"]} == {("off", 0), ("on", 2)}
+    assert {(c["arm"], c["instruction_count"]) for c in p["cells"]} == {("off", 0), ("on", 2)}
     assert len(p["instruction_lists"]) == 2
     assert all(c["build_sha256"] == "a" * 64 for c in p["instruction_lists"])
-    assert {(c["pack"], c["count"]) for c in p["instruction_lists"]} == {("off", 0), ("on", 2)}
-    assert next(c for c in p["instruction_lists"] if c["pack"] == "off")["instructions"] == []
+    assert {(c["arm"], c["count"]) for c in p["instruction_lists"]} == {("off", 0), ("on", 2)}
+    assert next(c for c in p["instruction_lists"] if c["arm"] == "off")["instructions"] == []
 
 
 def test_copilot_plan_projects_instructions_to_string_identity_fields_and_keeps_canonical(monkeypatch, tmp_path):
@@ -440,7 +823,7 @@ def test_copilot_plan_projects_instructions_to_string_identity_fields_and_keeps_
             "sourcePath": "AGENTS.md", "defaultDisabled": False}]
     args, _, _ = _fake_copilot_plan(monkeypatch, tmp_path, lambda ws: raw if (ws / "AGENTS.md").is_file() else [])
     p = plan.build_plan(**args)
-    on_list = next(c for c in p["instruction_lists"] if c["pack"] == "on")
+    on_list = next(c for c in p["instruction_lists"] if c["arm"] == "on")
     assert on_list["count"] == 1
     assert on_list["instructions"] == [{"label": "AGENTS.md", "location": "repository", "sourcePath": "AGENTS.md"}]
     canonical(p)  # ledger canonical forbids bool; build_plan already calls plan_hash internally
@@ -457,7 +840,7 @@ def test_copilot_plan_installs_pack_before_listing_instructions(monkeypatch, tmp
     args, _, _ = _fake_copilot_plan(monkeypatch, tmp_path, lambda ws: [
         {"label": "AGENTS.md"}] if (ws / "AGENTS.md").is_file() else [])
     p = plan.build_plan(**args)
-    assert next(item for item in p["instruction_lists"] if item["pack"] == "on")["count"] == 1
+    assert next(item for item in p["instruction_lists"] if item["arm"] == "on")["count"] == 1
 
 
 def test_copilot_plan_removes_probe_after_instruction_error(monkeypatch, tmp_path):

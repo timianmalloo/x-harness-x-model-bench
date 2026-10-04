@@ -4,90 +4,243 @@
     "file": "src/harness_bench/plan.py",
     "find": "tools.resolve(tools_dir or root / \".tools\" / \"harness\")",
     "replace": "tools.resolve(root / \".tools\" / \"harness\")",
-    "tests": ["tests/test_plan.py::test_copilot_plan_lists_once_per_task_pack_build_and_freezes_counts"]
+    "tests": [
+      "tests/test_plan.py::test_copilot_plan_lists_once_per_task_pack_build_and_freezes_counts"
+    ]
   },
   {
     "name": "CLI drops probe path arguments",
     "file": "src/harness_bench/cli.py",
     "find": "tools_dir=Path(args.tools_dir), cells_root=Path(args.cells_root)",
     "replace": "tools_dir=None, cells_root=None",
-    "tests": ["tests/test_plan.py::test_cmd_plan_passes_configured_tools_and_cells_roots_to_probe"]
+    "tests": [
+      "tests/test_plan.py::test_cmd_plan_passes_configured_tools_and_cells_roots_to_probe"
+    ]
   },
   {
     "name": "probe escapes configured cells root",
     "file": "src/harness_bench/plan.py",
     "find": "prefix=\"bench-plan-\", dir=cells_root",
     "replace": "prefix=\"bench-plan-\", dir=root.parent",
-    "tests": ["tests/test_plan.py::test_copilot_plan_lists_once_per_task_pack_build_and_freezes_counts"]
+    "tests": [
+      "tests/test_plan.py::test_copilot_plan_lists_once_per_task_pack_build_and_freezes_counts"
+    ]
   },
   {
     "name": "pack-on installation skipped",
     "file": "src/harness_bench/plan.py",
-    "find": "if arm == \"on\":",
-    "replace": "if False:",
-    "tests": ["tests/test_plan.py::test_copilot_plan_installs_pack_before_listing_instructions"]
+    "find": "pack = arm_packs[arm]\n            if pack is not None:",
+    "replace": "pack = arm_packs[arm]\n            if False:",
+    "tests": [
+      "tests/test_plan.py::test_copilot_plan_installs_pack_before_listing_instructions"
+    ]
   },
   {
     "name": "pack-off instructions accepted",
     "file": "src/harness_bench/plan.py",
-    "find": "if arm == \"off\" and rows:",
+    "find": "if pack is None and rows:",
     "replace": "if False:",
-    "tests": ["tests/test_plan.py::test_copilot_plan_refuses_a_nonempty_pack_off_instruction_list"]
+    "tests": [
+      "tests/test_plan.py::test_copilot_plan_refuses_a_nonempty_pack_off_instruction_list"
+    ]
   },
   {
     "name": "non-string instruction identity retained",
     "file": "src/harness_bench/plan.py",
     "find": "if isinstance(row.get(k), str)",
     "replace": "if k in row",
-    "tests": ["tests/test_plan.py::test_copilot_plan_projects_instructions_to_string_identity_fields_and_keeps_canonical"]
+    "tests": [
+      "tests/test_plan.py::test_copilot_plan_projects_instructions_to_string_identity_fields_and_keeps_canonical"
+    ]
   },
   {
     "name": "instruction timeout ignored",
     "file": "src/harness_bench/plan.py",
     "find": "if result.timed_out:",
     "replace": "if False:",
-    "tests": ["tests/test_plan.py::test_instruction_list_reports_timeout"]
+    "tests": [
+      "tests/test_plan.py::test_instruction_list_reports_timeout"
+    ]
   },
   {
     "name": "instruction nonzero exit ignored",
     "file": "src/harness_bench/plan.py",
     "find": "if result.returncode != 0:",
     "replace": "if False:",
-    "tests": ["tests/test_plan.py::test_instruction_list_reports_nonzero_exit"]
+    "tests": [
+      "tests/test_plan.py::test_instruction_list_reports_nonzero_exit"
+    ]
   },
   {
     "name": "truncated instruction output mislabeled",
     "file": "src/harness_bench/plan.py",
     "find": "if result.stdout.lstrip().startswith(\"[\") and not result.stdout.rstrip().endswith(\"]\"):",
     "replace": "if False:",
-    "tests": ["tests/test_plan.py::test_instruction_list_reports_truncated_stdout"]
+    "tests": [
+      "tests/test_plan.py::test_instruction_list_reports_truncated_stdout"
+    ]
   },
   {
     "name": "invalid instruction JSON accepted",
     "file": "src/harness_bench/plan.py",
     "find": "raise BenchError(\"HB-PRE-008\", \"Copilot instruction list did not return JSON\") from exc",
     "replace": "return []",
-    "tests": ["tests/test_plan.py::test_instruction_list_reports_invalid_json"]
+    "tests": [
+      "tests/test_plan.py::test_instruction_list_reports_invalid_json"
+    ]
   },
   {
     "name": "instruction list shape ignored",
     "file": "src/harness_bench/plan.py",
     "find": "if not isinstance(rows, list) or not all(isinstance(row, dict) for row in rows):",
     "replace": "if False:",
-    "tests": ["tests/test_plan.py::test_instruction_list_refuses_a_non_list_result_from_the_fake_exe"]
+    "tests": [
+      "tests/test_plan.py::test_instruction_list_refuses_a_non_list_result_from_the_fake_exe"
+    ]
   },
   {
     "name": "probe finally cleanup removed",
     "file": "src/harness_bench/plan.py",
     "find": "shutil.rmtree(probe, onexc=archive.make_writable)",
     "replace": "pass",
-    "tests": ["tests/test_plan.py::test_copilot_plan_lists_once_per_task_pack_build_and_freezes_counts", "tests/test_plan.py::test_copilot_plan_removes_probe_after_instruction_error"]
+    "tests": [
+      "tests/test_plan.py::test_copilot_plan_lists_once_per_task_pack_build_and_freezes_counts",
+      "tests/test_plan.py::test_copilot_plan_removes_probe_after_instruction_error"
+    ]
   },
   {
     "name": "probe cleanup failure not logged",
     "file": "src/harness_bench/plan.py",
     "find": "logger.warning(\"Could not remove plan probe %s: %s\", probe, exc)",
     "replace": "pass",
-    "tests": ["tests/test_plan.py::test_copilot_plan_logs_failed_cleanup_without_masking_instruction_error"]
+    "tests": [
+      "tests/test_plan.py::test_copilot_plan_logs_failed_cleanup_without_masking_instruction_error"
+    ]
+  },
+  {
+    "name": "launch balance check removed",
+    "file": "src/harness_bench/plan.py",
+    "find": "if launch_balance(ordered) < BALANCE_BOUND:",
+    "replace": "if True:",
+    "tests": [
+      "tests/test_plan.py::test_draw_redraws_a_failed_seed_then_stores_the_first_accepted_seed"
+    ]
+  },
+  {
+    "name": "launch bound includes exact five percent",
+    "file": "src/harness_bench/plan.py",
+    "find": "if launch_balance(ordered) < BALANCE_BOUND:",
+    "replace": "if launch_balance(ordered) <= BALANCE_BOUND:",
+    "tests": [
+      "tests/test_plan.py::test_the_bound_is_strict"
+    ]
+  },
+  {
+    "name": "explicit seed balance check removed",
+    "file": "src/harness_bench/plan.py",
+    "find": "if launch_balance(cells) >= BALANCE_BOUND:",
+    "replace": "if False:",
+    "tests": [
+      "tests/test_plan.py::test_plan2_optional_fields_are_absent_and_explicit_bad_seed_is_refused"
+    ]
+  },
+  {
+    "name": "unbound role check removed",
+    "file": "src/harness_bench/plan.py",
+    "find": "if pack is None:\n            raise BenchError(\"HB-PLN-002\", f\"unbound role arm {aid}\")",
+    "replace": "if pack is None:\n            resolved[aid] = None\n            continue",
+    "tests": [
+      "tests/test_plan.py::test_resolve_arms_refuses_each_binding_error"
+    ]
+  },
+  {
+    "name": "nonready task check removed",
+    "file": "src/harness_bench/plan.py",
+    "find": "if status not in permitted_statuses:",
+    "replace": "if False:",
+    "tests": [
+      "tests/test_plan.py::test_measurement_plan_names_every_nonready_task_and_synthetic_combo"
+    ]
+  },
+  {
+    "name": "synthetic measurement harness check removed",
+    "file": "src/harness_bench/plan.py",
+    "find": "if combo[\"harness\"] == \"synthetic\"",
+    "replace": "if False",
+    "tests": [
+      "tests/test_plan.py::test_measurement_plan_refuses_synthetic_even_when_every_task_is_ready"
+    ]
+  },
+  {
+    "name": "discrimination admits stubs",
+    "file": "src/harness_bench/plan.py",
+    "find": "else (\"draft\", \"ready\")",
+    "replace": "else (\"stub\", \"draft\", \"ready\")",
+    "tests": [
+      "tests/test_plan.py::test_a_discrimination_plan_accepts_draft_and_refuses_stub"
+    ]
+  },
+  {
+    "name": "single pack reader returns first of two",
+    "file": "src/harness_bench/plan.py",
+    "find": "if len(packs) > 1:",
+    "replace": "if False:",
+    "tests": [
+      "tests/test_plan.py::test_plan_packs_and_arm_pack_read_zero_one_two_and_legacy_packs"
+    ]
+  },
+  {
+    "name": "reader bypasses shared kind helper",
+    "file": "src/harness_bench/plan.py",
+    "find": "kind = kind_of({\"kind\": kind})",
+    "replace": "frozen = {\"kind\": kind}\n    kind = frozen[\"kind\"]",
+    "tests": [
+      "tests/test_plan.py::test_kind_readers_call_kind_of_instead_of_reading_kind_directly"
+    ]
+  },
+  {
+    "name": "check property absent from property names",
+    "file": "src/harness_bench/config.py",
+    "find": "CHECK_PROPERTIES = frozenset({\"security\", \"resilience\"})",
+    "replace": "CHECK_PROPERTIES = frozenset({\"security\", \"resilience\", \"unknown\"})",
+    "tests": [
+      "tests/test_config.py::test_check_properties_are_declared_property_names"
+    ]
+  },
+  {
+    "name": "matrix2 validation bypassed",
+    "file": "src/harness_bench/config.py",
+    "find": "_validate_matrix_arms(m, p, where)",
+    "replace": "pass",
+    "tests": [
+      "tests/test_config.py::test_matrix2_refuses_each_invalid_shape"
+    ]
+  },
+  {
+    "name": "role accepts a movable git ref",
+    "file": "src/harness_bench/config.py",
+    "find": "if not isinstance(commit, str) or not PACK_COMMIT.fullmatch(commit):",
+    "replace": "if False:",
+    "tests": [
+      "tests/test_plan.py::test_parse_binding_refuses_invalid_or_packless_bindings"
+    ]
+  },
+  {
+    "name": "cell id renames the frozen recipe key",
+    "file": "src/harness_bench/plan.py",
+    "find": "\"pack\": self.arm",
+    "replace": "\"arm\": self.arm",
+    "tests": [
+      "tests/test_plan.py::test_cell_arm_preserves_legacy_ids_with_the_frozen_pack_ingredient"
+    ]
+  },
+  {
+    "name": "unsupported plan schema accepted",
+    "file": "src/harness_bench/plan.py",
+    "find": "if data.get(\"schema\", \"bench-plan/1\") not in (\"bench-plan/1\", SCHEMA):",
+    "replace": "if False:",
+    "tests": [
+      "tests/test_plan.py::test_load_confirmed_reads_legacy_and_refuses_a_future_schema"
+    ]
   }
 ]

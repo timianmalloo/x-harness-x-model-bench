@@ -1,7 +1,7 @@
 """Expand a matrix and a BOM into the run's cells, and freeze them in a content-addressed plan (US-6).
 
-One cell is exactly one (task version, combo, pack, repetition). The order interleaves combos
-innermost, so provider load and time-of-day drift affect every combo alike (proposal).
+One cell is exactly one (task version, combo, arm, repetition). Launch order is hash-keyed
+by seed, with every arm of a (task, combo, rep) block adjacent (ADR-0014).
 
 - `cell_id` is a deterministic hash of (task version hash, combo, pack, repetition) (ADR-0006).
 - The task version hash covers every file in the task folder, so any edit to the prompt, the base
@@ -23,9 +23,13 @@ import secrets
 import shutil
 import sys
 import tempfile
+import time
+from collections import defaultdict
 from collections.abc import Iterable
+from copy import deepcopy
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
+from fractions import Fraction
 from pathlib import Path
 
 from harness_bench import archive, config, procs, profiles, tools, workspace
@@ -34,7 +38,14 @@ from harness_bench.ledger import canonical
 from harness_bench.scripted_user import clarifications
 from harness_bench.scripted_user.matcher import MATCHER_VERSION
 
-SCHEMA = "bench-plan/1"
+SCHEMA = "bench-plan/2"
+BALANCE_BOUND = Fraction(1, 20)
+# simplify: 100 redraws; exhaustion refuses the shape and prompts adding blocks, not raising the cap.
+MAX_DRAWS = 100
+SYNTHETIC_PROFILE_RECORD = {
+    "profile_hash": None, "vendor": "synthetic", "usage_source": "acp_turn",
+    "auxiliary_models": [], "record_glob": None, "subagent_glob": None, "shutdown_grace_seconds": "1",
+}
 logger = logging.getLogger(__name__)
 # Instruction rows come from `copilot instruction list --json` verbatim, and Copilot may add
 # non-string fields (e.g. `defaultDisabled`: bool) the ledger's canonical form forbids (ADR-0006).
@@ -66,18 +77,19 @@ class Cell:
     combo: str
     harness: str
     model: str
-    pack: str
+    arm: str
     rep: int
     budget_seconds: int
 
     @property
     def id(self) -> str:
-        ingredients = {"task_version": self.task_version, "combo": self.combo, "pack": self.pack, "rep": self.rep}
+        # "pack" is a frozen recipe label: changing the key would rewrite historical cell identities.
+        ingredients = {"task_version": self.task_version, "combo": self.combo, "pack": self.arm, "rep": self.rep}
         return hashlib.sha256(canonical(ingredients)).hexdigest()[:16]
 
     @property
     def label(self) -> str:
-        return f"{self.task}.{self.combo}.pack-{self.pack}.r{self.rep}"
+        return f"{self.task}.{self.combo}.arm-{self.arm}.r{self.rep}"
 
 
 def select_tasks(bom: dict, subset) -> list[dict]:
@@ -121,11 +133,147 @@ def expand(matrix: dict, bom: dict, task_versions: dict[str, str] | None = None)
     cells = []
     for rep in range(1, matrix["repetitions"] + 1):
         for t in tasks:
-            for pack in matrix["packs"]:
+            for arm in arms_of(matrix):
                 for c in matrix["combos"]:
                     cells.append(Cell(t["id"], versions.get(t["id"], t["id"]), t["scenario"], c["id"], c["harness"],
-                                      c["model"], pack, rep, t["budget_minutes"] * 60))
+                                      c["model"], arm["id"], rep, t["budget_minutes"] * 60))
     return cells
+
+
+def arms_of(matrix: dict) -> list[dict]:
+    """Adapter: upcast in memory, preserving declared order and the original matrix."""
+    if matrix.get("schema") == "bench-matrix/1":
+        return [{"id": aid, "pack": None} for aid in matrix["packs"]]
+    return [{"id": arm["id"], "pack": arm.get("pack")} for arm in matrix["arms"]]
+
+
+def default_comparisons(arm_ids: list[str]) -> list[list[str]]:
+    if len(arm_ids) < 2:
+        return []
+    if len(arm_ids) > 2:
+        raise BenchError("HB-PLN-002", "3 or more arms require explicit comparisons")
+    if config.ARM_OFF in arm_ids:
+        return [[config.ARM_OFF, next(a for a in arm_ids if a != config.ARM_OFF)]]
+    return [list(arm_ids)]
+
+
+def cell_arm(cell: dict) -> str:
+    """Facade over the versioned cell; explicit arm wins over a legacy pack key."""
+    arm = cell["arm"] if "arm" in cell else cell.get("pack")
+    if not isinstance(arm, str) or not config.ARM_ID.fullmatch(arm):
+        raise BenchError("HB-USR-002", f"cell has no valid arm: {arm!r}")
+    return arm
+
+
+def plan_packs(plan: dict) -> dict[str, dict]:
+    """The sole reader of arm pack records and the historical top-level pack."""
+    if "arms" in plan:
+        return {aid: arm["pack"] for aid, arm in plan["arms"].items() if arm.get("pack") is not None}
+    pack = plan.get("pack")
+    return {"on": pack} if pack is not None else {}
+
+
+def plan_pack(plan: dict) -> dict | None:
+    packs = plan_packs(plan)
+    if len(packs) > 1:
+        raise BenchError("HB-PLN-005", f"single-pack reader received several packs: {', '.join(packs)}")
+    return next(iter(packs.values()), None)
+
+
+def arm_pack(plan: dict, arm: str) -> dict | None:
+    declared = set(plan["arms"]) if "arms" in plan else set(config.PACKS)
+    if arm not in declared:
+        raise BenchError("HB-USR-002", f"arm {arm!r} is not in the plan")
+    return plan_packs(plan).get(arm)
+
+
+def plan_comparisons(plan: dict) -> list[tuple[str, str]]:
+    if "comparisons" in plan:
+        return [tuple(pair) for pair in plan["comparisons"]]
+    arms = {cell_arm(cell) for cell in plan.get("cells", [])}
+    return [(config.ARM_OFF, "on")] if set(config.PACKS) <= arms else []
+
+
+def kind_of(plan: dict) -> str:
+    kind = plan.get("kind", "measurement")
+    if kind not in ("measurement", "discrimination"):
+        raise BenchError("HB-PLN-004", f"unknown plan kind {kind!r}; expected measurement or discrimination")
+    return kind
+
+
+def launch_order(cells: list[Cell], seed: int) -> list[Cell]:
+    """Stable hash keys replay across Python versions; all arms of a block stay adjacent."""
+    def key(cell):
+        block = f"{cell.task}|{cell.combo}|{cell.rep}"
+        return (hashlib.sha256(f"{seed}|block|{block}".encode()).digest(),
+                hashlib.sha256(f"{seed}|arm|{block}|{cell.arm}".encode()).digest())
+    return sorted(cells, key=key)
+
+
+def launch_balance(cells: list[Cell]) -> Fraction:
+    if not cells:
+        return Fraction(0)
+    positions = defaultdict(list)
+    for position, cell in enumerate(cells):
+        positions[cell.arm].append(position)
+    midpoint = Fraction(len(cells) - 1, 2)
+    return max(abs(Fraction(sum(ps), len(ps)) - midpoint) / len(cells) for ps in positions.values())
+
+
+def draw_launch_order(cells: list[Cell], draw=None) -> tuple[int, list[Cell], int]:
+    draw = draw if draw is not None else lambda: secrets.randbits(63)
+    for attempt in range(1, MAX_DRAWS + 1):
+        seed = draw()
+        ordered = launch_order(cells, seed)
+        if launch_balance(ordered) < BALANCE_BOUND:
+            return seed, ordered, attempt
+    blocks = len({(c.task, c.combo, c.rep) for c in cells})
+    arms = len({c.arm for c in cells})
+    raise BenchError("HB-PLN-001", f"launch order cannot meet the 5 % balance bound after {MAX_DRAWS} draws: "
+                                 f"{blocks} blocks of {arms} arms; add tasks, combos or repetitions")
+
+
+def parse_binding(text: str) -> tuple[str, str, str]:
+    role, equals, rest = text.partition("=")
+    source, at, commit = rest.rpartition("@")
+    if not equals or not at or not config.ARM_ID.fullmatch(role) or role == config.ARM_OFF:
+        raise BenchError("HB-PLN-002", "binding must be ROLE=ABSOLUTE_SOURCE@COMMIT; off cannot be bound")
+    problem = config.pack_pin_problem({"source": source, "commit": commit})
+    if problem:
+        raise BenchError("HB-PLN-002", f"arm {role}: {problem}")
+    return role, source, commit
+
+
+def resolve_arms(matrix: dict, bindings: dict) -> dict[str, dict | None]:
+    arms = arms_of(matrix)
+    ids = [arm["id"] for arm in arms]
+    if any(not isinstance(aid, str) or not config.ARM_ID.fullmatch(aid) for aid in ids) or len(ids) != len(set(ids)):
+        raise BenchError("HB-PLN-002", "invalid or duplicate arm ids")
+    unknown = set(bindings) - set(ids)
+    if unknown:
+        raise BenchError("HB-PLN-002", f"bindings name unknown arms {sorted(unknown)}")
+    resolved = {}
+    for arm in arms:
+        aid, pack = arm["id"], arm["pack"]
+        if aid == config.ARM_OFF:
+            if pack is not None or aid in bindings:
+                raise BenchError("HB-PLN-002", "off arm cannot have a pack or binding")
+            resolved[aid] = None
+            continue
+        if aid in bindings:
+            if pack is not None:
+                raise BenchError("HB-PLN-002", f"arm {aid} is already pinned; cannot bind it again")
+            binding = bindings[aid]
+            if not isinstance(binding, (tuple, list)) or len(binding) != 2:
+                raise BenchError("HB-PLN-002", f"arm {aid}: binding must name source and commit")
+            pack = {"source": binding[0], "commit": binding[1]}
+        if pack is None:
+            raise BenchError("HB-PLN-002", f"unbound role arm {aid}")
+        problem = config.pack_pin_problem(pack)
+        if problem:
+            raise BenchError("HB-PLN-002", f"arm {aid}: {problem}")
+        resolved[aid] = dict(pack)
+    return resolved
 
 
 def envelope_seconds(cells: list[Cell], parallelism: int) -> int:
@@ -223,7 +371,8 @@ def resolved_model_map(plan: dict, cell: dict) -> dict[str, str]:
 def _require_discriminating_maps(body: dict) -> None:
     """R-73 item 5: every scenario-6 cell has at least one resolved role on a model other than its pin; a map whose every
     role equals the pin cannot tell routing from no routing, so the plan is refused."""
-    for c in body["cells"]:
+    # Refusal text must be reproducible even when the launch seed puts a different arm first.
+    for c in sorted(body["cells"], key=lambda cell: cell["label"]):
         if c["scenario"] != 6:
             continue
         vendor = body["profiles"][c["harness"]]["vendor"]
@@ -238,6 +387,8 @@ def _require_discriminating_maps(body: dict) -> None:
 
 
 def profile_record(root: Path, harness: str) -> dict:
+    if harness == "synthetic":
+        return SYNTHETIC_PROFILE_RECORD
     p = profiles.load(root, harness)
     # The plan's canonical form has no floats; the decimal string preserves a fractional profile value exactly.
     return {"profile_hash": file_hash(root / "bench" / "profiles" / f"{harness}.yaml"), "vendor": p.vendor, "usage_source": p.usage_source,
@@ -269,9 +420,53 @@ def _instruction_identity(row: dict) -> dict:
     return {k: row[k] for k in INSTRUCTION_IDENTITY_FIELDS if isinstance(row.get(k), str)}
 
 
-def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, pack: dict,
+def _probe_instructions(root: Path, cells: list[Cell], versions: dict, builds: dict, arm_packs: dict,
+                        tools_dir: Path | None, cells_root: Path | None) -> tuple[dict, list[dict]]:
+    instruction_counts, instruction_lists = {}, []
+    if not any(c.harness == "copilot" for c in cells):
+        return instruction_counts, instruction_lists
+    build = tools.resolve(tools_dir or root / ".tools" / "harness")["copilot"]
+    tools.check_build(build, builds["copilot"])
+    copilot_profile = profiles.load(root, "copilot")
+    # A plan probe uses the same source, clone and arm pack installation as a cell, in a fresh home.
+    cells_root = cells_root or root.parent / "bench-cells"
+    workspace.check_cells_root(cells_root)
+    cells_root.mkdir(parents=True, exist_ok=True)
+    probe = Path(tempfile.mkdtemp(prefix="bench-plan-", dir=cells_root))
+    try:
+        for task_id, arm in sorted({(c.task, c.arm) for c in cells if c.harness == "copilot"}):
+            source = workspace.task_source(root / "tasks" / task_id, versions[task_id], probe / "sources", probe / "upstream")
+            ws = workspace.cell_working_copy(source, probe / "cells" / task_id / arm / "ws")
+            pack = arm_packs[arm]
+            if pack is not None:
+                pack_dir = workspace.pack_checkout(Path(pack["source"]), pack["commit"], probe / "pack")
+                workspace.install_pack(pack_dir, ws, project=task_id, timeout=300)
+            home = probe / "homes" / task_id / arm
+            home.mkdir(parents=True)
+            env = copilot_profile.cell_env(dict(os.environ), home, build, "", "")
+            rows = instruction_list(build.exe, ws, env)
+            if pack is None and rows:
+                raise BenchError("HB-PRE-008", f"Copilot pack-off {task_id} loaded {len(rows)} instruction files")
+            instruction_counts[task_id, arm] = len(rows)
+            instruction_lists.append({"task": task_id, "task_version": versions[task_id], "arm": arm,
+                                      "build_sha256": builds["copilot"]["sha256"], "count": len(rows),
+                                      "instructions": [_instruction_identity(row) for row in rows]})
+    finally:
+        try:
+            shutil.rmtree(probe, onexc=archive.make_writable)
+        except OSError as exc:
+            logger.warning("Could not remove plan probe %s: %s", probe, exc)
+    return instruction_counts, instruction_lists
+
+
+def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, arm_packs: dict | None = None,
                parallelism: int = DEFAULT_PARAMETERS["parallelism"], parameters: dict | None = None,
-               tools_dir: Path | None = None, cells_root: Path | None = None) -> dict:
+               tools_dir: Path | None = None, cells_root: Path | None = None, *,
+               matrix_path: Path | None = None, kind: str = "measurement", campaign: dict | None = None,
+               launch_seed: int | None = None, task_versions: dict[str, str] | None = None,
+               pack: dict | None = None) -> dict:
+    started_ns = time.perf_counter_ns()
+    kind = kind_of({"kind": kind})
     if not 1 <= parallelism <= PHASE1_MAX_PARALLELISM:
         raise BenchError("HB-USR-002", f"parallelism must be 1-{PHASE1_MAX_PARALLELISM} in phase 1, got {parallelism}")
     params = {**DEFAULT_PARAMETERS, **(parameters or {}), "parallelism": parallelism}
@@ -282,45 +477,60 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, p
         if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
             raise BenchError("HB-USR-002", f"{name} must be a positive integer")
     tasks = select_tasks(bom, matrix["bom"]["subset"])
-    versions = {t["id"]: task_version_hash(root / "tasks" / t["id"]) for t in tasks}
+    permitted_statuses = ("ready",) if kind == "measurement" else ("draft", "ready")
+    offenders = []
+    for task in tasks:
+        status = config.load_yaml(root / "tasks" / task["id"] / "task.yaml").get("status")
+        if status not in permitted_statuses:
+            offenders.append(f"{task['id']} ({status})")
+    if kind == "measurement":
+        offenders.extend(f"combo {combo['id']} (synthetic)" for combo in matrix["combos"] if combo["harness"] == "synthetic")
+    if offenders:
+        raise BenchError("HB-PLN-004", f"{kind} plan refuses: {'; '.join(offenders)}")
+    declared = arms_of(matrix)
+    ids = [arm["id"] for arm in declared]
+    if len(ids) != len(set(ids)) or any(not isinstance(a, str) or not config.ARM_ID.fullmatch(a) for a in ids):
+        raise BenchError("HB-PLN-002", "invalid or duplicate arm ids")
+    # simplify: accept the old sixth pack argument until X-C migrates cmd_plan; no legacy field is written.
+    # Ceiling: bench-matrix/1 only. Upgrade trigger: the X-C caller switches to resolved arm_packs.
+    if pack is not None:
+        if arm_packs is not None or matrix.get("schema") != "bench-matrix/1":
+            raise BenchError("HB-PLN-002", "legacy pack argument applies only to bench-matrix/1 without arm_packs")
+        arm_packs = pack
+    if matrix.get("schema") == "bench-matrix/1" and (arm_packs is None or "source" in arm_packs):
+        legacy_pack = arm_packs
+        arm_packs = {aid: None if aid == config.ARM_OFF else legacy_pack for aid in ids}
+    arm_packs = arm_packs or {}
+    if set(arm_packs) != set(ids):
+        raise BenchError("HB-PLN-002", "resolved packs must name exactly the declared arms")
+    for arm in declared:
+        aid, record = arm["id"], arm_packs[arm["id"]]
+        if aid == config.ARM_OFF:
+            if record is not None or arm["pack"] is not None:
+                raise BenchError("HB-PLN-002", "off arm cannot have a pack")
+        elif not isinstance(record, dict) or not {"source", "commit", "revision"} <= record.keys():
+            raise BenchError("HB-PLN-002", f"unbound role or incomplete pack record for arm {aid}")
+    comparisons = matrix["comparisons"] if "comparisons" in matrix else default_comparisons(ids)
+    for pair in comparisons:
+        if len(pair) != 2 or any(aid not in ids for aid in pair) or pair[0] == pair[1]:
+            raise BenchError("HB-PLN-002", f"invalid comparison pair {pair!r}")
+    versions = {t["id"]: task_versions[t["id"]] if task_versions is not None else task_version_hash(root / "tasks" / t["id"])
+                for t in tasks}
     cells = expand(matrix, bom, versions)
+    if launch_seed is None:
+        launch_seed, cells, draws = draw_launch_order(cells)
+    else:
+        if not isinstance(launch_seed, int) or isinstance(launch_seed, bool) or launch_seed < 0:
+            raise BenchError("HB-PLN-001", "launch_seed must be a nonnegative integer")
+        cells = launch_order(cells, launch_seed)
+        if launch_balance(cells) >= BALANCE_BOUND:
+            raise BenchError("HB-PLN-001", "given launch_seed cannot meet the 5 % balance bound after 1 draw")
+        draws = 1
     harnesses = {c.harness for c in cells}
     missing = harnesses - set(builds)
     if missing:
         raise BenchError("HB-PRE-007", f"no planned build for {sorted(missing)}")
-    instruction_counts: dict[tuple[str, str], int] = {}
-    instruction_lists: list[dict] = []
-    if "copilot" in harnesses:
-        build = tools.resolve(tools_dir or root / ".tools" / "harness")["copilot"]
-        tools.check_build(build, builds["copilot"])
-        copilot_profile = profiles.load(root, "copilot")
-        # A plan probe uses the same source, clone and pack installation as a cell, in a fresh home.
-        cells_root = cells_root or root.parent / "bench-cells"
-        workspace.check_cells_root(cells_root)
-        cells_root.mkdir(parents=True, exist_ok=True)
-        probe = Path(tempfile.mkdtemp(prefix="bench-plan-", dir=cells_root))
-        try:
-            for task_id, arm in sorted({(c.task, c.pack) for c in cells if c.harness == "copilot"}):
-                source = workspace.task_source(root / "tasks" / task_id, versions[task_id], probe / "sources", probe / "upstream")
-                ws = workspace.cell_working_copy(source, probe / "cells" / task_id / arm / "ws")
-                if arm == "on":
-                    pack_dir = workspace.pack_checkout(Path(pack["source"]), pack["commit"], probe / "pack")
-                    workspace.install_pack(pack_dir, ws, project=task_id, timeout=300)
-                home = probe / "homes" / task_id / arm
-                home.mkdir(parents=True)
-                env = copilot_profile.cell_env(dict(os.environ), home, build, "", "")
-                rows = instruction_list(build.exe, ws, env)
-                if arm == "off" and rows:
-                    raise BenchError("HB-PRE-008", f"Copilot pack-off {task_id} loaded {len(rows)} instruction files")
-                instruction_counts[task_id, arm] = len(rows)
-                instruction_lists.append({"task": task_id, "task_version": versions[task_id], "pack": arm,
-                                          "build_sha256": builds["copilot"]["sha256"], "count": len(rows),
-                                          "instructions": [_instruction_identity(row) for row in rows]})
-        finally:
-            try:
-                shutil.rmtree(probe, onexc=archive.make_writable)
-            except OSError as exc:
-                logger.warning("Could not remove plan probe %s: %s", probe, exc)
+    instruction_counts, instruction_lists = _probe_instructions(root, cells, versions, builds, arm_packs, tools_dir, cells_root)
     body = {
         "schema": SCHEMA,
         "run_id": run_id,
@@ -339,18 +549,31 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, p
                             **_scripted_user(root / "tasks" / t["id"])} for t in tasks},
         "builds": {h: builds[h] for h in sorted(harnesses)},
         "profiles": {h: profile_record(root, h) for h in sorted(harnesses)},
-        "pack": pack,
+        "arms": {aid: {"pack": arm_packs[aid]} for aid in ids},
+        "comparisons": deepcopy(comparisons),
+        "launch_seed": launch_seed,
+        "kind": kind,
         "parameters": params,
         "price_list_hash": file_hash(root / "bench" / "prices.yaml"),
         "envelope_seconds": envelope_seconds(cells, parallelism),
         "cells": [{"cell_id": c.id, "label": c.label, **asdict(c),
-                   **({"instruction_count": instruction_counts[c.task, c.pack]} if c.harness == "copilot" else {})} for c in cells],
+                   **({"instruction_count": instruction_counts[c.task, c.arm]} if c.harness == "copilot" else {})} for c in cells],
     }
+    if campaign is not None:
+        body["campaign"] = deepcopy(campaign)
+    if "ring" in matrix:
+        if matrix_path is None:
+            raise BenchError("HB-PLN-002", "a ring requires matrix_path for its content hash")
+        body["ring"] = {"tag": matrix["ring"]["tag"], "hash": tree_hash(matrix_path.parent, [matrix_path])}
     if instruction_lists:
         body["instruction_lists"] = instruction_lists
     _validate_ids(body["cells"])
     _require_discriminating_maps(body)
     body["plan_hash"] = plan_hash(body)
+    logger.info("Plan built", extra={"run_id": run_id, "trace_id": body["trace_id"], "plan_kind": kind,
+                                    "cell_count": len(cells), "launch_seed": launch_seed, "launch_draws": draws,
+                                    "launch_balance": str(launch_balance(cells)),
+                                    "duration_ns": time.perf_counter_ns() - started_ns})
     return body
 
 
@@ -371,6 +594,9 @@ def load_confirmed(run_dir: Path) -> dict:
     if not path.exists():
         raise BenchError("HB-USR-001", f"no confirmed plan at {path}")
     data = json.loads(path.read_text(encoding="utf-8"))
+    # Historical hand-authored ledger fixtures predate a schema field; explicit newer schemas still refuse.
+    if data.get("schema", "bench-plan/1") not in ("bench-plan/1", SCHEMA):
+        raise BenchError("HB-USR-002", f"unsupported plan schema {data.get('schema')!r}")
     if plan_hash(data) != data.get("plan_hash"):
         raise BenchError("HB-LED-002", f"{path} was edited after confirmation (plan_hash mismatch)")
     return data
