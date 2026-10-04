@@ -950,7 +950,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "223ed173edb0e6aed2026d30001a0bcaa87645861fb7bf7d788c43fcd6a346a7"
+      "sourceSha256": "f06b88f66be36e7963c5792c5332d51e90a468390f05f35ab74f767ddc98d0dc"
     },
     {
       "id": "arch-evaluation-campaign",
@@ -1939,7 +1939,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "085de3e3c80c58e9d6f68a75fba1098d1b6cbf1d9bf19e259655fba2be27a79f"
+      "sourceSha256": "ab75ff5897c05cd8558caa500547fb691729ad068badfa233bc866222f941a04"
     },
     {
       "id": "design-eval-arms",
@@ -2557,6 +2557,67 @@ window.DOCS_INDEX = {
       "sourceSha256": "b14637314c7501ad8ce14c5b9d741f65331dc4544c28b17107039ddb33753158"
     },
     {
+      "id": "design-eval-resume",
+      "path": "docs/design/eval-resume.md",
+      "title": "Design: plan-level resume, liveness and the alarm channel (W1-K, ADR-0021)",
+      "type": "design",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: Wave 1 (E3 build tracks X-K1, X-K2)",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "How a restarted `bench run <run_id>` resumes: a pure classifier over the ledger maps every recorded cell state to one ADR-0021 section 4 action; one predicate `resume.has_work` is the only definition of remaining work, shared by the resume and the alarm (R-102); the refusals (including an unrepairable archive) run in a fixed order under the run lock, before any row is written; the dead engine's segments are marked abandoned, never written into; one `run.resumed` row per resume is the whole resume record (counts are derived). A resume of a stopped run finishes the stop (R-100) with the engine's own post-stop tail (R-101): it launches nothing, records `stopped` for every intent-without-outcome cell, archives, grades, writes `run.completed{grading}` and exits 3; the model's invariant is `NoLaunchAfterStop`, and no liveness property carries a crash exception. The TLA+ model also settles the two resume branches W1-J left provisional by the recorded `next` of each turn, and TLC rejects every new seeded variant. Liveness is the newest `recorded_at` over the segment tails; the alarm is a scheduled Windows task whose primary and required channel for an unattended run is an ntfy phone push (R-102), edge-triggered with a delivery log; the toast is optional and joins at the E5 drill.",
+      "tags": [
+        "evaluation-campaign",
+        "resume",
+        "liveness",
+        "alarm",
+        "sre",
+        "tla",
+        "wave-1"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0021-plan-level-resume-and-liveness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0015-multi-turn-attempt-and-turn-snapshots",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0007-run-engine",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-atomic-publish",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-run-lifecycle-model",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "8517db2563c008917ffc02f8d969c073626b4716a9637145a5ceb70e6b760bb1"
+    },
+    {
       "id": "design-eval-seam-contracts",
       "path": "docs/design/eval-seam-contracts.md",
       "title": "W0 seam contracts: the interfaces every Evaluation Campaign slice designs and builds against",
@@ -2658,7 +2719,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "c865bc681dc42a4fbfcc3028b7b0a3373434e8bc56bd14b9ad70622e0b343e9d"
+      "sourceSha256": "1c8d682cd1f51b5fb87e463d643a97fdd7fbf84ffb54648cbf0e4a1b275f1482"
     },
     {
       "id": "design-eval-security-tasks",
@@ -3651,7 +3712,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "1a07a2bd770fc842a77e6b2eae43d2431e3c4003c257cd0e71c0ff3db10ce4f7"
+      "sourceSha256": "763ef69aeae6bf10cab2090e3e4238a1a17ff52ebfccbca7787417c6afa55057"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -4224,6 +4285,27 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "d70e401df96961909a7dbcf6a8fc12b4d21da47122ae7ce9aa25bb7e0292125e"
+    },
+    {
+      "id": "review-eval-ds-w1k",
+      "path": "docs/design/reviews/eval-review-ds-w1k.md",
+      "title": "W1-K resume, liveness and the alarm channel: Distributed Systems lens review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Adversary-mode review of docs/design/eval-resume.md rev 1.1 (design/eval-resume, 315cf1d4) and models/run_lifecycle.tla against W0 rev 6.8, R-100, R-101 and ADR-0021 Amendment 1. The stop windows, finish-the-stop, NoLaunchAfterStop and the classifier hold. R-101 settles F-1 and removes the seal and alarm hazards it would have caused, but leaves the design text stale. Seven majors: stale R-101 text and the step 4 pending definition, run-level state not rebuilt on resume, no lock heartbeat during resume, pid reuse ignores the recorded creation time, segment ordinal and ordering, the HB-LED-005 wedge, and the pid-alive exit. PASS WITH CONDITIONS.",
+      "tags": [],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "5ebaf54b8e1ccacef5192f971ece7beeef77ffaf40fcc22d02dfa226130585ca"
     },
     {
       "id": "review-eval-pat",
@@ -6153,7 +6235,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "fb5d4e1549f37d5e6e347c3e47362bb69a48fbda3549d87e39aef0e2a5b9fd37"
+      "sourceSha256": "015eaf6b8d45d97569cb637e6a6c42b8837194701c3e24a43cea2f5202245621"
     },
     {
       "id": "brief-eval-x-k2",
@@ -6165,7 +6247,7 @@ window.DOCS_INDEX = {
       "phase": "",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "X-K2 builds bench status --alarm-after, last_progress_at, the alarm channel W1-K chooses, and the resume entry line in cli.py, on Agy gemini-3.8-flash-high in two turns. Blocked until W1-K passes its gate.",
+      "summary": "X-K2 builds bench status --alarm-after, last_progress_at and the ntfy alarm channel (R-102), importing resume.has_work, on Agy gemini-3.8-flash-high in two turns. Blocked until W1-K passes its gate.",
       "tags": [],
       "links": [
         {
@@ -6178,7 +6260,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d30eb2f6e5320b13813cbe7d150b0ca74eb9f9d75d9ea1b862b045582ecc1473"
+      "sourceSha256": "3ca1d894f7530b72d868383d40d47cd04636665533140646b9d792b6da00fc5e"
     },
     {
       "id": "brief-eval-x-lb",
@@ -7105,7 +7187,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4cc220d2b7ae4db62a5a9bce495aafd913f9e9ed69767864031e7ce0392a6f84"
+      "sourceSha256": "89fa3567118e82c779e2e6f214d8a9577acc867360752c27f492e42da520f677"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -7915,6 +7997,14 @@ window.DOCS_INDEX = {
       "artifactId": "design-eval-property-grader"
     },
     {
+      "id": "surface-design-eval-resume",
+      "path": "docs/design/eval-resume.html",
+      "title": "Eval Resume",
+      "kind": "design-preview",
+      "description": "Inspect a rendered design or design-language preview.",
+      "artifactId": "design-eval-resume"
+    },
+    {
       "id": "surface-design-eval-seam-contracts",
       "path": "docs/design/eval-seam-contracts.html",
       "title": "Eval Seam Contracts",
@@ -8008,5 +8098,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "5f3bc5e13becb72f3f705b5eacd688629be01732710e01359a35df94dc84e670"
+  "graphSha256": "4edb76cdab531808682bb8e339a249830b6a34f8d99e8e1d801a599ec7161ef2"
 };

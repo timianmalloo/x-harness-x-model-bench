@@ -64,6 +64,12 @@ VARIANTS = {
     "crashed_turn_as_between": ("inv", "CrashedTurnPredicate"),
     "archive_in_place": ("inv", "ArchiveExistsMeansComplete"),
     "snapshot_in_place": ("inv", "ArchiveExistsMeansComplete"),
+    # ADR-0021 sections 2, 4, 9 (W1-K, R-100): a resume after a stop finishes the stop, and the recorded `next` of each turn.
+    "stop_recorded_as_crash": ("inv", "StopResumeRecordsStopped"),   # R-100: finish-the-stop records `stopped`
+    "stop_resume_launches": ("inv", "NoLaunchAfterStop"),            # R-100: a resume after a stop launches nothing
+    "between_without_snapshot": ("inv", "BetweenRecordedWithSnapshot"),
+    "between_ignores_next": ("inv", "CrashedTurnPredicate"),
+    "snapshot_when_stopping": ("inv", "SnapshotOnlyWhenNext"),
 }
 # The real design and the variants run at small bounds (2 cells, parallelism 1, 1 crash, 1 pass, the
 # engine and `bench grade` both grading); two-pass variants use the grading config. Every seeded
@@ -78,6 +84,7 @@ TWO_TURNS = {"NumTurns = 1": "NumTurns = 2"}
 WIDER = {"reconcile_no_wait": {"Parallelism = 1": "Parallelism = 2"},
          "resend_turn_on_resume": TWO_TURNS, "prompt_before_snapshot": TWO_TURNS, "snapshot_in_flight": TWO_TURNS,
          "kill_between_turns": TWO_TURNS, "crashed_turn_as_between": TWO_TURNS, "snapshot_in_place": TWO_TURNS,
+         "between_without_snapshot": TWO_TURNS, "between_ignores_next": TWO_TURNS, "snapshot_when_stopping": TWO_TURNS,
          "turns-witness": TWO_TURNS, "between-witness": TWO_TURNS}
 WITNESSES = {"witness": "NotAllCellsFinished", "grace-witness": "NoGraceState",
              "turns-witness": "NotAllTurnsDelivered", "between-witness": "NotCrashBetween"}

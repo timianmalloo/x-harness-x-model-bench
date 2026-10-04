@@ -40,14 +40,15 @@ from pathlib import Path
 
 from harness_bench import archive, procs
 from harness_bench.grade import CellInput, Score, _changes
-from harness_bench.profiles import CELL_ENV
+from harness_bench.grade._env import (  # noqa: F401  (HOST_ENV re-exported)
+    DOTNET_HOST_ENV,
+    HOST_ENV,
+    grading_env,
+)
 
 RAN = re.compile(r"^Ran (\d+) tests? in ", re.MULTILINE)
 RESULT = re.compile(r"^(?:OK|FAILED)(?: \(([^)]*)\))?\s*$", re.MULTILINE)
 NOT_PASSED = ("failures", "errors", "skipped", "expected failures", "unexpected successes")
-HOST_ENV = ("PATH", "SYSTEMROOT", "SYSTEMDRIVE", "WINDIR", "TEMP", "TMP")
-DOTNET_HOST_ENV = ("USERPROFILE", "APPDATA", "LOCALAPPDATA", "HOMEDRIVE", "HOMEPATH", "ProgramData", "ProgramFiles",
-                   "NUGET_PACKAGES")
 # MSBuild's canonical error line, `<origin>: error <code>: <text>` (spike: `…Broken.cs(5,31): error CS1002: ; expected`,
 # `…AiDe.Core.csproj : error NU1101: Unable to find package …`). simplify: C# and NuGet codes only; ceiling D1, the one
 # dotnet task; upgrade trigger: an F# or VB task.
@@ -94,8 +95,7 @@ def parse_unittest(output: str) -> tuple[int, int] | None:
 
 
 def _env() -> dict[str, str]:
-    env = {k: os.environ[k] for k in HOST_ENV if k in os.environ}
-    return {**env, **CELL_ENV, "PYTHONDONTWRITEBYTECODE": "1", "PYTHONHASHSEED": "0", "PYTHONUTF8": "1"}
+    return grading_env()
 
 
 def _trx_spec(command: list[str]) -> tuple[str, str] | None:
@@ -204,8 +204,8 @@ def grade(ws: Path, task_dir: Path, oracle: dict, out_dir: Path, run_dir: Path, 
     if not ws.is_dir():
         return Result(None, None, "no working copy in the archive", "")
     work = (work_dir or out_dir) / "work"
-    shutil.copytree(ws, work, ignore=shutil.ignore_patterns(".git"))
-    shutil.copytree(task_dir / "tests", work, dirs_exist_ok=True)
+    _changes.copy_tree(ws, work, ignore=(".git",))
+    _changes.copy_tree(task_dir / "tests", work, ignore=(), dirs_exist_ok=True)
     argv = [sys.executable if a == "{python}" else a for a in oracle["command"]]
     env = _env()
     if kind == "dotnet":
