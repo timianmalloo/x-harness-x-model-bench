@@ -27,7 +27,6 @@ _HUNG = "a deliberately hung child killed by its own timeout; load lengthens the
 _UPPER = "asserts an elapsed upper bound well above the work's idle time; load-sensitive in principle, none measured (follow-up)"
 _STALL = "a deliberate forced delay (TIME-B2): it lengthens one step on purpose, so load cannot change what it forces"
 _INJECTED = "an injected clock and sleep (sleep=clock.sleep): no real time passes, so load cannot change the order"
-_UNAUDITED = "real sleep or fake delay whose ordering against other real work is not proven load-safe; none measured failing (TIME-B follow-up)"
 
 TIMING_ALLOWED: Mapping[str, str] = {
     "test_driver.py::_poll_until": _POLL,
@@ -58,19 +57,15 @@ TIMING_ALLOWED: Mapping[str, str] = {
     "test_identity.py::test_run_edit_stops_launch_grade_edit_does_not": _INJECTED,
     "test_identity.py::test_stray_file_stops_launch": _INJECTED,
     "test_identity.py::test_unreadable_component_is_named_after_retries": _INJECTED,
-    "test_engine.py::test_no_launch_after_a_stop_while_another_cell_still_runs": _UNAUDITED,
-    "test_engine.py::test_parallelism_is_never_exceeded": _UNAUDITED,
-    "test_engine.py::test_after_the_ledger_breaks_no_worker_blocks_forever": _UNAUDITED,
-    "test_engine.py::test_record_waits_through_a_full_inbox_and_a_slow_drain": _UNAUDITED,
-    "test_engine.py::test_the_heartbeat_keeps_beating_after_a_failed_beat": _UNAUDITED,
-    "test_engine.py::test_keep_awake_is_held_through_a_stop": _UNAUDITED,
-    "test_engine.py::test_a_worker_still_running_when_the_run_fails_is_refused_at_once_not_left_waiting": _UNAUDITED,
-    "test_engine.py::test_an_engine_thread_failure_exits_the_process_and_leaves_no_cell_running": _UNAUDITED,
-    "test_engine.py::test_blocked_cell_default_continues_after_the_timeout": _UNAUDITED,
-    "test_engine.py::test_no_decision_after_a_launch_stop": _UNAUDITED,
-    "test_engine.py::test_the_run_waits_for_an_open_decision": _UNAUDITED,
-    "test_engine.py::grade": _UNAUDITED,
-    "test_oslock.py::test_heartbeat_advances_the_mtime": _UNAUDITED,
+    "test_engine.py::test_blocked_cell_default_continues_after_the_timeout": _STALL,  # the blocked cell's "sleep" is the forced delay
+    "test_engine.py::test_parallelism_is_never_exceeded":
+        "forced delays of 3 s on each cell's handshake, no turn sleep, and 1.5 s on recording each process end cannot change the peak: the slot frees on the recorded outcome (TIME-B2); the 1 s turn only widens the window a broken cap would show in",
+    "test_engine.py::test_after_the_ledger_breaks_no_worker_blocks_forever":
+        "a 3 s and a 5 s handshake delay on the hung cell cannot change the outcome: after the break the engine kills every live turn whenever it started (TIME-B2)",
+    "test_engine.py::test_keep_awake_is_held_through_a_stop":
+        "a 1.5 s stall on every engine pass with a 0 s turn cannot change the calls: `active` is cleared by the engine thread after the budget check in the same tick, so the stop always sees the cell (TIME-B2)",
+    "test_engine.py::test_a_worker_still_running_when_the_run_fails_is_refused_at_once_not_left_waiting":
+        "a 2.5 s and a 5 s stall before the engine thread fails cannot change the outcome: the worker cannot finish its record without the engine, so it is still alive and is then refused (TIME-B2)",
 }
 
 
