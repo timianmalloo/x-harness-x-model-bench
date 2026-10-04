@@ -2,7 +2,7 @@
  {
   "name": "T9-1 workspace._discard stops making a losing tmp folder writable before removing it",
   "file": "src/harness_bench/workspace.py",
-  "find": "        try:\n            shutil.rmtree(tmp, onexc=archive.make_writable)\n        except OSError:\n            pass",
+  "find": "        try:\n            shutil.rmtree(tmp, onexc=atomic.make_writable)\n        except OSError:\n            pass",
   "replace": "        try:\n            shutil.rmtree(tmp, ignore_errors=True)\n        except OSError:\n            pass",
   "tests": ["tests/test_workspace.py::test_task_source_built_concurrently_leaves_no_tmp_folder_behind", "tests/test_workspace.py::test_pack_checkout_built_concurrently_leaves_no_tmp_folder_behind"]
  },
