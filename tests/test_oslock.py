@@ -72,6 +72,18 @@ def _file_bytes(folder: Path) -> dict[str, bytes]:
     return {path.name: path.read_bytes() for path in sorted(folder.iterdir()) if path.is_file()}
 
 
+def _report_side_error(queue: multiprocessing.Queue, payload: Path, exc: BaseException) -> None:
+    body = payload.read_bytes() if payload.is_file() else None
+    queue.put({
+        "proceeded": False,
+        "code": None,
+        "message": None,
+        "own_held": None,
+        "payload": body,
+        "error": f"{type(exc).__name__}: {exc}",
+    })
+
+
 def _acquire_then_probe_side(
     own: str,
     own_code: str,
@@ -80,9 +92,15 @@ def _acquire_then_probe_side(
     barrier: multiprocessing.Barrier,
     queue: multiprocessing.Queue,
 ) -> None:
-    """One side of the handshake. `between` is the barrier, after acquire and before probe."""
+    """One side of the handshake. `between` is the barrier, after acquire and before probe.
+
+    A second wait runs after the call returns. The peer's probe locks `own` for an instant
+    once we have released it, so `is_held` is observed only after both probes have finished.
+    """
     own_path = Path(own)
     payload = own_path.parent / "payload"
+    lock = None
+    refused: BenchError | None = None
     try:
         lock = oslock.acquire_then_probe(
             own_path,
@@ -91,26 +109,28 @@ def _acquire_then_probe_side(
             between=lambda: barrier.wait(timeout=10),
         )
     except BenchError as exc:
+        refused = exc
+    except (OSError, multiprocessing.BrokenBarrierError) as exc:
+        _report_side_error(queue, payload, exc)
+        return
+    try:
+        barrier.wait(timeout=10)
+    except (OSError, multiprocessing.BrokenBarrierError) as exc:
+        if lock is not None:
+            lock.release()
+        _report_side_error(queue, payload, exc)
+        return
+    if refused is not None:
         queue.put({
             "proceeded": False,
-            "code": exc.code,
-            "message": exc.message,
+            "code": refused.code,
+            "message": refused.message,
             "own_held": oslock.is_held(own_path),
             "payload": payload.read_bytes(),
             "error": None,
         })
         return
-    except (OSError, multiprocessing.BrokenBarrierError) as exc:
-        body = payload.read_bytes() if payload.is_file() else None
-        queue.put({
-            "proceeded": False,
-            "code": None,
-            "message": None,
-            "own_held": None,
-            "payload": body,
-            "error": f"{type(exc).__name__}: {exc}",
-        })
-        return
+    assert lock is not None
     held = lock.held
     lock.release()
     queue.put({

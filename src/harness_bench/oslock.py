@@ -116,6 +116,22 @@ def acquire_then_probe(
     *,
     between: Callable[[], None] | None = None,
 ) -> RunLock:
-    """Red skeleton: acquire `own` and return it. Does not probe and does not call `between`."""
-    del others, between
-    return RunLock.acquire(own, own_code)
+    """Acquire `own`, then probe each of `others`. Release `own` if a probe finds a hold or raises.
+
+    `between` runs after the acquire and before the probe (a test barrier sits between the two
+    operations, including when a mutant swaps them). A refusal says to retry: the probe holds the
+    other lock for an instant, so the other side's own acquire can fail spuriously.
+    """
+    lock = RunLock.acquire(own, own_code)
+    kept = False
+    try:
+        if between is not None:
+            between()
+        for path, code in others:
+            if is_held(path):
+                raise BenchError(code, f"{path} is held by another process; retry")
+        kept = True
+        return lock
+    finally:
+        if not kept:
+            lock.release()
