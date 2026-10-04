@@ -1,6 +1,7 @@
 """The run lock (ADR-0007): one engine per run; released by the OS when the process dies; mtime heartbeat."""
 
 import multiprocessing
+import os
 import subprocess
 import sys
 import time
@@ -44,13 +45,13 @@ def test_lock_is_released_when_the_holder_dies(tmp_path):
 def test_heartbeat_advances_the_mtime(tmp_path, monkeypatch, stall):
     path = tmp_path / ".lock"
     with oslock.RunLock.acquire(path) as lock:
-        before = path.stat().st_mtime_ns
-        time.sleep(0.05)
+        stale = time.time_ns() - 3600 * 10**9  # an hour-old beat, set directly: no wait for the clock to tick
+        os.utime(path, ns=(stale, stale))
         lock.heartbeat()
         real_time = time.time
         monkeypatch.setattr(time, "time", lambda: real_time() + stall)
-        assert path.stat().st_mtime_ns > before
-        assert oslock.heartbeat_age(path) < 5
+        assert path.stat().st_mtime_ns > stale
+        assert oslock.heartbeat_age(path) < 1800  # far under the hour it was backdated; a stalled check changes nothing
 
 
 def test_runlock_held_is_true_only_while_this_object_holds_the_fd(tmp_path):
