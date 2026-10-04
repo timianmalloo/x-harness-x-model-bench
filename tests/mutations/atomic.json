@@ -130,6 +130,7 @@
     "file": "src/harness_bench/atomic.py",
     "find": "    flags = os.O_RDONLY | O_BINARY | getattr(os, \"O_NOFOLLOW\", 0)\n",
     "replace": "    flags = os.O_RDONLY | O_BINARY\n",
+    "note": "RV-SEC W1-B 5(c): not run on this host (winerror 1314, no symlink right). Needs a host with symlink rights: the macOS CI job or Windows Developer Mode; the kill is recorded there.",
     "tests": ["tests/test_atomic.py::test_create_once_refuses_a_symlink_existing_path"]
   },
   {
