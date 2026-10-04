@@ -592,5 +592,23 @@
   "tests": [
    "tests/test_grade_runner.py::test_a_security_task_graded_by_property_writes_exactly_two_property_rows_and_the_pass_completes"
   ]
+ },
+ {
+  "name": "manifest(which=...) reads both sides: grading reads today's run-side profile files",
+  "file": "src/harness_bench/identity.py",
+  "find": "        readers = {key: read for key, read in readers.items() if _class(key) == which}\n",
+  "replace": "        readers = dict(readers)\n",
+  "tests": [
+   "tests/test_identity.py::test_a_one_side_manifest_is_that_side_of_the_full_manifest"
+  ]
+ },
+ {
+  "name": "grade_identity_hash: a missing grade input raises instead of degrading to not recorded",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "    except OSError:\n        return NOT_RECORDED\n",
+  "replace": "    except KeyError:\n        return NOT_RECORDED\n",
+  "tests": [
+   "tests/test_property_grade_cell.py::test_grading_started_carries_the_grade_identity_or_says_not_recorded"
+  ]
  }
 ]

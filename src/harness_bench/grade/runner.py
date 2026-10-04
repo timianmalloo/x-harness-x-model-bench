@@ -105,12 +105,15 @@ def grader_build() -> str:
 
 
 def grade_identity_hash(root: Path, plan: Mapping) -> str:
-    """The grade side of the engine identity (seam contracts s6), or "not recorded" while X-D's `identity.manifest` has
-    not landed: a missing measurement degrades to "not recorded", never to a plausible wrong hash."""
-    if not all(hasattr(identity, n) for n in ("manifest", "side", "identity_hash")):
-        return "not recorded"
+    """The grade side of the engine identity (seam contracts s6). Only grade-side inputs are read, so grading never
+    reads today's run-side files (profiles, tasks). A missing input degrades to "not recorded", never to a plausible
+    wrong hash."""
     tasks = sorted({c["task"] for c in plan.get("cells", [])})
-    return identity.identity_hash(identity.side(identity.manifest(root, tasks, plan.get("builds")), "grade"))
+    try:
+        m = identity.manifest(root, tasks, plan.get("builds"), which="grade")
+    except OSError:
+        return NOT_RECORDED
+    return identity.identity_hash(identity.side(m, "grade"))
 
 
 GRADERS["process"] = process.grade_cell  # GR-PROC p1-p3
