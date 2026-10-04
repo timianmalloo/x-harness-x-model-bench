@@ -1,0 +1,65 @@
+[
+  {
+    "name": "SL1: pytest never takes the lock",
+    "file": "tests/conftest.py",
+    "find": "        lock = suite_lock.acquire(os.environ, f\"pytest {' '.join(config.invocation_params.args)}\", tell)\n",
+    "replace": "        lock = None\n",
+    "tests": ["tests/test_suite_lock.py::test_pytest_with_workers_waits_for_the_lock_end_to_end"]
+  },
+  {
+    "name": "SL2: a holder's child waits on its parent",
+    "file": "tests/suite_lock.py",
+    "find": "    if env.get(PARENT_ENV) == \"1\":\n        return None\n",
+    "replace": "",
+    "tests": ["tests/test_suite_lock.py::test_a_child_of_a_holder_never_waits"]
+  },
+  {
+    "name": "SL3: a holder does not mark its children",
+    "file": "tests/suite_lock.py",
+    "find": "        env[PARENT_ENV] = \"1\"\n        return lock\n",
+    "replace": "        return lock\n",
+    "tests": ["tests/test_suite_lock.py::test_a_second_heavy_run_waits_until_the_holder_releases"]
+  },
+  {
+    "name": "SL4: release keeps the lock",
+    "file": "tests/suite_lock.py",
+    "find": "        lock.release()\n",
+    "replace": "        pass\n",
+    "tests": ["tests/test_suite_lock.py::test_a_second_heavy_run_waits_until_the_holder_releases"]
+  },
+  {
+    "name": "SL5: a refused path is waited on forever",
+    "file": "tests/suite_lock.py",
+    "find": "            if path.is_symlink() or not path.is_file() or not oslock.is_held(path):\n                raise\n",
+    "replace": "",
+    "tests": ["tests/test_suite_lock.py::test_a_lock_path_that_is_not_a_file_raises_instead_of_waiting"]
+  },
+  {
+    "name": "SL6: the whole suite run serially is light",
+    "file": "tests/suite_lock.py",
+    "find": "    if from_testpaths:\n        return True\n",
+    "replace": "",
+    "tests": ["tests/test_suite_lock.py::test_heavy_rule"]
+  },
+  {
+    "name": "SL7: a directory argument is light",
+    "file": "tests/suite_lock.py",
+    "find": "    return any((invocation_dir / arg.split(\"::\")[0]).is_dir() for arg in args)\n",
+    "replace": "    return False\n",
+    "tests": ["tests/test_suite_lock.py::test_heavy_rule"]
+  },
+  {
+    "name": "SL8: --collect-only takes the lock",
+    "file": "tests/suite_lock.py",
+    "find": "    if collect_only:\n        return False\n",
+    "replace": "",
+    "tests": ["tests/test_suite_lock.py::test_heavy_rule"]
+  },
+  {
+    "name": "SL9: a mutation run never takes the lock",
+    "file": "tools/mutate_check.py",
+    "find": "    with _suite_lock(argv[0]):\n",
+    "replace": "    with contextlib.nullcontext():\n",
+    "tests": ["tests/test_suite_lock.py::test_a_mutation_run_holds_the_lock"]
+  }
+]

@@ -25,8 +25,9 @@ summary: >-
 3. Climb the control ladder (CI6) and record the highest rung that actually holds: *make it impossible* > *automated control* > *always-loaded instruction* > *knowledge doc* > *register entry only*.
 4. A control is not a control until it has been **observed failing** on the un-fixed code.
 
-**Status counts:** controlled 13 · partially-controlled 5 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`. CAUSE-A is `observed` (2026-09-30).
+**Status counts:** controlled 13 · partially-controlled 6 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`. CAUSE-A is `observed` (2026-09-30).
 **Recurrence since last review:**
+- 2026-10-04 (Leader, epoch 16): LOAD-A registered as `partially-controlled`. It covers three host hangs (10/3 ~18:25, 10/4 ~09:21 and ~10:41) from concurrent heavy test gates; the control is SUITE-LOCK plus the Leader's worker cap.
 - 2026-10-03 (Coordinator #13): SERVE-A registered as `observed` (R-103 c5; four instances; R-92 c3's missing entry is a RUL-A instance); PROC-A (candidate) registered from X-F F2's machine-wide pytest kill, which left three other trees' mutants applied.
 - 2026-10-03 (Coordinator #11, W0 rev 6.9): CACHE-A (controlled), MOD-C (candidate), DOC-A (candidate), MUT-E (controlled) registered; a TIME-B instance (the S1 probe-host start bound under load).
 - 2026-10-02: SCAN-A, new class (grid-3 incident, follow-up) — the G2 artifact scan flagged `lake build`'s own mandated output (`.lake/`, `lake-manifest.json`) as an agent-introduced binary artifact, zeroing `formal_checks_clean` for all 12 real G2 cells; `grade/_changes.py`'s `BUILD_OUTPUT` already carried the same fix, independently, for dotnet/pytest's build output, confirming the shape recurs across graders.
@@ -796,6 +797,17 @@ summary: >-
 - **Sweep:** owed: the Leader greps the day's worker transcripts (`.agents/log/*.jsonl`, the harness session stores) for `Stop-Process`, `taskkill`, `pkill`, `killall` and `kill` with a name or pattern argument; each hit is an instance or is named safe (a PID the worker started).
 - **Control:** (1) a rule in both pack READMEs' section 2: never kill by name, pattern or command line; only PIDs you started. Rung: always-loaded instruction for every worker. (2) The PreToolUse guard (`tools/heredoc_guard.py`) refuses the name and pattern forms for Claude Code workers, on the Bash and PowerShell tools (brief `docs/coordination/eval-wave2-e1/kill-guard.md`). Rung: hook. Upgrade trigger: an instance from a Codex, Agy or Grok worker, which the Claude hook cannot see; then the same check goes into those harnesses' hook files.
 - **Status:** `candidate`
+
+### LOAD-A: parallel tracks each run a heavy test gate at once and exhaust the host's process and app-activation resources
+- **Signature:** several worktrees on one machine each start a full suite (`pytest -n 4` or `-n auto`), a mutation run, or both, within minutes of each other. Each suite spawns thousands of job-wrapped processes. Minutes later Windows stops starting packaged apps: AppModel-Runtime/Admin events 208/212 with 0x80070005 ("Cannot add process … to Desktop AppX container"), or an app failing to start with 0xc0000142. The terminal hosting the agents dies, every track's log stops in the same few seconds, and only a reboot recovers the host. There is no bugcheck and no application crash event.
+- **Why it survives:** each track's load rule is local ("`-n 4`", "no suite and mutate_check together in your track"), and each is right for one track alone. No track sees the sum. Lowering `-n` lowers each run but not how many overlap: 5 × `-n 4` still hung the host. The host does not fail at a measured limit; it fails after a few minutes at roughly 20 or more concurrent workers.
+- **Instances:**
+  - `2026-10-03 ~18:25` (E1, epoch 13): several full suites ran at once; the last transcript write was a worker starting `pytest -n auto`. The host stayed hung until a manual restart at 08:59 on 10/4. The roster recorded this as a reboot at 18:22, which it was not.
+  - `2026-10-04 ~09:21` (epoch 14): 4 × `pytest -n auto` + 2 mutation runs on 24 cores; wta.exe 0xc0000142 at 09:23; restart 09:25.
+  - `2026-10-04 ~10:41` (epoch 15): 5 × `pytest -n 4` + mutation runs; all five logs stopped between 10:40:45 and 10:41:03; AppModel-Runtime 212 from 10:41:06; restart 10:41:53.
+- **Sweep:** the heavy gates are the full suite, a directory run, `-n` runs and `tools/mutate_check.py`. The dotnet `slow` ring and the `gate` ring are heavy as well but run only on the Leader's hand. Owed: a measured safe concurrency (1, 2, 3 workers with the process count and AppModel-Runtime events logged), so the cap below is evidence rather than a guess.
+- **Control:** (1) SUITE-LOCK (`tests/suite_lock.py`): a machine-wide OS lock at `~/.harness-bench/suite.lock`. pytest takes it in `tests/conftest.py` for a heavy run (xdist workers, the whole suite, a directory), and `tools/mutate_check.py` holds it for a whole mutation run. A light run (named files or node ids, no `-n`) does not take it. A killed holder releases it, and a holder's children never wait on it. Observed failing: `tests/mutations/suite_lock.json` SL1–SL9, all killed. Rung: automated control. (2) Leader procedure: at most 3 live workers; `-n 4` at most; the full suite once per task at the join; a health check (process count, AppModel-Runtime 208/212) before each dispatch and at each join. Rung: always-loaded instruction (the dispatch brief). Upgrade trigger: one more hang with the lock in place; then the cap becomes measured and the lock covers the remaining heavy rings.
+- **Status:** `partially-controlled` (a tree gets the lock only once it has merged main)
 
 ---
 
