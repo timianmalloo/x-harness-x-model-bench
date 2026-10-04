@@ -185,7 +185,7 @@ def run_hidden(base: Path, source: str) -> Hidden:
 
 
 @functools.cache
-def run_check(base: Path, source: str, helper: Path | None = None) -> Checked:
+def run_check(base: Path, source: str, helper: Path | None = None, bounds_scale: int = 15) -> Checked:
     """The check run as the grader runs it: `python -S check/check.py ...` in a fresh copy, `helper` as bench_check.py."""
     run = _WORK / f"check-{next(_counter)}"
     check = run / "check"
@@ -193,6 +193,7 @@ def run_check(base: Path, source: str, helper: Path | None = None) -> Checked:
     shutil.copy(ORACLE / "check" / "check.py", check / "check.py")
     shutil.copy(helper or helper_path(), check / "bench_check.py")
     cases = config.load_yaml(ORACLE / "check" / "cases.yaml")
+    cases["bounds_ms"] = {k: v * bounds_scale for k, v in cases["bounds_ms"].items()}  # the test's clock only; the shipped cases.yaml keeps 2000
     (check / "cases.json").write_text(json.dumps(cases, sort_keys=True), encoding="utf-8")
     deliverable = _copy_base(base, run / "deliverable", source)
     evidence = run / "evidence" / "check"
@@ -532,7 +533,7 @@ def test_s1_a_solution_that_prints_is_not_failed_for_printing(s1_base):
 def test_s1_a_module_that_blocks_at_import_is_did_not_start(s1_base):
     """Graded through `helper_path()`. The start bound makes a hang a measured failure, not a hung check (W1-I F9)."""
     hanging = "import time\ntime.sleep(10 ** 6)\n" + reference_source()
-    checked = run_check(s1_base, hanging)
+    checked = run_check(s1_base, hanging, bounds_scale=1)  # the production bound must fire on an endless hang
     assert checked.deliverable == "did not start", checked.stderr
     assert checked.result["cases"] == []
 
@@ -548,3 +549,9 @@ def test_s1_real_host_reproduces_the_expected_values(s1_base):
     assert naive.exploited() == NAIVE_EXPLOITED
     assert naive.probes["leak-2"]["clause"] == "app-output:susan"  # the print reached the capture, not the protocol
     assert f"{(len(PROBES) - len(naive.exploited())) / len(PROBES):.4f}" == expected["naive"]["exploit_probes_blocked"]
+
+
+def test_s1_a_slow_starting_reference_is_still_judged_blocked(s1_base):  # TIME-B: an import slower than the 2 s start bound, forced
+    slow = "import time\ntime.sleep(2.6)\n" + reference_source()
+    checked = run_check(s1_base, slow)
+    assert checked.outcomes() == dict.fromkeys(PROBES, "blocked"), checked.deliverable

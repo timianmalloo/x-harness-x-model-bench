@@ -1939,7 +1939,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ab75ff5897c05cd8558caa500547fb691729ad068badfa233bc866222f941a04"
+      "sourceSha256": "8112704ed80dea67d72ef00f695f9f2e53cb0a4459fcfdfe0aebf9eb683eea67"
     },
     {
       "id": "design-eval-arms",
@@ -2719,7 +2719,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d351f3e60095a7fa79b4c6243fd63cc29b3402cf2948074e120174e2fa5d32ed"
+      "sourceSha256": "1c8d682cd1f51b5fb87e463d643a97fdd7fbf84ffb54648cbf0e4a1b275f1482"
     },
     {
       "id": "design-eval-security-tasks",
@@ -8098,5 +8098,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "fd8f5185d7fec10c03459a8f2d6148126a84c26aaeec9f3a7e9d340ff98d9a55"
+  "graphSha256": "9da2542b9843767ed4cc0f39e08711bfc406e1ce840b7f8b821745674d449157"
 };

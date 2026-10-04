@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T23:20:16Z",
+  "generated": "2026-10-04T00:05:52Z",
   "audit": [
     {
       "actor": null,
@@ -77621,27 +77621,160 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M4212YQC0RQ9HY4E99DKVZDW",
-      "shortname": "coord-requests-e1e4-11",
+      "actor": "Coordinator (claude-opus-5-5)",
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md"
+      ],
       "datetime": "2026-10-03T23:20:16Z",
-      "session": "coord-opus-e1e4",
-      "prompt": "Coordinator #11: W0 rev 6.9 - move the cmd_run hunk from X-K2 to X-K1 in E3 (RV-TA 3, RV-PAT 1 on W1-K), amend s13 and x-k1.md/x-k2.md, answer W1-K's request; add R-102 (resume.has_work X-K1's, alarm.py imports it, ntfy primary) to s12/s13; ADR-0021 Amendment 1 R-102 lines; register CACHE-A, MOD-C, the probe-host start-bound flake (TIME-B), the W0-text guard reddening, the stale mutant find paths; answer open requests; derive/validate, audit, named-path commits.",
-      "summary": "Resolved req-01M420GY3H75665W0N5T04NHRQ (W1-K, granted R6.9a), req-01M420G9EYGHXESH3XHXXNR8FK (X-D2, granted R6.9c), req-01M420GTV99WG47VP6MEH49CNT (X-A1a, partly granted R6.9d). W0 rev 6.9 and ADR-0021 Am.1 lines in fde04ddc. Classes: CACHE-A, MOD-C, DOC-A, MUT-E; TIME-B instance. W0-parsing tests 90 passed; validate exit 0.",
+      "done_when": "all committed on coord/eval-w0-rev69-k-move with derive/validate green and no request open to coord-opus-e1e4",
+      "fan_out": 0,
+      "goal": "W0 rev 6.9 (cmd_run hunk to X-K1; R-102), ADR-0021 Am.1 R-102 lines, register five candidate classes, answer open requests",
+      "id": "al-01M4212YQC0RQ9HY4E99DKVZDW",
       "kind": "manual",
+      "outcome": "success",
+      "prompt": "Coordinator #11: W0 rev 6.9 - move the cmd_run hunk from X-K2 to X-K1 in E3 (RV-TA 3, RV-PAT 1 on W1-K), amend s13 and x-k1.md/x-k2.md, answer W1-K's request; add R-102 (resume.has_work X-K1's, alarm.py imports it, ntfy primary) to s12/s13; ADR-0021 Amendment 1 R-102 lines; register CACHE-A, MOD-C, the probe-host start-bound flake (TIME-B), the W0-text guard reddening, the stale mutant find paths; answer open requests; derive/validate, audit, named-path commits.",
+      "session": "coord-opus-e1e4",
+      "shortname": "coord-requests-e1e4-11",
+      "signals": {
+        "verification_executed": true
+      },
+      "skill": null,
+      "summary": "Resolved req-01M420GY3H75665W0N5T04NHRQ (W1-K, granted R6.9a), req-01M420G9EYGHXESH3XHXXNR8FK (X-D2, granted R6.9c), req-01M420GTV99WG47VP6MEH49CNT (X-A1a, partly granted R6.9d). W0 rev 6.9 and ADR-0021 Am.1 lines in fde04ddc. Classes: CACHE-A, MOD-C, DOC-A, MUT-E; TIME-B instance. W0-parsing tests 90 passed; validate exit 0.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-resume.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T22:46:33Z",
+      "done_when": "Gate-ready design: section 4 rows mapped to node ids, NoResumeAfterStop with TLC output and rejected variant, provisional branches settled, resume record, alarm channel and runbook path, X-K1/X-K2 seam, surface list",
+      "fan_out": 0,
+      "goal": "Design plan-level resume, liveness and the alarm channel (ADR-0021)",
+      "id": "al-01M41Z56BXFH5NJQ2SFNK4VG4X",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave2-e234/w1-k.md",
+      "session": "w1k-resume-e1e4",
+      "shortname": "design-slice-eval-resume",
+      "skill": "design-slice",
+      "summary": "W1-K design: resume protocol and classifier, NoResumeAfterStop and settled resume branches in the TLA+ model (TLC 33/33 variants, US-44 bounds pass), alarm channel (scheduled task, toast, optional ntfy), X-K1/X-K2 split",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-resume.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T23:01:23Z",
+      "done_when": "Design and model amended, TLC re-run green, gate pending five lenses",
+      "duration_seconds": 812.0,
+      "fan_out": 0,
+      "goal": "Apply R-100 to the W1-K design before the lens reviews",
+      "id": "al-01M4200C9YVA5W1B8REQVHM1AB",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "docs/coordination/eval-wave2-e234/w1-k.md (rev 1.1: apply R-100)",
+      "session": "w1k-resume-r2-e1e4",
+      "shortname": "design-slice-eval-resume-rev1-1",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T22:47:51Z",
+      "summary": "Applied Ruling 100 (B): finish-the-stop resume; NoLaunchAfterStop; D-K9 withdrawn; model, variants, W12 and sections amended; TLC quick 34/34, exit 0",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "claude-sonnet-5-5",
+      "artifacts": [
+        "docs/design/eval-resume.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-03T23:17:35Z",
+      "done_when": "Every finding has a disposition row; five gate lines copied; derive/validate exit 0",
+      "duration_seconds": 429.0,
+      "fan_out": 0,
+      "goal": "Apply R-101, R-102 and five lens reviews to eval-resume.md as rev 1.2",
+      "id": "al-01M420Y0T6AJ1YSZASTY4KYWS9",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "W1-K gate revision rev 1.2: merge main, apply R-101 (finish-the-stop takes the engine's tail), R-102 (one has_work, ntfy primary), TA/DS/SRE/PAT/SIM reviews; cmd_run hunk moved to X-K1",
+      "session": "w1k-resume-r3-e1e4",
+      "shortname": "W1-K rev 1.2 gate revision",
+      "skill": "design-slice",
+      "started_at": "2026-10-03T23:10:26Z",
+      "summary": "eval-resume.md rev 1.2: R-101 closes F-1 (steps 4 and 8, 5.3, W12 asserts grading and one run.completed); R-102 has_work (D-K12) shared with alarm, ntfy primary with edge state file, delivery log, no printed topic, toast deferred to E5; DS rebuild of run-level state, lock heartbeat, creation-time pid check, ordinal rule, refusal 3(c), pid-alive defers; TA C7/C4 stop cells, sweep stop axis, mutant changes; SIM windows folded into the sweep, 5 classifier mutants dropped, HB-ALM-003 and report header deferred to E5. cmd_run hunk moved to X-K1 (seam req-01M420GY3H75665W0N5T04NHRQ). No model change; check_models not re-run. derive and validate exit 0.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M422VJZSARYZ9A0ZNS81YJEY",
+      "shortname": "coord-12-requests",
+      "datetime": "2026-10-03T23:51:12Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Coordinator #12: answer five open seam requests (X-B1a, X-D2 x2, X-A1a x2), check stale claims, write any W0 change as rev 6.10.",
+      "summary": "Six requests resolved (one arrived mid-turn). W0 rev 6.10 at 28ccc1ee on coord/eval-w0-rev610-grants. Ledger fold: 0 live leases; the identity.py block was x-b1a-e1e4's live lease, expired on TTL. X-D2 green d59a92cc present on build/eval-x-d2.",
+      "kind": "command",
       "skill": null,
       "tool": null,
-      "actor": "Coordinator (claude-opus-5-5)",
+      "actor": "coord-opus-e1e4",
       "artifacts": [
         "docs/design/eval-seam-contracts.md"
       ],
       "tags": [],
       "outcome": "success",
-      "goal": "W0 rev 6.9 (cmd_run hunk to X-K1; R-102), ADR-0021 Am.1 R-102 lines, register five candidate classes, answer open requests",
-      "done_when": "all committed on coord/eval-w0-rev69-k-move with derive/validate green and no request open to coord-opus-e1e4",
+      "goal": "Answer every open request addressed to coord-opus-e1e4 and report stale claims",
+      "done_when": "0 open requests; W0 rev 6.10 committed with derive/validate; stale claims listed",
       "tier": "T1",
+      "git": {
+        "sha": "28ccc1eeaa230276308c5f03e2335cd559cc45a8",
+        "short": "28ccc1eea",
+        "branch": "coord/eval-w0-rev610-grants",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M423PE79B47EQPKZM3V9F48W",
+      "shortname": "ruling-r103-grok-drift",
+      "datetime": "2026-10-04T00:05:52Z",
+      "session": "owner-fable",
+      "prompt": "Leader to Owner (fresh owner-fable session): rule R-103, Grok served the wrong model on X-B1a. Run w2-b1a-e1e4 (argv -m grok-4.7 --reasoning-effort high, grok 1.0.41) produced red 4c425df0, green 9838b006, fallback f3e0ce86, fix 95d65eb6 on build/eval-x-b1a, then hit its 2400 s deadline. tools/grok_served_model.py reports FAIL: pin grok-4.7; served grok-4.6-build x59. Earlier runs (q0g x8, X-G1 x43, ENV-A) served grok-4.7-build. X-B1a passes its own gate (red by assertion 19, ruff clean, full suite with only the gate-stamp failure); its mutation run was interrupted. Q1: can X-B1a's commits join main as they are with the drift recorded, or must the slice be redone under the pin? Q2: Grok dispatch for X-B1b, X-B1c, X-H1a/b/c, X-G3: (a) pause and route to Sonnet under R-92; (b) re-qualify once; (c) per-run gate and re-run any drifted turn. Operator away overnight; the kickoff requires a federation across Codex, Agy and Grok. Say whether the operator must be told.",
+      "summary": "R-103 (DR-11) appended to docs/notes/rulings.md (commit 26eaa689): X-B1a joins on its gate evidence, recorded as served grok-4.6-build; (b) re-qualification refused (Q0b passed 10:16, drift back by 16:xx); (a) blanket pause refused; (c) granted as a fail-fast first-response kill, one retry per turn, then Sonnet under R-92; mutation gate run to completion before merge; R-92 condition 3's register entry found missing and reassigned (condition 5); operator told in the next report. No decision request was on file, so the block is hand-appended in the R-88/R-91 shape; verify-ruling-citations OK (103/103); docs-graph validate exit 0.",
+      "kind": "manual",
+      "skill": "ruling",
+      "tool": null,
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "tags": [
+        "ruling",
+        "grok"
+      ],
+      "outcome": "success",
+      "goal": "Rule R-103: Grok served grok-4.6-build on X-B1a under -m grok-4.7; decide whether X-B1a joins and what Grok dispatch does overnight",
+      "done_when": "R-103 in docs/notes/rulings.md from the owner/ruling-r103 worktree, citations verified, audit entry appended, committed, 6-line return to the Leader",
+      "tier": "T0",
       "fan_out": 0,
       "signals": {
-        "verification_executed": true
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-04T00:04:52Z",
+      "duration_seconds": 60.0,
+      "git": {
+        "sha": "26eaa689395f0f0edd7be8b53a6abf7922f2d029",
+        "short": "26eaa6893",
+        "branch": "owner/ruling-r103",
+        "pushed": null
       }
     }
   ],
@@ -78850,79 +78983,146 @@ window.AUDIT_DATA = {
       "title": "W1-J rev 2: CrashedTurnPredicate independent of ClassOf; turn_ended for every returned turn; check_models WIDER rows"
     },
     {
-      "id": "cl-01M41TXDN4Y4WA99A575T5G09C",
-      "datetime": "2026-10-03T21:32:24Z",
-      "session": "coord-opus-e1e4",
-      "kind": "decision",
-      "skill": null,
-      "title": "Coordinator #9: E2 unblocked on W1-J rev 2; X-J1a and X-J2a compiled; X-I-S2 brief amended per R-99",
-      "prompt": null,
-      "summary": "W1-J rev 2 merged (f23d35ed) so X-J1 and X-J2 are unblocked by design. x-j1.md re-cut on W1-J section 11 (K1..K4) with its final names and conditions: budget clock at turn == 1 via lifecycle.is_cell_start; spend summed across turns; turn_ended with next for stopping turns (R6.5a); status.py first prompt_sent (R6.5b); job_active_baseline at turn 1's first update (R6.5c); append_missing_rows owned by X-J1; E2 snapshot recovery; S-J4/S-J5 run by X-J1. Deadline 3,600 s. X-J1a starts after X-D1 (and X-D2) joins: X-D owns engine.py in E1 and engine.py edits are serialised. x-i-s2.md step 1 item 2 per R-99: HMAC alternative withdrawn, login route only, no bottle/pickle import, inert bytes only, tamper-refusal replaces forged-session.",
-      "rationale": "W1-J gate passed; R-99 names the Coordinator as the amender of the X-I-S2 brief.",
       "artifacts": [
         "docs/coordination/eval-wave2-e234/README.md",
         "docs/coordination/eval-wave2-e234/x-j1.md",
         "docs/coordination/eval-wave2-e234/x-j2.md",
         "docs/coordination/eval-wave2-e234/x-i-s2.md"
       ],
-      "tags": [],
+      "datetime": "2026-10-03T21:32:24Z",
       "git": {
-        "before": "66ec885f",
         "after": "66ec885ff2e19f21af82dcaf16731ad293ca6d24",
+        "before": "66ec885f",
         "branch": "coord/eval-e2-unblock-r99",
-        "pushed": null,
-        "commits": []
-      }
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41TXDN4Y4WA99A575T5G09C",
+      "kind": "decision",
+      "prompt": null,
+      "rationale": "W1-J gate passed; R-99 names the Coordinator as the amender of the X-I-S2 brief.",
+      "session": "coord-opus-e1e4",
+      "skill": null,
+      "summary": "W1-J rev 2 merged (f23d35ed) so X-J1 and X-J2 are unblocked by design. x-j1.md re-cut on W1-J section 11 (K1..K4) with its final names and conditions: budget clock at turn == 1 via lifecycle.is_cell_start; spend summed across turns; turn_ended with next for stopping turns (R6.5a); status.py first prompt_sent (R6.5b); job_active_baseline at turn 1's first update (R6.5c); append_missing_rows owned by X-J1; E2 snapshot recovery; S-J4/S-J5 run by X-J1. Deadline 3,600 s. X-J1a starts after X-D1 (and X-D2) joins: X-D owns engine.py in E1 and engine.py edits are serialised. x-i-s2.md step 1 item 2 per R-99: HMAC alternative withdrawn, login route only, no bottle/pickle import, inert bytes only, tamper-refusal replaces forged-session.",
+      "tags": [],
+      "title": "Coordinator #9: E2 unblocked on W1-J rev 2; X-J1a and X-J2a compiled; X-I-S2 brief amended per R-99"
     },
     {
-      "id": "cl-01M41YY8QAT7CJDTA57GNDVAWX",
-      "datetime": "2026-10-03T22:42:46Z",
-      "session": "coord-opus-e1e4",
-      "kind": "decision",
-      "skill": null,
-      "title": "W0 rev 6.8: W1-K seams (views.py E3, X-K2 alarm paths, report resume header) and R-100 (ADR-0021 Amendment 1, HB-RUN-008 re-pointed); MUT-D candidate",
-      "prompt": null,
-      "summary": "Three W1-K requests resolved in W0 rev 6.8 (3538661f): R6.8a views.py E3 to X-K1 and X-A3 in disjoint hunks, model docs already X-K1's; R6.8b X-K2 owns tools/alarm-task.ps1, tests/test_alarm_task.py, docs/runbooks/resume-and-alarm.md with four conditions; R6.8c the report/html.py resume header is one X-K2 hunk after X-A3c and X-K1 join. R6.8d and ADR-0021 Amendment 1 record R-100 (finish-the-stop, NoLaunchAfterStop, HB-RUN-008 the exit-3 reason) and D-K1, D-K2, D-K4, D-K5. MUT-D candidate: scenario6 stub-map mutant survives on main.",
-      "rationale": "One owner per hunk keeps hub files serial: X-A3's brief already claimed a views.py rename that W0 did not list, so both E3 writers are recorded as disjoint hunks. The report header hunk goes to X-K2 (one wording with bench status) rather than delaying X-A3 on X-K1's join. R-100 conditions 1 and 4 assign the ADR note and the HB-RUN-008 text to the Coordinator. The stub-map mutant was re-run and observed surviving; its fixture is valid under model_map_problems.",
       "artifacts": [
         "docs/design/eval-seam-contracts.md",
         "docs/adr/0021-plan-level-resume-and-liveness.md",
         "docs/lessons/defect-classes.md"
       ],
-      "tags": [],
+      "datetime": "2026-10-03T22:42:46Z",
       "git": {
-        "before": "557cfe25",
         "after": "3538661f3a3bed5f4a6aa8ad350a87e447b91693",
+        "before": "557cfe25",
         "branch": "coord/eval-w0-rev68-w1k",
-        "pushed": null,
         "commits": [
           "3538661f docs(design): W0 seam contracts rev 6.8 (W1-K seams, R-100), ADR-0021 Amendment 1, MUT-D candidate"
-        ]
-      }
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M41YY8QAT7CJDTA57GNDVAWX",
+      "kind": "decision",
+      "prompt": null,
+      "rationale": "One owner per hunk keeps hub files serial: X-A3's brief already claimed a views.py rename that W0 did not list, so both E3 writers are recorded as disjoint hunks. The report header hunk goes to X-K2 (one wording with bench status) rather than delaying X-A3 on X-K1's join. R-100 conditions 1 and 4 assign the ADR note and the HB-RUN-008 text to the Coordinator. The stub-map mutant was re-run and observed surviving; its fixture is valid under model_map_problems.",
+      "session": "coord-opus-e1e4",
+      "skill": null,
+      "summary": "Three W1-K requests resolved in W0 rev 6.8 (3538661f): R6.8a views.py E3 to X-K1 and X-A3 in disjoint hunks, model docs already X-K1's; R6.8b X-K2 owns tools/alarm-task.ps1, tests/test_alarm_task.py, docs/runbooks/resume-and-alarm.md with four conditions; R6.8c the report/html.py resume header is one X-K2 hunk after X-A3c and X-K1 join. R6.8d and ADR-0021 Amendment 1 record R-100 (finish-the-stop, NoLaunchAfterStop, HB-RUN-008 the exit-3 reason) and D-K1, D-K2, D-K4, D-K5. MUT-D candidate: scenario6 stub-map mutant survives on main.",
+      "tags": [],
+      "title": "W0 rev 6.8: W1-K seams (views.py E3, X-K2 alarm paths, report resume header) and R-100 (ADR-0021 Amendment 1, HB-RUN-008 re-pointed); MUT-D candidate"
     },
     {
-      "id": "cl-01M4212YE512BD10GX2QQE0867",
-      "datetime": "2026-10-03T23:20:16Z",
-      "session": "coord-opus-e1e4",
-      "kind": "decision",
-      "skill": null,
-      "title": "W0 rev 6.9: cmd_run resume hunk to X-K1 (R6.9a), R-102 has_work and ntfy (R6.9b), X-D2 identity_check lines (R6.9c), X-A1a docs refused / test_model_map granted (R6.9d); ADR-0021 Am.1 R-102 lines; classes CACHE-A, MOD-C, DOC-A, MUT-E",
-      "prompt": null,
-      "summary": "W0 rev 6.9 (fde04ddc): s13 cli.py E3 row gives X-K1 the cmd_run resume branch (cli.py:157-158) so X-K1's real-CLI kill tests go green at its join; X-K2a beside X-K1, X-K2b after. s9/s12/s13/s14 record R-102: one resume.has_work (X-K1) imported by alarm.py and status; ntfy primary, required unattended; toast off E3. s12/s13 E1: X-D2 writes identity import and identity_check=; identity_recheck integer 1. ADR-0021 Amendment 1 gains two s7 lines. Register: CACHE-A, MUT-E controlled; MOD-C, DOC-A candidate; TIME-B instance.",
-      "rationale": "Two lens findings (RV-TA W1-K 3, RV-PAT W1-K 1) showed X-K1's gate entry tests could not pass while X-K2 owned the call site; R-102 condition 1 and 3 direct the ADR and owner lines; the ledger refuses bools.",
       "artifacts": [
         "docs/design/eval-seam-contracts.md",
         "docs/adr/0021-plan-level-resume-and-liveness.md",
         "docs/lessons/defect-classes.md"
       ],
-      "tags": [],
+      "datetime": "2026-10-03T23:20:16Z",
       "git": {
-        "before": "c2d8874b",
         "after": "fde04ddc24e42b24b957ec68b2c3c1c92a1f0911",
+        "before": "c2d8874b",
         "branch": "coord/eval-w0-rev69-k-move",
-        "pushed": null,
         "commits": [
           "fde04ddc docs(design): W0 seam contracts rev 6.9 (cmd_run hunk to X-K1, R-102 has_work and ntfy), ADR-0021 Amendment 1 R-102 lines, four classes"
+        ],
+        "pushed": null
+      },
+      "id": "cl-01M4212YE512BD10GX2QQE0867",
+      "kind": "decision",
+      "prompt": null,
+      "rationale": "Two lens findings (RV-TA W1-K 3, RV-PAT W1-K 1) showed X-K1's gate entry tests could not pass while X-K2 owned the call site; R-102 condition 1 and 3 direct the ADR and owner lines; the ledger refuses bools.",
+      "session": "coord-opus-e1e4",
+      "skill": null,
+      "summary": "W0 rev 6.9 (fde04ddc): s13 cli.py E3 row gives X-K1 the cmd_run resume branch (cli.py:157-158) so X-K1's real-CLI kill tests go green at its join; X-K2a beside X-K1, X-K2b after. s9/s12/s13/s14 record R-102: one resume.has_work (X-K1) imported by alarm.py and status; ntfy primary, required unattended; toast off E3. s12/s13 E1: X-D2 writes identity import and identity_check=; identity_recheck integer 1. ADR-0021 Amendment 1 gains two s7 lines. Register: CACHE-A, MUT-E controlled; MOD-C, DOC-A candidate; TIME-B instance.",
+      "tags": [],
+      "title": "W0 rev 6.9: cmd_run resume hunk to X-K1 (R6.9a), R-102 has_work and ntfy (R6.9b), X-D2 identity_check lines (R6.9c), X-A1a docs refused / test_model_map granted (R6.9d); ADR-0021 Am.1 R-102 lines; classes CACHE-A, MOD-C, DOC-A, MUT-E"
+    },
+    {
+      "artifacts": [
+        "docs/design/eval-resume.md"
+      ],
+      "audit_ref": "al-01M41Z56BXFH5NJQ2SFNK4VG4X",
+      "datetime": "2026-10-03T22:46:44Z",
+      "git": {
+        "after": "66ec885ff2e19f21af82dcaf16731ad293ca6d24",
+        "before": null,
+        "branch": "design/eval-resume",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M41Z5HBZW97QECK9XN4FSQNH",
+      "kind": "design",
+      "prompt": "docs/coordination/eval-wave2-e234/w1-k.md",
+      "rationale": "ADR-0021 left the stop-crash residue, the named job, the PID and run.completed-with-pending-cells unspecified; the code facts were read and the gaps closed",
+      "session": "w1k-resume-e1e4",
+      "skill": "design-slice",
+      "summary": "W1-K: resume protocol (refusal order, three stop rows, abandoned-segment markers that stay readable, pure classifier C0-C7), TLA+ v6 (NoResumeAfterStop, StopCrashed liveness disjunct, next-based between-turns), alarm check and channel",
+      "tags": [],
+      "title": "Resume refuses after a stop; between-turns decided by the recorded turn_ended.next; alarm is a scheduled toast task"
+    },
+    {
+      "artifacts": [],
+      "datetime": "2026-10-03T23:01:30Z",
+      "git": {
+        "after": "733ddf14b3df1ba4570b917e6a9551ac80ffde92",
+        "before": null,
+        "branch": "design/eval-resume",
+        "commits": [],
+        "pushed": null
+      },
+      "id": "cl-01M4200JH83T30B8M5FCTEG6EG",
+      "kind": "design",
+      "prompt": null,
+      "rationale": null,
+      "session": null,
+      "skill": "design-slice",
+      "summary": "Option B per Ruling 100: resume launches nothing, records stopped, archives, exits 3; invariant NoLaunchAfterStop; D-K9 withdrawn; finding F-1 (grading after finish-the-stop) recorded",
+      "tags": [],
+      "title": "W1-K rev 1.1: a resume of a stopped run finishes the stop (R-100)"
+    },
+    {
+      "id": "cl-01M422VJK91YSCMR12HBTA3W68",
+      "datetime": "2026-10-03T23:51:12Z",
+      "session": "coord-opus-e1e4",
+      "kind": "design",
+      "skill": null,
+      "title": "W0 seam contracts rev 6.10 (Coordinator #12)",
+      "prompt": "Coordinator #12: answer the open seam requests addressed to coord-opus-e1e4; report stale claims.",
+      "summary": "R6.10a: the track that lands a planned module deletes its own identity.PLANNED key in the landing commit (X-B1a f3e0ce86 granted). R6.10b: load_confirmed reads an absent schema as bench-plan/1 and refuses an explicit unknown one (X-A1a e77ad569). R6.10c: the vendor-key-parser scan exempts exactly plan.py::parse_binding, with a red fixture (X-A1a ba856313). Also resolved: X-D2 generated-view repair (c192ee45) and the identity.py lease block (lease expired on TTL; no live leases); X-A1a test_cli pack assertion (5416631f), no W0 change.",
+      "rationale": "Each grant matches the contract's existing intent (stale() enforcement; F13 protects against newer plans, not schema-less legacy fixtures; R-73 c2 targets role@vendor only). No ownership bypass.",
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "f1ffd650",
+        "after": "28ccc1eeaa230276308c5f03e2335cd559cc45a8",
+        "branch": "coord/eval-w0-rev610-grants",
+        "pushed": null,
+        "commits": [
+          "28ccc1ee docs(design): W0 seam contracts rev 6.10 (R6.10a landing track retires its PLANNED key; R6.10b absent plan schema reads bench-plan/1; R6.10c parse_binding exemption in the vendor-key scan)"
         ]
       }
     }
@@ -79233,6 +79433,42 @@ window.AUDIT_DATA = {
       "kind": "ruling",
       "ref": "req-01M42049A4NZ66MG3XNXBX10D6",
       "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M420CWM4PY8A59PKPX0WJJ47",
+      "ts": "2026-10-03T23:08:13Z",
+      "from": "leader-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M420CWKVYADEVB241PYEP6RB",
+      "session": "leader-e1e4"
+    },
+    {
+      "id": "mail-01M420DCN6FBKBTRK052EGQJKS",
+      "ts": "2026-10-03T23:08:30Z",
+      "from": "owner-fable",
+      "to": "leader-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M420CWKVYADEVB241PYEP6RB",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M421C9528K9CBV6HM9ZDXWWN",
+      "ts": "2026-10-03T23:25:22Z",
+      "from": "x-d2-e1e4",
+      "to": "x-b1a-e1e4",
+      "kind": "blocked",
+      "ref": "src/harness_bench/identity.py: D2 green commit refused; this is X-D hub-owned. Please release your overlapping identity.py lease; atomic PLANNED retirement must go through the Coordinator after your file joins.",
+      "session": "x-d2-e1e4"
+    },
+    {
+      "id": "mail-01M422BR4KM722G8R41RSEQZQZ",
+      "ts": "2026-10-03T23:42:33Z",
+      "from": "x-d2-e1e4",
+      "to": "owner-fable",
+      "kind": "blocked",
+      "ref": "build/eval-x-d2: red 0e8f283c assertion tests/test_identity.py:331; CLI seam 8633c305; source green d59a92cc; audit al-01M4229JMGNP1NWCY7X6XDDECD. 229 identity/engine and 2 real CLI tests passed; 3 campaign cleanup controls passed; all 18 new D2 mutants killed. Ruff0, docs validate0; full pytest and touched mutation gates stopped(exit1) at context209308 above200k ceiling. Inherited parallelism off-by-one mutant survived. Active grade/runner.py mutation restored, clean sidecar. Items1,2,5,6 verified; 3 cooperative I/O deadline residual; 4 local timing cold12/warm median11/max11, E1 campaign demo unrun. Pending requests req-01M421B182WTK9K3D9C0GNKGRV generated views and req-01M421C981ZJ34ZRY9R7KK1N2S expired overlapping lease; CLI req-01M420G9EYGHXESH3XHXXNR8FK granted. Remaining: full join gates and independent Owner review. Defect-class text in audit.",
+      "session": "x-d2-e1e4"
     }
   ]
 };

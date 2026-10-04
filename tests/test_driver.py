@@ -107,7 +107,7 @@ def _turn(tmp_path, prompt="Do the task.", before_send=None, acp_mode=None, hand
 def test_session_new_sends_supplied_mcp_servers_or_empty(tmp_path, servers):  # T-37-3, driver half
     cell = _spawn(tmp_path)
     try:
-        driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=None, handshake_timeout=10,
+        driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=None, handshake_timeout=60,
                         before_send=lambda sid: None, mcp_servers=servers)
         sent = json.loads((tmp_path / ".fake-session-new.json").read_text(encoding="utf-8"))
         assert sent["mcpServers"] == (servers or [])
@@ -681,7 +681,7 @@ def _message_types(agent: bytes, client: bytes) -> set[str]:
     return types
 
 
-def _tapped_turn(tmp_path, argv, env, acp_mode=None, model=None) -> set[str]:
+def _tapped_turn(tmp_path, argv, env, acp_mode=None, model=None, handshake_timeout=3) -> set[str]:
     cell = procs.spawn(argv, cwd=str(tmp_path), env=env)
     cell.proc.stdout, cell.proc.stdin = _Tap(cell.proc.stdout), _Tap(cell.proc.stdin)
     cfg = json.loads(env.get("FAKE_ACP") or "{}")
@@ -700,7 +700,7 @@ def _tapped_turn(tmp_path, argv, env, acp_mode=None, model=None) -> set[str]:
         ender = _arm_on_marker(tmp_path / ".fake-prompt.txt", "after a hang starts",
                                lambda: cell.terminate_and_confirm(timeout=10), cell, missed)
     try:
-        driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=acp_mode, handshake_timeout=3,
+        driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=acp_mode, handshake_timeout=handshake_timeout,
                         before_send=lambda sid: None, model=model)
     finally:
         still_waiting = ender is not None and _join_phase(ender)
@@ -737,17 +737,20 @@ def _assert_paired(emitted: set[str]) -> None:
 
 
 @pytestmark_native
-def test_every_message_type_the_fake_emits_is_paired_and_every_pairing_is_emitted(tmp_path):  # D7
+@pytest.mark.parametrize("slow_start", [0, 3.5])  # 3.5: every agent starts slowly, as under full-suite load (TIME-B)
+def test_every_message_type_the_fake_emits_is_paired_and_every_pairing_is_emitted(tmp_path, slow_start):  # D7
     from concurrent.futures import ThreadPoolExecutor
     modes = _fake_modes()
     assert {"ok", "permission", "eof_mid_turn"} <= set(modes)
-    env = {m: dict(os.environ, FAKE_ACP=json.dumps({"mode": m, "usage": [{"model": "m", "token_count": {}}]})) for m in modes}
+    env = {m: dict(os.environ, FAKE_ACP=json.dumps({"mode": m, "usage": [{"model": "m", "token_count": {}}],
+                                                    "handshake_delay": slow_start})) for m in modes}
     for m in modes:
         (tmp_path / m).mkdir()
     with ThreadPoolExecutor(max_workers=len(modes)) as pool:
         # "ok" also pins a model (Copilot's set_model, D7 W1-ACP open item 6); the other modes are unchanged
         runs = [pool.submit(_tapped_turn, tmp_path / m, [sys.executable, str(FAKE)], env[m], "agent-full-access",
-                            "gpt-6-sol" if m == "ok" else None) for m in modes]
+                            "gpt-6-sol" if m == "ok" else None,
+                            3 if m == "hang_handshake" else 60) for m in modes]  # only hang_handshake needs the short bound (it must fire)
         emitted = set().union(*(r.result() for r in runs))
     _assert_paired(emitted)
     stale = set(PAIRING) - emitted
@@ -939,3 +942,14 @@ def test_run_turn_fills_the_result_its_caller_supplies(tmp_path):  # so the ack 
         cell.terminate_and_confirm(timeout=10)
         cell.close()
     assert result is supplied and seen == ["0.79.0"]  # known before the prompt goes out
+
+
+def test_session_new_still_sends_its_servers_when_the_agent_starts_slowly(tmp_path):  # TIME-B: the old 10 s bound, forced
+    cell = _spawn(tmp_path, handshake_delay=10.5)
+    try:
+        result = driver.run_turn(cell, cwd=tmp_path, prompt="p", mode=None, handshake_timeout=60,
+                                 before_send=lambda sid: None, mcp_servers=[])
+        assert result.cause is None, result.detail
+    finally:
+        cell.terminate_and_confirm(timeout=10)
+        cell.close()
