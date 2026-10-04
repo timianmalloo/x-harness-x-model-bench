@@ -1,0 +1,2 @@
+{"type": "user", "content": [{"type": "text", "text": "go"}], "prompt_index": 0}
+{"type": "assistant", "content": "", "tool_calls": [], "model_id": "grok-4.6-build"}

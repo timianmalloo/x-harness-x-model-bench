@@ -1605,6 +1605,37 @@ window.DOCS_INDEX = {
       "sourceSha256": "5c36d4aa7ee258164ee2ed2921e92228b81c85584b18ff7d17eb6d3598d6a278"
     },
     {
+      "id": "note-20261003-spike-s2-bottle-r99",
+      "path": "docs/notes/spike-s2-bottle-r99.md",
+      "title": "S2 spike (R-99 redesign) - probe set measured on bottle at the pin",
+      "type": "decision-note",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Measured spike for S2 under R-99: five probe classes (SQL injection, path traversal, cross-team authz, secret non-disclosure, tamper-refusal) each discriminate a reference app from a single-defect naive on bottle cbd569c4, with no probe touching the signed-cookie deserialization path. Awaiting RV-SEC and RV-TA.",
+      "tags": [
+        "spike",
+        "s2",
+        "security",
+        "bottle",
+        "r99"
+      ],
+      "links": [
+        {
+          "to": "design-eval-security-tasks",
+          "rel": "relates-to"
+        },
+        {
+          "to": "note-20261003-spike-s2-bottle-cookie-reads",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "68d17931819fc30bf0f1879f37fb1bc3706b2b041845f7c149a11ba052ee52e6"
+    },
+    {
       "id": "note-catalog-0.5-anchors",
       "path": "docs/notes/catalog-0.5-anchors.md",
       "title": "Catalog 0.5.dev normalisation anchors and weight corrections (R-78 condition 1, R-79)",
@@ -1939,7 +1970,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ab75ff5897c05cd8558caa500547fb691729ad068badfa233bc866222f941a04"
+      "sourceSha256": "8112704ed80dea67d72ef00f695f9f2e53cb0a4459fcfdfe0aebf9eb683eea67"
     },
     {
       "id": "design-eval-arms",
@@ -3712,7 +3743,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "763ef69aeae6bf10cab2090e3e4238a1a17ff52ebfccbca7787417c6afa55057"
+      "sourceSha256": "4de419c1d642b2daeeef535bb3469222dfa9f0df0dccb003db41be9e06174cf6"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -4676,6 +4707,37 @@ window.DOCS_INDEX = {
       "sourceSha256": "14ae047db1757d5186e8d30ae44e1a1ba5d1b8a5a6e69fe7edfe55d91721ccf4"
     },
     {
+      "id": "review-eval-sec-s2spike",
+      "path": "docs/design/reviews/eval-review-sec-s2spike.md",
+      "title": "Security & Identity review of the redesigned S2 spike (R-99) (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Security & Identity gate on the S2 spike under R-99 (build/eval-x-i-s2b, 12f828df). The letter of R-99 holds; the tamper-refusal probe never reaches bottle's signature check, the leak probe does not scan logs, and the pin lacks a content hash. PASS WITH CONDITIONS, 6 findings.",
+      "tags": [
+        "review",
+        "security",
+        "evaluation-campaign",
+        "s2",
+        "r99"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sec",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "c2ca5e46f22359e86aead167e27848a1404090895537ea54efdf14f565626f35"
+    },
+    {
       "id": "review-eval-sec-w1b",
       "path": "docs/design/reviews/eval-review-sec-w1b.md",
       "title": "Security & Identity review of W1-B: crash-atomic publish (Adversary Mode)",
@@ -5211,6 +5273,37 @@ window.DOCS_INDEX = {
       "sourceSha256": "58aa306fe773223a7bc01e3fdab56fb115aab774568cff79990bd9f9a10cfe52"
     },
     {
+      "id": "review-eval-ta-s2spike",
+      "path": "docs/design/reviews/eval-review-ta-s2spike.md",
+      "title": "Test Architect review of the redesigned S2 spike (R-99) (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect gate on the S2 spike (build/eval-x-i-s2b, 12f828df). The diagonal reproduces and is real for four probes; the tamper probe is live for one input shape only, and two probes pass vacuously on a wrong app. PASS WITH CONDITIONS, 6 findings.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "s2",
+        "r99"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-ta",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "7d8b3799bb7a2efa2903d5d5117810710a73173cf91579ae146312901756bcec"
+    },
+    {
       "id": "review-eval-ta-w1a",
       "path": "docs/design/reviews/eval-review-ta-w1a.md",
       "title": "W1-A arms v2 design review: Test Architect lens",
@@ -5550,6 +5643,31 @@ window.DOCS_INDEX = {
       "sourceSha256": "88131b43a7d9a50dde6bbe90a328864d76924af4623c1e4d7937b9e130bbf59b"
     },
     {
+      "id": "brief-eval-kill-guard",
+      "path": "docs/coordination/eval-wave2-e1/kill-guard.md",
+      "title": "Brief KILL-GUARD: the PreToolUse guard refuses process kills by name or pattern (class PROC-A)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "tools/heredoc_guard.py gains a fourth verdict: a kill by process name, pattern or command line (Stop-Process -Name, a pipeline into Stop-Process, taskkill /IM or /FI, pkill, killall) is refused; a kill by PID passes. The hook is also wired for the PowerShell tool. Claude Sonnet, one short session.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "a5a7fb08d91d74783f66c39f22eb228244f1232c81a1f7484eeac5e80591ee30"
+    },
+    {
       "id": "brief-eval-time-b",
       "path": "docs/coordination/eval-wave2-e1/time-b.md",
       "title": "Brief TIME-B: two load-sensitive timing tests made deterministic, and the scan that keeps the class out",
@@ -5569,6 +5687,31 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "e2c40321e24a778160e596893c6e0907cf8dcefcdcc20f667ddb2bd11ad04f6d"
+    },
+    {
+      "id": "brief-eval-time-b2",
+      "path": "docs/coordination/eval-wave2-e1/time-b2.md",
+      "title": "Brief TIME-B2: the thirteen unaudited real-time tests, reproduced by forced delay and put under test-side time control",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "TIME-B's scan allowlists 13 tests as UNAUDITED (12 in test_engine.py, 1 in test_oslock.py). For each: a forced-delay reproduction that fails on an assertion, then test-side time control (event-driven wait, injected clock or test-scaled bound), or a measured reason it cannot flip. Shipped bounds unchanged. Claude Sonnet, one session.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "brief-eval-time-b",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "040176f1f6cc345b8fd7ac360d8ef250e4d632647e2e41e128c85e111b3eaba1"
     },
     {
       "id": "brief-eval-tool-gsm",
@@ -5623,6 +5766,35 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "dccd13b36f97db865ed77191495949124dfc56a9df3f419b14e3e2e1cf0e2773"
+    },
+    {
+      "id": "brief-eval-tool-gsm-first",
+      "path": "docs/coordination/eval-wave2-e1/tool-gsm-first.md",
+      "title": "Brief TOOL-GSM-FIRST: a --first mode for the Grok served-model reader (R-103 condition 3)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "tools/grok_served_model.py gains --first: read the first assistant row's model_id from chat_history.jsonl and exit at once, non-zero on a non-grok-4.7 id, so the Leader can kill a drifted Grok turn inside 120 s (R-103 c3). Lands before X-H1a's dispatch. Claude Sonnet, one short session.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "brief-eval-tool-gsm-b",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "91eb0bf54538fb9b4a6ee85e7b58e37fa400281549b08de2910bc407e34bea8e"
     },
     {
       "id": "brief-eval-w1-k",
@@ -5742,7 +5914,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "34d80e00c9f8ceb4e966f04f49c1aefad2afdcb5c70fcf39498f529db8806f30"
+      "sourceSha256": "172372d640a9c1fc24da756e9e8155666f4057f41683a94050bfe5365205fb7d"
     },
     {
       "id": "brief-eval-x-b2",
@@ -7142,7 +7314,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3d513410527d8a9419a83a036db50960a71954553e02cd71d22873d37743f1af"
+      "sourceSha256": "ba2d6bde47543f1b7f70d4ada8f963f7caf0890399cbbed687cb84f46eea80a7"
     },
     {
       "id": "coordination-eval-wave2-e234-briefs",
@@ -7187,7 +7359,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "89fa3567118e82c779e2e6f214d8a9577acc867360752c27f492e42da520f677"
+      "sourceSha256": "e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -8098,5 +8270,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "4edb76cdab531808682bb8e339a249830b6a34f8d99e8e1d801a599ec7161ef2"
+  "graphSha256": "bd6d23aede0661931afa660da5701c95ad672e17904cf19795131987d4695649"
 };

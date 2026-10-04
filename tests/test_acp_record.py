@@ -35,15 +35,16 @@ def _read(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
 
 
-def _run(cwd: Path, argv: list[str], fake: str) -> dict:
+def _run(cwd: Path, argv: list[str], fake: str, start_delay: float = 0) -> dict:
     """One driver turn against argv, with the driver's side of both pipes tapped."""
     cwd.mkdir(parents=True)
-    env = dict(os.environ, FAKE_ACP=json.dumps({"mode": fake, "usage": [{"model": "m", "token_count": {}}]}))
+    env = dict(os.environ, FAKE_ACP=json.dumps({"mode": fake, "usage": [{"model": "m", "token_count": {}}],
+                                                    "handshake_delay": start_delay}))
     cell = procs.spawn(argv, cwd=str(cwd), env=env)
     cell.proc.stdout, cell.proc.stdin = _Tap(cell.proc.stdout), _Tap(cell.proc.stdin)
     try:
         result = driver.run_turn(cell, cwd=cwd, prompt="Implement slugify.\r\nKeep it.  \n", mode="agent-full-access",
-                                 handshake_timeout=10, before_send=lambda sid: None)
+                                 handshake_timeout=60, before_send=lambda sid: None)
     finally:
         cell.terminate_and_confirm(timeout=10)
         cell.close()
@@ -282,3 +283,10 @@ def test_turn_sends_session_set_model_right_after_session_new_iff_the_profile_se
         assert setter["params"]["modelId"] == "gpt-6-sol"
     else:
         assert "session/set_model" not in methods
+
+
+@pytest.mark.native
+def test_a_slow_starting_agent_behind_the_recorder_still_completes(tmp_path):  # TIME-B: the old 10 s bound, forced
+    run = _run(tmp_path / "slow", [sys.executable, str(RECORDER), "record", "--out", str(tmp_path / "o.jsonl"),
+                                   "--", sys.executable, str(FAKE)], "ok", start_delay=10.5)
+    assert run["result"].cause is None, run["result"].detail

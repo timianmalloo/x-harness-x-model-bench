@@ -107,3 +107,4 @@
 {"agent": "coord-opus-e1e4", "at": 1791071480.7575235, "kind": "release", "path": "docs/design/eval-seam-contracts.html", "seq": 107, "session": "coord-opus-e1e4", "wi": "coord-12"}
 {"agent": "coord-opus-e1e4", "at": 1791071480.9868362, "kind": "release", "path": "docs/docs-index.js", "seq": 108, "session": "coord-opus-e1e4", "wi": "coord-12"}
 {"agent": "coord-opus-e1e4", "at": 1791071481.0819037, "kind": "release", "path": "docs/audit/audit-data.js", "seq": 109, "session": "coord-opus-e1e4", "wi": "coord-12"}
+{"agent": "coord-opus-e1e4", "at": 1791072467.8545356, "kind": "session-start", "path": "-", "seq": 110, "session": "coord-opus-e1e4", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-coord-eval-c13-compile-timeb2"}
