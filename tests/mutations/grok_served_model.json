@@ -1,0 +1,30 @@
+[
+  {
+    "name": "M1: the first row's id is not checked against the pin",
+    "file": "tools/grok_served_model.py",
+    "find": "    if model is None or not model.startswith(pin):\n        return 1, line",
+    "replace": "    if False:\n        return 1, line",
+    "tests": ["tests/test_grok_served_model.py::test_first_46_response_exits_1_and_names_it"]
+  },
+  {
+    "name": "M2: --first reads past the first assistant row",
+    "file": "tools/grok_served_model.py",
+    "find": "                if isinstance(row, dict) and row.get(\"type\") == \"assistant\":\n                    model = row.get(\"model_id\")\n                    return number,",
+    "replace": "                if isinstance(row, dict) and row.get(\"type\") == \"assistant\" and number > 2:\n                    model = row.get(\"model_id\")\n                    return number,",
+    "tests": ["tests/test_grok_served_model.py::test_first_reads_only_the_first_row_while_join_mode_still_fails"]
+  },
+  {
+    "name": "M3: a first row with no model_id passes",
+    "file": "tools/grok_served_model.py",
+    "find": "    if model is None or not model.startswith(pin):",
+    "replace": "    if model is not None and not model.startswith(pin):",
+    "tests": ["tests/test_grok_served_model.py::test_first_row_without_model_id_exits_1"]
+  },
+  {
+    "name": "M4: --wait does not poll",
+    "file": "tools/grok_served_model.py",
+    "find": "    while found is None and time.monotonic() < deadline:",
+    "replace": "    while False:",
+    "tests": ["tests/test_grok_served_model.py::test_wait_returns_when_the_assistant_row_appears"]
+  }
+]
