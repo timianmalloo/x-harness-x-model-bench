@@ -118,7 +118,7 @@ CLASSES: Mapping[str, Literal["run", "grade"]] = {
 # Explicitly retired on landing; stale() prevents a landed key lingering here.
 PLANNED: frozenset[str] = frozenset({
     "resume.py", "campaign.py", "power.py", "verdicts.py", "gates.py",
-    "discriminate.py", "readiness.py", "synthetic_agent.py", "grade/bench_check.py",
+    "discriminate.py", "readiness.py", "synthetic_agent.py",
     "report/campaign_section.py", "grade/rework.py", "alarm.py",
     "grade/noguess.py", "grade/diffstats.py",
 })
@@ -157,9 +157,14 @@ def stale(root: Path, classes: Mapping[str, str], planned: frozenset[str]) -> li
     return sorted((classes.keys() - files - planned) | (files & planned))
 
 
-def manifest(root: Path, tasks: Sequence[str], builds: Mapping[str, Mapping] | None = None) -> dict:
-    """One component per input at this instant; no builds keys when builds is None."""
-    return {"schema": SCHEMA, "components": {key: read() for key, read in _readers(root, tasks, builds).items()}}
+def manifest(root: Path, tasks: Sequence[str], builds: Mapping[str, Mapping] | None = None, *,
+             which: Literal["run", "grade"] | None = None) -> dict:
+    """One component per input at this instant; no builds keys when builds is None. With `which`, only that side's
+    inputs are read: grading never reads a run-side input such as today's profile files."""
+    readers = _readers(root, tasks, builds)
+    if which is not None:
+        readers = {key: read for key, read in readers.items() if _class(key) == which}
+    return {"schema": SCHEMA, "components": {key: read() for key, read in readers.items()}}
 
 
 def identity_hash(m: dict) -> str:

@@ -44,6 +44,8 @@ ALLOWED: dict[tuple[str, str, str], str] = {
         "the lock file; no content is written, so no O_BINARY is required",
     ("oslock", "is_held", "os.open"):
         "the lock file; no content is written, so no O_BINARY is required",
+    ("grade/bench_check", "_host", "os.open"):
+        "the probe host's stdin from os.devnull, read-only; nothing is written or published",
 }
 
 

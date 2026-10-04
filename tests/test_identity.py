@@ -108,6 +108,13 @@ def test_every_src_file_has_a_class():
     assert all(identity.CLASSES[name] == "grade" for name in identity.CLASSES if name.startswith("gateway/"))
 
 
+def test_a_one_side_manifest_is_that_side_of_the_full_manifest():
+    """`which` reads one side's inputs only (grading never reads today's profiles), and changes no component."""
+    full = identity.manifest(ROOT, [])
+    for which in ("run", "grade"):
+        assert identity.manifest(ROOT, [], which=which) == identity.side(full, which)
+
+
 def test_classes_match_w0_section_9():
     text = (ROOT / "docs/design/eval-seam-contracts.md").read_text(encoding="utf-8")
     expected = w0_modules(text)
