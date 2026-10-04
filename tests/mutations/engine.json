@@ -39,8 +39,8 @@
  {
   "name": "parallelism off by one",
   "file": "src/harness_bench/engine.py",
-  "find": "held < self.params[\"parallelism\"]",
-  "replace": "held <= self.params[\"parallelism\"]",
+  "find": "held < self.params[\"parallelism\"] \\\n                            and not self.decisions.any_open:  # launching pauses",
+  "replace": "held <= self.params[\"parallelism\"] \\\n                            and not self.decisions.any_open:  # launching pauses",
   "tests": [
    "tests/test_engine.py::test_parallelism_is_never_exceeded"
   ]
