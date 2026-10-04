@@ -80,5 +80,32 @@
   "tests": [
    "tests/test_property_grader.py::test_primary_kleene_truth_table_on_row_7"
   ]
+ },
+ {
+  "name": "hash_after reads the pre-run hash: a check that edits its own tree scores",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "        hash_after = tree_hash(check_dir, _tree_files(check_dir))",
+  "replace": "        hash_after = hash_before",
+  "tests": [
+   "tests/test_property_grade_cell.py::test_na_rows_through_the_real_handshake"
+  ]
+ },
+ {
+  "name": "the ack byte is never sent: an accepted line is refused (exit 3)",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "                        cp.proc.stdin.write(ACK)",
+  "replace": "                        cp.proc.stdin.write(b'')",
+  "tests": [
+   "tests/test_property_grade_cell.py::test_honest_check_is_accepted"
+  ]
+ },
+ {
+  "name": "the tests-phase span is ignored: a suspend there no longer voids the run",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "tests_suspended=spans[0][\"suspended\"]",
+  "replace": "tests_suspended=False",
+  "tests": [
+   "tests/test_property_grade_cell.py::test_a_seeded_suspend_in_either_phase_is_row_1"
+  ]
  }
 ]

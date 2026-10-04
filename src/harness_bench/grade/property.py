@@ -3,21 +3,40 @@
 Design: docs/design/eval-property-grader.md (W1-F rev 3); seams: docs/design/eval-seam-contracts.md (W0 rev 6.9).
 This module holds the pure core first (F2): `at_scale`, `check_segment`, the result-line validator, the ordered
 outcome table `_classify` (W0 section 3, rows 1-7: the first match decides) and the scoring of an accepted run.
-The check runner, the probe host and `grade_cell` follow in their own commits.
+F3a adds the check runner (the handshake of design 5.3) and `grade_cell` (design 5.2); the probe host and
+`bench_check` (F3b) follow in their own commit.
 """
 
 from __future__ import annotations
 
+import dataclasses
+import hashlib
 import json
 import re
+import subprocess
+import sys
+import threading
+import time
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from decimal import ROUND_HALF_EVEN, Decimal
+from pathlib import Path
 
-from harness_bench.grade import Score
+from harness_bench import config, host, procs
+from harness_bench.grade import CellInput, Score, _changes, _env, correctness
+from harness_bench.plan import tree_hash
 
-__all__ = ["Classification", "Facts", "at_scale", "check_segment", "parse_result", "score_run"]
+__all__ = ["Classification", "Facts", "at_scale", "check_seed", "check_segment", "grade_cell", "parse_result", "run_check",
+           "score_run"]
 
 MAX_RESULT_BYTES = 64 * 1024
+ACK = b"\x06"
+BENCH_CHECK = Path(__file__).with_name("bench_check.py")  # copied into every check copy; F3b writes it
+PROPERTY_SUSPEND_GAP_S = 60.0  # the host-sleep gap of a phase span (design 5.2 step 3)
+_STORE = 4 * MAX_RESULT_BYTES  # stdout kept for the document count; beyond it bytes are counted, never stored
+_ENTRY = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.-]*\.py")
+_CASE_ID = re.compile(r"[a-z0-9][a-z0-9-]{0,39}")
+_APP_KINDS = frozenset({"callable", "wsgi"})
 PROBE_OUTCOMES = frozenset({"blocked", "exploited", "timeout"})
 DELIVERABLES = frozenset({"ran", "did not build", "did not start"})
 
@@ -156,3 +175,277 @@ def score_run(cls: Classification, hidden_tests: Score, outcomes: list[str]) -> 
     else:
         secondary = Score(at_scale(Decimal(blocked) / Decimal(len(outcomes)), 4), None)
     return {"property_check_pass": primary, "exploit_probes_blocked": secondary}
+
+
+# --- the check runner: the grader side of the handshake (design 5.3; spike E1-S3, SP-F2) -------------------------------
+
+
+@dataclass(frozen=True)
+class CheckRun:
+    """What one check run showed, as facts. `_classify` decides; nothing here is a verdict."""
+
+    stdout: bytes  # stored prefix, at most `_STORE` bytes
+    has_line: bool
+    documents: int
+    trailing_bytes: int
+    alone_at_arrival: bool
+    job_view: str  # "alone", "not alone" or "query failed" (evidence only)
+    exit_before_line: bool
+    exit_code: int | None  # None: killed at the bound
+    bound_fired: bool
+    acked: bool
+    document: dict | None  # the validated document, or None
+    invalid: str | None  # why the line failed `validate`, or None
+
+
+class _Stdout(threading.Thread):
+    """Drains the check's stdout from the start so the writer never blocks; keeps `_STORE` bytes, counts the rest."""
+
+    def __init__(self, cp: procs.CellProcess) -> None:
+        super().__init__(daemon=True)
+        self.cp, self.buf, self.total, self.lock = cp, bytearray(), 0, threading.Lock()
+        self.first_ft: int | None = None
+        self.view: frozenset[int] | None = None  # None: the job query raised (read as not alone)
+        self.ready = threading.Event()  # a newline, an oversized prefix or EOF
+
+    def run(self) -> None:
+        stream = self.cp.proc.stdout
+        try:
+            while chunk := stream.read1(65536):
+                if self.first_ft is None:  # the first byte: stamp the clock, then look at the job (design 5.3 step 2)
+                    self.first_ft = procs.now_filetime()
+                    try:
+                        self.view = frozenset(self.cp.job.pids())
+                    except Exception:  # noqa: BLE001 - any failed query is "not alone" (fail closed, G5)
+                        self.view = None
+                with self.lock:
+                    self.total += len(chunk)
+                    self.buf += chunk[: max(0, _STORE - len(self.buf))]
+                    if b"\n" in self.buf or len(self.buf) > MAX_RESULT_BYTES:
+                        self.ready.set()
+        except (OSError, ValueError):
+            pass  # the pipe was closed under us at the end of a run
+        finally:
+            self.ready.set()
+
+    def snapshot(self) -> tuple[bytes, int]:
+        with self.lock:
+            return bytes(self.buf), self.total
+
+
+def _split(stored: bytes, total: int) -> tuple[bool, bytes, int, int]:
+    """(has_line, first line, document count, trailing bytes after it). A prefix with no newline is a line only when it
+    is already over the cap (it can never become a valid one); a short one is a write cut off."""
+    i = stored.find(b"\n")
+    if i < 0:
+        if len(stored) > MAX_RESULT_BYTES:
+            return True, stored[: MAX_RESULT_BYTES + 2], 1, total - MAX_RESULT_BYTES - 2
+        return False, b"", 0, 0
+    rest = stored[i + 1:]
+    return True, stored[: i + 1], 1 + len([x for x in rest.split(b"\n") if x]), total - (i + 1)
+
+
+def run_check(argv: list[str], cwd: Path, env: dict[str, str], bound: float, stderr_path: Path,
+              validate: Callable[[bytes], dict]) -> CheckRun:
+    """Spawn the check detached in its own job and run the handshake. Accept the first line only when `validate`
+    passes and the job held exactly the check at the first byte; then send 0x06. Stdin is closed on every path, so a
+    refusal is EOF and the check exits 3 at once. `bound` is seconds for the whole run. Never raises for a check fault."""
+    deadline = time.monotonic() + bound
+    document: dict | None = None
+    invalid: str | None = None
+    acked = bound_fired = False
+    exit_code: int | None = None
+    exit_ft: int | None = None
+    with stderr_path.open("wb") as err:
+        cp = procs.spawn(argv, cwd, env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=err, console=False)
+        reader = _Stdout(cp)
+        try:
+            reader.start()
+            got_line = reader.ready.wait(max(0.0, deadline - time.monotonic()))
+            try:
+                stored, total = reader.snapshot()
+                has_line, line, _, _ = _split(stored, total)
+                if got_line and has_line:
+                    try:
+                        document = validate(line)
+                    except ValueError as exc:
+                        invalid = str(exc)
+                    if document is not None and reader.view == frozenset({cp.pid}):
+                        cp.proc.stdin.write(ACK)
+                        cp.proc.stdin.flush()
+                        acked = True
+            except OSError:
+                pass  # the check is already gone; its exit status says what that means
+            finally:
+                try:
+                    cp.proc.stdin.close()  # every path: EOF without the byte is a refusal
+                except OSError:
+                    pass
+            if got_line:
+                try:
+                    exit_code = cp.wait(timeout=max(0.0, deadline - time.monotonic()))
+                except subprocess.TimeoutExpired:
+                    pass
+            bound_fired = exit_code is None
+            if not bound_fired:
+                try:
+                    exit_ft = cp.exit_time()
+                except OSError:
+                    exit_ft = None
+            cp.terminate_and_confirm(procs._KILL_GRACE)
+            reader.join(procs._KILL_GRACE)
+        finally:
+            cp.close()
+    stored, total = reader.snapshot()
+    has_line, line, documents, trailing = _split(stored, total)
+    if has_line and document is None and invalid is None:
+        try:
+            document = validate(line)
+        except ValueError as exc:
+            invalid = str(exc)
+    before = reader.first_ft is not None and not bound_fired and (exit_ft is None or exit_ft <= reader.first_ft)
+    view = "query failed" if reader.view is None else "alone" if reader.view == frozenset({cp.pid}) else "not alone"
+    return CheckRun(stored, has_line, documents, trailing, view == "alone", view, before, exit_code, bound_fired, acked,
+                    document, invalid)
+
+
+# --- grade_cell (design 5.2) ----------------------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class GradeContext:
+    """The grader-side context of one run (not `bench_check.Context`, the check-side one)."""
+
+    timeout: float  # the plan's grading_step_timeout; bounds each phase separately
+
+
+def check_seed(task_version: str, cell_id: str) -> int:
+    return int(hashlib.sha256(f"{task_version}|{cell_id}|property_check_pass".encode()).hexdigest()[:16], 16)
+
+
+def _sleep_detector() -> host.SleepDetector:
+    return host.SleepDetector(PROPERTY_SUSPEND_GAP_S)
+
+
+class _Span:
+    """One phase's span: a fresh SleepDetector made at start and read once at the end (design 5.2 step 3)."""
+
+    def __init__(self, phase: str) -> None:
+        self.phase, self.detector, self.t0 = phase, _sleep_detector(), time.monotonic()
+        self.start_ok = host.unbiased_seconds() is not None
+
+    def end(self) -> dict:
+        return {"phase": self.phase, "wall_ms": round((time.monotonic() - self.t0) * 1000),
+                "suspended": bool(self.detector.slept()),
+                "unbiased_ok": self.start_ok and host.unbiased_seconds() is not None}
+
+
+class NotBuilt(Exception):
+    """A task declares something E1 does not build (design 4): every metric is NA `not built`."""
+
+
+def _load_cases(task_dir: Path) -> dict:
+    """The task's cases.yaml, validated. ValueError names the rule broken (the runner's HB-GRD-003 NA); NotBuilt for
+    what E1 does not build."""
+    spec = config.load_yaml(task_dir / "oracle" / "check" / "cases.yaml")
+    if spec.get("schema") != "bench-check-cases/1":
+        raise ValueError(f"cases.yaml schema {spec.get('schema')!r} is not bench-check-cases/1")
+    entry = spec.get("entry", "")
+    if not isinstance(entry, str):
+        raise ValueError("cases.yaml entry is not a string")  # noqa: TRY004 - one error type for every malformed shape
+    check_segment("entry", entry, _ENTRY)
+    cases = spec.get("cases")
+    if not isinstance(cases, list) or not cases:
+        raise ValueError("cases.yaml declares no cases")
+    for c in cases:
+        check_segment("case id", str(c.get("id")), _CASE_ID)
+    if len({c["id"] for c in cases}) != len(cases):
+        raise ValueError("cases.yaml repeats a case id")
+    for name in spec.get("env") or []:
+        if name not in _env.TOOLCHAIN_ENV and not name.startswith(_env.CHECK_PREFIX):
+            raise ValueError(f"cases.yaml env {name!r} is neither a toolchain name nor HB_CHECK_*")
+    if spec.get("interface") != "in-process" or any(c.get("kind") != "probe" for c in cases) \
+            or (spec.get("app") or {}).get("kind") not in _APP_KINDS:
+        raise NotBuilt
+    return spec
+
+
+def _tree_files(root: Path) -> list[Path]:
+    return sorted(p for p in root.rglob("*") if p.is_file() or p.is_symlink())
+
+
+def _hidden_check(inp: CellInput, ctx: GradeContext) -> dict[str, Score]:
+    spec = _load_cases(inp.task_dir)
+    if not BENCH_CHECK.is_file():
+        raise NotBuilt
+    work = (inp.work_root or inp.out_dir) / "property"
+    run = work / "check-run"
+    evid = inp.out_dir / "check"
+    evid.mkdir(parents=True, exist_ok=True)
+    (inp.out_dir / "tests").mkdir(parents=True, exist_ok=True)
+    spans: list[dict] = []
+    try:
+        span = _Span("tests")
+        c = correctness.grade(inp.archive / "ws", inp.task_dir, inp.task.get("oracle") or {}, inp.out_dir / "tests",
+                              inp.run_dir, ctx.timeout, work / "tests")
+        spans.append(span.end())
+        hidden = Score(c.passed, c.reason)
+        span = _Span("check")
+        skipped = _changes.copy_tree(inp.archive / "ws", run / "deliverable", ignore=_changes.BUILD_OUTPUT)
+        check_dir = run / "check"
+        _changes.copy_tree(inp.task_dir / "oracle" / "check", check_dir, ignore=("__pycache__",))
+        (check_dir / BENCH_CHECK.name).write_bytes(BENCH_CHECK.read_bytes())
+        (check_dir / "cases.json").write_text(json.dumps(spec, sort_keys=True), encoding="utf-8")
+        hash_before = tree_hash(check_dir, _tree_files(check_dir))  # last, after every file is in place
+        declared = [str(c["id"]) for c in spec["cases"]]
+        seed = check_seed(inp.cell["task_version"], inp.cell["cell_id"])
+        argv = [sys._base_executable, "-S", f"check/{spec['entry']}", "--deliverable", str((run / "deliverable").resolve()),
+                "--cases", "check/cases.json", "--seed", str(seed), "--evidence", str(evid.resolve())]
+        env = _env.grading_env([n for n in spec.get("env") or [] if n in _env.TOOLCHAIN_ENV])
+        got = run_check(argv, run, env, ctx.timeout, evid / "check.stderr",
+                        lambda line: parse_result(line, declared, frozenset(), {}))
+        hash_after = tree_hash(check_dir, _tree_files(check_dir))
+        spans.append(span.end())
+    finally:
+        if run.exists():
+            _changes.remove_tree(run)
+    stderr = evid / "check.stderr"
+    if stderr.is_file() and stderr.stat().st_size > MAX_RESULT_BYTES:
+        with stderr.open("r+b") as f:
+            f.truncate(MAX_RESULT_BYTES)
+    (evid / "check.stdout").write_bytes(got.stdout[:MAX_RESULT_BYTES])
+    facts = Facts(tests_suspended=spans[0]["suspended"], check_suspended=spans[1]["suspended"], bound_fired=got.bound_fired,
+                  hash_before=hash_before, hash_after=hash_after, alone_at_arrival=got.alone_at_arrival,
+                  documents=got.documents, trailing_bytes=got.trailing_bytes, exit_before_line=got.exit_before_line,
+                  has_line=got.has_line, exit_code=got.exit_code, line_valid=got.document is not None,
+                  deliverable=got.document["deliverable"] if got.document else "ran")
+    cls = _classify(facts)
+    outcomes = [c["outcome"] for c in got.document["cases"]] if got.document and cls.row == 7 else []
+    pointer = (inp.out_dir / "property.json").relative_to(inp.run_dir).as_posix()
+    scores = {k: dataclasses.replace(v, evidence=pointer) for k, v in score_run(cls, hidden, outcomes).items()}
+    evidence = {"schema": "bench-property-evidence/1", "row": cls.row, "code": cls.code, "reason": cls.reason, "seed": seed,
+                "hidden_tests_pass": {"value": hidden.value, "reason": hidden.reason}, "spans": spans,
+                "check": {"job_view": got.job_view, "acked": got.acked, "exit_code": got.exit_code,
+                          "documents": got.documents, "trailing_bytes": got.trailing_bytes, "bound_fired": got.bound_fired,
+                          "invalid": got.invalid, "hash_before": hash_before, "hash_after": hash_after,
+                          "copy": {"skipped_reparse_points": skipped}},
+                "outcomes": outcomes}
+    (inp.out_dir / "property.json").write_text(json.dumps(evidence, sort_keys=True, indent=1), encoding="utf-8")
+    return scores
+
+
+STRATEGIES: dict[str, Callable[[CellInput, GradeContext], dict[str, Score]]] = {"security": _hidden_check}
+
+
+def grade_cell(inp: CellInput) -> Mapping[str, Score]:
+    """property_check_pass and exploit_probes_blocked from the hidden tests and the hidden check (design 5.2)."""
+    na = Score(None, "not built")
+    keys = list(inp.metrics)
+    strategy = STRATEGIES.get(((inp.task.get("property") or {}).get("name")) or "")
+    if sys.platform != "win32" or strategy is None:
+        return dict.fromkeys(keys, na)
+    try:
+        scores = strategy(inp, GradeContext(inp.plan["parameters"]["grading_step_timeout"]))
+    except NotBuilt:
+        return dict.fromkeys(keys, na)
+    return {k: scores.get(k, na) for k in keys}

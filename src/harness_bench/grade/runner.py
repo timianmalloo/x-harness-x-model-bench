@@ -40,7 +40,16 @@ from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
 
-from harness_bench import config, ledger, oslock, profiles, tools, views, workspace
+from harness_bench import (
+    config,
+    identity,
+    ledger,
+    oslock,
+    profiles,
+    tools,
+    views,
+    workspace,
+)
 from harness_bench.errors import BenchError
 from harness_bench.grade import (
     CellInput,
@@ -56,6 +65,9 @@ from harness_bench.grade import (
     mutation,
     process,
     rigor,
+)
+from harness_bench.grade import (
+    property as property_grader,
 )
 from harness_bench.identity import catalog_hash
 from harness_bench.plan import file_hash, load_confirmed, task_version_hash
@@ -92,12 +104,22 @@ def grader_build() -> str:
     return h.hexdigest()
 
 
+def grade_identity_hash(root: Path, plan: Mapping) -> str:
+    """The grade side of the engine identity (seam contracts s6), or "not recorded" while X-D's `identity.manifest` has
+    not landed: a missing measurement degrades to "not recorded", never to a plausible wrong hash."""
+    if not all(hasattr(identity, n) for n in ("manifest", "side", "identity_hash")):
+        return "not recorded"
+    tasks = sorted({c["task"] for c in plan.get("cells", [])})
+    return identity.identity_hash(identity.side(identity.manifest(root, tasks, plan.get("builds")), "grade"))
+
+
 GRADERS["process"] = process.grade_cell  # GR-PROC p1-p3
 GRADERS["clarify"] = clarify.grade_cell  # GR-CLAR l1
 GRADERS["drift"] = drift.grade_cell  # GR-CODE c3
 GRADERS["architecture"] = architecture.grade_cell  # GR-CODE c4
 GRADERS["rigor"] = rigor.grade_cell  # GR-CODE c5
 GRADERS["mutation"] = mutation.grade_cell  # GR-CODE c6
+GRADERS["property"] = property_grader.grade_cell  # X-F F3a
 GRADERS["formal"] = formal.grade_cell  # S-08g (docs/design/formal-grader.md; R-84)
 TOOL_TIMEOUT = 30  # seconds per version probe (R-59 c4)
 NOT_RECORDED = "not recorded"
@@ -249,6 +271,7 @@ class _Pass:
             self.append("events", {"kind": "grading.started", "grading_id": self.grading_id, "catalog_version": str(self.catalog["version"]),
                                    "grader_build": grader_build(), "extraction_id": self.extraction,
                                    "catalog_hash": catalog_hash(self.root),  # R-59 c1
+                                   "grade_identity_hash": grade_identity_hash(self.root, self.plan),  # ADR-0017 s5
                                    "tool_versions": tool_versions(self.root, self.plan)}  # R-59 c4
                         | ({"scanned_roots": [str(p) for p in self.live_scan[0]],  # R-65 c1: a calling pass only
                             "run_liveness": [{"run": str(run), "liveness": live} for run, live in self.live_scan[1]]}
