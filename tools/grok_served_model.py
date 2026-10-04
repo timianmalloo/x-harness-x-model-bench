@@ -108,6 +108,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--session", help="session id (with --tree)")
     parser.add_argument("--root", type=Path, default=DEFAULT_ROOT, help="sessions root (default ~/.grok/sessions)")
     parser.add_argument("--pin", default=PIN, help=f"required id prefix (default {PIN})")
+    parser.add_argument("--first", action="store_true")
+    parser.add_argument("--wait", type=float, default=0)
     try:
         args = parser.parse_args(argv)
     except SystemExit as exc:
@@ -119,6 +121,9 @@ def main(argv: list[str] | None = None) -> int:
     else:
         sys.stderr.write("need <session dir>, or --tree and --session\n")
         return 2
+    if args.first:
+        sys.stdout.write("first response: skeleton\n")
+        return 0
     code, text = check(directory, args.pin)
     sys.stdout.write(text)
     return code

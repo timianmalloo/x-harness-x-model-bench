@@ -122,3 +122,49 @@ def test_tree_and_session_resolve_the_url_encoded_folder(tmp_path):
 @pytest.mark.parametrize("args", [[], ["--tree", "x"]])
 def test_bad_invocation_exits_2(args):
     assert _run(*args).returncode == 2
+
+
+# TOOL-GSM-FIRST (R-103 condition 3): --first reads only the first assistant row.
+
+
+def test_first_46_response_exits_1_and_names_it():
+    r = _run("--first", _case("first_46_first"))
+    assert r.returncode == 1
+    assert "grok-4.6-build" in r.stdout and "FAIL" in r.stdout
+
+
+def test_first_reads_only_the_first_row_while_join_mode_still_fails():
+    r = _run("--first", _case("first_47_then_46"))
+    assert r.returncode == 0, r.stdout
+    assert r.stdout.startswith("first response: grok-4.7-build (row 2)")
+    assert _run(_case("first_47_then_46")).returncode == 1
+
+
+def test_first_with_no_assistant_row_exits_2():
+    assert _run("--first", _case("first_user_only")).returncode == 2
+
+
+def test_first_missing_file_exits_2():
+    assert _run("--first", _case("neither")).returncode == 2
+
+
+def test_first_row_without_model_id_exits_1():
+    assert _run("--first", _case("first_no_id")).returncode == 1
+
+
+def test_wait_returns_when_the_assistant_row_appears(tmp_path):
+    d = tmp_path / SID
+    d.mkdir()
+    history = d / "chat_history.jsonl"
+    history.write_text('{"type": "user", "content": "go"}\n', encoding="utf-8")
+    proc = subprocess.Popen(
+        [sys.executable, str(TOOL), "--first", "--wait", "30", str(d)], stdout=subprocess.PIPE, text=True
+    )
+    with history.open("a", encoding="utf-8") as fh:
+        fh.write('{"type": "assistant", "model_id": "grok-4.7-build"}\n')
+    out, _ = proc.communicate(timeout=30)
+    assert proc.returncode == 0, out
+
+
+def test_wait_with_nothing_arriving_ends_with_2():
+    assert _run("--first", "--wait", "1", _case("first_user_only")).returncode == 2
