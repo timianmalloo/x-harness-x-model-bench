@@ -7,6 +7,7 @@ import uuid
 from pathlib import Path
 
 import pytest
+import suite_lock
 from ambient_credentials import listed_credential_names
 from slow_ring import dotnet_gate
 
@@ -67,10 +68,32 @@ def clear_ambient_credentials(request, monkeypatch):
     yield
 
 
+_SUITE_LOCK = pytest.StashKey()
+
+
 def pytest_configure(config):
     config.addinivalue_line("markers", "native: needs Windows Job Objects and real processes")
     config.addinivalue_line("markers", "posix: needs POSIX process groups and real processes (setsid, killpg, pgrep)")
     config.addinivalue_line("markers", "credentials: needs the operator's harness logins (real model calls)")
+    # SUITE-LOCK: one heavy run per machine (tests/suite_lock.py). An xdist worker inherits its controller's
+    # HB_SUITE_LOCK_PARENT=1, so it runs under the controller's hold and never waits on it.
+    heavy = suite_lock.is_heavy(config.getoption("numprocesses", None), config.getoption("collectonly"), config.args,
+                                config.args_source != pytest.Config.ArgsSource.ARGS, config.invocation_params.dir)
+    lock = None
+    if heavy:
+        capture = config.pluginmanager.getplugin("capturemanager")
+
+        def tell(line):
+            with capture.global_and_fixture_disabled():
+                print(line, file=sys.stderr, flush=True)
+
+        lock = suite_lock.acquire(os.environ, f"pytest {' '.join(config.invocation_params.args)}", tell)
+    os.environ[suite_lock.PARENT_ENV] = "1"  # a light run too: a test's own nested pytest or mutate_check never waits
+    config.stash[_SUITE_LOCK] = lock
+
+
+def pytest_unconfigure(config):
+    suite_lock.release(config.stash.get(_SUITE_LOCK, None), os.environ)
 
 
 def pytest_collection_modifyitems(config, items):

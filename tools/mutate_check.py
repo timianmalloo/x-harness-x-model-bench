@@ -35,7 +35,9 @@ directory prefix covering every module under it, as "src/harness_bench/grade" co
 """
 
 import base64
+import contextlib
 import hashlib
+import importlib.util
 import io
 import json
 import os
@@ -323,6 +325,21 @@ def _environment_refusal() -> int | None:
     return None
 
 
+@contextlib.contextmanager
+def _suite_lock(what: str):
+    """SUITE-LOCK: a mutation run is a heavy run; it waits for, then holds, the machine's suite lock (tests/suite_lock.py)."""
+    # Loaded here, not at import: suite_lock imports harness_bench, and _environment_refusal must report that first.
+    # This file's own checkout, not ROOT: tests point ROOT at a scratch tree.
+    spec = importlib.util.spec_from_file_location("suite_lock", Path(__file__).resolve().parents[1] / "tests" / "suite_lock.py")
+    suite_lock = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(suite_lock)
+    lock = suite_lock.acquire(os.environ, f"mutate_check {what}", lambda line: print(line, flush=True))
+    try:
+        yield
+    finally:
+        suite_lock.release(lock, os.environ)
+
+
 def _report(survivors: int) -> int:
     """Print the run summary. A run whose every mutant errored is an environment failure, not a table of verdicts."""
     if _OUTCOMES and set(_OUTCOMES) == {"error"}:
@@ -507,10 +524,14 @@ def main(argv: list[str]) -> int:
         if len(argv) < 2 or (len(argv) == 3 and argv[2] != "--list") or len(argv) > 3:
             print("usage: python tools/mutate_check.py --touched <base> [--list]", flush=True)
             return 2
-        return _cmd_touched(argv[1], list_only=len(argv) == 3)
+        if len(argv) == 3:
+            return _cmd_touched(argv[1], list_only=True)
+        with _suite_lock(" ".join(argv)):
+            return _cmd_touched(argv[1], list_only=False)
     spec = json.loads(Path(argv[0]).read_text(encoding="utf-8"))
     _OUTCOMES.clear()
-    return _report(_run_set(spec))
+    with _suite_lock(argv[0]):
+        return _report(_run_set(spec))
 
 
 if __name__ == "__main__":
