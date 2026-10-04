@@ -1605,6 +1605,37 @@ window.DOCS_INDEX = {
       "sourceSha256": "5c36d4aa7ee258164ee2ed2921e92228b81c85584b18ff7d17eb6d3598d6a278"
     },
     {
+      "id": "note-20261003-spike-s2-bottle-r99",
+      "path": "docs/notes/spike-s2-bottle-r99.md",
+      "title": "S2 spike (R-99 redesign) - probe set measured on bottle at the pin",
+      "type": "decision-note",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Measured spike for S2 under R-99: five probe classes (SQL injection, path traversal, cross-team authz, secret non-disclosure, tamper-refusal) each discriminate a reference app from a single-defect naive on bottle cbd569c4, with no probe touching the signed-cookie deserialization path. Awaiting RV-SEC and RV-TA.",
+      "tags": [
+        "spike",
+        "s2",
+        "security",
+        "bottle",
+        "r99"
+      ],
+      "links": [
+        {
+          "to": "design-eval-security-tasks",
+          "rel": "relates-to"
+        },
+        {
+          "to": "note-20261003-spike-s2-bottle-cookie-reads",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "68d17931819fc30bf0f1879f37fb1bc3706b2b041845f7c149a11ba052ee52e6"
+    },
+    {
       "id": "note-catalog-0.5-anchors",
       "path": "docs/notes/catalog-0.5-anchors.md",
       "title": "Catalog 0.5.dev normalisation anchors and weight corrections (R-78 condition 1, R-79)",
@@ -4676,6 +4707,37 @@ window.DOCS_INDEX = {
       "sourceSha256": "14ae047db1757d5186e8d30ae44e1a1ba5d1b8a5a6e69fe7edfe55d91721ccf4"
     },
     {
+      "id": "review-eval-sec-s2spike",
+      "path": "docs/design/reviews/eval-review-sec-s2spike.md",
+      "title": "Security & Identity review of the redesigned S2 spike (R-99) (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Security & Identity gate on the S2 spike under R-99 (build/eval-x-i-s2b, 12f828df). The letter of R-99 holds; the tamper-refusal probe never reaches bottle's signature check, the leak probe does not scan logs, and the pin lacks a content hash. PASS WITH CONDITIONS, 6 findings.",
+      "tags": [
+        "review",
+        "security",
+        "evaluation-campaign",
+        "s2",
+        "r99"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sec",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "c2ca5e46f22359e86aead167e27848a1404090895537ea54efdf14f565626f35"
+    },
+    {
       "id": "review-eval-sec-w1b",
       "path": "docs/design/reviews/eval-review-sec-w1b.md",
       "title": "Security & Identity review of W1-B: crash-atomic publish (Adversary Mode)",
@@ -5209,6 +5271,37 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "58aa306fe773223a7bc01e3fdab56fb115aab774568cff79990bd9f9a10cfe52"
+    },
+    {
+      "id": "review-eval-ta-s2spike",
+      "path": "docs/design/reviews/eval-review-ta-s2spike.md",
+      "title": "Test Architect review of the redesigned S2 spike (R-99) (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect gate on the S2 spike (build/eval-x-i-s2b, 12f828df). The diagonal reproduces and is real for four probes; the tamper probe is live for one input shape only, and two probes pass vacuously on a wrong app. PASS WITH CONDITIONS, 6 findings.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "s2",
+        "r99"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-ta",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "7d8b3799bb7a2efa2903d5d5117810710a73173cf91579ae146312901756bcec"
     },
     {
       "id": "review-eval-ta-w1a",
@@ -8177,5 +8270,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "d74c569245d6403bddd3557744d54dc0e11251a3313562bb16336e6e83dc492a"
+  "graphSha256": "bd6d23aede0661931afa660da5701c95ad672e17904cf19795131987d4695649"
 };
