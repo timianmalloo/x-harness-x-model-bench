@@ -39,8 +39,8 @@
  {
   "name": "parallelism off by one",
   "file": "src/harness_bench/engine.py",
-  "find": "held < self.params[\"parallelism\"]",
-  "replace": "held <= self.params[\"parallelism\"]",
+  "find": "held < self.params[\"parallelism\"] \\\n                            and not self.decisions.any_open:  # launching pauses",
+  "replace": "held <= self.params[\"parallelism\"] \\\n                            and not self.decisions.any_open:  # launching pauses",
   "tests": [
    "tests/test_engine.py::test_parallelism_is_never_exceeded"
   ]
@@ -445,5 +445,124 @@
   "tests": [
    "tests/test_engine.py::test_an_unconfirmed_kill_backs_off_from_1_s_doubling_to_the_designs_30_s_cap"
   ]
+ },
+ {
+  "name": "D2 engine skips the launch-tick identity check",
+  "file": "src/harness_bench/engine.py",
+  "find": "                        self._identity_ok()  # one check clears all launches of this tick\n",
+  "replace": "                        pass\n",
+  "tests": ["tests/test_engine.py::test_drift_before_the_first_launch_records_no_intent"]
+ },
+ {
+  "name": "D2 check per launch instead of per tick",
+  "file": "src/harness_bench/engine.py",
+  "find": "                        self._launch(pending.pop(0))\n",
+  "replace": "                        self._identity_ok()\n                        self._launch(pending.pop(0))\n",
+  "tests": ["tests/test_engine.py::test_one_check_per_tick"]
+ },
+ {
+  "name": "D2 drift diff is ignored",
+  "file": "src/harness_bench/engine.py",
+  "find": "        if differences or reason != \"engine identity drift\":\n",
+  "replace": "        if reason != \"engine identity drift\":\n",
+  "tests": ["tests/test_engine.py::test_a_drifted_file_stops_launching_with_a_named_diff"]
+ },
+ {
+  "name": "D2 a raising check is swallowed",
+  "file": "src/harness_bench/engine.py",
+  "find": "            reason = f\"engine identity check failed: {type(exc).__name__}\"\n",
+  "replace": "            reason = \"engine identity drift\"\n",
+  "tests": ["tests/test_engine.py::test_a_raising_check_stops_launching"]
+ },
+ {
+  "name": "D2 launch intent drops its check timing",
+  "file": "src/harness_bench/engine.py",
+  "find": "            identity_fields[\"identity_check_ms\"] = self._check_ms\n",
+  "replace": "            pass\n",
+  "tests": ["tests/test_engine.py::test_launch_intent_carries_its_own_identity_check_ms"]
+ },
+ {
+  "name": "D2 zero timing emitted without a check",
+  "file": "src/harness_bench/engine.py",
+  "find": "        if self._check_ms is not None:\n",
+  "replace": "        if True:\n",
+  "tests": ["tests/test_engine.py::test_non_campaign_run_has_no_check_and_no_field"]
+ },
+ {
+  "name": "D2 campaign callable is skipped",
+  "file": "src/harness_bench/engine.py",
+  "find": "                self.cfg.campaign_check()  # own run lock held; refusal propagates before any launch\n",
+  "replace": "                pass\n",
+  "tests": ["tests/test_engine.py::test_campaign_check_runs_once_under_run_lock_before_any_launch", "tests/test_engine.py::test_campaign_check_raise_releases_lock_and_launches_nothing", "tests/test_engine.py::test_refused_campaign_check_leaves_run_retryable"]
+ },
+ {
+  "name": "D2 for_task keeps builds keys",
+  "file": "src/harness_bench/identity.py",
+  "find": "                                                  if not k.startswith(\"builds/\")\n",
+  "replace": "                                                  if True\n",
+  "tests": ["tests/test_identity.py::test_for_task_drops_builds_and_other_tasks", "tests/test_identity.py::test_single_task_identity_equals_projected_campaign_identity"]
+ },
+ {
+  "name": "D2 for_task keeps other task keys",
+  "file": "src/harness_bench/identity.py",
+  "find": "                                                  and (not k.startswith(\"tasks/\") or k == f\"tasks/{task}\")}}\n",
+  "replace": "                                                  }}\n",
+  "tests": ["tests/test_identity.py::test_for_task_drops_builds_and_other_tasks"]
+ },
+ {
+  "name": "D2 source hashing ignores normalized content",
+  "file": "src/harness_bench/identity.py",
+  "find": "lambda p=path: plan.tree_hash(p.parent, [p])",
+  "replace": "lambda p=path: hashlib.sha256(p.read_bytes()).hexdigest()",
+  "tests": ["tests/test_identity.py::test_manifest_is_deterministic_and_line_ending_independent"]
+ },
+ {
+  "name": "D2 gateway component is run class",
+  "file": "src/harness_bench/identity.py",
+  "find": "    if key in {\"catalog\", \"prices\", \"gateway\"}:\n",
+  "replace": "    if key == \"gateway\":\n        return \"run\"\n    if key in {\"catalog\", \"prices\", \"gateway\"}:\n",
+  "tests": ["tests/test_identity.py::test_gateway_is_a_grade_component"]
+ },
+ {
+  "name": "D2 telemetry source files are grade class",
+  "file": "src/harness_bench/identity.py",
+  "find": "    if key.startswith(\"src/harness_bench/\"):\n",
+  "replace": "    if key.startswith(\"src/harness_bench/telemetry/\"):\n        return \"grade\"\n    if key.startswith(\"src/harness_bench/\"):\n",
+  "tests": ["tests/test_identity.py::test_telemetry_edit_changes_the_run_side_only"]
+ },
+ {
+  "name": "D2 manifest skips the classification guard",
+  "file": "src/harness_bench/identity.py",
+  "find": "    if missing:\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_identity.py::test_unclassified_file_refused"]
+ },
+ {
+  "name": "D2 persistent drift is dropped during recheck",
+  "file": "src/harness_bench/identity.py",
+  "find": "                        read(key, current[key])\n",
+  "replace": "                        values[key] = expected.get(key, \"\")\n",
+  "tests": ["tests/test_identity.py::test_a_persistent_diff_survives_the_recheck"]
+ },
+ {
+  "name": "D2 torn-read recheck skipped",
+  "file": "src/harness_bench/identity.py",
+  "find": "        if differing:\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_identity.py::test_a_torn_read_is_not_drift"]
+ },
+ {
+  "name": "D2 read deadline disabled",
+  "file": "src/harness_bench/identity.py",
+  "find": "        deadline = clock() + deadline_s\n",
+  "replace": "        deadline = float(\"inf\")\n",
+  "tests": ["tests/test_identity.py::test_check_stops_at_the_deadline"]
+ },
+ {
+  "name": "D2 locked-file retry removed",
+  "file": "src/harness_bench/identity.py",
+  "find": "            for attempt in range(4):\n",
+  "replace": "            for attempt in range(3, 4):\n",
+  "tests": ["tests/test_identity.py::test_unreadable_component_is_named_after_retries"]
  }
 ]

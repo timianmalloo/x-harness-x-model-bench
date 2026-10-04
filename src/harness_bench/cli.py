@@ -26,6 +26,7 @@ from harness_bench import (
     config,
     egress,
     engine,
+    identity,
     oslock,
     plan,
     preflight,
@@ -168,7 +169,8 @@ def cmd_run(args) -> int:
         cfg = engine.EngineConfig(run_dir=run_dir, cells_root=cells_root, launchers=launchers,
                                   build_workspace=_workspace_builder(root, p, cells_root / ".sources", tools_dir.parent / "pack",
                                                                      tools_dir.parent / "upstream"),
-                                  grade=lambda d: runner.run_pass(d, root, judge.IN_RUN, cells_root=cells_root).summary())  # no judge call
+                                  grade=lambda d: runner.run_pass(d, root, judge.IN_RUN, cells_root=cells_root).summary(),  # no judge call
+                                  identity_check=identity.launch_check(root, p))
         summary = engine.Engine(p, cfg).run()
     finally:
         engine.log.removeHandler(log_handler)

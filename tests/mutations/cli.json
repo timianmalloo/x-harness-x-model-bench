@@ -82,5 +82,12 @@
   "find": "        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator(), board_obj=board_obj, params=params, comparison_obj=comp_obj, canaries=egress.CANARIES)\n        print(text, end=\"\")\n",
   "replace": "        print(text, end=\"\")\n        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator(), board_obj=board_obj, params=params, comparison_obj=comp_obj, canaries=egress.CANARIES)\n",
   "tests": ["tests/test_cli.py::test_report_does_not_print_a_label_before_the_credential_scan"]
+ },
+ {
+  "name": "D2 cli drops the kwarg",
+  "file": "src/harness_bench/cli.py",
+  "find": "                                  identity_check=identity.launch_check(root, p))\n",
+  "replace": "                                  )\n",
+  "tests": ["tests/test_identity.py::test_bench_run_stops_on_a_drifted_run_side_file", "tests/test_identity.py::test_bench_run_without_drift_launches"]
  }
 ]
