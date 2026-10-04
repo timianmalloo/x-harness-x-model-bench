@@ -144,8 +144,98 @@ def create_once(path: Path, data: bytes) -> bool:
             _discard_temp(tmp)
 
 
+def _elapsed_ms(start: float) -> int:
+    return int((time.perf_counter() - start) * 1000)
+
+
+def _publish_failed(final: Path, phase: str, exc: BaseException) -> None:
+    extra: dict[str, object] = {"final": str(final), "phase": phase, "exc_type": type(exc).__name__}
+    if isinstance(exc, BenchError):
+        extra["error_code"] = exc.code
+    log.error("atomic.publish_failed", extra=extra)
+
+
+def _regular_files(root: Path) -> list[Path]:
+    found: list[Path] = []
+    pending = [root]
+    while pending:
+        current = pending.pop()
+        try:
+            entries = os.scandir(current)
+        except FileNotFoundError:
+            continue
+        with entries:
+            for entry in entries:
+                try:
+                    st = os.lstat(entry.path)
+                except FileNotFoundError:
+                    continue
+                if _is_link_entry(st):
+                    continue
+                path = Path(entry.path)
+                if stat.S_ISDIR(st.st_mode):
+                    pending.append(path)
+                elif stat.S_ISREG(st.st_mode):
+                    found.append(path)
+    return found
+
+
+def _fsync_files(root: Path) -> tuple[int, int]:
+    files = _regular_files(root)
+    total = 0
+    for path in files:
+        total += os.lstat(path).st_size
+        wfd = os.open(path, os.O_RDWR | O_BINARY)
+        try:
+            os.fsync(wfd)
+        finally:
+            os.close(wfd)
+    return len(files), total
+
+
 def publish_dir[T](final: Path, fill: Callable[[Path], T], verify: Callable[[Path], None]) -> T:
-    return fill(final)
+    if os.path.lexists(final):
+        raise FileExistsError(errno.EEXIST, "File exists", str(final))
+    tmp = final.with_name(f"{final.name}.tmp-{os.getpid()}-{uuid4().hex}")
+    os.mkdir(tmp)
+    phase = "fill"
+    try:
+        started = time.perf_counter()
+        result = fill(tmp)
+        fill_ms = _elapsed_ms(started)
+        phase = "fsync"
+        started = time.perf_counter()
+        files, nbytes = _fsync_files(tmp)
+        if _POSIX:
+            _fsync_dir(tmp)
+        fsync_ms = _elapsed_ms(started)
+        phase = "verify"
+        started = time.perf_counter()
+        verify(tmp)
+        verify_ms = _elapsed_ms(started)
+        phase = "rename"
+        started = time.perf_counter()
+        retries = rename_with_retry(tmp, final)
+        rename_ms = _elapsed_ms(started)
+        if _POSIX:
+            _fsync_dir(final.parent)
+    except Exception as exc:
+        _publish_failed(final, phase, exc)
+        raise
+    log.info(
+        "atomic.publish",
+        extra={
+            "final": str(final),
+            "files": files,
+            "bytes": nbytes,
+            "fill_ms": fill_ms,
+            "fsync_ms": fsync_ms,
+            "verify_ms": verify_ms,
+            "rename_ms": rename_ms,
+            "rename_retries": retries,
+        },
+    )
+    return result
 
 
 def rename_with_retry(
@@ -221,4 +311,8 @@ def make_writable(func, path, _exc) -> None:
 
 
 def _fsync_dir(path: Path) -> None:
-    return None
+    fd = os.open(path, os.O_RDONLY | O_BINARY)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
