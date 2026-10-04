@@ -8,12 +8,15 @@ live engine from a stalled one without heartbeat rows in the ledger.
 from __future__ import annotations
 
 import os
+import stat
 import sys
 import time
 from pathlib import Path
 from typing import Self
 
 from harness_bench.errors import BenchError
+
+_REPARSE = 0x400  # FILE_ATTRIBUTE_REPARSE_POINT
 
 if sys.platform == "win32":
     import msvcrt
@@ -48,10 +51,22 @@ class RunLock:
         self.path = path
         self._fd = fd
 
+    @property
+    def held(self) -> bool:
+        return self._fd >= 0
+
     @classmethod
     def acquire(cls, path: Path, code: str = "HB-GRD-001") -> Self:
         """Take the lock or raise BenchError(code). `code` names what a held lock means to the caller."""
         path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            st = os.lstat(path)
+        except FileNotFoundError:
+            st = None
+        else:
+            attrs = getattr(st, "st_file_attributes", 0)
+            if (not stat.S_ISREG(st.st_mode)) or (attrs & _REPARSE):
+                raise BenchError(code, f"{path} exists and is not a regular file")
         fd = os.open(path, os.O_RDWR | os.O_CREAT, 0o644)
         if not _try_lock(fd):
             os.close(fd)
