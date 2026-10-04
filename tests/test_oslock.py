@@ -40,12 +40,15 @@ def test_lock_is_released_when_the_holder_dies(tmp_path):
     assert not oslock.is_held(path)
 
 
-def test_heartbeat_advances_the_mtime(tmp_path):
+@pytest.mark.parametrize("stall", [0, 6])  # 6: the check runs six seconds after the beat, as a starved test thread would (TIME-B2)
+def test_heartbeat_advances_the_mtime(tmp_path, monkeypatch, stall):
     path = tmp_path / ".lock"
     with oslock.RunLock.acquire(path) as lock:
         before = path.stat().st_mtime_ns
         time.sleep(0.05)
         lock.heartbeat()
+        real_time = time.time
+        monkeypatch.setattr(time, "time", lambda: real_time() + stall)
         assert path.stat().st_mtime_ns > before
         assert oslock.heartbeat_age(path) < 5
 

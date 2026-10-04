@@ -1178,10 +1178,11 @@ def test_a_drain_with_nothing_queued_returns_at_its_deadline(base):  # the loop 
     assert time.monotonic() - started < 0.6
 
 
-def test_no_launch_after_a_stop_while_another_cell_still_runs(base):  # NoLaunchAfterStop, a slot freeing up
+@pytest.mark.parametrize("a_stall", [0, 4])  # 4: the stopping cell's check is slower than the running cell's whole turn (TIME-B2)
+def test_no_launch_after_a_stop_while_another_cell_still_runs(base, a_stall):  # NoLaunchAfterStop, a slot freeing up
     p = _plan(n_cells=3, parallelism=2, budget=60)
     a, b, c = (cell["cell_id"] for cell in p["cells"])
-    launcher = FakeLauncher({p["cells"][1]["label"]: {"sleep": 3}}, build_changed_for={a})
+    launcher = FakeLauncher({p["cells"][1]["label"]: {"sleep": 3}}, build_changed_for={a}, check_stall={a: a_stall})
     _, events, _ = _run(base, p, launcher)
     launched = [e["cell_id"] for e in events if e["kind"] == "cell.launch_intent"]
     assert launched == [a, b] and c not in launched
@@ -1533,8 +1534,18 @@ def _bare_engine(base):
     return eng
 
 
-def test_record_waits_through_a_full_inbox_and_a_slow_drain(base):  # backpressure: never drops, never gives up early
+@pytest.mark.parametrize("worker_late", [0, 3.5])  # 3.5: the worker is scheduled after the test's whole choreography (TIME-B2)
+def test_record_waits_through_a_full_inbox_and_a_slow_drain(base, worker_late):  # backpressure: never drops, never gives up early
     eng = _bare_engine(base)
+    real_put, late = eng.inbox.put, []
+
+    def put(item, block=True, timeout=None):
+        if threading.current_thread() is not threading.main_thread() and not late:
+            late.append(1)
+            _stall(worker_late)
+        return real_put(item, block, timeout)
+
+    eng.inbox.put = put
     try:
         for _ in range(eng.inbox.maxsize):
             eng.inbox.put(("events", {"kind": "run.started"}, Future()))
@@ -1652,13 +1663,15 @@ def test_a_process_whose_status_never_arrives_is_recorded_as_minus_one(base, mon
     assert _outcomes(events)[p["cells"][0]["cell_id"]]["exit_status"] == -1
 
 
-def test_the_heartbeat_keeps_beating_after_a_failed_beat():
+@pytest.mark.parametrize("slow_beat", [0, 0.5])  # 0.5: the failing beat takes longer than the whole wait, as a stalled disk would (TIME-B2)
+def test_the_heartbeat_keeps_beating_after_a_failed_beat(slow_beat):
     class Lock:
         calls = 0
 
         def heartbeat(self):
             Lock.calls += 1
             if Lock.calls == 1:
+                _stall(slow_beat)
                 raise OSError(5, "Access is denied")
 
     with engine._beating(Lock(), 0.05):
@@ -2119,7 +2132,8 @@ engine.Engine(p, config).run()
 """
 
 
-def test_an_engine_thread_failure_exits_the_process_and_leaves_no_cell_running(base):  # workers are daemon threads
+@pytest.mark.parametrize("death_lag", [0, 3])  # 3: the cell's process outlives the engine's exit by longer than the check waits (TIME-B2)
+def test_an_engine_thread_failure_exits_the_process_and_leaves_no_cell_running(base, monkeypatch, death_lag):  # workers are daemon threads
     run_id = "fail-" + uuid.uuid4().hex[:4]
     script = base / "failer.py"
     script.write_text(FAILER.format(tests=str(Path(__file__).parent), src=str(ROOT / "src"), run_id=run_id,
@@ -2131,6 +2145,8 @@ def test_an_engine_thread_failure_exits_the_process_and_leaves_no_cell_running(b
         if proc.poll() is None:
             subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)], capture_output=True, check=False)
             proc.wait(timeout=30)
+    exited_at, real_alive = time.monotonic(), host.process_alive
+    monkeypatch.setattr(host, "process_alive", lambda pid, created_at: real_alive(pid, created_at) or time.monotonic() - exited_at < death_lag)
     time.sleep(2)
     [started] = [e for e in _events(base / "runs" / run_id) if e["kind"] == "attempt.process_started"]
     assert not host.process_alive(started["pid"], started["created_at"])
@@ -2341,8 +2357,10 @@ def test_a_stop_supersedes_every_open_decision(base):  # R10-2
     assert len(_kind(events, "cell.launch_intent")) == 2 and summary.exit_code == 3
 
 
-def test_blocked_cell_default_continues_after_the_timeout(base):  # US15-1 (US-15, UXA-9)
-    p, launcher = _decision_plan([("fake", "A", AUTH), ("other", "B", {"sleep": 2}), ("fake", "A", {})], parallelism=2)
+@pytest.mark.parametrize("blocked_sleep", [0, 4])  # 4: the blocked cell fails after the running cell's whole turn (TIME-B2)
+def test_blocked_cell_default_continues_after_the_timeout(base, blocked_sleep):  # US15-1 (US-15, UXA-9)
+    p, launcher = _decision_plan([("fake", "A", {**AUTH, "sleep": blocked_sleep}), ("other", "B", {"sleep": 2}), ("fake", "A", {})],
+                                 parallelism=2)
     blocked, running, waiting = (c["cell_id"] for c in p["cells"])
 
     def script(eng, offset, run_dir):
@@ -2415,13 +2433,15 @@ def test_a_cell_with_no_usage_is_unmeasured_never_zero(base):  # US15-3b (design
     assert len(_kind(events, "cell.launch_intent")) == 2 and summary.exit_code == 3
 
 
-def test_no_decision_after_a_launch_stop(base):  # US15-4 (S-4, PE-13, TA M8)
+@pytest.mark.parametrize(("a_sleep", "b_delay"), [(8, 0), (1, 1.5)])  # (1, 1.5): the breaker trips after the gap's cell ended (TIME-B2)
+def test_no_decision_after_a_launch_stop(base, a_sleep, b_delay):  # US15-4 (S-4, PE-13, TA M8)
     _, events, _ = _decision_run(base, _decision_plan([("fake", "A", AUTH), ("fake", "A", {})], parallelism=1,
                                                       decision_timeout=0))
     assert [e["decision_kind"] for e in _kind(events, "decision.opened")] == ["blocked_cell"]  # the positive control
     _, events, _ = _decision_run(base, _decision_plan([("fake", "A", AUTH)], parallelism=1, decision_timeout=0))
     assert _kind(events, "decision.opened") == []  # nothing pending: nothing it could change
-    p, launcher = _decision_plan([("fake", "A", {**UNSERVED, "sleep": 8}), *[("fake", "B", {"mode": "provider_error"})] * 3,
+    p, launcher = _decision_plan([("fake", "A", {**UNSERVED, "sleep": a_sleep}),
+                                  *[("fake", "B", {"mode": "provider_error", "handshake_delay": b_delay})] * 3,
                                   ("fake", "A", {})], parallelism=2, decision_timeout=0)
     _, events, _ = _decision_run(base, (p, launcher))
     assert [e["code"] for e in _kind(events, "run.launch_stopped")] == ["HB-CELL-108"]  # the breaker, first
@@ -2429,9 +2449,10 @@ def test_no_decision_after_a_launch_stop(base):  # US15-4 (S-4, PE-13, TA M8)
     assert _kind(events, "decision.opened") == []
 
 
-def test_the_run_waits_for_an_open_decision(base):  # US15-5 (UXA-9; the model's DecisionEventuallyResolved)
+@pytest.mark.parametrize("timeout", [30, 0.3])  # 0.3: three idle ticks outlast the timeout, as they would under heavy load (TIME-B2)
+def test_the_run_waits_for_an_open_decision(base, timeout):  # US15-5 (UXA-9; the model's DecisionEventuallyResolved)
     p, launcher = _decision_plan([("fake", "A", {}), ("fake", "A", {"sleep": 2})], parallelism=2,
-                                 spend_cap_tokens=CELL_TOKENS - 5)
+                                 spend_cap_tokens=CELL_TOKENS - 5, decision_timeout=timeout)
     cells = {c["cell_id"] for c in p["cells"]}
     idle = []
 
