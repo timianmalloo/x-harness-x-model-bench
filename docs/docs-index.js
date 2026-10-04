@@ -4707,6 +4707,37 @@ window.DOCS_INDEX = {
       "sourceSha256": "14ae047db1757d5186e8d30ae44e1a1ba5d1b8a5a6e69fe7edfe55d91721ccf4"
     },
     {
+      "id": "review-eval-sec-s2spike",
+      "path": "docs/design/reviews/eval-review-sec-s2spike.md",
+      "title": "Security & Identity review of the redesigned S2 spike (R-99) (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Security & Identity gate on the S2 spike under R-99 (build/eval-x-i-s2b, 12f828df). The letter of R-99 holds; the tamper-refusal probe never reaches bottle's signature check, the leak probe does not scan logs, and the pin lacks a content hash. PASS WITH CONDITIONS, 6 findings.",
+      "tags": [
+        "review",
+        "security",
+        "evaluation-campaign",
+        "s2",
+        "r99"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-sec",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "c2ca5e46f22359e86aead167e27848a1404090895537ea54efdf14f565626f35"
+    },
+    {
       "id": "review-eval-sec-w1b",
       "path": "docs/design/reviews/eval-review-sec-w1b.md",
       "title": "Security & Identity review of W1-B: crash-atomic publish (Adversary Mode)",
@@ -5240,6 +5271,37 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "58aa306fe773223a7bc01e3fdab56fb115aab774568cff79990bd9f9a10cfe52"
+    },
+    {
+      "id": "review-eval-ta-s2spike",
+      "path": "docs/design/reviews/eval-review-ta-s2spike.md",
+      "title": "Test Architect review of the redesigned S2 spike (R-99) (Adversary Mode)",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Test Architect gate on the S2 spike (build/eval-x-i-s2b, 12f828df). The diagonal reproduces and is real for four probes; the tamper probe is live for one input shape only, and two probes pass vacuously on a wrong app. PASS WITH CONDITIONS, 6 findings.",
+      "tags": [
+        "review",
+        "test-architect",
+        "evaluation-campaign",
+        "s2",
+        "r99"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "review-eval-ta",
+          "rel": "refines"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "7d8b3799bb7a2efa2903d5d5117810710a73173cf91579ae146312901756bcec"
     },
     {
       "id": "review-eval-ta-w1a",
@@ -8208,5 +8270,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "2f243d14a1714e7dbf238623415806c74748809a0e936adf69a735da2c97461f"
+  "graphSha256": "bd6d23aede0661931afa660da5701c95ad672e17904cf19795131987d4695649"
 };
