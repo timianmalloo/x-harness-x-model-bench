@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-04T00:05:52Z",
+  "generated": "2026-10-04T00:17:32Z",
   "audit": [
     {
       "actor": null,
@@ -77776,6 +77776,433 @@ window.AUDIT_DATA = {
         "branch": "owner/ruling-r103",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M4247DNBTENWAYN7XZXFG4KT",
+      "shortname": "You are session x-b1b-e1e4 on branch build/eval-x-b1b, harness Grok, mod…",
+      "datetime": "2026-10-04T00:15:08Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-b1b-e1e4 on branch build/eval-x-b1b, harness Grok, model grok-4.7 with --reasoning-effort high, deadline 2,400 s. Build dispatch B1b only of the brief docs/coordination/eval-wave2-e1/x-b1.md (publish_dir, workspace._land and tests/test_atomic_sites.py), in one turn: a red commit, then a green commit. B1a is on main (1d5e0490); build on its atomic.py, do not re-edit its hunks. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Never kill a process by name or pattern, only PIDs you started (README §2). Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). Acceptance items are the brief's.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M4247E5HNJQ4TYBJTGW0E855",
+      "shortname": "You are session x-b1c-e1e4 on branch build/eval-x-b1c, harness Grok, mod…",
+      "datetime": "2026-10-04T00:15:09Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-b1c-e1e4 on branch build/eval-x-b1c, harness Grok, model grok-4.7 with --reasoning-effort high, deadline 2,400 s. Build dispatch B1c only of the brief docs/coordination/eval-wave2-e1/x-b1.md (oslock.acquire_then_probe and its tests in tests/test_oslock.py), in one turn: a red commit, then a green commit. B1a is on main (1d5e0490); build on its RunLock.held, do not re-edit its hunks. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. Never kill a process by name or pattern, only PIDs you started (README §2). Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). Acceptance items are the brief's.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M4249G47JKX4QJGWTDDT1DT8",
+      "shortname": "compile-You are session x-b1b-e1e4 on branch build/eval-x-b1b, harness Grok, mod…",
+      "datetime": "2026-10-04T00:16:17Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1b of X-B1 on build/eval-x-b1b: publish_dir, workspace._land and tests/test_atomic_sites.py; red commit then green commit, building on B1a (main 1d5e0490).\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1b.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatches B1a (on main) and B1c (oslock.acquire_then_probe): other dispatches.; Re-editing B1a's hunks already on main.; Killing any process by name or pattern; only PIDs this session started.\nTier: T2\nFan-out cap: 0\nContext ceiling: 100k tokens\nMain-line budget: 40 calls, 2,400 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1b. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items are the brief's. |\n| not_in_scope: Dispatches B1a (on main) and B1c (oslock.acquire_then_probe): other dispatches. | phrase: Build dispatch B1b only |\n| not_in_scope: Re-editing B1a's hunks already on main. | phrase: build on its atomic.py, do not re-edit its hunks |\n| not_in_scope: Killing any process by name or pattern; only PIDs this session started. | phrase: Never kill a process by name or pattern, only PIDs you started |\nReferences\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-x-b1b: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-b1.md: docs/coordination/eval-wave2-e1/x-b1.md sha256 172372d640a9c1fc24da756e9e8155666f4057f41683a94050bfe5365205fb7d\n- tests/test_atomic_sites.py: unresolved (not found)\n- atomic.py: src/harness_bench/atomic.py sha256 2d39fb1d40a1300745d558dea193f16ef2a2a0481d71f0434e554a1677381897\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 ba2d6bde47543f1b7f70d4ada8f963f7caf0890399cbbed687cb84f46eea80a7\n- tools/grok_served_model.py: tools/grok_served_model.py sha256 d7adffd5d18a7cd162560bcb2999b635bd757339b4c95e3463969827c1c21524\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0; R-103's one drift retry is the Leader's)\nper_branch_exit: a red commit then a green commit on build/eval-x-b1b\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 2,400 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree; a first response not grok-4.7* is killed and retried once, then Sonnet (R-103)\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M4247DNBTENWAYN7XZXFG4KT\nraw sha256: ed478c11db7e499eb42aaffc5b2d942586fcc716e669142a29c965fd525ae4b2\ncompiler model: claude-opus-5-5\nengine seconds: 0.014\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M4247DNBTENWAYN7XZXFG4KT for claude-code v1: 7 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1b.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items are the brief's."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatches B1a (on main) and B1c (oslock.acquire_then_probe): other dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch B1b only"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Re-editing B1a's hunks already on main.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "build on its atomic.py, do not re-edit its hunks"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Killing any process by name or pattern; only PIDs this session started.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never kill a process by name or pattern, only PIDs you started"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "2,400 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree; a first response not grok-4.7* is killed and retried once, then Sonnet (R-103)",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-b1b",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0; R-103's one drift retry is the Leader's)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1b of X-B1 on build/eval-x-b1b: publish_dir, workspace._land and tests/test_atomic_sites.py; red commit then green commit, building on B1a (main 1d5e0490).",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1b.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "not_in_scope": [
+            "Dispatches B1a (on main) and B1c (oslock.acquire_then_probe): other dispatches.",
+            "Re-editing B1a's hunks already on main.",
+            "Killing any process by name or pattern; only PIDs this session started."
+          ],
+          "tier": "T2",
+          "fan_out_cap": "0",
+          "context_ceiling": "100k tokens",
+          "main_line_budget": "40 calls, 2,400 s"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.014,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M4247DNBTENWAYN7XZXFG4KT",
+        "raw_sha256": "ed478c11db7e499eb42aaffc5b2d942586fcc716e669142a29c965fd525ae4b2",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-b1b"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b1.md",
+            "reason": null,
+            "sha256": "172372d640a9c1fc24da756e9e8155666f4057f41683a94050bfe5365205fb7d",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-b1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/atomic.py",
+            "reason": null,
+            "sha256": "2d39fb1d40a1300745d558dea193f16ef2a2a0481d71f0434e554a1677381897",
+            "status": "resolved",
+            "token": "atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "ba2d6bde47543f1b7f70d4ada8f963f7caf0890399cbbed687cb84f46eea80a7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/grok_served_model.py",
+            "reason": null,
+            "sha256": "d7adffd5d18a7cd162560bcb2999b635bd757339b4c95e3463969827c1c21524",
+            "status": "resolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M4249GE3P1HYH62T73CB2J6J",
+      "shortname": "compile-You are session x-b1c-e1e4 on branch build/eval-x-b1c, harness Grok, mod…",
+      "datetime": "2026-10-04T00:16:17Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1c of X-B1 on build/eval-x-b1c: oslock.acquire_then_probe and its tests in tests/test_oslock.py; red commit then green commit, building on B1a (main 1d5e0490).\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1c.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Dispatches B1a (on main) and B1b (publish_dir, workspace._land): other dispatches.; Re-editing B1a's hunks already on main.; Killing any process by name or pattern; only PIDs this session started.\nTier: T2\nFan-out cap: 0\nContext ceiling: 100k tokens\nMain-line budget: 40 calls, 2,400 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1c. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items are the brief's. |\n| not_in_scope: Dispatches B1a (on main) and B1b (publish_dir, workspace._land): other dispatches. | phrase: Build dispatch B1c only |\n| not_in_scope: Re-editing B1a's hunks already on main. | phrase: build on its RunLock.held, do not re-edit its hunks |\n| not_in_scope: Killing any process by name or pattern; only PIDs this session started. | phrase: Never kill a process by name or pattern, only PIDs you started |\nReferences\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-x-b1c: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-b1.md: docs/coordination/eval-wave2-e1/x-b1.md sha256 172372d640a9c1fc24da756e9e8155666f4057f41683a94050bfe5365205fb7d\n- tests/test_oslock.py: tests/test_oslock.py sha256 f898e91884b54f07bcb07d83151cc34ae9ebff3e6b69b997f757154e4c219a2a\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 ba2d6bde47543f1b7f70d4ada8f963f7caf0890399cbbed687cb84f46eea80a7\n- tools/grok_served_model.py: tools/grok_served_model.py sha256 d7adffd5d18a7cd162560bcb2999b635bd757339b4c95e3463969827c1c21524\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0; R-103's one drift retry is the Leader's)\nper_branch_exit: a red commit then a green commit on build/eval-x-b1c\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 2,400 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree; a first response not grok-4.7* is killed and retried once, then Sonnet (R-103)\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M4247E5HNJQ4TYBJTGW0E855\nraw sha256: 8d92e2f326666e223f83129063e26c15755375197db7f33259e78e4e593107a0\ncompiler model: claude-opus-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M4247E5HNJQ4TYBJTGW0E855 for claude-code v1: 7 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1c.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items are the brief's."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Dispatches B1a (on main) and B1b (publish_dir, workspace._land): other dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch B1c only"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Re-editing B1a's hunks already on main.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "build on its RunLock.held, do not re-edit its hunks"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Killing any process by name or pattern; only PIDs this session started.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never kill a process by name or pattern, only PIDs you started"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "2,400 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree; a first response not grok-4.7* is killed and retried once, then Sonnet (R-103)",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-b1c",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0; R-103's one drift retry is the Leader's)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-b1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch B1c of X-B1 on build/eval-x-b1c: oslock.acquire_then_probe and its tests in tests/test_oslock.py; red commit then green commit, building on B1a (main 1d5e0490).",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b1c.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "not_in_scope": [
+            "Dispatches B1a (on main) and B1b (publish_dir, workspace._land): other dispatches.",
+            "Re-editing B1a's hunks already on main.",
+            "Killing any process by name or pattern; only PIDs this session started."
+          ],
+          "tier": "T2",
+          "fan_out_cap": "0",
+          "context_ceiling": "100k tokens",
+          "main_line_budget": "40 calls, 2,400 s"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M4247E5HNJQ4TYBJTGW0E855",
+        "raw_sha256": "8d92e2f326666e223f83129063e26c15755375197db7f33259e78e4e593107a0",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-b1c"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b1.md",
+            "reason": null,
+            "sha256": "172372d640a9c1fc24da756e9e8155666f4057f41683a94050bfe5365205fb7d",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-b1.md"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_oslock.py",
+            "reason": null,
+            "sha256": "f898e91884b54f07bcb07d83151cc34ae9ebff3e6b69b997f757154e4c219a2a",
+            "status": "resolved",
+            "token": "tests/test_oslock.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "ba2d6bde47543f1b7f70d4ada8f963f7caf0890399cbbed687cb84f46eea80a7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "tools/grok_served_model.py",
+            "reason": null,
+            "sha256": "d7adffd5d18a7cd162560bcb2999b635bd757339b4c95e3463969827c1c21524",
+            "status": "resolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M424AN5KQ74K3APCKX9QKP1Q",
+      "shortname": "compile-x-b1b-x-b1c",
+      "datetime": "2026-10-04T00:16:54Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Coordinator #13: compile what is dispatchable now (CO-S0); Leader: compile the Grok tracks as their dependencies land (X-B1b, X-B1c after X-B1a joins; deadline 2400 s)",
+      "summary": "raw al-01M4247DNBTENWAYN7XZXFG4KT -> compiled al-01M4249G47JKX4QJGWTDDT1DT8 (X-B1b); raw al-01M4247E5HNJQ4TYBJTGW0E855 -> compiled al-01M4249GE3P1HYH62T73CB2J6J (X-B1c); harness template claude-code for Grok grok-4.7 high; 7 clauses each, 0 assumptions, 0 decision requests; dispatchable; contracts x-b1b/x-b1c.contract.json, deadline 2400 s",
+      "kind": "skill",
+      "skill": "compile",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "tier": "T0",
+      "fan_out": 0,
+      "started_at": "2026-10-04T00:15:08Z",
+      "duration_seconds": 106.0
+    },
+    {
+      "id": "al-01M424BSFSX6DB3CFN2SKCK1WS",
+      "shortname": "coord-13-compile-timeb2",
+      "datetime": "2026-10-04T00:17:32Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Coordinator #13: compile dispatchable first-turn contracts (X-K2a, X-B2, X-LB0, others), TIME-B2 brief, answer open requests; Leader: R-103 c5 register entry, --first slice brief, compile Grok tracks as deps land (2400 s), PROC-A class + README rule + hook brief",
+      "summary": "Compiled X-B1b al-01M4249G47JKX4QJGWTDDT1DT8 and X-B1c al-01M4249GE3P1HYH62T73CB2J6J (Grok grok-4.7 high, 2400 s); not compiled: X-K2a (X-C, X-J1), X-B2 (X-B1b), X-LB0 (X-F F2/F3), X-H1a (X-A1a, TOOL-GSM-FIRST); briefs time-b2.md, tool-gsm-first.md, kill-guard.md; SERVE-A observed, PROC-A candidate, RUL-A instance; README section 2 rules; 0 open requests; served model claude-opus-5-5",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Compile the dispatchable Wave 2 contracts, brief TIME-B2, TOOL-GSM-FIRST and KILL-GUARD, register SERVE-A and PROC-A, answer open requests",
+      "done_when": "Compiles and briefs committed on coord/eval-c13-compile-timeb2 with derive and validate green",
+      "tier": "T1",
+      "fan_out": 0,
+      "change": "cl-01M424BH6RRF470HXWMPPG5P5F"
     }
   ],
   "changes": [
@@ -79125,6 +79552,35 @@ window.AUDIT_DATA = {
           "28ccc1ee docs(design): W0 seam contracts rev 6.10 (R6.10a landing track retires its PLANNED key; R6.10b absent plan schema reads bench-plan/1; R6.10c parse_binding exemption in the vendor-key scan)"
         ]
       }
+    },
+    {
+      "id": "cl-01M424BH6RRF470HXWMPPG5P5F",
+      "datetime": "2026-10-04T00:17:23Z",
+      "session": "coord-opus-e1e4",
+      "kind": "decision",
+      "skill": "execute-with-coordination",
+      "title": "Coordinator #13: X-B1b/X-B1c compiled; TIME-B2, TOOL-GSM-FIRST, KILL-GUARD briefed; PROC-A and SERVE-A registered",
+      "prompt": "Coordinator #13 hand-back: compile what is dispatchable now; TIME-B2 brief; open requests; Leader additions: R-103 c5 register entry and --first slice; PROC-A class, README rule and hook brief",
+      "summary": "X-B1b and X-B1c compiled (Grok grok-4.7 high, 2,400 s, R-103 first-response read), dispatchable now since X-B1a joined (1d5e0490). Blocked: X-H1a (X-A1a, TOOL-GSM-FIRST), X-B2 (X-B1b), X-LB0 (X-F F2/F3 on grade/property.py), X-K2a (X-C, X-J1). Sonnet now: TOOL-GSM-FIRST, KILL-GUARD, TIME-B2 (joins after X-D2 and X-B1c), X-I-S2 spike redo. README section 2 gains two rules: never kill by name, pattern or command line; any track may add one TIMING_ALLOWED entry for its own test. SERVE-A observed (R-103 c5), PROC-A candidate. No open requests to coord-opus-e1e4.",
+      "rationale": "R-103 lifts the Grok pause with fail-fast; B1a's join unblocks B1b and B1c; the TIMING_ALLOWED grant prevents seam requests at every join now that TIME-B's scan is on main; PROC-A's kill destroyed three trees' runs, so the rule binds every worker and a hook removes the Claude form",
+      "artifacts": [
+        "docs/coordination/eval-wave2-e1/README.md",
+        "docs/coordination/eval-wave2-e1/time-b2.md",
+        "docs/coordination/eval-wave2-e1/tool-gsm-first.md",
+        "docs/coordination/eval-wave2-e1/kill-guard.md",
+        "docs/lessons/defect-classes.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "4561daea",
+        "after": "1e0843c2115cec9766ec70cf2e902fd9a98b83c5",
+        "branch": "coord/eval-c13-compile-timeb2",
+        "pushed": null,
+        "commits": [
+          "1e0843c2 docs(coordination): Coordinator #13 - X-B1b/X-B1c compiled (2,400 s, R-103 first-response read); briefs TIME-B2, TOOL-GSM-FIRST, KILL-GUARD; README section 2 rules (no kill by name or pattern; one TIMING_ALLOWED entry per own test); dispatch state and blocking joins",
+          "63d13758 docs(lessons): SERVE-A (R-103 c5, observed, four instances; R-92 c3's missing entry as a RUL-A instance) and PROC-A (X-F F2's machine-wide pytest kill) (Coordinator #13)"
+        ]
+      }
     }
   ],
   "messages": [
@@ -79469,6 +79925,24 @@ window.AUDIT_DATA = {
       "kind": "blocked",
       "ref": "build/eval-x-d2: red 0e8f283c assertion tests/test_identity.py:331; CLI seam 8633c305; source green d59a92cc; audit al-01M4229JMGNP1NWCY7X6XDDECD. 229 identity/engine and 2 real CLI tests passed; 3 campaign cleanup controls passed; all 18 new D2 mutants killed. Ruff0, docs validate0; full pytest and touched mutation gates stopped(exit1) at context209308 above200k ceiling. Inherited parallelism off-by-one mutant survived. Active grade/runner.py mutation restored, clean sidecar. Items1,2,5,6 verified; 3 cooperative I/O deadline residual; 4 local timing cold12/warm median11/max11, E1 campaign demo unrun. Pending requests req-01M421B182WTK9K3D9C0GNKGRV generated views and req-01M421C981ZJ34ZRY9R7KK1N2S expired overlapping lease; CLI req-01M420G9EYGHXESH3XHXXNR8FK granted. Remaining: full join gates and independent Owner review. Defect-class text in audit.",
       "session": "x-d2-e1e4"
+    },
+    {
+      "id": "mail-01M422Z98CH2T6S01MR9MS8SG1",
+      "ts": "2026-10-03T23:53:13Z",
+      "from": "x-a1a-e1e4",
+      "to": "owner-fable",
+      "kind": "blocked",
+      "ref": "5416631f",
+      "session": "x-a1a-e1e4"
+    },
+    {
+      "id": "mail-01M422Z9T01BDZXAJE5XGJK7D9",
+      "ts": "2026-10-03T23:53:14Z",
+      "from": "x-a1a-e1e4",
+      "to": "coord-opus-e1e4",
+      "kind": "blocked",
+      "ref": "5416631f",
+      "session": "x-a1a-e1e4"
     }
   ]
 };

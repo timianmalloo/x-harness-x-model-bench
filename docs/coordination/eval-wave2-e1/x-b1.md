@@ -16,6 +16,8 @@ summary: "X-B1 builds atomic.py (W1-B rev 2), the workspace._land hunk and osloc
 
 **Harness** Grok via `coord-runner` (Leader, R-87), `grok-4.7`, `--reasoning-effort high`, grok 1.0.41, launched with `XAI_API_KEY` removed · **contract** `x-b1.contract.json` (B1a; B1b and B1c reuse it with the suffixes `b`, `c`) · **deadline** 1,200 s per dispatch · **budget** 40 calls · 100k per dispatch · 3 dispatches · 1.5 h total · **fallback** a red-only end, a timeout, or a served-model read that is not all `grok-4.7*`: the green follow-on runs as Claude Sonnet (`model: sonnet`, served `claude-sonnet-5-5`) in the same tree (R-87 Option 1; R-92 is the Owner review).
 
+**Coordinator #13 (R-103):** B1a merged `1d5e0490`, built by Grok **served `grok-4.6-build` x59, read from `chat_history.jsonl` (`usage.json` absent, OBS-A), R-103**; not relabelled. **B1b and B1c: deadline 2,400 s** (the Leader, after R-103), contracts `x-b1b.contract.json` and `x-b1c.contract.json`. They touch disjoint files (B1b: `atomic.py`, `workspace.py`, `tests/test_atomic*.py`; B1c: `oslock.py`, `tests/test_oslock.py`), so they may run together under the cap of 2 per harness. Each dispatch's first response is read within 120 s (README §3, R-103). TIME-B's scan is on `main`: a new real sleep in your tests needs an event-driven wait (the `Barrier` tests already are) or one `TIMING_ALLOWED` entry with its reason (README §2).
+
 **Design:** `docs/design/eval-atomic-publish.md` (W1-B rev 2, on `main`, gate passed), sections 3, 4, 10, 11, 12.2, 17. **W0 rev 4:** sections 4 (as granted to S-B4), 6 (`acquire_then_probe`), 11, 13.
 
 ## Owned paths

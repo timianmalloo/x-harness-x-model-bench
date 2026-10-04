@@ -28,6 +28,8 @@ summary: >-
 
 **Every rule of `docs/coordination/eval-wave2-e1/README.md` §1-§4 applies here unchanged**: start, owned paths, red first and observed, named-path commits, the shell shape, no guessing, measured fixture claims, budget, the join gate (`uv run` for `mutate_check`), the served-model read-back, and the report. That includes §2's rev 6.4 rule (**a request never parks you**: build the recommended fallback to green in its own commit) and §3's rule that the Leader checks for open requests at every join. Read that README, then this one, then your brief, then the design it names. Your brief wins over this file, and **W0** (`docs/design/eval-seam-contracts.md`, **rev 6.6 or later**) wins over a design.
 
+**Two §2 rules added by Coordinator #13, restated here because they protect other tracks:** (1) **never kill by name, pattern or command line; only PIDs you started** (class PROC-A: X-F F2's machine-wide `pytest` kill left three other trees' mutants applied); if a run of yours is stuck and you lost its PID, stop and report, never sweep. (2) TIME-B's scan is on `main`: a new real sleep, fake delay or clock assert in `tests/` is event-driven or test-clocked, or gets **one** `TIMING_ALLOWED` entry for your own test with a checkable reason (granted to every track).
+
 **One change to §1 step 4.** Check for W0 rev 6.6: `git log --oneline -1 --grep "W0 seam contracts rev 6.6"` must print a commit. If it does not, stop and report "W0 rev 6.6 not on main".
 
 **Seats.** Leader `leader-e1e4` (epoch 13; merges, pushes, runs every external dispatch through `.tools/coord/runner-leader.sh`, R-87). Owner `owner-fable`. Coordinator `coord-opus-e1e4`, which runs as hand-back sessions: requests to it are answered when the Leader spawns one (E1 README §3).
@@ -136,3 +138,5 @@ E1 items keep priority over part 3 (E1 README §7) until X-INT. Part 3 fills fre
 - **Launch order:** X-J1a starts after X-D1 joins (and X-D2): X-D owns `engine.py` in E1, and edits to `engine.py` are serialised (§3, §4 step 3).
 - **R-99 (DR-S2):** `x-i-s2.md` step 1 item 2 now carries the login-route-only, no-`bottle`/`pickle`-import, inert-bytes-only and tamper-refusal rules. W1-I §12 *Erratum 2* stays X-I's to write.
 - **For the Leader:** when X-J1c and X-J1e report S-J5 and S-J4, the Coordinator updates W1-J §12's result column from the report.
+
+**Coordinator #13 (2026-10-04, base `4561daea`):** W1-K has passed its gate (`7e96eee3`), so §1's W1-K row is out of date: X-K1 and X-K2 are unblocked by design. Nothing in this pack is dispatchable externally yet: **X-K2a** waits on X-C and X-J1 joined (`last_progress_at`, R6.5b; the script-only split is in E1 README §8, Coordinator #13); **X-LB0** waits on all of X-F (F2 and F3 still write `grade/property.py`); X-J1a, X-J2a, X-LG, X-A3, X-G3 and X-K1 wait on the E1 joins in §3. The **X-I-S2 spike redo** (Sonnet, R-99) is dispatchable now. The PROC-A and TIME-B rules above apply to every track here.
