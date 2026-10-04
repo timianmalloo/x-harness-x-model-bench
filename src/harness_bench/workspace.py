@@ -14,15 +14,14 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
+import os  # noqa: F401 - tests patch workspace.os.replace; rename_with_retry reads it on this module
 import shutil
 import sys
 import tarfile
-import time
 import uuid
 from pathlib import Path
 
-from harness_bench import archive, config, gitsafe, procs
+from harness_bench import atomic, config, gitsafe, procs
 from harness_bench.errors import BenchError
 
 INSTRUCTION_FILES = ("CLAUDE.md", ".claude/CLAUDE.md", "AGENTS.md", "GEMINI.md", ".github/copilot-instructions.md")
@@ -76,41 +75,27 @@ def _fresh(dest: Path) -> Path:
 def _discard(tmp: Path) -> None:
     """Best-effort cleanup of a losing or abandoned tmp build. Git leaves its object files read-only
     on Windows, so a plain rmtree fails silently (that failure is the T9-1 disk leak); make_writable
-    (archive.py) clears the bit first. A cleanup failure is still swallowed here rather than raised:
+    (atomic.py) clears the bit first. A cleanup failure is still swallowed here rather than raised:
     this runs in a `finally`, often while a real build exception is already propagating, and a
     cleanup error must never replace or mask that exception."""
     if tmp.exists():
         try:
-            shutil.rmtree(tmp, onexc=archive.make_writable)
+            shutil.rmtree(tmp, onexc=atomic.make_writable)
         except OSError:
             pass
 
 
-RENAME_BACKOFF = (0.05, 0.1, 0.2, 0.4, 0.8, None)  # seconds between WIN-A retries; None = the last attempt
-
-
 def _land(tmp: Path, dest: Path, valid) -> Path:
     """Publish tmp as dest. A build is content-addressed and written once: when two callers race to
-    build the same dest, `os.replace` fails for whichever lands second (HB-CELL-113, Windows cannot
+    build the same dest, the rename fails for whichever lands second (HB-CELL-113, Windows cannot
     rename onto a non-empty dest). If dest is by then a valid build, the other writer won; discard
     tmp (the caller's `finally` does that) and hand back dest. Any other failure is real and propagates.
     """
-    # WIN-A: Windows refuses a folder rename while another process briefly holds a handle inside it (antivirus, the
-    # git process that just exited). A refusal that clears is retried with a short backoff; one that persists raises.
-    for delay in RENAME_BACKOFF:
-        try:
-            os.replace(tmp, dest)
-            return dest
-        except PermissionError:
-            if valid(dest):
-                return dest
-            if delay is None:
-                raise
-            time.sleep(delay)
-        except OSError:
-            if not valid(dest):
-                raise
-            return dest
+    try:
+        atomic.rename_with_retry(tmp, dest, replace=True, settled=lambda: valid(dest))
+    except OSError:
+        if not valid(dest):
+            raise
     return dest
 
 

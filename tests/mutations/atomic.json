@@ -130,6 +130,7 @@
     "file": "src/harness_bench/atomic.py",
     "find": "    flags = os.O_RDONLY | O_BINARY | getattr(os, \"O_NOFOLLOW\", 0)\n",
     "replace": "    flags = os.O_RDONLY | O_BINARY\n",
+    "note": "RV-SEC W1-B 5(c): not run on this host (winerror 1314, no symlink right). Needs a host with symlink rights: the macOS CI job or Windows Developer Mode; the kill is recorded there.",
     "tests": ["tests/test_atomic.py::test_create_once_refuses_a_symlink_existing_path"]
   },
   {
@@ -169,5 +170,64 @@
     "find": "            if (not stat.S_ISREG(st.st_mode)) or (attrs & _REPARSE):\n",
     "replace": "            if False:\n",
     "tests": ["tests/test_oslock.py::test_acquire_refuses_a_non_regular_lock"]
+  },
+  {
+    "name": "M9: publish_dir has no lexists guard",
+    "file": "src/harness_bench/atomic.py",
+    "find": "    if os.path.lexists(final):\n        raise FileExistsError(errno.EEXIST, \"File exists\", str(final))\n",
+    "replace": "    if False:\n        raise FileExistsError(errno.EEXIST, \"File exists\", str(final))\n",
+    "tests": ["tests/test_atomic.py::test_publish_dir_refuses_when_final_exists_and_touches_nothing"]
+  },
+  {
+    "name": "M10: a failed publish deletes the temp and logs nothing",
+    "file": "src/harness_bench/atomic.py",
+    "find": "        _publish_failed(final, phase, exc)\n        raise\n",
+    "replace": "        shutil.rmtree(tmp, ignore_errors=True)\n        raise\n",
+    "tests": ["tests/test_atomic.py::test_publish_dir_never_renames_when_fill_or_verify_fails"]
+  },
+  {
+    "name": "M11: publish_dir reuses an existing temp folder",
+    "file": "src/harness_bench/atomic.py",
+    "find": "    os.mkdir(tmp)\n",
+    "replace": "    os.makedirs(tmp, exist_ok=True)\n",
+    "tests": [
+      "tests/test_atomic.py::test_publish_dir_hands_fill_an_empty_exclusively_created_folder",
+      "tests/test_atomic.py::test_publish_dir_refuses_a_squatted_reparse_point"
+    ]
+  },
+  {
+    "name": "M12: publish_dir fills the final folder",
+    "file": "src/harness_bench/atomic.py",
+    "find": "        result = fill(tmp)\n",
+    "replace": "        result = fill(final)\n",
+    "tests": ["tests/test_atomic.py::test_a_kill_during_fill_or_before_the_rename_leaves_no_final_name"]
+  },
+  {
+    "name": "M13: file bytes are not fsynced",
+    "file": "src/harness_bench/atomic.py",
+    "find": "            os.fsync(wfd)\n",
+    "replace": "            pass\n",
+    "tests": ["tests/test_atomic.py::test_every_file_is_fsynced_through_a_write_handle_before_the_rename"]
+  },
+  {
+    "name": "M14: _POSIX is always True",
+    "file": "src/harness_bench/atomic.py",
+    "find": "_POSIX = os.name == \"posix\"",
+    "replace": "_POSIX = True",
+    "tests": [
+      "tests/test_atomic.py::test_the_real_publish_dir_fsyncs_the_folder_only_on_posix",
+      "tests/test_atomic.py::test_posix_flag_default_follows_the_platform"
+    ]
+  },
+  {
+    "name": "M14b: _POSIX is always False",
+    "file": "src/harness_bench/atomic.py",
+    "find": "_POSIX = os.name == \"posix\"",
+    "replace": "_POSIX = False",
+    "note": "RV-TA W1-B R2-3: killable on POSIX only (on Windows _POSIX is already False, so the mutant changes nothing). Survives on a Windows host by design; the kill is recorded by the macOS CI job's mutation run.",
+    "tests": [
+      "tests/test_atomic.py::test_the_real_publish_dir_fsyncs_the_folder_only_on_posix",
+      "tests/test_atomic.py::test_posix_flag_default_follows_the_platform"
+    ]
   }
 ]

@@ -7,6 +7,7 @@ import os
 import stat
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 from uuid import UUID
@@ -491,3 +492,386 @@ def test_the_posix_job_does_not_skip_the_symlink_variants(tmp_path):
 
 def test_posix_flag_default_follows_the_platform():
     assert atomic._POSIX == (os.name == "posix")
+
+
+def _accept(tmp: Path) -> None:
+    return None
+
+
+def test_publish_dir_publishes_only_a_verified_complete_folder(tmp_path, caplog):
+    final = tmp_path / "out"
+
+    def fill(tmp: Path):
+        tmp.mkdir(parents=True, exist_ok=True)
+        (tmp / "a.txt").write_bytes(b"abc")
+        (tmp / "sub").mkdir()
+        (tmp / "sub" / "b.txt").write_bytes(b"de")
+        return "done"
+
+    def verify(tmp: Path) -> None:
+        names = sorted(p.relative_to(tmp).as_posix() for p in tmp.rglob("*") if p.is_file())
+        assert names == ["a.txt", "sub/b.txt"]
+
+    with caplog.at_level(logging.INFO, logger=LOG):
+        assert atomic.publish_dir(final, fill, verify) == "done"
+    assert (final / "a.txt").read_bytes() == b"abc"
+    assert (final / "sub" / "b.txt").read_bytes() == b"de"
+    assert not any(atomic.is_temp_name(p.name) for p in tmp_path.iterdir())
+    records = [r for r in caplog.records if r.getMessage() == "atomic.publish"]
+    assert len(records) == 1
+    record = records[0]
+    for field in ("fill_ms", "fsync_ms", "verify_ms", "rename_ms"):
+        assert isinstance(getattr(record, field), int)
+    assert record.rename_retries == 0
+    assert record.files == 2 and record.bytes == 5
+    assert record.final == str(final)
+
+
+@pytest.mark.parametrize("kind", ["populated", "empty", "file", "dangling"])
+def test_publish_dir_refuses_when_final_exists_and_touches_nothing(tmp_path, kind):
+    final = tmp_path / "out"
+    if kind == "populated":
+        final.mkdir()
+        (final / "a").write_bytes(b"a")
+    elif kind == "empty":
+        final.mkdir()
+    elif kind == "file":
+        final.write_bytes(b"f")
+    else:
+        if not _can_symlink(tmp_path):
+            pytest.skip("winerror 1314: no symlink right")
+        final.symlink_to(tmp_path / "missing-target")
+    called: list[Path] = []
+    before = {p.name: p.read_bytes() if p.is_file() and not p.is_symlink() else None for p in tmp_path.iterdir()}
+    with pytest.raises(FileExistsError):
+        atomic.publish_dir(final, lambda folder: called.append(folder), _accept)
+    assert called == []
+    assert {p.name for p in tmp_path.iterdir()} == set(before)
+    if kind == "populated":
+        assert (final / "a").read_bytes() == b"a"
+    elif kind == "file":
+        assert final.read_bytes() == b"f"
+
+
+def test_publish_dir_with_a_missing_parent_raises_and_creates_nothing(tmp_path):
+    final = tmp_path / "missing" / "out"
+    called: list[Path] = []
+    with pytest.raises(FileNotFoundError):
+        atomic.publish_dir(final, lambda folder: called.append(folder), _accept)
+    assert called == []
+    assert not (tmp_path / "missing").exists()
+
+
+@pytest.mark.parametrize("phase", ["fill", "verify"])
+def test_publish_dir_never_renames_when_fill_or_verify_fails(tmp_path, caplog, phase):
+    final = tmp_path / "out"
+    err: Exception = BenchError("HB-LED-007", "nope") if phase == "verify" else RuntimeError("fill failed")
+
+    def fill(tmp: Path):
+        tmp.mkdir(parents=True, exist_ok=True)
+        (tmp / "a").write_bytes(b"a")
+        if phase == "fill":
+            raise err
+        return "x"
+
+    def verify(tmp: Path) -> None:
+        if phase == "verify":
+            raise err
+
+    with caplog.at_level(logging.ERROR, logger=LOG), pytest.raises(type(err)) as ei:
+        atomic.publish_dir(final, fill, verify)
+    assert ei.value is err
+    assert not final.exists()
+    temps = [p for p in tmp_path.iterdir() if atomic.is_temp_name(p.name)]
+    assert len(temps) == 1 and temps[0].is_dir()
+    failed = [r for r in caplog.records if r.getMessage() == "atomic.publish_failed"]
+    assert len(failed) == 1 and failed[0].phase == phase
+    if isinstance(err, BenchError):
+        assert failed[0].error_code == err.code
+    assert failed[0].exc_type == type(err).__name__
+
+
+def test_publish_dir_hands_fill_an_empty_exclusively_created_folder(tmp_path, monkeypatch):
+    final = tmp_path / "out"
+    stale = final.with_name(f"{final.name}.tmp-999-{NONCE}")
+    stale.mkdir()
+    (stale / "old.txt").write_bytes(b"old")
+    seen: dict[str, object] = {}
+
+    def fill(tmp: Path):
+        tmp.mkdir(parents=True, exist_ok=True)
+        seen["path"] = tmp
+        seen["names"] = sorted(p.name for p in tmp.iterdir())
+        (tmp / "new.txt").write_bytes(b"new")
+        return "ok"
+
+    assert atomic.publish_dir(final, fill, _accept) == "ok"
+    assert seen["names"] == []
+    assert seen["path"] != final
+    assert atomic.is_temp_name(Path(str(seen["path"])).name)
+    assert (stale / "old.txt").read_bytes() == b"old"
+    assert (final / "new.txt").read_bytes() == b"new"
+
+    coll = tmp_path / "coll"
+    pre = coll.with_name(f"coll.tmp-999-{NONCE}")
+    pre.mkdir()
+    (pre / "old.txt").write_bytes(b"old")
+    monkeypatch.setattr(os, "getpid", lambda: 999)
+    monkeypatch.setattr("harness_bench.atomic.uuid4", lambda: UUID(hex=NONCE))
+
+    def fill_into(tmp: Path):
+        tmp.mkdir(parents=True, exist_ok=True)
+        (tmp / "fresh.txt").write_bytes(b"nope")
+
+    with pytest.raises(FileExistsError):
+        atomic.publish_dir(coll, fill_into, _accept)
+    assert (pre / "old.txt").read_bytes() == b"old"
+    assert not (pre / "fresh.txt").exists()
+    assert not coll.exists()
+
+
+def test_publish_dir_refuses_a_squatted_reparse_point(tmp_path, monkeypatch):
+    final = tmp_path / "out"
+    pid, nonce = "77", "cd" * 16
+    monkeypatch.setattr(os, "getpid", lambda: int(pid))
+    monkeypatch.setattr("harness_bench.atomic.uuid4", lambda: UUID(hex=nonce))
+    squat = final.with_name(f"{final.name}.tmp-{pid}-{nonce}")
+    target = tmp_path / "target"
+    target.mkdir()
+    (target / "sentinel").write_bytes(b"keep")
+    try:
+        _junction_or_dirlink(squat, target)
+    except OSError as exc:
+        if getattr(exc, "winerror", None) == 1314:
+            pytest.skip("winerror 1314: no symlink right")
+        raise
+    def fill(folder: Path):
+        raise AssertionError(f"fill called on {folder}")
+
+    with pytest.raises(FileExistsError):
+        atomic.publish_dir(final, fill, _accept)
+    assert (target / "sentinel").read_bytes() == b"keep"
+    assert not final.exists()
+
+
+def test_the_real_publish_dir_fsyncs_the_folder_only_on_posix(tmp_path, monkeypatch):
+    calls: list[Path] = []
+    real = atomic._fsync_dir
+
+    def wrap(path: Path) -> None:
+        calls.append(Path(path))
+        return real(path)
+
+    monkeypatch.setattr(atomic, "_fsync_dir", wrap)
+    final = tmp_path / "out"
+
+    def fill(tmp: Path):
+        tmp.mkdir(parents=True, exist_ok=True)
+        (tmp / "a").write_bytes(b"a")
+        return 1
+
+    assert atomic.publish_dir(final, fill, _accept) == 1
+    if os.name == "posix":
+        assert len(calls) == 2
+    else:
+        assert calls == []
+
+
+@pytest.mark.parametrize("posix_flag", [True, False])
+def test_the_folder_fsync_body_runs_for_the_temp_then_the_parent(tmp_path, monkeypatch, posix_flag):
+    order: list[tuple] = []
+    monkeypatch.setattr(atomic, "_POSIX", posix_flag)
+    monkeypatch.setattr(atomic, "_fsync_dir", lambda path: order.append(("fsync", Path(path))))
+    real_rename = os.rename
+
+    def spy_rename(src, dst):
+        order.append(("rename",))
+        return real_rename(src, dst)
+
+    monkeypatch.setattr(os, "rename", spy_rename)
+    final = tmp_path / "out"
+
+    def fill(tmp: Path):
+        tmp.mkdir(parents=True, exist_ok=True)
+        (tmp / "a").write_bytes(b"a")
+        return 1
+
+    assert atomic.publish_dir(final, fill, _accept) == 1
+    fsyncs = [item for item in order if item[0] == "fsync"]
+    if not posix_flag:
+        assert fsyncs == []
+        return
+    assert [item[0] for item in order] == ["fsync", "rename", "fsync"]
+    assert str(order[0][1].name).startswith("out.tmp-")
+    assert order[2][1] == tmp_path
+
+
+def test_every_file_is_fsynced_through_a_write_handle_before_the_rename(tmp_path, monkeypatch):
+    final = tmp_path / "out"
+    order: list[tuple] = []
+    opened_write: dict[int, str] = {}
+    real_open, real_fsync, real_rename = os.open, os.fsync, os.rename
+
+    def spy_open(path, flags, *args, **kwargs):
+        fd = real_open(path, flags, *args, **kwargs)
+        if flags & os.O_RDWR:
+            opened_write[fd] = os.fsdecode(path)
+            order.append(("open", fd))
+        return fd
+
+    def spy_fsync(fd):
+        if fd in opened_write:
+            order.append(("fsync", fd))
+        return real_fsync(fd)
+
+    def spy_rename(src, dst):
+        order.append(("rename",))
+        return real_rename(src, dst)
+
+    monkeypatch.setattr(os, "open", spy_open)
+    monkeypatch.setattr(os, "fsync", spy_fsync)
+    monkeypatch.setattr(os, "rename", spy_rename)
+
+    def fill(tmp: Path):
+        tmp.mkdir(parents=True, exist_ok=True)
+        order.append(("fill",))
+        (tmp / "a").write_bytes(b"aa")
+        (tmp / "b").write_bytes(b"b")
+        return 1
+
+    atomic.publish_dir(final, fill, _accept)
+    fsyncs = [item[1] for item in order if item[0] == "fsync"]
+    assert fsyncs and len(fsyncs) == 2
+    assert all(fd in opened_write for fd in fsyncs)
+    rename_at = order.index(("rename",))
+    fill_at = order.index(("fill",))
+    assert all(fill_at < order.index(("fsync", fd)) < rename_at for fd in fsyncs)
+
+
+@pytest.mark.parametrize("case", ["twice", "always", "exists"])
+def test_publish_dir_rename_retries_and_the_failure_record(tmp_path, monkeypatch, caplog, case):
+    final = tmp_path / "out"
+    sleeps: list[float] = []
+    calls = {"n": 0}
+    real_rename = os.rename
+    monkeypatch.setattr(time, "sleep", lambda delay: sleeps.append(delay))
+
+    def flaky(src, dst):
+        calls["n"] += 1
+        if case == "twice":
+            if calls["n"] <= 2:
+                raise PermissionError(13, "Access is denied")
+            return real_rename(src, dst)
+        if case == "always":
+            raise PermissionError(13, "Access is denied")
+        raise FileExistsError(17, "File exists")
+
+    monkeypatch.setattr(os, "rename", flaky)
+
+    def fill(tmp: Path):
+        tmp.mkdir(parents=True, exist_ok=True)
+        (tmp / "a").write_bytes(b"x")
+        return "landed"
+
+    with caplog.at_level(logging.INFO, logger=LOG):
+        if case == "twice":
+            assert atomic.publish_dir(final, fill, _accept) == "landed"
+            assert (final / "a").read_bytes() == b"x"
+            records = [r for r in caplog.records if r.getMessage() == "atomic.publish"]
+            assert len(records) == 1 and records[0].rename_retries == 2
+            assert isinstance(records[0].rename_ms, int)
+            assert sleeps == list(atomic.RENAME_BACKOFF[:2])
+            return
+        if case == "always":
+            with pytest.raises(PermissionError):
+                atomic.publish_dir(final, fill, _accept)
+            assert calls["n"] == len(atomic.RENAME_BACKOFF)
+            assert not final.exists()
+            assert sleeps == list(atomic.RENAME_BACKOFF[:-1])
+            temps = [p for p in tmp_path.iterdir() if atomic.is_temp_name(p.name)]
+            assert len(temps) == 1
+            failed = [r for r in caplog.records if r.getMessage() == "atomic.publish_failed"]
+            assert len(failed) == 1 and failed[0].phase == "rename"
+            return
+        with pytest.raises(FileExistsError):
+            atomic.publish_dir(final, fill, _accept)
+    assert calls["n"] == 1 and sleeps == []
+
+
+def test_a_rename_refused_by_an_open_handle_succeeds_once_it_closes(tmp_path, caplog):
+    if os.name != "nt":
+        pytest.skip("WIN-A: a directory rename while a handle is open is a Windows refusal")
+    final = tmp_path / "out"
+    held: dict[str, object] = {}
+
+    def fill(tmp: Path):
+        tmp.mkdir(parents=True, exist_ok=True)
+        path = tmp / "f"
+        path.write_bytes(b"x")
+        handle = path.open("rb")
+        held["handle"] = handle
+        timer = threading.Timer(0.3, handle.close)
+        timer.daemon = True
+        held["timer"] = timer
+        timer.start()
+        return "landed"
+
+    try:
+        with caplog.at_level(logging.INFO, logger=LOG):
+            assert atomic.publish_dir(final, fill, _accept) == "landed"
+    finally:
+        handle = held.get("handle")
+        if handle is not None:
+            handle.close()
+        timer = held.get("timer")
+        if timer is not None:
+            timer.cancel()
+    assert (final / "f").read_bytes() == b"x"
+    records = [r for r in caplog.records if r.getMessage() == "atomic.publish"]
+    assert records and records[0].rename_retries >= 1
+
+
+_KILL_PUBLISH = (
+    "import os, sys\n"
+    "from pathlib import Path\n"
+    "from harness_bench import atomic\n"
+    "mode, final = sys.argv[1], Path(sys.argv[2])\n"
+    "def fill(tmp):\n"
+    "    tmp.mkdir(parents=True, exist_ok=True)\n"
+    "    for i in range(3):\n"
+    "        (tmp / ('f%d' % i)).write_bytes(b'x')\n"
+    "    if mode == 'fill':\n"
+    "        os._exit(3)\n"
+    "    return 'ok'\n"
+    "def verify(tmp):\n"
+    "    return None\n"
+    "if mode == 'rename':\n"
+    "    os.rename = lambda *a, **k: os._exit(3)\n"
+    "atomic.publish_dir(final, fill, verify)\n"
+)
+
+
+@pytest.mark.parametrize("mode", ["fill", "rename"])
+def test_a_kill_during_fill_or_before_the_rename_leaves_no_final_name(tmp_path, mode):
+    final = tmp_path / "out"
+    script = tmp_path / "kill_pub.py"
+    script.write_text(_KILL_PUBLISH, encoding="utf-8")
+    proc = subprocess.run([sys.executable, str(script), mode, str(final)], check=False)
+    assert proc.returncode == 3
+    assert not final.exists()
+    temps = [p for p in atomic.stale_temps(tmp_path) if p.name.startswith("out.tmp-")]
+    assert len(temps) == 1 and temps[0].is_dir()
+
+    def fill(tmp: Path):
+        (tmp / "ok").write_bytes(b"ok")
+        return "redone"
+
+    assert atomic.publish_dir(final, fill, _accept) == "redone"
+    assert temps[0].exists()
+    lock = _held_lock(tmp_path)
+    try:
+        swept = atomic.sweep_temps(tmp_path, lock)
+        assert temps[0] in swept and not temps[0].exists()
+    finally:
+        lock.release()
+
