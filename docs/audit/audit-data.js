@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-03T23:51:12Z",
+  "generated": "2026-10-04T00:05:52Z",
   "audit": [
     {
       "actor": null,
@@ -77737,6 +77737,43 @@ window.AUDIT_DATA = {
         "sha": "28ccc1eeaa230276308c5f03e2335cd559cc45a8",
         "short": "28ccc1eea",
         "branch": "coord/eval-w0-rev610-grants",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M423PE79B47EQPKZM3V9F48W",
+      "shortname": "ruling-r103-grok-drift",
+      "datetime": "2026-10-04T00:05:52Z",
+      "session": "owner-fable",
+      "prompt": "Leader to Owner (fresh owner-fable session): rule R-103, Grok served the wrong model on X-B1a. Run w2-b1a-e1e4 (argv -m grok-4.7 --reasoning-effort high, grok 1.0.41) produced red 4c425df0, green 9838b006, fallback f3e0ce86, fix 95d65eb6 on build/eval-x-b1a, then hit its 2400 s deadline. tools/grok_served_model.py reports FAIL: pin grok-4.7; served grok-4.6-build x59. Earlier runs (q0g x8, X-G1 x43, ENV-A) served grok-4.7-build. X-B1a passes its own gate (red by assertion 19, ruff clean, full suite with only the gate-stamp failure); its mutation run was interrupted. Q1: can X-B1a's commits join main as they are with the drift recorded, or must the slice be redone under the pin? Q2: Grok dispatch for X-B1b, X-B1c, X-H1a/b/c, X-G3: (a) pause and route to Sonnet under R-92; (b) re-qualify once; (c) per-run gate and re-run any drifted turn. Operator away overnight; the kickoff requires a federation across Codex, Agy and Grok. Say whether the operator must be told.",
+      "summary": "R-103 (DR-11) appended to docs/notes/rulings.md (commit 26eaa689): X-B1a joins on its gate evidence, recorded as served grok-4.6-build; (b) re-qualification refused (Q0b passed 10:16, drift back by 16:xx); (a) blanket pause refused; (c) granted as a fail-fast first-response kill, one retry per turn, then Sonnet under R-92; mutation gate run to completion before merge; R-92 condition 3's register entry found missing and reassigned (condition 5); operator told in the next report. No decision request was on file, so the block is hand-appended in the R-88/R-91 shape; verify-ruling-citations OK (103/103); docs-graph validate exit 0.",
+      "kind": "manual",
+      "skill": "ruling",
+      "tool": null,
+      "actor": "Owner seat (Fable, claude-fable-5-1)",
+      "artifacts": [
+        "docs/notes/rulings.md"
+      ],
+      "tags": [
+        "ruling",
+        "grok"
+      ],
+      "outcome": "success",
+      "goal": "Rule R-103: Grok served grok-4.6-build on X-B1a under -m grok-4.7; decide whether X-B1a joins and what Grok dispatch does overnight",
+      "done_when": "R-103 in docs/notes/rulings.md from the owner/ruling-r103 worktree, citations verified, audit entry appended, committed, 6-line return to the Leader",
+      "tier": "T0",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-04T00:04:52Z",
+      "duration_seconds": 60.0,
+      "git": {
+        "sha": "26eaa689395f0f0edd7be8b53a6abf7922f2d029",
+        "short": "26eaa6893",
+        "branch": "owner/ruling-r103",
         "pushed": null
       }
     }
