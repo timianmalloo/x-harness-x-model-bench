@@ -602,4 +602,6 @@ def grade_cell(inp: CellInput) -> Mapping[str, Score]:
         out["bugs_confirmed"] = bugs_confirmed(inp, timeout)
     if "bug_claim_precision" in inp.metrics:
         out["bug_claim_precision"] = bug_claim_precision(inp, timeout)
+    if "pass_at_1" in inp.metrics:  # owner guard (R-95): on a G1 task correctness owns pass_at_1, so a key outside inp.metrics would be HB-GRD-004
+        out["pass_at_1"] = Score(None, NOT_BUILT)  # X-G3 replaces this with formal.pass_rule
     return out

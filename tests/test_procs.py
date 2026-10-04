@@ -244,3 +244,57 @@ def test_unused_knobs_are_gone():  # Simplifier minors: no caller passes stdin_d
     import inspect
     assert "stdin_data" not in inspect.signature(procs.run).parameters
     assert "retry_every" not in inspect.signature(procs.CellProcess.terminate_and_confirm).parameters
+
+
+# --- the hidden-check runner's additions (W1-F section 5.8): console=False, exit_time, now_filetime ------------------
+
+
+def _flags_of_spawn(monkeypatch, **kw) -> int:
+    seen = []
+    real = subprocess.Popen
+
+    def recording(*a, **k):
+        seen.append(k["creationflags"])
+        return real(*a, **k)
+
+    monkeypatch.setattr(procs.subprocess, "Popen", recording)
+    cell = procs.spawn([sys.executable, "-c", "pass"], cwd=None, env=None, **kw)
+    cell.proc.wait(timeout=30)
+    cell.close()
+    return seen[0]
+
+
+def test_spawn_default_flags_unchanged(monkeypatch):
+    assert _flags_of_spawn(monkeypatch) == 0x4 | 0x08000000  # CREATE_SUSPENDED | CREATE_NO_WINDOW
+
+
+def test_spawn_console_false_is_detached_and_job_holds_only_the_child(monkeypatch):
+    assert _flags_of_spawn(monkeypatch, console=False) == 0x4 | 0x8  # CREATE_SUSPENDED | DETACHED_PROCESS
+    cell = procs.spawn([sys._base_executable, "-c", "import time;time.sleep(30)"], cwd=None, env=None, console=False)
+    try:
+        time.sleep(0.5)  # a console host, were there one, would have joined the job by now
+        assert cell.job.pids() == {cell.pid}
+    finally:
+        cell.terminate_and_confirm(timeout=10)
+        cell.close()
+
+
+def test_exit_time_follows_now_filetime():
+    before = procs.now_filetime()
+    cell = procs.spawn([sys.executable, "-c", "pass"], cwd=None, env=None)
+    cell.wait(timeout=30)
+    after = procs.now_filetime()
+    exited = cell.exit_time()
+    cell.close()
+    assert 0 < before < exited < after
+    assert after - before < 60 * 10_000_000  # one clock, 100 ns ticks: a minute at most
+
+
+def test_exit_time_of_a_running_process_raises():
+    cell = procs.spawn([sys.executable, "-c", "import time;time.sleep(30)"], cwd=None, env=None)
+    try:
+        with pytest.raises(OSError):
+            cell.exit_time()
+    finally:
+        cell.terminate_and_confirm(timeout=10)
+        cell.close()

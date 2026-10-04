@@ -130,8 +130,8 @@
  {
   "name": "derived metrics written as score rows (kind ignored)",
   "file": "src/harness_bench/grade/runner.py",
-  "find": " and m[\"kind\"] == \"score\":",
-  "replace": ":",
+  "find": "            if m[\"kind\"] != \"score\":",
+  "replace": "            if False:",
   "tests": ["tests/test_grade_runner.py::test_the_pass_writes_one_row_per_applicable_metric_of_the_tasks_graders"]
  },
  {
@@ -565,5 +565,32 @@
   "find": "        if segment not in BUILD_OUTPUT:\n",
   "replace": "        if False:\n",
   "tests": ["tests/test_check_regrade.py::test_an_allowance_entry_outside_build_output_fails_at_load"]
+ },
+ {
+  "name": "applicable: the tag test drops its untagged clause, so an untagged metric is dropped for a property task (T-R2)",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "            if tag is not None and tag != prop:",
+  "replace": "            if tag != prop:",
+  "tests": [
+   "tests/test_grade_runner.py::test_applicable_with_no_prop_keeps_only_untagged_metrics"
+  ]
+ },
+ {
+  "name": "applicable: the owner is the last of [grader, *also_graded_by], not the first (T-R3)",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "            owner = next((g for g in (m[\"grader\"], *m.get(\"also_graded_by\", ())) if g in graders), None)",
+  "replace": "            owner = next((g for g in (*m.get(\"also_graded_by\", ()), m[\"grader\"]) if g in graders), None)",
+  "tests": [
+   "tests/test_grade_runner.py::test_pass_at_1_has_one_owner_when_correctness_and_formal_are_both_named"
+  ]
+ },
+ {
+  "name": "_grade_cell: applicable is called without the task's property, so no tagged metric is narrowed (T-R1)",
+  "file": "src/harness_bench/grade/runner.py",
+  "find": "applicable(self.catalog, names, prop).items()",
+  "replace": "applicable(self.catalog, names, None).items()",
+  "tests": [
+   "tests/test_grade_runner.py::test_a_security_task_graded_by_property_writes_exactly_two_property_rows_and_the_pass_completes"
+  ]
  }
 ]

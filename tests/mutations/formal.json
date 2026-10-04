@@ -60,5 +60,14 @@
     "find": "    cfg.write_text(bounds.read_text(encoding=\"utf-8\"), encoding=\"utf-8\")",
     "replace": "    pass  # cfg.write_text(bounds.read_text(encoding=\"utf-8\"), encoding=\"utf-8\")",
     "tests": ["tests/test_grade_formal.py::test_g1_formal_checks_clean_reference_is_1"]
-  }
+  },
+ {
+  "name": "formal emits pass_at_1 on every task, not only when it owns the metric (R-95 guard; T-R6)",
+  "file": "src/harness_bench/grade/formal.py",
+  "find": "    if \"pass_at_1\" in inp.metrics:  # owner guard",
+  "replace": "    if True:  # owner guard",
+  "tests": [
+   "tests/test_grade_runner.py::test_a_g1_shaped_task_through_a_real_pass_records_one_pass_at_1_row_and_no_hb_grd_004"
+  ]
+ }
 ]

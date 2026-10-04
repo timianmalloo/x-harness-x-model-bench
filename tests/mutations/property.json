@@ -1,0 +1,120 @@
+[
+ {
+  "name": "row 3 deleted: a changed check tree with a clean handshake scores (W0 s3 row 3)",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "    if facts.hash_after != facts.hash_before:",
+  "replace": "    if False:",
+  "tests": [
+   "tests/test_property_grader.py::test_classify_matches_the_independent_first_match_reference_on_every_flag_combination",
+   "tests/test_property_grader.py::test_precedence_asserts_the_row_and_the_code"
+  ]
+ },
+ {
+  "name": "row 1 drops the tests-span term: a suspend in the hidden-tests phase no longer voids the run",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "    if facts.tests_suspended or facts.check_suspended:",
+  "replace": "    if facts.check_suspended:",
+  "tests": [
+   "tests/test_property_grader.py::test_classify_matches_the_independent_first_match_reference_on_every_flag_combination"
+  ]
+ },
+ {
+  "name": "row 2 deleted: a fired outer bound is classified by the later process facts",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "    if facts.bound_fired:",
+  "replace": "    if False:",
+  "tests": [
+   "tests/test_property_grader.py::test_classify_matches_the_independent_first_match_reference_on_every_flag_combination"
+  ]
+ },
+ {
+  "name": "row 4 expects exit 0 after a refusal too: a check that ignored the missing acknowledgement passes as row 5",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "    expected_exit = 0 if (facts.line_valid and facts.alone_at_arrival) else 3",
+  "replace": "    expected_exit = 0",
+  "tests": [
+   "tests/test_property_grader.py::test_a_malformed_line_that_was_acknowledged_anyway_is_row_4_not_5"
+  ]
+ },
+ {
+  "name": "check_segment drops rule 3: a Windows device name stem is accepted",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "    if name.split(\".\")[0].rstrip(\" \").casefold() in _DEVICES:",
+  "replace": "    if False:",
+  "tests": [
+   "tests/test_property_grader.py::test_check_segment_refuses_unsafe_names"
+  ]
+ },
+ {
+  "name": "check_segment stem keeps trailing spaces: 'nul .txt' passes",
+  "file": "src/harness_bench/grade/property.py",
+  "find": ".rstrip(\" \").casefold()",
+  "replace": ".casefold()",
+  "tests": [
+   "tests/test_property_grader.py::test_check_segment_refuses_unsafe_names"
+  ]
+ },
+ {
+  "name": "at_scale accepts a bool as a JSON int",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "        if isinstance(value, int) and not isinstance(value, bool):",
+  "replace": "        if isinstance(value, int):",
+  "tests": [
+   "tests/test_property_grader.py::test_at_scale_refuses_loose_forms"
+  ]
+ },
+ {
+  "name": "at_scale rounds half up, not half to even",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "rounding=ROUND_HALF_EVEN)",
+  "replace": "rounding=\"ROUND_HALF_UP\")",
+  "tests": [
+   "tests/test_property_grader.py::test_at_scale_accepts_and_quantises"
+  ]
+ },
+ {
+  "name": "score_run: a known failing case no longer outranks an unknown hidden-test result (Kleene)",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "    if hidden_tests.value == 0 or not all_blocked:",
+  "replace": "    if hidden_tests.value == 0 or (not all_blocked and hidden_tests.value is not None):",
+  "tests": [
+   "tests/test_property_grader.py::test_primary_kleene_truth_table_on_row_7"
+  ]
+ },
+ {
+  "name": "hash_after reads the pre-run hash: a check that edits its own tree scores",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "        hash_after = tree_hash(check_dir, _tree_files(check_dir))",
+  "replace": "        hash_after = hash_before",
+  "tests": [
+   "tests/test_property_grade_cell.py::test_na_rows_through_the_real_handshake"
+  ]
+ },
+ {
+  "name": "the ack byte is never sent: an accepted line is refused (exit 3)",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "                        cp.proc.stdin.write(ACK)",
+  "replace": "                        cp.proc.stdin.write(b'')",
+  "tests": [
+   "tests/test_property_grade_cell.py::test_honest_check_is_accepted"
+  ]
+ },
+ {
+  "name": "the tests-phase span is ignored: a suspend there no longer voids the run",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "tests_suspended=spans[0][\"suspended\"]",
+  "replace": "tests_suspended=False",
+  "tests": [
+   "tests/test_property_grade_cell.py::test_a_seeded_suspend_in_either_phase_is_row_1"
+  ]
+ },
+ {
+  "name": "the ack is sent without checking the job view: a stolen or not-alone line is acknowledged",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "if document is not None and reader.view == frozenset({cp.pid}):",
+  "replace": "if document is not None:",
+  "tests": [
+   "tests/test_property_real_host.py::test_not_alone_at_arrival_is_row_4_never_scored"
+  ]
+ }
+]

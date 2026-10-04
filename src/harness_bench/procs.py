@@ -110,6 +110,13 @@ class CellProcess:
             self._reap_posix_zombie()
         return confirmed
 
+    def exit_time(self) -> int:
+        """The main process's exit time as a FILETIME (`GetProcessTimes` on the grader's own handle). Windows only;
+        raises OSError elsewhere and when the process has not exited."""
+        if sys.platform != "win32":
+            raise OSError("exit_time is Windows-only")
+        return _exit_filetime(int(self.proc._handle))  # type: ignore[attr-defined]
+
     def close(self) -> None:
         """Close the job first (kill-on-close, or its POSIX stand-in, ends any remaining tree), then the
         pipes. In that order a close never blocks: closing a pipe that a reader thread is blocked on
@@ -127,10 +134,22 @@ class CellProcess:
                     pass
 
 
-def spawn(argv: list[str], cwd, env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL) -> CellProcess:
-    """Start argv in its own job (Windows) or process group (POSIX). Raises SpawnError, leaving no process."""
-    return _spawn_win32(argv, cwd, env, stdin, stdout, stderr) if sys.platform == "win32" else \
+def spawn(argv: list[str], cwd, env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, *,
+          console: bool = True) -> CellProcess:
+    """Start argv in its own job (Windows) or process group (POSIX). Raises SpawnError, leaving no process.
+
+    `console=False` (Windows) starts the child DETACHED_PROCESS instead of CREATE_NO_WINDOW, so the job holds only the
+    child and no console host (spike E1-S3; the hidden-check runner needs the job's process list to be exactly the check).
+    The default is unchanged, so the engine and `run` are unaffected."""
+    return _spawn_win32(argv, cwd, env, stdin, stdout, stderr, console) if sys.platform == "win32" else \
         _spawn_posix(argv, cwd, env, stdin, stdout, stderr)
+
+
+def now_filetime() -> int:
+    """The system time as a FILETIME (100 ns since 1601), the clock `CellProcess.exit_time` reads. Windows only."""
+    if sys.platform != "win32":
+        raise OSError("now_filetime is Windows-only")
+    return _now_filetime()
 
 
 def _parse_pgrep(stdout: str) -> set[int]:
@@ -150,6 +169,7 @@ if sys.platform == "win32":
     DIE_ON_UNHANDLED_EXCEPTION = 0x400
     _CREATE_SUSPENDED = 0x4
     _CREATE_NO_WINDOW = 0x08000000
+    _DETACHED_PROCESS = 0x8
     _PROCESS_ALL_ACCESS = 0x1F0FFF
     _HANDLE_FLAG_INHERIT = 0x1
     _BASIC_ACCOUNTING = 1
@@ -197,6 +217,22 @@ if sys.platform == "win32":
 
     class _PidList(ctypes.Structure):
         _fields_ = [("Assigned", wt.DWORD), ("InList", wt.DWORD), ("Ids", ctypes.c_size_t * _MAX_PIDS)]
+
+    _k32.GetProcessTimes.argtypes = [wt.HANDLE] + [ctypes.POINTER(ctypes.c_ulonglong)] * 4
+    _k32.GetSystemTimePreciseAsFileTime.argtypes = [ctypes.POINTER(ctypes.c_ulonglong)]
+
+    def _now_filetime() -> int:
+        t = ctypes.c_ulonglong()
+        _k32.GetSystemTimePreciseAsFileTime(ctypes.byref(t))
+        return t.value
+
+    def _exit_filetime(handle: int) -> int:
+        created, exited, kernel, user = (ctypes.c_ulonglong() for _ in range(4))
+        if not _k32.GetProcessTimes(handle, ctypes.byref(created), ctypes.byref(exited), ctypes.byref(kernel), ctypes.byref(user)):
+            raise OSError(ctypes.get_last_error(), "GetProcessTimes failed")
+        if not exited.value:  # a running process reports 0: never a plausible wrong stamp
+            raise OSError("process has not exited")
+        return exited.value
 
     # Fault seams for tests: the two calls whose failure must leave no process behind.
     def _assign(job: int, handle: int) -> bool:
@@ -269,12 +305,13 @@ if sys.platform == "win32":
                 _k32.CloseHandle(self.handle)
                 self.handle = None
 
-    def _spawn_win32(argv: list[str], cwd, env, stdin, stdout, stderr) -> CellProcess:
+    def _spawn_win32(argv: list[str], cwd, env, stdin, stdout, stderr, console: bool = True) -> CellProcess:
         """Start argv suspended, assign it to a new job, resume it. Raises SpawnError, leaving no process."""
         job = Job()
         try:
             proc = subprocess.Popen(argv, cwd=cwd, env=env, stdin=stdin, stdout=stdout, stderr=stderr,
-                                    creationflags=_CREATE_SUSPENDED | _CREATE_NO_WINDOW, close_fds=True)
+                                    creationflags=_CREATE_SUSPENDED | (_CREATE_NO_WINDOW if console else _DETACHED_PROCESS),
+                                    close_fds=True)
         except OSError as exc:
             job.close()
             raise SpawnError(f"cannot start {argv[0]}", getattr(exc, "winerror", None) or exc.errno) from exc

@@ -444,3 +444,79 @@ def test_grading_a_committed_mini_run_twice_gives_byte_equal_exports(tmp_path, n
     assert pass_rows(run_dir, "tool_calls", b) == [] and pass_rows(run_dir, "model_calls", b) == []  # B extracted nothing
     assert {c.cell_id: c.scores["pass_at_1"].value for c in view_b.cells} == {"a": 1, "b": 0}  # not a vacuous export
     assert views.export(view_a) == views.export(view_b)
+
+
+# --- applicable(): the `property:` narrowing and the owner rule (R-90 c1, R-95; design eval-catalog-0-7 4.2; T-R1..T-R6) ---
+
+PROPERTY_ROWS = {"property_check_pass", "exploit_probes_blocked"}  # the security task's narrowed set (catalog 0.7.dev)
+
+
+def set_task(root, **keys) -> None:
+    path = root / "tasks" / "X1" / "task.yaml"
+    task = yaml.safe_load(path.read_text(encoding="utf-8"))
+    task.update(keys)
+    path.write_text(yaml.safe_dump(task, sort_keys=False), encoding="utf-8")
+
+
+def stub_returning(metrics_of_grader: dict[str, Score]):
+    def grade(inp):
+        return {m: metrics_of_grader.get(m, Score(1, None)) for m in inp.metrics}
+    return grade
+
+
+def catalog_of(root) -> dict:
+    return config.load_yaml(root / "bench" / "metrics.yaml")
+
+
+def test_a_security_task_graded_by_property_writes_exactly_two_property_rows_and_the_pass_completes(root, tmp_path, monkeypatch):  # T-R1
+    set_task(root, graders=["correctness", "property"], property={"name": "security"})
+    with_grader(monkeypatch, "property", stub_returning({"exploit_probes_blocked": Score(Decimal(1), None)}))
+    rows = graded(root, tmp_path)
+    assert {r["metric_id"] for r in rows} - CORRECTNESS == PROPERTY_ROWS
+    assert sorted(r["metric_id"] for r in rows).count("property_check_pass") == 1
+
+
+def test_applicable_with_no_prop_keeps_only_untagged_metrics(root, tmp_path, monkeypatch):  # T-R2
+    catalog = catalog_of(root)
+    assert set(runner.applicable(catalog, ["property"])["property"]) == {"property_check_pass"}  # prop=None: untagged only
+    assert set(runner.applicable(catalog, ["property"], "security")["property"]) == PROPERTY_ROWS
+    set_task(root, graders=["correctness", "property"], property={"name": "security"})
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    set_task(root, title="changed after the plan")  # the task version no longer matches the plan: the fallback
+    with_grader(monkeypatch, "property", stub_returning({}))
+    got = {r["metric_id"]: r["reason"] for r in pass_rows(run_dir, "scores", runner.run_pass(run_dir, root).grading_id)}
+    assert got["property_check_pass"] == runner.TASK_CHANGED
+    assert not {"exploit_probes_blocked", "fault_suite_pass", "rework_ratio", "size_vs_reference"} & got.keys()
+
+
+def test_pass_at_1_has_one_owner_when_correctness_and_formal_are_both_named(root, tmp_path, monkeypatch):  # T-R3
+    catalog = catalog_of(root)
+    assert [g for g, ms in runner.applicable(catalog, ["correctness", "formal"]).items() if "pass_at_1" in ms] == ["correctness"]
+    assert [g for g, ms in runner.applicable(catalog, ["formal", "correctness"]).items() if "pass_at_1" in ms] == ["correctness"]  # the catalog order, not the task list
+
+
+def test_a_formal_only_task_gets_pass_at_1_from_formal(root, tmp_path, monkeypatch):  # T-R4
+    set_task(root, graders=["formal"])
+    with_grader(monkeypatch, "formal", stub_returning({"pass_at_1": Score(1, None)}))
+    rows = graded(root, tmp_path)
+    assert [r["metric_id"] for r in rows].count("pass_at_1") == 1
+    assert [r["value"] for r in rows if r["metric_id"] == "pass_at_1"] == [1]
+
+
+def test_the_task_changed_fallback_gives_pass_at_1_to_correctness_as_na_in_the_correctness_folder(root, tmp_path):  # T-R5
+    set_task(root, graders=["formal"])
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    set_task(root, title="changed after the plan")
+    grading_id = runner.run_pass(run_dir, root).grading_id
+    got = [r for r in pass_rows(run_dir, "scores", grading_id) if r["metric_id"] == "pass_at_1"]
+    assert [(r["value"], r["reason"]) for r in got] == [(None, runner.TASK_CHANGED)]
+    every = [m["grader"] for a in catalog_of(root)["areas"].values() for m in a["metrics"]]
+    assert "pass_at_1" in runner.applicable(catalog_of(root), every)["correctness"]
+    assert "pass_at_1" not in runner.applicable(catalog_of(root), every).get("formal", {})
+
+
+def test_a_g1_shaped_task_through_a_real_pass_records_one_pass_at_1_row_and_no_hb_grd_004(root, tmp_path):  # T-R6
+    set_task(root, graders=["correctness", "formal"], formal={"tool": "tla", "statements": "fixed", "statement_hash": "0" * 64})
+    rows = graded(root, tmp_path)  # real run_pass, real formal.grade_cell; HB-GRD-004 would raise here
+    assert [r["metric_id"] for r in rows].count("pass_at_1") == 1
+    assert [r["value"] for r in rows if r["metric_id"] == "pass_at_1"] == [1]  # correctness's row, not formal's

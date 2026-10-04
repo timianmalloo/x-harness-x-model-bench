@@ -1,0 +1,94 @@
+[
+ {
+  "name": "write_result no longer sweeps: a stray process in the job makes the check write while not alone",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "    if not sweep():\n        os._exit(4)  # never write while not alone",
+  "replace": "    if False:\n        os._exit(4)",
+  "tests": [
+   "tests/test_property_real_host.py::test_write_result_sweeps_a_stray_process_then_writes_alone"
+  ]
+ },
+ {
+  "name": "the host keeps fd 1 on the protocol pipe: a forger's stdout write is a protocol line",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "    os.dup2(2, 1)\n",
+  "replace": "    pass\n",
+  "tests": [
+   "tests/test_property_real_host.py::test_import_time_forgery_cannot_reach_result",
+   "tests/test_property_real_host.py::test_factory_forgery_in_probe_host_is_refused"
+  ]
+ },
+ {
+  "name": "wsgi dispatch removed: a wsgi app is served as a callable",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "    serve = _serve_wsgi if spec.get(\"kind\") == \"wsgi\" else _serve_callable",
+  "replace": "    serve = _serve_callable",
+  "tests": [
+   "tests/test_property_real_host.py::test_wsgi_app_scores_through_the_real_probe_host"
+  ]
+ },
+ {
+  "name": "a host that never sent the ready line is served anyway: the start no longer fails",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "        if end != \"ready\":",
+  "replace": "        if False:",
+  "tests": [
+   "tests/test_property_real_host.py::test_import_time_forgery_cannot_reach_result",
+   "tests/test_property_real_host.py::test_a_module_that_does_not_import_is_did_not_start"
+  ]
+ },
+ {
+  "name": "{state_dir} is not substituted in args: the factory gets the literal text",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "        app[\"args\"] = _resolve(app.get(\"args\", {}), self.state_dir)",
+  "replace": "        app[\"args\"] = app.get(\"args\", {})",
+  "tests": [
+   "tests/test_property_real_host.py::test_wsgi_app_scores_through_the_real_probe_host"
+  ]
+ },
+ {
+  "name": "M1 the case bound is ignored: the host waits for the interface bound, so a hang is not a case timeout",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "        return min(case.get(\"bound_ms\", interface), interface)",
+  "replace": "        return interface",
+  "tests": [
+   "tests/test_property_real_host.py::test_case_bound_is_the_min_of_case_and_interface"
+  ]
+ },
+ {
+  "name": "the response wait ignores the case deadline: a hang runs to the outer bound",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "        resp = self._next(self.deadline - time.monotonic())",
+  "replace": "        resp = self._next(3600)",
+  "tests": [
+   "tests/test_property_real_host.py::test_case_hang_is_a_measured_timeout"
+  ]
+ },
+ {
+  "name": "RF-11: the host is not detached, so a grandchild with default stdio shares the check's console channel",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "creationflags=DETACHED_PROCESS, env=dict(os.environ))",
+  "replace": "creationflags=0, env=dict(os.environ))",
+  "tests": [
+   "tests/test_property_real_host.py::test_grandchild_stdio_is_not_captured_and_the_protocol_survives"
+  ]
+ },
+ {
+  "name": "JOB-A: the sweep terminates a job member older than the check (an inherited job: the terminal and every agent)",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "            if born is None or born < mine:\n",
+  "replace": "            if born is None:\n",
+  "tests": [
+   "tests/test_property_real_host.py::test_sweep_never_terminates_a_job_member_older_than_the_check"
+  ]
+ },
+ {
+  "name": "JOB-A: the s1 check is a bare subprocess again, so it inherits the logon session's job",
+  "file": "tests/test_security_tasks.py",
+  "find": "    run = prop.run_check(argv, Path(cwd), dict(os.environ), 180, err, lambda line: {})\n    return run.exit_code, run.stdout.decode(\"utf-8\", errors=\"replace\"), err.read_text(encoding=\"utf-8\", errors=\"replace\")\n",
+  "replace": "    proc = subprocess.run(argv, cwd=cwd, capture_output=True, text=True, timeout=180, check=False)\n    return proc.returncode, proc.stdout, proc.stderr\n",
+  "tests": [
+   "tests/test_security_tasks.py::test_the_check_runs_alone_in_a_job_of_its_own"
+  ]
+ }
+]

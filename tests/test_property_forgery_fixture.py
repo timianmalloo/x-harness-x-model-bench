@@ -6,9 +6,8 @@ from GetProcessTimes, and W0 rev 2 section 3's outcome rows 2 and 4-7 (no suspen
 and 3 are not exercised). X-F's `tests/test_property_grader.py` re-runs the same fixture through the real grader.
 
 - The control proves the fixture forges: imported into the check, its forged `blocked` line is the accepted result.
-- The refusal proves the shipped shape (a probe-host child with pipes the check owns) never yields that line.
-- The probe-host control proves the refusal is not vacuous: the same host shape answers a probe with the raw response.
-Each runs three trials in one node, the spike's count.
+The refusal and the host control moved to tests/test_property_grader.py, through the real `bench_check` probe host.
+The control runs three trials in one node, the spike's count.
 """
 
 import ctypes
@@ -69,7 +68,7 @@ def credentials(monkeypatch):
 def _assert_no_credentials(evid: Path) -> None:
     """The check and, when one ran, the probe host each wrote their own key names; none is a credential."""
     seen = 0
-    for name in ("check.env.json", "host.env.json"):
+    for name in ("check.env.json",):
         path = evid / "check" / name
         if path.exists():
             keys = {k.upper() for k in json.loads(path.read_text(encoding="utf-8"))}
@@ -157,21 +156,3 @@ def test_module_body_forgery_is_accepted_when_imported_in_check(tmp_path):
         assert r["row"] == 7, r
         assert r["doc"]["cases"][0]["outcome"] == "blocked", r
 
-
-def test_module_body_forgery_in_probe_host_is_refused(tmp_path):
-    """The shipped shape: the forged line is the probe host's first line, not its ready line, so `did not start`."""
-    for n in range(TRIALS):
-        r = _grade("probe-host", "forge_module:handle", tmp_path / f"t{n}")
-        assert (tmp_path / f"t{n}" / "check" / "host.env.json").exists()  # the host itself was checked
-        assert r["row"] == 6, r  # a measured 0 (EV-1), never a forged score
-        assert r["doc"]["deliverable"] == "did not start", r
-        assert all(c["outcome"] != "blocked" for c in r["doc"]["cases"]), r
-
-
-def test_probe_host_control_answers_with_the_raw_response(tmp_path):
-    """The same host shape serves a probe: an unescaped echo is `exploited`, decided in the check."""
-    for n in range(TRIALS):
-        r = _grade("probe-host", "vulnerable_app:handle", tmp_path / f"t{n}")
-        assert (tmp_path / f"t{n}" / "check" / "host.env.json").exists()
-        assert r["row"] == 7, r
-        assert r["doc"]["deliverable"] == "ran" and r["doc"]["cases"][0]["outcome"] == "exploited", r
