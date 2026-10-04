@@ -12,6 +12,16 @@
         ]
       },
       {
+        "matcher": "PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh ../../../tools/heredoc_guard.py",
+            "timeout": 10
+          }
+        ]
+      },
+      {
         "matcher": "Read",
         "hooks": [
           {
