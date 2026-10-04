@@ -43,3 +43,21 @@ def test_heartbeat_advances_the_mtime(tmp_path):
         lock.heartbeat()
         assert path.stat().st_mtime_ns > before
         assert oslock.heartbeat_age(path) < 5
+
+
+def test_runlock_held_is_true_only_while_this_object_holds_the_fd(tmp_path):
+    path = tmp_path / ".lock"
+    lock = oslock.RunLock.acquire(path)
+    assert lock.held is True
+    lock.release()
+    assert lock.held is False
+
+
+def test_acquire_refuses_a_non_regular_lock(tmp_path):
+    path = tmp_path / "lockdir"
+    path.mkdir()
+    with pytest.raises(Exception) as ei:
+        oslock.RunLock.acquire(path, "HB-CMP-001")
+    assert isinstance(ei.value, BenchError)
+    assert ei.value.code == "HB-CMP-001"
+    assert "not a regular file" in ei.value.message

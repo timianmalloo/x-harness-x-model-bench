@@ -1,0 +1,173 @@
+[
+  {
+    "name": "M1: create_once never links",
+    "file": "src/harness_bench/atomic.py",
+    "find": "    os.link(src, dst, **kwargs)\n",
+    "replace": "    return\n",
+    "tests": ["tests/test_atomic.py::test_a_kill_between_write_and_link_leaves_no_final_file"]
+  },
+  {
+    "name": "M2: no O_BINARY on the create temp",
+    "file": "src/harness_bench/atomic.py",
+    "find": "        fd = os.open(tmp, os.O_RDWR | os.O_CREAT | os.O_EXCL | O_BINARY, 0o644)\n",
+    "replace": "        fd = os.open(tmp, os.O_RDWR | os.O_CREAT | os.O_EXCL, 0o644)\n",
+    "tests": ["tests/test_atomic.py::test_create_once_round_trips_the_bytes_that_text_mode_corrupts"]
+  },
+  {
+    "name": "M3: equal bytes still returns True",
+    "file": "src/harness_bench/atomic.py",
+    "find": "    if existing == data:\n        return False\n",
+    "replace": "    if existing == data:\n        return True\n",
+    "tests": ["tests/test_atomic.py::test_create_once_creates_then_noops_on_equal_bytes"]
+  },
+  {
+    "name": "M4: different bytes overwrite",
+    "file": "src/harness_bench/atomic.py",
+    "find": "    _conflict(path, f\"{path} exists with different bytes\")\n",
+    "replace": "    return True\n",
+    "tests": ["tests/test_atomic.py::test_create_once_refuses_different_bytes_and_keeps_the_original"]
+  },
+  {
+    "name": "M5: temp open drops O_EXCL",
+    "file": "src/harness_bench/atomic.py",
+    "find": "os.O_RDWR | os.O_CREAT | os.O_EXCL | O_BINARY",
+    "replace": "os.O_RDWR | os.O_CREAT | O_BINARY",
+    "tests": ["tests/test_atomic.py::test_create_once_temp_names_are_unique_and_exclusive"]
+  },
+  {
+    "name": "M6: temp nonce is constant",
+    "file": "src/harness_bench/atomic.py",
+    "find": "f\"{path.name}.tmp-{os.getpid()}-{uuid4().hex}\"",
+    "replace": "f\"{path.name}.tmp-{os.getpid()}-{'0'*32}\"",
+    "tests": ["tests/test_atomic.py::test_create_once_temp_names_are_unique_and_exclusive"]
+  },
+  {
+    "name": "M7: non-regular existing path is not refused",
+    "file": "src/harness_bench/atomic.py",
+    "find": "    if not stat.S_ISREG(st.st_mode) or _is_link_entry(st):  # M7\n",
+    "replace": "    if False:  # M7\n",
+    "tests": ["tests/test_atomic.py::test_create_once_refuses_a_non_regular_existing_path"]
+  },
+  {
+    "name": "M8: link falls back to os.replace",
+    "file": "src/harness_bench/atomic.py",
+    "find": "    os.link(src, dst, **kwargs)\n",
+    "replace": "    os.replace(src, dst)\n",
+    "tests": ["tests/test_atomic.py::test_create_once_leaves_no_temp_and_propagates_when_a_step_fails"]
+  },
+  {
+    "name": "M17: stale_temps globs folder.name.tmp-*",
+    "file": "src/harness_bench/atomic.py",
+    "find": "            if is_temp_name(entry.name):\n",
+    "replace": "            if entry.name.startswith(folder.name + \".tmp-\"):\n",
+    "tests": ["tests/test_atomic.py::test_stale_temps_lists_every_strict_temp_in_the_folder"]
+  },
+  {
+    "name": "M18: sweep follows reparse points",
+    "file": "src/harness_bench/atomic.py",
+    "find": "def _sweep_one(path: Path, st: os.stat_result) -> str:\n    if _is_link_entry(st):\n",
+    "replace": "def _sweep_one(path: Path, st: os.stat_result) -> str:\n    if False:\n",
+    "tests": ["tests/test_atomic.py::test_sweep_temps_unlinks_reparse_points_without_recursing"]
+  },
+  {
+    "name": "M19: rmtree without make_writable",
+    "file": "src/harness_bench/atomic.py",
+    "find": "        shutil.rmtree(path, onexc=make_writable)\n",
+    "replace": "        shutil.rmtree(path)\n",
+    "tests": ["tests/test_atomic.py::test_sweep_temps_unlinks_reparse_points_without_recursing"]
+  },
+  {
+    "name": "M20: sweep swallows a delete error",
+    "file": "src/harness_bench/atomic.py",
+    "find": "        try:\n            kind = _sweep_one(path, st)\n        except FileNotFoundError:\n            continue\n",
+    "replace": "        try:\n            kind = _sweep_one(path, st)\n        except OSError:\n            continue\n",
+    "tests": ["tests/test_atomic.py::test_sweep_temps_raises_when_a_temp_cannot_be_removed"]
+  },
+  {
+    "name": "M21: rename retries FileExistsError",
+    "file": "src/harness_bench/atomic.py",
+    "find": "        except PermissionError:\n",
+    "replace": "        except OSError:\n",
+    "tests": ["tests/test_atomic.py::test_a_rename_refused_n_times"]
+  },
+  {
+    "name": "M22: no identity check after link",
+    "file": "src/harness_bench/atomic.py",
+    "find": "        if (got.st_dev, got.st_ino) != (listed.st_dev, listed.st_ino):\n",
+    "replace": "        if False:\n",
+    "tests": ["tests/test_atomic.py::test_create_once_refuses_a_file_swapped_in_before_the_link"]
+  },
+  {
+    "name": "M23: unlink failure after link raises",
+    "file": "src/harness_bench/atomic.py",
+    "find": "    except OSError as exc:\n        log.warning(\n            \"atomic.temp_leaked\",\n",
+    "replace": "    except OSError as exc:\n        raise\n        log.warning(\n            \"atomic.temp_leaked\",\n",
+    "tests": ["tests/test_atomic.py::test_create_once_returns_true_when_the_temp_unlink_fails"]
+  },
+  {
+    "name": "M24: no finally discard of the temp",
+    "file": "src/harness_bench/atomic.py",
+    "find": "            os.close(fd)\n            _discard_temp(tmp)\n",
+    "replace": "            os.close(fd)\n",
+    "tests": ["tests/test_atomic.py::test_create_once_leaves_no_temp_and_propagates_when_a_step_fails"]
+  },
+  {
+    "name": "M25: sweep guard is is_held(path)",
+    "file": "src/harness_bench/atomic.py",
+    "find": "    if not lock.held:\n",
+    "replace": "    if not oslock.is_held(lock.path):\n",
+    "tests": ["tests/test_atomic.py::test_sweep_temps_refuses_a_released_lock_while_another_process_holds_the_file"]
+  },
+  {
+    "name": "M26: make_writable replaces the mode",
+    "file": "src/harness_bench/atomic.py",
+    "find": "    if not _is_link_entry(st):\n        os.chmod(path, stat.S_IMODE(st.st_mode) | stat.S_IWUSR)\n",
+    "replace": "    os.chmod(path, stat.S_IWRITE)\n",
+    "tests": ["tests/test_atomic.py::test_make_writable_adds_write_bit_keeping_other_bits"]
+  },
+  {
+    "name": "M27: existing-file read drops O_NOFOLLOW",
+    "file": "src/harness_bench/atomic.py",
+    "find": "    flags = os.O_RDONLY | O_BINARY | getattr(os, \"O_NOFOLLOW\", 0)\n",
+    "replace": "    flags = os.O_RDONLY | O_BINARY\n",
+    "tests": ["tests/test_atomic.py::test_create_once_refuses_a_symlink_existing_path"]
+  },
+  {
+    "name": "M15: rename is not retried",
+    "file": "src/harness_bench/atomic.py",
+    "find": "RENAME_BACKOFF = (0.05, 0.1, 0.2, 0.4, 0.8, None)",
+    "replace": "RENAME_BACKOFF = (None,)",
+    "tests": ["tests/test_atomic.py::test_a_rename_refused_n_times"]
+  },
+  {
+    "name": "M16: last rename refusal is swallowed",
+    "file": "src/harness_bench/atomic.py",
+    "find": "            if delay is None:\n                raise\n",
+    "replace": "            if delay is None:\n                return retries\n",
+    "tests": ["tests/test_atomic.py::test_a_rename_refused_n_times"]
+  },
+  {
+    "name": "is_temp_name uses match not fullmatch",
+    "file": "src/harness_bench/atomic.py",
+    "find": "    return TEMP_RE.fullmatch(name) is not None\n",
+    "replace": "    return TEMP_RE.match(name) is not None\n",
+    "tests": ["tests/test_atomic.py::test_stale_temps_lists_every_strict_temp_in_the_folder"]
+  },
+  {
+    "name": "RunLock.held is always True",
+    "file": "src/harness_bench/oslock.py",
+    "find": "        return self._fd >= 0\n",
+    "replace": "        return True\n",
+    "tests": [
+      "tests/test_oslock.py::test_runlock_held_is_true_only_while_this_object_holds_the_fd",
+      "tests/test_atomic.py::test_sweep_temps_refuses_a_released_lock_while_another_process_holds_the_file"
+    ]
+  },
+  {
+    "name": "RunLock.acquire skips the non-regular lstat",
+    "file": "src/harness_bench/oslock.py",
+    "find": "            if (not stat.S_ISREG(st.st_mode)) or (attrs & _REPARSE):\n",
+    "replace": "            if False:\n",
+    "tests": ["tests/test_oslock.py::test_acquire_refuses_a_non_regular_lock"]
+  }
+]
