@@ -7,6 +7,7 @@ are the ones the design names (N1, N13, RF-11, case_hang). The pure core is test
 
 import ast
 import json
+import os
 import subprocess
 import sys
 from decimal import Decimal
@@ -14,6 +15,7 @@ from pathlib import Path
 
 import pytest
 
+from harness_bench import procs
 from harness_bench.grade import CellInput
 from harness_bench.grade import property as prop
 
@@ -119,6 +121,32 @@ def test_write_result_sweeps_a_stray_process_then_writes_alone(tmp_path):
     ev = evidence(inp)
     assert (ev["row"], ev["check"]["job_view"], ev["check"]["acked"]) == (7, "alone", True)
     assert vals(s)["property_check_pass"] == (1, None)
+
+
+# JOB-A. The elder runs in a job of its own (procs.spawn), then starts a check that sweeps. Interlock: the check sweeps only
+# when its job is exactly {elder, check}, so a broken setup can never reach the logon session's job.
+ELDER = """import subprocess, sys
+check = ("import sys; sys.path.insert(0, sys.argv[1]); import bench_check as bc; n = len(bc.job_pids()); "
+         "print(n, bc.sweep(1.0) if n == 2 else 'refused')")
+done = subprocess.run([sys.executable, "-S", "-c", check, sys.argv[1]], capture_output=True, text=True, timeout=30,
+                      creationflags=0x8)
+print("elder alive", done.stdout.strip(), done.stderr.strip()[-300:])
+"""
+
+
+def test_sweep_never_terminates_a_job_member_older_than_the_check(tmp_path):
+    """JOB-A: the grader's job is made for the check, so the check is its first member. A job that holds an older
+    process is one the check inherited, e.g. the logon session's job that holds the terminal and every agent. The sweep
+    refuses it whole: it terminates nothing and reports not alone."""
+    helper = Path(__file__).resolve().parents[1] / "src" / "harness_bench" / "grade"
+    cp = procs.spawn([sys._base_executable, "-S", "-c", ELDER, str(helper)], tmp_path, dict(os.environ),
+                     stdin=subprocess.DEVNULL, stderr=subprocess.PIPE, console=False)
+    try:
+        out, err = cp.proc.communicate(timeout=60)
+    finally:
+        cp.terminate_and_confirm(5)
+        cp.close()
+    assert out.decode().split() == ["elder", "alive", "2", "False"], (out, err)
 
 
 @pytest.mark.parametrize("kind", ["callable", "wsgi"])

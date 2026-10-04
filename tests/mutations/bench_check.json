@@ -72,5 +72,23 @@
   "tests": [
    "tests/test_property_real_host.py::test_grandchild_stdio_is_not_captured_and_the_protocol_survives"
   ]
+ },
+ {
+  "name": "JOB-A: the sweep terminates a job member older than the check (an inherited job: the terminal and every agent)",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "            if born is None or born < mine:\n",
+  "replace": "            if born is None:\n",
+  "tests": [
+   "tests/test_property_real_host.py::test_sweep_never_terminates_a_job_member_older_than_the_check"
+  ]
+ },
+ {
+  "name": "JOB-A: the s1 check is a bare subprocess again, so it inherits the logon session's job",
+  "file": "tests/test_security_tasks.py",
+  "find": "    run = prop.run_check(argv, Path(cwd), dict(os.environ), 180, err, lambda line: {})\n    return run.exit_code, run.stdout.decode(\"utf-8\", errors=\"replace\"), err.read_text(encoding=\"utf-8\", errors=\"replace\")\n",
+  "replace": "    proc = subprocess.run(argv, cwd=cwd, capture_output=True, text=True, timeout=180, check=False)\n    return proc.returncode, proc.stdout, proc.stderr\n",
+  "tests": [
+   "tests/test_security_tasks.py::test_the_check_runs_alone_in_a_job_of_its_own"
+  ]
  }
 ]

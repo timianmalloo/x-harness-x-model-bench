@@ -31,6 +31,8 @@ DETACHED_PROCESS = 0x00000008
 ACK = b"\x06"
 _REPARSE = 0x400
 _KILL = 0x0001 | 0x00100000  # PROCESS_TERMINATE | SYNCHRONIZE
+_QUERY = 0x1000  # PROCESS_QUERY_LIMITED_INFORMATION
+_GONE = 87  # ERROR_INVALID_PARAMETER: OpenProcess on a pid that has exited
 
 _k32 = ctypes.WinDLL("kernel32", use_last_error=True)
 _k32.QueryInformationJobObject.argtypes = [wt.HANDLE, ctypes.c_int, ctypes.c_void_p, wt.DWORD, ctypes.c_void_p]
@@ -38,6 +40,8 @@ _k32.OpenProcess.restype = wt.HANDLE
 _k32.OpenProcess.argtypes = [wt.DWORD, wt.BOOL, wt.DWORD]
 _k32.TerminateProcess.argtypes = [wt.HANDLE, wt.UINT]
 _k32.CloseHandle.argtypes = [wt.HANDLE]
+_k32.GetCurrentProcess.restype = wt.HANDLE
+_k32.GetProcessTimes.argtypes = [wt.HANDLE] + [ctypes.POINTER(wt.FILETIME)] * 4
 
 
 class DidNotStart(Exception):
@@ -56,9 +60,46 @@ def job_pids() -> set:
     return {int(buf.Ids[i]) for i in range(buf.InList)}
 
 
+def _created(handle) -> int | None:
+    """The process's creation time in FILETIME ticks, or None when it cannot be read."""
+    times = [wt.FILETIME() for _ in range(4)]
+    if not _k32.GetProcessTimes(handle, *(ctypes.byref(t) for t in times)):
+        return None
+    return times[0].dwHighDateTime << 32 | times[0].dwLowDateTime
+
+
+def _kill_younger(pids, mine) -> bool:
+    """Terminate `pids` only when none started before this process (JOB-A). The grader made the job for the check, so
+    the check is its first member; an older member means an inherited job, such as the logon session's job that holds
+    the terminal and every agent. Each handle is held from the age check to the kill, so a reused pid is never hit.
+    False, with nothing terminated, when any member is older or cannot be inspected."""
+    handles = []
+    try:
+        for pid in pids:
+            h = _k32.OpenProcess(_KILL | _QUERY, False, pid)
+            if not h:
+                if ctypes.get_last_error() == _GONE:
+                    continue
+                return False
+            handles.append(h)
+            born = _created(h)
+            if born is None or born < mine:
+                return False
+        for h in handles:
+            _k32.TerminateProcess(h, 1)
+        return True
+    finally:
+        for h in handles:
+            _k32.CloseHandle(h)
+
+
 def sweep(bound_s=5.0) -> bool:
-    """Terminate every job member except this process; True once alone, False at the bound or when the query fails."""
+    """Terminate every job member except this process; True once alone, False at the bound, when the query fails, or
+    when the job holds a process older than this one (then nothing is terminated: JOB-A)."""
     me, t0 = os.getpid(), time.monotonic()
+    mine = _created(_k32.GetCurrentProcess())
+    if mine is None:
+        return False  # fail closed: without its own start time the check cannot tell its job from an inherited one
     while time.monotonic() - t0 < bound_s:
         try:
             others = job_pids() - {me}
@@ -66,11 +107,8 @@ def sweep(bound_s=5.0) -> bool:
             return False  # fail closed: a job that cannot be read is not "alone"
         if not others:
             return True
-        for pid in others:
-            h = _k32.OpenProcess(_KILL, False, pid)
-            if h:
-                _k32.TerminateProcess(h, 1)
-                _k32.CloseHandle(h)
+        if not _kill_younger(others, mine):
+            return False
         time.sleep(0.01)
     return False
 

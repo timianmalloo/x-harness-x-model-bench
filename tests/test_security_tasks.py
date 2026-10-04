@@ -15,6 +15,7 @@ import ast
 import functools
 import importlib.util
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -28,6 +29,7 @@ import pytest
 import ring_cache
 
 from harness_bench import config
+from harness_bench.grade import property as prop
 
 ROOT = Path(__file__).resolve().parents[1]
 TASK = ROOT / "tasks" / "S1"
@@ -153,7 +155,7 @@ class Hidden:
 
 @dataclass(frozen=True)
 class Checked:
-    code: int
+    code: int | None
     result: dict | None
     probes: dict
     stderr: str
@@ -197,14 +199,21 @@ def run_check(base: Path, source: str, helper: Path | None = None, bounds_scale:
     (check / "cases.json").write_text(json.dumps(cases, sort_keys=True), encoding="utf-8")
     deliverable = _copy_base(base, run / "deliverable", source)
     evidence = run / "evidence" / "check"
-    proc = subprocess.run([sys._base_executable, "-S", str(check / "check.py"), "--deliverable", str(deliverable),
-                           "--cases", str(check / "cases.json"), "--seed", "1", "--evidence", str(evidence)],
-                          cwd=run, capture_output=True, text=True, timeout=180, check=False)
-    lines = proc.stdout.strip().splitlines()
-    result = json.loads(lines[-1]) if proc.returncode == 0 and lines else None
+    code, stdout, stderr = _launch([sys._base_executable, "-S", str(check / "check.py"), "--deliverable", str(deliverable),
+                                    "--cases", str(check / "cases.json"), "--seed", "1", "--evidence", str(evidence)], run)
+    lines = stdout.strip().splitlines()
+    result = json.loads(lines[-1]) if code == 0 and lines else None
     probes_file = evidence / "s1-probes.json"
     probes = json.loads(probes_file.read_text(encoding="utf-8")) if probes_file.is_file() else {}
-    return Checked(proc.returncode, result, probes, proc.stderr)
+    return Checked(code, result, probes, stderr)
+
+
+def _launch(argv: list[str], cwd: Path) -> tuple[int | None, str, str]:
+    """(exit code, stdout, stderr) of one check run, launched by the grader's own `run_check`: alone in a fresh job,
+    detached, with the acknowledgement byte (JOB-A: never a bare subprocess). The exit code is None at the bound."""
+    err = Path(cwd) / "check.stderr"
+    run = prop.run_check(argv, Path(cwd), dict(os.environ), 180, err, lambda line: {})
+    return run.exit_code, run.stdout.decode("utf-8", errors="replace"), err.read_text(encoding="utf-8", errors="replace")
 
 
 def with_edits(source: str, edits: list[tuple[str, str]]) -> str:
@@ -536,6 +545,24 @@ def test_s1_a_module_that_blocks_at_import_is_did_not_start(s1_base):
     checked = run_check(s1_base, hanging, bounds_scale=1)  # the production bound must fire on an endless hang
     assert checked.deliverable == "did not start", checked.stderr
     assert checked.result["cases"] == []
+
+
+JOB_SIZE = """import ctypes, ctypes.wintypes as w
+class L(ctypes.Structure):
+    _fields_ = [("assigned", w.DWORD), ("listed", w.DWORD), ("ids", ctypes.c_size_t * 4096)]
+b = L()
+ok = ctypes.WinDLL("kernel32").QueryInformationJobObject(None, 3, ctypes.byref(b), ctypes.sizeof(b), None)
+print(b.listed if ok else "no job")
+"""
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Job Objects are Windows-only")
+def test_the_check_runs_alone_in_a_job_of_its_own(tmp_path):
+    """JOB-A: the real helper's sweep terminates every other member of its job. Started from a terminal without a job
+    of its own, the check inherits the logon session's job (the terminal, every agent, pytest) and the sweep kills it
+    all. So the check runs as the grader runs it: the only process in a fresh job."""
+    code, stdout, stderr = _launch([sys._base_executable, "-S", "-c", JOB_SIZE], tmp_path)
+    assert (code, stdout.strip()) == (0, "1"), stderr
 
 
 @pytest.mark.skipif(not REAL_HELPER.is_file(), reason="X-F's grade/bench_check.py has not landed (the follow-on session runs this)")
