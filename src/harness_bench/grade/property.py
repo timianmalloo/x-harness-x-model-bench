@@ -4,7 +4,7 @@ Design: docs/design/eval-property-grader.md (W1-F rev 3); seams: docs/design/eva
 This module holds the pure core first (F2): `at_scale`, `check_segment`, the result-line validator, the ordered
 outcome table `_classify` (W0 section 3, rows 1-7: the first match decides) and the scoring of an accepted run.
 F3a adds the check runner (the handshake of design 5.3) and `grade_cell` (design 5.2); the probe host and
-`bench_check` (F3b) follow in their own commit.
+`bench_check` (F3b) is its own module, run only in the check process.
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ __all__ = ["Classification", "Facts", "at_scale", "check_seed", "check_segment",
 
 MAX_RESULT_BYTES = 64 * 1024
 ACK = b"\x06"
-BENCH_CHECK = Path(__file__).with_name("bench_check.py")  # copied into every check copy; F3b writes it
+BENCH_CHECK = Path(__file__).with_name("bench_check.py")  # copied into every check copy
 PROPERTY_SUSPEND_GAP_S = 60.0  # the host-sleep gap of a phase span (design 5.2 step 3)
 _STORE = 4 * MAX_RESULT_BYTES  # stdout kept for the document count; beyond it bytes are counted, never stored
 _ENTRY = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.-]*\.py")

@@ -1,5 +1,5 @@
 """F3a: `grade_cell` and the check runner, through the STUB check (tests/fixtures/property/stub_check.py), real
-processes and real copies. `bench_check` (F3b) is not written yet; the stub is named as such everywhere."""
+processes and real copies. the real helper is tested in test_property_real_host.py; the stub is named as such everywhere."""
 
 import dataclasses
 import json

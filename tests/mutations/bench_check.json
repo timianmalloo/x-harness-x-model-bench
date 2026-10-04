@@ -1,0 +1,49 @@
+[
+ {
+  "name": "write_result no longer sweeps: a stray process in the job makes the check write while not alone",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "    if not sweep():\n        os._exit(4)  # never write while not alone",
+  "replace": "    if False:\n        os._exit(4)",
+  "tests": [
+   "tests/test_property_real_host.py::test_write_result_sweeps_a_stray_process_then_writes_alone"
+  ]
+ },
+ {
+  "name": "the host keeps fd 1 on the protocol pipe: a forger's stdout write is a protocol line",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "    os.dup2(2, 1)\n",
+  "replace": "    pass\n",
+  "tests": [
+   "tests/test_property_real_host.py::test_import_time_forgery_cannot_reach_result",
+   "tests/test_property_real_host.py::test_factory_forgery_in_probe_host_is_refused"
+  ]
+ },
+ {
+  "name": "wsgi dispatch removed: a wsgi app is served as a callable",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "    serve = _serve_wsgi if spec.get(\"kind\") == \"wsgi\" else _serve_callable",
+  "replace": "    serve = _serve_callable",
+  "tests": [
+   "tests/test_property_real_host.py::test_wsgi_app_scores_through_the_real_probe_host"
+  ]
+ },
+ {
+  "name": "a host that never sent the ready line is served anyway: the start no longer fails",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "        if end != \"ready\":",
+  "replace": "        if False:",
+  "tests": [
+   "tests/test_property_real_host.py::test_import_time_forgery_cannot_reach_result",
+   "tests/test_property_real_host.py::test_a_module_that_does_not_import_is_did_not_start"
+  ]
+ },
+ {
+  "name": "{state_dir} is not substituted in args: the factory gets the literal text",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "        app[\"args\"] = _resolve(app.get(\"args\", {}), self.state_dir)",
+  "replace": "        app[\"args\"] = app.get(\"args\", {})",
+  "tests": [
+   "tests/test_property_real_host.py::test_wsgi_app_scores_through_the_real_probe_host"
+  ]
+ }
+]
