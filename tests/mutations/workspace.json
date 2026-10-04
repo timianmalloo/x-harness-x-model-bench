@@ -16,7 +16,8 @@
   "replace": "        raise\n",
   "tests": [
    "tests/test_workspace.py::test_task_source_built_concurrently_gives_every_caller_the_same_dest",
-   "tests/test_workspace.py::test_pack_checkout_built_concurrently_gives_every_caller_the_same_dest"
+   "tests/test_workspace.py::test_pack_checkout_built_concurrently_gives_every_caller_the_same_dest",
+   "tests/test_atomic_sites.py::test_a_losing_land_reuses_the_winners_valid_dest_and_leaves_it_untouched"
   ]
  },
  {

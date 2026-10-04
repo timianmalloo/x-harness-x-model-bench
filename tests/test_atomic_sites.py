@@ -269,3 +269,25 @@ def test_a_stale_or_unlisted_entry_fails(tmp_path: Path) -> None:
     )
     _, _, problems = scan(root)
     assert any(item.startswith("pub:") for item in problems), problems
+
+
+def test_a_losing_land_reuses_the_winners_valid_dest_and_leaves_it_untouched(tmp_path, monkeypatch):
+    """The race loser's rename fails with a non-PermissionError (POSIX ENOTEMPTY onto the winner's
+    folder), so `rename_with_retry` re-raises. `_land` must hand back the winner's valid dest, not raise,
+    rebuild or overwrite it."""
+    import errno
+
+    from harness_bench import workspace
+
+    tmp, dest = tmp_path / "loser", tmp_path / "dest"
+    (tmp / ".git").mkdir(parents=True)
+    (dest / ".git").mkdir(parents=True)
+    (dest / "winner").write_text("w", encoding="utf-8")
+
+    def lost(src, dst):
+        raise OSError(errno.ENOTEMPTY, "Directory not empty")
+
+    monkeypatch.setattr(workspace.os, "replace", lost)
+    assert workspace._land(tmp, dest, lambda d: (d / ".git").is_dir()) == dest
+    assert (dest / "winner").read_text(encoding="utf-8") == "w"
+    assert tmp.exists()

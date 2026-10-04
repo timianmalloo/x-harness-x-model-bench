@@ -223,6 +223,7 @@
     "file": "src/harness_bench/atomic.py",
     "find": "_POSIX = os.name == \"posix\"",
     "replace": "_POSIX = False",
+    "note": "RV-TA W1-B R2-3: killable on POSIX only (on Windows _POSIX is already False, so the mutant changes nothing). Survives on a Windows host by design; the kill is recorded by the macOS CI job's mutation run.",
     "tests": [
       "tests/test_atomic.py::test_the_real_publish_dir_fsyncs_the_folder_only_on_posix",
       "tests/test_atomic.py::test_posix_flag_default_follows_the_platform"
