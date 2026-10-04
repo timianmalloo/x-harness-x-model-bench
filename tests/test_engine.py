@@ -38,6 +38,12 @@ USAGE = [{"model": "fake-model", "token_count": {"inputTokens": 3, "cachedInputT
                                                  "outputTokens": 5, "reasoningOutputTokens": 0}}]
 
 
+def _stall(seconds: float) -> None:
+    """A deliberate forced delay (TIME-B2): it lengthens one step so a test reproduces the order load would produce."""
+    if seconds:
+        time.sleep(seconds)
+
+
 class FakeLauncher:
     """A Launcher (engine protocol) that runs the fake ACP agent; behaviour per cell label."""
 
@@ -50,14 +56,16 @@ class FakeLauncher:
     shutdown_grace = 1.0
 
     def __init__(self, behaviours: dict[str, dict], build_changed: bool = False, missing_exe: bool = False,
-                 build_changed_for: set[str] | None = None):
+                 build_changed_for: set[str] | None = None, check_stall: dict[str, float] | None = None):
         self.behaviours = behaviours
+        self.check_stall = check_stall or {}  # cell id -> seconds its build check is slow: a forced delay (TIME-B2)
         self.build_changed = build_changed
         self.missing_exe = missing_exe
         self.build_changed_for = build_changed_for or set()  # cell ids (the engine names each worker thread cell-<id>)
 
     def check_build(self) -> dict:
         import threading
+        _stall(self.check_stall.get(threading.current_thread().name.removeprefix("cell-"), 0))
         if self.build_changed or threading.current_thread().name.removeprefix("cell-") in self.build_changed_for:
             from harness_bench.tools import BuildChanged
             raise BuildChanged("fake", "binary replaced after planning")
@@ -345,6 +353,28 @@ def _wait(predicate, limit: float = 20.0) -> None:
     while time.monotonic() < deadline and not predicate():
         time.sleep(0.02)
     assert predicate(), f"not reached within {limit} s"
+
+
+def _seen(run_dir: Path, kind: str, **match) -> bool:
+    """True once the ledger holds a `kind` row with these fields (a segment mid-write reads as not yet)."""
+    try:
+        return any(e["kind"] == kind and all(e.get(k) == v for k, v in match.items()) for e in _events(run_dir))
+    except (OSError, ValueError):
+        return False
+
+
+def _release_after(predicate, release: Path, limit: float = 100.0) -> None:
+    """Event-driven (TIME-B2): write `release` once `predicate()` holds. A fake turn with `wait_for` ends only then, so an
+    order the test needs is made by the event, never by how long a real sleep lasts. A predicate that never holds
+    releases at the limit and the test's own assertion names the failure."""
+    def go():
+        try:
+            _wait(predicate, limit)
+        except AssertionError:
+            pass
+        release.write_text("go", encoding="utf-8")
+
+    threading.Thread(target=go, daemon=True).start()
 
 
 def _stop_and_wait(run_dir: Path) -> None:
@@ -737,13 +767,22 @@ def test_the_engine_grades_once_after_every_cell_is_archived_and_records_the_pas
     assert summary.exit_code == 0
 
 
-def test_the_heartbeat_runs_during_the_grading_hook(base):  # T1-10: a long pass never looks like a stalled engine
+@pytest.mark.parametrize("slow_beat", [0, 2])  # 2: the heartbeat thread's first beat lands after the hook's whole wait (TIME-B2)
+def test_the_heartbeat_runs_during_the_grading_hook(base, monkeypatch, slow_beat):  # T1-10: a long pass never looks like a stalled engine
     seen = []
+    real_beat = oslock.RunLock.heartbeat
+
+    def beat(self):
+        if threading.current_thread().name == "heartbeat":
+            _stall(slow_beat)
+        return real_beat(self)
+
+    monkeypatch.setattr(oslock.RunLock, "heartbeat", beat)
 
     def grade(run_dir):
         lock = run_dir / ".lock"
         start = lock.stat().st_mtime_ns
-        time.sleep(1.5)
+        _wait(lambda: lock.stat().st_mtime_ns > start, 30)  # event-driven: a beat lands however late the thread was scheduled
         seen.append(lock.stat().st_mtime_ns - start)
         return {"grading_id": "grade-x"}
 
@@ -1161,10 +1200,13 @@ def test_a_drain_with_nothing_queued_returns_at_its_deadline(base):  # the loop 
     assert time.monotonic() - started < 0.6
 
 
-def test_no_launch_after_a_stop_while_another_cell_still_runs(base):  # NoLaunchAfterStop, a slot freeing up
+@pytest.mark.parametrize("a_stall", [0, 4])  # 4: the stopping cell's check is slower than the running cell's whole turn (TIME-B2)
+def test_no_launch_after_a_stop_while_another_cell_still_runs(base, a_stall):  # NoLaunchAfterStop, a slot freeing up
     p = _plan(n_cells=3, parallelism=2, budget=60)
     a, b, c = (cell["cell_id"] for cell in p["cells"])
-    launcher = FakeLauncher({p["cells"][1]["label"]: {"sleep": 3}}, build_changed_for={a})
+    release = base / "release-running-cell"  # the running cell ends only after the stop is recorded
+    launcher = FakeLauncher({p["cells"][1]["label"]: {"wait_for": str(release)}}, build_changed_for={a}, check_stall={a: a_stall})
+    _release_after(lambda: _seen(base / "runs" / p["run_id"], "run.launch_stopped"), release)
     _, events, _ = _run(base, p, launcher)
     launched = [e["cell_id"] for e in events if e["kind"] == "cell.launch_intent"]
     assert launched == [a, b] and c not in launched
@@ -1516,18 +1558,43 @@ def _bare_engine(base):
     return eng
 
 
-def test_record_waits_through_a_full_inbox_and_a_slow_drain(base):  # backpressure: never drops, never gives up early
+@pytest.mark.parametrize("worker_late", [0, 3.5])  # 3.5: the worker is scheduled after the test's whole choreography (TIME-B2)
+def test_record_waits_through_a_full_inbox_and_a_slow_drain(base, monkeypatch, worker_late):  # backpressure: never drops, never gives up early
+    import queue
+    from concurrent.futures import TimeoutError as FutureTimeout
     eng = _bare_engine(base)
+    real_put, late, full_polls, future_polls = eng.inbox.put, [], [], []
+
+    def put(item, block=True, timeout=None):  # counts the worker's polls on a full inbox
+        if threading.current_thread() is not threading.main_thread() and not late:
+            late.append(1)
+            _stall(worker_late)
+        try:
+            return real_put(item, block, timeout)
+        except queue.Full:
+            full_polls.append(1)
+            raise
+
+    class CountingFuture(Future):  # counts the worker's polls on its unanswered future
+        def result(self, timeout=None):
+            try:
+                return super().result(timeout)
+            except FutureTimeout:
+                future_polls.append(1)
+                raise
+
+    eng.inbox.put = put
+    monkeypatch.setattr(engine, "Future", CountingFuture)
     try:
         for _ in range(eng.inbox.maxsize):
             eng.inbox.put(("events", {"kind": "run.started"}, Future()))
         box = {}
         t = threading.Thread(target=lambda: box.update(row=eng.record("events", {"kind": "run.started"})), daemon=True)
         t.start()
-        time.sleep(1.2)  # the inbox stays full for more than two RECORD_POLL periods
+        _wait(lambda: len(full_polls) > 2, 30)  # the inbox stayed full for more than two RECORD_POLL periods
         for _ in range(eng.inbox.maxsize):  # make room without draining: the worker's item goes in, unanswered
             eng.inbox.get()
-        time.sleep(1.2)  # the worker now waits on its future for more than two periods
+        _wait(lambda: len(future_polls) > 2, 30)  # the worker now waits on its future for more than two periods
         assert t.is_alive()
         eng._drain(0.5)
         t.join(5)
@@ -1635,18 +1702,24 @@ def test_a_process_whose_status_never_arrives_is_recorded_as_minus_one(base, mon
     assert _outcomes(events)[p["cells"][0]["cell_id"]]["exit_status"] == -1
 
 
-def test_the_heartbeat_keeps_beating_after_a_failed_beat():
+@pytest.mark.parametrize("slow_beat", [0, 0.5])  # 0.5: the failing beat takes longer than the whole wait, as a stalled disk would (TIME-B2)
+def test_the_heartbeat_keeps_beating_after_a_failed_beat(slow_beat):
+    third = threading.Event()
+
     class Lock:
         calls = 0
 
         def heartbeat(self):
             Lock.calls += 1
             if Lock.calls == 1:
+                _stall(slow_beat)
                 raise OSError(5, "Access is denied")
+            if Lock.calls >= 3:
+                third.set()
 
     with engine._beating(Lock(), 0.05):
-        time.sleep(0.4)
-    assert Lock.calls >= 3
+        reached = third.wait(30)  # event-driven: two beats after the failed one, however long the failed one took
+    assert reached and Lock.calls >= 3
 
 
 # --- _classify, the cause precedence table (T10: cosmic-ray survivors, docs/notes/mutation-record-t1.md) ---------------
@@ -2102,7 +2175,8 @@ engine.Engine(p, config).run()
 """
 
 
-def test_an_engine_thread_failure_exits_the_process_and_leaves_no_cell_running(base):  # workers are daemon threads
+@pytest.mark.parametrize("death_lag", [0, 3])  # 3: the cell's process outlives the engine's exit by longer than the check waits (TIME-B2)
+def test_an_engine_thread_failure_exits_the_process_and_leaves_no_cell_running(base, monkeypatch, death_lag):  # workers are daemon threads
     run_id = "fail-" + uuid.uuid4().hex[:4]
     script = base / "failer.py"
     script.write_text(FAILER.format(tests=str(Path(__file__).parent), src=str(ROOT / "src"), run_id=run_id,
@@ -2114,9 +2188,10 @@ def test_an_engine_thread_failure_exits_the_process_and_leaves_no_cell_running(b
         if proc.poll() is None:
             subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)], capture_output=True, check=False)
             proc.wait(timeout=30)
-    time.sleep(2)
+    exited_at, real_alive = time.monotonic(), host.process_alive
+    monkeypatch.setattr(host, "process_alive", lambda pid, created_at: real_alive(pid, created_at) or time.monotonic() - exited_at < death_lag)
     [started] = [e for e in _events(base / "runs" / run_id) if e["kind"] == "attempt.process_started"]
-    assert not host.process_alive(started["pid"], started["created_at"])
+    _wait(lambda: not host.process_alive(started["pid"], started["created_at"]), 30)  # the reaper may lag; the cell's process must go
 
 
 # --- the kill-retry backoff cap (T10: the code had drifted to 60 s; the design says 30 s) -----------------------------
@@ -2211,14 +2286,17 @@ def _answer_file(run_dir: Path, decision_id: str, option: str) -> Path:
     return _stop_file(run_dir, uid=uid, body=json.dumps(_control(uid, control="answer", decision_id=decision_id, option=option)))
 
 
-def _decision_run(base, plan_and_launcher, script=None, limit=45):
+def _decision_run(base, plan_and_launcher, script=None, limit=45, frozen=False):
     """The engine on its own thread, its clock `time.monotonic() + offset[0]`, and `script(eng, offset, run_dir)` called
-    in every tick after the controls and the expiry (design 6.2): each ordering is forced by the tick, never by a sleep."""
+    in every tick after the controls and the expiry (design 6.2): each ordering is forced by the tick, never by a sleep.
+    `frozen`: the clock moves only by `offset`, so a decision's timeout runs out when the script says and never by real time."""
     p, launcher = plan_and_launcher
     offset = [0.0]
+    origin = time.monotonic()
     run_dir = base / "runs" / p["run_id"]
     config = engine.EngineConfig(run_dir=run_dir, cells_root=base / "cells", launchers={"fake": launcher, "other": launcher},
-                                 build_workspace=_build_workspace, grade=None, clock=lambda: time.monotonic() + offset[0])
+                                 build_workspace=_build_workspace, grade=None,
+                                 clock=(lambda: origin + offset[0]) if frozen else (lambda: time.monotonic() + offset[0]))
     eng = engine.Engine(p, config)
     real_tick = eng.on_tick
 
@@ -2324,15 +2402,19 @@ def test_a_stop_supersedes_every_open_decision(base):  # R10-2
     assert len(_kind(events, "cell.launch_intent")) == 2 and summary.exit_code == 3
 
 
-def test_blocked_cell_default_continues_after_the_timeout(base):  # US15-1 (US-15, UXA-9)
-    p, launcher = _decision_plan([("fake", "A", AUTH), ("other", "B", {"sleep": 2}), ("fake", "A", {})], parallelism=2)
+@pytest.mark.parametrize("blocked_sleep", [0, 4])  # 4: the blocked cell fails after the running cell's whole turn (TIME-B2)
+def test_blocked_cell_default_continues_after_the_timeout(base, blocked_sleep):  # US15-1 (US-15, UXA-9)
+    release = base / "release-running-cell"  # the running cell ends only after the decision is open (event-driven, not a sleep)
+    p, launcher = _decision_plan([("fake", "A", {**AUTH, "sleep": blocked_sleep}), ("other", "B", {"wait_for": str(release)}),
+                                  ("fake", "A", {})], parallelism=2)
     blocked, running, waiting = (c["cell_id"] for c in p["cells"])
+    _release_after(lambda: _seen(base / "runs" / p["run_id"], "decision.opened"), release)
 
     def script(eng, offset, run_dir):
         if {blocked, running} <= set(eng.outcomes) and not offset[0]:
             offset[0] += JUMP
 
-    _, events, summary = _decision_run(base, (p, launcher), script)
+    _, events, summary = _decision_run(base, (p, launcher), script, frozen=True)
     opened = _kind(events, "decision.opened")
     assert [{k: e[k] for k in ("decision_id", "decision_kind", "subject", "cause_code", "options", "default")} for e in opened] == [
         {"decision_id": "D1", "decision_kind": "blocked_cell", "subject": "fake", "cause_code": "HB-CELL-202",
@@ -2398,23 +2480,28 @@ def test_a_cell_with_no_usage_is_unmeasured_never_zero(base):  # US15-3b (design
     assert len(_kind(events, "cell.launch_intent")) == 2 and summary.exit_code == 3
 
 
-def test_no_decision_after_a_launch_stop(base):  # US15-4 (S-4, PE-13, TA M8)
+@pytest.mark.parametrize("b_delay", [0, 1.5])  # 1.5: the breaker's cells are slow, so the trip is late (TIME-B2)
+def test_no_decision_after_a_launch_stop(base, b_delay):  # US15-4 (S-4, PE-13, TA M8)
     _, events, _ = _decision_run(base, _decision_plan([("fake", "A", AUTH), ("fake", "A", {})], parallelism=1,
                                                       decision_timeout=0))
     assert [e["decision_kind"] for e in _kind(events, "decision.opened")] == ["blocked_cell"]  # the positive control
     _, events, _ = _decision_run(base, _decision_plan([("fake", "A", AUTH)], parallelism=1, decision_timeout=0))
     assert _kind(events, "decision.opened") == []  # nothing pending: nothing it could change
-    p, launcher = _decision_plan([("fake", "A", {**UNSERVED, "sleep": 8}), *[("fake", "B", {"mode": "provider_error"})] * 3,
+    release = base / "release-gap-cell"  # the gap's cell fails only after the breaker has tripped (event-driven, not a sleep)
+    p, launcher = _decision_plan([("fake", "A", {**UNSERVED, "wait_for": str(release)}),
+                                  *[("fake", "B", {"mode": "provider_error", "handshake_delay": b_delay})] * 3,
                                   ("fake", "A", {})], parallelism=2, decision_timeout=0)
+    _release_after(lambda: _seen(base / "runs" / p["run_id"], "run.launch_stopped"), release)
     _, events, _ = _decision_run(base, (p, launcher))
     assert [e["code"] for e in _kind(events, "run.launch_stopped")] == ["HB-CELL-108"]  # the breaker, first
     assert _outcomes(events)[p["cells"][0]["cell_id"]]["cause"] == "model_unavailable"  # then the gap, combo A pending
     assert _kind(events, "decision.opened") == []
 
 
-def test_the_run_waits_for_an_open_decision(base):  # US15-5 (UXA-9; the model's DecisionEventuallyResolved)
-    p, launcher = _decision_plan([("fake", "A", {}), ("fake", "A", {"sleep": 2})], parallelism=2,
-                                 spend_cap_tokens=CELL_TOKENS - 5)
+@pytest.mark.parametrize("timeout", [30, 0.3])  # 0.3: three idle ticks outlast the timeout, as they would under heavy load (TIME-B2)
+def test_the_run_waits_for_an_open_decision(base, timeout):  # US15-5 (UXA-9; the model's DecisionEventuallyResolved)
+    p, launcher = _decision_plan([("fake", "A", {}), ("fake", "A", {})], parallelism=2,
+                                 spend_cap_tokens=CELL_TOKENS - 5, decision_timeout=timeout)
     cells = {c["cell_id"] for c in p["cells"]}
     idle = []
 
@@ -2424,7 +2511,7 @@ def test_the_run_waits_for_an_open_decision(base):  # US15-5 (UXA-9; the model's
             if len(idle) == 3:  # three ticks with nothing pending or running: only the open decision holds the loop
                 _answer_file(run_dir, "D1", "continue")
 
-    _, events, summary = _decision_run(base, (p, launcher), script)
+    _, events, summary = _decision_run(base, (p, launcher), script, frozen=True)
     assert len(idle) >= 3
     assert _resolutions(events) == [("D1", "answered", "continue")]
     last_outcome = max(events.index(e) for e in _kind(events, "cell.outcome"))

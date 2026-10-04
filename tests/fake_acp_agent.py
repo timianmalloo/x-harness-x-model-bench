@@ -16,7 +16,8 @@ Behaviour comes from the FAKE_ACP environment variable (JSON):
                        and the prompt's error reply>,
    "daemon": <at the prompt, start a detached grandchild that outlives the turn (a build server), trying breakaway
               first; it writes its own "pid creation_time" to daemon.pid in cwd>,
-   "wait_for": <a path; after `sleep`, the turn ends only once that file exists, within "wait_limit" seconds (default 60)>,
+   "wait_for": <a path; after `sleep`, the turn (or a refused prompt's error reply) ends only once that file exists, within
+                "wait_limit" seconds (default 60)>,
    "prompt_error": "<after `sleep` seconds, the prompt's error reply carries this message (an auth failure, an
                     `API Error: <status>`)>"}
 
@@ -90,6 +91,14 @@ def start_daemon() -> None:
     deadline = time.monotonic() + 20
     while not marker.exists() and time.monotonic() < deadline:
         time.sleep(0.05)
+
+
+def wait_for_release() -> None:
+    """Event-driven: with "wait_for", the turn ends once the test creates that file (TIME-B), or after "wait_limit"."""
+    wait_for = CFG.get("wait_for")
+    give_up = time.monotonic() + CFG.get("wait_limit", 60)
+    while wait_for and not Path(wait_for).exists() and time.monotonic() < give_up:
+        time.sleep(0.02)
 
 
 def main() -> int:
@@ -171,6 +180,7 @@ def main() -> int:
                 continue
             if CFG.get("prompt_error"):  # a refused prompt, as an adapter reports it (driver._prompt_error_cause)
                 time.sleep(CFG.get("sleep", 0))
+                wait_for_release()
                 send({"jsonrpc": "2.0", "id": mid, "error": {"code": -32000, "message": CFG["prompt_error"]}})
                 continue
             if CFG.get("daemon"):  # T-JOB-daemon: like `dotnet build` leaving its build server behind
@@ -190,10 +200,7 @@ def main() -> int:
             if CFG.get("write_file"):
                 Path(os.getcwd(), CFG["write_file"]).write_text("done\n", encoding="utf-8")
             time.sleep(CFG.get("sleep", 0))
-            wait_for = CFG.get("wait_for")  # event-driven: the turn ends once the test creates this file (TIME-B)
-            give_up = time.monotonic() + CFG.get("wait_limit", 60)
-            while wait_for and not Path(wait_for).exists() and time.monotonic() < give_up:
-                time.sleep(0.02)
+            wait_for_release()
             send({"jsonrpc": "2.0", "method": "session/update", "params": {"sessionId": session_id,
                   "update": {"sessionUpdate": "agent_message_chunk", "content": {"type": "text", "text": "DONE"}}}})
             result = {"stopReason": "end_turn"}
