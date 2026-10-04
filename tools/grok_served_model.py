@@ -11,6 +11,14 @@ Exit 0: every response id starts with the pin and at least one response was read
 Exit 1: a response id does not (each is named with its count), or a response row has no id.
 Exit 2: chat_history.jsonl is missing, unreadable or holds no assistant row ("not recorded", never a plausible
 pass), a present file is not JSON, or the arguments are bad.
+--first [--wait SECONDS] (R-103 condition 3, the fast kill): reads only the FIRST assistant row of
+chat_history.jsonl (never usage.json or summary.json, never past that row) and prints
+`first response: <model_id> (row <n>; ...)`. The rows carry no time field, so the file mtime is printed and said so.
+Exit 0: the id starts with the pin. Exit 1: it does not, or the row has no id (`FAIL: pin ...`).
+Exit 2: the file is missing or holds no assistant row yet. --wait polls every 2 s while the result would be 2,
+for at most SECONDS (default 0); `--first --wait 120` is the Leader's one-line read. This is the fast check, not
+the proof: the join mode above stays the proof and is unchanged.
+
 usage.json and summary.json are cross-checks: when absent (a deadline-killed session writes no usage.json) the
 line says "(absent)" and the response rows still decide.
 """
@@ -20,10 +28,13 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from collections import Counter
+from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import quote
 
+POLL_SECONDS = 2
 PIN = "grok-4.7"
 NONE = "(none)"
 ABSENT = "(absent)"
@@ -101,6 +112,41 @@ def check(session_dir: Path, pin: str) -> tuple[int, str]:
     return 0, "\n".join(lines) + "\n"
 
 
+def first_response(history: Path) -> tuple[int, str | None] | None:
+    """(row number, model_id or None) of the first assistant row, or None; reads no further."""
+    try:
+        with history.open(encoding="utf-8") as handle:
+            for number, line in enumerate(handle, 1):
+                try:
+                    row = json.loads(line)
+                except ValueError:
+                    continue  # a half-written last line; the next poll sees it whole
+                if isinstance(row, dict) and row.get("type") == "assistant":
+                    model = row.get("model_id")
+                    return number, model if isinstance(model, str) and model else None
+    except OSError:
+        return None
+    return None
+
+
+def first_check(session_dir: Path, pin: str, wait: float = 0) -> tuple[int, str]:
+    history = session_dir / "chat_history.jsonl"
+    deadline = time.monotonic() + wait
+    found = first_response(history)
+    while found is None and time.monotonic() < deadline:
+        time.sleep(min(POLL_SECONDS, max(deadline - time.monotonic(), 0)))
+        found = first_response(history)
+    if found is None:
+        return 2, "not recorded: no assistant row in chat_history.jsonl yet\n"
+    number, model = found
+    # The rows carry no time field (fixtures are copies of the real shape), so the file mtime stands in.
+    stamp = datetime.fromtimestamp(history.stat().st_mtime, UTC).isoformat(timespec="seconds")
+    line = f"first response: {model or NONE} (row {number}; no time field in row, file mtime {stamp})\n"
+    if model is None or not model.startswith(pin):
+        return 1, line + f"FAIL: pin {pin}; first response {model or NONE}\n"
+    return 0, line
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("session_dir", nargs="?", type=Path)
@@ -122,9 +168,9 @@ def main(argv: list[str] | None = None) -> int:
         sys.stderr.write("need <session dir>, or --tree and --session\n")
         return 2
     if args.first:
-        sys.stdout.write("first response: skeleton\n")
-        return 0
-    code, text = check(directory, args.pin)
+        code, text = first_check(directory, args.pin, args.wait)
+    else:
+        code, text = check(directory, args.pin)
     sys.stdout.write(text)
     return code
 

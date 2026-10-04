@@ -7,6 +7,7 @@ Fixtures under tests/fixtures/grok_sessions are synthetic copies of the real ses
 
 import subprocess
 import sys
+import threading
 from pathlib import Path
 from urllib.parse import quote
 
@@ -136,7 +137,7 @@ def test_first_46_response_exits_1_and_names_it():
 def test_first_reads_only_the_first_row_while_join_mode_still_fails():
     r = _run("--first", _case("first_47_then_46"))
     assert r.returncode == 0, r.stdout
-    assert r.stdout.startswith("first response: grok-4.7-build (row 2)")
+    assert r.stdout.startswith("first response: grok-4.7-build (row 2;")
     assert _run(_case("first_47_then_46")).returncode == 1
 
 
@@ -157,13 +158,15 @@ def test_wait_returns_when_the_assistant_row_appears(tmp_path):
     d.mkdir()
     history = d / "chat_history.jsonl"
     history.write_text('{"type": "user", "content": "go"}\n', encoding="utf-8")
-    proc = subprocess.Popen(
-        [sys.executable, str(TOOL), "--first", "--wait", "30", str(d)], stdout=subprocess.PIPE, text=True
-    )
-    with history.open("a", encoding="utf-8") as fh:
-        fh.write('{"type": "assistant", "model_id": "grok-4.7-build"}\n')
-    out, _ = proc.communicate(timeout=30)
-    assert proc.returncode == 0, out
+
+    def append_row():
+        with history.open("a", encoding="utf-8") as fh:
+            fh.write('{"type": "assistant", "model_id": "grok-4.7-build"}\n')
+
+    # The row lands 1.5 s after the tool starts, so a tool that does not poll exits 2 first.
+    threading.Timer(1.5, append_row).start()
+    r = _run("--first", "--wait", "30", str(d))
+    assert r.returncode == 0, r.stdout
 
 
 def test_wait_with_nothing_arriving_ends_with_2():
