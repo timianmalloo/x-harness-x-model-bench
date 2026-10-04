@@ -25,11 +25,14 @@ FAKE_PARAMS = {"sleep", "delay"}
 _POLL = "bounded poll on a condition (event-driven); the deadline only names the failure"
 _HUNG = "a deliberately hung child killed by its own timeout; load lengthens the wait and cannot flip the outcome"
 _UPPER = "asserts an elapsed upper bound well above the work's idle time; load-sensitive in principle, none measured (follow-up)"
+_STALL = "a deliberate forced delay (TIME-B2): it lengthens one step on purpose, so load cannot change what it forces"
+_INJECTED = "an injected clock and sleep (sleep=clock.sleep): no real time passes, so load cannot change the order"
 _UNAUDITED = "real sleep or fake delay whose ordering against other real work is not proven load-safe; none measured failing (TIME-B follow-up)"
 
 TIMING_ALLOWED: Mapping[str, str] = {
     "test_driver.py::_poll_until": _POLL,
     "test_engine.py::_wait": _POLL,
+    "test_engine.py::_stall": _STALL,
     "test_engine.py::release_when_stopped": _POLL,
     "test_engine.py::test_stop_ends_stubborn_trees_within_30s": _POLL,
     "test_engine.py::test_engine_crash_leaves_no_cell_running": _POLL,
@@ -47,6 +50,14 @@ TIMING_ALLOWED: Mapping[str, str] = {
     "test_ng_tasks.py::test_ng1_the_default_clock_test_does_not_depend_on_wall_time": _UPPER,
     "test_procs.py::test_run_times_out_and_kills_the_tree": _UPPER,
     "test_engine.py::test_the_engine_loop_passes_every_fifth_of_a_second_and_never_spins": _UPPER,
+    "test_identity.py::restore": _INJECTED,
+    "test_identity.py::test_a_persistent_diff_survives_the_recheck": _INJECTED,
+    "test_identity.py::test_a_torn_read_is_not_drift": _INJECTED,
+    "test_identity.py::test_check_stops_at_the_deadline": _INJECTED,
+    "test_identity.py::test_new_and_removed_run_components_stop_launch": _INJECTED,
+    "test_identity.py::test_run_edit_stops_launch_grade_edit_does_not": _INJECTED,
+    "test_identity.py::test_stray_file_stops_launch": _INJECTED,
+    "test_identity.py::test_unreadable_component_is_named_after_retries": _INJECTED,
     "test_engine.py::test_no_launch_after_a_stop_while_another_cell_still_runs": _UNAUDITED,
     "test_engine.py::test_parallelism_is_never_exceeded": _UNAUDITED,
     "test_engine.py::test_after_the_ledger_breaks_no_worker_blocks_forever": _UNAUDITED,
