@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-04T18:33:08Z",
+  "generated": "2026-10-04T20:43:04Z",
   "audit": [
     {
       "actor": null,
@@ -78319,6 +78319,57 @@ window.AUDIT_DATA = {
       "artifacts": [],
       "tags": [],
       "outcome": "success"
+    },
+    {
+      "id": "al-01M4488M07P1Z7WCXE02M68HHS",
+      "shortname": "powershell terminated again --- investigate whats causeing it to termina…",
+      "datetime": "2026-10-04T20:04:11Z",
+      "session": "prompt-log",
+      "prompt": "powershell terminated again --- investigate whats causeing it to terminate",
+      "summary": "prompt logged for reuse",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M44AFT9T5BVMARCMMEQ31QW6",
+      "shortname": "job-a-sweep-guard",
+      "datetime": "2026-10-04T20:43:04Z",
+      "session": "33afa188-d781-4a0f-9cd8-20769161ec3f",
+      "prompt": "investigate why [the terminal and all Claude sessions] are all terminating ... go ahead with the fix",
+      "summary": "Root cause of the five terminal deaths (10/3-10/4): run_check in tests/test_security_tasks.py ran the real bench_check as a bare subprocess, so it inherited the logon-session job (85 processes incl. the terminal and every agent) and sweep() killed them all. Fix on build/eval-x-f (uncommitted): sweep refuses a job with a member older than the check; run_check launches through property.run_check. Red->green for both tests; mutants killed; s1 file 53 passed with 8/8 watched processes alive. JOB-A in the register supersedes CONS-A's cause; CONS-A edits left for the operator.",
+      "kind": "manual",
+      "skill": null,
+      "tool": null,
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "src/harness_bench/grade/bench_check.py",
+        "tests/test_security_tasks.py",
+        "tests/test_property_real_host.py",
+        "tests/mutations/bench_check.json",
+        "docs/lessons/defect-classes.md"
+      ],
+      "tags": [
+        "JOB-A"
+      ],
+      "outcome": "success",
+      "goal": "bench_check.sweep never kills outside its own job; the s1 check runs alone in a job of its own",
+      "done_when": "both new tests observed red then green; both JOB-A mutants killed; the s1 real-host test runs with no outside process lost; JOB-A registered",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "duration_source": "session-start-hook",
+      "started_at": "2026-10-04T19:53:09Z",
+      "duration_seconds": 2995.0
     }
   ],
   "changes": [
