@@ -107,5 +107,14 @@
   "tests": [
    "tests/test_property_grade_cell.py::test_a_seeded_suspend_in_either_phase_is_row_1"
   ]
+ },
+ {
+  "name": "the ack is sent without checking the job view: a stolen or not-alone line is acknowledged",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "if document is not None and reader.view == frozenset({cp.pid}):",
+  "replace": "if document is not None:",
+  "tests": [
+   "tests/test_property_real_host.py::test_not_alone_at_arrival_is_row_4_never_scored"
+  ]
  }
 ]

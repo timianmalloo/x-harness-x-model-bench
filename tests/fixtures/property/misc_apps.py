@@ -11,6 +11,11 @@ def hang(payload):
     time.sleep(600)
 
 
+def slow(payload):
+    time.sleep(0.9)
+    return "safe"
+
+
 def spawn_grandchild(payload):
     subprocess.run([sys.executable, "-c", f"import sys; sys.stdout.write({TOKEN!r}); sys.stdout.flush()"], check=False)
     return "safe"

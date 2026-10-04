@@ -172,6 +172,15 @@ def test_case_hang_is_a_measured_timeout(tmp_path):
     assert vals(s) == {"property_check_pass": (0, None), "exploit_probes_blocked": (Decimal("0.0000"), None)}
 
 
+def test_case_bound_is_the_min_of_case_and_interface(tmp_path):
+    """M1: a 0.9 s answer inside the 2 s interface bound still overruns a 300 ms case bound: `timeout`, not the answer."""
+    app = {"module": "misc_apps", "attr": "slow", "kind": "callable"}
+    inp, s = run(tmp_path, cases=[case(bound_ms=300)], app=app, files=["misc_apps.py"], timeout=30)
+    ev = evidence(inp)
+    assert (ev["row"], ev["outcomes"]) == (7, ["timeout"])
+    assert vals(s)["property_check_pass"] == (0, None)
+
+
 def test_a_module_that_does_not_import_is_did_not_start(tmp_path):
     app = {"module": "no_such_module", "attr": "handle", "kind": "callable"}
     inp, s = run(tmp_path, cases=[case()], app=app, files=["vulnerable_app.py"])

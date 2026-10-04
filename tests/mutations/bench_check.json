@@ -45,5 +45,32 @@
   "tests": [
    "tests/test_property_real_host.py::test_wsgi_app_scores_through_the_real_probe_host"
   ]
+ },
+ {
+  "name": "M1 the case bound is ignored: the host waits for the interface bound, so a hang is not a case timeout",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "        return min(case.get(\"bound_ms\", interface), interface)",
+  "replace": "        return interface",
+  "tests": [
+   "tests/test_property_real_host.py::test_case_bound_is_the_min_of_case_and_interface"
+  ]
+ },
+ {
+  "name": "the response wait ignores the case deadline: a hang runs to the outer bound",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "        resp = self._next(self.deadline - time.monotonic())",
+  "replace": "        resp = self._next(3600)",
+  "tests": [
+   "tests/test_property_real_host.py::test_case_hang_is_a_measured_timeout"
+  ]
+ },
+ {
+  "name": "RF-11: the host is not detached, so a grandchild with default stdio shares the check's console channel",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "creationflags=DETACHED_PROCESS, env=dict(os.environ))",
+  "replace": "creationflags=0, env=dict(os.environ))",
+  "tests": [
+   "tests/test_property_real_host.py::test_grandchild_stdio_is_not_captured_and_the_protocol_survives"
+  ]
  }
 ]
