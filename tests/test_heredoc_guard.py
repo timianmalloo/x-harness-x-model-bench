@@ -98,3 +98,53 @@ def test_a_plain_removal_passes(command):
 def test_a_malformed_payload_never_blocks():
     result = subprocess.run([sys.executable, str(GUARD)], input="not json", capture_output=True, text=True, timeout=30, check=False)
     assert result.returncode == 0
+
+
+def _run_as(tool_name: str, command: str) -> subprocess.CompletedProcess:
+    payload = json.dumps({"tool_name": tool_name, "tool_input": {"command": command}})
+    return subprocess.run([sys.executable, str(GUARD)], input=payload, capture_output=True, text=True, timeout=30, check=False)
+
+
+@pytest.mark.parametrize("command", [
+    "Stop-Process -Name notepad -Force",
+    "Stop-Process -Force -ProcessName python",
+    "spps -Name python",
+    "Get-Process python | Stop-Process",
+    "Get-Process | Where-Object Name -eq python | Stop-Process -Force",
+    "Get-CimInstance Win32_Process | Where-Object CommandLine -match 'pytest' | ForEach-Object { Stop-Process -Id $_.ProcessId }",  # the observed instance, 2026-10-03
+    "Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'pytest' } | % { Stop-Process -Id $_.ProcessId -Force }",
+    "Get-CimInstance Win32_Process -Filter \"Name='python.exe'\" | Invoke-CimMethod -MethodName Terminate",
+    "wmic process where \"name='python.exe'\" delete",
+    "wmic process where name=python.exe call terminate",
+    "taskkill /IM python.exe /F",
+    "taskkill /F /FI \"IMAGENAME eq python.exe\"",
+    "taskkill //IM python.exe //F",
+    "pkill -f pytest",
+    "cd /c/x && pkill python",
+    "killall python",
+])
+def test_a_kill_by_name_or_pattern_is_blocked(command):  # PROC-A: a pattern kill reaches other worktrees' processes
+    result = _run(command)
+    assert result.returncode == 2
+    assert result.stderr.startswith("PROC-A:")
+    assert "Kill only PIDs you started" in result.stderr
+
+
+@pytest.mark.parametrize("command", [
+    "Stop-Process -Id 1234",
+    "Stop-Process -Id $proc.Id -Force",
+    "taskkill /PID 1234 /T /F",
+    "kill 1234",
+    "kill $pid",
+    "Get-Process -Id 1234 | Stop-Process",
+    "Get-Process -Id $p.Id | Stop-Process -Force",
+    "git commit -q -m 'never pkill python or taskkill /IM x or Stop-Process -Name y (PROC-A)'",  # quoted text is data
+])
+def test_a_kill_by_pid_passes(command):
+    assert _run(command).returncode == 0
+
+
+def test_a_powershell_payload_is_read():  # confirms tool_input.command is where the guard looks for the PowerShell tool
+    result = _run_as("PowerShell", "Stop-Process -Name notepad -WhatIf")
+    assert result.returncode == 2
+    assert "PROC-A" in result.stderr
