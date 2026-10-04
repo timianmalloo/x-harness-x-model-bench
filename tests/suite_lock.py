@@ -13,11 +13,13 @@ behind a seven-minute suite.
 
 The lock is `oslock.RunLock`: an OS byte-range lock, so a killed holder releases it and there is no stale
 lock to clean up. It lives outside every worktree so the sibling worktrees share it (HB_SUITE_LOCK
-overrides the path). Whoever holds it, or decided not to take it, sets HB_SUITE_LOCK_PARENT=1 in its
+overrides the path). Waiters take turns in arrival order: each holds a ticket in `suite.queue/`, and only the
+oldest live ticket may take the lock. Whoever holds it, or decided not to take it, sets HB_SUITE_LOCK_PARENT=1 in its
 environment: a child run (mutate_check's pytest, a test that runs pytest, an xdist worker) inherits it
 and never waits on its own parent.
 """
 
+import contextlib
 import json
 import os
 import time
@@ -67,23 +69,58 @@ def acquire(
     if env.get(PARENT_ENV) == "1":
         return None
     path = lock_path(env)
+    ticket = _take_ticket(path)
     told = False
-    while True:
-        try:
-            lock = oslock.RunLock.acquire(path)
-        except BenchError:
-            # not a hold: RunLock refused the path itself (not a regular file); waiting would never end
-            if path.is_symlink() or not path.is_file() or not oslock.is_held(path):
-                raise
+    try:
+        while True:
+            if _first_in_line(path, ticket.path):
+                try:
+                    lock = oslock.RunLock.acquire(path)
+                except BenchError:
+                    # not a hold: RunLock refused the path itself (not a regular file); waiting would never end
+                    if path.is_symlink() or not path.is_file() or not oslock.is_held(path):
+                        raise
+                else:
+                    break
             if not told:
                 on_wait(f"waiting for the suite lock {path} (one heavy test run at a time); held by: {_holder(path)}")
                 told = True
             sleep(POLL_SECONDS)
-            continue
-        owner = {"pid": os.getpid(), "cwd": os.getcwd(), "run": what, "since": time.strftime("%Y-%m-%d %H:%M:%S")}
-        path.with_suffix(".owner").write_text(json.dumps(owner) + "\n", encoding="utf-8")
-        env[PARENT_ENV] = "1"
-        return lock
+    finally:
+        ticket.release()
+        with contextlib.suppress(OSError):
+            ticket.path.unlink()
+    owner = {"pid": os.getpid(), "cwd": os.getcwd(), "run": what, "since": time.strftime("%Y-%m-%d %H:%M:%S")}
+    path.with_suffix(".owner").write_text(json.dumps(owner) + "\n", encoding="utf-8")
+    env[PARENT_ENV] = "1"
+    return lock
+
+
+def _queue(path: Path) -> Path:
+    return path.with_suffix(".queue")
+
+
+def _take_ticket(path: Path) -> oslock.RunLock:
+    """Join the line: a ticket file named by arrival time, held by an OS lock for as long as this run waits.
+
+    Without a line, a run that releases and at once re-takes the lock (back-to-back mutation sets in one command)
+    beats every waiter polling on a 5 s tick: on 2026-10-04 F3b waited 29 minutes behind TIME-B2's chain.
+    """
+    return oslock.RunLock.acquire(_queue(path) / f"{time.time_ns():020d}-{os.getpid()}")
+
+
+def _first_in_line(path: Path, mine: Path) -> bool:
+    """True when no live ticket is older than `mine`. A ticket whose waiter died is not held; it is removed."""
+    for ticket in sorted(_queue(path).iterdir()):
+        if ticket == mine:
+            return True
+        try:
+            if oslock.is_held(ticket):
+                return False
+            ticket.unlink()
+        except OSError:  # gone or still opening: its owner is alive or it no longer matters; look again next tick
+            return False
+    return True
 
 
 def release(lock: oslock.RunLock | None, env: MutableMapping[str, str]) -> None:

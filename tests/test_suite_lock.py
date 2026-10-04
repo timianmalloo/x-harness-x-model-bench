@@ -51,6 +51,47 @@ def test_a_second_heavy_run_waits_until_the_holder_releases(tmp_path):
     assert suite_lock.PARENT_ENV not in second_env
 
 
+def _queue(tmp_path) -> Path:
+    queue = tmp_path / "suite.queue"
+    queue.mkdir(exist_ok=True)
+    return queue
+
+
+def test_a_waiter_ahead_in_line_goes_first_even_when_the_lock_is_free(tmp_path):
+    """The 2026-10-04 starvation: a run re-taking a just-released lock must queue behind a waiter that came earlier."""
+    ahead = oslock.RunLock.acquire(_queue(tmp_path) / "00000000000000000001-1")
+    env, slept = _env(tmp_path), []
+
+    def sleep(seconds):
+        assert not slept, "still waiting after the run ahead left the line"
+        assert not oslock.is_held(tmp_path / "suite.lock")  # did not jump the line while the lock was free
+        slept.append(seconds)
+        ahead.release()
+
+    lock = suite_lock.acquire(env, "pytest -n 4", lambda line: None, sleep)
+    try:
+        assert slept == [suite_lock.POLL_SECONDS] and lock.held
+    finally:
+        suite_lock.release(lock, env)
+
+
+def test_a_dead_waiters_ticket_does_not_block_the_line(tmp_path):
+    dead = _queue(tmp_path) / "00000000000000000001-1"
+    dead.write_text("", encoding="utf-8")  # a ticket no process holds: its waiter was killed
+    env = _env(tmp_path)
+    lock = suite_lock.acquire(env, "pytest -n 4", lambda line: None, _never_sleep)
+    try:
+        assert lock.held and not dead.exists()
+    finally:
+        suite_lock.release(lock, env)
+
+
+def test_a_run_leaves_no_ticket_behind(tmp_path):
+    env = _env(tmp_path)
+    suite_lock.release(suite_lock.acquire(env, "pytest -n 4", lambda line: None, _never_sleep), env)
+    assert list(_queue(tmp_path).iterdir()) == []
+
+
 def test_a_child_of_a_holder_never_waits(tmp_path):
     env = {**_env(tmp_path), suite_lock.PARENT_ENV: "1"}
     assert suite_lock.acquire(env, "pytest", lambda line: None, _never_sleep) is None

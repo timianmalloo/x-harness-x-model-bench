@@ -16,8 +16,8 @@
   {
     "name": "SL3: a holder does not mark its children",
     "file": "tests/suite_lock.py",
-    "find": "        env[PARENT_ENV] = \"1\"\n        return lock\n",
-    "replace": "        return lock\n",
+    "find": "    env[PARENT_ENV] = \"1\"\n    return lock\n",
+    "replace": "    return lock\n",
     "tests": ["tests/test_suite_lock.py::test_a_second_heavy_run_waits_until_the_holder_releases"]
   },
   {
@@ -30,8 +30,8 @@
   {
     "name": "SL5: a refused path is waited on forever",
     "file": "tests/suite_lock.py",
-    "find": "            if path.is_symlink() or not path.is_file() or not oslock.is_held(path):\n                raise\n",
-    "replace": "",
+    "find": "                    if path.is_symlink() or not path.is_file() or not oslock.is_held(path):\n                        raise\n",
+    "replace": "                    pass\n",
     "tests": ["tests/test_suite_lock.py::test_a_lock_path_that_is_not_a_file_raises_instead_of_waiting"]
   },
   {
@@ -54,6 +54,27 @@
     "find": "    if collect_only:\n        return False\n",
     "replace": "",
     "tests": ["tests/test_suite_lock.py::test_heavy_rule"]
+  },
+  {
+    "name": "SL10: a run jumps the line when the lock is free",
+    "file": "tests/suite_lock.py",
+    "find": "            if _first_in_line(path, ticket.path):\n",
+    "replace": "            if True:\n",
+    "tests": ["tests/test_suite_lock.py::test_a_waiter_ahead_in_line_goes_first_even_when_the_lock_is_free"]
+  },
+  {
+    "name": "SL11: a dead waiter's ticket blocks the line",
+    "file": "tests/suite_lock.py",
+    "find": "            if oslock.is_held(ticket):\n",
+    "replace": "            if True:\n",
+    "tests": ["tests/test_suite_lock.py::test_a_dead_waiters_ticket_does_not_block_the_line"]
+  },
+  {
+    "name": "SL12: a run leaves its ticket behind",
+    "file": "tests/suite_lock.py",
+    "find": "        with contextlib.suppress(OSError):\n            ticket.path.unlink()\n",
+    "replace": "",
+    "tests": ["tests/test_suite_lock.py::test_a_run_leaves_no_ticket_behind"]
   },
   {
     "name": "SL9: a mutation run never takes the lock",
