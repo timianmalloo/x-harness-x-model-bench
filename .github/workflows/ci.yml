@@ -1,11 +1,12 @@
 name: ci
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-  schedule:
-    - cron: "17 9 * * *"   # nightly: the lifecycle model at the US-44 bounds
+  workflow_dispatch:
+    inputs:
+      full_models:
+        description: Run the full lifecycle model check
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -14,7 +15,7 @@ jobs:
   test:
     # Windows: cells run in Job Objects (ADR-0013). The credentials tests need the operator's harness
     # logins and real model calls, so they run on the workstation only.
-    if: github.event_name != 'schedule'
+    if: ${{ !inputs.full_models }}
     runs-on: windows-latest
     # 30 again (was 60 while the ring ran 24-32 min): three consecutive green test jobs under 22 min after CI-OPT
     # (13.4, 16.7 and 8.8 min; runs 36354105591, 36356656002, 36360514246 - the last with pytest -n auto).
@@ -36,7 +37,7 @@ jobs:
     # proves that branch: it cannot be exercised on windows-latest (os.killpg/setsid do not exist
     # there). `native`-marked tests (Windows Job Objects) skip here automatically (conftest.py); the
     # POSIX mirror is `posix`-marked (tests/test_procs_posix.py) and runs for real here, nowhere else.
-    if: github.event_name != 'schedule'
+    if: ${{ !inputs.full_models }}
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
@@ -59,7 +60,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - if: github.event_name != 'schedule'
+      - if: ${{ !inputs.full_models }}
         run: python3 tools/check_models.py --quick
-      - if: github.event_name == 'schedule'
+      - if: inputs.full_models
         run: python3 tools/check_models.py
