@@ -11,6 +11,7 @@ import os
 import stat
 import sys
 import time
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Self
 
@@ -106,3 +107,15 @@ def is_held(path: Path) -> bool:
 
 def heartbeat_age(path: Path) -> float:
     return time.time() - path.stat().st_mtime
+
+
+def acquire_then_probe(
+    own: Path,
+    own_code: str,
+    others: Sequence[tuple[Path, str]],
+    *,
+    between: Callable[[], None] | None = None,
+) -> RunLock:
+    """Red skeleton: acquire `own` and return it. Does not probe and does not call `between`."""
+    del others, between
+    return RunLock.acquire(own, own_code)
