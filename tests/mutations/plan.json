@@ -29,8 +29,8 @@
   {
     "name": "pack-on installation skipped",
     "file": "src/harness_bench/plan.py",
-    "find": "if pack is not None:",
-    "replace": "if False:",
+    "find": "pack = arm_packs[arm]\n            if pack is not None:",
+    "replace": "pack = arm_packs[arm]\n            if False:",
     "tests": [
       "tests/test_plan.py::test_copilot_plan_installs_pack_before_listing_instructions"
     ]

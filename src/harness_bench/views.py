@@ -38,7 +38,7 @@ from pathlib import Path
 
 from harness_bench import archive, ledger, profiles
 from harness_bench.errors import BenchError, Cause
-from harness_bench.plan import load_confirmed, resolved_model_map
+from harness_bench.plan import cell_arm, load_confirmed, resolved_model_map
 from harness_bench.telemetry import (
     Extraction,
     ModelCall,
@@ -522,7 +522,7 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
                                         executed)
     cause = Cause[outcome["cause"]] if outcome and outcome.get("cause") else None
     return CellView(
-        cell_id=cid, label=cell.get("label", cid), combo=cell["combo"], pack=cell["pack"], harness=cell["harness"], model=cell["model"],
+        cell_id=cid, label=cell.get("label", cid), combo=cell["combo"], pack=cell_arm(cell), harness=cell["harness"], model=cell["model"],
         outcome=state, cause=cause.label if cause else None,
         code=cause.code if cause else None, validity=validity, validity_code=validity_code,
         wall_ms=wall, model_ms=model, tool_ms=tool, idle_ms=idle,
