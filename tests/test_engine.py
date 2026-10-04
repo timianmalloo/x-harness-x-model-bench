@@ -38,6 +38,12 @@ USAGE = [{"model": "fake-model", "token_count": {"inputTokens": 3, "cachedInputT
                                                  "outputTokens": 5, "reasoningOutputTokens": 0}}]
 
 
+def _stall(seconds: float) -> None:
+    """A deliberate forced delay (TIME-B2): it lengthens one step so a test reproduces the order load would produce."""
+    if seconds:
+        time.sleep(seconds)
+
+
 class FakeLauncher:
     """A Launcher (engine protocol) that runs the fake ACP agent; behaviour per cell label."""
 
@@ -50,14 +56,16 @@ class FakeLauncher:
     shutdown_grace = 1.0
 
     def __init__(self, behaviours: dict[str, dict], build_changed: bool = False, missing_exe: bool = False,
-                 build_changed_for: set[str] | None = None):
+                 build_changed_for: set[str] | None = None, check_stall: dict[str, float] | None = None):
         self.behaviours = behaviours
+        self.check_stall = check_stall or {}  # cell id -> seconds its build check is slow: a forced delay (TIME-B2)
         self.build_changed = build_changed
         self.missing_exe = missing_exe
         self.build_changed_for = build_changed_for or set()  # cell ids (the engine names each worker thread cell-<id>)
 
     def check_build(self) -> dict:
         import threading
+        _stall(self.check_stall.get(threading.current_thread().name.removeprefix("cell-"), 0))
         if self.build_changed or threading.current_thread().name.removeprefix("cell-") in self.build_changed_for:
             from harness_bench.tools import BuildChanged
             raise BuildChanged("fake", "binary replaced after planning")
@@ -737,8 +745,17 @@ def test_the_engine_grades_once_after_every_cell_is_archived_and_records_the_pas
     assert summary.exit_code == 0
 
 
-def test_the_heartbeat_runs_during_the_grading_hook(base):  # T1-10: a long pass never looks like a stalled engine
+@pytest.mark.parametrize("slow_beat", [0, 2])  # 2: the heartbeat thread's first beat lands after the hook's whole wait (TIME-B2)
+def test_the_heartbeat_runs_during_the_grading_hook(base, monkeypatch, slow_beat):  # T1-10: a long pass never looks like a stalled engine
     seen = []
+    real_beat = oslock.RunLock.heartbeat
+
+    def beat(self):
+        if threading.current_thread().name == "heartbeat":
+            _stall(slow_beat)
+        return real_beat(self)
+
+    monkeypatch.setattr(oslock.RunLock, "heartbeat", beat)
 
     def grade(run_dir):
         lock = run_dir / ".lock"
