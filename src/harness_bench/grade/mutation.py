@@ -24,6 +24,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from harness_bench.grade import CellInput, Score, _changes, correctness
+from harness_bench.grade._env import HOST_ENV
 from harness_bench.profiles import CELL_ENV
 
 METRIC = "mutation_score"
@@ -35,7 +36,6 @@ NO_SOURCE_CHANGED = "no non-test source changed"
 NO_MUTANTS_GENERATED = "no mutants generated"
 TOOL_NOT_AVAILABLE = "mutation tool not available"
 
-HOST_ENV = ("PATH", "SYSTEMROOT", "SYSTEMDRIVE", "WINDIR", "TEMP", "TMP")
 DOTNET_HOST_ENV = (
     "USERPROFILE", "APPDATA", "LOCALAPPDATA", "HOMEDRIVE", "HOMEPATH",
     "ProgramData", "ProgramFiles", "NUGET_PACKAGES", "PROCESSOR_ARCHITECTURE",

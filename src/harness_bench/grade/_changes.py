@@ -19,7 +19,7 @@ import os
 import re
 import shutil
 import tarfile
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -41,9 +41,11 @@ __all__ = [
     "NOT_FOUND",
     "change_set",
     "clear_pre_turn_cache",
+    "copy_tree",
     "grading_copy",
     "pre_turn_commit",
     "pre_turn_tree",
+    "remove_tree",
     "tree_id",
 ]
 
@@ -108,6 +110,42 @@ def pre_turn_tree(ws: Path, commit: str, dest: Path, timeout: float) -> Iterator
             shutil.rmtree(dest, onexc=archive.make_writable)
 
 
+def copy_tree(src: Path, dest: Path, *, ignore: Iterable[str] = BUILD_OUTPUT, dirs_exist_ok: bool = False) -> list[str]:
+    """Copy `src` to `dest` without entering a directory junction (RF-9, G16); the skipped paths, relative to `src`.
+
+    `shutil.copytree` follows a junction and copies its target's files. A symlink is kept as a link; a junction (the
+    one reparse point that is not a symlink) is left out and named in the returned list.
+    """
+    skipped: list[str] = []
+    patterns = shutil.ignore_patterns(*ignore)
+
+    def leave_out(folder: str, names: list[str]) -> set[str]:
+        hit = set(patterns(folder, names))
+        for name in names:
+            if name not in hit and os.path.isjunction(os.path.join(folder, name)):
+                hit.add(name)
+                skipped.append(Path(folder, name).relative_to(src).as_posix())
+        return hit
+
+    shutil.copytree(src, dest, symlinks=True, ignore=leave_out, dirs_exist_ok=dirs_exist_ok)
+    return skipped
+
+
+def remove_tree(path: Path) -> None:
+    """Remove a grading copy; a reparse point is unlinked and never chmod-ed or entered (RF-9)."""
+
+    def force(func, target, _exc) -> None:
+        if os.path.islink(target) or os.path.isjunction(target):
+            try:
+                os.unlink(target)
+            except OSError:
+                os.rmdir(target)
+            return
+        archive.make_writable(func, target, _exc)
+
+    shutil.rmtree(path, onexc=force)
+
+
 @contextmanager
 def grading_copy(ws: Path, dest: Path) -> Iterator[Path]:
     """A disposable copy of the working tree at `dest`, without .git or build output, symlinks kept; removed on exit.
@@ -115,11 +153,11 @@ def grading_copy(ws: Path, dest: Path) -> Iterator[Path]:
     Lifted here from the design's `grade/__init__.py` home (CORE s1 did not build it); a recorded deviation.
     """
     try:
-        shutil.copytree(ws, dest, symlinks=True, ignore=shutil.ignore_patterns(*BUILD_OUTPUT))
+        copy_tree(ws, dest)
         yield dest
     finally:
         if dest.exists():
-            shutil.rmtree(dest, onexc=archive.make_writable)
+            remove_tree(dest)
 
 
 def _files(root: Path) -> dict[str, Path]:
