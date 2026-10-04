@@ -130,8 +130,8 @@
  {
   "name": "derived metrics written as score rows (kind ignored)",
   "file": "src/harness_bench/grade/runner.py",
-  "find": " and m[\"kind\"] == \"score\":",
-  "replace": ":",
+  "find": "            if m[\"kind\"] != \"score\":",
+  "replace": "            if False:",
   "tests": ["tests/test_grade_runner.py::test_the_pass_writes_one_row_per_applicable_metric_of_the_tasks_graders"]
  },
  {
