@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-04T16:16:28Z",
+  "generated": "2026-10-04T18:33:08Z",
   "audit": [
     {
       "actor": null,
@@ -78297,6 +78297,21 @@ window.AUDIT_DATA = {
       "session": "prompt-log",
       "prompt": "Post-reboot housekeeping: check all worktrees and session histories, clean dangling worktrees/dirs/loose files under C:\\Projects, take stock of outstanding work, sync local and origin, give a tabular next-steps breakdown.",
       "summary": "prompt logged for reuse",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M4431X5EZ2SSC162HTSCBV0T",
+      "shortname": "E1 resume under SUITE-LOCK and a 3-worker cap",
+      "datetime": "2026-10-04T18:33:08Z",
+      "session": "leader-e1e4",
+      "prompt": "Resume E1 as Leader after the third host hang: land the machine-wide SUITE-LOCK on main, register LOAD-A, merge main into the five live trees (b1b, x-f, xh-a1af-work, time-b2, kill-guard) and prove the lock in each, correct the roster (10/3 ~18:22 was a hang, not a reboot), then re-dispatch under the constraints: at most 3 live workers, one heavy test run at a time via the lock, -n 4 at most and never -n auto, named tests in the inner loop, the full suite once per task at the join, kill only own PIDs, and a health tripwire (process count > 1500 or AppModel-Runtime 208/212 stops dispatch).",
+      "summary": "goal: E1 resumes without another host hang; done_when: lock on main and in all five trees, workers dispatched under the cap, each join reported with health numbers",
       "kind": "prompt",
       "skill": null,
       "tool": null,
