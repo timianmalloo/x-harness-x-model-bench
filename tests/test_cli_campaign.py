@@ -289,11 +289,12 @@ def created(root: Path) -> None:
     assert bench(root, "campaign", "create", CID, "--question", QUESTION) == 0
 
 
-def baselined(root: Path, *tasks: str) -> None:
+def baselined(root: Path, *tasks: str, builds: dict | None = None) -> None:
     """A created campaign and its baseline, written as the baseline command writes them: the identity file, then the row.
-    The `baseline` command itself is under test only where a test names it, so no other test is red because of it."""
+    The `baseline` command itself is under test only where a test names it, so no other test is red because of it. `builds` puts
+    `builds/<harness>` into the identity: the engine's launch check compares those keys (the baseline command records none; see the report)."""
     created(root)
-    digest = put(root, identity.manifest(root, list(tasks or ("T1",))), "identity")
+    digest = put(root, identity.manifest(root, list(tasks or ("T1",)), builds), "identity")
     append(root, "baseline.recorded", identity_hash=digest, bench_commit=git(root, "rev-parse", "HEAD").stdout.strip())
 
 
@@ -331,7 +332,7 @@ def write_plan(root: Path, run_id: str, *, cid: str = CID, prereg_hash: str | No
     if prereg_hash == "unset":
         prereg_hash = latest_prereg(root, cid)
     cells = [{"cell_id": c.id, "label": c.label, **dataclasses.asdict(c)}
-             for c in (plan.Cell(t, "v1", 5, "c1", harness, "fake-model", arm, 1, 60) for t in tasks for arm in ("base", "treat"))]
+             for c in (plan.Cell(t, f"v-{t}", 5, "c1", harness, "fake-model", arm, 1, 60) for t in tasks for arm in ("base", "treat"))]
     doc = {"schema": plan.SCHEMA, "run_id": run_id, "trace_id": "a" * 32,
            "parameters": {**plan.DEFAULT_PARAMETERS, "parallelism": 1, "disk_floor_bytes": 1024},
            "tasks": {t: {"prompt": "p\n", "version_hash": plan.task_version_hash(root / "tasks" / t)} for t in tasks}, "builds": {harness: {}},
@@ -384,7 +385,8 @@ def real_run(monkeypatch, root: Path, tmp_path: Path, run_id: str) -> int:
     preflight and the grading pass; never the engine, its lock, `identity_check=` or `campaign_check=`."""
     from test_engine import FakeLauncher, _build_workspace
 
-    monkeypatch.setattr(cli.profiles, "load", lambda r, h: None)
+    real_load = cli.profiles.load
+    monkeypatch.setattr(cli.profiles, "load", lambda r, h: None if h == "fake" else real_load(r, h))
     monkeypatch.setattr(cli.profiles, "ProfileLauncher", lambda profile, tools, planned: FakeLauncher({}))
     monkeypatch.setattr(cli, "_workspace_builder", lambda *a, **k: _build_workspace)
     monkeypatch.setattr(cli.preflight, "check", lambda *a, **k: None)
@@ -398,9 +400,9 @@ def real_run(monkeypatch, root: Path, tmp_path: Path, run_id: str) -> int:
 
 def attached(root: Path, run_id: str = "R2") -> dict:
     """A registered campaign, a plan over the fake harness, and the grid attach, through the real commands."""
-    baselined(root, "T1", "T2")
+    baselined(root, "T1", "T2", builds={"fake": {}})
     digest = registered(root)
-    doc = write_plan(root, run_id, prereg_hash=digest, harness="fake")
+    doc = write_plan(root, run_id, prereg_hash=digest, harness="fake", tasks=("T1", "T2"))
     assert bench(root, "campaign", "attach", CID, run_id) == 0
     return doc
 
@@ -437,7 +439,7 @@ def test_the_campaign_check_runs_under_the_run_lock_before_the_first_launch_p7(t
 
 def test_a_tree_edit_after_attach_is_stopped_by_the_real_engine_with_hb_idn_001_p4_p5(tmp_path, monkeypatch, capsys):
     root = tree(tmp_path)
-    baselined(root, "T1", "T2")
+    baselined(root, "T1", "T2", builds={"fake": {}})
     digest = registered(root)
     drifted = tree(tmp_path, "drifted")  # a plan stamped from a tree that is not the chain's (the hand-stamp of P-4)
     edit_src(drifted, "engine.py")
@@ -469,5 +471,5 @@ def test_a_grid_launch_never_precedes_its_attach_row_i3(tmp_path, monkeypatch):
         return real(self)
 
     monkeypatch.setattr(FakeLauncher, "check_build", recording)
-    assert real_run(monkeypatch, root, tmp_path, "R2") == 0
+    assert real_run(monkeypatch, root, tmp_path, "R2") == 0, [(r["kind"], r.get("code"), r.get("diff")) for r in run_events(root, "R2")]
     assert seen and all("grid.attached:R2" in kinds_then for kinds_then in seen), seen

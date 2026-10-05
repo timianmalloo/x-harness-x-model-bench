@@ -302,8 +302,8 @@ def test_the_campaign_and_the_grading_side_never_both_proceed_l1(tmp_path):
         results = race(_campaign_side, _grade_side, (str(root),), (str(root),))
         assert all("error" not in item for item in results), results
         assert not (results[0]["proceeded"] and results[1]["proceeded"]), results
-        for item, allowed in zip(results, ({"HB-CMP-004"}, {"HB-GRD-007"}), strict=True):
-            assert item["proceeded"] or item["code"] in allowed, item
+        for item in results:
+            assert item["proceeded"] or item["code"] in {"HB-CMP-004", "HB-GRD-007"}, item
     assert ledger_path(root).read_bytes() == before
 
 

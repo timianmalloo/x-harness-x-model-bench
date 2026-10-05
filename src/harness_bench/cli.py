@@ -244,7 +244,8 @@ def cmd_run(args) -> int:
                                   build_workspace=_workspace_builder(root, p, cells_root / ".sources", tools_dir.parent / "pack",
                                                                      tools_dir.parent / "upstream"),
                                   grade=lambda d: runner.run_pass(d, root, judge.IN_RUN, cells_root=cells_root).summary(),  # no judge call
-                                  identity_check=identity.launch_check(root, p))
+                                  identity_check=identity.launch_check(root, p),
+                                  campaign_check=lambda: campaign.run_side_check(root, p, args.run_id))
         summary = engine.Engine(p, cfg).run()
     finally:
         engine.log.removeHandler(log_handler)

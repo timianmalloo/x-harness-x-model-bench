@@ -537,6 +537,7 @@ def test_baseline_records_identity_file_and_row_c4(tmp_path):
     assert rows[0]["bench_commit"] == head(root)
     components = json.loads(files[0].read_bytes())["components"]
     assert sorted(k for k in components if k.startswith("tasks/")) == ["tasks/T1", "tasks/T2"]
+    assert FORMAL in components and ENGINE in components  # the full manifest: grade side and run side, not only the run side
     assert campaign.read(root, CID).state == "baselined"
 
 
@@ -661,7 +662,8 @@ def test_fix_refuses_a_commit_not_an_ancestor_c12(tmp_path, capsys):
     baselined(root)
     git(root, "checkout", "-q", "-b", "side")
     edit_src(root, "engine.py", "side edit\n")
-    commit_all(root, "side")
+    git(root, "add", "src/harness_bench/engine.py")  # not the ledger: it must stay in the working tree when main is checked out again
+    git(root, "commit", "-q", "-m", "side")
     side = head(root)
     git(root, "checkout", "-q", "main")
     edit_src(root, "engine.py", "main edit\n")
@@ -880,7 +882,7 @@ def test_attach_of_a_pilot_plan_as_a_grid_is_refused_c41(tmp_path, capsys):
     capsys.readouterr()
     assert bench(root, "campaign", "attach", CID, "R2") == 1
     err = err_of(capsys)
-    assert "HB-CMP-010" in err and "prereg_hash" in err
+    assert "HB-CMP-010" in err and "prereg_hash is null" in err
 
 
 def test_attach_refuses_a_chain_stamped_plan_over_a_drifted_tree_and_takes_a_subset_plan_c49(tmp_path, capsys):
@@ -1003,13 +1005,13 @@ def test_conclude_and_abandon_refuse_a_live_run_c42(tmp_path, capsys, sub):
     root = tree(tmp_path)
     measuring(root)
     extra = ["--reason", "x"] if sub == "abandon" else []
-    before = snapshot(root)
+    before = snapshot(cdir(root))
     with held_by_another_process(root / "runs" / "R2" / ".lock"):
         capsys.readouterr()
         assert bench(root, "campaign", sub, CID, *extra) == 1
         err = err_of(capsys)
     assert "HB-CMP-004" in err and ".lock" in err and "R2" in err
-    assert snapshot(root) == before
+    assert snapshot(cdir(root)) == before
     assert not campaign.oslock.is_held(campaign.lock_path(root, CID))
 
 

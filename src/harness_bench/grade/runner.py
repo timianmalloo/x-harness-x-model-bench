@@ -227,7 +227,12 @@ def run_pass(run_dir: Path, root: Path, judging: Mapping[str, GraderFn] | None =
     cells_root = cells_root or root.parent / "bench-cells"
     grading_root = cells_root / "grading"
     workspace.check_grading_root(grading_root)
-    with oslock.RunLock.acquire(run_dir / "grade.lock", "HB-GRD-001"):
+    # Function-local on purpose: campaign imports readiness, and readiness imports this module (a cycle at module level).
+    from harness_bench import campaign
+
+    block = plan.get("campaign")
+    others = [(campaign.lock_path(root, campaign.validate_id("campaign", block["campaign_id"])), "HB-GRD-007")] if isinstance(block, dict) and block.get("campaign_id") else []
+    with oslock.acquire_then_probe(run_dir / "grade.lock", "HB-GRD-001", others):
         return _Pass(run_dir, root, plan, judging or {}, live_scan, grading_root).run()
 
 
