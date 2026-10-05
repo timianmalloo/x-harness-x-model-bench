@@ -15,7 +15,7 @@ return is NA `not built`, and an unregistered grader is NA `not built` for each 
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from decimal import Decimal
 from pathlib import Path
 
@@ -73,6 +73,9 @@ class CellInput:
     # None in a real pass (runner.py always sets it); None only in a hand-built CellInput (a test), where a grader
     # falls back to out_dir.
     work_root: Path | None = None
+    # graded_snapshots: turn number -> its snapshot folder, built by the runner through archive.snapshot_folder (W1-J
+    # section 7 row 11: the runner is the one grader-side reader). The graded copy is `<folder>/ws`.
+    snapshots: Mapping[int, Path] = field(default_factory=dict)
 
 
 GraderFn = Callable[[CellInput], Mapping[str, Score]]

@@ -16,7 +16,6 @@ from decimal import ROUND_HALF_EVEN, Decimal
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from harness_bench import archive
 from harness_bench.grade import CellInput, Score, _changes, correctness
 from harness_bench.grade import property as prop
 
@@ -140,10 +139,9 @@ def grade(inp: CellInput, ctx: GradeContext) -> Mapping[str, Score]:
     ceiling_str = ceilings.get("rework_ratio", "0.3000")
     ceiling = Decimal(str(ceiling_str))
 
-    cid = inp.cell.get("cell_id", "")
     snap_events = [e for e in events if e.get("kind") == "cell.turn_snapshot_archived" and e.get("turn") == 1]
-    snap_folder = archive.snapshot_folder(inp.run_dir, cid, 1)
-    snap_ws = snap_folder / "ws"
+    snap_folder = inp.snapshots.get(1)
+    snap_ws = snap_folder / "ws" if snap_folder is not None else inp.run_dir / "no-turn-1-snapshot"
 
     if turns_reached < planned_turns:
         # Turn 2 not reached
