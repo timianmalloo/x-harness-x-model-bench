@@ -2152,7 +2152,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "a8113ed21ab3b0d0e1f6be04074283079dc7fe4d8e6860229d49fe8f070c3130"
+      "sourceSha256": "7e1aeb94d7c8581537bdf9539244c0745fcb3ee38c739a20089246d8f5a7e5df"
     },
     {
       "id": "design-eval-catalog-0-7",
@@ -2273,7 +2273,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation: Wave 1 (W1-D; builds as X-D in E1)",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "Designs identity.py (manifest, hash, side, diff, the one CLASSES table), the per-launch run-side recheck in engine.py with identity_check_ms, grading.started.grade_identity_hash (E1), and the guards. Rev 2 applies R-94 (telemetry/* run, gateway grade; ADR-0017 Amendment 1) and the four first-round reviews: a real-wiring test, red fixtures for every scan, one retry mechanism with a wall-clock cap, and a cost model that prices run-class edits. All 69 existing files and 18 planned modules classed; no third \"tooling\" class.",
+      "summary": "Amendment 1 (R-106, 2026-10-05): the launch recheck's key set is the plan stamp's; builds/<h> is read only where the stamp holds it. Designs identity.py (manifest, hash, side, diff, the one CLASSES table), the per-launch run-side recheck in engine.py with identity_check_ms, grading.started.grade_identity_hash (E1), and the guards. Rev 2 applies R-94 (telemetry/* run, gateway grade; ADR-0017 Amendment 1) and the four first-round reviews: a real-wiring test, red fixtures for every scan, one retry mechanism with a wall-clock cap, and a cost model that prices run-class edits. All 69 existing files and 18 planned modules classed; no third \"tooling\" class.",
       "tags": [
         "benchmark",
         "campaign",
@@ -2305,10 +2305,14 @@ window.DOCS_INDEX = {
         {
           "to": "design-eval-seam-contracts",
           "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9421f6075f4a08aa6812800c417a4f2647aa74f4d86903b2100cc6e8dfdf362e"
+      "sourceSha256": "a4dd25386a918a1b5712ff2674dee915a4a9b65de59b60aba6ba3d25d6b7029e"
     },
     {
       "id": "design-eval-multi-turn",
@@ -2658,7 +2662,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation: W0 (serial spine item 2), before Wave 1",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "Revision 6 (R-98: the discrimination record body drops `run_id` and `grading_id`, ADR-0016 Amendment 1; and the conditions of the five W0 rev 4/5 delta reviews; rev-6 change table and re-read list at the end). Revision 5 (the W1-E and W1-L seam answers SR-E1, SR-E2, SR-L1..SR-L4, the W1-L review rulings and R-97; rev-5 change table and re-read list at the end; DR-E1, then open, is ruled by R-98 and applied in rev 6). Revision 4 (the batch-b seam answers and the RV-PAT, RV-SIM, RV-SEC and RV-DS cross-slice findings on W1-B, W1-C, W1-D and W1-H; rev-4 change table and the delta re-read list at the end; rev 3's table kept). The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
+      "summary": "Revision 6.11 (C-W0, Coordinator #31: R-106's launch-recheck key set in section 6, the R-106 c7 reader key-set sweep, the shared-value rule (keys and value types), the X-K2a script-only split, the section 13 rows of the E2-E4 plan and HB-GRD-007 to X-C; rev-6.11 change table and re-read list at the end). Revision 6 (R-98: the discrimination record body drops `run_id` and `grading_id`, ADR-0016 Amendment 1; and the conditions of the five W0 rev 4/5 delta reviews; rev-6 change table and re-read list at the end). Revision 5 (the W1-E and W1-L seam answers SR-E1, SR-E2, SR-L1..SR-L4, the W1-L review rulings and R-97; rev-5 change table and re-read list at the end; DR-E1, then open, is ruled by R-98 and applied in rev 6). Revision 4 (the batch-b seam answers and the RV-PAT, RV-SIM, RV-SEC and RV-DS cross-slice findings on W1-B, W1-C, W1-D and W1-H; rev-4 change table and the delta re-read list at the end; rev 3's table kept). The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
       "tags": [
         "benchmark",
         "campaign",
@@ -2750,7 +2754,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "1c8d682cd1f51b5fb87e463d643a97fdd7fbf84ffb54648cbf0e4a1b275f1482"
+      "sourceSha256": "cc73f899b6307989e6bfc7ab4f25fd9d07a4c4f2ab34ba02ca3aef81a2d3c42b"
     },
     {
       "id": "design-eval-security-tasks",
@@ -3804,6 +3808,50 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "b8b0c87af6daacf7b5a810c17d3a44712a5db00de4b323f12c4ceddd3b709dd1"
+    },
+    {
+      "id": "coordinator-log-c31",
+      "path": "docs/coordination/coordinator-log/c31.md",
+      "title": "Coordinator #31 hand-back (2026-10-05): C-W0, W0 rev 6.11",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-05",
+      "reviewSuggested": [],
+      "summary": "Coordinator #31 did C-W0 of the E2-E4 plan on base 37ec0585: W0 rev 6.11 (R-106's stamp key set quoted in section 6, the R-106 c7 reader sweep with two findings, the shared-value rule, the X-K2a script-only split, the plan's section 13 rows, HB-GRD-007 to X-C), W1-D Amendment 1, W1-C SEC 6 confirmed, and GUARD-A's control as E1 README sections 2 and 3. No request was open; no Owner decision is needed.",
+      "tags": [
+        "coordination",
+        "coordinator-log"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-identity",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b5c7862c5acb8a5024c6c69a3c0af8fe70d82471eb3fb1a5234b793f8c77680a"
     },
     {
       "id": "defect-classes",
@@ -7454,7 +7502,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation: Wave 2, phase E1 (walking skeleton build)",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "The rules every E1 build worker follows, the routing of the fourteen E1 items to harness and pinned model (R-87, R-88 confirmed to Codex, R-91, R-92), the real dependency DAG, the launch order by critical path, the dispatch shape per track (one external turn red and green, or a Sonnet follow-on), and one brief per item. Nine briefs are written; five wait on designs that have not passed their gate. Part 2 (W0 rev 6, Coordinator session #6): the X-C, X-H1, X-H2, X-E and X-INT briefs, TOOL-GSM-B, the rev-6 alignment of part 1, the external compilations, the Grok transport finding, and the DAG and launch order as of 2026-10-03 evening.",
+      "summary": "The rules every E1 build worker follows, the routing of the fourteen E1 items to harness and pinned model (R-87, R-88 confirmed to Codex, R-91, R-92), the real dependency DAG, the launch order by critical path, the dispatch shape per track (one external turn red and green, or a Sonnet follow-on), and one brief per item. Nine briefs are written; five wait on designs that have not passed their gate. Part 2 (W0 rev 6, Coordinator session #6): the X-C, X-H1, X-H2, X-E and X-INT briefs, TOOL-GSM-B, the rev-6 alignment of part 1, the external compilations, the Grok transport finding, and the DAG and launch order as of 2026-10-03 evening. Coordinator #31 (C-W0, 2026-10-05): section 3 is now the worker gate every E1-E4 brief inherits (the eight-file guard list on the skeleton and final commits, own mutation file only, never --touched; the whole suite is the Leader's, R-104), and section 2 carries RED-C and \"green on arrival\" (GUARD-A's control).",
       "tags": [
         "coordination",
         "briefs",
@@ -7481,7 +7529,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5a229082964c8a2781ca6aa1476732c75553e1ae172d6a404d7e83d3b1b54114"
+      "sourceSha256": "59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b"
     },
     {
       "id": "coordination-eval-wave2-e234-briefs",
@@ -8453,5 +8501,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "b4a59a409ebca3741d9a9cf738cd8af5fe7e851d3aa3a14a63c245ab2c15feaa"
+  "graphSha256": "310f8ec9383f68c44df98b823502cf273b0c52bcabee0f3c4b9077a50793f579"
 };
