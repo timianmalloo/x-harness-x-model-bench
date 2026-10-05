@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-05T19:40:09Z",
+  "generated": "2026-10-05T20:11:36Z",
   "audit": [
     {
       "actor": null,
@@ -91734,6 +91734,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-05T19:12:48Z",
       "duration_seconds": 1641.0
+    },
+    {
+      "id": "al-01M46V2XB9T4QKC3DZP6FHAEWR",
+      "shortname": "join-x-i-s2",
+      "datetime": "2026-10-05T20:11:36Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of build/eval-x-i-s2d into integrate/e2e4-18",
+      "summary": "X-I-S2 (Sonnet claude-sonnet-5-5) 6771c6e5: red b1809cb7 (Leader re-ran: 48 assertion fails, 27 green on arrival), green f51d3895; reference 10/10, naive 2/10; mutation 14 killed, 2 survivors named (cookieless-401, bob-get controls); A6 different-author clause not met; S2 stays draft for X-RDY recount_seconds=1883 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join X-I-S2 into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-05T19:40:12Z",
+      "duration_seconds": 1884.0
     }
   ],
   "changes": [
