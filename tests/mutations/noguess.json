@@ -1,0 +1,56 @@
+[
+  {
+    "name": "resolver counts 0: distinct unresolved names are not counted",
+    "file": "src/harness_bench/grade/noguess.py",
+    "find": "    return len(unresolved_list), unresolved_list",
+    "replace": "    return 0, []",
+    "tests": [
+      "tests/test_grade_noguess.py::test_noguess_resolver_counts_distinct_unresolved_names"
+    ]
+  },
+  {
+    "name": "resolver failure is scored 0: broken vendor or syntax error does not yield NA",
+    "file": "src/harness_bench/grade/noguess.py",
+    "find": "        hse_score = Score(None, err.reason)",
+    "replace": "        hse_score = Score(0, None)",
+    "tests": [
+      "tests/test_grade_noguess.py::test_hse_resolver_failure_is_na"
+    ]
+  },
+  {
+    "name": "resolver uses agent vendor: vendor edits by agent resolve to 0",
+    "file": "src/harness_bench/grade/noguess.py",
+    "find": "    vendor_to_resolve = pristine_vendor or (tree / \"vendor\")",
+    "replace": "    vendor_to_resolve = tree / \"vendor\" / \"quotakit\"",
+    "tests": [
+      "tests/test_grade_noguess.py::test_noguess_uses_pristine_vendor"
+    ]
+  },
+  {
+    "name": "compiled runner is scored 0: unsupported runner does not yield NA",
+    "file": "src/harness_bench/grade/noguess.py",
+    "find": "        na_runner = Score(None, f\"not built for {runner_kind}\")",
+    "replace": "        na_runner = Score(0, None)",
+    "tests": [
+      "tests/test_grade_noguess.py::test_noguess_compiled_runner_is_na_not_built"
+    ]
+  },
+  {
+    "name": "verified_before_use is scored 0: cell does not yield NA",
+    "file": "src/harness_bench/grade/noguess.py",
+    "find": "    vbu_score = Score(None, \"not built\")",
+    "replace": "    vbu_score = Score(0, None)",
+    "tests": [
+      "tests/test_grade_noguess.py::test_ng_verified_before_use_is_na_not_built"
+    ]
+  },
+  {
+    "name": "no-guessing STRATEGIES registration removed: grade_cell yields NA not built",
+    "file": "src/harness_bench/grade/property.py",
+    "find": "\"no-guessing\": noguess.grade, ",
+    "replace": "",
+    "tests": [
+      "tests/test_grade_noguess.py::test_noguess_grade_cell_uses_registered_strategy"
+    ]
+  }
+]
