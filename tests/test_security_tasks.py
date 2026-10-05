@@ -34,7 +34,7 @@ from test_ng_tasks import (  # the shared restatement of W0 section 2's variants
 )
 
 from harness_bench import config, readiness
-from harness_bench.grade import CellInput
+from harness_bench.grade import CellInput, correctness
 from harness_bench.grade import property as prop
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -655,7 +655,7 @@ def test_s1_clauses_json_carries_payload_ids_through_grade_cell(s1_base):
 
 def test_s1_check_keeps_exactly_the_four_payloads_with_their_ids():
     """X-I5 I5-1 (operator decision 2 of 2026-10-05): one table of id -> payload, and the kept ids are the ids X-I4 measured."""
-    assert list(getattr(check_module(), "PAYLOADS", {})) == ["SKELETON"]
+    assert list(getattr(check_module(), "PAYLOADS", {})) == ["A0", "B2", "B3", "C0"]
 
 
 def test_s1_every_variant_clause_names_a_kept_payload():
@@ -663,15 +663,15 @@ def test_s1_every_variant_clause_names_a_kept_payload():
     ids = set(getattr(check_module(), "PAYLOADS", {}))
     variants = literal_table(ORACLE / "variants.py", "VARIANTS")
     named = {i for spec in variants.values() for probe, clause in spec["clauses"].items() if probe.startswith("inj-") for i in clause.split(",")}
-    assert named == {"SKELETON"} and named <= ids, (named, ids)
+    assert named == {"A0", "B2", "B3", "C0"} and named <= ids, (named, ids)
 
 
 def test_s1_reference_declares_na_for_behavioural_equivalence_and_regression_count():
     """X-I5 I5-3: read through `readiness.expected_na` (the pilot gate's reader); each reason carries the grader's own text."""
-    assert readiness.expected_na(ROOT, ["S1"])["S1"] == frozenset({"SKELETON"})
+    assert readiness.expected_na(ROOT, ["S1"])["S1"] == frozenset({"behavioural_equivalence", "regression_count"})
     reference = config.load_yaml(TASK / "task.yaml")["expected"]["reference"]
-    assert reference["behavioural_equivalence"]["na"].startswith("SKELETON")
-    assert reference["regression_count"]["na"].startswith("SKELETON")
+    assert reference["behavioural_equivalence"]["na"].startswith(correctness.NOT_D_TASK)
+    assert reference["regression_count"]["na"].startswith(correctness.NO_PUBLIC_TESTS)
 
 
 def test_s1_a_slow_starting_reference_is_still_judged_blocked(s1_base):  # TIME-B: an import slower than the 2 s start bound, forced
