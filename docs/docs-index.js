@@ -3895,6 +3895,56 @@ window.DOCS_INDEX = {
       "sourceSha256": "ca3b9e47c27de68058d5f7a03d2a61e8ac5d16b2cadf23255d808993bcaca84d"
     },
     {
+      "id": "coordinator-log-c32",
+      "path": "docs/coordination/coordinator-log/c32.md",
+      "title": "Coordinator #32 hand-back (2026-10-05): four seam rulings, the wave-2 compiles, the register",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-05",
+      "reviewSuggested": [],
+      "summary": "Coordinator #32, on base a27d79fe (integrate/e2e4-18 after the X-I5 join), resolved the four overdue seam requests by accepting each fallback (one with conditions, one with its owner corrected by the Leader), compiled X-LGb (Agy), X-K2a (Grok) and a recompiled X-INTF that folds in the R-106 c7 loop-back F-1/F-2, made the register edits #31 owed plus three new candidates (PIN-B, IDN-A, LOCK-A) and a REG-C pack-side sibling, and fixed the plan's readiness erratum.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile",
+        "seam-requests"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-intf",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-lg",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-k2",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b31fe9eb302b96b0f7a38868f407c9a59f955f50e20a9434496bcdc1d796026a"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -3921,7 +3971,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9e3818df36400fd1629cd2eeb39728e74310db24c04eef411a70af6f2166ac33"
+      "sourceSha256": "2f4ea1f127e01387aaa2bf0b1c5f5d3ecb706f29eaa792fbcf021e945d9c43fd"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -6568,7 +6618,7 @@ window.DOCS_INDEX = {
       "phase": "",
       "reviewBy": "2026-10-19",
       "reviewSuggested": [],
-      "summary": "X-INTF fixes the three src/ findings X-INT recorded as strict-xfail legs: campaign.run_side_check refuses a non-measurement plan with no campaign block (HB-CMP-010, SR-E3), status.text names a blocked cell with its id and cause (EV-18), and the campaign commands read the --runs folder instead of <root>/runs. One Sonnet session, dispatched only after X-J1a joins (the status.py order); markers :471 and :591 in tests/test_e1_e2e.py are removed when their legs pass (Coordinator #30).",
+      "summary": "X-INTF fixes the three src/ findings X-INT recorded as strict-xfail legs: campaign.run_side_check refuses a non-measurement plan with no campaign block (HB-CMP-010, SR-E3), status.text names a blocked cell with its id and cause (EV-18), and the campaign commands read the --runs folder instead of <root>/runs. One Sonnet session, dispatched only after X-J1a joins (the status.py order); markers :471 and :591 in tests/test_e1_e2e.py are removed when their legs pass (Coordinator #30). Coordinator #32 adds finding 4, the R-106 c7 loop-back (W0 rev 6.11 section 6 F-1 and F-2 in campaign._tree_run_diff, with a cross-owner attach-vs-launch_check test), because X-INTF already owns campaign.py this phase.",
       "tags": [],
       "links": [
         {
@@ -6597,7 +6647,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "37ea7ee5ca829e71753983c82fc11380b4e2901e27c681647256e85eb03ef787"
+      "sourceSha256": "9da872a46585886bd90c4eca65c4e92ea32a5462af14bb9ea22024a485618ccc"
     },
     {
       "id": "brief-eval-x-j1",
@@ -6965,7 +7015,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9d81702e9374d2c7533ed99802552b9f105c34a357896eeeb0658bff51e1bdf0"
+      "sourceSha256": "81ae51ea2ccc4cb72c5b47f2de798d4ab183a0351b38e86992a3b6d83a371bbf"
     },
     {
       "id": "coordination-eval-brief-rv-ds",
@@ -8645,5 +8695,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "3142e9e244d070a65d37f7cd224c650795204200bfdd5e7db9112b85a95f5477"
+  "graphSha256": "2706c8f89b265c53d6bfe8b3ac4ee45a57e4b90c28a08fcbf8d344e23169ad70"
 };
