@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-05T19:12:43Z",
+  "generated": "2026-10-05T19:40:09Z",
   "audit": [
     {
       "actor": null,
@@ -91707,6 +91707,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-05T18:44:40Z",
       "duration_seconds": 1683.0
+    },
+    {
+      "id": "al-01M46S9AZSZEN6YKZ240QJFZ26",
+      "shortname": "join-x-i5-ready",
+      "datetime": "2026-10-05T19:40:09Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of build/eval-x-i5 into integrate/e2e4-18",
+      "summary": "X-I5 resume (Sonnet claude-sonnet-5-5) 8534fb1f: S1 ready + record 30cdf43968b6e999-eb5e47dbf99457a2-win32.json measured after the flip (reference 1.0000, naive 0.3750, 15 variants); J2 cross-check re-pointed to the committed record; make_task.py skips committed records; bench validate 0, guard 200, 143 passed 6 xfailed recount_seconds=1640 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join S1 ready into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-05T19:12:48Z",
+      "duration_seconds": 1641.0
     }
   ],
   "changes": [
