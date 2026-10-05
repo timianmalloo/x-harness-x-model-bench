@@ -3667,6 +3667,35 @@ window.DOCS_INDEX = {
       "sourceSha256": "b278432234edb1a4ac1320f18bc276401296d16169fd21a648088a947e401364"
     },
     {
+      "id": "coordination-eval-wave2-e1-overnight-2026-10-05",
+      "path": "docs/coordination/eval-wave2-e1/overnight-2026-10-05.md",
+      "title": "Overnight run 2026-10-04/05: Leader leader-e1e4 epoch 17 (E1 build joins, E2 starts)",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-12",
+      "reviewSuggested": [],
+      "summary": "The overnight Leader run, epoch 17, 2026-10-04 16:56 to 2026-10-05 07:00 local. Phase 1 joined and pushed. Every E1 build track was built and joined, 18 tracks in 7 pushed batches (origin/main a6e37b76 -> `17e22e00` plus this report). X-INT, the E1 end-to-end turn, was built and joined, and its E1 E2E list is green (24 passed, 7 strict xfail). One operator action unblocks the external harnesses: the earlier session left an applied mutant in the primary's views.py, which froze main in the primary and the external runner, so the E1 critical path ran on Sonnet under R-105. Rulings R-104, R-105 and R-106. The gate ring was measured at 77 to 81 min. The operator queue below has a recommended default for each item.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-eval-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "64b32caa250a15cfef6c43ea02697773c0c0ce22357697b068345e6f0ea48cab"
+    },
+    {
       "id": "coordination-finish-harness-bench-run",
       "path": "docs/coordination/coordination-finish-harness-bench-run.md",
       "title": "Run record - coordination-finish-harness-bench",
@@ -8287,6 +8316,14 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     },
     {
+      "id": "surface-coordination-eval-wave2-e1-overnight-2026-10-05",
+      "path": "docs/coordination/eval-wave2-e1/overnight-2026-10-05.html",
+      "title": "Overnight 2026 10 05",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "coordination-eval-wave2-e1-overnight-2026-10-05"
+    },
+    {
       "id": "surface-proposals-pack-onoff-analysis",
       "path": "docs/proposals/pack-onoff-analysis.html",
       "title": "Pack on vs pack off: grid-1 analysis",
@@ -8295,5 +8332,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "968494045a3eb79580a62d217e77e05815de1a3ba297bfdb490e45955fd43fdd"
+  "graphSha256": "869fbd8d15028f52d143a6ff5e2ec9afd3c867233ee5b2e23ad1d478e6aca94d"
 };
