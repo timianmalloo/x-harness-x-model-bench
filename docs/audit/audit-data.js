@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-05T17:05:49Z",
+  "generated": "2026-10-05T17:35:03Z",
   "audit": [
     {
       "actor": null,
@@ -88623,6 +88623,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-05T17:05:49Z",
       "duration_seconds": 0.0
+    },
+    {
+      "id": "al-01M46J496DBV0T039VFZ8B5K71",
+      "shortname": "join-x-a3a",
+      "datetime": "2026-10-05T17:35:03Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of build/eval-x-a3a into integrate/e2e4-18",
+      "summary": "X-A3a: Agy gemini-3.8-flash-high hit 3,300 s deadline after skeleton eb7a4413 + red b026daa1 (Leader re-ran: 7 assertion fails); Sonnet claude-sonnet-5-5 follow-on green cc2d0916 (kept Agy WIP, no red weakened); guard 200 passed, own tests 97 passed, mutations pack_improvement and board all killed, no golden moved recount_seconds=1501 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join X-A3a into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-05T17:10:01Z",
+      "duration_seconds": 1502.0
     }
   ],
   "changes": [
