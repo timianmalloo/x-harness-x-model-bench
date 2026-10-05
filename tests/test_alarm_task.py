@@ -119,3 +119,62 @@ def test_dry_run_without_a_stub_still_never_reaches_the_network(h):
     result = h.run(6, _alarm_object(), rest=None)
     assert result.returncode == 6
     assert TOPIC not in result.stdout + result.stderr
+
+
+def test_unset_topic_refuses_with_the_fixed_line(h):
+    result = h.run(0, None, topic=None)
+    assert result.returncode != 0
+    assert "alarm channel not configured: set HB_ALARM_NTFY_TOPIC (runbook)" in result.stdout + result.stderr
+
+
+def test_delivery_log_has_one_line_per_run_and_no_topic_or_uri(h):
+    h.run(6, _alarm_object(), at=T0)
+    h.run(6, _alarm_object(), at=T0 + timedelta(minutes=15), rest="throw")
+    lines = h.delivery_log().splitlines()
+    assert len(lines) == 2
+    assert lines[0].endswith("exit=6 push ok")
+    assert "push failed: WebException" in lines[1]
+    log = h.delivery_log()
+    assert TOPIC not in log
+    assert "http" not in log
+
+
+def test_a_new_code_sends_again(h):
+    h.run(6, _alarm_object(code="HB-ALM-001"), at=T0)
+    h.run(6, _alarm_object(code="HB-ALM-002"), at=T0 + timedelta(minutes=15))
+    assert len(h.sent_lines()) == 2
+
+
+def test_resend_is_hourly_on_an_injected_clock(h):
+    h.run(6, _alarm_object(), at=T0)
+    h.run(6, _alarm_object(), at=T0 + timedelta(minutes=59, seconds=59))
+    assert len(h.sent_lines()) == 1
+    h.run(6, _alarm_object(), at=T0 + timedelta(hours=1))
+    assert len(h.sent_lines()) == 2
+
+
+def test_recovery_sends_once_and_clears_the_edge(h):
+    h.run(6, _alarm_object(), at=T0)
+    h.run(0, None, at=T0 + timedelta(minutes=15))
+    assert len(h.sent_lines()) == 2
+    assert not (h.run_dir / ".alarm_edge").exists()
+    h.run(0, None, at=T0 + timedelta(minutes=30))
+    assert len(h.sent_lines()) == 2
+
+
+def test_edge_state_file_holds_only_code_and_times(h):
+    h.run(6, _alarm_object(), at=T0)
+    state = json.loads((h.run_dir / ".alarm_edge").read_text(encoding="ascii")) if (h.run_dir / ".alarm_edge").exists() else {}
+    assert set(state) == {"code", "first_sent_at", "last_sent_at"}
+    assert state["code"] == "HB-ALM-001"
+
+
+def test_a_failed_push_keeps_the_edge_so_the_next_run_retries(h):
+    h.run(6, _alarm_object(), at=T0, rest="throw")
+    h.run(6, _alarm_object(), at=T0 + timedelta(minutes=15))
+    assert len(h.sent_lines()) == 1
+
+
+def test_optional_base_url_replaces_the_default_host(h):
+    h.run(6, _alarm_object(), base_url="https://ntfy.example.test")
+    assert h.sent_lines()[0].startswith(f"https://ntfy.example.test/{TOPIC}|")
