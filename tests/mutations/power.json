@@ -179,5 +179,47 @@
     "find": "alpha=alpha,",
     "replace": "alpha=alpha_pt,",
     "tests": ["tests/test_power.py::test_alpha_and_power_echo_exactly"]
+  },
+  {
+    "name": "bisection lower bound raised above the reference MDEs",
+    "file": "src/harness_bench/power.py",
+    "find": "lo: float = 0.001",
+    "replace": "lo: float = 0.3",
+    "tests": ["tests/test_power.py::test_mde_solves_back_within_0_005", "tests/test_power.py::test_reachable_mde_when_plan_is_short"]
+  },
+  {
+    "name": "control_rate guard deleted",
+    "file": "src/harness_bench/power.py",
+    "find": "_reject(_open_unit(raw_rate), \"control_rate\")",
+    "replace": "_reject(True, \"control_rate\")",
+    "tests": [
+      "tests/test_power.py::test_power_inputs_each_invalid_field_is_named[control_rate-0]",
+      "tests/test_power.py::test_power_inputs_each_invalid_field_is_named[control_rate-1]",
+      "tests/test_power.py::test_power_inputs_each_invalid_field_is_named[control_rate-1.5]"
+    ]
+  },
+  {
+    "name": "mde over rate guard deleted (unpaired)",
+    "file": "src/harness_bench/power.py",
+    "find": "_reject(p0 + mde_f <= 1.0, \"mde\")",
+    "replace": "_reject(True, \"mde\")",
+    "tests": [
+      "tests/test_power.py::test_power_inputs_each_invalid_field_is_named[mde-over-rate]",
+      "tests/test_power.py::test_power_inputs_each_invalid_field_is_named[mde-over-assumed-rate]"
+    ]
+  },
+  {
+    "name": "mde over rate guard deleted (paired, discordance assumed)",
+    "file": "src/harness_bench/power.py",
+    "find": "_reject(p1 <= 1.0, \"mde\")",
+    "replace": "_reject(True, \"mde\")",
+    "tests": ["tests/test_power.py::test_power_inputs_each_invalid_field_is_named[mde-over-rate-paired-assumed]"]
+  },
+  {
+    "name": "mde over rate guard refuses a sum of exactly one",
+    "file": "src/harness_bench/power.py",
+    "find": "_reject(p0 + mde_f <= 1.0, \"mde\")",
+    "replace": "_reject(p0 + mde_f < 1.0, \"mde\")",
+    "tests": ["tests/test_power.py::test_a_rate_plus_mde_of_exactly_one_is_legal"]
   }
 ]

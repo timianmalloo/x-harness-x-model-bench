@@ -264,7 +264,34 @@ _INVALID = [
     ("planned", "planned_reps_per_task", lambda inputs: inputs.update(planned_reps_per_task=0)),
     ("sd", "sd", lambda inputs: inputs["properties"]["security"].update(sd=-1)),
     ("rep-spread", "rep_spread", lambda inputs: inputs["properties"]["security"].update(rep_spread=-1)),
+    ("control_rate-0", "control_rate", lambda inputs: inputs["properties"]["security"].update(control_rate=Decimal(0))),
+    ("control_rate-1", "control_rate", lambda inputs: inputs["properties"]["security"].update(control_rate=Decimal(1))),
+    ("control_rate-1.5", "control_rate",
+     lambda inputs: inputs["properties"]["security"].update(control_rate=Decimal("1.5"))),
+    ("mde-over-rate", "mde", lambda inputs: _rate_and_mde(inputs, "unpaired", "0.9", "0.2", None)),
+    ("mde-over-assumed-rate", "mde", lambda inputs: _rate_and_mde(inputs, "unpaired", "assumed", "0.6", None)),
+    ("mde-over-rate-paired-assumed", "mde",
+     lambda inputs: _rate_and_mde(inputs, "task-harness-rep", "0.9", "0.2", "assumed")),
 ]
+
+
+def _rate_and_mde(inputs: dict, pairing: str, rate: str, mde: str, discordance: str | None) -> None:
+    """Both paths that compute p1 = p0 + mde (H1a carry-over 1): unpaired, and paired with discordance assumed."""
+    inputs["pairing_unit"] = pairing
+    body = inputs["properties"]["security"]
+    body["control_rate"] = rate if rate == "assumed" else Decimal(rate)
+    body["mde"] = Decimal(mde)
+    if discordance is None:
+        body.pop("discordance", None)
+    else:
+        body["discordance"] = discordance
+
+
+def test_a_rate_plus_mde_of_exactly_one_is_legal():
+    """p0 + mde == 1 gives p1 = 1 and a finite n; only above 1 is refused."""
+    inputs = _campaign(pairing="unpaired")
+    inputs["properties"]["security"].update(control_rate=Decimal("0.9"), mde=Decimal("0.1"))
+    assert _only(power.analyse(inputs)).required_pairs[0]["n"] > 0
 
 
 @pytest.mark.parametrize(
