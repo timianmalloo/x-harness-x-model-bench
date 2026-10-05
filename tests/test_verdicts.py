@@ -151,6 +151,18 @@ def test_resamples_for_tail_depth():
         assert verdicts.resamples_for(alpha) * alpha / 2 >= 10 - D("1e-9")
 
 
+@pytest.mark.parametrize(
+    ("resamples", "alpha", "expect"),
+    [
+        pytest.param(18000, D("0.05") / 45, 10, id="snap"),  # 9.99999... in decimal arithmetic; the tail is 10 draws
+        pytest.param(2000, D("0.05"), 50, id="exact"),
+        pytest.param(2000, D("0.04999"), 49, id="floor"),  # 49.99 floors; a wide epsilon would round it up
+    ],
+)
+def test_tail_index_at_the_decimal_edge(resamples, alpha, expect):
+    assert verdicts._tail(resamples, alpha) == expect
+
+
 S2_HASH = "a182ba2204e318913030a3292bd6a27b3be23d347375158b075c74e0d404752c"
 
 
@@ -530,7 +542,9 @@ def _coverage(n_datasets: int, kind: str) -> int:
     return covered
 
 
-GOLDEN_COVERAGE = {"effect": 936, "ratio": 948}  # the design's counts at N = 1,000 (S4, S5)
+# Measured at N = 1,000 with this generator (X-H1b green). The design's 936 and 948 came from the S4 and S5
+# scripts, which were never committed; a reconstruction cannot reproduce them (FIXT-A: measured beside the design's).
+GOLDEN_COVERAGE = {"effect": 940, "ratio": 932}
 
 
 @COVERAGE_RUN
