@@ -696,3 +696,140 @@ def test_dr_pi_3_pack_paths_covers_install_md_and_pack_doctor_surfaces():
     ]
     assert uncovered == []
     assert "AGENTS.md" in pi.PACK_PATHS
+
+
+# ---------------------------------------------------------------------------------------------------
+# ADR-0019 item 4 / Catalog 0.7 §4.4: absence read as failure (ABS-A)
+# ---------------------------------------------------------------------------------------------------
+
+
+def test_a_cell_with_no_pass_at_1_is_not_a_failure():
+    """T-P1: A cell with no pass_at_1 row (or NA) is NOT_RECORDED, never a failure."""
+    c_na = _cell("na-1", "codex-sol", "on")
+    assert pi._pass(c_na) is None
+
+    on1 = _cell("on-1", "c", "on")
+    on1.scores["pass_at_1"] = views.Measure(1)
+    off1 = _cell("off-1", "c", "off")
+    off1.scores["pass_at_1"] = views.Measure(1)
+
+    on2 = _cell("on-2", "c", "on")
+    on2.scores["pass_at_1"] = views.Measure(1)
+    off2 = _cell("off-2", "c", "off")
+    off2.scores["pass_at_1"] = views.Measure(1)
+
+    on3 = _cell("on-3", "c", "on")
+    off3 = _cell("off-3", "c", "off")
+    off3.scores["pass_at_1"] = views.Measure(1)
+
+    plan_cells = [
+        {"cell_id": on1.cell_id, "task": "T1", "rep": 1},
+        {"cell_id": off1.cell_id, "task": "T1", "rep": 1},
+        {"cell_id": on2.cell_id, "task": "T1", "rep": 2},
+        {"cell_id": off2.cell_id, "task": "T1", "rep": 2},
+        {"cell_id": on3.cell_id, "task": "T1", "rep": 3},
+        {"cell_id": off3.cell_id, "task": "T1", "rep": 3},
+    ]
+    view = views.RunView("r1", {"cells": plan_cells, "profiles": {}}, True, "grade-1", None, [on1, off1, on2, off2, on3, off3])
+    result = pi.assemble(view, None, None, None, archive_present=False)
+    assert "pass 2/2 vs 2/2" in result.headline
+
+
+def test_a_task_with_no_recorded_pairs_is_inconclusive_not_all_fail():
+    """T-P2: A task with no recorded pairs is inconclusive, not all failed."""
+    cells = []
+    plan_cells = []
+    for i in range(1, 4):
+        on = _cell(f"on-{i}", "c", "on")
+        on.scores["pass_at_1"] = views.Measure(None, "task changed since the plan (version hash mismatch)")
+        off = _cell(f"off-{i}", "c", "off")
+        off.scores["pass_at_1"] = views.Measure(None, "task changed since the plan (version hash mismatch)")
+        cells.extend([on, off])
+        plan_cells.extend([{"cell_id": on.cell_id, "task": "G2", "rep": i}, {"cell_id": off.cell_id, "task": "G2", "rep": i}])
+    view = views.RunView("r1", {"cells": plan_cells, "profiles": {}}, True, "grade-1", None, cells)
+    result = pi.assemble(view, None, None, None, archive_present=False)
+    inc = next((inc for inc in result.inconclusive if inc.task == "G2"), None)
+    assert inc is not None
+    assert any("pass_at_1 not recorded" in r for r in inc.reasons)
+
+
+def test_headline_counts_failures_over_recorded_cells_and_states_k_on_and_k_off_not_recorded():
+    """T-P3: Headline counts failures over recorded cells and states k_on and k_off not recorded."""
+    on1 = _cell("on-1", "c", "on")
+    on1.scores["pass_at_1"] = views.Measure(1)
+    off1 = _cell("off-1", "c", "off")
+    off1.scores["pass_at_1"] = views.Measure(1)
+
+    on_na1 = _cell("on-na1", "c", "on")
+    on_na1.scores["pass_at_1"] = views.Measure(None, "not recorded")
+    off_ok = _cell("off-2", "c", "off")
+    off_ok.scores["pass_at_1"] = views.Measure(1)
+
+    on_na2 = _cell("on-na2", "c", "on")
+    on_na2.scores["pass_at_1"] = views.Measure(None, "not recorded")
+    off_na1 = _cell("off-na1", "c", "off")
+    off_na1.scores["pass_at_1"] = views.Measure(None, "not recorded")
+
+    plan_cells = [
+        {"cell_id": on1.cell_id, "task": "T1", "rep": 1},
+        {"cell_id": off1.cell_id, "task": "T1", "rep": 1},
+        {"cell_id": on_na1.cell_id, "task": "T1", "rep": 2},
+        {"cell_id": off_ok.cell_id, "task": "T1", "rep": 2},
+        {"cell_id": on_na2.cell_id, "task": "T1", "rep": 3},
+        {"cell_id": off_na1.cell_id, "task": "T1", "rep": 3},
+    ]
+    view = views.RunView("r1", {"cells": plan_cells, "profiles": {}}, True, "grade-1", None,
+                         [on1, off1, on_na1, off_ok, on_na2, off_na1])
+    result = pi.assemble(view, None, None, None, archive_present=False)
+    assert "0 of 0 pack-on failures have a pack-attributed cause" in result.headline
+    assert "2 pack-on and 1 pack-off cells not recorded" in result.headline
+
+
+def test_pass_counts_holm_and_harm_failed_pairs_use_recorded_pairs_only():
+    """T-P4: harm_groups_failed_pairs uses n_recorded, not n_pairs."""
+    gi = pi.GroupClassInput(
+        passes_on=1, passes_off=3, n_pairs=3, n_ratio_valid=3,
+        median_token_ratio=Decimal("1.0"), holm_p=Decimal("0.01"),
+        harm_indicator=False, quality_lo_positive=False,
+        n_recorded=2,
+    )
+    cls, _ = pi.classify_group(gi)
+    assert cls == "harm"
+    failed_pairs = max(0, gi.n_recorded - gi.passes_on)
+    assert failed_pairs == 1
+
+
+def test_failing_test_names_ignore_unrecorded_cells():
+    """T-P5: failing_test_names ignores unrecorded cells."""
+    p_unrec = pi.Pair(
+        task="T1", combo="c", rep=1,
+        on=_cell("1-on", "c", "on"),
+        off=_cell("1-off", "c", "off"),
+    )
+    p_unrec.on.scores["pass_at_1"] = views.Measure(None, "not recorded")
+    p_unrec.on.evidence["pass_at_1"] = "evidence.log"
+    assert pi._pass(p_unrec.on) is None
+    assert not (pi._pass(p_unrec.on) is False)
+
+
+def test_the_quality_rules_read_n_recorded_and_the_ratio_rules_read_n_pairs():
+    """T-P6: Quality rules read n_recorded, ratio rules read n_pairs."""
+    g = pi.GroupClassInput(
+        passes_on=1, passes_off=1, n_pairs=4, n_ratio_valid=4,
+        median_token_ratio=Decimal("1.0"), holm_p=Decimal("0.5"),
+        harm_indicator=False, quality_lo_positive=False,
+        n_recorded=1,
+    )
+    cls, is_ceiling = pi.classify_group(g)
+    assert is_ceiling is True
+    assert cls == "neutral"
+
+    g_swapped = pi.GroupClassInput(
+        passes_on=1, passes_off=1, n_pairs=1, n_ratio_valid=1,
+        median_token_ratio=Decimal("1.0"), holm_p=Decimal("0.5"),
+        harm_indicator=False, quality_lo_positive=False,
+        n_recorded=4,
+    )
+    cls_swapped, is_ceiling_swapped = pi.classify_group(g_swapped)
+    assert cls_swapped == "inconclusive"
+    assert is_ceiling_swapped is False
