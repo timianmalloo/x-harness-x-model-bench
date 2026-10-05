@@ -86,8 +86,8 @@
  {
   "name": "D2 cli drops the kwarg",
   "file": "src/harness_bench/cli.py",
-  "find": "                                  identity_check=identity.launch_check(root, p))\n",
-  "replace": "                                  )\n",
+  "find": "identity_check=identity.launch_check(root, p),\n",
+  "replace": "",
   "tests": ["tests/test_identity.py::test_bench_run_stops_on_a_drifted_run_side_file", "tests/test_identity.py::test_bench_run_without_drift_launches"]
  }
 ]
