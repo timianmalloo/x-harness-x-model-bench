@@ -555,7 +555,7 @@ def test_every_reader_of_a_stored_plan_is_in_the_reader_table():
         text = path.read_text(encoding="utf-8")
         if "load_confirmed(" in text or '"plan.json"' in text:
             found.add(rel)
-    assert found == {"cli.py", "grade/runner.py", "status.py", "views.py", "readiness.py"}
+    assert found == {"cli.py", "grade/runner.py", "status.py", "views.py", "readiness.py", "campaign.py"}
 
 
 def test_no_option_a_branch_and_no_hand_rolled_identity_or_matrix_validation_in_the_three_modules():
