@@ -28,6 +28,7 @@ from harness_bench import (
     discriminate,
     egress,
     engine,
+    gitsafe,
     identity,
     oslock,
     plan,
@@ -179,10 +180,7 @@ def cmd_validate(args) -> int:
     return INVALID if problems else OK
 
 
-def _pack(source: Path, pack_root: Path) -> dict:
-    from harness_bench import gitsafe
-
-    commit = gitsafe.git(["rev-parse", "HEAD"], cwd=source, timeout=60).stdout.strip()
+def _pack_record(source: Path, commit: str, pack_root: Path) -> dict:
     checkout = workspace.pack_checkout(source, commit, pack_root)
     return {"source": str(source), "commit": commit, "revision": workspace.pack_revision(checkout)}
 
@@ -205,11 +203,21 @@ def cmd_plan(args) -> int:
         print(json.dumps([c.__dict__ | {"id": c.id} for c in plan.expand(matrix, bom, versions)], indent=2))
         return OK
     builds = {h: b.record() for h, b in tools.resolve(Path(args.tools_dir)).items()}
-    pack = _pack(Path(args.pack_source), Path(args.tools_dir).parent / "pack")
+    bindings = {r: (s, c) for r, s, c in map(plan.parse_binding, args.arm)}  # W1-A section 3.9, pasted (SR-2)
+    if matrix["schema"] == "bench-matrix/1" and "on" in matrix["packs"]:
+        source = Path(args.pack_source or root.parent / "ai-forward")
+        bindings["on"] = (str(source), gitsafe.git(["rev-parse", "HEAD"], cwd=source, timeout=60).stdout.strip())
+    elif args.pack_source:
+        raise BenchError("HB-PLN-002", "--pack-source applies to a bench-matrix/1 file; use --arm role=source@commit")
+    pack_root = Path(args.tools_dir).parent / "pack"
+    arm_packs = {a: (_pack_record(Path(b["source"]), b["commit"], pack_root) if b else None) for a, b in plan.resolve_arms(matrix, bindings).items()}
+    block = campaign.plan_block(root, args.campaign, matrix) if args.campaign else None  # lock-free: advisory, `attach` binds
     run_id = args.run_id or f"{matrix.get('run_id', 'run')}-{datetime.now(UTC):%Y%m%dT%H%M%S}"
     parameters = {"decision_timeout": args.decision_timeout_minutes * 60, "spend_cap_tokens": args.spend_cap_tokens}
-    p = plan.build_plan(root, matrix, bom, run_id, builds, pack, parallelism=args.parallelism, parameters=parameters,
-                        tools_dir=Path(args.tools_dir), cells_root=Path(args.cells_root))
+    p = plan.build_plan(root, matrix, bom, run_id, builds, arm_packs, parallelism=args.parallelism, parameters=parameters,
+                        tools_dir=Path(args.tools_dir), cells_root=Path(args.cells_root), matrix_path=matrix_path, campaign=block)
+    if block is not None:
+        campaign.check_plan(root, campaign.read(root, args.campaign), p, run_id, grid=block["prereg_hash"] is not None, tree=True)
     console = Console(no_color=_plain(), highlight=False)
     table = Table(title=f"plan {run_id}: {matrix_path.name}")
     for col in ("combo", "harness", "model", "planned build", "cells"):
@@ -219,8 +227,12 @@ def cmd_plan(args) -> int:
         b = p["builds"].get(c["harness"], {})
         table.add_row(c["id"], c["harness"], c["model"], f"{b.get('version')} ({(b.get('sha256') or '')[:12]})", str(per_combo[c["id"]]))
     console.print(table)
-    print(f"pack revision {pack['revision']} ({pack['commit'][:12]}); {len(p['cells'])} cells; parallelism {p['parameters']['parallelism']}; "
+    for aid, arm in p["arms"].items():
+        record = arm["pack"]
+        print(f"arm {aid}: " + (f"pack revision {record['revision']} ({record['commit'][:12]})" if record else "no pack"))
+    print(f"{len(p['cells'])} cells; parallelism {p['parameters']['parallelism']}; "
           f"envelope {p['envelope_seconds']} s; price list {p['price_list_hash'][:12] or 'absent'}")
+    print(f"launch order: seed {p['launch_seed']}, balance bound {plan.BALANCE_BOUND} of cells")
     print("parameters: " + ", ".join(f"{k}={v}" for k, v in sorted(p["parameters"].items())))
     print(f"decision timeout: {p['parameters']['decision_timeout'] // 60} min; "
           f"spend cap: {p['parameters']['spend_cap_tokens'] if p['parameters']['spend_cap_tokens'] is not None else 'none'}"
@@ -511,7 +523,7 @@ def build_parser() -> argparse.ArgumentParser:
     pl.add_argument("--parallelism", type=int, default=plan.DEFAULT_PARAMETERS["parallelism"])
     pl.add_argument("--decision-timeout-minutes", type=_positive_int, default=plan.DEFAULT_PARAMETERS["decision_timeout"] // 60)
     pl.add_argument("--spend-cap-tokens", type=_positive_int, default=None)
-    pl.add_argument("--pack-source", default=str(root.parent / "ai-forward"), help="the ai-forward clone; its HEAD is pinned")
+    pl.add_argument("--pack-source", default=None, help="a bench-matrix/1 file only: the pack clone whose HEAD is arm 'on' (default: ../ai-forward)")
     pl.add_argument("--confirm", action="store_true", help="write runs/<run_id>/plan.json (frozen)")
     pl.add_argument("--json", action="store_true", help="print the cell list as JSON")
     pl.add_argument("--campaign", type=_campaign_id, default=None, help="stamp the plan with this campaign's effective run side")

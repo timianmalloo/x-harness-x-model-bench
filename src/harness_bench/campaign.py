@@ -1098,6 +1098,22 @@ def power(root: Path, campaign_id: str, inputs_file: Path) -> str:
         return f"recorded {role} power inputs {digest[:12]}"
 
 
+def plan_block(root: Path, campaign_id: str, matrix: dict) -> dict:
+    """The `campaign` block of `bench plan --campaign` (W1-C section 5): the chain's effective run side, never a stamp of the working tree.
+    A pilot-ring matrix is `prereg_hash: null` and needs `baselined` or `piloted`; any other needs `registered` or `measuring` and takes
+    the latest `registered` row's hash. A `pack-regression` ring is not a campaign ring. Lock-free."""
+    ring = (matrix.get("ring") or {}).get("tag")
+    if ring == "pack-regression":
+        raise BenchError("HB-CMP-010", "ring pack-regression is not a campaign ring. Plan it without --campaign.")
+    state = read(root, campaign_id)
+    pilot = ring == "pilot"
+    if state.state not in (("baselined", "piloted") if pilot else ("registered", "measuring")):
+        raise _terminal(state, "plan --campaign")
+    run = identity.side(effective_identity(root, state), "run")
+    prereg = None if pilot else latest(state, "registered")["prereg_hash"]
+    return {"campaign_id": campaign_id, "prereg_hash": prereg, "identity": {"hash": identity.identity_hash(run), "components": run["components"]}}
+
+
 def verify_for_plan(root: Path, plan_doc: dict) -> str:
     """The after-grading hook's read (item 15): lock-free, writes nothing. `campaign verify: ok (<n> rows)`, or `campaign verify: not run
     (HB-CMP-005)` for an unknown campaign; HB-CMP-003 with the first finding otherwise. "Not verified", never "verified"."""
@@ -1162,6 +1178,9 @@ def check_plan(root: Path, state: CampaignState, plan_doc: dict, run_id: str, *,
         where = ", ".join(identity.diff(wanted, {"schema": effective["schema"], "components": components})) or "its hash"
         raise BenchError("HB-CMP-010", f"plan.campaign.identity {stamped['hash'][:12]} is not the effective run-side identity {chain[:12]}; "
                                       f"differs at {where}. Plan again.")
+    if tree and (outside := [t for t in sorted(plan_doc.get("tasks") or {}) if t not in _tasks_of(effective)]):  # R-106 c2
+        raise BenchError("HB-CMP-010", f'plan task "{outside[0]}" is not in the effective identity. '
+                                      "Baseline it (bench campaign baseline --tasks) or plan without it.")
     if tree and (drift := _tree_run_diff(root, effective, plan_doc)):
         raise BenchError("HB-CMP-010", f"the working tree differs from the effective run side at {', '.join(drift)}. Record a fix or restore the files.")
     if grid:

@@ -28,7 +28,7 @@ from test_tools import _fake_tree
 
 from harness_bench import gitsafe, identity
 
-MATRIX = {"schema": "bench-matrix/2", "ring": {"tag": "comparison"}, "bom": {"file": "bench/bom.yaml", "subset": ["T1"]}, "repetitions": 1,
+MATRIX = {"schema": "bench-matrix/2", "ring": {"tag": "comparison"}, "bom": {"file": "bench/bom.yaml", "subset": ["T1"]}, "repetitions": 4,
           "arms": [{"id": "off"}, {"id": "treat"}], "comparisons": [["off", "treat"]],
           "combos": [{"id": "cc-opus", "harness": "claude-code", "model": "claude-opus-5-5"}]}
 
@@ -71,14 +71,14 @@ def test_a_campaign_plan_from_the_chain_launches_past_the_identity_check(tmp_pat
     registered(root, pack_commit(tmp_path))  # the register walk is C-33's; the three commands under test follow it
     assert plan_campaign(root, tmp_path, "C1", "--confirm") == 0, capsys.readouterr().err  # a subset: T1 of the baselined T1 and T2
     plan_doc = json.loads((root / "runs" / "C1" / "plan.json").read_text(encoding="utf-8"))
-    assert sorted(plan_doc["tasks"]) == ["T1"] and plan_doc["builds"]["claude-code"]["version"] == "0.3.274"
+    assert sorted(plan_doc["tasks"]) == ["T1"] and plan_doc["builds"]["claude-code"]["version"] == "2.1.274"
     assert bench(root, "campaign", "attach", CID, "C1") == 0, capsys.readouterr().err
     code = real_run(monkeypatch, root, tmp_path, "C1")
     events = run_events(root, "C1")
     stops = [(r["code"], r.get("diff")) for r in events if r["kind"] == "run.launch_stopped"]
     assert not [s for s in stops if s[0] == "HB-IDN-001"], stops  # on the base this is `tasks/T2 removed` or `builds/claude-code added`
     launches = [r for r in events if r["kind"] == "cell.launch_intent"]
-    assert len(launches) == 2 and code == 0, (code, stops, len(launches))
+    assert len(launches) == 8 and code == 0, (code, stops, len(launches))
     first, warm = launches[0]["identity_check_ms"], launches[1]["identity_check_ms"]
     print(f"identity_check_ms first={first} warm={warm}")  # R-106 c6: measured, read from the rows; a breach of 250 ms warm is a finding
     assert isinstance(first, int) and isinstance(warm, int)
@@ -98,11 +98,11 @@ def test_the_three_refusals_of_a_drifted_tree_still_fire_p4(tmp_path, monkeypatc
     assert "HB-CMP-010" in err and "engine.py" in err
     assert not (root / "runs" / "D1").exists()
     stamp = identity.side(identity.manifest(root, ["T1", "T2"]), "run")  # a hand-stamp from the drifted tree
-    write_plan(root, "D2", prereg_hash=digest, harness="claude-code", ident={"hash": identity.identity_hash(stamp), "components": stamp["components"]})
+    write_plan(root, "D2", prereg_hash=digest, harness="claude-code", commit=pack_commit(tmp_path), ident={"hash": identity.identity_hash(stamp), "components": stamp["components"]})
     assert bench(root, "campaign", "attach", CID, "D2") == 1  # leg 2: attach
     assert "HB-CMP-010" in capsys.readouterr().err
     write_text(root / "src" / "harness_bench" / "engine.py", "original\n")
-    write_plan(root, "D3", prereg_hash=digest, harness="claude-code")
+    write_plan(root, "D3", prereg_hash=digest, harness="claude-code", commit=pack_commit(tmp_path))
     assert bench(root, "campaign", "attach", CID, "D3") == 0
     edit_src(root, "engine.py")
     assert real_run(monkeypatch, root, tmp_path, "D3") == 3  # leg 3: the real engine
