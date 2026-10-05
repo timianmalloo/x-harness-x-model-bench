@@ -36,6 +36,7 @@ from harness_bench import (
     views,
 )
 from harness_bench.errors import BenchError, Cause
+from harness_bench.telemetry import claude_code
 
 
 def usage(n):
@@ -54,9 +55,11 @@ class CellClock:
 def run_cell(tmp_path, per_turn=None, budget=60, on_row=None, **fake):
     """The actual engine with injected logical time; no real delay is needed."""
     p = _plan(1, budget=budget, parallelism=1)
+    p["profiles"] = {"fake": {"usage_source": FakeLauncher.usage_source, "vendor": "fake", "auxiliary_models": []}}
     p["tasks"]["X1"]["turns"] = [{"n": 2, "prompt": "Repair it.\n", "sha256": hashlib.sha256(b"Repair it.\n").hexdigest()}]
     log = tmp_path / "prompts.jsonl"
-    cfg = {"prompts_log": str(log), "per_turn": per_turn or [{"files": {"a.txt": "1"}}, {"files": {"a.txt": "2"}}], **fake}
+    cfg = {"prompts_log": str(log), "model": "fake-model",
+           "per_turn": per_turn or [{"files": {"a.txt": "1"}}, {"files": {"a.txt": "2"}}], **fake}
     launcher = FakeLauncher({p["cells"][0]["label"]: cfg})
     clock = CellClock()
     config = engine.EngineConfig(tmp_path / "runs" / p["run_id"], tmp_path / "cells", {"fake": launcher},
@@ -271,6 +274,16 @@ def test_t_drv_1_wrapper_keeps_single_turn_failure_semantics(tmp_path, fake):
     finally:
         cp.terminate_and_confirm(timeout=10)
         cp.close()
+
+
+def test_k1_native_record_contains_both_turns_without_duplicate_message_ids(tmp_path):
+    records = [{"usage": usage(n), "native_usage": {"input_tokens": n, "output_tokens": 0,
+                "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0}} for n in (5, 7)]
+    _, events, cfg, _, _ = run_cell(tmp_path, records)
+    cid = row(events, "cell.outcome")["cell_id"]
+    native = next((cfg.run_dir / "archive" / cid / "attempt-1/home").rglob("*.jsonl"))
+    extraction = claude_code.read(native)
+    assert sum(call.uncached_input for call in extraction.model_calls) == 12, extraction.model_calls
 
 
 def make_cell(tmp_path):
