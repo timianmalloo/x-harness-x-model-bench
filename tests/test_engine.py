@@ -1517,7 +1517,7 @@ def test_a_full_disk_during_the_archive_records_archive_failed_as_disk(base, mon
     def full(src, dst, **kwargs):
         raise OSError(errno.ENOSPC, "No space left on device")
 
-    monkeypatch.setattr(archive.shutil, "copyfile", full)
+    monkeypatch.setattr(archive, "_copy_hashed", full)
     p = _plan(n_cells=1)
     cid = p["cells"][0]["cell_id"]
     summary, events, config = _run(base, p, FakeLauncher({}))
