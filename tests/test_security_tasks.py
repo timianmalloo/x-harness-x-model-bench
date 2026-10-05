@@ -28,6 +28,7 @@ from pathlib import Path
 
 import pytest
 import ring_cache
+from test_ng_tasks import reader_problems  # the shared restatement of W0 section 2's variants reader
 
 from harness_bench import config
 from harness_bench.grade import CellInput
@@ -485,6 +486,13 @@ def test_s1_the_variant_judge_rejects_a_variant_that_crashes(s1_base):
 
 def flipped_branches(variants: dict) -> set[str]:
     return {f"{probe}:{clause}" for spec in variants.values() for probe, clause in spec["clause"].items()}
+
+
+def test_s1_variants_conform_to_the_w0_section_2_carrier():
+    """W0 rev 6.10 section 2: one literal `VARIANTS`, `{flips, clauses, edits: [{file, old, new}]}`, names `^[a-z0-9]{1,16}$`, each
+    `old` once in the reference overlay file. X-E's reader refuses anything else with HB-RDY-005."""
+    text = (ORACLE / "variants.py").read_text(encoding="utf-8")
+    assert reader_problems(text, {APP_REL: reference_source()}) == []
 
 
 def test_s1_every_probe_branch_is_flipped_by_a_variant():
