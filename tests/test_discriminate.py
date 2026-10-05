@@ -325,8 +325,9 @@ def test_a_variant_whose_flips_differ_from_the_declared_ones_is_hb_rdy_003(base)
     wrong = {"m9": {"flips": ["p-1"], "clauses": {"p-1": "echo"}, "edits": [mt.edit_for("p-2")]}}
     root = new_root(base, "disc_p", variants=mt.variants_text(wrong))
     assert trial(base, root, "DISC-P").outcome == "written"
-    (failure,) = readiness.record_failures(root, "DISC-P")
-    assert failure.code == "HB-RDY-003" and failure.item == "m9"
+    failures = readiness.record_failures(root, "DISC-P")
+    assert [(f.code, f.item) for f in failures] == [("HB-RDY-003", "m9")]
+    failure = failures[0]
     assert "p-1" in failure.detail and "p-2" in failure.detail
 
 
