@@ -142,6 +142,9 @@ def test_t_eng_4_usage_sums_every_turn(tmp_path, source):
                 for n in (5, 7)]
     with pytest.MonkeyPatch.context() as patch:
         patch.setattr(FakeLauncher, "usage_source", source)
+        # req-01M472W8WPQXV1YF726CAD2794: keep J1b's real usage/view
+        # cross-check independent of J1d's pending snapshot reader keys.
+        patch.setattr(engine.Engine, "_snapshot_turn", lambda *args: True)
         _, _, cfg, _, _ = run_cell(tmp_path, per_turn)
     rows = views.rows(cfg.run_dir, "turn_usage")
     outcome = row(_events(cfg.run_dir), "cell.outcome")
