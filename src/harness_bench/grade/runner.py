@@ -41,6 +41,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from harness_bench import (
+    archive,
     config,
     identity,
     ledger,
@@ -362,7 +363,7 @@ class _Pass:
                          tool_calls=tuple(tool_rows), turn_usage=tuple(usage.get(cid, [])), metrics={},
                          allow_model_calls=False,  # R-58 DR-2: only `judge.calling` (--allow-model-calls) sets it
                          extraction=ex, prices=self.prices if self.prices_ok else None, emit=self.append,
-                         work_root=work_root)
+                         work_root=work_root, snapshots=self._snapshots(cid, task))
         prop = (task.get("property") or {}).get("name") if current else None
         for grader, metrics in applicable(self.catalog, names, prop).items():
             inp = dataclasses.replace(base, out_dir=out_dir / grader, work_root=work_root / grader, metrics=metrics)
@@ -370,6 +371,10 @@ class _Pass:
             self.wanted.update((cid, m) for m in metrics)
             for metric in sorted(metrics):
                 self._score(cell, attempt, metric, scores[metric])
+
+    def _snapshots(self, cid: str, task: Mapping) -> dict[int, Path]:
+        """Turn n -> its snapshot folder for a task with turns (W1-J section 7 row 11); the path function only."""
+        return {n: archive.snapshot_folder(self.run_dir, cid, n) for n in range(1, len(task.get("turns") or ()) + 1)}
 
     def _run_grader(self, grader: str, inp: CellInput, current: bool) -> dict[str, Score]:
         """One Score for each applicable metric of `grader` (design: the dispatch, step 3)."""
