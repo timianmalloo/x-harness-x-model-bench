@@ -4499,6 +4499,46 @@ window.DOCS_INDEX = {
       "sourceSha256": "21e6681caa476d0431a368581b3fd833f4f8ad39dc21839e9eaf027095b7237d"
     },
     {
+      "id": "plan-eval-x-j1b",
+      "path": "docs/plans/eval-x-j1b.md",
+      "title": "X-J1b: returned-turn usage, decisions and session lifetime",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Create-only execution plan and red proof for dispatch x-j1b-e1e4. Builds three fixes on J1a's landed interfaces; runtime evidence and final cost ledger are recorded in the closing coordination-worker audit entry. The Leader performs independent join review.",
+      "tags": [
+        "implementation",
+        "evaluation",
+        "multi-turn",
+        "proof"
+      ],
+      "links": [
+        {
+          "to": "brief-eval-x-j1",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "Execution graph",
+          "mermaid": "flowchart LR\n B --> R --> P --> S --> U --> D --> C --> G --> H"
+        }
+      ],
+      "sourceSha256": "33a78832e033e09bd28b598f304a50e097bac5d6eef1ff98d9b20110037ad4d3"
+    },
+    {
       "id": "proof-phase2",
       "path": "docs/proof/phase2.md",
       "title": "Proof Pack - phase 2 (wave-by-wave joins)",
@@ -8884,6 +8924,14 @@ window.DOCS_INDEX = {
       "artifactId": "plan-eval-x-j1a"
     },
     {
+      "id": "surface-plans-eval-x-j1b",
+      "path": "docs/plans/eval-x-j1b.html",
+      "title": "Eval X J1B",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-j1b"
+    },
+    {
       "id": "surface-case-study",
       "path": "docs/case-study.html",
       "title": "From Specification to Implementation: An AI-Forward Case Study",
@@ -8930,5 +8978,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "8f44db1a8df1a24f082bb5794a671e552aa07873682645516e4edde48e3e3697"
+  "graphSha256": "6b7510ae9f30740ead753678019786c5778ecc0c7e6fb692a006b5606d397216"
 };
