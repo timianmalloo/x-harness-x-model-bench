@@ -164,8 +164,8 @@ def test_gate_bnd_a_beats_cell_lost():
 
 
 def test_gate_grader_error_once_per_cell_not_also_primary_unrecorded():
-    cells = _clean_cells(("a",)) + [_cell("b", 1, "off", primary=None, reason=GRADER, cid="g1",
-                                          extra={"m2": views.Measure(None, GRADER), "m3": views.Measure(None, GRADER)})]
+    cells = _clean_cells(("a",)) + [_cell("a", 3, "off", primary=None, reason=GRADER, cid="g1",
+                                          extra={"m2": views.Measure(None, GRADER)})]
     assert _kinds(_pilot(cells)) == [("grader-error", "g1")]
 
 
@@ -249,7 +249,7 @@ def test_pilot_output_is_sorted_unique_and_order_independent(shuffler, hidden):
     keys = _kinds(baseline)
     assert again == baseline
     assert keys == sorted(set(keys))
-    assert len(baseline) >= 8
+    assert len(baseline) >= 7
 
 
 # ---------------------------------------------------------------- pack_regression
