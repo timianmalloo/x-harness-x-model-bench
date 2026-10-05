@@ -867,3 +867,16 @@ def test_tb10_compare_refuses_different_ring_hashes(tmp_path):
     assert "ring hashes differ:" in exc_info.value.message
     assert "hash differs: A hash-a, B hash-b" in exc_info.value.message
 
+
+
+def test_tb10_compare_accepts_equal_ring_hashes_and_rings_absent_on_one_side(tmp_path):
+    """EV-15: only two differing ring hashes are refused; the same hash, or a run with no ring, compares as before."""
+    root = make_root(tmp_path)
+    run_a = stats_run(root, tmp_path, run_id="r-a", tasks=("A1",), reps=1, arms=("off",), combos=["c"])
+    run_b = stats_run(root, tmp_path, run_id="r-b", tasks=("A1",), reps=1, arms=("off",), combos=["c"])
+    view_a, view_b = views.load(run_a), views.load(run_b)
+    view_a.plan["ring"] = {"tag": "pilot", "hash": "same"}
+    view_b.plan["ring"] = {"tag": "pilot", "hash": "same"}
+    assert board.compare(view_a, view_b, TEST_CATALOG) is not None
+    view_b.plan.pop("ring")
+    assert board.compare(view_a, view_b, TEST_CATALOG) is not None

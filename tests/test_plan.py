@@ -1047,3 +1047,23 @@ def test_pinned_copilot_instruction_list_repeats_for_both_real_working_copies(ba
     assert results["off"] == [[], []]
     assert results["on"][0] == results["on"][1]
     assert any(row.get("sourcePath") == "AGENTS.md" for row in results["on"][0])
+
+
+def test_a_three_arm_plan_stores_a_seed_whose_order_meets_the_balance_bound(tmp_path):
+    matrix = {
+        "schema": "bench-matrix/2", "repetitions": 3, "bom": {"subset": ["X1"]},
+        "arms": [{"id": "off"}, {"id": "candidate"}, {"id": "incumbent"}],
+        "comparisons": [["off", "candidate"], ["incumbent", "candidate"]],
+        "combos": [{"id": "cc-opus", "harness": "claude-code", "model": "claude-opus-5-5"}],
+    }
+    bom = config.load_yaml(ROOT / "bench" / "bom.yaml")
+    arm_packs = {
+        "off": None,
+        "candidate": {"source": str(tmp_path), "commit": "c" * 40, "revision": 1},
+        "incumbent": {"source": str(tmp_path), "commit": "d" * 40, "revision": 2},
+    }
+    body = plan.build_plan(ROOT, matrix, bom, "three-arm", builds={"claude-code": {"version": "test"}}, arm_packs=arm_packs)
+    cells = plan.expand(body["matrix"], bom, {"X1": body["tasks"]["X1"]["version_hash"]})
+    ordered = plan.launch_order(cells, body["launch_seed"])
+    assert [c.id for c in ordered] == [c["cell_id"] for c in body["cells"]]
+    assert plan.launch_balance(ordered) < plan.BALANCE_BOUND == Fraction(1, 20)
