@@ -1833,7 +1833,7 @@ DR-K3 (Leader relaying W1-K's reviews: SRE 1, 2, 4, 5, 6; PAT 2, 3; SIM 3). Two 
 
 - request: req-01M44NYTJ5VS2EJAVHG3V2MYH6 · ruled by: owner-fable · at: 2026-10-05T00:13:58Z
 
-### Ruling 105 — Owner seat (Fable) · DR-13 (the primary cannot advance past X-A1b; every external dispatch bases on its HEAD 4891e4d4): (b) granted, bounded per turn, minus X-H1c — X-H1b, X-C1..C3 and X-H2 run as Sonnet from the integration head only at their dispatch moment and only while the primary is still blocked, recorded with planned harness and reason; X-H1c stays Grok, dispatched now from 4891e4d4 (no data edge to H1a, files disjoint from the integration delta); E2-E4 external turns wait; (a) and (c) refused
+### Ruling 105 — 2026-10-04 · Owner seat (Fable) · DR-13 (the primary cannot advance past X-A1b; every external dispatch bases on its HEAD 4891e4d4): (b) granted, bounded per turn, minus X-H1c — X-H1b, X-C1..C3 and X-H2 run as Sonnet from the integration head only at their dispatch moment and only while the primary is still blocked, recorded with planned harness and reason; X-H1c stays Grok, dispatched now from 4891e4d4 (no data edge to H1a, files disjoint from the integration delta); E2-E4 external turns wait; (a) and (c) refused
 
 - **Recorded as DR-13** (`req-01M45139XPTX9ATRE3S5WEVR87`, Leader epoch 17 → `owner-fable`; fallback until ruled: Sonnet-only tracks proceed, every external turn waits for the operator). Ruled from the worktree `owner/ruling-r105` at base `4891e4d4`, written through `coord decide rule` so the ledger links (R-104's shape).
 - **Facts, Verified by me on 2026-10-04 20:20-20:35 PDT** (every file opened in the primary or the tree named; nothing edited in the primary):
