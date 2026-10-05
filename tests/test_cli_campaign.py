@@ -8,16 +8,20 @@ Expected values are typed here or computed with hashlib, never with the function
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
+import json
 import re
+import shutil
 import subprocess
 import sys
 from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
+import yaml
 
-from harness_bench import atomic, campaign, cli, gitsafe, ledger
+from harness_bench import atomic, campaign, cli, gitsafe, identity, ledger, oslock, plan
 from harness_bench.errors import BenchError
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -238,3 +242,232 @@ def test_the_parser_validates_the_campaign_id_before_any_command_runs():
         assert code_of(err) == "HB-USR-002", bad
 
 
+
+
+# --- the C2 fixtures: a real classed tree, the real manifest, hand-written confirmed plans --------------------------------
+
+SRC_FILES = ("engine.py", "grade/formal.py", "telemetry/normalize.py")
+TASK = "T1"
+TREAT_COMMIT = "a" * 40
+
+
+def write_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+
+
+def make_tree(root: Path, tasks: tuple[str, ...] = ("T1", "T2")) -> None:
+    """The baseline fixture: a small classed source tree, the committed harness profiles, the bench files the manifest reads,
+    a ready task per id, the defect-class and spike notes, and a catalog freeze that holds the tree's own catalog hash. Committed."""
+    for name in SRC_FILES:
+        write_text(root / "src" / "harness_bench" / name, "original\n")
+    shutil.copytree(ROOT / "bench" / "profiles", root / "bench" / "profiles")
+    for name in ("metrics.yaml", "prices.yaml", "gateway.yaml"):
+        write_text(root / "bench" / name, "version: 1\nmetrics: []\n")
+    rows = "".join(f"  - {{ id: {t}, scenario: 5, smoke: false, budget_minutes: 5, source: authored, title: t }}\n" for t in tasks)
+    write_text(root / "bench" / "bom.yaml", f"schema: bench-bom/1\ntasks:\n{rows}")
+    write_text(root / "uv.lock", "version = 1\n")
+    for t in tasks:
+        write_text(root / "tasks" / t / "prompt.md", f"task {t}\n")
+        write_text(root / "tasks" / t / "task.yaml", f"schema: bench-task/1\nid: {t}\nstatus: ready\nproperty:\n  name: security\n")
+    write_text(root / "docs" / "lessons" / "defect-classes.md", "### MOD-A — a class\n\n### CONC-A: another\n\nMOD-B is named only here.\n")
+    write_text(root / "docs" / "notes" / "spike-e4-post-turn-prompt.md", "---\nstatus: accepted\n---\nbody\n")
+    set_freeze(root, identity.catalog_hash(root))
+    commit_all(root, "tree")
+
+
+def set_freeze(root: Path, catalog_hash: str | None) -> None:
+    versions = {} if catalog_hash is None else {"0.7": {"catalog_hash": catalog_hash}}
+    write_text(root / "bench" / "catalog-freeze.yaml", yaml.safe_dump({"schema": "bench-catalog-freeze/1", "versions": versions}))
+
+
+def edit_src(root: Path, name: str, text: str = "edited\n") -> None:
+    write_text(root / "src" / "harness_bench" / name, text)
+
+
+def created(root: Path) -> None:
+    assert bench(root, "campaign", "create", CID, "--question", QUESTION) == 0
+
+
+def baselined(root: Path, *tasks: str) -> None:
+    """A created campaign and its baseline, written as the baseline command writes them: the identity file, then the row.
+    The `baseline` command itself is under test only where a test names it, so no other test is red because of it."""
+    created(root)
+    digest = put(root, identity.manifest(root, list(tasks or ("T1",))), "identity")
+    append(root, "baseline.recorded", identity_hash=digest, bench_commit=git(root, "rev-parse", "HEAD").stdout.strip())
+
+
+def rows_of(root: Path, cid: str = CID) -> list[dict]:
+    return ledger.read_segment(ledger_path(root, cid))
+
+
+def kinds(root: Path) -> list[str]:
+    return [r["kind"] for r in rows_of(root)]
+
+
+def chain_identity(root: Path, cid: str = CID) -> dict:
+    """The chain's effective run side as a plan stamps it (a fixture: the test builds the stamp the way `plan --campaign` will)."""
+    run = identity.side(campaign.effective_identity(root, campaign.read(root, cid)), "run")
+    return {"hash": identity.identity_hash(run), "components": run["components"]}
+
+
+def register_row(root: Path, commit: str = TREAT_COMMIT) -> str:
+    """One `registered` row over a prereg file naming the treat arm's pack commit (the register command is C2b; this is the row it writes)."""
+    digest = put(root, {"schema": "bench-prereg/1", "question": QUESTION, "arms": {"treat": {"commit": commit, "revision": "r1"}}}, "prereg")
+    append(root, "registered", prereg_hash=digest)
+    return digest
+
+
+def registered(root: Path, commit: str = TREAT_COMMIT) -> str:
+    """Walk a baselined campaign to `registered` by real rows; returns the prereg hash."""
+    append(root, "pilot.passed")
+    return register_row(root, commit)
+
+
+def write_plan(root: Path, run_id: str, *, cid: str = CID, prereg_hash: str | None = "unset", ident: dict | None = None, ring: dict | None = None,
+               kind: str | None = None, commit: str = TREAT_COMMIT, harness: str = "claude-code", tasks: tuple[str, ...] = ("T1",),
+               campaign_block: bool = True) -> dict:
+    """A confirmed `plan.json` under runs/<id>/ (`plan_hash` recomputed, so `load_confirmed` accepts it)."""
+    if prereg_hash == "unset":
+        prereg_hash = latest_prereg(root, cid)
+    cells = [{"cell_id": c.id, "label": c.label, **dataclasses.asdict(c)}
+             for c in (plan.Cell(t, "v1", 5, "c1", harness, "fake-model", arm, 1, 60) for t in tasks for arm in ("base", "treat"))]
+    doc = {"schema": plan.SCHEMA, "run_id": run_id, "trace_id": "a" * 32,
+           "parameters": {**plan.DEFAULT_PARAMETERS, "parallelism": 1, "disk_floor_bytes": 1024},
+           "tasks": {t: {"prompt": "p\n", "version_hash": plan.task_version_hash(root / "tasks" / t)} for t in tasks}, "builds": {harness: {}},
+           "arms": {"base": {"pack": None}, "treat": {"pack": {"commit": commit, "revision": "r1", "source": "https://example.test/pack"}}},
+           "cells": cells, "profiles": {harness: {"profile_hash": "", "usage_source": "acp_turn", "auxiliary_models": [], "record_glob": "x"}}}
+    if campaign_block:
+        doc["campaign"] = {"campaign_id": cid, "prereg_hash": prereg_hash, "identity": ident or chain_identity(root)}
+    if ring is not None:
+        doc["ring"] = ring
+    if kind is not None:
+        doc["kind"] = kind
+    doc["plan_hash"] = plan.plan_hash(doc)
+    write_text(root / "runs" / run_id / "plan.json", json.dumps(doc, indent=2, sort_keys=True))
+    return doc
+
+
+def latest_prereg(root: Path, cid: str = CID) -> str | None:
+    hits = [r for r in rows_of(root, cid) if r["kind"] == "registered"]
+    return hits[-1]["prereg_hash"] if hits else None
+
+
+def power_file(root: Path, name: str = "power.json", **over) -> Path:
+    """Valid bench-power-inputs/1 (decimals are strings: the canonical form has no float)."""
+    body = {"alpha": "0.05", "power": "0.8", "correction": {"method": "bonferroni", "m": 2}, "pairing_unit": "unpaired", "slots": 2,
+            "harnesses": ["claude-code"], "comparisons": [["base", "treat"]], "mean_wall_per_cell_s": 600, "mean_tokens_per_cell": 100000,
+            "properties": {"security": {"mde": "0.3", "tasks": ["T1", "T2"]}}, **over}
+    path = root / name
+    path.write_text(json.dumps(body), encoding="utf-8")
+    return path
+
+
+# --- C2a: the real cmd_run and the real engine (P-3, P-4, P-5, P-7, I-3) -----------------------------------------------------
+
+def tree(tmp_path: Path, name: str | None = None) -> Path:
+    if name:
+        tmp_path = tmp_path / name
+        tmp_path.mkdir()
+    root = make_repo(tmp_path)
+    make_tree(root)
+    return root
+
+
+def run_events(root: Path, run_id: str) -> list[dict]:
+    folder = root / "runs" / run_id / "events"
+    return [row for seg in sorted(folder.glob("*.jsonl")) for row in ledger.read_segment(seg)] if folder.is_dir() else []
+
+
+def real_run(monkeypatch, root: Path, tmp_path: Path, run_id: str) -> int:
+    """`bench run` through the real `cmd_run` and the real engine. Faked: the launcher (the fake ACP agent), the workspace builder,
+    preflight and the grading pass; never the engine, its lock, `identity_check=` or `campaign_check=`."""
+    from test_engine import FakeLauncher, _build_workspace
+
+    monkeypatch.setattr(cli.profiles, "load", lambda r, h: None)
+    monkeypatch.setattr(cli.profiles, "ProfileLauncher", lambda profile, tools, planned: FakeLauncher({}))
+    monkeypatch.setattr(cli, "_workspace_builder", lambda *a, **k: _build_workspace)
+    monkeypatch.setattr(cli.preflight, "check", lambda *a, **k: None)
+
+    def no_grading(*a, **k):
+        raise BenchError("HB-GRD-005", "grading is not part of this test")
+
+    monkeypatch.setattr(cli.runner, "run_pass", no_grading)
+    return cli_rc(["--root", str(root), "--cells-root", str(tmp_path / "cells"), "--tools-dir", str(tmp_path / "tools"), "run", run_id])
+
+
+def attached(root: Path, run_id: str = "R2") -> dict:
+    """A registered campaign, a plan over the fake harness, and the grid attach, through the real commands."""
+    baselined(root, "T1", "T2")
+    digest = registered(root)
+    doc = write_plan(root, run_id, prereg_hash=digest, harness="fake")
+    assert bench(root, "campaign", "attach", CID, run_id) == 0
+    return doc
+
+
+def test_bench_run_refuses_an_unattached_campaign_plan_p3(tmp_path, monkeypatch, capsys):
+    root = tree(tmp_path)
+    baselined(root, "T1", "T2")
+    digest = registered(root)
+    write_plan(root, "G1", prereg_hash=digest, harness="fake")  # a grid plan nothing attached
+    write_plan(root, "P1", prereg_hash=None, harness="fake", ring={"tag": "pilot", "hash": "r" * 64})  # a pilot plan with no ring row
+    moved = write_plan(root, "M1", prereg_hash="0" * 64, harness="fake")  # a grid plan whose registered hash moved, though a row names it
+    append(root, "grid.attached", run_id="M1", plan_hash=moved["plan_hash"])
+    for run_id in ("G1", "P1", "M1"):
+        capsys.readouterr()
+        assert real_run(monkeypatch, root, tmp_path, run_id) == 1, run_id
+        assert "HB-CMP-010" in capsys.readouterr().err, run_id
+        assert run_events(root, run_id) == [], run_id  # nothing launched, and no started-run marker: the operator can retry
+
+
+def test_the_campaign_check_runs_under_the_run_lock_before_the_first_launch_p7(tmp_path, monkeypatch):
+    root = tree(tmp_path)
+    doc = attached(root)
+    seen: dict = {}
+
+    def recording(root_, plan_doc, run_id):
+        seen.update(held=oslock.is_held(root / "runs" / "R2" / ".lock"), events=(root / "runs" / "R2" / "events").exists(),
+                    who=(plan_doc["run_id"], run_id))
+
+    monkeypatch.setattr(campaign, "run_side_check", recording)
+    real_run(monkeypatch, root, tmp_path, "R2")
+    assert seen == {"held": True, "events": False, "who": ("R2", "R2")}, seen
+    assert doc["run_id"] == "R2"
+
+
+def test_a_tree_edit_after_attach_is_stopped_by_the_real_engine_with_hb_idn_001_p4_p5(tmp_path, monkeypatch, capsys):
+    root = tree(tmp_path)
+    baselined(root, "T1", "T2")
+    digest = registered(root)
+    drifted = tree(tmp_path, "drifted")  # a plan stamped from a tree that is not the chain's (the hand-stamp of P-4)
+    edit_src(drifted, "engine.py")
+    stamp = identity.side(identity.manifest(drifted, ["T1", "T2"]), "run")
+    write_plan(root, "H1", prereg_hash=digest, harness="fake", ident={"hash": identity.identity_hash(stamp), "components": stamp["components"]})
+    capsys.readouterr()
+    assert bench(root, "campaign", "attach", CID, "H1") == 1
+    assert "HB-CMP-010" in capsys.readouterr().err
+    write_plan(root, "R2", prereg_hash=digest, harness="fake")
+    assert bench(root, "campaign", "attach", CID, "R2") == 0
+    edit_src(root, "engine.py")  # the tree changes after the attach: the chain still matches the plan, the tree does not
+    assert real_run(monkeypatch, root, tmp_path, "R2") == 3
+    events = run_events(root, "R2")
+    stops = [r for r in events if r["kind"] == "run.launch_stopped"]
+    assert [r["code"] for r in stops] == ["HB-IDN-001"]
+    assert not any(r["kind"] == "cell.launch_intent" for r in events)
+
+
+def test_a_grid_launch_never_precedes_its_attach_row_i3(tmp_path, monkeypatch):
+    root = tree(tmp_path)
+    attached(root)
+    from test_engine import FakeLauncher
+
+    seen: list[list[str]] = []
+    real = FakeLauncher.check_build
+
+    def recording(self):
+        seen.append([r["kind"] + ":" + str(r.get("run_id")) for r in rows_of(root)])
+        return real(self)
+
+    monkeypatch.setattr(FakeLauncher, "check_build", recording)
+    assert real_run(monkeypatch, root, tmp_path, "R2") == 0
+    assert seen and all("grid.attached:R2" in kinds_then for kinds_then in seen), seen
