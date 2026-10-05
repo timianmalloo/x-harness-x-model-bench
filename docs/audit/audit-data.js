@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-05T15:12:46Z",
+  "generated": "2026-10-05T16:02:26Z",
   "audit": [
     {
       "actor": null,
@@ -87160,6 +87160,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-05T15:12:45Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M46CTP5E02TVMNQWBEE02A3K",
+      "shortname": "join-x-i5",
+      "datetime": "2026-10-05T16:02:26Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of build/eval-x-i5 into integrate/e2e4-18",
+      "summary": "X-I5 (Sonnet claude-sonnet-5-5): S1 check keeps four payloads in one id table, two NA declarations from grade/correctness.py, task version 1f84ef69; red d34ed4a4 re-run by Leader (3 assertion failures); fallback for req-01M46AMDRDRJ1XA610E63MJXD0 accepted pending Coordinator recount_seconds=1591 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join X-I5 into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-05T15:35:54Z",
+      "duration_seconds": 1592.0
     }
   ],
   "changes": [
