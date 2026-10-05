@@ -1,0 +1,147 @@
+[
+ {
+  "name": "the record compare is skipped, so a differing re-run reaches create_once and raises HB-LED-007, not HB-RDY-010",
+  "file": "src/harness_bench/discriminate.py",
+  "find": "        if stored != data:\n",
+  "replace": "        if False:\n",
+  "tests": [
+   "tests/test_discriminate.py::test_no_link_after_hb_rdy_010"
+  ]
+ },
+ {
+  "name": "a run id is put back in the record body, so a retry at an unchanged key differs from the stored bytes",
+  "file": "src/harness_bench/discriminate.py",
+  "find": "\"scores\": {role: scores[role] for role in ROLES}, \"expected\": expected}",
+  "replace": "\"scores\": {role: scores[role] for role in ROLES}, \"expected\": expected, \"run_id\": p[\"run_id\"]}",
+  "tests": [
+   "tests/test_discriminate.py::test_retry_at_an_unchanged_key_is_a_confirmation",
+   "tests/test_discriminate.py::test_record_body_is_a_pure_function_of_its_key"
+  ]
+ },
+ {
+  "name": "a record that appears during the trial is read as the stored one",
+  "file": "src/harness_bench/discriminate.py",
+  "find": "        if not existed:\n",
+  "replace": "        if False:\n",
+  "tests": [
+   "tests/test_discriminate.py::test_a_record_that_appears_mid_trial_is_untrustworthy_and_not_written"
+  ]
+ },
+ {
+  "name": "the sweep accepts another task's lock",
+  "file": "src/harness_bench/discriminate.py",
+  "find": "    if lock.path.name != f\".discriminate-{task_id}.lock\":\n",
+  "replace": "    if False:\n",
+  "tests": [
+   "tests/test_discriminate.py::test_the_sweep_is_pinned_to_its_own_tasks_lock"
+  ]
+ },
+ {
+  "name": "a load-driven timeout is no longer an item",
+  "file": "src/harness_bench/discriminate.py",
+  "find": "if out == \"timeout\" and c not in allowed)",
+  "replace": "if out == \"never\" and c not in allowed)",
+  "tests": [
+   "tests/test_discriminate.py::test_a_timeout_trial_writes_no_record_and_the_clean_retry_succeeds"
+  ]
+ },
+ {
+  "name": "an NA reason outside the closed set is let into a record",
+  "file": "src/harness_bench/discriminate.py",
+  "find": "            elif reason not in NA_REASONS:\n",
+  "replace": "            elif False:\n",
+  "tests": [
+   "tests/test_discriminate.py::test_an_na_reason_outside_the_closed_set_is_untrustworthy"
+  ]
+ },
+ {
+  "name": "the score compare is greater-or-equal, so a naive primary of 1 against 0 passes",
+  "file": "src/harness_bench/readiness.py",
+  "find": "ok = normal(observed, table.get(metric)) == normal(declared[metric], table.get(metric))",
+  "replace": "ok = normal(observed, table.get(metric)) >= normal(declared[metric], table.get(metric))",
+  "tests": [
+   "tests/test_readiness.py::test_each_record_item_fails_with_its_code"
+  ]
+ },
+ {
+  "name": "the campaign baseline is compared whole, not through for_task",
+  "file": "src/harness_bench/readiness.py",
+  "find": "identity.identity_hash(identity.for_task(dict(baseline), task_id))",
+  "replace": "identity.identity_hash(dict(baseline))",
+  "tests": [
+   "tests/test_readiness.py::test_a_campaign_baseline_with_two_tasks_and_builds_equals_the_task_identity"
+  ]
+ },
+ {
+  "name": "R-HOST is not applied: a check-less record may carry a probe",
+  "file": "src/harness_bench/readiness.py",
+  "find": "            if probe is not None else []",
+  "replace": "            if False else []",
+  "tests": [
+   "tests/test_readiness.py::test_a_check_less_task_carrying_a_probe_fails_and_one_without_passes"
+  ]
+ },
+ {
+  "name": "the hosts_ready count is no longer compared with the cases",
+  "file": "src/harness_bench/readiness.py",
+  "find": "              or digest.get(\"hosts_ready\") != len(cases)):",
+  "replace": "              or False):",
+  "tests": [
+   "tests/test_readiness.py::test_ready_without_a_real_host_record_is_refused"
+  ]
+ },
+ {
+  "name": "the variants file size cap is dropped",
+  "file": "src/harness_bench/readiness.py",
+  "find": "    if path.stat().st_size > MAX_VARIANTS_BYTES:\n        raise _bad(task_id, f\"is over {MAX_VARIANTS_BYTES} bytes\")\n",
+  "replace": "",
+  "tests": [
+   "tests/test_readiness.py::test_each_variants_defect_is_hb_rdy_005"
+  ]
+ },
+ {
+  "name": "a variant name is not held to the charset",
+  "file": "src/harness_bench/readiness.py",
+  "find": "VARIANT_NAME = re.compile(r\"[a-z0-9]{1,16}\")",
+  "replace": "VARIANT_NAME = re.compile(r\".*\")",
+  "tests": [
+   "tests/test_readiness.py::test_each_variants_defect_is_hb_rdy_005"
+  ]
+ },
+ {
+  "name": "the overlay path rule lets a parent segment through",
+  "file": "src/harness_bench/synthetic_agent.py",
+  "find": "    if part in (\"\", \".\", \"..\"):\n",
+  "replace": "    if part in (\"\", \".\"):\n",
+  "tests": [
+   "tests/test_synthetic_agent.py::test_safe_relpath_refuses_each_unsafe_form"
+  ]
+ },
+ {
+  "name": "the agent writes through a link already in the working copy",
+  "file": "src/harness_bench/synthetic_agent.py",
+  "find": "        if _is_link(st) or not stat.S_ISDIR(st.st_mode):\n",
+  "replace": "        if False:\n",
+  "tests": [
+   "tests/test_synthetic_agent.py::test_the_agent_refuses_a_link_already_in_the_working_copy"
+  ]
+ },
+ {
+  "name": "reconciliation trusts a link without hashing the record",
+  "file": "src/harness_bench/readiness.py",
+  "find": "    if hashlib.sha256(path.read_bytes()).hexdigest() != link.get(\"record_sha256\"):\n",
+  "replace": "    if False:\n",
+  "tests": [
+   "tests/test_discriminate.py::test_reconciliation_reasons_never_fail_and_never_pass"
+  ]
+ },
+ {
+  "name": "the launcher passes the whole environment to the agent",
+  "file": "src/harness_bench/discriminate.py",
+  "find": "        env = grading_env()\n",
+  "replace": "        env = dict(__import__(\"os\").environ)\n",
+  "tests": [
+   "tests/test_discriminate.py::test_synthetic_environment_and_record_leak_scan"
+  ]
+ }
+]

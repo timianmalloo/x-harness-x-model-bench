@@ -11,7 +11,6 @@ clean retry then contradicts. The link `runs/<run>/discrimination-link.json` is 
 import hashlib
 import json
 import secrets
-import shutil
 import sys
 import time
 from dataclasses import dataclass
@@ -30,7 +29,7 @@ from harness_bench import (
     workspace,
 )
 from harness_bench.errors import BenchError
-from harness_bench.grade import correctness, judge, runner
+from harness_bench.grade import _changes, correctness, judge, runner
 from harness_bench.readiness import (
     CORRECTNESS_SCORES,
     FLIPPED,
@@ -129,7 +128,7 @@ def _overlays(task_dir: Path) -> dict[str, tuple[str, Path]]:
 def _variant_overlay(task_dir: Path, name: str, entry: dict, dest: Path) -> Path:
     """The reference overlay with the variant's edits applied, held under the run folder, never in the task folder. Every
     edit was checked by `readiness.variants` (path rule, `old` exactly once), so each applies once."""
-    shutil.copytree(task_dir / "oracle" / "solutions" / "reference", dest)
+    _changes.copy_tree(task_dir / "oracle" / "solutions" / "reference", dest, ignore=())
     for edit in entry["edits"]:
         target = dest / edit["file"]
         target.write_bytes(target.read_bytes().replace(edit["old"].encode(), edit["new"].encode(), 1))
@@ -137,7 +136,7 @@ def _variant_overlay(task_dir: Path, name: str, entry: dict, dest: Path) -> Path
 
 
 def _matrix(run_id: str, task_id: str, combos: list[str]) -> dict:
-    return {"schema": "bench-matrix/1", "run_id": run_id, "bom": {"subset": [task_id]}, "packs": ["off"], "repetitions": 1,
+    return {"schema": "bench-matrix/1", "run_id": run_id, "bom": {"subset": [task_id]}, "packs": [config.ARM_OFF], "repetitions": 1,
             "combos": [{"id": c, "harness": "synthetic", "model": "synthetic-1"} for c in combos]}
 
 
@@ -145,7 +144,7 @@ def _workspace_builder(task_dir: Path, sources: Path, upstream: Path):
     def build(cell: dict, cell_dir: Path) -> dict:
         source = workspace.task_source(task_dir, cell["task_version"], sources, upstream)
         workspace.cell_working_copy(source, cell_dir / "ws")
-        return {"arm": "off", "pack_manifest": 0}
+        return {"arm": config.ARM_OFF, "pack_manifest": 0}
 
     return build
 
