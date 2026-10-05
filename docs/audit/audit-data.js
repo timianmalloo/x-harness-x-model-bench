@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-05T20:42:57Z",
+  "generated": "2026-10-05T20:43:01Z",
   "audit": [
     {
       "actor": null,
@@ -92450,6 +92450,33 @@ window.AUDIT_DATA = {
         "acceptance_met": true
       },
       "started_at": "2026-10-05T20:42:56Z",
+      "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M46WWEQ32RKYQ3NS756DE6GF",
+      "shortname": "join-r107-r108",
+      "datetime": "2026-10-05T20:43:01Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of owner/ruling-r108 into integrate/e2e4-18",
+      "summary": "Owner (Fable claude-fable-5-1) 57f6e999 + 3f4561ef: R-107 grants (a) turn_ms int, refuses (b),(c), ADR sync, built/ruled ADRs in force (status clean-up: Leader); R-108 grants (b) bounded: LGc Agy unchanged, A3c Claude Code Sonnet after J1d, (a),(c),(d),(e) refused, condition 4 = dispatch audit entries carry start/end, outcome, served id, tokens or not recorded; docs-only recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join Rulings 107 and 108 into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0; citations green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-05T20:43:00Z",
       "duration_seconds": 1.0
     }
   ],
