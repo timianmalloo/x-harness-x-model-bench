@@ -13,6 +13,7 @@ import json
 import secrets
 import shutil
 import sys
+import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -149,21 +150,6 @@ def _workspace_builder(task_dir: Path, sources: Path, upstream: Path):
     return build
 
 
-def _scores(run_dir: Path, grading_id: str, p: dict, combo_role: dict[str, str], keep: set[str]) -> tuple[dict, dict]:
-    """(role -> metric -> value or {na: reason}, role -> the `property.json` pointer of its property_check_pass row)."""
-    cell_role = {c["cell_id"]: combo_role[c["combo"]] for c in p["cells"]}
-    scores: dict[str, dict] = {role: {} for role in combo_role.values()}
-    pointers: dict[str, str] = {}
-    for row in views.rows(run_dir, "scores"):
-        if row["grading_id"] == grading_id and row["cell_id"] in cell_role:
-            role = cell_role[row["cell_id"]]
-            if row["metric_id"] in keep:
-                scores[role][row["metric_id"]] = row["value"] if row["value"] is not None else {"na": row["reason"]}
-            if row["metric_id"] == "property_check_pass" and row["evidence"]:
-                pointers[role] = row["evidence"]
-    return {role: dict(sorted(s.items())) for role, s in scores.items()}, pointers
-
-
 def _untrustworthy(scores: dict[str, dict], expected: dict) -> list[str]:
     """HB-RDY-011 items from the scores alone: a check or host fault, or an NA reason outside the closed set."""
     items = []
@@ -269,9 +255,33 @@ def run(root: Path, task_id: str, *, runs: Path, cells_root: Path, upstream_root
         return _trial(root, task_id, runs, cells_root, upstream_root or root / ".tools" / "upstream", lock)
 
 
+class _Clock:
+    """Per-phase milliseconds of one trial; a phase never reached stays None and prints `null`, never 0 (IO)."""
+
+    FIELDS = ("plan_ms", "engine_ms", "grade_ms", "compare_ms", "write_ms")
+
+    def __init__(self) -> None:
+        self.ms: dict[str, int | None] = dict.fromkeys(self.FIELDS)
+        self.outcome = "failed"
+
+    def add(self, field: str, start: float) -> None:
+        self.ms[field] = (self.ms[field] or 0) + round((time.monotonic() - start) * 1000)
+
+    def detail(self, cells: int) -> str:
+        return f"outcome={self.outcome} " + " ".join(f"{k}={'null' if v is None else v}" for k, v in self.ms.items()) + f" cells={cells}"
+
+
+def _fail(clock: _Clock, outcome: str, code: str, message: str) -> BenchError:
+    clock.outcome = outcome
+    return BenchError(code, message)
+
+
 def _trial(root: Path, task_id: str, runs: Path, cells_root: Path, upstream: Path, lock: oslock.RunLock) -> Result:
+    clock, t0 = _Clock(), time.monotonic()
     task_dir = root / "tasks" / task_id
     task = config.load_yaml(task_dir / "task.yaml")
+    if task.get("turns"):
+        raise BenchError("HB-RDY-005", f"{task_id}: a task with turns is not built in E1 (multi-turn overlays arrive in E3)")
     contract = readiness.contract_failures(root, task_id)
     if contract:
         raise BenchError("HB-RDY-005", "; ".join(f"{f.item}: {f.detail}" for f in contract))
@@ -291,28 +301,59 @@ def _trial(root: Path, task_id: str, runs: Path, cells_root: Path, upstream: Pat
     plan.confirm(run_dir, p)
     cells_root.mkdir(parents=True, exist_ok=True)
     workspace.check_cells_root(cells_root)
-    launcher = SyntheticLauncher({combo: folder for combo, (_role, folder) in overlays.items()})
+    clock.add("plan_ms", t0)
+    cells = len(p["cells"])
     handler = engine.configure_logging(run_dir, p["trace_id"])
+    error_code = None
     try:
-        cfg = engine.EngineConfig(
-            run_dir=run_dir, cells_root=cells_root, launchers={"synthetic": launcher},
-            build_workspace=_workspace_builder(task_dir, cells_root / ".sources", upstream),
-            grade=lambda d: runner.run_pass(d, root, judge.IN_RUN, cells_root=cells_root).summary())
-        summary = engine.Engine(p, cfg).run()
+        engine.log.info("discriminate.started", extra={"detail": f"task={task_id} cells={cells}"})
+        return _run_and_record(root, task_id, task, run_dir, p, clock, overlays, combo_role, declared, cells_root, upstream,
+                               (tv, ih, path, existed), lock)
+    except BenchError as exc:
+        error_code = exc.code
+        raise
     finally:
+        engine.log.info("discriminate.finished", extra={"detail": clock.detail(cells), "error_code": error_code})
         engine.log.removeHandler(handler)
         handler.close()
+
+
+def _run_engine(root: Path, task_dir: Path, run_dir: Path, p: dict, clock: _Clock, overlays: dict, cells_root: Path, upstream: Path):
+    def grade(d: Path) -> dict:
+        start = time.monotonic()
+        try:
+            return runner.run_pass(d, root, judge.IN_RUN, cells_root=cells_root).summary()
+        finally:
+            clock.add("grade_ms", start)
+
+    cfg = engine.EngineConfig(
+        run_dir=run_dir, cells_root=cells_root, launchers={"synthetic": SyntheticLauncher({c: f for c, (_r, f) in overlays.items()})},
+        build_workspace=_workspace_builder(task_dir, cells_root / ".sources", upstream), grade=grade)
+    start = time.monotonic()
+    try:
+        return engine.Engine(p, cfg).run()
+    finally:
+        spent = round((time.monotonic() - start) * 1000) - (clock.ms["grade_ms"] or 0)
+        clock.ms["engine_ms"] = max(spent, 0)
+
+
+def _run_and_record(root: Path, task_id: str, task: dict, run_dir: Path, p: dict, clock: _Clock, overlays: dict, combo_role: dict,
+                    declared: dict, cells_root: Path, upstream: Path, key: tuple, lock: oslock.RunLock) -> Result:
+    tv, ih, path, existed = key
+    summary = _run_engine(root, root / "tasks" / task_id, run_dir, p, clock, overlays, cells_root, upstream)
     bad = [f"{c['label']} ({summary.outcomes.get(c['cell_id'], {}).get('outcome')}, "
            f"{summary.outcomes.get(c['cell_id'], {}).get('cause')})" for c in p["cells"]
            if summary.outcomes.get(c["cell_id"], {}).get("outcome") != "completed"]
     if summary.exit_code != 0 or bad:
-        raise BenchError("HB-RDY-011", f"trial incomplete, nothing written: {', '.join(bad) or 'the run stopped'}")
+        raise _fail(clock, "failed-engine", "HB-RDY-011", f"trial incomplete, nothing written: {', '.join(bad) or 'the run stopped'}")
     passes = views.completed_passes(run_dir)
     if len(passes) != 1:
-        raise BenchError("HB-RDY-011", f"the grading pass did not complete exactly once ({len(passes)}), nothing written")
+        raise _fail(clock, "failed-grading", "HB-RDY-011", f"the grading pass did not complete exactly once ({len(passes)}), nothing written")
+    start = time.monotonic()
     (grading_id,) = passes
     narrowed = set(readiness.recorded_metrics(root, task))
-    scores, pointers = _scores(run_dir, grading_id, p, combo_role, narrowed | set(CORRECTNESS_SCORES))
+    scores, pointers = readiness.run_scores(run_dir, grading_id, {c["cell_id"]: combo_role[c["combo"]] for c in p["cells"]},
+                                            narrowed | set(CORRECTNESS_SCORES))
     expected = task.get("expected") or {}
     items = _untrustworthy(scores, expected)
     check_based = readiness.is_check_based(task)
@@ -326,21 +367,28 @@ def _trial(root: Path, task_id: str, runs: Path, cells_root: Path, upstream: Pat
     body: dict = {"schema": RECORD_SCHEMA, "task": task_id, "task_version": tv, "identity_hash": ih, "platform": sys.platform,
                   "scores": {role: scores[role] for role in ROLES}, "expected": expected}
     if check_based and not items:
-        body["probe"] = {role: {"deliverable": found[role]["deliverable"], "cases": dict(sorted(found[role]["cases"].items())),
-                                "hosts_ready": found[role]["hosts_ready"]} for role in ROLES}
+        body["probe"] = {role: readiness.probe_digest(found[role]) for role in ROLES}
     if declared and not items:
-        scales = readiness.scales(root)
+        table = readiness.scales(root)
         body["variants"] = {}
         for name, entry in declared.items():
-            rec, more = _variant_record(name, entry, f"variant:{name}", scores, found, check_based, scores["reference"], narrowed, scales)
+            rec, more = _variant_record(name, entry, f"variant:{name}", scores, found, check_based, scores["reference"], narrowed, table)
             body["variants"][name] = rec
             items += more
     if items:
-        raise BenchError("HB-RDY-011", f"trial untrustworthy, nothing written: {'; '.join(items)}")
+        raise _fail(clock, "untrustworthy", "HB-RDY-011", f"trial untrustworthy, nothing written: {'; '.join(items)}")
     body["readiness_failures"] = sorted(f"{f.code}: {f.item}" for f in readiness.body_failures(root, task_id, body))
     data = ledger.canonical(body)
-    created = _publish(task_id, path, data, existed, lock)
+    clock.add("compare_ms", start)
+    start = time.monotonic()
+    try:
+        created = _publish(task_id, path, data, existed, lock)
+    except BenchError as exc:
+        clock.outcome = "determinism-defect" if exc.code == "HB-RDY-010" else "untrustworthy"
+        raise
+    clock.add("write_ms", start)
+    clock.outcome = "written" if created else "confirmed"
     link = ledger.stamp({"schema": LINK_SCHEMA, "record_stem": path.stem, "record_sha256": hashlib.sha256(data).hexdigest(),
-                         "run_id": run_id, "grading_id": grading_id})
+                         "run_id": p["run_id"], "grading_id": grading_id, "timings": dict(clock.ms), "cells": len(p["cells"])})
     atomic.create_once(run_dir / "discrimination-link.json", ledger.canonical(link))
-    return Result("written" if created else "confirmed", path, run_id)
+    return Result(clock.outcome, path, p["run_id"])

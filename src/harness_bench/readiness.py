@@ -10,7 +10,9 @@ They never return a bare None.
 """
 
 import ast
+import hashlib
 import json
+import logging
 import re
 import sys
 from collections.abc import Mapping
@@ -19,9 +21,9 @@ from pathlib import Path
 
 from harness_bench import atomic, config, identity, plan, views
 from harness_bench.errors import BenchError
+from harness_bench.grade import _env, runner
 from harness_bench.grade import property as prop
-from harness_bench.grade import runner
-from harness_bench.synthetic_agent import OverlayError, safe_relpath
+from harness_bench.synthetic_agent import OverlayError, overlay_files, safe_relpath
 
 ROLES = ("reference", "naive")
 CORRECTNESS_SCORES = ("pass_at_1", "partial_credit")  # recorded in `scores`, no expected value (R-90 condition 1)
@@ -184,14 +186,187 @@ def _name_parts(name: str) -> tuple[str, str, str] | None:
     return stem[:_NAME_LEN], stem[_NAME_LEN + 1:2 * _NAME_LEN + 1], stem[2 * _NAME_LEN + 2:]
 
 
+CONTAINER_RUNTIMES = frozenset({"docker", "podman", "nerdctl", "buildah", "ctr", "colima", "lima"})  # simplify: named, extend on a find
+LINUX_ONLY = frozenset({"strace", "ltrace", "gdb", "valgrind", "perf", "bwrap", "firejail", "unshare", "iptables", "systemctl"})
+CASE_ID = re.compile(r"[a-z0-9][a-z0-9_-]{0,31}")
+ENTRY = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.-]*\.py")
+APP_KINDS = frozenset({"callable", "wsgi"})  # what E1 builds (the grader's own set)
+_EXPECTED_LINE = re.compile(r"^(\s+)([A-Za-z0-9_]+):\s*(.*)$")
+
+
+def _provenance_missing(text: str) -> list[tuple[str, str]]:
+    """(role, metric) of every `expected` value line in the raw task.yaml whose `#` comment has fewer than three words (GLD-A:
+    a presence check; whether the value is independent of the grader's output stays a review item)."""
+    out, role, inside = [], "", False
+    for line in text.splitlines():
+        if line.startswith("expected:"):
+            inside = True
+            continue
+        if not inside:
+            continue
+        if line and not line[0].isspace():
+            break
+        m = _EXPECTED_LINE.match(line)
+        if not m:
+            continue
+        indent, key, rest = len(m.group(1)), m.group(2), m.group(3)
+        if indent <= 2 and not rest.strip():
+            role = key
+        elif indent > 2 and role:
+            comment = rest.partition(" #")[2] if " #" in rest else ""
+            if len(comment.split()) < 3:
+                out.append((role, key))
+    return out
+
+
+def _container_items(spec: Mapping) -> list[str]:
+    names = [str(t) for t in spec.get("toolchain") or []]
+    deliverable = spec.get("deliverable") or {}
+    for key in ("build", "start"):
+        argv = deliverable.get(key)
+        if isinstance(argv, list) and argv:
+            names.append(str(argv[0]))
+    stems = {Path(n.replace("\\", "/")).name.lower().removesuffix(".exe") for n in names}
+    return sorted(stems & (CONTAINER_RUNTIMES | LINUX_ONLY))
+
+
+def _case_failures(spec: Mapping, add) -> None:
+    try:
+        prop.check_segment("entry", str(spec.get("entry")), ENTRY)
+    except ValueError as exc:
+        add("cases.yaml", str(exc))
+    for case in spec.get("cases") or []:
+        try:
+            prop.check_segment("case id", str(case.get("id")), CASE_ID)
+        except ValueError as exc:
+            add("cases.yaml", str(exc))
+    for env_name in spec.get("env") or []:
+        if (env_name not in _env.TOOLCHAIN_ENV and not str(env_name).startswith(_env.CHECK_PREFIX)) or _env.denied(str(env_name)):
+            add("cases.yaml env", f"{env_name!r} is neither a toolchain name nor HB_CHECK_*")
+    for rel in (spec.get("app") or {}).get("paths") or []:
+        try:
+            safe_relpath(str(rel))
+        except OverlayError as exc:
+            add("cases.yaml app.paths", f"{rel!r} is not a relative path inside the deliverable ({exc})")
+    if spec.get("interface") != "in-process":
+        add("cases.yaml interface", f"{spec.get('interface')!r} is not built in E1 (loopback arrives in E4)")
+    if (spec.get("app") or {}).get("kind") not in APP_KINDS:
+        add("cases.yaml app.kind", f"{(spec.get('app') or {}).get('kind')!r} is not callable or wsgi")
+
+
 def contract_failures(root: Path, task_id: str) -> list[Failure]:
-    """HB-RDY-005..008 for one task: what needs no run."""
-    return []
+    """HB-RDY-005..008 for one task: what needs no run (EV-1, W1-E section 8.2). Loopback shapes and the HB-RDY-009 frozen
+    value check are not built in E1."""
+    d = root / "tasks" / task_id
+    text = (d / "task.yaml").read_text(encoding="utf-8")
+    task = config.load_yaml(d / "task.yaml")
+    p = task.get("property")
+    if not isinstance(p, dict):
+        return []
+    out: list[Failure] = []
+
+    def add(item: str, detail: str, code: str = "HB-RDY-005") -> None:
+        out.append(Failure(code, item, detail))
+
+    name = p.get("name")
+    if name not in config.PROPERTY_NAMES:
+        return [Failure("HB-RDY-005", "property.name", f"{name!r} is not one of {', '.join(config.PROPERTY_NAMES)}")]
+    if not isinstance(p.get("latent_requirement"), str) or not p["latent_requirement"].strip():
+        add("property.latent_requirement", "missing")
+    terms = p.get("latent_terms")
+    if not isinstance(terms, list) or not terms or not all(isinstance(t, str) and t for t in terms):
+        add("property.latent_terms", "must be a non-empty list of terms")
+        terms = []
+    evidence = p.get("evidence_paths")
+    if not isinstance(evidence, list) or not evidence:
+        add("property.evidence_paths", "at least one path is required")
+    elif (task.get("source") or {}).get("workspace_from") != "source":
+        # assume: a `workspace_from: source` base tree is the upstream clone, which this check does not open; confirm: the
+        # E2 discrimination run builds it; breaks if false: a wrong evidence path of such a task is found one step late.
+        out.extend(Failure("HB-RDY-005", "property.evidence_paths", f"{rel} is not in the base tree")
+                   for rel in evidence if not (d / "workspace" / str(rel)).exists())
+    if p.get("primary_metric") != _PROPERTY_PASS:  # simplify: the catalog's one primary is named here, not derived
+        add("property.primary_metric", f"must be {_PROPERTY_PASS}")
+    graders = task.get("graders") or []
+    if not {"correctness", "property"} <= set(graders):
+        add("graders", "must name correctness and property")
+    radius = (p.get("ceilings") or {}).get("outside_radius_lines")
+    if name == "simplicity" and (isinstance(radius, bool) or not isinstance(radius, int)):
+        add("property.ceilings.outside_radius_lines", "a simplicity task needs an integer outside_radius_lines")
+    catalog = config.load_yaml(root / "bench" / "metrics.yaml")
+    narrowed = runner.applicable(catalog, ["correctness", "property"], name).get("property", {})
+    expected = task.get("expected") or {}
+    for role in ROLES:
+        declared = expected.get(role) or {}
+        out.extend(Failure("HB-RDY-005", f"expected.{role}.{metric}", "missing (or {na: <reason>})") for metric in narrowed if metric not in declared)
+        want = {"reference": 1, "naive": 0}[role]
+        got = declared.get(_PROPERTY_PASS)
+        if got is not None and not isinstance(got, Mapping) and got != want:
+            add(f"expected.{role}.{_PROPERTY_PASS}", f"the primary must be {want} for the {role} role (EV-7), not {got!r}")
+    out.extend(Failure("HB-RDY-005", f"expected.{role}.{metric}", "no provenance comment of at least three words (GLD-A)")
+               for role, metric in _provenance_missing(text) if metric in narrowed)
+    check_dir = d / "oracle" / "check"
+    if name in config.CHECK_PROPERTIES:
+        if not (check_dir / "cases.yaml").is_file():
+            add("oracle/check", f"a {name} task needs oracle/check/ with cases.yaml")
+        else:
+            try:
+                spec = config.load_yaml(check_dir / "cases.yaml")
+                if not (check_dir / str(spec.get("entry"))).is_file():
+                    add("oracle/check", f"the entry {spec.get('entry')!r} is not in oracle/check/")
+                _case_failures(spec, add)
+                out.extend(Failure("HB-RDY-008", "cases.yaml", f"declares {c}, a container runtime or Linux-only tool") for c in _container_items(spec))
+            except (OSError, ValueError, AttributeError) as exc:
+                add("oracle/check/cases.yaml", f"unreadable ({type(exc).__name__})")
+    elif check_dir.exists():
+        add("oracle/check", f"a {name} task has no hidden check; oracle/check/ would be a dead oracle")
+    for role in ROLES:
+        folder = d / "oracle" / "solutions" / role
+        if not folder.is_dir():
+            add(f"oracle/solutions/{role}", "missing")
+            continue
+        try:
+            overlay_files(folder)
+        except OverlayError as exc:
+            add(f"oracle/solutions/{role}", f"overlay refused: {exc}")
+    try:
+        variants(root, task_id)
+    except BenchError as exc:
+        add("oracle/variants.py", exc.message)
+    prompt = (d / "prompt.md").read_text(encoding="utf-8") if (d / "prompt.md").is_file() else ""
+    for term in terms:
+        rx = re.compile(r"(?<![A-Za-z0-9])" + re.escape(term) + r"(?![A-Za-z0-9])", re.IGNORECASE)
+        out.extend(Failure("HB-RDY-006", term, f"prompt line {i} states the latent term {term!r}")
+                   for i, line in enumerate(prompt.splitlines(), 1) if rx.search(line))
+    return out
 
 
-def record_failures(root: Path, task_id: str, *, baseline: Mapping | None = None) -> list[Failure]:
-    """HB-RDY-001..004, 010, 011 for one task: what the discrimination record must show. With a campaign `baseline`
-    manifest the identity compared is `identity_hash(identity.for_task(baseline, task))` (W0 section 6)."""
+def pair_failures(tasks: Mapping[str, Mapping]) -> dict[str, list[Failure]]:
+    """HB-RDY-007 (DR-T1), per property that has a task past `stub`: two tasks, at different bases (a base is the source's
+    repo and commit). A stub with no `source` conflicts with nothing."""
+    out: dict[str, list[Failure]] = {}
+    by_property: dict[str, list[str]] = {}
+    for tid, t in sorted(tasks.items()):
+        by_property.setdefault(str((t.get("property") or {}).get("name")), []).append(tid)
+    for name, ids in by_property.items():
+        live = [i for i in ids if tasks[i].get("status") != "stub"]
+        if not live:
+            continue
+        if len(ids) < 2:
+            out.setdefault(live[0], []).append(Failure("HB-RDY-007", name, f"the {name} property has one task; the pair rule needs two"))
+            continue
+        seen: dict[tuple, str] = {}
+        for tid in live:
+            src = tasks[tid].get("source") or {}
+            base = (src.get("repo"), src.get("commit"))
+            if base in seen:
+                out.setdefault(tid, []).append(Failure("HB-RDY-007", name, f"{tid} and {seen[base]} share one base {base[0]}@{str(base[1])[:12]}"))
+            seen.setdefault(base, tid)
+    return out
+
+
+def _find_record(root: Path, task_id: str, baseline: Mapping | None) -> tuple[Path | None, dict | None, list[Failure]]:
+    """(the record's path, its body, []) when the key names one that matches its body, else (None, None, the failure)."""
     tv, ih = record_key(root, task_id)
     if baseline is not None:
         ih = identity.identity_hash(identity.for_task(dict(baseline), task_id))
@@ -200,30 +375,150 @@ def record_failures(root: Path, task_id: str, *, baseline: Mapping | None = None
     here = [n for n in names if (parts := _name_parts(n)) and parts[0] == tv[:_NAME_LEN] and parts[2] == sys.platform]
     if not here:
         present = ", ".join(names) or "none"
-        return [Failure("HB-RDY-001", task_id, f"no discrimination record for task version {tv[:_NAME_LEN]} on {sys.platform}; present: {present}")]
+        return None, None, [Failure("HB-RDY-001", task_id, f"no discrimination record for task version {tv[:_NAME_LEN]} on {sys.platform}; present: {present}")]
     match = [n for n in here if _name_parts(n)[1] == ih[:_NAME_LEN]]  # type: ignore[index]
     if not match:
-        return [Failure("HB-RDY-002", task_id, f"record identity {_name_parts(here[0])[1]} differs from the current {ih[:_NAME_LEN]}")]  # type: ignore[index]
+        return None, None, [Failure("HB-RDY-002", task_id, f"record identity {_name_parts(here[0])[1]} differs from the current {ih[:_NAME_LEN]}")]  # type: ignore[index]
     body = _read_record(folder / match[0])
     p_tv, p_ih, p_platform = _name_parts(match[0])  # type: ignore[misc]
     if (body is None or body.get("task") != task_id or body.get("platform") != p_platform
             or str(body.get("task_version", ""))[:_NAME_LEN] != p_tv or str(body.get("identity_hash", ""))[:_NAME_LEN] != p_ih):
-        return [Failure("HB-RDY-001", task_id, f"record name {match[0]} does not match its body")]
+        return None, None, [Failure("HB-RDY-001", task_id, f"record name {match[0]} does not match its body")]
+    return folder / match[0], body, []
+
+
+def record_failures(root: Path, task_id: str, *, baseline: Mapping | None = None) -> list[Failure]:
+    """HB-RDY-001..004, 010, 011 for one task: what the discrimination record must show. With a campaign `baseline`
+    manifest the identity compared is `identity_hash(identity.for_task(baseline, task))` (W0 section 6)."""
+    _path, body, failures = _find_record(root, task_id, baseline)
+    if body is None:
+        return failures
     task = config.load_yaml(root / "tasks" / task_id / "task.yaml")
     if body.get("expected") != task.get("expected"):
         return [Failure("HB-RDY-001", task_id, "record expected differs from task.yaml (a tamper tell)")]
     return body_failures(root, task_id, body)
 
 
-def reconcile(root: Path, task_id: str, runs: Path) -> tuple[str, list[Failure]]:
+def run_scores(run_dir: Path, grading_id: str, cell_roles: Mapping[str, str], keep: set[str]) -> tuple[dict, dict]:
+    """(role -> metric -> value or {na: reason}, role -> the `property.json` pointer of its property_check_pass row) read
+    from one completed grading pass; `cell_roles` maps a cell id to its role. The one reader of a pass for the record, used
+    by `discriminate` to write it and by `reconcile` to compare it."""
+    scores: dict[str, dict] = {role: {} for role in cell_roles.values()}
+    pointers: dict[str, str] = {}
+    for row in views.rows(run_dir, "scores"):
+        if row["grading_id"] == grading_id and row["cell_id"] in cell_roles:
+            role = cell_roles[row["cell_id"]]
+            if row["metric_id"] in keep:
+                scores[role][row["metric_id"]] = row["value"] if row["value"] is not None else {"na": row["reason"]}
+            if row["metric_id"] == _PROPERTY_PASS and row["evidence"]:
+                pointers[role] = row["evidence"]
+    return {role: dict(sorted(s.items())) for role, s in scores.items()}, pointers
+
+
+def probe_digest(found: Mapping) -> dict:
+    return {"deliverable": found["deliverable"], "cases": dict(sorted(found["cases"].items())), "hosts_ready": found["hosts_ready"]}
+
+
+def _newest_link(runs: Path, stem: str) -> dict | None:
+    """The link whose `record_stem` is `stem` with the newest wall-clock `recorded_at` (ties: the larger run id). `mono_ns` is
+    informational and never orders (RV-PAT 2): a monotonic clock restarts with the machine."""
+    links = []
+    for path in sorted(runs.glob("*/discrimination-link.json")) if runs.is_dir() else []:
+        try:
+            link = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if isinstance(link, dict) and link.get("record_stem") == stem:
+            links.append(link)
+    return max(links, key=lambda link: (link.get("recorded_at", ""), link.get("run_id", "")), default=None)
+
+
+def reconcile(root: Path, task_id: str, runs: Path, *, baseline: Mapping | None = None) -> tuple[str, list[Failure]]:
     """(`reconciled: yes` or `reconciled: no (<reason>)`, HB-RDY-004 failures) of the current record against the newest run
-    that made it. Skeleton: always yes."""
-    return "reconciled: yes", []
+    that made it (ADR-0016 section 4, R-98 condition 3). The reason is one of seven; a `no` neither fails nor passes. Only
+    a score or `probe` difference fails, and it is never degraded to a pass."""
+    path, body, _ = _find_record(root, task_id, baseline)
+    if path is None or body is None:
+        return "reconciled: no (no link)", []
+    link = _newest_link(runs, path.stem)
+    if link is None:
+        return "reconciled: no (no link)", []
+    run_dir = runs / str(link.get("run_id"))
+    if not run_dir.is_dir():
+        return "reconciled: no (run folder absent)", []
+    if link.get("grading_id") not in views.completed_passes(run_dir):
+        return "reconciled: no (no completed grading pass)", []
+    if hashlib.sha256(path.read_bytes()).hexdigest() != link.get("record_sha256"):
+        return "reconciled: no (record hash differs from the link)", []
+    try:
+        stored = plan.load_confirmed(run_dir)
+        is_discrimination = plan.kind_of(stored) == "discrimination"
+    except (BenchError, OSError, ValueError, KeyError):
+        is_discrimination = False
+    if not is_discrimination:
+        return "reconciled: no (run is not a discrimination run)", []
+    if (stored.get("tasks", {}).get(task_id) or {}).get("version_hash") != body.get("task_version"):
+        return "reconciled: no (run task version differs)", []
+    declared = sorted(f"synthetic-v-{n}" for n in body.get("variants") or {})
+    if (sorted(c["combo"] for c in stored["cells"]) != sorted(["synthetic-reference", "synthetic-naive", *declared])
+            or any(c["harness"] != "synthetic" for c in stored["cells"])):
+        return "reconciled: no (run combos are not the synthetic ones)", []
+    roles = {c["combo"]: ("reference" if c["combo"].endswith("reference") else "naive" if c["combo"].endswith("naive")
+                          else f"variant:{c['combo'].removeprefix('synthetic-v-')}") for c in stored["cells"]}
+    scores, pointers = run_scores(run_dir, link["grading_id"], {c["cell_id"]: roles[c["combo"]] for c in stored["cells"]}, set(body["scores"]["reference"]))
+    failures = []
+    for role in ROLES:
+        for metric, value in sorted(body["scores"][role].items()):
+            if scores[role].get(metric) != value:
+                failures.append(Failure("HB-RDY-004", metric, f"copy {show(value)}, run {show(scores[role].get(metric, {'na': 'not recorded'}))}"))
+    for role in ROLES if "probe" in body else ():
+        try:
+            run_probe = probe_digest(property_evidence(run_dir, pointers[role]))
+        except (KeyError, OSError, ValueError, IndexError):
+            failures.append(Failure("HB-RDY-004", f"probe.{role}", "the run holds no readable check evidence"))
+            continue
+        copy = body["probe"].get(role) or {}
+        if run_probe["deliverable"] != copy.get("deliverable") or run_probe["hosts_ready"] != copy.get("hosts_ready"):
+            failures.append(Failure("HB-RDY-004", f"probe.{role}", f"copy {copy}, run {run_probe}"))
+        failures.extend(Failure("HB-RDY-004", f"probe.{role}.cases.{c}", f"copy {copy.get('cases', {}).get(c)}, run {out}")
+                        for c, out in sorted(run_probe["cases"].items()) if (copy.get("cases") or {}).get(c) != out)
+    return ("reconciled: yes", []) if not failures else ("", failures)
+
+
+log = logging.getLogger("harness_bench.readiness")
 
 
 def problems(root: Path, *, baseline: Mapping | None = None, runs: Path | None = None) -> list[str]:
-    """The lines `bench validate` prints, `x <code> <task>: <item>: <detail>`, plus non-failing `note:` lines."""
-    return []
+    """The lines `bench validate` prints, `x <code> <task>: <item>: <detail>`, plus non-failing `note:` lines (a skipped temp
+    in `bench/discrimination/<task>/`, which is never deleted here, and one `reconciled:` line per ready task). A `stub` is
+    skipped; a `draft` gets its contract items; a `ready` task gets the contract, the record and the reconciliation."""
+    runs = runs or root / "runs"
+    tasks = {}
+    for path in sorted((root / "tasks").glob("*/task.yaml")):
+        task = config.load_yaml(path)
+        if isinstance(task.get("property"), dict):
+            tasks[path.parent.name] = task
+    pairs = pair_failures(tasks)
+    lines: list[str] = []
+    reconciled = ""
+    for tid, task in tasks.items():
+        if task.get("status") == "stub":
+            continue
+        failures = contract_failures(root, tid) + pairs.get(tid, [])
+        folder = record_dir(root, tid)
+        if folder.is_dir():
+            lines += [f"note: {tid}: skipped temp {p.name} (the writer's sweep removes it)" for p in sorted(folder.iterdir()) if atomic.is_temp_name(p.name)]
+        if task.get("status") == "ready":
+            failures += record_failures(root, tid, baseline=baseline)
+            if not any(f.code in ("HB-RDY-001", "HB-RDY-002") for f in failures):
+                line, drift = reconcile(root, tid, runs, baseline=baseline)
+                failures += drift
+                if line:
+                    lines.append(f"note: {tid}: {line}")
+                    reconciled = line.split(": ", 1)[1].split(" ")[0]
+        lines += [f"x {f.code} {tid}: {f.item}: {f.detail}" for f in failures]
+    log.info("readiness.validated", extra={"detail": f"reconciled={reconciled or 'null'} tasks={len(tasks)}"})
+    return lines
 
 
 # --- the readers over a graded run (O3, O4) ------------------------------------------------------------------------
