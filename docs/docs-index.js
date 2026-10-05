@@ -3743,7 +3743,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "fb31e37b1fcb1f4471ea3151e1eb5c35d778faaec2717d0f3baef7f2f54ad1ad"
+      "sourceSha256": "6352a655696ffb7c68846f966150176d6404f71cb83f6a8550cc0984d6f3d713"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -5980,7 +5980,7 @@ window.DOCS_INDEX = {
       "phase": "",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "X-C builds campaign.py, the bench campaign commands, the lock protocol, verify with its git witness, the run-side check inside the engine, the campaign status document and the after-grading hook of W1-C rev 2, under W0 rev 6, on Agy gemini-3.8-flash-high, in three dispatches, each red and green in one turn.",
+      "summary": "X-C builds campaign.py, the bench campaign commands, the lock protocol, verify with its git witness, the run-side check inside the engine, the campaign status document and the after-grading hook of W1-C rev 2, under W0 rev 6, in three serial dispatches C1 -> C2 -> C3, each red and green in one turn; planned Agy gemini-3.8-flash-high, run as Claude Sonnet from the integration head under R-105 while the primary is blocked (Coordinator #22: C1 re-read against integrate/b3-stage2 f7e1e357).",
       "tags": [],
       "links": [
         {
@@ -5997,7 +5997,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b962322c327b0e4c45263a30ace9d1bf1f3eecd72903c06d0233638592defe10"
+      "sourceSha256": "925a75629b47fadd45ca396ce5bded0feeec32e5d4ae39251ac691c0d206bfbd"
     },
     {
       "id": "brief-eval-x-cv",
@@ -7339,7 +7339,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "34a926ae3f731d0c193ad0f2daeba69234da9e88b31f7c32cd8aaf122cdec545"
+      "sourceSha256": "f3e142bd4a8941ca1af64966631a0d8d57389a07e73bd5438c5a3347008e4dc0"
     },
     {
       "id": "coordination-eval-wave2-e234-briefs",
@@ -8295,5 +8295,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "13553bcbb11a4f9f3789739a947f29830843a1c9fc944f736ed9e404235f8d68"
+  "graphSha256": "9b5f203b0a747052fa9404abd55b9a893642eaa2da932f032d37458d873999b7"
 };
