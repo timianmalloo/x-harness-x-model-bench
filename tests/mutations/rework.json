@@ -3,7 +3,7 @@
     "name": "rework_ratio counts replaced and deleted lines, not added lines",
     "file": "src/harness_bench/grade/rework.py",
     "find": "changed_total += len(t1 & c_set)",
-    "replace": "changed_total += len(t1)",
+    "replace": "changed_total += len(t1 & c_set) + len(set(last) - set(after))",
     "tests": [
       "tests/test_rework.py::test_rework_ratio_counts_replaced_and_deleted_not_added"
     ]
