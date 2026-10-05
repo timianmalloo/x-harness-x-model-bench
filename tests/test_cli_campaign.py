@@ -473,3 +473,40 @@ def test_a_grid_launch_never_precedes_its_attach_row_i3(tmp_path, monkeypatch):
     monkeypatch.setattr(FakeLauncher, "check_build", recording)
     assert real_run(monkeypatch, root, tmp_path, "R2") == 0, [(r["kind"], r.get("code"), r.get("diff")) for r in run_events(root, "R2")]
     assert seen and all("grid.attached:R2" in kinds_then for kinds_then in seen), seen
+
+
+# --- X-INTF F-3: the campaign commands read the --runs folder ------------------------------------------------------------------------
+
+def plan_outside_root(root: Path, tmp_path: Path, run_id: str = "R2") -> Path:
+    """A registered campaign and a grid plan that exists only under a runs folder outside the root."""
+    baselined(root, "T1", "T2")
+    write_plan(root, run_id, prereg_hash=registered(root), harness="fake", tasks=("T1", "T2"))
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    shutil.move(str(root / "runs" / run_id), str(elsewhere / run_id))
+    return elsewhere
+
+
+def test_attach_reads_the_runs_folder_given_by_runs_not_root_runs_f3(tmp_path):
+    root = tree(tmp_path)
+    elsewhere = plan_outside_root(root, tmp_path)
+    assert cli_rc(["--root", str(root), "--runs", str(elsewhere), "campaign", "attach", CID, "R2"]) == 0
+    assert kinds(root)[-1] == "grid.attached"
+
+
+def test_attach_without_runs_still_reads_root_runs_f3(tmp_path):
+    root = tree(tmp_path)
+    elsewhere = plan_outside_root(root, tmp_path)
+    shutil.move(str(elsewhere / "R2"), str(root / "runs" / "R2"))
+    assert cli_rc(["--root", str(root), "campaign", "attach", CID, "R2"]) == 0
+    assert kinds(root)[-1] == "grid.attached"
+
+
+def test_conclude_probes_the_attached_runs_lock_in_the_runs_folder_given_by_runs_f3(tmp_path):
+    root = tree(tmp_path)
+    elsewhere = plan_outside_root(root, tmp_path)
+    runs_args = ["--root", str(root), "--runs", str(elsewhere)]
+    assert cli_rc([*runs_args, "campaign", "attach", CID, "R2"]) == 0
+    with held_by_another_process(elsewhere / "R2" / ".lock"):
+        assert cli_rc([*runs_args, "campaign", "conclude", CID]) == 1
+    assert kinds(root)[-1] == "grid.attached"
