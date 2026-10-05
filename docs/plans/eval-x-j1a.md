@@ -125,6 +125,24 @@ rollout-2026-10-05T08-14-33-01a10ca1-8042-79b2-b585-fdd9c0bbbaf3.jsonl.
 No model identity is inferred from the dispatch pin. The audit prompt was
 captured verbatim from that native record, al-01M46C6M4Y1R4AY8P22N3EQ790.
 
-Mutation gate state: engine.json is queued behind the Leader's full-suite
-lock; driver.json follows it. Neither is represented as passed before its
-output and exit status have been observed. The suite lock is not bypassed.
+Partial delivery at the README section 2's 85% stopping threshold (2,805 of
+3,300 seconds). Engine mutations waited behind Leader PID 5944's full-suite
+lock since 08:42:34 local time, with no mutant result. The owned tool session
+was interrupted (exit 1); `mutate_check.py --restore` exited 0, reporting
+"nothing to restore". Its terminated process tree and stale owned queue ticket
+were checked; only that ticket was removed. The Leader's lock was untouched.
+Driver mutations were not started, because they must follow engine mutations.
+The worker gate is incomplete. Acceptance items 1 and 4 are verified green.
+
+Completed: registry, K1, K2, assertion-red K3 table, K4(1) and all completed
+gate results above. Remaining: engine.json and then driver.json mutations,
+and the eight-file guard run on the eventual final handoff SHA (the recorded
+green guard run is on the final runtime SHA e39f40c5). Next: the Owner/Leader
+uses the same-tree fallback after releasing the suite lock, then joins with
+the three open seam requests reviewed. J1b–J1e stay future dispatches.
+
+Graph result: G, S, R and C reached their exits. V stopped at the shared
+mutation lock, so H is a partial handoff rather than a claimed complete gate.
+The elapsed budget stop is a defect signal: serialized readiness work consumed
+the available wall time despite all completed checks passing. Preserve the
+suite-lock floor and schedule the remaining worker checks after the batch.
