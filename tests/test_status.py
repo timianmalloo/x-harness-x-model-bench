@@ -309,3 +309,36 @@ def test_a_decision_carries_no_free_string(root, tmp_path):  # ST-3 (ADR-0007 se
                    {**DECISION, "default_in_s": -1}, {**DECISION, "state": "answered"}, {**DECISION, "options": "continue"},
                    {**DECISION, "note": "x"}, {k: v for k, v in DECISION.items() if k != "default_in_s"}):
         assert not _parses(json.dumps({**data, "decisions": [broken]})), broken
+
+
+def _identity_stop(root, tmp_path, diff):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
+        ev.append({"kind": "run.launch_stopped", "code": "HB-IDN-001", "reason": "engine identity drift", "diff": diff, "identity_check_ms": 4})
+    return run_dir
+
+
+def test_status_shows_the_identity_stop_reason_and_diff(root, tmp_path):  # item 34, R-106 report
+    items = [f"tasks/T{i} changed" for i in range(1, 8)]
+    s = status.build(_identity_stop(root, tmp_path, items), now=NOW)
+    assert s.stop_reason == "engine identity drift"
+    assert s.stop_diff == (*items[:5], "and 2 more")
+    shown = status.text(s)
+    assert "HB-IDN-001" in shown and "engine identity drift" in shown
+    assert "tasks/T5 changed" in shown and "and 2 more" in shown and "tasks/T6 changed" not in shown
+
+
+def test_a_run_with_no_launch_stop_has_no_reason_and_no_diff(root, tmp_path):
+    s = status.build(make_run(root, tmp_path, {"a": GOOD}), now=NOW)
+    assert (s.stop_reason, s.stop_diff) == (None, ())
+
+
+def test_the_stop_fields_round_trip_and_a_wrong_type_is_refused(root, tmp_path):  # #23 gap (c): both construction sites
+    s = status.build(_identity_stop(root, tmp_path, ["engine.py changed"]), now=NOW)
+    assert status.parse(status.to_json(s)) == s
+    data = json.loads(status.to_json(s))
+    assert data["stop_diff"] == ["engine.py changed"] and data["stop_reason"] == "engine identity drift"
+    for broken in ({**data, "stop_reason": 5}, {**data, "stop_diff": "engine.py changed"}, {**data, "stop_diff": [1]},
+                   {**data, "stop_diff": ["x"] * 7}, {**data, "stop_diff": None}):
+        with pytest.raises(ValueError):
+            status.parse(json.dumps(broken))
