@@ -3774,6 +3774,38 @@ window.DOCS_INDEX = {
       "sourceSha256": "acd8498fd932679d67586f51a0b1c47183b8e3d7a3cca26d3dfd3685e841e2a4"
     },
     {
+      "id": "coordinator-log-c29",
+      "path": "docs/coordination/coordinator-log/c29.md",
+      "title": "Coordinator #29 hand-back (2026-10-05): the E2-E4 coordination plan",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-05",
+      "reviewSuggested": [],
+      "summary": "Coordinator #29 wrote the E2-E4 coordination plan (Stages 2-9 of /prepare-for-coordination) on base 839d0f4a for Leader epoch 18, and registered six candidate defect classes and six instances. No request was open; no Owner decision is needed before the first dispatch.",
+      "tags": [
+        "coordination",
+        "coordinator-log"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b8b0c87af6daacf7b5a810c17d3a44712a5db00de4b323f12c4ceddd3b709dd1"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -3800,7 +3832,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ab40e3919d19e8dd69889ba5f63be71e17020b60e5252d117b2e632e2ccb9506"
+      "sourceSha256": "9e3818df36400fd1629cd2eeb39728e74310db24c04eef411a70af6f2166ac33"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -6691,6 +6723,59 @@ window.DOCS_INDEX = {
       "sourceSha256": "94ec74e5552cb4703ec2b068af7f1f29e1187e99ba6fbd01be4a7dd62976eb4f"
     },
     {
+      "id": "coordination-e2e4",
+      "path": "docs/coordination/coordination-e2e4.md",
+      "title": "Coordination plan - Evaluation Campaign E2-E4, convergence, overnight follow-ons and the pack upstream",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: E2 (multi-turn), E3 (arms, freeze, resume, alarm), E4 (property graders and tasks), convergence; Leader epoch 18",
+      "reviewBy": "2026-10-19",
+      "reviewSuggested": [],
+      "summary": "Coordinator #29's plan for the rest of the Evaluation Campaign build at 839d0f4a: 14 dispatchable tracks plus 2 operator-gated ones (X-LB1, X-RS) across Codex, Agy, Grok and Claude Code, one owner per authored file per phase with the joint-satisfiability check for every shared surface, a serial spine of the engine lane (X-J1 then X-K1 then X-K2b then X-CV), five push batches with at most two gate rings, nine struck or merged tracks, and Lane F (the ai-forward upstream) in its own worktree of C:\\projects\\ai-forward. Critical path Inferred at 15-20 h wall.",
+      "tags": [
+        "coordination",
+        "worktrees",
+        "parallelism",
+        "evaluation-campaign",
+        "e2",
+        "e3",
+        "e4"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "depends-on"
+        },
+        {
+          "to": "coordination-eval-wave2-e1-overnight-2026-10-05",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "7f8a62ed8716752667449ab459e32670ed2de417dfc9ade3114cbfdca56cb853"
+    },
+    {
       "id": "coordination-eval-brief-rv-ds",
       "path": "docs/coordination/eval-wave1/rv-ds.md",
       "title": "RV-DS brief: Distributed Systems lens reviewer (Adversary Mode)",
@@ -8290,6 +8375,14 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-benchmark-state-and-target"
     },
     {
+      "id": "surface-coordination-coordination-e2e4",
+      "path": "docs/coordination/coordination-e2e4.html",
+      "title": "Coordination E2-E4",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "coordination-e2e4"
+    },
+    {
       "id": "surface-coordination-coordination-eval-campaign",
       "path": "docs/coordination/coordination-eval-campaign.html",
       "title": "Coordination Eval Campaign",
@@ -8360,5 +8453,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "a06f1efd8f0d10f4bc41857e093365ed5ffc157c0b88af85a5551050ed25c63b"
+  "graphSha256": "b4a59a409ebca3741d9a9cf738cd8af5fe7e851d3aa3a14a63c245ab2c15feaa"
 };

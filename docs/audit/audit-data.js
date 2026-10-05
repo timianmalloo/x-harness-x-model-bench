@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-05T14:14:54Z",
+  "generated": "2026-10-05T14:47:37Z",
   "audit": [
     {
       "actor": null,
@@ -83754,6 +83754,28 @@ window.AUDIT_DATA = {
       "fan_out": 6,
       "started_at": "2026-10-04T23:57:59Z",
       "duration_seconds": 50279.0
+    },
+    {
+      "id": "al-01M468HGCFXDWV3QFZYHQA00GN",
+      "shortname": "coordination-e2e4",
+      "datetime": "2026-10-05T14:47:31Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Coordinator hand-back #29: author Stages 2-9 of /prepare-for-coordination (the E2-E4 coordination plan) from the operator-approved scope prompt e2e4-coordination-prompt.md; register the Stage-1 and overnight candidate defect classes; write docs/coordination/coordinator-log/c29.md",
+      "summary": "14 dispatchable tracks + 2 operator-gated (X-LB1, X-RS); 9 struck or merged; serial spine = engine lane X-J1 -> X-K1 -> X-K2b -> X-CV, Inferred 15-20 h; 5 push batches, 2 expected gate rings; Lane F in its own ai-forward worktree; 6 candidate classes + 6 instances registered",
+      "kind": "skill",
+      "skill": "prepare-for-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/coordination/coordination-e2e4.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "commit the E2-E4 coordination plan (md + html), the defect-class registrations and the c29 hand-back on coord/eval-c29-plan",
+      "done_when": "docs-graph validate exit read as 0 and a named-path commit made on coord/eval-c29-plan",
+      "tier": "T1",
+      "fan_out": 0
     }
   ],
   "changes": [
