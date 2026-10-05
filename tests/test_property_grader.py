@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from harness_bench.grade import Score, _changes, correctness, formal
+from harness_bench.grade import CellInput, Score, _changes, correctness, formal
 from harness_bench.grade import property as prop
 
 # --- F1: G4, the one allowlist (W0 section 10 G4; ADR-0018 section 9) ---
@@ -107,7 +107,6 @@ def test_grading_copy_with_junction_leaves_target_untouched_formal(tmp_path):
         assert (copy / "keep.txt").read_text() == "kept"
         assert not (copy / "escape").exists(), "the junction target was copied"
     assert sentinel_unchanged(sentinel, snapshot)
-
 
 
 def test_copy_tree_records_the_skipped_junction_relative_path(tmp_path):
@@ -360,3 +359,89 @@ def test_exploit_probes_blocked_is_a_scale_4_ratio_and_na_with_no_probe_case():
     assert two_thirds.value == Decimal("0.6667")
     none = prop.score_run(ROW7, PASS, [])["exploit_probes_blocked"]
     assert (none.value, none.reason) == (None, "no probe case declared")
+
+
+# --- LB0: SR-L5's additions (property.hidden_tests, write_section, run_child) ---
+
+
+def lb0_input(tmp_path: Path):
+    task = tmp_path / "task"
+    (task / "tests").mkdir(parents=True)
+    (task / "tests" / "test_hidden.py").write_text(
+        "import unittest\nfrom vendor.lib import mod\nimport app\n\nclass T(unittest.TestCase):\n"
+        "    def test_x(self):\n        self.assertEqual((app.V, mod.W), (1, 'pristine'))\n"
+        "    def test_no_extra(self):\n        import os\n        self.assertFalse(os.path.exists('vendor/lib/added.py'))\n",
+        encoding="utf-8")
+    run_dir = tmp_path / "run"
+    out = run_dir / "grading" / "g" / "c" / "property"
+    out.mkdir(parents=True)
+    return CellInput(
+        run_dir=run_dir, root=tmp_path, plan={"parameters": {"grading_step_timeout": 60}}, cell={"cell_id": "c"},
+        task={"oracle": {"runner": "unittest",
+                         "command": ["{python}", "-m", "unittest", "discover", "-s", ".", "-p", "test_*.py"]}},
+        task_dir=task, archive=run_dir / "archive", out_dir=out, events=(), record_reason=None, model_calls=(),
+        tool_calls=(), turn_usage=(), metrics={}, allow_model_calls=False, extraction=None, prices=None,
+        work_root=tmp_path / "work")
+
+
+def lb0_tree(root: Path, *, v: int, w: str = "pristine", added: bool = False) -> Path:
+    (root / "vendor" / "lib").mkdir(parents=True)
+    (root / "app.py").write_text(f"V = {v}\n", encoding="utf-8")
+    (root / "vendor" / "lib" / "mod.py").write_text(f"W = {w!r}\n", encoding="utf-8")
+    if added:
+        (root / "vendor" / "lib" / "added.py").write_text("X = 1\n", encoding="utf-8")
+    return root
+
+
+def test_hidden_tests_scores_the_tree_it_is_given_not_the_archive(tmp_path):
+    inp = lb0_input(tmp_path)
+    good, bad = lb0_tree(tmp_path / "good", v=1), lb0_tree(tmp_path / "bad", v=2)
+    assert (prop.hidden_tests(inp, good, "final").value, prop.hidden_tests(inp, bad, "turn-1").value) == (1, 0)
+    assert (inp.out_dir / "turn-1").is_dir()  # each label keeps its own evidence
+
+
+def test_hidden_tests_overlay_replaces_the_destination_and_leaves_the_tree_untouched(tmp_path):
+    inp = lb0_input(tmp_path)
+    tree = lb0_tree(tmp_path / "tree", v=1, w="agent edit", added=True)
+    pristine = tmp_path / "pristine"
+    pristine.mkdir()
+    (pristine / "mod.py").write_text("W = 'pristine'\n", encoding="utf-8")
+    assert prop.hidden_tests(inp, tree, "final").value == 0
+    assert prop.hidden_tests(inp, tree, "final", overlay={"vendor/lib": pristine}).value == 1
+    assert (tree / "vendor" / "lib" / "added.py").is_file()
+
+
+@pytest.mark.parametrize("dest", ["../x", "/abs", "a/../../x", "C:/x"])
+def test_hidden_tests_overlay_refuses_a_destination_outside_the_copy(tmp_path, dest):
+    inp = lb0_input(tmp_path)
+    with pytest.raises(ValueError, match="overlay"):
+        prop.hidden_tests(inp, lb0_tree(tmp_path / "t", v=1), "final", overlay={dest: tmp_path})
+
+
+def test_write_section_adds_one_strategy_object_to_the_single_property_json(tmp_path):
+    inp = lb0_input(tmp_path)
+    (inp.out_dir / "property.json").write_text(json.dumps({"schema": "bench-property-evidence/1", "row": 7}),
+                                               encoding="utf-8")
+    pointer = prop.write_section(inp, "rework", {"clause": "ratio", "rework_ratio": "0.2500"})
+    doc = json.loads((inp.out_dir / "property.json").read_text(encoding="utf-8"))
+    assert (doc.get("strategy"), doc["row"], pointer) == (
+        {"rework": {"clause": "ratio", "rework_ratio": "0.2500"}}, 7, "grading/g/c/property/property.json")
+
+
+def test_write_section_creates_the_file_and_refuses_a_rewrite_or_a_checked_property(tmp_path):
+    inp = lb0_input(tmp_path)
+    prop.write_section(inp, "simplicity", {"clause": "tests"})
+    assert (inp.out_dir / "property.json").is_file()
+    assert json.loads((inp.out_dir / "property.json").read_text(encoding="utf-8"))["schema"] == "bench-property-evidence/1"
+    for name in ("simplicity", "security", "nope"):  # written once; a check property owns its own record
+        with pytest.raises(ValueError, match=name):
+            prop.write_section(inp, name, {})
+
+
+def test_run_child_starts_the_child_through_the_grading_env_allowlist(tmp_path, monkeypatch):
+    monkeypatch.setenv("HB_CLAUDE_OAUTH_TOKEN", "secret")
+    monkeypatch.setenv("GH_TOKEN", "secret")
+    done = prop.run_child([sys.executable, "-S", "-c", "import os,sys;sys.stdout.write(','.join(sorted(os.environ)))"],
+                          tmp_path, 30)
+    names = set(done.stdout.split(","))
+    assert (done.returncode, "PATH" in names, names & {"HB_CLAUDE_OAUTH_TOKEN", "GH_TOKEN"}) == (0, True, set())

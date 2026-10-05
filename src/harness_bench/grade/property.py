@@ -17,7 +17,7 @@ import subprocess
 import sys
 import threading
 import time
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from decimal import ROUND_HALF_EVEN, Decimal
 from pathlib import Path
@@ -26,8 +26,8 @@ from harness_bench import config, host, procs
 from harness_bench.grade import CellInput, Score, _changes, _env, correctness
 from harness_bench.plan import tree_hash
 
-__all__ = ["Classification", "Facts", "at_scale", "check_seed", "check_segment", "grade_cell", "parse_result", "run_check",
-           "score_run"]
+__all__ = ["Classification", "Facts", "at_scale", "check_seed", "check_segment", "grade_cell", "hidden_tests", "parse_result",
+           "run_check", "run_child", "score_run", "write_section"]
 
 MAX_RESULT_BYTES = 64 * 1024
 ACK = b"\x06"
@@ -374,6 +374,43 @@ def _tree_files(root: Path) -> list[Path]:
     return sorted(p for p in root.rglob("*") if p.is_file() or p.is_symlink())
 
 
+def _overlay_dest(root: Path, dest: str) -> Path:
+    parts = Path(dest).parts
+    if not parts or Path(dest).is_absolute() or Path(dest).drive or Path(dest).root or ".." in parts:
+        raise ValueError(f"overlay destination {dest!r} is not a relative path inside the copy")
+    return root.joinpath(*parts)
+
+
+def hidden_tests(inp: CellInput, tree: Path, label: str, overlay: Mapping[str, Path] | None = None) -> Score:
+    """The hidden-test phase of the grade (design 5.2 phase 1) on `tree`, as one `Score` (passed, or NA with the reason).
+
+    A check-less helper calls it once per tree and `label` (a case-id-shaped segment). Evidence goes to
+    `out_dir/<label>/`, the disposable copy under the work root. `overlay` maps a destination, relative to the tree, to a
+    source directory: in the grading copy the destination is deleted and the source is copied over it (the pristine
+    `vendor/<lib>` case, so the agent's edit to its own copy is invisible). `tree` itself is never touched."""
+    check_segment("hidden-tests label", label, _CASE_ID)
+    timeout = inp.plan["parameters"]["grading_step_timeout"]
+    work = (inp.work_root or inp.out_dir) / "property"
+    (inp.out_dir / label).mkdir(parents=True, exist_ok=True)
+    ws, staged = tree, None
+    if overlay:
+        staged = work / f"{label}-ws"
+        dests = {d: _overlay_dest(staged, d) for d in overlay}  # refuse every destination before any copy
+        _changes.copy_tree(tree, staged, ignore=())
+        for d, src in overlay.items():
+            if dests[d].exists():
+                _changes.remove_tree(dests[d])
+            _changes.copy_tree(Path(src), dests[d], ignore=())
+        ws = staged
+    try:
+        c = correctness.grade(ws, inp.task_dir, inp.task.get("oracle") or {}, inp.out_dir / label, inp.run_dir, timeout,
+                              work / label)
+    finally:
+        if staged is not None and staged.exists():
+            _changes.remove_tree(staged)
+    return Score(c.passed, c.reason)
+
+
 def _hidden_check(inp: CellInput, ctx: GradeContext) -> dict[str, Score]:
     spec = _load_cases(inp.task_dir)
     if not BENCH_CHECK.is_file():
@@ -382,14 +419,11 @@ def _hidden_check(inp: CellInput, ctx: GradeContext) -> dict[str, Score]:
     run = work / "check-run"
     evid = inp.out_dir / "check"
     evid.mkdir(parents=True, exist_ok=True)
-    (inp.out_dir / "tests").mkdir(parents=True, exist_ok=True)
     spans: list[dict] = []
     try:
         span = _Span("tests")
-        c = correctness.grade(inp.archive / "ws", inp.task_dir, inp.task.get("oracle") or {}, inp.out_dir / "tests",
-                              inp.run_dir, ctx.timeout, work / "tests")
+        hidden = hidden_tests(inp, inp.archive / "ws", "tests")
         spans.append(span.end())
-        hidden = Score(c.passed, c.reason)
         span = _Span("check")
         skipped = _changes.copy_tree(inp.archive / "ws", run / "deliverable", ignore=_changes.BUILD_OUTPUT)
         check_dir = run / "check"
@@ -432,6 +466,31 @@ def _hidden_check(inp: CellInput, ctx: GradeContext) -> dict[str, Score]:
                 "outcomes": outcomes}
     (inp.out_dir / "property.json").write_text(json.dumps(evidence, sort_keys=True, indent=1), encoding="utf-8")
     return scores
+
+
+def write_section(inp: CellInput, name: str, section: Mapping) -> str:
+    """Write one check-less helper's `strategy.<name>` object into the pass's single `property.json`; return the
+    `Score.evidence` pointer (relative to the run directory).
+
+    The file is the grader's one record (RV-SIM 10, RV-PAT 4), so a helper adds a section and never owns a file. A
+    section is written once per pass, and only for a property that has no check (`config.PROPERTY_NAMES` minus
+    `CHECK_PROPERTIES`); a check property's evidence is `_hidden_check`'s. ValueError names the refused `name`."""
+    if name not in config.PROPERTY_NAMES or name in config.CHECK_PROPERTIES:
+        raise ValueError(f"{name!r} is not a check-less property; only those write a strategy section")
+    path = inp.out_dir / "property.json"
+    doc = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {"schema": "bench-property-evidence/1"}
+    sections = doc.setdefault("strategy", {})
+    if name in sections:
+        raise ValueError(f"strategy.{name} is already written for this pass; a section is written once")
+    sections[name] = dict(section)
+    path.write_text(json.dumps(doc, sort_keys=True, indent=1), encoding="utf-8")
+    return path.relative_to(inp.run_dir).as_posix()
+
+
+def run_child(argv: list[str], cwd: Path, timeout: float, extra_env: Iterable[str] = ()) -> procs.Completed:
+    """Start a check-less helper's child (the NG resolver) through `procs.run` (its own job, kill-on-close, bounded)
+    with `_env.grading_env(extra_env)` as its whole environment, never the parent environment wholesale and never a credential (G4)."""
+    return procs.run(argv, cwd, _env.grading_env(extra_env), timeout)
 
 
 STRATEGIES: dict[str, Callable[[CellInput, GradeContext], dict[str, Score]]] = {"security": _hidden_check}

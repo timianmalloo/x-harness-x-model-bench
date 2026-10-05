@@ -341,6 +341,8 @@ This is an **ordered decision table**: one function, `_classify(facts) -> Classi
 
 A hidden-tests NA caused by a suspend is row 1, not a row-7 NA: a suspend in the tests span voids the run before the tests' own result is read (RV-TA W1-F 2).
 
+**Check-less helpers (SR-L5).** A property with no check (`rework`, `no-guessing`, `simplicity`) has no run row: its helper computes `property_check_pass` itself, from the hidden tests (`property.hidden_tests`, Kleene as above) and then every ceiling clause, and may only narrow W0's predicate, never widen it.
+
 **Secondaries**, under row 7: `exploit_probes_blocked = at_scale(Decimal(blocked) / Decimal(probe cases), 4)`. Zero probe cases give NA `no probe case declared` (readiness prevents it; HB-RDY-005). Under rows 1-5, every secondary is NA with the row's reason. Under row 6, NA with the deliverable text.
 
 **`at_scale(value, scale) -> int | Decimal`** (W0 §2 *One normaliser*; RV-SIM W1-F 5). It lives in `grade/property.py`; readiness imports it, never a copy. `scale` is the catalog's (`runner._scales`). An int-scale value must be a JSON int (`bool` refused). A scaled value is quantised with `ROUND_HALF_EVEN`; on input from a check it must be a string with exactly `scale` decimals (`"1.0000"`), and `"1.0"`, `1` and `1.0` are refused. The grader uses the same function to validate any `measures` value (row 5) and to quantise its own ratios.
