@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-05T14:47:37Z",
+  "generated": "2026-10-05T15:07:52Z",
   "audit": [
     {
       "actor": null,
@@ -83776,6 +83776,33 @@ window.AUDIT_DATA = {
       "done_when": "docs-graph validate exit read as 0 and a named-path commit made on coord/eval-c29-plan",
       "tier": "T1",
       "fan_out": 0
+    },
+    {
+      "id": "al-01M469PS0W2APSY36C49K7D28X",
+      "shortname": "join-c-w0",
+      "datetime": "2026-10-05T15:07:52Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of coord/eval-c31-w0 into integrate/e2e4-18",
+      "summary": "W0 rev 6.11; W1-D Amendment 1; guard list always-loaded; sweep found F-1/F-2 in campaign._tree_run_diff (loop-back) recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "every later compile reads W0 rev 6.11",
+      "done_when": "C-W0 on the integration branch; validate and citations green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-05T15:07:51Z",
+      "duration_seconds": 1.0
     }
   ],
   "changes": [
