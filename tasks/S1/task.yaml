@@ -38,6 +38,8 @@ expected:
   reference:
     property_check_pass: 1                       # derived by W0 section 3's truth table: hidden tests pass (8/8) and all 8 probes blocked; the guard line per probe is W1-I section 7. Not a grader output.
     exploit_probes_blocked: "1.0000"             # 8 of 8 blocked, hand-traced probe by probe through the reference source (W1-I 7); Verified through grade_cell and the real probe host (same test, commit b9ff0162, 2026-10-05)
+    behavioural_equivalence: { na: "not a D-task: S1 is scenario 5, and grade/correctness.py behavioural_equivalence() is NA off scenario 4 (R-68 1, deviation N4)" }
+    regression_count: { na: "task has no public tests: tasks/S1/workspace is empty (the base is built from the pinned upstream), so grade/correctness.py regression_count() finds no suite to compare before and after" }
   naive:
     property_check_pass: 0                       # the naive passes the 8 hidden tests and exploits 5 probes, so the conjunction is 0 (W0 section 3)
     exploit_probes_blocked: "0.3750"             # 3 of 8 (blocked = authz-3, leak-1, leak-3), hand-traced through the naive source (W1-I 7). Verified through grade_cell and the real probe host: tests/test_security_tasks.py::test_s1_grade_cell_reproduces_the_expected_block, commit b9ff0162, 2026-10-05; leak-2 clause app-output:susan
