@@ -290,12 +290,11 @@ def created(root: Path) -> None:
     assert bench(root, "campaign", "create", CID, "--question", QUESTION) == 0
 
 
-def baselined(root: Path, *tasks: str, builds: dict | None = None) -> None:
-    """A created campaign and its baseline, written as the baseline command writes them: the identity file, then the row.
-    The `baseline` command itself is under test only where a test names it, so no other test is red because of it. `builds` puts
-    `builds/<harness>` into the identity: the engine's launch check compares those keys (the baseline command records none; see the report)."""
+def baselined(root: Path, *tasks: str) -> None:
+    """A created campaign and its baseline, written as the baseline command writes them: the identity file, then the row, with no
+    `builds/*` key. The `baseline` command itself is under test only where a test names it, so no other test is red because of it."""
     created(root)
-    digest = put(root, identity.manifest(root, list(tasks or ("T1",)), builds), "identity")
+    digest = put(root, identity.manifest(root, list(tasks or ("T1",))), "identity")
     append(root, "baseline.recorded", identity_hash=digest, bench_commit=git(root, "rev-parse", "HEAD").stdout.strip())
 
 
@@ -401,7 +400,7 @@ def real_run(monkeypatch, root: Path, tmp_path: Path, run_id: str) -> int:
 
 def attached(root: Path, run_id: str = "R2") -> dict:
     """A registered campaign, a plan over the fake harness, and the grid attach, through the real commands."""
-    baselined(root, "T1", "T2", builds={"fake": {}})
+    baselined(root, "T1", "T2")
     digest = registered(root)
     doc = write_plan(root, run_id, prereg_hash=digest, harness="fake", tasks=("T1", "T2"))
     assert bench(root, "campaign", "attach", CID, run_id) == 0
@@ -440,7 +439,7 @@ def test_the_campaign_check_runs_under_the_run_lock_before_the_first_launch_p7(t
 
 def test_a_tree_edit_after_attach_is_stopped_by_the_real_engine_with_hb_idn_001_p4_p5(tmp_path, monkeypatch, capsys):
     root = tree(tmp_path)
-    baselined(root, "T1", "T2", builds={"fake": {}})
+    baselined(root, "T1", "T2")
     digest = registered(root)
     drifted = tree(tmp_path, "drifted")  # a plan stamped from a tree that is not the chain's (the hand-stamp of P-4)
     edit_src(drifted, "engine.py")

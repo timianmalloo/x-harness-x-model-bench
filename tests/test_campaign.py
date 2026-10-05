@@ -902,7 +902,20 @@ def test_attach_refuses_a_chain_stamped_plan_over_a_drifted_tree_and_takes_a_sub
     assert kinds(root)[-1] == "grid.attached"
 
 
-PLAN_KINDS = {"discrimination": ({"kind": "discrimination"}, "discrimination"), "unknown": ({"kind": "foo"}, "foo"),
+def test_attach_refuses_a_plan_task_outside_the_effective_identity_c49(tmp_path, capsys):  # R-106 c2: the plan-task-outside-the-set case
+    root = tree(tmp_path)
+    digest = to_registered(root)
+    write_text(root / "tasks" / "T3" / "prompt.md", "task T3\n")  # a task the tree holds and the baseline never named
+    write_plan(root, "R4", prereg_hash=digest, tasks=("T1", "T3"))
+    before = ledger_path(root).read_bytes()
+    capsys.readouterr()
+    assert bench(root, "campaign", "attach", CID, "R4") == 1
+    assert ('HB-CMP-010: plan task "T3" is not in the effective identity. Baseline it (bench campaign baseline --tasks) or plan without it.'
+            in err_of(capsys))
+    assert ledger_path(root).read_bytes() == before
+
+
+PLAN_KINDS ={"discrimination": ({"kind": "discrimination"}, "discrimination"), "unknown": ({"kind": "foo"}, "foo"),
               "synthetic": ({"harness": "synthetic"}, "synthetic")}
 
 
