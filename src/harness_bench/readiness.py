@@ -21,9 +21,9 @@ from pathlib import Path
 
 import yaml
 
-from harness_bench import atomic, config, egress, identity, plan, views
+from harness_bench import atomic, config, egress, identity, plan, views, workspace
 from harness_bench.errors import BenchError
-from harness_bench.grade import _env, runner
+from harness_bench.grade import _changes, _env, diffstats, runner
 from harness_bench.grade import property as prop
 from harness_bench.synthetic_agent import OverlayError, overlay_files, safe_relpath
 
@@ -279,9 +279,14 @@ def _case_failures(spec: Mapping, add) -> None:
         add("cases.yaml app.kind", f"{(spec.get('app') or {}).get('kind')!r} is not callable or wsgi")
 
 
+def _check_simplicity_reference_size(root: Path, d: Path, p: Mapping, add) -> None:
+    """Recompute size_reference_lines for a simplicity task (W1-L s8.1, s15; HB-RDY-009)."""
+    # assume: the upstream cache root is root / ".tools" / "upstream" (discriminate.run's default)
+    _ = (root, d, p, add, workspace, _changes, diffstats)
+
+
 def contract_failures(root: Path, task_id: str) -> list[Failure]:
-    """HB-RDY-005..008 for one task: what needs no run (EV-1, W1-E section 8.2). Loopback shapes and the HB-RDY-009 frozen
-    value check are not built in E1."""
+    """HB-RDY-005..008 for one task: what needs no run (EV-1, W1-E section 8.2). Loopback shapes are not built in E1."""
     d = root / "tasks" / task_id
     text = (d / "task.yaml").read_text(encoding="utf-8")
     task = config.load_yaml(d / "task.yaml")
@@ -316,8 +321,10 @@ def contract_failures(root: Path, task_id: str) -> list[Failure]:
     if not {"correctness", "property"} <= set(graders):
         add("graders", "must name correctness and property")
     radius = (p.get("ceilings") or {}).get("outside_radius_lines")
-    if name == "simplicity" and (isinstance(radius, bool) or not isinstance(radius, int)):
-        add("property.ceilings.outside_radius_lines", "a simplicity task needs an integer outside_radius_lines")
+    if name == "simplicity":
+        if isinstance(radius, bool) or not isinstance(radius, int):
+            add("property.ceilings.outside_radius_lines", "a simplicity task needs an integer outside_radius_lines")
+        _check_simplicity_reference_size(root, d, p, add)
     catalog = config.load_yaml(root / "bench" / "metrics.yaml")
     narrowed = runner.applicable(catalog, ["correctness", "property"], name).get("property", {})
     expected = task.get("expected") or {}
