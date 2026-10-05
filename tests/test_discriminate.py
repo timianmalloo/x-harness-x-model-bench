@@ -15,7 +15,7 @@ import uuid
 from pathlib import Path
 
 import pytest
-from conftest import CLEAN_PARENT
+from clean_parent import CLEAN_PARENT
 
 from harness_bench import archive, discriminate, oslock, readiness
 from harness_bench.errors import BenchError
