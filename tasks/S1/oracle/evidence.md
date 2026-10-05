@@ -148,3 +148,26 @@ about what a model writes. Decision owed to the Coordinator or X-E; the cost of 
 - The decision on the ten payloads above.
 - `wsgi.errors` has no variant (R-S4): microdot's handler cannot reach the WSGI environ as far as `request` shows
   (Inferred; `request.environ` was not tried).
+
+## F4 carrier (X-I4)
+
+Change: `check.py` `inj_1` and `inj_3` try every payload (no return on the first hit). The clause of an exploited `inj` probe is
+the ids of every payload that hit, in `check.py` order, joined by `,` with no spaces. An id is `A{i}` (`INJ_A`), `B{i}`
+(`INJ_B`) or `C{i}` (`INJ_3`), built by `payload_ids` from the index, so there is one definition. `check()` writes `clauses.json`
+(`{case id: clause}` for every exploited case, `{}` when none) from the same dict as `s1-probes.json`. Outcomes, payloads and
+`expected` values are unchanged; status stays `draft`.
+
+| variant | probe | measured (real host) | X-I2 reported |
+| --- | --- | --- | --- |
+| m1 | inj-1 | `A0,B2,B3` | A0, B2, B3 |
+| m12 | inj-1 | `B2,B3` | B2, B3 |
+| m13 | inj-1 | `B2` | B2 |
+| m8 | inj-3 | `C0` | C0 |
+
+All four agree with X-I2's table; no trace is owed.
+
+Task version (`plan.task_version_hash(tasks/S1)`): before `8837bb1ee221e5ffcfd7d3a36012afb6973d7d6565b347dc8081c6747c785283`
+(base `a59ac310`). After: read it from the commit that carries this section. This file is inside the hashed folder, so it
+cannot state its own hash. Base `a59ac310`, branch `build/eval-x-i4`.
+
+Keep or drop is not decided here.

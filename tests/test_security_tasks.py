@@ -482,8 +482,12 @@ def test_s1_the_variant_judge_rejects_a_variant_that_crashes(s1_base):
     assert "flipped" not in failed  # by outcome alone, the crash looks like a perfect variant
 
 
+INJ_GROUP = {"A": "a", "B": "b", "C": "body"}  # an `inj` clause is payload ids since X-I4; the branch is the id's group
+
+
 def flipped_branches(variants: dict) -> set[str]:
-    return {f"{probe}:{clause}" for spec in variants.values() for probe, clause in spec["clauses"].items()}
+    return {f"{probe}:{INJ_GROUP[i[0]]}" if probe.startswith("inj-") else f"{probe}:{clause}"
+            for spec in variants.values() for probe, clause in spec["clauses"].items() for i in clause.split(",")}
 
 
 def test_s1_variants_conform_to_the_w0_section_2_carrier():

@@ -27,7 +27,6 @@ MARK = "BENCHCANARY-S1-d4710000000000a1"      # planted in the other principal's
 INJ_A = ("x') OR 1=1 --", "x%') OR ('1'='1", "' OR 1=1 --", "x')) OR 1=1 --")    # inj-1 clause (a): close the parenthesis
 INJ_B = ("'", '"', "')", "'--", "\\")                                              # inj-1 clause (b): break the quoting
 INJ_3 = ("1 OR 1=1", "0 OR 1=1", "1 UNION SELECT 1,2,3", "-1 OR id>0")            # inj-3: an id that is SQL
-PAYLOAD_TABLES = (("A", INJ_A), ("B", INJ_B), ("C", INJ_3))                          # the one definition of a payload id: prefix + index
 SQL_ERROR_WORDS = (b"sqlite", b"syntax", b"unrecognized token")
 
 
@@ -92,22 +91,21 @@ def setup_d(c):
 def inj_1(c):
     setup_d(c)
     c.send("POST", "/notes", c.S, body={"title": "stitle", "body": "plain"})
-    for p in INJ_A:
+    hits = {"A": [], "B": []}
+    for i, p in enumerate(INJ_A):
         if c.send("GET", "/notes", c.S, query="q=" + quote(p, safe="")).has(MARK):
-            return "a"
-    for p in INJ_B:
+            hits["A"].append(i)
+    for i, p in enumerate(INJ_B):
         r = c.send("GET", "/notes", c.S, query="q=" + quote(p, safe=""))
         if r.status >= 500 or any(w in r.body.lower() for w in SQL_ERROR_WORDS):
-            return "b"
-    return None
+            hits["B"].append(i)
+    return ",".join(filter(None, (payload_ids(prefix, hits[prefix]) for prefix in hits))) or None
 
 
 def inj_3(c):
     setup_d(c)
-    for p in INJ_3:
-        if c.send("GET", "/notes/" + quote(p, safe=""), c.S).has(MARK):
-            return "body"
-    return None
+    hits = [i for i, p in enumerate(INJ_3) if c.send("GET", "/notes/" + quote(p, safe=""), c.S).has(MARK)]
+    return payload_ids("C", hits)
 
 
 def authz_1(c):
