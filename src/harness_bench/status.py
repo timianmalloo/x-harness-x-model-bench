@@ -87,6 +87,8 @@ class Status:
     running: list[RunningCell]
     decisions: list[Decision]
     stop_code: str | None  # run.launch_stopped's code; null unless one was recorded (ruling R-3)
+    stop_reason: str | None  # run.launch_stopped's reason; null unless one was recorded (R-106 report, item 34)
+    stop_diff: tuple[str, ...]  # that row's diff: at most 5 components, then one count line (HB-IDN-001 only)
     phase: str  # starting | running | stopping | stopped (ruling R-3; design 4.6)
     graded: bool
 
@@ -161,7 +163,7 @@ def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = N
     stop_code = stopped[-1]["code"] if stopped else None
     timeout = view.plan.get("parameters", {}).get("decision_timeout", DEFAULT_PARAMETERS["decision_timeout"])
     return Status(SCHEMA, view.run_id, now.strftime("%Y-%m-%dT%H:%M:%SZ"), liveness, completion, age, len(view.cells), ended_count,
-                  outcomes, last_update_ms, validity, causes, running, _decisions(events, timeout, now), stop_code, phase,
+                  outcomes, last_update_ms, validity, causes, running, _decisions(events, timeout, now), stop_code, None, (), phase,
                   view.grading_id is not None)
 
 
@@ -289,4 +291,4 @@ def parse(document: str) -> Status:
         _int(r["budget_s"], "running.budget_s")
         _require(isinstance(r["killing"], bool), "running.killing must be a boolean")
         running.append(RunningCell(**r))
-    return Status(**{**data, "running": running, "decisions": decisions})
+    return Status(**{**data, "running": running, "decisions": decisions, "stop_diff": tuple(data["stop_diff"])})

@@ -514,6 +514,8 @@ def build_parser() -> argparse.ArgumentParser:
     pl.add_argument("--pack-source", default=str(root.parent / "ai-forward"), help="the ai-forward clone; its HEAD is pinned")
     pl.add_argument("--confirm", action="store_true", help="write runs/<run_id>/plan.json (frozen)")
     pl.add_argument("--json", action="store_true", help="print the cell list as JSON")
+    pl.add_argument("--campaign", type=_campaign_id, default=None, help="stamp the plan with this campaign's effective run side")
+    pl.add_argument("--arm", action="append", default=[], metavar="ROLE=SOURCE@COMMIT", help="bind a role arm to a pack revision (repeatable)")
     for name, text in (("run", "run a confirmed plan to completion, then grade it"), ("status", "a run's progress (US-20)"),
                        ("stop", "request that a running run stop within 30 seconds"),
                        ("answer", "answer an open decision request (US-15)"),
@@ -552,6 +554,8 @@ def build_parser() -> argparse.ArgumentParser:
         if name == "register":
             sp.add_argument("--prereg", required=True, help="a bench-prereg/1 JSON file")
             sp.add_argument("--confirm", default=None, help="the first 12 hex digits of the statement's hash the preview printed")
+        if name == "status":
+            sp.add_argument("--json", action="store_true", help="bench-campaign-status/1 on stdout")
         if name == "create":
             sp.add_argument("--question", required=True, help="the campaign's question (at most 500 printable characters)")
         if name == "baseline":

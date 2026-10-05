@@ -239,7 +239,10 @@ _statuses = st.builds(
     validity=st.dictionaries(st.sampled_from(status.VALIDITY), st.integers(0, 600)),
     causes=st.dictionaries(st.from_regex(r"HB-CELL-[0-9]{3}", fullmatch=True), st.integers(0, 600)),
     running=st.lists(_running, max_size=4), decisions=st.just([]),
-    stop_code=st.none() | st.from_regex(r"HB-[A-Z]+-[0-9]{3}", fullmatch=True), phase=st.sampled_from(status.PHASE),
+    stop_code=st.none() | st.from_regex(r"HB-[A-Z]+-[0-9]{3}", fullmatch=True),
+    stop_reason=st.none() | st.from_regex(r"[a-z ]{1,40}", fullmatch=True),
+    stop_diff=st.lists(st.from_regex(r"tasks/[A-Z][0-9] (added|removed|changed)", fullmatch=True), max_size=6).map(tuple),
+    phase=st.sampled_from(status.PHASE),
     graded=st.booleans())
 
 

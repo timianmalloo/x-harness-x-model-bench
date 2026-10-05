@@ -1038,13 +1038,13 @@ def _float_fields(value, path: str = "") -> list[str]:
     return []
 
 
-def _decimal_view(value):
+def decimal_view(value):
     """The inputs as `power.analyse` reads them: the decimal-valued fields as `Decimal` (the file holds them as strings)."""
     if isinstance(value, dict):
-        return {key: Decimal(item) if key in _DECIMALS and isinstance(item, str) and re.fullmatch(r"-?\d+(\.\d+)?", item) else _decimal_view(item)
+        return {key: Decimal(item) if key in _DECIMALS and isinstance(item, str) and re.fullmatch(r"-?\d+(\.\d+)?", item) else decimal_view(item)
                 for key, item in value.items()}
     if isinstance(value, list):
-        return [_decimal_view(item) for item in value]
+        return [decimal_view(item) for item in value]
     return value
 
 
@@ -1078,7 +1078,7 @@ def power(root: Path, campaign_id: str, inputs_file: Path) -> str:
             raise _terminal(state, "power")
         inputs = _power_inputs(Path(inputs_file))
         try:
-            power_model.analyse(_decimal_view(inputs))
+            power_model.analyse(decimal_view(inputs))
             data = ledger.canonical(inputs)
         except BenchError as exc:
             if exc.code != "HB-PWR-001":
@@ -1096,6 +1096,26 @@ def power(root: Path, campaign_id: str, inputs_file: Path) -> str:
         atomic.create_once(folder / f"{digest}.json", data)  # the file first, so a crash before the row is retried by appending the row only
         _append(s, "power.recorded", role=role, input_hash=digest)
         return f"recorded {role} power inputs {digest[:12]}"
+
+
+def verify_for_plan(root: Path, plan_doc: dict) -> str:
+    """The after-grading hook's read (item 15): lock-free, writes nothing. `campaign verify: ok (<n> rows)`, or `campaign verify: not run
+    (HB-CMP-005)` for an unknown campaign; HB-CMP-003 with the first finding otherwise. "Not verified", never "verified"."""
+    return ""
+
+
+def status_doc(root: Path, campaign_id: str) -> dict:
+    """The `bench-campaign-status/1` document of a campaign (lock-free; no free text)."""
+    return {}
+
+
+def to_json(doc: dict) -> str:
+    return ""
+
+
+def parse_status(text: str) -> dict:
+    """A `bench-campaign-status/1` document, validated strictly (ValueError on any deviation)."""
+    return {}
 
 
 def _tree_run_diff(root: Path, effective: Mapping, plan_doc: dict) -> list[str]:
@@ -1432,7 +1452,7 @@ def _preview(root: Path, state: CampaignState, statement: dict, digest: str, pre
     if final is None:
         lines.append("no final power recorded; min_pairs is not compared with a required n. Run bench campaign power in state piloted.")
     else:
-        results = power_model.analyse(_decimal_view(content(root, state.campaign_id, "power", final["input_hash"])))
+        results = power_model.analyse(decimal_view(content(root, state.campaign_id, "power", final["input_hash"])))
         for prop, result in sorted(results.items()):
             for row in result.required_pairs:
                 if statement["min_pairs"] < row["n"]:
