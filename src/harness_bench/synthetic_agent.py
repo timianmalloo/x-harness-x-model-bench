@@ -139,6 +139,7 @@ def _send(obj: dict) -> None:
 
 def main() -> int:
     session_id = str(uuid.uuid4())
+    turn = 0
     for raw in sys.stdin.buffer:
         msg = json.loads(raw)
         method, mid = msg.get("method"), msg.get("id")
@@ -148,8 +149,13 @@ def main() -> int:
         elif method == "session/new":
             _send({"jsonrpc": "2.0", "id": mid, "result": {"sessionId": session_id}})
         elif method == "session/prompt":
+            turn += 1
+            overlay_root = Path(os.environ["HB_SYNTH_OVERLAY"])
+            turn_dir = overlay_root / f"turn-{turn}"
+            target_overlay = turn_dir if (overlay_root / "turn-1").is_dir() else overlay_root
             try:
-                apply_overlay(Path(os.environ["HB_SYNTH_OVERLAY"]), Path.cwd())
+                if target_overlay.is_dir():
+                    apply_overlay(target_overlay, Path.cwd())
             except (OverlayError, OSError, KeyError) as exc:
                 sys.stderr.write(f"synthetic agent refused the overlay: {exc!r}\n")
                 return 2
