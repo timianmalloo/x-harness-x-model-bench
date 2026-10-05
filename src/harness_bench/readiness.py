@@ -15,6 +15,7 @@ import json
 import logging
 import re
 import sys
+import tempfile
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -25,7 +26,12 @@ from harness_bench import atomic, config, egress, identity, plan, views, workspa
 from harness_bench.errors import BenchError
 from harness_bench.grade import _changes, _env, diffstats, runner
 from harness_bench.grade import property as prop
-from harness_bench.synthetic_agent import OverlayError, overlay_files, safe_relpath
+from harness_bench.synthetic_agent import (
+    OverlayError,
+    apply_overlay,
+    overlay_files,
+    safe_relpath,
+)
 
 ROLES = ("reference", "naive")
 CORRECTNESS_SCORES = ("pass_at_1", "partial_credit")  # recorded in `scores`, no expected value (R-90 condition 1)
@@ -281,8 +287,34 @@ def _case_failures(spec: Mapping, add) -> None:
 
 def _check_simplicity_reference_size(root: Path, d: Path, p: Mapping, add) -> None:
     """Recompute size_reference_lines for a simplicity task (W1-L s8.1, s15; HB-RDY-009)."""
-    # assume: the upstream cache root is root / ".tools" / "upstream" (discriminate.run's default)
-    _ = (root, d, p, add, workspace, _changes, diffstats)
+    frozen = p.get("size_reference_lines")
+    if frozen is None:
+        add("property.size_reference_lines", "missing", "HB-RDY-005")
+        return
+    # assume: the upstream cache root is root / ".tools" / "upstream" (discriminate.run's default); confirm: discriminate.run line 254; breaks if false: cache miss on discrimination run.
+    upstream_root = (root / ".tools" / "upstream").resolve()
+    sources_root = (root / ".tools" / "sources").resolve()
+    try:
+        tv = plan.task_version_hash(d)
+        base_repo = workspace.task_source(d, tv, sources_root, upstream_root)
+    except (BenchError, OSError) as exc:
+        add("property.size_reference_lines", f"value not checked: base tree cannot be built ({exc})", "HB-RDY-009")
+        return
+
+    ref_dir = d / "oracle" / "solutions" / "reference"
+    radius = config.load_yaml(d / "task.yaml").get("blast_radius") or []
+    try:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            final = Path(tmp_dir) / "final"
+            _changes.copy_tree(base_repo, final)
+            apply_overlay(ref_dir, final)
+            computed = diffstats.measure(base_repo, final, radius)["inside_lines"]
+    except (OSError, OverlayError) as exc:
+        add("property.size_reference_lines", f"value not checked: reference overlay cannot be applied ({exc})", "HB-RDY-009")
+        return
+
+    if frozen != computed:
+        add("property.size_reference_lines", f"frozen value {frozen} differs from computed {computed}", "HB-RDY-009")
 
 
 def contract_failures(root: Path, task_id: str) -> list[Failure]:
