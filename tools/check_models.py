@@ -111,7 +111,7 @@ def tlc(cfg_text: str, label: str) -> tuple[int, str, float]:
             ["java", "-XX:+UseParallelGC", "-XX:MaxRAMPercentage=75", "-cp", str(JAR), "tlc2.TLC",
              "-workers", "auto",
              "-metadir", str(Path(tmp) / "meta"), "-config", str(cfg), f"{MODEL}.tla"],
-            cwd=MODELS, capture_output=True, text=True, timeout=TIMEOUT,
+            cwd=MODELS, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=TIMEOUT,
             check=False)  # TLC exits non-zero on the violations the variants expect
         return result.returncode, result.stdout + result.stderr, time.monotonic() - started
 

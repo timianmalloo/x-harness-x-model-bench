@@ -130,7 +130,7 @@ def renew(root: Path | None = None) -> int:
     else:
         cmd = [sys.executable, "-m", "pytest", "-m", "gate"]
 
-    proc = subprocess.run(cmd, cwd=repo_root, capture_output=True, text=True, check=False)
+    proc = subprocess.run(cmd, cwd=repo_root, capture_output=True, text=True, encoding="utf-8", errors="replace", check=False)
     output = proc.stdout + "\n" + proc.stderr
 
     if proc.returncode == 5:
