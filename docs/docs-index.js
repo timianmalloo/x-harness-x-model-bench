@@ -3746,6 +3746,34 @@ window.DOCS_INDEX = {
       "sourceSha256": "93fa6763587ff34106f283575074265c0bbb69839affc718ca1c4a79a8b530e3"
     },
     {
+      "id": "coordinator-log",
+      "path": "docs/coordination/coordinator-log.md",
+      "title": "Coordinator hand-back log (append-only)",
+      "type": "doc",
+      "status": "active",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-05",
+      "reviewSuggested": [],
+      "summary": "One entry per Coordinator hand-back session, appended at the end, newest last. Class register in .agents/artifacts.yml: concurrent appends union-merge, so seats never conflict here. Entries up to Coordinator #28 live in docs/coordination/eval-wave2-e1/README.md section 8.",
+      "tags": [
+        "coordination",
+        "register"
+      ],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "c8c1970639e34791b65504340db99fe086760172fac885cce6747899f4b6820d"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -8332,5 +8360,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "869fbd8d15028f52d143a6ff5e2ec9afd3c867233ee5b2e23ad1d478e6aca94d"
+  "graphSha256": "5b4a689b2384b5425e93c7834d975d3b17273e7f9edce8852a8259ab620c9a19"
 };

@@ -32,3 +32,10 @@ docs/specs/harness-bench.html: derived python tools/render-doc-html.py
 
 # Owner rulings: append-only, union-merged (coordination-phase1-finish).
 docs/notes/rulings.md: register
+
+# Coord ledgers: one append-only JSONL per session, written by the coord tools in whichever tree runs them (2026-10-05).
+.agents/log/*.jsonl: register
+
+# Coordinator hand-back entries: append-only (they went into eval-wave2-e1/README.md section 8, an otherwise authored file,
+# and conflicted at every join on 2026-10-04/05). New entries go here; README section 8 points to it (2026-10-05).
+docs/coordination/coordinator-log.md: register

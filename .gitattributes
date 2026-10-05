@@ -22,3 +22,5 @@ docs/specs/harness-bench.html merge=coord-regen
 docs/audit/audit-log.jsonl merge=coord-register
 docs/audit/change-log.jsonl merge=coord-register
 docs/notes/rulings.md merge=coord-register
+.agents/log/*.jsonl merge=coord-register
+docs/coordination/coordinator-log.md merge=coord-register
