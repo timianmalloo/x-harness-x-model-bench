@@ -49,6 +49,7 @@ from harness_bench.report import campaign_section, cli_table, html, summaries
 from harness_bench.report import credentials as report_credentials
 
 OK, INVALID, INCOMPLETE, NOT_BUILT, INTEGRITY = 0, 1, 3, 4, 5
+_LEGACY_PACK = next(a for a in config.PACKS if a != config.ARM_OFF)  # a bench-matrix/1 file's one pack arm (W1-A 3.9's `on`), read from config
 
 
 def _exit_for(code: str) -> int:
@@ -209,9 +210,9 @@ def cmd_plan(args) -> int:
         return OK
     builds = {h: b.record() for h, b in tools.resolve(Path(args.tools_dir)).items()}
     bindings = {r: (s, c) for r, s, c in map(plan.parse_binding, args.arm)}  # W1-A section 3.9, pasted (SR-2)
-    if matrix["schema"] == "bench-matrix/1" and "on" in matrix["packs"]:
+    if matrix["schema"] == "bench-matrix/1" and _LEGACY_PACK in matrix["packs"]:
         source = Path(args.pack_source or root.parent / "ai-forward")
-        bindings["on"] = (str(source), gitsafe.git(["rev-parse", "HEAD"], cwd=source, timeout=60).stdout.strip())
+        bindings[_LEGACY_PACK] = (str(source), gitsafe.git(["rev-parse", "HEAD"], cwd=source, timeout=60).stdout.strip())
     elif args.pack_source:
         raise BenchError("HB-PLN-002", "--pack-source applies to a bench-matrix/1 file; use --arm role=source@commit")
     pack_root = Path(args.tools_dir).parent / "pack"
@@ -232,8 +233,9 @@ def cmd_plan(args) -> int:
         b = p["builds"].get(c["harness"], {})
         table.add_row(c["id"], c["harness"], c["model"], f"{b.get('version')} ({(b.get('sha256') or '')[:12]})", str(per_combo[c["id"]]))
     console.print(table)
-    for aid, arm in p["arms"].items():
-        record = arm["pack"]
+    packs = plan.plan_packs(p)
+    for aid in p["arms"]:
+        record = packs.get(aid)
         print(f"arm {aid}: " + (f"pack revision {record['revision']} ({record['commit'][:12]})" if record else "no pack"))
     print(f"{len(p['cells'])} cells; parallelism {p['parameters']['parallelism']}; "
           f"envelope {p['envelope_seconds']} s; price list {p['price_list_hash'][:12] or 'absent'}")
@@ -491,11 +493,11 @@ def cmd_report(args) -> int:
             summaries.generate(kind, run_dir, view, board_obj, backend, operator=operator, secrets=secrets,
                               canaries=egress.CANARIES)
 
+    campaign_obj = _campaign_input(root, run_dir, view)  # None for a plan with no campaign block (EVU-4)
     text, code = cli_table.render(view, plain=_plain(), run_dir=run_dir, root=root, board_obj=board_obj, params=params, comparison_obj=comp_obj)
     if code == OK:
         # html.write's credential scan must run before a label reaches the terminal (residual 5).
-        campaign_obj = _campaign_input(root, run_dir, view)
-        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator(), board_obj=board_obj, params=params, comparison_obj=comp_obj, canaries=egress.CANARIES, **({"campaign_obj": campaign_obj} if campaign_obj is not None else {}))
+        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator(), board_obj=board_obj, params=params, comparison_obj=comp_obj, canaries=egress.CANARIES, campaign_obj=campaign_obj)
         print(text, end="")
         print(f"report: {report_path}")
     else:

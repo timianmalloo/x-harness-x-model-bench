@@ -247,7 +247,7 @@
   {
     "name": "A1b report admits discrimination runs",
     "file": "src/harness_bench/views.py",
-    "find": "if kind != \"measurement\":",
+    "find": "if kind != \"measurement\" and not any_kind:",
     "replace": "if False:",
     "tests": ["tests/test_views.py::test_views_refuses_nonmeasurement_confirmed_run"]
   },

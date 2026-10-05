@@ -623,11 +623,10 @@ def test_cmd_plan_refuses_a_changed_frozen_task_before_building_a_plan(monkeypat
     (root / "bench" / "task-freeze.yaml").write_text(f"schema: bench-task-freeze/1\ntasks: {{X1: '{'0' * 64}'}}\n", encoding="utf-8")
     actual = plan.task_version_hash(root / "tasks" / "X1")
     monkeypatch.setattr(cli.tools, "resolve", lambda path: {})
-    monkeypatch.setattr(cli, "_pack", lambda *args: {"source": "pack", "commit": "c" * 40, "revision": 1})
     monkeypatch.setattr(cli.plan, "build_plan", lambda *a, **k: pytest.fail("a plan was built over a changed frozen task"))
     args = SimpleNamespace(root=str(root), matrix=str(root / "bench" / "matrix.phase1.yaml"), tools_dir=str(tmp_path / "t"),
                            cells_root=str(tmp_path / "c"), pack_source=str(tmp_path / "p"), run_id="p", parallelism=2,
-                           json=False, confirm=False, decision_timeout_minutes=30, spend_cap_tokens=None)
+                           json=False, confirm=False, decision_timeout_minutes=30, spend_cap_tokens=None, arm=[], campaign=None)
     assert cli.cmd_plan(args) == cli.INVALID
     assert capsys.readouterr().err == f"x tasks/X1 changed while frozen (R-59 c5): {actual} != {'0' * 64}\n"
 
@@ -876,19 +875,20 @@ def test_cmd_plan_passes_configured_tools_and_cells_roots_to_probe(monkeypatch, 
                         or real(path))
     monkeypatch.setattr(cli.config, "validate_matrix", lambda *args: None)
     monkeypatch.setattr(cli.tools, "resolve", lambda path: {})
-    monkeypatch.setattr(cli, "_pack", lambda *args: {"source": "pack", "commit": "c" * 40, "revision": 1})
+    monkeypatch.setattr(cli, "_pack_record", lambda *args: {"source": "pack", "commit": "c" * 40, "revision": 1})
+    monkeypatch.setattr(cli.gitsafe, "git", lambda *a, **k: SimpleNamespace(stdout="c" * 40 + "\n"))
     received = {}
 
     def fake_build_plan(*args, **kwargs):
         received.update(kwargs)
-        return {"cells": [], "builds": {}, "pack": {"revision": 1, "commit": "c" * 40},
+        return {"cells": [], "builds": {}, "arms": {"on": {"pack": {"revision": 1, "commit": "c" * 40}}}, "launch_seed": 1,
                 "parameters": {"parallelism": 2, **kwargs["parameters"]}, "envelope_seconds": 0, "price_list_hash": ""}
 
     monkeypatch.setattr(cli.plan, "build_plan", fake_build_plan)
     args = SimpleNamespace(root=str(ROOT), matrix=str(ROOT / "bench" / "matrix.phase1.yaml"),
                            tools_dir=str(tmp_path / "custom-tools"), cells_root=str(tmp_path / "cells-root"),
                            pack_source=str(tmp_path / "pack"), run_id="p", parallelism=2, json=False, confirm=False,
-                           decision_timeout_minutes=30, spend_cap_tokens=None)
+                           decision_timeout_minutes=30, spend_cap_tokens=None, arm=[], campaign=None)
     assert cli.cmd_plan(args) == 0
     assert received["tools_dir"] == Path(args.tools_dir)
     assert received["cells_root"] == Path(args.cells_root)
