@@ -65,7 +65,7 @@ def record(session_id: str, cwd: str, prompt: str) -> None:
                      "timestamp": now, "message": {"model": "<synthetic>", "usage": {"input_tokens": 0, "output_tokens": 0}}})
     elif MODE != "no_model_call":
         rows.append({"type": "assistant", "sessionId": session_id, "timestamp": now,
-                     "message": {"id": "msg_1", "model": CFG.get("model", "claude-sonnet-5"), "role": "assistant",
+                     "message": {"id": f"msg_{CFG.get('_turn', 1)}", "model": CFG.get("model", "claude-sonnet-5"), "role": "assistant",
                                  "content": [{"type": "tool_use", "id": "tu1", "name": "Bash", "input": {"command": "python -c \"print(6*7)\""}}],
                                  "usage": CFG.get("native_usage", {"input_tokens": 10, "output_tokens": 5, "cache_read_input_tokens": 100,
                                                                   "cache_creation_input_tokens": 20})}})
@@ -161,6 +161,7 @@ def main() -> int:
             if prompt_number < len(configs):
                 CFG.update(configs[prompt_number])
             prompt_number += 1
+            CFG["_turn"] = prompt_number
             MODE = CFG.get("mode", "ok")
             text = msg["params"]["prompt"][0]["text"]
             prompt_log("session/prompt", n=prompt_number, prompt=text)
@@ -231,7 +232,7 @@ def main() -> int:
                 start_daemon()
             result = {"stopReason": CFG.get("stop_reason", "end_turn")}
             if CFG.get("usage"):  # shaped like claude-agent-acp's prompt response (tests/fixtures/acp)
-                result.update({"usage": {"inputTokens": 1}, "_meta": {"quota": {"model_usage": CFG["usage"]}}})
+                result.update({"usage": CFG.get("acp_usage", {"inputTokens": 1}), "_meta": {"quota": {"model_usage": CFG["usage"]}}})
             send({"jsonrpc": "2.0", "id": mid, "result": result})
             if CFG.get("exit_after_prompt"):
                 return 0

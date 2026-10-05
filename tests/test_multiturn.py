@@ -36,7 +36,7 @@ from harness_bench import (
     views,
 )
 from harness_bench.errors import BenchError, Cause
-from harness_bench.telemetry import claude_code
+from harness_bench.telemetry import claude_code, normalize
 
 
 def usage(n):
@@ -64,6 +64,8 @@ def run_cell(tmp_path, per_turn=None, budget=60, on_row=None, **fake):
     clock = CellClock()
     config = engine.EngineConfig(tmp_path / "runs" / p["run_id"], tmp_path / "cells", {"fake": launcher},
                                  _build_workspace, None, loop_interval=0.01, clock=clock)
+    p["plan_hash"] = plan.plan_hash(p)
+    plan.confirm(config.run_dir, p)
 
     class ObservedEngine(engine.Engine):
         def _after_append(self, row):
@@ -134,13 +136,40 @@ def test_t_eng_2_one_budget_across_turns(tmp_path):
 @pytest.mark.parametrize("source", ["acp_turn", "native_record"])
 @pytest.mark.xfail(strict=True, reason="J1b: sum usage across returned turns")
 def test_t_eng_4_usage_sums_every_turn(tmp_path, source):
-    per_turn = [{"usage": usage(5), "native_usage": {"input_tokens": 5, "output_tokens": 0}},
-                {"usage": usage(7), "native_usage": {"input_tokens": 7, "output_tokens": 0}}]
+    per_turn = [{"usage": usage(n), "native_usage": {"input_tokens": n, "output_tokens": 0,
+                "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0},
+                "acp_usage": {"inputTokens": n, "outputTokens": 0, "cachedReadTokens": 0, "cachedWriteTokens": 0}}
+                for n in (5, 7)]
     with pytest.MonkeyPatch.context() as patch:
         patch.setattr(FakeLauncher, "usage_source", source)
         _, _, cfg, _, _ = run_cell(tmp_path, per_turn)
     rows = views.rows(cfg.run_dir, "turn_usage")
-    assert sum(r["uncached_input"] for r in rows) == 12, rows
+    outcome = row(_events(cfg.run_dir), "cell.outcome")
+    cid, sid = outcome["cell_id"], outcome["session_id"]
+    native = next((cfg.run_dir / "archive" / cid / "attempt-1/home").rglob("*.jsonl"))
+    extraction = claude_code.read(native)
+    assert sum(c.uncached_input for c in extraction.model_calls) == 12
+    gid = "j1-crosscheck"
+    with ledger.SegmentWriter.create(cfg.run_dir / "model_calls", f"grade-{gid}") as writer:
+        for call in normalize.model_call_rows(cfg.run_dir.name, cid, sid, extraction, "j1-native"):
+            writer.append(call)
+        writer.seal()
+    with ledger.SegmentWriter.create(cfg.run_dir / "scores", f"grade-{gid}") as writer:
+        writer.append({"kind": "score", "run_id": cfg.run_dir.name, "grading_id": gid, "cell_id": cid,
+                       "metric_id": "usage", "extraction_id": "j1-native", "value": 1, "reason": None})
+        writer.seal()
+    with ledger.SegmentWriter.create(cfg.run_dir / "events", f"grade-{gid}") as writer:
+        writer.append(ledger.stamp({"kind": "grading.started", "grading_id": gid, "catalog_version": "0.7"}))
+        writer.append(ledger.stamp({"kind": "grading.completed", "grading_id": gid}))
+        writer.seal()
+    with pytest.MonkeyPatch.context() as patch:
+        # This fixture adapter reports complete ACP totals like Copilot. The
+        # real extractor, ledger and view cross-check remain in use.
+        patch.setattr(views, "ACP_TOTAL_HARNESSES", (*views.ACP_TOTAL_HARNESSES, "fake"))
+        view = views.load(cfg.run_dir)
+        assert view.grading_id == gid
+        assert sum(r["uncached_input"] for r in rows) == 12, rows
+        assert not [f for c in view.cells for f in c.warnings if f.code == "HB-VAL-005"]
     assert not [f for f in views.verify(cfg.run_dir) if f.code == "HB-VAL-005"]
 
 
