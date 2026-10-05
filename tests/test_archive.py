@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from harness_bench import archive
+from harness_bench import archive, atomic, oslock
 from harness_bench.errors import BenchError
 
 
@@ -100,3 +100,198 @@ def test_delete_is_refused_when_the_archive_does_not_verify(tmp_path):
     with pytest.raises(BenchError):
         archive.delete_after_verify(cell, result.folder, result.rows)
     assert cell.exists()
+
+
+def test_a_kill_mid_copy_leaves_no_final_folder_and_the_redo_succeeds(tmp_path):
+    cell = _cell(tmp_path)
+    dest_root = tmp_path / "archive" / "c1"
+    final = dest_root / "attempt-1"
+    script = tmp_path / "kill_archive.py"
+    script.write_text(
+        "import os, sys\n"
+        "from pathlib import Path\n"
+        "from harness_bench import archive\n"
+        "calls = 0\n"
+        "real_copy = archive._copy_hashed\n"
+        "def bad_copy(src, dest):\n"
+        "    global calls\n"
+        "    calls += 1\n"
+        "    if calls == 3:\n"
+        "        os._exit(3)\n"
+        "    return real_copy(src, dest)\n"
+        "archive._copy_hashed = bad_copy\n"
+        "cell_dir = Path(sys.argv[1])\n"
+        "dest_root = Path(sys.argv[2])\n"
+        "archive.archive_cell(cell_dir, dest_root, attempt=1, exclude_names=set())\n",
+        encoding="utf-8",
+    )
+    proc = subprocess.run([sys.executable, str(script), str(cell), str(dest_root)], check=False)
+    assert proc.returncode == 3
+    assert not final.exists()
+    stale = atomic.stale_temps(dest_root)
+    assert len(stale) == 1 and stale[0].is_dir()
+    lock = oslock.RunLock.acquire(dest_root / ".lock")
+    try:
+        swept = atomic.sweep_temps(dest_root, lock)
+        assert stale[0] in swept and not stale[0].exists()
+        result = archive.archive_cell(cell, dest_root, attempt=1, exclude_names=set())
+        assert final.exists()
+        archive.verify(result.folder, result.rows)
+    finally:
+        lock.release()
+
+
+def test_a_corrupted_copy_fails_verification_before_the_rename(tmp_path, monkeypatch):
+    cell = _cell(tmp_path)
+    dest_root = tmp_path / "archive" / "c1"
+    real_copy = archive._copy_hashed
+
+    def corrupt_copy(src: Path, dest: Path) -> tuple[int, str]:
+        size, h = real_copy(src, dest)
+        if dest.is_file() and dest.stat().st_size > 0:
+            b = dest.read_bytes()
+            flipped = bytes([b[0] ^ 0xFF]) + b[1:]
+            dest.write_bytes(flipped)
+        return size, h
+
+    monkeypatch.setattr(archive, "_copy_hashed", corrupt_copy)
+    with pytest.raises(BenchError) as exc:
+        archive.archive_cell(cell, dest_root, attempt=1, exclude_names=set())
+    assert exc.value.code == "HB-LED-005"
+    assert not (dest_root / "attempt-1").exists()
+
+
+@pytest.mark.parametrize("scenario", ["extra_file", "missing_file", "link_file", "empty_dir"])
+def test_verify_rejects_an_extra_file_and_a_missing_file(tmp_path, scenario):
+    cell = _cell(tmp_path)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "link_target.txt").write_text("outside", encoding="utf-8")
+    link = cell / "ws" / "escape"
+    if sys.platform == "win32":
+        subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(outside)], capture_output=True, check=False)
+    else:
+        os.symlink(outside, link, target_is_directory=True)
+
+    result = archive.archive_cell(cell, tmp_path / "a", attempt=1, exclude_names=set())
+    folder = result.folder
+    rows = result.rows
+
+    if scenario == "extra_file":
+        (folder / "extra.txt").write_bytes(b"extra")
+        with pytest.raises(BenchError) as exc:
+            archive.verify(folder, rows)
+        assert exc.value.code == "HB-LED-005"
+    elif scenario == "missing_file":
+        (folder / "ws" / "answer.txt").unlink()
+        with pytest.raises(BenchError) as exc:
+            archive.verify(folder, rows)
+        assert exc.value.code == "HB-LED-005"
+    elif scenario == "link_file":
+        (folder / "ws" / "escape").write_bytes(b"file_at_link")
+        with pytest.raises(BenchError) as exc:
+            archive.verify(folder, rows)
+        assert exc.value.code == "HB-LED-005"
+    elif scenario == "empty_dir":
+        (folder / "empty_dir").mkdir()
+        archive.verify(folder, rows)
+
+
+def test_archive_cell_refuses_when_a_complete_archive_exists(tmp_path):
+    cell = _cell(tmp_path)
+    dest_root = tmp_path / "archive" / "c1"
+    archive.archive_cell(cell, dest_root, attempt=1, exclude_names=set())
+    answer_path = dest_root / "attempt-1" / "ws" / "answer.txt"
+    original_bytes = answer_path.read_bytes()
+    with pytest.raises(BenchError) as exc:
+        archive.archive_cell(cell, dest_root, attempt=1, exclude_names=set())
+    assert exc.value.code == "HB-USR-002"
+    assert answer_path.read_bytes() == original_bytes
+
+
+def test_attempt_dirs_ignores_a_leaked_temp_sibling(tmp_path):
+    run_dir = tmp_path / "run"
+    cell_archive = run_dir / "archive" / "cell-1"
+    cell_archive.mkdir(parents=True)
+    a1 = cell_archive / "attempt-1"
+    a2 = cell_archive / "attempt-2"
+    a1.mkdir()
+    a2.mkdir()
+    leaked = cell_archive / "attempt-1.tmp-123-12345678901234567890123456789012"
+    leaked.mkdir()
+    got = archive.attempt_dirs(run_dir, "cell-1")
+    assert got == [a1, a2]
+
+
+def test_a_file_added_after_verify_is_caught_by_delete_after_verify(tmp_path):
+    cell = _cell(tmp_path)
+    result = archive.archive_cell(cell, tmp_path / "a", attempt=1, exclude_names=set())
+    (result.folder / "planted.txt").write_bytes(b"tamper")
+    with pytest.raises(BenchError) as exc:
+        archive.delete_after_verify(cell, result.folder, result.rows)
+    assert exc.value.code == "HB-LED-005"
+    assert cell.exists()
+
+
+def test_the_judge_artifact_text_survives_a_leaked_archive_temp(tmp_path):
+    from harness_bench.report import judges
+
+    run_dir = tmp_path / "run"
+    cell_archive = run_dir / "archive" / "cell-1"
+    attempt = cell_archive / "attempt-1"
+    (attempt / "ws").mkdir(parents=True)
+    (attempt / "ws" / "out.txt").write_text("artifact-content", encoding="utf-8")
+    leaked = cell_archive / "attempt-1.tmp-999-0123456789abcdef0123456789abcdef"
+    leaked.mkdir()
+    text = judges._artifact_text(run_dir, "cell-1", "out.txt")
+    assert text == "artifact-content"
+
+
+def test_the_engine_archive_goes_through_publish_dir(base, monkeypatch):
+    from test_engine import FakeLauncher, _plan, _run
+
+    from harness_bench import atomic
+
+    calls: list[Path] = []
+    real_publish = atomic.publish_dir
+
+    def spy_publish(final, fill, verify):
+        calls.append(final)
+        return real_publish(final, fill, verify)
+
+    monkeypatch.setattr(atomic, "publish_dir", spy_publish)
+    p = _plan(n_cells=2)
+    summary, _, _ = _run(base, p, FakeLauncher({}))
+    assert summary.exit_code == 0
+    assert len(calls) == len(p["cells"])
+    for final in calls:
+        assert final.is_dir()
+
+
+def test_bench_verify_passes_a_run_archived_by_the_atomic_path(tmp_path):
+    import shutil
+
+    import archived_runs as ar
+
+    from harness_bench import ledger, views
+
+    root = ar.make_root(tmp_path / "root")
+    cell_dir = tmp_path / "cell1"
+    (cell_dir / "ws").mkdir(parents=True)
+    (cell_dir / "ws" / "slug.py").write_text(ar.GOOD, encoding="utf-8")
+    (cell_dir / "home" / "sessions" / "2026" / "09").mkdir(parents=True)
+    shutil.copy(ar.FIX / "native" / "codex" / "ok.jsonl", cell_dir / "home" / "sessions" / "2026" / "09" / "rollout-2026-09-23-sess-c1.jsonl")
+
+    run_dir = ar.make_run(root, tmp_path / "runs", {"c1": None}, archived=set())
+    res = archive.archive_cell(cell_dir, run_dir / "archive" / "c1", attempt=1, exclude_names=set())
+    with ledger.SegmentWriter.reopen(run_dir / "events" / "engine-1.jsonl") as ev, \
+            ledger.SegmentWriter.reopen(run_dir / "archive_files" / "engine-1.jsonl") as af:
+        for row in res.rows:
+            af.append({"kind": "archive_file", "run_id": "r1", "cell_id": "c1", **row})
+        ev.append({"kind": "cell.archived", "cell_id": "c1", "archive_attempt": 1, "archive_hash": res.archive_hash})
+
+    findings = views.verify(run_dir)
+    errors = [f for f in findings if f.level == "error"]
+    assert errors == []
+
+

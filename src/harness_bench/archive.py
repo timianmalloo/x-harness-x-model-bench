@@ -16,7 +16,6 @@ from __future__ import annotations
 import hashlib
 import os
 import shutil
-import stat
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -52,6 +51,19 @@ def archive_hash(rows: list[dict]) -> str:
     return hashlib.sha256(canonical({"files": body})).hexdigest()
 
 
+def _copy_hashed(src: Path, dest: Path) -> tuple[int, str]:
+    shutil.copyfile(src, dest)
+    size = dest.stat().st_size
+    return size, _sha(dest)
+
+
+def attempt_dirs(run_dir: Path, cell_id: str) -> list[Path]:
+    base = run_dir / "archive" / cell_id
+    if not base.is_dir():
+        return []
+    return sorted(base.glob("attempt-*"))
+
+
 def archive_cell(cell_dir: Path, dest_root: Path, attempt: int, exclude_names: set[str]) -> ArchiveResult:
     folder = dest_root / f"attempt-{attempt}"
     if folder.exists():
@@ -71,10 +83,9 @@ def archive_cell(cell_dir: Path, dest_root: Path, attempt: int, exclude_names: s
                 stack.extend(sorted(src.iterdir(), reverse=True))
             elif src.is_file() and src.name not in exclude_names:
                 dest.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(src, dest)
-                size = dest.stat().st_size
+                size, sha256 = _copy_hashed(src, dest)
                 total += size
-                rows.append({"path": rel, "kind": "file", "size": size, "sha256": _sha(dest), "link_target": ""})
+                rows.append({"path": rel, "kind": "file", "size": size, "sha256": sha256, "link_target": ""})
     for r in rows:
         r["archive_attempt"] = attempt
     return ArchiveResult(folder, rows, archive_hash(rows), total)
@@ -90,9 +101,7 @@ def verify(folder: Path, rows: list[dict]) -> None:
             raise BenchError("HB-LED-005", f"archived file {r['path']} does not match its archive_files row")
 
 
-def make_writable(func, path, _exc) -> None:
-    os.chmod(path, stat.S_IWRITE)
-    func(path)
+from harness_bench.atomic import make_writable
 
 
 def delete_after_verify(cell_dir: Path, folder: Path, rows: list[dict], retries: int = 5, wait: float = 1.0) -> bool:
