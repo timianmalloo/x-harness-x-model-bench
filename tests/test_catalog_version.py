@@ -761,6 +761,101 @@ def cross_version_problems(root: Path, root06: Path, golden06: Path, freeze: dic
     return []
 
 
+def _us4_root(tmp: Path) -> Path:
+    """The real 0.7.dev catalog and X1 task, rubrics included, so catalog_hash matches the tree."""
+    root = make_root(tmp, release=False)
+    rubrics = ROOT / "bench" / "rubrics"
+    if rubrics.is_dir():
+        shutil.copytree(rubrics, root / "bench" / "rubrics")
+    return root
+
+
+def _cross(root: Path, root06: Path, golden06: Path, tmp: Path, export=None, board_export=None) -> list[str]:
+    freeze = config.load_yaml(ROOT / FREEZE)
+    return cross_version_problems(
+        root, root06, golden06, freeze,
+        export or (lambda name: graded_export(root, name, tmp)),
+        board_export or (lambda name: graded_board_export(root, name, tmp)))
+
+
+def test_cross_version_problems_is_red_for_a_moved_06_metric(tmp_path, monkeypatch):  # T-U1a
+    root = _us4_root(tmp_path)
+    real = runner.GRADERS["correctness"]
+
+    def changed(inp):
+        out = dict(real(inp))
+        if inp.cell["cell_id"] == "a":
+            out["partial_credit"] = Score(Decimal("0.5000"), None)
+        return out
+
+    monkeypatch.setitem(runner.GRADERS, "correctness", changed)
+    problems = _cross(root, _root06(tmp_path), GOLDEN / "0.6", tmp_path)
+    assert problems
+    assert any("views" in item and "c44dd2b-no-heads" in item for item in problems)
+
+
+def test_cross_version_problems_is_red_for_a_weight_change(tmp_path):  # T-U1b
+    root = _us4_root(tmp_path)
+    path = root / "bench" / "metrics.yaml"
+    text = path.read_text(encoding="utf-8")
+    old = "id: partial_credit,          source: [D], better: higher, grader: correctness, kind: score, weight: 1"
+    assert old in text
+    path.write_text(text.replace(old, old.replace("weight: 1", "weight: 2"), 1), encoding="utf-8")
+    problems = _cross(root, _root06(tmp_path), GOLDEN / "0.6", tmp_path)
+    assert problems
+    assert any("board" in item for item in problems)
+
+
+def test_cross_version_problems_is_red_for_an_edited_or_regenerated_06_golden(tmp_path):  # T-U1c
+    root = _us4_root(tmp_path)
+    root06 = _root06(tmp_path)
+    edited = tmp_path / "edited-golden"
+    shutil.copytree(GOLDEN / "0.6", edited)
+    target = edited / "heads.export"
+    target.write_bytes(target.read_bytes() + b" ")
+    edited_problems = _cross(root, root06, edited, tmp_path)
+    assert edited_problems
+    assert any("pin" in item for item in edited_problems)
+    regenerated = tmp_path / "regenerated-golden"
+    regenerated.mkdir()
+    for name in FIXTURES:
+        (regenerated / f"{name}.export").write_bytes(graded_export(root, name, tmp_path))
+        (regenerated / f"{name}.board.export").write_bytes(graded_board_export(root, name, tmp_path))
+    regenerated_problems = _cross(root, root06, regenerated, tmp_path)
+    assert regenerated_problems
+    assert any("pin" in item for item in regenerated_problems)
+
+
+def test_cross_version_problems_is_red_for_an_edited_root06(tmp_path):  # T-U1d
+    root = _us4_root(tmp_path)
+    edited = _root06(tmp_path)
+    metrics = edited / "bench" / "metrics.yaml"
+    metrics.write_text(metrics.read_text(encoding="utf-8").replace("weight: 1", "weight: 9", 1), encoding="utf-8")
+    edited_problems = _cross(root, edited, GOLDEN / "0.6", tmp_path)
+    assert edited_problems
+    assert any("hash" in item for item in edited_problems)
+    with_rubric = _root06(tmp_path / "rubric-case")
+    (with_rubric / "bench" / "rubrics").mkdir()
+    (with_rubric / "bench" / "rubrics" / "added.md").write_text("# added\n", encoding="utf-8")
+    rubric_problems = _cross(root, with_rubric, GOLDEN / "0.6", tmp_path)
+    assert rubric_problems
+    assert any("hash" in item for item in rubric_problems)
+
+
+def test_the_new_metric_ids_are_absent_from_the_x1_exports(tmp_path):  # T-U2
+    root = _us4_root(tmp_path)
+
+    def injected(name: str) -> bytes:
+        data = json.loads(graded_export(root, name, tmp_path))
+        data["cells"][0]["scores"]["exploit_probes_blocked"] = {"value": 1, "reason": None}
+        from harness_bench import ledger
+        return ledger.canonical(data)
+
+    problems = _cross(root, _root06(tmp_path), GOLDEN / "0.6", tmp_path, export=injected)
+    assert problems
+    assert any("exploit_probes_blocked" in item for item in problems)
+
+
 # --- the slow ring: dotnet fixtures run only on the grading host (design: Catalog-version rule 4; seam V-4) ---------
 
 
