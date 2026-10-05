@@ -299,7 +299,10 @@ def file_hash(path: Path) -> str:
 def _prompt(task_dir: Path) -> dict:
     """The task prompt the agent receives, frozen in the plan with its hash (US-10); line ends as LF."""
     text = (task_dir / "prompt.md").read_bytes().replace(b"\r\n", b"\n").decode("utf-8")
-    return {"prompt": text, "prompt_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest()}
+    turns = [{"n": int(p.stem), "prompt": p.read_text(encoding="utf-8"), "sha256": ""}
+             for p in sorted((task_dir / "turns").glob("*.md"))]
+    return {"prompt": text, "prompt_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+            **({"turns": turns} if turns else {})}
 
 
 def _model_map(task_dir: Path) -> dict:

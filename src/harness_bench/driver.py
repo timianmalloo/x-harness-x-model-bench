@@ -31,7 +31,7 @@ import re
 import threading
 import time
 from collections.abc import Callable, Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from harness_bench.errors import Cause
@@ -88,6 +88,15 @@ class LineParser:
 
 
 @dataclass
+class TurnRecord:
+    turn: int
+    stop_reason: str | None
+    turn_seconds: float
+    usage: dict | None
+    last_update_seconds: float | None
+
+
+@dataclass
 class TurnResult:
     session_id: str | None = None
     stop_reason: str | None = None
@@ -109,6 +118,25 @@ class TurnResult:
     # R-34: the mode the session reports (session/new modes.currentModeId, after the adapter's own fallback), or the
     # mode a session/set_mode it accepted; null when not reported, never the profile's declared mode
     permission_mode_effective: str | None = None
+    turns: list[TurnRecord] = field(default_factory=list)
+
+
+class Session:
+    """Own the channel until close; K2 deliberately retains the repeated-close bug."""
+
+    def __init__(self, channel, cwd, mode, handshake_timeout, model, mcp_servers):
+        self.channel = channel
+        self.result = channel.result
+        self.cwd, self.mode = cwd, mode
+        self.handshake_timeout, self.model = handshake_timeout, model
+        self.mcp_servers = mcp_servers
+        self.closed = False
+
+    def close(self) -> None:
+        if self.closed:
+            raise ValueError("session already closed")
+        self.channel.cell.proc.stdin.close()
+        self.closed = True
 
 
 class _Eof(Exception):
@@ -246,19 +274,11 @@ def _prompt_error_cause(exc: _AcpError) -> Cause:
     return normalize.classify([ProviderError(0, status, error_type, message[:300])]) or Cause.adapter_crash
 
 
-def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handshake_timeout: float,
-             before_send: Callable[[str | None], None], model: str | None = None,
-             result: TurnResult | None = None, mcp_servers: list[dict] | None = None,
-             cancel: threading.Event | None = None) -> TurnResult:
-    """Handshake, ack barrier, one verbatim prompt. `before_send` exceptions propagate unsent.
-
-    `model`: sent with `session/set_model` right after `session/new` (the ADR-0003 pin, for a profile that sets it);
-    a refusal is `model_unavailable` by step, whatever its text, and the prompt is never sent (R-18).
-    `result`: a TurnResult the caller supplies and can read in `before_send` (agent_version, R-28).
-    `cancel`: an engine-owned event observed on this worker thread; it closes stdin and sends the ACP
-    notification only while a prompt is in flight."""
-    result = result if result is not None else TurnResult()
-    ch = _Channel(cell, result, cancel)
+def _handshake(session: Session) -> bool:
+    ch, result = session.channel, session.result
+    cwd, mode = session.cwd, session.mode
+    handshake_timeout, model = session.handshake_timeout, session.model
+    mcp_servers = session.mcp_servers
     started = time.monotonic()
     deadline = started + handshake_timeout
     try:
@@ -275,26 +295,53 @@ def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handsh
             try:
                 ch.rpc("session/set_model", {"sessionId": result.session_id, "modelId": model}, deadline)
             except _AcpError as exc:  # tagged by step: the plan's model is not served here
-                return _fail(result, Cause.model_unavailable, f"set_model refused: {exc}", started)
+                _fail(result, Cause.model_unavailable, f"set_model refused: {exc}", started)
+                return False
         if mode:
             ch.rpc("session/set_mode", {"sessionId": result.session_id, "modeId": mode}, deadline)
             result.permission_mode_effective = mode  # accepted: a refusal raised _AcpError above
     except _Timeout as exc:
-        return _fail(result, Cause.handshake_timeout, f"no answer to {exc} within {handshake_timeout} s", started)
+        _fail(result, Cause.handshake_timeout, f"no answer to {exc} within {handshake_timeout} s", started)
+        return False
     except _Eof:
         result.eof = True
-        return _fail(result, Cause.adapter_crash, "the adapter exited during the handshake", started)
+        _fail(result, Cause.adapter_crash, "the adapter exited during the handshake", started)
+        return False
     except ProtocolError as exc:
-        return _fail(result, Cause.protocol, exc.detail, started)
+        _fail(result, Cause.protocol, exc.detail, started)
+        return False
     except _AcpError as exc:
         cause = Cause.blocked_auth if normalize.is_auth_failure(str(exc)) else Cause.adapter_crash
-        return _fail(result, cause, f"handshake error: {exc}", started)
+        _fail(result, cause, f"handshake error: {exc}", started)
+        return False
     result.handshake_seconds = time.monotonic() - started
+    return True
+
+
+def open_session(cell: CellProcess, cwd: Path, mode: str | None, handshake_timeout: float,
+                 model: str | None = None, result: TurnResult | None = None,
+                 mcp_servers: list[dict] | None = None, cancel: threading.Event | None = None) -> Session | None:
+    """Open one channel; None means the supplied result carries the handshake cause."""
+    result = result if result is not None else TurnResult()
+    session = Session(_Channel(cell, result, cancel), cwd, mode, handshake_timeout, model, mcp_servers)
+    return session if _handshake(session) else None
+
+
+def send_turn(session: Session, prompt: str, before_send: Callable[[str | None], None], turn: int,
+              on_first_update: Callable[[], None] | None = None) -> TurnRecord | None:
+    """Send one prompt; None means result.cause is set. K2 re-handshakes after turn 1."""
+    ch, result = session.channel, session.result
+    if session.closed:
+        result.cause, result.detail = Cause.adapter_crash, "send after session close"
+        return None
+    if result.turns and not _handshake(session):
+        return None
+    result.last_update_seconds = None
 
     before_send(result.session_id)  # the ack barrier: prompt_sent is durable before the prompt goes out
-    if cancel is not None and cancel.is_set():
+    if ch.cancel is not None and ch.cancel.is_set():
         ch._observe_cancel(False)
-        return result
+        return None
     turn_start = ch.turn_start = time.monotonic()
     try:
         done = ch.rpc("session/prompt", {"sessionId": result.session_id, "prompt": [{"type": "text", "text": prompt}]}, None)
@@ -310,6 +357,25 @@ def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handsh
     except _AcpError as exc:
         result.cause, result.detail = _prompt_error_cause(exc), f"prompt error: {exc}"
     result.turn_seconds = time.monotonic() - turn_start
+    if result.cause is not None:
+        return None
+    rec = TurnRecord(turn, result.stop_reason, result.turn_seconds, result.usage, result.last_update_seconds)
+    result.turns.append(rec)
+    return rec
+
+
+def run_turn(cell: CellProcess, cwd: Path, prompt: str, mode: str | None, handshake_timeout: float,
+             before_send: Callable[[str | None], None], model: str | None = None,
+             result: TurnResult | None = None, mcp_servers: list[dict] | None = None,
+             cancel: threading.Event | None = None) -> TurnResult:
+    """Compatibility wrapper: handshake, ack barrier, one prompt, then close."""
+    result = result if result is not None else TurnResult()
+    session = open_session(cell, cwd, mode, handshake_timeout, model, result, mcp_servers, cancel)
+    if session is not None:
+        try:
+            send_turn(session, prompt, before_send, 1)
+        finally:
+            session.close()
     return result
 
 

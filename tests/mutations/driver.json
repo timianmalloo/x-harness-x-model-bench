@@ -16,8 +16,8 @@
  {
   "name": "Codex review: a refused model setter reads adapter_crash",
   "file": "src/harness_bench/driver.py",
-  "find": "return _fail(result, Cause.model_unavailable, f\"set_model refused: {exc}\", started)",
-  "replace": "return _fail(result, Cause.adapter_crash, f\"set_model refused: {exc}\", started)",
+  "find": "_fail(result, Cause.model_unavailable, f\"set_model refused: {exc}\", started)",
+  "replace": "_fail(result, Cause.adapter_crash, f\"set_model refused: {exc}\", started)",
   "tests": ["tests/test_driver.py::test_a_refused_model_setter_is_model_unavailable_and_the_prompt_is_never_sent"]
  },
  {
