@@ -102,6 +102,7 @@ def test_a_lock_that_is_a_folder_or_a_link_is_refused_naming_it_l5(tmp_path, sha
     walk_to(root, "draft")
     target = tmp_path / "somewhere"
     target.mkdir()
+    lock_file(root).unlink()  # the session that built the campaign left a plain lock file
     if shape == "folder":
         lock_file(root).mkdir()
     else:

@@ -432,6 +432,7 @@ def test_a_temp_that_vanishes_between_listing_and_lstat_is_absent_not_a_finding(
 def test_verify_loop_never_raises_while_a_writer_loop_sweeps_and_appends(tmp_path):
     root = make_repo(tmp_path)
     walk_to(root, "baselined")
+    (cdir(root) / "power").mkdir()
     stop = threading.Event()
     seen: list = []
 

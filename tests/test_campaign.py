@@ -6,6 +6,7 @@ Each guard has a red fixture and a mutant in tests/mutations/campaign.json. Red 
 from __future__ import annotations
 
 import dataclasses
+import json
 import re
 
 import pytest
@@ -32,7 +33,7 @@ from test_cli_campaign import (
 )
 from test_cli_campaign import append as append_row
 
-from harness_bench import campaign, cli, identity, ledger, status
+from harness_bench import campaign, cli, identity, ledger, plan, status
 
 H64 = "0123456789abcdef" * 4
 
@@ -153,14 +154,20 @@ def campaign_append_raw(root, kind, fields):
         campaign._append(s, kind, **fields)
 
 
-def test_admission_row_stores_int_and_a_bool_is_refused_f7(tmp_path):
+def test_admission_row_stores_int_and_a_bool_is_refused_before_canonical_f7(tmp_path, monkeypatch):
     root = make_repo(tmp_path)
     walk_to(root, "piloted")
     append_row(root, "admission.decided", admitted=1)
     assert b'"admitted":1' in ledger_path(root).read_bytes()
     before = ledger_path(root).read_bytes()
-    err = attempt(campaign_append_raw, root, "admission.decided", {"task": "T2", "admitted": True, "reason": "r"})
+    real = ledger.canonical
+    reached = []
+    with campaign.session(root, CID) as s:
+        monkeypatch.setattr(ledger, "canonical", lambda obj: (reached.append(obj), real(obj))[1])
+        err = attempt(campaign._append, s, "admission.decided", task="T2", admitted=True, reason="r")
+        monkeypatch.undo()
     assert code_of(err) == "HB-CMP-003"
+    assert reached == []  # refused by `_append` itself, never by the canonical form beneath it
     assert ledger_path(root).read_bytes() == before
 
 
@@ -355,6 +362,35 @@ def test_a_merged_ledger_fails_closed(tmp_path, capsys):
     before = snapshot(root)
     assert code_of(attempt(campaign_append_raw, root, "abandoned", {"reason": "after the merge"})) == "HB-CMP-003"
     assert snapshot(root) == before
+
+
+# --- the compute readers over rows and files -----------------------------------------------------------------------
+
+def test_effective_identity_applies_each_fix_up_to_the_given_seq(tmp_path):
+    root = make_repo(tmp_path)
+    walk_to(root, "baselined")
+    append_row(root, "defect_fix.admitted")  # seq 3: engine a -> b
+    state = campaign.read(root, CID)
+    engine = "src/harness_bench/engine.py"
+    assert campaign.effective_identity(root, state)["components"].get(engine) == "b" * 64
+    assert campaign.effective_identity(root, state, upto_seq=2)["components"].get(engine) == "a" * 64
+    assert campaign.effective_identity(root, state)["components"].get("tasks/T1") == "d" * 64
+
+
+def test_run_facts_reads_the_plan_and_the_grading_started_row(tmp_path):
+    run_dir = tmp_path / "runs" / "R2"
+    run_dir.mkdir(parents=True)
+    body = {"run_id": "R2", "campaign": {"campaign_id": CID, "prereg_hash": PH, "identity": {"hash": "i" * 64}}, "ring": {"hash": "r" * 64}}
+    body["plan_hash"] = plan.plan_hash(body)
+    (run_dir / "plan.json").write_text(json.dumps(body), encoding="utf-8")
+    gid = "grade-20261004T000000-abcdef"
+    with ledger.SegmentWriter.create(run_dir / "events", gid) as writer:
+        writer.append({"kind": "grading.started", "grading_id": gid, "grade_identity_hash": "g" * 64})
+    assert campaign.run_facts(run_dir, gid) == campaign.RunFacts("R2", True, body["plan_hash"], CID, PH, "i" * 64, "r" * 64, "g" * 64)
+    bare = tmp_path / "runs" / "R3"
+    bare.mkdir()
+    absent = campaign.run_facts(bare, gid)
+    assert (absent.plan_present, absent.grade_identity_hash) == (False, "not recorded")
 
 
 # --- E: eligibility (pure) -----------------------------------------------------------------------------------------
