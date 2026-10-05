@@ -2,7 +2,7 @@
  {
   "name": "an integrity failure exits 1",
   "file": "src/harness_bench/cli.py",
-  "find": "    return INTEGRITY if code.startswith((\"HB-LED\", \"HB-SEC\")) else INVALID\n",
+  "find": "    return INTEGRITY if code.startswith((\"HB-LED\", \"HB-SEC\", \"HB-CMP-003\")) else INVALID\n",
   "replace": "    return INVALID\n",
   "tests": ["tests/test_cli.py::test_a_broken_ledger_is_an_integrity_failure_for_every_reader"]
  },
