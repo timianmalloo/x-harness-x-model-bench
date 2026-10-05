@@ -23,6 +23,7 @@ summary: >-
 # ADR-0006: A hash-chained, append-only record per run; every result is a derived view
 
 - **Status:** Proposed
+- **Amended (2026-10-05, ruling R-107 / DR-15; W1-J §15 Amendment 1, W0 rev 6.12 R6.12a):** the `cell.turn_ended` duration named `turn_seconds` in Amendment 5 is `turn_ms`, an int in milliseconds, `int(rec.turn_seconds * 1000)` - the expression `cell.outcome.turn_ms` already uses. See "Amendment 6" below.
 - **Amended (2026-10-03, ADR-0014, ADR-0015, ADR-0021; architecture council round 1):** the `cell_id` ingredient `pack` carries the arm id; `archive_files` gains a `snapshot` key part; `events` gains per-turn rows and resume rows; archive writes become crash-atomic. See "Amendment 5" below.
 - **Amended (2026-09-24, ruling R-26; design `design-phase2-copilot-profile` section 3):** the `model_calls` grain is re-declared as one native usage report per model, with an additive `requests` count and `model` in the key; `tool_calls` gains `outcome_code` (ruling R-27). See "Amendment 1" under Facts and their grains.
 - **Amended (2026-09-25, ruling R-15 Q6):** `model_calls` gains `total_nano_aiu`, Copilot's native AI-unit measure (`modelMetrics.<model>.totalNanoAiu`) stored verbatim as an additive column, null (never 0) when the native record does not carry it. See "Amendment 2" under Facts and their grains.
@@ -177,6 +178,11 @@ All of these are projections computed in memory by `bench report` from the verif
 - **`events` additions.** `cell.prompt_sent{turn}` (absent reads 1), `cell.turn_ended{turn, stop_reason, turn_seconds, usage}`, `cell.turn_snapshot_archived{turn, snapshot_hash, files, bytes, duration_ms, job_active_processes}`, and the resume rows of ADR-0021 (`segment.abandoned` written by a resuming engine; resume start with its counts).
 - **Crash-atomic archive.** Every archive and snapshot folder is written to a temporary sibling, fsynced, verified and renamed; "the folder exists" means "the copy is complete" (ADR-0015 §5a; this fixes a pre-existing defect of the end-of-attempt archive).
 - **Migration.** None: absent fields read as stated; no ledger or archive is rewritten.
+
+### Amendment 6 (2026-10-05; ruling R-107 / DR-15, `req-01M46PAJGJEEE7GBDV7YXVHC4T`)
+
+- **`cell.turn_ended` duration.** The field Amendment 5 names `turn_seconds` is **`turn_ms`**: an int in milliseconds, `int(rec.turn_seconds * 1000)`, the same expression and unit as `cell.outcome.turn_ms`, so `outcome.turn_ms == turn_ended{last}.turn_ms` exactly and agent time is `Σ turn_ms` over the rows present (absent reads "not recorded", never 0). The row is `cell.turn_ended{turn, stop_reason, turn_ms, usage}`. This follows *Physical form and integrity* (no floats; every ledger duration is an int in ms) and *Derived, never stored* (DM7); a decimal-string `turn_seconds` and a float exception in `ledger._check` were refused.
+- **Migration.** None: no ledger holds a `turn_ended` row before this amendment. A reader that ever meets `turn_seconds` takes `int(turn_seconds * 1000)`; nothing is rewritten.
 
 ## Alternatives considered
 

@@ -25,6 +25,7 @@ summary: >-
 # ADR-0015: A cell attempt may hold a second user turn; each non-final turn leaves an append-only snapshot
 
 - **Status:** Proposed. Spike E4 passed on Windows (`docs/notes/spike-e4-post-turn-prompt.md`, id `note-20261003-spike-e4-post-turn-prompt`, commit `ebf21cee`, merging to main after this draft); macOS unverified.
+- **Amended (2026-10-05, ruling R-107 / DR-15; ADR-0006 Amendment 6; W1-J §15 Amendment 1, W0 rev 6.12 R6.12a):** the `cell.turn_ended` duration named `turn_seconds` in §2 and in *Record model* is `turn_ms`, an int in milliseconds, `int(rec.turn_seconds * 1000)`. See "Amendment 1" before *Alternatives considered*. The decision text above is unchanged.
 - **Date:** 2026-10-03
 - **Deciders:** @timianmalloo (DR-E4, 2026-10-03); authored by Claude Code with the Distributed Systems and Data & Persistence lenses
 - **Context spec/architecture:** `docs/specs/enterprise-evaluation.md` (EV-4, C-E3, C-E12, R-E6); amends ADR-0006 (`archive_files` grain), ADR-0007 (prompt-once), ADR-0013 §2 (job termination per turn).
@@ -72,6 +73,10 @@ Forces: P8 (idempotency at the prompt boundary), US-9 (verbatim prompts), US-19 
 **7a. Host sleep (council R3).** The engine loop's `SleepDetector` (`engine.py:379, 396`) already covers the whole attempt, so turn 2 is covered; a test seeds a suspend gap during turn 2 and asserts `host_suspended`. Per-turn auth failure maps to `blocked_auth` (`errors.py:20`, `driver._prompt_error_cause`), never to NOT_RECORDED (council R4).
 
 **8. Grading.** The final tree stays the graded deliverable. A task names a snapshot as an extra graded input (`graded_snapshots: [turn-1]`); the grader builds that grading copy from the snapshot. Telemetry stays one extraction over the whole native session; a per-turn token split is a design-slice question (the per-turn usage in each `session/prompt` response is available on all three harnesses; production profiles read the native record for Codex and Copilot, ADR-0008).
+
+### Amendment 1 (2026-10-05; ruling R-107 / DR-15, `req-01M46PAJGJEEE7GBDV7YXVHC4T`; ADR-0006 Amendment 6)
+
+- **`cell.turn_ended` duration.** §2 (a) and *Record model* name `turn_seconds`; the stored field is **`turn_ms`**, an int in milliseconds, `int(rec.turn_seconds * 1000)` - the expression and unit of `cell.outcome.turn_ms` and of the sibling `duration_ms` on `cell.turn_snapshot_archived`. The ledger's canonical form holds no floats (ADR-0006 *Physical form and integrity*; `ledger._check`), so a float `turn_seconds` raised `TypeError` at the first write (X-J1b). Agent time is `Σ turn_ms` over the `turn_ended` rows present. The in-memory `TurnRecord.turn_seconds` float is unchanged. No ledger held the row before this amendment; nothing is migrated.
 
 ## Alternatives considered
 
