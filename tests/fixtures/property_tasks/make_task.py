@@ -89,7 +89,7 @@ def make_root(tmp_path: Path) -> Path:
         base = Path(tempfile.mkdtemp(prefix="hb-disc-skeleton-"))
         atexit.register(shutil.rmtree, base, True)
         shutil.copytree(REPO / "src", base / "src", ignore=shutil.ignore_patterns("__pycache__"))
-        shutil.copytree(REPO / "bench", base / "bench", ignore=shutil.ignore_patterns("__pycache__", "calibration", "rings"))
+        shutil.copytree(REPO / "bench", base / "bench", ignore=shutil.ignore_patterns("__pycache__", "calibration", "rings", "discrimination"))
         shutil.copy2(REPO / "uv.lock", base / "uv.lock")
         (base / "tasks").mkdir()
         _SKELETON.append(base)
