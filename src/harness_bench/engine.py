@@ -83,7 +83,7 @@ class Launcher(Protocol):
     credential_kind: str  # what attempt.process_started records, as the launcher reports it (R-13)
     usage_source: str
     mode: str | None
-    set_model: bool  # run_turn gets model= (the ACP session/set_model pin) only when true (R-13)
+    set_model: bool  # open_session gets model= (the ACP session/set_model pin) only when true (R-13)
     shutdown_grace: float
 
     def check_build(self) -> dict: ...

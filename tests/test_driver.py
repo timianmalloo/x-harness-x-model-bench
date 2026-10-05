@@ -1,6 +1,7 @@
 """The ACP cell driver (ADR-0002; design: driver.py): bounded reader, strict parse, deny-all permissions,
 verbatim prompt, ack barrier, handshake deadline."""
 
+import inspect
 import io
 import json
 import os
@@ -778,13 +779,13 @@ def test_the_fidelity_check_fails_on_a_seeded_unpaired_type(tmp_path):  # D7 neg
 @pytest.mark.parametrize("set_model", [False, True])
 def test_the_engine_passes_the_plan_model_only_to_a_launcher_that_sets_it(base, monkeypatch, set_model):  # R-13
     from test_engine import FakeLauncher, _plan, _run
-    real, seen = driver.run_turn, []
+    real, seen = driver.open_session, []
 
     def spy(*args, **kwargs):
-        seen.append(kwargs.get("model"))
+        seen.append(inspect.signature(real).bind(*args, **kwargs).arguments.get("model"))
         return real(*args, **kwargs)
 
-    monkeypatch.setattr(driver, "run_turn", spy)
+    monkeypatch.setattr(driver, "open_session", spy)
     launcher = FakeLauncher({})
     launcher.set_model = set_model
     p = _plan(n_cells=1)
