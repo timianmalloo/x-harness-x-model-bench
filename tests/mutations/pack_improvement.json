@@ -75,5 +75,19 @@
   "find": "_PATCH_HEADER = re.compile(r\"\\*\\*\\* (?:Add|Update) File: (.+?)(?:\\\\n|\\n|$)\")\n",
   "replace": "_PATCH_HEADER = re.compile(r\"\\*\\*\\* (?:Add|Update) File: ([^\\\\\\n]+)\")\n",
   "tests": ["tests/test_telemetry.py::test_patch_header_paths_keeps_a_windows_absolute_path_with_backslashes"]
+ },
+ {
+  "name": "_pass returns False for None",
+  "file": "src/harness_bench/report/pack_improvement.py",
+  "find": "    if s is None or s.value is None:\n        return None\n",
+  "replace": "    if s is None or s.value is None:\n        return False\n",
+  "tests": ["tests/test_pack_improvement.py::test_a_cell_with_no_pass_at_1_is_not_a_failure"]
+ },
+ {
+  "name": "n_recorded replaced by n_pairs in harm_groups_failed_pairs",
+  "file": "src/harness_bench/report/pack_improvement.py",
+  "find": "                harm_groups_failed_pairs += max(0, n_recorded - passes_on)\n",
+  "replace": "                harm_groups_failed_pairs += max(0, n_pairs - passes_on)\n",
+  "tests": ["tests/test_absence_not_failure.py::test_no_failure_count_is_derived_as_n_minus_passes"]
  }
 ]

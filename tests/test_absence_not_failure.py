@@ -13,14 +13,23 @@ def _scan_numeric_score_defaults(src_dir: Path) -> set[str]:
     for py_file in sorted(src_dir.rglob("*.py")):
         tree = ast.parse(py_file.read_text(encoding="utf-8"), filename=str(py_file))
         for node in ast.walk(tree):
-            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "get":
-                if len(node.args) >= 2:
-                    default_arg = node.args[1]
-                    if isinstance(default_arg, ast.Call):
-                        if isinstance(default_arg.func, ast.Name) and default_arg.func.id == "Measure":
-                            if default_arg.args and isinstance(default_arg.args[0], ast.Constant) and isinstance(default_arg.args[0].value, (int, float)):
-                                rel = py_file.relative_to(src_dir).as_posix()
-                                hits.add(f"{rel}:{node.lineno}")
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and node.func.attr == "get"
+                and len(node.args) >= 2
+            ):
+                default_arg = node.args[1]
+                if (
+                    isinstance(default_arg, ast.Call)
+                    and isinstance(default_arg.func, ast.Name)
+                    and default_arg.func.id == "Measure"
+                    and default_arg.args
+                    and isinstance(default_arg.args[0], ast.Constant)
+                    and isinstance(default_arg.args[0].value, (int, float))
+                ):
+                    rel = py_file.relative_to(src_dir).as_posix()
+                    hits.add(f"{rel}:{node.lineno}")
     return hits
 
 
@@ -30,11 +39,16 @@ def _scan_unrecorded_subtractions(src_dir: Path) -> set[str]:
     for py_file in sorted(src_dir.rglob("*.py")):
         tree = ast.parse(py_file.read_text(encoding="utf-8"), filename=str(py_file))
         for node in ast.walk(tree):
-            if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Sub):
-                if isinstance(node.left, ast.Name) and node.left.id == "n_pairs":
-                    if isinstance(node.right, ast.Name) and node.right.id.startswith("passes_"):
-                        rel = py_file.relative_to(src_dir).as_posix()
-                        hits.add(f"{rel}:{node.lineno}")
+            if (
+                isinstance(node, ast.BinOp)
+                and isinstance(node.op, ast.Sub)
+                and isinstance(node.left, ast.Name)
+                and node.left.id == "n_pairs"
+                and isinstance(node.right, ast.Name)
+                and node.right.id.startswith("passes_")
+            ):
+                rel = py_file.relative_to(src_dir).as_posix()
+                hits.add(f"{rel}:{node.lineno}")
     return hits
 
 

@@ -478,7 +478,7 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
                     t
                     for t in all_tasks
                     if any(
-                        c.scores.get("pass_at_1", Measure(0)).value == 1
+                        c.scores.get("pass_at_1", Measure(None)).value == 1
                         for c in valid_cells
                         if _cell_task_rep(c.cell_id, plan_by_id)[0] == t
                     )
