@@ -187,3 +187,213 @@ def test_a_leaked_temp_is_swept_before_the_write_and_never_by_a_reader(base):
     assert result.outcome == "written"
     assert result.record_path.exists()
     assert not leaked.exists() and not leaked_dir.exists() and keep.exists()
+
+
+# --- E2: the real probe host ----------------------------------------------------------------------------------------
+
+
+def record_of(result) -> dict:
+    return json.loads(result.record_path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="module")
+def hosted():
+    """One real trial of disc_p (a callable security task with a real check), shared by the host-read tests."""
+    base = CLEAN_PARENT / uuid.uuid4().hex
+    base.mkdir(parents=True)
+    try:
+        root = new_root(base, "disc_p")
+        yield base, root, trial(base, root, "DISC-P")
+    finally:
+        shutil.rmtree(base, onexc=archive.make_writable)
+
+
+def got_host(hosted):
+    base, root, result = hosted
+    assert result.outcome == "written", result
+    return base, root, result
+
+
+def grading_of(base: Path, result) -> tuple[Path, str]:
+    run_dir = base / "runs" / result.run_id
+    return run_dir, json.loads((run_dir / "discrimination-link.json").read_text(encoding="utf-8"))["grading_id"]
+
+
+def test_a_real_deliverable_through_the_real_probe_host_to_a_record(hosted):
+    """T-E1b (the required end-to-end test): the real probe host spawned by the real grader, no stub."""
+    _base, root, result = got_host(hosted)
+    body = record_of(result)
+    assert body["scores"]["reference"]["property_check_pass"] == 1
+    assert body["scores"]["naive"]["property_check_pass"] == 0
+    probe = body.get("probe", {})
+    assert probe.get("reference") == {"deliverable": "ran", "cases": {"p-1": "blocked", "p-2": "blocked"}, "hosts_ready": 2}
+    assert probe.get("naive", {}).get("cases") == {"p-1": "exploited", "p-2": "exploited"}
+    assert readiness.record_failures(root, "DISC-P") == []
+
+
+def test_unbiased_failures_lists_cells_and_raises_with_the_reason_when_unreadable(hosted, base):
+    """T-E14: over a real graded run; the copy is edited, never the shared run."""
+    run_dir, gid = grading_of(hosted[0], got_host(hosted)[2])
+    assert readiness.unbiased_failures(run_dir, gid) == []
+    copy = base / "copy"
+    shutil.copytree(run_dir, copy)
+    target = next(copy.glob(f"grading/{gid}/*/property/property.json"))
+    doc = json.loads(target.read_text(encoding="utf-8"))
+    doc["spans"][0]["unbiased_ok"] = False
+    target.write_text(json.dumps(doc), encoding="utf-8")
+    assert readiness.unbiased_failures(copy, gid) == [target.parent.parent.name]
+    shutil.rmtree(copy / "scores")
+    with pytest.raises(BenchError) as err:
+        readiness.unbiased_failures(copy, gid)
+    assert err.value.code == "HB-USR-002" and "scores" in str(err.value)
+
+
+def test_hidden_test_disagreements_states_and_reasons(hosted, base):
+    """T-E15: agree, disagree, not comparable, and raise (a property.json gone for a cell with a recorded value)."""
+    run_dir, gid = grading_of(hosted[0], got_host(hosted)[2])
+    assert readiness.hidden_test_disagreements(run_dir, gid) == []
+    copy = base / "copy"
+    shutil.copytree(run_dir, copy)
+    files = sorted(copy.glob(f"grading/{gid}/*/property/property.json"))
+    cell = files[0].parent.parent.name
+    doc = json.loads(files[0].read_text(encoding="utf-8"))
+    original = doc["hidden_tests_pass"]["value"]
+    doc["hidden_tests_pass"]["value"] = 0 if original == 1 else 1
+    files[0].write_text(json.dumps(doc), encoding="utf-8")
+    assert readiness.hidden_test_disagreements(copy, gid) == [cell]
+    doc["hidden_tests_pass"]["value"] = None
+    files[0].write_text(json.dumps(doc), encoding="utf-8")
+    assert readiness.hidden_test_disagreements(copy, gid) == []
+    assert readiness.comparable_cells(copy, gid) == ([], [cell])
+    files[0].unlink()
+    with pytest.raises(BenchError) as err:
+        readiness.hidden_test_disagreements(copy, gid)
+    assert err.value.code == "HB-USR-002" and cell in str(err.value)
+
+
+def test_discriminate_fails_the_trial_on_a_hidden_test_disagreement(base):
+    """T-E16: hidden tests that flip between the correctness pass and the property pass are a flaky oracle."""
+    root = new_root(base, "disc_p", hidden=mt.HIDDEN_COUNTER.format(counter=str(base / "tests-counter.txt")))
+    with pytest.raises(BenchError) as err:
+        trial(base, root, "DISC-P")
+    assert err.value.code == "HB-RDY-011" and "disagree" in str(err.value)
+    assert not list((root / "bench" / "discrimination").rglob("*.json"))
+
+
+@pytest.mark.parametrize(("name", "task", "items"), [
+    ("scan_a", "SCAN-A", {("reference", "property_check_pass"), ("reference", "exploit_probes_blocked")}),
+    ("scan_a_secondary", "SCAN-B", {("reference", "exploit_probes_blocked")}),
+])
+def test_scan_a_fixture_fails_naming_metric_expected_observed(base, name, task, items):
+    """T-E10: the reference's mandated build output flips the scan probe; the secondary-only sibling fails on it alone."""
+    root = new_root(base, name)
+    result = trial(base, root, task)
+    assert result.outcome == "written"
+    failures = readiness.record_failures(root, task)
+    assert {(f.detail.split()[0], f.item) for f in failures} == items
+    assert all(f.code == "HB-RDY-003" for f in failures)
+    by = {f.item: f.detail for f in failures}
+    if name == "scan_a":
+        assert by["exploit_probes_blocked"] == "reference expected 1.0000, observed 0.8000"
+        assert by["property_check_pass"] == "reference expected 1, observed 0"
+    else:
+        assert by["exploit_probes_blocked"] == "reference expected 0.9000, observed 1.0000"
+    assert record_of(result)["readiness_failures"] == sorted(f"HB-RDY-003: {f.item}" for f in failures)
+
+
+VARIANT_FLIPS = {"m9": {"flips": ["p-2"], "clauses": {"p-2": "reflect"}, "edits": [mt.edit_for("p-2")]},
+                 "m8": {"flips": ["p-1"], "clauses": {"p-1": "echo"}, "edits": [mt.edit_for("p-1")]}}
+
+
+def test_variant_trial_runs_on_the_real_host_compares_flips_and_never_executes_the_file(base):
+    """T-E11: variants are cells of the same run; the file is read as data (its module body would write the sentinel)."""
+    sentinel = base / "sentinel.txt"
+    root = new_root(base, "disc_p", variants=mt.variants_text(VARIANT_FLIPS, sentinel))
+    result = trial(base, root, "DISC-P")
+    assert result.outcome == "written"
+    body = record_of(result)
+    variants = body.get("variants", {})
+    assert variants.get("m9", {}).get("flips") == ["p-2"] and variants.get("m8", {}).get("flips") == ["p-1"]
+    assert variants.get("m9", {}).get("clauses") == {"p-2": "reflect"}
+    assert variants.get("m9", {}).get("hidden_tests_pass") is True and variants.get("m9", {}).get("deliverable") == "ran"
+    assert not sentinel.exists(), "variants.py was executed"
+    assert body["readiness_failures"] == [] and readiness.record_failures(root, "DISC-P") == []
+
+
+def test_a_variant_whose_flips_differ_from_the_declared_ones_is_hb_rdy_003(base):
+    """T-E11 wrong_flip: declared p-1, observed p-2: the record is written and readiness names variant and case."""
+    wrong = {"m9": {"flips": ["p-1"], "clauses": {"p-1": "echo"}, "edits": [mt.edit_for("p-2")]}}
+    root = new_root(base, "disc_p", variants=mt.variants_text(wrong))
+    assert trial(base, root, "DISC-P").outcome == "written"
+    (failure,) = readiness.record_failures(root, "DISC-P")
+    assert failure.code == "HB-RDY-003" and failure.item == "m9"
+    assert "p-1" in failure.detail and "p-2" in failure.detail
+
+
+def test_a_crash_variant_is_rejected_not_counted_as_a_flip(base):
+    """T-E12: a variant whose every call raises fails its hidden tests, so declaring it a flip cannot make it pass."""
+    crash = {"crash": {"flips": ["p-1", "p-2"], "clauses": {"p-1": "echo", "p-2": "reflect"},
+                       "edits": [{"file": "src/app.py", "old": mt.ESCAPE, "new": "1 / 0"}]}}
+    root = new_root(base, "disc_p", variants=mt.variants_text(crash))
+    assert trial(base, root, "DISC-P").outcome == "written"
+    failures = readiness.record_failures(root, "DISC-P")
+    assert failures
+    assert all(f.code == "HB-RDY-003" and f.item == "crash" for f in failures)
+    assert any("hidden tests" in f.detail for f in failures)
+
+
+def test_a_timeout_trial_writes_no_record_and_the_clean_retry_succeeds(base):
+    """T-E13 / R2-1: a load-driven `timeout` is HB-RDY-011, never a record; the retry is `written`, never HB-RDY-010."""
+    cases = mt._cases(["p-1", "p-2"], bound_ms={"p-1": 1000})
+    root = new_root(base, "disc_p", naive={"src/app.py": mt.handle_slow_first(base / "slow.txt")}, cases=cases)
+    with pytest.raises(BenchError) as err:
+        trial(base, root, "DISC-P")
+    assert err.value.code == "HB-RDY-011" and "timeout" in str(err.value)
+    assert not list((root / "bench" / "discrimination").rglob("*.json"))
+    assert not list((base / "runs").rglob("discrimination-link.json"))
+    second = trial(base, root, "DISC-P")
+    assert second.outcome == "written"
+
+
+@pytest.mark.parametrize("reason", ["invalid (check tampered)", "check exceeded its bound", "host suspended", "check output invalid"])
+def test_a_check_or_host_fault_in_the_scores_is_untrustworthy_unless_expected_declares_it(reason):
+    """T-E13 (the push form, over hand-built scores): each HB-CHK NA is an item; an NA equal to `expected` is exempt."""
+    scores = {"reference": {"property_check_pass": {"na": reason}}, "naive": {"property_check_pass": 0}}
+    assert len(discriminate._untrustworthy(scores, {})) == 1
+    assert discriminate._untrustworthy(scores, {"reference": {"property_check_pass": {"na": reason}}}) == []
+
+
+def test_an_na_reason_outside_the_closed_set_is_untrustworthy():
+    """Rev 6.3: a reason with text no closed set names could differ between honest trials, so it never reaches a record."""
+    scores = {"reference": {"property_check_pass": {"na": "HB-GRD-002 grading step timeout after 60 s"}}}
+    assert len(discriminate._untrustworthy(scores, {})) == 1
+
+
+def test_a_record_that_appears_mid_trial_is_untrustworthy_and_not_written(base, monkeypatch):
+    """T-E22 / R2-7: bytes forged at the final key during the trial are left alone: HB-RDY-011, not HB-LED-007, no link."""
+    root = new_root(base)
+    forged = readiness.record_path(root, TASK)
+    real = discriminate.runner.run_pass
+
+    def forge_then_grade(*args, **kwargs):
+        forged.parent.mkdir(parents=True, exist_ok=True)
+        forged.write_bytes(b'{"forged":true}')
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(discriminate.runner, "run_pass", forge_then_grade)
+    with pytest.raises(BenchError) as err:
+        trial(base, root)
+    assert err.value.code == "HB-RDY-011" and "appeared" in str(err.value)
+    assert forged.read_bytes() == b'{"forged":true}'
+    assert not list((base / "runs").rglob("discrimination-link.json"))
+
+
+def test_the_sweep_is_pinned_to_its_own_tasks_lock(base):
+    """Acceptance 13 / RV-SEC: another task's held lock is refused for this folder (atomic does not know the pairing)."""
+    folder = base / "disc"
+    folder.mkdir()
+    with oslock.RunLock.acquire(base / "runs" / ".discriminate-OTHER.lock", "HB-RUN-005") as wrong, \
+            pytest.raises(ValueError, match="does not guard"):
+        discriminate._sweep(TASK, folder, wrong)
+    with oslock.RunLock.acquire(base / "runs" / f".discriminate-{TASK}.lock", "HB-RUN-005") as right:
+        assert discriminate._sweep(TASK, folder, right) == []

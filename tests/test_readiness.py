@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 from harness_bench import discriminate, identity, readiness
+from harness_bench.errors import BenchError
 
 _spec = importlib.util.spec_from_file_location("make_task", Path(__file__).parent / "fixtures" / "property_tasks" / "make_task.py")
 mt = importlib.util.module_from_spec(_spec)
@@ -102,3 +103,98 @@ def test_a_campaign_baseline_with_two_tasks_and_builds_equals_the_task_identity(
     assert codes(root, baseline=baseline) == []
     drifted = {**baseline, "components": {**baseline["components"], "src/harness_bench/grade/property.py": "0" * 64}}
     assert codes(root, baseline=drifted) == ["HB-RDY-002"]
+
+
+# --- E2: the real-host rule and the variants file ----------------------------------------------------------------------
+
+
+def _probe(mutate):
+    return lambda body: mutate(body["probe"])
+
+
+@pytest.mark.parametrize(("label", "mutate"), [
+    ("no probe at all", lambda body: body.pop("probe")),
+    ("hosts_ready 0", _probe(lambda p: p["reference"].update(hosts_ready=0))),
+    ("a case missing from the digest", _probe(lambda p: p["naive"]["cases"].pop("p-2"))),
+    ("the deliverable did not run", _probe(lambda p: p["reference"].update(deliverable="did not start"))),
+])
+def test_ready_without_a_real_host_record_is_refused(root, label, mutate):
+    """T-E8 (a..c): equal scores, so only R-HOST can fail these; the correct record (control) passes."""
+    build(root, mutate)
+    failures = readiness.record_failures(root, TASK)
+    assert [f.code for f in failures] == ["HB-RDY-001"], label
+    assert "probe" in failures[0].detail
+
+
+def test_a_check_less_task_carrying_a_probe_fails_and_one_without_passes(tmp_path):
+    """T-E8 (d), and T-E1c's rule: R-HOST is scoped by CONFIG.CHECK_PROPERTIES, in both directions."""
+    r = mt.make_root(tmp_path)
+    mt.install(r, "disc_c")
+    tv, ih = discriminate.record_key(r, "DISC-C")
+    na = {"na": "not built"}
+    scores = {"pass_at_1": 1, "partial_credit": "1.0000", "property_check_pass": na, "turn1_tests_pass": na, "rework_ratio": na}
+    body = {"schema": "bench-discrimination/1", "task": "DISC-C", "task_version": tv, "identity_hash": ih, "platform": sys.platform,
+            "scores": {"reference": scores, "naive": scores}, "expected": mt.RW_EXPECTED, "readiness_failures": []}
+    folder = r / "bench" / "discrimination" / "DISC-C"
+    folder.mkdir(parents=True)
+    path = folder / discriminate.record_path(r, "DISC-C").name
+    path.write_bytes(json.dumps(body, sort_keys=True).encode())
+    assert readiness.record_failures(r, "DISC-C") == []
+    body["probe"] = {"reference": PROBE, "naive": PROBE_NAIVE}
+    path.write_bytes(json.dumps(body, sort_keys=True).encode())
+    failures = readiness.record_failures(r, "DISC-C")
+    assert [f.code for f in failures] == ["HB-RDY-001"] and "check-less" in failures[0].detail
+
+
+def declare(root, variants: str) -> None:
+    mt.install(root, "disc_p", variants=variants)
+
+
+def test_the_variants_file_is_read_as_data(root):
+    ok = mt.variants_text({"m9": {"flips": ["p-2"], "clauses": {"p-2": "reflect"}, "edits": [mt.edit_for("p-2")]}})
+    declare(root, ok)
+    assert list(readiness.variants(root, TASK)) == ["m9"]
+    mt.install(root, "disc_p", task_id="DISC-NONE")
+    assert readiness.variants(root, "DISC-NONE") == {}
+
+
+GOOD = {"flips": ["p-2"], "clauses": {"p-2": "reflect"}, "edits": [mt.edit_for("p-2")]}
+
+
+def with_(**override) -> str:
+    return mt.variants_text({"m9": {**GOOD, **override}})
+
+
+def edit(**kw) -> dict:
+    return {"edits": [{"file": "src/app.py", "old": "html.escape(payload)", "new": "payload", **kw}]}
+
+
+VARIANT_DEFECTS = [
+    ("two assignments", f"VARIANTS = {{}}\nVARIANTS = {{'m9': {GOOD!r}}}\n"),
+    ("an annotated assignment", f"VARIANTS: dict = {{'m9': {GOOD!r}}}\n"),
+    ("an augmented assignment", f"VARIANTS = {{'m9': {GOOD!r}}}\nVARIANTS |= {{}}\n"),
+    ("a non-literal", "VARIANTS = {'m9': build()}\n"),
+    ("a module name as a value", "EDIT = 1\nVARIANTS = {'m9': {'flips': [], 'clauses': {}, 'edits': [EDIT]}}\n"),
+    ("no assignment", "OTHER = 1\n"),
+    ("a bad name", mt.variants_text({"Bad-Name": GOOD})),
+    ("a device name", mt.variants_text({"nul": GOOD})),
+    ("a name over 16 characters", mt.variants_text({"x" * 17: GOOD})),
+    ("a clause over 200 characters", with_(clauses={"p-2": "c" * 201})),
+    ("old matching nothing", with_(**edit(old="zzz"))),
+    ("old matching twice", with_(**edit(old="payload"))),
+    ("a parent segment in the edit file", with_(**edit(file="../x.py"))),
+    ("an absolute edit file", with_(**edit(file="/x.py"))),
+    ("a device-named overlay component", with_(**edit(file="con/x.py"))),
+    ("a syntax error", "VARIANTS = {\n"),
+    ("a nesting bomb", "VARIANTS = " + "[" * 5000 + "]" * 5000 + "\n"),
+    ("over 64 KiB", "VARIANTS = {}\n" + "# " + "x" * 70000 + "\n"),
+]
+
+
+@pytest.mark.parametrize(("label", "text"), VARIANT_DEFECTS, ids=[label for label, _ in VARIANT_DEFECTS])
+def test_each_variants_defect_is_hb_rdy_005(root, label, text):
+    """Acceptance 10: one param per defect; the file is never imported, so nothing in it can run."""
+    declare(root, text)
+    with pytest.raises(BenchError) as err:
+        readiness.variants(root, TASK)
+    assert err.value.code == "HB-RDY-005", label

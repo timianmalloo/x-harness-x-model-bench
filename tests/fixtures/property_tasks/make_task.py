@@ -30,6 +30,7 @@ HANDLE_REF = "import html\n\n\ndef handle(payload):\n    return '<p>' + html.esc
 HANDLE_NAIVE = "def handle(payload):\n    return '<p>' + payload + '</p>'\n"
 CHECK = '''"""Fixture hidden check: the real bench_check, one probe per case (decision from the raw response)."""
 import base64
+import json
 import os
 
 import bench_check as bc
@@ -60,14 +61,18 @@ def check(ctx):
     outcomes = []
     for case in ctx.cases:
         def probe(case=case):
-            if case["id"].startswith("scan"):
-                return scan(ctx.deliverable)
             host = bc.probe_host(case)
             try:
+                if case["id"].startswith("scan"):
+                    return scan(ctx.deliverable)
                 return decide(host.request(case["frame"]))
             finally:
                 host.close()
         outcomes.append(bc.run_case(case, probe))
+    clauses = {c["id"]: c["clause"] for c in ctx.cases if c.get("clause")}
+    if clauses:
+        with open(os.path.join(ctx.evidence, "clauses.json"), "w", encoding="utf-8") as f:
+            json.dump(clauses, f)
     bc.write_result(outcomes)
 
 
@@ -153,8 +158,13 @@ def install(root: Path, name: str, task_id: str | None = None, status: str = "re
     return d
 
 
-def _cases(ids: list[str], extra=None) -> dict:
-    cases = [{"id": i, "kind": "probe", "frame": {"args": [PAYLOAD + i], "kwargs": {}}} for i in ids]
+CLAUSES = {"p-1": "echo", "p-2": "reflect"}
+
+
+def _cases(ids: list[str], extra=None, bound_ms: dict | None = None) -> dict:
+    cases = [{"id": i, "kind": "probe", "frame": {"args": [PAYLOAD + i], "kwargs": {}},
+              **({"clause": CLAUSES[i]} if i in CLAUSES else {}), **({"bound_ms": bound_ms[i]} if bound_ms and i in bound_ms else {})}
+             for i in ids]
     return {"schema": "bench-check-cases/1", "entry": "check.py", "interface": "in-process", "bounds_ms": {"in-process": 5000},
             "app": {"module": "app", "attr": "handle", "kind": "callable", "paths": ["src"]},
             "deliverable": {}, "toolchain": ["python"], "env": [], "cases": cases, **(extra or {})}
@@ -181,11 +191,39 @@ def _disc_rw(tweak):
 
 def _disc_p(tweak):
     """Security task with a real check: two probes through the real probe host."""
-    return {"id": "DISC-P", "property": "security", "evidence": "src/app.py", "hidden": HIDDEN_P.replace("import app", "import sys\nsys.path.insert(0, 'src')\nimport app"),
+    return {"id": "DISC-P", "property": "security", "evidence": "src/app.py",
+            "hidden": tweak.get("hidden", HIDDEN_P.replace("import app", "import sys\nsys.path.insert(0, 'src')\nimport app")),
             "workspace": {"src/app.py": HANDLE_BASE}, "reference": tweak.get("reference", {"src/app.py": HANDLE_REF}),
             "naive": tweak.get("naive", {"src/app.py": HANDLE_NAIVE}), "expected": tweak.get("expected", P_EXPECTED),
             "check": tweak.get("check", CHECK), "cases": tweak.get("cases", _cases(["p-1", "p-2"])),
             "variants": tweak.get("variants"), "repo": tweak.get("repo", "disc-p")}
+
+
+HIDDEN_COUNTER = (
+    "import sys\nimport unittest\nfrom pathlib import Path\n\nsys.path.insert(0, 'src')\nimport app\n\nCOUNTER = Path({counter!r})\n\n\n"
+    "class T(unittest.TestCase):\n    def test_flaky(self):\n        n = int(COUNTER.read_text()) + 1 if COUNTER.exists() else 1\n"
+    "        COUNTER.write_text(str(n))\n        self.assertIn('hello', app.handle('hello'))\n        self.assertTrue(n % 2 == 1)\n")
+
+
+def handle_slow_first(counter: Path, seconds: int = 3) -> str:
+    """An echo whose first probe call sleeps past the case bound (a load-driven timeout), counted outside the working copy."""
+    return FLAKY_COUNTER_APP.format(counter=str(counter)) + (
+        "import time\n\n\ndef handle(payload):\n    if '<script>' in payload and _tick() == 1:\n"
+        f"        time.sleep({seconds})\n    return '<p>' + payload + '</p>'\n")
+
+
+def variants_text(variants: dict, sentinel: Path | None = None) -> str:
+    """oracle/variants.py: one literal; with `sentinel` its module body would write that file if anything executed it."""
+    head = f"open({str(sentinel)!r}, 'w').close()\n" if sentinel else ""
+    return head + f"VARIANTS = {variants!r}\n"
+
+
+ESCAPE = "html.escape(payload)"
+
+
+def edit_for(case_id: str) -> dict:
+    """A variant edit that stops escaping for one case only, so exactly that case flips."""
+    return {"file": "src/app.py", "old": ESCAPE, "new": f"(payload if payload.endswith({case_id!r}) else {ESCAPE})"}
 
 
 def _flaky_ref(counter: Path) -> str:

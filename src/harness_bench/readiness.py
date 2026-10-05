@@ -157,3 +157,13 @@ def unbiased_failures(run_dir: Path, grading_id: str) -> list[str]:
     """Cell ids with a grading span whose `unbiased_ok` is false. Raises BenchError("HB-USR-002", <reason>) when it cannot run."""
     return []
 
+
+
+def comparable_cells(run_dir: Path, grading_id: str) -> tuple[list[str], list[str]]:
+    """(cells where the hidden tests and `pass_at_1` disagree, cells where either side is NA). Raises like the readers."""
+    return [], []
+
+
+def variants(root: Path, task_id: str) -> dict[str, dict]:
+    """The task's declared defect variants, read as data (`ast.literal_eval`, never imported). HB-RDY-005 on any defect."""
+    return {}
