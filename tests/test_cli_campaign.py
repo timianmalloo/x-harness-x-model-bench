@@ -31,7 +31,8 @@ PREREG = {"schema": "bench-prereg/1", "question": QUESTION}
 POWER = {"schema": "bench-power-inputs/1", "alpha": 5}
 COMMIT = "f" * 40
 STATES = ("draft", "baselined", "piloted", "registered", "measuring", "concluded")
-ARGV = {"create": ["--question", QUESTION], "verify": [], "status": []}  # per subcommand: the options after the id (N-1 follows the table)
+ARGV = {"create": ["--question", QUESTION], "verify": [], "status": [], "baseline": [], "fix": ["--class", "MOD-A", "--commit", "abc1234", "--component", "tasks/T1"],
+        "power": ["--inputs", "inputs.json"], "attach": ["R1"], "conclude": [], "abandon": ["--reason", "done"]}  # per subcommand: the options after the id (N-1 follows the table)
 
 
 def cli_rc(argv: list[str]) -> int:

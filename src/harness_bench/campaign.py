@@ -726,7 +726,7 @@ def _locked(root: Path, campaign_id: str, others_extra: Sequence[tuple[Path, str
 
 @contextmanager
 def session(root: Path, campaign_id: str, *, others_extra: Sequence[tuple[Path, str]] = (), wait_s: float = 0.0,
-            create: bool = False) -> Iterator[Session]:
+            create: bool = False, run_locks: bool = False, between=None) -> Iterator[Session]:
     """The one Execute-Around of every write command: validate, `lstat` the chain, lock-and-probe, read, verify, sweep, run,
     close the writer, release. `others_extra` is the command's own extra probe entries (C2: the run locks)."""
     campaign_id = validate_id("campaign", campaign_id)
@@ -812,3 +812,59 @@ def status_text(root: Path, campaign_id: str) -> tuple[str, list[Finding]]:
     errors = [f for f in findings if f.level == "error"]
     result = "ok" if not errors else f"failed ({len(errors)} findings)"
     return f"campaign {campaign_id}: state {state.state}, rows {len(state.rows)}, verify {result}", findings
+
+
+# --- C2a commands (skeleton: final signatures, neutral wrong values) -----------------------------------------------
+
+def validate_defect_class(value: str) -> str:
+    return value
+
+
+def validate_commit(value: str) -> str:
+    return value
+
+
+def default_tasks(root: Path) -> list[str]:
+    return []
+
+
+def baseline_unmet(root: Path, tasks: Sequence[str]) -> list[str]:
+    return []
+
+
+def baseline(root: Path, campaign_id: str, tasks: Sequence[str] | None = None) -> str:
+    with session(root, campaign_id):
+        return ""
+
+
+def fix(root: Path, campaign_id: str, defect_class: str, commit: str, components: Sequence[str]) -> str:
+    with session(root, campaign_id):
+        return ""
+
+
+def power(root: Path, campaign_id: str, inputs_file: Path) -> str:
+    with session(root, campaign_id):
+        return ""
+
+
+def check_plan(root: Path, state: CampaignState, plan_doc: dict, run_id: str, *, grid: bool = True, tree: bool = True) -> None:
+    return None
+
+
+def run_side_check(root: Path, plan_doc: dict, run_id: str) -> None:
+    return None
+
+
+def attach(root: Path, campaign_id: str, run_id: str) -> str:
+    with session(root, campaign_id):
+        return ""
+
+
+def conclude(root: Path, campaign_id: str) -> str:
+    with session(root, campaign_id):
+        return ""
+
+
+def abandon(root: Path, campaign_id: str, reason: str) -> str:
+    with session(root, campaign_id):
+        return ""

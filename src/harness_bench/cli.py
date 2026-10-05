@@ -77,7 +77,39 @@ def cmd_campaign_status(args) -> int:
     return OK if _print_findings(findings) else INTEGRITY
 
 
-CAMPAIGN_COMMANDS = {"create": cmd_campaign_create, "verify": cmd_campaign_verify, "status": cmd_campaign_status}
+def cmd_campaign_baseline(args) -> int:
+    print(campaign.baseline(Path(args.root), args.campaign_id, args.tasks))
+    return OK
+
+
+def cmd_campaign_fix(args) -> int:
+    print(campaign.fix(Path(args.root), args.campaign_id, args.defect_class, args.commit, args.component))
+    return OK
+
+
+def cmd_campaign_power(args) -> int:
+    print(campaign.power(Path(args.root), args.campaign_id, Path(args.inputs)))
+    return OK
+
+
+def cmd_campaign_attach(args) -> int:
+    print(campaign.attach(Path(args.root), args.campaign_id, args.run_id))
+    return OK
+
+
+def cmd_campaign_conclude(args) -> int:
+    print(campaign.conclude(Path(args.root), args.campaign_id))
+    return OK
+
+
+def cmd_campaign_abandon(args) -> int:
+    print(campaign.abandon(Path(args.root), args.campaign_id, args.reason))
+    return OK
+
+
+CAMPAIGN_COMMANDS = {"create": cmd_campaign_create, "verify": cmd_campaign_verify, "status": cmd_campaign_status,
+                     "baseline": cmd_campaign_baseline, "fix": cmd_campaign_fix, "power": cmd_campaign_power,
+                     "attach": cmd_campaign_attach, "conclude": cmd_campaign_conclude, "abandon": cmd_campaign_abandon}
 
 
 def cmd_campaign(args) -> int:
@@ -476,11 +508,27 @@ def build_parser() -> argparse.ArgumentParser:
     cm = sub.add_parser("campaign", help="the campaign record (W1-C)")
     csub = cm.add_subparsers(dest="campaign_command", required=True)
     for name, text in (("create", "start a campaign"), ("verify", "check a campaign's ledger, files and git witness"),
-                       ("status", "a campaign's state")):
+                       ("status", "a campaign's state"), ("baseline", "record the engine identity the campaign starts from"),
+                       ("fix", "record a defect fix to a component of the effective identity"),
+                       ("power", "record power-analysis inputs (prior or final, by the campaign's state)"),
+                       ("attach", "attach a confirmed grid run to the campaign (freezes the pre-registration)"),
+                       ("conclude", "end a measuring campaign"), ("abandon", "end a campaign without a conclusion")):
         sp = csub.add_parser(name, help=text)
         sp.add_argument("campaign_id", type=_campaign_id)
         if name == "create":
             sp.add_argument("--question", required=True, help="the campaign's question (at most 500 printable characters)")
+        if name == "baseline":
+            sp.add_argument("--tasks", type=_task_list, default=None, help="comma-separated task ids (default: the BOM's property tasks)")
+        if name == "fix":
+            sp.add_argument("--class", dest="defect_class", required=True, type=_defect_class, help="a class id in docs/lessons/defect-classes.md")
+            sp.add_argument("--commit", required=True, type=_commit, help="the commit that holds the fix (an ancestor of HEAD)")
+            sp.add_argument("--component", action="append", required=True, help="an identity component key; repeat for each")
+        if name == "power":
+            sp.add_argument("--inputs", required=True, help="a bench-power-inputs/1 JSON file")
+        if name == "attach":
+            sp.add_argument("run_id", type=_run_id)
+        if name == "abandon":
+            sp.add_argument("--reason", required=True, help="why (at most 500 printable characters)")
     tl = sub.add_parser("tools", help="the pinned harness builds")
     tl.add_argument("action", choices=["install"])
     return p
@@ -489,6 +537,22 @@ def build_parser() -> argparse.ArgumentParser:
 def _campaign_id(value: str) -> str:
     """Validated in the parser and again at `campaign.session` entry (W1-C section 5), before any path is built."""
     return campaign.validate_id("campaign", value)
+
+
+def _run_id(value: str) -> str:
+    return campaign.validate_id("run", value)
+
+
+def _task_list(value: str) -> list[str]:
+    return [campaign.validate_id("task", item) for item in value.split(",")]
+
+
+def _defect_class(value: str) -> str:
+    return campaign.validate_defect_class(value)
+
+
+def _commit(value: str) -> str:
+    return campaign.validate_commit(value)
 
 
 COMMANDS = {"validate": cmd_validate, "plan": cmd_plan, "run": cmd_run, "status": cmd_status, "stop": cmd_stop, "answer": cmd_answer, "grade": cmd_grade,
