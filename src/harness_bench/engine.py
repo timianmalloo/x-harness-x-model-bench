@@ -846,7 +846,7 @@ class Engine:
         job_active_processes = _job_query(cp.job.active, None)
         job_active_after = None
         copied = None
-        for delay in (1, 2, 4):  # W1-J 4.4: three failures, cancel-aware waits, then archive cause
+        for delay in (1, 2, None):  # W1-J 4.4: three tries, cancel-aware waits of 1 s then 2 s, none after the third
             if a.cancel.is_set():
                 return False
             try:
@@ -880,7 +880,7 @@ class Engine:
             except OSError as exc:
                 atomic.sweep_temps(dest_root, self.run_lock)
                 a.archive_error = f"{type(exc).__name__}: {exc}"
-                if a.cancel.wait(delay):
+                if delay is not None and a.cancel.wait(delay):
                     return False
             except BenchError as exc:
                 if exc.code == "HB-RUN-001":
