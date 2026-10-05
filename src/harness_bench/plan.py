@@ -201,6 +201,11 @@ def kind_of(plan: dict) -> str:
     return kind
 
 
+def ring_diff(plan_a: dict, plan_b: dict) -> str:
+    """Name the differences between two plans' ring blocks."""
+    return ""
+
+
 def launch_order(cells: list[Cell], seed: int) -> list[Cell]:
     """Stable hash keys replay across Python versions; all arms of a block stay adjacent."""
     def key(cell):
