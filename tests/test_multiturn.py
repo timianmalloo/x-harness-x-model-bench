@@ -250,7 +250,6 @@ def test_t_eng_11_outcome_last_turn_and_total_agent_time(tmp_path):
     assert next(iter(summary.outcomes.values()))["turn_ms"] == ended[-1]["turn_ms"]
 
 
-@pytest.mark.xfail(strict=True, reason="J1b: one handshake per session")
 def test_t_drv_1_one_handshake_for_two_prompts(tmp_path):
     log = tmp_path / "prompts.jsonl"
     cp = _spawn(tmp_path, prompts_log=str(log))
@@ -271,7 +270,6 @@ def test_t_drv_1_one_handshake_for_two_prompts(tmp_path):
         cp.close()
 
 
-@pytest.mark.xfail(strict=True, reason="J1b: idempotent Session.close")
 def test_t_drv_2_close_is_idempotent_and_closed_send_has_cause(tmp_path):
     cp = _spawn(tmp_path)
     try:

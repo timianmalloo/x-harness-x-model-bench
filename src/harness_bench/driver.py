@@ -122,7 +122,7 @@ class TurnResult:
 
 
 class Session:
-    """Own the channel until close; K2 deliberately retains the repeated-close bug."""
+    """Own the channel until close; close() is idempotent."""
 
     def __init__(self, channel, cwd, mode, handshake_timeout, model, mcp_servers):
         self.channel = channel
@@ -134,9 +134,9 @@ class Session:
 
     def close(self) -> None:
         if self.closed:
-            raise ValueError("session already closed")
-        self.channel.cell.proc.stdin.close()
+            return
         self.closed = True
+        self.channel.cell.proc.stdin.close()
 
 
 class _Eof(Exception):
@@ -329,12 +329,10 @@ def open_session(cell: CellProcess, cwd: Path, mode: str | None, handshake_timeo
 
 def send_turn(session: Session, prompt: str, before_send: Callable[[str | None], None], turn: int,
               on_first_update: Callable[[], None] | None = None) -> TurnRecord | None:
-    """Send one prompt; None means result.cause is set. K2 re-handshakes after turn 1."""
+    """Send one prompt; None means result.cause is set. The handshake ran once, in open_session."""
     ch, result = session.channel, session.result
     if session.closed:
         result.cause, result.detail = Cause.adapter_crash, "send after session close"
-        return None
-    if result.turns and not _handshake(session):
         return None
     result.last_update_seconds = None
 
