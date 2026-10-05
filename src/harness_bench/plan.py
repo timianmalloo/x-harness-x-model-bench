@@ -203,7 +203,14 @@ def kind_of(plan: dict) -> str:
 
 def ring_diff(plan_a: dict, plan_b: dict) -> str:
     """Name the differences between two plans' ring blocks."""
-    return ""
+    ring_a = (plan_a or {}).get("ring", plan_a) if isinstance(plan_a, dict) else {}
+    ring_b = (plan_b or {}).get("ring", plan_b) if isinstance(plan_b, dict) else {}
+    diffs = []
+    if (ring_a or {}).get("tag") != (ring_b or {}).get("tag"):
+        diffs.append(f"tag differs: A {(ring_a or {}).get('tag')}, B {(ring_b or {}).get('tag')}")
+    if (ring_a or {}).get("hash") != (ring_b or {}).get("hash"):
+        diffs.append(f"hash differs: A {(ring_a or {}).get('hash')}, B {(ring_b or {}).get('hash')}")
+    return "; ".join(diffs)
 
 
 def launch_order(cells: list[Cell], seed: int) -> list[Cell]:
