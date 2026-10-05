@@ -40,8 +40,6 @@ from harness_bench import (
 
 ROOT = Path(__file__).resolve().parents[1]
 READERS = ("campaign attach", "campaign pilot attach", "campaign.run_side_check", "bench run", "bench report", "board run listing", "bench status")
-J2_COMMIT = "5f54cf0b"  # leader/s1-discrimination: the Leader's J2 measurement (59.3 s; written; 15/15 flips; naive 0.3750; reference 1.0000)
-J2_RECORD = "bench/discrimination/S1/cafd00925c15b59a-a29e75cbd70b4a44-win32.json"
 MICRODOT_KEY = "b710ad2a8403e3e9"  # sha256("<repo>@<commit>")[:16] of S1's pinned upstream (workspace.upstream_tree)
 QUESTION = "does the pack help"
 PACK_REVISION = "7"  # the revision `_pack_repo` writes into its INSTALL.md
@@ -115,10 +113,14 @@ class S1Repo:
         self.base = base
         self.root = lean_repo(base)
         self.runs, self.cells = self.root / "runs", base / "cells"  # campaign commands read root/runs, so the walk's runs live there (git-ignored)
+        task = self.root / "tasks" / "S1" / "task.yaml"
+        text = task.read_text(encoding="utf-8")
+        assert "status: ready" in text  # the repo's S1 is ready with its record; the copy walks draft -> ready -> discriminate -> commit again
+        task.write_text(text.replace("status: ready", "status: draft", 1), encoding="utf-8")
+        shutil.rmtree(self.root / "bench" / "discrimination" / "S1", ignore_errors=True)  # the copy's own record is the one under test
         self.draft_version = subprocess.run([sys.executable, "-c", "import sys;from pathlib import Path;from harness_bench import plan;print(plan.task_version_hash(Path(sys.argv[1])))",
                                              str(self.root / "tasks" / "S1")], capture_output=True, text=True, check=True).stdout.strip()
         self.draft_lines = readiness.problems(self.root)
-        task = self.root / "tasks" / "S1" / "task.yaml"
         text = task.read_text(encoding="utf-8")
         assert "status: draft" in text
         task.write_text(text.replace("status: draft", "status: ready", 1), encoding="utf-8")  # the temp repo's copy only
@@ -345,31 +347,25 @@ def test_uf_e1_front_half(s1):
     assert [line for line in s1.after_lines if line.startswith("x ")] == ["x HB-RDY-007 S1: security: the security property has one task; the pair rule needs two"]
 
 
-def test_the_temp_discrimination_matches_the_leaders_j2_measurement(s1):
-    """Items 2 and 5 cross-check: the real trial in the temp repo against J2 (`leader/s1-discrimination` 5f54cf0b): outcome written, 15 of 15
-    variants flip their declared probe with their declared clause, naive 0.3750, reference 1.0000, and every probe, score and variant equals
-    J2's. Not equal, and reported as a fact: the record name (J2 discriminated the `draft` file, so its task version is that of the draft; the
-    identity hash moved with the tree)."""
+def test_the_temp_discrimination_matches_the_committed_record(s1):
+    """Items 2 and 5 cross-check: the real trial in the temp repo against the record committed in this tree (`bench/discrimination/S1`, the
+    Leader's run over the X-I5 check): outcome written, 15 of 15 variants flip their declared probe with their declared clause, naive 0.3750,
+    reference 1.0000, and the task version, every probe, score and variant equal the committed record's (the temp copy is the same tree)."""
     body = json.loads(s1.records[0].read_text(encoding="utf-8"))
     assert body["scores"]["naive"]["exploit_probes_blocked"] == "0.3750" and body["scores"]["naive"]["property_check_pass"] == 0
     assert body["scores"]["reference"]["exploit_probes_blocked"] == "1.0000" and body["scores"]["reference"]["property_check_pass"] == 1
     assert body["readiness_failures"] == []
     assert len(body["variants"]) == 15 and all(set(v["flips"]) == set(v["clauses"]) and v["flips"] for v in body["variants"].values())
-    shown = subprocess.run(["git", "show", f"{J2_COMMIT}:{J2_RECORD}"], cwd=ROOT, capture_output=True, text=True, check=False)
-    if shown.returncode != 0:
-        pytest.skip(f"J2 commit {J2_COMMIT} is not in this clone")
-    j2 = json.loads(shown.stdout)
-    na = {"behavioural_equivalence", "regression_count"}  # X-I5 declares these two NA after J2's record (req-01M46AMDRDRJ1XA610E63MJXD0)
-    assert {m for m, v in body["expected"]["reference"].items() if isinstance(v, dict)} == na
-    body["expected"]["reference"] = {m: v for m, v in body["expected"]["reference"].items() if m not in na}
-    for key in ("expected", "probe", "scores", "variants", "readiness_failures"):
-        assert body[key] == j2[key], key
-    assert body["task_version"] != j2["task_version"] and s1.draft_version != j2["task_version"]  # X-I5 moved the draft version off J2's too
+    committed = sorted((ROOT / "bench" / "discrimination" / "S1").glob("*.json"))
+    assert len(committed) == 1, committed
+    record = json.loads(committed[0].read_text(encoding="utf-8"))
+    for key in ("task_version", "expected", "probe", "scores", "variants", "readiness_failures"):
+        assert body[key] == record[key], key
 
 
-def test_s1_draft_task_version_is_the_j2_task_version(s1):
-    """X-I5 moved the draft S1 task version off the J2 / X-I4 version (the F4 drop and the NA lines are part of the hashed folder)."""
-    assert s1.draft_version != "cafd00925c15b59ac2d386009cbd72a6d94bb8d7b1a98405440075d7b3c5d990"
+def test_s1_draft_task_version_is_not_the_ready_task_version(s1):
+    """The flip moves the task version (W0 section 2: the record is measured after the flip): the copy's draft version differs from the record's."""
+    assert s1.draft_version != json.loads(s1.records[0].read_text(encoding="utf-8"))["task_version"]
 
 
 @pytest.fixture
