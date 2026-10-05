@@ -393,7 +393,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "c63113c0d48dddf26d34faef2c28d0974c731ff6dcd69b0b7368ba630675e176"
+      "sourceSha256": "8d3c751bc5e4933f734015c94a7c1b036d4e69e46d36b481917378131013303b"
     },
     {
       "id": "adr-0007-run-engine",
@@ -719,7 +719,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b239bddc9ac605c41d45c20ca09ff481e25b5f1c1a85f5f35096e8512b39b8e0"
+      "sourceSha256": "afbabb83002015f41c7645a7ecdda095412a38b8a6e5de62de8e44557655f951"
     },
     {
       "id": "adr-0016-campaign-record",
@@ -1970,7 +1970,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ff67309fef745a4727d77014af4231394c8b1e62c4d17e3f240be43aedeb5e19"
+      "sourceSha256": "41b282d7908aaaeacbc7fc7ad66afb8bf4c887845968e891bedee8161f4f2431"
     },
     {
       "id": "design-eval-arms",
@@ -8844,5 +8844,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "b673f3d204b1ecbeb5dbea4a5814cf7f7125baef40ea272d5dc015828cb8e134"
+  "graphSha256": "e9642c1464b34f910a18b7fbc918653f9a897b49f01d128435257233153bce86"
 };
