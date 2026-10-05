@@ -19,7 +19,7 @@ import pytest
 from archived_runs import GOOD, make_root, make_run
 from test_cli import _pack_repo
 from test_driver import ACP_FIX, REPLAY, _derive, _spawn
-from test_engine import FakeLauncher, _build_workspace, _events, _plan
+from test_engine import FakeLauncher, _build_workspace, _events, _plan, _run
 from test_lifecycle_conformance import GOOD as LIF_GOOD
 from test_plan import _matrix2, _plan2
 from test_tools import _fake_tree
@@ -92,6 +92,18 @@ def run_cell(tmp_path, per_turn=None, budget=60, on_row=None, **fake):
 
 def row(events, kind, turn=None):
     return next((r for r in events if r["kind"] == kind and (turn is None or r.get("turn", 1) == turn)), {})
+
+
+def test_single_turn_cell_records_exactly_one_turn_end_with_next_final(tmp_path):
+    p = _plan(n_cells=1)
+    _, events, _ = _run(tmp_path, p, FakeLauncher({}))
+    ended = [r for r in events if r["kind"] == "cell.turn_ended"]
+    assert len(ended) == 1, "a single-turn cell must write exactly one turn_ended"
+    assert (ended[0]["turn"], ended[0]["next"], ended[0]["stop_reason"]) == (1, "final", "end_turn")
+    assert isinstance(ended[0]["turn_ms"], int)
+    assert ended[0]["turn_ms"] == row(events, "cell.outcome")["turn_ms"]
+    assert row(events, "cell.prompt_sent")["seq"] < ended[0]["seq"] < row(events, "attempt.process_ended")["seq"]
+    assert not row(events, "cell.turn_snapshot_archived")
 
 
 @pytest.mark.xfail(strict=True, reason="J1d: full replay after J1b loop and J1c snapshots")
