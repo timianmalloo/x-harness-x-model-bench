@@ -19,7 +19,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
-from harness_bench import atomic, config, identity, plan, views
+from harness_bench import atomic, config, egress, identity, plan, views
 from harness_bench.errors import BenchError
 from harness_bench.grade import _env, runner
 from harness_bench.grade import property as prop
@@ -615,7 +615,12 @@ def property_evidence(run_dir: Path, pointer: str) -> dict:
     if (check / "clauses.json").is_file():
         if (check / "clauses.json").stat().st_size > MAX_VARIANTS_BYTES:
             raise ValueError("clauses.json is over 64 KiB")
-        clauses = json.loads((check / "clauses.json").read_text(encoding="utf-8"))
+        text = (check / "clauses.json").read_text(encoding="utf-8")
+        # Untrusted grader output: the scan every other reader uses (egress.check, as report/judges.py), before the parse.
+        verdict = egress.check(text, destination="readiness", operator=egress.Operator.from_os())
+        if verdict.withheld:
+            raise ValueError(f"clauses.json is withheld by the egress scan ({', '.join(verdict.classes)})")
+        clauses = json.loads(text)
         if not isinstance(clauses, dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in clauses.items()):
             raise ValueError("clauses.json is not a {case id: clause text} object")
     return {"deliverable": result["deliverable"], "cases": {c["id"]: c["outcome"] for c in result["cases"]},

@@ -143,5 +143,14 @@
   "tests": [
    "tests/test_discriminate.py::test_synthetic_environment_and_record_leak_scan"
   ]
+ },
+ {
+  "name": "clauses.json is parsed without the egress scan refusing it first",
+  "file": "src/harness_bench/readiness.py",
+  "find": "        if verdict.withheld:\n",
+  "replace": "        if False:\n",
+  "tests": [
+   "tests/test_readiness.py::test_clauses_json_is_egress_scanned_before_it_is_parsed"
+  ]
  }
 ]
