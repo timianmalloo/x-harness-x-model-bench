@@ -136,3 +136,10 @@
 {"at": 1791187799.1240988, "from": "coord-opus-e1e4", "kind": "decision-request", "mail_id": "mail-01M45HSK2MW8SNCTWPMN7Z85WM", "ref": "req-01M45HSK2BGQ0RR0KPA2F1CDWG", "session": "coord-opus-e1e4", "to": "owner-fable", "type": "mail"}
 {"agent": "coord-opus-e1e4", "at": 1791194291.2633624, "kind": "session-start", "path": "-", "seq": 137, "session": "coord-opus-e1e4", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-coord-eval-c27-xc3b"}
 {"agent": "coord-opus-e1e4", "at": 1791195113.8619797, "kind": "session-start", "path": "-", "seq": 138, "session": "coord-opus-e1e4", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-coord-eval-c28-xint"}
+{"agent": "coord-opus-e1e4", "at": 1791208676.3878567, "kind": "session-end", "path": "-", "seq": 139, "session": "coord-opus-e1e4", "wi": "WI-0", "worktree": "x-harness-x-model-bench"}
+{"agent": "coord-opus-e1e4", "at": 1791208710.0103445, "kind": "session-end", "path": "-", "seq": 140, "session": "coord-opus-e1e4", "wi": "WI-0", "worktree": "x-harness-x-model-bench-coord-eval-c23"}
+{"agent": "coord-opus-e1e4", "at": 1791208710.2636006, "kind": "session-end", "path": "-", "seq": 141, "session": "coord-opus-e1e4", "wi": "WI-0", "worktree": "x-harness-x-model-bench-coord-eval-c24-xc2"}
+{"agent": "coord-opus-e1e4", "at": 1791208710.5154958, "kind": "session-end", "path": "-", "seq": 142, "session": "coord-opus-e1e4", "wi": "WI-0", "worktree": "x-harness-x-model-bench-coord-eval-c25-xh2"}
+{"agent": "coord-opus-e1e4", "at": 1791208710.7799652, "kind": "session-end", "path": "-", "seq": 143, "session": "coord-opus-e1e4", "wi": "WI-0", "worktree": "x-harness-x-model-bench-coord-eval-c26-xc3"}
+{"agent": "coord-opus-e1e4", "at": 1791208711.04896, "kind": "session-end", "path": "-", "seq": 144, "session": "coord-opus-e1e4", "wi": "WI-0", "worktree": "x-harness-x-model-bench-coord-eval-c27-xc3b"}
+{"agent": "coord-opus-e1e4", "at": 1791208711.2964091, "kind": "session-end", "path": "-", "seq": 145, "session": "coord-opus-e1e4", "wi": "WI-0", "worktree": "x-harness-x-model-bench-coord-eval-c28-xint"}
