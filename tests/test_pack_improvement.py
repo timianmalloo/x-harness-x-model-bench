@@ -437,6 +437,7 @@ def _group(**kw) -> pi.GroupClassInput:
         "passes_on": 3, "passes_off": 3, "n_pairs": 3, "n_ratio_valid": 3,
         "median_token_ratio": Decimal("1.0"), "holm_p": Decimal("1.0"),
         "harm_indicator": False, "quality_lo_positive": False,
+        "n_recorded": 3,
     }
     base.update(kw)
     return pi.GroupClassInput(**base)

@@ -558,6 +558,11 @@ class GroupClassInput:
     holm_p: Decimal | None
     harm_indicator: bool  # >=1 on-cell is diverted_and_failed or stopped_without_product
     quality_lo_positive: bool  # a mapped quality metric's board interval has lo > 0 for this combo
+    n_recorded: int | None = None
+
+    def __post_init__(self):
+        if self.n_recorded is None:
+            object.__setattr__(self, "n_recorded", self.n_pairs)
 
 
 def classify_group(g: GroupClassInput) -> tuple[str, bool]:
@@ -1171,9 +1176,13 @@ def assemble(
                                   method_lines(board_obj), population_caveats(view))
 
 
-def _passed(c: CellView) -> bool:
+def _pass(c: CellView) -> bool | None:
     s = c.scores.get("pass_at_1")
     return s is not None and s.value == 1
+
+
+def _passed(c: CellView) -> bool:
+    return bool(_pass(c))
 
 
 def _measure_ratio(on: Measure, off: Measure) -> Measure:
