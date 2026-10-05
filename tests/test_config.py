@@ -10,6 +10,33 @@ from harness_bench import config
 ROOT = Path(__file__).resolve().parents[1]
 
 
+@pytest.mark.parametrize("field,value,fragment", [
+    ("property", "no_guessing", "property"),
+    ("property", "unknown", "property"),
+    ("also_graded_by", ["formla"], "also_graded_by"),
+    ("also_graded_by", ["correctness"], "also_graded_by"),
+    ("also_graded_by", ["formal", "formal"], "also_graded_by"),
+    ("also_graded_by", "formal", "also_graded_by"),
+])
+def test_catalog_refuses_invalid_property_and_secondary_graders(field, value, fragment):
+    catalog = config.load_yaml(ROOT / "bench/metrics.yaml")
+    metric = next(m for a in catalog["areas"].values() for m in a["metrics"] if m["id"] == "pass_at_1")
+    metric[field] = value
+    problems = config.Problems()
+    config.validate_metrics(catalog, problems, config.grader_modules(ROOT), root=ROOT)
+    assert any(fragment in p for p in problems.items), problems.items
+
+
+def test_catalog_accepts_each_property_and_distinct_secondary_grader():
+    for prop in config.PROPERTY_NAMES:
+        catalog = config.load_yaml(ROOT / "bench/metrics.yaml")
+        metric = next(m for a in catalog["areas"].values() for m in a["metrics"] if m["id"] == "pass_at_1")
+        metric.update(property=prop, also_graded_by=["formal"])
+        problems = config.Problems()
+        config.validate_metrics(catalog, problems, config.grader_modules(ROOT), root=ROOT)
+        assert problems.items == []
+
+
 def _arms_matrix(tmp_path):
     return {"schema": "bench-matrix/2", "repetitions": 3, "bom": {"subset": ["X1"]},
             "arms": [{"id": "off"}, {"id": "candidate", "pack": {
