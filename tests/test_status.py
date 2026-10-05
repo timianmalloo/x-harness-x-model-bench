@@ -238,6 +238,7 @@ _statuses = st.builds(
     last_update_ms=st.dictionaries(_ids, st.none() | st.integers(0, 10**9), max_size=4),
     validity=st.dictionaries(st.sampled_from(status.VALIDITY), st.integers(0, 600)),
     causes=st.dictionaries(st.from_regex(r"HB-CELL-[0-9]{3}", fullmatch=True), st.integers(0, 600)),
+    cell_causes=st.dictionaries(_ids, st.from_regex(r"HB-CELL-[0-9]{3}", fullmatch=True), max_size=4),
     running=st.lists(_running, max_size=4), decisions=st.just([]),
     stop_code=st.none() | st.from_regex(r"HB-[A-Z]+-[0-9]{3}", fullmatch=True),
     stop_reason=st.none() | st.from_regex(r"[a-z ]{1,40}", fullmatch=True),
