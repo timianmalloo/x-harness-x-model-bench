@@ -11,7 +11,7 @@
   "file": "src/harness_bench/driver.py",
   "find": "                    if self.turn_start is not None:\n                        self.result.last_update_seconds = time.monotonic() - self.turn_start\n",
   "replace": "                    self.result.last_update_seconds = 0.0 if self.turn_start is None else time.monotonic() - self.turn_start\n",
-  "tests": ["tests/test_driver.py::test_a_handshake_time_update_leaves_last_update_null"]
+  "tests": ["tests/test_driver.py::test_a_handshake_time_update_leaves_last_update_null", "tests/test_multiturn.py::test_k2_a_handshake_time_update_is_counted_but_not_timed"]
  },
  {
   "name": "Codex review: a refused model setter reads adapter_crash",
@@ -33,6 +33,6 @@
   "file": "src/harness_bench/driver.py",
   "find": "    last_update_seconds: float | None = None\n",
   "replace": "    last_update_seconds: float | None = 0.0\n",
-  "tests": ["tests/test_driver.py::test_last_update_is_null_never_zero_with_no_session_update"]
+  "tests": ["tests/test_driver.py::test_last_update_is_null_never_zero_with_no_session_update", "tests/test_multiturn.py::test_k2_open_session_without_an_update_reports_last_update_null"]
  }
 ]
