@@ -163,7 +163,7 @@ def forbidden(capture: Path | None, extra: list[str]) -> set[str]:
         r = subprocess.run(["git", "config", key], capture_output=True, text=True, check=False)
         values.add(r.stdout.strip())
         values.update(r.stdout.strip().split())  # each part of a full name
-    configs = [*(capture.glob("cells/*/home/config.json") if capture else []),
+    configs = [*(capture.glob("cells/*/home/config.json") if capture else []),  # machine-path-ok: relative glob, not a machine path
                Path(os.environ.get("USERPROFILE", "~")).expanduser() / ".copilot" / "config.json"]
     for cfg in configs:
         data = lenient_json(cfg)

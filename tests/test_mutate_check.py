@@ -192,7 +192,7 @@ def test_a_mutant_name_with_non_cp1252_characters_does_not_crash_on_cp1252_stdou
 # --- TOOL-B: a cosmic-ray "killed" is re-derived from a named test failing --------------------
 #
 # cosmic-ray 8.7.0's WorkResult (cosmic_ray/work_item.py) has no exit code: `testing.run_tests`
-# (read at C:\Users\malla\AppData\Local\uv\cache\archive-v0\PdlzIZscLpkdaw3H\Lib\site-packages\
+# (read in the uv cache under %LOCALAPPDATA%, archive-v0\...\Lib\site-packages\
 # cosmic_ray\testing.py:73-75, cosmic-ray 8.7.0) calls TestOutcome.KILLED for *any* non-zero exit
 # from the test command -- a real test failure, a collection error, or any other non-zero exit
 # alike -- and KILLED with output=="timeout" (the literal sentinel string) for a hang. Only a
