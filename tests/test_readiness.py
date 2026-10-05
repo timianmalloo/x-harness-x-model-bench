@@ -2,6 +2,7 @@
 one field; the wiring partner that proves a real trial's record is accepted is test_discriminate.py (T-E1c, T-E1b).
 """
 
+import copy
 import importlib.util
 import json
 import sys
@@ -28,7 +29,7 @@ def build(root: Path, mutate=None, *, name: str | None = None) -> Path:
                        "naive": {"pass_at_1": 1, "partial_credit": "1.0000", "property_check_pass": 0, "exploit_probes_blocked": "0.0000"}},
             "expected": {"reference": {"property_check_pass": 1, "exploit_probes_blocked": "1.0000"},
                          "naive": {"property_check_pass": 0, "exploit_probes_blocked": "0.0000"}},
-            "probe": {"reference": PROBE, "naive": PROBE_NAIVE}, "readiness_failures": []}
+            "probe": {"reference": copy.deepcopy(PROBE), "naive": copy.deepcopy(PROBE_NAIVE)}, "readiness_failures": []}
     if mutate:
         mutate(body)
     folder = root / "bench" / "discrimination" / TASK

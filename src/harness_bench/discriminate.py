@@ -11,6 +11,7 @@ clean retry then contradicts. The link `runs/<run>/discrimination-link.json` is 
 import hashlib
 import json
 import secrets
+import shutil
 import sys
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -29,7 +30,13 @@ from harness_bench import (
 )
 from harness_bench.errors import BenchError
 from harness_bench.grade import correctness, judge, runner
-from harness_bench.readiness import ROLES, record_key, record_path
+from harness_bench.readiness import (
+    CORRECTNESS_SCORES,
+    FLIPPED,
+    ROLES,
+    record_key,
+    record_path,
+)
 from harness_bench.synthetic_agent import SYNTHETIC_VERSION
 
 AGENT = Path(__file__).with_name("synthetic_agent.py")
@@ -41,6 +48,7 @@ NA_REASONS = frozenset({"not built", correctness.NO_PUBLIC_TESTS, correctness.NO
                         "no probe case declared", "did not build", "did not start"})
 # A check or host fault: the trial is untrustworthy (HB-CHK-001..004) unless `expected` declares that very NA (EV-11).
 UNTRUSTED_NA = ("invalid (check tampered)", "check exceeded its bound", "host suspended", "check output invalid")
+UNDECLARED = "(differs)"  # what a record holds where the check's clause text is not the declared one
 
 
 @dataclass(frozen=True)
@@ -117,6 +125,16 @@ def _overlays(task_dir: Path) -> dict[str, tuple[str, Path]]:
     return out
 
 
+def _variant_overlay(task_dir: Path, name: str, entry: dict, dest: Path) -> Path:
+    """The reference overlay with the variant's edits applied, held under the run folder, never in the task folder. Every
+    edit was checked by `readiness.variants` (path rule, `old` exactly once), so each applies once."""
+    shutil.copytree(task_dir / "oracle" / "solutions" / "reference", dest)
+    for edit in entry["edits"]:
+        target = dest / edit["file"]
+        target.write_bytes(target.read_bytes().replace(edit["old"].encode(), edit["new"].encode(), 1))
+    return dest
+
+
 def _matrix(run_id: str, task_id: str, combos: list[str]) -> dict:
     return {"schema": "bench-matrix/1", "run_id": run_id, "bom": {"subset": [task_id]}, "packs": ["off"], "repetitions": 1,
             "combos": [{"id": c, "harness": "synthetic", "model": "synthetic-1"} for c in combos]}
@@ -131,13 +149,19 @@ def _workspace_builder(task_dir: Path, sources: Path, upstream: Path):
     return build
 
 
-def _scores(run_dir: Path, grading_id: str, p: dict, combo_role: dict[str, str], keep: set[str]) -> dict[str, dict]:
+def _scores(run_dir: Path, grading_id: str, p: dict, combo_role: dict[str, str], keep: set[str]) -> tuple[dict, dict]:
+    """(role -> metric -> value or {na: reason}, role -> the `property.json` pointer of its property_check_pass row)."""
     cell_role = {c["cell_id"]: combo_role[c["combo"]] for c in p["cells"]}
-    out: dict[str, dict] = {role: {} for role in combo_role.values()}
+    scores: dict[str, dict] = {role: {} for role in combo_role.values()}
+    pointers: dict[str, str] = {}
     for row in views.rows(run_dir, "scores"):
-        if row["grading_id"] == grading_id and row["metric_id"] in keep and row["cell_id"] in cell_role:
-            out[cell_role[row["cell_id"]]][row["metric_id"]] = row["value"] if row["value"] is not None else {"na": row["reason"]}
-    return {role: dict(sorted(scores.items())) for role, scores in out.items()}
+        if row["grading_id"] == grading_id and row["cell_id"] in cell_role:
+            role = cell_role[row["cell_id"]]
+            if row["metric_id"] in keep:
+                scores[role][row["metric_id"]] = row["value"] if row["value"] is not None else {"na": row["reason"]}
+            if row["metric_id"] == "property_check_pass" and row["evidence"]:
+                pointers[role] = row["evidence"]
+    return {role: dict(sorted(s.items())) for role, s in scores.items()}, pointers
 
 
 def _untrustworthy(scores: dict[str, dict], expected: dict) -> list[str]:
@@ -147,8 +171,7 @@ def _untrustworthy(scores: dict[str, dict], expected: dict) -> list[str]:
         for metric, value in row.items():
             if not isinstance(value, dict):
                 continue
-            declared = (expected.get(role) or {}).get(metric)
-            if declared == value:
+            if (expected.get(role) or {}).get(metric) == value:
                 continue  # an NA equal to the declared expected NA is the one exemption (EV-11)
             reason = value["na"]
             if reason.startswith(UNTRUSTED_NA):
@@ -156,6 +179,60 @@ def _untrustworthy(scores: dict[str, dict], expected: dict) -> list[str]:
             elif reason not in NA_REASONS:
                 items.append(f"{role} {metric}: NA reason outside the closed set ({reason})")
     return items
+
+
+def _evidence_items(run_dir: Path, grading_id: str, labels: dict[str, str], pointers: dict[str, str], declared: dict) -> tuple[dict, list[str]]:
+    """The HB-RDY-011 items a check-based trial can show, and the per-role evidence they were found in: unreadable
+    evidence, a case `timeout` that nothing declares (R2-1), a hidden-test disagreement or not-comparable cell (R-93, R-96),
+    a span with `unbiased_ok` false, and a reader that raised (its reason is the detail)."""
+    items, found = [], {}
+    for role, pointer in sorted(pointers.items()):
+        try:
+            found[role] = readiness.property_evidence(run_dir, pointer)
+        except (OSError, ValueError, KeyError, IndexError) as exc:
+            items.append(f"{role}: check evidence unreadable ({type(exc).__name__}: {exc})")
+            continue
+        allowed = set(declared.get(role.removeprefix("variant:"), {}).get("flips", ())) if role.startswith("variant:") else set()
+        late = sorted(c for c, out in found[role]["cases"].items() if out == "timeout" and c not in allowed)
+        if late:
+            items.append(f"{role}: case {', '.join(late)} timed out (a timeout nothing declares is not measured content)")
+    try:
+        disagree, not_comparable = readiness.comparable_cells(run_dir, grading_id)
+        unbiased = readiness.unbiased_failures(run_dir, grading_id)
+    except BenchError as exc:
+        return found, [*items, f"a reader could not run: {exc.message}"]
+    for what, cells in (("hidden tests disagree with pass_at_1 in", disagree), ("not comparable (a side is NA) in", not_comparable),
+                        ("a span with unbiased_ok false in", unbiased)):
+        if cells:
+            items.append(f"{what} {', '.join(labels.get(c, c) for c in cells)}")
+    return found, items
+
+
+def _variant_record(name: str, entry: dict, role: str, scores: dict, found: dict, check_based: bool, ref_scores: dict,
+                    narrowed: set[str], scales: dict) -> tuple[dict, list[str]]:
+    """One variant's record entry (observed flips, declared clause text where the check's clause is the declared one) and
+    any HB-RDY-011 item (a declared clause the check's evidence cannot confirm fails closed)."""
+    rec: dict = {"scores": scores[role]}
+    items: list[str] = []
+    if check_based:
+        ev = found[role]
+        rec["flips"] = sorted(c for c, out in ev["cases"].items() if out not in FLIPPED)
+        rec["hidden_tests_pass"] = int(ev["hidden"] == 1)  # an int: the canonical form has no bool
+        rec["deliverable"] = ev["deliverable"]
+        observed = ev["clauses"]
+        if entry["clauses"] and observed is None:
+            items.append(f"variant {name}: clauses are declared but the check wrote no clauses.json (the pointer does not resolve)")
+            observed = {}
+        rec["clauses"] = {c: (entry["clauses"][c] if (observed or {}).get(c) == entry["clauses"][c] else UNDECLARED)
+                          for c in rec["flips"] if c in entry["clauses"]}
+    else:
+        rec["flips"] = sorted(m for m in narrowed if readiness.normal(scores[role].get(m, {"na": "not recorded"}), scales.get(m))
+                              != readiness.normal(ref_scores.get(m, {"na": "not recorded"}), scales.get(m)))
+        rec["hidden_tests_pass"] = int(scores[role].get("pass_at_1") == 1)
+        rec["clauses"] = {}
+        if entry["clauses"]:
+            items.append(f"variant {name}: a check-less variant declares clauses and this base records none (SR-E3 2)")
+    return rec, items
 
 
 def _sweep(task_id: str, folder: Path, lock: oslock.RunLock) -> list[Path]:
@@ -198,16 +275,19 @@ def _trial(root: Path, task_id: str, runs: Path, cells_root: Path, upstream: Pat
     contract = readiness.contract_failures(root, task_id)
     if contract:
         raise BenchError("HB-RDY-005", "; ".join(f"{f.item}: {f.detail}" for f in contract))
+    declared = readiness.variants(root, task_id)
     tv, ih = record_key(root, task_id)
     path = record_path(root, task_id)
     existed = path.exists()
     overlays = _overlays(task_dir)
-    combo_role = {combo: role for combo, (role, _folder) in overlays.items()}
     run_id = f"disc-{task_id.lower()}-{tv[:8]}-{datetime.now(UTC):%Y%m%dT%H%M%S}-{secrets.token_hex(2)}"
+    run_dir = runs / run_id
+    for name, entry in declared.items():
+        overlays[f"synthetic-v-{name}"] = (f"variant:{name}", _variant_overlay(task_dir, name, entry, run_dir / "variants" / name))
+    combo_role = {combo: role for combo, (role, _folder) in overlays.items()}
     bom = config.load_yaml(root / "bench" / "bom.yaml")
     p = plan.build_plan(root, _matrix(run_id, task_id, list(overlays)), bom, run_id, {"synthetic": {"version": SYNTHETIC_VERSION}},
                         parallelism=1, kind="discrimination")
-    run_dir = runs / run_id
     plan.confirm(run_dir, p)
     cells_root.mkdir(parents=True, exist_ok=True)
     workspace.check_cells_root(cells_root)
@@ -231,19 +311,36 @@ def _trial(root: Path, task_id: str, runs: Path, cells_root: Path, upstream: Pat
     if len(passes) != 1:
         raise BenchError("HB-RDY-011", f"the grading pass did not complete exactly once ({len(passes)}), nothing written")
     (grading_id,) = passes
-    keep = set(readiness.recorded_metrics(root, task)) | set(readiness.CORRECTNESS_SCORES)
-    scores = _scores(run_dir, grading_id, p, combo_role, keep)
+    narrowed = set(readiness.recorded_metrics(root, task))
+    scores, pointers = _scores(run_dir, grading_id, p, combo_role, narrowed | set(CORRECTNESS_SCORES))
     expected = task.get("expected") or {}
     items = _untrustworthy(scores, expected)
+    check_based = readiness.is_check_based(task)
+    found: dict = {}
+    if check_based:
+        labels = {c["cell_id"]: c["label"] for c in p["cells"]}
+        found, more = _evidence_items(run_dir, grading_id, labels, pointers, declared)
+        items += more
+        if not more:
+            items += [f"{r}: no check evidence found for the cell" for r in sorted(set(combo_role.values()) - set(found))]
+    body: dict = {"schema": RECORD_SCHEMA, "task": task_id, "task_version": tv, "identity_hash": ih, "platform": sys.platform,
+                  "scores": {role: scores[role] for role in ROLES}, "expected": expected}
+    if check_based and not items:
+        body["probe"] = {role: {"deliverable": found[role]["deliverable"], "cases": dict(sorted(found[role]["cases"].items())),
+                                "hosts_ready": found[role]["hosts_ready"]} for role in ROLES}
+    if declared and not items:
+        scales = readiness.scales(root)
+        body["variants"] = {}
+        for name, entry in declared.items():
+            rec, more = _variant_record(name, entry, f"variant:{name}", scores, found, check_based, scores["reference"], narrowed, scales)
+            body["variants"][name] = rec
+            items += more
     if items:
         raise BenchError("HB-RDY-011", f"trial untrustworthy, nothing written: {'; '.join(items)}")
-    body = {"schema": RECORD_SCHEMA, "task": task_id, "task_version": tv, "identity_hash": ih, "platform": sys.platform,
-            "scores": scores, "expected": expected}
-    body["readiness_failures"] = sorted(f"{f.code}: {f.item}" for f in readiness.score_failures(root, task_id, body))
+    body["readiness_failures"] = sorted(f"{f.code}: {f.item}" for f in readiness.body_failures(root, task_id, body))
     data = ledger.canonical(body)
     created = _publish(task_id, path, data, existed, lock)
     link = ledger.stamp({"schema": LINK_SCHEMA, "record_stem": path.stem, "record_sha256": hashlib.sha256(data).hexdigest(),
                          "run_id": run_id, "grading_id": grading_id})
     atomic.create_once(run_dir / "discrimination-link.json", ledger.canonical(link))
     return Result("written" if created else "confirmed", path, run_id)
-

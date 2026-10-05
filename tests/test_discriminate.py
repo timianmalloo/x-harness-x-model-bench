@@ -315,7 +315,7 @@ def test_variant_trial_runs_on_the_real_host_compares_flips_and_never_executes_t
     variants = body.get("variants", {})
     assert variants.get("m9", {}).get("flips") == ["p-2"] and variants.get("m8", {}).get("flips") == ["p-1"]
     assert variants.get("m9", {}).get("clauses") == {"p-2": "reflect"}
-    assert variants.get("m9", {}).get("hidden_tests_pass") is True and variants.get("m9", {}).get("deliverable") == "ran"
+    assert variants.get("m9", {}).get("hidden_tests_pass") == 1 and variants.get("m9", {}).get("deliverable") == "ran"
     assert not sentinel.exists(), "variants.py was executed"
     assert body["readiness_failures"] == [] and readiness.record_failures(root, "DISC-P") == []
 
