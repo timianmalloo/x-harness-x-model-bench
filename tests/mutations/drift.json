@@ -15,15 +15,15 @@
   },
   {
     "name": "GR-CODE c3: the blast radius matches nothing",
-    "file": "src/harness_bench/grade/drift.py",
-    "find": "    return any(fnmatchcase(path, glob) for glob in radius)",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "    return any(fnmatchcase(path.replace(\"\\\\\", \"/\"), glob) for glob in radius)",
     "replace": "    return False",
     "tests": ["tests/test_grade_drift.py::test_a_block_scoped_namespace_in_a_10_line_file_is_convention_drift_10"]
   },
   {
     "name": "GR-CODE c3: the blast radius matches everything",
-    "file": "src/harness_bench/grade/drift.py",
-    "find": "    return any(fnmatchcase(path, glob) for glob in radius)",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "    return any(fnmatchcase(path.replace(\"\\\\\", \"/\"), glob) for glob in radius)",
     "replace": "    return True",
     "tests": ["tests/test_grade_drift.py::test_a_3_line_edit_outside_the_blast_radius_is_scope_creep_3_in_1_file"]
   },

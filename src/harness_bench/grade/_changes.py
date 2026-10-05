@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+import ast
+import difflib
 import hashlib
 import os
 import re
@@ -21,6 +23,7 @@ import shutil
 import tarfile
 from collections.abc import Iterable, Iterator, Mapping
 from contextlib import contextmanager
+from fnmatch import fnmatchcase
 from pathlib import Path
 
 from harness_bench import archive, config, gitsafe
@@ -44,8 +47,12 @@ __all__ = [
     "clear_pre_turn_cache",
     "copy_tree",
     "grading_copy",
+    "in_radius",
+    "is_test_path",
+    "line_delta",
     "pre_turn_commit",
     "pre_turn_tree",
+    "product_lines",
     "remove_tree",
     "tree_id",
 ]
@@ -219,3 +226,64 @@ def change_set(
     out.update({p: "deleted" for p in old_keys - new.keys()})
     out.update({p: "changed" for p in old_keys & new.keys() if old_digests[p] != _digest(new[p])})
     return dict(sorted(out.items()))
+
+
+def product_lines(path: Path | str) -> list[str]:
+    """W1-L 5.1: lines that are not blank, not comment-only, and not part of a docstring (found by ast)."""
+    p = Path(path)
+    if p.suffix != ".py" or not p.is_file():
+        return []
+    try:
+        raw = p.read_bytes()
+    except OSError:
+        return []
+    text = raw.replace(b"\r\n", b"\n").decode("utf-8")
+    lines = text.split("\n")
+    skip: set[int] = set()
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        tree = None
+    if tree is not None:
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)) and node.body:
+                first = node.body[0]
+                if isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant) and isinstance(first.value.value, str):
+                    skip.update(range(first.lineno, first.end_lineno + 1))
+    return [
+        line for number, line in enumerate(lines, 1)
+        if number not in skip and line.strip() and not line.strip().startswith("#")
+    ]
+
+
+def in_radius(path: str, radius: list[str]) -> bool:
+    # simplify: fnmatch, where `*` also crosses `/`, so `dir/**` is every file under dir; ceiling: the task globs are
+    # `**`, `<dir>/**` or one file; upgrade trigger: a glob with a `*` inside a path segment.
+    return any(fnmatchcase(path.replace("\\", "/"), glob) for glob in radius)
+
+
+def line_delta(old: list[str], new: list[str]) -> tuple[list[int], list[int]]:
+    """Indices of `new` lines added or replaced, and of `old` lines removed or replaced (SequenceMatcher, autojunk off)."""
+    added: list[int] = []
+    removed: list[int] = []
+    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, old, new, autojunk=False).get_opcodes():
+        if tag in ("replace", "insert"):
+            added.extend(range(j1, j2))
+        if tag in ("replace", "delete"):
+            removed.extend(range(i1, i2))
+    return added, removed
+
+
+TEST_BASENAMES = ("tests.py", "test.py", "conftest.py")
+
+
+def is_test_path(path: str, base_paths: frozenset[str]) -> bool:
+    """W0 rev 6.6 section 13: a test basename, or a path already in the base tree under a tests/test directory."""
+    norm = path.replace("\\", "/")
+    parts = norm.split("/")
+    name = parts[-1]
+    if fnmatchcase(name, "test_*.py") or fnmatchcase(name, "*_test.py") or name in TEST_BASENAMES:
+        return True
+    return (norm in base_paths or path in base_paths) and any(part in ("tests", "test") for part in parts[:-1])
+
+
