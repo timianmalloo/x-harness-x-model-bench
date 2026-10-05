@@ -4,7 +4,6 @@ an independent naive reference (Fractions, no common-denominator trick), not fro
 import ast
 import hashlib
 import math
-import os
 import random
 from decimal import Decimal
 from pathlib import Path
@@ -20,9 +19,6 @@ from harness_bench.verdicts import Pair, Ratio, VerdictLabel
 SRC = Path(__file__).resolve().parents[1] / "src" / "harness_bench" / "verdicts.py"
 D = Decimal
 L = VerdictLabel
-# The `slow` marker is the dotnet graders' ring (conftest.py gates it on HB_REQUIRE_DOTNET and a dotnet on PATH),
-# so the coverage simulations gate on their own switch. Seam request: a `coverage` marker in pyproject.toml.
-COVERAGE_RUN = pytest.mark.skipif(os.environ.get("HB_RUN_COVERAGE") != "1", reason="coverage simulation: HB_RUN_COVERAGE=1")
 
 
 # ---------------------------------------------------------------- builders
@@ -409,9 +405,10 @@ def test_collect_reads_task_and_rep_from_either_label_form(form):
 
 
 def test_collect_refuses_an_unparseable_label():
-    with pytest.raises(BenchError) as caught:
-        _collect([_cell("a", 1, "off", label="nonsense")])
-    assert caught.value.code == "HB-USR-002"
+    for label in ("nonsense", "a-off-1"):  # the second is a label that fell back to the cell id
+        with pytest.raises(BenchError) as caught:
+            _collect([_cell("a", 1, "off", label=label)])
+        assert caught.value.code == "HB-USR-002"
 
 
 def test_collect_refuses_a_second_cell_for_the_same_half():
@@ -547,7 +544,7 @@ def _coverage(n_datasets: int, kind: str) -> int:
 GOLDEN_COVERAGE = {"effect": 940, "ratio": 932}
 
 
-@COVERAGE_RUN
+@pytest.mark.slow
 @pytest.mark.parametrize("kind", ["effect", "ratio"])
 def test_coverage_golden(kind):
     """A regression pin on this Python's random stream, not the method claim. A golden failure with a green band
@@ -555,7 +552,7 @@ def test_coverage_golden(kind):
     assert _coverage(1000, kind) == GOLDEN_COVERAGE[kind]
 
 
-@COVERAGE_RUN
+@pytest.mark.slow
 @pytest.mark.parametrize("kind", ["effect", "ratio"])
 def test_coverage_band(kind):
     """The method claim at N = 4,000 datasets: coverage within [0.93, 0.97]. Below 0.93 is the R-H2 finding
