@@ -850,3 +850,20 @@ def test_projections_carry_only_the_arms_the_run_has(tmp_path):
     b = board.build(views.load(run_dir), composites.load_catalog(root))
     assert b.frontier and b.areas
     assert {r.pack for r in (*b.areas, *b.scenarios, *b.frontier)} == {"off"}
+
+
+def test_tb10_compare_refuses_different_ring_hashes(tmp_path):
+    """EV-15 / HB-PLN-003: two runs with rings and differing hashes are refused, naming the differences."""
+    root = make_root(tmp_path)
+    run_a = stats_run(root, tmp_path, run_id="r-a", tasks=("A1",), reps=1, arms=("off",), combos=["c"])
+    run_b = stats_run(root, tmp_path, run_id="r-b", tasks=("A1",), reps=1, arms=("off",), combos=["c"])
+    view_a = views.load(run_a)
+    view_b = views.load(run_b)
+    view_a.plan["ring"] = {"tag": "pilot", "hash": "hash-a"}
+    view_b.plan["ring"] = {"tag": "pilot", "hash": "hash-b"}
+    with pytest.raises(BenchError) as exc_info:
+        board.compare(view_a, view_b, TEST_CATALOG)
+    assert exc_info.value.code == "HB-PLN-003"
+    assert "ring hashes differ:" in exc_info.value.message
+    assert "hash differs: A hash-a, B hash-b" in exc_info.value.message
+

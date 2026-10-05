@@ -49,6 +49,22 @@ def test_pilot_ring_pins_r89_combo_repetitions_and_roles():
     assert matrix["combos"] == [{"id": "cc-opus", "harness": "claude-code", "model": "claude-opus-5-5"}]
 
 
+def test_pack_regression_ring_pins_tag_roles_and_quoted_ids():
+    matrix = config.load_yaml(ROOT / "bench/rings/pack-regression.yaml")
+    problems = config.Problems()
+    config.validate_matrix(matrix, config.load_yaml(ROOT / "bench/bom.yaml"), problems, "pack-regression")
+    assert problems.items == []
+    assert matrix["schema"] == "bench-matrix/2" and matrix["ring"] == {"tag": "pack-regression"}
+    assert matrix["repetitions"] == 3
+    assert matrix["arms"] == [{"id": "off"}, {"id": "incumbent"}, {"id": "candidate"}]
+    assert matrix["comparisons"] == [["off", "candidate"], ["incumbent", "candidate"]]
+    assert matrix["combos"] == [{"id": "cc-opus", "harness": "claude-code", "model": "claude-opus-5-5"}]
+    raw_text = (ROOT / "bench/rings/pack-regression.yaml").read_text(encoding="utf-8")
+    assert '"off"' in raw_text or "'off'" in raw_text
+    assert '"incumbent"' in raw_text or "'incumbent'" in raw_text
+    assert '"candidate"' in raw_text or "'candidate'" in raw_text
+
+
 def _arms_matrix(tmp_path):
     return {"schema": "bench-matrix/2", "repetitions": 3, "bom": {"subset": ["X1"]},
             "arms": [{"id": "off"}, {"id": "candidate", "pack": {

@@ -4,6 +4,7 @@ import importlib.util
 import json
 import os
 import shutil
+from collections import defaultdict
 from copy import deepcopy
 from dataclasses import asdict
 from fractions import Fraction
@@ -173,6 +174,131 @@ def test_draw_cap_names_shape_without_claiming_a_two_block_minimum():
     assert len(calls) == plan.MAX_DRAWS == 100
     assert "1 blocks of 4 arms" in error.value.message
     assert "at least 2" not in error.value.message
+
+
+def test_ring_diff_names_tag_and_hash_differences():
+    plan_a = {"ring": {"tag": "pilot", "hash": "h1"}}
+    plan_b = {"ring": {"tag": "pack-regression", "hash": "h2"}}
+    diff = plan.ring_diff(plan_a, plan_b)
+    assert diff == "tag differs: A pilot, B pack-regression; hash differs: A h1, B h2"
+
+
+def test_a_three_arm_plan_has_one_cell_per_task_combo_rep_per_arm(tmp_path):
+    matrix = {
+        "schema": "bench-matrix/2", "repetitions": 3, "bom": {"subset": ["X1"]},
+        "arms": [{"id": "off"}, {"id": "candidate"}, {"id": "incumbent"}],
+        "comparisons": [["off", "candidate"], ["incumbent", "candidate"]],
+        "combos": [{"id": "cc-opus", "harness": "claude-code", "model": "claude-opus-5-5"}],
+    }
+    bom = config.load_yaml(ROOT / "bench" / "bom.yaml")
+    arm_packs = {
+        "off": None,
+        "candidate": {"source": str(tmp_path), "commit": "c" * 40, "revision": 1},
+        "incumbent": {"source": str(tmp_path), "commit": "d" * 40, "revision": 2},
+    }
+    body = plan.build_plan(ROOT, matrix, bom, "three-arm", builds={"claude-code": {"version": "test"}}, arm_packs=arm_packs)
+    cells = body["cells"]
+    assert len(cells) == 9
+    combos_seen = [(c["task"], c["combo"], c["rep"], c["arm"]) for c in cells]
+    assert len(combos_seen) == len(set(combos_seen))
+    for arm in ("off", "candidate", "incumbent"):
+        assert sum(1 for c in cells if c["arm"] == arm) == 3
+
+
+def test_arms_freeze_one_pack_revision_per_non_off_arm_and_none_for_off(tmp_path):
+    matrix = {
+        "schema": "bench-matrix/2", "repetitions": 3, "bom": {"subset": ["X1"]},
+        "arms": [{"id": "off"}, {"id": "candidate"}, {"id": "incumbent"}],
+        "comparisons": [["off", "candidate"], ["incumbent", "candidate"]],
+        "combos": [{"id": "cc-opus", "harness": "claude-code", "model": "claude-opus-5-5"}],
+    }
+    bom = config.load_yaml(ROOT / "bench" / "bom.yaml")
+    arm_packs = {
+        "off": None,
+        "candidate": {"source": str(tmp_path), "commit": "c" * 40, "revision": 1},
+        "incumbent": {"source": str(tmp_path), "commit": "d" * 40, "revision": 2},
+    }
+    body = plan.build_plan(ROOT, matrix, bom, "three-arm", builds={"claude-code": {"version": "test"}}, arm_packs=arm_packs)
+    assert body["arms"]["off"]["pack"] is None
+    assert body["arms"]["candidate"]["pack"]["revision"] == 1
+    assert body["arms"]["incumbent"]["pack"]["revision"] == 2
+
+
+def test_launch_order_is_a_pure_function_of_the_seed():
+    cells = _arm_cells(3, ("off", "incumbent", "candidate"))
+    assert plan.launch_order(cells, 42) == plan.launch_order(cells, 42)
+    assert plan.launch_order(cells, 42) != plan.launch_order(cells, 99)
+
+
+def test_every_block_holds_every_arm_exactly_once():
+    cells = _arm_cells(4, ("off", "incumbent", "candidate"))
+    ordered = plan.launch_order(cells, 42)
+    for i in range(0, len(ordered), 3):
+        block = ordered[i:i + 3]
+        assert {c.rep for c in block} == {block[0].rep}
+        assert {c.arm for c in block} == {"off", "incumbent", "candidate"}
+
+
+@pytest.mark.parametrize("blocks,arms", [
+    (3, 2), (4, 2), (20, 2), (138, 2), (3, 3), (20, 3), (3, 4)
+])
+def test_accepted_plans_meet_the_balance_bound(blocks, arms):
+    arm_names = tuple(f"a{i}" for i in range(arms))
+    cells = _arm_cells(blocks, arm_names)
+    for seed in range(50):
+        ordered = plan.launch_order(cells, seed)
+        bal = plan.launch_balance(ordered)
+        midpoint = Fraction(len(cells) - 1, 2)
+        pos = defaultdict(list)
+        for idx, c in enumerate(ordered):
+            pos[c.arm].append(idx)
+        expected_bal = max(abs(Fraction(sum(p), len(p)) - midpoint) / len(cells) for p in pos.values())
+        assert bal == expected_bal
+
+
+def test_a_four_arm_shape_refuses_with_the_shape_and_draws():
+    calls = []
+    with pytest.raises(BenchError) as error:
+        plan.draw_launch_order(_arm_cells(1, ("off", "a", "b", "c")), draw=lambda: calls.append(0) or 0)
+    assert error.value.code == "HB-PLN-001"
+    assert len(calls) == plan.MAX_DRAWS == 100
+    assert "1 blocks of 4 arms" in error.value.message
+    assert "at least 2" not in error.value.message
+
+
+def test_cells_order_equals_the_order_derived_from_launch_seed(tmp_path):
+    body = _plan2(tmp_path)
+    cells = plan.expand(body["matrix"], config.load_yaml(ROOT / "bench" / "bom.yaml"),
+                        {"X1": body["tasks"]["X1"]["version_hash"]})
+    expected_order = [c.id for c in plan.launch_order(cells, body["launch_seed"])]
+    assert [c["cell_id"] for c in body["cells"]] == expected_order
+
+
+def test_a_one_block_plan_is_refused_hb_pln_001():
+    cells = _arm_cells(1, ("off", "candidate"))
+    with pytest.raises(BenchError) as exc_info:
+        plan.draw_launch_order(cells, draw=lambda: 1)
+    assert exc_info.value.code == "HB-PLN-001"
+
+
+def test_a_failing_first_draw_is_redrawn_and_the_stored_seed_replays():
+    cells = _arm_cells(3, ("off", "candidate"))
+    failed = next((seed for seed in range(1000) if plan.launch_balance(plan.launch_order(cells, seed)) >= plan.BALANCE_BOUND), None)
+    assert failed is not None
+    accepted = next(seed for seed in range(1000) if plan.launch_balance(plan.launch_order(cells, seed)) < plan.BALANCE_BOUND)
+    draws = iter([failed, accepted])
+    seed, ordered, count = plan.draw_launch_order(cells, draw=lambda: next(draws))
+    assert seed == accepted and count == 2
+    assert ordered == plan.launch_order(cells, accepted)
+    assert plan.launch_balance(ordered) < Fraction(1, 20)
+
+
+def test_redraw_stops_at_the_cap():
+    calls = []
+    with pytest.raises(BenchError) as error:
+        plan.draw_launch_order(_arm_cells(1, ("off", "candidate")), draw=lambda: calls.append(0) or 0)
+    assert error.value.code == "HB-PLN-001"
+    assert len(calls) == plan.MAX_DRAWS == 100
 
 
 def test_plan2_freezes_fields_hash_order_and_campaign_verbatim(tmp_path):
