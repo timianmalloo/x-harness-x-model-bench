@@ -4,7 +4,6 @@ The agent is run as the real script in a real process, as the engine runs it; no
 """
 
 import json
-import os
 import subprocess
 import sys
 from pathlib import Path

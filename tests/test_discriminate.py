@@ -9,12 +9,15 @@ import importlib.util
 import json
 import os
 import re
+import shutil
 import sys
+import uuid
 from pathlib import Path
 
 import pytest
+from conftest import CLEAN_PARENT
 
-from harness_bench import discriminate, oslock, readiness
+from harness_bench import archive, discriminate, oslock, readiness
 from harness_bench.errors import BenchError
 from harness_bench.grade import _env
 
@@ -52,11 +55,15 @@ def got(first):
 
 
 @pytest.fixture(scope="module")
-def first(tmp_path_factory):
+def first():
     """One real trial of disc_c, shared by the tests that only read its outcome."""
-    base = tmp_path_factory.mktemp("disc-c")
-    root = new_root(base)
-    return base, root, trial(base, root)
+    base = CLEAN_PARENT / uuid.uuid4().hex  # cells cannot be built under the operator's profile (HB-PRE-002)
+    base.mkdir(parents=True)
+    try:
+        root = new_root(base)
+        yield base, root, trial(base, root)
+    finally:
+        shutil.rmtree(base, onexc=archive.make_writable)
 
 
 def test_a_check_less_property_task_discriminates_without_a_host(first):
@@ -112,62 +119,62 @@ def test_record_body_is_a_pure_function_of_its_key(first):
     assert link["record_stem"] == result.record_path.stem
 
 
-def test_retry_at_an_unchanged_key_is_a_confirmation(tmp_path):
+def test_retry_at_an_unchanged_key_is_a_confirmation(base):
     """T-E4 / acceptance 4: a second trial in another run folder writes equal bytes and is `confirmed`, never HB-LED-007."""
-    root = new_root(tmp_path)
-    one = trial(tmp_path, root)
+    root = new_root(base)
+    one = trial(base, root)
     assert one.outcome == "written"
     before = digest(one.record_path)
-    two = trial(tmp_path, root)
+    two = trial(base, root)
     assert (one.outcome, two.outcome) == ("written", "confirmed")
     assert two.record_path == one.record_path and digest(two.record_path) == before
     assert two.run_id != one.run_id
-    assert len(list((tmp_path / "runs").glob("*/discrimination-link.json"))) == 2
+    assert len(list((base / "runs").glob("*/discrimination-link.json"))) == 2
 
 
-def test_no_link_after_hb_rdy_010(tmp_path):
+def test_no_link_after_hb_rdy_010(base):
     """T-E5a/b (R-98 conditions 1 and 2): a differing re-run raises HB-RDY-010 naming the first differing path and both
     values, leaves the stored bytes alone, and the failed run folder holds no link."""
-    root = new_root(tmp_path, "disc_flaky", counter=str(tmp_path / "counter.txt"))
-    one = trial(tmp_path, root, "DISC-FLAKY")
+    root = new_root(base, "disc_flaky", counter=str(base / "counter.txt"))
+    one = trial(base, root, "DISC-FLAKY")
     assert one.outcome == "written"
     before = digest(one.record_path)
-    seen = run_folders(tmp_path)
+    seen = run_folders(base)
     with pytest.raises(BenchError) as err:
-        trial(tmp_path, root, "DISC-FLAKY")
+        trial(base, root, "DISC-FLAKY")
     assert err.value.code == "HB-RDY-010"
     assert re.search(r"scores\.reference\.\w+", str(err.value))
     assert digest(one.record_path) == before
-    (failed,) = run_folders(tmp_path) - seen
-    assert not (tmp_path / "runs" / failed / "discrimination-link.json").exists()
+    (failed,) = run_folders(base) - seen
+    assert not (base / "runs" / failed / "discrimination-link.json").exists()
 
 
-def test_two_discriminate_calls_exactly_one_proceeds(tmp_path):
+def test_two_discriminate_calls_exactly_one_proceeds(base):
     """T-E20: the test holds the task's lock itself; the call is refused before it plans, so no run folder exists."""
-    root = new_root(tmp_path)
-    with oslock.RunLock.acquire(tmp_path / "runs" / f".discriminate-{TASK}.lock", "HB-RUN-005"):
-        with pytest.raises(BenchError) as err:
-            trial(tmp_path, root)
+    root = new_root(base)
+    lock = base / "runs" / f".discriminate-{TASK}.lock"
+    with oslock.RunLock.acquire(lock, "HB-RUN-005"), pytest.raises(BenchError) as err:
+        trial(base, root)
     assert err.value.code == "HB-RUN-005"
-    assert run_folders(tmp_path) == set()
+    assert run_folders(base) == set()
 
 
-def test_an_incomplete_engine_run_writes_no_record_and_names_the_cell(tmp_path, monkeypatch):
+def test_an_incomplete_engine_run_writes_no_record_and_names_the_cell(base, monkeypatch):
     """T-E21: an agent that exits non-zero fails its cell; nothing is written and the error names the cell."""
-    bad = tmp_path / "bad_agent.py"
+    bad = base / "bad_agent.py"
     bad.write_text("import sys\nsys.exit(3)\n", encoding="utf-8")
     monkeypatch.setattr(discriminate, "AGENT", bad)
-    root = new_root(tmp_path)
+    root = new_root(base)
     with pytest.raises(BenchError) as err:
-        trial(tmp_path, root)
+        trial(base, root)
     assert err.value.code == "HB-RDY-011" and f"{TASK}.synthetic-" in str(err.value)
     assert not (root / "bench" / "discrimination").exists() or not list((root / "bench" / "discrimination").rglob("*.json"))
-    assert not list((tmp_path / "runs").rglob("discrimination-link.json"))
+    assert not list((base / "runs").rglob("discrimination-link.json"))
 
 
-def test_a_leaked_temp_is_swept_before_the_write_and_never_by_a_reader(tmp_path):
+def test_a_leaked_temp_is_swept_before_the_write_and_never_by_a_reader(base):
     """T-E17: the writer sweeps `<name>.tmp-*` temps (files and folders) under its lock; a non-temp name survives."""
-    root = new_root(tmp_path)
+    root = new_root(base)
     folder = root / "bench" / "discrimination" / TASK
     folder.mkdir(parents=True)
     leaked = folder / f"x.json.tmp-1-{'a' * 32}"
@@ -176,7 +183,7 @@ def test_a_leaked_temp_is_swept_before_the_write_and_never_by_a_reader(tmp_path)
     leaked_dir.mkdir()
     keep = folder / "x.tmp-notes"
     keep.write_text("notes", encoding="utf-8")
-    result = trial(tmp_path, root)
+    result = trial(base, root)
     assert result.outcome == "written"
     assert result.record_path.exists()
     assert not leaked.exists() and not leaked_dir.exists() and keep.exists()
