@@ -148,7 +148,12 @@ def make_world(tmp_path, *, cells=None, kind="grid", reader: Callable | None = N
                admitted=("S1", "S2"), attach=True, final_power=True, fixes=0, eligible=True, plan_body=None):
     tmp_path.mkdir(parents=True, exist_ok=True)
     root = make_repo(tmp_path)
-    walk_to(root, "piloted")
+    walk_to(root, "baselined")
+    for n in range(fixes):  # a fix demotes `piloted` and `registered`, so fixes come before the pilot
+        before, after = "abcdef"[n] * 64, "abcdef"[n + 1] * 64
+        append(root, "defect_fix.admitted", defect_class=f"MOD-{n}", commit=f"{n}" * 40,
+               changes={"src/harness_bench/engine.py": [before, after]})
+    append(root, "pilot.passed")
     for task in ("S1", "S2"):
         append(root, "admission.decided", task=task, admitted=int(task in admitted), reason="kept")
     prereg = w0.prereg(method=method, m=m, min_pairs=min_pairs)
@@ -157,10 +162,6 @@ def make_world(tmp_path, *, cells=None, kind="grid", reader: Callable | None = N
         append(root, "power.recorded", role="final", input_hash=put(root, inputs, "power"))
     if kind == "grid":
         append(root, "registered", prereg_hash=put(root, prereg, "prereg"))
-    for n in range(fixes):
-        before, after = "abcdef"[n] * 64, "abcdef"[n + 1] * 64
-        append(root, "defect_fix.admitted", defect_class=f"MOD-{n}", commit=f"{n}" * 40,
-               changes={"src/harness_bench/engine.py": [before, after]})
     if attach:
         if kind == "grid":
             append(root, "grid.attached", run_id=RUN_ID, plan_hash="q" * 64)
@@ -484,7 +485,7 @@ def test_evu_7_exploratory_labels(tmp_path):
     for c in view.cells:
         if c.cell_id == "a":
             c.pack = "on"
-    world = make_world(tmp_path / "w")
+    world = make_world(tmp_path / "w", eligible=False)  # the page is a campaign report; the flipped cell label names no pair
     header = "Exploratory — see §3 Property verdicts for the pre-registered result"
     badge = "exploratory — not pre-registered"
     page = dom(html.render(view, archive_present=True, run_dir=run_dir, root=root_dir, campaign_obj=world.obj))

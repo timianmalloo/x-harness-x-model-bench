@@ -19,7 +19,7 @@ PACK_READERS_ALLOWED: dict[str, int] = {
     "plan.py": 12,  # Authoritative version adapter and frozen identity recipe.
     "report/cli_table.py": 7,
     "report/context_growth.py": 2,
-    "report/html.py": 40,  # X-H2 owns the header migration.
+    "report/html.py": 37,  # X-H2: the header reads plan_packs (three `.get("pack")` reads removed; decrease only).
     "report/pack_improvement.py": 8,
     "report/summaries.py": 5,
     "views.py": 1,
