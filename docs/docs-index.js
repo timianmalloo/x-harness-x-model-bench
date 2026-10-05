@@ -4258,6 +4258,41 @@ window.DOCS_INDEX = {
       "sourceSha256": "d35a8989cbc5eb2f8456f152825f7a70d3f79266c6567e2e24727038af97beb7"
     },
     {
+      "id": "plan-eval-x-j1a",
+      "path": "docs/plans/eval-x-j1a.md",
+      "title": "X-J1a: skeleton, assertion-red table and cell budget clock",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-19",
+      "reviewSuggested": [],
+      "summary": "J1a execution graph and measured skeleton, red and green evidence.",
+      "tags": [
+        "evaluation",
+        "coordination",
+        "execution-graph"
+      ],
+      "links": [
+        {
+          "to": "brief-eval-x-j1",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "Diagram 1",
+          "mermaid": "flowchart LR\n G --> S --> R --> C --> V --> H"
+        }
+      ],
+      "sourceSha256": "ef20ee320be857f0da7412b3321a29ec54426f0d22115dfefc798ec3a72e97cf"
+    },
+    {
       "id": "proof-phase2",
       "path": "docs/proof/phase2.md",
       "title": "Proof Pack - phase 2 (wave-by-wave joins)",
@@ -8603,7 +8638,8 @@ window.DOCS_INDEX = {
       "path": "docs/plans/eval-x-j1a.html",
       "title": "Eval X J1A",
       "kind": "knowledge-tool",
-      "description": "Open an interactive knowledge artifact."
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-j1a"
     },
     {
       "id": "surface-case-study",
@@ -8652,5 +8688,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "3142e9e244d070a65d37f7cd224c650795204200bfdd5e7db9112b85a95f5477"
+  "graphSha256": "966d5d782d6fb8124978688a6501685b4e85d8dce24ee232111bb04a3d1c5159"
 };

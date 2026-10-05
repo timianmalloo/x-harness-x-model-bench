@@ -4,11 +4,11 @@ title: "X-J1a: skeleton, assertion-red table and cell budget clock"
 type: doc
 owner: "@timianmalloo"
 status: proposed
+summary: "J1a execution graph and measured skeleton, red and green evidence."
 tags: [evaluation, coordination, execution-graph]
 links:
   - {to: brief-eval-x-j1, rel: implements}
   - {to: design-eval-multi-turn, rel: depends-on}
-  - {to: kb-graph-and-loop-engineering, rel: depends-on}
 review-by: "2026-10-19"
 ---
 
@@ -62,3 +62,35 @@ and decision edges remain. No planned test claims a result until executed.
 ## Delivery ledger
 
 Execution in progress. Measured durations and results will be recorded here.
+
+Verified skeleton: 3cde5fc6. Eight-file guard gate: exit 0, 200 passed in
+65.35 seconds. Existing driver/engine/archive/plan/error tests: exit 0,
+400 passed in 218.73 seconds. No new runtime module was introduced; every
+changed module already has an identity.CLASSES entry. No stored-plan reader
+was added, so T-E19 needs no new entry.
+
+Verified K3 red: afee24b4. 43 failed by assertion, 7 passed, 19.01 seconds.
+JUnit contains no error nodes, and each failure is an assertion. Required
+evidence: T-ENG-2 completed instead of timed_out; T-ENG-4 sum 7 instead of 12;
+T-ENG-6 prompt_sent{2} present after max_tokens; T-DRV-1 session/new count 2.
+The real CLI wiring row reaches its missing-snapshot assertion after real
+plan and run. Windows junctions, rather than privileged symlinks, exercise
+the link row. All transient fixture setup failures were corrected before
+the red commit; they are not counted as bug evidence.
+
+Seven green-on-arrival cases also pass with the integration base a26060c1's
+source imported from an archive inside this assigned cwd: single-turn wrapper
+success and EOF; final writer omission/hash; final-spelling hash/duplicate;
+valid mid-turn HB-CELL-118; both archive-reader guard cases. Three other
+CrashedTurnPredicate cases fail on that base, as expected. None was faked red.
+
+K4(1) uses lifecycle.is_cell_start in both engine and status. Status keeps
+the first matching row with setdefault. Owned test run: exit 0, 9 passed,
+41 strict xfailed in 20.63 seconds. Each expected failure names J1b, J1c or
+J1d; each later dispatch removes its own marker when the behaviour passes.
+
+The installed pack references kb-graph-and-loop-engineering, but this tree
+has no docs/knowledge directory or indexed artifact with that id. The
+execution standard itself was read from .claude/knowledge. A dangling typed
+link to the absent artifact was removed rather than inventing its identity.
+Remaining independent review is the Coordinator's join, with fan-out zero.
