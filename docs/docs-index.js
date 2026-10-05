@@ -1614,7 +1614,7 @@ window.DOCS_INDEX = {
       "phase": "",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "Measured spike for S2 under R-99: five probe classes (SQL injection, path traversal, cross-team authz, secret non-disclosure, tamper-refusal) each discriminate a reference app from a single-defect naive on bottle cbd569c4, with no probe touching the signed-cookie deserialization path. Awaiting RV-SEC and RV-TA.",
+      "summary": "Measured spike for S2 under R-99, re-run after the RV-SEC and RV-TA conditions (C1-C5): five probe classes (SQL injection, path traversal, cross-team authz, secret non-disclosure, tamper-refusal) each discriminate a reference app from a single-defect naive on bottle cbd569c4, with no probe touching the signed-cookie deserialization path. Tamper now reaches the signature check; leak scans errors and logs; each probe has a positive control.",
       "tags": [
         "spike",
         "s2",
@@ -1633,7 +1633,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "68d17931819fc30bf0f1879f37fb1bc3706b2b041845f7c149a11ba052ee52e6"
+      "sourceSha256": "8861e94c8fb2f1b6e57c4c2f6cac5a1601fa2dea2a9af5addf7b3dfdee52f3b1"
     },
     {
       "id": "note-catalog-0.5-anchors",
@@ -8645,5 +8645,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "3142e9e244d070a65d37f7cd224c650795204200bfdd5e7db9112b85a95f5477"
+  "graphSha256": "f88639212d91eedf8f7c068c346a79afd4e35836565b2b13a476bcd0ac4c9476"
 };
