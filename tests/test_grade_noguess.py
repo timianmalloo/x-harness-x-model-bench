@@ -7,12 +7,11 @@ from pathlib import Path
 import pytest
 
 from harness_bench import errors, identity
-from harness_bench.grade import Score, noguess
+from harness_bench.grade import noguess
 from harness_bench.grade import property as property_grader
 from harness_bench.grade.property import GradeContext
 
 
-@pytest.mark.xfail(strict=True, reason="LGb: no-guessing unresolved behavior")
 def test_noguess_unresolved_count():
     """W1-L section 15 K3: count == 2 fails on -1 by assertion, never KeyError/ImportError."""
     count, unresolved_names = noguess.unresolved(
@@ -41,21 +40,6 @@ def test_identity_planned_noguess_retired():
     """W0 rev 6.10 R6.10a: grade/noguess.py is classed and retired from PLANNED."""
     assert "grade/noguess.py" not in identity.PLANNED
     assert identity.CLASSES["grade/noguess.py"] == "grade"
-
-
-def test_noguess_grade_skeleton_returns_scores():
-    """Skeleton grade() returns Score(None, 'not built') for metrics."""
-    metrics = ["property_check_pass", "hallucinated_symbol_errors", "verified_before_use"]
-
-    import types
-
-    inp = types.SimpleNamespace(metrics=metrics)
-    res = noguess.grade(inp, GradeContext(30.0))  # type: ignore[arg-type]
-    assert set(res.keys()) == set(metrics)
-    for score in res.values():
-        assert isinstance(score, Score)
-        assert score.value is None
-        assert score.reason == "not built"
 
 
 def make_ng_input(
@@ -253,34 +237,39 @@ def test_noguess_compiled_runner_is_na_not_built(tmp_path: Path):
     """W1-L s15: task with a compiled runner scores NA 'not built for <runner>'."""
     inp = make_ng_input(tmp_path, Path("tasks/NG1"), runner_kind="dotnet")
     res = noguess.grade(inp, GradeContext(30.0))
-    assert res["hallucinated_symbol_errors"] == Score(None, "not built for dotnet")
-    assert res["property_check_pass"] == Score(None, "not built for dotnet")
+    assert res["hallucinated_symbol_errors"].value is None
+    assert res["hallucinated_symbol_errors"].reason == "not built for dotnet"
+    assert res["property_check_pass"].value is None
+    assert res["property_check_pass"].reason == "not built for dotnet"
 
 
 def test_ng_verified_before_use_is_na_not_built(tmp_path: Path):
     """W1-L s15: verified_before_use is NA 'not built' for every cell."""
     inp = make_ng_input(tmp_path, Path("tasks/NG1"))
     res = noguess.grade(inp, GradeContext(30.0))
-    assert res["verified_before_use"] == Score(None, "not built")
+    assert res["verified_before_use"].value is None
+    assert res["verified_before_use"].reason == "not built"
 
 
 def test_noguess_grade_cell_uses_registered_strategy(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     """W1-L s15: STRATEGIES line removed gives NA 'not built'."""
-    inp = make_ng_input(tmp_path, Path("tasks/NG1"))
+    import shutil
 
-    # When registered: grade_cell calls STRATEGIES['no-guessing']
-    monkeypatch.setitem(
-        property_grader.STRATEGIES,
-        "no-guessing",
-        lambda _inp, _ctx: {"property_check_pass": Score(1, None), "hallucinated_symbol_errors": Score(0, None)},
-    )
+    inp = make_ng_input(tmp_path, Path("tasks/NG1"))
+    ws = inp.archive / "ws"
+    shutil.copytree("tasks/NG1/workspace", ws, dirs_exist_ok=True)
+    shutil.copytree("tasks/NG1/oracle/solutions/naive", ws, dirs_exist_ok=True)
+
+    # When registered: grade_cell calls STRATEGIES['no-guessing'] -> noguess.grade
     scores = property_grader.grade_cell(inp)
-    assert scores["property_check_pass"] == Score(1, None)
-    assert scores["hallucinated_symbol_errors"] == Score(0, None)
+    assert scores["hallucinated_symbol_errors"].value == 2
+    assert scores["hallucinated_symbol_errors"].reason is None
 
     # When removed: grade_cell returns NA 'not built'
     monkeypatch.delitem(property_grader.STRATEGIES, "no-guessing")
     scores_removed = property_grader.grade_cell(inp)
     for s in scores_removed.values():
-        assert s == Score(None, "not built")
+        assert s.value is None
+        assert s.reason == "not built"
+
 
