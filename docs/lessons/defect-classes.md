@@ -27,6 +27,7 @@ summary: >-
 
 **Status counts:** controlled 13 · partially-controlled 7 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`. CAUSE-A is `observed` (2026-09-30).
 **Recurrence since last review:**
+- 2026-10-05 (Coordinator #24): a GUARD-A instance (X-C1, T-E19's stored-plan reader table, `req-01M45DBS0Y63YENHPR7CJY68VM`); TEST-E registered `candidate` (a test id built by prefixing one file's path onto another's node id ran as a pytest usage error).
 - 2026-10-04 (Coordinator #19, X-E's report): TEST-C, TEST-D and GUARD-A registered `candidate`; an EDIT-B instance (a heredoc mangled backslashes).
 - 2026-10-05 (Coordinator #18): DEP-A registered `candidate` (X-H1's "c reads nothing from a or b" was false: H1c calls H1b's `verdicts.seed_for`; found by Coordinator #17); BASE-A registered `observed` (R-105 c8: the dispatch base is coupled to the primary's working tree; its cause is a MUT-A instance, noted there).
 - 2026-10-04 (Coordinator #15): MARK-A registered (R-104 c9; the `join.json` marker copy; control red `467400a9`, green `09261fc2`); RUN-B registered `candidate` (three Grok deadline kills on feature-sized turns); a MUT-A instance (a session end left a mutant in the primary), MUT-A moved to `partially-controlled`; two MUT-E instances (A1b, J2a retargets).
@@ -869,8 +870,19 @@ summary: >-
 - **Signature:** a track adds a module under `src/harness_bench/`. A repo-wide guard reads every module: a literal list of modules (`test_only_driver_speaks_acp` asserts `== ["driver.py"]`; `identity.PLANNED`), or a scan for a forbidden literal (G1's arm literal, the atomic-site `copytree` scan). The new module fails it. The author learns of the guard only when the full suite runs after green, and then needs a fix commit or a seam request in another track's file.
 - **Why it survives:** the guards sit in other tracks' test files; the brief lists the module's own tests and acceptance items. Each guard is right; the cost is the late discovery.
 - **Instances:**
+  - `2026-10-05` X-C1 (`build/eval-x-c1`, Coordinator #24, `req-01M45DBS0Y63YENHPR7CJY68VM`): `campaign.run_facts` calls `plan.load_confirmed`, so X-E's T-E19 sweep (`tests/test_discriminate.py:558`, the exact set of stored-plan readers) failed until `"campaign.py"` joined the set (`d67efccc`, granted). The briefs had expected it (`x-e.md` R2-4, `x-int.md` item 6), but they put the edit at X-INT, not in X-C1's brief, so it still arrived as a request. Listed above X-E's line so that it does not collide with Coordinator #22's X-B2 line (`coord/eval-c22-xc1`), which is not yet joined. Prevented at brief time for X-C2: `x-c.md`'s Coordinator #24 section names the guard files, has them run on the skeleton commit, and pre-grants a new reader-set entry.
   - `2026-10-04` X-E (`build/eval-x-e`): `3aab1c8a` (no arm literal or `copytree` in `discriminate.py`, after green `179e3edd`); `req-01M451WM4JKQSA22RW4DAF31YE` (the `PLANNED` keys and the ACP-server exemption).
 - **Control (proposed):** the brief template for a track that adds a `src/` module names the repo-wide guard files (`tests/test_architecture.py`, `tests/test_identity.py`, `tests/test_atomic_sites.py`, the G1 ratchet tests), and the worker runs them on its skeleton commit, before red. Rung: always-loaded instruction once in the template. Upgrade trigger: a second instance; then a `tests/guards` marker the join gate runs first.
+- **Status:** `candidate`
+
+### TEST-E: a test id built by prefixing one file's path onto another file's node id runs as a pytest usage error (candidate)
+- **Signature:** a pytest argument is put together by hand from two sources, a file path and a node id that already carries its own `<file>::`, for example `tests/test_a.py::tests/test_b.py::test_x`. pytest cannot resolve it and exits with a usage error (exit 4). No test runs.
+- **Why it survives:** each part is right on its own, and the long id looks plausible in a command line. It costs one gate run, and it can be misread as a test failure.
+- **Instances:**
+  - `2026-10-05` reported by the Leader in Coordinator #24's prompt. The command and its author are not recorded here.
+- **Sweep (2026-10-05, Coordinator #24):** `git grep "py::tests/\|\.py::[^\"]*\.py"` over `tests/mutations`, `tools` and `docs/coordination` on `integrate/e1e4-17` and `build/eval-x-c1` found no committed id of this shape.
+- **Coverage:** inside `tests/mutations/*.json`, MUT-B's control (`tests/test_mutate_check.py::test_every_named_test_in_the_mutation_sets_exists`) already refuses the shape: the function name it extracts is the second path, which matches no `def` (Inferred from `:713-719`, not run). GATE-B's standing rule that a "no tests ran" exit (4 or 5) is a failure makes it loud, but nothing prevents it.
+- **Control (proposed):** brief gate lines give each node id as `<file>::<name>` from that one file (written into `x-c.md`'s Coordinator #24 gate). Rung: knowledge doc (brief text). Upgrade trigger: a second instance; then a helper in `tools/` that builds pytest arguments refuses an id with two `.py::` segments.
 - **Status:** `candidate`
 
 ### DEP-A: two sibling turns declared independent from their file lists, without checking the design's calls between them (candidate)

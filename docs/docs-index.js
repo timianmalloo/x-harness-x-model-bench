@@ -3743,7 +3743,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "fb31e37b1fcb1f4471ea3151e1eb5c35d778faaec2717d0f3baef7f2f54ad1ad"
+      "sourceSha256": "5b23ce96b19206aa312e13ad4979b32a17c7c9e5fe9e6b270d1b573393c72d75"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -5997,7 +5997,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5341f3282ed2f90a9cd35177724d382d7c4dc12ebfdc89a3ebda9a801b134d93"
+      "sourceSha256": "b3ad4bec9ee68ed76c0f0bb94f51d8e34e286a7696b246e32cf7a73c735849cc"
     },
     {
       "id": "brief-eval-x-cv",
@@ -7339,7 +7339,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "758de28f10a6fd6983dadc1c7126b401f7d707f3e180426f4c89f024daf7de59"
+      "sourceSha256": "4848907c58a07b7c3ad525a893e9fa266d9fe698e978e1245bbff902d01fc08a"
     },
     {
       "id": "coordination-eval-wave2-e234-briefs",
@@ -8295,5 +8295,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "b4d1c99dd32aa872fd3d4b499a69e05d468cc97b8c9b247aa1e795d64391494f"
+  "graphSha256": "e8715aa6935eb449d148c0369223add6afd35ccf3e9cc2302fd0f2108e420987"
 };
