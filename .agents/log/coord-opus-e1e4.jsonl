@@ -143,3 +143,4 @@
 {"agent": "coord-opus-e1e4", "at": 1791208710.7799652, "kind": "session-end", "path": "-", "seq": 143, "session": "coord-opus-e1e4", "wi": "WI-0", "worktree": "x-harness-x-model-bench-coord-eval-c26-xc3"}
 {"agent": "coord-opus-e1e4", "at": 1791208711.04896, "kind": "session-end", "path": "-", "seq": 144, "session": "coord-opus-e1e4", "wi": "WI-0", "worktree": "x-harness-x-model-bench-coord-eval-c27-xc3b"}
 {"agent": "coord-opus-e1e4", "at": 1791208711.2964091, "kind": "session-end", "path": "-", "seq": 145, "session": "coord-opus-e1e4", "wi": "WI-0", "worktree": "x-harness-x-model-bench-coord-eval-c28-xint"}
+{"agent": "coord-opus-e1e4", "at": 1791210152.413623, "kind": "session-start", "path": "-", "seq": 146, "session": "coord-opus-e1e4", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-coord-eval-c29-plan"}
