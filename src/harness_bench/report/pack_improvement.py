@@ -32,6 +32,7 @@ import yaml
 from harness_bench import profiles
 from harness_bench.board import Board, _cell_task_rep
 from harness_bench.grade.cost import ACP_MISSES_CALLS, SESSION_TOTALS
+from harness_bench.plan import cell_arm
 from harness_bench.stats import fisher_exact_two_sided, holm
 from harness_bench.telemetry import ProcessTrace, ToolInput, claude_code, codex, copilot
 from harness_bench.views import CellView, Measure, RunView, rows, sum_tokens
@@ -743,8 +744,8 @@ def population_caveats(view: RunView) -> tuple[str, ...]:
     guessed into a bucket."""
     planned: dict[tuple[str, str], int] = {}
     for c in view.plan.get("cells") or []:
-        if isinstance(c, dict) and isinstance(c.get("combo"), str) and isinstance(c.get("pack"), str):
-            key = (c["combo"], c["pack"])
+        if isinstance(c, dict) and isinstance(c.get("combo"), str) and ("arm" in c or "pack" in c):
+            key = (c["combo"], cell_arm(c))
             planned[key] = planned.get(key, 0) + 1
     valid: dict[tuple[str, str], int] = {}
     for c in view.cells:

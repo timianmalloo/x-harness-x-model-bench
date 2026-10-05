@@ -243,4 +243,61 @@
       "tests/test_plan.py::test_load_confirmed_reads_legacy_and_refuses_a_future_schema"
     ]
   }
+  ,
+  {
+    "name": "A1b report admits discrimination runs",
+    "file": "src/harness_bench/views.py",
+    "find": "if kind != \"measurement\":",
+    "replace": "if False:",
+    "tests": ["tests/test_views.py::test_views_refuses_nonmeasurement_confirmed_run"]
+  },
+  {
+    "name": "A1b named arm reads the base instead of installed pack",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "if cell_arm(cell) == config.ARM_OFF:",
+    "replace": "if True:",
+    "tests": ["tests/test_changes_cache.py::test_pre_turn_commit_treats_every_non_off_arm_as_pack_bearing"]
+  },
+  {
+    "name": "A1b workspace ignores the arm pack",
+    "file": "src/harness_bench/cli.py",
+    "find": "pack = plan.arm_pack(p, arm)",
+    "replace": "pack = None",
+    "tests": ["tests/test_workspace.py::test_workspace_builder_installs_each_arms_own_pack_and_exact_manifest"]
+  },
+  {
+    "name": "A1b ranking header invents a single revision",
+    "file": "src/harness_bench/report/summaries.py",
+    "find": "else \"several packs\" if packs else \"not recorded\"",
+    "replace": "else \"not recorded\"",
+    "tests": ["tests/test_views.py::test_ranking_header_states_zero_one_or_several_packs"]
+  },
+  {
+    "name": "A1b property tag check removed",
+    "file": "src/harness_bench/config.py",
+    "find": "if \"property\" in m and m[\"property\"] not in PROPERTY_NAMES:",
+    "replace": "if False:",
+    "tests": ["tests/test_config.py::test_catalog_refuses_invalid_property_and_secondary_graders"]
+  },
+  {
+    "name": "A1b secondary grader checks removed",
+    "file": "src/harness_bench/config.py",
+    "find": "secondary = m.get(\"also_graded_by\", [])",
+    "replace": "secondary = []",
+    "tests": ["tests/test_config.py::test_catalog_refuses_invalid_property_and_secondary_graders"]
+  },
+  {
+    "name": "A1b board hides several packs",
+    "file": "src/harness_bench/board.py",
+    "find": "base_rev = (plan_pack(base.plan or {}) or {}).get(\"revision\")",
+    "replace": "base_rev = None",
+    "tests": ["tests/test_views.py::test_board_comparison_reads_zero_or_one_arm_pack"]
+  },
+  {
+    "name": "A1b G1 ignores pack attributes",
+    "file": "tests/test_arms_guard.py",
+    "find": "or (isinstance(n, ast.Attribute) and n.attr == \"pack\")",
+    "replace": "or False",
+    "tests": ["tests/test_arms_guard.py::test_pack_guard_detects_each_form_in_a_real_file"]
+  }
 ]

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from harness_bench import cli, config, gitsafe, plan, workspace
+from harness_bench import cli, gitsafe, plan, workspace
 from harness_bench.errors import BenchError
 
 pytestmark = pytest.mark.native
@@ -40,8 +40,29 @@ def test_workspace_builder_installs_each_arms_own_pack_and_exact_manifest(base, 
         repo.mkdir()
         shutil.copytree(ROOT / "docs/ai-forward-pack/scripts", repo / "pack/scripts")
         shutil.copytree(ROOT / ".claude/knowledge", repo / "pack/knowledge")
-        shutil.copytree(ROOT / ".agents/skills", repo / "pack/skills")
+        shutil.copytree(ROOT / ".agents/skills", repo / "pack/commands")
+        shutil.copytree(ROOT / "docs/ai-forward-pack/templates", repo / "pack/templates")
         (repo / "pack/adapters").mkdir()
+        shutil.copytree(ROOT / "docs/ai-forward-pack/hooks", repo / "pack/adapters/hooks")
+        for name in ("README.md", "OVERVIEW.md", "research-synthesis.md", "context-budget.json"):
+            shutil.copyfile(ROOT / "docs/ai-forward-pack" / name, repo / "pack" / name)
+        for name, text in {
+            "codex/codex.md": "Fixture Codex guide\n",
+            "grok/grok-surface.md": "Fixture Grok guide\n",
+            "antigravity/agy-surface.md": "Fixture Antigravity guide\n",
+            "hooks/grok.ai-forward-hooks.json": '{}\n',
+            "hooks/agy.ai-forward-hooks.json": '{}\n',
+            "hooks/claude-code.settings.hooks.json": '{}\n',
+            "managed-blocks/AGENTS.block.md": f"<!-- AI-FORWARD-PACK:BEGIN -->\n{arm}\n<!-- AI-FORWARD-PACK:END -->\n",
+            "managed-blocks/CLAUDE.block.md": "<!-- AI-FORWARD-PACK:BEGIN -->\nfixture\n<!-- AI-FORWARD-PACK:END -->\n",
+        }.items():
+            path = repo / "pack/adapters" / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+        for adapter in ("claude-code/agents", "copilot/agents"):
+            folder = repo / "pack/adapters" / adapter
+            folder.mkdir(parents=True)
+            (folder / ".keep").write_text("fixture directory", encoding="utf-8")
         (repo / "pack/adapters/INSTALL.md").write_text(f"revision: {revision}\n", encoding="utf-8")
         for args in (["init", "-q"], ["add", "-A"], ["commit", "-qm", arm]):
             gitsafe.git(args, cwd=repo, timeout=60, identity=True)

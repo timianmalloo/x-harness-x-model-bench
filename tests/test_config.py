@@ -37,6 +37,18 @@ def test_catalog_accepts_each_property_and_distinct_secondary_grader():
         assert problems.items == []
 
 
+def test_pilot_ring_pins_r89_combo_repetitions_and_roles():
+    matrix = config.load_yaml(ROOT / "bench/rings/pilot.yaml")
+    problems = config.Problems()
+    config.validate_matrix(matrix, config.load_yaml(ROOT / "bench/bom.yaml"), problems, "pilot")
+    assert problems.items == []
+    assert matrix["schema"] == "bench-matrix/2" and matrix["ring"] == {"tag": "pilot"}
+    assert matrix["repetitions"] == 3
+    assert matrix["arms"] == [{"id": "off"}, {"id": "candidate"}]
+    assert matrix["comparisons"] == [["off", "candidate"]]
+    assert matrix["combos"] == [{"id": "cc-opus", "harness": "claude-code", "model": "claude-opus-5-5"}]
+
+
 def _arms_matrix(tmp_path):
     return {"schema": "bench-matrix/2", "repetitions": 3, "bom": {"subset": ["X1"]},
             "arms": [{"id": "off"}, {"id": "candidate", "pack": {

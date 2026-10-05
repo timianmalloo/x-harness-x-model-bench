@@ -97,6 +97,26 @@ def test_population_caveat_reads_version_two_cell_arms():
     assert any("candidate" in line and "0 of 1" in line for line in pack_improvement.population_caveats(view))
 
 
+def test_two_named_arms_do_not_claim_a_single_pack_setting(root, tmp_path):
+    from dataclasses import replace
+
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    view = views.load(run_dir)
+    original = view.cells[0]
+    view.cells = [replace(original, pack="off"), replace(original, pack="candidate")]
+    result = board.build(view, composites.load_catalog(root))
+    assert "one pack setting" not in result.pack_effect.status
+    assert "not computed" in result.pack_effect.status
+
+
+@pytest.mark.parametrize("packs,expected", [({}, None), ({"candidate": {"revision": 7}}, 7)])
+def test_board_comparison_reads_zero_or_one_arm_pack(root, packs, expected):
+    frozen = {"arms": {a: {"pack": p} for a, p in packs.items()}}
+    a = views.RunView("a", frozen, True, "g", "0.7.dev", [])
+    b = views.RunView("b", frozen, True, "g", "0.7.dev", [])
+    assert board.compare(a, b, composites.load_catalog(root)).same_pack_revision == expected
+
+
 def _usage(cell_id: str, model: str, output: int = 50) -> dict:
     return {"kind": "turn_usage", "run_id": "r1", "cell_id": cell_id, "attempt": 1, "model": model,
             "uncached_input": 100, "cache_read": 1000, "cache_write": 10, "output": output, "reasoning": 0}

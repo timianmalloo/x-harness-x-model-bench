@@ -25,6 +25,7 @@ from harness_bench.errors import BenchError
 from harness_bench.gateway import backend as gw_backend
 from harness_bench.gateway import request as gw_request
 from harness_bench.gateway import schema as gw_schema
+from harness_bench.plan import plan_packs
 from harness_bench.stats import no_detectable_effect
 
 KIND_RANKING = "ranking"
@@ -174,7 +175,9 @@ def _entry(id_: str, data: bytes) -> dict:
 def _header_facts(view: views.RunView) -> bytes:
     """The header facts section 8 allows into the ranking manifest: run id, catalog version, pack revision --
     nothing else (never transcripts or agent text)."""
-    pack_rev = (view.plan.get("pack") or {}).get("revision")
+    packs = plan_packs(view.plan)
+    pack_rev = (next(iter(packs.values())).get("revision", "not recorded") if len(packs) == 1
+                else "several packs" if packs else "not recorded")
     return ledger.canonical({"run_id": view.run_id, "catalog_version": view.catalog_version, "pack_revision": pack_rev})
 
 

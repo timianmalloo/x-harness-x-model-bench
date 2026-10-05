@@ -38,7 +38,7 @@ from pathlib import Path
 
 from harness_bench import archive, ledger, profiles
 from harness_bench.errors import BenchError, Cause
-from harness_bench.plan import cell_arm, load_confirmed, resolved_model_map
+from harness_bench.plan import cell_arm, kind_of, load_confirmed, resolved_model_map
 from harness_bench.telemetry import (
     Extraction,
     ModelCall,
@@ -535,6 +535,9 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
 
 def load(run_dir: Path, catalog_version: str | None = None) -> RunView:
     plan = load_confirmed(run_dir)
+    kind = kind_of(plan)
+    if kind != "measurement":
+        raise BenchError("HB-PLN-004", f"reports require measurement runs; plan kind is {kind}")
     facts = {f: rows(run_dir, f) for f in FACTS}
     _refuse_duplicates(facts)
     grading_id, catalog = _current_pass(facts["events"], catalog_version)

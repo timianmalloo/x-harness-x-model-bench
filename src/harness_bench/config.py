@@ -243,6 +243,22 @@ def validate_metrics(
                 p.add(where, f"{area_id}.{mid}: better must be higher or lower")
             if m.get("grader") not in grader_modules:
                 p.add(where, f"{area_id}.{mid}: grader {m.get('grader')!r} has no module in harness_bench.grade")
+            if "property" in m and m["property"] not in PROPERTY_NAMES:
+                p.add(where, f"{area_id}.{mid}: property must be one of {PROPERTY_NAMES}, got {m['property']!r}")
+            secondary = m.get("also_graded_by", [])
+            if not isinstance(secondary, list):
+                p.add(where, f"{area_id}.{mid}: also_graded_by must be a list of grader modules")
+            else:
+                seen_secondary = set()
+                for grader in secondary:
+                    if not isinstance(grader, str) or grader not in grader_modules:
+                        p.add(where, f"{area_id}.{mid}: also_graded_by {grader!r} has no module in harness_bench.grade")
+                        continue
+                    if grader == m.get("grader"):
+                        p.add(where, f"{area_id}.{mid}: also_graded_by must differ from grader {grader!r}")
+                    if grader in seen_secondary:
+                        p.add(where, f"{area_id}.{mid}: also_graded_by repeats {grader!r}")
+                    seen_secondary.add(grader)
             kind = m.get("kind")
             weight = m.get("weight", 0)
             if kind == "derived" and weight > 0:
