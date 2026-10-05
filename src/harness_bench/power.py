@@ -169,11 +169,13 @@ def analyse(inputs: Mapping) -> dict[str, PowerResult]:
             p0 = 0.5
             assumed.append("control_rate")
         else:
+            _reject(_open_unit(raw_rate), "control_rate")
             p0 = float(raw_rate)
         if pairing_unit == "task-harness-rep":
             raw_psi = body.get("discordance", "assumed")
             if raw_psi == "assumed":
                 p1 = p0 + mde_f
+                _reject(p1 <= 1.0, "mde")
                 psi = p0 * (1.0 - p1) + p1 * (1.0 - p0)
                 assumed.append("discordance")
             else:
@@ -182,6 +184,7 @@ def analyse(inputs: Mapping) -> dict[str, PowerResult]:
             exact = n_paired_exact(psi, mde_f, alpha_f, power_f)
             sizer: Callable[[float], float] = partial(_paired_n, psi, alpha_f, power_f)
         else:
+            _reject(p0 + mde_f <= 1.0, "mde")
             exact = n_unpaired_exact(p0, p0 + mde_f, alpha_f, power_f)
             sizer = partial(_unpaired_n, p0, alpha_f, power_f)
         n = _snap(exact)

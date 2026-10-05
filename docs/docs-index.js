@@ -1970,7 +1970,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "04e9dea58a101724ff0d20cff81549b7e5c55e33a3020730923f279ec7e2234a"
+      "sourceSha256": "49ccd33743dd2207b676ef21dcdf6445c15aa87d261c9fb5599d1f07dd4aed37"
     },
     {
       "id": "design-eval-arms",
@@ -3743,7 +3743,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "34c8202580e6447302af765cd7048d021d6c2cf40db65c30782c6b051d51d134"
+      "sourceSha256": "556aa59f62ed3747609ca9f762ba3d5742b407baa1bef28741c26c29b3d17bd5"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -6212,7 +6212,7 @@ window.DOCS_INDEX = {
       "phase": "",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "X-H1 builds power.py, verdicts.py and gates.py of W1-H rev 2 (stdlib only, pure functions) under W0 rev 6 on Grok grok-4.7 high, in three turns: power, then verdicts and gates as two parallel turns, each red and green in one turn.",
+      "summary": "X-H1 builds power.py, verdicts.py and gates.py of W1-H rev 2 (stdlib only, pure functions) under W0 rev 6, in three serial turns a -> b -> c (gates calls verdicts.seed_for), each red and green in one turn; a ran on Grok grok-4.7 high, b and c run as Claude Sonnet from integrate/e1e4-17 under R-105 while the primary is blocked (Coordinator #18).",
       "tags": [],
       "links": [
         {
@@ -6233,7 +6233,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "bc2325d78f60f85a3962358971b49414ff24961cdb41a1d8979ac1a7b5187068"
+      "sourceSha256": "eb2b0c5c7f22a9085d1cc7542d47a37aa1263fad49fb20aa110091a5cf5347c1"
     },
     {
       "id": "brief-eval-x-h2",
@@ -7339,7 +7339,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "832a4f1c36e83b7f38c7acd2f6514f8206dcb23e86528f6d2350c8cd9f3f3569"
+      "sourceSha256": "53c49b81c08b9f1bfc3fc4a756da7222f1dd87db70f2a31c286457565e3ab573"
     },
     {
       "id": "coordination-eval-wave2-e234-briefs",
@@ -8295,5 +8295,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "b241190ad356dc51ca303c844bb385f7cb6cdc9805d7db8d0bb346d8fd3ea7d0"
+  "graphSha256": "6c5dfb1ddacd6e1858453462a393da4ac12c9eb364e48ec75cbfcdda183aee74"
 };
