@@ -30,10 +30,14 @@ import time
 from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
+from decimal import Decimal
 from pathlib import Path
+
+import yaml
 
 from harness_bench import (
     atomic,
+    config,
     gitsafe,
     identity,
     ledger,
@@ -42,6 +46,7 @@ from harness_bench import (
     readiness,
     status,
 )
+from harness_bench import power as power_model
 from harness_bench.errors import BenchError
 from harness_bench.grade.property import check_segment
 
@@ -686,9 +691,11 @@ def _attached_runs(state: CampaignState | None) -> list[str]:
 def _lock_refusal(exc: BenchError, root: Path, campaign_id: str) -> BenchError:
     if exc.code == "HB-CMP-001":
         return BenchError("HB-CMP-001", f'campaign "{campaign_id}" is being written. Retry in a moment.')
-    if exc.code == "HB-CMP-004":
-        run = next(iter(re.findall(r"runs[\\/]([^\\/]+)", exc.message)), "?")
-        return BenchError("HB-CMP-004", f'run "{run}" is being graded. A campaign write must not be open during a grading pass. Wait for the pass to finish.')
+    if exc.code == "HB-CMP-004":  # W0 rev 6 R6-4: the copy names the lock that is held (`grade.lock` or the run lock `.lock`)
+        found = re.search(r"runs[\\/]([^\\/]+)[\\/](grade\.lock|\.lock)", exc.message)
+        run, lock = found.groups() if found else ("?", "lock")
+        return BenchError("HB-CMP-004", f'run "{run}" holds {lock}. A campaign write must not overlap a grading pass or a live run. '
+                                        "Wait for it to finish or stop the run.")
     return exc
 
 
@@ -700,17 +707,22 @@ def _precheck(root: Path, campaign_id: str, create: bool) -> None:
         raise _unknown(root, campaign_id)
 
 
-def _locked(root: Path, campaign_id: str, others_extra: Sequence[tuple[Path, str]], wait_s: float, create: bool):
-    """Acquire `campaign.lock` and probe the attached runs' `grade.lock`s in one `acquire_then_probe` call. Lock first, then
-    read: the probe set is read lock-free first, and a run attached in between is caught by the re-read and retried."""
+def _locked(root: Path, campaign_id: str, others_extra: Sequence[tuple[Path, str]], wait_s: float, create: bool,
+            run_locks: bool = False, between=None):
+    """Acquire `campaign.lock` and probe the attached runs' `grade.lock`s (and, for `run_locks`, their run locks) in one
+    `acquire_then_probe` call. Lock first, then read: the probe set is read lock-free first, and a run attached in between is
+    caught by the re-read and retried. `others_extra` is the command's own argument run."""
     deadline = time.monotonic() + wait_s
     path = lock_path(root, campaign_id)
     for _ in range(3):
         runs = _attached_runs(read(root, campaign_id) if (campaign_dir(root, campaign_id) / "ledger.jsonl").exists() else None)
-        others = [(root / "runs" / run / "grade.lock", "HB-CMP-004") for run in runs] + list(others_extra)
+        others = [(root / "runs" / run / "grade.lock", "HB-CMP-004") for run in runs]
+        if run_locks:
+            others += [(root / "runs" / run / ".lock", "HB-CMP-004") for run in runs]
+        others += list(others_extra)
         while True:
             try:
-                lock = oslock.acquire_then_probe(path, "HB-CMP-001", others)
+                lock = oslock.acquire_then_probe(path, "HB-CMP-001", others, between=between)
                 break
             except BenchError as exc:
                 if time.monotonic() >= deadline:
@@ -726,12 +738,12 @@ def _locked(root: Path, campaign_id: str, others_extra: Sequence[tuple[Path, str
 
 @contextmanager
 def session(root: Path, campaign_id: str, *, others_extra: Sequence[tuple[Path, str]] = (), wait_s: float = 0.0,
-            create: bool = False) -> Iterator[Session]:
+            create: bool = False, run_locks: bool = False, between=None) -> Iterator[Session]:
     """The one Execute-Around of every write command: validate, `lstat` the chain, lock-and-probe, read, verify, sweep, run,
     close the writer, release. `others_extra` is the command's own extra probe entries (C2: the run locks)."""
     campaign_id = validate_id("campaign", campaign_id)
     _precheck(root, campaign_id, create)
-    lock = _locked(root, campaign_id, others_extra, wait_s, create)
+    lock = _locked(root, campaign_id, others_extra, wait_s, create, run_locks, between)
     sess: Session | None = None
     try:
         ledger_file = campaign_dir(root, campaign_id) / "ledger.jsonl"
@@ -812,3 +824,414 @@ def status_text(root: Path, campaign_id: str) -> tuple[str, list[Finding]]:
     errors = [f for f in findings if f.level == "error"]
     result = "ok" if not errors else f"failed ({len(errors)} findings)"
     return f"campaign {campaign_id}: state {state.state}, rows {len(state.rows)}, verify {result}", findings
+
+
+# --- C2a commands: baseline, fix, power, attach, conclude, abandon; check_plan and run_side_check -----------------------------
+
+_DEFECT_CLASS = r"^[A-Z]+-[A-Z0-9]+$"
+_COMMIT = r"^[0-9a-f]{7,40}$"
+_DECIMALS = frozenset({"alpha", "power", "mde", "control_rate", "discordance", "sd", "rep_spread"})  # decimal strings in the file, Decimal for `analyse`
+SPIKE_E4 = "docs/notes/spike-e4-post-turn-prompt.md"  # simplify: ceiling one spike; upgrade trigger a second spike precondition
+_DEFECT_CLASSES = "docs/lessons/defect-classes.md"
+_DIRTY_PATHS = ("src/harness_bench", "bench/bom.yaml", "bench/metrics.yaml", "bench/prices.yaml", "bench/gateway.yaml", "bench/profiles",
+                "bench/rubrics", "uv.lock")
+_FLAT_COMPONENTS = {"catalog": ("bench/metrics.yaml", "bench/rubrics"), "prices": ("bench/prices.yaml",), "gateway": ("bench/gateway.yaml",),
+                    "bom": ("bench/bom.yaml",), "uv.lock": ("uv.lock",)}
+
+
+class _Float(str):
+    """A JSON float, kept as its text so the command can name the field: the canonical form has none."""
+
+
+def validate_defect_class(value: str) -> str:
+    if not isinstance(value, str) or not re.fullmatch(_DEFECT_CLASS, value):
+        raise BenchError("HB-USR-002", f'defect class "{value}" is malformed ({_DEFECT_CLASS}). Use a class id such as MOD-A.')
+    return value
+
+
+def validate_commit(value: str) -> str:
+    if not isinstance(value, str) or not re.fullmatch(_COMMIT, value):
+        raise BenchError("HB-USR-002", f'commit "{value}" is malformed ({_COMMIT}). Use a commit hash of 7 to 40 hex digits.')
+    return value
+
+
+def _no_change(text: str) -> str:
+    return f"no change: {text}"
+
+
+def _tasks_of(effective: Mapping) -> list[str]:
+    return sorted(key.split("/", 1)[1] for key in effective["components"] if key.startswith("tasks/"))
+
+
+def _display(key: str) -> str:
+    return key.removeprefix("src/harness_bench/")
+
+
+def _head(root: Path) -> str | None:
+    result = _git(root, "rev-parse", "--verify", "-q", "HEAD")
+    return result.stdout.strip() if _ok(result) else None
+
+
+def default_tasks(root: Path) -> list[str]:
+    """The BOM's tasks whose `task.yaml` carries a `property` block, in BOM order (the property tasks)."""
+    out = []
+    for entry in config.load_yaml(root / "bench" / "bom.yaml").get("tasks", []):
+        path = root / "tasks" / entry["id"] / "task.yaml"
+        if path.is_file() and "property" in config.load_yaml(path):
+            out.append(entry["id"])
+    return out
+
+
+def _task_status(root: Path, task: str) -> str:
+    path = root / "tasks" / task / "task.yaml"
+    return str(config.load_yaml(path).get("status", "absent")) if path.is_file() else "absent"
+
+
+def _spike_status(root: Path) -> str:
+    path = root / SPIKE_E4
+    parts = path.read_text(encoding="utf-8").split("---", 2) if path.is_file() else []
+    try:
+        front = yaml.safe_load(parts[1]) if len(parts) == 3 else None
+    except yaml.YAMLError:
+        front = None
+    return str(front.get("status")) if isinstance(front, dict) and "status" in front else "absent"
+
+
+def _catalog_unmet(root: Path) -> str | None:
+    path = root / "bench" / "catalog-freeze.yaml"
+    versions = config.load_yaml(path).get("versions") or {} if path.is_file() else {}
+    entry = {str(k): v for k, v in versions.items()}.get("0.7")
+    if not isinstance(entry, dict):
+        return "catalog 0.7 is not frozen in bench/catalog-freeze.yaml. Run the catalog freeze."
+    frozen, now = str(entry.get("catalog_hash")), identity.catalog_hash(root)
+    if frozen != now:
+        return f"catalog 0.7 is frozen at {frozen[:12]} but the tree's catalog is {now[:12]}. Run the catalog freeze again."
+    return None
+
+
+def baseline_unmet(root: Path, tasks: Sequence[str]) -> list[str]:
+    """Every unmet precondition of `baseline` (W1-C section 5), each ending with its action; empty means it may run."""
+    out: list[str] = []
+    if _head(root) is None:
+        out.append("the repository has no commit yet. Commit the tree, then run baseline again.")
+    paths = [*_DIRTY_PATHS, *[f"tasks/{task}" for task in tasks]]
+    status_out = _git(root, "status", "--porcelain", "-uall", "-z", "--", *paths)
+    if not _ok(status_out):
+        out.append("git status could not be read. Fix the repository, then run baseline again.")
+    out += [f'component "{entry[3:]}" has an uncommitted change. Commit or discard it, then run baseline again.'
+            for entry in filter(None, status_out.stdout.split("\0"))]
+    out += [f'task "{task}" is not ready (status {state}). Finish authoring it.' for task in tasks if (state := _task_status(root, task)) != "ready"]
+    if (unmet := _catalog_unmet(root)) is not None:
+        out.append(unmet)
+    if (state := _spike_status(root)) != "accepted":
+        out.append(f"spike E4 is not accepted ({SPIKE_E4} status is {state}). Complete the spike.")
+    return out
+
+
+def _refuse_first(code: str, items: Sequence[str]) -> BenchError:
+    more = f" (+{len(items) - 1} more)" if len(items) > 1 else ""
+    return BenchError(code, f"{items[0]}{more}")
+
+
+def _terminal(state: CampaignState, action: str) -> BenchError:
+    return BenchError("HB-CMP-002", f'{action} is not legal in state {state.state} for campaign "{state.campaign_id}". '
+                                    f"Run bench campaign status {state.campaign_id} to see the next step.")
+
+
+def baseline(root: Path, campaign_id: str, tasks: Sequence[str] | None = None) -> str:
+    """`bench campaign baseline`: the full manifest as `identity/<h>.json`, then the row. Later: a no-op while the tree equals the effective
+    identity, else a refusal. *assume:* the manifest is taken with no installed builds (`builds=None`); confirm by `identity.manifest`'s own
+    signature; if false, a campaign that wants builds in its identity records them in a new component, not here."""
+    with session(root, campaign_id) as s:
+        state = s.state
+        if state.state in ("concluded", "abandoned"):
+            raise _terminal(state, "baseline")
+        if state.state != "draft":
+            effective = effective_identity(root, state)
+            now = identity.manifest(root, _tasks_of(effective))
+            if now["components"] == effective["components"]:
+                return _no_change(f'campaign "{campaign_id}" is baselined and the tree equals the effective identity')
+            raise BenchError("HB-CMP-006", f"the tree differs from the effective identity at {', '.join(identity.diff(effective, now))}. "
+                                          "Only a recorded fix changes the engine: bench campaign fix.")
+        names = list(tasks) if tasks else default_tasks(root)
+        if unmet := baseline_unmet(root, names):
+            raise _refuse_first("HB-CMP-006", unmet)
+        manifest = identity.manifest(root, names)
+        data = ledger.canonical(manifest)
+        digest = hashlib.sha256(data).hexdigest()
+        folder = campaign_dir(root, campaign_id) / "identity"
+        folder.mkdir(exist_ok=True)
+        atomic.create_once(folder / f"{digest}.json", data)  # the content file first, then its row (W0 rev 6 R6-3)
+        head = _head(root) or ""
+        _append(s, "baseline.recorded", identity_hash=digest, bench_commit=head)
+        return f'baselined campaign "{campaign_id}" at {head[:12]} (identity {digest[:12]})'
+
+
+def _component_paths(key: str) -> tuple[str, ...]:
+    """The repository paths that hold one identity component (none for a measured fact such as `platform`)."""
+    if key.startswith(("src/harness_bench/", "tasks/")):
+        return (key,)
+    if key.startswith("profiles/"):
+        return (f"bench/profiles/{key.split('/', 1)[1]}.yaml",)
+    return _FLAT_COMPONENTS.get(key, ())
+
+
+def _scope(keys: Sequence[str]) -> str:
+    sides: set[str] = set()
+    for key in keys:
+        probe = {"schema": identity.SCHEMA, "components": {key: ""}}
+        sides |= {which for which in ("run", "grade") if identity.side(probe, which)["components"]}
+    return "both" if len(sides) == 2 else next(iter(sides))
+
+
+def fix(root: Path, campaign_id: str, defect_class: str, commit: str, components: Sequence[str]) -> str:
+    """`bench campaign fix`: a recorded defect fix (ADR-0017 section 4). The named components must equal the differing set exactly, and
+    the tree must hold what `commit` holds for each. `scope` is computed from the keys, never accepted."""
+    defect_class, commit, names = validate_defect_class(defect_class), validate_commit(commit), sorted(set(components))
+    with session(root, campaign_id) as s:
+        state = s.state
+        if state.state not in ("baselined", "piloted", "registered", "measuring"):
+            raise _terminal(state, "a fix")
+        effective = effective_identity(root, state)
+        classes = root / _DEFECT_CLASSES
+        heading = re.compile(rf"^#{{2,4}}\s+{re.escape(defect_class)}\s*[:—–-]", re.MULTILINE)
+        if not classes.is_file() or not heading.search(classes.read_text(encoding="utf-8")):
+            raise BenchError("HB-CMP-007", f'defect class "{defect_class}" is not in {_DEFECT_CLASSES}. Record the class first.')
+        resolved = _git(root, "rev-parse", "--verify", "-q", f"{commit}^{{commit}}")
+        if not _ok(resolved) or not _ok(_git(root, "merge-base", "--is-ancestor", resolved.stdout.strip(), "HEAD")):
+            raise BenchError("HB-CMP-007", f'commit "{commit}" is not an ancestor of HEAD. Commit the fix.')
+        full = resolved.stdout.strip()
+        now = identity.manifest(root, _tasks_of(effective))["components"]
+        have = effective["components"]
+        for row in state.rows:
+            if (row["kind"] == "defect_fix.admitted" and row["defect_class"] == defect_class and row["commit"] == full
+                    and set(row["changes"]) == set(names) and all(have.get(k) == pair[1] for k, pair in row["changes"].items())):
+                return _no_change(f'fix {defect_class} at {full[:12]} is already recorded')
+        differ = sorted(key for key in have.keys() | now.keys() if have.get(key) != now.get(key))
+        for key in differ:
+            if key not in have or key not in now:
+                raise BenchError("HB-CMP-007", f'component "{key}" was added or removed. A fix changes components of the effective identity; '
+                                              "start a new campaign for another component set.")
+            if key not in names:
+                raise BenchError("HB-CMP-007", f'component "{key}" changed and no fix names it. Add --component {key}.')
+        for key in names:
+            if key not in differ:
+                raise BenchError("HB-CMP-007", f'component "{key}" is named but unchanged. Remove it.')
+        for key in names:
+            paths = _component_paths(key)
+            if paths and (_git(root, "status", "--porcelain", "-uall", "--", *paths).stdout.strip()
+                          or not _ok(_git(root, "diff", "--quiet", full, "--", *paths))):
+                raise BenchError("HB-CMP-007", f'component "{key}" differs from commit {full[:12]} (or has an uncommitted change). '
+                                              "The recorded identity must be what the commit holds. Commit the change or check out the commit's file.")
+        changes = {key: [have[key], now[key]] for key in names}
+        check_fix(effective, changes)
+        scope = _scope(names)
+        _append(s, "defect_fix.admitted", defect_class=defect_class, commit=full, changes=changes, scope=scope)
+        return f"recorded fix {defect_class} at {full[:12]} (scope {scope}, {len(names)} component(s))"
+
+
+def _float_fields(value, path: str = "") -> list[str]:
+    if isinstance(value, _Float):
+        return [path]
+    if isinstance(value, dict):
+        return [name for key, item in value.items() for name in _float_fields(item, f"{path}.{key}" if path else str(key))]
+    if isinstance(value, list):
+        return [name for index, item in enumerate(value) for name in _float_fields(item, f"{path}[{index}]")]
+    return []
+
+
+def _decimal_view(value):
+    """The inputs as `power.analyse` reads them: the decimal-valued fields as `Decimal` (the file holds them as strings)."""
+    if isinstance(value, dict):
+        return {key: Decimal(item) if key in _DECIMALS and isinstance(item, str) and re.fullmatch(r"-?\d+(\.\d+)?", item) else _decimal_view(item)
+                for key, item in value.items()}
+    if isinstance(value, list):
+        return [_decimal_view(item) for item in value]
+    return value
+
+
+def _power_inputs(path: Path) -> dict:
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"), parse_float=_Float)
+    except OSError as exc:
+        raise BenchError("HB-USR-002", f"{path} cannot be read ({exc.strerror}). Pass an existing bench-power-inputs/1 JSON file.") from exc
+    except ValueError as exc:
+        raise BenchError("HB-PWR-001", f"power inputs invalid: the file is not JSON ({exc}). Fix the file.") from exc
+    if not isinstance(raw, dict):
+        raise BenchError("HB-PWR-001", "power inputs invalid: the document is not an object. Fix the file.")
+    if floats := _float_fields(raw):
+        raise BenchError("HB-PWR-001", f'power inputs invalid: {floats[0]} is a float. Write it as a string such as "0.05", or as an integer.')
+    if raw.get("schema", _SCHEMAS["power"]) != _SCHEMAS["power"]:
+        raise BenchError("HB-PWR-001", f"power inputs invalid: schema must be {_SCHEMAS['power']}. Fix the field.")
+    return {**raw, "schema": _SCHEMAS["power"]}
+
+
+def power(root: Path, campaign_id: str, inputs_file: Path) -> str:
+    """`bench campaign power`: validate with `power.analyse`, write `power/<h>.json`, then the row. The role comes from the state (the one
+    rule is `fold`'s docstring): `prior` in `baselined`, `final` in `piloted` and `registered`; after a grid attach it is HB-CMP-009."""
+    with session(root, campaign_id) as s:
+        state = s.state
+        role = {"baselined": "prior", "piloted": "final", "registered": "final"}.get(state.state)
+        if role is None:
+            if state.state == "measuring":
+                run = latest(state, "grid.attached")["run_id"]
+                raise BenchError("HB-CMP-009", f'pre-registration is frozen: run "{run}" is attached. Abandon this campaign or create a new one; '
+                                              "the grid's verdicts would be exploratory.")
+            raise _terminal(state, "power")
+        inputs = _power_inputs(Path(inputs_file))
+        try:
+            power_model.analyse(_decimal_view(inputs))
+            data = ledger.canonical(inputs)
+        except BenchError as exc:
+            if exc.code != "HB-PWR-001":
+                raise
+            raise BenchError("HB-PWR-001", f"power inputs invalid: {exc.message}. Fix that field.") from exc
+        except (KeyError, TypeError, ValueError, ArithmeticError) as exc:
+            raise BenchError("HB-PWR-001", f"power inputs invalid: {exc!r}. Fix that field.") from exc
+        digest = hashlib.sha256(data).hexdigest()
+        prior = latest(state, "power.recorded", role=role)
+        reset = max((r["seq"] for r in state.rows if r["kind"] in ("baseline.recorded", "defect_fix.admitted")), default=0)
+        if prior is not None and prior["input_hash"] == digest and prior["seq"] > reset:
+            return _no_change(f"power inputs {digest[:12]} are already recorded as {role}")
+        folder = campaign_dir(root, campaign_id) / "power"
+        folder.mkdir(exist_ok=True)
+        atomic.create_once(folder / f"{digest}.json", data)  # the file first, so a crash before the row is retried by appending the row only
+        _append(s, "power.recorded", role=role, input_hash=digest)
+        return f"recorded {role} power inputs {digest[:12]}"
+
+
+def _tree_run_diff(root: Path, effective: Mapping, plan_doc: dict) -> list[str]:
+    """Components of the effective run side that the working tree no longer holds, over the effective tasks and the plan's builds."""
+    wanted = identity.side(dict(effective), "run")["components"]
+    tree = identity.side(identity.manifest(root, _tasks_of(effective), plan_doc.get("builds") or {}), "run")["components"]
+    return [_display(key) for key, value in wanted.items() if (key in tree or not key.startswith("builds/")) and tree.get(key) != value]
+
+
+def check_plan(root: Path, state: CampaignState, plan_doc: dict, run_id: str, *, grid: bool = True, tree: bool = True) -> None:
+    """The one predicate of `attach` and the run-side check (W1-C section 5): every refusal is HB-CMP-010 with its own copy. `grid` adds the
+    registered-statement clauses (hash and arm commits); `tree` adds the working-tree comparison (`attach` and `plan --campaign` take it,
+    the engine's own `identity_check` takes it at each launch). The plan kind is read only through `plan.kind_of`."""
+    try:
+        kind = plan.kind_of(plan_doc)
+    except BenchError as exc:
+        raise BenchError("HB-CMP-010", f'run "{run_id}": {exc.message}. Plan it as a measurement run.') from exc
+    if kind != "measurement":
+        raise BenchError("HB-CMP-010", f'run "{run_id}" has plan kind {kind}, not measurement. Plan it as a measurement run.')
+    combos = [c for c in (plan_doc.get("cells") or []) + (plan_doc.get("combos") or []) if isinstance(c, dict)]
+    if any(c.get("harness") == "synthetic" for c in combos):
+        raise BenchError("HB-CMP-010", f'run "{run_id}" has a combo on the synthetic harness. Synthetic runs belong to discrimination, not to a campaign.')
+    block = plan_doc.get("campaign") or {}
+    cid = state.campaign_id
+    if block.get("campaign_id") != cid:
+        raise BenchError("HB-CMP-010", f'run "{run_id}" belongs to campaign "{block.get("campaign_id")}", not "{cid}". Plan it with --campaign {cid}.')
+    registered = latest(state, "registered")
+    if grid:
+        prereg = block.get("prereg_hash")
+        if prereg is None:
+            raise BenchError("HB-CMP-010", f'plan.campaign.prereg_hash is null: run "{run_id}" is a pilot plan. Attach it as a pilot, or plan it again '
+                                          "under the registered statement.")
+        if registered is None or prereg != registered["prereg_hash"]:
+            want = registered["prereg_hash"][:12] if registered else "none"
+            raise BenchError("HB-CMP-010", f"plan.campaign.prereg_hash {str(prereg)[:12]} is not the registered {want}. Plan again.")
+    effective = effective_identity(root, state)
+    wanted = identity.side(effective, "run")
+    stamped = block.get("identity") or {}
+    components = stamped.get("components")
+    if not isinstance(components, dict) or identity.identity_hash({"schema": effective["schema"], "components": components}) != stamped.get("hash"):
+        raise BenchError("HB-CMP-010", "plan identity components do not hash to plan.campaign.identity.hash. Plan again.")
+    chain = identity.identity_hash(wanted)
+    if stamped["hash"] != chain:
+        where = ", ".join(identity.diff(wanted, {"schema": effective["schema"], "components": components})) or "its hash"
+        raise BenchError("HB-CMP-010", f"plan.campaign.identity {stamped['hash'][:12]} is not the effective run-side identity {chain[:12]}; "
+                                      f"differs at {where}. Plan again.")
+    if tree and (drift := _tree_run_diff(root, effective, plan_doc)):
+        raise BenchError("HB-CMP-010", f"the working tree differs from the effective run side at {', '.join(drift)}. Record a fix or restore the files.")
+    if grid:
+        statement = json.loads((campaign_dir(root, cid) / "prereg" / f"{registered['prereg_hash']}.json").read_bytes())
+        arms = statement.get("arms") or {}
+        for arm, record in plan.plan_packs(plan_doc).items():
+            want = (arms.get(arm) or {}).get("commit")
+            if record.get("commit") != want:
+                raise BenchError("HB-CMP-010", f'plan arm "{arm}" pack {str(record.get("commit"))[:12]} is not the pre-registered {str(want)[:12]}. '
+                                              "Plan again from the registered statement.")
+
+
+def _run_launched(run_dir: Path) -> bool:
+    return any(b'"cell.launch_intent"' in seg.read_bytes() for seg in (run_dir / "events").glob("*.jsonl"))
+
+
+def attach(root: Path, campaign_id: str, run_id: str) -> str:
+    """`bench campaign attach`: the grid run, under `check_plan`; the row freezes the pre-registration (HB-CMP-009 for `register`).
+    *assume:* runs live under `<root>/runs` (as `_locked` already probes them). Confirm: `bench --runs` defaults to it. If false: attach
+    reads the wrong folder and refuses HB-USR-001, never attaches a plan it did not read."""
+    run_id = validate_id("run", run_id)
+    run_dir = root / "runs" / run_id
+    entries = [(run_dir / "grade.lock", "HB-CMP-004"), (run_dir / ".lock", "HB-CMP-004")]
+    with session(root, campaign_id, others_extra=entries, run_locks=True) as s:
+        state = s.state
+        if state.state not in ("registered", "measuring"):
+            raise _terminal(state, "attach")
+        doc = plan.load_confirmed(run_dir)
+        prior = latest(state, "grid.attached", run_id=run_id)
+        if prior is not None and prior["plan_hash"] == doc["plan_hash"]:
+            return _no_change(f'run "{run_id}" is already attached to campaign "{campaign_id}"')
+        final, registered = latest(state, "power.recorded", role="final"), latest(state, "registered")
+        if final is not None and registered is not None and final["seq"] > registered["seq"]:
+            raise BenchError("HB-CMP-002", f"attach is refused: re-register after the latest final power (row {final['seq']} is after the "
+                                          f"registration, row {registered['seq']}). Register the statement the final power supports.")
+        check_plan(root, state, doc, run_id)
+        if _run_launched(run_dir):
+            raise BenchError("HB-CMP-010", f'run "{run_id}" has already launched a cell. Plan a new run.')
+        _append(s, "grid.attached", run_id=run_id, plan_hash=doc["plan_hash"])
+        return f'attached run "{run_id}" to campaign "{campaign_id}"; the pre-registration is frozen'
+
+
+def run_side_check(root: Path, plan_doc: dict, run_id: str) -> None:
+    """Inside the engine, after the run lock is held and before the first launch (`campaign_check=`). It try-probes `campaign.lock` (the
+    run side of the pair `conclude` and `abandon` probe from the other end), reads lock-free, and compares the ledger with the plan dict the
+    engine parsed: it opens no file under `runs/<id>/` (W0 rev 6 R6-5). A plan with no campaign block is not its business."""
+    block = plan_doc.get("campaign")
+    if not isinstance(block, dict) or not block.get("campaign_id"):
+        return
+    cid = validate_id("campaign", block["campaign_id"])
+    if oslock.is_held(lock_path(root, cid)):
+        raise BenchError("HB-CMP-001", f'campaign "{cid}" is being written. Retry in a moment.')
+    state = read(root, cid)
+    if state.state in ("concluded", "abandoned"):
+        raise BenchError("HB-CMP-002", f'campaign "{cid}" is {state.state}; a run cannot start under it. Plan a new campaign.')
+    grid = block.get("prereg_hash") is not None
+    check_plan(root, state, plan_doc, run_id, grid=grid, tree=False)
+    row = max((r for r in state.rows if r["kind"] == ("grid.attached" if grid else "ring_run.attached") and r["run_id"] == run_id),
+              key=lambda r: r["seq"], default=None)
+    if row is None or row["plan_hash"] != plan_doc.get("plan_hash") or (not grid and row["ring_hash"] != (plan_doc.get("ring") or {}).get("hash")):
+        raise BenchError("HB-CMP-010", f'run "{run_id}" is not attached to campaign "{cid}" (or its plan no longer matches the ledger). '
+                                      "Run bench campaign attach.")
+
+
+def conclude(root: Path, campaign_id: str) -> str:
+    """`bench campaign conclude`: only from `measuring`; its session also probes every attached run's `.lock`."""
+    with session(root, campaign_id, run_locks=True) as s:
+        if s.state.state == "concluded":
+            return _no_change(f'campaign "{campaign_id}" is already concluded')
+        if s.state.state != "measuring":
+            raise BenchError("HB-CMP-002", f'conclude needs state measuring, not {s.state.state}, for campaign "{campaign_id}". '
+                                          "Attach a grid run first.")
+        _append(s, "concluded")
+        return f'concluded campaign "{campaign_id}"'
+
+
+def abandon(root: Path, campaign_id: str, reason: str) -> str:
+    """`bench campaign abandon`: from any live state; the same reason again is a no-op, another reason a refusal."""
+    _check_text("reason", reason)
+    with session(root, campaign_id, run_locks=True) as s:
+        state = s.state
+        if state.state == "abandoned":
+            earlier = latest(state, "abandoned")["reason"]
+            if earlier == reason:
+                return _no_change(f'campaign "{campaign_id}" is already abandoned with this reason')
+            raise BenchError("HB-CMP-002", f'campaign "{campaign_id}" is already abandoned ({earlier}). Another reason is not recorded; '
+                                          "start another campaign.")
+        if state.state == "concluded":
+            raise BenchError("HB-CMP-002", f'campaign "{campaign_id}" is concluded; nothing to abandon. Start another campaign for a new question.')
+        _append(s, "abandoned", reason=reason)
+        return f'abandoned campaign "{campaign_id}"'
