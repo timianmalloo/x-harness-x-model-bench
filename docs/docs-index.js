@@ -1970,7 +1970,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "49ccd33743dd2207b676ef21dcdf6445c15aa87d261c9fb5599d1f07dd4aed37"
+      "sourceSha256": "ff67309fef745a4727d77014af4231394c8b1e62c4d17e3f240be43aedeb5e19"
     },
     {
       "id": "design-eval-arms",
@@ -3743,7 +3743,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9c92f17bc0e84d33385f983991f89b30ac4a9dd5a902e6179f4ccf9edcb21a48"
+      "sourceSha256": "ab40e3919d19e8dd69889ba5f63be71e17020b60e5252d117b2e632e2ccb9506"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -5980,7 +5980,7 @@ window.DOCS_INDEX = {
       "phase": "",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "X-C builds campaign.py, the bench campaign commands, the lock protocol, verify with its git witness, the run-side check inside the engine, the campaign status document and the after-grading hook of W1-C rev 2, under W0 rev 6, in three serial dispatches C1 -> C2 -> C3, each red and green in one turn; planned Agy gemini-3.8-flash-high, run as Claude Sonnet from the integration head under R-105 while the primary is blocked (Coordinator #22: C1 re-read against integrate/b3-stage2 f7e1e357).",
+      "summary": "X-C builds campaign.py, the bench campaign commands, the lock protocol, verify with its git witness, the run-side check inside the engine, the campaign status document and the after-grading hook of W1-C rev 2, under W0 rev 6, in serial dispatches C1 -> C2 (C2a ran) -> C3a -> C3b (Coordinator #26: C2b returns to C3a; DR-14 gates C3b), each red and green in one turn; planned Agy gemini-3.8-flash-high, run as Claude Sonnet from the integration head under R-105 while the primary is blocked (Coordinator #22: C1 re-read against integrate/b3-stage2 f7e1e357).",
       "tags": [],
       "links": [
         {
@@ -5997,7 +5997,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f5fcc161ca82882af4fe310e23e295763ee9e04cb3ee07b3b6c5c52a6f9f03fd"
+      "sourceSha256": "29e5c6a3ae4f05bc6efd969eae96d341b4d76750daefa7897c5df5c3c9ce15a1"
     },
     {
       "id": "brief-eval-x-cv",
@@ -7339,7 +7339,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f01e18a7a5898c6cc894a5090d55cc07789ba83c3b6c8b8bcab7cde0e7c7a09a"
+      "sourceSha256": "4fa3b54183b2d40e3be97e0a36e3edba8d19e44574238dfa1482fe0bbbda848c"
     },
     {
       "id": "coordination-eval-wave2-e234-briefs",
@@ -8295,5 +8295,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "4fe080bc9e4045714609e27e9ddb988732e49e8db813c45ce53e528b741325bb"
+  "graphSha256": "fae2bd6f548d2b138c6ae4d550113ca3cc05c493a88ae7fa8e6b3bce8d485657"
 };
