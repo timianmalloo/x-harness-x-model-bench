@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-05T20:11:36Z",
+  "generated": "2026-10-05T20:41:36Z",
   "audit": [
     {
       "actor": null,
@@ -91761,6 +91761,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-05T19:40:12Z",
       "duration_seconds": 1884.0
+    },
+    {
+      "id": "al-01M46WSVS2VG600GD29R1MCAQX",
+      "shortname": "join-x-lgb",
+      "datetime": "2026-10-05T20:41:36Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of build/eval-x-lgb into integrate/e2e4-18",
+      "summary": "X-LGb (Agy gemini-3.8-flash-high, 2,037 s) 0b32d333: skeleton 63af921c, red 3c4b4f87 (Leader re-ran: 4 assertion fails), green 0b32d333; Leader gate 243 passed + 1 flake (test_discriminate leaked-temp, HB-RDY-011 workspace; 3/3 alone on tip, passes on base); noguess.json every mutation killed; ruff 0 recount_seconds=1795 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join X-LGb into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-05T20:11:40Z",
+      "duration_seconds": 1796.0
     }
   ],
   "changes": [
