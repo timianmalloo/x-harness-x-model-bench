@@ -121,4 +121,7 @@ flipped to exactly its own probe with its own clause, by `test_s2_each_defect_va
 reference, the naive and the probes were written by one author, the Sonnet session `x-is2d-e1e4`. The "one shape per class by a
 different author or model" clause is NOT met.** The one-time `mutate_check.py` run over the probe file is below.
 
-(mutation run: see the section appended after the run)
+One-time run, outside the ring: `uv run python tools/mutate_check.py <16 mutants of check.py>` (mutation file kept in the session scratch, not committed; each mutant names the variant or wrong-app test expected to kill it). **14 killed, 2 survived**:
+
+- `tamper-1 no-cookie control removed`: no committed fixture is an app that answers a cookieless `GET /tasks` with 200 yet passes the seed controls. The control stays; it is untested.
+- `authz bob-get control removed`: the only fixture meant to reach it (`pa-ids`) is stopped earlier by the `alice-get` control in `seed`. The control stays; it is untested.
