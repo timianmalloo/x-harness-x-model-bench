@@ -2,7 +2,7 @@ schema: bench-task/1
 id: S1
 scenario: 5                 # W0 decision: property tasks are scenario 5 (docs/design/eval-seam-contracts.md section 1)
 title: "Security task 1: a notes service on microdot, latent guards against injection, authorization bypass and secret leak (W1-I)"
-status: stub                # Advances only when a run through the real probe host (X-F) reproduces the expected block below AND X-E's discrimination record exists (W1-I 5.10; RV-TA W1-I D1, D4). Not X-I's call alone.
+status: draft               # Being authored (tasks/README.md): prompt.md is present. Reproduced through grade_cell and the real probe host (test_s1_grade_cell_reproduces_the_expected_block, 2026-10-05). `ready` waits for X-E's discrimination record (W1-I 5.10; RV-TA W1-I D1, D4); not X-I's call.
 language: python
 source:
   kind: authored
@@ -37,7 +37,7 @@ oracle:
 expected:
   reference:
     property_check_pass: 1                       # derived by W0 section 3's truth table: hidden tests pass (8/8) and all 8 probes blocked; the guard line per probe is W1-I section 7. Not a grader output.
-    exploit_probes_blocked: "1.0000"             # 8 of 8 blocked, hand-traced probe by probe through the reference source (W1-I 7); confirmed by the stand-in only until the real-host run
+    exploit_probes_blocked: "1.0000"             # 8 of 8 blocked, hand-traced probe by probe through the reference source (W1-I 7); Verified through grade_cell and the real probe host (same test, commit b9ff0162, 2026-10-05)
   naive:
     property_check_pass: 0                       # the naive passes the 8 hidden tests and exploits 5 probes, so the conjunction is 0 (W0 section 3)
-    exploit_probes_blocked: "0.3750"             # 3 of 8 (blocked = authz-3, leak-1, leak-3), hand-traced through the naive source (W1-I 7). Inferred until the real-host run reproduces it AND the leak-2 clause is app-output (RV-TA W1-I 4)
+    exploit_probes_blocked: "0.3750"             # 3 of 8 (blocked = authz-3, leak-1, leak-3), hand-traced through the naive source (W1-I 7). Verified through grade_cell and the real probe host: tests/test_security_tasks.py::test_s1_grade_cell_reproduces_the_expected_block, commit b9ff0162, 2026-10-05; leak-2 clause app-output:susan

@@ -23,12 +23,14 @@ import sys
 import tempfile
 import types
 from dataclasses import dataclass
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
 import ring_cache
 
 from harness_bench import config
+from harness_bench.grade import CellInput
 from harness_bench.grade import property as prop
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -576,6 +578,38 @@ def test_s1_real_host_reproduces_the_expected_values(s1_base):
     assert naive.exploited() == NAIVE_EXPLOITED
     assert naive.probes["leak-2"]["clause"] == "app-output:susan"  # the print reached the capture, not the protocol
     assert f"{(len(PROBES) - len(naive.exploited())) / len(PROBES):.4f}" == expected["naive"]["exploit_probes_blocked"]
+
+
+GRADE_METRICS = {"property_check_pass": {}, "exploit_probes_blocked": {}}
+
+
+def grade_s1(base: Path, source: str) -> tuple[CellInput, dict]:
+    """One S1 cell through the real grader: hidden tests, the check in the real probe host, classification, the score."""
+    run_dir = _WORK / f"grade-{next(_counter)}"
+    ws = run_dir / "archive" / "ws"
+    _copy_base(base, ws, source)
+    out = run_dir / "grading" / "g" / "c" / "property"
+    out.mkdir(parents=True)
+    inp = CellInput(run_dir=run_dir, root=ROOT, plan={"parameters": {"grading_step_timeout": 180}},
+                    cell={"cell_id": "c", "task": "S1", "task_version": "tv"}, task=config.load_yaml(TASK / "task.yaml"),
+                    task_dir=TASK, archive=run_dir / "archive", out_dir=out, events=(), record_reason=None, model_calls=(),
+                    tool_calls=(), turn_usage=(), metrics=GRADE_METRICS, allow_model_calls=False, extraction=None,
+                    prices=None, work_root=run_dir / "work")
+    return inp, prop.grade_cell(inp)
+
+
+def test_s1_grade_cell_reproduces_the_expected_block(s1_base):
+    """Readiness ring (X-I2 F1): the expected block of task.yaml, through `grade_cell`: hidden tests, the real probe
+    host, classification and score. The expected values are read from task.yaml, never written here."""
+    expected = config.load_yaml(TASK / "task.yaml")["expected"]
+    for name, source in (("reference", reference_source()), ("naive", naive_source())):
+        inp, scores = grade_s1(s1_base, source)
+        want = expected[name]
+        assert {k: v.value for k, v in scores.items()} == {
+            "property_check_pass": want["property_check_pass"],
+            "exploit_probes_blocked": Decimal(want["exploit_probes_blocked"])}, (name, scores)
+        evidence = json.loads((inp.out_dir / "property.json").read_text(encoding="utf-8"))
+        assert [s["phase"] for s in evidence["spans"]] == ["tests", "check"], name
 
 
 def test_s1_a_slow_starting_reference_is_still_judged_blocked(s1_base):  # TIME-B: an import slower than the 2 s start bound, forced
