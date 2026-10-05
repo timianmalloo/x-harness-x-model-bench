@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-05T02:54:39Z",
+  "generated": "2026-10-05T03:24:56Z",
   "audit": [
     {
       "actor": null,
@@ -80359,6 +80359,293 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-05T02:11:26Z",
       "duration_seconds": 2593.0
+    },
+    {
+      "id": "al-01M451DH8E5W4BM1EPCMNHKBAY",
+      "shortname": "Dispatch X-E (E1 critical path: discriminate, synthetic agent, readiness…",
+      "datetime": "2026-10-05T03:23:46Z",
+      "session": "prompt-compile",
+      "prompt": "Dispatch X-E (E1 critical path: discriminate, synthetic agent, readiness) as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91). Session x-e-e1e4, branch build/eval-x-e, a new tree from integrate/e1e4-17, not main: from the primary run coord worktree new --branch build/eval-x-e --session x-e-e1e4 --base integrate/e1e4-17 and work only in the printed tree by absolute path; never EnterWorktree, never checkout or switch in the primary. Your brief is docs/coordination/eval-wave2-e1/x-e.md; read docs/coordination/eval-wave2-e1/README.md sections 1-4, then the brief, then W1-E (docs/design/eval-discriminate.md, gated at 2bd4401d), W0 rev 6 and R-98. Build discriminate.py, readiness.py and synthetic_agent.py red first in the brief's commit groups E0 to E3; the RV-TA conditions R2-1 to R2-4 go into the skeleton commit or the first red commit. Owned paths are the brief's list only; a line in another owner's file is a seam request with a fallback that reaches green. Depends on: X-A1b, X-B1b, X-D2, X-G1, X-I and X-I2, and X-F's grade/_env.py and host, all on integrate/e1e4-17; check each with git merge-base --is-ancestor and stop if one is missing. Decide X-I2's F4 at S1's discrimination record: keep or drop for each of the ten droppable S1 payloads, one line each in your report; drop nothing yourself. Budget 240 calls, 200k context per session, 3.5 h; at 85 % commit, stop and report what remains. Exit evidence: run the test files you own or touch by name, ruff, mutate_check --touched integrate/e1e4-17 and docs-graph validate, each command on its own line with its exit status read; the whole-suite run is the Leader's at the join (R-104). Report per README section 4, and report your served model id on the first line of your final message. J2, the real S1 discrimination and its commit, is run by the Leader, not you. Never kill a process by name or pattern, only PIDs you started.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M451FBY00SS7XX1Y2FJWD7SH",
+      "shortname": "compile-Dispatch X-E (E1 critical path: discriminate, synthetic agent, readiness…",
+      "datetime": "2026-10-05T03:24:46Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-e.md and docs/coordination/eval-wave2-e1/README.md sections 1-4 (they bind you; the owned paths and acceptance items are the brief's), then W1-E (docs/design/eval-discriminate.md, gated at 2bd4401d), W0 rev 6 and R-98: build discriminate.py, readiness.py and synthetic_agent.py red first in commit groups E0 to E3 on build/eval-x-e as session x-e-e1e4, in a new tree from integrate/e1e4-17 (not main), and decide X-I2's F4 at S1's discrimination record.\nDone when: The tree is created from the primary with coord worktree new --branch build/eval-x-e --session x-e-e1e4 --base integrate/e1e4-17, and all work is in the printed tree by absolute path.; X-A1b, X-B1b, X-D2, X-G1, X-I and X-I2, and X-F's grade/_env.py and host are each checked on integrate/e1e4-17 with git merge-base --is-ancestor before any work; a missing one stops the session.; discriminate.py, readiness.py and synthetic_agent.py are built red first in the brief's commit groups E0 to E3.; The RV-TA conditions R2-1 to R2-4 are in the skeleton commit or the first red commit.; X-I2's F4 is decided at S1's discrimination record: keep or drop for each of the ten droppable S1 payloads, one line each in the report; nothing is dropped by this session.; The exit evidence is run on the final commit: the owned or touched test files by name, ruff, mutate_check --touched integrate/e1e4-17 and docs-graph validate, each command on its own line with its exit status read.; The report follows README section 4.; The served model id is the first line of the final report.\nNot in scope: The whole-suite run: the Leader's at the join (R-104).; J2, the real S1 discrimination and its commit: run by the Leader.; Any line in another owner's file without a seam request.; A checkout or switch in the primary.; Killing any process by name or pattern; only PIDs this session started.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens per session\nMain-line budget: 240 calls, 3.5 h\nTrace\n| clause | trace |\n|---|---|\n| done_when: The tree is created from the primary with coord worktree new --branch build/eval-x-e --session x-e-e1e4 --base integrate/e1e4-17, and all work is in the printed tree by absolute path. | phrase: from the primary run coord worktree new --branch build/eval-x-e --session x-e-e1e4 --base integrate/e1e4-17 and work only in the printed tree by absolute path |\n| done_when: X-A1b, X-B1b, X-D2, X-G1, X-I and X-I2, and X-F's grade/_env.py and host are each checked on integrate/e1e4-17 with git merge-base --is-ancestor before any work; a missing one stops the session. | phrase: check each with git merge-base --is-ancestor and stop if one is missing |\n| done_when: discriminate.py, readiness.py and synthetic_agent.py are built red first in the brief's commit groups E0 to E3. | phrase: Build discriminate.py, readiness.py and synthetic_agent.py red first in the brief's commit groups E0 to E3 |\n| done_when: The RV-TA conditions R2-1 to R2-4 are in the skeleton commit or the first red commit. | phrase: the RV-TA conditions R2-1 to R2-4 go into the skeleton commit or the first red commit |\n| done_when: X-I2's F4 is decided at S1's discrimination record: keep or drop for each of the ten droppable S1 payloads, one line each in the report; nothing is dropped by this session. | phrase: Decide X-I2's F4 at S1's discrimination record: keep or drop for each of the ten droppable S1 payloads, one line each in your report; drop nothing yourself. |\n| done_when: The exit evidence is run on the final commit: the owned or touched test files by name, ruff, mutate_check --touched integrate/e1e4-17 and docs-graph validate, each command on its own line with its exit status read. | phrase: run the test files you own or touch by name, ruff, mutate_check --touched integrate/e1e4-17 and docs-graph validate, each command on its own line with its exit status read |\n| done_when: The report follows README section 4. | phrase: Report per README section 4 |\n| done_when: The served model id is the first line of the final report. | phrase: report your served model id on the first line of your final message |\n| not_in_scope: The whole-suite run: the Leader's at the join (R-104). | phrase: the whole-suite run is the Leader's at the join (R-104) |\n| not_in_scope: J2, the real S1 discrimination and its commit: run by the Leader. | phrase: J2, the real S1 discrimination and its commit, is run by the Leader, not you. |\n| not_in_scope: Any line in another owner's file without a seam request. | phrase: a line in another owner's file is a seam request with a fallback that reaches green |\n| not_in_scope: A checkout or switch in the primary. | phrase: never checkout or switch in the primary |\n| not_in_scope: Killing any process by name or pattern; only PIDs this session started. | phrase: Never kill a process by name or pattern, only PIDs you started. |\nReferences\n- build/eval-x-e: unresolved (not found)\n- integrate/e1e4-17: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-e.md: docs/coordination/eval-wave2-e1/x-e.md sha256 bdc9f235929384d350bea1be1b588b2e341ccc068ebdb6bc9aad6713ad74957a\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 832a4f1c36e83b7f38c7acd2f6514f8206dcb23e86528f6d2350c8cd9f3f3569\n- docs/design/eval-discriminate.md: docs/design/eval-discriminate.md sha256 008437404b45b0b3328917767710ec3a299871230386130f26c7f292a34afe57\n- discriminate.py: unresolved (not found)\n- readiness.py: unresolved (not found)\n- synthetic_agent.py: unresolved (not found)\n- grade/_env.py: src/harness_bench/grade/_env.py sha256 2e41fb890adc75b239e5ecb86bb20b928c74736d273d9121eee8e40e2625458c\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0\nper_branch_exit: red then green commits per group E0..E3 on build/eval-x-e with the brief's gate green\njoin_rule: the brief's gate (named files, ruff, mutate_check --touched integrate/e1e4-17, validate); the Leader runs the whole suite and merges (R-104)\ncontainment: own worktree from integrate/e1e4-17; the brief's owned paths only\ntermination: up to 3 sessions (a fresh one per group past 150k); at 85 % commit, stop and report what remains\ndeadline: 3.5 h (the brief's budget)\nfallback: a fresh Claude Code Sonnet session (model: sonnet) from the same brief; the tree and its commits carry the state\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M451DH8E5W4BM1EPCMNHKBAY\nraw sha256: 51803b58b8f3a70524f81424a1389d1e4cda6ab83200eec0685c8d2f9d4db0bc\ncompiler model: claude-opus-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M451DH8E5W4BM1EPCMNHKBAY for claude-code v1: 13 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "The tree is created from the primary with coord worktree new --branch build/eval-x-e --session x-e-e1e4 --base integrate/e1e4-17, and all work is in the printed tree by absolute path.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "from the primary run coord worktree new --branch build/eval-x-e --session x-e-e1e4 --base integrate/e1e4-17 and work only in the printed tree by absolute path"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "X-A1b, X-B1b, X-D2, X-G1, X-I and X-I2, and X-F's grade/_env.py and host are each checked on integrate/e1e4-17 with git merge-base --is-ancestor before any work; a missing one stops the session.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "check each with git merge-base --is-ancestor and stop if one is missing"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "discriminate.py, readiness.py and synthetic_agent.py are built red first in the brief's commit groups E0 to E3.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build discriminate.py, readiness.py and synthetic_agent.py red first in the brief's commit groups E0 to E3"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The RV-TA conditions R2-1 to R2-4 are in the skeleton commit or the first red commit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the RV-TA conditions R2-1 to R2-4 go into the skeleton commit or the first red commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "X-I2's F4 is decided at S1's discrimination record: keep or drop for each of the ten droppable S1 payloads, one line each in the report; nothing is dropped by this session.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Decide X-I2's F4 at S1's discrimination record: keep or drop for each of the ten droppable S1 payloads, one line each in your report; drop nothing yourself."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The exit evidence is run on the final commit: the owned or touched test files by name, ruff, mutate_check --touched integrate/e1e4-17 and docs-graph validate, each command on its own line with its exit status read.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "run the test files you own or touch by name, ruff, mutate_check --touched integrate/e1e4-17 and docs-graph validate, each command on its own line with its exit status read"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The report follows README section 4.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report per README section 4"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "The whole-suite run: the Leader's at the join (R-104).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the whole-suite run is the Leader's at the join (R-104)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "J2, the real S1 discrimination and its commit: run by the Leader.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "J2, the real S1 discrimination and its commit, is run by the Leader, not you."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any line in another owner's file without a seam request.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a line in another owner's file is a seam request with a fallback that reaches green"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "A checkout or switch in the primary.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "never checkout or switch in the primary"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Killing any process by name or pattern; only PIDs this session started.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never kill a process by name or pattern, only PIDs you started."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree from integrate/e1e4-17; the brief's owned paths only",
+          "deadline": "3.5 h (the brief's budget)",
+          "fallback": "a fresh Claude Code Sonnet session (model: sonnet) from the same brief; the tree and its commits carry the state",
+          "join_rule": "the brief's gate (named files, ruff, mutate_check --touched integrate/e1e4-17, validate); the Leader runs the whole suite and merges (R-104)",
+          "per_branch_exit": "red then green commits per group E0..E3 on build/eval-x-e with the brief's gate green",
+          "termination": "up to 3 sessions (a fresh one per group past 150k); at 85 % commit, stop and report what remains",
+          "transient_retry": "0",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens per session",
+          "done_when": [
+            "The tree is created from the primary with coord worktree new --branch build/eval-x-e --session x-e-e1e4 --base integrate/e1e4-17, and all work is in the printed tree by absolute path.",
+            "X-A1b, X-B1b, X-D2, X-G1, X-I and X-I2, and X-F's grade/_env.py and host are each checked on integrate/e1e4-17 with git merge-base --is-ancestor before any work; a missing one stops the session.",
+            "discriminate.py, readiness.py and synthetic_agent.py are built red first in the brief's commit groups E0 to E3.",
+            "The RV-TA conditions R2-1 to R2-4 are in the skeleton commit or the first red commit.",
+            "X-I2's F4 is decided at S1's discrimination record: keep or drop for each of the ten droppable S1 payloads, one line each in the report; nothing is dropped by this session.",
+            "The exit evidence is run on the final commit: the owned or touched test files by name, ruff, mutate_check --touched integrate/e1e4-17 and docs-graph validate, each command on its own line with its exit status read.",
+            "The report follows README section 4.",
+            "The served model id is the first line of the final report."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-e.md and docs/coordination/eval-wave2-e1/README.md sections 1-4 (they bind you; the owned paths and acceptance items are the brief's), then W1-E (docs/design/eval-discriminate.md, gated at 2bd4401d), W0 rev 6 and R-98: build discriminate.py, readiness.py and synthetic_agent.py red first in commit groups E0 to E3 on build/eval-x-e as session x-e-e1e4, in a new tree from integrate/e1e4-17 (not main), and decide X-I2's F4 at S1's discrimination record.",
+          "main_line_budget": "240 calls, 3.5 h",
+          "not_in_scope": [
+            "The whole-suite run: the Leader's at the join (R-104).",
+            "J2, the real S1 discrimination and its commit: run by the Leader.",
+            "Any line in another owner's file without a seam request.",
+            "A checkout or switch in the primary.",
+            "Killing any process by name or pattern; only PIDs this session started."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M451DH8E5W4BM1EPCMNHKBAY",
+        "raw_sha256": "51803b58b8f3a70524f81424a1389d1e4cda6ab83200eec0685c8d2f9d4db0bc",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-e"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "integrate/e1e4-17"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-e.md",
+            "reason": null,
+            "sha256": "bdc9f235929384d350bea1be1b588b2e341ccc068ebdb6bc9aad6713ad74957a",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-e.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "832a4f1c36e83b7f38c7acd2f6514f8206dcb23e86528f6d2350c8cd9f3f3569",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-discriminate.md",
+            "reason": null,
+            "sha256": "008437404b45b0b3328917767710ec3a299871230386130f26c7f292a34afe57",
+            "status": "resolved",
+            "token": "docs/design/eval-discriminate.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "readiness.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "synthetic_agent.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/_env.py",
+            "reason": null,
+            "sha256": "2e41fb890adc75b239e5ecb86bb20b928c74736d273d9121eee8e40e2625458c",
+            "status": "resolved",
+            "token": "grade/_env.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M451FN89K7TAQBRSMD14YCEA",
+      "shortname": "compile-x-e-c16",
+      "datetime": "2026-10-05T03:24:56Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Coordinator #16: re-read x-e.md against integrate/e1e4-17, add the F4 duty, compile the X-E dispatch (session x-e-e1e4, branch build/eval-x-e)",
+      "summary": "raw al-01M451DH8E5W4BM1EPCMNHKBAY, compiled al-01M451FBY00SS7XX1Y2FJWD7SH, harness claude-code, compiler claude-opus-5-5; 8 done-when + 5 not-in-scope clauses, all phrase-traced; 0 assumptions; 0 decision requests; dispatchable yes; x-e.md sha256 bdc9f235 recorded (brief edited before compile); one gate refusal (forbidden construct EnterWorktree in a not-in-scope clause) fixed on retry 1",
+      "kind": "skill",
+      "skill": "compile",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "tier": "T0",
+      "fan_out": 0,
+      "started_at": "2026-10-05T03:18:57Z",
+      "duration_seconds": 359.0
     }
   ],
   "changes": [

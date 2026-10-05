@@ -1970,7 +1970,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8112704ed80dea67d72ef00f695f9f2e53cb0a4459fcfdfe0aebf9eb683eea67"
+      "sourceSha256": "04e9dea58a101724ff0d20cff81549b7e5c55e33a3020730923f279ec7e2234a"
     },
     {
       "id": "design-eval-arms",
@@ -2519,7 +2519,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9d11c8c82185ce40085649657cc776ba78fea129211044361630d7b80e80dfe3"
+      "sourceSha256": "3447cd7b555398d32db4806ce87a9c20aacdf772e26073dcbbe41f33804ef815"
     },
     {
       "id": "design-eval-property-tasks",
@@ -3743,7 +3743,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "38e73a117b6fbc0b6648cfea5079425fd138dbe260d51ebbca857dedfed193c4"
+      "sourceSha256": "34c8202580e6447302af765cd7048d021d6c2cf40db65c30782c6b051d51d134"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -6096,7 +6096,7 @@ window.DOCS_INDEX = {
       "phase": "",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "X-E builds discriminate.py, readiness.py and synthetic_agent.py of W1-E rev 2 under W0 rev 6 and R-98, red first, on Sonnet: the skeleton first, then the engine-only tests, then the host tests once X-F's host has joined.",
+      "summary": "X-E builds discriminate.py, readiness.py and synthetic_agent.py of W1-E rev 2 under W0 rev 6 and R-98, red first, on Sonnet, from integrate/e1e4-17 (Coordinator #16): the skeleton, the engine-only tests, the host tests, and the X-I2 F4 keep-or-drop line per S1 payload.",
       "tags": [],
       "links": [
         {
@@ -6113,7 +6113,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "120b01ea1e0d5cdcba769c21dc327006b732ab72453026d84e786bfd424e1547"
+      "sourceSha256": "bdc9f235929384d350bea1be1b588b2e341ccc068ebdb6bc9aad6713ad74957a"
     },
     {
       "id": "brief-eval-x-f",
@@ -7339,7 +7339,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ba2d6bde47543f1b7f70d4ada8f963f7caf0890399cbbed687cb84f46eea80a7"
+      "sourceSha256": "832a4f1c36e83b7f38c7acd2f6514f8206dcb23e86528f6d2350c8cd9f3f3569"
     },
     {
       "id": "coordination-eval-wave2-e234-briefs",
@@ -8295,5 +8295,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "5ec39d75b936a3a3d757c556f6d6556d7455a8251912c2befb92ee454d873c30"
+  "graphSha256": "b241190ad356dc51ca303c844bb385f7cb6cdc9805d7db8d0bb346d8fd3ea7d0"
 };
