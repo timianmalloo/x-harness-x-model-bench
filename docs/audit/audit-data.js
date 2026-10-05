@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-05T18:29:50Z",
+  "generated": "2026-10-05T20:13:21Z",
   "audit": [
     {
       "actor": null,
@@ -89806,78 +89806,69 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M46MTD7BP4DMV747AA48TPE9",
-      "shortname": "eval-x-j1b-dispatch",
-      "datetime": "2026-10-05T18:22:06Z",
-      "session": "x-j1b-e1e4",
-      "prompt": "python docs/ai-forward-pack/scripts/audit-log.py start --session x-j1b-e1e4 --skill coordination-worker\nGoal state\nGoal: Following docs/coordination/eval-wave2-e234/x-j1.md (owned paths, names, acceptance items 2 and 3), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md and W1-J rev 2 (docs/design/eval-multi-turn.md sections 4.1, 4.2, 4.5, 11), all binding: build dispatch J1b of X-J1, the turn loop, on build/eval-x-j1b from the integration head after the X-J1a join, in three fix commits on J1a's landed names: K4(2) usage summed over every returned turn, with views._token_cross_check's ACP side summed over the turn_ended rows present; K4(3) only end_turn continues and turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every returned turn before the continue or cancel decision; K4(4) one handshake per Session and an idempotent Session.close(). Each commit removes its own J1b xfail markers in tests/test_multiturn.py (Coordinator #33 at bcd35532; J1a's names read at a3cfbcfe).\nDone when: The base is the integration head at dispatch (integrate/e2e4-18 after the X-J1a join), never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing, stop and report.; `git merge-base --is-ancestor a3cfbcfe HEAD` exits 0; if it exits non-zero, X-J1a is not in the base: stop and report.; J1a's landed names are built on, never defined a second time (DM7): driver.TurnRecord, Session and Session.close(), open_session, send_turn, run_turn, TurnResult.turns; engine._attempt with record_session_opened, _snapshot_turn, _after_append, COMPLETED_STOP_REASONS; lifecycle.is_cell_start; the archive snapshot functions; views._token_cross_check.; K4(2) lands in its own commit: usage summed over every returned turn, the ACP side of views._token_cross_check the sum over the turn_ended rows present, a turn with no row not recorded, never 0; T-ENG-4 (acp_turn and native_record, no HB-VAL-005) and T-ENG-11 green with their J1b markers removed.; K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response, before the continue or cancel decision, next one of snapshot, final, stop or cancel; no row when send_turn returned None; T-ENG-6 and T-ENG-10 green with their J1b markers removed.; K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed.; The xfail markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them.; Before the first fix, the six J1b tests are re-run with `uv run pytest -q --runxfail` on the base and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added.; A test that already passes is recorded green on arrival with the SHA, never faked red; every existing test in tests/test_engine.py, tests/test_driver.py and tests/test_multiturn.py stays green.; No src/ caller of archive.snapshot_cell is added: on the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py (Coordinator #32, ruling 3).; A T2 plan record, if your skill wants one, is docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted).; The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.; A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call.; A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2).; The served model id is the first line of the final report (README section 4), read from the Codex native record.\nNot in scope: The ALLOWED entry (\"archive\", \"snapshot_cell\", \"shutil.copytree\") in tests/test_atomic_sites.py: J1c deletes it.; K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c); views beyond _token_cross_check, the lifecycle TABLE rules, plan turns, CellView.task and CellView.rep, verdicts._task_rep (J1d); the section 11 mutant rows and spike S-J4 (J1e).; status.py: X-INTF holds its text() hunk after J1a's join (serial spine 5).; mutate_check with --touched, and the whole suite: they are the Leader's, once per batch.; Killing any process by name or pattern; only PIDs this session started.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens per dispatch\nMain-line budget: within X-J1's 320 calls across 5 dispatches; 3,300 s this dispatch\n\nTrace\n| clause | trace |\n|---|---|\n| done_when: The base is the integration head at dispatch (integrate/e2e4-18 after the X-J1a join), never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing, stop and report. | phrase: Stop and report if git log --oneline -1 --grep \"W0 seam contracts rev 6.11\" prints nothing. |\n| done_when: `git merge-base --is-ancestor a3cfbcfe HEAD` exits 0; if it exits non-zero, X-J1a is not in the base: stop and report. | phrase: Stop and report if git merge-base --is-ancestor a3cfbcfe HEAD exits non-zero |\n| done_when: J1a's landed names are built on, never defined a second time (DM7): driver.TurnRecord, Session and Session.close(), open_session, send_turn, run_turn, TurnResult.turns; engine._attempt with record_session_opened, _snapshot_turn, _after_append, COMPLETED_STOP_REASONS; lifecycle.is_cell_start; the archive snapshot functions; views._token_cross_check. | phrase: J1a's landed names at a3cfbcfe are the names you build on, never a second definition (DM7) |\n| done_when: K4(2) lands in its own commit: usage summed over every returned turn, the ACP side of views._token_cross_check the sum over the turn_ended rows present, a turn with no row not recorded, never 0; T-ENG-4 (acp_turn and native_record, no HB-VAL-005) and T-ENG-11 green with their J1b markers removed. | phrase: usage is summed over every returned turn; the ACP side of views._token_cross_check is the sum over the turn_ended rows present |\n| done_when: K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response, before the continue or cancel decision, next one of snapshot, final, stop or cancel; no row when send_turn returned None; T-ENG-6 and T-ENG-10 green with their J1b markers removed. | phrase: only end_turn continues, and cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response |\n| done_when: K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed. | phrase: one handshake per Session and an idempotent Session.close() |\n| done_when: The xfail markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them. | phrase: The markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them. |\n| done_when: Before the first fix, the six J1b tests are re-run with `uv run pytest -q --runxfail` on the base and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added. | phrase: re-run the six J1b tests with uv run pytest -q --runxfail on your base and paste each failing assertion line into your first fix commit's message |\n| done_when: A test that already passes is recorded green on arrival with the SHA, never faked red; every existing test in tests/test_engine.py, tests/test_driver.py and tests/test_multiturn.py stays green. | phrase: A test that already passes is recorded green on arrival with the SHA, never faked red. |\n| done_when: No src/ caller of archive.snapshot_cell is added: on the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py (Coordinator #32, ruling 3). | phrase: On your final commit git grep -n \"snapshot_cell(\" -- src prints only the definition in src/harness_bench/archive.py. |\n| done_when: A T2 plan record, if your skill wants one, is docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted). | phrase: If your skill wants a T2 plan record, write it at docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted). |\n| done_when: The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. | phrase: Gate (R-104; each command on its own line, exit status read, never behind a pipe) |\n| done_when: A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed |\n| done_when: Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call. | phrase: Commit named paths only, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call. |\n| done_when: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2). | phrase: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green. |\n| done_when: The served model id is the first line of the final report (README section 4), read from the Codex native record. | phrase: Report your served model id on the first line of your final message, read from the Codex native record. |\n| not_in_scope: The ALLOWED entry (\"archive\", \"snapshot_cell\", \"shutil.copytree\") in tests/test_atomic_sites.py: J1c deletes it. | phrase: is J1c's to delete, not yours |\n| not_in_scope: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c); views beyond _token_cross_check, the lifecycle TABLE rules, plan turns, CellView.task and CellView.rep, verdicts._task_rep (J1d); the section 11 mutant rows and spike S-J4 (J1e). | phrase: Not yours: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c) |\n| not_in_scope: status.py: X-INTF holds its text() hunk after J1a's join (serial spine 5). | phrase: status.py (X-INTF holds its text() hunk after J1a's join, serial spine 5) |\n| not_in_scope: mutate_check with --touched, and the whole suite: they are the Leader's, once per batch. | phrase: The whole suite is the Leader's. |\n| not_in_scope: Killing any process by name or pattern; only PIDs this session started. | phrase: Never kill a process by name or pattern, only PIDs you started. |\n\nReferences\n- build/eval-x-j1b: unresolved (not found)\n- docs/coordination/eval-wave2-e234/x-j1.md's: unresolved (not found; nearest: docs/coordination/eval-wave2-e234/x-j1.md)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b\n- docs/coordination/eval-wave2-e234/README.md: docs/coordination/eval-wave2-e234/README.md sha256 e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701\n- docs/coordination/eval-wave2-e234/x-j1.md: docs/coordination/eval-wave2-e234/x-j1.md sha256 8db0a5c2e1827c4a648d7351a3444473be142d955e724cce2644e7abd32bf437\n- docs/design/eval-multi-turn.md: docs/design/eval-multi-turn.md sha256 e32527dad56e2c97cd4340c492f0d1c2e679b74853f5d208139ef40ccb8ae847\n- integrate/e2e4-18: unresolved (not found)\n- tests/test_multiturn.py: unresolved (not found)\n- tests/test_engine.py: tests/test_engine.py sha256 df24bd350ed2a6f8d16a4b80e2cf53c7720fe0c99b6374cfe31157447b3e8d26\n- tests/test_driver.py: tests/test_driver.py sha256 453e01a8f4511deb6676036905c88b71485447aecd1c876b00bf2cb7519d762d\n- src/: unresolved (not found)\n- src/harness_bench/archive.py: src/harness_bench/archive.py sha256 1b18d1d166fc15a7686b6ea28a3fb746bdee97d9a44477ca8b1137de705b13cf\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- docs/plans/eval-x-j1b.md: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d\n- tests/mutations/engine.json: tests/mutations/engine.json sha256 ebae6d0ee051f94b00ece947f0184f35abd72dd666ce8a1f1d1a66a31b56d2bc\n- tests/mutations/driver.json: tests/mutations/driver.json sha256 eb20d524a79665c316ff3b3205b13ad5886b4fbb0575caf1cecd310b223d1390\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- status.py: src/harness_bench/status.py sha256 71e2b1feb7086ec5da7ee97931109bb96e90d17c090edb0cbd0de643f70667a7\n\nAssumptions\n- none\n\nDecision requests\n- none\n\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: three fix commits (K4(2), K4(3), K4(4)) on build/eval-x-j1b\njoin_rule: the R-104 worker gate; the Leader joins into integrate/e2e4-18, re-runs a red SHA and runs git grep -n \"snapshot_cell(\" -- src (Coordinator #32, ruling 3)\ncontainment: own worktree based on the integration head; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: a red-only end, a deadline or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet, served claude-sonnet-5-5) in the same tree (R-87 Option 1)\n\nProvenance\nraw id: al-01M46HB94V9Q5H72XY13ZR0NN7\nraw sha256: 424b464f0c1266772ba57ed6596429fd08086e00950ff65799ee4c8be2071dcf\ncompiler model: claude-opus-5-5\nengine seconds: 0.013\ntokens: not recorded\ngate: pass\ndispatchable: true\nWork only in your assigned cwd. Follow the plan's owned paths and return evidence to the Owner.",
-      "summary": "prompt logged for reuse",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
+      "datetime": "2026-10-05T18:22:06Z",
+      "id": "al-01M46MTD7BP4DMV747AA48TPE9",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "python docs/ai-forward-pack/scripts/audit-log.py start --session x-j1b-e1e4 --skill coordination-worker\nGoal state\nGoal: Following docs/coordination/eval-wave2-e234/x-j1.md (owned paths, names, acceptance items 2 and 3), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md and W1-J rev 2 (docs/design/eval-multi-turn.md sections 4.1, 4.2, 4.5, 11), all binding: build dispatch J1b of X-J1, the turn loop, on build/eval-x-j1b from the integration head after the X-J1a join, in three fix commits on J1a's landed names: K4(2) usage summed over every returned turn, with views._token_cross_check's ACP side summed over the turn_ended rows present; K4(3) only end_turn continues and turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every returned turn before the continue or cancel decision; K4(4) one handshake per Session and an idempotent Session.close(). Each commit removes its own J1b xfail markers in tests/test_multiturn.py (Coordinator #33 at bcd35532; J1a's names read at a3cfbcfe).\nDone when: The base is the integration head at dispatch (integrate/e2e4-18 after the X-J1a join), never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing, stop and report.; `git merge-base --is-ancestor a3cfbcfe HEAD` exits 0; if it exits non-zero, X-J1a is not in the base: stop and report.; J1a's landed names are built on, never defined a second time (DM7): driver.TurnRecord, Session and Session.close(), open_session, send_turn, run_turn, TurnResult.turns; engine._attempt with record_session_opened, _snapshot_turn, _after_append, COMPLETED_STOP_REASONS; lifecycle.is_cell_start; the archive snapshot functions; views._token_cross_check.; K4(2) lands in its own commit: usage summed over every returned turn, the ACP side of views._token_cross_check the sum over the turn_ended rows present, a turn with no row not recorded, never 0; T-ENG-4 (acp_turn and native_record, no HB-VAL-005) and T-ENG-11 green with their J1b markers removed.; K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response, before the continue or cancel decision, next one of snapshot, final, stop or cancel; no row when send_turn returned None; T-ENG-6 and T-ENG-10 green with their J1b markers removed.; K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed.; The xfail markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them.; Before the first fix, the six J1b tests are re-run with `uv run pytest -q --runxfail` on the base and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added.; A test that already passes is recorded green on arrival with the SHA, never faked red; every existing test in tests/test_engine.py, tests/test_driver.py and tests/test_multiturn.py stays green.; No src/ caller of archive.snapshot_cell is added: on the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py (Coordinator #32, ruling 3).; A T2 plan record, if your skill wants one, is docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted).; The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.; A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call.; A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2).; The served model id is the first line of the final report (README section 4), read from the Codex native record.\nNot in scope: The ALLOWED entry (\"archive\", \"snapshot_cell\", \"shutil.copytree\") in tests/test_atomic_sites.py: J1c deletes it.; K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c); views beyond _token_cross_check, the lifecycle TABLE rules, plan turns, CellView.task and CellView.rep, verdicts._task_rep (J1d); the section 11 mutant rows and spike S-J4 (J1e).; status.py: X-INTF holds its text() hunk after J1a's join (serial spine 5).; mutate_check with --touched, and the whole suite: they are the Leader's, once per batch.; Killing any process by name or pattern; only PIDs this session started.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens per dispatch\nMain-line budget: within X-J1's 320 calls across 5 dispatches; 3,300 s this dispatch\n\nTrace\n| clause | trace |\n|---|---|\n| done_when: The base is the integration head at dispatch (integrate/e2e4-18 after the X-J1a join), never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing, stop and report. | phrase: Stop and report if git log --oneline -1 --grep \"W0 seam contracts rev 6.11\" prints nothing. |\n| done_when: `git merge-base --is-ancestor a3cfbcfe HEAD` exits 0; if it exits non-zero, X-J1a is not in the base: stop and report. | phrase: Stop and report if git merge-base --is-ancestor a3cfbcfe HEAD exits non-zero |\n| done_when: J1a's landed names are built on, never defined a second time (DM7): driver.TurnRecord, Session and Session.close(), open_session, send_turn, run_turn, TurnResult.turns; engine._attempt with record_session_opened, _snapshot_turn, _after_append, COMPLETED_STOP_REASONS; lifecycle.is_cell_start; the archive snapshot functions; views._token_cross_check. | phrase: J1a's landed names at a3cfbcfe are the names you build on, never a second definition (DM7) |\n| done_when: K4(2) lands in its own commit: usage summed over every returned turn, the ACP side of views._token_cross_check the sum over the turn_ended rows present, a turn with no row not recorded, never 0; T-ENG-4 (acp_turn and native_record, no HB-VAL-005) and T-ENG-11 green with their J1b markers removed. | phrase: usage is summed over every returned turn; the ACP side of views._token_cross_check is the sum over the turn_ended rows present |\n| done_when: K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response, before the continue or cancel decision, next one of snapshot, final, stop or cancel; no row when send_turn returned None; T-ENG-6 and T-ENG-10 green with their J1b markers removed. | phrase: only end_turn continues, and cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response |\n| done_when: K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed. | phrase: one handshake per Session and an idempotent Session.close() |\n| done_when: The xfail markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them. | phrase: The markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them. |\n| done_when: Before the first fix, the six J1b tests are re-run with `uv run pytest -q --runxfail` on the base and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added. | phrase: re-run the six J1b tests with uv run pytest -q --runxfail on your base and paste each failing assertion line into your first fix commit's message |\n| done_when: A test that already passes is recorded green on arrival with the SHA, never faked red; every existing test in tests/test_engine.py, tests/test_driver.py and tests/test_multiturn.py stays green. | phrase: A test that already passes is recorded green on arrival with the SHA, never faked red. |\n| done_when: No src/ caller of archive.snapshot_cell is added: on the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py (Coordinator #32, ruling 3). | phrase: On your final commit git grep -n \"snapshot_cell(\" -- src prints only the definition in src/harness_bench/archive.py. |\n| done_when: A T2 plan record, if your skill wants one, is docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted). | phrase: If your skill wants a T2 plan record, write it at docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted). |\n| done_when: The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. | phrase: Gate (R-104; each command on its own line, exit status read, never behind a pipe) |\n| done_when: A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed |\n| done_when: Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call. | phrase: Commit named paths only, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call. |\n| done_when: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2). | phrase: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green. |\n| done_when: The served model id is the first line of the final report (README section 4), read from the Codex native record. | phrase: Report your served model id on the first line of your final message, read from the Codex native record. |\n| not_in_scope: The ALLOWED entry (\"archive\", \"snapshot_cell\", \"shutil.copytree\") in tests/test_atomic_sites.py: J1c deletes it. | phrase: is J1c's to delete, not yours |\n| not_in_scope: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c); views beyond _token_cross_check, the lifecycle TABLE rules, plan turns, CellView.task and CellView.rep, verdicts._task_rep (J1d); the section 11 mutant rows and spike S-J4 (J1e). | phrase: Not yours: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c) |\n| not_in_scope: status.py: X-INTF holds its text() hunk after J1a's join (serial spine 5). | phrase: status.py (X-INTF holds its text() hunk after J1a's join, serial spine 5) |\n| not_in_scope: mutate_check with --touched, and the whole suite: they are the Leader's, once per batch. | phrase: The whole suite is the Leader's. |\n| not_in_scope: Killing any process by name or pattern; only PIDs this session started. | phrase: Never kill a process by name or pattern, only PIDs you started. |\n\nReferences\n- build/eval-x-j1b: unresolved (not found)\n- docs/coordination/eval-wave2-e234/x-j1.md's: unresolved (not found; nearest: docs/coordination/eval-wave2-e234/x-j1.md)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b\n- docs/coordination/eval-wave2-e234/README.md: docs/coordination/eval-wave2-e234/README.md sha256 e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701\n- docs/coordination/eval-wave2-e234/x-j1.md: docs/coordination/eval-wave2-e234/x-j1.md sha256 8db0a5c2e1827c4a648d7351a3444473be142d955e724cce2644e7abd32bf437\n- docs/design/eval-multi-turn.md: docs/design/eval-multi-turn.md sha256 e32527dad56e2c97cd4340c492f0d1c2e679b74853f5d208139ef40ccb8ae847\n- integrate/e2e4-18: unresolved (not found)\n- tests/test_multiturn.py: unresolved (not found)\n- tests/test_engine.py: tests/test_engine.py sha256 df24bd350ed2a6f8d16a4b80e2cf53c7720fe0c99b6374cfe31157447b3e8d26\n- tests/test_driver.py: tests/test_driver.py sha256 453e01a8f4511deb6676036905c88b71485447aecd1c876b00bf2cb7519d762d\n- src/: unresolved (not found)\n- src/harness_bench/archive.py: src/harness_bench/archive.py sha256 1b18d1d166fc15a7686b6ea28a3fb746bdee97d9a44477ca8b1137de705b13cf\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- docs/plans/eval-x-j1b.md: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d\n- tests/mutations/engine.json: tests/mutations/engine.json sha256 ebae6d0ee051f94b00ece947f0184f35abd72dd666ce8a1f1d1a66a31b56d2bc\n- tests/mutations/driver.json: tests/mutations/driver.json sha256 eb20d524a79665c316ff3b3205b13ad5886b4fbb0575caf1cecd310b223d1390\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- status.py: src/harness_bench/status.py sha256 71e2b1feb7086ec5da7ee97931109bb96e90d17c090edb0cbd0de643f70667a7\n\nAssumptions\n- none\n\nDecision requests\n- none\n\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: three fix commits (K4(2), K4(3), K4(4)) on build/eval-x-j1b\njoin_rule: the R-104 worker gate; the Leader joins into integrate/e2e4-18, re-runs a red SHA and runs git grep -n \"snapshot_cell(\" -- src (Coordinator #32, ruling 3)\ncontainment: own worktree based on the integration head; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: a red-only end, a deadline or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet, served claude-sonnet-5-5) in the same tree (R-87 Option 1)\n\nProvenance\nraw id: al-01M46HB94V9Q5H72XY13ZR0NN7\nraw sha256: 424b464f0c1266772ba57ed6596429fd08086e00950ff65799ee4c8be2071dcf\ncompiler model: claude-opus-5-5\nengine seconds: 0.013\ntokens: not recorded\ngate: pass\ndispatchable: true\nWork only in your assigned cwd. Follow the plan's owned paths and return evidence to the Owner.",
+      "session": "x-j1b-e1e4",
+      "shortname": "eval-x-j1b-dispatch",
+      "skill": null,
+      "summary": "prompt logged for reuse",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M46N192WCZ9NGFVVAGACCKRW",
-      "shortname": "optimize-graph-eval-x-j1b",
-      "datetime": "2026-10-05T18:25:51Z",
-      "session": "x-j1b-e1e4",
-      "prompt": "python docs/ai-forward-pack/scripts/audit-log.py start --session x-j1b-e1e4 --skill coordination-worker\nGoal state\nGoal: Following docs/coordination/eval-wave2-e234/x-j1.md (owned paths, names, acceptance items 2 and 3), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md and W1-J rev 2 (docs/design/eval-multi-turn.md sections 4.1, 4.2, 4.5, 11), all binding: build dispatch J1b of X-J1, the turn loop, on build/eval-x-j1b from the integration head after the X-J1a join, in three fix commits on J1a's landed names: K4(2) usage summed over every returned turn, with views._token_cross_check's ACP side summed over the turn_ended rows present; K4(3) only end_turn continues and turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every returned turn before the continue or cancel decision; K4(4) one handshake per Session and an idempotent Session.close(). Each commit removes its own J1b xfail markers in tests/test_multiturn.py (Coordinator #33 at bcd35532; J1a's names read at a3cfbcfe).\nDone when: The base is the integration head at dispatch (integrate/e2e4-18 after the X-J1a join), never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing, stop and report.; `git merge-base --is-ancestor a3cfbcfe HEAD` exits 0; if it exits non-zero, X-J1a is not in the base: stop and report.; J1a's landed names are built on, never defined a second time (DM7): driver.TurnRecord, Session and Session.close(), open_session, send_turn, run_turn, TurnResult.turns; engine._attempt with record_session_opened, _snapshot_turn, _after_append, COMPLETED_STOP_REASONS; lifecycle.is_cell_start; the archive snapshot functions; views._token_cross_check.; K4(2) lands in its own commit: usage summed over every returned turn, the ACP side of views._token_cross_check the sum over the turn_ended rows present, a turn with no row not recorded, never 0; T-ENG-4 (acp_turn and native_record, no HB-VAL-005) and T-ENG-11 green with their J1b markers removed.; K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response, before the continue or cancel decision, next one of snapshot, final, stop or cancel; no row when send_turn returned None; T-ENG-6 and T-ENG-10 green with their J1b markers removed.; K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed.; The xfail markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them.; Before the first fix, the six J1b tests are re-run with `uv run pytest -q --runxfail` on the base and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added.; A test that already passes is recorded green on arrival with the SHA, never faked red; every existing test in tests/test_engine.py, tests/test_driver.py and tests/test_multiturn.py stays green.; No src/ caller of archive.snapshot_cell is added: on the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py (Coordinator #32, ruling 3).; A T2 plan record, if your skill wants one, is docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted).; The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.; A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call.; A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2).; The served model id is the first line of the final report (README section 4), read from the Codex native record.\nNot in scope: The ALLOWED entry (\"archive\", \"snapshot_cell\", \"shutil.copytree\") in tests/test_atomic_sites.py: J1c deletes it.; K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c); views beyond _token_cross_check, the lifecycle TABLE rules, plan turns, CellView.task and CellView.rep, verdicts._task_rep (J1d); the section 11 mutant rows and spike S-J4 (J1e).; status.py: X-INTF holds its text() hunk after J1a's join (serial spine 5).; mutate_check with --touched, and the whole suite: they are the Leader's, once per batch.; Killing any process by name or pattern; only PIDs this session started.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens per dispatch\nMain-line budget: within X-J1's 320 calls across 5 dispatches; 3,300 s this dispatch\n\nTrace\n| clause | trace |\n|---|---|\n| done_when: The base is the integration head at dispatch (integrate/e2e4-18 after the X-J1a join), never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing, stop and report. | phrase: Stop and report if git log --oneline -1 --grep \"W0 seam contracts rev 6.11\" prints nothing. |\n| done_when: `git merge-base --is-ancestor a3cfbcfe HEAD` exits 0; if it exits non-zero, X-J1a is not in the base: stop and report. | phrase: Stop and report if git merge-base --is-ancestor a3cfbcfe HEAD exits non-zero |\n| done_when: J1a's landed names are built on, never defined a second time (DM7): driver.TurnRecord, Session and Session.close(), open_session, send_turn, run_turn, TurnResult.turns; engine._attempt with record_session_opened, _snapshot_turn, _after_append, COMPLETED_STOP_REASONS; lifecycle.is_cell_start; the archive snapshot functions; views._token_cross_check. | phrase: J1a's landed names at a3cfbcfe are the names you build on, never a second definition (DM7) |\n| done_when: K4(2) lands in its own commit: usage summed over every returned turn, the ACP side of views._token_cross_check the sum over the turn_ended rows present, a turn with no row not recorded, never 0; T-ENG-4 (acp_turn and native_record, no HB-VAL-005) and T-ENG-11 green with their J1b markers removed. | phrase: usage is summed over every returned turn; the ACP side of views._token_cross_check is the sum over the turn_ended rows present |\n| done_when: K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response, before the continue or cancel decision, next one of snapshot, final, stop or cancel; no row when send_turn returned None; T-ENG-6 and T-ENG-10 green with their J1b markers removed. | phrase: only end_turn continues, and cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response |\n| done_when: K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed. | phrase: one handshake per Session and an idempotent Session.close() |\n| done_when: The xfail markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them. | phrase: The markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them. |\n| done_when: Before the first fix, the six J1b tests are re-run with `uv run pytest -q --runxfail` on the base and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added. | phrase: re-run the six J1b tests with uv run pytest -q --runxfail on your base and paste each failing assertion line into your first fix commit's message |\n| done_when: A test that already passes is recorded green on arrival with the SHA, never faked red; every existing test in tests/test_engine.py, tests/test_driver.py and tests/test_multiturn.py stays green. | phrase: A test that already passes is recorded green on arrival with the SHA, never faked red. |\n| done_when: No src/ caller of archive.snapshot_cell is added: on the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py (Coordinator #32, ruling 3). | phrase: On your final commit git grep -n \"snapshot_cell(\" -- src prints only the definition in src/harness_bench/archive.py. |\n| done_when: A T2 plan record, if your skill wants one, is docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted). | phrase: If your skill wants a T2 plan record, write it at docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted). |\n| done_when: The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. | phrase: Gate (R-104; each command on its own line, exit status read, never behind a pipe) |\n| done_when: A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed |\n| done_when: Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call. | phrase: Commit named paths only, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call. |\n| done_when: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2). | phrase: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green. |\n| done_when: The served model id is the first line of the final report (README section 4), read from the Codex native record. | phrase: Report your served model id on the first line of your final message, read from the Codex native record. |\n| not_in_scope: The ALLOWED entry (\"archive\", \"snapshot_cell\", \"shutil.copytree\") in tests/test_atomic_sites.py: J1c deletes it. | phrase: is J1c's to delete, not yours |\n| not_in_scope: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c); views beyond _token_cross_check, the lifecycle TABLE rules, plan turns, CellView.task and CellView.rep, verdicts._task_rep (J1d); the section 11 mutant rows and spike S-J4 (J1e). | phrase: Not yours: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c) |\n| not_in_scope: status.py: X-INTF holds its text() hunk after J1a's join (serial spine 5). | phrase: status.py (X-INTF holds its text() hunk after J1a's join, serial spine 5) |\n| not_in_scope: mutate_check with --touched, and the whole suite: they are the Leader's, once per batch. | phrase: The whole suite is the Leader's. |\n| not_in_scope: Killing any process by name or pattern; only PIDs this session started. | phrase: Never kill a process by name or pattern, only PIDs you started. |\n\nReferences\n- build/eval-x-j1b: unresolved (not found)\n- docs/coordination/eval-wave2-e234/x-j1.md's: unresolved (not found; nearest: docs/coordination/eval-wave2-e234/x-j1.md)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b\n- docs/coordination/eval-wave2-e234/README.md: docs/coordination/eval-wave2-e234/README.md sha256 e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701\n- docs/coordination/eval-wave2-e234/x-j1.md: docs/coordination/eval-wave2-e234/x-j1.md sha256 8db0a5c2e1827c4a648d7351a3444473be142d955e724cce2644e7abd32bf437\n- docs/design/eval-multi-turn.md: docs/design/eval-multi-turn.md sha256 e32527dad56e2c97cd4340c492f0d1c2e679b74853f5d208139ef40ccb8ae847\n- integrate/e2e4-18: unresolved (not found)\n- tests/test_multiturn.py: unresolved (not found)\n- tests/test_engine.py: tests/test_engine.py sha256 df24bd350ed2a6f8d16a4b80e2cf53c7720fe0c99b6374cfe31157447b3e8d26\n- tests/test_driver.py: tests/test_driver.py sha256 453e01a8f4511deb6676036905c88b71485447aecd1c876b00bf2cb7519d762d\n- src/: unresolved (not found)\n- src/harness_bench/archive.py: src/harness_bench/archive.py sha256 1b18d1d166fc15a7686b6ea28a3fb746bdee97d9a44477ca8b1137de705b13cf\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- docs/plans/eval-x-j1b.md: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d\n- tests/mutations/engine.json: tests/mutations/engine.json sha256 ebae6d0ee051f94b00ece947f0184f35abd72dd666ce8a1f1d1a66a31b56d2bc\n- tests/mutations/driver.json: tests/mutations/driver.json sha256 eb20d524a79665c316ff3b3205b13ad5886b4fbb0575caf1cecd310b223d1390\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- status.py: src/harness_bench/status.py sha256 71e2b1feb7086ec5da7ee97931109bb96e90d17c090edb0cbd0de643f70667a7\n\nAssumptions\n- none\n\nDecision requests\n- none\n\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: three fix commits (K4(2), K4(3), K4(4)) on build/eval-x-j1b\njoin_rule: the R-104 worker gate; the Leader joins into integrate/e2e4-18, re-runs a red SHA and runs git grep -n \"snapshot_cell(\" -- src (Coordinator #32, ruling 3)\ncontainment: own worktree based on the integration head; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: a red-only end, a deadline or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet, served claude-sonnet-5-5) in the same tree (R-87 Option 1)\n\nProvenance\nraw id: al-01M46HB94V9Q5H72XY13ZR0NN7\nraw sha256: 424b464f0c1266772ba57ed6596429fd08086e00950ff65799ee4c8be2071dcf\ncompiler model: claude-opus-5-5\nengine seconds: 0.013\ntokens: not recorded\ngate: pass\ndispatchable: true\nWork only in your assigned cwd. Follow the plan's owned paths and return evidence to the Owner.",
-      "summary": "Create-only plan 9d732a0a, index seam4f7e62c9, caller seamc323b5a7; planned nine serial nodes, zero agents, immutable base/red/gate floors. Measured base guard200 passed66.30s and seven J1b assertion reds2.34s. Actual B/R/P done, S pending rulings, U/D/C not delivered, G partial, H hand-back. No duration prediction; final runtime cannot be built under simultaneous float-seconds/integers-only ledger and excluded single-turn replay constraints. Missing skill graph target corrected in unshared creation commit; validate0. Independent join review remains Leader-owned. Plan remained create-only after creation; actual delivery in audit.",
-      "kind": "skill",
-      "skill": "optimize-graph",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/plans/eval-x-j1b.md",
         "docs/plans/eval-x-j1b.html"
       ],
-      "tags": [],
-      "outcome": "partial",
       "compiled_from": "al-01M46HBJENC6EPR6KHGXQEGPTZ",
-      "goal": "Build the three J1b turn-loop fix commits on integration base be2df9cb",
+      "datetime": "2026-10-05T18:25:51Z",
       "done_when": "Scoped fix commits and all required R-104 evidence; otherwise explicit red-only follow-on under the dispatch fallback",
-      "tier": "T2",
+      "duration_seconds": 0.0,
       "fan_out": 0,
+      "goal": "Build the three J1b turn-loop fix commits on integration base be2df9cb",
+      "id": "al-01M46N192WCZ9NGFVVAGACCKRW",
+      "kind": "skill",
+      "outcome": "partial",
+      "prompt": "python docs/ai-forward-pack/scripts/audit-log.py start --session x-j1b-e1e4 --skill coordination-worker\nGoal state\nGoal: Following docs/coordination/eval-wave2-e234/x-j1.md (owned paths, names, acceptance items 2 and 3), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md and W1-J rev 2 (docs/design/eval-multi-turn.md sections 4.1, 4.2, 4.5, 11), all binding: build dispatch J1b of X-J1, the turn loop, on build/eval-x-j1b from the integration head after the X-J1a join, in three fix commits on J1a's landed names: K4(2) usage summed over every returned turn, with views._token_cross_check's ACP side summed over the turn_ended rows present; K4(3) only end_turn continues and turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every returned turn before the continue or cancel decision; K4(4) one handshake per Session and an idempotent Session.close(). Each commit removes its own J1b xfail markers in tests/test_multiturn.py (Coordinator #33 at bcd35532; J1a's names read at a3cfbcfe).\nDone when: The base is the integration head at dispatch (integrate/e2e4-18 after the X-J1a join), never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing, stop and report.; `git merge-base --is-ancestor a3cfbcfe HEAD` exits 0; if it exits non-zero, X-J1a is not in the base: stop and report.; J1a's landed names are built on, never defined a second time (DM7): driver.TurnRecord, Session and Session.close(), open_session, send_turn, run_turn, TurnResult.turns; engine._attempt with record_session_opened, _snapshot_turn, _after_append, COMPLETED_STOP_REASONS; lifecycle.is_cell_start; the archive snapshot functions; views._token_cross_check.; K4(2) lands in its own commit: usage summed over every returned turn, the ACP side of views._token_cross_check the sum over the turn_ended rows present, a turn with no row not recorded, never 0; T-ENG-4 (acp_turn and native_record, no HB-VAL-005) and T-ENG-11 green with their J1b markers removed.; K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response, before the continue or cancel decision, next one of snapshot, final, stop or cancel; no row when send_turn returned None; T-ENG-6 and T-ENG-10 green with their J1b markers removed.; K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed.; The xfail markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them.; Before the first fix, the six J1b tests are re-run with `uv run pytest -q --runxfail` on the base and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added.; A test that already passes is recorded green on arrival with the SHA, never faked red; every existing test in tests/test_engine.py, tests/test_driver.py and tests/test_multiturn.py stays green.; No src/ caller of archive.snapshot_cell is added: on the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py (Coordinator #32, ruling 3).; A T2 plan record, if your skill wants one, is docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted).; The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.; A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call.; A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2).; The served model id is the first line of the final report (README section 4), read from the Codex native record.\nNot in scope: The ALLOWED entry (\"archive\", \"snapshot_cell\", \"shutil.copytree\") in tests/test_atomic_sites.py: J1c deletes it.; K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c); views beyond _token_cross_check, the lifecycle TABLE rules, plan turns, CellView.task and CellView.rep, verdicts._task_rep (J1d); the section 11 mutant rows and spike S-J4 (J1e).; status.py: X-INTF holds its text() hunk after J1a's join (serial spine 5).; mutate_check with --touched, and the whole suite: they are the Leader's, once per batch.; Killing any process by name or pattern; only PIDs this session started.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens per dispatch\nMain-line budget: within X-J1's 320 calls across 5 dispatches; 3,300 s this dispatch\n\nTrace\n| clause | trace |\n|---|---|\n| done_when: The base is the integration head at dispatch (integrate/e2e4-18 after the X-J1a join), never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing, stop and report. | phrase: Stop and report if git log --oneline -1 --grep \"W0 seam contracts rev 6.11\" prints nothing. |\n| done_when: `git merge-base --is-ancestor a3cfbcfe HEAD` exits 0; if it exits non-zero, X-J1a is not in the base: stop and report. | phrase: Stop and report if git merge-base --is-ancestor a3cfbcfe HEAD exits non-zero |\n| done_when: J1a's landed names are built on, never defined a second time (DM7): driver.TurnRecord, Session and Session.close(), open_session, send_turn, run_turn, TurnResult.turns; engine._attempt with record_session_opened, _snapshot_turn, _after_append, COMPLETED_STOP_REASONS; lifecycle.is_cell_start; the archive snapshot functions; views._token_cross_check. | phrase: J1a's landed names at a3cfbcfe are the names you build on, never a second definition (DM7) |\n| done_when: K4(2) lands in its own commit: usage summed over every returned turn, the ACP side of views._token_cross_check the sum over the turn_ended rows present, a turn with no row not recorded, never 0; T-ENG-4 (acp_turn and native_record, no HB-VAL-005) and T-ENG-11 green with their J1b markers removed. | phrase: usage is summed over every returned turn; the ACP side of views._token_cross_check is the sum over the turn_ended rows present |\n| done_when: K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response, before the continue or cancel decision, next one of snapshot, final, stop or cancel; no row when send_turn returned None; T-ENG-6 and T-ENG-10 green with their J1b markers removed. | phrase: only end_turn continues, and cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response |\n| done_when: K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed. | phrase: one handshake per Session and an idempotent Session.close() |\n| done_when: The xfail markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them. | phrase: The markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them. |\n| done_when: Before the first fix, the six J1b tests are re-run with `uv run pytest -q --runxfail` on the base and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added. | phrase: re-run the six J1b tests with uv run pytest -q --runxfail on your base and paste each failing assertion line into your first fix commit's message |\n| done_when: A test that already passes is recorded green on arrival with the SHA, never faked red; every existing test in tests/test_engine.py, tests/test_driver.py and tests/test_multiturn.py stays green. | phrase: A test that already passes is recorded green on arrival with the SHA, never faked red. |\n| done_when: No src/ caller of archive.snapshot_cell is added: on the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py (Coordinator #32, ruling 3). | phrase: On your final commit git grep -n \"snapshot_cell(\" -- src prints only the definition in src/harness_bench/archive.py. |\n| done_when: A T2 plan record, if your skill wants one, is docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted). | phrase: If your skill wants a T2 plan record, write it at docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted). |\n| done_when: The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. | phrase: Gate (R-104; each command on its own line, exit status read, never behind a pipe) |\n| done_when: A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed |\n| done_when: Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call. | phrase: Commit named paths only, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call. |\n| done_when: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2). | phrase: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green. |\n| done_when: The served model id is the first line of the final report (README section 4), read from the Codex native record. | phrase: Report your served model id on the first line of your final message, read from the Codex native record. |\n| not_in_scope: The ALLOWED entry (\"archive\", \"snapshot_cell\", \"shutil.copytree\") in tests/test_atomic_sites.py: J1c deletes it. | phrase: is J1c's to delete, not yours |\n| not_in_scope: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c); views beyond _token_cross_check, the lifecycle TABLE rules, plan turns, CellView.task and CellView.rep, verdicts._task_rep (J1d); the section 11 mutant rows and spike S-J4 (J1e). | phrase: Not yours: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c) |\n| not_in_scope: status.py: X-INTF holds its text() hunk after J1a's join (serial spine 5). | phrase: status.py (X-INTF holds its text() hunk after J1a's join, serial spine 5) |\n| not_in_scope: mutate_check with --touched, and the whole suite: they are the Leader's, once per batch. | phrase: The whole suite is the Leader's. |\n| not_in_scope: Killing any process by name or pattern; only PIDs this session started. | phrase: Never kill a process by name or pattern, only PIDs you started. |\n\nReferences\n- build/eval-x-j1b: unresolved (not found)\n- docs/coordination/eval-wave2-e234/x-j1.md's: unresolved (not found; nearest: docs/coordination/eval-wave2-e234/x-j1.md)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b\n- docs/coordination/eval-wave2-e234/README.md: docs/coordination/eval-wave2-e234/README.md sha256 e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701\n- docs/coordination/eval-wave2-e234/x-j1.md: docs/coordination/eval-wave2-e234/x-j1.md sha256 8db0a5c2e1827c4a648d7351a3444473be142d955e724cce2644e7abd32bf437\n- docs/design/eval-multi-turn.md: docs/design/eval-multi-turn.md sha256 e32527dad56e2c97cd4340c492f0d1c2e679b74853f5d208139ef40ccb8ae847\n- integrate/e2e4-18: unresolved (not found)\n- tests/test_multiturn.py: unresolved (not found)\n- tests/test_engine.py: tests/test_engine.py sha256 df24bd350ed2a6f8d16a4b80e2cf53c7720fe0c99b6374cfe31157447b3e8d26\n- tests/test_driver.py: tests/test_driver.py sha256 453e01a8f4511deb6676036905c88b71485447aecd1c876b00bf2cb7519d762d\n- src/: unresolved (not found)\n- src/harness_bench/archive.py: src/harness_bench/archive.py sha256 1b18d1d166fc15a7686b6ea28a3fb746bdee97d9a44477ca8b1137de705b13cf\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- docs/plans/eval-x-j1b.md: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d\n- tests/mutations/engine.json: tests/mutations/engine.json sha256 ebae6d0ee051f94b00ece947f0184f35abd72dd666ce8a1f1d1a66a31b56d2bc\n- tests/mutations/driver.json: tests/mutations/driver.json sha256 eb20d524a79665c316ff3b3205b13ad5886b4fbb0575caf1cecd310b223d1390\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- status.py: src/harness_bench/status.py sha256 71e2b1feb7086ec5da7ee97931109bb96e90d17c090edb0cbd0de643f70667a7\n\nAssumptions\n- none\n\nDecision requests\n- none\n\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: three fix commits (K4(2), K4(3), K4(4)) on build/eval-x-j1b\njoin_rule: the R-104 worker gate; the Leader joins into integrate/e2e4-18, re-runs a red SHA and runs git grep -n \"snapshot_cell(\" -- src (Coordinator #32, ruling 3)\ncontainment: own worktree based on the integration head; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: a red-only end, a deadline or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet, served claude-sonnet-5-5) in the same tree (R-87 Option 1)\n\nProvenance\nraw id: al-01M46HB94V9Q5H72XY13ZR0NN7\nraw sha256: 424b464f0c1266772ba57ed6596429fd08086e00950ff65799ee4c8be2071dcf\ncompiler model: claude-opus-5-5\nengine seconds: 0.013\ntokens: not recorded\ngate: pass\ndispatchable: true\nWork only in your assigned cwd. Follow the plan's owned paths and return evidence to the Owner.",
+      "session": "x-j1b-e1e4",
+      "shortname": "optimize-graph-eval-x-j1b",
+      "skill": "optimize-graph",
       "started_at": "2026-10-05T18:25:51Z",
-      "duration_seconds": 0.0
+      "summary": "Create-only plan 9d732a0a, index seam4f7e62c9, caller seamc323b5a7; planned nine serial nodes, zero agents, immutable base/red/gate floors. Measured base guard200 passed66.30s and seven J1b assertion reds2.34s. Actual B/R/P done, S pending rulings, U/D/C not delivered, G partial, H hand-back. No duration prediction; final runtime cannot be built under simultaneous float-seconds/integers-only ledger and excluded single-turn replay constraints. Missing skill graph target corrected in unshared creation commit; validate0. Independent join review remains Leader-owned. Plan remained create-only after creation; actual delivery in audit.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
     },
     {
-      "id": "al-01M46N3DQWDT1PB6N3HQ6QMVRK",
-      "shortname": "implement-eval-x-j1b-partial",
-      "datetime": "2026-10-05T18:27:01Z",
-      "session": "x-j1b-e1e4",
-      "prompt": "python docs/ai-forward-pack/scripts/audit-log.py start --session x-j1b-e1e4 --skill coordination-worker\nGoal state\nGoal: Following docs/coordination/eval-wave2-e234/x-j1.md (owned paths, names, acceptance items 2 and 3), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md and W1-J rev 2 (docs/design/eval-multi-turn.md sections 4.1, 4.2, 4.5, 11), all binding: build dispatch J1b of X-J1, the turn loop, on build/eval-x-j1b from the integration head after the X-J1a join, in three fix commits on J1a's landed names: K4(2) usage summed over every returned turn, with views._token_cross_check's ACP side summed over the turn_ended rows present; K4(3) only end_turn continues and turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every returned turn before the continue or cancel decision; K4(4) one handshake per Session and an idempotent Session.close(). Each commit removes its own J1b xfail markers in tests/test_multiturn.py (Coordinator #33 at bcd35532; J1a's names read at a3cfbcfe).\nDone when: The base is the integration head at dispatch (integrate/e2e4-18 after the X-J1a join), never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing, stop and report.; `git merge-base --is-ancestor a3cfbcfe HEAD` exits 0; if it exits non-zero, X-J1a is not in the base: stop and report.; J1a's landed names are built on, never defined a second time (DM7): driver.TurnRecord, Session and Session.close(), open_session, send_turn, run_turn, TurnResult.turns; engine._attempt with record_session_opened, _snapshot_turn, _after_append, COMPLETED_STOP_REASONS; lifecycle.is_cell_start; the archive snapshot functions; views._token_cross_check.; K4(2) lands in its own commit: usage summed over every returned turn, the ACP side of views._token_cross_check the sum over the turn_ended rows present, a turn with no row not recorded, never 0; T-ENG-4 (acp_turn and native_record, no HB-VAL-005) and T-ENG-11 green with their J1b markers removed.; K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response, before the continue or cancel decision, next one of snapshot, final, stop or cancel; no row when send_turn returned None; T-ENG-6 and T-ENG-10 green with their J1b markers removed.; K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed.; The xfail markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them.; Before the first fix, the six J1b tests are re-run with `uv run pytest -q --runxfail` on the base and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added.; A test that already passes is recorded green on arrival with the SHA, never faked red; every existing test in tests/test_engine.py, tests/test_driver.py and tests/test_multiturn.py stays green.; No src/ caller of archive.snapshot_cell is added: on the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py (Coordinator #32, ruling 3).; A T2 plan record, if your skill wants one, is docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted).; The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.; A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call.; A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2).; The served model id is the first line of the final report (README section 4), read from the Codex native record.\nNot in scope: The ALLOWED entry (\"archive\", \"snapshot_cell\", \"shutil.copytree\") in tests/test_atomic_sites.py: J1c deletes it.; K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c); views beyond _token_cross_check, the lifecycle TABLE rules, plan turns, CellView.task and CellView.rep, verdicts._task_rep (J1d); the section 11 mutant rows and spike S-J4 (J1e).; status.py: X-INTF holds its text() hunk after J1a's join (serial spine 5).; mutate_check with --touched, and the whole suite: they are the Leader's, once per batch.; Killing any process by name or pattern; only PIDs this session started.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens per dispatch\nMain-line budget: within X-J1's 320 calls across 5 dispatches; 3,300 s this dispatch\n\nTrace\n| clause | trace |\n|---|---|\n| done_when: The base is the integration head at dispatch (integrate/e2e4-18 after the X-J1a join), never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing, stop and report. | phrase: Stop and report if git log --oneline -1 --grep \"W0 seam contracts rev 6.11\" prints nothing. |\n| done_when: `git merge-base --is-ancestor a3cfbcfe HEAD` exits 0; if it exits non-zero, X-J1a is not in the base: stop and report. | phrase: Stop and report if git merge-base --is-ancestor a3cfbcfe HEAD exits non-zero |\n| done_when: J1a's landed names are built on, never defined a second time (DM7): driver.TurnRecord, Session and Session.close(), open_session, send_turn, run_turn, TurnResult.turns; engine._attempt with record_session_opened, _snapshot_turn, _after_append, COMPLETED_STOP_REASONS; lifecycle.is_cell_start; the archive snapshot functions; views._token_cross_check. | phrase: J1a's landed names at a3cfbcfe are the names you build on, never a second definition (DM7) |\n| done_when: K4(2) lands in its own commit: usage summed over every returned turn, the ACP side of views._token_cross_check the sum over the turn_ended rows present, a turn with no row not recorded, never 0; T-ENG-4 (acp_turn and native_record, no HB-VAL-005) and T-ENG-11 green with their J1b markers removed. | phrase: usage is summed over every returned turn; the ACP side of views._token_cross_check is the sum over the turn_ended rows present |\n| done_when: K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response, before the continue or cancel decision, next one of snapshot, final, stop or cancel; no row when send_turn returned None; T-ENG-6 and T-ENG-10 green with their J1b markers removed. | phrase: only end_turn continues, and cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response |\n| done_when: K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed. | phrase: one handshake per Session and an idempotent Session.close() |\n| done_when: The xfail markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them. | phrase: The markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them. |\n| done_when: Before the first fix, the six J1b tests are re-run with `uv run pytest -q --runxfail` on the base and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added. | phrase: re-run the six J1b tests with uv run pytest -q --runxfail on your base and paste each failing assertion line into your first fix commit's message |\n| done_when: A test that already passes is recorded green on arrival with the SHA, never faked red; every existing test in tests/test_engine.py, tests/test_driver.py and tests/test_multiturn.py stays green. | phrase: A test that already passes is recorded green on arrival with the SHA, never faked red. |\n| done_when: No src/ caller of archive.snapshot_cell is added: on the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py (Coordinator #32, ruling 3). | phrase: On your final commit git grep -n \"snapshot_cell(\" -- src prints only the definition in src/harness_bench/archive.py. |\n| done_when: A T2 plan record, if your skill wants one, is docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted). | phrase: If your skill wants a T2 plan record, write it at docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted). |\n| done_when: The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. | phrase: Gate (R-104; each command on its own line, exit status read, never behind a pipe) |\n| done_when: A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed |\n| done_when: Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call. | phrase: Commit named paths only, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call. |\n| done_when: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2). | phrase: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green. |\n| done_when: The served model id is the first line of the final report (README section 4), read from the Codex native record. | phrase: Report your served model id on the first line of your final message, read from the Codex native record. |\n| not_in_scope: The ALLOWED entry (\"archive\", \"snapshot_cell\", \"shutil.copytree\") in tests/test_atomic_sites.py: J1c deletes it. | phrase: is J1c's to delete, not yours |\n| not_in_scope: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c); views beyond _token_cross_check, the lifecycle TABLE rules, plan turns, CellView.task and CellView.rep, verdicts._task_rep (J1d); the section 11 mutant rows and spike S-J4 (J1e). | phrase: Not yours: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c) |\n| not_in_scope: status.py: X-INTF holds its text() hunk after J1a's join (serial spine 5). | phrase: status.py (X-INTF holds its text() hunk after J1a's join, serial spine 5) |\n| not_in_scope: mutate_check with --touched, and the whole suite: they are the Leader's, once per batch. | phrase: The whole suite is the Leader's. |\n| not_in_scope: Killing any process by name or pattern; only PIDs this session started. | phrase: Never kill a process by name or pattern, only PIDs you started. |\n\nReferences\n- build/eval-x-j1b: unresolved (not found)\n- docs/coordination/eval-wave2-e234/x-j1.md's: unresolved (not found; nearest: docs/coordination/eval-wave2-e234/x-j1.md)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b\n- docs/coordination/eval-wave2-e234/README.md: docs/coordination/eval-wave2-e234/README.md sha256 e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701\n- docs/coordination/eval-wave2-e234/x-j1.md: docs/coordination/eval-wave2-e234/x-j1.md sha256 8db0a5c2e1827c4a648d7351a3444473be142d955e724cce2644e7abd32bf437\n- docs/design/eval-multi-turn.md: docs/design/eval-multi-turn.md sha256 e32527dad56e2c97cd4340c492f0d1c2e679b74853f5d208139ef40ccb8ae847\n- integrate/e2e4-18: unresolved (not found)\n- tests/test_multiturn.py: unresolved (not found)\n- tests/test_engine.py: tests/test_engine.py sha256 df24bd350ed2a6f8d16a4b80e2cf53c7720fe0c99b6374cfe31157447b3e8d26\n- tests/test_driver.py: tests/test_driver.py sha256 453e01a8f4511deb6676036905c88b71485447aecd1c876b00bf2cb7519d762d\n- src/: unresolved (not found)\n- src/harness_bench/archive.py: src/harness_bench/archive.py sha256 1b18d1d166fc15a7686b6ea28a3fb746bdee97d9a44477ca8b1137de705b13cf\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- docs/plans/eval-x-j1b.md: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d\n- tests/mutations/engine.json: tests/mutations/engine.json sha256 ebae6d0ee051f94b00ece947f0184f35abd72dd666ce8a1f1d1a66a31b56d2bc\n- tests/mutations/driver.json: tests/mutations/driver.json sha256 eb20d524a79665c316ff3b3205b13ad5886b4fbb0575caf1cecd310b223d1390\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- status.py: src/harness_bench/status.py sha256 71e2b1feb7086ec5da7ee97931109bb96e90d17c090edb0cbd0de643f70667a7\n\nAssumptions\n- none\n\nDecision requests\n- none\n\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: three fix commits (K4(2), K4(3), K4(4)) on build/eval-x-j1b\njoin_rule: the R-104 worker gate; the Leader joins into integrate/e2e4-18, re-runs a red SHA and runs git grep -n \"snapshot_cell(\" -- src (Coordinator #32, ruling 3)\ncontainment: own worktree based on the integration head; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: a red-only end, a deadline or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet, served claude-sonnet-5-5) in the same tree (R-87 Option 1)\n\nProvenance\nraw id: al-01M46HB94V9Q5H72XY13ZR0NN7\nraw sha256: 424b464f0c1266772ba57ed6596429fd08086e00950ff65799ee4c8be2071dcf\ncompiler model: claude-opus-5-5\nengine seconds: 0.013\ntokens: not recorded\ngate: pass\ndispatchable: true\nWork only in your assigned cwd. Follow the plan's owned paths and return evidence to the Owner.",
-      "summary": "Partial, no K4 fix delivered. Basebe2df9cb contains W0rev6.11 and ancestor a3cfbcfe. Guards200 passed; six J1b tests seven assertion failures. Proposed direct float turn_seconds broke canonical persistence; legacy single-turn rows require excluded lifecycle.TABLE mapping. Request req-01M46MGW3NFZJDWWJHCXKG69BP asks representation/mapping ruling; fallback is honest partial/Sonnet follow-on. Draft driver controls2 passed and existing engine/driver267 passed198.33s; draft reverted to preserve ordered fixes and saved .agents/x-j1b-evidence/proposed-fixes.diff, plus extra-controls.diff and first-fix-message.txt. No markers removed, no second definitions, no snapshot_cell caller. Code/source gates not certified as complete; independent reviewer and final mutations absent. Class text: INT-A float wire type unestablished; FIXT-A inherited fake usage; RIG-D stdin wrapper lacks closed; missing installed graph target. Controls observed failing before corrections. Audit instrumentation correction: optimize-graph al-01M46N192WCZ9NGFVVAGACCKRW duration measures its closing audit write only, because its start marker was set at closing, not its graph work; true separate graph duration not recorded. coordination-worker original grounding marker measures the complete dispatch.",
-      "kind": "skill",
-      "skill": "implement",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/plans/eval-x-j1b.md",
         "src/harness_bench/views.py"
       ],
-      "tags": [],
-      "outcome": "partial",
       "compiled_from": "al-01M46HBJENC6EPR6KHGXQEGPTZ",
-      "goal": "Build J1b usage, returned-turn decisions and Session lifetime in three ordered commits",
+      "datetime": "2026-10-05T18:27:01Z",
       "done_when": "All six J1b controls green with own markers removed plus complete R-104 worker evidence",
+      "fan_out": 0,
+      "goal": "Build J1b usage, returned-turn decisions and Session lifetime in three ordered commits",
+      "id": "al-01M46N3DQWDT1PB6N3HQ6QMVRK",
+      "kind": "skill",
+      "outcome": "partial",
+      "prompt": "python docs/ai-forward-pack/scripts/audit-log.py start --session x-j1b-e1e4 --skill coordination-worker\nGoal state\nGoal: Following docs/coordination/eval-wave2-e234/x-j1.md (owned paths, names, acceptance items 2 and 3), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md and W1-J rev 2 (docs/design/eval-multi-turn.md sections 4.1, 4.2, 4.5, 11), all binding: build dispatch J1b of X-J1, the turn loop, on build/eval-x-j1b from the integration head after the X-J1a join, in three fix commits on J1a's landed names: K4(2) usage summed over every returned turn, with views._token_cross_check's ACP side summed over the turn_ended rows present; K4(3) only end_turn continues and turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every returned turn before the continue or cancel decision; K4(4) one handshake per Session and an idempotent Session.close(). Each commit removes its own J1b xfail markers in tests/test_multiturn.py (Coordinator #33 at bcd35532; J1a's names read at a3cfbcfe).\nDone when: The base is the integration head at dispatch (integrate/e2e4-18 after the X-J1a join), never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing, stop and report.; `git merge-base --is-ancestor a3cfbcfe HEAD` exits 0; if it exits non-zero, X-J1a is not in the base: stop and report.; J1a's landed names are built on, never defined a second time (DM7): driver.TurnRecord, Session and Session.close(), open_session, send_turn, run_turn, TurnResult.turns; engine._attempt with record_session_opened, _snapshot_turn, _after_append, COMPLETED_STOP_REASONS; lifecycle.is_cell_start; the archive snapshot functions; views._token_cross_check.; K4(2) lands in its own commit: usage summed over every returned turn, the ACP side of views._token_cross_check the sum over the turn_ended rows present, a turn with no row not recorded, never 0; T-ENG-4 (acp_turn and native_record, no HB-VAL-005) and T-ENG-11 green with their J1b markers removed.; K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response, before the continue or cancel decision, next one of snapshot, final, stop or cancel; no row when send_turn returned None; T-ENG-6 and T-ENG-10 green with their J1b markers removed.; K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed.; The xfail markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them.; Before the first fix, the six J1b tests are re-run with `uv run pytest -q --runxfail` on the base and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added.; A test that already passes is recorded green on arrival with the SHA, never faked red; every existing test in tests/test_engine.py, tests/test_driver.py and tests/test_multiturn.py stays green.; No src/ caller of archive.snapshot_cell is added: on the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py (Coordinator #32, ruling 3).; A T2 plan record, if your skill wants one, is docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted).; The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.; A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call.; A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2).; The served model id is the first line of the final report (README section 4), read from the Codex native record.\nNot in scope: The ALLOWED entry (\"archive\", \"snapshot_cell\", \"shutil.copytree\") in tests/test_atomic_sites.py: J1c deletes it.; K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c); views beyond _token_cross_check, the lifecycle TABLE rules, plan turns, CellView.task and CellView.rep, verdicts._task_rep (J1d); the section 11 mutant rows and spike S-J4 (J1e).; status.py: X-INTF holds its text() hunk after J1a's join (serial spine 5).; mutate_check with --touched, and the whole suite: they are the Leader's, once per batch.; Killing any process by name or pattern; only PIDs this session started.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens per dispatch\nMain-line budget: within X-J1's 320 calls across 5 dispatches; 3,300 s this dispatch\n\nTrace\n| clause | trace |\n|---|---|\n| done_when: The base is the integration head at dispatch (integrate/e2e4-18 after the X-J1a join), never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing, stop and report. | phrase: Stop and report if git log --oneline -1 --grep \"W0 seam contracts rev 6.11\" prints nothing. |\n| done_when: `git merge-base --is-ancestor a3cfbcfe HEAD` exits 0; if it exits non-zero, X-J1a is not in the base: stop and report. | phrase: Stop and report if git merge-base --is-ancestor a3cfbcfe HEAD exits non-zero |\n| done_when: J1a's landed names are built on, never defined a second time (DM7): driver.TurnRecord, Session and Session.close(), open_session, send_turn, run_turn, TurnResult.turns; engine._attempt with record_session_opened, _snapshot_turn, _after_append, COMPLETED_STOP_REASONS; lifecycle.is_cell_start; the archive snapshot functions; views._token_cross_check. | phrase: J1a's landed names at a3cfbcfe are the names you build on, never a second definition (DM7) |\n| done_when: K4(2) lands in its own commit: usage summed over every returned turn, the ACP side of views._token_cross_check the sum over the turn_ended rows present, a turn with no row not recorded, never 0; T-ENG-4 (acp_turn and native_record, no HB-VAL-005) and T-ENG-11 green with their J1b markers removed. | phrase: usage is summed over every returned turn; the ACP side of views._token_cross_check is the sum over the turn_ended rows present |\n| done_when: K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response, before the continue or cancel decision, next one of snapshot, final, stop or cancel; no row when send_turn returned None; T-ENG-6 and T-ENG-10 green with their J1b markers removed. | phrase: only end_turn continues, and cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response |\n| done_when: K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed. | phrase: one handshake per Session and an idempotent Session.close() |\n| done_when: The xfail markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them. | phrase: The markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them. |\n| done_when: Before the first fix, the six J1b tests are re-run with `uv run pytest -q --runxfail` on the base and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added. | phrase: re-run the six J1b tests with uv run pytest -q --runxfail on your base and paste each failing assertion line into your first fix commit's message |\n| done_when: A test that already passes is recorded green on arrival with the SHA, never faked red; every existing test in tests/test_engine.py, tests/test_driver.py and tests/test_multiturn.py stays green. | phrase: A test that already passes is recorded green on arrival with the SHA, never faked red. |\n| done_when: No src/ caller of archive.snapshot_cell is added: on the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py (Coordinator #32, ruling 3). | phrase: On your final commit git grep -n \"snapshot_cell(\" -- src prints only the definition in src/harness_bench/archive.py. |\n| done_when: A T2 plan record, if your skill wants one, is docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted). | phrase: If your skill wants a T2 plan record, write it at docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted). |\n| done_when: The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. | phrase: Gate (R-104; each command on its own line, exit status read, never behind a pipe) |\n| done_when: A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed |\n| done_when: Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call. | phrase: Commit named paths only, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call. |\n| done_when: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2). | phrase: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green. |\n| done_when: The served model id is the first line of the final report (README section 4), read from the Codex native record. | phrase: Report your served model id on the first line of your final message, read from the Codex native record. |\n| not_in_scope: The ALLOWED entry (\"archive\", \"snapshot_cell\", \"shutil.copytree\") in tests/test_atomic_sites.py: J1c deletes it. | phrase: is J1c's to delete, not yours |\n| not_in_scope: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c); views beyond _token_cross_check, the lifecycle TABLE rules, plan turns, CellView.task and CellView.rep, verdicts._task_rep (J1d); the section 11 mutant rows and spike S-J4 (J1e). | phrase: Not yours: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c) |\n| not_in_scope: status.py: X-INTF holds its text() hunk after J1a's join (serial spine 5). | phrase: status.py (X-INTF holds its text() hunk after J1a's join, serial spine 5) |\n| not_in_scope: mutate_check with --touched, and the whole suite: they are the Leader's, once per batch. | phrase: The whole suite is the Leader's. |\n| not_in_scope: Killing any process by name or pattern; only PIDs this session started. | phrase: Never kill a process by name or pattern, only PIDs you started. |\n\nReferences\n- build/eval-x-j1b: unresolved (not found)\n- docs/coordination/eval-wave2-e234/x-j1.md's: unresolved (not found; nearest: docs/coordination/eval-wave2-e234/x-j1.md)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b\n- docs/coordination/eval-wave2-e234/README.md: docs/coordination/eval-wave2-e234/README.md sha256 e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701\n- docs/coordination/eval-wave2-e234/x-j1.md: docs/coordination/eval-wave2-e234/x-j1.md sha256 8db0a5c2e1827c4a648d7351a3444473be142d955e724cce2644e7abd32bf437\n- docs/design/eval-multi-turn.md: docs/design/eval-multi-turn.md sha256 e32527dad56e2c97cd4340c492f0d1c2e679b74853f5d208139ef40ccb8ae847\n- integrate/e2e4-18: unresolved (not found)\n- tests/test_multiturn.py: unresolved (not found)\n- tests/test_engine.py: tests/test_engine.py sha256 df24bd350ed2a6f8d16a4b80e2cf53c7720fe0c99b6374cfe31157447b3e8d26\n- tests/test_driver.py: tests/test_driver.py sha256 453e01a8f4511deb6676036905c88b71485447aecd1c876b00bf2cb7519d762d\n- src/: unresolved (not found)\n- src/harness_bench/archive.py: src/harness_bench/archive.py sha256 1b18d1d166fc15a7686b6ea28a3fb746bdee97d9a44477ca8b1137de705b13cf\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- docs/plans/eval-x-j1b.md: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d\n- tests/mutations/engine.json: tests/mutations/engine.json sha256 ebae6d0ee051f94b00ece947f0184f35abd72dd666ce8a1f1d1a66a31b56d2bc\n- tests/mutations/driver.json: tests/mutations/driver.json sha256 eb20d524a79665c316ff3b3205b13ad5886b4fbb0575caf1cecd310b223d1390\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- status.py: src/harness_bench/status.py sha256 71e2b1feb7086ec5da7ee97931109bb96e90d17c090edb0cbd0de643f70667a7\n\nAssumptions\n- none\n\nDecision requests\n- none\n\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: three fix commits (K4(2), K4(3), K4(4)) on build/eval-x-j1b\njoin_rule: the R-104 worker gate; the Leader joins into integrate/e2e4-18, re-runs a red SHA and runs git grep -n \"snapshot_cell(\" -- src (Coordinator #32, ruling 3)\ncontainment: own worktree based on the integration head; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: a red-only end, a deadline or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet, served claude-sonnet-5-5) in the same tree (R-87 Option 1)\n\nProvenance\nraw id: al-01M46HB94V9Q5H72XY13ZR0NN7\nraw sha256: 424b464f0c1266772ba57ed6596429fd08086e00950ff65799ee4c8be2071dcf\ncompiler model: claude-opus-5-5\nengine seconds: 0.013\ntokens: not recorded\ngate: pass\ndispatchable: true\nWork only in your assigned cwd. Follow the plan's owned paths and return evidence to the Owner.",
+      "session": "x-j1b-e1e4",
+      "shortname": "implement-eval-x-j1b-partial",
+      "skill": "implement",
+      "summary": "Partial, no K4 fix delivered. Basebe2df9cb contains W0rev6.11 and ancestor a3cfbcfe. Guards200 passed; six J1b tests seven assertion failures. Proposed direct float turn_seconds broke canonical persistence; legacy single-turn rows require excluded lifecycle.TABLE mapping. Request req-01M46MGW3NFZJDWWJHCXKG69BP asks representation/mapping ruling; fallback is honest partial/Sonnet follow-on. Draft driver controls2 passed and existing engine/driver267 passed198.33s; draft reverted to preserve ordered fixes and saved .agents/x-j1b-evidence/proposed-fixes.diff, plus extra-controls.diff and first-fix-message.txt. No markers removed, no second definitions, no snapshot_cell caller. Code/source gates not certified as complete; independent reviewer and final mutations absent. Class text: INT-A float wire type unestablished; FIXT-A inherited fake usage; RIG-D stdin wrapper lacks closed; missing installed graph target. Controls observed failing before corrections. Audit instrumentation correction: optimize-graph al-01M46N192WCZ9NGFVVAGACCKRW duration measures its closing audit write only, because its start marker was set at closing, not its graph work; true separate graph duration not recorded. coordination-worker original grounding marker measures the complete dispatch.",
+      "tags": [],
       "tier": "T2",
-      "fan_out": 0
+      "tool": null
     },
     {
-      "id": "al-01M46N8JJZ3GAJ9YBYY9KR9ZAC",
-      "shortname": "eval-x-j1b-partial-contract-conflict",
-      "datetime": "2026-10-05T18:29:50Z",
-      "session": "x-j1b-e1e4",
-      "prompt": "python docs/ai-forward-pack/scripts/audit-log.py start --session x-j1b-e1e4 --skill coordination-worker\nGoal state\nGoal: Following docs/coordination/eval-wave2-e234/x-j1.md (owned paths, names, acceptance items 2 and 3), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md and W1-J rev 2 (docs/design/eval-multi-turn.md sections 4.1, 4.2, 4.5, 11), all binding: build dispatch J1b of X-J1, the turn loop, on build/eval-x-j1b from the integration head after the X-J1a join, in three fix commits on J1a's landed names: K4(2) usage summed over every returned turn, with views._token_cross_check's ACP side summed over the turn_ended rows present; K4(3) only end_turn continues and turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every returned turn before the continue or cancel decision; K4(4) one handshake per Session and an idempotent Session.close(). Each commit removes its own J1b xfail markers in tests/test_multiturn.py (Coordinator #33 at bcd35532; J1a's names read at a3cfbcfe).\nDone when: The base is the integration head at dispatch (integrate/e2e4-18 after the X-J1a join), never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing, stop and report.; `git merge-base --is-ancestor a3cfbcfe HEAD` exits 0; if it exits non-zero, X-J1a is not in the base: stop and report.; J1a's landed names are built on, never defined a second time (DM7): driver.TurnRecord, Session and Session.close(), open_session, send_turn, run_turn, TurnResult.turns; engine._attempt with record_session_opened, _snapshot_turn, _after_append, COMPLETED_STOP_REASONS; lifecycle.is_cell_start; the archive snapshot functions; views._token_cross_check.; K4(2) lands in its own commit: usage summed over every returned turn, the ACP side of views._token_cross_check the sum over the turn_ended rows present, a turn with no row not recorded, never 0; T-ENG-4 (acp_turn and native_record, no HB-VAL-005) and T-ENG-11 green with their J1b markers removed.; K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response, before the continue or cancel decision, next one of snapshot, final, stop or cancel; no row when send_turn returned None; T-ENG-6 and T-ENG-10 green with their J1b markers removed.; K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed.; The xfail markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them.; Before the first fix, the six J1b tests are re-run with `uv run pytest -q --runxfail` on the base and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added.; A test that already passes is recorded green on arrival with the SHA, never faked red; every existing test in tests/test_engine.py, tests/test_driver.py and tests/test_multiturn.py stays green.; No src/ caller of archive.snapshot_cell is added: on the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py (Coordinator #32, ruling 3).; A T2 plan record, if your skill wants one, is docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted).; The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.; A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call.; A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2).; The served model id is the first line of the final report (README section 4), read from the Codex native record.\nNot in scope: The ALLOWED entry (\"archive\", \"snapshot_cell\", \"shutil.copytree\") in tests/test_atomic_sites.py: J1c deletes it.; K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c); views beyond _token_cross_check, the lifecycle TABLE rules, plan turns, CellView.task and CellView.rep, verdicts._task_rep (J1d); the section 11 mutant rows and spike S-J4 (J1e).; status.py: X-INTF holds its text() hunk after J1a's join (serial spine 5).; mutate_check with --touched, and the whole suite: they are the Leader's, once per batch.; Killing any process by name or pattern; only PIDs this session started.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens per dispatch\nMain-line budget: within X-J1's 320 calls across 5 dispatches; 3,300 s this dispatch\n\nTrace\n| clause | trace |\n|---|---|\n| done_when: The base is the integration head at dispatch (integrate/e2e4-18 after the X-J1a join), never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing, stop and report. | phrase: Stop and report if git log --oneline -1 --grep \"W0 seam contracts rev 6.11\" prints nothing. |\n| done_when: `git merge-base --is-ancestor a3cfbcfe HEAD` exits 0; if it exits non-zero, X-J1a is not in the base: stop and report. | phrase: Stop and report if git merge-base --is-ancestor a3cfbcfe HEAD exits non-zero |\n| done_when: J1a's landed names are built on, never defined a second time (DM7): driver.TurnRecord, Session and Session.close(), open_session, send_turn, run_turn, TurnResult.turns; engine._attempt with record_session_opened, _snapshot_turn, _after_append, COMPLETED_STOP_REASONS; lifecycle.is_cell_start; the archive snapshot functions; views._token_cross_check. | phrase: J1a's landed names at a3cfbcfe are the names you build on, never a second definition (DM7) |\n| done_when: K4(2) lands in its own commit: usage summed over every returned turn, the ACP side of views._token_cross_check the sum over the turn_ended rows present, a turn with no row not recorded, never 0; T-ENG-4 (acp_turn and native_record, no HB-VAL-005) and T-ENG-11 green with their J1b markers removed. | phrase: usage is summed over every returned turn; the ACP side of views._token_cross_check is the sum over the turn_ended rows present |\n| done_when: K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response, before the continue or cancel decision, next one of snapshot, final, stop or cancel; no row when send_turn returned None; T-ENG-6 and T-ENG-10 green with their J1b markers removed. | phrase: only end_turn continues, and cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response |\n| done_when: K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed. | phrase: one handshake per Session and an idempotent Session.close() |\n| done_when: The xfail markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them. | phrase: The markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them. |\n| done_when: Before the first fix, the six J1b tests are re-run with `uv run pytest -q --runxfail` on the base and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added. | phrase: re-run the six J1b tests with uv run pytest -q --runxfail on your base and paste each failing assertion line into your first fix commit's message |\n| done_when: A test that already passes is recorded green on arrival with the SHA, never faked red; every existing test in tests/test_engine.py, tests/test_driver.py and tests/test_multiturn.py stays green. | phrase: A test that already passes is recorded green on arrival with the SHA, never faked red. |\n| done_when: No src/ caller of archive.snapshot_cell is added: on the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py (Coordinator #32, ruling 3). | phrase: On your final commit git grep -n \"snapshot_cell(\" -- src prints only the definition in src/harness_bench/archive.py. |\n| done_when: A T2 plan record, if your skill wants one, is docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted). | phrase: If your skill wants a T2 plan record, write it at docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted). |\n| done_when: The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. | phrase: Gate (R-104; each command on its own line, exit status read, never behind a pipe) |\n| done_when: A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed |\n| done_when: Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call. | phrase: Commit named paths only, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call. |\n| done_when: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2). | phrase: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green. |\n| done_when: The served model id is the first line of the final report (README section 4), read from the Codex native record. | phrase: Report your served model id on the first line of your final message, read from the Codex native record. |\n| not_in_scope: The ALLOWED entry (\"archive\", \"snapshot_cell\", \"shutil.copytree\") in tests/test_atomic_sites.py: J1c deletes it. | phrase: is J1c's to delete, not yours |\n| not_in_scope: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c); views beyond _token_cross_check, the lifecycle TABLE rules, plan turns, CellView.task and CellView.rep, verdicts._task_rep (J1d); the section 11 mutant rows and spike S-J4 (J1e). | phrase: Not yours: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c) |\n| not_in_scope: status.py: X-INTF holds its text() hunk after J1a's join (serial spine 5). | phrase: status.py (X-INTF holds its text() hunk after J1a's join, serial spine 5) |\n| not_in_scope: mutate_check with --touched, and the whole suite: they are the Leader's, once per batch. | phrase: The whole suite is the Leader's. |\n| not_in_scope: Killing any process by name or pattern; only PIDs this session started. | phrase: Never kill a process by name or pattern, only PIDs you started. |\n\nReferences\n- build/eval-x-j1b: unresolved (not found)\n- docs/coordination/eval-wave2-e234/x-j1.md's: unresolved (not found; nearest: docs/coordination/eval-wave2-e234/x-j1.md)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b\n- docs/coordination/eval-wave2-e234/README.md: docs/coordination/eval-wave2-e234/README.md sha256 e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701\n- docs/coordination/eval-wave2-e234/x-j1.md: docs/coordination/eval-wave2-e234/x-j1.md sha256 8db0a5c2e1827c4a648d7351a3444473be142d955e724cce2644e7abd32bf437\n- docs/design/eval-multi-turn.md: docs/design/eval-multi-turn.md sha256 e32527dad56e2c97cd4340c492f0d1c2e679b74853f5d208139ef40ccb8ae847\n- integrate/e2e4-18: unresolved (not found)\n- tests/test_multiturn.py: unresolved (not found)\n- tests/test_engine.py: tests/test_engine.py sha256 df24bd350ed2a6f8d16a4b80e2cf53c7720fe0c99b6374cfe31157447b3e8d26\n- tests/test_driver.py: tests/test_driver.py sha256 453e01a8f4511deb6676036905c88b71485447aecd1c876b00bf2cb7519d762d\n- src/: unresolved (not found)\n- src/harness_bench/archive.py: src/harness_bench/archive.py sha256 1b18d1d166fc15a7686b6ea28a3fb746bdee97d9a44477ca8b1137de705b13cf\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- docs/plans/eval-x-j1b.md: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d\n- tests/mutations/engine.json: tests/mutations/engine.json sha256 ebae6d0ee051f94b00ece947f0184f35abd72dd666ce8a1f1d1a66a31b56d2bc\n- tests/mutations/driver.json: tests/mutations/driver.json sha256 eb20d524a79665c316ff3b3205b13ad5886b4fbb0575caf1cecd310b223d1390\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- status.py: src/harness_bench/status.py sha256 71e2b1feb7086ec5da7ee97931109bb96e90d17c090edb0cbd0de643f70667a7\n\nAssumptions\n- none\n\nDecision requests\n- none\n\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: three fix commits (K4(2), K4(3), K4(4)) on build/eval-x-j1b\njoin_rule: the R-104 worker gate; the Leader joins into integrate/e2e4-18, re-runs a red SHA and runs git grep -n \"snapshot_cell(\" -- src (Coordinator #32, ruling 3)\ncontainment: own worktree based on the integration head; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: a red-only end, a deadline or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet, served claude-sonnet-5-5) in the same tree (R-87 Option 1)\n\nProvenance\nraw id: al-01M46HB94V9Q5H72XY13ZR0NN7\nraw sha256: 424b464f0c1266772ba57ed6596429fd08086e00950ff65799ee4c8be2071dcf\ncompiler model: claude-opus-5-5\nengine seconds: 0.013\ntokens: not recorded\ngate: pass\ndispatchable: true\nWork only in your assigned cwd. Follow the plan's owned paths and return evidence to the Owner.",
-      "summary": "Partial, no K4(2)/(3)/(4) fix commit and no J1b marker removed. Basebe2df9cb verified equal integration head at dispatch; W0rev6.11 grep4760e55e and a3cfbcfe ancestor exit0. Served modelgpt-6.1-sol/efforthigh/CLI0.160.0 native record01a10d3e-f42a-7182-a715-799dbf0e6c93 matches assignedcwd. Baseguard200 passed66.30s exit0. Before anyfix six J1b controls seven assertion reds2.34s exit1; none green on arrival: T-ENG-4 bothsources line172 assert sum(r[uncached_input] for r in rows)==12 (7); T-ENG-11 line252 assert len(ended)==2 (0); T-ENG-6 line191 assert not row(events,cell.prompt_sent,2); T-ENG-10 line242 assert ended ({}); T-DRV-1 line270 assert sum(session/new)==1 (2); T-DRV-2 line290 assert error is None (ValueError). Full exact lines in committed plan and ignored first-fix-message.txt. Plan9d732a0a; derivedindex seam4f7e62c9 req-01M46M3FXJ439W4F61Z5VH03J2; optionalcrosscheckcaller seamc323b5a7 req-01M46M1XK94E5PEF7KMQRM6YGW. Blockingreq-01M46MGW3NFZJDWWJHCXKG69BP: ledger.py43-44 rejects float turn_seconds required by W1-J4.1/4.2 and T-ENG-11; single-turn turn_ended fails legacy replay UNMAPPED, while TABLE belongs J1d. No precision loss/unitrename or canonical/lifecycle change made. Proposed fixes and supplementarycontrols saved ignored in .agents/x-j1b-evidence; all runtime proposals reverted. Draftdriver2 controls passed0.38s; draft existingengine/driver267 passed198.33s; these are not deliveredfixes. Restoredheadc323b5a7 namedgate277 passed41xfail220.25s exit0; all originalmarkers remain. Ruffexit0, graphvalidateexit0 zero defects16 existing suggestions, grep snapshot_cell sourceonly archive.py67 definition exit0. Engine and driver mutation gates not run: suite lock held, observedheldtrue; no lock wait or bypass. Finalguard not yet run at closing entry; no finalacceptance claim. Audit seamreq-01M46N18XX8WEHT4KN39T2M571 fallback isolatedauditcommit. Native snapshot46 toolcalls, input6321784 cached6132864 output31981 total6353765, tokens cumulative not context size; dispatch budget3300s within X-J1 total320calls acrossfive dispatches, no aggregate budget inference. Nine plannednodes: B/R/Pdone, Sfallbacks built pendingruling, U/D/Cnotdelivered, Gpartial, HOwner handback; no agents. Rework: missingtemplategraph link amended before sharedcommit, fixture inherited usage corrected, directfloat persistence reverted, missing stdin.closed on _Tap corrected in draft. Defect texts sent to Coordinator; source controls remain unchanged and partialnotselfapproved. Optimizegraph marker correction: its closingentry duration measures auditwriting only, separategraphduration not recorded; this originalcoordination-worker marker measures entire dispatch.",
-      "kind": "skill",
-      "skill": "coordination-worker",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/plans/eval-x-j1b.md",
@@ -89885,21 +89876,2563 @@ window.AUDIT_DATA = {
         "docs/docs-index.js",
         "src/harness_bench/views.py"
       ],
-      "tags": [],
-      "outcome": "partial",
       "compiled_from": "al-01M46HBJENC6EPR6KHGXQEGPTZ",
-      "goal": "Build J1b turn-loop on integration base in three ordered usage, continuation/event, and Session lifetime commits",
+      "datetime": "2026-10-05T18:29:50Z",
       "done_when": "Six J1b controls green, own markers removed, existing tests preserved and all R-104 worker gate evidence complete; otherwise explicit red-only hand-back for the authorized Sonnet follow-on",
-      "tier": "T2",
-      "fan_out": 0,
-      "started_at": "2026-10-05T18:06:43Z",
       "duration_seconds": 1387.0,
+      "fan_out": 0,
       "git": {
-        "sha": "c323b5a778b7f87c823fd201ccf9625f3aa01ceb",
-        "short": "c323b5a77",
         "branch": "build/eval-x-j1b",
-        "pushed": null
-      }
+        "pushed": null,
+        "sha": "c323b5a778b7f87c823fd201ccf9625f3aa01ceb",
+        "short": "c323b5a77"
+      },
+      "goal": "Build J1b turn-loop on integration base in three ordered usage, continuation/event, and Session lifetime commits",
+      "id": "al-01M46N8JJZ3GAJ9YBYY9KR9ZAC",
+      "kind": "skill",
+      "outcome": "partial",
+      "prompt": "python docs/ai-forward-pack/scripts/audit-log.py start --session x-j1b-e1e4 --skill coordination-worker\nGoal state\nGoal: Following docs/coordination/eval-wave2-e234/x-j1.md (owned paths, names, acceptance items 2 and 3), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md and W1-J rev 2 (docs/design/eval-multi-turn.md sections 4.1, 4.2, 4.5, 11), all binding: build dispatch J1b of X-J1, the turn loop, on build/eval-x-j1b from the integration head after the X-J1a join, in three fix commits on J1a's landed names: K4(2) usage summed over every returned turn, with views._token_cross_check's ACP side summed over the turn_ended rows present; K4(3) only end_turn continues and turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every returned turn before the continue or cancel decision; K4(4) one handshake per Session and an idempotent Session.close(). Each commit removes its own J1b xfail markers in tests/test_multiturn.py (Coordinator #33 at bcd35532; J1a's names read at a3cfbcfe).\nDone when: The base is the integration head at dispatch (integrate/e2e4-18 after the X-J1a join), never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing, stop and report.; `git merge-base --is-ancestor a3cfbcfe HEAD` exits 0; if it exits non-zero, X-J1a is not in the base: stop and report.; J1a's landed names are built on, never defined a second time (DM7): driver.TurnRecord, Session and Session.close(), open_session, send_turn, run_turn, TurnResult.turns; engine._attempt with record_session_opened, _snapshot_turn, _after_append, COMPLETED_STOP_REASONS; lifecycle.is_cell_start; the archive snapshot functions; views._token_cross_check.; K4(2) lands in its own commit: usage summed over every returned turn, the ACP side of views._token_cross_check the sum over the turn_ended rows present, a turn with no row not recorded, never 0; T-ENG-4 (acp_turn and native_record, no HB-VAL-005) and T-ENG-11 green with their J1b markers removed.; K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response, before the continue or cancel decision, next one of snapshot, final, stop or cancel; no row when send_turn returned None; T-ENG-6 and T-ENG-10 green with their J1b markers removed.; K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed.; The xfail markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them.; Before the first fix, the six J1b tests are re-run with `uv run pytest -q --runxfail` on the base and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added.; A test that already passes is recorded green on arrival with the SHA, never faked red; every existing test in tests/test_engine.py, tests/test_driver.py and tests/test_multiturn.py stays green.; No src/ caller of archive.snapshot_cell is added: on the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py (Coordinator #32, ruling 3).; A T2 plan record, if your skill wants one, is docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted).; The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.; A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call.; A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2).; The served model id is the first line of the final report (README section 4), read from the Codex native record.\nNot in scope: The ALLOWED entry (\"archive\", \"snapshot_cell\", \"shutil.copytree\") in tests/test_atomic_sites.py: J1c deletes it.; K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c); views beyond _token_cross_check, the lifecycle TABLE rules, plan turns, CellView.task and CellView.rep, verdicts._task_rep (J1d); the section 11 mutant rows and spike S-J4 (J1e).; status.py: X-INTF holds its text() hunk after J1a's join (serial spine 5).; mutate_check with --touched, and the whole suite: they are the Leader's, once per batch.; Killing any process by name or pattern; only PIDs this session started.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens per dispatch\nMain-line budget: within X-J1's 320 calls across 5 dispatches; 3,300 s this dispatch\n\nTrace\n| clause | trace |\n|---|---|\n| done_when: The base is the integration head at dispatch (integrate/e2e4-18 after the X-J1a join), never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing, stop and report. | phrase: Stop and report if git log --oneline -1 --grep \"W0 seam contracts rev 6.11\" prints nothing. |\n| done_when: `git merge-base --is-ancestor a3cfbcfe HEAD` exits 0; if it exits non-zero, X-J1a is not in the base: stop and report. | phrase: Stop and report if git merge-base --is-ancestor a3cfbcfe HEAD exits non-zero |\n| done_when: J1a's landed names are built on, never defined a second time (DM7): driver.TurnRecord, Session and Session.close(), open_session, send_turn, run_turn, TurnResult.turns; engine._attempt with record_session_opened, _snapshot_turn, _after_append, COMPLETED_STOP_REASONS; lifecycle.is_cell_start; the archive snapshot functions; views._token_cross_check. | phrase: J1a's landed names at a3cfbcfe are the names you build on, never a second definition (DM7) |\n| done_when: K4(2) lands in its own commit: usage summed over every returned turn, the ACP side of views._token_cross_check the sum over the turn_ended rows present, a turn with no row not recorded, never 0; T-ENG-4 (acp_turn and native_record, no HB-VAL-005) and T-ENG-11 green with their J1b markers removed. | phrase: usage is summed over every returned turn; the ACP side of views._token_cross_check is the sum over the turn_ended rows present |\n| done_when: K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response, before the continue or cancel decision, next one of snapshot, final, stop or cancel; no row when send_turn returned None; T-ENG-6 and T-ENG-10 green with their J1b markers removed. | phrase: only end_turn continues, and cell.turn_ended{turn, stop_reason, turn_seconds, usage, next} is written for every turn that returned a response |\n| done_when: K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed. | phrase: one handshake per Session and an idempotent Session.close() |\n| done_when: The xfail markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them. | phrase: The markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them. |\n| done_when: Before the first fix, the six J1b tests are re-run with `uv run pytest -q --runxfail` on the base and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added. | phrase: re-run the six J1b tests with uv run pytest -q --runxfail on your base and paste each failing assertion line into your first fix commit's message |\n| done_when: A test that already passes is recorded green on arrival with the SHA, never faked red; every existing test in tests/test_engine.py, tests/test_driver.py and tests/test_multiturn.py stays green. | phrase: A test that already passes is recorded green on arrival with the SHA, never faked red. |\n| done_when: No src/ caller of archive.snapshot_cell is added: on the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py (Coordinator #32, ruling 3). | phrase: On your final commit git grep -n \"snapshot_cell(\" -- src prints only the definition in src/harness_bench/archive.py. |\n| done_when: A T2 plan record, if your skill wants one, is docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted). | phrase: If your skill wants a T2 plan record, write it at docs/plans/eval-x-j1b.md and its HTML, create-only, in its own commit (pre-granted). |\n| done_when: The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. | phrase: Gate (R-104; each command on its own line, exit status read, never behind a pipe) |\n| done_when: A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed |\n| done_when: Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call. | phrase: Commit named paths only, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call. |\n| done_when: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2). | phrase: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green. |\n| done_when: The served model id is the first line of the final report (README section 4), read from the Codex native record. | phrase: Report your served model id on the first line of your final message, read from the Codex native record. |\n| not_in_scope: The ALLOWED entry (\"archive\", \"snapshot_cell\", \"shutil.copytree\") in tests/test_atomic_sites.py: J1c deletes it. | phrase: is J1c's to delete, not yours |\n| not_in_scope: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c); views beyond _token_cross_check, the lifecycle TABLE rules, plan turns, CellView.task and CellView.rep, verdicts._task_rep (J1d); the section 11 mutant rows and spike S-J4 (J1e). | phrase: Not yours: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c) |\n| not_in_scope: status.py: X-INTF holds its text() hunk after J1a's join (serial spine 5). | phrase: status.py (X-INTF holds its text() hunk after J1a's join, serial spine 5) |\n| not_in_scope: mutate_check with --touched, and the whole suite: they are the Leader's, once per batch. | phrase: The whole suite is the Leader's. |\n| not_in_scope: Killing any process by name or pattern; only PIDs this session started. | phrase: Never kill a process by name or pattern, only PIDs you started. |\n\nReferences\n- build/eval-x-j1b: unresolved (not found)\n- docs/coordination/eval-wave2-e234/x-j1.md's: unresolved (not found; nearest: docs/coordination/eval-wave2-e234/x-j1.md)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b\n- docs/coordination/eval-wave2-e234/README.md: docs/coordination/eval-wave2-e234/README.md sha256 e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701\n- docs/coordination/eval-wave2-e234/x-j1.md: docs/coordination/eval-wave2-e234/x-j1.md sha256 8db0a5c2e1827c4a648d7351a3444473be142d955e724cce2644e7abd32bf437\n- docs/design/eval-multi-turn.md: docs/design/eval-multi-turn.md sha256 e32527dad56e2c97cd4340c492f0d1c2e679b74853f5d208139ef40ccb8ae847\n- integrate/e2e4-18: unresolved (not found)\n- tests/test_multiturn.py: unresolved (not found)\n- tests/test_engine.py: tests/test_engine.py sha256 df24bd350ed2a6f8d16a4b80e2cf53c7720fe0c99b6374cfe31157447b3e8d26\n- tests/test_driver.py: tests/test_driver.py sha256 453e01a8f4511deb6676036905c88b71485447aecd1c876b00bf2cb7519d762d\n- src/: unresolved (not found)\n- src/harness_bench/archive.py: src/harness_bench/archive.py sha256 1b18d1d166fc15a7686b6ea28a3fb746bdee97d9a44477ca8b1137de705b13cf\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- docs/plans/eval-x-j1b.md: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d\n- tests/mutations/engine.json: tests/mutations/engine.json sha256 ebae6d0ee051f94b00ece947f0184f35abd72dd666ce8a1f1d1a66a31b56d2bc\n- tests/mutations/driver.json: tests/mutations/driver.json sha256 eb20d524a79665c316ff3b3205b13ad5886b4fbb0575caf1cecd310b223d1390\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- status.py: src/harness_bench/status.py sha256 71e2b1feb7086ec5da7ee97931109bb96e90d17c090edb0cbd0de643f70667a7\n\nAssumptions\n- none\n\nDecision requests\n- none\n\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: three fix commits (K4(2), K4(3), K4(4)) on build/eval-x-j1b\njoin_rule: the R-104 worker gate; the Leader joins into integrate/e2e4-18, re-runs a red SHA and runs git grep -n \"snapshot_cell(\" -- src (Coordinator #32, ruling 3)\ncontainment: own worktree based on the integration head; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: a red-only end, a deadline or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet, served claude-sonnet-5-5) in the same tree (R-87 Option 1)\n\nProvenance\nraw id: al-01M46HB94V9Q5H72XY13ZR0NN7\nraw sha256: 424b464f0c1266772ba57ed6596429fd08086e00950ff65799ee4c8be2071dcf\ncompiler model: claude-opus-5-5\nengine seconds: 0.013\ntokens: not recorded\ngate: pass\ndispatchable: true\nWork only in your assigned cwd. Follow the plan's owned paths and return evidence to the Owner.",
+      "session": "x-j1b-e1e4",
+      "shortname": "eval-x-j1b-partial-contract-conflict",
+      "skill": "coordination-worker",
+      "started_at": "2026-10-05T18:06:43Z",
+      "summary": "Partial, no K4(2)/(3)/(4) fix commit and no J1b marker removed. Basebe2df9cb verified equal integration head at dispatch; W0rev6.11 grep4760e55e and a3cfbcfe ancestor exit0. Served modelgpt-6.1-sol/efforthigh/CLI0.160.0 native record01a10d3e-f42a-7182-a715-799dbf0e6c93 matches assignedcwd. Baseguard200 passed66.30s exit0. Before anyfix six J1b controls seven assertion reds2.34s exit1; none green on arrival: T-ENG-4 bothsources line172 assert sum(r[uncached_input] for r in rows)==12 (7); T-ENG-11 line252 assert len(ended)==2 (0); T-ENG-6 line191 assert not row(events,cell.prompt_sent,2); T-ENG-10 line242 assert ended ({}); T-DRV-1 line270 assert sum(session/new)==1 (2); T-DRV-2 line290 assert error is None (ValueError). Full exact lines in committed plan and ignored first-fix-message.txt. Plan9d732a0a; derivedindex seam4f7e62c9 req-01M46M3FXJ439W4F61Z5VH03J2; optionalcrosscheckcaller seamc323b5a7 req-01M46M1XK94E5PEF7KMQRM6YGW. Blockingreq-01M46MGW3NFZJDWWJHCXKG69BP: ledger.py43-44 rejects float turn_seconds required by W1-J4.1/4.2 and T-ENG-11; single-turn turn_ended fails legacy replay UNMAPPED, while TABLE belongs J1d. No precision loss/unitrename or canonical/lifecycle change made. Proposed fixes and supplementarycontrols saved ignored in .agents/x-j1b-evidence; all runtime proposals reverted. Draftdriver2 controls passed0.38s; draft existingengine/driver267 passed198.33s; these are not deliveredfixes. Restoredheadc323b5a7 namedgate277 passed41xfail220.25s exit0; all originalmarkers remain. Ruffexit0, graphvalidateexit0 zero defects16 existing suggestions, grep snapshot_cell sourceonly archive.py67 definition exit0. Engine and driver mutation gates not run: suite lock held, observedheldtrue; no lock wait or bypass. Finalguard not yet run at closing entry; no finalacceptance claim. Audit seamreq-01M46N18XX8WEHT4KN39T2M571 fallback isolatedauditcommit. Native snapshot46 toolcalls, input6321784 cached6132864 output31981 total6353765, tokens cumulative not context size; dispatch budget3300s within X-J1 total320calls acrossfive dispatches, no aggregate budget inference. Nine plannednodes: B/R/Pdone, Sfallbacks built pendingruling, U/D/Cnotdelivered, Gpartial, HOwner handback; no agents. Rework: missingtemplategraph link amended before sharedcommit, fixture inherited usage corrected, directfloat persistence reverted, missing stdin.closed on _Tap corrected in draft. Defect texts sent to Coordinator; source controls remain unchanged and partialnotselfapproved. Optimizegraph marker correction: its closingentry duration measures auditwriting only, separategraphduration not recorded; this originalcoordination-worker marker measures entire dispatch.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-05T18:43:22Z",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "duration_seconds": 1544.0,
+      "fan_out": 0,
+      "goal": "Join X-J1a into integrate/e2e4-18",
+      "id": "al-01M46P1C2DXFJVKBZXT602T6XT",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "the join of the resolved merge into integrate/e2e4-18",
+      "session": "leader-e1e4",
+      "shortname": "join-x-j1a",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "execute-with-coordination",
+      "started_at": "2026-10-05T18:17:38Z",
+      "summary": "X-J1a: Codex gpt-6.1-sol (runner session x-j1a2-e1e4, commits as x-j1a-e1e4 per Coordinator #32 / IDN-A), 2,960 s partial a3cfbcfe (mutations starved by LOCK-A); Leader ran owed gates: engine.json all killed, guard 200, driver.json 2 survivors -> Sonnet claude-sonnet-5-5 follow-on 17eba034/605bd9df kills both; red afee24b4 re-run by Leader: 43 assertion fails; first recount on be2df9cb: test_acp_record [ok],[permission] deterministic regression (per-turn timings compared by value) + test_campaign_locks l9 flake (passes alone) -> fix bb177a2e (seam req-01M46M718GZDH0ZV3297KN0AM8); snapshot_cell( in src = definition only recount_seconds=1543 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-05T17:57:46Z",
+      "id": "al-01M46KDVXV5847E06A81GY5FTV",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-lgc-e1e4 on branch build/eval-x-lgc, harness Agy, model gemini-3.8-flash-high, deadline 3,300 s. Build dispatch LGc only of the brief docs/coordination/eval-wave2-e234/x-lg.md (diffstats behaviour: size_vs_reference, new_abstractions, new_dependencies and the outside_radius_lines scope clause, W1-L section 8.1; plus the HB-RDY-009 frozen-value check in readiness.contract_failures), in one turn: a skeleton commit, red commits, then green commits. Read docs/coordination/eval-wave2-e1/README.md sections 1-4, then docs/coordination/eval-wave2-e234/README.md, then that brief, then W1-L (docs/design/eval-property-tasks.md sections 3, 5.1, 8.1-8.3, 15, Erratum 1 and Erratum 2); all bind you. W0 is docs/design/eval-seam-contracts.md rev 6.11 on your base. Your base is the integration head at dispatch (integrate/e2e4-18 with X-LGb joined), never main. Stop and report if git log --oneline -1 --grep \"W0 seam contracts rev 6.11\" prints nothing, or if git merge-base --is-ancestor 0b32d333 HEAD fails (LGb not joined).\n\nWhat is on the base (Coordinator #34 read each at 0d4a291a; LGb's tip 0b32d333 changes only grade/noguess.py, tests/test_grade_noguess.py and tests/mutations/noguess.json); call these names, never re-implement them (DM7): src/harness_bench/grade/diffstats.py has measure(base, final, radius, package=\"\", size_reference_lines=1, ceilings=None) returning -1 for every field and clause \"not built\", and grade(inp, ctx) returning Score(None, \"not built\") for every metric. grade/property.py STRATEGIES (:504) already maps \"simplicity\" to diffstats.grade, and identity.PLANNED no longer holds grade/diffstats.py, so you add no STRATEGIES key and delete no PLANNED key. Also call hidden_tests (:392) and write_section (:479) in grade/property.py; grade/_changes.py change_set, product_lines, line_delta, in_radius (:259) and is_test_path (:280); and errors.RUN_CODES[\"HB-RDY-009\"] (errors.py:68), \"a frozen task value differs from the canonical function's output (HASH-A)\".\n\nYour own markers: tests/test_grade_diffstats.py::test_diffstats_measure_size carries xfail(strict=True) with reason \"LGc: simplicity diffstats measure behavior\": remove that marker in the commit that makes it pass, and point its relative placeholder paths (Path(\"base\"), Path(\"final\")) at a real fixture tree. tests/test_grade_diffstats.py::test_diffstats_grade_skeleton_returns_scores asserts the skeleton's \"not built\" result and goes red when grade is built: replace it in the green commit with the behaviour test it stood in for, and say so in the report.\n\nYour tests (W1-L section 15 rows, in tests/test_grade_diffstats.py): test_sm_product_lines_ignore_blank_comment_docstring, test_sm_each_metric_and_clause_has_a_flipping_variant, test_sm_ceiling_boundary_pairs, test_sm_abstractions_counts_classdef_once, test_sm_radius_partition_counts_each_line_once, test_sm_frozen_reference_size_equals_function_output and test_diffstats_grade_cell_uses_registered_strategy. Each row's mutant goes in your own new mutation file tests/mutations/diffstats.json and is killed, including \"drop clause (b)\" killed by launderlines and \"drop clause (a)\" killed by launderclass (the brief's acceptance item 1; a synthetic tree with the SM folders' shape is allowed). EV-6: no line is counted twice with scope_creep, and diffstats never reads drift's row. tests/fixtures/property_tasks/standin_diffstats.py and tests/test_simplicity_tasks.py are X-SM's: you read them and never edit them. Their measured numbers are a cross-check for yours, and a difference goes in your report.\n\nThe HB-RDY-009 check (Coordinator #32 ruled it LGc's; plan erratum: the function is contract_failures, readiness.py:282): for a simplicity task, contract_failures recomputes size_reference_lines as diffstats' in-radius added product lines of the committed reference overlay over the task's base tree, and an unequal frozen value is a Failure with code HB-RDY-009 naming the frozen and the computed value. The red test is a fixture task with a hand-edited frozen value. Your readiness.py hunk stays inside contract_failures, plus one private helper beside it if you need one; X-J2b edits _check_variant (readiness.py:693) in the same window, so never touch it. SM1 and SM2 are workspace_from: source: their base is the pinned upstream clone that workspace.task_source builds, and contract_failures does not open such a base today (the assume at readiness.py:308-312). Build the base only through workspace's own functions, never a second clone rule. Never a silent pass: a base that cannot be built gives an HB-RDY-009 failure that says the value was not checked and why. Mark your choice of the upstream cache root with an inline assume: (discriminate.run defaults to root / \".tools\" / \"upstream\", discriminate.py:254).\n\nRed first: a skeleton commit with any new helper's final signature and neutral values, then the red tests failing on an assertion, never by ImportError, AttributeError, NameError or KeyError (RED-C). A test that already passes is recorded green on arrival with the SHA, never faked red. Then the green commits. If your skill wants a T2 plan record, write it at docs/plans/eval-x-lgc.md and its HTML, create-only, in its own commit (pre-granted by Coordinator #32).\n\nGate (R-104; it replaces README section 3's join gate; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the skeleton commit and on the final commit; uv run pytest -q tests/test_grade_diffstats.py tests/test_readiness.py; uv run python tools/mutate_check.py tests/mutations/diffstats.json (your own mutation file only, never --touched); uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate. A gate that waits on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. The whole suite, the gate ring and the stamp renewal are the Leader's. No campaign ledger (bench/campaigns/**) on your branch. Never kill a process by name or pattern, only PIDs you started (README section 2). Commit named paths only, with AGENT_SESSION=x-lgc-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green (README section 2). Report your served model id on the first line of your final message.\n\nNot yours: _check_variant and the rest of readiness.py outside contract_failures; grade/property.py and grade/noguess.py; tasks/SM1/** and tasks/SM2/** (a frozen value your function disagrees with is reported, never edited); the stand-in and tests/test_simplicity_tasks.py (X-RDY deletes the stand-in at the ready flip); readiness.pass_rule_problems.\n\nExit: report per README section 4; the served model is read from Agy's cli.log. Your grade/ change pays the P2 gate ring and stamp renewal, run by the Leader.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-lgc-e1e4 on branch build/eval-x-lgc, harness Agy, mode…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-05T17:57:47Z",
+      "id": "al-01M46KDWFZCYJTSN21YVF7G0AD",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-a3b-e1e4 on branch build/eval-x-a3b, harness Agy, model gemini-3.8-flash-high, deadline 3,300 s. Build dispatch A3b only of the brief docs/coordination/eval-wave2-e234/x-a3.md (three-arm plans; EV-17's launch balance under 5 %; rings as bench-matrix/2 files; EV-15's refusal to compare two ring hashes, HB-PLN-003), in one turn: a skeleton commit, red commits, then green commits. Read docs/coordination/eval-wave2-e1/README.md sections 1-4, then docs/coordination/eval-wave2-e234/README.md, then that brief, then W1-A (docs/design/eval-arms.md sections 3.3, 3.4, 3.8, 5, 5.1, 10 and 12) and ADR-0016 section 6 (docs/adr/0016-campaign-record.md); all bind you. W0 is docs/design/eval-seam-contracts.md rev 6.11 on your base. Your base is the integration head at dispatch (integrate/e2e4-18 with X-A3a joined), never main. Stop and report if git log --oneline -1 --grep \"W0 seam contracts rev 6.11\" prints nothing, or if git merge-base --is-ancestor cc2d0916 HEAD fails (A3a not joined).\n\nWhat X-A3a landed at cc2d0916 (Coordinator #34 read each on 0d4a291a); call these names, never re-implement them (DM7): report/pack_improvement.py _pass(c) -> bool | None (:1197), _passed(c) (:1208), ceiling_off(passes_off, n_pairs=0, *, n_recorded=None) (:527) and GroupClassInput.n_recorded (:562); board.py reads pass_at_1 with a Measure(None) default. What X-A1 built in E1, which you call and never re-define: plan.py BALANCE_BOUND (:42), default_comparisons (:150), cell_arm (:160), plan_packs (:168), plan_pack (:176, raises HB-PLN-005), arm_pack (:183), plan_comparisons (:190), launch_balance (:213), draw_launch_order (:223), tree_hash (:105) and the plan's ring {tag, hash} (:564-567); config.RING_TAGS = (\"pilot\", \"pack-regression\", \"comparison\") (config.py:40); bench/rings/pilot.yaml. A test you write for a behaviour E1 already built, and that already passes, is recorded green on arrival with the SHA, never faked red.\n\nYour deliverables: (1) bench/rings/pack-regression.yaml, a bench-matrix/2 ring file with ring {tag: pack-regression}, arms declared by role without a pack (ADR-0016 section 6) and quoted arm ids, valid under config's ring validation. (2) A three-arm plan (off and two pack revisions) built through plan.build_plan: one cell per arm per (task, combo, rep), one pack revision per non-off arm and none for off, and a stored launch seed whose order meets launch_balance < 5 % (EV-17; W1-A section 10's criterion-1 and criterion-3 nodes in tests/test_plan.py). (3) EV-15: a plan.py helper that names the differences between two plans' ring blocks, and board.compare (board.py:683) refusing with BenchError(\"HB-PLN-003\", ...) when both runs carry a ring and the hashes differ, with the mutant \"the ring-hash refusal is skipped\" in tests/mutations/board.json, killed. A comparison of two runs without a ring is unchanged, and every committed board and report golden stays byte-identical; a moved golden is a stop and a report, never a fix.\n\nCoordinator #34 decisions you build on: (a) HB-PLN-003 is not in errors.RUN_CODES, and BenchError refuses an unknown code (errors.py:152). You add exactly one row, \"HB-PLN-003\": \"comparison refused: ring hashes differ (names the differences, EV-15)\" (W0 section 11), between HB-PLN-002 and HB-PLN-004, in its own commit. It is pre-granted, and no other errors.py line is yours. (b) HB-PLN-005 stays: it is retired when the last plan_pack legacy site moves to comparison pairs, which is X-A3c's reader migration, so A3b neither removes it nor edits its text. (c) views.py is not yours in A3b: the CellView.pack rename is X-A3c's, after X-J1d joins (the plan's views.py hub row and its X-A3c -> X-J1d seam). (d) cells[].calibration (W0 section 5, EV-9) is not in A3b: no turn of the brief names it.\n\nG1 and the literal ratchet: you add no \"pack\", \"on\" or \"off\" literal, so every pin in tests/test_arms_guard.py stays equal. If one must move, it moves in the same commit and the report names it; narrowing the allowlist to plan.py is X-A3c's.\n\nRed first: a skeleton commit with any new helper's final signature and neutral values, then the red tests failing on an assertion, never by ImportError, AttributeError, NameError or KeyError (RED-C). Then the green commits. If your skill wants a T2 plan record, write it at docs/plans/eval-x-a3b.md and its HTML, create-only, in its own commit (pre-granted by Coordinator #32).\n\nGate (R-104; it replaces README section 3's join gate; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the skeleton commit and on the final commit; uv run pytest -q tests/test_plan.py tests/test_config.py tests/test_board.py tests/test_errors.py; uv run python tools/mutate_check.py tests/mutations/plan.json and uv run python tools/mutate_check.py tests/mutations/board.json (your own mutation files this phase, never --touched); uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate. A gate that waits on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. The whole suite is the Leader's. No campaign ledger (bench/campaigns/**) on your branch. Never kill a process by name or pattern, only PIDs you started (README section 2). Commit named paths only, with AGENT_SESSION=x-a3b-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green (README section 2). Report your served model id on the first line of your final message.\n\nNot yours: views.py; report/** (X-A3c's readers per comparison pair); the G1 narrowing; HB-PLN-005's retirement; cells[].calibration; readiness.py; readiness.pass_rule_problems.\n\nExit: report per README section 4; the served model is read from Agy's cli.log. A3b touches no grade/ file, so it pays no gate ring.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-a3b-e1e4 on branch build/eval-x-a3b, harness Agy, mode…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-05T17:57:47Z",
+      "id": "al-01M46KDX2Q1WFKXPHCVDWGC6PV",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-j2b-e1e4 on branch build/eval-x-j2b, harness Agy, model gemini-3.8-flash-high, deadline 3,300 s. Build dispatch J2b only of the brief docs/coordination/eval-wave2-e234/x-j2.md (the rework grader rework.grade with rework_ratio and turn1_tests_pass, W1-L section 6.1; per-turn synthetic overlays; discriminate admitting a turns task; the variant reader's create form and turn-<n>/ prefix), in one turn: a skeleton commit, red commits, then green commits. J2b is planned red-only on the engine leg: the multi-turn discrimination test through X-J1's engine and the turn-1 snapshot test are J2c's, a Claude Code Sonnet follow-on in this tree after X-J1d joins, so you land them as xfail(strict=True) with a reason that starts \"J2c:\". Read docs/coordination/eval-wave2-e1/README.md sections 1-4, then docs/coordination/eval-wave2-e234/README.md, then that brief, then W1-L (docs/design/eval-property-tasks.md sections 3, 5.1, 6.1 and Erratum 1) and W1-J rev 2 (docs/design/eval-multi-turn.md sections 2, 3, 4.2 and 7); all bind you. W0 is docs/design/eval-seam-contracts.md rev 6.11 on your base. Your base is the integration head at dispatch (integrate/e2e4-18 with X-J1a joined), never main. Stop and report if git log --oneline -1 --grep \"W0 seam contracts rev 6.11\" prints nothing, or if git merge-base --is-ancestor 605bd9df HEAD fails (J1a not joined).\n\nNames on the base (Coordinator #34 read each at 0d4a291a, and archive.py at the X-J1a merge be2df9cb); call these names, never re-implement them (DM7): archive.snapshot_folder(run_dir, cell_id, turn) (archive.py:58) and archive.snapshot_of(row) (:62), the only source of the snapshot folder and of whether a row is final; grade/property.py hidden_tests (:392), write_section (:479) and STRATEGIES (:504, holding \"security\", \"no-guessing\" and \"simplicity\"); grade/_changes.py product_lines, line_delta, in_radius (:259) and is_test_path (:280); readiness.variants (:663) and _check_variant (:693). \"Turn k not reached\" is derived from cell.turn_ended events against len(plan.tasks.<id>.turns) + 1 (W1-J section 4.2), never stored. No src/ module emits turn_ended yet (X-J1b to X-J1d land it), so you build against fixtures shaped by W1-J's record contract.\n\nCoordinator #34 read readiness.py (the plan's assume, confirmed): readiness.py holds no turns refusal. The E1 refusal of a turns task is discriminate.py:281-282 (if task.get(\"turns\"): raise BenchError(\"HB-RDY-005\", ...)), which is yours. Your only readiness.py hunk is the variant reader, _check_variant (readiness.py:693-721; W0 section 13 rev 6.6, \"that one function only\"), outside contract_failures (:282-366), which X-LGc edits in the same window: never touch contract_failures. Measured on 0d4a291a: readiness.contract_failures fails SM1 and SM2 on the launderclass edit and NG1 and NG2 on the vendoredit edit (\"edit does not apply (`old` must occur exactly once ...)\"), which is the create form your reader admits. After your change those four failures are gone, and your report gives the before and after lines.\n\nYour registrations: add \"rework\": rework.grade to the STRATEGIES literal at grade/property.py:504, keeping the three keys already there. Delete \"grade/rework.py\" from identity.PLANNED (:121) in the commit that lands grade/rework.py, keeping \"alarm.py\" (R6.10a). In grade/runner.py, only W1-J section 7 row 11's hunk (graded_snapshots read through archive.snapshot_folder). Add yourself to T-E19's reader set in tests/test_discriminate.py only if a new src/ file reads a stored plan.\n\nYour tests (tests/test_rework.py, new): W1-L section 15's rows test_rework_ratio_counts_replaced_and_deleted_not_added, test_rework_ratio_ceiling_boundary, test_rework_turn2_not_reached_is_na_and_primary_zero and test_rework_grade_cell_uses_registered_strategy; the variant reader's create form and turn-<n>/ prefix, one test and one refused case each (the create form is refused when its file is in the reference overlay); discriminate admitting a turns task; and the J2c engine-leg tests as strict xfail. Each row's mutant goes in your own new mutation file tests/mutations/rework.json and is killed. tests/fixtures/property_tasks/rework_standin.py and tests/test_rework_tasks.py are X-RW's: you read them and never edit them.\n\nRed first: a skeleton commit with every new function's final signature and neutral values, then the red tests failing on an assertion, never by ImportError, AttributeError, NameError or KeyError (RED-C). A test that already passes is recorded green on arrival with the SHA, never faked red. Then the green commits. If your skill wants a T2 plan record, write it at docs/plans/eval-x-j2b.md and its HTML, create-only, in its own commit (pre-granted by Coordinator #32).\n\nGate (R-104; it replaces README section 3's join gate; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the skeleton commit and on the final commit; uv run pytest -q tests/test_rework.py tests/test_readiness.py; uv run python tools/mutate_check.py tests/mutations/rework.json and, if you edited discriminate.py, uv run python tools/mutate_check.py tests/mutations/discriminate.json (your own mutation files, never --touched); uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate. A gate that waits on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. The whole suite, the gate ring and the stamp renewal are the Leader's. No campaign ledger (bench/campaigns/**) on your branch. Never kill a process by name or pattern, only PIDs you started (README section 2). Commit named paths only, with AGENT_SESSION=x-j2b-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green (README section 2). Report your served model id on the first line of your final message.\n\nNot yours: contract_failures and the rest of readiness.py outside _check_variant; tasks/RW1/** and tasks/RW2/** (their missing GLD-A provenance on expected.naive.turn1_tests_pass is X-RDY's); the rework stand-in and tests/test_rework_tasks.py (X-RDY points them at the real functions); engine.py and every other X-J1 file; readiness.pass_rule_problems.\n\nExit: report per README section 4; the served model is read from Agy's cli.log. Your grade/ change pays the P2 gate ring, run by the Leader.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-j2b-e1e4 on branch build/eval-x-j2b, harness Agy, mode…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "The base is the integration head at dispatch with X-LGb joined, never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing or `git merge-base --is-ancestor 0b32d333 HEAD` fails, stop and report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Stop and report if git log --oneline -1 --grep \"W0 seam contracts rev 6.11\" prints nothing, or if git merge-base --is-ancestor 0b32d333 HEAD fails (LGb not joined)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A skeleton commit, then red commits failing on an assertion, never by ImportError, AttributeError, NameError or KeyError (RED-C), then green commits, on build/eval-x-lgc.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "never by ImportError, AttributeError, NameError or KeyError (RED-C)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The landed names are called, never re-implemented (DM7): diffstats.measure and diffstats.grade (skeletons), property.STRATEGIES :504 (\"simplicity\" already registered, so no new key), hidden_tests :392, write_section :479, _changes.change_set, product_lines, line_delta, in_radius :259, is_test_path :280, and errors.RUN_CODES[\"HB-RDY-009\"] (:68); identity.PLANNED is not edited.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "call these names, never re-implement them (DM7)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "test_diffstats_measure_size points at a real fixture tree and its LGc strict-xfail marker is removed in the commit that makes it pass; test_diffstats_grade_skeleton_returns_scores is replaced in the green commit by the behaviour test it stood in for, and the report says so.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "remove that marker in the commit that makes it pass"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The seven W1-L section 15 rows are named tests in tests/test_grade_diffstats.py (test_sm_product_lines_ignore_blank_comment_docstring, test_sm_each_metric_and_clause_has_a_flipping_variant, test_sm_ceiling_boundary_pairs, test_sm_abstractions_counts_classdef_once, test_sm_radius_partition_counts_each_line_once, test_sm_frozen_reference_size_equals_function_output, test_diffstats_grade_cell_uses_registered_strategy), each row's mutant in the new tests/mutations/diffstats.json and killed, including \"drop clause (b)\" killed by launderlines and \"drop clause (a)\" killed by launderclass.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Each row's mutant goes in your own new mutation file tests/mutations/diffstats.json and is killed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "EV-6: no line is counted twice with scope_creep, and diffstats never reads drift's row.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "EV-6: no line is counted twice with scope_creep, and diffstats never reads drift's row."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The stand-in's measured numbers (tests/fixtures/property_tasks/standin_diffstats.py, read only) are compared with diffstats' and any difference is in the report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Their measured numbers are a cross-check for yours, and a difference goes in your report."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "contract_failures, for a simplicity task, recomputes size_reference_lines as diffstats' in-radius added product lines of the committed reference overlay over the task's base tree; an unequal frozen value is a Failure with code HB-RDY-009 naming the frozen and the computed value; the red test is a fixture task with a hand-edited frozen value.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "an unequal frozen value is a Failure with code HB-RDY-009 naming the frozen and the computed value"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The readiness.py hunk stays inside contract_failures (plus at most one private helper beside it); _check_variant (:693) is untouched.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your readiness.py hunk stays inside contract_failures, plus one private helper beside it if you need one"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The base tree is built only through workspace's own functions (never a second clone rule); a base that cannot be built gives an HB-RDY-009 failure saying the value was not checked and why (never a silent pass); the upstream cache root is marked with an inline assume:.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never a silent pass: a base that cannot be built gives an HB-RDY-009 failure that says the value was not checked and why."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A test that already passes is recorded green on arrival with the SHA, never faked red.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "is recorded green on arrival with the SHA, never faked red"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A T2 plan record, if your skill wants one, is docs/plans/eval-x-lgc.md and its HTML, create-only, in its own commit (pre-granted).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "If your skill wants a T2 plan record, write it at docs/plans/eval-x-lgc.md and its HTML, create-only, in its own commit (pre-granted by Coordinator #32)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the skeleton commit and on the final commit; `uv run pytest -q tests/test_grade_diffstats.py tests/test_readiness.py`; `uv run python tools/mutate_check.py tests/mutations/diffstats.json`, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Gate (R-104; it replaces README section 3's join gate; each command on its own line, exit status read, never behind a pipe)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commits name their paths, with AGENT_SESSION=x-lgc-e1e4 inline on every commit and coord call.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit named paths only, with AGENT_SESSION=x-lgc-e1e4 inline on every commit and coord call."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report (README section 4); the Leader reads it from Agy's cli.log.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "mutate_check with --touched, and the whole suite: they are the Leader's, once per batch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "never --touched"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "A campaign ledger (bench/campaigns/**) on the branch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "No campaign ledger (bench/campaigns/**) on your branch."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Killing any process by name or pattern; only PIDs this session started.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never kill a process by name or pattern, only PIDs you started"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "_check_variant and the rest of readiness.py outside contract_failures (X-J2b edits _check_variant in this window); readiness.pass_rule_problems.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Not yours: _check_variant and the rest of readiness.py outside contract_failures"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "grade/property.py and grade/noguess.py; a STRATEGIES key or a PLANNED edit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "grade/property.py and grade/noguess.py"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any edit under tasks/SM1 or tasks/SM2 (a frozen value the function disagrees with is reported, never edited), the stand-in and tests/test_simplicity_tasks.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tasks/SM1/** and tasks/SM2/** (a frozen value your function disagrees with is reported, never edited)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "The P2 gate ring and stamp renewal: the Leader's.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your grade/ change pays the P2 gate ring and stamp renewal, run by the Leader."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree based on the integration head; the brief's owned paths and the pre-granted lines only",
+          "deadline": "3,300 s",
+          "fallback": "a red-only end, a deadline or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet, served claude-sonnet-5-5) in the same tree (R-87 Option 1). A launch or transport failure before the first prompt (XPORT-A shape): the follow-on runs as Claude Code Sonnet in the same tree under the same session x-lgc-e1e4, because the runner refuses a second attempt under the same id; with no commit landed it does the whole turn from this compile",
+          "join_rule": "the R-104 worker gate; the Leader joins into integrate/e2e4-18 after LGb, re-runs a red SHA; the P2 gate ring and stamp renewal",
+          "per_branch_exit": "a skeleton, red and green commits on build/eval-x-lgc",
+          "termination": "one turn",
+          "transient_retry": "0 (no retry in the contract)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "180k tokens per dispatch",
+          "done_when": [
+            "The base is the integration head at dispatch with X-LGb joined, never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing or `git merge-base --is-ancestor 0b32d333 HEAD` fails, stop and report.",
+            "A skeleton commit, then red commits failing on an assertion, never by ImportError, AttributeError, NameError or KeyError (RED-C), then green commits, on build/eval-x-lgc.",
+            "The landed names are called, never re-implemented (DM7): diffstats.measure and diffstats.grade (skeletons), property.STRATEGIES :504 (\"simplicity\" already registered, so no new key), hidden_tests :392, write_section :479, _changes.change_set, product_lines, line_delta, in_radius :259, is_test_path :280, and errors.RUN_CODES[\"HB-RDY-009\"] (:68); identity.PLANNED is not edited.",
+            "test_diffstats_measure_size points at a real fixture tree and its LGc strict-xfail marker is removed in the commit that makes it pass; test_diffstats_grade_skeleton_returns_scores is replaced in the green commit by the behaviour test it stood in for, and the report says so.",
+            "The seven W1-L section 15 rows are named tests in tests/test_grade_diffstats.py (test_sm_product_lines_ignore_blank_comment_docstring, test_sm_each_metric_and_clause_has_a_flipping_variant, test_sm_ceiling_boundary_pairs, test_sm_abstractions_counts_classdef_once, test_sm_radius_partition_counts_each_line_once, test_sm_frozen_reference_size_equals_function_output, test_diffstats_grade_cell_uses_registered_strategy), each row's mutant in the new tests/mutations/diffstats.json and killed, including \"drop clause (b)\" killed by launderlines and \"drop clause (a)\" killed by launderclass.",
+            "EV-6: no line is counted twice with scope_creep, and diffstats never reads drift's row.",
+            "The stand-in's measured numbers (tests/fixtures/property_tasks/standin_diffstats.py, read only) are compared with diffstats' and any difference is in the report.",
+            "contract_failures, for a simplicity task, recomputes size_reference_lines as diffstats' in-radius added product lines of the committed reference overlay over the task's base tree; an unequal frozen value is a Failure with code HB-RDY-009 naming the frozen and the computed value; the red test is a fixture task with a hand-edited frozen value.",
+            "The readiness.py hunk stays inside contract_failures (plus at most one private helper beside it); _check_variant (:693) is untouched.",
+            "The base tree is built only through workspace's own functions (never a second clone rule); a base that cannot be built gives an HB-RDY-009 failure saying the value was not checked and why (never a silent pass); the upstream cache root is marked with an inline assume:.",
+            "A test that already passes is recorded green on arrival with the SHA, never faked red.",
+            "A T2 plan record, if your skill wants one, is docs/plans/eval-x-lgc.md and its HTML, create-only, in its own commit (pre-granted).",
+            "The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the skeleton commit and on the final commit; `uv run pytest -q tests/test_grade_diffstats.py tests/test_readiness.py`; `uv run python tools/mutate_check.py tests/mutations/diffstats.json`, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.",
+            "A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "Commits name their paths, with AGENT_SESSION=x-lgc-e1e4 inline on every commit and coord call.",
+            "A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2).",
+            "The served model id is the first line of the final report (README section 4); the Leader reads it from Agy's cli.log."
+          ],
+          "fan_out_cap": 0,
+          "goal": "Following the brief docs/coordination/eval-wave2-e234/x-lg.md, docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md and W1-L (docs/design/eval-property-tasks.md sections 3, 5.1, 8.1-8.3, 15, Erratum 1 and Erratum 2), all binding: build dispatch LGc of X-LG on build/eval-x-lgc from the integration head with LGb joined (W0 rev 6.11): diffstats.measure and diffstats.grade compute size_vs_reference, new_abstractions, new_dependencies and the outside_radius_lines scope clause (W1-L section 8.1) from the _changes functions, with property_check_pass and its deciding clause; and readiness.contract_failures recomputes a simplicity task's frozen size_reference_lines through diffstats and reports an unequal value as HB-RDY-009 (Coordinator #32's ruling; Coordinator #34 read the base at 0d4a291a).",
+          "main_line_budget": "180 calls across 3 dispatches; 3,300 s this dispatch",
+          "not_in_scope": [
+            "mutate_check with --touched, and the whole suite: they are the Leader's, once per batch.",
+            "A campaign ledger (bench/campaigns/**) on the branch.",
+            "Killing any process by name or pattern; only PIDs this session started.",
+            "_check_variant and the rest of readiness.py outside contract_failures (X-J2b edits _check_variant in this window); readiness.pass_rule_problems.",
+            "grade/property.py and grade/noguess.py; a STRATEGIES key or a PLANNED edit.",
+            "Any edit under tasks/SM1 or tasks/SM2 (a frozen value the function disagrees with is reported, never edited), the stand-in and tests/test_simplicity_tasks.py.",
+            "The P2 gate ring and stamp renewal: the Leader's."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.017,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M46KDVXV5847E06A81GY5FTV",
+        "raw_sha256": "4bca8a36610d88bc3da3ea0a552ec65ba0893a8be3b23421b360aaf3f3fd1190",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-lgc"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/x-lg.md",
+            "reason": null,
+            "sha256": "1c9cf03613301cdc7c8701711e2e9207f2721ccbad9be49b151c537f0fad1c90",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/x-lg.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/README.md",
+            "reason": null,
+            "sha256": "e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-property-tasks.md",
+            "reason": null,
+            "sha256": "b14637314c7501ad8ce14c5b9d741f65331dc4544c28b17107039ddb33753158",
+            "status": "resolved",
+            "token": "docs/design/eval-property-tasks.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-seam-contracts.md",
+            "reason": null,
+            "sha256": "cc73f899b6307989e6bfc7ab4f25fd9d07a4c4f2ab34ba02ca3aef81a2d3c42b",
+            "status": "resolved",
+            "token": "docs/design/eval-seam-contracts.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "integrate/e2e4-18"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/noguess.py",
+            "reason": null,
+            "sha256": "5d26786e12dd3ebe12148c14ff21672c6ba97fcdc80d916006a068bb0c943f25",
+            "status": "resolved",
+            "token": "grade/noguess.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_noguess.py",
+            "reason": null,
+            "sha256": "c206a39d0734d0ae40f8fc10e668064b820d1c29b7fc6b8a1677dad1cbf30a41",
+            "status": "resolved",
+            "token": "tests/test_grade_noguess.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/noguess.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/diffstats.py",
+            "reason": null,
+            "sha256": "dc156a75c48c02608955c47e9df802efd88c12ba8c15793dc6dcb6c52eb6c913",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/diffstats.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/property.py",
+            "reason": null,
+            "sha256": "b1deee742cfb1e954999d16024bffd888650de2db48108cb56897d235791bf48",
+            "status": "resolved",
+            "token": "grade/property.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/diffstats.py",
+            "reason": null,
+            "sha256": "dc156a75c48c02608955c47e9df802efd88c12ba8c15793dc6dcb6c52eb6c913",
+            "status": "resolved",
+            "token": "grade/diffstats.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/_changes.py",
+            "reason": null,
+            "sha256": "9c65c020a56cfd285dd0cd5d2377b70ee8e67c93b91597dfe216b4ad3d4c13ef",
+            "status": "resolved",
+            "token": "grade/_changes.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_grade_diffstats.py::test_diffstats_measure_size"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_grade_diffstats.py::test_diffstats_grade_skeleton_returns_scores"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_diffstats.py",
+            "reason": null,
+            "sha256": "4167e5bf393f79c9d71c00978982a64be0cb2567f82d1e03ea6e57531c29c504",
+            "status": "resolved",
+            "token": "tests/test_grade_diffstats.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/diffstats.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/fixtures/property_tasks/standin_diffstats.py",
+            "reason": null,
+            "sha256": "0e754d2c3e03b535358784b641746a35a5c6f749cccee77806525daff63f7a59",
+            "status": "resolved",
+            "token": "tests/fixtures/property_tasks/standin_diffstats.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_simplicity_tasks.py",
+            "reason": null,
+            "sha256": "245979b2470386a48f705f922107cb86300c1e0158d1a0d065964701d16bf402",
+            "status": "resolved",
+            "token": "tests/test_simplicity_tasks.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/readiness.py",
+            "reason": null,
+            "sha256": "89191350ec9af494b6ff5fec49c5a38257cc383d385da01abfb1eafcb7c0275e",
+            "status": "resolved",
+            "token": "readiness.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/plans/eval-x-lgc.md"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_identity.py",
+            "reason": null,
+            "sha256": "ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf",
+            "status": "resolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_atomic_sites.py",
+            "reason": null,
+            "sha256": "143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90",
+            "status": "resolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_arms_guard.py",
+            "reason": null,
+            "sha256": "ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349",
+            "status": "resolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_discriminate.py",
+            "reason": null,
+            "sha256": "6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52",
+            "status": "resolved",
+            "token": "tests/test_discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_skills_in_sync.py",
+            "reason": null,
+            "sha256": "572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d",
+            "status": "resolved",
+            "token": "tests/test_skills_in_sync.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_timing_hygiene.py",
+            "reason": null,
+            "sha256": "fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6",
+            "status": "resolved",
+            "token": "tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_readiness.py",
+            "reason": null,
+            "sha256": "0cf21b1b579f90abc63a00ffeb8533366fcbbed4b19e7e29487ab57a801fa0bb",
+            "status": "resolved",
+            "token": "tests/test_readiness.py"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/campaigns/**"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/SM1/**"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/SM2/**"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-05T17:59:38Z",
+      "dispatchable": true,
+      "id": "al-01M46KH8W1B3NC5Y7R0BPJBQXA",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session x-lgc-e1e4 --skill implement\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e234/x-lg.md, docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md and W1-L (docs/design/eval-property-tasks.md sections 3, 5.1, 8.1-8.3, 15, Erratum 1 and Erratum 2), all binding: build dispatch LGc of X-LG on build/eval-x-lgc from the integration head with LGb joined (W0 rev 6.11): diffstats.measure and diffstats.grade compute size_vs_reference, new_abstractions, new_dependencies and the outside_radius_lines scope clause (W1-L section 8.1) from the _changes functions, with property_check_pass and its deciding clause; and readiness.contract_failures recomputes a simplicity task's frozen size_reference_lines through diffstats and reports an unequal value as HB-RDY-009 (Coordinator #32's ruling; Coordinator #34 read the base at 0d4a291a).\nDone when: The base is the integration head at dispatch with X-LGb joined, never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing or `git merge-base --is-ancestor 0b32d333 HEAD` fails, stop and report.; A skeleton commit, then red commits failing on an assertion, never by ImportError, AttributeError, NameError or KeyError (RED-C), then green commits, on build/eval-x-lgc.; The landed names are called, never re-implemented (DM7): diffstats.measure and diffstats.grade (skeletons), property.STRATEGIES :504 (\"simplicity\" already registered, so no new key), hidden_tests :392, write_section :479, _changes.change_set, product_lines, line_delta, in_radius :259, is_test_path :280, and errors.RUN_CODES[\"HB-RDY-009\"] (:68); identity.PLANNED is not edited.; test_diffstats_measure_size points at a real fixture tree and its LGc strict-xfail marker is removed in the commit that makes it pass; test_diffstats_grade_skeleton_returns_scores is replaced in the green commit by the behaviour test it stood in for, and the report says so.; The seven W1-L section 15 rows are named tests in tests/test_grade_diffstats.py (test_sm_product_lines_ignore_blank_comment_docstring, test_sm_each_metric_and_clause_has_a_flipping_variant, test_sm_ceiling_boundary_pairs, test_sm_abstractions_counts_classdef_once, test_sm_radius_partition_counts_each_line_once, test_sm_frozen_reference_size_equals_function_output, test_diffstats_grade_cell_uses_registered_strategy), each row's mutant in the new tests/mutations/diffstats.json and killed, including \"drop clause (b)\" killed by launderlines and \"drop clause (a)\" killed by launderclass.; EV-6: no line is counted twice with scope_creep, and diffstats never reads drift's row.; The stand-in's measured numbers (tests/fixtures/property_tasks/standin_diffstats.py, read only) are compared with diffstats' and any difference is in the report.; contract_failures, for a simplicity task, recomputes size_reference_lines as diffstats' in-radius added product lines of the committed reference overlay over the task's base tree; an unequal frozen value is a Failure with code HB-RDY-009 naming the frozen and the computed value; the red test is a fixture task with a hand-edited frozen value.; The readiness.py hunk stays inside contract_failures (plus at most one private helper beside it); _check_variant (:693) is untouched.; The base tree is built only through workspace's own functions (never a second clone rule); a base that cannot be built gives an HB-RDY-009 failure saying the value was not checked and why (never a silent pass); the upstream cache root is marked with an inline assume:.; A test that already passes is recorded green on arrival with the SHA, never faked red.; A T2 plan record, if your skill wants one, is docs/plans/eval-x-lgc.md and its HTML, create-only, in its own commit (pre-granted).; The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the skeleton commit and on the final commit; `uv run pytest -q tests/test_grade_diffstats.py tests/test_readiness.py`; `uv run python tools/mutate_check.py tests/mutations/diffstats.json`, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.; A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commits name their paths, with AGENT_SESSION=x-lgc-e1e4 inline on every commit and coord call.; A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2).; The served model id is the first line of the final report (README section 4); the Leader reads it from Agy's cli.log.\nNot in scope: mutate_check with --touched, and the whole suite: they are the Leader's, once per batch.; A campaign ledger (bench/campaigns/**) on the branch.; Killing any process by name or pattern; only PIDs this session started.; _check_variant and the rest of readiness.py outside contract_failures (X-J2b edits _check_variant in this window); readiness.pass_rule_problems.; grade/property.py and grade/noguess.py; a STRATEGIES key or a PLANNED edit.; Any edit under tasks/SM1 or tasks/SM2 (a frozen value the function disagrees with is reported, never edited), the stand-in and tests/test_simplicity_tasks.py.; The P2 gate ring and stamp renewal: the Leader's.\nTier: T2\nFan-out cap: 0\nContext ceiling: 180k tokens per dispatch\nMain-line budget: 180 calls across 3 dispatches; 3,300 s this dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: The base is the integration head at dispatch with X-LGb joined, never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing or `git merge-base --is-ancestor 0b32d333 HEAD` fails, stop and report. | phrase: Stop and report if git log --oneline -1 --grep \"W0 seam contracts rev 6.11\" prints nothing, or if git merge-base --is-ancestor 0b32d333 HEAD fails (LGb not joined). |\n| done_when: A skeleton commit, then red commits failing on an assertion, never by ImportError, AttributeError, NameError or KeyError (RED-C), then green commits, on build/eval-x-lgc. | phrase: never by ImportError, AttributeError, NameError or KeyError (RED-C) |\n| done_when: The landed names are called, never re-implemented (DM7): diffstats.measure and diffstats.grade (skeletons), property.STRATEGIES :504 (\"simplicity\" already registered, so no new key), hidden_tests :392, write_section :479, _changes.change_set, product_lines, line_delta, in_radius :259, is_test_path :280, and errors.RUN_CODES[\"HB-RDY-009\"] (:68); identity.PLANNED is not edited. | phrase: call these names, never re-implement them (DM7) |\n| done_when: test_diffstats_measure_size points at a real fixture tree and its LGc strict-xfail marker is removed in the commit that makes it pass; test_diffstats_grade_skeleton_returns_scores is replaced in the green commit by the behaviour test it stood in for, and the report says so. | phrase: remove that marker in the commit that makes it pass |\n| done_when: The seven W1-L section 15 rows are named tests in tests/test_grade_diffstats.py (test_sm_product_lines_ignore_blank_comment_docstring, test_sm_each_metric_and_clause_has_a_flipping_variant, test_sm_ceiling_boundary_pairs, test_sm_abstractions_counts_classdef_once, test_sm_radius_partition_counts_each_line_once, test_sm_frozen_reference_size_equals_function_output, test_diffstats_grade_cell_uses_registered_strategy), each row's mutant in the new tests/mutations/diffstats.json and killed, including \"drop clause (b)\" killed by launderlines and \"drop clause (a)\" killed by launderclass. | phrase: Each row's mutant goes in your own new mutation file tests/mutations/diffstats.json and is killed |\n| done_when: EV-6: no line is counted twice with scope_creep, and diffstats never reads drift's row. | phrase: EV-6: no line is counted twice with scope_creep, and diffstats never reads drift's row. |\n| done_when: The stand-in's measured numbers (tests/fixtures/property_tasks/standin_diffstats.py, read only) are compared with diffstats' and any difference is in the report. | phrase: Their measured numbers are a cross-check for yours, and a difference goes in your report. |\n| done_when: contract_failures, for a simplicity task, recomputes size_reference_lines as diffstats' in-radius added product lines of the committed reference overlay over the task's base tree; an unequal frozen value is a Failure with code HB-RDY-009 naming the frozen and the computed value; the red test is a fixture task with a hand-edited frozen value. | phrase: an unequal frozen value is a Failure with code HB-RDY-009 naming the frozen and the computed value |\n| done_when: The readiness.py hunk stays inside contract_failures (plus at most one private helper beside it); _check_variant (:693) is untouched. | phrase: Your readiness.py hunk stays inside contract_failures, plus one private helper beside it if you need one |\n| done_when: The base tree is built only through workspace's own functions (never a second clone rule); a base that cannot be built gives an HB-RDY-009 failure saying the value was not checked and why (never a silent pass); the upstream cache root is marked with an inline assume:. | phrase: Never a silent pass: a base that cannot be built gives an HB-RDY-009 failure that says the value was not checked and why. |\n| done_when: A test that already passes is recorded green on arrival with the SHA, never faked red. | phrase: is recorded green on arrival with the SHA, never faked red |\n| done_when: A T2 plan record, if your skill wants one, is docs/plans/eval-x-lgc.md and its HTML, create-only, in its own commit (pre-granted). | phrase: If your skill wants a T2 plan record, write it at docs/plans/eval-x-lgc.md and its HTML, create-only, in its own commit (pre-granted by Coordinator #32). |\n| done_when: The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the skeleton commit and on the final commit; `uv run pytest -q tests/test_grade_diffstats.py tests/test_readiness.py`; `uv run python tools/mutate_check.py tests/mutations/diffstats.json`, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. | phrase: Gate (R-104; it replaces README section 3's join gate; each command on its own line, exit status read, never behind a pipe) |\n| done_when: A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed |\n| done_when: Commits name their paths, with AGENT_SESSION=x-lgc-e1e4 inline on every commit and coord call. | phrase: Commit named paths only, with AGENT_SESSION=x-lgc-e1e4 inline on every commit and coord call. |\n| done_when: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2). | phrase: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green |\n| done_when: The served model id is the first line of the final report (README section 4); the Leader reads it from Agy's cli.log. | phrase: Report your served model id on the first line of your final message. |\n| not_in_scope: mutate_check with --touched, and the whole suite: they are the Leader's, once per batch. | phrase: never --touched |\n| not_in_scope: A campaign ledger (bench/campaigns/**) on the branch. | phrase: No campaign ledger (bench/campaigns/**) on your branch. |\n| not_in_scope: Killing any process by name or pattern; only PIDs this session started. | phrase: Never kill a process by name or pattern, only PIDs you started |\n| not_in_scope: _check_variant and the rest of readiness.py outside contract_failures (X-J2b edits _check_variant in this window); readiness.pass_rule_problems. | phrase: Not yours: _check_variant and the rest of readiness.py outside contract_failures |\n| not_in_scope: grade/property.py and grade/noguess.py; a STRATEGIES key or a PLANNED edit. | phrase: grade/property.py and grade/noguess.py |\n| not_in_scope: Any edit under tasks/SM1 or tasks/SM2 (a frozen value the function disagrees with is reported, never edited), the stand-in and tests/test_simplicity_tasks.py. | phrase: tasks/SM1/** and tasks/SM2/** (a frozen value your function disagrees with is reported, never edited) |\n| not_in_scope: The P2 gate ring and stamp renewal: the Leader's. | phrase: Your grade/ change pays the P2 gate ring and stamp renewal, run by the Leader. |\nReferences\n- build/eval-x-lgc: unresolved (not found)\n- docs/coordination/eval-wave2-e234/x-lg.md: docs/coordination/eval-wave2-e234/x-lg.md sha256 1c9cf03613301cdc7c8701711e2e9207f2721ccbad9be49b151c537f0fad1c90\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b\n- docs/coordination/eval-wave2-e234/README.md: docs/coordination/eval-wave2-e234/README.md sha256 e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701\n- docs/design/eval-property-tasks.md: docs/design/eval-property-tasks.md sha256 b14637314c7501ad8ce14c5b9d741f65331dc4544c28b17107039ddb33753158\n- docs/design/eval-seam-contracts.md: docs/design/eval-seam-contracts.md sha256 cc73f899b6307989e6bfc7ab4f25fd9d07a4c4f2ab34ba02ca3aef81a2d3c42b\n- integrate/e2e4-18: unresolved (not found)\n- grade/noguess.py: src/harness_bench/grade/noguess.py sha256 5d26786e12dd3ebe12148c14ff21672c6ba97fcdc80d916006a068bb0c943f25\n- tests/test_grade_noguess.py: tests/test_grade_noguess.py sha256 c206a39d0734d0ae40f8fc10e668064b820d1c29b7fc6b8a1677dad1cbf30a41\n- tests/mutations/noguess.json: unresolved (not found)\n- src/harness_bench/grade/diffstats.py: src/harness_bench/grade/diffstats.py sha256 dc156a75c48c02608955c47e9df802efd88c12ba8c15793dc6dcb6c52eb6c913\n- grade/property.py: src/harness_bench/grade/property.py sha256 b1deee742cfb1e954999d16024bffd888650de2db48108cb56897d235791bf48\n- grade/diffstats.py: src/harness_bench/grade/diffstats.py sha256 dc156a75c48c02608955c47e9df802efd88c12ba8c15793dc6dcb6c52eb6c913\n- grade/_changes.py: src/harness_bench/grade/_changes.py sha256 9c65c020a56cfd285dd0cd5d2377b70ee8e67c93b91597dfe216b4ad3d4c13ef\n- tests/test_grade_diffstats.py::test_diffstats_measure_size: unresolved (not found)\n- tests/test_grade_diffstats.py::test_diffstats_grade_skeleton_returns_scores: unresolved (not found)\n- tests/test_grade_diffstats.py: tests/test_grade_diffstats.py sha256 4167e5bf393f79c9d71c00978982a64be0cb2567f82d1e03ea6e57531c29c504\n- tests/mutations/diffstats.json: unresolved (not found)\n- tests/fixtures/property_tasks/standin_diffstats.py: tests/fixtures/property_tasks/standin_diffstats.py sha256 0e754d2c3e03b535358784b641746a35a5c6f749cccee77806525daff63f7a59\n- tests/test_simplicity_tasks.py: tests/test_simplicity_tasks.py sha256 245979b2470386a48f705f922107cb86300c1e0158d1a0d065964701d16bf402\n- readiness.py: src/harness_bench/readiness.py sha256 89191350ec9af494b6ff5fec49c5a38257cc383d385da01abfb1eafcb7c0275e\n- /: unresolved (outside repo)\n- docs/plans/eval-x-lgc.md: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tests/test_readiness.py: tests/test_readiness.py sha256 0cf21b1b579f90abc63a00ffeb8533366fcbbed4b19e7e29487ab57a801fa0bb\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- bench/campaigns/**: unresolved (not found)\n- tasks/SM1/**: unresolved (not found)\n- tasks/SM2/**: unresolved (not found)\n- grade/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (no retry in the contract)\nper_branch_exit: a skeleton, red and green commits on build/eval-x-lgc\njoin_rule: the R-104 worker gate; the Leader joins into integrate/e2e4-18 after LGb, re-runs a red SHA; the P2 gate ring and stamp renewal\ncontainment: own worktree based on the integration head; the brief's owned paths and the pre-granted lines only\ntermination: one turn\ndeadline: 3,300 s\nfallback: a red-only end, a deadline or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet, served claude-sonnet-5-5) in the same tree (R-87 Option 1). A launch or transport failure before the first prompt (XPORT-A shape): the follow-on runs as Claude Code Sonnet in the same tree under the same session x-lgc-e1e4, because the runner refuses a second attempt under the same id; with no commit landed it does the whole turn from this compile\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M46KDVXV5847E06A81GY5FTV\nraw sha256: 4bca8a36610d88bc3da3ea0a552ec65ba0893a8be3b23421b360aaf3f3fd1190\ncompiler model: claude-opus-5-5\nengine seconds: 0.017\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "x-lgc-e1e4",
+      "shortname": "compile-You are session x-lgc-e1e4 on branch build/eval-x-lgc, harness Agy, mode…",
+      "skill": null,
+      "summary": "compiled al-01M46KDVXV5847E06A81GY5FTV for claude-code v1: 24 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "The base is the integration head at dispatch with X-A3a joined, never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing or `git merge-base --is-ancestor cc2d0916 HEAD` fails, stop and report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Stop and report if git log --oneline -1 --grep \"W0 seam contracts rev 6.11\" prints nothing, or if git merge-base --is-ancestor cc2d0916 HEAD fails (A3a not joined)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A skeleton commit, then red commits failing on an assertion, never by ImportError, AttributeError, NameError or KeyError (RED-C), then green commits, on build/eval-x-a3b.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "never by ImportError, AttributeError, NameError or KeyError (RED-C)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A3a's names (_pass :1197, _passed :1208, ceiling_off :527, GroupClassInput.n_recorded :562, board.py's Measure(None) default) and X-A1's plan.py names (BALANCE_BOUND :42, default_comparisons :150, cell_arm :160, plan_packs :168, plan_pack :176, arm_pack :183, plan_comparisons :190, launch_balance :213, draw_launch_order :223, tree_hash :105, the ring block :564-567) and config.RING_TAGS are called, never re-defined (DM7).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "call these names, never re-implement them (DM7)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "bench/rings/pack-regression.yaml is a bench-matrix/2 ring file with ring {tag: pack-regression}, arms declared by role without a pack and quoted arm ids, valid under config's ring validation.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench/rings/pack-regression.yaml, a bench-matrix/2 ring file with ring {tag: pack-regression}"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A three-arm plan (off and two pack revisions) built through plan.build_plan has one cell per arm per (task, combo, rep), one pack revision per non-off arm and none for off, and a stored launch seed whose order meets launch_balance < 5 % (EV-17; W1-A section 10's criterion-1 and criterion-3 nodes in tests/test_plan.py).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A three-arm plan (off and two pack revisions) built through plan.build_plan"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A plan.py helper names the differences between two plans' ring blocks, and board.compare (board.py:683) raises BenchError(\"HB-PLN-003\", ...) when both runs carry a ring and the hashes differ; the mutant \"the ring-hash refusal is skipped\" in tests/mutations/board.json is killed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "board.compare (board.py:683) refusing with BenchError(\"HB-PLN-003\", ...) when both runs carry a ring and the hashes differ"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A comparison of two runs without a ring is unchanged, and every committed board and report golden stays byte-identical; a moved golden is a stop and a report, never a fix.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a moved golden is a stop and a report, never a fix"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "errors.py gains exactly one row, \"HB-PLN-003\": \"comparison refused: ring hashes differ (names the differences, EV-15)\", between HB-PLN-002 and HB-PLN-004, in its own commit (pre-granted by Coordinator #34); no other errors.py line changes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "You add exactly one row, \"HB-PLN-003\": \"comparison refused: ring hashes differ (names the differences, EV-15)\" (W0 section 11), between HB-PLN-002 and HB-PLN-004, in its own commit."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Every pin in tests/test_arms_guard.py stays equal (no new \"pack\", \"on\" or \"off\" literal); a pin that must move moves in the same commit and is named in the report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "If one must move, it moves in the same commit and the report names it"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A test that already passes is recorded green on arrival with the SHA, never faked red.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "is recorded green on arrival with the SHA, never faked red"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A T2 plan record, if your skill wants one, is docs/plans/eval-x-a3b.md and its HTML, create-only, in its own commit (pre-granted).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "If your skill wants a T2 plan record, write it at docs/plans/eval-x-a3b.md and its HTML, create-only, in its own commit (pre-granted by Coordinator #32)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the skeleton commit and on the final commit; `uv run pytest -q tests/test_plan.py tests/test_config.py tests/test_board.py tests/test_errors.py`; `uv run python tools/mutate_check.py tests/mutations/plan.json` and `uv run python tools/mutate_check.py tests/mutations/board.json`, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Gate (R-104; it replaces README section 3's join gate; each command on its own line, exit status read, never behind a pipe)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commits name their paths, with AGENT_SESSION=x-a3b-e1e4 inline on every commit and coord call.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit named paths only, with AGENT_SESSION=x-a3b-e1e4 inline on every commit and coord call."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report (README section 4); the Leader reads it from Agy's cli.log.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "mutate_check with --touched, and the whole suite: they are the Leader's, once per batch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "never --touched"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "A campaign ledger (bench/campaigns/**) on the branch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "No campaign ledger (bench/campaigns/**) on your branch."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Killing any process by name or pattern; only PIDs this session started.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never kill a process by name or pattern, only PIDs you started"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "views.py: the CellView.pack rename is X-A3c's, after X-J1d joins.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "views.py is not yours in A3b: the CellView.pack rename is X-A3c's, after X-J1d joins"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "HB-PLN-005's retirement and its errors.py text: X-A3c's, when the last plan_pack legacy site moves to comparison pairs.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "HB-PLN-005 stays: it is retired when the last plan_pack legacy site moves to comparison pairs, which is X-A3c's reader migration"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "report/** (X-A3c's readers per comparison pair) and narrowing the G1 allowlist to plan.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "report/** (X-A3c's readers per comparison pair)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "cells[].calibration (W0 section 5, EV-9); readiness.py; readiness.pass_rule_problems.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "cells[].calibration (W0 section 5, EV-9) is not in A3b"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree based on the integration head; the brief's owned paths and the pre-granted lines only",
+          "deadline": "3,300 s",
+          "fallback": "a red-only end, a deadline or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet, served claude-sonnet-5-5) in the same tree (R-87 Option 1). A launch or transport failure before the first prompt (XPORT-A shape): the follow-on runs as Claude Code Sonnet in the same tree under the same session x-a3b-e1e4, because the runner refuses a second attempt under the same id; with no commit landed it does the whole turn from this compile",
+          "join_rule": "the R-104 worker gate; the Leader joins into integrate/e2e4-18 and re-runs a red SHA; no gate ring (no grade/ file)",
+          "per_branch_exit": "a skeleton, red and green commits on build/eval-x-a3b",
+          "termination": "one turn",
+          "transient_retry": "0 (no retry in the contract)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens per dispatch",
+          "done_when": [
+            "The base is the integration head at dispatch with X-A3a joined, never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing or `git merge-base --is-ancestor cc2d0916 HEAD` fails, stop and report.",
+            "A skeleton commit, then red commits failing on an assertion, never by ImportError, AttributeError, NameError or KeyError (RED-C), then green commits, on build/eval-x-a3b.",
+            "A3a's names (_pass :1197, _passed :1208, ceiling_off :527, GroupClassInput.n_recorded :562, board.py's Measure(None) default) and X-A1's plan.py names (BALANCE_BOUND :42, default_comparisons :150, cell_arm :160, plan_packs :168, plan_pack :176, arm_pack :183, plan_comparisons :190, launch_balance :213, draw_launch_order :223, tree_hash :105, the ring block :564-567) and config.RING_TAGS are called, never re-defined (DM7).",
+            "bench/rings/pack-regression.yaml is a bench-matrix/2 ring file with ring {tag: pack-regression}, arms declared by role without a pack and quoted arm ids, valid under config's ring validation.",
+            "A three-arm plan (off and two pack revisions) built through plan.build_plan has one cell per arm per (task, combo, rep), one pack revision per non-off arm and none for off, and a stored launch seed whose order meets launch_balance < 5 % (EV-17; W1-A section 10's criterion-1 and criterion-3 nodes in tests/test_plan.py).",
+            "A plan.py helper names the differences between two plans' ring blocks, and board.compare (board.py:683) raises BenchError(\"HB-PLN-003\", ...) when both runs carry a ring and the hashes differ; the mutant \"the ring-hash refusal is skipped\" in tests/mutations/board.json is killed.",
+            "A comparison of two runs without a ring is unchanged, and every committed board and report golden stays byte-identical; a moved golden is a stop and a report, never a fix.",
+            "errors.py gains exactly one row, \"HB-PLN-003\": \"comparison refused: ring hashes differ (names the differences, EV-15)\", between HB-PLN-002 and HB-PLN-004, in its own commit (pre-granted by Coordinator #34); no other errors.py line changes.",
+            "Every pin in tests/test_arms_guard.py stays equal (no new \"pack\", \"on\" or \"off\" literal); a pin that must move moves in the same commit and is named in the report.",
+            "A test that already passes is recorded green on arrival with the SHA, never faked red.",
+            "A T2 plan record, if your skill wants one, is docs/plans/eval-x-a3b.md and its HTML, create-only, in its own commit (pre-granted).",
+            "The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the skeleton commit and on the final commit; `uv run pytest -q tests/test_plan.py tests/test_config.py tests/test_board.py tests/test_errors.py`; `uv run python tools/mutate_check.py tests/mutations/plan.json` and `uv run python tools/mutate_check.py tests/mutations/board.json`, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.",
+            "A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "Commits name their paths, with AGENT_SESSION=x-a3b-e1e4 inline on every commit and coord call.",
+            "A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2).",
+            "The served model id is the first line of the final report (README section 4); the Leader reads it from Agy's cli.log."
+          ],
+          "fan_out_cap": 0,
+          "goal": "Following the brief docs/coordination/eval-wave2-e234/x-a3.md, docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md, W1-A (docs/design/eval-arms.md sections 3.3, 3.4, 3.8, 5, 5.1, 10, 12) and ADR-0016 section 6, all binding: build dispatch A3b of X-A3 on build/eval-x-a3b from the integration head with A3a joined (W0 rev 6.11): bench/rings/pack-regression.yaml as a bench-matrix/2 ring file; a three-arm plan through plan.build_plan with one cell per arm per (task, combo, rep), one pack revision per non-off arm and none for off, and a stored seed whose launch_balance is under 5 % (EV-17); EV-15's refusal in board.compare when two runs carry different ring hashes (HB-PLN-003, one pre-granted errors.py row). Call A3a's and X-A1's landed names, never re-define them (Coordinator #34 read the base at 0d4a291a).",
+          "main_line_budget": "240 calls across 3 dispatches; 3,300 s this dispatch",
+          "not_in_scope": [
+            "mutate_check with --touched, and the whole suite: they are the Leader's, once per batch.",
+            "A campaign ledger (bench/campaigns/**) on the branch.",
+            "Killing any process by name or pattern; only PIDs this session started.",
+            "views.py: the CellView.pack rename is X-A3c's, after X-J1d joins.",
+            "HB-PLN-005's retirement and its errors.py text: X-A3c's, when the last plan_pack legacy site moves to comparison pairs.",
+            "report/** (X-A3c's readers per comparison pair) and narrowing the G1 allowlist to plan.py.",
+            "cells[].calibration (W0 section 5, EV-9); readiness.py; readiness.pass_rule_problems."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.013,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M46KDWFZCYJTSN21YVF7G0AD",
+        "raw_sha256": "ea573110278c687249195aaf95fdf67d6e6fd1956b670d9f02a388496c704122",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-a3b"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/x-a3.md",
+            "reason": null,
+            "sha256": "7286c23fdbee0a7a69a1047c40a8e2689639b80d7741916fd1378971c6f93328",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/x-a3.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench-matrix/2"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/README.md",
+            "reason": null,
+            "sha256": "e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-arms.md",
+            "reason": null,
+            "sha256": "6b96dee39670f518834044ffa1fe16bc1e4956939b50163ebb378ff8ca6cdb84",
+            "status": "resolved",
+            "token": "docs/design/eval-arms.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/adr/0016-campaign-record.md",
+            "reason": null,
+            "sha256": "8eee493ff9b2b2363be00f20281732ab9e5486e00a2a61e9cd59df1e3fe98da0",
+            "status": "resolved",
+            "token": "docs/adr/0016-campaign-record.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-seam-contracts.md",
+            "reason": null,
+            "sha256": "cc73f899b6307989e6bfc7ab4f25fd9d07a4c4f2ab34ba02ca3aef81a2d3c42b",
+            "status": "resolved",
+            "token": "docs/design/eval-seam-contracts.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "integrate/e2e4-18"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/pack_improvement.py",
+            "reason": null,
+            "sha256": "f8411c14b104bfe8bcd3aa909e1bb3c0e9bb386a6b7ea5453769d5b20f209d1c",
+            "status": "resolved",
+            "token": "report/pack_improvement.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/board.py",
+            "reason": null,
+            "sha256": "4e47d8ebb87f3bd266c7fa0528d0c9c1d5fb122443f019fb87124c6b395f024f",
+            "status": "resolved",
+            "token": "board.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "c5ab23058428142f7ba945a3ffe39ea60e115291499ee27c7280f99e6979b6fd",
+            "status": "resolved",
+            "token": "plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "bench/rings/pilot.yaml",
+            "reason": null,
+            "sha256": "b32dac62b752b6e3b4c61721bf15570aa3a15da5636d605f723de4751c06b5a4",
+            "status": "resolved",
+            "token": "bench/rings/pilot.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/rings/pack-regression.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_plan.py",
+            "reason": null,
+            "sha256": "532cded78ace5227fdc9efd1e79affabba5ea1e88bba579218bd7a4fc8f5e2df",
+            "status": "resolved",
+            "token": "tests/test_plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/board.json",
+            "reason": null,
+            "sha256": "ad80e0479c0347ad2e8d76ec4873ed8de569726cd2bfb556c7f322dd54733b70",
+            "status": "resolved",
+            "token": "tests/mutations/board.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "38681ee1c7c94114085a1c316afd3f1a0c89e59fd6385db018baa7efccb75669",
+            "status": "resolved",
+            "token": "errors.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_arms_guard.py",
+            "reason": null,
+            "sha256": "ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349",
+            "status": "resolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/plans/eval-x-a3b.md"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_identity.py",
+            "reason": null,
+            "sha256": "ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf",
+            "status": "resolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_atomic_sites.py",
+            "reason": null,
+            "sha256": "143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90",
+            "status": "resolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_discriminate.py",
+            "reason": null,
+            "sha256": "6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52",
+            "status": "resolved",
+            "token": "tests/test_discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_skills_in_sync.py",
+            "reason": null,
+            "sha256": "572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d",
+            "status": "resolved",
+            "token": "tests/test_skills_in_sync.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_timing_hygiene.py",
+            "reason": null,
+            "sha256": "fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6",
+            "status": "resolved",
+            "token": "tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_config.py",
+            "reason": null,
+            "sha256": "bc4e8afa0bc4f23b392174ab815250d68ca7b9f974bc3f82dc48aef857fd7ed8",
+            "status": "resolved",
+            "token": "tests/test_config.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_board.py",
+            "reason": null,
+            "sha256": "539118f1cc6779836654c58f0a76d8f91906cd5c28642d01dd82fdbe0816ecb2",
+            "status": "resolved",
+            "token": "tests/test_board.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_errors.py",
+            "reason": null,
+            "sha256": "67d8609c8130286b0bd5414a9150b181f6695662f64f5663c59e19a9454452d1",
+            "status": "resolved",
+            "token": "tests/test_errors.py"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/plan.json",
+            "reason": null,
+            "sha256": "31c9dd582921b2e918454e3a8b38577e0f2f35ed83410b8ee3c0b53c8d79b1d2",
+            "status": "resolved",
+            "token": "tests/mutations/plan.json"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/campaigns/**"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/**"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/readiness.py",
+            "reason": null,
+            "sha256": "89191350ec9af494b6ff5fec49c5a38257cc383d385da01abfb1eafcb7c0275e",
+            "status": "resolved",
+            "token": "readiness.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-05T17:59:38Z",
+      "dispatchable": true,
+      "id": "al-01M46KH9906JPJ1GPACVSD9J5P",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session x-a3b-e1e4 --skill implement\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e234/x-a3.md, docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md, W1-A (docs/design/eval-arms.md sections 3.3, 3.4, 3.8, 5, 5.1, 10, 12) and ADR-0016 section 6, all binding: build dispatch A3b of X-A3 on build/eval-x-a3b from the integration head with A3a joined (W0 rev 6.11): bench/rings/pack-regression.yaml as a bench-matrix/2 ring file; a three-arm plan through plan.build_plan with one cell per arm per (task, combo, rep), one pack revision per non-off arm and none for off, and a stored seed whose launch_balance is under 5 % (EV-17); EV-15's refusal in board.compare when two runs carry different ring hashes (HB-PLN-003, one pre-granted errors.py row). Call A3a's and X-A1's landed names, never re-define them (Coordinator #34 read the base at 0d4a291a).\nDone when: The base is the integration head at dispatch with X-A3a joined, never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing or `git merge-base --is-ancestor cc2d0916 HEAD` fails, stop and report.; A skeleton commit, then red commits failing on an assertion, never by ImportError, AttributeError, NameError or KeyError (RED-C), then green commits, on build/eval-x-a3b.; A3a's names (_pass :1197, _passed :1208, ceiling_off :527, GroupClassInput.n_recorded :562, board.py's Measure(None) default) and X-A1's plan.py names (BALANCE_BOUND :42, default_comparisons :150, cell_arm :160, plan_packs :168, plan_pack :176, arm_pack :183, plan_comparisons :190, launch_balance :213, draw_launch_order :223, tree_hash :105, the ring block :564-567) and config.RING_TAGS are called, never re-defined (DM7).; bench/rings/pack-regression.yaml is a bench-matrix/2 ring file with ring {tag: pack-regression}, arms declared by role without a pack and quoted arm ids, valid under config's ring validation.; A three-arm plan (off and two pack revisions) built through plan.build_plan has one cell per arm per (task, combo, rep), one pack revision per non-off arm and none for off, and a stored launch seed whose order meets launch_balance < 5 % (EV-17; W1-A section 10's criterion-1 and criterion-3 nodes in tests/test_plan.py).; A plan.py helper names the differences between two plans' ring blocks, and board.compare (board.py:683) raises BenchError(\"HB-PLN-003\", ...) when both runs carry a ring and the hashes differ; the mutant \"the ring-hash refusal is skipped\" in tests/mutations/board.json is killed.; A comparison of two runs without a ring is unchanged, and every committed board and report golden stays byte-identical; a moved golden is a stop and a report, never a fix.; errors.py gains exactly one row, \"HB-PLN-003\": \"comparison refused: ring hashes differ (names the differences, EV-15)\", between HB-PLN-002 and HB-PLN-004, in its own commit (pre-granted by Coordinator #34); no other errors.py line changes.; Every pin in tests/test_arms_guard.py stays equal (no new \"pack\", \"on\" or \"off\" literal); a pin that must move moves in the same commit and is named in the report.; A test that already passes is recorded green on arrival with the SHA, never faked red.; A T2 plan record, if your skill wants one, is docs/plans/eval-x-a3b.md and its HTML, create-only, in its own commit (pre-granted).; The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the skeleton commit and on the final commit; `uv run pytest -q tests/test_plan.py tests/test_config.py tests/test_board.py tests/test_errors.py`; `uv run python tools/mutate_check.py tests/mutations/plan.json` and `uv run python tools/mutate_check.py tests/mutations/board.json`, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.; A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commits name their paths, with AGENT_SESSION=x-a3b-e1e4 inline on every commit and coord call.; A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2).; The served model id is the first line of the final report (README section 4); the Leader reads it from Agy's cli.log.\nNot in scope: mutate_check with --touched, and the whole suite: they are the Leader's, once per batch.; A campaign ledger (bench/campaigns/**) on the branch.; Killing any process by name or pattern; only PIDs this session started.; views.py: the CellView.pack rename is X-A3c's, after X-J1d joins.; HB-PLN-005's retirement and its errors.py text: X-A3c's, when the last plan_pack legacy site moves to comparison pairs.; report/** (X-A3c's readers per comparison pair) and narrowing the G1 allowlist to plan.py.; cells[].calibration (W0 section 5, EV-9); readiness.py; readiness.pass_rule_problems.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens per dispatch\nMain-line budget: 240 calls across 3 dispatches; 3,300 s this dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: The base is the integration head at dispatch with X-A3a joined, never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing or `git merge-base --is-ancestor cc2d0916 HEAD` fails, stop and report. | phrase: Stop and report if git log --oneline -1 --grep \"W0 seam contracts rev 6.11\" prints nothing, or if git merge-base --is-ancestor cc2d0916 HEAD fails (A3a not joined). |\n| done_when: A skeleton commit, then red commits failing on an assertion, never by ImportError, AttributeError, NameError or KeyError (RED-C), then green commits, on build/eval-x-a3b. | phrase: never by ImportError, AttributeError, NameError or KeyError (RED-C) |\n| done_when: A3a's names (_pass :1197, _passed :1208, ceiling_off :527, GroupClassInput.n_recorded :562, board.py's Measure(None) default) and X-A1's plan.py names (BALANCE_BOUND :42, default_comparisons :150, cell_arm :160, plan_packs :168, plan_pack :176, arm_pack :183, plan_comparisons :190, launch_balance :213, draw_launch_order :223, tree_hash :105, the ring block :564-567) and config.RING_TAGS are called, never re-defined (DM7). | phrase: call these names, never re-implement them (DM7) |\n| done_when: bench/rings/pack-regression.yaml is a bench-matrix/2 ring file with ring {tag: pack-regression}, arms declared by role without a pack and quoted arm ids, valid under config's ring validation. | phrase: bench/rings/pack-regression.yaml, a bench-matrix/2 ring file with ring {tag: pack-regression} |\n| done_when: A three-arm plan (off and two pack revisions) built through plan.build_plan has one cell per arm per (task, combo, rep), one pack revision per non-off arm and none for off, and a stored launch seed whose order meets launch_balance < 5 % (EV-17; W1-A section 10's criterion-1 and criterion-3 nodes in tests/test_plan.py). | phrase: A three-arm plan (off and two pack revisions) built through plan.build_plan |\n| done_when: A plan.py helper names the differences between two plans' ring blocks, and board.compare (board.py:683) raises BenchError(\"HB-PLN-003\", ...) when both runs carry a ring and the hashes differ; the mutant \"the ring-hash refusal is skipped\" in tests/mutations/board.json is killed. | phrase: board.compare (board.py:683) refusing with BenchError(\"HB-PLN-003\", ...) when both runs carry a ring and the hashes differ |\n| done_when: A comparison of two runs without a ring is unchanged, and every committed board and report golden stays byte-identical; a moved golden is a stop and a report, never a fix. | phrase: a moved golden is a stop and a report, never a fix |\n| done_when: errors.py gains exactly one row, \"HB-PLN-003\": \"comparison refused: ring hashes differ (names the differences, EV-15)\", between HB-PLN-002 and HB-PLN-004, in its own commit (pre-granted by Coordinator #34); no other errors.py line changes. | phrase: You add exactly one row, \"HB-PLN-003\": \"comparison refused: ring hashes differ (names the differences, EV-15)\" (W0 section 11), between HB-PLN-002 and HB-PLN-004, in its own commit. |\n| done_when: Every pin in tests/test_arms_guard.py stays equal (no new \"pack\", \"on\" or \"off\" literal); a pin that must move moves in the same commit and is named in the report. | phrase: If one must move, it moves in the same commit and the report names it |\n| done_when: A test that already passes is recorded green on arrival with the SHA, never faked red. | phrase: is recorded green on arrival with the SHA, never faked red |\n| done_when: A T2 plan record, if your skill wants one, is docs/plans/eval-x-a3b.md and its HTML, create-only, in its own commit (pre-granted). | phrase: If your skill wants a T2 plan record, write it at docs/plans/eval-x-a3b.md and its HTML, create-only, in its own commit (pre-granted by Coordinator #32). |\n| done_when: The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the skeleton commit and on the final commit; `uv run pytest -q tests/test_plan.py tests/test_config.py tests/test_board.py tests/test_errors.py`; `uv run python tools/mutate_check.py tests/mutations/plan.json` and `uv run python tools/mutate_check.py tests/mutations/board.json`, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. | phrase: Gate (R-104; it replaces README section 3's join gate; each command on its own line, exit status read, never behind a pipe) |\n| done_when: A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed |\n| done_when: Commits name their paths, with AGENT_SESSION=x-a3b-e1e4 inline on every commit and coord call. | phrase: Commit named paths only, with AGENT_SESSION=x-a3b-e1e4 inline on every commit and coord call. |\n| done_when: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2). | phrase: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green |\n| done_when: The served model id is the first line of the final report (README section 4); the Leader reads it from Agy's cli.log. | phrase: Report your served model id on the first line of your final message. |\n| not_in_scope: mutate_check with --touched, and the whole suite: they are the Leader's, once per batch. | phrase: never --touched |\n| not_in_scope: A campaign ledger (bench/campaigns/**) on the branch. | phrase: No campaign ledger (bench/campaigns/**) on your branch. |\n| not_in_scope: Killing any process by name or pattern; only PIDs this session started. | phrase: Never kill a process by name or pattern, only PIDs you started |\n| not_in_scope: views.py: the CellView.pack rename is X-A3c's, after X-J1d joins. | phrase: views.py is not yours in A3b: the CellView.pack rename is X-A3c's, after X-J1d joins |\n| not_in_scope: HB-PLN-005's retirement and its errors.py text: X-A3c's, when the last plan_pack legacy site moves to comparison pairs. | phrase: HB-PLN-005 stays: it is retired when the last plan_pack legacy site moves to comparison pairs, which is X-A3c's reader migration |\n| not_in_scope: report/** (X-A3c's readers per comparison pair) and narrowing the G1 allowlist to plan.py. | phrase: report/** (X-A3c's readers per comparison pair) |\n| not_in_scope: cells[].calibration (W0 section 5, EV-9); readiness.py; readiness.pass_rule_problems. | phrase: cells[].calibration (W0 section 5, EV-9) is not in A3b |\nReferences\n- build/eval-x-a3b: unresolved (not found)\n- docs/coordination/eval-wave2-e234/x-a3.md: docs/coordination/eval-wave2-e234/x-a3.md sha256 7286c23fdbee0a7a69a1047c40a8e2689639b80d7741916fd1378971c6f93328\n- bench-matrix/2: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b\n- docs/coordination/eval-wave2-e234/README.md: docs/coordination/eval-wave2-e234/README.md sha256 e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701\n- docs/design/eval-arms.md: docs/design/eval-arms.md sha256 6b96dee39670f518834044ffa1fe16bc1e4956939b50163ebb378ff8ca6cdb84\n- docs/adr/0016-campaign-record.md: docs/adr/0016-campaign-record.md sha256 8eee493ff9b2b2363be00f20281732ab9e5486e00a2a61e9cd59df1e3fe98da0\n- docs/design/eval-seam-contracts.md: docs/design/eval-seam-contracts.md sha256 cc73f899b6307989e6bfc7ab4f25fd9d07a4c4f2ab34ba02ca3aef81a2d3c42b\n- integrate/e2e4-18: unresolved (not found)\n- report/pack_improvement.py: src/harness_bench/report/pack_improvement.py sha256 f8411c14b104bfe8bcd3aa909e1bb3c0e9bb386a6b7ea5453769d5b20f209d1c\n- board.py: src/harness_bench/board.py sha256 4e47d8ebb87f3bd266c7fa0528d0c9c1d5fb122443f019fb87124c6b395f024f\n- plan.py: src/harness_bench/plan.py sha256 c5ab23058428142f7ba945a3ffe39ea60e115291499ee27c7280f99e6979b6fd\n- bench/rings/pilot.yaml: bench/rings/pilot.yaml sha256 b32dac62b752b6e3b4c61721bf15570aa3a15da5636d605f723de4751c06b5a4\n- bench/rings/pack-regression.yaml: unresolved (not found)\n- tests/test_plan.py: tests/test_plan.py sha256 532cded78ace5227fdc9efd1e79affabba5ea1e88bba579218bd7a4fc8f5e2df\n- tests/mutations/board.json: tests/mutations/board.json sha256 ad80e0479c0347ad2e8d76ec4873ed8de569726cd2bfb556c7f322dd54733b70\n- errors.py: src/harness_bench/errors.py sha256 38681ee1c7c94114085a1c316afd3f1a0c89e59fd6385db018baa7efccb75669\n- views.py: unresolved (ambiguous: 2 matches)\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349\n- docs/plans/eval-x-a3b.md: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tests/test_config.py: tests/test_config.py sha256 bc4e8afa0bc4f23b392174ab815250d68ca7b9f974bc3f82dc48aef857fd7ed8\n- tests/test_board.py: tests/test_board.py sha256 539118f1cc6779836654c58f0a76d8f91906cd5c28642d01dd82fdbe0816ecb2\n- tests/test_errors.py: tests/test_errors.py sha256 67d8609c8130286b0bd5414a9150b181f6695662f64f5663c59e19a9454452d1\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d\n- tests/mutations/plan.json: tests/mutations/plan.json sha256 31c9dd582921b2e918454e3a8b38577e0f2f35ed83410b8ee3c0b53c8d79b1d2\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- bench/campaigns/**: unresolved (not found)\n- report/**: unresolved (not found)\n- readiness.py: src/harness_bench/readiness.py sha256 89191350ec9af494b6ff5fec49c5a38257cc383d385da01abfb1eafcb7c0275e\n- grade/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (no retry in the contract)\nper_branch_exit: a skeleton, red and green commits on build/eval-x-a3b\njoin_rule: the R-104 worker gate; the Leader joins into integrate/e2e4-18 and re-runs a red SHA; no gate ring (no grade/ file)\ncontainment: own worktree based on the integration head; the brief's owned paths and the pre-granted lines only\ntermination: one turn\ndeadline: 3,300 s\nfallback: a red-only end, a deadline or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet, served claude-sonnet-5-5) in the same tree (R-87 Option 1). A launch or transport failure before the first prompt (XPORT-A shape): the follow-on runs as Claude Code Sonnet in the same tree under the same session x-a3b-e1e4, because the runner refuses a second attempt under the same id; with no commit landed it does the whole turn from this compile\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M46KDWFZCYJTSN21YVF7G0AD\nraw sha256: ea573110278c687249195aaf95fdf67d6e6fd1956b670d9f02a388496c704122\ncompiler model: claude-opus-5-5\nengine seconds: 0.013\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "x-a3b-e1e4",
+      "shortname": "compile-You are session x-a3b-e1e4 on branch build/eval-x-a3b, harness Agy, mode…",
+      "skill": null,
+      "summary": "compiled al-01M46KDWFZCYJTSN21YVF7G0AD for claude-code v1: 23 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "The base is the integration head at dispatch with X-J1a joined, never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing or `git merge-base --is-ancestor 605bd9df HEAD` fails, stop and report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Stop and report if git log --oneline -1 --grep \"W0 seam contracts rev 6.11\" prints nothing, or if git merge-base --is-ancestor 605bd9df HEAD fails (J1a not joined)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A skeleton commit, then red commits failing on an assertion, never by ImportError, AttributeError, NameError or KeyError (RED-C), then green commits, on build/eval-x-j2b.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "never by ImportError, AttributeError, NameError or KeyError (RED-C)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The multi-turn discrimination test through X-J1's engine and the turn-1 snapshot test land as xfail(strict=True) with a reason that starts \"J2c:\".",
+            "trace": {
+              "kind": "phrase",
+              "ref": "so you land them as xfail(strict=True) with a reason that starts \"J2c:\""
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The landed names are called, never re-implemented (DM7): archive.snapshot_folder (:58) and archive.snapshot_of (:62), property.hidden_tests :392, write_section :479, _changes.product_lines, line_delta, in_radius :259, is_test_path :280, readiness.variants :663; turn k not reached is derived from cell.turn_ended events against len(plan.tasks.<id>.turns) + 1, never stored, and built against fixtures shaped by W1-J's record contract.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "call these names, never re-implement them (DM7)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The only readiness.py hunk is _check_variant (:693-721); contract_failures (:282-366) is untouched; the turns admission is in discriminate.py:281-282.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your only readiness.py hunk is the variant reader, _check_variant (readiness.py:693-721; W0 section 13 rev 6.6, \"that one function only\"), outside contract_failures (:282-366)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "After the change, contract_failures no longer fails SM1, SM2 (launderclass) or NG1, NG2 (vendoredit) on the variant reader; the report gives the before and after lines.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "After your change those four failures are gone, and your report gives the before and after lines."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "STRATEGIES at grade/property.py:504 gains \"rework\": rework.grade and keeps \"security\", \"no-guessing\" and \"simplicity\"; \"grade/rework.py\" is deleted from identity.PLANNED (:121) in the commit that lands grade/rework.py, \"alarm.py\" kept (R6.10a).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "add \"rework\": rework.grade to the STRATEGIES literal at grade/property.py:504, keeping the three keys already there"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "grade/runner.py carries only W1-J section 7 row 11's hunk (graded_snapshots read through archive.snapshot_folder); a T-E19 reader-set entry is added only if a new src/ file reads a stored plan.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "In grade/runner.py, only W1-J section 7 row 11's hunk (graded_snapshots read through archive.snapshot_folder)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/test_rework.py holds test_rework_ratio_counts_replaced_and_deleted_not_added, test_rework_ratio_ceiling_boundary, test_rework_turn2_not_reached_is_na_and_primary_zero, test_rework_grade_cell_uses_registered_strategy, the create form and turn-<n>/ prefix with one test and one refused case each, and discriminate admitting a turns task; each row's mutant is in the new tests/mutations/rework.json and killed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Each row's mutant goes in your own new mutation file tests/mutations/rework.json and is killed."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A test that already passes is recorded green on arrival with the SHA, never faked red.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "is recorded green on arrival with the SHA, never faked red"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A T2 plan record, if your skill wants one, is docs/plans/eval-x-j2b.md and its HTML, create-only, in its own commit (pre-granted).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "If your skill wants a T2 plan record, write it at docs/plans/eval-x-j2b.md and its HTML, create-only, in its own commit (pre-granted by Coordinator #32)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the skeleton commit and on the final commit; `uv run pytest -q tests/test_rework.py tests/test_readiness.py`; `uv run python tools/mutate_check.py tests/mutations/rework.json` and, if discriminate.py was edited, `uv run python tools/mutate_check.py tests/mutations/discriminate.json`, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Gate (R-104; it replaces README section 3's join gate; each command on its own line, exit status read, never behind a pipe)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commits name their paths, with AGENT_SESSION=x-j2b-e1e4 inline on every commit and coord call.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit named paths only, with AGENT_SESSION=x-j2b-e1e4 inline on every commit and coord call."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report (README section 4); the Leader reads it from Agy's cli.log.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "mutate_check with --touched, and the whole suite: they are the Leader's, once per batch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "never --touched"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "A campaign ledger (bench/campaigns/**) on the branch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "No campaign ledger (bench/campaigns/**) on your branch."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Killing any process by name or pattern; only PIDs this session started.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never kill a process by name or pattern, only PIDs you started"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "contract_failures and the rest of readiness.py outside _check_variant (X-LGc edits contract_failures in this window); readiness.pass_rule_problems.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Not yours: contract_failures and the rest of readiness.py outside _check_variant"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any edit under tasks/RW1 or tasks/RW2 (their missing GLD-A provenance on expected.naive.turn1_tests_pass is X-RDY's); the rework stand-in and tests/test_rework_tasks.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tasks/RW1/** and tasks/RW2/** (their missing GLD-A provenance on expected.naive.turn1_tests_pass is X-RDY's)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "engine.py and every other X-J1 file; the J2c green legs.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "engine.py and every other X-J1 file"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "The P2 gate ring: the Leader's.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your grade/ change pays the P2 gate ring, run by the Leader."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree based on the integration head; the brief's owned paths and the pre-granted lines only",
+          "deadline": "3,300 s",
+          "fallback": "planned red-only on the engine leg: J2c, a Claude Code Sonnet follow-on (model: sonnet, served claude-sonnet-5-5) in the same tree, compiled at X-J1d's join, turns the J2c strict-xfail legs green (R-87 Option 1). A red-only end, a deadline or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet, served claude-sonnet-5-5) in the same tree (R-87 Option 1). A launch or transport failure before the first prompt (XPORT-A shape): the follow-on runs as Claude Code Sonnet in the same tree under the same session x-j2b-e1e4, because the runner refuses a second attempt under the same id; with no commit landed it does the whole turn from this compile",
+          "join_rule": "the R-104 worker gate; the Leader joins into integrate/e2e4-18 and re-runs a red SHA; the P2 gate ring",
+          "per_branch_exit": "a skeleton, red and green commits on build/eval-x-j2b",
+          "termination": "one turn",
+          "transient_retry": "0 (no retry in the contract)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "180k tokens per dispatch",
+          "done_when": [
+            "The base is the integration head at dispatch with X-J1a joined, never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing or `git merge-base --is-ancestor 605bd9df HEAD` fails, stop and report.",
+            "A skeleton commit, then red commits failing on an assertion, never by ImportError, AttributeError, NameError or KeyError (RED-C), then green commits, on build/eval-x-j2b.",
+            "The multi-turn discrimination test through X-J1's engine and the turn-1 snapshot test land as xfail(strict=True) with a reason that starts \"J2c:\".",
+            "The landed names are called, never re-implemented (DM7): archive.snapshot_folder (:58) and archive.snapshot_of (:62), property.hidden_tests :392, write_section :479, _changes.product_lines, line_delta, in_radius :259, is_test_path :280, readiness.variants :663; turn k not reached is derived from cell.turn_ended events against len(plan.tasks.<id>.turns) + 1, never stored, and built against fixtures shaped by W1-J's record contract.",
+            "The only readiness.py hunk is _check_variant (:693-721); contract_failures (:282-366) is untouched; the turns admission is in discriminate.py:281-282.",
+            "After the change, contract_failures no longer fails SM1, SM2 (launderclass) or NG1, NG2 (vendoredit) on the variant reader; the report gives the before and after lines.",
+            "STRATEGIES at grade/property.py:504 gains \"rework\": rework.grade and keeps \"security\", \"no-guessing\" and \"simplicity\"; \"grade/rework.py\" is deleted from identity.PLANNED (:121) in the commit that lands grade/rework.py, \"alarm.py\" kept (R6.10a).",
+            "grade/runner.py carries only W1-J section 7 row 11's hunk (graded_snapshots read through archive.snapshot_folder); a T-E19 reader-set entry is added only if a new src/ file reads a stored plan.",
+            "tests/test_rework.py holds test_rework_ratio_counts_replaced_and_deleted_not_added, test_rework_ratio_ceiling_boundary, test_rework_turn2_not_reached_is_na_and_primary_zero, test_rework_grade_cell_uses_registered_strategy, the create form and turn-<n>/ prefix with one test and one refused case each, and discriminate admitting a turns task; each row's mutant is in the new tests/mutations/rework.json and killed.",
+            "A test that already passes is recorded green on arrival with the SHA, never faked red.",
+            "A T2 plan record, if your skill wants one, is docs/plans/eval-x-j2b.md and its HTML, create-only, in its own commit (pre-granted).",
+            "The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the skeleton commit and on the final commit; `uv run pytest -q tests/test_rework.py tests/test_readiness.py`; `uv run python tools/mutate_check.py tests/mutations/rework.json` and, if discriminate.py was edited, `uv run python tools/mutate_check.py tests/mutations/discriminate.json`, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.",
+            "A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "Commits name their paths, with AGENT_SESSION=x-j2b-e1e4 inline on every commit and coord call.",
+            "A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2).",
+            "The served model id is the first line of the final report (README section 4); the Leader reads it from Agy's cli.log."
+          ],
+          "fan_out_cap": 0,
+          "goal": "Following the brief docs/coordination/eval-wave2-e234/x-j2.md, docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md, W1-L (docs/design/eval-property-tasks.md sections 3, 5.1, 6.1, Erratum 1) and W1-J rev 2 (docs/design/eval-multi-turn.md sections 2, 3, 4.2, 7), all binding: build dispatch J2b of X-J2 on build/eval-x-j2b from the integration head with X-J1a joined (W0 rev 6.11): grade/rework.py's rework.grade (rework_ratio on the turn-1 snapshot and the final tree, turn1_tests_pass, turn 2 not reached derived from turn_ended events), registered as STRATEGIES[\"rework\"]; per-turn synthetic overlays; discriminate admitting a turns task; the variant reader's create form and turn-<n>/ prefix in readiness._check_variant. The engine-leg tests land as strict xfail for J2c, the Sonnet follow-on after X-J1d joins (Coordinator #34 read the base at 0d4a291a and archive.py at be2df9cb).",
+          "main_line_budget": "110 calls; 3,300 s this dispatch",
+          "not_in_scope": [
+            "mutate_check with --touched, and the whole suite: they are the Leader's, once per batch.",
+            "A campaign ledger (bench/campaigns/**) on the branch.",
+            "Killing any process by name or pattern; only PIDs this session started.",
+            "contract_failures and the rest of readiness.py outside _check_variant (X-LGc edits contract_failures in this window); readiness.pass_rule_problems.",
+            "Any edit under tasks/RW1 or tasks/RW2 (their missing GLD-A provenance on expected.naive.turn1_tests_pass is X-RDY's); the rework stand-in and tests/test_rework_tasks.py.",
+            "engine.py and every other X-J1 file; the J2c green legs.",
+            "The P2 gate ring: the Leader's."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.013,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M46KDX2Q1WFKXPHCVDWGC6PV",
+        "raw_sha256": "b23ebfb3f6f86fb2ee680c8d905cb29209286a0452beff90dcbe5c1fa1833a4d",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "old"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-j2b"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/x-j2.md",
+            "reason": null,
+            "sha256": "c7e06322ddf6c16c0451c42c4d03b2f780dcfce7062383fa6a85b7c956e70d7f",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/x-j2.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "turn-<n>/"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/README.md",
+            "reason": null,
+            "sha256": "e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-property-tasks.md",
+            "reason": null,
+            "sha256": "b14637314c7501ad8ce14c5b9d741f65331dc4544c28b17107039ddb33753158",
+            "status": "resolved",
+            "token": "docs/design/eval-property-tasks.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-multi-turn.md",
+            "reason": null,
+            "sha256": "e32527dad56e2c97cd4340c492f0d1c2e679b74853f5d208139ef40ccb8ae847",
+            "status": "resolved",
+            "token": "docs/design/eval-multi-turn.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-seam-contracts.md",
+            "reason": null,
+            "sha256": "cc73f899b6307989e6bfc7ab4f25fd9d07a4c4f2ab34ba02ca3aef81a2d3c42b",
+            "status": "resolved",
+            "token": "docs/design/eval-seam-contracts.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "integrate/e2e4-18"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/archive.py",
+            "reason": null,
+            "sha256": "1b18d1d166fc15a7686b6ea28a3fb746bdee97d9a44477ca8b1137de705b13cf",
+            "status": "resolved",
+            "token": "archive.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/property.py",
+            "reason": null,
+            "sha256": "b1deee742cfb1e954999d16024bffd888650de2db48108cb56897d235791bf48",
+            "status": "resolved",
+            "token": "grade/property.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/_changes.py",
+            "reason": null,
+            "sha256": "9c65c020a56cfd285dd0cd5d2377b70ee8e67c93b91597dfe216b4ad3d4c13ef",
+            "status": "resolved",
+            "token": "grade/_changes.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/readiness.py",
+            "reason": null,
+            "sha256": "89191350ec9af494b6ff5fec49c5a38257cc383d385da01abfb1eafcb7c0275e",
+            "status": "resolved",
+            "token": "readiness.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/property.py:504"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/rework.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "alarm.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "9ff13c4e4677e95998a00bb9a9cd7fd20dc6ad3b49c75ceab9d5bb7899c197cf",
+            "status": "resolved",
+            "token": "grade/runner.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_discriminate.py",
+            "reason": null,
+            "sha256": "6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52",
+            "status": "resolved",
+            "token": "tests/test_discriminate.py"
+          },
+          {
+            "nearest": "tests/test_report.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_rework.py"
+          },
+          {
+            "nearest": "tests/mutations/report.json",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/rework.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/fixtures/property_tasks/rework_standin.py",
+            "reason": null,
+            "sha256": "98ad56f146ac847353f30409ebb36d33148eb163c6de0e2b4e14c627ce490934",
+            "status": "resolved",
+            "token": "tests/fixtures/property_tasks/rework_standin.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_rework_tasks.py",
+            "reason": null,
+            "sha256": "c8e1f5f891c083f8bf207559e3bbeb459fef76e6484a31d32716905a9f77e167",
+            "status": "resolved",
+            "token": "tests/test_rework_tasks.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/plans/eval-x-j2b.md"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_identity.py",
+            "reason": null,
+            "sha256": "ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf",
+            "status": "resolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_atomic_sites.py",
+            "reason": null,
+            "sha256": "143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90",
+            "status": "resolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_arms_guard.py",
+            "reason": null,
+            "sha256": "ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349",
+            "status": "resolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_skills_in_sync.py",
+            "reason": null,
+            "sha256": "572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d",
+            "status": "resolved",
+            "token": "tests/test_skills_in_sync.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_timing_hygiene.py",
+            "reason": null,
+            "sha256": "fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6",
+            "status": "resolved",
+            "token": "tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_readiness.py",
+            "reason": null,
+            "sha256": "0cf21b1b579f90abc63a00ffeb8533366fcbbed4b19e7e29487ab57a801fa0bb",
+            "status": "resolved",
+            "token": "tests/test_readiness.py"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/discriminate.py",
+            "reason": null,
+            "sha256": "738fb6a202e9945c54b2f74af9299e0f033dc33df0c0b7390d991c361a979d7a",
+            "status": "resolved",
+            "token": "discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/discriminate.json",
+            "reason": null,
+            "sha256": "77ecf73d3da5f48b976da7740f262ede0f125144d746ae44820ba1f1986a97bc",
+            "status": "resolved",
+            "token": "tests/mutations/discriminate.json"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/campaigns/**"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/RW1/**"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/RW2/**"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/engine.py",
+            "reason": null,
+            "sha256": "ca654261a933e3c7dd7a50fcb7acce833feda82d6ac18788d8a002e22982883d",
+            "status": "resolved",
+            "token": "engine.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-05T17:59:38Z",
+      "dispatchable": true,
+      "id": "al-01M46KH9NG0MH59F090783A14X",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session x-j2b-e1e4 --skill implement\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e234/x-j2.md, docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md, W1-L (docs/design/eval-property-tasks.md sections 3, 5.1, 6.1, Erratum 1) and W1-J rev 2 (docs/design/eval-multi-turn.md sections 2, 3, 4.2, 7), all binding: build dispatch J2b of X-J2 on build/eval-x-j2b from the integration head with X-J1a joined (W0 rev 6.11): grade/rework.py's rework.grade (rework_ratio on the turn-1 snapshot and the final tree, turn1_tests_pass, turn 2 not reached derived from turn_ended events), registered as STRATEGIES[\"rework\"]; per-turn synthetic overlays; discriminate admitting a turns task; the variant reader's create form and turn-<n>/ prefix in readiness._check_variant. The engine-leg tests land as strict xfail for J2c, the Sonnet follow-on after X-J1d joins (Coordinator #34 read the base at 0d4a291a and archive.py at be2df9cb).\nDone when: The base is the integration head at dispatch with X-J1a joined, never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing or `git merge-base --is-ancestor 605bd9df HEAD` fails, stop and report.; A skeleton commit, then red commits failing on an assertion, never by ImportError, AttributeError, NameError or KeyError (RED-C), then green commits, on build/eval-x-j2b.; The multi-turn discrimination test through X-J1's engine and the turn-1 snapshot test land as xfail(strict=True) with a reason that starts \"J2c:\".; The landed names are called, never re-implemented (DM7): archive.snapshot_folder (:58) and archive.snapshot_of (:62), property.hidden_tests :392, write_section :479, _changes.product_lines, line_delta, in_radius :259, is_test_path :280, readiness.variants :663; turn k not reached is derived from cell.turn_ended events against len(plan.tasks.<id>.turns) + 1, never stored, and built against fixtures shaped by W1-J's record contract.; The only readiness.py hunk is _check_variant (:693-721); contract_failures (:282-366) is untouched; the turns admission is in discriminate.py:281-282.; After the change, contract_failures no longer fails SM1, SM2 (launderclass) or NG1, NG2 (vendoredit) on the variant reader; the report gives the before and after lines.; STRATEGIES at grade/property.py:504 gains \"rework\": rework.grade and keeps \"security\", \"no-guessing\" and \"simplicity\"; \"grade/rework.py\" is deleted from identity.PLANNED (:121) in the commit that lands grade/rework.py, \"alarm.py\" kept (R6.10a).; grade/runner.py carries only W1-J section 7 row 11's hunk (graded_snapshots read through archive.snapshot_folder); a T-E19 reader-set entry is added only if a new src/ file reads a stored plan.; tests/test_rework.py holds test_rework_ratio_counts_replaced_and_deleted_not_added, test_rework_ratio_ceiling_boundary, test_rework_turn2_not_reached_is_na_and_primary_zero, test_rework_grade_cell_uses_registered_strategy, the create form and turn-<n>/ prefix with one test and one refused case each, and discriminate admitting a turns task; each row's mutant is in the new tests/mutations/rework.json and killed.; A test that already passes is recorded green on arrival with the SHA, never faked red.; A T2 plan record, if your skill wants one, is docs/plans/eval-x-j2b.md and its HTML, create-only, in its own commit (pre-granted).; The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the skeleton commit and on the final commit; `uv run pytest -q tests/test_rework.py tests/test_readiness.py`; `uv run python tools/mutate_check.py tests/mutations/rework.json` and, if discriminate.py was edited, `uv run python tools/mutate_check.py tests/mutations/discriminate.json`, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.; A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commits name their paths, with AGENT_SESSION=x-j2b-e1e4 inline on every commit and coord call.; A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2).; The served model id is the first line of the final report (README section 4); the Leader reads it from Agy's cli.log.\nNot in scope: mutate_check with --touched, and the whole suite: they are the Leader's, once per batch.; A campaign ledger (bench/campaigns/**) on the branch.; Killing any process by name or pattern; only PIDs this session started.; contract_failures and the rest of readiness.py outside _check_variant (X-LGc edits contract_failures in this window); readiness.pass_rule_problems.; Any edit under tasks/RW1 or tasks/RW2 (their missing GLD-A provenance on expected.naive.turn1_tests_pass is X-RDY's); the rework stand-in and tests/test_rework_tasks.py.; engine.py and every other X-J1 file; the J2c green legs.; The P2 gate ring: the Leader's.\nTier: T2\nFan-out cap: 0\nContext ceiling: 180k tokens per dispatch\nMain-line budget: 110 calls; 3,300 s this dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: The base is the integration head at dispatch with X-J1a joined, never main, and carries W0 rev 6.11; if `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints nothing or `git merge-base --is-ancestor 605bd9df HEAD` fails, stop and report. | phrase: Stop and report if git log --oneline -1 --grep \"W0 seam contracts rev 6.11\" prints nothing, or if git merge-base --is-ancestor 605bd9df HEAD fails (J1a not joined). |\n| done_when: A skeleton commit, then red commits failing on an assertion, never by ImportError, AttributeError, NameError or KeyError (RED-C), then green commits, on build/eval-x-j2b. | phrase: never by ImportError, AttributeError, NameError or KeyError (RED-C) |\n| done_when: The multi-turn discrimination test through X-J1's engine and the turn-1 snapshot test land as xfail(strict=True) with a reason that starts \"J2c:\". | phrase: so you land them as xfail(strict=True) with a reason that starts \"J2c:\" |\n| done_when: The landed names are called, never re-implemented (DM7): archive.snapshot_folder (:58) and archive.snapshot_of (:62), property.hidden_tests :392, write_section :479, _changes.product_lines, line_delta, in_radius :259, is_test_path :280, readiness.variants :663; turn k not reached is derived from cell.turn_ended events against len(plan.tasks.<id>.turns) + 1, never stored, and built against fixtures shaped by W1-J's record contract. | phrase: call these names, never re-implement them (DM7) |\n| done_when: The only readiness.py hunk is _check_variant (:693-721); contract_failures (:282-366) is untouched; the turns admission is in discriminate.py:281-282. | phrase: Your only readiness.py hunk is the variant reader, _check_variant (readiness.py:693-721; W0 section 13 rev 6.6, \"that one function only\"), outside contract_failures (:282-366) |\n| done_when: After the change, contract_failures no longer fails SM1, SM2 (launderclass) or NG1, NG2 (vendoredit) on the variant reader; the report gives the before and after lines. | phrase: After your change those four failures are gone, and your report gives the before and after lines. |\n| done_when: STRATEGIES at grade/property.py:504 gains \"rework\": rework.grade and keeps \"security\", \"no-guessing\" and \"simplicity\"; \"grade/rework.py\" is deleted from identity.PLANNED (:121) in the commit that lands grade/rework.py, \"alarm.py\" kept (R6.10a). | phrase: add \"rework\": rework.grade to the STRATEGIES literal at grade/property.py:504, keeping the three keys already there |\n| done_when: grade/runner.py carries only W1-J section 7 row 11's hunk (graded_snapshots read through archive.snapshot_folder); a T-E19 reader-set entry is added only if a new src/ file reads a stored plan. | phrase: In grade/runner.py, only W1-J section 7 row 11's hunk (graded_snapshots read through archive.snapshot_folder). |\n| done_when: tests/test_rework.py holds test_rework_ratio_counts_replaced_and_deleted_not_added, test_rework_ratio_ceiling_boundary, test_rework_turn2_not_reached_is_na_and_primary_zero, test_rework_grade_cell_uses_registered_strategy, the create form and turn-<n>/ prefix with one test and one refused case each, and discriminate admitting a turns task; each row's mutant is in the new tests/mutations/rework.json and killed. | phrase: Each row's mutant goes in your own new mutation file tests/mutations/rework.json and is killed. |\n| done_when: A test that already passes is recorded green on arrival with the SHA, never faked red. | phrase: is recorded green on arrival with the SHA, never faked red |\n| done_when: A T2 plan record, if your skill wants one, is docs/plans/eval-x-j2b.md and its HTML, create-only, in its own commit (pre-granted). | phrase: If your skill wants a T2 plan record, write it at docs/plans/eval-x-j2b.md and its HTML, create-only, in its own commit (pre-granted by Coordinator #32). |\n| done_when: The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the skeleton commit and on the final commit; `uv run pytest -q tests/test_rework.py tests/test_readiness.py`; `uv run python tools/mutate_check.py tests/mutations/rework.json` and, if discriminate.py was edited, `uv run python tools/mutate_check.py tests/mutations/discriminate.json`, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. | phrase: Gate (R-104; it replaces README section 3's join gate; each command on its own line, exit status read, never behind a pipe) |\n| done_when: A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed |\n| done_when: Commits name their paths, with AGENT_SESSION=x-j2b-e1e4 inline on every commit and coord call. | phrase: Commit named paths only, with AGENT_SESSION=x-j2b-e1e4 inline on every commit and coord call. |\n| done_when: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit (README section 2). | phrase: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green |\n| done_when: The served model id is the first line of the final report (README section 4); the Leader reads it from Agy's cli.log. | phrase: Report your served model id on the first line of your final message. |\n| not_in_scope: mutate_check with --touched, and the whole suite: they are the Leader's, once per batch. | phrase: never --touched |\n| not_in_scope: A campaign ledger (bench/campaigns/**) on the branch. | phrase: No campaign ledger (bench/campaigns/**) on your branch. |\n| not_in_scope: Killing any process by name or pattern; only PIDs this session started. | phrase: Never kill a process by name or pattern, only PIDs you started |\n| not_in_scope: contract_failures and the rest of readiness.py outside _check_variant (X-LGc edits contract_failures in this window); readiness.pass_rule_problems. | phrase: Not yours: contract_failures and the rest of readiness.py outside _check_variant |\n| not_in_scope: Any edit under tasks/RW1 or tasks/RW2 (their missing GLD-A provenance on expected.naive.turn1_tests_pass is X-RDY's); the rework stand-in and tests/test_rework_tasks.py. | phrase: tasks/RW1/** and tasks/RW2/** (their missing GLD-A provenance on expected.naive.turn1_tests_pass is X-RDY's) |\n| not_in_scope: engine.py and every other X-J1 file; the J2c green legs. | phrase: engine.py and every other X-J1 file |\n| not_in_scope: The P2 gate ring: the Leader's. | phrase: Your grade/ change pays the P2 gate ring, run by the Leader. |\nReferences\n- old: unresolved (not found)\n- build/eval-x-j2b: unresolved (not found)\n- docs/coordination/eval-wave2-e234/x-j2.md: docs/coordination/eval-wave2-e234/x-j2.md sha256 c7e06322ddf6c16c0451c42c4d03b2f780dcfce7062383fa6a85b7c956e70d7f\n- turn-<n>/: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b\n- docs/coordination/eval-wave2-e234/README.md: docs/coordination/eval-wave2-e234/README.md sha256 e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701\n- docs/design/eval-property-tasks.md: docs/design/eval-property-tasks.md sha256 b14637314c7501ad8ce14c5b9d741f65331dc4544c28b17107039ddb33753158\n- docs/design/eval-multi-turn.md: docs/design/eval-multi-turn.md sha256 e32527dad56e2c97cd4340c492f0d1c2e679b74853f5d208139ef40ccb8ae847\n- docs/design/eval-seam-contracts.md: docs/design/eval-seam-contracts.md sha256 cc73f899b6307989e6bfc7ab4f25fd9d07a4c4f2ab34ba02ca3aef81a2d3c42b\n- integrate/e2e4-18: unresolved (not found)\n- archive.py: src/harness_bench/archive.py sha256 1b18d1d166fc15a7686b6ea28a3fb746bdee97d9a44477ca8b1137de705b13cf\n- grade/property.py: src/harness_bench/grade/property.py sha256 b1deee742cfb1e954999d16024bffd888650de2db48108cb56897d235791bf48\n- grade/_changes.py: src/harness_bench/grade/_changes.py sha256 9c65c020a56cfd285dd0cd5d2377b70ee8e67c93b91597dfe216b4ad3d4c13ef\n- src/: unresolved (not found)\n- readiness.py: src/harness_bench/readiness.py sha256 89191350ec9af494b6ff5fec49c5a38257cc383d385da01abfb1eafcb7c0275e\n- grade/property.py:504: unresolved (not found)\n- grade/rework.py: unresolved (not found)\n- alarm.py: unresolved (not found)\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 9ff13c4e4677e95998a00bb9a9cd7fd20dc6ad3b49c75ceab9d5bb7899c197cf\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52\n- tests/test_rework.py: unresolved (not found; nearest: tests/test_report.py)\n- tests/mutations/rework.json: unresolved (not found; nearest: tests/mutations/report.json)\n- tests/fixtures/property_tasks/rework_standin.py: tests/fixtures/property_tasks/rework_standin.py sha256 98ad56f146ac847353f30409ebb36d33148eb163c6de0e2b4e14c627ce490934\n- tests/test_rework_tasks.py: tests/test_rework_tasks.py sha256 c8e1f5f891c083f8bf207559e3bbeb459fef76e6484a31d32716905a9f77e167\n- docs/plans/eval-x-j2b.md: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tests/test_readiness.py: tests/test_readiness.py sha256 0cf21b1b579f90abc63a00ffeb8533366fcbbed4b19e7e29487ab57a801fa0bb\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d\n- discriminate.py: src/harness_bench/discriminate.py sha256 738fb6a202e9945c54b2f74af9299e0f033dc33df0c0b7390d991c361a979d7a\n- tests/mutations/discriminate.json: tests/mutations/discriminate.json sha256 77ecf73d3da5f48b976da7740f262ede0f125144d746ae44820ba1f1986a97bc\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- bench/campaigns/**: unresolved (not found)\n- tasks/RW1/**: unresolved (not found)\n- tasks/RW2/**: unresolved (not found)\n- engine.py: src/harness_bench/engine.py sha256 ca654261a933e3c7dd7a50fcb7acce833feda82d6ac18788d8a002e22982883d\n- grade/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (no retry in the contract)\nper_branch_exit: a skeleton, red and green commits on build/eval-x-j2b\njoin_rule: the R-104 worker gate; the Leader joins into integrate/e2e4-18 and re-runs a red SHA; the P2 gate ring\ncontainment: own worktree based on the integration head; the brief's owned paths and the pre-granted lines only\ntermination: one turn\ndeadline: 3,300 s\nfallback: planned red-only on the engine leg: J2c, a Claude Code Sonnet follow-on (model: sonnet, served claude-sonnet-5-5) in the same tree, compiled at X-J1d's join, turns the J2c strict-xfail legs green (R-87 Option 1). A red-only end, a deadline or a failed served-model read: the green follow-on as Claude Code Sonnet (model: sonnet, served claude-sonnet-5-5) in the same tree (R-87 Option 1). A launch or transport failure before the first prompt (XPORT-A shape): the follow-on runs as Claude Code Sonnet in the same tree under the same session x-j2b-e1e4, because the runner refuses a second attempt under the same id; with no commit landed it does the whole turn from this compile\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M46KDX2Q1WFKXPHCVDWGC6PV\nraw sha256: b23ebfb3f6f86fb2ee680c8d905cb29209286a0452beff90dcbe5c1fa1833a4d\ncompiler model: claude-opus-5-5\nengine seconds: 0.013\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "x-j2b-e1e4",
+      "shortname": "compile-You are session x-j2b-e1e4 on branch build/eval-x-j2b, harness Agy, mode…",
+      "skill": null,
+      "summary": "compiled al-01M46KDX2Q1WFKXPHCVDWGC6PV for claude-code v1: 23 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-05T18:04:19Z",
+      "done_when": "derive, validate, verify-ruling-citations exit 0; commit on coord/eval-c34-w2c",
+      "duration_seconds": 1283.0,
+      "fan_out": 0,
+      "goal": "three dispatchable Agy compiles, pass_rule_problems owned, register edited, c34 committed",
+      "id": "al-01M46KSVJBN70MN5EBAFW4KZ3Q",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Coordinator #34 (hand-back for leader-e1e4 epoch 18): compile X-LGc, X-A3b, X-J2b (Agy gemini-3.8-flash-high); name an owner for readiness.pass_rule_problems; register the DRIFT root cause under the Grok drift class; write c34.md; run derive, validate, verify-ruling-citations; commit",
+      "session": "coord-opus-e1e4",
+      "shortname": "coord-c34-w2c",
+      "skill": "compile",
+      "started_at": "2026-10-05T17:42:56Z",
+      "summary": "3 compiles dispatchable, gate pass first run: LGc al-01M46KH8W1B3NC5Y7R0BPJBQXA, A3b al-01M46KH9906JPJ1GPACVSD9J5P, J2b al-01M46KH9NG0MH59F090783A14X; contracts x-lg/x-a3/x-j2 updated; plan readiness assume confirmed (J2b hunk is _check_variant); pass_rule_problems -> X-TE9 at next plan revision (finding); SERVE-A root cause DRIFT + instance, EOL-A instance; c34.md",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-05T18:43:29Z",
+      "done_when": "conductor-join exit 0; gates green",
+      "duration_seconds": 3.0,
+      "fan_out": 0,
+      "goal": "Join Coordinator #34 into integrate/e2e4-18",
+      "id": "al-01M46P1J4EJ65SCA0YSGX2R7DB",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "the join of coord/eval-c34-w2c into integrate/e2e4-18",
+      "session": "leader-e1e4",
+      "shortname": "join-c34",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "execute-with-coordination",
+      "started_at": "2026-10-05T18:43:26Z",
+      "summary": "Coordinator #34 (Opus claude-opus-5-5) 3f887a0c: LGc al-01M46KH8W1B3NC5Y7R0BPJBQXA, A3b al-01M46KH9906JPJ1GPACVSD9J5P (dispatched from the c34 tree at 3f887a0c), J2b al-01M46KH9NG0MH59F090783A14X; docs-only recount_seconds=0 (docs_only=True).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-05T18:49:52Z",
+      "id": "al-01M46PD8P42C9YJ9YTTKKVT5RW",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-j1b-e1e4 on branch build/eval-x-j1b in the tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-j1b, harness Claude Code, model claude-sonnet-5-5 (model: sonnet), a same-tree green follow-on of X-J1b under R-87 Option 1, the fallback of x-j1.contract.json. The Codex turn (gpt-6.1-sol, run w2-j1b-e1e4) handed back partial at 45be75a2 after 1,666 s, blocked on seam request req-01M46MGW3NFZJDWWJHCXKG69BP, which Coordinator #35 has resolved. Finish K4(2), K4(3) and K4(4) of X-J1b under docs/coordination/eval-wave2-e234/x-j1.md (owned paths, names, acceptance items 2 and 3, the Coordinator #35 lines), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md, W1-J rev 2 (docs/design/eval-multi-turn.md sections 4.1, 4.2, 4.5, 4.6, 11) and W1-J Amendment 1 (section 15 there), and W0 rev 6.12 (docs/design/eval-seam-contracts.md section 12 R6.12a and R6.12b), all binding.\n\nFirst, bring in the integration head: integrate/e2e4-18 at 8998d092 already contains the J1a regression fix bb177a2e (tests/test_acp_record.py _norm compares turns[] timings by shape). Run git fetch if a remote holds it, then git merge --no-ff integrate/e2e4-18 into build/eval-x-j1b (merge, not rebase, so the partial's SHAs 9d732a0a, 4f7e62c9, c323b5a7 and 45be75a2 stay valid for the register and the request records). If docs/docs-index.js or docs/audit/audit-data.js conflict, regenerate them (python docs/ai-forward-pack/scripts/docs-graph.py derive; audit-log.py's render) and never hand-merge them. Stop and report if git merge-base --is-ancestor bb177a2e HEAD exits non-zero after the merge, or if git log --oneline -1 --grep \"W0 seam contracts rev 6.11\" prints nothing. Stop and report if docs/design/eval-multi-turn.md has no \"## 15. Amendment 1\" heading in your tree; it lands with Coordinator #35's branch coord/eval-c35-j1b, which the Leader joins into integrate/e2e4-18 before this dispatch, so merge integrate/e2e4-18 again if it is missing.\n\nThen re-run the six J1b tests with uv run pytest -q --runxfail on the merged base, T-ENG-11 already restated as below, and paste each failing assertion line into your first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError). These are J1a's K3 reds for J1b's group. No skeleton is added. A test that already passes is recorded green on arrival with the SHA, never faked red.\n\nK4(2), in its own commit: usage summed over every returned turn; the ACP side of views._token_cross_check is the sum over the cell.turn_ended rows present (the turn_rows argument and the one _cell_view call site granted at c323b5a7); a turn with no row is not recorded, never 0; T-ENG-4 (no HB-VAL-005) and T-ENG-11 green with their J1b markers removed. T-ENG-11 is restated in integer ms per W1-J Amendment 1: assert len(ended) == 2, sum(r[\"turn_ms\"] for r in ended) >= ended[-1][\"turn_ms\"], and the outcome's turn_ms == ended[-1][\"turn_ms\"].\n\nK4(3), in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_ms, usage, next} is written for every turn that returned a response, before the continue or cancel decision, with turn_ms = int(rec.turn_seconds * 1000), an int (never a float, never a string; ledger._check refuses floats), next one of snapshot, final, stop or cancel; no row when send_turn returned None; the record is written with the literal \"kind\": \"cell.turn_ended\" in engine.py. In the same commit, the one lifecycle.TABLE entry granted to J1b (W0 R6.12b): \"cell.turn_ended\": Transition(\"TurnEnd\", \"engine\", after=(\"cell.prompt_sent\",), after_rule=\"turn_ended follows its prompt_sent\"), and one SEEDED case in tests/test_lifecycle_conformance.py (a turn end with no prompt, rule \"turn_ended follows its prompt_sent\"), without changing GOOD. T-LIF-1's single-turn case then passes: split its marker per parameter, count=1 unmarked, count=2 keeping the reason \"J1d: turn-keyed lifecycle replay\" verbatim. T-ENG-6 and T-ENG-10 green with their J1b markers removed. Every tests/test_engine.py replay stays green.\n\nK4(4), in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed.\n\nThe markers whose reason names J1c, J1d or J1e stay (except the T-LIF-1 count=1 split above), T-ENG-1 and T-WIRE-1 among them. J1a's landed names are built on, never defined twice (DM7). No src/ caller of archive.snapshot_cell: on the final commit git grep -n \"snapshot_cell(\" -- src prints only the definition in src/harness_bench/archive.py.\n\nGate (R-104; each command on its own line, exit status read, never behind a pipe): the eight-file guard list uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the merged base before the first edit and on the final commit; uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py tests/test_lifecycle_conformance.py tests/test_views.py tests/test_acp_record.py; uv run python tools/mutate_check.py tests/mutations/engine.json and uv run python tools/mutate_check.py tests/mutations/driver.json, own mutation files only, never --touched, every mutant killed or a recorded reason per survivor; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate. A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. The whole suite is the Leader's.\n\nCommit named paths only, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call. The audit records go through audit-log.py into docs/audit/audit-log.jsonl and the generated audit-data.js in their own commit (granted, req-01M46N18XX8WEHT4KN39T2M571). A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit. Report your served model id on the first line of your final message.\n\nNot yours: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c); the ALLOWED entry for snapshot_cell in tests/test_atomic_sites.py (J1c); views beyond _token_cross_check and the granted _cell_view call site, every other lifecycle.TABLE change and turn-keyed replay, plan turns, CellView.task and CellView.rep (J1d); the section 11 mutant rows and spike S-J4 (J1e); status.py (X-INTF); ledger.py and any ADR text; mutate_check --touched and the whole suite; killing any process by name or pattern, only PIDs you started.",
+      "session": "prompt-compile",
+      "shortname": "You are session x-j1b-e1e4 on branch build/eval-x-j1b in the tree C:\\Pro…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "The tree is C:\\Projects\\x-harness-x-model-bench-build-eval-x-j1b on build/eval-x-j1b, session x-j1b-e1e4, model claude-sonnet-5-5: the same-tree green follow-on of X-J1b's Codex partial at 45be75a2 (R-87 Option 1, the contract's fallback).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a same-tree green follow-on of X-J1b under R-87 Option 1, the fallback of x-j1.contract.json"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Before any edit, integrate/e2e4-18 (8998d092, which holds bb177a2e, the test_acp_record _norm fix) is merged with git merge --no-ff, never rebased, so 9d732a0a, 4f7e62c9, c323b5a7 and 45be75a2 stay valid; a conflict in docs/docs-index.js or docs/audit/audit-data.js is regenerated, never hand-merged.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "git merge --no-ff integrate/e2e4-18 into build/eval-x-j1b (merge, not rebase"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "After the merge, `git merge-base --is-ancestor bb177a2e HEAD` exits 0 and `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints a commit; otherwise stop and report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Stop and report if git merge-base --is-ancestor bb177a2e HEAD exits non-zero after the merge"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "docs/design/eval-multi-turn.md in the tree has the heading \"## 15. Amendment 1\" (W1-J Amendment 1, from coord/eval-c35-j1b via integrate/e2e4-18); if it is missing, merge integrate/e2e4-18 again, and if it is still missing, stop and report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Stop and report if docs/design/eval-multi-turn.md has no \"## 15. Amendment 1\" heading in your tree"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Before the first fix, the six J1b tests (T-ENG-4, T-ENG-6, T-ENG-10, T-ENG-11 restated, T-DRV-1, T-DRV-2) are re-run with `uv run pytest -q --runxfail` on the merged base, and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "re-run the six J1b tests with uv run pytest -q --runxfail on the merged base"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A test that already passes is recorded green on arrival with the SHA, never faked red.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A test that already passes is recorded green on arrival with the SHA, never faked red."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "K4(2) lands in its own commit: usage summed over every returned turn; the ACP side of views._token_cross_check is the sum over the cell.turn_ended rows present, through the turn_rows argument and _cell_view call site granted at c323b5a7; a turn with no row is not recorded, never 0; T-ENG-4 (no HB-VAL-005) and T-ENG-11 green with their J1b markers removed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "K4(2), in its own commit: usage summed over every returned turn"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "T-ENG-11 is restated in integer ms (W1-J Amendment 1): len(ended) == 2; sum(r[\"turn_ms\"] for r in ended) >= ended[-1][\"turn_ms\"]; the outcome's turn_ms == ended[-1][\"turn_ms\"].",
+            "trace": {
+              "kind": "phrase",
+              "ref": "T-ENG-11 is restated in integer ms per W1-J Amendment 1"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_ms, usage, next} is written for every turn that returned a response, before the continue or cancel decision, with turn_ms = int(rec.turn_seconds * 1000) as an int (never a float or a string), next one of snapshot, final, stop or cancel; no row when send_turn returned None; the engine writes it with the literal \"kind\": \"cell.turn_ended\".",
+            "trace": {
+              "kind": "phrase",
+              "ref": "with turn_ms = int(rec.turn_seconds * 1000), an int (never a float, never a string; ledger._check refuses floats)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The K4(3) commit also adds the one lifecycle.TABLE entry granted to J1b (W0 R6.12b), \"cell.turn_ended\": Transition(\"TurnEnd\", \"engine\", after=(\"cell.prompt_sent\",), after_rule=\"turn_ended follows its prompt_sent\"), and one SEEDED case in tests/test_lifecycle_conformance.py for a turn end with no prompt, without changing GOOD.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the one lifecycle.TABLE entry granted to J1b (W0 R6.12b)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "T-LIF-1's marker is split per parameter: count=1 unmarked (green by J1b's entry), count=2 keeping the reason \"J1d: turn-keyed lifecycle replay\" verbatim; T-ENG-6 and T-ENG-10 green with their J1b markers removed; every tests/test_engine.py replay stays green.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "split its marker per parameter, count=1 unmarked, count=2 keeping the reason \"J1d: turn-keyed lifecycle replay\" verbatim"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "K4(4), in its own commit: one handshake per Session and an idempotent Session.close()"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them; the T-LIF-1 count=1 split is the only exception.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The markers whose reason names J1c, J1d or J1e stay (except the T-LIF-1 count=1 split above)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "J1a's landed names are built on, never defined a second time (DM7).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "J1a's landed names are built on, never defined twice (DM7)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "On the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "on the final commit git grep -n \"snapshot_cell(\" -- src prints only the definition in src/harness_bench/archive.py"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: the eight-file guard list `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the merged base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py tests/test_lifecycle_conformance.py tests/test_views.py tests/test_acp_record.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Gate (R-104; each command on its own line, exit status read, never behind a pipe)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call; audit records go through audit-log.py into docs/audit/audit-log.jsonl and the generated audit-data.js in their own commit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit named paths only, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5, and the snapshot_cell ALLOWED entry in tests/test_atomic_sites.py (J1c).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Not yours: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "views beyond _token_cross_check and the granted _cell_view call site; every other lifecycle.TABLE change and turn-keyed replay; plan turns; CellView.task and CellView.rep (J1d).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "every other lifecycle.TABLE change and turn-keyed replay"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "The section 11 mutant rows and spike S-J4 (J1e); status.py (X-INTF).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the section 11 mutant rows and spike S-J4 (J1e); status.py (X-INTF)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "ledger.py and any ADR text.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "ledger.py and any ADR text"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "mutate_check with --touched, and the whole suite: they are the Leader's.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "mutate_check --touched and the whole suite"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Killing any process by name or pattern; only PIDs this session started.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "killing any process by name or pattern, only PIDs you started"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "the existing tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-j1b, branch build/eval-x-j1b; the brief's owned paths plus the R6.12b TABLE entry",
+          "deadline": "3,300 s",
+          "fallback": "a red-only end or a deadline: hand back partial with the reds pasted; the Leader asks the Coordinator for the next step (no second fallback harness)",
+          "join_rule": "the R-104 worker gate; the Leader joins into integrate/e2e4-18, re-runs a red SHA, runs git grep -n \"snapshot_cell(\" -- src, and checks lifecycle.py changed by exactly the one TABLE entry",
+          "per_branch_exit": "a merge of integrate/e2e4-18, then three fix commits (K4(2), K4(3), K4(4)) on build/eval-x-j1b",
+          "termination": "one turn",
+          "transient_retry": "0",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens",
+          "done_when": [
+            "The tree is C:\\Projects\\x-harness-x-model-bench-build-eval-x-j1b on build/eval-x-j1b, session x-j1b-e1e4, model claude-sonnet-5-5: the same-tree green follow-on of X-J1b's Codex partial at 45be75a2 (R-87 Option 1, the contract's fallback).",
+            "Before any edit, integrate/e2e4-18 (8998d092, which holds bb177a2e, the test_acp_record _norm fix) is merged with git merge --no-ff, never rebased, so 9d732a0a, 4f7e62c9, c323b5a7 and 45be75a2 stay valid; a conflict in docs/docs-index.js or docs/audit/audit-data.js is regenerated, never hand-merged.",
+            "After the merge, `git merge-base --is-ancestor bb177a2e HEAD` exits 0 and `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints a commit; otherwise stop and report.",
+            "docs/design/eval-multi-turn.md in the tree has the heading \"## 15. Amendment 1\" (W1-J Amendment 1, from coord/eval-c35-j1b via integrate/e2e4-18); if it is missing, merge integrate/e2e4-18 again, and if it is still missing, stop and report.",
+            "Before the first fix, the six J1b tests (T-ENG-4, T-ENG-6, T-ENG-10, T-ENG-11 restated, T-DRV-1, T-DRV-2) are re-run with `uv run pytest -q --runxfail` on the merged base, and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added.",
+            "A test that already passes is recorded green on arrival with the SHA, never faked red.",
+            "K4(2) lands in its own commit: usage summed over every returned turn; the ACP side of views._token_cross_check is the sum over the cell.turn_ended rows present, through the turn_rows argument and _cell_view call site granted at c323b5a7; a turn with no row is not recorded, never 0; T-ENG-4 (no HB-VAL-005) and T-ENG-11 green with their J1b markers removed.",
+            "T-ENG-11 is restated in integer ms (W1-J Amendment 1): len(ended) == 2; sum(r[\"turn_ms\"] for r in ended) >= ended[-1][\"turn_ms\"]; the outcome's turn_ms == ended[-1][\"turn_ms\"].",
+            "K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_ms, usage, next} is written for every turn that returned a response, before the continue or cancel decision, with turn_ms = int(rec.turn_seconds * 1000) as an int (never a float or a string), next one of snapshot, final, stop or cancel; no row when send_turn returned None; the engine writes it with the literal \"kind\": \"cell.turn_ended\".",
+            "The K4(3) commit also adds the one lifecycle.TABLE entry granted to J1b (W0 R6.12b), \"cell.turn_ended\": Transition(\"TurnEnd\", \"engine\", after=(\"cell.prompt_sent\",), after_rule=\"turn_ended follows its prompt_sent\"), and one SEEDED case in tests/test_lifecycle_conformance.py for a turn end with no prompt, without changing GOOD.",
+            "T-LIF-1's marker is split per parameter: count=1 unmarked (green by J1b's entry), count=2 keeping the reason \"J1d: turn-keyed lifecycle replay\" verbatim; T-ENG-6 and T-ENG-10 green with their J1b markers removed; every tests/test_engine.py replay stays green.",
+            "K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed.",
+            "The markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them; the T-LIF-1 count=1 split is the only exception.",
+            "J1a's landed names are built on, never defined a second time (DM7).",
+            "On the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py.",
+            "The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: the eight-file guard list `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the merged base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py tests/test_lifecycle_conformance.py tests/test_views.py tests/test_acp_record.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.",
+            "A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call; audit records go through audit-log.py into docs/audit/audit-log.jsonl and the generated audit-data.js in their own commit.",
+            "A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit.",
+            "The served model id is the first line of the final report."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Following docs/coordination/eval-wave2-e234/x-j1.md (owned paths, names, acceptance items 2 and 3, the Coordinator #35 lines), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md, W1-J rev 2 (docs/design/eval-multi-turn.md sections 4.1, 4.2, 4.5, 4.6, 11) with W1-J Amendment 1 (section 15) and W0 rev 6.12 (section 12 R6.12a, R6.12b), all binding: finish X-J1b as the Claude Code Sonnet same-tree follow-on on build/eval-x-j1b, after merging integrate/e2e4-18 (8998d092, with bb177a2e): K4(2) usage summed over turns, K4(3) the end_turn gate and turn_ended{turn, stop_reason, turn_ms, usage, next} for every returned turn with J1b's one lifecycle.TABLE entry, K4(4) one handshake and an idempotent Session.close(), each commit removing its own J1b markers (Coordinator #35 at 3f887a0c).",
+          "main_line_budget": "within X-J1's 320 calls across 5 dispatches; one Agent-tool turn",
+          "not_in_scope": [
+            "K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5, and the snapshot_cell ALLOWED entry in tests/test_atomic_sites.py (J1c).",
+            "views beyond _token_cross_check and the granted _cell_view call site; every other lifecycle.TABLE change and turn-keyed replay; plan turns; CellView.task and CellView.rep (J1d).",
+            "The section 11 mutant rows and spike S-J4 (J1e); status.py (X-INTF).",
+            "ledger.py and any ADR text.",
+            "mutate_check with --touched, and the whole suite: they are the Leader's.",
+            "Killing any process by name or pattern; only PIDs this session started."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.017,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M46PD8P42C9YJ9YTTKKVT5RW",
+        "raw_sha256": "7862d94e91884c360b08947908dcd4342c901e33311392b737cf25de8dea61a9",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-j1b"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/x-j1.contract.json",
+            "reason": null,
+            "sha256": "9be304115859d3d108682c53cc5f40a638aaa5fb3c238781c8fc5759752e976f",
+            "status": "resolved",
+            "token": "x-j1.contract.json"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/x-j1.md",
+            "reason": null,
+            "sha256": "f20fd9b4554a895984f51134e0daa9656b3c9653dc49738e4eacf37f4e5b1067",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/x-j1.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/README.md",
+            "reason": null,
+            "sha256": "e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-multi-turn.md",
+            "reason": null,
+            "sha256": "9193c6ae18e441bedf7182eb394cd554bfc46b0733007818b85f341fd4c4baf1",
+            "status": "resolved",
+            "token": "docs/design/eval-multi-turn.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-seam-contracts.md",
+            "reason": null,
+            "sha256": "52403c0eda333e9f706521a2efc5610d7019dda9e7e457d3ae5b69d8df1bc6ee",
+            "status": "resolved",
+            "token": "docs/design/eval-seam-contracts.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "integrate/e2e4-18"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_acp_record.py",
+            "reason": null,
+            "sha256": "32573b6521b05b4148b40d950232804865a542da6e16d4aea8303c5a93ce3e79",
+            "status": "resolved",
+            "token": "tests/test_acp_record.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/docs-index.js",
+            "reason": null,
+            "sha256": "33fe7e093c089833d09f6eb281e8d9e55b9d937fd4efc265babc32a052c1a65d",
+            "status": "resolved",
+            "token": "docs/docs-index.js"
+          },
+          {
+            "nearest": null,
+            "path": "docs/audit/audit-data.js",
+            "reason": null,
+            "sha256": "655b7c4d32df200ef0656b4239007adce2d08f6a29d1d567bae7639da7740b52",
+            "status": "resolved",
+            "token": "docs/audit/audit-data.js"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord/eval-c35-j1b"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/engine.py",
+            "reason": null,
+            "sha256": "ca654261a933e3c7dd7a50fcb7acce833feda82d6ac18788d8a002e22982883d",
+            "status": "resolved",
+            "token": "engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_lifecycle_conformance.py",
+            "reason": null,
+            "sha256": "04a2bb9082a5aa38fadc2874aeeff08ab5103ef319075c29f577b5688e189c6d",
+            "status": "resolved",
+            "token": "tests/test_lifecycle_conformance.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_engine.py",
+            "reason": null,
+            "sha256": "df24bd350ed2a6f8d16a4b80e2cf53c7720fe0c99b6374cfe31157447b3e8d26",
+            "status": "resolved",
+            "token": "tests/test_engine.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/archive.py",
+            "reason": null,
+            "sha256": "1b18d1d166fc15a7686b6ea28a3fb746bdee97d9a44477ca8b1137de705b13cf",
+            "status": "resolved",
+            "token": "src/harness_bench/archive.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_identity.py",
+            "reason": null,
+            "sha256": "ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf",
+            "status": "resolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_atomic_sites.py",
+            "reason": null,
+            "sha256": "143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90",
+            "status": "resolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_arms_guard.py",
+            "reason": null,
+            "sha256": "ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349",
+            "status": "resolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_discriminate.py",
+            "reason": null,
+            "sha256": "6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52",
+            "status": "resolved",
+            "token": "tests/test_discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_skills_in_sync.py",
+            "reason": null,
+            "sha256": "572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d",
+            "status": "resolved",
+            "token": "tests/test_skills_in_sync.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_timing_hygiene.py",
+            "reason": null,
+            "sha256": "fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6",
+            "status": "resolved",
+            "token": "tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_multiturn.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_driver.py",
+            "reason": null,
+            "sha256": "453e01a8f4511deb6676036905c88b71485447aecd1c876b00bf2cb7519d762d",
+            "status": "resolved",
+            "token": "tests/test_driver.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_views.py",
+            "reason": null,
+            "sha256": "fad045e5f5391548e319e823a80531bb6abfe3aad7cb1ff87cf696154e40d2cc",
+            "status": "resolved",
+            "token": "tests/test_views.py"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/engine.json",
+            "reason": null,
+            "sha256": "ebae6d0ee051f94b00ece947f0184f35abd72dd666ce8a1f1d1a66a31b56d2bc",
+            "status": "resolved",
+            "token": "tests/mutations/engine.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/driver.json",
+            "reason": null,
+            "sha256": "eb20d524a79665c316ff3b3205b13ad5886b4fbb0575caf1cecd310b223d1390",
+            "status": "resolved",
+            "token": "tests/mutations/driver.json"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/audit-log.py",
+            "reason": null,
+            "sha256": "d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4",
+            "status": "resolved",
+            "token": "audit-log.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/audit/audit-log.jsonl",
+            "reason": null,
+            "sha256": "83d621974add6c0aaa7d7215fd5e0831f3d30a9e02ff3acd9c0617efc268f193",
+            "status": "resolved",
+            "token": "docs/audit/audit-log.jsonl"
+          },
+          {
+            "nearest": null,
+            "path": "docs/audit/audit-data.js",
+            "reason": null,
+            "sha256": "655b7c4d32df200ef0656b4239007adce2d08f6a29d1d567bae7639da7740b52",
+            "status": "resolved",
+            "token": "audit-data.js"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/status.py",
+            "reason": null,
+            "sha256": "71e2b1feb7086ec5da7ee97931109bb96e90d17c090edb0cbd0de643f70667a7",
+            "status": "resolved",
+            "token": "status.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/ledger.py",
+            "reason": null,
+            "sha256": "809188c4a0d27385369bfa175ffd7444dc92d4f4da1801692bea0cc538e0df50",
+            "status": "resolved",
+            "token": "ledger.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-05T18:50:45Z",
+      "dispatchable": true,
+      "id": "al-01M46PEVZJEVCAAF5RW8N9K7MR",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session x-j1b-e1e4 --skill implement\nGoal state\nGoal: Following docs/coordination/eval-wave2-e234/x-j1.md (owned paths, names, acceptance items 2 and 3, the Coordinator #35 lines), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md, W1-J rev 2 (docs/design/eval-multi-turn.md sections 4.1, 4.2, 4.5, 4.6, 11) with W1-J Amendment 1 (section 15) and W0 rev 6.12 (section 12 R6.12a, R6.12b), all binding: finish X-J1b as the Claude Code Sonnet same-tree follow-on on build/eval-x-j1b, after merging integrate/e2e4-18 (8998d092, with bb177a2e): K4(2) usage summed over turns, K4(3) the end_turn gate and turn_ended{turn, stop_reason, turn_ms, usage, next} for every returned turn with J1b's one lifecycle.TABLE entry, K4(4) one handshake and an idempotent Session.close(), each commit removing its own J1b markers (Coordinator #35 at 3f887a0c).\nDone when: The tree is C:\\Projects\\x-harness-x-model-bench-build-eval-x-j1b on build/eval-x-j1b, session x-j1b-e1e4, model claude-sonnet-5-5: the same-tree green follow-on of X-J1b's Codex partial at 45be75a2 (R-87 Option 1, the contract's fallback).; Before any edit, integrate/e2e4-18 (8998d092, which holds bb177a2e, the test_acp_record _norm fix) is merged with git merge --no-ff, never rebased, so 9d732a0a, 4f7e62c9, c323b5a7 and 45be75a2 stay valid; a conflict in docs/docs-index.js or docs/audit/audit-data.js is regenerated, never hand-merged.; After the merge, `git merge-base --is-ancestor bb177a2e HEAD` exits 0 and `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints a commit; otherwise stop and report.; docs/design/eval-multi-turn.md in the tree has the heading \"## 15. Amendment 1\" (W1-J Amendment 1, from coord/eval-c35-j1b via integrate/e2e4-18); if it is missing, merge integrate/e2e4-18 again, and if it is still missing, stop and report.; Before the first fix, the six J1b tests (T-ENG-4, T-ENG-6, T-ENG-10, T-ENG-11 restated, T-DRV-1, T-DRV-2) are re-run with `uv run pytest -q --runxfail` on the merged base, and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added.; A test that already passes is recorded green on arrival with the SHA, never faked red.; K4(2) lands in its own commit: usage summed over every returned turn; the ACP side of views._token_cross_check is the sum over the cell.turn_ended rows present, through the turn_rows argument and _cell_view call site granted at c323b5a7; a turn with no row is not recorded, never 0; T-ENG-4 (no HB-VAL-005) and T-ENG-11 green with their J1b markers removed.; T-ENG-11 is restated in integer ms (W1-J Amendment 1): len(ended) == 2; sum(r[\"turn_ms\"] for r in ended) >= ended[-1][\"turn_ms\"]; the outcome's turn_ms == ended[-1][\"turn_ms\"].; K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_ms, usage, next} is written for every turn that returned a response, before the continue or cancel decision, with turn_ms = int(rec.turn_seconds * 1000) as an int (never a float or a string), next one of snapshot, final, stop or cancel; no row when send_turn returned None; the engine writes it with the literal \"kind\": \"cell.turn_ended\".; The K4(3) commit also adds the one lifecycle.TABLE entry granted to J1b (W0 R6.12b), \"cell.turn_ended\": Transition(\"TurnEnd\", \"engine\", after=(\"cell.prompt_sent\",), after_rule=\"turn_ended follows its prompt_sent\"), and one SEEDED case in tests/test_lifecycle_conformance.py for a turn end with no prompt, without changing GOOD.; T-LIF-1's marker is split per parameter: count=1 unmarked (green by J1b's entry), count=2 keeping the reason \"J1d: turn-keyed lifecycle replay\" verbatim; T-ENG-6 and T-ENG-10 green with their J1b markers removed; every tests/test_engine.py replay stays green.; K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed.; The markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them; the T-LIF-1 count=1 split is the only exception.; J1a's landed names are built on, never defined a second time (DM7).; On the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py.; The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: the eight-file guard list `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the merged base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py tests/test_lifecycle_conformance.py tests/test_views.py tests/test_acp_record.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.; A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call; audit records go through audit-log.py into docs/audit/audit-log.jsonl and the generated audit-data.js in their own commit.; A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit.; The served model id is the first line of the final report.\nNot in scope: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5, and the snapshot_cell ALLOWED entry in tests/test_atomic_sites.py (J1c).; views beyond _token_cross_check and the granted _cell_view call site; every other lifecycle.TABLE change and turn-keyed replay; plan turns; CellView.task and CellView.rep (J1d).; The section 11 mutant rows and spike S-J4 (J1e); status.py (X-INTF).; ledger.py and any ADR text.; mutate_check with --touched, and the whole suite: they are the Leader's.; Killing any process by name or pattern; only PIDs this session started.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens\nMain-line budget: within X-J1's 320 calls across 5 dispatches; one Agent-tool turn\nTrace\n| clause | trace |\n|---|---|\n| done_when: The tree is C:\\Projects\\x-harness-x-model-bench-build-eval-x-j1b on build/eval-x-j1b, session x-j1b-e1e4, model claude-sonnet-5-5: the same-tree green follow-on of X-J1b's Codex partial at 45be75a2 (R-87 Option 1, the contract's fallback). | phrase: a same-tree green follow-on of X-J1b under R-87 Option 1, the fallback of x-j1.contract.json |\n| done_when: Before any edit, integrate/e2e4-18 (8998d092, which holds bb177a2e, the test_acp_record _norm fix) is merged with git merge --no-ff, never rebased, so 9d732a0a, 4f7e62c9, c323b5a7 and 45be75a2 stay valid; a conflict in docs/docs-index.js or docs/audit/audit-data.js is regenerated, never hand-merged. | phrase: git merge --no-ff integrate/e2e4-18 into build/eval-x-j1b (merge, not rebase |\n| done_when: After the merge, `git merge-base --is-ancestor bb177a2e HEAD` exits 0 and `git log --oneline -1 --grep \"W0 seam contracts rev 6.11\"` prints a commit; otherwise stop and report. | phrase: Stop and report if git merge-base --is-ancestor bb177a2e HEAD exits non-zero after the merge |\n| done_when: docs/design/eval-multi-turn.md in the tree has the heading \"## 15. Amendment 1\" (W1-J Amendment 1, from coord/eval-c35-j1b via integrate/e2e4-18); if it is missing, merge integrate/e2e4-18 again, and if it is still missing, stop and report. | phrase: Stop and report if docs/design/eval-multi-turn.md has no \"## 15. Amendment 1\" heading in your tree |\n| done_when: Before the first fix, the six J1b tests (T-ENG-4, T-ENG-6, T-ENG-10, T-ENG-11 restated, T-DRV-1, T-DRV-2) are re-run with `uv run pytest -q --runxfail` on the merged base, and each failing assertion line is pasted into the first fix commit's message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError); no skeleton is added. | phrase: re-run the six J1b tests with uv run pytest -q --runxfail on the merged base |\n| done_when: A test that already passes is recorded green on arrival with the SHA, never faked red. | phrase: A test that already passes is recorded green on arrival with the SHA, never faked red. |\n| done_when: K4(2) lands in its own commit: usage summed over every returned turn; the ACP side of views._token_cross_check is the sum over the cell.turn_ended rows present, through the turn_rows argument and _cell_view call site granted at c323b5a7; a turn with no row is not recorded, never 0; T-ENG-4 (no HB-VAL-005) and T-ENG-11 green with their J1b markers removed. | phrase: K4(2), in its own commit: usage summed over every returned turn |\n| done_when: T-ENG-11 is restated in integer ms (W1-J Amendment 1): len(ended) == 2; sum(r[\"turn_ms\"] for r in ended) >= ended[-1][\"turn_ms\"]; the outcome's turn_ms == ended[-1][\"turn_ms\"]. | phrase: T-ENG-11 is restated in integer ms per W1-J Amendment 1 |\n| done_when: K4(3) lands in its own commit: only end_turn continues; cell.turn_ended{turn, stop_reason, turn_ms, usage, next} is written for every turn that returned a response, before the continue or cancel decision, with turn_ms = int(rec.turn_seconds * 1000) as an int (never a float or a string), next one of snapshot, final, stop or cancel; no row when send_turn returned None; the engine writes it with the literal \"kind\": \"cell.turn_ended\". | phrase: with turn_ms = int(rec.turn_seconds * 1000), an int (never a float, never a string; ledger._check refuses floats) |\n| done_when: The K4(3) commit also adds the one lifecycle.TABLE entry granted to J1b (W0 R6.12b), \"cell.turn_ended\": Transition(\"TurnEnd\", \"engine\", after=(\"cell.prompt_sent\",), after_rule=\"turn_ended follows its prompt_sent\"), and one SEEDED case in tests/test_lifecycle_conformance.py for a turn end with no prompt, without changing GOOD. | phrase: the one lifecycle.TABLE entry granted to J1b (W0 R6.12b) |\n| done_when: T-LIF-1's marker is split per parameter: count=1 unmarked (green by J1b's entry), count=2 keeping the reason \"J1d: turn-keyed lifecycle replay\" verbatim; T-ENG-6 and T-ENG-10 green with their J1b markers removed; every tests/test_engine.py replay stays green. | phrase: split its marker per parameter, count=1 unmarked, count=2 keeping the reason \"J1d: turn-keyed lifecycle replay\" verbatim |\n| done_when: K4(4) lands in its own commit: one handshake per Session and an idempotent Session.close() (stdin closed once; send_turn after close returns None with the cause set); T-DRV-1 and T-DRV-2 green with their J1b markers removed. | phrase: K4(4), in its own commit: one handshake per Session and an idempotent Session.close() |\n| done_when: The markers whose reason names J1c, J1d or J1e stay, T-ENG-1 and T-WIRE-1 among them; the T-LIF-1 count=1 split is the only exception. | phrase: The markers whose reason names J1c, J1d or J1e stay (except the T-LIF-1 count=1 split above) |\n| done_when: J1a's landed names are built on, never defined a second time (DM7). | phrase: J1a's landed names are built on, never defined twice (DM7). |\n| done_when: On the final commit `git grep -n \"snapshot_cell(\" -- src` prints only the definition in src/harness_bench/archive.py. | phrase: on the final commit git grep -n \"snapshot_cell(\" -- src prints only the definition in src/harness_bench/archive.py |\n| done_when: The R-104 worker gate passes, each command on its own line with its exit status read, never behind a pipe: the eight-file guard list `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py` on the merged base before the first edit and on the final commit; `uv run pytest -q tests/test_multiturn.py tests/test_engine.py tests/test_driver.py tests/test_lifecycle_conformance.py tests/test_views.py tests/test_acp_record.py`; `uv run python tools/mutate_check.py tests/mutations/engine.json` and `uv run python tools/mutate_check.py tests/mutations/driver.json`, never --touched, every mutant killed or a recorded reason per survivor; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. | phrase: Gate (R-104; each command on its own line, exit status read, never behind a pipe) |\n| done_when: A gate that waited on the suite lock is reported with the measured wait; a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed |\n| done_when: Commits name their paths, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call; audit records go through audit-log.py into docs/audit/audit-log.jsonl and the generated audit-data.js in their own commit. | phrase: Commit named paths only, with AGENT_SESSION=x-j1b-e1e4 inline on every commit and coord call. |\n| done_when: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit. | phrase: A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green, built in its own commit. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message. |\n| not_in_scope: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5, and the snapshot_cell ALLOWED entry in tests/test_atomic_sites.py (J1c). | phrase: Not yours: K4(5) snapshots, publish_dir, the append_missing_rows wiring, E2 snapshot recovery and spike S-J5 (J1c) |\n| not_in_scope: views beyond _token_cross_check and the granted _cell_view call site; every other lifecycle.TABLE change and turn-keyed replay; plan turns; CellView.task and CellView.rep (J1d). | phrase: every other lifecycle.TABLE change and turn-keyed replay |\n| not_in_scope: The section 11 mutant rows and spike S-J4 (J1e); status.py (X-INTF). | phrase: the section 11 mutant rows and spike S-J4 (J1e); status.py (X-INTF) |\n| not_in_scope: ledger.py and any ADR text. | phrase: ledger.py and any ADR text |\n| not_in_scope: mutate_check with --touched, and the whole suite: they are the Leader's. | phrase: mutate_check --touched and the whole suite |\n| not_in_scope: Killing any process by name or pattern; only PIDs this session started. | phrase: killing any process by name or pattern, only PIDs you started |\nReferences\n- build/eval-x-j1b: unresolved (not found)\n- x-j1.contract.json: docs/coordination/eval-wave2-e234/x-j1.contract.json sha256 9be304115859d3d108682c53cc5f40a638aaa5fb3c238781c8fc5759752e976f\n- docs/coordination/eval-wave2-e234/x-j1.md: docs/coordination/eval-wave2-e234/x-j1.md sha256 f20fd9b4554a895984f51134e0daa9656b3c9653dc49738e4eacf37f4e5b1067\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b\n- docs/coordination/eval-wave2-e234/README.md: docs/coordination/eval-wave2-e234/README.md sha256 e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701\n- docs/design/eval-multi-turn.md: docs/design/eval-multi-turn.md sha256 9193c6ae18e441bedf7182eb394cd554bfc46b0733007818b85f341fd4c4baf1\n- docs/design/eval-seam-contracts.md: docs/design/eval-seam-contracts.md sha256 52403c0eda333e9f706521a2efc5610d7019dda9e7e457d3ae5b69d8df1bc6ee\n- integrate/e2e4-18: unresolved (not found)\n- tests/test_acp_record.py: tests/test_acp_record.py sha256 32573b6521b05b4148b40d950232804865a542da6e16d4aea8303c5a93ce3e79\n- docs/docs-index.js: docs/docs-index.js sha256 33fe7e093c089833d09f6eb281e8d9e55b9d937fd4efc265babc32a052c1a65d\n- docs/audit/audit-data.js: docs/audit/audit-data.js sha256 655b7c4d32df200ef0656b4239007adce2d08f6a29d1d567bae7639da7740b52\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- coord/eval-c35-j1b: unresolved (not found)\n- engine.py: src/harness_bench/engine.py sha256 ca654261a933e3c7dd7a50fcb7acce833feda82d6ac18788d8a002e22982883d\n- tests/test_lifecycle_conformance.py: tests/test_lifecycle_conformance.py sha256 04a2bb9082a5aa38fadc2874aeeff08ab5103ef319075c29f577b5688e189c6d\n- tests/test_engine.py: tests/test_engine.py sha256 df24bd350ed2a6f8d16a4b80e2cf53c7720fe0c99b6374cfe31157447b3e8d26\n- src/: unresolved (not found)\n- src/harness_bench/archive.py: src/harness_bench/archive.py sha256 1b18d1d166fc15a7686b6ea28a3fb746bdee97d9a44477ca8b1137de705b13cf\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tests/test_multiturn.py: unresolved (not found)\n- tests/test_driver.py: tests/test_driver.py sha256 453e01a8f4511deb6676036905c88b71485447aecd1c876b00bf2cb7519d762d\n- tests/test_views.py: tests/test_views.py sha256 fad045e5f5391548e319e823a80531bb6abfe3aad7cb1ff87cf696154e40d2cc\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d\n- tests/mutations/engine.json: tests/mutations/engine.json sha256 ebae6d0ee051f94b00ece947f0184f35abd72dd666ce8a1f1d1a66a31b56d2bc\n- tests/mutations/driver.json: tests/mutations/driver.json sha256 eb20d524a79665c316ff3b3205b13ad5886b4fbb0575caf1cecd310b223d1390\n- audit-log.py: docs/ai-forward-pack/scripts/audit-log.py sha256 d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4\n- docs/audit/audit-log.jsonl: docs/audit/audit-log.jsonl sha256 83d621974add6c0aaa7d7215fd5e0831f3d30a9e02ff3acd9c0617efc268f193\n- audit-data.js: docs/audit/audit-data.js sha256 655b7c4d32df200ef0656b4239007adce2d08f6a29d1d567bae7639da7740b52\n- status.py: src/harness_bench/status.py sha256 71e2b1feb7086ec5da7ee97931109bb96e90d17c090edb0cbd0de643f70667a7\n- ledger.py: src/harness_bench/ledger.py sha256 809188c4a0d27385369bfa175ffd7444dc92d4f4da1801692bea0cc538e0df50\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0\nper_branch_exit: a merge of integrate/e2e4-18, then three fix commits (K4(2), K4(3), K4(4)) on build/eval-x-j1b\njoin_rule: the R-104 worker gate; the Leader joins into integrate/e2e4-18, re-runs a red SHA, runs git grep -n \"snapshot_cell(\" -- src, and checks lifecycle.py changed by exactly the one TABLE entry\ncontainment: the existing tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-j1b, branch build/eval-x-j1b; the brief's owned paths plus the R6.12b TABLE entry\ntermination: one turn\ndeadline: 3,300 s\nfallback: a red-only end or a deadline: hand back partial with the reds pasted; the Leader asks the Coordinator for the next step (no second fallback harness)\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M46PD8P42C9YJ9YTTKKVT5RW\nraw sha256: 7862d94e91884c360b08947908dcd4342c901e33311392b737cf25de8dea61a9\ncompiler model: claude-opus-5-5\nengine seconds: 0.017\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "x-j1b-e1e4",
+      "shortname": "compile-You are session x-j1b-e1e4 on branch build/eval-x-j1b in the tree C:\\Pro…",
+      "skill": null,
+      "summary": "compiled al-01M46PD8P42C9YJ9YTTKKVT5RW for claude-code v1: 26 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/coordination/coordinator-log/c35.md",
+        "docs/design/eval-multi-turn.md",
+        "docs/design/eval-seam-contracts.md",
+        "docs/coordination/eval-wave2-e234/x-j1.md",
+        "docs/lessons/defect-classes.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-05T18:54:34Z",
+      "done_when": "W1-J Amendment 1 and W0 rev 6.12 written; requests resolved; compile al-01M46PEVZJEVCAAF5RW8N9K7MR dispatchable; CANON-A registered; derive, validate and verify-ruling-citations exit 0; commit on coord/eval-c35-j1b.",
+      "duration_seconds": 1114.0,
+      "fan_out": 0,
+      "goal": "Both J1b conflicts ruled (or sent to the Owner), four requests resolved, the J1b continuation compiled and dispatchable, the register edited, c35.md committed, gates run.",
+      "id": "al-01M46PNVQPS96JAEEFBXRQX0Z8",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Coordinator #35 (hand-back for leader-e1e4 epoch 18): rule X-J1b's blocking request req-01M46MGW3NFZJDWWJHCXKG69BP (turn_seconds float vs the canonical form; lifecycle.TABLE scope) and its three smaller requests, compile the Sonnet same-tree J1b continuation, register the contract-vs-canonical-form class with its sweep, write c35.md.",
+      "session": "coord-opus-e1e4",
+      "shortname": "c35-j1b",
+      "skill": "compile",
+      "started_at": "2026-10-05T18:36:00Z",
+      "summary": "Conflict 1: ADR-0006 Physical form (no floats) decides it; cell.turn_ended carries the int turn_ms (W1-J s15A, W0 R6.12a); the ADR name sync is DR req-01M46PAJGJEEE7GBDV7YXVHC4T to owner-fable (non-blocking). Conflict 2: J1b gets the one lifecycle.TABLE entry cell.turn_ended plus its seeded case (check_writer refuses unmapped kinds at write time; W0 R6.12b). Three requests granted as built. Continuation al-01M46PEVZJEVCAAF5RW8N9K7MR (Sonnet, same tree, merge integrate/e2e4-18 with bb177a2e first). CANON-A registered; sweep: 1 open, 3 stale texts, 1 resolved.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "id": "al-01M46V64D5P5C4NASE5EJRCYET",
+      "shortname": "x-j1b-green",
+      "datetime": "2026-10-05T20:13:21Z",
+      "session": "x-j1b-e1e4",
+      "prompt": "X-J1b continuation: K4(2), K4(3), K4(4) on build/eval-x-j1b (compile al-01M46PEVZJEVCAAF5RW8N9K7MR)",
+      "summary": "K4(2) 5470d248, K4(3) c0193d7b, K4(4) 60da1888; engine and driver mutants all killed; guard list, six-file gate, ruff, docs validate green",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "finish X-J1b green",
+      "done_when": "K4(2)(3)(4) landed, gates read",
+      "tier": "T2",
+      "started_at": "2026-10-05T18:56:44Z",
+      "duration_seconds": 4597.0
     }
   ],
   "changes": [
