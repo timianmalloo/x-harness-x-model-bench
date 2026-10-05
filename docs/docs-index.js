@@ -2519,7 +2519,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "c18ce4b2d3ba321f0b76097b0ad2976333c5facc15f0eb67aef0b5b0c1722c5a"
+      "sourceSha256": "9d11c8c82185ce40085649657cc776ba78fea129211044361630d7b80e80dfe3"
     },
     {
       "id": "design-eval-property-tasks",
@@ -3743,7 +3743,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4de419c1d642b2daeeef535bb3469222dfa9f0df0dccb003db41be9e06174cf6"
+      "sourceSha256": "38e73a117b6fbc0b6648cfea5079425fd138dbe260d51ebbca857dedfed193c4"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -5643,6 +5643,31 @@ window.DOCS_INDEX = {
       "sourceSha256": "88131b43a7d9a50dde6bbe90a328864d76924af4623c1e4d7937b9e130bbf59b"
     },
     {
+      "id": "brief-eval-hyg-verify",
+      "path": "docs/coordination/eval-wave2-e1/hyg-verify.md",
+      "title": "Brief HYG-VERIFY: the four run-verify-gates failures on main (machine paths, portable text I/O, skill contracts, subprocess UTF-8)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Four of the nine pack verify gates fail on main before and after the E1 joins (measured at fec54563: 24 machine paths, 25 text-I/O findings, 1 skill-contract refusal, 5 subprocess calls). Every finding is in a repo-owned file. HYG-VERIFY fixes each red-first against the gate's own output, opts out true fixtures with the gate's own marker, and records the gate defects it finds as findings for the pack. Claude Sonnet, one session, 90 min.",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e1-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "cca38f2189a9641d361ac480d91754f32c9c2cdc29b24d346f7557ac3657b301"
+    },
+    {
       "id": "brief-eval-kill-guard",
       "path": "docs/coordination/eval-wave2-e1/kill-guard.md",
       "title": "Brief KILL-GUARD: the PreToolUse guard refuses process kills by name or pattern (class PROC-A)",
@@ -6266,7 +6291,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d2f5e31b97b000bf14fbe830b3f1514fc0a7184e3a9554fcae4c2bff9d5571ea"
+      "sourceSha256": "0b4ff13396a2a33358e90bd0e9b2e1dd4dd050a39cbcf583f2d1e65290bf26d6"
     },
     {
       "id": "brief-eval-x-i-s2",
@@ -6291,7 +6316,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "6a4af9946908a86586de98b4f7f17a5d2a1183d46f2a6db671f20bcb766f2dbd"
+      "sourceSha256": "1318ac08a9df14ba214162df316cf1c94c017ca095ff3061d384be7b5d368ed9"
     },
     {
       "id": "brief-eval-x-int",
@@ -6461,7 +6486,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "508923efcdfd9b876a9a3f85d1de7e62ee961a579406328d41c523422c51bac3"
+      "sourceSha256": "56104e1087deaf137c0e6814ea86090b32aea94763e429f602ba721953f10144"
     },
     {
       "id": "brief-eval-x-lg",
@@ -8270,5 +8295,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "bd6d23aede0661931afa660da5701c95ad672e17904cf19795131987d4695649"
+  "graphSha256": "5ec39d75b936a3a3d757c556f6d6556d7455a8251912c2befb92ee454d873c30"
 };
