@@ -31,7 +31,7 @@ from decimal import Decimal
 from fractions import Fraction
 from pathlib import Path
 
-from harness_bench import config, egress, ledger, profiles, views
+from harness_bench import archive, config, egress, ledger, profiles, views
 from harness_bench.gateway import calibration, pipeline
 from harness_bench.grade import judge
 
@@ -213,7 +213,7 @@ def _artifact_text(run_dir: Path, cell_id: str, path: str) -> str:
     """The archived artifact of the cell's last attempt, as the judge read it ("" when the cell did not write it).
     assume: the pass graded the cell's highest-numbered attempt. Confirm: runner._grade_cell's `attempt` for a cell
     with a retry. Breaks: the flag reads an attempt the judge never saw (the flag only; no score reads it)."""
-    attempts = sorted((run_dir / "archive" / cell_id).glob("attempt-*"), key=lambda p: int(p.name.split("-")[1]))
+    attempts = archive.attempt_dirs(run_dir, cell_id)
     file = attempts[-1] / "ws" / path if attempts else None
     return file.read_bytes().decode("utf-8", errors="replace") if file is not None and file.is_file() else ""
 
