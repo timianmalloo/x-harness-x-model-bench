@@ -22,6 +22,7 @@ from harness_bench.composites import area as compute_area
 from harness_bench.composites import gated as compute_gated
 from harness_bench.composites import normalise as compute_normalise
 from harness_bench.errors import BenchError
+from harness_bench.plan import plan_pack
 from harness_bench.stats import (
     CONTAMINATION_PRONE,
     DEFAULT_SEED,
@@ -539,7 +540,8 @@ def _build_pack_effect(
 
     if not ({"off", "on"} <= set(pack_settings)):
         return PackEffect(
-            status="This run has one pack setting; no effect to show.",
+            status=("This run has one pack setting; no effect to show." if len(pack_settings) < 2
+                    else "Pack effect for these arms is not computed; the legacy reader needs on and off."),
             excluded_tasks=excluded_tasks,
             rows=[],
         )
@@ -753,8 +755,8 @@ def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = 
     unshared_tasks = tuple(sorted(set(base_task_vers) ^ set(view_task_vers)))
     excluded_tasks = tuple(t for t in all_tasks if t in CONTAMINATION_PRONE)
 
-    base_rev = (base.plan or {}).get("pack", {}).get("revision")
-    view_rev = (view.plan or {}).get("pack", {}).get("revision")
+    base_rev = (plan_pack(base.plan or {}) or {}).get("revision")
+    view_rev = (plan_pack(view.plan or {}) or {}).get("revision")
     same_pack_revision = base_rev if base_rev is not None and base_rev == view_rev else None
 
     # VER-A rule (R-78 c3 / design): area composite deltas computed only when both runs' current
@@ -982,4 +984,3 @@ def export(board: Board, comparison: Comparison | None = None) -> bytes:
         }
 
     return ledger.canonical(payload)
-

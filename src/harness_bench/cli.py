@@ -139,14 +139,22 @@ def cmd_plan(args) -> int:
 
 def _workspace_builder(root: Path, p: dict, sources_root: Path, pack_root: Path, upstream_root: Path):
     def build(cell: dict, cell_dir: Path) -> dict:
+        arm = plan.cell_arm(cell)
+        pack = plan.arm_pack(p, arm)
         task_dir = root / "tasks" / cell["task"]
         source = workspace.task_source(task_dir, cell["task_version"], sources_root, upstream_root)
         ws = workspace.cell_working_copy(source, cell_dir / "ws")
         manifest: list[str] = []
-        if cell["pack"] == "on":
-            pack_dir = workspace.pack_checkout(Path(p["pack"]["source"]), p["pack"]["commit"], pack_root)
+        if pack is not None:
+            pack_dir = workspace.pack_checkout(Path(pack["source"]), pack["commit"], pack_root)
             manifest = workspace.install_pack(pack_dir, ws, project=cell["task"], timeout=p["parameters"]["git_timeout"] * 5)
-        return {"pack": cell["pack"], "pack_manifest": len(manifest)}
+        info = {"arm": arm, "pack_manifest": len(manifest)}
+        if pack is not None:
+            info["pack_commit"] = pack["commit"]
+        # Historical runs retain their event wire key; version 2 records the arm and commit.
+        if p.get("schema", "bench-plan/1") == "bench-plan/1":
+            return {"pack": arm, "pack_manifest": len(manifest)}
+        return info
 
     return build
 

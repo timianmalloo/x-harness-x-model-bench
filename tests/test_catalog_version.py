@@ -743,7 +743,6 @@ def test_a_property_tag_outside_property_names_is_refused_and_property_names_mat
     assert list(names) == list(strategies.keys())
 
 
-@pytest.mark.xfail(strict=True, reason="X-A1 owns the also_graded_by check. The key is unread until then.")
 def test_an_also_graded_by_name_that_is_unknown_equal_to_the_grader_or_repeated_is_refused():
     catalog = config.load_yaml(ROOT / "bench" / "metrics.yaml")
     cases = {"unknown": ["formla"], "equal to grader": ["correctness"], "repeated": ["formal", "formal"]}

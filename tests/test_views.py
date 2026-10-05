@@ -54,6 +54,69 @@ def root(tmp_path):
     return make_root(tmp_path)
 
 
+@pytest.mark.parametrize("kind", ["discrimination", "unknown"])
+def test_views_refuses_nonmeasurement_confirmed_run(root, tmp_path, kind):
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    frozen = json.loads((run_dir / "plan.json").read_text(encoding="utf-8"))
+    frozen["kind"] = kind
+    frozen.pop("plan_hash", None)
+    frozen["plan_hash"] = plan_mod.plan_hash(frozen)
+    (run_dir / "plan.json").write_bytes(ledger.canonical(frozen))
+    with pytest.raises(BenchError) as error:
+        views.load(run_dir)
+    assert error.value.code == "HB-PLN-004"
+    assert kind in str(error.value)
+
+
+@pytest.mark.parametrize("packs,expected", [({}, "not recorded"),
+    ({"candidate": {"revision": 7}}, 7),
+    ({"incumbent": {"revision": 6}, "candidate": {"revision": 7}}, "several packs")])
+def test_ranking_header_states_zero_one_or_several_packs(packs, expected):
+    from harness_bench.report import summaries
+
+    view = views.RunView("r", {"arms": {a: {"pack": p} for a, p in packs.items()}}, False, None, None, [])
+    assert json.loads(summaries._header_facts(view))["pack_revision"] == expected
+
+
+def test_plan_level_board_reader_refuses_several_packs(root, tmp_path):
+    from dataclasses import replace
+
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    view = views.load(run_dir)
+    view.grading_id = "graded"
+    view.plan["arms"] = {"incumbent": {"pack": {"revision": 6}}, "candidate": {"pack": {"revision": 7}}}
+    with pytest.raises(BenchError) as error:
+        board.compare(view, replace(view, run_id="r2"), composites.load_catalog(root))
+    assert error.value.code == "HB-PLN-005"
+
+
+def test_population_caveat_reads_version_two_cell_arms():
+    from harness_bench.report import pack_improvement
+
+    view = views.RunView("r", {"cells": [{"combo": "cc", "arm": "candidate"}]}, False, None, None, [])
+    assert any("candidate" in line and "0 of 1" in line for line in pack_improvement.population_caveats(view))
+
+
+def test_two_named_arms_do_not_claim_a_single_pack_setting(root, tmp_path):
+    from dataclasses import replace
+
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    view = views.load(run_dir)
+    original = view.cells[0]
+    view.cells = [replace(original, pack="off"), replace(original, pack="candidate")]
+    result = board.build(view, composites.load_catalog(root))
+    assert "one pack setting" not in result.pack_effect.status
+    assert "not computed" in result.pack_effect.status
+
+
+@pytest.mark.parametrize("packs,expected", [({}, None), ({"candidate": {"revision": 7}}, 7)])
+def test_board_comparison_reads_zero_or_one_arm_pack(root, packs, expected):
+    frozen = {"arms": {a: {"pack": p} for a, p in packs.items()}}
+    a = views.RunView("a", frozen, True, "g", "0.7.dev", [])
+    b = views.RunView("b", frozen, True, "g", "0.7.dev", [])
+    assert board.compare(a, b, composites.load_catalog(root)).same_pack_revision == expected
+
+
 def _usage(cell_id: str, model: str, output: int = 50) -> dict:
     return {"kind": "turn_usage", "run_id": "r1", "cell_id": cell_id, "attempt": 1, "model": model,
             "uncached_input": 100, "cache_read": 1000, "cache_write": 10, "output": output, "reasoning": 0}

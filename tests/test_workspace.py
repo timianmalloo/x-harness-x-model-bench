@@ -7,13 +7,82 @@ from pathlib import Path
 
 import pytest
 
-from harness_bench import gitsafe, workspace
+from harness_bench import cli, gitsafe, plan, workspace
 from harness_bench.errors import BenchError
 
 pytestmark = pytest.mark.native
 ROOT = Path(__file__).resolve().parents[1]
 X1 = ROOT / "tasks" / "X1"
 PACK_SOURCE = (ROOT / ".." / "ai-forward").resolve()
+
+
+def test_workspace_builder_installs_each_arms_own_pack_and_exact_manifest(base, monkeypatch):
+    """Real CLI wiring, two real git repositories and the production pack-apply script.
+
+    The pack fixture is the committed deployment bundle in this repo, not a sibling checkout.
+    Capture the production install manifest to compare content diffs, not only filenames.
+    """
+    import shutil
+
+    real_install = workspace.install_pack
+    manifests = {}
+
+    def record_install(pack_dir, ws, project, timeout):
+        result = real_install(pack_dir, ws, project, timeout)
+        manifests[ws.parent.name] = set(result)
+        return result
+
+    monkeypatch.setattr(workspace, "install_pack", record_install)
+    packs = {}
+    for arm, revision in (("candidate", 7), ("incumbent", 8)):
+        repo = base / arm
+        # Use pack artifacts available in the harness repository (pack-apply reads this layout).
+        repo.mkdir()
+        shutil.copytree(ROOT / "docs/ai-forward-pack/scripts", repo / "pack/scripts")
+        shutil.copytree(ROOT / ".claude/knowledge", repo / "pack/knowledge")
+        shutil.copytree(ROOT / ".agents/skills", repo / "pack/commands")
+        shutil.copytree(ROOT / "docs/ai-forward-pack/templates", repo / "pack/templates")
+        (repo / "pack/adapters").mkdir()
+        shutil.copytree(ROOT / "docs/ai-forward-pack/hooks", repo / "pack/adapters/hooks")
+        for name in ("README.md", "OVERVIEW.md", "research-synthesis.md", "context-budget.json"):
+            shutil.copyfile(ROOT / "docs/ai-forward-pack" / name, repo / "pack" / name)
+        for name, text in {
+            "codex/codex.md": "Fixture Codex guide\n",
+            "grok/grok-surface.md": "Fixture Grok guide\n",
+            "antigravity/agy-surface.md": "Fixture Antigravity guide\n",
+            "hooks/grok.ai-forward-hooks.json": '{}\n',
+            "hooks/agy.ai-forward-hooks.json": '{}\n',
+            "hooks/claude-code.settings.hooks.json": '{}\n',
+            "managed-blocks/AGENTS.block.md": f"<!-- AI-FORWARD-PACK:BEGIN -->\n{arm}\n<!-- AI-FORWARD-PACK:END -->\n",
+            "managed-blocks/CLAUDE.block.md": "<!-- AI-FORWARD-PACK:BEGIN -->\nfixture\n<!-- AI-FORWARD-PACK:END -->\n",
+        }.items():
+            path = repo / "pack/adapters" / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+        for adapter in ("claude-code/agents", "copilot/agents"):
+            folder = repo / "pack/adapters" / adapter
+            folder.mkdir(parents=True)
+            (folder / ".keep").write_text("fixture directory", encoding="utf-8")
+        (repo / "pack/adapters/INSTALL.md").write_text(f"revision: {revision}\n", encoding="utf-8")
+        for args in (["init", "-q"], ["add", "-A"], ["commit", "-qm", arm]):
+            gitsafe.git(args, cwd=repo, timeout=60, identity=True)
+        commit = gitsafe.git(["rev-parse", "HEAD"], cwd=repo, timeout=60).stdout.strip()
+        packs[arm] = {"pack": {"source": str(repo), "commit": commit, "revision": revision}}
+    frozen = {"schema": "bench-plan/2", "arms": {"off": {"pack": None}, **packs}, "parameters": {"git_timeout": 60}}
+    build = cli._workspace_builder(ROOT, frozen, base / "sources", base / "pack-cache", base / "upstream")
+    info = {}
+    for arm in frozen["arms"]:
+        cell = {"task": "X1", "task_version": plan.task_version_hash(X1), "arm": arm, "pack": "off"}
+        info[arm] = build(cell, base / "cells" / arm)
+    assert info["off"] == {"arm": "off", "pack_manifest": 0}
+    off = base / "cells/off/ws"
+    for arm in packs:
+        ws = base / "cells" / arm / "ws"
+        changed = {p.relative_to(ws).as_posix() for p in ws.rglob("*") if p.is_file() and ".git" not in p.parts
+                   and (not (off / p.relative_to(ws)).exists() or p.read_bytes() != (off / p.relative_to(ws)).read_bytes())}
+        assert changed == manifests[arm] and changed
+        assert info[arm] == {"arm": arm, "pack_commit": packs[arm]["pack"]["commit"], "pack_manifest": len(changed)}
+        assert workspace.pack_revision(base / "pack-cache" / packs[arm]["pack"]["commit"][:12]) == packs[arm]["pack"]["revision"]
 
 
 def _git(cwd, *args):

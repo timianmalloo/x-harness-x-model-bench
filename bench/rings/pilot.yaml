@@ -1,0 +1,11 @@
+# R-89 pilot: one pinned combo, off/candidate roles, k = 3.
+schema: bench-matrix/2
+ring: {tag: pilot}
+bom: {file: bench/bom.yaml, subset: [S1]}
+repetitions: 3
+arms:
+  - {id: "off"}
+  - {id: candidate}
+comparisons: [["off", candidate]]
+combos:
+  - {id: cc-opus, harness: claude-code, model: claude-opus-5-5}

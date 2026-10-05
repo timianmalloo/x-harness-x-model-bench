@@ -23,7 +23,8 @@ from collections.abc import Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from pathlib import Path
 
-from harness_bench import archive, gitsafe
+from harness_bench import archive, config, gitsafe
+from harness_bench.plan import cell_arm
 
 NOT_FOUND = "pre-turn commit not found in the working copy"
 PACK_SUBJECT = re.compile(r"ai-forward pack revision \d+")  # workspace.install_pack's message
@@ -83,7 +84,7 @@ def pre_turn_commit(ws: Path, cell: Mapping, timeout: float) -> str | None:
     chain = [line.split("\0", 1) for line in done.stdout.splitlines()[:2]]
     if not chain or chain[0][1:] != [f"{cell['task']} base ({cell['task_version'][:12]})"]:  # workspace.task_source
         return None
-    if cell.get("pack") != "on":
+    if cell_arm(cell) == config.ARM_OFF:
         return chain[0][0]
     if len(chain) < 2 or len(chain[1]) != 2 or not PACK_SUBJECT.fullmatch(chain[1][1]):
         return None

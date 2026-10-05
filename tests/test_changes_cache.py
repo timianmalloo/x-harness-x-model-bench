@@ -11,6 +11,31 @@ from harness_bench import gitsafe
 from harness_bench.grade import _changes
 
 
+@pytest.mark.parametrize("cell_arm", ["candidate", "incumbent", "on"])
+def test_pre_turn_commit_treats_every_non_off_arm_as_pack_bearing(tmp_path, cell_arm):
+    ws = tmp_path / "ws"
+    ws.mkdir()
+    gitsafe.git(["init", "-q"], cwd=ws, timeout=60)
+    (ws / "base.txt").write_text("base", encoding="utf-8")
+    gitsafe.git(["add", "base.txt"], cwd=ws, timeout=60)
+    gitsafe.git(["commit", "-qm", "X1 base (abcdef123456)"], cwd=ws, timeout=60, identity=True)
+    base = gitsafe.git(["rev-parse", "HEAD"], cwd=ws, timeout=60).stdout.strip()
+    gitsafe.git(["commit", "--allow-empty", "-qm", "ai-forward pack revision 7"], cwd=ws, timeout=60, identity=True)
+    installed = gitsafe.git(["rev-parse", "HEAD"], cwd=ws, timeout=60).stdout.strip()
+    gitsafe.git(["commit", "--allow-empty", "-qm", "ai-forward pack revision 99"], cwd=ws, timeout=60, identity=True)
+    cell = {"task": "X1", "task_version": "abcdef1234567890", "arm": cell_arm, "pack": "off"}
+    assert _changes.pre_turn_commit(ws, cell, 60) == installed
+    assert _changes.pre_turn_commit(ws, {**cell, "arm": "off"}, 60) == base
+
+
+def test_pre_turn_commit_refuses_a_missing_pack_install_for_a_named_arm(tmp_path):
+    ws = tmp_path / "ws"
+    ws.mkdir()
+    gitsafe.git(["init", "-q"], cwd=ws, timeout=60)
+    gitsafe.git(["commit", "--allow-empty", "-qm", "X1 base (abcdef123456)"], cwd=ws, timeout=60, identity=True)
+    assert _changes.pre_turn_commit(ws, {"task": "X1", "task_version": "abcdef123456", "arm": "candidate"}, 60) is None
+
+
 def _make_symlink(link_path: Path, target_str: str, monkeypatch: pytest.MonkeyPatch) -> None:
     """Create a symlink or mock is_symlink/readlink if Windows lacks privileges."""
     try:

@@ -166,14 +166,14 @@
   {
     "name": "GR-CODE c1: the base commit is the pre-turn commit of a pack-on cell (F10)",
     "file": "src/harness_bench/grade/_changes.py",
-    "find": "    if cell.get(\"pack\") != \"on\":",
+    "find": "    if cell_arm(cell) == config.ARM_OFF:",
     "replace": "    if True:",
     "tests": ["tests/test_grade_correctness.py::test_the_pack_on_base_is_the_pack_commit_so_the_pack_is_not_a_change"]
   },
   {
     "name": "GR-CODE c1: a pack-off cell takes a look-alike second commit as its base (tamper rule)",
     "file": "src/harness_bench/grade/_changes.py",
-    "find": "    if cell.get(\"pack\") != \"on\":",
+    "find": "    if cell_arm(cell) == config.ARM_OFF:",
     "replace": "    if len(chain) < 2:",
     "tests": ["tests/test_grade_correctness.py::test_a_pack_off_cell_takes_the_root_even_when_its_second_commit_looks_like_a_pack"]
   },
