@@ -31,6 +31,7 @@ from harness_bench.grade import (
     correctness,
     diffstats,
     noguess,
+    rework,
 )
 from harness_bench.plan import tree_hash
 
@@ -501,7 +502,7 @@ def run_child(argv: list[str], cwd: Path, timeout: float, extra_env: Iterable[st
     return procs.run(argv, cwd, _env.grading_env(extra_env), timeout)
 
 
-STRATEGIES: dict[str, Callable[[CellInput, GradeContext], dict[str, Score]]] = {"security": _hidden_check, "no-guessing": noguess.grade, "simplicity": diffstats.grade}
+STRATEGIES: dict[str, Callable[[CellInput, GradeContext], dict[str, Score]]] = {"security": _hidden_check, "no-guessing": noguess.grade, "simplicity": diffstats.grade, "rework": rework.grade}
 
 
 def grade_cell(inp: CellInput) -> Mapping[str, Score]:

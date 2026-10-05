@@ -118,7 +118,7 @@ CLASSES: Mapping[str, Literal["run", "grade"]] = {
 # Explicitly retired on landing; stale() prevents a landed key lingering here.
 PLANNED: frozenset[str] = frozenset({
     "resume.py",
-    "grade/rework.py", "alarm.py",
+    "alarm.py",
 })
 
 # R-94 condition 3: exactly three validate-time edges, not cell-path imports.
