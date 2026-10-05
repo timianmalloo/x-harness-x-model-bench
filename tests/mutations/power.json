@@ -1,0 +1,183 @@
+[
+  {
+    "name": "ceil becomes round",
+    "file": "src/harness_bench/power.py",
+    "find": "math.ceil(x - 1e-9)",
+    "replace": "round(x - 1e-9)",
+    "tests": ["tests/test_power.py::test_bonferroni_reference_115"]
+  },
+  {
+    "name": "snap epsilon removed",
+    "file": "src/harness_bench/power.py",
+    "find": "x - 1e-9",
+    "replace": "x",
+    "tests": ["tests/test_power.py::test_snap_at_the_integer_edge[epsilon]"]
+  },
+  {
+    "name": "snap epsilon widened to 1e-2",
+    "file": "src/harness_bench/power.py",
+    "find": "1e-9",
+    "replace": "1e-2",
+    "tests": ["tests/test_power.py::test_snap_at_the_integer_edge[above]"]
+  },
+  {
+    "name": "alpha/m becomes alpha",
+    "file": "src/harness_bench/power.py",
+    "find": "alpha / m",
+    "replace": "alpha",
+    "tests": ["tests/test_power.py::test_bonferroni_reference_115"]
+  },
+  {
+    "name": "holm divisor becomes false",
+    "file": "src/harness_bench/power.py",
+    "find": "\"holm\": (True,",
+    "replace": "\"holm\": (False,",
+    "tests": ["tests/test_power.py::test_holm_is_sized_like_bonferroni"]
+  },
+  {
+    "name": "holm sentence becomes the bonferroni sentence",
+    "file": "src/harness_bench/power.py",
+    "find": "\"alpha/m (Bonferroni; Holm's first step)\"",
+    "replace": "\"alpha/m (Bonferroni)\"",
+    "tests": ["tests/test_power.py::test_level_rule_table"]
+  },
+  {
+    "name": "reps ceil becomes floor division",
+    "file": "src/harness_bench/power.py",
+    "find": "math.ceil(n / len(tasks))",
+    "replace": "n // len(tasks)",
+    "tests": ["tests/test_power.py::test_cells_hours_tokens_reference_table"]
+  },
+  {
+    "name": "bisection hi 0.999 becomes 0.5",
+    "file": "src/harness_bench/power.py",
+    "find": "hi: float = 0.999",
+    "replace": "hi: float = 0.5",
+    "tests": ["tests/test_power.py::test_mde_roundtrip_property"]
+  },
+  {
+    "name": "paired sqrt drops the delta term",
+    "file": "src/harness_bench/power.py",
+    "find": "math.sqrt(psi - delta * delta)",
+    "replace": "math.sqrt(psi)",
+    "tests": ["tests/test_power.py::test_paired_reference_53"]
+  },
+  {
+    "name": "two-sided z becomes one-sided",
+    "file": "src/harness_bench/power.py",
+    "find": "1.0 - alpha / 2.0",
+    "replace": "1.0 - alpha",
+    "tests": ["tests/test_power.py::test_unpaired_reference_93"]
+  },
+  {
+    "name": "alpha guard deleted",
+    "file": "src/harness_bench/power.py",
+    "find": "_reject(_open_unit(alpha), \"alpha\")",
+    "replace": "_reject(True, \"alpha\")",
+    "tests": [
+      "tests/test_power.py::test_power_inputs_each_invalid_field_is_named[alpha-0]",
+      "tests/test_power.py::test_power_inputs_each_invalid_field_is_named[alpha-1]"
+    ]
+  },
+  {
+    "name": "power guard deleted",
+    "file": "src/harness_bench/power.py",
+    "find": "_reject(_open_unit(power), \"power\")",
+    "replace": "_reject(True, \"power\")",
+    "tests": ["tests/test_power.py::test_power_inputs_each_invalid_field_is_named[power]"]
+  },
+  {
+    "name": "m guard deleted",
+    "file": "src/harness_bench/power.py",
+    "find": "_reject(isinstance(m, int) and not isinstance(m, bool) and m >= 1, \"m\")",
+    "replace": "_reject(True, \"m\")",
+    "tests": ["tests/test_power.py::test_power_inputs_each_invalid_field_is_named[m]"]
+  },
+  {
+    "name": "unknown method reads the none row",
+    "file": "src/harness_bench/power.py",
+    "find": "level_for(method, alpha, m)",
+    "replace": "level_for(\"none\", alpha, m)",
+    "tests": ["tests/test_power.py::test_power_inputs_each_invalid_field_is_named[method]"]
+  },
+  {
+    "name": "pairing guard deleted",
+    "file": "src/harness_bench/power.py",
+    "find": "_reject(pairing_unit in PAIRING, \"pairing\")",
+    "replace": "_reject(True, \"pairing\")",
+    "tests": ["tests/test_power.py::test_power_inputs_each_invalid_field_is_named[pairing]"]
+  },
+  {
+    "name": "psi guard deleted",
+    "file": "src/harness_bench/power.py",
+    "find": "_reject(psi >= mde_f * mde_f, \"psi\")",
+    "replace": "_reject(True, \"psi\")",
+    "tests": ["tests/test_power.py::test_power_inputs_each_invalid_field_is_named[psi]"]
+  },
+  {
+    "name": "tasks guard deleted",
+    "file": "src/harness_bench/power.py",
+    "find": "_reject(isinstance(tasks, list) and len(tasks) > 0, \"tasks\")",
+    "replace": "_reject(True, \"tasks\")",
+    "tests": ["tests/test_power.py::test_power_inputs_each_invalid_field_is_named[tasks]"]
+  },
+  {
+    "name": "mde guard deleted",
+    "file": "src/harness_bench/power.py",
+    "find": "_reject(_open_unit(mde), \"mde\")",
+    "replace": "_reject(True, \"mde\")",
+    "tests": ["tests/test_power.py::test_power_inputs_each_invalid_field_is_named[mde]"]
+  },
+  {
+    "name": "slots guard deleted",
+    "file": "src/harness_bench/power.py",
+    "find": "_reject(isinstance(slots, int) and not isinstance(slots, bool) and slots >= 1, \"slots\")",
+    "replace": "_reject(True, \"slots\")",
+    "tests": [
+      "tests/test_power.py::test_power_inputs_each_invalid_field_is_named[slots-0]",
+      "tests/test_power.py::test_power_inputs_each_invalid_field_is_named[slots-absent]"
+    ]
+  },
+  {
+    "name": "planned_reps_per_task guard deleted",
+    "file": "src/harness_bench/power.py",
+    "find": "_reject(isinstance(planned, int) and not isinstance(planned, bool) and planned >= 1, \"planned_reps_per_task\")",
+    "replace": "_reject(True, \"planned_reps_per_task\")",
+    "tests": ["tests/test_power.py::test_power_inputs_each_invalid_field_is_named[planned]"]
+  },
+  {
+    "name": "sd guard deleted",
+    "file": "src/harness_bench/power.py",
+    "find": "_reject(_nonneg(body[\"sd\"]), \"sd\")",
+    "replace": "_reject(True, \"sd\")",
+    "tests": ["tests/test_power.py::test_power_inputs_each_invalid_field_is_named[sd]"]
+  },
+  {
+    "name": "rep_spread guard deleted",
+    "file": "src/harness_bench/power.py",
+    "find": "_reject(_nonneg(body[\"rep_spread\"]), \"rep_spread\")",
+    "replace": "_reject(True, \"rep_spread\")",
+    "tests": ["tests/test_power.py::test_power_inputs_each_invalid_field_is_named[rep-spread]"]
+  },
+  {
+    "name": "assumed control_rate label dropped",
+    "file": "src/harness_bench/power.py",
+    "find": "assumed.append(\"control_rate\")",
+    "replace": "pass",
+    "tests": ["tests/test_power.py::test_assumed_control_rate_is_labelled"]
+  },
+  {
+    "name": "planned reps ignored",
+    "file": "src/harness_bench/power.py",
+    "find": "reachable_mde = mde_for(len(tasks) * planned, sizer)",
+    "replace": "reachable_mde = None",
+    "tests": ["tests/test_power.py::test_reachable_mde_when_plan_is_short"]
+  },
+  {
+    "name": "alpha echoes alpha_per_test",
+    "file": "src/harness_bench/power.py",
+    "find": "alpha=alpha,",
+    "replace": "alpha=alpha_pt,",
+    "tests": ["tests/test_power.py::test_alpha_and_power_echo_exactly"]
+  }
+]
