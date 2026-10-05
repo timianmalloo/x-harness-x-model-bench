@@ -55,6 +55,32 @@ def archive_hash(rows: list[dict]) -> str:
     return hashlib.sha256(canonical({"files": body})).hexdigest()
 
 
+def snapshot_folder(run_dir: Path, cell_id: str, turn: int) -> Path:
+    return run_dir / "archive" / cell_id / f"turn-{turn}"
+
+
+def snapshot_of(row: dict) -> str:
+    """Absent snapshot reads final; shared reader predicate (W1-J D-J2)."""
+    return row.get("snapshot", "final")
+
+
+def snapshot_cell(cell_dir: Path, dest_root: Path, turn: int, exclude_names: set[str],
+                  cancel=None) -> ArchiveResult:
+    """K2: direct copy to the final name, including home and following links."""
+    folder = snapshot_folder(dest_root.parent.parent, dest_root.name, turn)
+    folder.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(cell_dir, folder)
+    rows = [{"path": p.relative_to(folder).as_posix(), "kind": "file", "size": p.stat().st_size,
+             "sha256": _sha(p), "link_target": "", "archive_attempt": 1, "snapshot": f"turn-{turn}"}
+            for p in sorted(folder.rglob("*")) if p.is_file()]
+    return ArchiveResult(folder, rows, archive_hash(rows), sum(r["size"] for r in rows), 0)
+
+
+def append_missing_rows(folder: Path, rows: list[dict], present: list[dict], code: str) -> list[dict]:
+    """K2 returns all rows, including already present rows, without comparing them."""
+    return list(rows)
+
+
 def _copy_hashed(src: Path, dest: Path) -> tuple[int, str]:
     h = hashlib.sha256()
     size = 0

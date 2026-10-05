@@ -286,7 +286,7 @@ class Engine:
     def _after_append(self, row: dict) -> None:
         """Engine-thread bookkeeping of a durable row, done before its worker is released."""
         kind = row.get("kind")
-        if kind == "cell.prompt_sent":
+        if kind == "cell.prompt_sent" and lifecycle.is_cell_start(row):
             a = self.active.get(row["cell_id"])
             if a:
                 a.prompt_mono = self.clock()
@@ -750,11 +750,19 @@ class Engine:
 
         result = driver.TurnResult()  # filled by run_turn; the barrier reads agent_version from it (R-28)
 
-        def barrier(session_id: str | None) -> None:
+        def record_session_opened(session_id: str | None) -> None:
             self.record("events", {"kind": "attempt.session_opened", "cell_id": cid, "session_id": session_id or "",
                                    "agent_version": result.agent_version,
                                    "permission_mode_effective": result.permission_mode_effective})  # R-34
+
+        def barrier(session_id: str | None) -> None:
+            record_session_opened(session_id)
             self.record("events", {"kind": "cell.prompt_sent", "cell_id": cid})
+
+        def barrier_for(n: int):
+            def before_send(session_id: str | None) -> None:
+                self.record("events", {"kind": "cell.prompt_sent", "cell_id": cid, "turn": n})
+            return before_send
 
         exit_status: int | None = None
         started = False
@@ -764,10 +772,24 @@ class Engine:
                                    "build_version": build.get("version"), "build_sha256": build.get("sha256"),
                                    "credential_kind": launcher.credential_kind, "network_mode": "unrestricted"})
             started = True
-            result = driver.run_turn(cp, cwd=ws, prompt=self.plan["tasks"][cell["task"]]["prompt"], mode=launcher.mode,
-                                     handshake_timeout=self.params["handshake_timeout"], before_send=barrier,
-                                     model=cell["model"] if launcher.set_model else None, result=result,
-                                     mcp_servers=mcp_servers, cancel=a.cancel)
+            if not task.get("turns"):
+                result = driver.run_turn(cp, cwd=ws, prompt=task["prompt"], mode=launcher.mode,
+                                         handshake_timeout=self.params["handshake_timeout"], before_send=barrier,
+                                         model=cell["model"] if launcher.set_model else None, result=result,
+                                         mcp_servers=mcp_servers, cancel=a.cancel)
+            else:
+                session = driver.open_session(cp, ws, launcher.mode, self.params["handshake_timeout"],
+                                              cell["model"] if launcher.set_model else None, result, mcp_servers, a.cancel)
+                if session is not None:
+                    try:
+                        record_session_opened(result.session_id)
+                        prompts = [task["prompt"]] + [t["prompt"] for t in task["turns"]]
+                        for n, text in enumerate(prompts, 1):
+                            rec = driver.send_turn(session, text, barrier_for(n), n)
+                            if rec is None or rec.stop_reason not in COMPLETED_STOP_REASONS:
+                                break
+                    finally:
+                        session.close()
         finally:
             with a.lock:
                 a.ended = True
@@ -788,6 +810,11 @@ class Engine:
             if started:  # an unrecorded start has no recorded end
                 self.record("events", ended)
         return result, exit_status, bytes(tail)
+
+    def _snapshot_turn(self, a: _Active, cell: dict, cell_dir: Path, turn: int,
+                       launcher: Launcher, cp: procs.CellProcess) -> bool:
+        """K2: report success without creating a snapshot or its ledger rows."""
+        return True
 
     def _end_process(self, a: _Active, cp: procs.CellProcess, grace: float) -> tuple[int | None, bool, str]:
         """Graceful first (stdin closed, the adapter flushes and exits), then terminate and confirm."""

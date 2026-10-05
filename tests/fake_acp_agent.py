@@ -36,8 +36,15 @@ import uuid
 from pathlib import Path
 
 CFG = json.loads(os.environ.get("FAKE_ACP", "{}"))
+BASE_CFG = dict(CFG)
 MODE = CFG.get("mode", "ok")
 OUT = sys.stdout.buffer
+
+
+def prompt_log(kind: str, **fields) -> None:
+    if BASE_CFG.get("prompts_log"):
+        with Path(BASE_CFG["prompts_log"]).open("a", encoding="utf-8") as log:
+            log.write(json.dumps({"kind": kind, **fields}) + "\n")
 
 
 def send(obj) -> None:
@@ -58,10 +65,10 @@ def record(session_id: str, cwd: str, prompt: str) -> None:
                      "timestamp": now, "message": {"model": "<synthetic>", "usage": {"input_tokens": 0, "output_tokens": 0}}})
     elif MODE != "no_model_call":
         rows.append({"type": "assistant", "sessionId": session_id, "timestamp": now,
-                     "message": {"id": "msg_1", "model": CFG.get("model", "claude-sonnet-5"), "role": "assistant",
+                     "message": {"id": f"msg_{CFG.get('_turn', 1)}", "model": CFG.get("model", "claude-sonnet-5"), "role": "assistant",
                                  "content": [{"type": "tool_use", "id": "tu1", "name": "Bash", "input": {"command": "python -c \"print(6*7)\""}}],
-                                 "usage": {"input_tokens": 10, "output_tokens": 5, "cache_read_input_tokens": 100,
-                                           "cache_creation_input_tokens": 20}}})
+                                 "usage": CFG.get("native_usage", {"input_tokens": 10, "output_tokens": 5, "cache_read_input_tokens": 100,
+                                                                  "cache_creation_input_tokens": 20})}})
     with path.open("a", encoding="utf-8") as f:
         for r in rows:
             f.write(json.dumps(r) + "\n")
@@ -77,11 +84,11 @@ time.sleep(120)
 """
 
 
-def start_daemon() -> None:
+def start_daemon(marker_name="daemon.pid") -> None:
     """The daemon writes its own identity: sys.executable may be a venv launcher whose child is the real process."""
     import subprocess
 
-    marker = Path(os.getcwd(), "daemon.pid")
+    marker = Path(os.getcwd(), marker_name)
     detached = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
     argv = [sys.executable, "-c", DAEMON, str(marker)]
     try:  # breakaway is never allowed by the cell's job, so this must fail
@@ -102,6 +109,8 @@ def wait_for_release() -> None:
 
 
 def main() -> int:
+    global MODE
+    prompt_number = 0
     if CFG.get("stderr"):
         sys.stderr.write(CFG["stderr"])
         sys.stderr.flush()
@@ -130,6 +139,7 @@ def main() -> int:
             send({"jsonrpc": "2.0", "id": mid, "result": {"protocolVersion": 1, "agentCapabilities": {},
                                                            "agentInfo": {"name": "fake", "version": "0"}}})
         elif method == "session/new":
+            prompt_log("session/new")
             Path(os.getcwd(), ".fake-session-new.json").write_text(json.dumps(msg["params"]), encoding="utf-8")
             if CFG.get("scripted_user_log"):
                 with Path(CFG["scripted_user_log"]).open("a", encoding="utf-8") as log:
@@ -145,7 +155,16 @@ def main() -> int:
         elif method == "session/cancel":
             Path(os.getcwd(), ".fake-cancel.json").write_text(json.dumps(msg), encoding="utf-8")
         elif method == "session/prompt":
+            configs = BASE_CFG.get("per_turn", [])
+            CFG.clear()
+            CFG.update(BASE_CFG)
+            if prompt_number < len(configs):
+                CFG.update(configs[prompt_number])
+            prompt_number += 1
+            CFG["_turn"] = prompt_number
+            MODE = CFG.get("mode", "ok")
             text = msg["params"]["prompt"][0]["text"]
+            prompt_log("session/prompt", n=prompt_number, prompt=text)
             Path(os.getcwd(), ".fake-prompt.txt").write_text(text, encoding="utf-8", newline="")
             record(session_id, os.getcwd(), text)
             if MODE in {"stubborn", "on_cancel"}:
@@ -185,6 +204,8 @@ def main() -> int:
                 continue
             if CFG.get("daemon"):  # T-JOB-daemon: like `dotnet build` leaving its build server behind
                 start_daemon()
+            if CFG.get("helper"):
+                start_daemon("helper.pid")
             if MODE == "hang_prompt" or CFG.get("hang"):
                 time.sleep(600)
             if MODE == "eof_mid_turn":
@@ -199,16 +220,25 @@ def main() -> int:
                 Path(os.getcwd(), ".fake-permission-reply.json").write_text(json.dumps(reply), encoding="utf-8")
             if CFG.get("write_file"):
                 Path(os.getcwd(), CFG["write_file"]).write_text("done\n", encoding="utf-8")
+            for name, content in CFG.get("files", {}).items():
+                path = Path(os.getcwd(), name)
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(content, encoding="utf-8")
             time.sleep(CFG.get("sleep", 0))
             wait_for_release()
             send({"jsonrpc": "2.0", "method": "session/update", "params": {"sessionId": session_id,
                   "update": {"sessionUpdate": "agent_message_chunk", "content": {"type": "text", "text": "DONE"}}}})
-            result = {"stopReason": "end_turn"}
+            if CFG.get("daemon_after_update"):
+                start_daemon()
+            result = {"stopReason": CFG.get("stop_reason", "end_turn")}
             if CFG.get("usage"):  # shaped like claude-agent-acp's prompt response (tests/fixtures/acp)
-                result.update({"usage": {"inputTokens": 1}, "_meta": {"quota": {"model_usage": CFG["usage"]}}})
+                result.update({"usage": CFG.get("acp_usage", {"inputTokens": 1}), "_meta": {"quota": {"model_usage": CFG["usage"]}}})
             send({"jsonrpc": "2.0", "id": mid, "result": result})
+            if CFG.get("exit_after_prompt"):
+                return 0
         elif mid is not None:
             send({"jsonrpc": "2.0", "id": mid, "error": {"code": -32601, "message": "method not found"}})
+    prompt_log("eof")
     if CFG.get("flush_on_eof") and CFG.get("record_dir"):  # like a CLI that writes its last rows on exit
         time.sleep(0.5)
         for rec in Path(CFG["record_dir"]).glob("projects/**/*.jsonl"):

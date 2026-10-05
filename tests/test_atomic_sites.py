@@ -40,6 +40,8 @@ ALLOWED: dict[tuple[str, str, str], str] = {
         "grader scratch copy; the publish of a cell is not this tree",
     ("workspace", "task_source", "shutil.copytree"):
         "copies into the tmp build that _land then publishes",
+    ("archive", "snapshot_cell", "shutil.copytree"):
+        "W1-J K2 skeleton only; J1c removes this entry when snapshot_cell uses publish_dir",
     ("oslock", "acquire", "os.open"):
         "the lock file; no content is written, so no O_BINARY is required",
     ("oslock", "is_held", "os.open"):

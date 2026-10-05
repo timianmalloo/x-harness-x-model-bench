@@ -25,7 +25,7 @@ from pathlib import Path
 from harness_bench import oslock, views
 from harness_bench.config import CELL_ID, LABEL
 from harness_bench.errors import BenchError
-from harness_bench.lifecycle import DECISION_KINDS, DECISION_STATES
+from harness_bench.lifecycle import DECISION_KINDS, DECISION_STATES, is_cell_start
 from harness_bench.plan import DEFAULT_PARAMETERS
 
 SCHEMA = "bench-status/1"
@@ -130,7 +130,10 @@ def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = N
     completion = "complete" if view.completed else ("in progress" if held else "incomplete")
     started = {e["cell_id"]: e for e in events if e["kind"] == "attempt.process_started"}
     ended = {e["cell_id"] for e in events if e["kind"] == "attempt.process_ended"}
-    prompt_sent = {e["cell_id"]: e for e in events if e["kind"] == "cell.prompt_sent"}
+    prompt_sent = {}
+    for e in events:
+        if e["kind"] == "cell.prompt_sent" and is_cell_start(e):
+            prompt_sent.setdefault(e["cell_id"], e)
     running = []
     for c in view.plan["cells"]:
         cid = c["cell_id"]

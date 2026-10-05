@@ -29,6 +29,7 @@ class Cause(Enum):
     memory = ("HB-CELL-103", "infrastructure", "failed (memory)")
     disk = ("HB-CELL-112", "infrastructure", "failed (disk)")
     host_suspended = ("HB-CELL-106", "infrastructure", "failed (host suspended)")
+    archive = ("HB-CELL-117", "infrastructure", "failed (archive)")
     unclassified = ("HB-CELL-199", "none", "failed (unclassified)")
 
     def __init__(self, code: str, attribution: str, label: str) -> None:
@@ -96,6 +97,7 @@ RUN_CODES: dict[str, str] = {
     "HB-LED-004": "abandoned grading segment (warning; skipped by views)",
     "HB-LED-005": "archive_hash does not match the attempt's archive_files rows",
     "HB-LED-006": "warning: grading.completed records no heads (written before ruling R-2); only its seals are checked",
+    "HB-LED-008": "a turn snapshot does not match its record: hash, counts, missing or changed files, absent rows, or a differing present recovery row",
     "HB-GRD-001": "grade lock held",
     "HB-GRD-002": "grading step timeout",
     "HB-GRD-003": "grader failed or returned malformed output: its metrics are NA with the exception type, and the pass continues",
