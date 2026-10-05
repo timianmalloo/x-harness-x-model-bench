@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-05T10:10:16Z",
+  "generated": "2026-10-05T10:20:23Z",
   "audit": [
     {
       "actor": null,
@@ -83427,6 +83427,307 @@ window.AUDIT_DATA = {
       "compiled": false,
       "goal": "C3b brief re-cut and X-C3b compiled, dispatchable",
       "done_when": "brief section, compile entry and README #27 entry committed on coord/eval-c27-xc3b; docs-graph validate exit 0",
+      "tier": "T1",
+      "fan_out": 0
+    },
+    {
+      "id": "al-01M45S59BN35T4FQYF6XHTFSV0",
+      "shortname": "You are X-INT (session x-int-e1e4, branch build/eval-x-int), a Claude Co…",
+      "datetime": "2026-10-05T10:18:42Z",
+      "session": "prompt-compile",
+      "prompt": "You are X-INT (session x-int-e1e4, branch build/eval-x-int), a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5 expected; the served id is the first line of your report). Repo C:\\Projects\\x-harness-x-model-bench (Windows; python, never python3). Read docs/coordination/eval-wave2-e1/x-int.md (the R-105 re-cut, Coordinator #28) and build X-INT as it says: test-only, acceptance items 1-14 in tests/test_e1_e2e.py, and the credentials-marked real-cell variant of item 3 only in tests/e2e/test_e1_walking_skeleton.py. Base the integration head at dispatch, which carries X-C3b's merge: create the worktree from the primary with coord worktree new --branch build/eval-x-int --session x-int-e1e4 --base <integration head>; never checkout or switch in the primary; record the base SHA and stop if any of the first four precondition checks fails; record the C3b-name greps, and report an item whose C3b name is absent as blocked: C3c. Never edit src/: a needed src/ change is a finding for a C3c or follow-on turn with its red SHA and failing assertion. Never flip S1, edit tasks/S1, or commit a discrimination record (F4 is open); items 2 and 5 run the real bench discriminate S1 in the test's temp repo and cross-check it against the Leader's J2 measurement on leader/s1-discrimination at 5f54cf0b. Items 2, 10 and 12 carry strict-xfail legs that cannot pass tonight (the T-E9 validate line held for the operator; the EV-18 completion-summary leg needs src/ code); record each failing assertion. Red first: a skeleton commit with final test names, the guard files run on it, then each test red on a deliberately wrong expected value, then green. Gate per the brief: the guard-file pytest line on the skeleton and final commit, the own-file pytest line, the browser test once, ruff, docs-graph validate; each on its own line, exit status read, never behind a pipe; no mutate_check and never --touched. The whole suite and the credentials ring are the Leader's. Budget 180 calls, context under 400k, at most 2 h; at 85 % commit, stop and report what remains by test id; past the cut line item 14 moves to a later X-INT-b turn. AGENT_SESSION=x-int-e1e4 on every commit and coord call. Do not merge or push. Report per the brief's Report list.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M45S6G8M6YFW2YX7RHKR05PT",
+      "shortname": "compile-You are X-INT (session x-int-e1e4, branch build/eval-x-int), a Claude Co…",
+      "datetime": "2026-10-05T10:19:22Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Build X-INT (session x-int-e1e4, branch build/eval-x-int) as docs/coordination/eval-wave2-e1/x-int.md (the R-105 re-cut, Coordinator #28) specifies, test-only and red first, as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) from the integration head that carries X-C3b's merge.\nDone when: The tree is created from the primary with coord worktree new --branch build/eval-x-int --session x-int-e1e4 --base <integration head> (a head that carries X-C3b's merge), and nothing is checked out or switched in the primary.; The base SHA is recorded and the first four precondition checks pass before any work; the session stops if any fails. The C3b-name greps are recorded, and an item whose C3b name is absent is reported as blocked: C3c.; X-INT is built as docs/coordination/eval-wave2-e1/x-int.md (the R-105 re-cut, Coordinator #28) says: test-only, acceptance items 1-14 in tests/test_e1_e2e.py, and only the credentials-marked real-cell variant of item 3 in tests/e2e/test_e1_walking_skeleton.py.; No src/ line changes; each needed src/ change is reported as a finding for a C3c or follow-on turn, with its red SHA and failing assertion.; Items 2 and 5 run the real bench discriminate S1 in the test's temp repo and are cross-checked against the Leader's J2 measurement on leader/s1-discrimination at 5f54cf0b; S1 stays draft in the tree and no discrimination record is committed.; The legs that cannot pass tonight (items 2, 10 and 12: the held T-E9 validate line, the EV-18 completion-summary leg) are strict xfail tests, each with its failing assertion recorded.; The work lands red first: a skeleton commit with final test names and the guard files run on it, then each test red on a deliberately wrong expected value, then green.; The gate passes per the brief: the guard-file pytest line on the skeleton and final commit, the own-file pytest line, the browser test once, ruff, and docs-graph validate; each on its own line, exit status read, never behind a pipe; no mutate_check and never --touched.; Every commit and coord call carries AGENT_SESSION=x-int-e1e4.; At 85 % of the budget (180 calls, context under 400k, 2 h) the work is committed, the session stops, and what remains is reported by test id; past the cut line item 14 moves to a later X-INT-b turn.; The final report follows the brief's Report list, with the served model id on its first line.\nNot in scope: Any src/ edit.; Flipping S1, editing tasks/S1, or committing a discrimination record (F4 is open).; The whole suite and the credentials ring (the Leader's).; Merging or pushing.; Checkout or switch in the primary.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k\nMain-line budget: 180 calls, 2 h\nTrace\n| clause | trace |\n|---|---|\n| done_when: The tree is created from the primary with coord worktree new --branch build/eval-x-int --session x-int-e1e4 --base <integration head> (a head that carries X-C3b's merge), and nothing is checked out or switched in the primary. | phrase: create the worktree from the primary with coord worktree new --branch build/eval-x-int --session x-int-e1e4 --base <integration head> |\n| done_when: The base SHA is recorded and the first four precondition checks pass before any work; the session stops if any fails. The C3b-name greps are recorded, and an item whose C3b name is absent is reported as blocked: C3c. | phrase: record the base SHA and stop if any of the first four precondition checks fails; record the C3b-name greps, and report an item whose C3b name is absent as blocked: C3c. |\n| done_when: X-INT is built as docs/coordination/eval-wave2-e1/x-int.md (the R-105 re-cut, Coordinator #28) says: test-only, acceptance items 1-14 in tests/test_e1_e2e.py, and only the credentials-marked real-cell variant of item 3 in tests/e2e/test_e1_walking_skeleton.py. | phrase: Read docs/coordination/eval-wave2-e1/x-int.md (the R-105 re-cut, Coordinator #28) and build X-INT as it says: test-only, acceptance items 1-14 in tests/test_e1_e2e.py, and the credentials-marked real-cell variant of item 3 only in tests/e2e/test_e1_walking_skeleton.py. |\n| done_when: No src/ line changes; each needed src/ change is reported as a finding for a C3c or follow-on turn, with its red SHA and failing assertion. | phrase: Never edit src/: a needed src/ change is a finding for a C3c or follow-on turn with its red SHA and failing assertion. |\n| done_when: Items 2 and 5 run the real bench discriminate S1 in the test's temp repo and are cross-checked against the Leader's J2 measurement on leader/s1-discrimination at 5f54cf0b; S1 stays draft in the tree and no discrimination record is committed. | phrase: items 2 and 5 run the real bench discriminate S1 in the test's temp repo and cross-check it against the Leader's J2 measurement on leader/s1-discrimination at 5f54cf0b |\n| done_when: The legs that cannot pass tonight (items 2, 10 and 12: the held T-E9 validate line, the EV-18 completion-summary leg) are strict xfail tests, each with its failing assertion recorded. | phrase: Items 2, 10 and 12 carry strict-xfail legs that cannot pass tonight (the T-E9 validate line held for the operator; the EV-18 completion-summary leg needs src/ code); record each failing assertion. |\n| done_when: The work lands red first: a skeleton commit with final test names and the guard files run on it, then each test red on a deliberately wrong expected value, then green. | phrase: Red first: a skeleton commit with final test names, the guard files run on it, then each test red on a deliberately wrong expected value, then green. |\n| done_when: The gate passes per the brief: the guard-file pytest line on the skeleton and final commit, the own-file pytest line, the browser test once, ruff, and docs-graph validate; each on its own line, exit status read, never behind a pipe; no mutate_check and never --touched. | phrase: Gate per the brief: the guard-file pytest line on the skeleton and final commit, the own-file pytest line, the browser test once, ruff, docs-graph validate; each on its own line, exit status read, never behind a pipe; no mutate_check and never --touched. |\n| done_when: Every commit and coord call carries AGENT_SESSION=x-int-e1e4. | phrase: AGENT_SESSION=x-int-e1e4 on every commit and coord call. |\n| done_when: At 85 % of the budget (180 calls, context under 400k, 2 h) the work is committed, the session stops, and what remains is reported by test id; past the cut line item 14 moves to a later X-INT-b turn. | phrase: Budget 180 calls, context under 400k, at most 2 h; at 85 % commit, stop and report what remains by test id; past the cut line item 14 moves to a later X-INT-b turn. |\n| done_when: The final report follows the brief's Report list, with the served model id on its first line. | phrase: Report per the brief's Report list. |\n| not_in_scope: Any src/ edit. | phrase: Never edit src/ |\n| not_in_scope: Flipping S1, editing tasks/S1, or committing a discrimination record (F4 is open). | phrase: Never flip S1, edit tasks/S1, or commit a discrimination record (F4 is open) |\n| not_in_scope: The whole suite and the credentials ring (the Leader's). | phrase: The whole suite and the credentials ring are the Leader's. |\n| not_in_scope: Merging or pushing. | phrase: Do not merge or push. |\n| not_in_scope: Checkout or switch in the primary. | phrase: never checkout or switch in the primary |\nReferences\n- build/eval-x-int: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-int.md: docs/coordination/eval-wave2-e1/x-int.md sha256 cb95c2dcc33c12c6524a9f2e794d7d8d738bb2255f9e46c6222655032d8659e7\n- tests/test_e1_e2e.py: unresolved (not found)\n- tests/e2e/test_e1_walking_skeleton.py: unresolved (not found)\n- src/: unresolved (not found)\n- tasks/S1: unresolved (not found)\n- leader/s1-discrimination: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1 (serial; no sub-agents)\ntransient_retry: one retry of a failed tool call; a red gate is fixed, never retried\nper_branch_exit: the five-line gate green on the final commit, exit status of each read\njoin_rule: the Leader joins onto the integration line after the whole suite passes (R-104)\ncontainment: own worktree build/eval-x-int; owned paths tests/test_e1_e2e.py and tests/e2e/test_e1_walking_skeleton.py only; test-only, no src/ edit; another owner's line is a finding or seam request\ntermination: items 1-14 green or recorded as strict xfail or blocked: C3c, or the 85 % budget stop\ndeadline: 2 h\nfallback: at 85 % of budget: commit, stop, report the remainder by test id; item 14 to an X-INT-b turn; a src/ need to a C3c turn\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M45S59BN35T4FQYF6XHTFSV0\nraw sha256: 897130e02ee64a23bb41bc8f600859cb8f1d0de746fdc9ed5d7af0531f1a6da9\ncompiler model: claude-opus-5-5\nengine seconds: 0.016\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M45S59BN35T4FQYF6XHTFSV0 for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "The tree is created from the primary with coord worktree new --branch build/eval-x-int --session x-int-e1e4 --base <integration head> (a head that carries X-C3b's merge), and nothing is checked out or switched in the primary.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "create the worktree from the primary with coord worktree new --branch build/eval-x-int --session x-int-e1e4 --base <integration head>"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The base SHA is recorded and the first four precondition checks pass before any work; the session stops if any fails. The C3b-name greps are recorded, and an item whose C3b name is absent is reported as blocked: C3c.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "record the base SHA and stop if any of the first four precondition checks fails; record the C3b-name greps, and report an item whose C3b name is absent as blocked: C3c."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "X-INT is built as docs/coordination/eval-wave2-e1/x-int.md (the R-105 re-cut, Coordinator #28) says: test-only, acceptance items 1-14 in tests/test_e1_e2e.py, and only the credentials-marked real-cell variant of item 3 in tests/e2e/test_e1_walking_skeleton.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Read docs/coordination/eval-wave2-e1/x-int.md (the R-105 re-cut, Coordinator #28) and build X-INT as it says: test-only, acceptance items 1-14 in tests/test_e1_e2e.py, and the credentials-marked real-cell variant of item 3 only in tests/e2e/test_e1_walking_skeleton.py."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "No src/ line changes; each needed src/ change is reported as a finding for a C3c or follow-on turn, with its red SHA and failing assertion.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never edit src/: a needed src/ change is a finding for a C3c or follow-on turn with its red SHA and failing assertion."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Items 2 and 5 run the real bench discriminate S1 in the test's temp repo and are cross-checked against the Leader's J2 measurement on leader/s1-discrimination at 5f54cf0b; S1 stays draft in the tree and no discrimination record is committed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "items 2 and 5 run the real bench discriminate S1 in the test's temp repo and cross-check it against the Leader's J2 measurement on leader/s1-discrimination at 5f54cf0b"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The legs that cannot pass tonight (items 2, 10 and 12: the held T-E9 validate line, the EV-18 completion-summary leg) are strict xfail tests, each with its failing assertion recorded.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Items 2, 10 and 12 carry strict-xfail legs that cannot pass tonight (the T-E9 validate line held for the operator; the EV-18 completion-summary leg needs src/ code); record each failing assertion."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The work lands red first: a skeleton commit with final test names and the guard files run on it, then each test red on a deliberately wrong expected value, then green.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Red first: a skeleton commit with final test names, the guard files run on it, then each test red on a deliberately wrong expected value, then green."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The gate passes per the brief: the guard-file pytest line on the skeleton and final commit, the own-file pytest line, the browser test once, ruff, and docs-graph validate; each on its own line, exit status read, never behind a pipe; no mutate_check and never --touched.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Gate per the brief: the guard-file pytest line on the skeleton and final commit, the own-file pytest line, the browser test once, ruff, docs-graph validate; each on its own line, exit status read, never behind a pipe; no mutate_check and never --touched."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Every commit and coord call carries AGENT_SESSION=x-int-e1e4.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "AGENT_SESSION=x-int-e1e4 on every commit and coord call."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "At 85 % of the budget (180 calls, context under 400k, 2 h) the work is committed, the session stops, and what remains is reported by test id; past the cut line item 14 moves to a later X-INT-b turn.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Budget 180 calls, context under 400k, at most 2 h; at 85 % commit, stop and report what remains by test id; past the cut line item 14 moves to a later X-INT-b turn."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The final report follows the brief's Report list, with the served model id on its first line.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report per the brief's Report list."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any src/ edit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never edit src/"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Flipping S1, editing tasks/S1, or committing a discrimination record (F4 is open).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never flip S1, edit tasks/S1, or commit a discrimination record (F4 is open)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "The whole suite and the credentials ring (the Leader's).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The whole suite and the credentials ring are the Leader's."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Merging or pushing.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Do not merge or push."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Checkout or switch in the primary.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "never checkout or switch in the primary"
+            }
+          }
+        ],
+        "contract_slot": {
+          "width_cap": "1 (serial; no sub-agents)",
+          "transient_retry": "one retry of a failed tool call; a red gate is fixed, never retried",
+          "per_branch_exit": "the five-line gate green on the final commit, exit status of each read",
+          "join_rule": "the Leader joins onto the integration line after the whole suite passes (R-104)",
+          "containment": "own worktree build/eval-x-int; owned paths tests/test_e1_e2e.py and tests/e2e/test_e1_walking_skeleton.py only; test-only, no src/ edit; another owner's line is a finding or seam request",
+          "termination": "items 1-14 green or recorded as strict xfail or blocked: C3c, or the 85 % budget stop",
+          "deadline": "2 h",
+          "fallback": "at 85 % of budget: commit, stop, report the remainder by test id; item 14 to an X-INT-b turn; a src/ need to a C3c turn"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Build X-INT (session x-int-e1e4, branch build/eval-x-int) as docs/coordination/eval-wave2-e1/x-int.md (the R-105 re-cut, Coordinator #28) specifies, test-only and red first, as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) from the integration head that carries X-C3b's merge.",
+          "done_when": [
+            "The tree is created from the primary with coord worktree new --branch build/eval-x-int --session x-int-e1e4 --base <integration head> (a head that carries X-C3b's merge), and nothing is checked out or switched in the primary.",
+            "The base SHA is recorded and the first four precondition checks pass before any work; the session stops if any fails. The C3b-name greps are recorded, and an item whose C3b name is absent is reported as blocked: C3c.",
+            "X-INT is built as docs/coordination/eval-wave2-e1/x-int.md (the R-105 re-cut, Coordinator #28) says: test-only, acceptance items 1-14 in tests/test_e1_e2e.py, and only the credentials-marked real-cell variant of item 3 in tests/e2e/test_e1_walking_skeleton.py.",
+            "No src/ line changes; each needed src/ change is reported as a finding for a C3c or follow-on turn, with its red SHA and failing assertion.",
+            "Items 2 and 5 run the real bench discriminate S1 in the test's temp repo and are cross-checked against the Leader's J2 measurement on leader/s1-discrimination at 5f54cf0b; S1 stays draft in the tree and no discrimination record is committed.",
+            "The legs that cannot pass tonight (items 2, 10 and 12: the held T-E9 validate line, the EV-18 completion-summary leg) are strict xfail tests, each with its failing assertion recorded.",
+            "The work lands red first: a skeleton commit with final test names and the guard files run on it, then each test red on a deliberately wrong expected value, then green.",
+            "The gate passes per the brief: the guard-file pytest line on the skeleton and final commit, the own-file pytest line, the browser test once, ruff, and docs-graph validate; each on its own line, exit status read, never behind a pipe; no mutate_check and never --touched.",
+            "Every commit and coord call carries AGENT_SESSION=x-int-e1e4.",
+            "At 85 % of the budget (180 calls, context under 400k, 2 h) the work is committed, the session stops, and what remains is reported by test id; past the cut line item 14 moves to a later X-INT-b turn.",
+            "The final report follows the brief's Report list, with the served model id on its first line."
+          ],
+          "not_in_scope": [
+            "Any src/ edit.",
+            "Flipping S1, editing tasks/S1, or committing a discrimination record (F4 is open).",
+            "The whole suite and the credentials ring (the Leader's).",
+            "Merging or pushing.",
+            "Checkout or switch in the primary."
+          ],
+          "tier": "T2",
+          "fan_out_cap": "0",
+          "context_ceiling": "400k",
+          "main_line_budget": "180 calls, 2 h"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.016,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M45S59BN35T4FQYF6XHTFSV0",
+        "raw_sha256": "897130e02ee64a23bb41bc8f600859cb8f1d0de746fdc9ed5d7af0531f1a6da9",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-int"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-int.md",
+            "reason": null,
+            "sha256": "cb95c2dcc33c12c6524a9f2e794d7d8d738bb2255f9e46c6222655032d8659e7",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-int.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_e1_e2e.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/e2e/test_e1_walking_skeleton.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/S1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "leader/s1-discrimination"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M45S8C82GK4V5P23G1BBN7ZP",
+      "shortname": "coord #28: x-int.md re-cut under R-105; X-INT compiled",
+      "datetime": "2026-10-05T10:20:23Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Coordinator #28 (Leader epoch 17): re-cut x-int.md under R-105 with #27's six points (integration-head base, R-104 gate, E2E items as acceptance items, test-only, S1 not flipped), compile X-INT (CO-S0), append Coordinator #28 to E1 README section 8.",
+      "summary": "x-int.md re-cut (offline tests move to tests/test_e1_e2e.py: a tests/e2e test would break SUITE-A's bare-collect guard and trigger npm ci); X-INT compiled al-01M45S6G8M6YFW2YX7RHKR05PT (raw al-01M45S59BN35T4FQYF6XHTFSV0), 0 assumptions, 0 DR, dispatchable after X-C3b joins and this branch merges; strict-xfail legs: T-E9 validate (held), EV-18 completion summary (C3c).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/coordination/eval-wave2-e1/x-int.md",
+        "docs/coordination/eval-wave2-e1/README.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "X-INT brief re-cut under R-105 and X-INT compiled, dispatchable after C3b joins",
+      "done_when": "brief, compile entry and README #28 entry committed on coord/eval-c28-xint; docs-graph validate exit 0",
       "tier": "T1",
       "fan_out": 0
     }

@@ -6328,7 +6328,7 @@ window.DOCS_INDEX = {
       "phase": "",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "X-INT proves the joined E1 tracks end to end through the real CLI: the campaign happy path, the T-E19 reader refusals, a two-arm report, and the arm-reader assume, on Sonnet, with the real cells credential-marked.",
+      "summary": "X-INT proves the joined E1 tracks end to end through the real CLI, test-only: the campaign walk with real gates, power and readiness, the S1 discrimination run and the T-E19 reader refusals, a two-arm report, the lock and hook partners of C2a and C3b, on Sonnet from the integration head (R-105 re-cut, Coordinator #28).",
       "tags": [],
       "links": [
         {
@@ -6345,7 +6345,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4cb06a998dbf4f14babca317eb9c828edf2e7ac3e18d5808264ca62f49c6c9b9"
+      "sourceSha256": "cb95c2dcc33c12c6524a9f2e794d7d8d738bb2255f9e46c6222655032d8659e7"
     },
     {
       "id": "brief-eval-x-j1",
@@ -7339,7 +7339,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "cef576f5555b705b5da64be9e79da28110fcbc09d54326482f68e3c23cb5d1a4"
+      "sourceSha256": "5a229082964c8a2781ca6aa1476732c75553e1ae172d6a404d7e83d3b1b54114"
     },
     {
       "id": "coordination-eval-wave2-e234-briefs",
@@ -8295,5 +8295,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "3229bba8e548d2d7bd5e8f636d86a28447219aa7877a32bf331ba4e5f3ac79ab"
+  "graphSha256": "968494045a3eb79580a62d217e77e05815de1a3ba297bfdb490e45955fd43fdd"
 };
