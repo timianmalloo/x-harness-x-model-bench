@@ -40,7 +40,7 @@
         "permissions": "observed-only"
       },
       "prompts": [
-        "al-01M41JX5J2A1XH7TZ7BTY8MW70"
+        "al-01M44PHDKFRKXC33A12WE1FA0B"
       ],
       "fallback": "A red-only end, a deadline or a failed served-model read: the green follow-on runs as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) in this worker's tree (R-87 Option 1); the plan's fallback for every Agy track, after an Owner review"
     }
