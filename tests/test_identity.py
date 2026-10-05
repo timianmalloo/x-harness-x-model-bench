@@ -540,3 +540,42 @@ def test_bench_run_without_drift_launches(confirmed_campaign_run):  # T-25b, own
 
     assert sum(row["kind"] == "cell.launch_intent" for row in rows) == 1
     assert not any(row["kind"] == "run.launch_stopped" and row["code"] == "HB-IDN-001" for row in rows)
+
+
+def chain_plan(root, stamp_tasks=("t", "u"), stamp_builds=None, plan_tasks=("t",), plan_builds=None):
+    """A plan stamped from the chain (the stamp is the baseline's effective run side) over its own, possibly smaller, task and build set."""
+    p = frozen_plan(root, tasks=stamp_tasks, builds=stamp_builds)
+    p["tasks"] = {task: {} for task in plan_tasks}
+    p["builds"] = plan_builds or {}
+    return p
+
+
+def launch_diff(root, p):
+    clock = FakeClock()
+    return identity.launch_check(root, p, clock=clock, sleep=clock.sleep)()
+
+
+def test_a_chain_stamped_plan_naming_builds_the_stamp_lacks_launches_clean(identity_root):  # R-106 c1 (i)
+    p = chain_plan(identity_root, plan_tasks=("t", "u"), plan_builds={"codex": {"version": "1"}})
+    assert launch_diff(identity_root, p) == identity.CheckResult([], False)
+
+
+def test_a_subset_plan_over_an_undrifted_tree_launches_clean(identity_root):  # R-106 c1 (ii)
+    assert launch_diff(identity_root, chain_plan(identity_root)) == identity.CheckResult([], False)
+
+
+def test_a_drift_in_an_unplanned_task_stops_the_subset_plan(identity_root):  # R-106 c1 (iii)
+    p = chain_plan(identity_root)
+    (identity_root / "tasks" / "u" / "prompt.md").write_text("edited\n", encoding="utf-8")
+    assert launch_diff(identity_root, p).diff == ["tasks/u changed"]
+
+
+def test_a_stamp_build_is_compared_with_the_plans_build_and_only_that_one(identity_root):  # R-106 c1 (iv)
+    stamped = {"codex": {"version": "1"}}
+    p = chain_plan(identity_root, stamp_builds=stamped, plan_builds={"codex": {"version": "2"}, "extra": {"version": "9"}})
+    assert launch_diff(identity_root, p).diff == ["builds/codex changed"]
+
+
+def test_a_stamp_build_the_plan_lacks_stays_a_diff_item(identity_root):  # R-106 c1, fail closed
+    p = chain_plan(identity_root, stamp_builds={"codex": {"version": "1"}}, plan_builds={})
+    assert launch_diff(identity_root, p).diff == ["builds/codex removed"]

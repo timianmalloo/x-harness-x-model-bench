@@ -533,10 +533,10 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
         served=tuple(sorted(served)) if served is not None else None, scenario=scenario)
 
 
-def load(run_dir: Path, catalog_version: str | None = None) -> RunView:
+def load(run_dir: Path, catalog_version: str | None = None, *, any_kind: bool = False) -> RunView:
     plan = load_confirmed(run_dir)
     kind = kind_of(plan)
-    if kind != "measurement":
+    if kind != "measurement" and not any_kind:  # only `status.build` passes any_kind: a discrimination run is labelled there
         raise BenchError("HB-PLN-004", f"reports require measurement runs; plan kind is {kind}")
     facts = {f: rows(run_dir, f) for f in FACTS}
     _refuse_duplicates(facts)

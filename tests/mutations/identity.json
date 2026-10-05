@@ -1,0 +1,4 @@
+[
+  {"name": "M-R106a launch_check takes the task key set from plan[tasks] again", "file": "src/harness_bench/identity.py", "find": "tasks = tuple(key.removeprefix(\"tasks/\") for key in expected if key.startswith(\"tasks/\"))", "replace": "tasks = tuple(plan[\"tasks\"])", "tests": ["tests/test_identity.py::test_a_subset_plan_over_an_undrifted_tree_launches_clean", "tests/test_identity.py::test_a_drift_in_an_unplanned_task_stops_the_subset_plan"]},
+  {"name": "M-R106b launch_check reads builds from the plan regardless of the stamp", "file": "src/harness_bench/identity.py", "find": "for key in expected if key.startswith(\"builds/\") and key.removeprefix(\"builds/\") in plan_builds}", "replace": "for key in plan_builds}", "tests": ["tests/test_identity.py::test_a_chain_stamped_plan_naming_builds_the_stamp_lacks_launches_clean", "tests/test_identity.py::test_a_stamp_build_is_compared_with_the_plans_build_and_only_that_one"]}
+]

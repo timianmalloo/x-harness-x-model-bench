@@ -28,11 +28,14 @@ from harness_bench import (
     discriminate,
     egress,
     engine,
+    gitsafe,
     identity,
     oslock,
     plan,
+    power,
     preflight,
     profiles,
+    readiness,
     stats,
     status,
     tools,
@@ -42,10 +45,11 @@ from harness_bench import (
 from harness_bench.errors import BenchError
 from harness_bench.gateway import backend as gateway
 from harness_bench.grade import judge, runner
-from harness_bench.report import cli_table, html, summaries
+from harness_bench.report import campaign_section, cli_table, html, summaries
 from harness_bench.report import credentials as report_credentials
 
 OK, INVALID, INCOMPLETE, NOT_BUILT, INTEGRITY = 0, 1, 3, 4, 5
+_LEGACY_PACK = next(a for a in config.PACKS if a != config.ARM_OFF)  # a bench-matrix/1 file's one pack arm (W1-A 3.9's `on`), read from config
 
 
 def _exit_for(code: str) -> int:
@@ -73,6 +77,9 @@ def cmd_campaign_verify(args) -> int:
 
 
 def cmd_campaign_status(args) -> int:
+    if args.json:
+        print(campaign.to_json(campaign.status_doc(Path(args.root), args.campaign_id)))
+        return OK
     text, findings = campaign.status_text(Path(args.root), args.campaign_id)
     print(text)
     return OK if _print_findings(findings) else INTEGRITY
@@ -137,7 +144,7 @@ CAMPAIGN_COMMANDS = {"create": cmd_campaign_create, "verify": cmd_campaign_verif
 
 def cmd_campaign(args) -> int:
     key = args.campaign_command + (f" {args.pilot_command}" if args.campaign_command == "pilot" else "")
-    return CAMPAIGN_COMMANDS[key](args)
+    return campaign.command(key, args.campaign_id, lambda: CAMPAIGN_COMMANDS[key](args))
 
 
 def cmd_discriminate(args) -> int:
@@ -179,10 +186,7 @@ def cmd_validate(args) -> int:
     return INVALID if problems else OK
 
 
-def _pack(source: Path, pack_root: Path) -> dict:
-    from harness_bench import gitsafe
-
-    commit = gitsafe.git(["rev-parse", "HEAD"], cwd=source, timeout=60).stdout.strip()
+def _pack_record(source: Path, commit: str, pack_root: Path) -> dict:
     checkout = workspace.pack_checkout(source, commit, pack_root)
     return {"source": str(source), "commit": commit, "revision": workspace.pack_revision(checkout)}
 
@@ -205,11 +209,21 @@ def cmd_plan(args) -> int:
         print(json.dumps([c.__dict__ | {"id": c.id} for c in plan.expand(matrix, bom, versions)], indent=2))
         return OK
     builds = {h: b.record() for h, b in tools.resolve(Path(args.tools_dir)).items()}
-    pack = _pack(Path(args.pack_source), Path(args.tools_dir).parent / "pack")
+    bindings = {r: (s, c) for r, s, c in map(plan.parse_binding, args.arm)}  # W1-A section 3.9, pasted (SR-2)
+    if matrix["schema"] == "bench-matrix/1" and _LEGACY_PACK in matrix["packs"]:
+        source = Path(args.pack_source or root.parent / "ai-forward")
+        bindings[_LEGACY_PACK] = (str(source), gitsafe.git(["rev-parse", "HEAD"], cwd=source, timeout=60).stdout.strip())
+    elif args.pack_source:
+        raise BenchError("HB-PLN-002", "--pack-source applies to a bench-matrix/1 file; use --arm role=source@commit")
+    pack_root = Path(args.tools_dir).parent / "pack"
+    arm_packs = {a: (_pack_record(Path(b["source"]), b["commit"], pack_root) if b else None) for a, b in plan.resolve_arms(matrix, bindings).items()}
+    block = campaign.plan_block(root, args.campaign, matrix) if args.campaign else None  # lock-free: advisory, `attach` binds
     run_id = args.run_id or f"{matrix.get('run_id', 'run')}-{datetime.now(UTC):%Y%m%dT%H%M%S}"
     parameters = {"decision_timeout": args.decision_timeout_minutes * 60, "spend_cap_tokens": args.spend_cap_tokens}
-    p = plan.build_plan(root, matrix, bom, run_id, builds, pack, parallelism=args.parallelism, parameters=parameters,
-                        tools_dir=Path(args.tools_dir), cells_root=Path(args.cells_root))
+    p = plan.build_plan(root, matrix, bom, run_id, builds, arm_packs, parallelism=args.parallelism, parameters=parameters,
+                        tools_dir=Path(args.tools_dir), cells_root=Path(args.cells_root), matrix_path=matrix_path, campaign=block)
+    if block is not None:
+        campaign.check_plan(root, campaign.read(root, args.campaign), p, run_id, grid=block["prereg_hash"] is not None, tree=True)
     console = Console(no_color=_plain(), highlight=False)
     table = Table(title=f"plan {run_id}: {matrix_path.name}")
     for col in ("combo", "harness", "model", "planned build", "cells"):
@@ -219,8 +233,13 @@ def cmd_plan(args) -> int:
         b = p["builds"].get(c["harness"], {})
         table.add_row(c["id"], c["harness"], c["model"], f"{b.get('version')} ({(b.get('sha256') or '')[:12]})", str(per_combo[c["id"]]))
     console.print(table)
-    print(f"pack revision {pack['revision']} ({pack['commit'][:12]}); {len(p['cells'])} cells; parallelism {p['parameters']['parallelism']}; "
+    packs = plan.plan_packs(p)
+    for aid in p["arms"]:
+        record = packs.get(aid)
+        print(f"arm {aid}: " + (f"pack revision {record['revision']} ({record['commit'][:12]})" if record else "no pack"))
+    print(f"{len(p['cells'])} cells; parallelism {p['parameters']['parallelism']}; "
           f"envelope {p['envelope_seconds']} s; price list {p['price_list_hash'][:12] or 'absent'}")
+    print(f"launch order: seed {p['launch_seed']}, balance bound {plan.BALANCE_BOUND} of cells")
     print("parameters: " + ", ".join(f"{k}={v}" for k, v in sorted(p["parameters"].items())))
     print(f"decision timeout: {p['parameters']['decision_timeout'] // 60} min; "
           f"spend cap: {p['parameters']['spend_cap_tokens'] if p['parameters']['spend_cap_tokens'] is not None else 'none'}"
@@ -259,6 +278,8 @@ def _workspace_builder(root: Path, p: dict, sources_root: Path, pack_root: Path,
 def cmd_run(args) -> int:
     root, run_dir = Path(args.root), _run_dir(args)
     p = plan.load_confirmed(run_dir)
+    if (kind := plan.kind_of(p)) != "measurement":  # SR-E3 1: only a measurement run is a bench run
+        raise BenchError("HB-PLN-004", f"bench run needs a measurement plan; plan kind is {kind}. Run it through bench discriminate.")
     plan.require_run_parameters(p)
     if (run_dir / "events").exists():
         raise BenchError("HB-USR-002", f"run {args.run_id} has already started; phase 1 re-runs under a new run id")
@@ -286,7 +307,10 @@ def cmd_run(args) -> int:
 
 
 def cmd_status(args) -> int:
-    s = status.build(_run_dir(args))
+    run_dir = _run_dir(args)
+    s = status.build(run_dir)
+    if not args.json and (kind := plan.kind_of(plan.load_confirmed(run_dir))) != "measurement":
+        print(f"kind: {kind}")  # a label, not a refusal; bench-status/1 has no kind field
     print(status.to_json(s) if args.json else status.text(s), end="\n" if args.json else "")
     return OK
 
@@ -386,6 +410,32 @@ def _credential_values(root: Path, run_dir: Path) -> set[str]:
     return values
 
 
+def _campaign_input(root: Path, run_dir: Path, view) -> campaign_section.CampaignInput | None:
+    """X-H2's CampaignInput for a plan with a `campaign` block (swap points 1-4); None for any other plan, so a non-campaign report is
+    unchanged (EVU-4). A reader's `BenchError` propagates; no `None` stands in for a failed read."""
+    block = view.plan.get("campaign")
+    if not isinstance(block, dict) or not block.get("campaign_id"):
+        return None
+    cid = campaign.validate_id("campaign", block["campaign_id"])
+    state = campaign.read(root, cid)
+    row = campaign.latest(state, "power.recorded", role="final") if block.get("prereg_hash") is not None else campaign.latest(state, "power.recorded")
+    if row is None:
+        print("campaign section: no power inputs recorded (run bench campaign power).")
+        return None
+    registered = campaign.latest(state, "registered")
+    prereg = campaign.content(root, cid, "prereg", registered["prereg_hash"]) if registered else {}
+    power_inputs = campaign.content(root, cid, "power", row["input_hash"])
+    first = min((r for r in state.rows if r["kind"] == "grid.attached"), key=lambda r: r["seq"], default=None)
+    here = campaign.run_facts(run_dir, view.grading_id)
+    first_facts = None if first is None else here if first["run_id"] == run_dir.name else campaign.run_facts(run_dir.parent / first["run_id"], "")
+    return campaign_section.CampaignInput(
+        state=state, prereg=prereg, power_inputs=power_inputs, power_result=power.analyse(campaign.decimal_view(power_inputs)),
+        eligibility=campaign.eligibility(state, campaign.effective_identity(root, state), here,
+                                         first_facts if first_facts is not None and first_facts.plan_present else None),
+        expected_na=readiness.expected_na(root, list(view.plan["tasks"])),
+        read_disagreements=lambda: readiness.hidden_test_disagreements(run_dir, view.grading_id))
+
+
 def cmd_report(args) -> int:
     run_dir = _run_dir(args)
     root = Path(args.root)
@@ -443,10 +493,11 @@ def cmd_report(args) -> int:
             summaries.generate(kind, run_dir, view, board_obj, backend, operator=operator, secrets=secrets,
                               canaries=egress.CANARIES)
 
+    campaign_obj = _campaign_input(root, run_dir, view)  # None for a plan with no campaign block (EVU-4)
     text, code = cli_table.render(view, plain=_plain(), run_dir=run_dir, root=root, board_obj=board_obj, params=params, comparison_obj=comp_obj)
     if code == OK:
         # html.write's credential scan must run before a label reaches the terminal (residual 5).
-        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator(), board_obj=board_obj, params=params, comparison_obj=comp_obj, canaries=egress.CANARIES)
+        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator(), board_obj=board_obj, params=params, comparison_obj=comp_obj, canaries=egress.CANARIES, campaign_obj=campaign_obj)
         print(text, end="")
         print(f"report: {report_path}")
     else:
@@ -511,9 +562,11 @@ def build_parser() -> argparse.ArgumentParser:
     pl.add_argument("--parallelism", type=int, default=plan.DEFAULT_PARAMETERS["parallelism"])
     pl.add_argument("--decision-timeout-minutes", type=_positive_int, default=plan.DEFAULT_PARAMETERS["decision_timeout"] // 60)
     pl.add_argument("--spend-cap-tokens", type=_positive_int, default=None)
-    pl.add_argument("--pack-source", default=str(root.parent / "ai-forward"), help="the ai-forward clone; its HEAD is pinned")
+    pl.add_argument("--pack-source", default=None, help="a bench-matrix/1 file only: the pack clone whose HEAD is arm 'on' (default: ../ai-forward)")
     pl.add_argument("--confirm", action="store_true", help="write runs/<run_id>/plan.json (frozen)")
     pl.add_argument("--json", action="store_true", help="print the cell list as JSON")
+    pl.add_argument("--campaign", type=_campaign_id, default=None, help="stamp the plan with this campaign's effective run side")
+    pl.add_argument("--arm", action="append", default=[], metavar="ROLE=SOURCE@COMMIT", help="bind a role arm to a pack revision (repeatable)")
     for name, text in (("run", "run a confirmed plan to completion, then grade it"), ("status", "a run's progress (US-20)"),
                        ("stop", "request that a running run stop within 30 seconds"),
                        ("answer", "answer an open decision request (US-15)"),
@@ -552,6 +605,8 @@ def build_parser() -> argparse.ArgumentParser:
         if name == "register":
             sp.add_argument("--prereg", required=True, help="a bench-prereg/1 JSON file")
             sp.add_argument("--confirm", default=None, help="the first 12 hex digits of the statement's hash the preview printed")
+        if name == "status":
+            sp.add_argument("--json", action="store_true", help="bench-campaign-status/1 on stdout")
         if name == "create":
             sp.add_argument("--question", required=True, help="the campaign's question (at most 500 printable characters)")
         if name == "baseline":

@@ -244,7 +244,12 @@ def launch_check(root: Path, plan: dict, *, clock=time.monotonic, sleep=time.sle
     if "campaign" not in plan:
         return None
     expected = dict(plan["campaign"]["identity"]["components"])
-    tasks, builds = tuple(plan["tasks"]), plan.get("builds", {})
+    # R-106 c1: the key set is the stamp's, never the plan's. A subset plan still rechecks every task the chain baselined, and a build is read
+    # from the plan only where the stamp holds it; a stamp build the plan lacks stays in `expected` and diffs as removed (fail closed).
+    tasks = tuple(key.removeprefix("tasks/") for key in expected if key.startswith("tasks/"))
+    plan_builds = plan.get("builds", {})
+    builds = {key.removeprefix("builds/"): plan_builds[key.removeprefix("builds/")]
+              for key in expected if key.startswith("builds/") and key.removeprefix("builds/") in plan_builds}
 
     def check() -> CheckResult:
         deadline = clock() + deadline_s

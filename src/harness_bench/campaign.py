@@ -21,8 +21,10 @@ releases on every path. `_append` is the only function that writes a row.
 
 from __future__ import annotations
 
+import contextvars
 import hashlib
 import json
+import logging
 import os
 import re
 import stat
@@ -51,6 +53,9 @@ from harness_bench import (
 from harness_bench import power as power_model
 from harness_bench.errors import BenchError
 from harness_bench.grade.property import check_segment
+
+log = logging.getLogger("harness_bench.campaign")
+_TRACE: contextvars.ContextVar[dict | None] = contextvars.ContextVar("campaign_trace", default=None)
 
 FIELDS: Mapping[str, Mapping[str, str]] = {  # exact field sets besides kind, campaign_id and the stamp; s=str, i=int, d=dict
     "campaign.created": {"question": "s"},
@@ -734,6 +739,37 @@ def _locked(root: Path, campaign_id: str, others_extra: Sequence[tuple[Path, str
     raise BenchError("HB-CMP-001", f'campaign "{campaign_id}" is being written. Retry in a moment.')
 
 
+def _note(**fields) -> None:
+    """Facts of the running command for its one `campaign.command` record; a phase that did not run is never noted, so it is absent (IO1)."""
+    trace = _TRACE.get()
+    if trace is not None:
+        trace.update(fields)
+
+
+def _ms(started_ns: int) -> int:
+    return max(0, round((time.perf_counter_ns() - started_ns) / 1_000_000))
+
+
+def command(name: str, campaign_id: str, fn):
+    """Run one campaign command and emit its one `campaign.command` record (W1-C section 12): outcome ok, noop or refused, the code of a
+    refusal, the state before and after and the phase timings the command measured. Each command is a thread's own context."""
+    trace: dict = {}
+    token = _TRACE.set(trace)
+    started, code, outcome = time.perf_counter_ns(), None, "ok"
+    try:
+        return fn()
+    except BenchError as exc:
+        code, outcome = exc.code, "refused"
+        raise
+    finally:
+        _TRACE.reset(token)
+        if outcome == "ok":
+            outcome = trace.pop("outcome", "ok")
+        trace.pop("outcome", None)
+        log.info("campaign.command", extra={"command": name, "campaign_id": campaign_id, "outcome": outcome, "code": code, **trace,
+                                            "duration_ms": _ms(started)})
+
+
 @contextmanager
 def session(root: Path, campaign_id: str, *, others_extra: Sequence[tuple[Path, str]] = (), wait_s: float = 0.0,
             create: bool = False, run_locks: bool = False, between=None) -> Iterator[Session]:
@@ -741,24 +777,33 @@ def session(root: Path, campaign_id: str, *, others_extra: Sequence[tuple[Path, 
     close the writer, release. `others_extra` is the command's own extra probe entries (C2: the run locks)."""
     campaign_id = validate_id("campaign", campaign_id)
     _precheck(root, campaign_id, create)
+    waited = time.perf_counter_ns()
     lock = _locked(root, campaign_id, others_extra, wait_s, create, run_locks, between)
+    _note(lock_wait_ms=_ms(waited))
     sess: Session | None = None
     try:
         ledger_file = campaign_dir(root, campaign_id) / "ledger.jsonl"
         state = None
         if ledger_file.exists():
+            checking = time.perf_counter_ns()
             errors = [f for f in verify(root, campaign_id) if f.level == "error"]
+            _note(verify_ms=_ms(checking))
             if errors:
                 raise _refuse_findings(campaign_id, errors)
             state = read(root, campaign_id)
         sess = Session(root, campaign_id, state, lock, [], [])
+        _note(state_before=state.state if state is not None else "none")
         cdir = campaign_dir(root, campaign_id)
+        sweeping = time.perf_counter_ns()
         for folder in (cdir, *[cdir / n for n in _SCHEMAS]):
             swept, skipped = sweep_folder(cdir, folder, lock)
             sess.swept += swept
             sess.skipped += skipped
+        _note(sweep_ms=_ms(sweeping), swept=len(sess.swept))
         yield sess
     finally:
+        if sess is not None and sess.state is not None:
+            _note(state_after=sess.state.state, rows=len(sess.state.rows))
         if sess is not None and sess._writer is not None:
             sess._writer.close()  # one open writer per path per process: close it before the lock goes
         lock.release()
@@ -811,7 +856,7 @@ def create(root: Path, campaign_id: str, question: str) -> str:
             _append(s, "campaign.created", question=question)
             return f'created campaign "{campaign_id}"'
         if s.state.rows[0]["question"] == question:
-            return f'no change: campaign "{campaign_id}" already exists with this question'
+            return _no_change(f'campaign "{campaign_id}" already exists with this question')
     raise BenchError("HB-CMP-002", f'campaign "{campaign_id}" already exists with another question. A new question needs a new campaign id.')
 
 
@@ -821,6 +866,7 @@ def status_text(root: Path, campaign_id: str) -> tuple[str, list[Finding]]:
     findings = verify(root, campaign_id)
     errors = [f for f in findings if f.level == "error"]
     result = "ok" if not errors else f"failed ({len(errors)} findings)"
+    _note(state_before=state.state, state_after=state.state, rows=len(state.rows))
     return f"campaign {campaign_id}: state {state.state}, rows {len(state.rows)}, verify {result}", findings
 
 
@@ -854,6 +900,7 @@ def validate_commit(value: str) -> str:
 
 
 def _no_change(text: str) -> str:
+    _note(outcome="noop")
     return f"no change: {text}"
 
 
@@ -1038,13 +1085,13 @@ def _float_fields(value, path: str = "") -> list[str]:
     return []
 
 
-def _decimal_view(value):
+def decimal_view(value):
     """The inputs as `power.analyse` reads them: the decimal-valued fields as `Decimal` (the file holds them as strings)."""
     if isinstance(value, dict):
-        return {key: Decimal(item) if key in _DECIMALS and isinstance(item, str) and re.fullmatch(r"-?\d+(\.\d+)?", item) else _decimal_view(item)
+        return {key: Decimal(item) if key in _DECIMALS and isinstance(item, str) and re.fullmatch(r"-?\d+(\.\d+)?", item) else decimal_view(item)
                 for key, item in value.items()}
     if isinstance(value, list):
-        return [_decimal_view(item) for item in value]
+        return [decimal_view(item) for item in value]
     return value
 
 
@@ -1078,7 +1125,7 @@ def power(root: Path, campaign_id: str, inputs_file: Path) -> str:
             raise _terminal(state, "power")
         inputs = _power_inputs(Path(inputs_file))
         try:
-            power_model.analyse(_decimal_view(inputs))
+            power_model.analyse(decimal_view(inputs))
             data = ledger.canonical(inputs)
         except BenchError as exc:
             if exc.code != "HB-PWR-001":
@@ -1096,6 +1143,104 @@ def power(root: Path, campaign_id: str, inputs_file: Path) -> str:
         atomic.create_once(folder / f"{digest}.json", data)  # the file first, so a crash before the row is retried by appending the row only
         _append(s, "power.recorded", role=role, input_hash=digest)
         return f"recorded {role} power inputs {digest[:12]}"
+
+
+STATUS_SCHEMA = "bench-campaign-status/1"
+STATUS_KEYS = frozenset({"schema", "campaign_id", "state", "baseline_identity_hash", "effective_run_hash", "effective_grade_hash", "fixes", "power",
+                         "prereg_hash", "pilot_runs", "grid_runs", "excluded_tasks", "next"})
+NEXT_TOKENS = frozenset({"baseline", "pilot", "power", "register", "attach", "wait", "conclude", "none"})
+_NEXT = {"draft": "baseline", "baselined": "pilot", "registered": "attach", "measuring": "conclude", "concluded": "none", "abandoned": "none"}  # piloted: power or register
+_STATES = frozenset({"draft", "baselined", "piloted", "registered", "measuring", "concluded", "abandoned"})
+
+
+def plan_block(root: Path, campaign_id: str, matrix: dict) -> dict:
+    """The `campaign` block of `bench plan --campaign` (W1-C section 5): the chain's effective run side, never a stamp of the working tree.
+    A pilot-ring matrix is `prereg_hash: null` and needs `baselined` or `piloted`; any other needs `registered` or `measuring` and takes
+    the latest `registered` row's hash. A `pack-regression` ring is not a campaign ring. Lock-free."""
+    ring = (matrix.get("ring") or {}).get("tag")
+    if ring == "pack-regression":
+        raise BenchError("HB-CMP-010", "ring pack-regression is not a campaign ring. Plan it without --campaign.")
+    state = read(root, campaign_id)
+    pilot = ring == "pilot"
+    if state.state not in (("baselined", "piloted") if pilot else ("registered", "measuring")):
+        raise _terminal(state, "plan --campaign")
+    run = identity.side(effective_identity(root, state), "run")
+    prereg = None if pilot else latest(state, "registered")["prereg_hash"]
+    return {"campaign_id": campaign_id, "prereg_hash": prereg, "identity": {"hash": identity.identity_hash(run), "components": run["components"]}}
+
+
+def verify_for_plan(root: Path, plan_doc: dict) -> str:
+    """The after-grading hook's read (item 15): lock-free, writes nothing. `campaign verify: ok (<n> rows)`, or `campaign verify: not run
+    (HB-CMP-005)` for an unknown campaign; HB-CMP-003 with the first finding otherwise. "Not verified", never "verified"."""
+    cid = validate_id("campaign", plan_doc["campaign"]["campaign_id"])
+    try:
+        errors = [f for f in verify(root, cid) if f.level == "error"]
+        rows = len(read(root, cid).rows)
+    except BenchError as exc:
+        if exc.code == "HB-CMP-005":
+            return "campaign verify: not run (HB-CMP-005)"
+        raise
+    if errors:
+        first = errors[0]
+        raise BenchError("HB-CMP-003", f'campaign "{cid}" failed verify at {first.path}: {first.detail}. Restore the record with git or abandon the campaign.')
+    return f"campaign verify: ok ({rows} rows)"
+
+
+def status_doc(root: Path, campaign_id: str) -> dict:
+    """The `bench-campaign-status/1` document of a campaign (lock-free; no free text: the question and every reason stay out, B2)."""
+    state = read(root, campaign_id)
+    base = latest(state, "baseline.recorded")
+    effective = effective_identity(root, state) if base is not None else None
+    final, prior = latest(state, "power.recorded", role="final"), latest(state, "power.recorded", role="prior")
+    registered = latest(state, "registered")
+    reset = max((r["seq"] for r in state.rows if r["kind"] in ("baseline.recorded", "defect_fix.admitted")), default=0)
+    token = _NEXT.get(state.state) or ("register" if final is not None and final["seq"] > reset else "power")
+    decided: dict[str, int] = {}
+    for row in state.rows:
+        if row["kind"] == "admission.decided":
+            decided[row["task"]] = row["admitted"]
+    return {"schema": STATUS_SCHEMA, "campaign_id": campaign_id, "state": state.state,
+            "baseline_identity_hash": base["identity_hash"] if base else None,
+            "effective_run_hash": identity.identity_hash(identity.side(effective, "run")) if effective else None,
+            "effective_grade_hash": identity.identity_hash(identity.side(effective, "grade")) if effective else None,
+            "fixes": [{"defect_class": r["defect_class"], "commit": r["commit"], "scope": r["scope"]}
+                      for r in state.rows if r["kind"] == "defect_fix.admitted"],
+            "power": {"prior": prior["input_hash"] if prior else None, "final": final["input_hash"] if final else None},
+            "prereg_hash": registered["prereg_hash"] if registered else None,
+            "pilot_runs": list(dict.fromkeys(r["run_id"] for r in state.rows if r["kind"] == "ring_run.attached")),
+            "grid_runs": list(dict.fromkeys(r["run_id"] for r in state.rows if r["kind"] == "grid.attached")),
+            "excluded_tasks": sorted(task for task, admitted in decided.items() if admitted == 0), "next": token}
+
+
+def to_json(doc: dict) -> str:
+    return json.dumps(doc, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+
+
+def parse_status(text: str) -> dict:
+    """A `bench-campaign-status/1` document, validated strictly (ValueError on any deviation), as `status.parse` is."""
+    doc = json.loads(text)
+
+    def need(ok: bool, what: str) -> None:
+        if not ok:
+            raise ValueError(f"{STATUS_SCHEMA}: {what}")
+
+    def digest(value) -> bool:
+        return value is None or (isinstance(value, str) and bool(re.fullmatch(r"[0-9a-f]{64}", value)))
+
+    def ids(value) -> bool:
+        return isinstance(value, list) and all(isinstance(v, str) and bool(re.fullmatch(status.RUN_ID, v)) for v in value)
+
+    need(isinstance(doc, dict) and set(doc) == STATUS_KEYS, f"fields differ from {sorted(STATUS_KEYS)}")
+    need(doc["schema"] == STATUS_SCHEMA, f"schema must be {STATUS_SCHEMA}")
+    need(isinstance(doc["campaign_id"], str) and bool(re.fullmatch(CAMPAIGN_ID, doc["campaign_id"])), "campaign_id is malformed")
+    need(doc["state"] in _STATES, "state is not a known value")
+    need(all(digest(doc[k]) for k in ("baseline_identity_hash", "effective_run_hash", "effective_grade_hash", "prereg_hash")), "a hash is malformed")
+    need(isinstance(doc["power"], dict) and set(doc["power"]) == {"prior", "final"} and all(digest(v) for v in doc["power"].values()), "power is malformed")
+    need(isinstance(doc["fixes"], list) and all(isinstance(f, dict) and set(f) == {"defect_class", "commit", "scope"}
+                                                and all(isinstance(v, str) for v in f.values()) for f in doc["fixes"]), "fixes are malformed")
+    need(all(ids(doc[k]) for k in ("pilot_runs", "grid_runs", "excluded_tasks")), "a run or task list is malformed")
+    need(doc["next"] in NEXT_TOKENS, "next is not a known token")
+    return doc
 
 
 def _tree_run_diff(root: Path, effective: Mapping, plan_doc: dict) -> list[str]:
@@ -1142,6 +1287,9 @@ def check_plan(root: Path, state: CampaignState, plan_doc: dict, run_id: str, *,
         where = ", ".join(identity.diff(wanted, {"schema": effective["schema"], "components": components})) or "its hash"
         raise BenchError("HB-CMP-010", f"plan.campaign.identity {stamped['hash'][:12]} is not the effective run-side identity {chain[:12]}; "
                                       f"differs at {where}. Plan again.")
+    if tree and (outside := [t for t in sorted(plan_doc.get("tasks") or {}) if t not in _tasks_of(effective)]):  # R-106 c2
+        raise BenchError("HB-CMP-010", f'plan task "{outside[0]}" is not in the effective identity. '
+                                      "Baseline it (bench campaign baseline --tasks) or plan without it.")
     if tree and (drift := _tree_run_diff(root, effective, plan_doc)):
         raise BenchError("HB-CMP-010", f"the working tree differs from the effective run side at {', '.join(drift)}. Record a fix or restore the files.")
     if grid:
@@ -1432,7 +1580,7 @@ def _preview(root: Path, state: CampaignState, statement: dict, digest: str, pre
     if final is None:
         lines.append("no final power recorded; min_pairs is not compared with a required n. Run bench campaign power in state piloted.")
     else:
-        results = power_model.analyse(_decimal_view(content(root, state.campaign_id, "power", final["input_hash"])))
+        results = power_model.analyse(decimal_view(content(root, state.campaign_id, "power", final["input_hash"])))
         for prop, result in sorted(results.items()):
             for row in result.required_pairs:
                 if statement["min_pairs"] < row["n"]:

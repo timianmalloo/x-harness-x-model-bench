@@ -233,7 +233,10 @@ def run_pass(run_dir: Path, root: Path, judging: Mapping[str, GraderFn] | None =
     block = plan.get("campaign")
     others = [(campaign.lock_path(root, campaign.validate_id("campaign", block["campaign_id"])), "HB-GRD-007")] if isinstance(block, dict) and block.get("campaign_id") else []
     with oslock.acquire_then_probe(run_dir / "grade.lock", "HB-GRD-001", others):
-        return _Pass(run_dir, root, plan, judging or {}, live_scan, grading_root).run()
+        result = _Pass(run_dir, root, plan, judging or {}, live_scan, grading_root).run()
+    if others:  # a campaign plan: after the pass and with grade.lock released, read the campaign (lock-free); a raise leaves the pass done
+        print(campaign.verify_for_plan(root, plan))
+    return result
 
 
 class _Pass:

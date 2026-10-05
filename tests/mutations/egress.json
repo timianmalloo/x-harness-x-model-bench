@@ -572,8 +572,8 @@
  {
   "name": "R-80 c3: cmd_report drops the production canaries",
   "file": "src/harness_bench/cli.py",
-  "find": "comparison_obj=comp_obj, canaries=egress.CANARIES)",
-  "replace": "comparison_obj=comp_obj, canaries=())",
+  "find": "comparison_obj=comp_obj, canaries=egress.CANARIES, campaign_obj=campaign_obj)",
+  "replace": "comparison_obj=comp_obj, canaries=(), campaign_obj=campaign_obj)",
   "tests": [
    "tests/test_injection_and_publication.py::test_bench_report_scans_every_section_for_the_production_canary_set"
   ]
