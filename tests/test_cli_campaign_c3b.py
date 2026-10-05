@@ -23,9 +23,10 @@ from test_cli_campaign import (
     write_plan,
     write_text,
 )
+from test_cli import _pack_repo
 from test_tools import _fake_tree
 
-from harness_bench import identity
+from harness_bench import gitsafe, identity
 
 MATRIX = {"schema": "bench-matrix/2", "ring": {"tag": "comparison"}, "bom": {"file": "bench/bom.yaml", "subset": ["T1"]}, "repetitions": 1,
           "arms": [{"id": "off"}, {"id": "treat"}], "comparisons": [["off", "treat"]],
@@ -42,10 +43,18 @@ def cli_args(root: Path, tmp_path: Path) -> list[str]:
     return ["--root", str(root), "--cells-root", str(tmp_path / "cells"), "--tools-dir", str(tmp_path / "tools")]
 
 
-def plan_campaign(root: Path, tmp_path: Path, run_id: str, *extra: str) -> int:
+def pack_commit(tmp_path: Path) -> str:
+    """A real pack clone, made once per test: the matrix's treat arm is bound to its HEAD, and the registered statement names that commit."""
+    folder = tmp_path / "ai-forward"
+    return _pack_repo(folder) if not folder.exists() else gitsafe.git(["rev-parse", "HEAD"], cwd=folder, timeout=60).stdout.strip()
+
+
+def plan_campaign(root: Path, tmp_path: Path, run_id: str, *extra: str, matrix: Path | None = None) -> int:
     from test_cli_campaign import cli_rc
 
-    return cli_rc([*cli_args(root, tmp_path), "plan", "--campaign", CID, "--matrix", str(matrix_file(tmp_path)), "--run-id", run_id, *extra])
+    binding = f"treat={tmp_path / 'ai-forward'}@{pack_commit(tmp_path)}"
+    return cli_rc([*cli_args(root, tmp_path), "plan", "--campaign", CID, "--matrix", str(matrix or matrix_file(tmp_path)), "--arm", binding,
+                   "--run-id", run_id, *extra])
 
 
 def baseline_two_tasks(root: Path) -> None:
@@ -59,7 +68,7 @@ def test_a_campaign_plan_from_the_chain_launches_past_the_identity_check(tmp_pat
     root = tree(tmp_path)
     _fake_tree(tmp_path / "tools")  # real builds, resolved from a tools dir
     baseline_two_tasks(root)
-    registered(root)  # the register walk is C-33's; the three commands under test follow it
+    registered(root, pack_commit(tmp_path))  # the register walk is C-33's; the three commands under test follow it
     assert plan_campaign(root, tmp_path, "C1", "--confirm") == 0, capsys.readouterr().err  # a subset: T1 of the baselined T1 and T2
     plan_doc = json.loads((root / "runs" / "C1" / "plan.json").read_text(encoding="utf-8"))
     assert sorted(plan_doc["tasks"]) == ["T1"] and plan_doc["builds"]["claude-code"]["version"] == "0.3.274"
@@ -81,7 +90,7 @@ def test_the_three_refusals_of_a_drifted_tree_still_fire_p4(tmp_path, monkeypatc
     root = tree(tmp_path)
     _fake_tree(tmp_path / "tools")
     baseline_two_tasks(root)
-    digest = registered(root)
+    digest = registered(root, pack_commit(tmp_path))
     edit_src(root, "engine.py")  # the tree drifts after the baseline
     capsys.readouterr()
     assert plan_campaign(root, tmp_path, "D1", "--confirm") == 1  # leg 1: plan time
