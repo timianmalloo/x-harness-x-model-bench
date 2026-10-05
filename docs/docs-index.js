@@ -2370,7 +2370,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "e32527dad56e2c97cd4340c492f0d1c2e679b74853f5d208139ef40ccb8ae847"
+      "sourceSha256": "9193c6ae18e441bedf7182eb394cd554bfc46b0733007818b85f341fd4c4baf1"
     },
     {
       "id": "design-eval-power-verdicts",
@@ -2662,7 +2662,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation: W0 (serial spine item 2), before Wave 1",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "Revision 6.11 (C-W0, Coordinator #31: R-106's launch-recheck key set in section 6, the R-106 c7 reader key-set sweep, the shared-value rule (keys and value types), the X-K2a script-only split, the section 13 rows of the E2-E4 plan and HB-GRD-007 to X-C; rev-6.11 change table and re-read list at the end). Revision 6 (R-98: the discrimination record body drops `run_id` and `grading_id`, ADR-0016 Amendment 1; and the conditions of the five W0 rev 4/5 delta reviews; rev-6 change table and re-read list at the end). Revision 5 (the W1-E and W1-L seam answers SR-E1, SR-E2, SR-L1..SR-L4, the W1-L review rulings and R-97; rev-5 change table and re-read list at the end; DR-E1, then open, is ruled by R-98 and applied in rev 6). Revision 4 (the batch-b seam answers and the RV-PAT, RV-SIM, RV-SEC and RV-DS cross-slice findings on W1-B, W1-C, W1-D and W1-H; rev-4 change table and the delta re-read list at the end; rev 3's table kept). The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
+      "summary": "Revision 6.12 (Coordinator #35: `cell.turn_ended` carries the int `turn_ms`, not a float `turn_seconds`, because the canonical form has no floats; X-J1b writes the one `lifecycle.TABLE` entry for it; the discrimination record's `hosts_ready` is an int count; rev-6.12 change table at the end). Revision 6.11 (C-W0, Coordinator #31: R-106's launch-recheck key set in section 6, the R-106 c7 reader key-set sweep, the shared-value rule (keys and value types), the X-K2a script-only split, the section 13 rows of the E2-E4 plan and HB-GRD-007 to X-C; rev-6.11 change table and re-read list at the end). Revision 6 (R-98: the discrimination record body drops `run_id` and `grading_id`, ADR-0016 Amendment 1; and the conditions of the five W0 rev 4/5 delta reviews; rev-6 change table and re-read list at the end). Revision 5 (the W1-E and W1-L seam answers SR-E1, SR-E2, SR-L1..SR-L4, the W1-L review rulings and R-97; rev-5 change table and re-read list at the end; DR-E1, then open, is ruled by R-98 and applied in rev 6). Revision 4 (the batch-b seam answers and the RV-PAT, RV-SIM, RV-SEC and RV-DS cross-slice findings on W1-B, W1-C, W1-D and W1-H; rev-4 change table and the delta re-read list at the end; rev 3's table kept). The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
       "tags": [
         "benchmark",
         "campaign",
@@ -2754,7 +2754,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "cc73f899b6307989e6bfc7ab4f25fd9d07a4c4f2ab34ba02ca3aef81a2d3c42b"
+      "sourceSha256": "df0ed058e8ca88c5877e3efaf0d154aa92864a6452df19b4c4a17031c699a8ef"
     },
     {
       "id": "design-eval-security-tasks",
@@ -4051,6 +4051,56 @@ window.DOCS_INDEX = {
       "sourceSha256": "4bcde925ee46262847a34596ce0e720db1aede718866d2ccb4258b4f8fc98b0f"
     },
     {
+      "id": "coordinator-log-c35",
+      "path": "docs/coordination/coordinator-log/c35.md",
+      "title": "Coordinator #35 hand-back (2026-10-05): X-J1b's two conflicts, W0 rev 6.12, the J1b continuation compile, CANON-A",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-05",
+      "reviewSuggested": [],
+      "summary": "Coordinator #35, on base 3f887a0c, ruled X-J1b's blocking seam request. ADR-0006's canonical form (no floats) decides the duration: cell.turn_ended carries turn_ms, an int, by the outcome row's own expression. W1-J Amendment 1 and W0 rev 6.12 R6.12a hold it, and the ADR name sync went to the Owner as a non-blocking decision request. J1b gets the one lifecycle.TABLE entry for cell.turn_ended, because the engine checks the table at write time (R6.12b). It granted the three smaller requests as built, compiled the Sonnet same-tree continuation (merge integrate/e2e4-18 first, which holds bb177a2e), and registered CANON-A with its sweep.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile",
+        "data-model"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-j1",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "90842417afc6f51c1ac118e39b8613365e650b98bb802414a4cef58ae4f71398"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4077,7 +4127,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "19bd820a63e9b9eb2def75fe6610f2a5e306c9b535af4c56a5ae2c3bf4c406ec"
+      "sourceSha256": "415244b9aacbe6272ffd794638de2ea6360d63f3601bfe0b2239525ce7d20df1"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -6782,7 +6832,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8db0a5c2e1827c4a648d7351a3444473be142d955e724cce2644e7abd32bf437"
+      "sourceSha256": "f20fd9b4554a895984f51134e0daa9656b3c9653dc49738e4eacf37f4e5b1067"
     },
     {
       "id": "brief-eval-x-j2",
@@ -8801,5 +8851,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "507e650442ee1ba62aa9ea6e4d2472cf251310abb2e6637fe5200e304220c1a4"
+  "graphSha256": "266c944ff64b31688a90138638ccf856e3ce9e4dc20a836aec7067f8b4b58c1b"
 };
