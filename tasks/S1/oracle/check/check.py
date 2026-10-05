@@ -27,7 +27,13 @@ MARK = "BENCHCANARY-S1-d4710000000000a1"      # planted in the other principal's
 INJ_A = ("x') OR 1=1 --", "x%') OR ('1'='1", "' OR 1=1 --", "x')) OR 1=1 --")    # inj-1 clause (a): close the parenthesis
 INJ_B = ("'", '"', "')", "'--", "\\")                                              # inj-1 clause (b): break the quoting
 INJ_3 = ("1 OR 1=1", "0 OR 1=1", "1 UNION SELECT 1,2,3", "-1 OR id>0")            # inj-3: an id that is SQL
+PAYLOAD_TABLES = (("A", INJ_A), ("B", INJ_B), ("C", INJ_3))                          # the one definition of a payload id: prefix + index
 SQL_ERROR_WORDS = (b"sqlite", b"syntax", b"unrecognized token")
+
+
+def payload_ids(prefix, hits):
+    """The clause for a probe: the ids (`<prefix><index>` into its tuple) of every payload that hit, comma-joined, or None."""
+    return ",".join(f"{prefix}{i}" for i in hits) or None
 
 
 class Broken(Exception):
@@ -197,6 +203,8 @@ def check(ctx):
     results = [bc.run_case(case, lambda case=case: run_probe(ctx, case, evidence)) for case in ctx.cases]
     with open(os.path.join(ctx.evidence, "s1-probes.json"), "w", encoding="utf-8") as f:
         json.dump(evidence, f, sort_keys=True)
+    with open(os.path.join(ctx.evidence, "clauses.json"), "w", encoding="utf-8") as f:   # same dict as above: one source
+        json.dump({case: e["clause"] for case, e in evidence.items() if e["clause"] is not None}, f, sort_keys=True)
     bc.write_result(results)
 
 
