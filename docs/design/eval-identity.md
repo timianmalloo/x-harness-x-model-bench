@@ -13,9 +13,11 @@ links:
   - { to: adr-0016-campaign-record, rel: depends-on }
   - { to: adr-0021-plan-level-resume-and-liveness, rel: depends-on }
   - { to: design-eval-seam-contracts, rel: depends-on }
+  - { to: rulings-register, rel: depends-on }
 review-by: "2026-10-17"
 summary: >-
-  Designs identity.py (manifest, hash, side, diff, the one CLASSES table), the per-launch run-side recheck in engine.py
+  Amendment 1 (R-106, 2026-10-05): the launch recheck's key set is the plan stamp's; builds/<h> is read only where the
+  stamp holds it. Designs identity.py (manifest, hash, side, diff, the one CLASSES table), the per-launch run-side recheck in engine.py
   with identity_check_ms, grading.started.grade_identity_hash (E1), and the guards. Rev 2 applies R-94 (telemetry/* run,
   gateway grade; ADR-0017 Amendment 1) and the four first-round reviews: a real-wiring test, red fixtures for every
   scan, one retry mechanism with a wall-clock cap, and a cost model that prices run-class edits. All 69 existing files
@@ -25,6 +27,8 @@ summary: >-
 # W1-D: engine identity, freeze and per-launch recheck (revision 2)
 
 Evidence labels: **V** verified (opened or run this session), **I** inferred, **A** `assume:`. Base of every count: `84980979` (main merged into this branch; W0 rev 3, R-87..R-96).
+
+- **Amended (2026-10-05, ruling R-106 / DR-14; W0 rev 6.11 section 6, R6.11a):** the launch recheck's key set is derived from the plan's stamp, not from the plan's tasks and builds; `builds/<h>` is read only where the stamp holds it. See "16. Amendment 1" below. Sections 3.1 and 5 are not rewritten.
 
 ## 0. Rulings (the items routed to this slice)
 
@@ -285,6 +289,18 @@ Mutation files: `tests/mutations/engine.json`, `cli.json` and `identity.json` ca
 ## 15. ADR-0017 Amendment 1
 
 Written on this branch in ADR-0006's form (a header bullet plus an "Amendment 1" section; s1's body is not rewritten) and landing with this slice's gate merge (R-94). It restates the s1 list with `telemetry/*` under run and `gateway` under grade, gives the reason with the cell-end read cited, records the accepted cost (a telemetry fix is `scope: run`) and records this as the first review of the "load-bearing" follow-up. Tests that pin it: T-3, T-4, T-12d.
+
+## 16. Amendment 1 (2026-10-05, ruling R-106 / DR-14; W0 rev 6.11 section 6)
+
+Written by the Coordinator (`coord-opus-e1e4`, hand-back session #31) in ADR-0006's form, as R-106 condition 4 asks: this section is appended, sections 3.1 and 5 above are not rewritten, and where they differ this section governs. Documentation only: no X-D code and no X-D dispatch (R-106 condition 4).
+
+- **What changes.** Section 3.1 says "`builds` is `plan["builds"]`", and section 5 "What is rechecked" says `builds/<h>` "is taken from the plan, so inside `launch_check` it compares the plan with itself". As X-D built it, `launch_check` took `tasks` from `plan["tasks"]` and `builds` from `plan["builds"]` (the old `identity.py:247`, R-106's facts). R-106 (c) replaces both, quoted: "The key set of the launch recheck is **derived from the plan's stamp**, never restated from the plan's tasks or builds. `launch_check` reads `tasks/<id>` for exactly the `tasks/<id>` keys of `plan.campaign.identity.components`, and `builds/<h>` only for the `builds/<h>` keys the stamp holds, taking each record from `plan.builds[h]`; a stamp build key with no plan build is a diff item (fail closed)."
+- **Why.** `campaign.baseline` records no `builds/*` key, and the stamp holds every task the chain baselined. So a key set taken from the plan made every chain-stamped plan stop at its first tick (`builds/<h> added`; a subset plan: `tasks/<id> removed`; R-106's probe on `e15abd48`). Section 5's intent, "reads the plan's effective stamp" (its RV-PAT 2 row), was right; the key set as built was not.
+- **What is rechecked, restated.** Every run-side component the stamp holds: the run-class `src/` files, `bom`, `uv.lock`, `profiles/<h>`, `platform`, `python`, and every `tasks/<id>` the campaign baselined. That is a superset of a subset plan's tasks, so a drift in an unplanned task still stops the launch. A run-side key the tree has and the stamp lacks (a new run-class file) is "added" and stops the launch. `builds/<h>` is compared only for a key the stamp holds; today no stamp holds one (`baseline` passes `builds=None`). **A changed build still stops**, per cell, as `Cause.build_changed` through `launcher.check_build()` at the cell's start (section 5's operator table, unchanged).
+- **As landed.** X-C turn C3b wrote the hunk as arbiter (R-106 condition 1): `identity.py:246-251` on `37ec0585`, with a comment citing R-106 c1. The cross-owner launch test is `tests/test_cli_campaign_c3b.py::test_a_campaign_plan_from_the_chain_launches_past_the_identity_check` (R-106 c3; INT-A's control).
+- **No stored shape changes** (R-106 condition 5): `baseline.recorded`, `identity/<h>.json`, `plan.campaign.identity` and every HB code are unchanged; a plan stamped before R-106 launches under it unchanged.
+- **The sibling sweep** (R-106 condition 7) is in W0 rev 6.11 section 6: ten readers of the stamp and of the effective identity, each with its key set. Two differences, both in `campaign._tree_run_diff`: an added run-side key is not named at `attach` (F-1, which then fails closed at launch), and a stamp build key the plan lacks is skipped (F-2, latent). They are W0 findings, routed to a `campaign.py` loop-back fix; nothing in this section changes for them.
+- **What reverses it:** R-106's own reversal conditions (a campaign that freezes an executable in its identity, by a new ruling; a measured false HB-IDN-001 stop on the R-106 c3 test; the per-cell `check_build` path removed or weakened).
 
 ## Review disposition
 

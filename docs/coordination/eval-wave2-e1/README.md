@@ -16,7 +16,7 @@ summary: >-
   The rules every E1 build worker follows, the routing of the fourteen E1 items to harness and pinned model (R-87,
   R-88 confirmed to Codex, R-91, R-92), the real dependency DAG, the launch order by critical path, the dispatch
   shape per track (one external turn red and green, or a Sonnet follow-on), and one brief per item. Nine briefs
-  are written; five wait on designs that have not passed their gate. Part 2 (W0 rev 6, Coordinator session #6): the X-C, X-H1, X-H2, X-E and X-INT briefs, TOOL-GSM-B, the rev-6 alignment of part 1, the external compilations, the Grok transport finding, and the DAG and launch order as of 2026-10-03 evening.
+  are written; five wait on designs that have not passed their gate. Part 2 (W0 rev 6, Coordinator session #6): the X-C, X-H1, X-H2, X-E and X-INT briefs, TOOL-GSM-B, the rev-6 alignment of part 1, the external compilations, the Grok transport finding, and the DAG and launch order as of 2026-10-03 evening. Coordinator #31 (C-W0, 2026-10-05): section 3 is now the worker gate every E1-E4 brief inherits (the eight-file guard list on the skeleton and final commits, own mutation file only, never --touched; the whole suite is the Leader's, R-104), and section 2 carries RED-C and "green on arrival" (GUARD-A's control).
 ---
 
 # Wave 2 E1 dispatch pack
@@ -31,13 +31,17 @@ You were given a brief in this folder. Read this file, then your brief, then the
 1. `python docs/ai-forward-pack/scripts/audit-log.py start --session <your session> --skill implement`.
 2. **Prefix every `git commit` and every coord call inline:** `AGENT_SESSION=<your session> git commit …` (class COORD-D: an `export` does not survive to the next tool call).
 3. If your cwd is not your brief's tree: from the primary run `python $C worktree new --branch <your branch> --session <your session>` and use absolute paths into the printed tree. Never `coord install`, never `EnterWorktree`, never `checkout`/`switch` in the primary.
-4. In the tree: `python $C doctor`. Check W0 rev 6 is in your base: `git log --oneline -1 --grep "W0 seam contracts rev 6"` prints a commit. If not, stop: "W0 rev 6 not on main". Then read W0's *Revision 6 change table* and its re-read row for your track.
+4. In the tree: `python $C doctor`. Check W0 rev 6 is in your base: `git log --oneline -1 --grep "W0 seam contracts rev 6"` prints a commit. If not, stop: "W0 rev 6 not on main". Then read W0's *Revision 6 change table* and its re-read row for your track. **An E2-E4 track also checks W0 rev 6.11** (`git log --oneline -1 --grep "W0 seam contracts rev 6.11"` prints a commit; if not, stop: "W0 rev 6.11 not in base") and reads its *Revision 6.11 change table* and *Who re-reads what (rev 6.11)* row.
 5. Check every item of your brief's **Depends on** is on `main` (`git log --oneline main -- <path>`). If one is missing, stop and report which.
 
 ## 2. While working
 - **Owned paths only** (your brief's list; the hub-file owner per W0 §13). A line in another owner's file is a seam request: `python $C request add --to coord-opus-e1e4 --deadline default --fallback "<what you do meanwhile>" "<ask>"`.
 - **A request never parks you (rev 6.4, after X-D1).** The Coordinator runs as hand-back sessions, so a request may wait an hour. Your `--fallback` is the option you recommend, stated so it reaches green ("build the scans in `tests/import_graph.py`", never "keep it pending"). Build it in its own commit (also when it is the exact lines the request names in another owner's file), put the request id in the message, and finish the turn green. The join holds that branch until the request is resolved; if the ruling differs, the follow-on reverts that one commit. Stop red only when the fallback would change another track's behaviour, not just its lines.
-- **Red first, observed.** Each behaviour lands as a red commit whose tests fail **on an assertion** (never `ImportError`/`AttributeError`/`NameError`: land a skeleton with final signatures and neutral wrong values first), then a green commit. Record in your report, per red commit: SHA, test node, the failing assertion line. The Wave 1 *Testability floor* (`docs/coordination/eval-wave1/README.md` §2a: failing assertion, red fixture for every guard, real-wiring test beside every fake, a mutant per adjacent rule pair, allowlists checked against the tree) applies to every test you write.
+- **Red first, observed.** Each behaviour lands as a red commit whose tests fail **on an assertion** (never `ImportError`/`AttributeError`/`NameError`/`KeyError`: land a skeleton with final signatures and neutral wrong values first), then a green commit. Record in your report, per red commit: SHA, test node, the failing assertion line.
+- **RED-C: a skeleton's neutral values must fail by assertion (class TEST-B shape (a), X-C3b).** Choose neutral values that the test's lookups can use, so the red fails on the assertion and not on a lookup: a `{}` or `""` that makes the test raise `KeyError` before its `assert` is not a red. The Leader re-runs at least one red SHA per track at the join and refuses a red whose failure is `KeyError`, `AttributeError`, `ImportError` or `NameError`.
+- **Green on arrival.** A named test that already passes on your base, before your change, is recorded in your report as "green on arrival" with the SHA it passed on. Never fake a red: do not edit the test, the code or a fixture to make it fail first.
+- **The standard guard list, on the skeleton commit and on the final commit (class GUARD-A; scope rule 4 of `docs/coordination/coordination-e2e4.md`).** Eight repo-wide guard files read every module, so a new module, a moved call or a new literal can turn them red in another track's file. Run all eight **on your skeleton commit, before your first red, and again on your final commit**; once is not enough (a later `src/` edit tripped them in X-C3b). The list is in §3. Widening a guard reddens other tracks at the join; narrowing it stays green. A guard that needs a line in another owner's file is a seam request (the granted exceptions: your own `TIMING_ALLOWED` entry; your own `identity.PLANNED` key, R6.10a; your own entry in T-E19's stored-plan reader set).
+- **Mutations on your own file only, never `--touched`.** You run `uv run python tools/mutate_check.py tests/mutations/<your module>.json` for each mutation file you own, and nothing wider. `--touched` runs other tracks' mutants against your tree and is the Leader's, once per batch, with `HB_REQUIRE_DOTNET=1`. If your edit moves another file's mutant `find` text, you retarget that find and name it in your report (MUT-E; `tests/test_mutate_check.py` in the guard list catches it). The Wave 1 *Testability floor* (`docs/coordination/eval-wave1/README.md` §2a: failing assertion, red fixture for every guard, real-wiring test beside every fake, a mutant per adjacent rule pair, allowlists checked against the tree) applies to every test you write.
 - **Commit named paths** (`git add <path>…`; never `-A`, `.` or `-a`). Each message ends with your model's `Co-Authored-By` line.
 - **Shell shape (CT27).** A gate's exit status is never behind a pipe; a multi-line program is a file, then a run (no heredoc into Python).
 - **No guessing.** Open it, run it, or write an inline `assume:` (belief, what confirms it, what breaks if false).
@@ -47,19 +51,29 @@ You were given a brief in this folder. Read this file, then your brief, then the
 - **Defect classes** you find go to the Coordinator as text in your report; `docs/lessons/defect-classes.md` is Coordinator-owned.
 - **Budget.** At 85 % of your brief's budget: commit, stop, report what remains. A budget firing is a defect signal (GO9).
 
-## 3. The join gate (every track; run in your tree on your final commit, each on its own line)
+## 3. The worker gate (every track; run in your tree, each command on its own line, its exit status read from that line)
+**Rev 2026-10-05 (C-W0, Coordinator #31; R-104, GUARD-A, RED-C).** This replaces the earlier gate (the full suite and `mutate_check --touched main` in every worker tree). **The whole suite is the Leader's**, once per batch with every ring and `HB_REQUIRE_DOTNET=1` (R-104); a worker never runs it as its gate, and never runs `--touched`.
+
+**1. The standard guard list: on your skeleton commit (before your first red) and again on your final commit.** All eight files, every time; your brief may add files, never remove one:
+```
+uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py
+```
+Record both runs in your report (SHA, exit status, pass count). A red guard on the skeleton is fixed before red; a red guard on the final commit is fixed before you report green.
+
+**2. On your final commit:**
 ```
 uv run ruff check src tests tools
-env -u HB_CLAUDE_OAUTH_TOKEN uv run pytest -q          # the full non-credential suite; PowerShell: Remove-Item Env:HB_CLAUDE_OAUTH_TOKEN -ErrorAction SilentlyContinue; uv run pytest -q
-uv run python tools/mutate_check.py --touched main     # every mutant killed, or a recorded reason per survivor
+uv run pytest -q <your brief's own named test files>
+uv run python tools/mutate_check.py tests/mutations/<your module>.json
 python docs/ai-forward-pack/scripts/docs-graph.py validate
 ```
+The second line names your own test files only (each node id is `<file>::<name>` from that one file, TEST-E). The third runs once per mutation file you own, never `--touched`: every mutant killed, or a recorded reason per survivor. Each red commit fails on an assertion (RED-C, §2); a test that already passed on your base is reported "green on arrival" (§2). Then read your served model back and record it (§4).
 A track that touches `grade/`: the gate ring and stamp renewal, once per batch (the Leader). **Grok joins (R-92 condition 1):** `python tools/grok_served_model.py <the dispatch's session dir>` exits 0, and its output goes in the plan's Tracks row; a non-zero exit pauses Grok dispatch and the Coordinator raises a request. **R-103 (fail-fast, before the join):** the first assistant row's `model_id` is read within 120 s of `run` (by hand until TOOL-GSM-FIRST lands, then `python tools/grok_served_model.py --first --wait 120 …`); a non-`grok-4.7*` id kills the turn at once, it is retried once with the next contract suffix, a second drift sends that turn to Sonnet, and two consecutive exhausted retries pause Grok for E1. **On a deadline-killed session** the reader exits 2 "not recorded" today (`usage.json` is written only at a clean end; class OBS-A); until TOOL-GSM-B joins, the Leader reads the assistant rows' model ids in `chat_history.jsonl` and records that source in the Tracks row. **Codex and Agy joins:** the served model is read from the native record (Codex `~/.codex/sessions/…/rollout-*.jsonl` `model`; Agy `cli.log` model resolution), as Q0 did. The Coordinator re-runs at least one red SHA per track at the join.
 
 **Open requests at every join (rev 6.4, class COORD-B second instance; the Leader).** Before each join and before each dispatch batch, the Leader runs `python $C request list` (open is the default). Any request to `coord-opus-e1e4` that is open → the Leader spawns a Coordinator hand-back session with those ids as its first item, before the batch. A branch whose commits name an open request id is not merged until it is resolved. X-D1's two requests went 25-32 min overdue with no Coordinator live; this is the control.
 
 ## 4. Report (final message, at most 12 lines)
-Served model id (first line, R-91 c1) · branch and SHAs (red, green) · per red commit: node and failing assertion · join-gate results (each command's exit status, read from its own line) · acceptance items met / not met · seam requests raised · defect-class text · budget used (calls, tokens, wall) against the brief · what remains.
+Served model id (first line, R-91 c1) · branch and SHAs (red, green) · per red commit: node and failing assertion · tests "green on arrival", with the SHA · worker-gate results: the guard list on the skeleton and on the final commit, then each §3 command's exit status, read from its own line · acceptance items met / not met · seam requests raised · defect-class text · budget used (calls, tokens, wall) against the brief · what remains.
 
 ## 5. Routing (harness and pinned model, never a default)
 
