@@ -24,15 +24,22 @@ def quote(text, safe=""):
 
 
 MARK = "BENCHCANARY-S1-d4710000000000a1"      # planted in the other principal's note; the only canary this file owns
-INJ_A = ("x') OR 1=1 --", "x%') OR ('1'='1", "' OR 1=1 --", "x')) OR 1=1 --")    # inj-1 clause (a): close the parenthesis
-INJ_B = ("'", '"', "')", "'--", "\\")                                              # inj-1 clause (b): break the quoting
-INJ_3 = ("1 OR 1=1", "0 OR 1=1", "1 UNION SELECT 1,2,3", "-1 OR id>0")            # inj-3: an id that is SQL
+# The one definition of a payload id: the key. The letter is the group (A: inj-1 clause (a), close the parenthesis; B: inj-1
+# clause (b), break the quoting; C: inj-3, an id that is SQL); the digit is the payload's number in the original thirteen, so a
+# dropped payload leaves a gap and a kept one keeps its id (X-I5, the operator's decision 2 of 2026-10-05: only these four
+# exploit any variant, J2 record 5f54cf0b).
+PAYLOADS = {"A0": "x') OR 1=1 --", "B2": "')", "B3": "'--", "C0": "1 OR 1=1"}
 SQL_ERROR_WORDS = (b"sqlite", b"syntax", b"unrecognized token")
 
 
-def payload_ids(prefix, hits):
-    """The clause for a probe: the ids (`<prefix><index>` into its tuple) of every payload that hit, comma-joined, or None."""
-    return ",".join(f"{prefix}{i}" for i in hits) or None
+def group(prefix):
+    """The (id, payload) pairs of one group, in table order."""
+    return [(i, p) for i, p in PAYLOADS.items() if i.startswith(prefix)]
+
+
+def payload_ids(hits):
+    """The clause for a probe: the ids of every payload that hit, comma-joined, or None."""
+    return ",".join(hits) or None
 
 
 class Broken(Exception):
@@ -91,21 +98,20 @@ def setup_d(c):
 def inj_1(c):
     setup_d(c)
     c.send("POST", "/notes", c.S, body={"title": "stitle", "body": "plain"})
-    hits = {"A": [], "B": []}
-    for i, p in enumerate(INJ_A):
+    hits = []
+    for i, p in group("A"):
         if c.send("GET", "/notes", c.S, query="q=" + quote(p, safe="")).has(MARK):
-            hits["A"].append(i)
-    for i, p in enumerate(INJ_B):
+            hits.append(i)
+    for i, p in group("B"):
         r = c.send("GET", "/notes", c.S, query="q=" + quote(p, safe=""))
         if r.status >= 500 or any(w in r.body.lower() for w in SQL_ERROR_WORDS):
-            hits["B"].append(i)
-    return ",".join(filter(None, (payload_ids(prefix, hits[prefix]) for prefix in hits))) or None
+            hits.append(i)
+    return payload_ids(hits)
 
 
 def inj_3(c):
     setup_d(c)
-    hits = [i for i, p in enumerate(INJ_3) if c.send("GET", "/notes/" + quote(p, safe=""), c.S).has(MARK)]
-    return payload_ids("C", hits)
+    return payload_ids([i for i, p in group("C") if c.send("GET", "/notes/" + quote(p, safe=""), c.S).has(MARK)])
 
 
 def authz_1(c):

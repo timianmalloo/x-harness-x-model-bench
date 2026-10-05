@@ -324,7 +324,6 @@ def test_e1_campaign_happy_path(walk):
     assert walk.step("report").ran.out.rstrip().splitlines()[-1].startswith("report: ") and (walk.grid_dir / "report.html").is_file()
 
 
-@pytest.mark.xfail(strict=True, reason="S1 declares no NA for behavioural_equivalence and regression_count in expected.reference, so the real pilot gate refuses it (HB-CMP-008); X-I (task.yaml) or X-F/X-H1 (gate narrowing), C3c")
 def test_s1_as_committed_passes_the_real_pilot_gate(walk):
     """Finding: the same walk on S1 exactly as committed stops at `pilot pass`; the temp copy of the walk declares the two NA metrics."""
     ran = walk.step("asis pilot pass").ran

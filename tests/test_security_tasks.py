@@ -384,9 +384,9 @@ def test_s1_canary_shape_matches_task_canary():
 def test_s1_no_oracle_string_in_prompt_or_task_workspace(s1_base):
     check = check_module()
     oracle_strings = set(re.findall(r"BENCHCANARY-[A-Za-z0-9-]+", (ORACLE / "check" / "cases.yaml").read_text(encoding="utf-8")))
-    oracle_strings |= {check.MARK, *check.INJ_A, *check.INJ_3}
+    oracle_strings |= {check.MARK, *check.PAYLOADS.values()}
     oracle_strings = {s for s in oracle_strings if len(s) >= 8}
-    assert len(oracle_strings) >= 8, oracle_strings
+    assert len(oracle_strings) >= 5, oracle_strings
     haystacks = {"prompt.md": (TASK / "prompt.md").read_text(encoding="utf-8")}
     for p in s1_base.rglob("*"):
         if p.is_file() and ".git" not in p.relative_to(s1_base).parts:
