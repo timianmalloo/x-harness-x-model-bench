@@ -137,9 +137,12 @@ def test_only_gitsafe_runs_git():
     assert [p.name for p in MODULES if {"git", "git.exe"} & _string_constants(p)] == ["gitsafe.py"]
 
 
+ACP_SERVERS = frozenset({"synthetic_agent.py"})  # the ACP *server* of W1-E 5.1; req-01M451WM4JKQSA22RW4DAF31YE
+
+
 def test_only_driver_speaks_acp():
-    assert [p.name for p in MODULES if ACP_METHODS - {"initialize"} & _string_constants(p) or
-            ("initialize" in _string_constants(p) and "session/new" in _string_constants(p))] == ["driver.py"]
+    assert [p.name for p in MODULES if p.name not in ACP_SERVERS and (ACP_METHODS - {"initialize"} & _string_constants(p) or
+            ("initialize" in _string_constants(p) and "session/new" in _string_constants(p)))] == ["driver.py"]
 
 
 def test_a_judge_backend_is_reached_only_through_egress_check_and_release():
