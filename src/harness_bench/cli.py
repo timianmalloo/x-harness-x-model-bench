@@ -48,19 +48,33 @@ OK, INVALID, INCOMPLETE, NOT_BUILT, INTEGRITY = 0, 1, 3, 4, 5
 
 
 def _exit_for(code: str) -> int:
-    return INTEGRITY if code.startswith(("HB-LED", "HB-SEC")) else INVALID
+    return INTEGRITY if code.startswith(("HB-LED", "HB-SEC", "HB-CMP-003")) else INVALID
 
 
 def cmd_campaign_create(args) -> int:
+    print(campaign.create(Path(args.root), args.campaign_id, args.question))
     return OK
 
 
+def _print_findings(findings: list[campaign.Finding]) -> bool:
+    """Print every finding to stderr (a warning is marked); True when none is an error."""
+    for f in findings:
+        print(f"{f.code}: {f.path}: {f.detail}" + (" (warning)" if f.level == "warning" else ""), file=sys.stderr)
+    return not any(f.level == "error" for f in findings)
+
+
 def cmd_campaign_verify(args) -> int:
+    findings = campaign.verify(Path(args.root), args.campaign_id)
+    if not _print_findings(findings):
+        return INTEGRITY
+    print(f"verify: ok ({len(campaign.read(Path(args.root), args.campaign_id).rows)} rows)")
     return OK
 
 
 def cmd_campaign_status(args) -> int:
-    return OK
+    text, findings = campaign.status_text(Path(args.root), args.campaign_id)
+    print(text)
+    return OK if _print_findings(findings) else INTEGRITY
 
 
 CAMPAIGN_COMMANDS = {"create": cmd_campaign_create, "verify": cmd_campaign_verify, "status": cmd_campaign_status}
