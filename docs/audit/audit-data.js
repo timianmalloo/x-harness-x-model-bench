@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-05T07:23:33Z",
+  "generated": "2026-10-05T10:10:16Z",
   "audit": [
     {
       "actor": null,
@@ -82356,34 +82356,23 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M45F18WA95D67HZWVWREZ6R9",
-      "shortname": "Dispatch X-H2 (E1 report section 3: report/campaign_section.py, the html…",
-      "datetime": "2026-10-05T07:21:45Z",
-      "session": "prompt-compile",
-      "prompt": "Dispatch X-H2 (E1 report section 3: report/campaign_section.py, the html.py hook with the EV-20 campaign block, the R-93 three-state line and the plan_packs header lines) as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) under R-105 (planned Agy gemini-3.8-flash-high; ran Sonnet; reason R-105), beside X-C2. Session x-h2-e1e4, branch build/eval-x-h2, a new tree from integrate/e1e4-17, not main: from the primary run python docs/ai-forward-pack/scripts/coord-core.py worktree new --branch build/eval-x-h2 --session x-h2-e1e4 --base integrate/e1e4-17, record the base SHA, prefix AGENT_SESSION=x-h2-e1e4 inline on every commit and coord call, and work only in the printed tree by absolute path; never checkout or switch in the primary. Before any work, check git merge-base --is-ancestor 8587a463 HEAD (X-C1 joined) and that the brief contains \"Coordinator #25\"; stop if either fails. Your brief is docs/coordination/eval-wave2-e1/x-h2.md (Coordinator #25): read docs/coordination/eval-wave2-e1/README.md sections 1-4, then the brief's R-105 header and its section \"Real API versus fixtures\", which win over the Harness line, \"Building before X-C joins\" and the Exit section; then Owned paths and the acceptance items; then W1-H (docs/design/eval-power-verdicts.md sections 6, 10, 11.4, 11.5 and 12), W0 rev 6 sections 5, 6, 7 condition 3, 8 and 13 (docs/design/eval-seam-contracts.md), R-93, R-96, R-104 and R-105 (docs/notes/rulings.md), and the UI spec's Part C (docs/specs/enterprise-evaluation.md, EV-20, EVU-1..EVU-8). Build against the real C1 read API (campaign.read, campaign.fold, campaign.latest, campaign.eligibility, CampaignState with its three fields), with real ledgers built by importing C1's helpers from tests/test_cli_campaign.py (make_repo, put, append, walk_to); write no fixture dataclass. Use fixtures only for the four points the brief names (the prereg statement, the power inputs, expected_na, and the bench report binding in cli.py, which is a C3 carry), each with its swap point. Red first: a skeleton commit with final signatures and neutral wrong values, the five repo-wide guard files run on it, then red commits failing by assertion, then green; report SHA, node and failing assertion per red commit. Write tests/mutations/campaign_section.json with the brief's item 14 mutants plus the call-site conversion mutant. The join test test_section_reads_the_real_readiness_function is live (X-E has joined), with no skipif. In the commit that moves the header to plan_packs, lower the report/html.py pin in tests/test_arms_guard.py to the measured count, decrease only. Owned paths are the brief's list plus that granted pin change; X-C2 owns campaign.py, cli.py, grade/runner.py, readiness.py, tests/test_campaign*.py, tests/test_cli_campaign.py, tests/test_readiness.py and tests/mutations/campaign.json this hour, so any line there or in another owner's file is a seam request with a fallback that reaches green. Budget 220 calls, 350k context, 2.5 h; at 85 % commit, stop and report what remains by test id. Exit evidence per the brief's R-105 gate: uv run pytest -q on tests/test_campaign_section.py, tests/test_report.py, tests/test_report_builder.py and the five guard files (tests/test_architecture.py, tests/test_identity.py, tests/test_atomic_sites.py, tests/test_arms_guard.py, tests/test_discriminate.py); uv run pytest -q -m browser tests/test_report_browser.py once on the final commit; ruff; mutate_check on tests/mutations/campaign_section.json (your own mutant file only, never --touched); and docs-graph validate, each command on its own line with its exit status read; the whole-suite run is the Leader's at the join (R-104). Report per README section 4 and the brief's Exit line, and report your served model id on the first line of your final message. Never commit a campaign ledger in this repository. Never kill a process by name or pattern, only PIDs you started.",
-      "summary": "raw prompt logged for compilation",
-      "kind": "prompt",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
+      "datetime": "2026-10-05T07:21:45Z",
+      "id": "al-01M45F18WA95D67HZWVWREZ6R9",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "Dispatch X-H2 (E1 report section 3: report/campaign_section.py, the html.py hook with the EV-20 campaign block, the R-93 three-state line and the plan_packs header lines) as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) under R-105 (planned Agy gemini-3.8-flash-high; ran Sonnet; reason R-105), beside X-C2. Session x-h2-e1e4, branch build/eval-x-h2, a new tree from integrate/e1e4-17, not main: from the primary run python docs/ai-forward-pack/scripts/coord-core.py worktree new --branch build/eval-x-h2 --session x-h2-e1e4 --base integrate/e1e4-17, record the base SHA, prefix AGENT_SESSION=x-h2-e1e4 inline on every commit and coord call, and work only in the printed tree by absolute path; never checkout or switch in the primary. Before any work, check git merge-base --is-ancestor 8587a463 HEAD (X-C1 joined) and that the brief contains \"Coordinator #25\"; stop if either fails. Your brief is docs/coordination/eval-wave2-e1/x-h2.md (Coordinator #25): read docs/coordination/eval-wave2-e1/README.md sections 1-4, then the brief's R-105 header and its section \"Real API versus fixtures\", which win over the Harness line, \"Building before X-C joins\" and the Exit section; then Owned paths and the acceptance items; then W1-H (docs/design/eval-power-verdicts.md sections 6, 10, 11.4, 11.5 and 12), W0 rev 6 sections 5, 6, 7 condition 3, 8 and 13 (docs/design/eval-seam-contracts.md), R-93, R-96, R-104 and R-105 (docs/notes/rulings.md), and the UI spec's Part C (docs/specs/enterprise-evaluation.md, EV-20, EVU-1..EVU-8). Build against the real C1 read API (campaign.read, campaign.fold, campaign.latest, campaign.eligibility, CampaignState with its three fields), with real ledgers built by importing C1's helpers from tests/test_cli_campaign.py (make_repo, put, append, walk_to); write no fixture dataclass. Use fixtures only for the four points the brief names (the prereg statement, the power inputs, expected_na, and the bench report binding in cli.py, which is a C3 carry), each with its swap point. Red first: a skeleton commit with final signatures and neutral wrong values, the five repo-wide guard files run on it, then red commits failing by assertion, then green; report SHA, node and failing assertion per red commit. Write tests/mutations/campaign_section.json with the brief's item 14 mutants plus the call-site conversion mutant. The join test test_section_reads_the_real_readiness_function is live (X-E has joined), with no skipif. In the commit that moves the header to plan_packs, lower the report/html.py pin in tests/test_arms_guard.py to the measured count, decrease only. Owned paths are the brief's list plus that granted pin change; X-C2 owns campaign.py, cli.py, grade/runner.py, readiness.py, tests/test_campaign*.py, tests/test_cli_campaign.py, tests/test_readiness.py and tests/mutations/campaign.json this hour, so any line there or in another owner's file is a seam request with a fallback that reaches green. Budget 220 calls, 350k context, 2.5 h; at 85 % commit, stop and report what remains by test id. Exit evidence per the brief's R-105 gate: uv run pytest -q on tests/test_campaign_section.py, tests/test_report.py, tests/test_report_builder.py and the five guard files (tests/test_architecture.py, tests/test_identity.py, tests/test_atomic_sites.py, tests/test_arms_guard.py, tests/test_discriminate.py); uv run pytest -q -m browser tests/test_report_browser.py once on the final commit; ruff; mutate_check on tests/mutations/campaign_section.json (your own mutant file only, never --touched); and docs-graph validate, each command on its own line with its exit status read; the whole-suite run is the Leader's at the join (R-104). Report per README section 4 and the brief's Exit line, and report your served model id on the first line of your final message. Never commit a campaign ledger in this repository. Never kill a process by name or pattern, only PIDs you started.",
+      "session": "prompt-compile",
+      "shortname": "Dispatch X-H2 (E1 report section 3: report/campaign_section.py, the html…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
       "tags": [],
-      "outcome": "success"
+      "tool": null
     },
     {
-      "id": "al-01M45F2Y4T0QHNBNXXJGZMKPFN",
-      "shortname": "compile-Dispatch X-H2 (E1 report section 3: report/campaign_section.py, the html…",
-      "datetime": "2026-10-05T07:22:39Z",
-      "session": "coord-opus-e1e4",
-      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill compile\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-h2.md (Coordinator #25; its R-105 header and \"Real API versus fixtures\" win over the Harness line, \"Building before X-C joins\" and the Exit section) and docs/coordination/eval-wave2-e1/README.md sections 1-4, then W1-H (docs/design/eval-power-verdicts.md sections 6, 10, 11.4, 11.5, 12), W0 rev 6 sections 5, 6, 7 condition 3, 8 and 13, R-93, R-96, R-104, R-105 and the UI spec's Part C: build X-H2, report/campaign_section.py and the html.py hook with the EV-20 campaign block, the R-93 three-state line and the plan_packs header lines, red first on build/eval-x-h2 as session x-h2-e1e4, a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) in a new tree from integrate/e1e4-17, beside X-C2, recorded as planned Agy gemini-3.8-flash-high; ran Sonnet; reason R-105.\nDone when: The tree is created from the primary with coord-core.py worktree new --branch build/eval-x-h2 --session x-h2-e1e4 --base integrate/e1e4-17, the base SHA is recorded, AGENT_SESSION=x-h2-e1e4 prefixes every commit and coord call, and all work is in the printed tree by absolute path.; Before any work, git merge-base --is-ancestor 8587a463 HEAD passes and the brief contains \"Coordinator #25\"; if either fails the session stops.; The section is built against the real C1 read API (campaign.read, campaign.fold, campaign.latest, campaign.eligibility, CampaignState with its three fields) over real ledgers built with C1's imported helpers from tests/test_cli_campaign.py, and no fixture dataclass is written.; Fixtures exist only for the four points the brief names (the prereg statement, the power inputs, expected_na, the bench report binding in cli.py as a C3 carry), each with its swap point.; The work lands red first: a skeleton commit with final signatures and neutral wrong values on which the five repo-wide guard files are run, then red commits failing by assertion, then green, with SHA, node and failing assertion reported per red commit.; tests/mutations/campaign_section.json holds the brief's item 14 mutants plus the call-site conversion mutant.; test_section_reads_the_real_readiness_function is live against the real reader, with no skipif.; In the commit that moves the header to plan_packs, the report/html.py pin in tests/test_arms_guard.py is lowered to the measured count, decrease only.; A line in X-C2's files or in another owner's file beyond the brief's list and the granted pin change goes through a seam request with a fallback that reaches green.; The gate passes, each command on its own line with its exit status read: uv run pytest -q on tests/test_campaign_section.py, tests/test_report.py, tests/test_report_builder.py and the five guard files; uv run pytest -q -m browser tests/test_report_browser.py once on the final commit; ruff; mutate_check on tests/mutations/campaign_section.json only; docs-graph validate.; At 85 % of the budget (220 calls, 350k context, 2.5 h) the work is committed, the session stops, and what remains is reported by test id.; The final report follows README section 4 and the brief's Exit line, with the served model id on its first line.\nNot in scope: Editing campaign.py, cli.py, grade/runner.py, readiness.py, tests/test_campaign*.py, tests/test_cli_campaign.py, tests/test_readiness.py or tests/mutations/campaign.json (X-C2's this hour), including the bench report binding in cli.py (a C3 carry).; The whole-suite run (the Leader's at the join, R-104).; mutate_check with --touched.; A checkout or switch in the primary.; Committing a campaign ledger in this repository.; Killing a process by name or pattern; only PIDs the session started.\nTier: T1\nFan-out cap: 0\nContext ceiling: 350000\nMain-line budget: 220\nTrace\n| clause | trace |\n|---|---|\n| done_when: The tree is created from the primary with coord-core.py worktree new --branch build/eval-x-h2 --session x-h2-e1e4 --base integrate/e1e4-17, the base SHA is recorded, AGENT_SESSION=x-h2-e1e4 prefixes every commit and coord call, and all work is in the printed tree by absolute path. | phrase: from the primary run python docs/ai-forward-pack/scripts/coord-core.py worktree new --branch build/eval-x-h2 --session x-h2-e1e4 --base integrate/e1e4-17, record the base SHA, prefix AGENT_SESSION=x-h2-e1e4 inline on every commit and coord call |\n| done_when: Before any work, git merge-base --is-ancestor 8587a463 HEAD passes and the brief contains \"Coordinator #25\"; if either fails the session stops. | phrase: Before any work, check git merge-base --is-ancestor 8587a463 HEAD (X-C1 joined) and that the brief contains \"Coordinator #25\"; stop if either fails. |\n| done_when: The section is built against the real C1 read API (campaign.read, campaign.fold, campaign.latest, campaign.eligibility, CampaignState with its three fields) over real ledgers built with C1's imported helpers from tests/test_cli_campaign.py, and no fixture dataclass is written. | phrase: Build against the real C1 read API (campaign.read, campaign.fold, campaign.latest, campaign.eligibility, CampaignState with its three fields), with real ledgers built by importing C1's helpers from tests/test_cli_campaign.py (make_repo, put, append, walk_to); write no fixture dataclass. |\n| done_when: Fixtures exist only for the four points the brief names (the prereg statement, the power inputs, expected_na, the bench report binding in cli.py as a C3 carry), each with its swap point. | phrase: Use fixtures only for the four points the brief names (the prereg statement, the power inputs, expected_na, and the bench report binding in cli.py, which is a C3 carry), each with its swap point. |\n| done_when: The work lands red first: a skeleton commit with final signatures and neutral wrong values on which the five repo-wide guard files are run, then red commits failing by assertion, then green, with SHA, node and failing assertion reported per red commit. | phrase: Red first: a skeleton commit with final signatures and neutral wrong values, the five repo-wide guard files run on it, then red commits failing by assertion, then green; report SHA, node and failing assertion per red commit. |\n| done_when: tests/mutations/campaign_section.json holds the brief's item 14 mutants plus the call-site conversion mutant. | phrase: Write tests/mutations/campaign_section.json with the brief's item 14 mutants plus the call-site conversion mutant. |\n| done_when: test_section_reads_the_real_readiness_function is live against the real reader, with no skipif. | phrase: The join test test_section_reads_the_real_readiness_function is live (X-E has joined), with no skipif. |\n| done_when: In the commit that moves the header to plan_packs, the report/html.py pin in tests/test_arms_guard.py is lowered to the measured count, decrease only. | phrase: In the commit that moves the header to plan_packs, lower the report/html.py pin in tests/test_arms_guard.py to the measured count, decrease only. |\n| done_when: A line in X-C2's files or in another owner's file beyond the brief's list and the granted pin change goes through a seam request with a fallback that reaches green. | phrase: any line there or in another owner's file is a seam request with a fallback that reaches green |\n| done_when: The gate passes, each command on its own line with its exit status read: uv run pytest -q on tests/test_campaign_section.py, tests/test_report.py, tests/test_report_builder.py and the five guard files; uv run pytest -q -m browser tests/test_report_browser.py once on the final commit; ruff; mutate_check on tests/mutations/campaign_section.json only; docs-graph validate. | phrase: Exit evidence per the brief's R-105 gate: uv run pytest -q on tests/test_campaign_section.py, tests/test_report.py, tests/test_report_builder.py and the five guard files (tests/test_architecture.py, tests/test_identity.py, tests/test_atomic_sites.py, tests/test_arms_guard.py, tests/test_discriminate.py); uv run pytest -q -m browser tests/test_report_browser.py once on the final commit; ruff; mutate_check on tests/mutations/campaign_section.json (your own mutant file only, never --touched); and docs-graph validate, each command on its own line with its exit status read |\n| done_when: At 85 % of the budget (220 calls, 350k context, 2.5 h) the work is committed, the session stops, and what remains is reported by test id. | phrase: Budget 220 calls, 350k context, 2.5 h; at 85 % commit, stop and report what remains by test id. |\n| done_when: The final report follows README section 4 and the brief's Exit line, with the served model id on its first line. | phrase: Report per README section 4 and the brief's Exit line, and report your served model id on the first line of your final message. |\n| not_in_scope: Editing campaign.py, cli.py, grade/runner.py, readiness.py, tests/test_campaign*.py, tests/test_cli_campaign.py, tests/test_readiness.py or tests/mutations/campaign.json (X-C2's this hour), including the bench report binding in cli.py (a C3 carry). | phrase: X-C2 owns campaign.py, cli.py, grade/runner.py, readiness.py, tests/test_campaign*.py, tests/test_cli_campaign.py, tests/test_readiness.py and tests/mutations/campaign.json this hour |\n| not_in_scope: The whole-suite run (the Leader's at the join, R-104). | phrase: the whole-suite run is the Leader's at the join (R-104) |\n| not_in_scope: mutate_check with --touched. | phrase: your own mutant file only, never --touched |\n| not_in_scope: A checkout or switch in the primary. | phrase: never checkout or switch in the primary |\n| not_in_scope: Committing a campaign ledger in this repository. | phrase: Never commit a campaign ledger in this repository. |\n| not_in_scope: Killing a process by name or pattern; only PIDs the session started. | phrase: Never kill a process by name or pattern, only PIDs you started. |\nReferences\n- report/campaign_section.py: unresolved (not found)\n- html.py: src/harness_bench/report/html.py sha256 91b1d6543041fa57c9541faf8c4c1df201c9d3f4e362a8b3c0491d21df60e020\n- build/eval-x-h2: unresolved (not found)\n- integrate/e1e4-17: unresolved (not found)\n- docs/ai-forward-pack/scripts/coord-core.py: docs/ai-forward-pack/scripts/coord-core.py sha256 35d25610d8132ec61b8cd0ee6ab17bfe8e264cc6646fc210bb841119d7514f04\n- docs/coordination/eval-wave2-e1/x-h2.md: docs/coordination/eval-wave2-e1/x-h2.md sha256 1869dd5d96eb41ab1e2637a797c97de165597763c015ff8e280a07ba6e531265\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 f01e18a7a5898c6cc894a5090d55cc07789ba83c3b6c8b8bcab7cde0e7c7a09a\n- docs/design/eval-power-verdicts.md: docs/design/eval-power-verdicts.md sha256 433e03284f6dde833b0505aab5d171cec193650cad5d8931673b96488d47e8cd\n- docs/design/eval-seam-contracts.md: docs/design/eval-seam-contracts.md sha256 1c8d682cd1f51b5fb87e463d643a97fdd7fbf84ffb54648cbf0e4a1b275f1482\n- docs/notes/rulings.md: docs/notes/rulings.md sha256 49ccd33743dd2207b676ef21dcdf6445c15aa87d261c9fb5599d1f07dd4aed37\n- docs/specs/enterprise-evaluation.md: docs/specs/enterprise-evaluation.md sha256 dc44b25711edc3125b255de5df1e911a90cda089f18f7b433b26037d467392d1\n- tests/test_cli_campaign.py: tests/test_cli_campaign.py sha256 6b575affda2a9af33e635f969fe0f209a85eaa545525dbcc088565a2eed74427\n- cli.py: src/harness_bench/cli.py sha256 96588264159ca896c5c10430bd5876f097c50bda13f2b2063eedb55c54324112\n- tests/mutations/campaign_section.json: unresolved (not found)\n- report/html.py: src/harness_bench/report/html.py sha256 91b1d6543041fa57c9541faf8c4c1df201c9d3f4e362a8b3c0491d21df60e020\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 487656fb732f6654f8d298e8d4105e6033702d111bf47c4da5963064e173fe23\n- campaign.py: src/harness_bench/campaign.py sha256 e0548fef56e908fcba25b2f75820a915a54f3957aaa38d28154d016b1ee39958\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 b63b99a8fd04bcc9bb166d4fb1186255cf17b1b8c1b8b77f212fcc46647b818e\n- readiness.py: src/harness_bench/readiness.py sha256 afbfeada41de88a31423a3c055ce90c930472e2a2665eb994da743260e6856a8\n- tests/test_campaign*.py: unresolved (not found; nearest: tests/test_campaign.py)\n- tests/test_readiness.py: tests/test_readiness.py sha256 d6bb19d178508f3e0fc26a3fc48ff54e4f9124df597657543d0d35eda66c42ce\n- tests/mutations/campaign.json: tests/mutations/campaign.json sha256 56d778dd7f696d60059f1c4de7590bdb15acf3e0e7ff0b3ca0880228c6e1f9ff\n- tests/test_campaign_section.py: unresolved (not found)\n- tests/test_report.py: tests/test_report.py sha256 c3f2e53a8212b94bab89c11e50dc9773a8f29077757c016273b9b272d4c387d9\n- tests/test_report_builder.py: tests/test_report_builder.py sha256 decb9c40ff7da835bc4486cb6c48c11a47b0336fc8ede59fc9c21126d2325874\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 2fe5d6ce2ff48cc6ae879b4962a0f48bda8611706a0b92c4cde0b911c2a93c52\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52\n- tests/test_report_browser.py: tests/test_report_browser.py sha256 ba80ad60cfb4c9abad46d56e5d676378c887ca985de791439b00e4eaac3d90b6\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: not recorded\nper_branch_exit: the gate's five commands, each exit read\njoin_rule: the Leader joins after the own-files gate; the whole suite is the Leader's (R-104)\ncontainment: one tree, build/eval-x-h2; owned paths per the brief plus the granted test_arms_guard.py pin decrease\ntermination: at 85 % of the budget commit, stop and report what remains\ndeadline: 2.5 h\nfallback: a seam request with a fallback that reaches green\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M45F18WA95D67HZWVWREZ6R9\nraw sha256: 297f4398049b0fa101accd99173ecd1747f931127d4c3cac58dcb70422125b9f\ncompiler model: claude-opus-5-5\nengine seconds: 0.014\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
-      "summary": "compiled al-01M45F18WA95D67HZWVWREZ6R9 for claude-code v1: 18 clauses, 0 assumptions, 0 decision requests",
-      "kind": "compilation",
-      "skill": null,
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": {
         "assumptions": [],
         "clauses": [
@@ -82545,7 +82534,7 @@ window.AUDIT_DATA = {
         "decision_requests": [],
         "dispatchable": true,
         "goal_state": {
-          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-h2.md (Coordinator #25; its R-105 header and \"Real API versus fixtures\" win over the Harness line, \"Building before X-C joins\" and the Exit section) and docs/coordination/eval-wave2-e1/README.md sections 1-4, then W1-H (docs/design/eval-power-verdicts.md sections 6, 10, 11.4, 11.5, 12), W0 rev 6 sections 5, 6, 7 condition 3, 8 and 13, R-93, R-96, R-104, R-105 and the UI spec's Part C: build X-H2, report/campaign_section.py and the html.py hook with the EV-20 campaign block, the R-93 three-state line and the plan_packs header lines, red first on build/eval-x-h2 as session x-h2-e1e4, a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) in a new tree from integrate/e1e4-17, beside X-C2, recorded as planned Agy gemini-3.8-flash-high; ran Sonnet; reason R-105.",
+          "context_ceiling": 350000,
           "done_when": [
             "The tree is created from the primary with coord-core.py worktree new --branch build/eval-x-h2 --session x-h2-e1e4 --base integrate/e1e4-17, the base SHA is recorded, AGENT_SESSION=x-h2-e1e4 prefixes every commit and coord call, and all work is in the printed tree by absolute path.",
             "Before any work, git merge-base --is-ancestor 8587a463 HEAD passes and the brief contains \"Coordinator #25\"; if either fails the session stops.",
@@ -82560,6 +82549,9 @@ window.AUDIT_DATA = {
             "At 85 % of the budget (220 calls, 350k context, 2.5 h) the work is committed, the session stops, and what remains is reported by test id.",
             "The final report follows README section 4 and the brief's Exit line, with the served model id on its first line."
           ],
+          "fan_out_cap": 0,
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-h2.md (Coordinator #25; its R-105 header and \"Real API versus fixtures\" win over the Harness line, \"Building before X-C joins\" and the Exit section) and docs/coordination/eval-wave2-e1/README.md sections 1-4, then W1-H (docs/design/eval-power-verdicts.md sections 6, 10, 11.4, 11.5, 12), W0 rev 6 sections 5, 6, 7 condition 3, 8 and 13, R-93, R-96, R-104, R-105 and the UI spec's Part C: build X-H2, report/campaign_section.py and the html.py hook with the EV-20 campaign block, the R-93 three-state line and the plan_packs header lines, red first on build/eval-x-h2 as session x-h2-e1e4, a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) in a new tree from integrate/e1e4-17, beside X-C2, recorded as planned Agy gemini-3.8-flash-high; ran Sonnet; reason R-105.",
+          "main_line_budget": 220,
           "not_in_scope": [
             "Editing campaign.py, cli.py, grade/runner.py, readiness.py, tests/test_campaign*.py, tests/test_cli_campaign.py, tests/test_readiness.py or tests/mutations/campaign.json (X-C2's this hour), including the bench report binding in cli.py (a C3 carry).",
             "The whole-suite run (the Leader's at the join, R-104).",
@@ -82568,10 +82560,7 @@ window.AUDIT_DATA = {
             "Committing a campaign ledger in this repository.",
             "Killing a process by name or pattern; only PIDs the session started."
           ],
-          "tier": "T1",
-          "fan_out_cap": 0,
-          "main_line_budget": 220,
-          "context_ceiling": 350000
+          "tier": "T1"
         },
         "graph_neighbours": [],
         "harness": "claude-code",
@@ -82832,29 +82821,612 @@ window.AUDIT_DATA = {
         "template": "claude-code",
         "template_version": 1
       },
+      "datetime": "2026-10-05T07:22:39Z",
+      "dispatchable": true,
+      "id": "al-01M45F2Y4T0QHNBNXXJGZMKPFN",
+      "kind": "compilation",
       "mode": "compiled",
-      "dispatchable": true
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill compile\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-h2.md (Coordinator #25; its R-105 header and \"Real API versus fixtures\" win over the Harness line, \"Building before X-C joins\" and the Exit section) and docs/coordination/eval-wave2-e1/README.md sections 1-4, then W1-H (docs/design/eval-power-verdicts.md sections 6, 10, 11.4, 11.5, 12), W0 rev 6 sections 5, 6, 7 condition 3, 8 and 13, R-93, R-96, R-104, R-105 and the UI spec's Part C: build X-H2, report/campaign_section.py and the html.py hook with the EV-20 campaign block, the R-93 three-state line and the plan_packs header lines, red first on build/eval-x-h2 as session x-h2-e1e4, a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) in a new tree from integrate/e1e4-17, beside X-C2, recorded as planned Agy gemini-3.8-flash-high; ran Sonnet; reason R-105.\nDone when: The tree is created from the primary with coord-core.py worktree new --branch build/eval-x-h2 --session x-h2-e1e4 --base integrate/e1e4-17, the base SHA is recorded, AGENT_SESSION=x-h2-e1e4 prefixes every commit and coord call, and all work is in the printed tree by absolute path.; Before any work, git merge-base --is-ancestor 8587a463 HEAD passes and the brief contains \"Coordinator #25\"; if either fails the session stops.; The section is built against the real C1 read API (campaign.read, campaign.fold, campaign.latest, campaign.eligibility, CampaignState with its three fields) over real ledgers built with C1's imported helpers from tests/test_cli_campaign.py, and no fixture dataclass is written.; Fixtures exist only for the four points the brief names (the prereg statement, the power inputs, expected_na, the bench report binding in cli.py as a C3 carry), each with its swap point.; The work lands red first: a skeleton commit with final signatures and neutral wrong values on which the five repo-wide guard files are run, then red commits failing by assertion, then green, with SHA, node and failing assertion reported per red commit.; tests/mutations/campaign_section.json holds the brief's item 14 mutants plus the call-site conversion mutant.; test_section_reads_the_real_readiness_function is live against the real reader, with no skipif.; In the commit that moves the header to plan_packs, the report/html.py pin in tests/test_arms_guard.py is lowered to the measured count, decrease only.; A line in X-C2's files or in another owner's file beyond the brief's list and the granted pin change goes through a seam request with a fallback that reaches green.; The gate passes, each command on its own line with its exit status read: uv run pytest -q on tests/test_campaign_section.py, tests/test_report.py, tests/test_report_builder.py and the five guard files; uv run pytest -q -m browser tests/test_report_browser.py once on the final commit; ruff; mutate_check on tests/mutations/campaign_section.json only; docs-graph validate.; At 85 % of the budget (220 calls, 350k context, 2.5 h) the work is committed, the session stops, and what remains is reported by test id.; The final report follows README section 4 and the brief's Exit line, with the served model id on its first line.\nNot in scope: Editing campaign.py, cli.py, grade/runner.py, readiness.py, tests/test_campaign*.py, tests/test_cli_campaign.py, tests/test_readiness.py or tests/mutations/campaign.json (X-C2's this hour), including the bench report binding in cli.py (a C3 carry).; The whole-suite run (the Leader's at the join, R-104).; mutate_check with --touched.; A checkout or switch in the primary.; Committing a campaign ledger in this repository.; Killing a process by name or pattern; only PIDs the session started.\nTier: T1\nFan-out cap: 0\nContext ceiling: 350000\nMain-line budget: 220\nTrace\n| clause | trace |\n|---|---|\n| done_when: The tree is created from the primary with coord-core.py worktree new --branch build/eval-x-h2 --session x-h2-e1e4 --base integrate/e1e4-17, the base SHA is recorded, AGENT_SESSION=x-h2-e1e4 prefixes every commit and coord call, and all work is in the printed tree by absolute path. | phrase: from the primary run python docs/ai-forward-pack/scripts/coord-core.py worktree new --branch build/eval-x-h2 --session x-h2-e1e4 --base integrate/e1e4-17, record the base SHA, prefix AGENT_SESSION=x-h2-e1e4 inline on every commit and coord call |\n| done_when: Before any work, git merge-base --is-ancestor 8587a463 HEAD passes and the brief contains \"Coordinator #25\"; if either fails the session stops. | phrase: Before any work, check git merge-base --is-ancestor 8587a463 HEAD (X-C1 joined) and that the brief contains \"Coordinator #25\"; stop if either fails. |\n| done_when: The section is built against the real C1 read API (campaign.read, campaign.fold, campaign.latest, campaign.eligibility, CampaignState with its three fields) over real ledgers built with C1's imported helpers from tests/test_cli_campaign.py, and no fixture dataclass is written. | phrase: Build against the real C1 read API (campaign.read, campaign.fold, campaign.latest, campaign.eligibility, CampaignState with its three fields), with real ledgers built by importing C1's helpers from tests/test_cli_campaign.py (make_repo, put, append, walk_to); write no fixture dataclass. |\n| done_when: Fixtures exist only for the four points the brief names (the prereg statement, the power inputs, expected_na, the bench report binding in cli.py as a C3 carry), each with its swap point. | phrase: Use fixtures only for the four points the brief names (the prereg statement, the power inputs, expected_na, and the bench report binding in cli.py, which is a C3 carry), each with its swap point. |\n| done_when: The work lands red first: a skeleton commit with final signatures and neutral wrong values on which the five repo-wide guard files are run, then red commits failing by assertion, then green, with SHA, node and failing assertion reported per red commit. | phrase: Red first: a skeleton commit with final signatures and neutral wrong values, the five repo-wide guard files run on it, then red commits failing by assertion, then green; report SHA, node and failing assertion per red commit. |\n| done_when: tests/mutations/campaign_section.json holds the brief's item 14 mutants plus the call-site conversion mutant. | phrase: Write tests/mutations/campaign_section.json with the brief's item 14 mutants plus the call-site conversion mutant. |\n| done_when: test_section_reads_the_real_readiness_function is live against the real reader, with no skipif. | phrase: The join test test_section_reads_the_real_readiness_function is live (X-E has joined), with no skipif. |\n| done_when: In the commit that moves the header to plan_packs, the report/html.py pin in tests/test_arms_guard.py is lowered to the measured count, decrease only. | phrase: In the commit that moves the header to plan_packs, lower the report/html.py pin in tests/test_arms_guard.py to the measured count, decrease only. |\n| done_when: A line in X-C2's files or in another owner's file beyond the brief's list and the granted pin change goes through a seam request with a fallback that reaches green. | phrase: any line there or in another owner's file is a seam request with a fallback that reaches green |\n| done_when: The gate passes, each command on its own line with its exit status read: uv run pytest -q on tests/test_campaign_section.py, tests/test_report.py, tests/test_report_builder.py and the five guard files; uv run pytest -q -m browser tests/test_report_browser.py once on the final commit; ruff; mutate_check on tests/mutations/campaign_section.json only; docs-graph validate. | phrase: Exit evidence per the brief's R-105 gate: uv run pytest -q on tests/test_campaign_section.py, tests/test_report.py, tests/test_report_builder.py and the five guard files (tests/test_architecture.py, tests/test_identity.py, tests/test_atomic_sites.py, tests/test_arms_guard.py, tests/test_discriminate.py); uv run pytest -q -m browser tests/test_report_browser.py once on the final commit; ruff; mutate_check on tests/mutations/campaign_section.json (your own mutant file only, never --touched); and docs-graph validate, each command on its own line with its exit status read |\n| done_when: At 85 % of the budget (220 calls, 350k context, 2.5 h) the work is committed, the session stops, and what remains is reported by test id. | phrase: Budget 220 calls, 350k context, 2.5 h; at 85 % commit, stop and report what remains by test id. |\n| done_when: The final report follows README section 4 and the brief's Exit line, with the served model id on its first line. | phrase: Report per README section 4 and the brief's Exit line, and report your served model id on the first line of your final message. |\n| not_in_scope: Editing campaign.py, cli.py, grade/runner.py, readiness.py, tests/test_campaign*.py, tests/test_cli_campaign.py, tests/test_readiness.py or tests/mutations/campaign.json (X-C2's this hour), including the bench report binding in cli.py (a C3 carry). | phrase: X-C2 owns campaign.py, cli.py, grade/runner.py, readiness.py, tests/test_campaign*.py, tests/test_cli_campaign.py, tests/test_readiness.py and tests/mutations/campaign.json this hour |\n| not_in_scope: The whole-suite run (the Leader's at the join, R-104). | phrase: the whole-suite run is the Leader's at the join (R-104) |\n| not_in_scope: mutate_check with --touched. | phrase: your own mutant file only, never --touched |\n| not_in_scope: A checkout or switch in the primary. | phrase: never checkout or switch in the primary |\n| not_in_scope: Committing a campaign ledger in this repository. | phrase: Never commit a campaign ledger in this repository. |\n| not_in_scope: Killing a process by name or pattern; only PIDs the session started. | phrase: Never kill a process by name or pattern, only PIDs you started. |\nReferences\n- report/campaign_section.py: unresolved (not found)\n- html.py: src/harness_bench/report/html.py sha256 91b1d6543041fa57c9541faf8c4c1df201c9d3f4e362a8b3c0491d21df60e020\n- build/eval-x-h2: unresolved (not found)\n- integrate/e1e4-17: unresolved (not found)\n- docs/ai-forward-pack/scripts/coord-core.py: docs/ai-forward-pack/scripts/coord-core.py sha256 35d25610d8132ec61b8cd0ee6ab17bfe8e264cc6646fc210bb841119d7514f04\n- docs/coordination/eval-wave2-e1/x-h2.md: docs/coordination/eval-wave2-e1/x-h2.md sha256 1869dd5d96eb41ab1e2637a797c97de165597763c015ff8e280a07ba6e531265\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 f01e18a7a5898c6cc894a5090d55cc07789ba83c3b6c8b8bcab7cde0e7c7a09a\n- docs/design/eval-power-verdicts.md: docs/design/eval-power-verdicts.md sha256 433e03284f6dde833b0505aab5d171cec193650cad5d8931673b96488d47e8cd\n- docs/design/eval-seam-contracts.md: docs/design/eval-seam-contracts.md sha256 1c8d682cd1f51b5fb87e463d643a97fdd7fbf84ffb54648cbf0e4a1b275f1482\n- docs/notes/rulings.md: docs/notes/rulings.md sha256 49ccd33743dd2207b676ef21dcdf6445c15aa87d261c9fb5599d1f07dd4aed37\n- docs/specs/enterprise-evaluation.md: docs/specs/enterprise-evaluation.md sha256 dc44b25711edc3125b255de5df1e911a90cda089f18f7b433b26037d467392d1\n- tests/test_cli_campaign.py: tests/test_cli_campaign.py sha256 6b575affda2a9af33e635f969fe0f209a85eaa545525dbcc088565a2eed74427\n- cli.py: src/harness_bench/cli.py sha256 96588264159ca896c5c10430bd5876f097c50bda13f2b2063eedb55c54324112\n- tests/mutations/campaign_section.json: unresolved (not found)\n- report/html.py: src/harness_bench/report/html.py sha256 91b1d6543041fa57c9541faf8c4c1df201c9d3f4e362a8b3c0491d21df60e020\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 487656fb732f6654f8d298e8d4105e6033702d111bf47c4da5963064e173fe23\n- campaign.py: src/harness_bench/campaign.py sha256 e0548fef56e908fcba25b2f75820a915a54f3957aaa38d28154d016b1ee39958\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 b63b99a8fd04bcc9bb166d4fb1186255cf17b1b8c1b8b77f212fcc46647b818e\n- readiness.py: src/harness_bench/readiness.py sha256 afbfeada41de88a31423a3c055ce90c930472e2a2665eb994da743260e6856a8\n- tests/test_campaign*.py: unresolved (not found; nearest: tests/test_campaign.py)\n- tests/test_readiness.py: tests/test_readiness.py sha256 d6bb19d178508f3e0fc26a3fc48ff54e4f9124df597657543d0d35eda66c42ce\n- tests/mutations/campaign.json: tests/mutations/campaign.json sha256 56d778dd7f696d60059f1c4de7590bdb15acf3e0e7ff0b3ca0880228c6e1f9ff\n- tests/test_campaign_section.py: unresolved (not found)\n- tests/test_report.py: tests/test_report.py sha256 c3f2e53a8212b94bab89c11e50dc9773a8f29077757c016273b9b272d4c387d9\n- tests/test_report_builder.py: tests/test_report_builder.py sha256 decb9c40ff7da835bc4486cb6c48c11a47b0336fc8ede59fc9c21126d2325874\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 2fe5d6ce2ff48cc6ae879b4962a0f48bda8611706a0b92c4cde0b911c2a93c52\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52\n- tests/test_report_browser.py: tests/test_report_browser.py sha256 ba80ad60cfb4c9abad46d56e5d676378c887ca985de791439b00e4eaac3d90b6\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: not recorded\nper_branch_exit: the gate's five commands, each exit read\njoin_rule: the Leader joins after the own-files gate; the whole suite is the Leader's (R-104)\ncontainment: one tree, build/eval-x-h2; owned paths per the brief plus the granted test_arms_guard.py pin decrease\ntermination: at 85 % of the budget commit, stop and report what remains\ndeadline: 2.5 h\nfallback: a seam request with a fallback that reaches green\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M45F18WA95D67HZWVWREZ6R9\nraw sha256: 297f4398049b0fa101accd99173ecd1747f931127d4c3cac58dcb70422125b9f\ncompiler model: claude-opus-5-5\nengine seconds: 0.014\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-Dispatch X-H2 (E1 report section 3: report/campaign_section.py, the html…",
+      "skill": null,
+      "summary": "compiled al-01M45F18WA95D67HZWVWREZ6R9 for claude-code v1: 18 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
     },
     {
-      "id": "al-01M45F4K13ZE7CY97G26QYF1J3",
-      "shortname": "compile-x-h2-c25",
-      "datetime": "2026-10-05T07:23:33Z",
-      "session": "coord-opus-e1e4",
-      "prompt": "Coordinator #25: re-read x-h2.md, W1-H section 6 and W0 rev 6.10 against e6a7160a; decide what X-H2 builds against the real C1 read API and what uses fixtures until C2/C3; fix moved names/lines; add the R-105 header and the R-104 gate; compile X-H2 (CO-S0, claude-code, --compiler-model claude-opus-5-5), session x-h2-e1e4, branch build/eval-x-h2",
-      "summary": "raw al-01M45F18WA95D67HZWVWREZ6R9, compiled al-01M45F2Y4T0QHNBNXXJGZMKPFN, harness claude-code, compiler claude-opus-5-5; 12 done-when + 6 not-in-scope clauses, all phrase-traced; 0 assumptions; 0 decision requests; dispatchable yes; x-h2.md sha256 1869dd5d (brief edited before compile). Real: CampaignState(campaign_id,state,rows), read/fold/latest/eligibility, C1 test helpers for real ledgers, X-H1 verdicts/power/gates, readiness.hidden_test_disagreements (join test live, no skipif). Fixtures: prereg statement, power inputs, expected_na, cli.cmd_report binding (C3 carry), completion-summary leg (X-INT). Pin moved :165 -> :163; arms-guard html.py pin decrease granted; item 12 events via logging.",
-      "kind": "skill",
-      "skill": "compile",
-      "tool": null,
       "actor": null,
       "artifacts": [
         "docs/coordination/eval-wave2-e1/x-h2.md",
         "docs/coordination/eval-wave2-e1/README.md"
       ],
+      "compiled": false,
+      "datetime": "2026-10-05T07:23:33Z",
+      "done_when": "x-h2.md edited; X-H2 compiled dispatchable with 0 DR; README section 8 Coordinator #25 entry; docs-graph validate exit read; named paths committed on coord/eval-c25-xh2",
+      "fan_out": 0,
+      "goal": "Coordinator #25: re-read X-H2 against integrate/e1e4-17 e6a7160a, split real C1 read API vs fixtures, add the R-105 header, compile X-H2 (session x-h2-e1e4, branch build/eval-x-h2, Sonnet under R-105 beside X-C2)",
+      "id": "al-01M45F4K13ZE7CY97G26QYF1J3",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Coordinator #25: re-read x-h2.md, W1-H section 6 and W0 rev 6.10 against e6a7160a; decide what X-H2 builds against the real C1 read API and what uses fixtures until C2/C3; fix moved names/lines; add the R-105 header and the R-104 gate; compile X-H2 (CO-S0, claude-code, --compiler-model claude-opus-5-5), session x-h2-e1e4, branch build/eval-x-h2",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-x-h2-c25",
+      "skill": "compile",
+      "summary": "raw al-01M45F18WA95D67HZWVWREZ6R9, compiled al-01M45F2Y4T0QHNBNXXJGZMKPFN, harness claude-code, compiler claude-opus-5-5; 12 done-when + 6 not-in-scope clauses, all phrase-traced; 0 assumptions; 0 decision requests; dispatchable yes; x-h2.md sha256 1869dd5d (brief edited before compile). Real: CampaignState(campaign_id,state,rows), read/fold/latest/eligibility, C1 test helpers for real ledgers, X-H1 verdicts/power/gates, readiness.hidden_test_disagreements (join test live, no skipif). Fixtures: prereg statement, power inputs, expected_na, cli.cmd_report binding (C3 carry), completion-summary leg (X-INT). Pin moved :165 -> :163; arms-guard html.py pin decrease granted; item 12 events via logging.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-05T08:13:21Z",
+      "id": "al-01M45HZRB1EZP2GYX5A3SZG477",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are X-C3a (session x-c3a-e1e4, branch build/eval-x-c3a), a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5 expected; the served id is the first line of your report). Repo C:\\Projects\\x-harness-x-model-bench (Windows; python, never python3). Read docs/coordination/eval-wave2-e1/x-c.md section \"C3 under R-105 (Coordinator #26)\" and build C3a as it says: the pilot attach, pilot pass, admit and register commands, readiness.expected_na, the campaign.content reader, and the bench discriminate dispatch. Base integrate/e1e4-17 with X-C2a joined: create the worktree from the primary with coord worktree new --branch build/eval-x-c3a --session x-c3a-e1e4 --base integrate/e1e4-17; never EnterWorktree; never checkout or switch in the primary; record the base SHA and stop if the two precondition checks fail. Red first: a skeleton commit with final signatures and neutral wrong values, the guard files run on it, then red commits that fail by assertion, then green. Tests C-18 register case, C-20, C-21, C-23..C-33, C-35, C-48, I-1, I-2, L-11, the C-47 rows for the four commands, the expected_na test, the content reader test, and T-E9 (c) in tests/test_cli_discriminate.py, each with a written mutant in tests/mutations/campaign.json. Gate per the section: the pytest line with the guard files, ruff, mutate_check on tests/mutations/campaign.json only and never --touched, docs-graph validate; each command on its own line with its exit status read. Do not touch identity.launch_check, plan --campaign, P-1, P-2, P-3b or P-4 (DR-14 is open), do not change the names X-H2 imports, and do not merge or push. Commit with AGENT_SESSION=x-c3a-e1e4 inline. Budget 200 calls, 350k context, 2.5 h; at 85 % commit, stop and report what remains. Report per README section 4 plus the section's report list.",
+      "session": "prompt-compile",
+      "shortname": "You are X-C3a (session x-c3a-e1e4, branch build/eval-x-c3a), a Claude Co…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "The tree is created from the primary with coord worktree new --branch build/eval-x-c3a --session x-c3a-e1e4 --base integrate/e1e4-17, the base SHA is recorded, and the session stops if either precondition check in the brief's C3a section fails.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "create the worktree from the primary with coord worktree new --branch build/eval-x-c3a --session x-c3a-e1e4 --base integrate/e1e4-17"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The base SHA is recorded and the two precondition checks pass before any work.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "record the base SHA and stop if the two precondition checks fail"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "C3a is built as the x-c.md section \"C3 under R-105 (Coordinator #26)\" says: the pilot attach, pilot pass, admit and register commands, readiness.expected_na, the campaign.content reader, and the bench discriminate dispatch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the pilot attach, pilot pass, admit and register commands, readiness.expected_na, the campaign.content reader, and the bench discriminate dispatch"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The work lands red first: a skeleton commit with final signatures and neutral wrong values with the guard files run on it, then red commits failing by assertion, then green.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Red first: a skeleton commit with final signatures and neutral wrong values, the guard files run on it, then red commits that fail by assertion, then green"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Tests C-18 register case, C-20, C-21, C-23..C-33, C-35, C-48, I-1, I-2, L-11, the C-47 rows for the four commands, the expected_na test, the content reader test, and T-E9 (c) in tests/test_cli_discriminate.py exist and pass.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Tests C-18 register case, C-20, C-21, C-23..C-33, C-35, C-48, I-1, I-2, L-11, the C-47 rows for the four commands, the expected_na test, the content reader test, and T-E9 (c) in tests/test_cli_discriminate.py"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each test has a written mutant in tests/mutations/campaign.json.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "each with a written mutant in tests/mutations/campaign.json"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The gate passes per the section: the pytest line with the guard files, ruff, mutate_check on tests/mutations/campaign.json only and never --touched, docs-graph validate; each command on its own line with its exit status read.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the pytest line with the guard files, ruff, mutate_check on tests/mutations/campaign.json only and never --touched, docs-graph validate; each command on its own line with its exit status read"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Every commit carries AGENT_SESSION=x-c3a-e1e4 inline.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit with AGENT_SESSION=x-c3a-e1e4 inline"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "At 85 % of the budget (200 calls, 350k context, 2.5 h) the work is committed, the session stops, and what remains is reported.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "at 85 % commit, stop and report what remains"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The final report follows README section 4 plus the section's report list, with the served model id on its first line.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report per README section 4 plus the section's report list"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "identity.launch_check, plan --campaign, P-1, P-2, P-3b and P-4 (DR-14 is open).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Do not touch identity.launch_check, plan --campaign, P-1, P-2, P-3b or P-4 (DR-14 is open)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Changing the names X-H2 imports.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "do not change the names X-H2 imports"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Merging or pushing.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "do not merge or push"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Checkout or switch in the primary.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "never checkout or switch in the primary"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree build/eval-x-c3a; owned paths per x-c.md Owned paths plus the C3a grants (readiness.expected_na hunk, tests/test_cli_discriminate.py); another owner's line is a seam request",
+          "deadline": "2.5 h",
+          "fallback": "at 85 % of budget: commit, stop, report the remainder by test id; the Leader re-dispatches the remainder",
+          "join_rule": "the Leader joins into integrate/e1e4-17 after the whole suite passes (R-104)",
+          "per_branch_exit": "the four-line gate green on the final commit, exit status of each read",
+          "termination": "C3a scope green, or the 85 % budget stop",
+          "transient_retry": "one retry of a failed tool call; a red gate is fixed, never retried",
+          "width_cap": "1 (serial; no sub-agents)"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "350k",
+          "done_when": [
+            "The tree is created from the primary with coord worktree new --branch build/eval-x-c3a --session x-c3a-e1e4 --base integrate/e1e4-17, the base SHA is recorded, and the session stops if either precondition check in the brief's C3a section fails.",
+            "The base SHA is recorded and the two precondition checks pass before any work.",
+            "C3a is built as the x-c.md section \"C3 under R-105 (Coordinator #26)\" says: the pilot attach, pilot pass, admit and register commands, readiness.expected_na, the campaign.content reader, and the bench discriminate dispatch.",
+            "The work lands red first: a skeleton commit with final signatures and neutral wrong values with the guard files run on it, then red commits failing by assertion, then green.",
+            "Tests C-18 register case, C-20, C-21, C-23..C-33, C-35, C-48, I-1, I-2, L-11, the C-47 rows for the four commands, the expected_na test, the content reader test, and T-E9 (c) in tests/test_cli_discriminate.py exist and pass.",
+            "Each test has a written mutant in tests/mutations/campaign.json.",
+            "The gate passes per the section: the pytest line with the guard files, ruff, mutate_check on tests/mutations/campaign.json only and never --touched, docs-graph validate; each command on its own line with its exit status read.",
+            "Every commit carries AGENT_SESSION=x-c3a-e1e4 inline.",
+            "At 85 % of the budget (200 calls, 350k context, 2.5 h) the work is committed, the session stops, and what remains is reported.",
+            "The final report follows README section 4 plus the section's report list, with the served model id on its first line."
+          ],
+          "fan_out_cap": "0",
+          "goal": "Build X-C3a (session x-c3a-e1e4, branch build/eval-x-c3a) as docs/coordination/eval-wave2-e1/x-c.md section \"C3 under R-105 (Coordinator #26)\" specifies, red first, as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) from integrate/e1e4-17 with X-C2a joined.",
+          "main_line_budget": "200 calls, 2.5 h",
+          "not_in_scope": [
+            "identity.launch_check, plan --campaign, P-1, P-2, P-3b and P-4 (DR-14 is open).",
+            "Changing the names X-H2 imports.",
+            "Merging or pushing.",
+            "Checkout or switch in the primary."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.012,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M45HZRB1EZP2GYX5A3SZG477",
+        "raw_sha256": "20530003fbeef83657e6bb5d57490c59ef917cb1f268688957848e6be47890ca",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-c3a"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-c.md",
+            "reason": null,
+            "sha256": "29e5c6a3ae4f05bc6efd969eae96d341b4d76750daefa7897c5df5c3c9ce15a1",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-c.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "integrate/e1e4-17"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_cli_discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/campaign.json",
+            "reason": null,
+            "sha256": "c9c7aea4a66327675b14dba967fa5323449169a78d939a282fa055a607322bf6",
+            "status": "resolved",
+            "token": "tests/mutations/campaign.json"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-05T08:14:43Z",
+      "dispatchable": true,
+      "id": "al-01M45J28TYDB5RNP6CEW0Q3XEW",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Build X-C3a (session x-c3a-e1e4, branch build/eval-x-c3a) as docs/coordination/eval-wave2-e1/x-c.md section \"C3 under R-105 (Coordinator #26)\" specifies, red first, as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) from integrate/e1e4-17 with X-C2a joined.\nDone when: The tree is created from the primary with coord worktree new --branch build/eval-x-c3a --session x-c3a-e1e4 --base integrate/e1e4-17, the base SHA is recorded, and the session stops if either precondition check in the brief's C3a section fails.; The base SHA is recorded and the two precondition checks pass before any work.; C3a is built as the x-c.md section \"C3 under R-105 (Coordinator #26)\" says: the pilot attach, pilot pass, admit and register commands, readiness.expected_na, the campaign.content reader, and the bench discriminate dispatch.; The work lands red first: a skeleton commit with final signatures and neutral wrong values with the guard files run on it, then red commits failing by assertion, then green.; Tests C-18 register case, C-20, C-21, C-23..C-33, C-35, C-48, I-1, I-2, L-11, the C-47 rows for the four commands, the expected_na test, the content reader test, and T-E9 (c) in tests/test_cli_discriminate.py exist and pass.; Each test has a written mutant in tests/mutations/campaign.json.; The gate passes per the section: the pytest line with the guard files, ruff, mutate_check on tests/mutations/campaign.json only and never --touched, docs-graph validate; each command on its own line with its exit status read.; Every commit carries AGENT_SESSION=x-c3a-e1e4 inline.; At 85 % of the budget (200 calls, 350k context, 2.5 h) the work is committed, the session stops, and what remains is reported.; The final report follows README section 4 plus the section's report list, with the served model id on its first line.\nNot in scope: identity.launch_check, plan --campaign, P-1, P-2, P-3b and P-4 (DR-14 is open).; Changing the names X-H2 imports.; Merging or pushing.; Checkout or switch in the primary.\nTier: T2\nFan-out cap: 0\nContext ceiling: 350k\nMain-line budget: 200 calls, 2.5 h\nTrace\n| clause | trace |\n|---|---|\n| done_when: The tree is created from the primary with coord worktree new --branch build/eval-x-c3a --session x-c3a-e1e4 --base integrate/e1e4-17, the base SHA is recorded, and the session stops if either precondition check in the brief's C3a section fails. | phrase: create the worktree from the primary with coord worktree new --branch build/eval-x-c3a --session x-c3a-e1e4 --base integrate/e1e4-17 |\n| done_when: The base SHA is recorded and the two precondition checks pass before any work. | phrase: record the base SHA and stop if the two precondition checks fail |\n| done_when: C3a is built as the x-c.md section \"C3 under R-105 (Coordinator #26)\" says: the pilot attach, pilot pass, admit and register commands, readiness.expected_na, the campaign.content reader, and the bench discriminate dispatch. | phrase: the pilot attach, pilot pass, admit and register commands, readiness.expected_na, the campaign.content reader, and the bench discriminate dispatch |\n| done_when: The work lands red first: a skeleton commit with final signatures and neutral wrong values with the guard files run on it, then red commits failing by assertion, then green. | phrase: Red first: a skeleton commit with final signatures and neutral wrong values, the guard files run on it, then red commits that fail by assertion, then green |\n| done_when: Tests C-18 register case, C-20, C-21, C-23..C-33, C-35, C-48, I-1, I-2, L-11, the C-47 rows for the four commands, the expected_na test, the content reader test, and T-E9 (c) in tests/test_cli_discriminate.py exist and pass. | phrase: Tests C-18 register case, C-20, C-21, C-23..C-33, C-35, C-48, I-1, I-2, L-11, the C-47 rows for the four commands, the expected_na test, the content reader test, and T-E9 (c) in tests/test_cli_discriminate.py |\n| done_when: Each test has a written mutant in tests/mutations/campaign.json. | phrase: each with a written mutant in tests/mutations/campaign.json |\n| done_when: The gate passes per the section: the pytest line with the guard files, ruff, mutate_check on tests/mutations/campaign.json only and never --touched, docs-graph validate; each command on its own line with its exit status read. | phrase: the pytest line with the guard files, ruff, mutate_check on tests/mutations/campaign.json only and never --touched, docs-graph validate; each command on its own line with its exit status read |\n| done_when: Every commit carries AGENT_SESSION=x-c3a-e1e4 inline. | phrase: Commit with AGENT_SESSION=x-c3a-e1e4 inline |\n| done_when: At 85 % of the budget (200 calls, 350k context, 2.5 h) the work is committed, the session stops, and what remains is reported. | phrase: at 85 % commit, stop and report what remains |\n| done_when: The final report follows README section 4 plus the section's report list, with the served model id on its first line. | phrase: Report per README section 4 plus the section's report list |\n| not_in_scope: identity.launch_check, plan --campaign, P-1, P-2, P-3b and P-4 (DR-14 is open). | phrase: Do not touch identity.launch_check, plan --campaign, P-1, P-2, P-3b or P-4 (DR-14 is open) |\n| not_in_scope: Changing the names X-H2 imports. | phrase: do not change the names X-H2 imports |\n| not_in_scope: Merging or pushing. | phrase: do not merge or push |\n| not_in_scope: Checkout or switch in the primary. | phrase: never checkout or switch in the primary |\nReferences\n- build/eval-x-c3a: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-c.md: docs/coordination/eval-wave2-e1/x-c.md sha256 29e5c6a3ae4f05bc6efd969eae96d341b4d76750daefa7897c5df5c3c9ce15a1\n- integrate/e1e4-17: unresolved (not found)\n- tests/test_cli_discriminate.py: unresolved (not found)\n- tests/mutations/campaign.json: tests/mutations/campaign.json sha256 c9c7aea4a66327675b14dba967fa5323449169a78d939a282fa055a607322bf6\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1 (serial; no sub-agents)\ntransient_retry: one retry of a failed tool call; a red gate is fixed, never retried\nper_branch_exit: the four-line gate green on the final commit, exit status of each read\njoin_rule: the Leader joins into integrate/e1e4-17 after the whole suite passes (R-104)\ncontainment: own worktree build/eval-x-c3a; owned paths per x-c.md Owned paths plus the C3a grants (readiness.expected_na hunk, tests/test_cli_discriminate.py); another owner's line is a seam request\ntermination: C3a scope green, or the 85 % budget stop\ndeadline: 2.5 h\nfallback: at 85 % of budget: commit, stop, report the remainder by test id; the Leader re-dispatches the remainder\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M45HZRB1EZP2GYX5A3SZG477\nraw sha256: 20530003fbeef83657e6bb5d57490c59ef917cb1f268688957848e6be47890ca\ncompiler model: claude-opus-5-5\nengine seconds: 0.012\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-You are X-C3a (session x-c3a-e1e4, branch build/eval-x-c3a), a Claude Co…",
+      "skill": null,
+      "summary": "compiled al-01M45HZRB1EZP2GYX5A3SZG477 for claude-code v1: 14 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-05T08:16:16Z",
+      "duration_seconds": 176.0,
+      "fan_out": 0,
+      "id": "al-01M45J53EXBB649S9YH56W1J33",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "You are X-C3a (session x-c3a-e1e4, branch build/eval-x-c3a), a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5 expected; the served id is the first line of your report). Repo C:\\Projects\\x-harness-x-model-bench (Windows; python, never python3). Read docs/coordination/eval-wave2-e1/x-c.md section \"C3 under R-105 (Coordinator #26)\" and build C3a as it says: the pilot attach, pilot pass, admit and register commands, readiness.expected_na, the campaign.content reader, and the bench discriminate dispatch. Base integrate/e1e4-17 with X-C2a joined: create the worktree from the primary with coord worktree new --branch build/eval-x-c3a --session x-c3a-e1e4 --base integrate/e1e4-17; never EnterWorktree; never checkout or switch in the primary; record the base SHA and stop if the two precondition checks fail. Red first: a skeleton commit with final signatures and neutral wrong values, the guard files run on it, then red commits that fail by assertion, then green. Tests C-18 register case, C-20, C-21, C-23..C-33, C-35, C-48, I-1, I-2, L-11, the C-47 rows for the four commands, the expected_na test, the content reader test, and T-E9 (c) in tests/test_cli_discriminate.py, each with a written mutant in tests/mutations/campaign.json. Gate per the section: the pytest line with the guard files, ruff, mutate_check on tests/mutations/campaign.json only and never --touched, docs-graph validate; each command on its own line with its exit status read. Do not touch identity.launch_check, plan --campaign, P-1, P-2, P-3b or P-4 (DR-14 is open), do not change the names X-H2 imports, and do not merge or push. Commit with AGENT_SESSION=x-c3a-e1e4 inline. Budget 200 calls, 350k context, 2.5 h; at 85 % commit, stop and report what remains. Report per README section 4 plus the section's report list.",
+      "session": "coord-opus-e1e4",
+      "shortname": "compile-x-c3a",
+      "skill": "compile",
+      "started_at": "2026-10-05T08:13:20Z",
+      "summary": "raw al-01M45HZRB1EZP2GYX5A3SZG477, compiled al-01M45J28TYDB5RNP6CEW0Q3XEW, harness claude-code, compiler claude-opus-5-5; 10 done-when + 4 not-in-scope phrase-traced; 0 assumptions; 0 decision requests (DR-14 is the Owner's and C3a does not depend on it); dispatchable true",
+      "tags": [],
+      "tier": "T0",
+      "tool": null
+    },
+    {
+      "id": "al-01M45RHE32FJDYJ7F3WJSWHKP3",
+      "shortname": "You are X-C3b (session x-c3b-e1e4, branch build/eval-x-c3b), a Claude Co…",
+      "datetime": "2026-10-05T10:07:51Z",
+      "session": "prompt-compile",
+      "prompt": "You are X-C3b (session x-c3b-e1e4, branch build/eval-x-c3b), a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5 expected; the served id is the first line of your report). Repo C:\\Projects\\x-harness-x-model-bench (Windows; python, never python3). Read docs/coordination/eval-wave2-e1/x-c.md section \"C3b under R-105 (Coordinator #27)\" and build C3b as it says: the R-106 conditions (the identity.py key-set hunk with red tests i-iv in tests/test_identity.py and two mutants in tests/mutations/identity.json, the check_plan HB-CMP-010 clause with C-49 extended, the I-3 raw-row workaround removed, the cross-owner launch test baseline to plan --campaign to attach to bench run reaching cell.launch_intent with P-4 still firing, identity_check_ms measured), bench plan --campaign with P-1, P-2, P-3b, stop_reason and stop_diff at both status.py construction sites, the bench run refusal and bench status label for a non-measurement plan, verify_for_plan and the after-grading hook, the bench report binding to X-H2's CampaignInput, the bench-campaign-status/1 document, telemetry, and L-10, C-45, C-46 and the remaining C-47 rows. Base integrate/b6-stage: create the worktree from the primary with coord worktree new --branch build/eval-x-c3b --session x-c3b-e1e4 --base integrate/b6-stage; never EnterWorktree; never checkout or switch in the primary; record the base SHA and stop if any of the four precondition checks fails. Red first: a skeleton commit with final signatures and neutral wrong values, the guard files run on it, then red commits that fail by assertion, then green; every test with a written mutant. Gate per the section: the guard-file pytest line on the skeleton and final commit, the own-file pytest line, the browser test once, ruff, mutate_check on tests/mutations/campaign.json and on tests/mutations/identity.json only (never --touched), docs-graph validate; each on its own line, exit status read, never behind a pipe. The bench validate line stays held (the Leader's call; it goes to the operator); do not add it. The whole suite is the Leader's. Budget 200 calls, context under 400k, at most 2.5 h; at 85 % commit, stop and report what remains by test id. AGENT_SESSION=x-c3b-e1e4 on every commit and coord call. Do not merge or push. Report per the section's Report list.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M45RK5XAYR8ZBZRHR66XC9DV",
+      "shortname": "compile-You are X-C3b (session x-c3b-e1e4, branch build/eval-x-c3b), a Claude Co…",
+      "datetime": "2026-10-05T10:08:49Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Build X-C3b (session x-c3b-e1e4, branch build/eval-x-c3b) as docs/coordination/eval-wave2-e1/x-c.md section \"C3b under R-105 (Coordinator #27)\" specifies, red first, as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) from integrate/b6-stage.\nDone when: The tree is created from the primary with coord worktree new --branch build/eval-x-c3b --session x-c3b-e1e4 --base integrate/b6-stage, and nothing is checked out or switched in the primary.; The base SHA is recorded and the four precondition checks pass before any work; the session stops if any fails.; C3b is built as the x-c.md section \"C3b under R-105 (Coordinator #27)\" says.; The R-106 conditions hold: the identity.py key-set hunk with red tests i-iv in tests/test_identity.py and two mutants in tests/mutations/identity.json, the check_plan HB-CMP-010 clause with C-49 extended, the I-3 raw-row workaround removed, the cross-owner launch test reaching cell.launch_intent with P-4 still firing, and identity_check_ms measured.; bench plan --campaign exists with P-1, P-2 and P-3b; stop_reason and stop_diff are set at both status.py construction sites; bench run refuses and bench status labels a non-measurement plan.; verify_for_plan and the after-grading hook, the bench report binding to X-H2's CampaignInput, the bench-campaign-status/1 document, telemetry, and L-10, C-45, C-46 and the remaining C-47 rows exist and pass.; The work lands red first: a skeleton commit with final signatures and neutral wrong values with the guard files run on it, then red commits failing by assertion, then green; every test has a written mutant.; The gate passes per the section: the guard-file pytest line on the skeleton and final commit, the own-file pytest line, the browser test once, ruff, mutate_check on tests/mutations/campaign.json and tests/mutations/identity.json only (never --touched), and docs-graph validate; each on its own line, exit status read, never behind a pipe.; Every commit and coord call carries AGENT_SESSION=x-c3b-e1e4.; At 85 % of the budget (200 calls, context under 400k, 2.5 h) the work is committed, the session stops, and what remains is reported by test id.; The final report follows the section's Report list, with the served model id on its first line.\nNot in scope: The bench validate line (the Leader's call; it goes to the operator).; The whole suite (the Leader's).; Merging or pushing.; Checkout or switch in the primary.\nTier: T2\nFan-out cap: 0\nContext ceiling: 400k\nMain-line budget: 200 calls, 2.5 h\nTrace\n| clause | trace |\n|---|---|\n| done_when: The tree is created from the primary with coord worktree new --branch build/eval-x-c3b --session x-c3b-e1e4 --base integrate/b6-stage, and nothing is checked out or switched in the primary. | phrase: create the worktree from the primary with coord worktree new --branch build/eval-x-c3b --session x-c3b-e1e4 --base integrate/b6-stage |\n| done_when: The base SHA is recorded and the four precondition checks pass before any work; the session stops if any fails. | phrase: record the base SHA and stop if any of the four precondition checks fails |\n| done_when: C3b is built as the x-c.md section \"C3b under R-105 (Coordinator #27)\" says. | phrase: Read docs/coordination/eval-wave2-e1/x-c.md section \"C3b under R-105 (Coordinator #27)\" and build C3b as it says |\n| done_when: The R-106 conditions hold: the identity.py key-set hunk with red tests i-iv in tests/test_identity.py and two mutants in tests/mutations/identity.json, the check_plan HB-CMP-010 clause with C-49 extended, the I-3 raw-row workaround removed, the cross-owner launch test reaching cell.launch_intent with P-4 still firing, and identity_check_ms measured. | phrase: the R-106 conditions (the identity.py key-set hunk with red tests i-iv in tests/test_identity.py and two mutants in tests/mutations/identity.json, the check_plan HB-CMP-010 clause with C-49 extended, the I-3 raw-row workaround removed, the cross-owner launch test baseline to plan --campaign to attach to bench run reaching cell.launch_intent with P-4 still firing, identity_check_ms measured) |\n| done_when: bench plan --campaign exists with P-1, P-2 and P-3b; stop_reason and stop_diff are set at both status.py construction sites; bench run refuses and bench status labels a non-measurement plan. | phrase: bench plan --campaign with P-1, P-2, P-3b, stop_reason and stop_diff at both status.py construction sites, the bench run refusal and bench status label for a non-measurement plan |\n| done_when: verify_for_plan and the after-grading hook, the bench report binding to X-H2's CampaignInput, the bench-campaign-status/1 document, telemetry, and L-10, C-45, C-46 and the remaining C-47 rows exist and pass. | phrase: verify_for_plan and the after-grading hook, the bench report binding to X-H2's CampaignInput, the bench-campaign-status/1 document, telemetry, and L-10, C-45, C-46 and the remaining C-47 rows |\n| done_when: The work lands red first: a skeleton commit with final signatures and neutral wrong values with the guard files run on it, then red commits failing by assertion, then green; every test has a written mutant. | phrase: Red first: a skeleton commit with final signatures and neutral wrong values, the guard files run on it, then red commits that fail by assertion, then green; every test with a written mutant. |\n| done_when: The gate passes per the section: the guard-file pytest line on the skeleton and final commit, the own-file pytest line, the browser test once, ruff, mutate_check on tests/mutations/campaign.json and tests/mutations/identity.json only (never --touched), and docs-graph validate; each on its own line, exit status read, never behind a pipe. | phrase: Gate per the section: the guard-file pytest line on the skeleton and final commit, the own-file pytest line, the browser test once, ruff, mutate_check on tests/mutations/campaign.json and on tests/mutations/identity.json only (never --touched), docs-graph validate; each on its own line, exit status read, never behind a pipe. |\n| done_when: Every commit and coord call carries AGENT_SESSION=x-c3b-e1e4. | phrase: AGENT_SESSION=x-c3b-e1e4 on every commit and coord call. |\n| done_when: At 85 % of the budget (200 calls, context under 400k, 2.5 h) the work is committed, the session stops, and what remains is reported by test id. | phrase: Budget 200 calls, context under 400k, at most 2.5 h; at 85 % commit, stop and report what remains by test id. |\n| done_when: The final report follows the section's Report list, with the served model id on its first line. | phrase: Report per the section's Report list. |\n| not_in_scope: The bench validate line (the Leader's call; it goes to the operator). | phrase: The bench validate line stays held (the Leader's call; it goes to the operator); do not add it. |\n| not_in_scope: The whole suite (the Leader's). | phrase: The whole suite is the Leader's. |\n| not_in_scope: Merging or pushing. | phrase: Do not merge or push. |\n| not_in_scope: Checkout or switch in the primary. | phrase: never checkout or switch in the primary |\nReferences\n- build/eval-x-c3b: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-c.md: docs/coordination/eval-wave2-e1/x-c.md sha256 2f1e37044b13059c16aabc6d917fda2245b532f0d7d9316bb231d27940aa5c8f\n- identity.py: src/harness_bench/identity.py sha256 7f1d02dc603e1ece391799ded238194261e65824a10f5b65e824f557b669be97\n- tests/test_identity.py: tests/test_identity.py sha256 2fe5d6ce2ff48cc6ae879b4962a0f48bda8611706a0b92c4cde0b911c2a93c52\n- tests/mutations/identity.json: unresolved (not found)\n- status.py: src/harness_bench/status.py sha256 41bdba44b39d3bb84523fe66ccdcff173b85f7ad9458bf61c836a7b520406e65\n- bench-campaign-status/1: unresolved (not found)\n- integrate/b6-stage: unresolved (not found)\n- tests/mutations/campaign.json: tests/mutations/campaign.json sha256 f1c61f9f970e650fb67a583429e5269ed09b30704f075de3b0e9d797dba0bf74\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1 (serial; no sub-agents)\ntransient_retry: one retry of a failed tool call; a red gate is fixed, never retried\nper_branch_exit: the seven-line gate green on the final commit, exit status of each read\njoin_rule: the Leader joins onto the integration line after the whole suite passes (R-104)\ncontainment: own worktree build/eval-x-c3b; owned paths per x-c.md Owned paths plus the #27 grants (the R-106 identity.py hunk and its tests, tests/mutations/identity.json, the views.load any_kind keyword); another owner's line is a seam request\ntermination: C3b scope green, or the 85 % budget stop\ndeadline: 2.5 h\nfallback: at 85 % of budget: commit, stop, report the remainder by test id; src remainder to a C3c turn, test-only items 9 to X-INT\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M45RHE32FJDYJ7F3WJSWHKP3\nraw sha256: c9bd9438215cfed394c91785fec0e20c0ad23ebf3e29b0dba226cb19880e1e16\ncompiler model: claude-opus-5-5\nengine seconds: 0.012\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M45RHE32FJDYJ7F3WJSWHKP3 for claude-code v1: 15 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "The tree is created from the primary with coord worktree new --branch build/eval-x-c3b --session x-c3b-e1e4 --base integrate/b6-stage, and nothing is checked out or switched in the primary.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "create the worktree from the primary with coord worktree new --branch build/eval-x-c3b --session x-c3b-e1e4 --base integrate/b6-stage"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The base SHA is recorded and the four precondition checks pass before any work; the session stops if any fails.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "record the base SHA and stop if any of the four precondition checks fails"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "C3b is built as the x-c.md section \"C3b under R-105 (Coordinator #27)\" says.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Read docs/coordination/eval-wave2-e1/x-c.md section \"C3b under R-105 (Coordinator #27)\" and build C3b as it says"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The R-106 conditions hold: the identity.py key-set hunk with red tests i-iv in tests/test_identity.py and two mutants in tests/mutations/identity.json, the check_plan HB-CMP-010 clause with C-49 extended, the I-3 raw-row workaround removed, the cross-owner launch test reaching cell.launch_intent with P-4 still firing, and identity_check_ms measured.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the R-106 conditions (the identity.py key-set hunk with red tests i-iv in tests/test_identity.py and two mutants in tests/mutations/identity.json, the check_plan HB-CMP-010 clause with C-49 extended, the I-3 raw-row workaround removed, the cross-owner launch test baseline to plan --campaign to attach to bench run reaching cell.launch_intent with P-4 still firing, identity_check_ms measured)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "bench plan --campaign exists with P-1, P-2 and P-3b; stop_reason and stop_diff are set at both status.py construction sites; bench run refuses and bench status labels a non-measurement plan.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "bench plan --campaign with P-1, P-2, P-3b, stop_reason and stop_diff at both status.py construction sites, the bench run refusal and bench status label for a non-measurement plan"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "verify_for_plan and the after-grading hook, the bench report binding to X-H2's CampaignInput, the bench-campaign-status/1 document, telemetry, and L-10, C-45, C-46 and the remaining C-47 rows exist and pass.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "verify_for_plan and the after-grading hook, the bench report binding to X-H2's CampaignInput, the bench-campaign-status/1 document, telemetry, and L-10, C-45, C-46 and the remaining C-47 rows"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The work lands red first: a skeleton commit with final signatures and neutral wrong values with the guard files run on it, then red commits failing by assertion, then green; every test has a written mutant.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Red first: a skeleton commit with final signatures and neutral wrong values, the guard files run on it, then red commits that fail by assertion, then green; every test with a written mutant."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The gate passes per the section: the guard-file pytest line on the skeleton and final commit, the own-file pytest line, the browser test once, ruff, mutate_check on tests/mutations/campaign.json and tests/mutations/identity.json only (never --touched), and docs-graph validate; each on its own line, exit status read, never behind a pipe.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Gate per the section: the guard-file pytest line on the skeleton and final commit, the own-file pytest line, the browser test once, ruff, mutate_check on tests/mutations/campaign.json and on tests/mutations/identity.json only (never --touched), docs-graph validate; each on its own line, exit status read, never behind a pipe."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Every commit and coord call carries AGENT_SESSION=x-c3b-e1e4.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "AGENT_SESSION=x-c3b-e1e4 on every commit and coord call."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "At 85 % of the budget (200 calls, context under 400k, 2.5 h) the work is committed, the session stops, and what remains is reported by test id.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Budget 200 calls, context under 400k, at most 2.5 h; at 85 % commit, stop and report what remains by test id."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The final report follows the section's Report list, with the served model id on its first line.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report per the section's Report list."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "The bench validate line (the Leader's call; it goes to the operator).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The bench validate line stays held (the Leader's call; it goes to the operator); do not add it."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "The whole suite (the Leader's).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The whole suite is the Leader's."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Merging or pushing.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Do not merge or push."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Checkout or switch in the primary.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "never checkout or switch in the primary"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree build/eval-x-c3b; owned paths per x-c.md Owned paths plus the #27 grants (the R-106 identity.py hunk and its tests, tests/mutations/identity.json, the views.load any_kind keyword); another owner's line is a seam request",
+          "deadline": "2.5 h",
+          "fallback": "at 85 % of budget: commit, stop, report the remainder by test id; src remainder to a C3c turn, test-only items 9 to X-INT",
+          "join_rule": "the Leader joins onto the integration line after the whole suite passes (R-104)",
+          "per_branch_exit": "the seven-line gate green on the final commit, exit status of each read",
+          "termination": "C3b scope green, or the 85 % budget stop",
+          "transient_retry": "one retry of a failed tool call; a red gate is fixed, never retried",
+          "width_cap": "1 (serial; no sub-agents)"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Build X-C3b (session x-c3b-e1e4, branch build/eval-x-c3b) as docs/coordination/eval-wave2-e1/x-c.md section \"C3b under R-105 (Coordinator #27)\" specifies, red first, as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) from integrate/b6-stage.",
+          "done_when": [
+            "The tree is created from the primary with coord worktree new --branch build/eval-x-c3b --session x-c3b-e1e4 --base integrate/b6-stage, and nothing is checked out or switched in the primary.",
+            "The base SHA is recorded and the four precondition checks pass before any work; the session stops if any fails.",
+            "C3b is built as the x-c.md section \"C3b under R-105 (Coordinator #27)\" says.",
+            "The R-106 conditions hold: the identity.py key-set hunk with red tests i-iv in tests/test_identity.py and two mutants in tests/mutations/identity.json, the check_plan HB-CMP-010 clause with C-49 extended, the I-3 raw-row workaround removed, the cross-owner launch test reaching cell.launch_intent with P-4 still firing, and identity_check_ms measured.",
+            "bench plan --campaign exists with P-1, P-2 and P-3b; stop_reason and stop_diff are set at both status.py construction sites; bench run refuses and bench status labels a non-measurement plan.",
+            "verify_for_plan and the after-grading hook, the bench report binding to X-H2's CampaignInput, the bench-campaign-status/1 document, telemetry, and L-10, C-45, C-46 and the remaining C-47 rows exist and pass.",
+            "The work lands red first: a skeleton commit with final signatures and neutral wrong values with the guard files run on it, then red commits failing by assertion, then green; every test has a written mutant.",
+            "The gate passes per the section: the guard-file pytest line on the skeleton and final commit, the own-file pytest line, the browser test once, ruff, mutate_check on tests/mutations/campaign.json and tests/mutations/identity.json only (never --touched), and docs-graph validate; each on its own line, exit status read, never behind a pipe.",
+            "Every commit and coord call carries AGENT_SESSION=x-c3b-e1e4.",
+            "At 85 % of the budget (200 calls, context under 400k, 2.5 h) the work is committed, the session stops, and what remains is reported by test id.",
+            "The final report follows the section's Report list, with the served model id on its first line."
+          ],
+          "not_in_scope": [
+            "The bench validate line (the Leader's call; it goes to the operator).",
+            "The whole suite (the Leader's).",
+            "Merging or pushing.",
+            "Checkout or switch in the primary."
+          ],
+          "tier": "T2",
+          "fan_out_cap": "0",
+          "context_ceiling": "400k",
+          "main_line_budget": "200 calls, 2.5 h"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.012,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M45RHE32FJDYJ7F3WJSWHKP3",
+        "raw_sha256": "c9bd9438215cfed394c91785fec0e20c0ad23ebf3e29b0dba226cb19880e1e16",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-c3b"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-c.md",
+            "reason": null,
+            "sha256": "2f1e37044b13059c16aabc6d917fda2245b532f0d7d9316bb231d27940aa5c8f",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-c.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/identity.py",
+            "reason": null,
+            "sha256": "7f1d02dc603e1ece391799ded238194261e65824a10f5b65e824f557b669be97",
+            "status": "resolved",
+            "token": "identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_identity.py",
+            "reason": null,
+            "sha256": "2fe5d6ce2ff48cc6ae879b4962a0f48bda8611706a0b92c4cde0b911c2a93c52",
+            "status": "resolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/identity.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/status.py",
+            "reason": null,
+            "sha256": "41bdba44b39d3bb84523fe66ccdcff173b85f7ad9458bf61c836a7b520406e65",
+            "status": "resolved",
+            "token": "status.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench-campaign-status/1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "integrate/b6-stage"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/campaign.json",
+            "reason": null,
+            "sha256": "f1c61f9f970e650fb67a583429e5269ed09b30704f075de3b0e9d797dba0bf74",
+            "status": "resolved",
+            "token": "tests/mutations/campaign.json"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M45RNTY1VSHSE7WK0659EAGF",
+      "shortname": "coord #27: C3b re-cut on 1c615832 under R-106; X-C3b compiled",
+      "datetime": "2026-10-05T10:10:16Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Coordinator #27 (Leader epoch 17): re-cut the C3b part of x-c.md against integrate/b6-stage 1c615832 with R-106's conditions as acceptance items, compile X-C3b (CO-S0), list X-INT's needs, append Coordinator #27 to E1 README section 8.",
+      "summary": "x-c.md section 'C3b under R-105 (Coordinator #27)'; views.load any_kind keyword granted as arbiter for X-A1 (bench status label, SR-E3 1); X-C3b compiled al-01M45RK5XAYR8ZBZRHR66XC9DV (raw al-01M45RHE32FJDYJ7F3WJSWHKP3), 0 assumptions, 0 DR, dispatchable; bench validate line held (Leader's call).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/coordination/eval-wave2-e1/x-c.md",
+        "docs/coordination/eval-wave2-e1/README.md"
+      ],
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Coordinator #25: re-read X-H2 against integrate/e1e4-17 e6a7160a, split real C1 read API vs fixtures, add the R-105 header, compile X-H2 (session x-h2-e1e4, branch build/eval-x-h2, Sonnet under R-105 beside X-C2)",
-      "done_when": "x-h2.md edited; X-H2 compiled dispatchable with 0 DR; README section 8 Coordinator #25 entry; docs-graph validate exit read; named paths committed on coord/eval-c25-xh2",
+      "goal": "C3b brief re-cut and X-C3b compiled, dispatchable",
+      "done_when": "brief section, compile entry and README #27 entry committed on coord/eval-c27-xc3b; docs-graph validate exit 0",
       "tier": "T1",
       "fan_out": 0
     }

@@ -5980,7 +5980,7 @@ window.DOCS_INDEX = {
       "phase": "",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "X-C builds campaign.py, the bench campaign commands, the lock protocol, verify with its git witness, the run-side check inside the engine, the campaign status document and the after-grading hook of W1-C rev 2, under W0 rev 6, in serial dispatches C1 -> C2 (C2a ran) -> C3a -> C3b (Coordinator #26: C2b returns to C3a; DR-14 gates C3b), each red and green in one turn; planned Agy gemini-3.8-flash-high, run as Claude Sonnet from the integration head under R-105 while the primary is blocked (Coordinator #22: C1 re-read against integrate/b3-stage2 f7e1e357).",
+      "summary": "X-C builds campaign.py, the bench campaign commands, the lock protocol, verify with its git witness, the run-side check inside the engine, the campaign status document and the after-grading hook of W1-C rev 2, under W0 rev 6, in serial dispatches C1 -> C2 (C2a ran) -> C3a -> C3b (Coordinator #26: C2b returns to C3a; Coordinator #27: C3b re-cut on 1c615832 under R-106), each red and green in one turn; planned Agy gemini-3.8-flash-high, run as Claude Sonnet from the integration head under R-105 while the primary is blocked (Coordinator #22: C1 re-read against integrate/b3-stage2 f7e1e357).",
       "tags": [],
       "links": [
         {
@@ -5997,7 +5997,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "29e5c6a3ae4f05bc6efd969eae96d341b4d76750daefa7897c5df5c3c9ce15a1"
+      "sourceSha256": "2f1e37044b13059c16aabc6d917fda2245b532f0d7d9316bb231d27940aa5c8f"
     },
     {
       "id": "brief-eval-x-cv",
@@ -7339,7 +7339,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4fa3b54183b2d40e3be97e0a36e3edba8d19e44574238dfa1482fe0bbbda848c"
+      "sourceSha256": "cef576f5555b705b5da64be9e79da28110fcbc09d54326482f68e3c23cb5d1a4"
     },
     {
       "id": "coordination-eval-wave2-e234-briefs",
@@ -8295,5 +8295,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "fae2bd6f548d2b138c6ae4d550113ca3cc05c493a88ae7fa8e6b3bce8d485657"
+  "graphSha256": "3229bba8e548d2d7bd5e8f636d86a28447219aa7877a32bf331ba4e5f3ac79ab"
 };
