@@ -1,0 +1,3 @@
+{"agent": "x-h1b-e1e4", "at": 1791171878.8122528, "kind": "session-start", "path": "-", "seq": 1, "session": "x-h1b-e1e4", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-eval-x-h1b"}
+{"action": "add", "agent": "x-h1b-e1e4", "at": 1791172501.7140892, "deadline_at": 1791173401.7140892, "id": "req-01M4536R6JC1GNHMA4CEQCWVP8", "kind": "request", "path": "-", "seq": 2, "session": "x-h1b-e1e4", "to": "coord-opus-e1e4", "type": "request", "wi": "WI-0"}
+{"action": "add", "agent": "x-h1b-e1e4", "at": 1791172511.4779403, "deadline_at": 1791173411.4779403, "id": "req-01M45371QP0AMN0BGPSEYS1BN0", "kind": "request", "path": "-", "seq": 3, "session": "x-h1b-e1e4", "to": "coord-opus-e1e4", "type": "request", "wi": "WI-0"}
