@@ -135,7 +135,6 @@ def test_t_eng_2_one_budget_across_turns(tmp_path):
 
 
 @pytest.mark.parametrize("source", ["acp_turn", "native_record"])
-@pytest.mark.xfail(strict=True, reason="J1b: sum usage across returned turns")
 def test_t_eng_4_usage_sums_every_turn(tmp_path, source):
     per_turn = [{"usage": usage(n), "native_usage": {"input_tokens": n, "output_tokens": 0,
                 "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0},
@@ -185,7 +184,6 @@ def test_t_eng_5_suspend_during_turn_two_keeps_snapshot(tmp_path):
     assert next(iter(summary.outcomes.values()))["cause"] == "host_suspended"
 
 
-@pytest.mark.xfail(strict=True, reason="J1b: only end_turn continues; record stopping turns")
 def test_t_eng_6_only_end_turn_continues(tmp_path):
     _, events, _, _, _ = run_cell(tmp_path, [{"stop_reason": "max_tokens"}, {"stop_reason": "end_turn"}])
     assert not row(events, "cell.prompt_sent", 2), "max_tokens must not send turn 2"
@@ -219,7 +217,6 @@ def test_t_eng_8_9_failed_second_turn_keeps_snapshot(tmp_path, config, cause):
     assert next(iter(summary.outcomes.values()))["cause"] == cause
 
 
-@pytest.mark.xfail(strict=True, reason="J1b: write returned turn before cancel decision")
 def test_t_eng_10_returned_turn_is_recorded_before_cancel(tmp_path, monkeypatch):
     observed = {}
     def cancel(e, r, clock):
@@ -245,16 +242,14 @@ def test_t_eng_10_returned_turn_is_recorded_before_cancel(tmp_path, monkeypatch)
     assert not row(events, "cell.prompt_sent", 2)
 
 
-@pytest.mark.xfail(strict=True, reason="J1b: per-turn records carry total agent time")
 def test_t_eng_11_outcome_last_turn_and_total_agent_time(tmp_path):
     summary, events, _, _, _ = run_cell(tmp_path)
     ended = [r for r in events if r["kind"] == "cell.turn_ended"]
     assert len(ended) == 2, "agent time requires every returned turn"
-    assert sum(r["turn_seconds"] for r in ended) >= ended[-1]["turn_seconds"]
-    assert next(iter(summary.outcomes.values()))["turn_ms"] == int(ended[-1]["turn_seconds"] * 1000)
+    assert sum(r["turn_ms"] for r in ended) >= ended[-1]["turn_ms"]
+    assert next(iter(summary.outcomes.values()))["turn_ms"] == ended[-1]["turn_ms"]
 
 
-@pytest.mark.xfail(strict=True, reason="J1b: one handshake per session")
 def test_t_drv_1_one_handshake_for_two_prompts(tmp_path):
     log = tmp_path / "prompts.jsonl"
     cp = _spawn(tmp_path, prompts_log=str(log))
@@ -275,7 +270,6 @@ def test_t_drv_1_one_handshake_for_two_prompts(tmp_path):
         cp.close()
 
 
-@pytest.mark.xfail(strict=True, reason="J1b: idempotent Session.close")
 def test_t_drv_2_close_is_idempotent_and_closed_send_has_cause(tmp_path):
     cp = _spawn(tmp_path)
     try:
@@ -550,8 +544,10 @@ def turn_row(kind, n, **fields):
     return {"kind": kind, "cell_id": "a", "turn": n, **fields}
 
 
-@pytest.mark.parametrize("count", [1, 2])
-@pytest.mark.xfail(strict=True, reason="J1d: turn-keyed lifecycle replay")
+@pytest.mark.parametrize("count", [
+    1,  # green by J1b's one lifecycle.TABLE entry (W0 R6.12b)
+    pytest.param(2, marks=pytest.mark.xfail(strict=True, reason="J1d: turn-keyed lifecycle replay")),
+])
 def test_t_lif_1_valid_turn_streams(count):
     prefix = LIF_GOOD[:5]
     turns = [turn_row("cell.prompt_sent", 1), turn_row("cell.turn_ended", 1, stop_reason="end_turn", next="snapshot" if count == 2 else "final")]

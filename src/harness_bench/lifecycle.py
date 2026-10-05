@@ -66,6 +66,8 @@ TABLE: dict[str, Transition] = {
                                    after_rule="PersistPromptSent needs StartCell and an open session",
                                    not_after=("attempt.process_ended", "cell.outcome"),
                                    not_after_rule="NoPromptAfterOutcome: no prompt once the process ended or the outcome is in"),
+    "cell.turn_ended": Transition("TurnEnd", "engine", after=("cell.prompt_sent",),
+                                  after_rule="turn_ended follows its prompt_sent"),
     "attempt.process_ended": Transition("CellExits / CellDies (confirmed)", "engine", after=("attempt.process_started",),
                                         after_rule="process_ended after process_started"),
     "cell.outcome": Transition("RecordExit / StartFails", "engine"),

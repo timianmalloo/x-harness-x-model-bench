@@ -347,11 +347,16 @@ def _build_check(plan: dict, harness: str, opened: dict) -> Finding | None:
     return None
 
 
-def _token_cross_check(ended: dict, calls: list[ModelCall]) -> Finding | None:
+def _token_cross_check(ended: dict, calls: list[ModelCall], turn_rows: list[dict] = ()) -> Finding | None:
     """HB-VAL-005, a warning, never a validity change: the ACP turn total and Σ model_calls disagree, or no ACP usage
     was recorded (the check did not run, which is never read as a pass). Copilot's `inputTokens` includes cache read
     and write (R-20 c2)."""
-    usage = as_dict(ended.get("acp_usage")).get("usage")
+    per_turn = [u for r in turn_rows if isinstance(u := as_dict(r.get("usage")).get("usage"), dict)]
+    if per_turn:  # the sum over the turn_ended rows present; a turn with no row is not recorded, never 0 (design 4.5)
+        usage = {k: sum(u[k] for u in per_turn) if all(is_count(u.get(k)) for u in per_turn) else None
+                 for k in {k for u in per_turn for k in u}}
+    else:
+        usage = as_dict(ended.get("acp_usage")).get("usage")
     if not isinstance(usage, dict):
         return Finding("HB-VAL-005", "warning", "token cross-check not run: no ACP usage recorded")
     diffs = []
@@ -499,7 +504,9 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     executed, refused = _out_of_profile(tools or [], (outcome or {}).get("permission_requests"), advertised, scenario)
     warnings.append(refused)
     if cell["harness"] in ACP_TOTAL_HARNESSES and source == "native_record" and calls is not None and unrecorded is None:
-        warnings.append(_token_cross_check(ended, ex.model_calls))
+        warnings.append(_token_cross_check(ended, ex.model_calls,
+                                          [e for e in facts["events"] if e.get("cell_id") == cid
+                                           and e["kind"] == "cell.turn_ended"]))
     totals = normalize.totals(source, ex, usage) if recorded and unrecorded is None else {}
     if unrecorded is not None:
         tokens_reason = f"not recorded ({unrecorded})"  # R-21 c2: never a partial sum or a zero
