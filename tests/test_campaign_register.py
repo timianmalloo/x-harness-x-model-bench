@@ -184,6 +184,12 @@ def test_pilot_pass_refuses_an_unsealed_pass_and_an_unattached_run_c25(tmp_path,
     rc, _, err = cmd(root, capsys, "pilot", "pass", CID, "P1")
     assert rc == 1 and "HB-CMP-002" in err and "not complete" in err
     assert "pilot.passed" not in kinds_of(root)
+    for fact in ("events", "scores"):
+        (root / "runs" / "P1" / fact / f"{GID}.jsonl").unlink()
+    grade_pass(root, "P1", facts=("events",))  # the pass is complete, but its scores segment is not sealed: the gate heads cannot be taken
+    grade_pass(root, "P1", seal=False, facts=("scores",))
+    rc, _, err = cmd(root, capsys, "pilot", "pass", CID, "P1")
+    assert rc == 1 and "HB-CMP-002" in err and "scores" in err and "pilot.passed" not in kinds_of(root)
 
 
 @pytest.mark.parametrize("reader", ["hidden_test_disagreements", "unbiased_failures", "expected_na"])
@@ -279,6 +285,11 @@ def fix_after_power(root):
     campaign_append(root, "defect_fix.admitted", changes={key: [effective[key], "b" * 64]})
 
 
+def stale_admission(root):
+    grade_pass(root, "P1", GID2, score="b")  # a newer pass, recorded, with no admission after it
+    assert bench(root, "campaign", "pilot", "pass", CID, "P1", "--grading-id", GID2) == 0
+
+
 def campaign_append(root, kind, **fields):
     from test_cli_campaign import append
 
@@ -290,6 +301,7 @@ C30_CASES = [
     ("mde", {"mde": {"security": "0.2"}}, None, "mde"),
     ("fix", {}, fix_after_power, "predate"),
     ("admission", {}, "skip-admit", "admission"),
+    ("stale-admission", {}, stale_admission, "admission"),
     ("coverage", {"arms": {"ghost": {"commit": TREAT_COMMIT, "revision": "r1"}}}, None, "did not cover"),
     ("heads", {}, break_heads, "heads"),
     ("source", {"arms": {"treat": {"commit": TREAT_COMMIT, "revision": "r1", "source": "C:\\Users\\x\\ai-forward"}}}, None, "local path"),

@@ -142,6 +142,8 @@ def cmd_campaign(args) -> int:
 
 def cmd_discriminate(args) -> int:
     """T-E9 (c): one discrimination trial; the record path and outcome on stdout, a `BenchError` to `main`'s handler."""
+    result = discriminate.run(Path(args.root), args.task, runs=Path(args.runs), cells_root=Path(args.cells_root))
+    print(f"discriminate {args.task}: {result.outcome} {result.record_path}")
     return OK
 
 
