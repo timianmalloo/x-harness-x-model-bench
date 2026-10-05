@@ -1,0 +1,5 @@
+{"agent": "x-a1b-e1e4", "at": 1791166146.165369, "kind": "session-start", "path": "-", "seq": 1, "session": "x-a1b-e1e4", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-eval-x-a1b"}
+{"action": "add", "agent": "x-a1b-e1e4", "at": 1791166455.8947177, "deadline_at": 1791167355.8947177, "id": "req-01M44XE82QS5H5TTR3WGZS660Y", "kind": "request", "path": "-", "seq": 2, "session": "x-a1b-e1e4", "to": "coord-opus-e1e4", "type": "request", "wi": "WI-0"}
+{"action": "add", "agent": "x-a1b-e1e4", "at": 1791167133.2229764, "deadline_at": 1791168033.2229764, "id": "req-01M44Y2XH7HD6VTK1GBRVWGNGE", "kind": "request", "path": "-", "seq": 3, "session": "x-a1b-e1e4", "to": "coord-opus-e1e4", "type": "request", "wi": "WI-0"}
+{"at": 1791168235.5261953, "from": "x-a1b-e1e4", "kind": "blocked", "mail_id": "mail-01M44Z4J06K1A74W4KAXZE54PS", "ref": "7a76d60e", "session": "x-a1b-e1e4", "to": "leader-e1e4", "type": "mail"}
+{"at": 1791168880.7274883, "from": "x-a1b-e1e4", "kind": "blocked", "mail_id": "mail-01M44ZR82QRNDA9E5MPKDY4H90", "ref": "build/eval-x-a1b", "session": "x-a1b-e1e4", "to": "coord-opus-e1e4", "type": "mail"}
