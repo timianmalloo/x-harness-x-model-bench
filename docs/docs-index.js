@@ -3994,6 +3994,63 @@ window.DOCS_INDEX = {
       "sourceSha256": "7b94008b6236d65dafbeeb8526f12bff06d57904bf9f0c467001367aa233e282"
     },
     {
+      "id": "coordinator-log-c34",
+      "path": "docs/coordination/coordinator-log/c34.md",
+      "title": "Coordinator #34 hand-back (2026-10-05): the X-LGc, X-A3b and X-J2b compiles, pass_rule_problems, the register",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-05",
+      "reviewSuggested": [],
+      "summary": "Coordinator #34, on base 0d4a291a (integrate/e2e4-18 after the A3a and Coordinator #33 joins), compiled three Agy turns: X-LGc (diffstats and the HB-RDY-009 frozen-value check in contract_failures), X-A3b (the pack-regression ring, three-arm plans, the EV-15 ring-hash refusal with one pre-granted errors.py row) and X-J2b (rework.grade, the variant reader, discriminate admitting a turns task; red-only on the engine leg by plan). It confirmed the plan's readiness.py assume by reading the file, named X-TE9 as the owner of readiness.pass_rule_problems in the next plan revision, and added SERVE-A's measured root cause (DRIFT) and an EOL-A instance to the register.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-lg",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-a3",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-j2",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-property-tasks",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-arms",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-catalog-0-7",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "4bcde925ee46262847a34596ce0e720db1aede718866d2ccb4258b4f8fc98b0f"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4020,7 +4077,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "04ab4ef817a37fbede5e44ac80786cdfaad770a9a0db9d64d182aa21ef0ed7a6"
+      "sourceSha256": "19bd820a63e9b9eb2def75fe6610f2a5e306c9b535af4c56a5ae2c3bf4c406ec"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -8787,5 +8844,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "af65e156e8013b4c96071554b7dfb875087c6ebbda0d3b609119f983b671a7d5"
+  "graphSha256": "b673f3d204b1ecbeb5dbea4a5814cf7f7125baef40ea272d5dc015828cb8e134"
 };
