@@ -905,6 +905,15 @@ summary: >-
 - **Control (proposed, operator-owned, R-105 c8/c9):** the wrapper takes the invoking tree as an argument, and one `prepare` from a linked tree is run at the next qualification (it confirms or refutes the Q0 *assume:*). Until then, the procedure control is R-105's: Sonnet sub-agents from `integrate/e1e4-17`, recorded as "planned <harness>; ran Sonnet; reason R-105". The cause half is MUT-A, whose proposed session-start `--check-clean` hook would have caught this mutant before it froze `main`. Upgrade trigger: a second block of the primary, then the wrapper change is a blocker for the next wave.
 - **Status:** `observed` (procedure: R-105; the operator's ask is open)
 
+### INT-A: two owners' checks over one record, specified separately, disagree on its key set (candidate; the E2E-D shape)
+- **Signature:** two checks compare the same stored value, owned by two tracks and each specified in its own design. Each derives the set of keys it compares in its own way. Each passes its own tests, which build the value the way that owner reads it. Joined, the checks disagree: a value that one check writes or accepts, the other refuses.
+- **Why it survives:** the contract above both designs (here W0) names the comparison but not its arguments. Each design fills the gap differently, and the fixtures hide it. X-C2's engine tests wrote the baseline with builds through a raw-row helper, so the real `baseline` command was never paired with the real launch check.
+- **Instances:**
+  - `2026-10-05` X-C2 (found on `build/eval-x-c2` and reported to Coordinator #26). `campaign.baseline` records no `builds/*` key (`campaign.py:959`). `identity.launch_check` takes `tasks/<id>` from `plan.tasks` and `builds/<h>` from `plan.builds` (`identity.py:247`, X-D, following W1-D §5). W1-C's `attach` takes tasks from the effective identity and skips builds keys the stamp lacks (`_tree_run_diff`, `campaign.py:1103`). Measured on `e15abd48`: a chain-stamped plan with builds stops with `builds/fake added`, and a subset plan stops with `tasks/A2 removed`. Ruling: DR-14 (`req-01M45HSK2BGQ0RR0KPA2F1CDWG`).
+- **Sweep (2026-10-05, Coordinator #26):** not run beyond this pair. Owed when DR-14 is ruled: every other reader of `plan.campaign.identity` (`check_plan`, `run_side_check`, eligibility) is checked against the ruled key set.
+- **Control (proposed):** one cross-owner test per shared record, through both real writers and both real checks with no raw-row fixture. Here that is C3b's test that a plan stamped by `plan --campaign` from a `baseline`-command chain launches past `launch_check`. Rung: a test. Upgrade trigger: a second instance. Then a brief-writing rule: where W0 names a comparison but not its arguments, the Coordinator names the arguments in W0 before either owner builds.
+- **Status:** `candidate`
+
 ---
 
 ## Inherited classes (seeded from the pack)

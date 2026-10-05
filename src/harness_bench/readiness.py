@@ -15,9 +15,11 @@ import json
 import logging
 import re
 import sys
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
+
+import yaml
 
 from harness_bench import atomic, config, egress, identity, plan, views
 from harness_bench.errors import BenchError
@@ -87,6 +89,24 @@ def normal(value, scale: int | None):
             raise ValueError(f"{value!r} is not {{na: <reason>}}")
         return ("na", value["na"])
     return prop.at_scale(value, scale)
+
+
+def expected_na(root: Path, tasks: Iterable[str]) -> Mapping[str, frozenset[str]]:
+    """Per task, the metric ids whose `expected.reference` is `{na: <reason>}` (X-C's `pilot pass` hands it to `gates.pilot`). The
+    reference role only: a naive-only NA says nothing about real cells (W0 section 8). Raises HB-USR-002 for a `task.yaml` that is absent,
+    unparseable or holds a malformed NA."""
+    out: dict[str, frozenset[str]] = {}
+    for task_id in tasks:
+        path = root / "tasks" / task_id / "task.yaml"
+        try:
+            reference = (config.load_yaml(path).get("expected") or {}).get("reference") or {}
+            for value in reference.values():
+                if isinstance(value, Mapping):
+                    normal(value, None)  # the one normaliser: a malformed NA raises ValueError
+            out[task_id] = frozenset(metric for metric, value in reference.items() if isinstance(value, Mapping))
+        except (OSError, yaml.YAMLError, ValueError, AttributeError) as exc:
+            raise BenchError("HB-USR-002", f"task {task_id}: {path.name} cannot be read for its expected NA metrics ({exc}). Fix the file.") from exc
+    return out
 
 
 def show(value) -> str:

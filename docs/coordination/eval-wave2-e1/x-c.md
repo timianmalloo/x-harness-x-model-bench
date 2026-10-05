@@ -9,7 +9,7 @@ links:
   - { to: design-eval-campaign-record, rel: depends-on }
   - { to: design-eval-seam-contracts, rel: depends-on }
 review-by: "2026-10-17"
-summary: "X-C builds campaign.py, the bench campaign commands, the lock protocol, verify with its git witness, the run-side check inside the engine, the campaign status document and the after-grading hook of W1-C rev 2, under W0 rev 6, in three serial dispatches C1 -> C2 -> C3, each red and green in one turn; planned Agy gemini-3.8-flash-high, run as Claude Sonnet from the integration head under R-105 while the primary is blocked (Coordinator #22: C1 re-read against integrate/b3-stage2 f7e1e357)."
+summary: "X-C builds campaign.py, the bench campaign commands, the lock protocol, verify with its git witness, the run-side check inside the engine, the campaign status document and the after-grading hook of W1-C rev 2, under W0 rev 6, in serial dispatches C1 -> C2 (C2a ran) -> C3a -> C3b (Coordinator #26: C2b returns to C3a; DR-14 gates C3b), each red and green in one turn; planned Agy gemini-3.8-flash-high, run as Claude Sonnet from the integration head under R-105 while the primary is blocked (Coordinator #22: C1 re-read against integrate/b3-stage2 f7e1e357)."
 ---
 
 # X-C: campaign record and `bench campaign`
@@ -181,3 +181,120 @@ The whole suite (the default ring) is the Leader's at the join, and the `grade/`
 **Budget** (Inferred from C1's measured 52 minutes from session start, 23:01:35, to its last commit `d67efccc`, 23:53:35, for about 45 test ids and 63 mutants; C2a and C2b together are about 60 test ids): 300 calls, 450k context, 3.5 h. At 85 %, commit, stop, and report what remains.
 
 **Report** per README §4, plus: the red SHA, node and failing assertion for items 3, 28, 29, 30 and 31 (C2a) and 33 (C2b); the base SHA; which tests use a stub (C-17 `power.analyse`, C-23, C-26, C-48) and the X-INT partner each waits for; every `assume:` you wrote and whether you confirmed it; and any C2b remainder, by test id.
+
+## C3 under R-105 (Coordinator #26): C3a, then C3b
+This section is the C3 brief. Where they differ, it supersedes the C3 bullet under Turns, "C3's compile reads" (#22), and "C3 keeps" (#24). The R-105 header's rules for seat, gate and serial order still hold. Every name below was read on `integrate/e1e4-17` at `e15abd48`, which has X-C2a joined (skeleton `98dd32ec`, red `ada9760c`, green `7ac20c62`, fix `d1d63e9c`). C2 finished C2a only, so the whole of C2b comes back here.
+
+**Two turns, in this order: C3a, then C3b.** C2 stopped at its context ceiling, so each turn is one Sonnet session of at most 2.5 h with a context budget under 400k.
+- **C3a, the write side.** It completes the campaign command set: after C3a, every command that appends a ledger row exists. The work is C2b, plus the tests that need `register`.
+- **C3b, the read and wiring side.** It covers the status document, `stop_reason` and `stop_diff`, `plan --campaign`, the after-grading hook, `bench run` and `bench status` kind handling, the `bench report` binding, the `bench validate` line, and DR-14's outcome.
+- **The seam.** C3b adds no command that writes a row. It reads ledgers through C1's and C3a's readers. C3b is compiled at C3a's join, from C3a's landed code.
+
+**DR-14: the builds and subset seam (filed by Coordinator #26; `req-01M45HSK2BGQ0RR0KPA2F1CDWG` to `owner-fable`; deadline 4 h).**
+- *What happens today.* `campaign.baseline` records no `builds/*` key (`identity.manifest(root, names)`, `campaign.py:959`). But `identity.launch_check` reads `builds/<h>` from `plan["builds"]` and `tasks/<id>` from `plan["tasks"]` (`identity.py:247`), and compares that key set with the stamp. As a result, a plan stamped from the chain stops at its first launch with HB-IDN-001.
+- *Measured* on `e15abd48` with the real `launch_check`, a stamp taken from a builds-free two-task identity, and a scratchpad probe:
+  - full plan, no builds: `[]`
+  - subset plan: `['tasks/A2 removed']`
+  - plan with `builds: {fake: {}}`: `['builds/fake added']`
+  - X-C2's I-3 works around this by writing the baseline with builds through a raw-row helper (`tests/test_cli_campaign.py:292`, `baselined(..., builds=)`).
+- *Why the Owner decides.* W0 §6 leaves the recheck's manifest arguments unstated. W1-D §5 says tasks come from the plan and builds from the plan. W1-C §5 says tasks come from the effective identity, and builds only where the stamp has them (`_tree_run_diff`, `campaign.py:1103`).
+- *Recommended default:* (c). `launch_check` takes its key set from the stamp. A new `check_plan` clause refuses a plan task that is absent from the effective identity, with HB-CMP-010. The `identity.py` hunk is granted to C3b as arbiter for X-D.
+- **C3a does not depend on DR-14.** It does not touch `identity.launch_check`, `plan --campaign`, P-1, P-2, P-3b or P-4. So C3a is dispatchable now. C3b is compiled on the ruling. If no ruling arrives by the deadline, C3b is compiled on (c).
+
+**`bench validate` finding (for the Leader; measured on `e15abd48`).** T-E9's line (`readiness.problems(root, baseline=...)` in `cmd_validate`, X-E's design §300) would turn CI's `uv run bench validate` (`.github/workflows/ci.yml:29`) red today. `readiness.problems(Path('.'))` prints 8 HB-RDY-005 items on six draft tasks:
+- NG1 and NG2: a GLD-A provenance item and a `vendoredit` variant that does not apply.
+- RW1 and RW2: a GLD-A provenance item each.
+- SM1 and SM2: a `launderclass` variant that does not apply.
+
+So the `validate` line goes to C3b. It lands only on a base where `readiness.problems` is empty, or after the Leader rules otherwise. The `discriminate` dispatch (T-E9 c) has no such effect, and it lands in C3a.
+
+### C3a (`x-c3a-e1e4`, `build/eval-x-c3a`): pilot, admit, register, `expected_na`, the content reader, the `discriminate` dispatch
+**Seat, base and dispatch.**
+- Seat: Claude Code Sonnet sub-agent, `model: sonnet`, served `claude-sonnet-5-5` expected. The served id is the first line of your report. Record: "planned Agy · `gemini-3.8-flash-high`; ran Sonnet (`model: sonnet`, served `claude-sonnet-5-5`); reason R-105".
+- Base: `integrate/e1e4-17`, which carries X-C2a. From the primary: `coord worktree new --branch build/eval-x-c3a --session x-c3a-e1e4 --base integrate/e1e4-17`. Record the base SHA.
+- Before any work, run each check on its own line and stop if one fails:
+  - `git merge-base --is-ancestor d1d63e9c HEAD` (X-C2a)
+  - `grep -n "Coordinator #26" docs/coordination/eval-wave2-e1/x-c.md` (this section is on your base)
+
+**Names as landed (C2a at `e15abd48`; use these).**
+- `campaign.py`:
+  - `session` (`:740`) and `_append(sess, kind, **fields)` (`:776`), the one write API
+  - `latest(state, kind, **match)` (`:342`), meaning "largest `seq`"
+  - `effective_identity` (`:391`), `_baseline_components` (`:380`), `check_fix` (`:402`)
+  - `power` and `_power_inputs` (`:1069`, `:1053`)
+  - `check_plan(root, state, plan_doc, run_id, *, grid=True, tree=True)` (`:1110`); its prereg statement is read inline at `:1150`
+  - `attach` (`:1163`), `run_side_check` (`:1189`), `conclude` and `abandon` (`:1211`, `:1223`)
+  - `_no_change` (`:858`), the `no change:` copy for C-47
+- `cli.CAMPAIGN_COMMANDS` (`cli.py:110`). Its subparsers are built in one loop with `type=_campaign_id` (`:509-518`).
+- `gates.pilot(view, hidden_test_disagreements, unbiased_failures, *, expected_na=EMPTY)` (`gates.py:102`). It raises HB-USR-002 on a `None` list.
+- `gates.admission(view, tasks, off_arm=config.ARM_OFF)` (`:162`).
+- `readiness.py`: `normal` (`:82`), `unbiased_failures` (`:561`), `hidden_test_disagreements` (`:598`), `record_name` (`:57`). `readiness.expected_na` is absent.
+- `discriminate.run(root, task_id, *, runs, cells_root, upstream_root=None) -> Result` (`discriminate.py:246`). `cli.py` has no `discriminate` command.
+- X-H2 imports the following. Do not rename them or change their signatures: `campaign.read`, `latest`, `eligibility`, `CampaignState`, `run_facts`, and the helpers `make_repo`, `put`, `append` and `walk_to` from `tests/test_cli_campaign.py`.
+
+**Scope.**
+1. **C2b as #24 wrote it:** `pilot attach`, `pilot pass`, `admit`, and `register` (preview and `--confirm`).
+   - Read W1-C §5 for the rows and the copy, and W0 §6 (freeze order, R6-5, R6-6) and §8 (pilot gate, `register` preview, R6-13) for the rules.
+   - Add the readers to the gate's conversion: `hidden_test_disagreements`, `unbiased_failures` and `expected_na` each raise HB-USR-002, and the call site turns that into HB-CMP-008 with the reason.
+   - Add one row each to `CAMPAIGN_COMMANDS`, so N-1 picks them up.
+2. **`readiness.expected_na`** (#23 gap (b), the contract in #24's C2b bullet). It is a granted one-function hunk in `readiness.py`.
+3. **One content reader.** This settles #25's open choice: the reader is in `campaign.py`, so the path has one definition (DM7).
+   - Add `campaign.content(root, campaign_id, folder, digest) -> dict`. `folder` is one of `identity`, `prereg` or `power`. It reads `bench/campaigns/<id>/<folder>/<digest>.json` and raises HB-CMP-003 (naming the file) when the file cannot be read or parsed.
+   - Replace the two inline reads (`_baseline_components`, and `check_plan` at `:1150`) with calls to it.
+   - `register` uses it, and C3b's report binder will.
+4. **The `bench discriminate <task> [--runs --cells-root --root]` dispatch** (T-E9 c; X-E's design §300). It is one `COMMANDS` row and a parser that call `discriminate.run`. Print the result's record path and outcome; a `BenchError` propagates through `main`'s handler.
+
+**Tests (W1-C §13 ids; retired ids are not reused).**
+- Commands: C-18 (the `register` case), C-20, C-21, C-23..C-32, C-48 (three raising readers).
+- Need `register`: C-35, I-1, I-2 (threads with `wait_s=30`, hand-off on an event; M-I1, M-I2).
+- Full walk and coverage: C-33 (the full walk on the real CLI), L-11 (AST scan over the complete `CAMPAIGN_COMMANDS`), and the C-47 rows for the four new commands.
+- `expected_na`: #23's one test in `tests/test_readiness.py`.
+- Content reader: a test that an unreadable or unparseable content file is HB-CMP-003 naming the file, plus a mutant.
+- `discriminate`: T-E9 (c) through the real `cli.main` in a new own file, `tests/test_cli_discriminate.py`. Deleting the dispatch row turns it red.
+- C-17 already exists from C2a. Do not add a second one.
+- Acceptance items: 1 (C-33), 4, 5, 6, 16 (I-1, I-2), 19 (L-11), 22, 24 (I-1, I-2, C-35), 29 (`pilot attach`), 33, 42.
+- Stubs: C-23, C-26 and C-48 use stub gates and readers. Their real partner is X-INT-1.
+
+**Gate (R-104; each command on its own line, exit status read, never behind a pipe).** Run the guard files on the skeleton commit, before the reds, and again on the final commit.
+1. `uv run pytest -q tests/test_campaign.py tests/test_campaign_locks.py tests/test_campaign_verify.py tests/test_cli_campaign.py tests/test_cli_discriminate.py tests/test_readiness.py tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py`
+2. `uv run ruff check src tests tools`
+3. `uv run python tools/mutate_check.py tests/mutations/campaign.json` (your own file only, **never `--touched`**)
+4. `python docs/ai-forward-pack/scripts/docs-graph.py validate`
+
+The whole suite is the Leader's at the join (R-104).
+
+**Budget** (Inferred from C2a's measured stop at its ceiling on about 45 ids; C3a is about 22 ids): 200 calls, 350k context, 2.5 h. At 85 %, commit, stop, and report what remains, by test id.
+
+**Report** per README §4, plus:
+- the base SHA
+- the red SHA, node and failing assertion for items 4, 16, 33 and 42
+- which tests use a stub, and the X-INT partner each waits for
+- every `assume:` you wrote, and whether you confirmed it
+- any remainder, by test id
+
+### C3b (`x-c3b-e1e4`, `build/eval-x-c3b`): compiled at C3a's join, on DR-14's ruling
+**Scope (#24's "C3 keeps", less what C3a took, plus three carries):**
+- `status` with `bench-campaign-status/1` (`parse_status`, `to_json`; B-1..B-3).
+- `status.py` `stop_reason` and `stop_diff` at **both** construction sites (#23 gap (c)), with its two tests.
+- `cmd_plan --campaign` (W1-A §3.9 pasted verbatim, SR-2; P-1, P-2, P-4's plan-time refusal) and P-3b.
+- DR-14's outcome. Under (c): the `launch_check` key-set hunk with its tests in `tests/test_identity.py`, the `check_plan` clause, and a red test that a plan stamped by `plan --campaign` from a `baseline`-command chain (subset, and with builds) launches past the identity check. Then I-3's raw-row builds workaround is removed.
+- `verify_for_plan` and the after-grading hook (item 37; item 15).
+- Telemetry (T-1, T-2).
+- `bench run` refusal and `bench status` label for a non-measurement plan (SR-E3 1).
+- L-10, C-45, C-46, and the remaining C-47 rows.
+- **Carries:**
+  - the `bench report` binding in `cli.cmd_report` (#25). It reads through `campaign.read`, `content`, `run_facts`/`eligibility` and `readiness.expected_na`, and passes `campaign_obj=` to `html.write`. It **needs X-H2 joined**, because X-H2 adds `campaign_obj=None` to `render` and `write`. If X-H2 has not joined, the binding moves to X-INT.
+  - the `cmd_validate` line with `--campaign <id>` passing the baseline manifest (T-E9 a, b), under the precondition above.
+
+**What C3b needs from C3a:** the four commands with final signatures and their `CAMPAIGN_COMMANDS` rows, `campaign.content`, `readiness.expected_na`, the `registered` rows the status document and the binder read, and L-11 green over the complete table.
+
+**Gate:** C3a's gate, plus `tests/test_status.py`, `tests/test_grade_runner.py`, `tests/test_report.py` and `tests/test_report_builder.py`. **Budget:** about 22 ids, the same ceiling as C3a.
+
+### X-H2 swap points that C3 hits (from #25's fixture list)
+1. The prereg statement: C3a's `register` writes it, and `campaign.content` reads it.
+2. The power inputs: C2a's `power` is already on `e15abd48`, so this swap is live now.
+3. `expected_na`: C3a.
+4. The `bench report` binding: C3b.
+5. The completion-summary leg: no code in `src/`; X-INT's.
+
+X-H2's swap commits read these names at X-H2's own join, or at X-INT, whichever comes later.

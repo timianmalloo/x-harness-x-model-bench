@@ -310,7 +310,7 @@ def test_malformed_and_unknown_ids_create_nothing_n1(tmp_path, capsys, sub, bad)
     if sub == "create" and bad == "nope":
         pytest.skip("`nope` is a valid new id: only create may create it")
     before = snapshot(root)
-    assert bench(root, "campaign", sub, bad, *ARGV[sub]) == 1
+    assert bench(root, "campaign", *sub.split(), bad, *ARGV[sub]) == 1
     err = capsys.readouterr().err
     assert ("HB-CMP-005" if bad == "nope" else "HB-USR-002") in err
     assert snapshot(root) == before

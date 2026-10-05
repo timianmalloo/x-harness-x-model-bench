@@ -25,6 +25,7 @@ from harness_bench import (
     campaign,
     composites,
     config,
+    discriminate,
     egress,
     engine,
     identity,
@@ -107,13 +108,43 @@ def cmd_campaign_abandon(args) -> int:
     return OK
 
 
+def cmd_campaign_pilot_attach(args) -> int:
+    print(campaign.pilot_attach(Path(args.root), args.campaign_id, args.run_id))
+    return OK
+
+
+def cmd_campaign_pilot_pass(args) -> int:
+    print(campaign.pilot_pass(Path(args.root), args.campaign_id, args.run_id, args.grading_id))
+    return OK
+
+
+def cmd_campaign_admit(args) -> int:
+    print(campaign.admit(Path(args.root), args.campaign_id))
+    return OK
+
+
+def cmd_campaign_register(args) -> int:
+    print(campaign.register(Path(args.root), args.campaign_id, Path(args.prereg), args.confirm))
+    return OK
+
+
 CAMPAIGN_COMMANDS = {"create": cmd_campaign_create, "verify": cmd_campaign_verify, "status": cmd_campaign_status,
                      "baseline": cmd_campaign_baseline, "fix": cmd_campaign_fix, "power": cmd_campaign_power,
+                     "pilot attach": cmd_campaign_pilot_attach, "pilot pass": cmd_campaign_pilot_pass, "admit": cmd_campaign_admit,
+                     "register": cmd_campaign_register,
                      "attach": cmd_campaign_attach, "conclude": cmd_campaign_conclude, "abandon": cmd_campaign_abandon}
 
 
 def cmd_campaign(args) -> int:
-    return CAMPAIGN_COMMANDS[args.campaign_command](args)
+    key = args.campaign_command + (f" {args.pilot_command}" if args.campaign_command == "pilot" else "")
+    return CAMPAIGN_COMMANDS[key](args)
+
+
+def cmd_discriminate(args) -> int:
+    """T-E9 (c): one discrimination trial; the record path and outcome on stdout, a `BenchError` to `main`'s handler."""
+    result = discriminate.run(Path(args.root), args.task, runs=Path(args.runs), cells_root=Path(args.cells_root))
+    print(f"discriminate {args.task}: {result.outcome} {result.record_path}")
+    return OK
 
 
 def _plain() -> bool:
@@ -513,9 +544,14 @@ def build_parser() -> argparse.ArgumentParser:
                        ("fix", "record a defect fix to a component of the effective identity"),
                        ("power", "record power-analysis inputs (prior or final, by the campaign's state)"),
                        ("attach", "attach a confirmed grid run to the campaign (freezes the pre-registration)"),
-                       ("conclude", "end a measuring campaign"), ("abandon", "end a campaign without a conclusion")):
+                       ("conclude", "end a measuring campaign"), ("abandon", "end a campaign without a conclusion"),
+                       ("admit", "record the admission decision of every pilot task (gates.admission)"),
+                       ("register", "preview a pre-registration statement, or register it with --confirm")):
         sp = csub.add_parser(name, help=text)
         sp.add_argument("campaign_id", type=_campaign_id)
+        if name == "register":
+            sp.add_argument("--prereg", required=True, help="a bench-prereg/1 JSON file")
+            sp.add_argument("--confirm", default=None, help="the first 12 hex digits of the statement's hash the preview printed")
         if name == "create":
             sp.add_argument("--question", required=True, help="the campaign's question (at most 500 printable characters)")
         if name == "baseline":
@@ -530,6 +566,18 @@ def build_parser() -> argparse.ArgumentParser:
             sp.add_argument("run_id", type=_run_id)
         if name == "abandon":
             sp.add_argument("--reason", required=True, help="why (at most 500 printable characters)")
+    pilot = csub.add_parser("pilot", help="the pilot ring: attach a run, then record its gate pass")
+    psub = pilot.add_subparsers(dest="pilot_command", required=True)
+    for name, text in (("attach", "attach a confirmed pilot-ring run"), ("pass", "run the pilot gate on a graded pilot run and record the pass")):
+        sp = psub.add_parser(name, help=text)
+        sp.add_argument("campaign_id", type=_campaign_id)
+        sp.add_argument("run_id", type=_run_id)
+        if name == "pass":
+            sp.add_argument("--grading-id", default=None, type=_grading_id, help="the grading pass (default: the run's current pass)")
+    ds = sub.add_parser("discriminate", help="one discrimination trial of a task (the global --root, --runs, --cells-root apply)")
+    ds.add_argument("task", type=_task_id)
+    for flag in ("--root", "--runs", "--cells-root"):  # also accepted after the command, as W1-E's design writes it
+        ds.add_argument(flag, default=argparse.SUPPRESS)
     tl = sub.add_parser("tools", help="the pinned harness builds")
     tl.add_argument("action", choices=["install"])
     return p
@@ -542,6 +590,14 @@ def _campaign_id(value: str) -> str:
 
 def _run_id(value: str) -> str:
     return campaign.validate_id("run", value)
+
+
+def _grading_id(value: str) -> str:
+    return campaign.validate_id("grading", value)
+
+
+def _task_id(value: str) -> str:
+    return campaign.validate_id("task", value)
 
 
 def _task_list(value: str) -> list[str]:
@@ -557,7 +613,8 @@ def _commit(value: str) -> str:
 
 
 COMMANDS = {"validate": cmd_validate, "plan": cmd_plan, "run": cmd_run, "status": cmd_status, "stop": cmd_stop, "answer": cmd_answer, "grade": cmd_grade,
-            "report": cmd_report, "verify": cmd_verify, "teardown": cmd_teardown, "tools": cmd_tools, "campaign": cmd_campaign}
+            "report": cmd_report, "verify": cmd_verify, "teardown": cmd_teardown, "tools": cmd_tools, "campaign": cmd_campaign,
+            "discriminate": cmd_discriminate}
 
 
 def main(argv: list[str] | None = None) -> int:

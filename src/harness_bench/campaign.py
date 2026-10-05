@@ -38,6 +38,7 @@ import yaml
 from harness_bench import (
     atomic,
     config,
+    gates,
     gitsafe,
     identity,
     ledger,
@@ -45,6 +46,7 @@ from harness_bench import (
     plan,
     readiness,
     status,
+    views,
 )
 from harness_bench import power as power_model
 from harness_bench.errors import BenchError
@@ -381,11 +383,7 @@ def _baseline_components(root: Path, state: CampaignState) -> dict:
     row = latest(state, "baseline.recorded")
     if row is None:
         raise BenchError("HB-CMP-002", f'campaign "{state.campaign_id}" has no baseline yet. Run bench campaign baseline.')
-    path = campaign_dir(root, state.campaign_id) / "identity" / f"{row['identity_hash']}.json"
-    try:
-        return json.loads(path.read_bytes())
-    except (OSError, ValueError) as exc:
-        raise BenchError("HB-CMP-003", f"{_rel(root, path)} cannot be read as the baseline manifest ({exc}). Restore it with git.") from exc
+    return content(root, state.campaign_id, "identity", row["identity_hash"])
 
 
 def effective_identity(root: Path, state: CampaignState, upto_seq: int | None = None) -> dict:
@@ -1147,7 +1145,7 @@ def check_plan(root: Path, state: CampaignState, plan_doc: dict, run_id: str, *,
     if tree and (drift := _tree_run_diff(root, effective, plan_doc)):
         raise BenchError("HB-CMP-010", f"the working tree differs from the effective run side at {', '.join(drift)}. Record a fix or restore the files.")
     if grid:
-        statement = json.loads((campaign_dir(root, cid) / "prereg" / f"{registered['prereg_hash']}.json").read_bytes())
+        statement = content(root, cid, "prereg", registered["prereg_hash"])
         arms = statement.get("arms") or {}
         for arm, record in plan.plan_packs(plan_doc).items():
             want = (arms.get(arm) or {}).get("commit")
@@ -1160,14 +1158,14 @@ def _run_launched(run_dir: Path) -> bool:
     return any(b'"cell.launch_intent"' in seg.read_bytes() for seg in (run_dir / "events").glob("*.jsonl"))
 
 
-def attach(root: Path, campaign_id: str, run_id: str) -> str:
+def attach(root: Path, campaign_id: str, run_id: str, *, wait_s: float = 0.0) -> str:
     """`bench campaign attach`: the grid run, under `check_plan`; the row freezes the pre-registration (HB-CMP-009 for `register`).
     *assume:* runs live under `<root>/runs` (as `_locked` already probes them). Confirm: `bench --runs` defaults to it. If false: attach
     reads the wrong folder and refuses HB-USR-001, never attaches a plan it did not read."""
     run_id = validate_id("run", run_id)
     run_dir = root / "runs" / run_id
     entries = [(run_dir / "grade.lock", "HB-CMP-004"), (run_dir / ".lock", "HB-CMP-004")]
-    with session(root, campaign_id, others_extra=entries, run_locks=True) as s:
+    with session(root, campaign_id, others_extra=entries, run_locks=True, wait_s=wait_s) as s:
         state = s.state
         if state.state not in ("registered", "measuring"):
             raise _terminal(state, "attach")
@@ -1235,3 +1233,284 @@ def abandon(root: Path, campaign_id: str, reason: str) -> str:
             raise BenchError("HB-CMP-002", f'campaign "{campaign_id}" is concluded; nothing to abandon. Start another campaign for a new question.')
         _append(s, "abandoned", reason=reason)
         return f'abandoned campaign "{campaign_id}"'
+
+
+# --- C3a commands: pilot attach, pilot pass, admit, register; the content reader -------------------------------------------
+
+_PREREG_REQUIRED = frozenset({"schema", "question", "arms", "mde", "alpha", "power", "correction", "pairing_unit", "min_pairs"})
+_PREREG_KEYS = _PREREG_REQUIRED | {"primary_metric", "method", "exclusions"}
+_REMOTE_SOURCE = r"^(https://|ssh://|git@)"
+_FULL_COMMIT = r"^[0-9a-f]{40}$"
+_GRADE_FACTS = ("events", "scores")
+
+
+def content(root: Path, campaign_id: str, folder: str, digest: str) -> dict:
+    """The one reader of `bench/campaigns/<id>/<folder>/<digest>.json` (`identity`, `prereg` or `power`): HB-CMP-003 naming the file when
+    it cannot be read or is not a JSON object (DM7: the path has one definition)."""
+    if folder not in _SCHEMAS:
+        raise ValueError(f"{folder!r} is not a campaign content folder ({sorted(_SCHEMAS)})")
+    path = campaign_dir(root, campaign_id) / folder / f"{digest}.json"
+    try:
+        body = json.loads(path.read_bytes())
+        if not isinstance(body, dict):
+            raise TypeError("not a JSON object")
+    except (OSError, ValueError, TypeError) as exc:
+        raise BenchError("HB-CMP-003", f"{_rel(root, path)} cannot be read as {folder} content ({exc}). Restore it with git.") from exc
+    return body
+
+
+def _reset_seq(state: CampaignState) -> int:
+    """The seq after which a decision counts as current: the last baseline or admitted fix."""
+    return max((r["seq"] for r in state.rows if r["kind"] in ("baseline.recorded", "defect_fix.admitted")), default=0)
+
+
+def _plan_of(run_dir: Path, run_id: str) -> dict:
+    if not (run_dir / "plan.json").is_file():
+        raise BenchError("HB-CMP-002", f'run "{run_id}" has no confirmed plan under runs/. Plan and confirm it first.')
+    doc = plan.load_confirmed(run_dir)
+    try:
+        kind = plan.kind_of(doc)
+    except BenchError as exc:
+        raise BenchError("HB-CMP-010", f'run "{run_id}": {exc.message}. Plan it as a measurement run.') from exc
+    if kind == "measurement":
+        return doc
+    raise BenchError("HB-CMP-010", f'run "{run_id}" has plan kind {kind}, not measurement. Plan it as a measurement run.')
+
+
+def pilot_attach(root: Path, campaign_id: str, run_id: str) -> str:
+    """`bench campaign pilot attach`: a confirmed pilot-ring run of this campaign; the row carries the ring hash and the plan's own hash."""
+    run_id = validate_id("run", run_id)
+    run_dir = root / "runs" / run_id
+    with session(root, campaign_id, others_extra=[(run_dir / "grade.lock", "HB-CMP-004")]) as s:
+        state = s.state
+        if state.state not in ("baselined", "piloted"):
+            raise _terminal(state, "pilot attach")
+        doc = _plan_of(run_dir, run_id)
+        owner = (doc.get("campaign") or {}).get("campaign_id")
+        if owner != campaign_id:
+            raise BenchError("HB-CMP-002", f'run "{run_id}" belongs to campaign "{owner}" (plan.campaign), not "{campaign_id}". '
+                                          f"Plan it with --campaign {campaign_id}.")
+        ring = doc.get("ring")
+        if not isinstance(ring, dict) or not ring.get("hash"):
+            raise BenchError("HB-CMP-002", f'run "{run_id}" has no ring hash. Plan it from the pilot ring.')
+        if ring.get("tag") != "pilot":
+            raise BenchError("HB-CMP-002", f'run "{run_id}" is a {ring.get("tag")} ring run, not a pilot. Plan it from the pilot ring.')
+        prior = latest(state, "ring_run.attached", run_id=run_id)
+        if prior is not None and prior["plan_hash"] == doc["plan_hash"]:
+            return _no_change(f'run "{run_id}" is already attached to campaign "{campaign_id}" as a pilot')
+        _append(s, "ring_run.attached", ring_hash=ring["hash"], run_id=run_id, plan_hash=doc["plan_hash"])
+        return f'attached pilot run "{run_id}" to campaign "{campaign_id}"'
+
+
+def _gate_input_hash(run_dir: Path, grading_id: str) -> str:
+    """sha256 of the canonical heads of the pass's two sealed segments (ADR-0016 section 7); HB-CMP-002 when either is absent or unsealed."""
+    heads = {}
+    for fact in _GRADE_FACTS:
+        path = run_dir / fact / f"{grading_id}.jsonl"
+        report = ledger.verify_segment(path) if path.is_file() else None
+        if report is None or report.error or not report.sealed:
+            raise BenchError("HB-CMP-002", f'grading pass "{grading_id}" is not complete: {fact}/{grading_id}.jsonl is absent or not sealed. '
+                                          "Wait for the pass to finish, or grade again.")
+        heads[fact] = report.head_hash
+    return hashlib.sha256(ledger.canonical({"grading_id": grading_id, "scores_head": heads["scores"], "events_head": heads["events"]})).hexdigest()
+
+
+def _read_gate_input(name: str, reader, *args):
+    """A reader that raises is R-96's not-recorded state with its reason: HB-CMP-008, no row, the gate not evaluated (W0 R6-13)."""
+    try:
+        return reader(*args)
+    except BenchError as exc:
+        raise BenchError("HB-CMP-008", f'reader "readiness.{name}" failed: {exc.message}. The gate was not evaluated; no row was written. '
+                                      "Fix the reader's input and rerun.") from exc
+
+
+def pilot_pass(root: Path, campaign_id: str, run_id: str, grading_id: str | None = None) -> str:
+    """`bench campaign pilot pass`: the pilot gate (`gates.pilot`) over the run's current graded pass; a clean gate appends `pilot.passed`."""
+    run_id = validate_id("run", run_id)
+    grading_id = validate_id("grading", grading_id) if grading_id is not None else None
+    run_dir = root / "runs" / run_id
+    with session(root, campaign_id, others_extra=[(run_dir / "grade.lock", "HB-CMP-004")]) as s:
+        state = s.state
+        if state.state not in ("baselined", "piloted"):
+            raise _terminal(state, "pilot pass")
+        if latest(state, "ring_run.attached", run_id=run_id) is None:
+            raise BenchError("HB-CMP-002", f'run "{run_id}" is not attached as a pilot. Run bench campaign pilot attach {campaign_id} {run_id}.')
+        view = views.load(run_dir)
+        grading_id = grading_id or view.grading_id
+        if grading_id is None or grading_id not in views.completed_passes(run_dir):
+            raise BenchError("HB-CMP-002", f'grading pass "{grading_id}" is not complete for run "{run_id}". Wait for the pass to finish, or run bench grade.')
+        if view.grading_id != grading_id:
+            raise BenchError("HB-CMP-002", f'grading pass "{grading_id}" is not the current pass of run "{run_id}" ({view.grading_id}). '
+                                          "Grade again, or name the current pass.")
+        digest = _gate_input_hash(run_dir, grading_id)
+        prior = latest(state, "pilot.passed")
+        if (prior is not None and prior["seq"] > _reset_seq(state)
+                and (prior["run_id"], prior["grading_id"], prior["gate_input_hash"]) == (run_id, grading_id, digest)):
+            return _no_change(f'pilot pass {grading_id} of run "{run_id}" is already recorded')
+        disagreements = _read_gate_input("hidden_test_disagreements", readiness.hidden_test_disagreements, run_dir, grading_id)
+        unbiased = _read_gate_input("unbiased_failures", readiness.unbiased_failures, run_dir, grading_id)
+        expected_na = _read_gate_input("expected_na", readiness.expected_na, root, list(view.plan["tasks"]))
+        if items := gates.pilot(view, disagreements, unbiased, expected_na=expected_na):
+            shown = "; ".join(f"{item.kind} {item.ident}: {item.detail}" for item in items[:5])
+            more = f" (+{len(items) - 5} more)" if len(items) > 5 else ""
+            raise BenchError("HB-CMP-008", f"pilot gate failed: {shown}{more}. Fix the cause, record the fix, rerun the pilot.")
+        _append(s, "pilot.passed", run_id=run_id, grading_id=grading_id, gate_input_hash=digest)
+        return f'pilot passed: run "{run_id}", pass {grading_id}'
+
+
+def admit(root: Path, campaign_id: str) -> str:
+    """`bench campaign admit`: `gates.admission` over the latest pilot pass; one row per task whose decision is not already current."""
+    with session(root, campaign_id) as s:
+        state = s.state
+        if state.state != "piloted":
+            raise _terminal(state, "admit")
+        passed = latest(state, "pilot.passed")
+        run_dir = root / "runs" / passed["run_id"]
+        view = views.load(run_dir)
+        if view.grading_id != passed["grading_id"]:
+            raise BenchError("HB-CMP-002", f'pilot pass {passed["grading_id"]} is not the current pass of run "{passed["run_id"]}" ({view.grading_id}). '
+                                          "Run bench campaign pilot pass again.")
+        decided = gates.admission(view, list(view.plan["tasks"]))  # HB-USR-002 for a not-recorded primary propagates: no row is written
+        written = 0
+        for task in sorted(decided):
+            admitted, reason = decided[task]
+            prior = latest(s.state, "admission.decided", task=task)
+            if prior is not None and prior["seq"] > passed["seq"] and (prior["admitted"], prior["reason"]) == (admitted, reason):
+                continue
+            _append(s, "admission.decided", task=task, admitted=int(admitted), reason=reason)
+            written += 1
+        if not written:
+            return _no_change(f'every pilot task of campaign "{campaign_id}" already has this decision')
+        return f'recorded {written} admission decision(s) for campaign "{campaign_id}"'
+
+
+def _statement(path: Path) -> dict:
+    try:
+        raw = json.loads(Path(path).read_text(encoding="utf-8"), parse_float=_Float)
+    except OSError as exc:
+        raise BenchError("HB-USR-002", f"{path} cannot be read ({exc.strerror}). Pass an existing bench-prereg/1 JSON file.") from exc
+    except ValueError as exc:
+        raise BenchError("HB-CMP-008", f"the statement is not JSON ({exc}). Fix the file.") from exc
+    if not isinstance(raw, dict):
+        raise BenchError("HB-CMP-008", "the statement is not a JSON object. Fix the file.")
+    if floats := _float_fields(raw):
+        raise BenchError("HB-CMP-008", f'the statement field {floats[0]} is a float. Write it as a string such as "0.05", or as an integer.')
+    if raw.get("schema") != _SCHEMAS["prereg"]:
+        raise BenchError("HB-CMP-008", f"the statement schema must be {_SCHEMAS['prereg']}. Fix the field.")
+    if missing := sorted(_PREREG_REQUIRED - set(raw)) or sorted(set(raw) - _PREREG_KEYS):
+        raise BenchError("HB-CMP-008", f"the statement fields {missing} are missing or unknown; the set is {sorted(_PREREG_KEYS)}. Fix the file.")
+    return raw
+
+
+def _statement_digest(statement: dict) -> str:
+    return hashlib.sha256(ledger.canonical(statement)).hexdigest()
+
+
+def _check_statement(state: CampaignState, statement: dict) -> None:
+    """The checks that need only the statement and the campaign's first row."""
+    if statement["question"] != state.rows[0]["question"]:
+        raise BenchError("HB-CMP-008", "prereg question differs from the campaign's. Changing the question needs a new campaign.")
+    if not isinstance(statement["correction"], dict) or not isinstance(statement["mde"], dict):
+        raise BenchError("HB-CMP-008", "prereg correction and mde must be objects. Fix the file.")
+    if not re.fullmatch(r"\d+(\.\d+)?", str(statement["alpha"])):
+        raise BenchError("HB-CMP-008", f'prereg alpha "{statement["alpha"]}" is not a decimal string such as "0.05". Fix the field.')
+    arms = statement["arms"]
+    if not isinstance(arms, dict) or not arms:
+        raise BenchError("HB-CMP-008", "prereg arms must name at least one arm. Fix the file.")
+    for arm, pack in arms.items():
+        if not isinstance(pack, dict) or not re.fullmatch(_FULL_COMMIT, str(pack.get("commit"))) or not isinstance(pack.get("revision"), str):
+            raise BenchError("HB-CMP-008", f'arm "{arm}" must be {{commit (40 hex), revision, source?}}. Fix the file.')
+        if "source" in pack and not re.match(_REMOTE_SOURCE, str(pack["source"])):
+            raise BenchError("HB-CMP-008", f'arm "{arm}" source is a local path. Use the remote URL or omit source.')
+
+
+def _preview(root: Path, state: CampaignState, statement: dict, digest: str, prereg_file: Path) -> str:
+    method = statement["correction"].get("method")
+    per_test, rule = power_model.level_for(method, Decimal(statement["alpha"]), statement["correction"].get("m", 1))
+    lines = [f"pre-registration statement {digest}", f"question: {statement['question']}", f"alpha_per_test {per_test} ({rule}; method {method})"]
+    final = latest(state, "power.recorded", role="final")
+    if final is None:
+        lines.append("no final power recorded; min_pairs is not compared with a required n. Run bench campaign power in state piloted.")
+    else:
+        results = power_model.analyse(_decimal_view(content(root, state.campaign_id, "power", final["input_hash"])))
+        for prop, result in sorted(results.items()):
+            for row in result.required_pairs:
+                if statement["min_pairs"] < row["n"]:
+                    lines.append(f"warning: min_pairs {statement['min_pairs']} is below the required n {row['n']} for "
+                                 f"({prop}, {row['harness']}, {row['comparison'][0]} vs {row['comparison'][1]}); the verdict will say underpowered.")
+    lines.append(f"to register: bench campaign register {state.campaign_id} --prereg {prereg_file} --confirm {digest[:12]}")
+    return "\n".join(lines)
+
+
+def _check_against_pilot(root: Path, state: CampaignState, statement: dict) -> None:
+    """Registration preconditions beyond the statement itself: the final power, the admissions, the heads and the pilot's coverage."""
+    reset = _reset_seq(state)
+    final = latest(state, "power.recorded", role="final")
+    if final is None:
+        raise BenchError("HB-CMP-008", "no final power inputs are recorded. Run bench campaign power.")
+    if final["seq"] <= reset:
+        raise BenchError("HB-CMP-008", f"the final power inputs predate the last fix (row {final['seq']} < {reset}). Re-run bench campaign power.")
+    inputs = content(root, state.campaign_id, "power", final["input_hash"])
+    for name in ("alpha", "power", "correction", "pairing_unit"):
+        if statement[name] != inputs.get(name):
+            raise BenchError("HB-CMP-008", f"prereg {name} ({statement[name]}) is not the final analysis's ({inputs.get(name)}). Re-run power with the value you accept.")
+    for prop, spec in sorted((inputs.get("properties") or {}).items()):
+        if (statement["mde"] or {}).get(prop) != spec.get("mde"):
+            raise BenchError("HB-CMP-008", f'prereg mde for "{prop}" ({(statement["mde"] or {}).get(prop)}) is not the final analysis\'s ({spec.get("mde")}). '
+                                          "Re-run power with the MDE you accept.")
+    passed = latest(state, "pilot.passed")
+    run_dir = root / "runs" / passed["run_id"]
+    if not (run_dir / "plan.json").is_file():
+        raise BenchError("HB-CMP-008", f'the pilot run "{passed["run_id"]}" has no plan under runs/ on this machine. Restore the run, or rerun the pilot.')
+    pilot_plan = plan.load_confirmed(run_dir)
+    for task in sorted(pilot_plan["tasks"]):
+        row = latest(state, "admission.decided", task=task)
+        if row is None or row["seq"] <= passed["seq"]:
+            raise BenchError("HB-CMP-008", f'task "{task}" has no admission decision after the latest pilot pass. Run bench campaign admit.')
+    try:
+        now = _gate_input_hash(run_dir, passed["grading_id"])
+    except BenchError as exc:
+        raise BenchError("HB-CMP-008", f"pilot gate inputs changed since the pass (heads differ): {exc.message}") from exc
+    if now != passed["gate_input_hash"]:
+        raise BenchError("HB-CMP-008", "pilot gate inputs changed since the pass (heads differ). Re-record the pilot.")
+    covered = {(c["task"], c["harness"], plan.cell_arm(c)) for c in pilot_plan["cells"]}
+    admitted = [t for t in sorted(pilot_plan["tasks"]) if latest(state, "admission.decided", task=t)["admitted"] == 1]
+    for task in admitted:
+        for harness in inputs.get("harnesses") or []:
+            for arm in sorted(statement["arms"]):
+                if (task, harness, arm) not in covered:
+                    raise BenchError("HB-CMP-008", f"pilot did not cover (task {task}, harness {harness}, arm {arm}). Rerun the pilot.")
+
+
+def register(root: Path, campaign_id: str, prereg_file: Path, confirm: str | None = None, *, wait_s: float = 0.0) -> str:
+    """`bench campaign register`: with no `confirm` a lock-free preview that writes nothing; with `--confirm <hash12>` the statement file, then
+    the row. The freeze is HB-CMP-009 once a grid is attached (W0 section 6, the freeze order)."""
+    campaign_id = validate_id("campaign", campaign_id)
+    if confirm is None:
+        state = read(root, campaign_id)
+        if state.state == "draft":
+            raise _terminal(state, "register")
+        statement = _statement(prereg_file)
+        _check_statement(state, statement)
+        return _preview(root, state, statement, _statement_digest(statement), prereg_file)
+    with session(root, campaign_id, wait_s=wait_s) as s:
+        state = s.state
+        if state.state == "measuring":
+            raise BenchError("HB-CMP-009", f'pre-registration is frozen: run "{latest(state, "grid.attached")["run_id"]}" is attached. '
+                                          "Abandon this campaign or create a new one; the grid's verdicts would be exploratory.")
+        if state.state not in ("piloted", "registered"):
+            raise _terminal(state, "register")
+        statement = _statement(prereg_file)
+        digest = _statement_digest(statement)
+        if confirm != digest[:12]:
+            raise BenchError("HB-CMP-008", f"--confirm {confirm!r} does not match the statement's hash {digest[:12]}. Run the preview again.")
+        current = latest(state, "registered")
+        if state.state == "registered" and current["prereg_hash"] == digest and current["seq"] > _reset_seq(state):
+            return _no_change(f'statement {digest[:12]} is already registered for campaign "{campaign_id}"')
+        _check_statement(state, statement)
+        _check_against_pilot(root, state, statement)
+        folder = campaign_dir(root, campaign_id) / "prereg"
+        folder.mkdir(exist_ok=True)
+        atomic.create_once(folder / f"{digest}.json", ledger.canonical(statement))  # the file first; a crash before the row is retried by appending the row only
+        _append(s, "registered", prereg_hash=digest)
+        return f'registered statement {digest[:12]} for campaign "{campaign_id}"'
