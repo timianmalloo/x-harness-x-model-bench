@@ -5,12 +5,15 @@ from __future__ import annotations
 from decimal import Decimal
 from pathlib import Path
 
+import pytest
+
 from harness_bench import identity
 from harness_bench.grade import Score, diffstats
 from harness_bench.grade import property as property_grader
 from harness_bench.grade.property import GradeContext
 
 
+@pytest.mark.xfail(strict=True, reason="LGc: simplicity diffstats measure behavior")
 def test_diffstats_measure_size():
     """W1-L section 15 K4: size == Decimal('3.5000') fails on -1 by assertion, never KeyError/ImportError."""
     stats = diffstats.measure(

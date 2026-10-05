@@ -4,12 +4,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from harness_bench import errors, identity
 from harness_bench.grade import Score, noguess
 from harness_bench.grade import property as property_grader
 from harness_bench.grade.property import GradeContext
 
 
+@pytest.mark.xfail(strict=True, reason="LGb: no-guessing unresolved behavior")
 def test_noguess_unresolved_count():
     """W1-L section 15 K3: count == 2 fails on -1 by assertion, never KeyError/ImportError."""
     count, unresolved_names = noguess.unresolved(

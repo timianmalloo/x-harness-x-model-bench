@@ -9,10 +9,12 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from decimal import Decimal
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from harness_bench.grade import CellInput, Score, _changes
-from harness_bench.grade.property import GradeContext, hidden_tests, write_section
+
+if TYPE_CHECKING:
+    from harness_bench.grade.property import GradeContext
 
 __all__ = ["grade", "measure"]
 
@@ -51,5 +53,7 @@ def measure(
 
 def grade(inp: CellInput, ctx: GradeContext) -> Mapping[str, Score]:
     """Grade simplicity property task (W1-L section 8). Skeleton returns NA not built."""
+    from harness_bench.grade.property import hidden_tests, write_section
+
     _ = (ctx, hidden_tests, write_section)
     return dict.fromkeys(inp.metrics, Score(None, "not built"))

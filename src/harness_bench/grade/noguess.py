@@ -9,14 +9,12 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from harness_bench.grade import CellInput, Score, _changes
-from harness_bench.grade.property import (
-    GradeContext,
-    hidden_tests,
-    run_child,
-    write_section,
-)
+
+if TYPE_CHECKING:
+    from harness_bench.grade.property import GradeContext
 
 __all__ = ["grade", "unresolved"]
 
@@ -30,11 +28,15 @@ def unresolved(
 
     Skeleton implementation returning neutral out-of-range value (-1, []).
     """
+    from harness_bench.grade.property import run_child
+
     _ = (tree, radius, vendor, _changes.in_radius, run_child)
     return -1, []
 
 
 def grade(inp: CellInput, ctx: GradeContext) -> Mapping[str, Score]:
     """Grade no-guessing property task (W1-L section 7). Skeleton returns NA not built."""
+    from harness_bench.grade.property import hidden_tests, write_section
+
     _ = (ctx, hidden_tests, write_section)
     return dict.fromkeys(inp.metrics, Score(None, "not built"))
