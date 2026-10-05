@@ -737,7 +737,7 @@ def test_happy_run_completes_archives_and_deletes_every_cell(base):
     for cell in p["cells"]:
         kinds = [e["kind"] for e in events if e.get("cell_id") == cell["cell_id"]]
         assert kinds == ["cell.launch_intent", "cell.workspace_built", "attempt.process_started", "attempt.session_opened",
-                         "cell.prompt_sent", "attempt.process_ended", "cell.outcome", "cell.archived", "cell.workspace_deleted"]
+                         "cell.prompt_sent", "cell.turn_ended", "attempt.process_ended", "cell.outcome", "cell.archived", "cell.workspace_deleted"]
         assert not (config.cells_root / p["run_id"] / cell["cell_id"]).exists()
     assert events[-1]["kind"] == "run.completed" and summary.exit_code == 0
     assert [e["exit_status"] for e in events if e["kind"] == "attempt.process_ended"] == [0, 0]  # the real status
