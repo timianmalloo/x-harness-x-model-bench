@@ -142,7 +142,7 @@ def test_pi_relative_to_root_relativizes_posix_and_windows_absolute_paths():
 
 def test_pi_relative_to_root_keeps_last_three_segments_outside_ws():
     ws = Path("C:/Projects/bench-cells/x/4a6250261f80ded4/ws")
-    assert pi._relative_to_root("C:/Users/tim/.cache/other/deep/file.txt", ws) == "other/deep/file.txt"
+    assert pi._relative_to_root("C:/Users/tim/.cache/other/deep/file.txt", ws) == "other/deep/file.txt"  # machine-path-ok: path-relativizer input
     assert pi._relative_to_root("a.py", None) == "a.py"  # no root at all: never a guessed path
 
 
