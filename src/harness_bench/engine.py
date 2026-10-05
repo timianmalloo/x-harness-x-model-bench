@@ -786,7 +786,15 @@ class Engine:
                         prompts = [task["prompt"]] + [t["prompt"] for t in task["turns"]]
                         for n, text in enumerate(prompts, 1):
                             rec = driver.send_turn(session, text, barrier_for(n), n)
-                            if rec is None or rec.stop_reason not in COMPLETED_STOP_REASONS:
+                            if rec is None:
+                                break  # no response came back: the outcome cause says why; no turn_ended
+                            nxt = (("cancel" if a.kill_reason == "stop" else "stop") if a.cancel.is_set()
+                                   else "final" if n == len(prompts)
+                                   else "stop" if rec.stop_reason != "end_turn" else "snapshot")
+                            self.record("events", {"kind": "cell.turn_ended", "cell_id": cid, "turn": n,
+                                                   "stop_reason": rec.stop_reason, "turn_ms": int(rec.turn_seconds * 1000),
+                                                   "usage": rec.usage, "next": nxt})  # before the decision (design 4.2)
+                            if nxt != "snapshot":
                                 break
                     finally:
                         session.close()
