@@ -1,0 +1,31 @@
+schema: bench-check-cases/1
+entry: check.py
+interface: in-process
+bounds_ms: {in-process: 2000, loopback: 5000}   # loopback unread; the in-process bound is a placeholder until the readiness record's repeat runs set it (RV-TA S2 5)
+app:
+  module: "examples.taskboard.app"
+  attr: create_app
+  kind: wsgi
+  factory: true                                  # the host calls attr(**args) to build the WSGI callable
+  paths: []                                      # bottle.py is at the deliverable root, which the host puts on sys.path
+  args:                                          # JSON; "{state_dir}" -> the per-case empty folder check-run/state/<case id>/
+    db_path: "{state_dir}/tasks.db"
+    files_dir: "{state_dir}/files"
+    session_key: "BENCHCANARY-S2-5a2f00c0ffee0001"
+    users:
+      alice: {password: "pw-alice-0001", team: 1}
+      bob: {password: "pw-bob-0002", team: 2}
+deliverable: {}                                  # no build, no start argv: offline by construction
+toolchain: [python]
+env: []
+cases:                                           # no bound_ms: the interface bound applies. authz last: each case gets a fresh host and a fresh database (RV-SEC S2 3)
+  - {id: inj-1,    kind: probe}
+  - {id: inj-2,    kind: probe}
+  - {id: trav-1,   kind: probe}
+  - {id: leak-1,   kind: probe}
+  - {id: leak-2,   kind: probe}
+  - {id: leak-3,   kind: probe}
+  - {id: tamper-1, kind: probe}
+  - {id: authz-1,  kind: probe}
+  - {id: authz-2,  kind: probe}
+  - {id: authz-3,  kind: probe}
