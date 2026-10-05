@@ -359,14 +359,17 @@ def test_the_temp_discrimination_matches_the_leaders_j2_measurement(s1):
     if shown.returncode != 0:
         pytest.skip(f"J2 commit {J2_COMMIT} is not in this clone")
     j2 = json.loads(shown.stdout)
+    na = {"behavioural_equivalence", "regression_count"}  # X-I5 declares these two NA after J2's record (req-01M46AMDRDRJ1XA610E63MJXD0)
+    assert {m for m, v in body["expected"]["reference"].items() if isinstance(v, dict)} == na
+    body["expected"]["reference"] = {m: v for m, v in body["expected"]["reference"].items() if m not in na}
     for key in ("expected", "probe", "scores", "variants", "readiness_failures"):
         assert body[key] == j2[key], key
-    assert body["task_version"] != j2["task_version"] and s1.draft_version == j2["task_version"]  # J2 ran on the draft file; the flip moves the version
+    assert body["task_version"] != j2["task_version"] and s1.draft_version != j2["task_version"]  # X-I5 moved the draft version off J2's too
 
 
 def test_s1_draft_task_version_is_the_j2_task_version(s1):
-    """The unflipped draft S1 task version is the J2 task version (measured here with the draft file)."""
-    assert s1.draft_version == "cafd00925c15b59ac2d386009cbd72a6d94bb8d7b1a98405440075d7b3c5d990"
+    """X-I5 moved the draft S1 task version off the J2 / X-I4 version (the F4 drop and the NA lines are part of the hashed folder)."""
+    assert s1.draft_version != "cafd00925c15b59ac2d386009cbd72a6d94bb8d7b1a98405440075d7b3c5d990"
 
 
 @pytest.fixture
