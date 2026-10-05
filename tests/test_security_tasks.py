@@ -635,9 +635,8 @@ def test_s1_m1_inj_1_clause_names_every_payload_that_hit(s1_base):
     """X-I4 I4-3: m1 (the concatenated query) is exploited by payloads of both groups; the clause lists every one, in
     check.py order, never the first only and never a letter."""
     clause = run_check(s1_base, variant_source("m1"), REAL_HELPER).probes["inj-1"]["clause"]
-    ids = clause.split(",")
     assert PAYLOAD_ID_CLAUSE.fullmatch(clause), clause
-    assert len(ids) > 1 and {i[0] for i in ids} == {"A", "B"}, clause
+    assert clause.split(",") == ["A0", "B2", "B3"], clause  # measured through the real host (X-I2's scratch run agrees)
 
 
 def test_s1_clauses_json_carries_payload_ids_through_grade_cell(s1_base):
