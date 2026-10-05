@@ -5991,6 +5991,42 @@ window.DOCS_INDEX = {
       "sourceSha256": "6870ca4c300824c59bed200083ce50b9dde2b55b55a5d4ef12ca8afed49eef89"
     },
     {
+      "id": "runbook-resume-and-alarm",
+      "path": "docs/runbooks/resume-and-alarm.md",
+      "title": "Runbook: resume a crashed run and wire the alarm channel",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-12-31",
+      "reviewSuggested": [],
+      "summary": "How an operator wires the unattended alarm for a multi-night run: the ntfy topic and user variable, the Task Scheduler task that runs tools/alarm-task.ps1 every 15 minutes, the delivery log and edge state file, and the honest limits (a toast wakes no one; a sleeping host cannot push).",
+      "tags": [
+        "runbook",
+        "alarm",
+        "ntfy",
+        "resume",
+        "task-scheduler",
+        "evaluation-campaign"
+      ],
+      "links": [
+        {
+          "to": "adr-0021-plan-level-resume-and-liveness",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-resume",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "2b35fece6b5117acf6c8651d17c4ba3e1b9e21b5859ebbdc0c913c266c09df8d"
+    },
+    {
       "id": "brief-eval-env-a",
       "path": "docs/coordination/eval-wave2-e1/env-a.md",
       "title": "Brief ENV-A: hermetic tests never read the operator's credential (the ambient-credential fix)",
@@ -8844,5 +8880,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "b673f3d204b1ecbeb5dbea4a5814cf7f7125baef40ea272d5dc015828cb8e134"
+  "graphSha256": "c75b576bc57f2206e121d447e59378c06ff5f0688076d1fdd29b94d31b52a444"
 };

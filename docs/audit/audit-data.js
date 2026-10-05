@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-05T18:43:29Z",
+  "generated": "2026-10-05T19:12:43Z",
   "audit": [
     {
       "actor": null,
@@ -91680,6 +91680,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-05T18:43:26Z",
       "duration_seconds": 3.0
+    },
+    {
+      "id": "al-01M46QQ389B6F6DZ1N4D8BS84Z",
+      "shortname": "join-x-k2a",
+      "datetime": "2026-10-05T19:12:43Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of build/eval-x-k2a into integrate/e2e4-18",
+      "summary": "X-K2a: Grok grok-4.7 launch failed in ACP initialize (skills-reload ack reloaded:0, XPORT-A), same-id retry refused RUN-STARTED; Sonnet claude-sonnet-5-5 same-tree fallback: skeleton 9d046fc2, reds 59c92fed/14124556 (Leader re-ran: 7 assertion fails), green a65f8094; guard 200 passed x2, own 15 passed, ruff 0 recount_seconds=1682 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join X-K2a into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-05T18:44:40Z",
+      "duration_seconds": 1683.0
     }
   ],
   "changes": [
