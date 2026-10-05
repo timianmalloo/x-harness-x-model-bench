@@ -6245,7 +6245,7 @@ window.DOCS_INDEX = {
       "phase": "",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "X-H2 builds report/campaign_section.py (verdict rows, legend, exclusions block, NA counts, the three-state R-93 line) and the report/html.py hook with the plan_packs header lines, on Agy gemini-3.8-flash-high, one turn red and green.",
+      "summary": "X-H2 builds report/campaign_section.py (verdict rows, legend, exclusions block, NA counts, the three-state R-93 line) and the report/html.py hook with the EV-20 campaign block and the plan_packs header lines; planned Agy gemini-3.8-flash-high, run as Claude Sonnet from the integration head under R-105 beside X-C2 (Coordinator #25: re-read against integrate/e1e4-17 e6a7160a; real C1 read API, fixtures only for the C2/C3 store reads and bindings).",
       "tags": [],
       "links": [
         {
@@ -6262,7 +6262,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2bc4517590a50534f3c043cf0c615c0054cf5c560767ec67aa0323f25fcce714"
+      "sourceSha256": "1869dd5d96eb41ab1e2637a797c97de165597763c015ff8e280a07ba6e531265"
     },
     {
       "id": "brief-eval-x-i",
@@ -8295,5 +8295,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "b32b1ae33ded476b4f45af6dff0f6b4d4bcfa88a57f35bec491e8d4e63e708cb"
+  "graphSha256": "4fe080bc9e4045714609e27e9ddb988732e49e8db813c45ce53e528b741325bb"
 };

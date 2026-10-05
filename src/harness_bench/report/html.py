@@ -35,8 +35,14 @@ from harness_bench import (
 )
 from harness_bench.errors import BenchError
 from harness_bench.grade import judge as grade_judge
-from harness_bench.plan import resolved_model_map
-from harness_bench.report import context_growth, html_builder, judges, model
+from harness_bench.plan import plan_packs, resolved_model_map
+from harness_bench.report import (
+    campaign_section,
+    context_growth,
+    html_builder,
+    judges,
+    model,
+)
 from harness_bench.report import pack_improvement as pack_improvement_mod
 from harness_bench.report.credentials import encodings
 
@@ -254,16 +260,24 @@ def _scenario6_facts(view: views.RunView) -> list[tuple[str, str | None]]:
     return facts
 
 
+def _pack_fact(plan: dict, field: str) -> str | None:
+    """The one revision (or commit) of the plan's packs; `several packs` for two or more, None for none (R6-10)."""
+    packs = plan_packs(plan)
+    if len(packs) > 1:
+        return "several packs"
+    return next(iter(packs.values()), {}).get(field)
+
+
 def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | None = None,
             judging: list[tuple[str, str | None]] | None = None, root: Path | None = None,
             run_dir: Path | None = None, board_obj: board.Board | None = None,
-            params: stats.Params | None = None) -> html_builder.Html:
+            params: stats.Params | None = None, campaign_block: html_builder.Html | None = None) -> html_builder.Html:
     plan = view.plan
     planned = ", ".join(views.build_label(h, str(b.get("version", ""))) for h, b in sorted((plan.get("builds") or {}).items()))
     facts = [("Run", view.run_id), ("State", "complete" if view.completed else "incomplete"),
              ("Plan hash", (plan.get("plan_hash") or "")[:12]), ("Catalog version", view.catalog_version),
-             ("Pack revision", (plan.get("pack") or {}).get("revision")),
-             ("Pack commit", (plan.get("pack") or {}).get("commit")), ("Planned builds", planned),
+             ("Pack revision", _pack_fact(plan, "revision")),
+             ("Pack commit", _pack_fact(plan, "commit")), ("Planned builds", planned),
              ("Executed builds", view.header.get("executed_builds")), ("Executed-build check", _build_check_fact(view.cells)),
              ("Credential kind", view.header.get("credential_kind")),
              ("Network mode", view.header.get("network_mode")), ("Defender real-time exclusion", None),
@@ -285,8 +299,9 @@ def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | N
     if plan.get("bom_version") and subset_str:
         bom_str += f" ({subset_str})"
     cat_str = f"catalog {view.catalog_version}" if view.catalog_version else "catalog not recorded"
-    pack_rev = (plan.get("pack") or {}).get("revision")
-    pack_str = f"pack ai-forward revision {pack_rev}" if pack_rev is not None else "pack revision not recorded"
+    pack_rev = _pack_fact(plan, "revision")
+    pack_str = ("several packs" if pack_rev == "several packs" else f"pack ai-forward revision {pack_rev}"
+                if pack_rev is not None else "pack revision not recorded")
     cells_str = f"{len(view.cells)} cells"
 
     summary_p = html_builder.el(
@@ -403,10 +418,11 @@ def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | N
         about_details,
         header_dl,
         prov_details,
+        *([campaign_block] if campaign_block is not None else []),
     )
 
 
-def _validity(view: views.RunView) -> html_builder.Html:
+def _validity(view: views.RunView, campaign_line: html_builder.Html | None = None) -> html_builder.Html:
     n = len(view.cells)
     warned_items = [
         html_builder.el("li", None, f"{c.label}: {w.code} {w.message}")
@@ -424,6 +440,7 @@ def _validity(view: views.RunView) -> html_builder.Html:
         body_elements = [
             html_builder.el("p", None, f"All {n} cells completed and are valid."),
             *warnings_block,
+            *([campaign_line] if campaign_line else []),
         ]
         return html_builder.el("section", {"id": "validity"}, html_builder.el("h2", None, "Validity"), *body_elements)
 
@@ -525,6 +542,7 @@ def _validity(view: views.RunView) -> html_builder.Html:
         html_builder.el("p", None, "Cells that are not valid:"),
         html_builder.el("ul", None, *listed),
         *warnings_block,
+        *([campaign_line] if campaign_line else []),
     ]
     return html_builder.el("section", {"id": "validity"}, html_builder.el("h2", None, "Validity"), *body_elements)
 
@@ -1599,6 +1617,17 @@ STYLE += "\n" + "\n".join(
     f".h{i}{{background:var(--heat-{i});color:var(--{_heat_ink_class(_heat_stop(i))})}}" for i in range(10)
 ) + "\n"
 
+# Report section 3 (X-H2): existing tokens only. The MDE band is tinted and dashed, never colour alone (EVU-5).
+STYLE += """p.warn{color:var(--warn);font-weight:600}
+.badge{border:var(--rule-w) solid var(--rule-strong);border-radius:var(--radius);font-size:var(--fs-small);color:var(--ink-2)}
+.verdict-cell span[data-part]{display:block}
+.verdict-cell .glyph{color:var(--ink-2)}
+.bar .axis{stroke:var(--rule-strong)}
+.bar .mde-band{fill:var(--rule);stroke:var(--rule-strong);stroke-dasharray:3 2}
+.bar .interval{stroke:var(--ink);stroke-width:var(--focus-w)}
+.scroll{overflow:auto;max-height:calc(var(--target) * 8)}
+"""
+
 
 def _heat_bucket(value) -> int:
     """The composite's 0-100 point maps onto one of the ten `--heat-0..9` viridis stops (design s6
@@ -2066,7 +2095,10 @@ def _pi_ratio_cell(m) -> str:
     return "NA" if m.value is None else f"{m.value:.2f}x"
 
 
-def _pi_group_row(g, combo_ix: dict[str, str], combo_harness: dict[str, str]) -> html_builder.Html:
+EXPLORATORY_BADGE = "exploratory — not pre-registered"
+
+
+def _pi_group_row(g, combo_ix: dict[str, str], combo_harness: dict[str, str], campaign: bool = False) -> html_builder.Html:
     # The Combo column shows the real combo id (`_combo_label`, same text the leaderboard, pack-effect
     # and runs sections show), never the c1..c8 legend/filter token `combo_ix` hands out -- that token
     # vocabulary exists only to drive the control bar's `hide-cN` classes (CSS above, design section 6),
@@ -2084,7 +2116,9 @@ def _pi_group_row(g, combo_ix: dict[str, str], combo_harness: dict[str, str]) ->
         html_builder.el("td", {"class": "num"},
                         f"{_pi_ratio_cell(g.median_token_ratio)} ({g.n_token_above} of {g.n_token_valid} pairs > 1)"),
         html_builder.el("td", {"class": "num"}, _pi_ratio_cell(g.median_wall_ratio)),
-        html_builder.el("td", None, g.cls + flag),
+        (html_builder.el("td", {"data-verdict": "intention"}, g.cls + flag, " ",
+                         html_builder.el("span", {"class": "badge"}, EXPLORATORY_BADGE))
+         if campaign else html_builder.el("td", None, g.cls + flag)),
     )
 
 
@@ -2107,7 +2141,7 @@ def _pi_finding_row(f, combo_ix: dict[str, str]) -> html_builder.Html:
 
 
 def _pack_improvement(view: views.RunView, board_obj: board.Board | None, run_dir: Path | None, root: Path | None,
-                      archive_present: bool, combo_ix: dict[str, str]) -> html_builder.Html:
+                      archive_present: bool, combo_ix: dict[str, str], campaign_section_id: str | None = None) -> html_builder.Html:
     """Design section 2/7: the always-last, always-present "Pack on vs pack off -- where to improve
     the pack" section. Every table sits in the existing horizontally scrolling wrapper. Only counts,
     ratios, verdict codes, metric/task/cell ids and the Method text leave `pack_improvement.assemble`
@@ -2120,6 +2154,10 @@ def _pack_improvement(view: views.RunView, board_obj: board.Board | None, run_di
             combo_harness.setdefault(r.combo, r.harness)
     heading = html_builder.el("h2", None, "Pack on vs pack off — where to improve the pack")
     children: list[html_builder.Html] = [heading]
+    if campaign_section_id is not None:  # EVX-7: every path to an intention verdict passes the exploratory label
+        children.append(html_builder.el("p", {"data-kind": "exploratory-header"}, "Exploratory — see §3 ",
+                                        html_builder.el("a", {"href": f"#{campaign_section_id}"}, "Property verdicts"),
+                                        " for the pre-registered result"))
     if result.state != pack_improvement_mod.STATE_FULL and result.state != pack_improvement_mod.STATE_PARTIAL:
         children.append(html_builder.el("p", None, result.state_line))
         method = html_builder.el(
@@ -2138,7 +2176,7 @@ def _pack_improvement(view: views.RunView, board_obj: board.Board | None, run_di
         html_builder.el("thead", None, html_builder.el(
             "tr", None, *(html_builder.el("th", {"scope": "col"}, h) for h in
                           ("Task", "Combo", "Pass on · off", "Median token ratio", "Median wall ratio", "Class")))),
-        html_builder.el("tbody", None, *(_pi_group_row(g, combo_ix, combo_harness) for g in result.groups)),
+        html_builder.el("tbody", None, *(_pi_group_row(g, combo_ix, combo_harness, campaign_section_id is not None) for g in result.groups)),
     )
     children.append(html_builder.el(
         "div", {"class": "region", "role": "region", "tabindex": "0", "aria-labelledby": "pi-groups-caption"},
@@ -2189,7 +2227,8 @@ def _pack_improvement(view: views.RunView, board_obj: board.Board | None, run_di
 def render(view: views.RunView, archive_present: bool, run_dir: Path | None = None, root: Path | None = None,
            operator: egress.Operator | None = None, board_obj: board.Board | None = None,
            params: stats.Params | None = None, comparison_obj: board.Comparison | str | None = None,
-           context_growth_obj: context_growth.ContextGrowthResult | None = None) -> str:
+           context_growth_obj: context_growth.ContextGrowthResult | None = None,
+           campaign_obj: campaign_section.CampaignInput | None = None) -> str:
     """The page; `root` (the bench root) adds the judge block for a pass that looked up judge verdicts, and
     `operator` (read at run time, never committed) lets it name the classes each judge CLI added."""
     tags = _context_window_tags(run_dir)  # R-32: read from events, not from views.py (ruling R-32 condition 3)
@@ -2226,10 +2265,13 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
     # module docstring); a caller (a test, or a future producer) may pass `context_growth_obj` directly,
     # the same seam `comparison_obj` uses.
     cg = context_growth_obj if context_growth_obj is not None else context_growth.build(view, run_dir)
+    built = campaign_section.build(view, campaign_obj) if campaign_obj is not None else None
     sections = [
         model.Section("header", "Run header",
-                      _header(view, tags, _permission_modes(run_dir), judging, root, run_dir, board_obj=board_obj, params=params)),
-        model.Section("validity", "Validity", _validity(view)),
+                      _header(view, tags, _permission_modes(run_dir), judging, root, run_dir, board_obj=board_obj, params=params,
+                              campaign_block=built.header_block if built else None)),
+        model.Section("validity", "Validity", _validity(view, built.validity_line if built else None)),
+        *([built.section] if built else []),
         model.Section("leaderboard", "Leaderboard", _leaderboard(view, board_obj)),
         model.Section("pack-effect", "Pack effect", _pack_effect(board_obj, combo_ix)),
         model.Section("cost-frontier", "Cost frontier", cost_frontier_sec),
@@ -2245,7 +2287,7 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
     # Design section 2: always the LAST section, after `runs` and after `comparison` when present.
     sections.append(model.Section(
         "pack-improvement", "Pack improvement",
-        _pack_improvement(view, board_obj, run_dir, root, archive_present, combo_ix),
+        _pack_improvement(view, board_obj, run_dir, root, archive_present, combo_ix, built.section.id if built else None),
     ))
     # R4: the one hashed inline script (design section 5) plus the sticky control bar it drives.
     script_text = SCRIPT_PATH.read_text(encoding="utf-8")
@@ -2295,7 +2337,7 @@ def _egress_row(record: dict) -> str:
 def write(run_dir: Path, view: views.RunView, credential_values: set[str] = frozenset(), root: Path | None = None,
           operator: egress.Operator | None = None, board_obj: board.Board | None = None,
           params: stats.Params | None = None, comparison_obj: board.Comparison | str | None = None,
-          canaries: Sequence[str] = ()) -> Path:
+          canaries: Sequence[str] = (), campaign_obj: campaign_section.CampaignInput | None = None) -> Path:
     """report.html, after publication egress (`_publish`) and the credential scan (HB-SEC-001), and beside it the run
     record of what the report withheld and flagged (`RECORD`). The record is the publication record, a derived
     artifact regenerated with the report and never a ledger fact (R-80 DR-EG-1, ADR-0006 amendment); `report_sha256`
@@ -2303,7 +2345,7 @@ def write(run_dir: Path, view: views.RunView, credential_values: set[str] = froz
     scanned and the email is not (R-80 c4)."""
     operator = operator if operator is not None else egress.Operator.from_os()
     doc = render(view, archive_present=(run_dir / "archive").is_dir(), run_dir=run_dir, root=root, operator=operator,
-                 board_obj=board_obj, params=params, comparison_obj=comparison_obj)
+                 board_obj=board_obj, params=params, comparison_obj=comparison_obj, campaign_obj=campaign_obj)
     # The rendered page, before any section is withheld: a credential refuses the whole write, never only its section,
     # so `bench report` never prints a table that carries it either (residual 5; R-80 c4 made the section scan run).
     found = scan(doc, credential_values)
