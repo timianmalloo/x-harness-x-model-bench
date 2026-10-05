@@ -58,6 +58,7 @@ TIMING_ALLOWED: Mapping[str, str] = {
     "test_identity.py::test_run_edit_stops_launch_grade_edit_does_not": _INJECTED,
     "test_identity.py::test_stray_file_stops_launch": _INJECTED,
     "test_identity.py::test_unreadable_component_is_named_after_retries": _INJECTED,
+    "test_identity.py::launch_diff": _INJECTED,
     "test_engine.py::test_blocked_cell_default_continues_after_the_timeout": _STALL,  # the blocked cell's "sleep" is the forced delay
     "test_engine.py::test_parallelism_is_never_exceeded":
         "forced delays of 3 s on each cell's handshake, no turn sleep, and 1.5 s on recording each process end cannot change the peak: the slot frees on the recorded outcome (TIME-B2); the 1 s turn only widens the window a broken cap would show in",
