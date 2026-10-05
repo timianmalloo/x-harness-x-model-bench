@@ -20,8 +20,8 @@
   {
     "name": "turn 2 not reached derivation yields NA rework_ratio and 0 property_check_pass",
     "file": "src/harness_bench/grade/rework.py",
-    "find": "property_check_pass = Score(0, None)",
-    "replace": "property_check_pass = Score(1, None)",
+    "find": "property_check_pass = Score(0, None)\n        if snap_events and snap_ws.is_dir():",
+    "replace": "property_check_pass = Score(1, None)\n        if snap_events and snap_ws.is_dir():",
     "tests": [
       "tests/test_rework.py::test_rework_turn2_not_reached_is_na_and_primary_zero"
     ]
