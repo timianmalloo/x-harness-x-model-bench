@@ -703,7 +703,7 @@ class Engine:
         kill_reason = self.active[cid].kill_reason
         extractions = _read_records(launcher, home, result.session_id)  # read once: the provider-error scan and the spend
         cause = None if kill_reason == "stop" else self._classify(result, extractions, exit_status, tail, kill_reason)
-        usage = normalize.turn_usage({"_meta": (result.usage or {}).get("meta")})
+        usage = [u for t in result.turns for u in normalize.turn_usage({"_meta": (t.usage or {}).get("meta")})]  # every returned turn (design 4.5)
         for model, buckets in _usage_per_model(usage).items():
             self.record("turn_usage", {"kind": "turn_usage", "run_id": self.plan["run_id"], "cell_id": cid, "attempt": 1,
                                        "model": model, **buckets})

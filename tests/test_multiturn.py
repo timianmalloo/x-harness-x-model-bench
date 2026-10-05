@@ -250,8 +250,8 @@ def test_t_eng_11_outcome_last_turn_and_total_agent_time(tmp_path):
     summary, events, _, _, _ = run_cell(tmp_path)
     ended = [r for r in events if r["kind"] == "cell.turn_ended"]
     assert len(ended) == 2, "agent time requires every returned turn"
-    assert sum(r["turn_seconds"] for r in ended) >= ended[-1]["turn_seconds"]
-    assert next(iter(summary.outcomes.values()))["turn_ms"] == int(ended[-1]["turn_seconds"] * 1000)
+    assert sum(r["turn_ms"] for r in ended) >= ended[-1]["turn_ms"]
+    assert next(iter(summary.outcomes.values()))["turn_ms"] == ended[-1]["turn_ms"]
 
 
 @pytest.mark.xfail(strict=True, reason="J1b: one handshake per session")
