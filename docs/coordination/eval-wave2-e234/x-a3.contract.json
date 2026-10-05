@@ -1,12 +1,12 @@
 {
   "schema": "coord-run/1",
-  "run_id": "w2-a3a-e1e4",
+  "run_id": "w2-a3b-e1e4",
   "owner": "leader-e1e4",
   "parallelism": 1,
   "workers": [
     {
-      "session": "x-a3a-e1e4",
-      "branch": "build/eval-x-a3a",
+      "session": "x-a3b-e1e4",
+      "branch": "build/eval-x-a3b",
       "harness": "agy",
       "transport": "agy",
       "argv": [
@@ -40,9 +40,9 @@
         "permissions": "observed-only"
       },
       "prompts": [
-        "al-01M469J3RS1YJ5PNW6SMEKN99C"
+        "al-01M46KH9906JPJ1GPACVSD9J5P"
       ],
-      "fallback": "A red-only end, a deadline or a failed served-model read: the green follow-on runs as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) in this worker's tree (R-87 Option 1); turns b and c reuse this contract with their suffix, each with its own compilation"
+      "fallback": "A launch or transport failure before the first prompt (XPORT-A shape): the follow-on runs as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) in this worker's tree under the same session x-a3b-e1e4, because the runner refuses a second attempt under the same id; with no commit landed it does the whole turn from the compile. A red-only end, a deadline or a failed served-model read: the green follow-on runs as that Sonnet sub-agent in this worker's tree (R-87 Option 1); turns b and c reuse this contract with their suffix, each with its own compilation"
     }
   ]
 }
