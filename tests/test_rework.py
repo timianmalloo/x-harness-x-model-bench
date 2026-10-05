@@ -215,6 +215,33 @@ def test_discriminate_admits_turns_task(tmp_path: Path, monkeypatch):
     assert not e1_raised, "discriminate still refused a task with turns (HB-RDY-005: not built in E1)"
 
 
+def test_rework_task_without_turns_stays_not_built(tmp_path: Path):
+    """A task that declares no turns (the E1 single-turn stand-in) keeps the E1 NA, so discriminate's DISC-C fixture holds."""
+    cid = "c3"
+    inp = CellInput(
+        run_dir=tmp_path / "run",
+        root=tmp_path,
+        plan={"parameters": {"grading_step_timeout": 30.0}, "tasks": {"RW0": {}}},
+        cell={"cell_id": cid, "task": "RW0"},
+        task={"property": {"name": "rework"}},
+        task_dir=tmp_path / "tasks" / "RW0",
+        archive=tmp_path / "run" / "archive" / cid / "attempt-1",
+        out_dir=tmp_path / "run" / "grading" / cid / "rework",
+        events=(),
+        record_reason=None,
+        model_calls=(),
+        tool_calls=(),
+        turn_usage=(),
+        metrics={"rework_ratio": {}, "property_check_pass": {}, "turn1_tests_pass": {}},
+        allow_model_calls=False,
+        extraction=None,
+        prices=None,
+        work_root=tmp_path / "work",
+    )
+    scores = rework.grade(inp, GradeContext(30.0))
+    assert {k: (s.value, s.reason) for k, s in scores.items()} == dict.fromkeys(inp.metrics, (None, "not built"))
+
+
 @pytest.mark.xfail(strict=True, reason="J2c: multi-turn discrimination through engine waits on X-J1d")
 def test_multi_turn_discrimination_through_engine():
     assert False, "J2c: engine multi-turn discrimination not yet connected"

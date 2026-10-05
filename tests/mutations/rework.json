@@ -79,5 +79,14 @@
     "tests": [
       "tests/test_rework.py::test_discriminate_admits_turns_task"
     ]
+  },
+  {
+    "name": "a rework task without turns keeps the E1 not built NA",
+    "file": "src/harness_bench/grade/rework.py",
+    "find": "return dict.fromkeys(inp.metrics, Score(None, \"not built\"))",
+    "replace": "plan_turns = []",
+    "tests": [
+      "tests/test_rework.py::test_rework_task_without_turns_stays_not_built"
+    ]
   }
 ]

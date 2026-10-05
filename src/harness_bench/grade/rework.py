@@ -126,7 +126,10 @@ def grade(inp: CellInput, ctx: GradeContext) -> Mapping[str, Score]:
     task_plan = plan_tasks.get(task_id, {})
     plan_turns = task_plan.get("turns")
     if plan_turns is None:
-        plan_turns = inp.task.get("turns") or []
+        plan_turns = inp.task.get("turns")
+    if plan_turns is None:
+        # A task that declares no turns (the E1 single-turn stand-in shape) has nothing to rework: the E1 NA, unchanged.
+        return dict.fromkeys(inp.metrics, Score(None, "not built"))
     planned_turns = len(plan_turns) + 1
 
     events = inp.events or ()
