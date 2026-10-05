@@ -468,6 +468,10 @@ def _hidden_check(inp: CellInput, ctx: GradeContext) -> dict[str, Score]:
     return scores
 
 
+def write_section(inp: CellInput, name: str, section: Mapping) -> str:
+    return ""
+
+
 STRATEGIES: dict[str, Callable[[CellInput, GradeContext], dict[str, Score]]] = {"security": _hidden_check}
 
 

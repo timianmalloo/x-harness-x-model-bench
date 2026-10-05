@@ -109,7 +109,6 @@ def test_grading_copy_with_junction_leaves_target_untouched_formal(tmp_path):
     assert sentinel_unchanged(sentinel, snapshot)
 
 
-
 def test_copy_tree_records_the_skipped_junction_relative_path(tmp_path):
     ws, _sentinel, _snapshot = make_tree_with_junction(tmp_path)
     assert _changes.copy_tree(ws, tmp_path / "copy") == ["escape"]
@@ -418,3 +417,22 @@ def test_hidden_tests_overlay_refuses_a_destination_outside_the_copy(tmp_path, d
     with pytest.raises(ValueError, match="overlay"):
         prop.hidden_tests(inp, lb0_tree(tmp_path / "t", v=1), "final", overlay={dest: tmp_path})
 
+
+def test_write_section_adds_one_strategy_object_to_the_single_property_json(tmp_path):
+    inp = lb0_input(tmp_path)
+    (inp.out_dir / "property.json").write_text(json.dumps({"schema": "bench-property-evidence/1", "row": 7}),
+                                               encoding="utf-8")
+    pointer = prop.write_section(inp, "rework", {"clause": "ratio", "rework_ratio": "0.2500"})
+    doc = json.loads((inp.out_dir / "property.json").read_text(encoding="utf-8"))
+    assert (doc.get("strategy"), doc["row"], pointer) == (
+        {"rework": {"clause": "ratio", "rework_ratio": "0.2500"}}, 7, "grading/g/c/property/property.json")
+
+
+def test_write_section_creates_the_file_and_refuses_a_rewrite_or_a_checked_property(tmp_path):
+    inp = lb0_input(tmp_path)
+    prop.write_section(inp, "simplicity", {"clause": "tests"})
+    assert (inp.out_dir / "property.json").is_file()
+    assert json.loads((inp.out_dir / "property.json").read_text(encoding="utf-8"))["schema"] == "bench-property-evidence/1"
+    for name in ("simplicity", "security", "nope"):  # written once; a check property owns its own record
+        with pytest.raises(ValueError, match=name):
+            prop.write_section(inp, name, {})
