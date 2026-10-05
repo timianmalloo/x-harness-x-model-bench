@@ -1,0 +1,83 @@
+[
+  {
+    "name": "rework_ratio counts replaced and deleted lines, not added lines",
+    "file": "src/harness_bench/grade/rework.py",
+    "find": "changed_total += len(t1 & c_set)",
+    "replace": "changed_total += len(t1)",
+    "tests": [
+      "tests/test_rework.py::test_rework_ratio_counts_replaced_and_deleted_not_added"
+    ]
+  },
+  {
+    "name": "rework_ratio computes exact decimal ratio against ceiling boundary",
+    "file": "src/harness_bench/grade/rework.py",
+    "find": "return (Decimal(changed_total) / Decimal(t1_total)).quantize(\n        Decimal(\"0.0001\"), rounding=ROUND_HALF_EVEN\n    )",
+    "replace": "return Decimal(\"0.5000\")",
+    "tests": [
+      "tests/test_rework.py::test_rework_ratio_ceiling_boundary"
+    ]
+  },
+  {
+    "name": "turn 2 not reached derivation yields NA rework_ratio and 0 property_check_pass",
+    "file": "src/harness_bench/grade/rework.py",
+    "find": "property_check_pass = Score(0, None)",
+    "replace": "property_check_pass = Score(1, None)",
+    "tests": [
+      "tests/test_rework.py::test_rework_turn2_not_reached_is_na_and_primary_zero"
+    ]
+  },
+  {
+    "name": "STRATEGIES maps rework to rework.grade",
+    "file": "src/harness_bench/grade/property.py",
+    "find": "\"rework\": rework.grade",
+    "replace": "\"rework\": _hidden_check",
+    "tests": [
+      "tests/test_rework.py::test_rework_grade_cell_uses_registered_strategy"
+    ]
+  },
+  {
+    "name": "variant reader create form is accepted when file not in reference overlay",
+    "file": "src/harness_bench/readiness.py",
+    "find": "if edit[\"old\"] == \"\":\n            if target.is_file():",
+    "replace": "if False:\n            if target.is_file():",
+    "tests": [
+      "tests/test_rework.py::test_variant_reader_create_form_accepted"
+    ]
+  },
+  {
+    "name": "variant reader create form is refused when file exists in reference overlay",
+    "file": "src/harness_bench/readiness.py",
+    "find": "if target.is_file():\n                raise _bad(task_id, f\"variant {name} create edit cannot replace file already in reference overlay ({rel.as_posix()})\")",
+    "replace": "if False:\n                pass",
+    "tests": [
+      "tests/test_rework.py::test_variant_reader_create_form_refused_when_file_exists"
+    ]
+  },
+  {
+    "name": "variant reader turn prefix is accepted for task with turns",
+    "file": "src/harness_bench/readiness.py",
+    "find": "if has_turns and not re.match(r\"^turn-\\d+/\", file_str):",
+    "replace": "if has_turns:",
+    "tests": [
+      "tests/test_rework.py::test_variant_reader_turn_prefix_accepted_for_turns_task"
+    ]
+  },
+  {
+    "name": "variant reader turn prefix is refused when missing for task with turns",
+    "file": "src/harness_bench/readiness.py",
+    "find": "if has_turns and not re.match(r\"^turn-\\d+/\", file_str):",
+    "replace": "if False:",
+    "tests": [
+      "tests/test_rework.py::test_variant_reader_turn_prefix_refused_when_missing_for_turns_task"
+    ]
+  },
+  {
+    "name": "discriminate admits tasks with turns",
+    "file": "src/harness_bench/discriminate.py",
+    "find": "contract = readiness.contract_failures(root, task_id)",
+    "replace": "if task.get(\"turns\"): raise BenchError(\"HB-RDY-005\", f\"{task_id}: a task with turns is not built in E1\")\n    contract = readiness.contract_failures(root, task_id)",
+    "tests": [
+      "tests/test_rework.py::test_discriminate_admits_turns_task"
+    ]
+  }
+]

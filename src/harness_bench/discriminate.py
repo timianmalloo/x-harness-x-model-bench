@@ -131,7 +131,11 @@ def _variant_overlay(task_dir: Path, name: str, entry: dict, dest: Path) -> Path
     _changes.copy_tree(task_dir / "oracle" / "solutions" / "reference", dest, ignore=())
     for edit in entry["edits"]:
         target = dest / edit["file"]
-        target.write_bytes(target.read_bytes().replace(edit["old"].encode(), edit["new"].encode(), 1))
+        if edit["old"] == "":
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(edit["new"].encode())
+        else:
+            target.write_bytes(target.read_bytes().replace(edit["old"].encode(), edit["new"].encode(), 1))
     return dest
 
 
@@ -279,8 +283,6 @@ def _trial(root: Path, task_id: str, runs: Path, cells_root: Path, upstream: Pat
     clock, t0 = _Clock(), time.monotonic()
     task_dir = root / "tasks" / task_id
     task = config.load_yaml(task_dir / "task.yaml")
-    if task.get("turns"):
-        raise BenchError("HB-RDY-005", f"{task_id}: a task with turns is not built in E1 (multi-turn overlays arrive in E3)")
     contract = readiness.contract_failures(root, task_id)
     if contract:
         raise BenchError("HB-RDY-005", "; ".join(f"{f.item}: {f.detail}" for f in contract))

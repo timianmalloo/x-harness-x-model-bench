@@ -11,7 +11,8 @@ import yaml
 
 from harness_bench import discriminate, readiness
 from harness_bench.errors import BenchError
-from harness_bench.grade import CellInput, property as prop, rework
+from harness_bench.grade import CellInput, rework
+from harness_bench.grade import property as prop
 from harness_bench.grade.property import GradeContext
 
 
@@ -50,7 +51,7 @@ def test_rework_turn2_not_reached_is_na_and_primary_zero(tmp_path: Path):
         task={"property": {"name": "rework", "ceilings": {"rework_ratio": "0.3000"}}},
         task_dir=tmp_path / "tasks" / "RW1",
         archive=tmp_path / "run" / "archive" / cid / "attempt-1",
-        out_dir=tmp_path / "grading" / cid / "rework",
+        out_dir=tmp_path / "run" / "grading" / cid / "rework",
         events=(
             {"kind": "cell.turn_ended", "cell_id": cid, "turn": 1, "next": "stop"},
         ),
@@ -86,7 +87,7 @@ def test_rework_grade_cell_uses_registered_strategy(tmp_path: Path):
         task={"property": {"name": "rework"}},
         task_dir=tmp_path / "tasks" / "RW1",
         archive=tmp_path / "run" / "archive" / cid / "attempt-1",
-        out_dir=tmp_path / "grading" / cid / "property",
+        out_dir=tmp_path / "run" / "grading" / cid / "property",
         events=(),
         record_reason=None,
         model_calls=(),
@@ -116,7 +117,7 @@ def _make_task_with_variant(tmp_path: Path, task_id: str, variant_dict: dict, ta
         fp.write_text(content, encoding="utf-8")
     variants_file = task_dir / "oracle" / "variants.py"
     variants_file.parent.mkdir(parents=True, exist_ok=True)
-    variants_file.write_text(f"VARIANTS = {repr(variant_dict)}\n", encoding="utf-8")
+    variants_file.write_text(f"VARIANTS = {variant_dict!r}\n", encoding="utf-8")
     return task_dir
 
 
@@ -208,7 +209,7 @@ def test_discriminate_admits_turns_task(tmp_path: Path, monkeypatch):
         e1_raised = False
     except BenchError as exc:
         e1_raised = "not built in E1" in str(exc)
-    except Exception:
+    except Exception:  # noqa: BLE001 - any other failure means the E1 refusal is not what stopped the trial
         e1_raised = False
 
     assert not e1_raised, "discriminate still refused a task with turns (HB-RDY-005: not built in E1)"

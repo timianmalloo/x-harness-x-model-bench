@@ -705,17 +705,26 @@ def _check_variant(root: Path, task_id: str, name, entry) -> None:
         raise _bad(task_id, f"variant {name} clauses must map strings to texts of at most {MAX_CLAUSE_CHARS} characters")
     if not isinstance(edits, list) or not edits:
         raise _bad(task_id, f"variant {name} edits is not a non-empty list")
+    task_path = root / "tasks" / task_id / "task.yaml"
+    has_turns = bool(config.load_yaml(task_path).get("turns")) if task_path.is_file() else False
     reference = root / "tasks" / task_id / "oracle" / "solutions" / "reference"
     for edit in edits:
         if not isinstance(edit, dict) or set(edit) != {"file", "old", "new"} or not all(isinstance(v, str) for v in edit.values()):
             raise _bad(task_id, f"variant {name} has an edit that is not {{file, old, new}} strings")
+        file_str = edit["file"]
+        if has_turns and not re.match(r"^turn-\d+/", file_str):
+            raise _bad(task_id, f"variant {name} edit file must start with turn-<n>/ for a task with turns ({file_str})")
         try:
-            rel = safe_relpath(edit["file"])
+            rel = safe_relpath(file_str)
             for part in rel.parts:
                 prop.check_segment("overlay component", part, OVERLAY_COMPONENT)
         except (OverlayError, ValueError) as exc:
             raise _bad(task_id, f"variant {name} edit file: {exc}") from exc
         target = reference / rel
-        text = target.read_text(encoding="utf-8") if target.is_file() else ""
-        if not edit["old"] or text.count(edit["old"]) != 1:
-            raise _bad(task_id, f"variant {name} edit does not apply (`old` must occur exactly once in reference/{rel.as_posix()})")
+        if edit["old"] == "":
+            if target.is_file():
+                raise _bad(task_id, f"variant {name} create edit cannot replace file already in reference overlay ({rel.as_posix()})")
+        else:
+            text = target.read_text(encoding="utf-8") if target.is_file() else ""
+            if not edit["old"] or text.count(edit["old"]) != 1:
+                raise _bad(task_id, f"variant {name} edit does not apply (`old` must occur exactly once in reference/{rel.as_posix()})")
