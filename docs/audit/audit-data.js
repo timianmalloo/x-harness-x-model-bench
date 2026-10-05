@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-04T20:43:04Z",
+  "generated": "2026-10-05T00:14:18Z",
   "audit": [
     {
       "actor": null,
@@ -78370,6 +78370,996 @@ window.AUDIT_DATA = {
       "duration_source": "session-start-hook",
       "started_at": "2026-10-04T19:53:09Z",
       "duration_seconds": 2995.0
+    },
+    {
+      "id": "al-01M44PETECKFW6RB0DDS001FT9",
+      "shortname": "You are session x-a1b-e1e4 on branch build/eval-x-a1b, harness Codex, mo…",
+      "datetime": "2026-10-05T00:12:14Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-a1b-e1e4 on branch build/eval-x-a1b, harness Codex, model gpt-6.1-sol with effort high, deadline 3,300 s. Build dispatch A1b only of the brief docs/coordination/eval-wave2-e1/x-a1.md (the readers, the views.py kind refusal, grade/_changes.py, cli._workspace_builder, the plan-level readers, the two validate_catalog checks, G1 with the pinned counts and bench/rings/pilot.yaml), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first (its Coordinator #14a entry names what moved), then that brief; both bind you. W0 is docs/design/eval-seam-contracts.md rev 6.10.\n\nRead A1a's landed code before you write: src/harness_bench/plan.py (cell_arm, plan_packs, plan_pack, arm_pack, plan_comparisons, kind_of) and src/harness_bench/config.py (ARM_OFF, ARM_ID, PROPERTY_NAMES, CHECK_PROPERTIES). Call them; never re-define them. A1a and its follow-on are on main (3d71d594); do not re-edit their hunks. A1af already moved views.py:525 to plan.cell_arm, so your views.py work is the kind refusal through plan.kind_of only. The sites moved since the brief: grade/_changes.py:86, report/pack_improvement.py:747, board.py:756-757, report/summaries.py:177, cli.py:146-149. The two validate_catalog checks are not in config.py yet; they are yours. W0 calls the function validate_catalog; on main the catalog checker is config.validate_metrics (config.py:218), which the tests in tests/test_catalog_version.py call. When they land, the strict xfail at tests/test_catalog_version.py:746 passes; that file is not yours, so its marker removal follows README §2 (a seam request and the fallback in its own commit). Never kill a process by name or pattern, only PIDs you started (README §2). Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch; the served model is read from the Codex native record. Acceptance items are the brief's.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M44PEV06XYTC9XW03KTQFSQH",
+      "shortname": "You are session x-h1a-e1e4 on branch build/eval-x-h1a, harness Grok, mod…",
+      "datetime": "2026-10-05T00:12:15Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-h1a-e1e4 on branch build/eval-x-h1a, harness Grok, model grok-4.7 with --reasoning-effort high, deadline 2,400 s. Build dispatch turn a only of the brief docs/coordination/eval-wave2-e1/x-h1.md (power: src/harness_bench/power.py, tests/test_power.py, tests/mutations/power.json), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief; both bind you. W0 is docs/design/eval-seam-contracts.md rev 6.10.\n\nEvery item the brief depends on is on main: X-D1 (HB-PWR-001, the grade class of power.py), X-G1, X-A1a (plan.cell_arm; turn a does not read it), ADR-0020 Amendment 1, TOOL-GSM-FIRST. power.py is in identity.PLANNED: the commit that lands power.py deletes that one key from identity.PLANNED and changes nothing else in src/harness_bench/identity.py (W0 rev 6.10, R6.10a). Never kill a process by name or pattern, only PIDs you started (README §2). Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). Acceptance items are the brief's.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M44PEVFQZF9D5R2BWEW7ZWEZ",
+      "shortname": "You are session x-b2-e1e4 on branch build/eval-x-b2, harness Agy, model …",
+      "datetime": "2026-10-05T00:12:15Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-b2-e1e4 on branch build/eval-x-b2, harness Agy, model gemini-3.8-flash-high, deadline 3,300 s. Build X-B2 of the brief docs/coordination/eval-wave2-e1/x-b2.md (archive_cell through atomic.publish_dir with a verify of the file set and each file's rows, archive.attempt_dirs as the one attempt-folder reader used by report/judges.py, mutants A1..A4), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then that brief, then the design it names; all three bind you. W0 is docs/design/eval-seam-contracts.md rev 6.10; its section 4 wins over the brief's rev 4 citation.\n\nRead X-B1b's landed code before you write: src/harness_bench/atomic.py publish_dir(final, fill, verify) (on main, d162dc42; fill and verify get the temp folder; an existing final raises FileExistsError), is_temp_name, stale_temps, sweep_temps(folder, lock) and make_writable. Call them; never re-define them. archive.make_writable is still its own definition on main; W0 section 4 says archive re-exports atomic.make_writable, so make it a re-export. The one archive_cell caller is engine.py:850. X-A1b may run beside you and owns tests/test_views.py, so put your views test in tests/test_archive.py if it needs no private fixture of that file. Never kill a process by name or pattern, only PIDs you started (README §2). Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch; the served model is read from Agy's cli.log. Acceptance items are the brief's.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M44PEVXETK8ZJ2RRZWWSYDFV",
+      "shortname": "You are session x-j2a-e1e4 on branch build/eval-x-j2a, harness Agy, mode…",
+      "datetime": "2026-10-05T00:12:16Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-j2a-e1e4 on branch build/eval-x-j2a, harness Agy, model gemini-3.8-flash-high, deadline 3,300 s. Build turn J2a only of the brief docs/coordination/eval-wave2-e234/x-j2.md (grade/_changes.py's four functions product_lines, in_radius, line_delta and is_test_path; the drift.py hunk that calls _changes.in_radius; the R2-2 and R2-3 fixtures and the test-directory mutant), in one turn: a red commit, then a green commit. Read docs/coordination/eval-wave2-e1/README.md first, then docs/coordination/eval-wave2-e234/README.md, then that brief; all bind you. W0 is docs/design/eval-seam-contracts.md rev 6.10. tests/test_grade_drift.py stays green unedited.\n\nX-F has joined (a03b849f): grade/_changes.py now carries its copy_tree and remove_tree; do not edit X-F's hunks. drift._in_radius is at src/harness_bench/grade/drift.py:73 and its one caller at :131. X-A1b may run beside you and edits only line 86 of grade/_changes.py (the cell pack read); do not edit that line. Never kill a process by name or pattern, only PIDs you started (README §2). Report your served model id on the first line of your final message.\n\nExit: README §3 join gate per dispatch. Acceptance items are the brief's. Turn J2b is a later dispatch.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M44PHD0JM9CCZ4ZBNES5TPXM",
+      "shortname": "compile-You are session x-a1b-e1e4 on branch build/eval-x-a1b, harness Codex, mo…",
+      "datetime": "2026-10-05T00:13:39Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-a1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch A1b of X-A1 on build/eval-x-a1b: the readers, the views.py kind refusal, grade/_changes.py, cli._workspace_builder, the plan-level readers, the two validate_catalog checks, G1 with the pinned counts and bench/rings/pilot.yaml; red commit then green commit, calling A1a's landed plan.py and config.py names (main 3d71d594).\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1b.; The README section 3 join gate passes; the served model is read from the Codex native record.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Re-editing the hunks of A1a and its follow-on (on main 3d71d594).; Re-defining A1a's plan.py and config.py names; call them.; The views.py:525 cell-arm read: A1af landed it.; Editing tests/test_catalog_version.py other than the xfail marker removal by README section 2 (a seam request and the fallback in its own commit).; Killing any process by name or pattern; only PIDs this session started.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens across 2 dispatches\nMain-line budget: 220 calls across 2 dispatches, 3,300 s per dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1b. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The README section 3 join gate passes; the served model is read from the Codex native record. | phrase: README §3 join gate per dispatch; the served model is read from the Codex native record. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items are the brief's. |\n| not_in_scope: Re-editing the hunks of A1a and its follow-on (on main 3d71d594). | phrase: do not re-edit their hunks |\n| not_in_scope: Re-defining A1a's plan.py and config.py names; call them. | phrase: Call them; never re-define them. |\n| not_in_scope: The views.py:525 cell-arm read: A1af landed it. | phrase: A1af already moved views.py:525 to plan.cell_arm |\n| not_in_scope: Editing tests/test_catalog_version.py other than the xfail marker removal by README section 2 (a seam request and the fallback in its own commit). | phrase: that file is not yours, so its marker removal follows README §2 (a seam request and the fallback in its own commit) |\n| not_in_scope: Killing any process by name or pattern; only PIDs this session started. | phrase: Never kill a process by name or pattern, only PIDs you started |\nReferences\n- build/eval-x-a1b: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-a1.md: docs/coordination/eval-wave2-e1/x-a1.md sha256 6252a059c23b39058f30bda99d149f90ce4ed4360f61d4d8350c543c452304b0\n- views.py: unresolved (ambiguous: 2 matches)\n- grade/_changes.py: src/harness_bench/grade/_changes.py sha256 034eaa52cdbe05855ee10edee3ec8196a986829e34a448df1df6b78785d1a7e2\n- bench/rings/pilot.yaml: unresolved (not found; nearest: bench/profiles/copilot.yaml)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 1232413ffe9c2f0401491a601b9f67e2a1142d2ade60ff0e5b78691c6937ae53\n- docs/design/eval-seam-contracts.md: docs/design/eval-seam-contracts.md sha256 1c8d682cd1f51b5fb87e463d643a97fdd7fbf84ffb54648cbf0e4a1b275f1482\n- src/harness_bench/plan.py: src/harness_bench/plan.py sha256 c5ab23058428142f7ba945a3ffe39ea60e115291499ee27c7280f99e6979b6fd\n- src/harness_bench/config.py: src/harness_bench/config.py sha256 1d0914c64e4c3f034971d258013f230ca11b0e1a4adc60aca9113a34ea4dc987\n- grade/_changes.py:86: unresolved (not found)\n- report/pack_improvement.py:747: unresolved (not found)\n- report/summaries.py:177: unresolved (not found)\n- config.py: src/harness_bench/config.py sha256 1d0914c64e4c3f034971d258013f230ca11b0e1a4adc60aca9113a34ea4dc987\n- tests/test_catalog_version.py: tests/test_catalog_version.py sha256 c5f8a32bae7e52baa7d4f3a1ec783e62f792fd8407f000596130d0ff1abd01cc\n- tests/test_catalog_version.py:746: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-a1b\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree (R-87 Option 1)\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M44PETECKFW6RB0DDS001FT9\nraw sha256: a7765ab0f96a44c6eb9cf0c66ec64ec09f8afca0e43b143841b222b3894e88e1\ncompiler model: claude-opus-5-5\nengine seconds: 0.014\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M44PETECKFW6RB0DDS001FT9 for codex v1: 9 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1b.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes; the served model is read from the Codex native record.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; the served model is read from the Codex native record."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items are the brief's."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Re-editing the hunks of A1a and its follow-on (on main 3d71d594).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "do not re-edit their hunks"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Re-defining A1a's plan.py and config.py names; call them.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Call them; never re-define them."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "The views.py:525 cell-arm read: A1af landed it.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A1af already moved views.py:525 to plan.cell_arm"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing tests/test_catalog_version.py other than the xfail marker removal by README section 2 (a seam request and the fallback in its own commit).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "that file is not yours, so its marker removal follows README §2 (a seam request and the fallback in its own commit)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Killing any process by name or pattern; only PIDs this session started.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never kill a process by name or pattern, only PIDs you started"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree (R-87 Option 1)",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-a1b",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-a1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch A1b of X-A1 on build/eval-x-a1b: the readers, the views.py kind refusal, grade/_changes.py, cli._workspace_builder, the plan-level readers, the two validate_catalog checks, G1 with the pinned counts and bench/rings/pilot.yaml; red commit then green commit, calling A1a's landed plan.py and config.py names (main 3d71d594).",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-a1b.",
+            "The README section 3 join gate passes; the served model is read from the Codex native record.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "not_in_scope": [
+            "Re-editing the hunks of A1a and its follow-on (on main 3d71d594).",
+            "Re-defining A1a's plan.py and config.py names; call them.",
+            "The views.py:525 cell-arm read: A1af landed it.",
+            "Editing tests/test_catalog_version.py other than the xfail marker removal by README section 2 (a seam request and the fallback in its own commit).",
+            "Killing any process by name or pattern; only PIDs this session started."
+          ],
+          "tier": "T2",
+          "fan_out_cap": "0",
+          "context_ceiling": "200k tokens across 2 dispatches",
+          "main_line_budget": "220 calls across 2 dispatches, 3,300 s per dispatch"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.014,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M44PETECKFW6RB0DDS001FT9",
+        "raw_sha256": "a7765ab0f96a44c6eb9cf0c66ec64ec09f8afca0e43b143841b222b3894e88e1",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-a1b"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-a1.md",
+            "reason": null,
+            "sha256": "6252a059c23b39058f30bda99d149f90ce4ed4360f61d4d8350c543c452304b0",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-a1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/_changes.py",
+            "reason": null,
+            "sha256": "034eaa52cdbe05855ee10edee3ec8196a986829e34a448df1df6b78785d1a7e2",
+            "status": "resolved",
+            "token": "grade/_changes.py"
+          },
+          {
+            "nearest": "bench/profiles/copilot.yaml",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/rings/pilot.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "1232413ffe9c2f0401491a601b9f67e2a1142d2ade60ff0e5b78691c6937ae53",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-seam-contracts.md",
+            "reason": null,
+            "sha256": "1c8d682cd1f51b5fb87e463d643a97fdd7fbf84ffb54648cbf0e4a1b275f1482",
+            "status": "resolved",
+            "token": "docs/design/eval-seam-contracts.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "c5ab23058428142f7ba945a3ffe39ea60e115291499ee27c7280f99e6979b6fd",
+            "status": "resolved",
+            "token": "src/harness_bench/plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "1d0914c64e4c3f034971d258013f230ca11b0e1a4adc60aca9113a34ea4dc987",
+            "status": "resolved",
+            "token": "src/harness_bench/config.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/_changes.py:86"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/pack_improvement.py:747"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "report/summaries.py:177"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "1d0914c64e4c3f034971d258013f230ca11b0e1a4adc60aca9113a34ea4dc987",
+            "status": "resolved",
+            "token": "config.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_catalog_version.py",
+            "reason": null,
+            "sha256": "c5f8a32bae7e52baa7d4f3a1ec783e62f792fd8407f000596130d0ff1abd01cc",
+            "status": "resolved",
+            "token": "tests/test_catalog_version.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_catalog_version.py:746"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M44PHD9Y558JERJ7NW2YDDF0",
+      "shortname": "compile-You are session x-h1a-e1e4 on branch build/eval-x-h1a, harness Grok, mod…",
+      "datetime": "2026-10-05T00:13:39Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-h1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch turn a of X-H1 on build/eval-x-h1a: power (src/harness_bench/power.py, tests/test_power.py, tests/mutations/power.json); red commit then green commit; the commit that lands power.py deletes its identity.PLANNED key (W0 rev 6.10, R6.10a).\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1a.; The commit that lands power.py deletes the power.py key from identity.PLANNED.; The README section 3 join gate passes and the Grok served-model reader exits 0.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Turns b (verdicts.py) and c (gates.py): later dispatches.; Any other change to src/harness_bench/identity.py.; Killing any process by name or pattern; only PIDs this session started.\nTier: T2\nFan-out cap: 0\nContext ceiling: 250k tokens across 3 dispatches\nMain-line budget: 60 calls, 2,400 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: The commit that lands power.py deletes the power.py key from identity.PLANNED. | phrase: the commit that lands power.py deletes that one key from identity.PLANNED |\n| done_when: The README section 3 join gate passes and the Grok served-model reader exits 0. | phrase: README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92). |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items are the brief's. |\n| not_in_scope: Turns b (verdicts.py) and c (gates.py): later dispatches. | phrase: Build dispatch turn a only |\n| not_in_scope: Any other change to src/harness_bench/identity.py. | phrase: changes nothing else in src/harness_bench/identity.py |\n| not_in_scope: Killing any process by name or pattern; only PIDs this session started. | phrase: Never kill a process by name or pattern, only PIDs you started |\nReferences\n- python tools/grok_served_model.py <session dir: unresolved (not found)\n- build/eval-x-h1a: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-h1.md: docs/coordination/eval-wave2-e1/x-h1.md sha256 bc2325d78f60f85a3962358971b49414ff24961cdb41a1d8979ac1a7b5187068\n- src/harness_bench/power.py: unresolved (not found)\n- tests/test_power.py: unresolved (not found)\n- tests/mutations/power.json: unresolved (not found)\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 1232413ffe9c2f0401491a601b9f67e2a1142d2ade60ff0e5b78691c6937ae53\n- docs/design/eval-seam-contracts.md: docs/design/eval-seam-contracts.md sha256 1c8d682cd1f51b5fb87e463d643a97fdd7fbf84ffb54648cbf0e4a1b275f1482\n- power.py: unresolved (not found)\n- src/harness_bench/identity.py: src/harness_bench/identity.py sha256 61b09b21cb570be6167b4875f70e0539f18aab92fc28a9b91bf3713b8ab74c01\n- tools/grok_served_model.py: tools/grok_served_model.py sha256 45df6851d7f2e1654b04306066a62ad7823dd765576cbfbeff02ff9256712be9\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0; R-103's one drift retry is the Leader's)\nper_branch_exit: a red commit then a green commit on build/eval-x-h1a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 2,400 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree (R-87 Option 1); a first response not grok-4.7* is killed inside 120 s and retried once, then Sonnet (R-103)\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M44PEV06XYTC9XW03KTQFSQH\nraw sha256: e999ce12731cefe7c02bc30c1395f537dd4a3ca7fce90ece4d0366f274771cc8\ncompiler model: claude-opus-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M44PEV06XYTC9XW03KTQFSQH for claude-code v1: 8 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The commit that lands power.py deletes the power.py key from identity.PLANNED.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the commit that lands power.py deletes that one key from identity.PLANNED"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; `python tools/grok_served_model.py <session dir>` exits 0 (R-92)."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items are the brief's."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Turns b (verdicts.py) and c (gates.py): later dispatches.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build dispatch turn a only"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any other change to src/harness_bench/identity.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "changes nothing else in src/harness_bench/identity.py"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Killing any process by name or pattern; only PIDs this session started.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never kill a process by name or pattern, only PIDs you started"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "2,400 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree (R-87 Option 1); a first response not grok-4.7* is killed inside 120 s and retried once, then Sonnet (R-103)",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-h1a",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0; R-103's one drift retry is the Leader's)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-h1.md and the pack README (both bind you; the owned paths and acceptance items are the brief's): Build dispatch turn a of X-H1 on build/eval-x-h1a: power (src/harness_bench/power.py, tests/test_power.py, tests/mutations/power.json); red commit then green commit; the commit that lands power.py deletes its identity.PLANNED key (W0 rev 6.10, R6.10a).",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-h1a.",
+            "The commit that lands power.py deletes the power.py key from identity.PLANNED.",
+            "The README section 3 join gate passes and the Grok served-model reader exits 0.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "not_in_scope": [
+            "Turns b (verdicts.py) and c (gates.py): later dispatches.",
+            "Any other change to src/harness_bench/identity.py.",
+            "Killing any process by name or pattern; only PIDs this session started."
+          ],
+          "tier": "T2",
+          "fan_out_cap": "0",
+          "context_ceiling": "250k tokens across 3 dispatches",
+          "main_line_budget": "60 calls, 2,400 s"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M44PEV06XYTC9XW03KTQFSQH",
+        "raw_sha256": "e999ce12731cefe7c02bc30c1395f537dd4a3ca7fce90ece4d0366f274771cc8",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/grok_served_model.py <session dir"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-h1a"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-h1.md",
+            "reason": null,
+            "sha256": "bc2325d78f60f85a3962358971b49414ff24961cdb41a1d8979ac1a7b5187068",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-h1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/power.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_power.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/power.json"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "1232413ffe9c2f0401491a601b9f67e2a1142d2ade60ff0e5b78691c6937ae53",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-seam-contracts.md",
+            "reason": null,
+            "sha256": "1c8d682cd1f51b5fb87e463d643a97fdd7fbf84ffb54648cbf0e4a1b275f1482",
+            "status": "resolved",
+            "token": "docs/design/eval-seam-contracts.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "power.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/identity.py",
+            "reason": null,
+            "sha256": "61b09b21cb570be6167b4875f70e0539f18aab92fc28a9b91bf3713b8ab74c01",
+            "status": "resolved",
+            "token": "src/harness_bench/identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tools/grok_served_model.py",
+            "reason": null,
+            "sha256": "45df6851d7f2e1654b04306066a62ad7823dd765576cbfbeff02ff9256712be9",
+            "status": "resolved",
+            "token": "tools/grok_served_model.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M44PHDKFRKXC33A12WE1FA0B",
+      "shortname": "compile-You are session x-b2-e1e4 on branch build/eval-x-b2, harness Agy, model …",
+      "datetime": "2026-10-05T00:13:39Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-b2.md, the pack README and the design it names (all bind you; the owned paths and acceptance items are the brief's): Build X-B2 on build/eval-x-b2: archive_cell through atomic.publish_dir with a verify of the file set and each file's rows, archive.attempt_dirs as the one attempt-folder reader used by report/judges.py, mutants A1..A4; red commit then green commit, calling X-B1b's landed atomic.py (main d162dc42).\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2.; archive.make_writable is a re-export of atomic.make_writable.; The README section 3 join gate passes; the served model is read from Agy's cli.log.; The served model id is the first line of the final report.; Each of the brief's acceptance items is met, or reported as not met with the reason.\nNot in scope: Re-defining X-B1b's atomic.py helpers; call them.; Editing tests/test_views.py (X-A1b's) when the views test needs no private fixture of it; it goes in tests/test_archive.py.; Killing any process by name or pattern; only PIDs this session started.\nTier: T2\nFan-out cap: 0\nContext ceiling: 150k tokens\nMain-line budget: 120 calls, 3,300 s\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2. | phrase: in one turn: a red commit, then a green commit |\n| done_when: archive.make_writable is a re-export of atomic.make_writable. | phrase: so make it a re-export |\n| done_when: The README section 3 join gate passes; the served model is read from Agy's cli.log. | phrase: README §3 join gate per dispatch; the served model is read from Agy's cli.log. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| done_when: Each of the brief's acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items are the brief's. |\n| not_in_scope: Re-defining X-B1b's atomic.py helpers; call them. | phrase: Call them; never re-define them. |\n| not_in_scope: Editing tests/test_views.py (X-A1b's) when the views test needs no private fixture of it; it goes in tests/test_archive.py. | phrase: put your views test in tests/test_archive.py if it needs no private fixture of that file |\n| not_in_scope: Killing any process by name or pattern; only PIDs this session started. | phrase: Never kill a process by name or pattern, only PIDs you started |\nReferences\n- build/eval-x-b2: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-b2.md: docs/coordination/eval-wave2-e1/x-b2.md sha256 a16f73aeebe362c4dd5e74b5d5c60566d0bd106fe6baff2168c70d890e10c348\n- report/judges.py: src/harness_bench/report/judges.py sha256 30b8de3c690430923075040f43b81d0f1bda166606e987d969594dbd1e4786f9\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 1232413ffe9c2f0401491a601b9f67e2a1142d2ade60ff0e5b78691c6937ae53\n- docs/design/eval-seam-contracts.md: docs/design/eval-seam-contracts.md sha256 1c8d682cd1f51b5fb87e463d643a97fdd7fbf84ffb54648cbf0e4a1b275f1482\n- src/harness_bench/atomic.py: src/harness_bench/atomic.py sha256 d158db29ef50ee5013f1e775363cb8db4c0fd4815bbc4df5bd07d3a88d30e317\n- tests/test_views.py: tests/test_views.py sha256 dbb238335908729014a566fc8703c830fb1ee11e415f8005862f25ac1f2d4b94\n- tests/test_archive.py: tests/test_archive.py sha256 37f00d199456e779774171c4f523ecc5cd6e18d75d3a4d829af009121f7bdf54\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-b2\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree (R-87 Option 1)\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M44PEVFQZF9D5R2BWEW7ZWEZ\nraw sha256: 7c800f0123ea4c46bd057f397c74599a9e7d8d2807ab5b3505ae2397fca3bf85\ncompiler model: claude-opus-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M44PEVFQZF9D5R2BWEW7ZWEZ for claude-code v1: 8 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "archive.make_writable is a re-export of atomic.make_writable.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "so make it a re-export"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes; the served model is read from Agy's cli.log.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch; the served model is read from Agy's cli.log."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items are the brief's."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Re-defining X-B1b's atomic.py helpers; call them.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Call them; never re-define them."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Editing tests/test_views.py (X-A1b's) when the views test needs no private fixture of it; it goes in tests/test_archive.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "put your views test in tests/test_archive.py if it needs no private fixture of that file"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Killing any process by name or pattern; only PIDs this session started.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never kill a process by name or pattern, only PIDs you started"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree (R-87 Option 1)",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-b2",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-b2.md, the pack README and the design it names (all bind you; the owned paths and acceptance items are the brief's): Build X-B2 on build/eval-x-b2: archive_cell through atomic.publish_dir with a verify of the file set and each file's rows, archive.attempt_dirs as the one attempt-folder reader used by report/judges.py, mutants A1..A4; red commit then green commit, calling X-B1b's landed atomic.py (main d162dc42).",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-b2.",
+            "archive.make_writable is a re-export of atomic.make_writable.",
+            "The README section 3 join gate passes; the served model is read from Agy's cli.log.",
+            "The served model id is the first line of the final report.",
+            "Each of the brief's acceptance items is met, or reported as not met with the reason."
+          ],
+          "not_in_scope": [
+            "Re-defining X-B1b's atomic.py helpers; call them.",
+            "Editing tests/test_views.py (X-A1b's) when the views test needs no private fixture of it; it goes in tests/test_archive.py.",
+            "Killing any process by name or pattern; only PIDs this session started."
+          ],
+          "tier": "T2",
+          "fan_out_cap": "0",
+          "context_ceiling": "150k tokens",
+          "main_line_budget": "120 calls, 3,300 s"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M44PEVFQZF9D5R2BWEW7ZWEZ",
+        "raw_sha256": "7c800f0123ea4c46bd057f397c74599a9e7d8d2807ab5b3505ae2397fca3bf85",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-b2"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-b2.md",
+            "reason": null,
+            "sha256": "a16f73aeebe362c4dd5e74b5d5c60566d0bd106fe6baff2168c70d890e10c348",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-b2.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/judges.py",
+            "reason": null,
+            "sha256": "30b8de3c690430923075040f43b81d0f1bda166606e987d969594dbd1e4786f9",
+            "status": "resolved",
+            "token": "report/judges.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "1232413ffe9c2f0401491a601b9f67e2a1142d2ade60ff0e5b78691c6937ae53",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-seam-contracts.md",
+            "reason": null,
+            "sha256": "1c8d682cd1f51b5fb87e463d643a97fdd7fbf84ffb54648cbf0e4a1b275f1482",
+            "status": "resolved",
+            "token": "docs/design/eval-seam-contracts.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/atomic.py",
+            "reason": null,
+            "sha256": "d158db29ef50ee5013f1e775363cb8db4c0fd4815bbc4df5bd07d3a88d30e317",
+            "status": "resolved",
+            "token": "src/harness_bench/atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_views.py",
+            "reason": null,
+            "sha256": "dbb238335908729014a566fc8703c830fb1ee11e415f8005862f25ac1f2d4b94",
+            "status": "resolved",
+            "token": "tests/test_views.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_archive.py",
+            "reason": null,
+            "sha256": "37f00d199456e779774171c4f523ecc5cd6e18d75d3a4d829af009121f7bdf54",
+            "status": "resolved",
+            "token": "tests/test_archive.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M44PHDX8QPNF0K3HP1VB8X6G",
+      "shortname": "compile-You are session x-j2a-e1e4 on branch build/eval-x-j2a, harness Agy, mode…",
+      "datetime": "2026-10-05T00:13:40Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e234/x-j2.md and the E1 and E2-E4 READMEs, all binding (the owned paths and acceptance items are the brief's): build turn J2a of X-J2 on build/eval-x-j2a: grade/_changes.py's product_lines, in_radius, line_delta and is_test_path, the drift.py hunk that calls _changes.in_radius, the R2-2 and R2-3 fixtures and the test-directory mutant; red commit then green commit.\nDone when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-j2a.; tests/test_grade_drift.py passes with no edit.; Each of the brief's J2a acceptance items is met, or reported as not met with the reason.; The README section 3 join gate passes.; The served model id is the first line of the final report.\nNot in scope: Turn J2b (rework.py, per-turn synthetic cells, multi-turn discrimination, variant edit forms): a later dispatch.; X-F's hunks in grade/_changes.py (copy_tree, remove_tree).; Line 86 of grade/_changes.py (X-A1b's cell pack read).; Killing any process by name or pattern; only PIDs this session started.\nTier: T2\nFan-out cap: 0\nContext ceiling: 180k tokens across 2 dispatches\nMain-line budget: 160 calls across 2 dispatches, 3,300 s per dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-j2a. | phrase: in one turn: a red commit, then a green commit |\n| done_when: tests/test_grade_drift.py passes with no edit. | phrase: tests/test_grade_drift.py stays green unedited. |\n| done_when: Each of the brief's J2a acceptance items is met, or reported as not met with the reason. | phrase: Acceptance items are the brief's. |\n| done_when: The README section 3 join gate passes. | phrase: README §3 join gate per dispatch. |\n| done_when: The served model id is the first line of the final report. | phrase: Report your served model id on the first line of your final message |\n| not_in_scope: Turn J2b (rework.py, per-turn synthetic cells, multi-turn discrimination, variant edit forms): a later dispatch. | phrase: Turn J2b is a later dispatch. |\n| not_in_scope: X-F's hunks in grade/_changes.py (copy_tree, remove_tree). | phrase: do not edit X-F's hunks |\n| not_in_scope: Line 86 of grade/_changes.py (X-A1b's cell pack read). | phrase: do not edit that line |\n| not_in_scope: Killing any process by name or pattern; only PIDs this session started. | phrase: Never kill a process by name or pattern, only PIDs you started |\nReferences\n- build/eval-x-j2a: unresolved (not found)\n- docs/coordination/eval-wave2-e234/x-j2.md: docs/coordination/eval-wave2-e234/x-j2.md sha256 c7e06322ddf6c16c0451c42c4d03b2f780dcfce7062383fa6a85b7c956e70d7f\n- grade/_changes.py's: unresolved (not found; nearest: src/harness_bench/grade/_changes.py)\n- drift.py: src/harness_bench/grade/drift.py sha256 a52a8a0ad71ce498df898fab7b28c38afede891078fff63d71feaa88ad42277a\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 1232413ffe9c2f0401491a601b9f67e2a1142d2ade60ff0e5b78691c6937ae53\n- docs/coordination/eval-wave2-e234/README.md: docs/coordination/eval-wave2-e234/README.md sha256 e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701\n- docs/design/eval-seam-contracts.md: docs/design/eval-seam-contracts.md sha256 1c8d682cd1f51b5fb87e463d643a97fdd7fbf84ffb54648cbf0e4a1b275f1482\n- tests/test_grade_drift.py: tests/test_grade_drift.py sha256 71d5ce7eeca13e0f9326ccae6b88af6e6d86bb25b95c9b87d74c8124c248b67b\n- grade/_changes.py: src/harness_bench/grade/_changes.py sha256 034eaa52cdbe05855ee10edee3ec8196a986829e34a448df1df6b78785d1a7e2\n- src/harness_bench/grade/drift.py:73: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0 (contract max_retries 0)\nper_branch_exit: a red commit then a green commit on build/eval-x-j2a\njoin_rule: README section 3 join gate; the Leader merges\ncontainment: own worktree; the brief's owned paths only\ntermination: one turn\ndeadline: 3,300 s\nfallback: the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree (R-87 Option 1)\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M44PEVXETK8ZJ2RRZWWSYDFV\nraw sha256: f20c7b5839bdc5bad3b9b030184636d4c288b708f8a84204b6042697af293579\ncompiler model: claude-opus-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M44PEVXETK8ZJ2RRZWWSYDFV for claude-code v1: 9 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-j2a.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "in one turn: a red commit, then a green commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/test_grade_drift.py passes with no edit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/test_grade_drift.py stays green unedited."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Each of the brief's J2a acceptance items is met, or reported as not met with the reason.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Acceptance items are the brief's."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The README section 3 join gate passes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "README §3 join gate per dispatch."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The served model id is the first line of the final report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report your served model id on the first line of your final message"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Turn J2b (rework.py, per-turn synthetic cells, multi-turn discrimination, variant edit forms): a later dispatch.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Turn J2b is a later dispatch."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "X-F's hunks in grade/_changes.py (copy_tree, remove_tree).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "do not edit X-F's hunks"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Line 86 of grade/_changes.py (X-A1b's cell pack read).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "do not edit that line"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Killing any process by name or pattern; only PIDs this session started.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never kill a process by name or pattern, only PIDs you started"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree; the brief's owned paths only",
+          "deadline": "3,300 s",
+          "fallback": "the green follow-on as Claude Code Sonnet (model: sonnet) in the same tree (R-87 Option 1)",
+          "join_rule": "README section 3 join gate; the Leader merges",
+          "per_branch_exit": "a red commit then a green commit on build/eval-x-j2a",
+          "termination": "one turn",
+          "transient_retry": "0 (contract max_retries 0)",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Following the brief docs/coordination/eval-wave2-e234/x-j2.md and the E1 and E2-E4 READMEs, all binding (the owned paths and acceptance items are the brief's): build turn J2a of X-J2 on build/eval-x-j2a: grade/_changes.py's product_lines, in_radius, line_delta and is_test_path, the drift.py hunk that calls _changes.in_radius, the R2-2 and R2-3 fixtures and the test-directory mutant; red commit then green commit.",
+          "done_when": [
+            "A red commit whose tests fail on an assertion, then a green commit, on build/eval-x-j2a.",
+            "tests/test_grade_drift.py passes with no edit.",
+            "Each of the brief's J2a acceptance items is met, or reported as not met with the reason.",
+            "The README section 3 join gate passes.",
+            "The served model id is the first line of the final report."
+          ],
+          "not_in_scope": [
+            "Turn J2b (rework.py, per-turn synthetic cells, multi-turn discrimination, variant edit forms): a later dispatch.",
+            "X-F's hunks in grade/_changes.py (copy_tree, remove_tree).",
+            "Line 86 of grade/_changes.py (X-A1b's cell pack read).",
+            "Killing any process by name or pattern; only PIDs this session started."
+          ],
+          "tier": "T2",
+          "fan_out_cap": "0",
+          "context_ceiling": "180k tokens across 2 dispatches",
+          "main_line_budget": "160 calls across 2 dispatches, 3,300 s per dispatch"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M44PEVXETK8ZJ2RRZWWSYDFV",
+        "raw_sha256": "f20c7b5839bdc5bad3b9b030184636d4c288b708f8a84204b6042697af293579",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-j2a"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/x-j2.md",
+            "reason": null,
+            "sha256": "c7e06322ddf6c16c0451c42c4d03b2f780dcfce7062383fa6a85b7c956e70d7f",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/x-j2.md"
+          },
+          {
+            "nearest": "src/harness_bench/grade/_changes.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/_changes.py's"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/drift.py",
+            "reason": null,
+            "sha256": "a52a8a0ad71ce498df898fab7b28c38afede891078fff63d71feaa88ad42277a",
+            "status": "resolved",
+            "token": "drift.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "1232413ffe9c2f0401491a601b9f67e2a1142d2ade60ff0e5b78691c6937ae53",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/README.md",
+            "reason": null,
+            "sha256": "e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-seam-contracts.md",
+            "reason": null,
+            "sha256": "1c8d682cd1f51b5fb87e463d643a97fdd7fbf84ffb54648cbf0e4a1b275f1482",
+            "status": "resolved",
+            "token": "docs/design/eval-seam-contracts.md"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_drift.py",
+            "reason": null,
+            "sha256": "71d5ce7eeca13e0f9326ccae6b88af6e6d86bb25b95c9b87d74c8124c248b67b",
+            "status": "resolved",
+            "token": "tests/test_grade_drift.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/_changes.py",
+            "reason": null,
+            "sha256": "034eaa52cdbe05855ee10edee3ec8196a986829e34a448df1df6b78785d1a7e2",
+            "status": "resolved",
+            "token": "grade/_changes.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/grade/drift.py:73"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M44PJKF0X36CS4CPZKCRTDTK",
+      "shortname": "compile-c14a-a1b-h1a-b2-j2a",
+      "datetime": "2026-10-05T00:14:18Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Coordinator #14a: compile X-A1b (Codex), X-H1a (Grok, 2400 s, R-103), X-B2 (Agy) and X-J2a (Agy, E2) on main fec54563 (W0 rev 6.10); write x-a1b.contract.json and update the x-h1, x-b2, x-j2 contracts; README section 8 entry before compiling",
+      "summary": "4 compiled, all dispatchable, 0 decision requests. A1b raw al-01M44PETECKFW6RB0DDS001FT9 -> al-01M44PHD0JM9CCZ4ZBNES5TPXM (codex, 9 clauses); H1a raw al-01M44PEV06XYTC9XW03KTQFSQH -> al-01M44PHD9Y558JERJ7NW2YDDF0 (claude-code, 8); B2 raw al-01M44PEVFQZF9D5R2BWEW7ZWEZ -> al-01M44PHDKFRKXC33A12WE1FA0B (claude-code, 8); J2a raw al-01M44PEVXETK8ZJ2RRZWWSYDFV -> al-01M44PHDX8QPNF0K3HP1VB8X6G (claude-code, 9; recompiled: both READMEs and grade/_changes.py moved since 66ec885f, no J2a name or signature moved)",
+      "kind": "skill",
+      "skill": "compile",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "tier": "T0",
+      "fan_out": 0,
+      "started_at": "2026-10-05T00:11:21Z",
+      "duration_seconds": 177.0
     }
   ],
   "changes": [

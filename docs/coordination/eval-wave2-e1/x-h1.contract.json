@@ -37,9 +37,9 @@
         "permissions": "observed-only"
       },
       "prompts": [
-        "al-01M41NRM9X2NVDN5QASJ391EBH"
+        "al-01M44PHD9Y558JERJ7NW2YDDF0"
       ],
-      "fallback": "A red-only end, a deadline or a failed served-model read: the green follow-on runs as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) in this worker's tree (R-87 Option 1); R-92 is X-H1's Owner review. Turns b and c reuse this contract with the suffixes b and c (session, branch, run_id), each with its own compilation"
+      "fallback": "A red-only end, a deadline or a failed served-model read: the green follow-on runs as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) in this worker's tree (R-87 Option 1); R-92 is X-H1's Owner review. R-103: a first response not grok-4.7* is killed inside 120 s (python tools/grok_served_model.py --first --wait 120) and this turn is re-dispatched once with run_id, session and branch suffixed -r2; a second drift sends the turn to Sonnet (R-92). Turns b and c reuse this contract with the suffixes b and c (session, branch, run_id), each with its own compilation"
     }
   ]
 }
