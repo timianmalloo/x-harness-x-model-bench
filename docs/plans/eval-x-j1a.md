@@ -94,3 +94,37 @@ has no docs/knowledge directory or indexed artifact with that id. The
 execution standard itself was read from .claude/knowledge. A dangling typed
 link to the absent artifact was removed rather than inventing its identity.
 Remaining independent review is the Coordinator's join, with fan-out zero.
+
+Verified follow-up red fdaad48c: the native fixture's real extractor reported
+5 instead of 12. Green e39f40c5 gives each prompt a distinct native message id
+and exposes per-turn ACP totals. The final owned tests pass: 10 passed,
+41 strict xfailed in 20.72 seconds; the two legacy golden-ledger cases pass.
+The final eight-file guard run on e39f40c5 passes: 200 passed, exit 0, in
+58.90 seconds. Ruff passes, exit 0. Docs graph validation passes, exit 0,
+zero defects; 16 pre-existing review suggestions are advisory.
+
+Defect class → sweep → derive → prevent (Coordinator owns the register):
+
+* TEST-B: a fake can emit syntactically valid rows whose reused native ids
+  make its real reader discard a later turn. Sweep: the fake's one native
+  assistant writer and claude_code.read's seen_messages set; no second fake
+  writer retains msg_1. Control: the real extractor must observe 5 + 7 = 12
+  in test_k1_native_record_contains_both_turns_without_duplicate_message_ids;
+  red fdaad48c, green e39f40c5. T-ENG-4 confirms a plan and seeds sealed
+  native facts so a missing pass or skipped cross-check cannot count as proof.
+* TEST-B fixture setup: Windows file symlinks require privilege, and a tiny
+  CLI matrix cannot satisfy launch balance. The link fixture uses a real
+  junction; the CLI fixture uses 20 repetitions. Their final K3 reds are the
+  missing-link-row and missing-snapshot assertions, not setup failures.
+* Documentation metadata: a required summary or an absent graph target can
+  make a new artifact invalid. Sweep: this artifact's frontmatter and links.
+  Control: docs-graph validate rejected both and now reports zero defects.
+
+Native served model: gpt-6.1-sol, from turn_context.model in
+rollout-2026-10-05T08-14-33-01a10ca1-8042-79b2-b585-fdd9c0bbbaf3.jsonl.
+No model identity is inferred from the dispatch pin. The audit prompt was
+captured verbatim from that native record, al-01M46C6M4Y1R4AY8P22N3EQ790.
+
+Mutation gate state: engine.json is queued behind the Leader's full-suite
+lock; driver.json follows it. Neither is represented as passed before its
+output and exit status have been observed. The suite lock is not bypassed.
