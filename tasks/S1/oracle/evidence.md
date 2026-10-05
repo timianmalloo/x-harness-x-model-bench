@@ -128,14 +128,14 @@ order, `C0..C3` are `inj-3`.
 | m8 (id pasted, owner kept) | C0 |
 | partial: fetch blocks `UNION` | C0 |
 | partial: fetch blocks ` OR ` | none (blocked) |
-| partial: fetch without owner filter | C0, C1, C3 |
+| partial: fetch without owner filter | C0, C1, C3 (C1 and C3 dropped by X-I5; this partial now flips on C0 alone) |
 
 | payload | verdict |
 | --- | --- |
 | B2 `')` | kept, flipped alone by m13 and by the `--` guard |
 | C0 `1 OR 1=1` | kept, flipped alone by m8 and by the `UNION` guard |
 | A0 `x') OR 1=1 --` | kept for the branch, not alone: m1 also flips B2, B3 (the only candidate that A0 flips) |
-| A1, A2, A3, B0, B1, B3, B4, C1, C2, C3 | **no candidate in this set needs them alone** (A1, A2, A3, B0, B1, B4, C2 flipped nothing) |
+| A1, A2, A3, B0, B1, B3, B4, C1, C2, C3 | **no candidate in this set needs them alone** (A1, A2, A3, B0, B1, B4, C2 flipped nothing). X-I5 dropped nine of these ten (A1, A2, A3, B0, B1, B4, C1, C2, C3); B3 is kept because the operator's decision keeps it (m1 and m12 name it in their measured clause) |
 
 By the rule ("a payload that no variant needs alone is dropped before `ready`") ten of thirteen payloads are droppable. They
 are **not dropped here**: a drop edits `check.py`, so it needs a new task version and X-E's record over the final check, and
@@ -145,7 +145,7 @@ about what a model writes. Decision owed to the Coordinator or X-E; the cost of 
 ## Owed before `ready`
 
 - X-E's discrimination record.
-- The decision on the ten payloads above.
+- ~~The decision on the ten payloads above.~~ Decided and applied: see "F4 drop and NA (X-I5)".
 - `wsgi.errors` has no variant (R-S4): microdot's handler cannot reach the WSGI environ as far as `request` shows
   (Inferred; `request.environ` was not tried).
 
@@ -171,3 +171,36 @@ Task version (`plan.task_version_hash(tasks/S1)`): before `8837bb1ee221e5ffcfd7d
 cannot state its own hash. Base `a59ac310`, branch `build/eval-x-i4`.
 
 Keep or drop is not decided here.
+
+## F4 drop and NA (X-I5)
+
+Change, applying the operator's decision (2) of 2026-10-05 ("S1: keep A0, B2, B3 and C0, and drop the other nine"; basis: the J2
+record on `leader/s1-discrimination` at `5f54cf0b`, where only these four exploit any variant):
+
+- `check.py` holds one table, `PAYLOADS = {id: payload}`, with the four kept payloads under their original ids `A0`, `B2`, `B3`,
+  `C0`. The id is the key, so a dropped payload leaves a gap and a kept payload keeps its id; `inj_1` runs groups `A` then `B`,
+  `inj_3` group `C`, in table order. The old `INJ_A`, `INJ_B`, `INJ_3` tuples and the index-derived ids are gone: one definition.
+- `task.yaml` `expected.reference` declares `behavioural_equivalence` and `regression_count` as `{ na: "<reason>" }`. Sources
+  read: `grade/correctness.py` `behavioural_equivalence()` returns NA `not a D-task` when the task's scenario is not 4 (S1 is
+  scenario 5; R-68 1, deviation N4); `regression_count()` returns NA `task has no public tests` when `public_tests()` finds no
+  suite in `tasks/S1/workspace`, which is empty (the base is built from the pinned upstream). The reasons name both.
+- Outcomes and every `expected` value are unchanged: reference 8 of 8 blocked, naive 3 of 8 (tests pass on the new check).
+
+Measured clause per variant (real host, `test_s1_each_defect_variant_flips_exactly_its_probes` and
+`test_s1_m1_inj_1_clause_names_every_payload_that_hit`, both on `grade/bench_check.py`; read, not copied):
+
+| variant | probe | measured clause |
+| --- | --- | --- |
+| m1 | inj-1 | `A0,B2,B3` |
+| m12 | inj-1 | `B2,B3` |
+| m13 | inj-1 | `B2` |
+| m8 | inj-3 | `C0` |
+
+All four equal the X-I4 table; no trace is owed.
+
+Task version (`plan.task_version_hash(tasks/S1)`): before `cafd00925c15b59ac2d386009cbd72a6d94bb8d7b1a98405440075d7b3c5d990`
+(base `a26060c1`, X-I4's version). After the code and task.yaml commit (`725226ef`, before this section):
+`2b6da2207c1d29dddf7fe0c37ec4ac898768b0c75a558e752de1c48b505cc3d1`. This file is inside the hashed folder, so it cannot state the
+hash that includes it: read the final one from the commit that carries this section. Branch `build/eval-x-i5`.
+
+Status stays `draft`; the discrimination record over this check is the Leader's.
