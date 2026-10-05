@@ -4101,6 +4101,51 @@ window.DOCS_INDEX = {
       "sourceSha256": "90842417afc6f51c1ac118e39b8613365e650b98bb802414a4cef58ae4f71398"
     },
     {
+      "id": "coordinator-log-c36",
+      "path": "docs/coordination/coordinator-log/c36.md",
+      "title": "Coordinator #36 hand-back (2026-10-05): the X-J1c compile, J1b's two scope notes, the snapshot TABLE entry, FLAKE-A and ROUTE-A",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-05",
+      "reviewSuggested": [],
+      "summary": "Coordinator #36, on base 197092d3 (X-J1b's green, K4(4) at 60da1888), compiled X-J1c for Codex gpt-6.1-sol (session x-j1c-e1e4, branch build/eval-x-j1c, run w2-j1c-e1e4). J1c owns both of J1b's scope notes: wiring _snapshot_turn into the loop (in K4(5)), and turn_ended{1} for a single-turn cell (its own commit after K4(5)). Three boundary decisions are in the compile: J1c gets the one lifecycle.TABLE entry for cell.turn_snapshot_archived, because check_writer refuses an unmapped kind; copy_retries is null, because publish_dir does not return a count; and the snapshot_cell ALLOWED entry is deleted in K4(5). FLAKE-A and ROUTE-A are registered as candidates.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-j1",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "f564497b96fca083c70aac7a7a1ae105c19c000444284f6215d94c1b8284a732"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4127,7 +4172,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "415244b9aacbe6272ffd794638de2ea6360d63f3601bfe0b2239525ce7d20df1"
+      "sourceSha256": "3cc70ffddd466fc15bf94f055392c19dae0da0d3868191162610969ef7d16b4d"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -6943,7 +6988,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f20fd9b4554a895984f51134e0daa9656b3c9653dc49738e4eacf37f4e5b1067"
+      "sourceSha256": "04fa259602b6bb14f51041be933bc09ac427f32a6399d80e5578c3540c9f427b"
     },
     {
       "id": "brief-eval-x-j2",
@@ -8978,5 +9023,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "6b7510ae9f30740ead753678019786c5778ecc0c7e6fb692a006b5606d397216"
+  "graphSha256": "5bb3b26b8c96de9cb58d2505417a779e9ccce98b5de30fd6d68cf97c568b6463"
 };
