@@ -3743,7 +3743,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "556aa59f62ed3747609ca9f762ba3d5742b407baa1bef28741c26c29b3d17bd5"
+      "sourceSha256": "fb31e37b1fcb1f4471ea3151e1eb5c35d778faaec2717d0f3baef7f2f54ad1ad"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -6212,7 +6212,7 @@ window.DOCS_INDEX = {
       "phase": "",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "X-H1 builds power.py, verdicts.py and gates.py of W1-H rev 2 (stdlib only, pure functions) under W0 rev 6, in three serial turns a -> b -> c (gates calls verdicts.seed_for), each red and green in one turn; a ran on Grok grok-4.7 high, b and c run as Claude Sonnet from integrate/e1e4-17 under R-105 while the primary is blocked (Coordinator #18).",
+      "summary": "X-H1 builds power.py, verdicts.py and gates.py of W1-H rev 2 (stdlib only, pure functions) under W0 rev 6, in three serial turns a -> b -> c (gates calls verdicts.seed_for), each red and green in one turn; a ran on Grok grok-4.7 high, b ran as Claude Sonnet from integrate/e1e4-17 under R-105 (Coordinator #18); c runs as Claude Sonnet from integrate/b3-stage2 (b6c08e30, carries b) under R-105 (b) (Coordinator #21).",
       "tags": [],
       "links": [
         {
@@ -6233,7 +6233,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "eb2b0c5c7f22a9085d1cc7542d47a37aa1263fad49fb20aa110091a5cf5347c1"
+      "sourceSha256": "54acf3fb7f083001bbe98a1bca1d5e692d8f564a5449eec418f9fbfb61c0b5ad"
     },
     {
       "id": "brief-eval-x-h2",
@@ -7339,7 +7339,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "53c49b81c08b9f1bfc3fc4a756da7222f1dd87db70f2a31c286457565e3ab573"
+      "sourceSha256": "758de28f10a6fd6983dadc1c7126b401f7d707f3e180426f4c89f024daf7de59"
     },
     {
       "id": "coordination-eval-wave2-e234-briefs",
@@ -8295,5 +8295,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "6c5dfb1ddacd6e1858453462a393da4ac12c9eb364e48ec75cbfcdda183aee74"
+  "graphSha256": "b4d1c99dd32aa872fd3d4b499a69e05d468cc97b8c9b247aa1e795d64391494f"
 };

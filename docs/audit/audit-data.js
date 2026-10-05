@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-05T03:42:25Z",
+  "generated": "2026-10-05T05:30:31Z",
   "audit": [
     {
       "actor": null,
@@ -80957,6 +80957,289 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-05T03:41:19Z",
       "duration_seconds": 66.0
+    },
+    {
+      "id": "al-01M458JDZ3PWV85HZGRH5W0NY2",
+      "shortname": "Dispatch X-H1c (E1 critical path: gates.py) as a Claude Code Sonnet sub-…",
+      "datetime": "2026-10-05T05:28:47Z",
+      "session": "prompt-compile",
+      "prompt": "Dispatch X-H1c (E1 critical path: gates.py) as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) under R-105 (b) (planned Grok grok-4.7 high; ran Sonnet; reason R-105 (b), the Leader's DAG ruling: H1c waits for H1b, DEP-A). Session x-h1c-e1e4, branch build/eval-x-h1c, a new tree from integrate/b3-stage2, not main and not integrate/e1e4-17: from the primary run coord worktree new --branch build/eval-x-h1c --session x-h1c-e1e4 --base integrate/b3-stage2, record the base SHA (b6c08e30 expected), export AGENT_SESSION=x-h1c-e1e4, and work only in the printed tree by absolute path; never EnterWorktree, never checkout or switch in the primary. Your brief is docs/coordination/eval-wave2-e1/x-h1.md (sha256 54acf3fb, Coordinator #21): read docs/coordination/eval-wave2-e1/README.md sections 1-4, then the brief's header, Rules for all three turns, and Turn c including its \"Names as landed on b6c08e30\" list, then W1-H (docs/design/eval-power-verdicts.md sections 3, 5, 7, 11, 13), W0 rev 6 section 8, ADR-0020 with Amendment 1, R-93, R-96, R-104 and R-105. Build gates.py red first per the brief's red protocol: red commit 1 the skeletons (pack_regression returns {\"\": \"unimplemented\"}), red commit 2 the tests, then the green commit; report SHA, node and failing assertion per red commit. Meet Turn c acceptance items 1 to 9, including item 9, removing \"gates.py\" from identity.PLANNED in the commit that adds gates.py, and carry item 7's two assume lines as written, each fail-closed. Owned paths are the brief's Turn c row only; a line in another owner's file is a seam request with a fallback that reaches green. Depends on: X-H1b (verdicts.seed_for) on the base; check it with git merge-base --is-ancestor 3c08d18e HEAD and stop if it is missing. Budget 150 calls, 200k context, 2 h; at 85 % commit, stop and report what remains. Exit evidence per the Turn c gate line: run tests/test_gates.py and tests/test_identity.py by name, ruff, mutate_check on tests/mutations/gates.json (your own mutant file only, never --touched), and docs-graph validate, each command on its own line with its exit status read; the whole-suite run and the G1 ratchet re-run are the Leader's at the join (R-104, R-105). Report per README section 4, and report your served model id on the first line of your final message. X-C (cli.py) and X-H2 (report) are not yours. Never kill a process by name or pattern, only PIDs you started.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M458NKQWDN5EFGNQWD6C48PB",
+      "shortname": "compile-Dispatch X-H1c (E1 critical path: gates.py) as a Claude Code Sonnet sub-…",
+      "datetime": "2026-10-05T05:30:31Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the brief docs/coordination/eval-wave2-e1/x-h1.md (sha256 54acf3fb, Coordinator #21) and docs/coordination/eval-wave2-e1/README.md sections 1-4, then W1-H (docs/design/eval-power-verdicts.md sections 3, 5, 7, 11, 13), W0 rev 6 section 8, ADR-0020 with Amendment 1, R-93, R-96, R-104 and R-105: build X-H1c, gates.py, red first on build/eval-x-h1c as session x-h1c-e1e4, a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) in a new tree from integrate/b3-stage2, recorded as planned Grok grok-4.7 high; ran Sonnet; reason R-105 (b).\nDone when: The tree is created from the primary with coord worktree new --branch build/eval-x-h1c --session x-h1c-e1e4 --base integrate/b3-stage2, the base SHA (b6c08e30 expected) is recorded, AGENT_SESSION=x-h1c-e1e4 is exported, and all work is in the printed tree by absolute path.; X-H1b is checked on the base with git merge-base --is-ancestor 3c08d18e HEAD before any work; if it is missing the session stops.; gates.py is built red first per the brief's red protocol: red commit 1 the skeletons (pack_regression returns {\"\": \"unimplemented\"}), red commit 2 the tests, then the green commit, with SHA, node and failing assertion reported per red commit.; Turn c acceptance items 1 to 9 are met, including item 9 (\"gates.py\" removed from identity.PLANNED in the commit that adds gates.py) and item 7's two assume lines carried as written, each fail-closed.; Exit evidence per the Turn c gate line: tests/test_gates.py and tests/test_identity.py by name, ruff, mutate_check on tests/mutations/gates.json, and docs-graph validate, each command on its own line with its exit status read.; The report follows README section 4 and its first line is the served model id.; At 85 % of the budget (150 calls, 200k context, 2 h) the work is committed and the report says what remains.\nNot in scope: The whole-suite run and the G1 ratchet re-run: both are the Leader's at the join (R-104, R-105).; mutate_check --touched: only this turn's own mutant file is run.; X-C (cli.py) and X-H2 (report).; Any path outside the brief's Turn c row: a line in another owner's file is a seam request with a fallback that reaches green.; Checking out or switching branches in the primary.; Killing a process by name or pattern; only PIDs this session started.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200000\nMain-line budget: 150\nTrace\n| clause | trace |\n|---|---|\n| done_when: The tree is created from the primary with coord worktree new --branch build/eval-x-h1c --session x-h1c-e1e4 --base integrate/b3-stage2, the base SHA (b6c08e30 expected) is recorded, AGENT_SESSION=x-h1c-e1e4 is exported, and all work is in the printed tree by absolute path. | phrase: from the primary run coord worktree new --branch build/eval-x-h1c --session x-h1c-e1e4 --base integrate/b3-stage2, record the base SHA (b6c08e30 expected), export AGENT_SESSION=x-h1c-e1e4, and work only in the printed tree by absolute path |\n| done_when: X-H1b is checked on the base with git merge-base --is-ancestor 3c08d18e HEAD before any work; if it is missing the session stops. | phrase: check it with git merge-base --is-ancestor 3c08d18e HEAD and stop if it is missing |\n| done_when: gates.py is built red first per the brief's red protocol: red commit 1 the skeletons (pack_regression returns {\"\": \"unimplemented\"}), red commit 2 the tests, then the green commit, with SHA, node and failing assertion reported per red commit. | phrase: Build gates.py red first per the brief's red protocol: red commit 1 the skeletons (pack_regression returns {\"\": \"unimplemented\"}), red commit 2 the tests, then the green commit; report SHA, node and failing assertion per red commit. |\n| done_when: Turn c acceptance items 1 to 9 are met, including item 9 (\"gates.py\" removed from identity.PLANNED in the commit that adds gates.py) and item 7's two assume lines carried as written, each fail-closed. | phrase: Meet Turn c acceptance items 1 to 9, including item 9, removing \"gates.py\" from identity.PLANNED in the commit that adds gates.py, and carry item 7's two assume lines as written, each fail-closed. |\n| done_when: Exit evidence per the Turn c gate line: tests/test_gates.py and tests/test_identity.py by name, ruff, mutate_check on tests/mutations/gates.json, and docs-graph validate, each command on its own line with its exit status read. | phrase: run tests/test_gates.py and tests/test_identity.py by name, ruff, mutate_check on tests/mutations/gates.json (your own mutant file only, never --touched), and docs-graph validate, each command on its own line with its exit status read |\n| done_when: The report follows README section 4 and its first line is the served model id. | phrase: Report per README section 4, and report your served model id on the first line of your final message. |\n| done_when: At 85 % of the budget (150 calls, 200k context, 2 h) the work is committed and the report says what remains. | phrase: Budget 150 calls, 200k context, 2 h; at 85 % commit, stop and report what remains. |\n| not_in_scope: The whole-suite run and the G1 ratchet re-run: both are the Leader's at the join (R-104, R-105). | phrase: the whole-suite run and the G1 ratchet re-run are the Leader's at the join (R-104, R-105) |\n| not_in_scope: mutate_check --touched: only this turn's own mutant file is run. | phrase: (your own mutant file only, never --touched) |\n| not_in_scope: X-C (cli.py) and X-H2 (report). | phrase: X-C (cli.py) and X-H2 (report) are not yours. |\n| not_in_scope: Any path outside the brief's Turn c row: a line in another owner's file is a seam request with a fallback that reaches green. | phrase: Owned paths are the brief's Turn c row only; a line in another owner's file is a seam request with a fallback that reaches green. |\n| not_in_scope: Checking out or switching branches in the primary. | phrase: never checkout or switch in the primary |\n| not_in_scope: Killing a process by name or pattern; only PIDs this session started. | phrase: Never kill a process by name or pattern, only PIDs you started. |\nReferences\n- gates.py: unresolved (not found (created by this turn))\n- build/eval-x-h1c: unresolved (not found (a branch, created by this turn))\n- integrate/b3-stage2: unresolved (not found (a branch at b6c08e30, not a path))\n- integrate/e1e4-17: unresolved (not found (a branch, not a path))\n- docs/coordination/eval-wave2-e1/x-h1.md: docs/coordination/eval-wave2-e1/x-h1.md sha256 54acf3fb7f083001bbe98a1bca1d5e692d8f564a5449eec418f9fbfb61c0b5ad\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 3b3a5be32d246eba52180a422ea3b7707b9b3b42e297040bb7b4b6988db76f5d\n- docs/design/eval-power-verdicts.md: docs/design/eval-power-verdicts.md sha256 433e03284f6dde833b0505aab5d171cec193650cad5d8931673b96488d47e8cd\n- tests/test_gates.py: unresolved (not found (created by this turn))\n- tests/test_identity.py: tests/test_identity.py sha256 2fe5d6ce2ff48cc6ae879b4962a0f48bda8611706a0b92c4cde0b911c2a93c52\n- tests/mutations/gates.json: unresolved (not found (created by this turn))\n- cli.py: src/harness_bench/cli.py sha256 d434cb15fee1d7009d6b9f79bcb89d435cc02f0bc91dc943eb08115aec2c6f7c\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M458JDZ3PWV85HZGRH5W0NY2\nraw sha256: dfc9c5f8d377a907bf9a44e9c0be330a67abe3b9010978c42243f564aebb5a0a\ncompiler model: claude-opus-5-5\nengine seconds: 0.012\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M458JDZ3PWV85HZGRH5W0NY2 for claude-code v1: 13 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "The tree is created from the primary with coord worktree new --branch build/eval-x-h1c --session x-h1c-e1e4 --base integrate/b3-stage2, the base SHA (b6c08e30 expected) is recorded, AGENT_SESSION=x-h1c-e1e4 is exported, and all work is in the printed tree by absolute path.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "from the primary run coord worktree new --branch build/eval-x-h1c --session x-h1c-e1e4 --base integrate/b3-stage2, record the base SHA (b6c08e30 expected), export AGENT_SESSION=x-h1c-e1e4, and work only in the printed tree by absolute path"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "X-H1b is checked on the base with git merge-base --is-ancestor 3c08d18e HEAD before any work; if it is missing the session stops.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "check it with git merge-base --is-ancestor 3c08d18e HEAD and stop if it is missing"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "gates.py is built red first per the brief's red protocol: red commit 1 the skeletons (pack_regression returns {\"\": \"unimplemented\"}), red commit 2 the tests, then the green commit, with SHA, node and failing assertion reported per red commit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build gates.py red first per the brief's red protocol: red commit 1 the skeletons (pack_regression returns {\"\": \"unimplemented\"}), red commit 2 the tests, then the green commit; report SHA, node and failing assertion per red commit."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Turn c acceptance items 1 to 9 are met, including item 9 (\"gates.py\" removed from identity.PLANNED in the commit that adds gates.py) and item 7's two assume lines carried as written, each fail-closed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Meet Turn c acceptance items 1 to 9, including item 9, removing \"gates.py\" from identity.PLANNED in the commit that adds gates.py, and carry item 7's two assume lines as written, each fail-closed."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Exit evidence per the Turn c gate line: tests/test_gates.py and tests/test_identity.py by name, ruff, mutate_check on tests/mutations/gates.json, and docs-graph validate, each command on its own line with its exit status read.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "run tests/test_gates.py and tests/test_identity.py by name, ruff, mutate_check on tests/mutations/gates.json (your own mutant file only, never --touched), and docs-graph validate, each command on its own line with its exit status read"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The report follows README section 4 and its first line is the served model id.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report per README section 4, and report your served model id on the first line of your final message."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "At 85 % of the budget (150 calls, 200k context, 2 h) the work is committed and the report says what remains.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Budget 150 calls, 200k context, 2 h; at 85 % commit, stop and report what remains."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "The whole-suite run and the G1 ratchet re-run: both are the Leader's at the join (R-104, R-105).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the whole-suite run and the G1 ratchet re-run are the Leader's at the join (R-104, R-105)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "mutate_check --touched: only this turn's own mutant file is run.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "(your own mutant file only, never --touched)"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "X-C (cli.py) and X-H2 (report).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "X-C (cli.py) and X-H2 (report) are not yours."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any path outside the brief's Turn c row: a line in another owner's file is a seam request with a fallback that reaches green.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Owned paths are the brief's Turn c row only; a line in another owner's file is a seam request with a fallback that reaches green."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Checking out or switching branches in the primary.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "never checkout or switch in the primary"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Killing a process by name or pattern; only PIDs this session started.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never kill a process by name or pattern, only PIDs you started."
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": 200000,
+          "done_when": [
+            "The tree is created from the primary with coord worktree new --branch build/eval-x-h1c --session x-h1c-e1e4 --base integrate/b3-stage2, the base SHA (b6c08e30 expected) is recorded, AGENT_SESSION=x-h1c-e1e4 is exported, and all work is in the printed tree by absolute path.",
+            "X-H1b is checked on the base with git merge-base --is-ancestor 3c08d18e HEAD before any work; if it is missing the session stops.",
+            "gates.py is built red first per the brief's red protocol: red commit 1 the skeletons (pack_regression returns {\"\": \"unimplemented\"}), red commit 2 the tests, then the green commit, with SHA, node and failing assertion reported per red commit.",
+            "Turn c acceptance items 1 to 9 are met, including item 9 (\"gates.py\" removed from identity.PLANNED in the commit that adds gates.py) and item 7's two assume lines carried as written, each fail-closed.",
+            "Exit evidence per the Turn c gate line: tests/test_gates.py and tests/test_identity.py by name, ruff, mutate_check on tests/mutations/gates.json, and docs-graph validate, each command on its own line with its exit status read.",
+            "The report follows README section 4 and its first line is the served model id.",
+            "At 85 % of the budget (150 calls, 200k context, 2 h) the work is committed and the report says what remains."
+          ],
+          "fan_out_cap": 0,
+          "goal": "Following the brief docs/coordination/eval-wave2-e1/x-h1.md (sha256 54acf3fb, Coordinator #21) and docs/coordination/eval-wave2-e1/README.md sections 1-4, then W1-H (docs/design/eval-power-verdicts.md sections 3, 5, 7, 11, 13), W0 rev 6 section 8, ADR-0020 with Amendment 1, R-93, R-96, R-104 and R-105: build X-H1c, gates.py, red first on build/eval-x-h1c as session x-h1c-e1e4, a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) in a new tree from integrate/b3-stage2, recorded as planned Grok grok-4.7 high; ran Sonnet; reason R-105 (b).",
+          "main_line_budget": 150,
+          "not_in_scope": [
+            "The whole-suite run and the G1 ratchet re-run: both are the Leader's at the join (R-104, R-105).",
+            "mutate_check --touched: only this turn's own mutant file is run.",
+            "X-C (cli.py) and X-H2 (report).",
+            "Any path outside the brief's Turn c row: a line in another owner's file is a seam request with a fallback that reaches green.",
+            "Checking out or switching branches in the primary.",
+            "Killing a process by name or pattern; only PIDs this session started."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.012,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M458JDZ3PWV85HZGRH5W0NY2",
+        "raw_sha256": "dfc9c5f8d377a907bf9a44e9c0be330a67abe3b9010978c42243f564aebb5a0a",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found (created by this turn)",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gates.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found (a branch, created by this turn)",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-h1c"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found (a branch at b6c08e30, not a path)",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "integrate/b3-stage2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found (a branch, not a path)",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "integrate/e1e4-17"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-h1.md",
+            "reason": null,
+            "sha256": "54acf3fb7f083001bbe98a1bca1d5e692d8f564a5449eec418f9fbfb61c0b5ad",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-h1.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "3b3a5be32d246eba52180a422ea3b7707b9b3b42e297040bb7b4b6988db76f5d",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-power-verdicts.md",
+            "reason": null,
+            "sha256": "433e03284f6dde833b0505aab5d171cec193650cad5d8931673b96488d47e8cd",
+            "status": "resolved",
+            "token": "docs/design/eval-power-verdicts.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found (created by this turn)",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_gates.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_identity.py",
+            "reason": null,
+            "sha256": "2fe5d6ce2ff48cc6ae879b4962a0f48bda8611706a0b92c4cde0b911c2a93c52",
+            "status": "resolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found (created by this turn)",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/gates.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "d434cb15fee1d7009d6b9f79bcb89d435cc02f0bc91dc943eb08115aec2c6f7c",
+            "status": "resolved",
+            "token": "cli.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
     }
   ],
   "changes": [
