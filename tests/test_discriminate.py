@@ -74,7 +74,7 @@ def test_a_check_less_property_task_discriminates_without_a_host(first):
     assert "probe" not in body
     assert body["scores"]["reference"]["pass_at_1"] == 1
     assert body["scores"]["naive"]["pass_at_1"] == 0
-    assert readiness.problems(root) == []
+    assert [ln for ln in readiness.problems(root) if not ln.startswith("note:")] == []
 
 
 def test_synthetic_environment_and_record_leak_scan(first, monkeypatch, tmp_path):
@@ -398,3 +398,181 @@ def test_the_sweep_is_pinned_to_its_own_tasks_lock(base):
         discriminate._sweep(TASK, folder, wrong)
     with oslock.RunLock.acquire(base / "runs" / f".discriminate-{TASK}.lock", "HB-RUN-005") as right:
         assert discriminate._sweep(TASK, folder, right) == []
+
+
+# --- E3: reconciliation, telemetry, the reader table, the grep rules ------------------------------------------------
+
+
+def clone_state(source_base: Path, dest: Path) -> Path:
+    """The runs folder and repository root of a finished trial, copied so a test can break the copy and not the original."""
+    shutil.copytree(source_base / "runs", dest / "runs")
+    shutil.copytree(source_base / "repo", dest / "repo")
+    return dest / "repo"
+
+
+def notes_and_failures(root: Path, base: Path) -> tuple[list[str], list[str]]:
+    lines = readiness.problems(root, runs=base / "runs")
+    return [ln for ln in lines if ln.startswith("note:")], [ln for ln in lines if ln.startswith("x ")]
+
+
+def plan_edit(run_dir: Path, edit) -> None:
+    from harness_bench import plan
+
+    doc = json.loads((run_dir / "plan.json").read_text(encoding="utf-8"))
+    edit(doc)
+    doc["plan_hash"] = plan.plan_hash(doc)
+    (run_dir / "plan.json").write_text(json.dumps(doc), encoding="utf-8")
+
+
+def drop_pass(run_dir: Path) -> None:
+    for seg in (run_dir / "events").glob("grade-*.jsonl"):
+        seg.unlink()
+
+
+def rewrite_record(record: Path, link: Path, edit) -> None:
+    """Change the record's body, then make the link carry the new hash, so only the run comparison can object."""
+    body = json.loads(record.read_text(encoding="utf-8"))
+    edit(body)
+    data = json.dumps(body, sort_keys=True, separators=(",", ":")).encode()
+    record.write_bytes(data)
+    doc = json.loads(link.read_text(encoding="utf-8"))
+    doc["record_sha256"] = hashlib.sha256(data).hexdigest()
+    link.write_text(json.dumps(doc), encoding="utf-8")
+
+
+REASONS = [
+    ("no link", lambda run, rec, link: link.unlink(), "no link"),
+    ("run folder absent", lambda run, rec, link: link.write_text(json.dumps({**json.loads(link.read_text(encoding="utf-8")),
+                                                                              "run_id": "gone"}), encoding="utf-8"), "run folder absent"),
+    ("no completed grading pass", lambda run, rec, link: drop_pass(run), "no completed grading pass"),
+    ("record hash differs from the link", lambda run, rec, link: rec.write_bytes(rec.read_bytes() + b"\n"),
+     "record hash differs from the link"),
+    ("run is not a discrimination run", lambda run, rec, link: plan_edit(run, lambda d: d.update(kind="measurement")),
+     "run is not a discrimination run"),
+    ("run task version differs", lambda run, rec, link: plan_edit(run, lambda d: d["tasks"][TASK].update(version_hash="0" * 64)),
+     "run task version differs"),
+    ("run combos are not the synthetic ones", lambda run, rec, link: plan_edit(run, lambda d: d["cells"][0].update(combo="other")),
+     "run combos are not the synthetic ones"),
+]
+
+
+@pytest.mark.parametrize(("label", "break_it", "reason"), REASONS, ids=[r[0] for r in REASONS])
+def test_reconciliation_reasons_never_fail_and_never_pass(first, base, label, break_it, reason):
+    """T-E6 (one case per reason of the closed set): `reconciled: no (<reason>)` is a note; it neither fails nor counts."""
+    src_base, _root, result = got(first)
+    root = clone_state(src_base, base)
+    run_dir = base / "runs" / result.run_id
+    break_it(run_dir, root / "bench" / "discrimination" / TASK / result.record_path.name, run_dir / "discrimination-link.json")
+    notes, failures = notes_and_failures(root, base)
+    assert f"note: {TASK}: reconciled: no ({reason})" in notes, label
+    assert failures == []
+
+
+def test_a_reconciled_record_prints_yes_and_a_score_difference_is_hb_rdy_004(first, base):
+    """T-E6: the matching run reconciles; a recorded score that the run's grading pass does not hold fails HB-RDY-004."""
+    src_base, _root, result = got(first)
+    root = clone_state(src_base, base)
+    notes, failures = notes_and_failures(root, base)
+    assert notes == [f"note: {TASK}: reconciled: yes"] and failures == []
+    record = root / "bench" / "discrimination" / TASK / result.record_path.name
+    rewrite_record(record, base / "runs" / result.run_id / "discrimination-link.json",
+                   lambda body: body["scores"]["reference"].update(partial_credit="0.5000"))
+    notes, failures = notes_and_failures(root, base)
+    assert failures == [f"x HB-RDY-004 {TASK}: partial_credit: copy 0.5000, run 1.0000"]
+    assert notes == []
+
+
+def test_a_forged_probe_outcome_fails_hb_rdy_004_when_its_run_exists(hosted, base):
+    """SR-E3 fixture: the record says the naive role was blocked on p-1; the run's property.json says exploited."""
+    src_base, _root, result = got_host(hosted)
+    root = clone_state(src_base, base)
+    record = root / "bench" / "discrimination" / "DISC-P" / result.record_path.name
+    rewrite_record(record, base / "runs" / result.run_id / "discrimination-link.json",
+                   lambda body: body["probe"]["naive"]["cases"].update({"p-1": "blocked"}))
+    failures = [ln for ln in readiness.problems(root, runs=base / "runs") if ln.startswith("x ")]
+    assert any("HB-RDY-004" in ln and "probe.naive.cases.p-1" in ln for ln in failures), failures
+
+
+def test_readiness_recomputes_the_stored_failure_list(hosted, base):
+    """T-E18: a record whose stored `readiness_failures` is empty, with a wrong score, is still refused."""
+    src_base, _root, result = got_host(hosted)
+    root = clone_state(src_base, base)
+    record = root / "bench" / "discrimination" / "DISC-P" / result.record_path.name
+    body = json.loads(record.read_text(encoding="utf-8"))
+    body["scores"]["reference"]["property_check_pass"] = 0
+    record.write_bytes(json.dumps(body, sort_keys=True, separators=(",", ":")).encode())
+    assert body["readiness_failures"] == []
+    assert [f.code for f in readiness.record_failures(root, "DISC-P")] == ["HB-RDY-003"]
+
+
+def events(run_dir: Path, name: str) -> list[dict]:
+    rows = [json.loads(line) for line in (run_dir / "engine.log").read_text(encoding="utf-8").splitlines() if line.strip()]
+    return [r for r in rows if r["event"] == name]
+
+
+def test_discriminate_emits_started_and_finished_with_measured_fields(first):
+    """Acceptance 14 (IO): fields are measured on the normal path; the link carries the same timings."""
+    base, _root, result = got(first)
+    run_dir = base / "runs" / result.run_id
+    started, finished = events(run_dir, "discriminate.started"), events(run_dir, "discriminate.finished")
+    assert len(started) == 1 and len(finished) == 1
+    started, finished = started[0], finished[0]
+    assert started["detail"] == "task=DISC-C cells=2"
+    assert re.fullmatch(r"outcome=written plan_ms=\d+ engine_ms=\d+ grade_ms=\d+ compare_ms=\d+ write_ms=\d+ cells=2", finished["detail"])
+    assert finished["error_code"] is None
+    link = json.loads((run_dir / "discrimination-link.json").read_text(encoding="utf-8"))
+    assert set(link["timings"]) == {"plan_ms", "engine_ms", "grade_ms", "compare_ms", "write_ms"}
+    assert all(isinstance(v, int) for v in link["timings"].values())
+
+
+def test_a_failed_trial_logs_null_for_what_it_never_reached(base, monkeypatch):
+    """Acceptance 14: `null`, never 0, for a field that was not recorded; the error code rides in `error_code`."""
+    bad = base / "bad_agent.py"
+    bad.write_text("import sys\nsys.exit(3)\n", encoding="utf-8")
+    monkeypatch.setattr(discriminate, "AGENT", bad)
+    root = new_root(base)
+    with pytest.raises(BenchError):
+        trial(base, root)
+    (run_dir,) = [p for p in (base / "runs").iterdir() if p.is_dir()]
+    finished = events(run_dir, "discriminate.finished")
+    assert len(finished) == 1
+    finished = finished[0]
+    assert finished["error_code"] == "HB-RDY-011"
+    assert re.fullmatch(r"outcome=failed-engine plan_ms=\d+ engine_ms=\d+ grade_ms=\w+ compare_ms=null write_ms=null cells=2", finished["detail"])
+
+
+def test_every_reader_of_a_stored_plan_is_in_the_reader_table():
+    """T-E19 / R2-4: a new `load_confirmed` or `plan.json` reader under src/ fails here until it is added to the table.
+    Direct readers only: `report/pack_improvement.py` reads `RunView.plan`, which `views.py` loads, so it is transitive and
+    deliberately not listed; the refusals of a discrimination run themselves join at X-INT (owners X-C, X-A1)."""
+    src = Path(__file__).resolve().parents[1] / "src" / "harness_bench"
+    found = set()
+    for path in src.rglob("*.py"):
+        rel = path.relative_to(src).as_posix()
+        if rel == "plan.py":
+            continue
+        text = path.read_text(encoding="utf-8")
+        if "load_confirmed(" in text or '"plan.json"' in text:
+            found.add(rel)
+    assert found == {"cli.py", "grade/runner.py", "status.py", "views.py", "readiness.py"}
+
+
+def test_no_option_a_branch_and_no_hand_rolled_identity_or_matrix_validation_in_the_three_modules():
+    """Acceptance 4 and 12 (greps): the record compare is `create_once`'s bytes or the field-naming diff after unequal
+    bytes; the matrix is built in memory; `readiness.py` drops no `builds/*` key itself."""
+    src = Path(__file__).resolve().parents[1] / "src" / "harness_bench"
+    import ast
+
+    def literals(name: str) -> list[str]:
+        """String literals that are code, not docstrings."""
+        tree = ast.parse((src / name).read_text(encoding="utf-8"))
+        docs = {id(n.body[0].value) for n in ast.walk(tree) if isinstance(n, ast.Module | ast.FunctionDef | ast.ClassDef)
+                and n.body and isinstance(n.body[0], ast.Expr) and isinstance(n.body[0].value, ast.Constant)}
+        return [n.value for n in ast.walk(tree) if isinstance(n, ast.Constant) and isinstance(n.value, str) and id(n) not in docs]
+
+    texts = {n: (src / n).read_text(encoding="utf-8") for n in ("discriminate.py", "readiness.py", "synthetic_agent.py")}
+    code = "\n".join(texts.values())
+    assert "validate_matrix" not in code.replace("`validate_matrix`", "") and "config.HARNESSES" not in code
+    assert not [s for s in literals("readiness.py") if "builds/" in s or s == "builds"]
+    assert "os.environ" not in texts["discriminate.py"].replace("`os.environ`", "")
+    assert "issubset" not in code and "<=" not in texts["readiness.py"] + texts["discriminate.py"]

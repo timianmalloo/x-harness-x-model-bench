@@ -215,7 +215,13 @@ def record_failures(root: Path, task_id: str, *, baseline: Mapping | None = None
     return body_failures(root, task_id, body)
 
 
-def problems(root: Path, *, baseline: Mapping | None = None) -> list[str]:
+def reconcile(root: Path, task_id: str, runs: Path) -> tuple[str, list[Failure]]:
+    """(`reconciled: yes` or `reconciled: no (<reason>)`, HB-RDY-004 failures) of the current record against the newest run
+    that made it. Skeleton: always yes."""
+    return "reconciled: yes", []
+
+
+def problems(root: Path, *, baseline: Mapping | None = None, runs: Path | None = None) -> list[str]:
     """The lines `bench validate` prints, `x <code> <task>: <item>: <detail>`, plus non-failing `note:` lines."""
     return []
 

@@ -5,6 +5,7 @@ one field; the wiring partner that proves a real trial's record is accepted is t
 import copy
 import importlib.util
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -199,3 +200,152 @@ def test_each_variants_defect_is_hb_rdy_005(root, label, text):
     with pytest.raises(BenchError) as err:
         readiness.variants(root, TASK)
     assert err.value.code == "HB-RDY-005", label
+
+
+# --- E3: contract fields, the pair rule and what `bench validate` prints -------------------------------------------------
+
+
+def task_text(root: Path, task_id: str, rel: str) -> tuple[Path, str]:
+    path = root / "tasks" / task_id / rel
+    return path, path.read_text(encoding="utf-8")
+
+
+def edit_file(root: Path, task_id: str, rel: str, old: str, new: str) -> None:
+    path, text = task_text(root, task_id, rel)
+    assert old in text, (rel, old)
+    path.write_text(text.replace(old, new, 1), encoding="utf-8", newline="")
+
+
+def edit_cases(root: Path, task_id: str, fn) -> None:
+    path, text = task_text(root, task_id, "oracle/check/cases.yaml")
+    doc = json.loads(text)
+    fn(doc)
+    path.write_text(json.dumps(doc), encoding="utf-8")
+
+
+def lines_of(root: Path) -> list[str]:
+    return [ln for ln in readiness.problems(root) if ln.startswith("x ")]
+
+
+@pytest.fixture
+def pair(tmp_path):
+    """Two draft security tasks at two different bases, and two draft rework tasks likewise: the clean control."""
+    r = mt.make_root(tmp_path)
+    for name in ("disc_p", "scan_a", "disc_c", "disc_rw"):
+        mt.install(r, name, status="draft")
+    return r
+
+
+def test_the_clean_control_pair_has_no_problems_and_a_stub_has_none_at_all(pair):
+    assert lines_of(pair) == []
+    stub = pair / "tasks" / "DISC-P" / "task.yaml"
+    stub.write_text(stub.read_text(encoding="utf-8").replace("status: draft", "status: stub"), encoding="utf-8")
+    assert not [ln for ln in lines_of(pair) if "DISC-P" in ln]
+
+
+def _defect_cases():
+    expected_line = "exploit_probes_blocked: \"1.0000\"   # measured by the fixture run, not a grader guess"
+    return [
+        ("latent term in the prompt", "DISC-P", "prompt.md", "keep the tests green.", "keep the tests green and escape output.", "HB-RDY-006", "escape"),
+        ("expected value with no comment", "DISC-P", "task.yaml", expected_line, "exploit_probes_blocked: \"1.0000\"", "HB-RDY-005", "provenance"),
+        ("expected value with a one-word comment", "DISC-P", "task.yaml", expected_line, "exploit_probes_blocked: \"1.0000\"   # ok", "HB-RDY-005", "provenance"),
+        ("primary declared 2", "DISC-P", "task.yaml", "property_check_pass: 1   #", "property_check_pass: 2   #", "HB-RDY-005", "primary"),
+        ("a metric of the narrowed set left out", "DISC-P", "task.yaml", "    exploit_probes_blocked: \"0.0000\"   # measured by the fixture run, not a grader guess\n", "", "HB-RDY-005", "exploit_probes_blocked"),
+        ("simplicity with no outside_radius_lines", "DISC-C", "task.yaml", "name: rework", "name: simplicity", "HB-RDY-005", "outside_radius_lines"),
+        ("a primary_metric the catalog does not call primary", "DISC-P", "task.yaml", "primary_metric: property_check_pass", "primary_metric: pass_at_1", "HB-RDY-005", "primary_metric"),
+        ("graders without property", "DISC-P", "task.yaml", "graders: [correctness, property]", "graders: [correctness]", "HB-RDY-005", "graders"),
+    ]
+
+
+DEFECTS = _defect_cases()
+
+
+@pytest.mark.parametrize(("label", "task", "rel", "old", "new", "code", "needle"), DEFECTS, ids=[d[0] for d in DEFECTS])
+def test_contract_field_defects_each_fail_with_their_code(pair, label, task, rel, old, new, code, needle):
+    """T-E24: one defect per param over `make_task` trees, through the public `problems`; the control is clean."""
+    edit_file(pair, task, rel, old, new)
+    found = [ln for ln in lines_of(pair) if f" {task}:" in ln and code in ln and needle in ln]
+    assert found, (label, lines_of(pair))
+
+
+def test_authorization_does_not_trip_the_authoriz_term_but_a_whole_word_does(pair):
+    """T-E24 (006): whole-word, so `authoriz` in `Authorization` passes; the term as a word, at line 3, fails naming line 3."""
+    edit_file(pair, "DISC-P", "task.yaml", "latent_terms: [escape]", "latent_terms: [authoriz]")
+    edit_file(pair, "DISC-P", "prompt.md", "keep the tests green.", "keep the tests green.\nSend an Authorization header.")
+    assert lines_of(pair) == []
+    edit_file(pair, "DISC-P", "prompt.md", "Send an Authorization", "Send an authoriz")
+    (line,) = lines_of(pair)
+    assert "HB-RDY-006" in line and "authoriz" in line and "line 2" in line
+
+
+def test_a_security_task_with_no_check_and_a_rework_task_with_one_each_fail_005(pair):
+    shutil.rmtree(pair / "tasks" / "DISC-P" / "oracle" / "check")
+    assert any("HB-RDY-005" in ln and "DISC-P" in ln and "oracle/check" in ln for ln in lines_of(pair))
+    pair2 = pair / "tasks" / "DISC-C" / "oracle" / "check"
+    pair2.mkdir(parents=True)
+    (pair2 / "cases.yaml").write_text("{}", encoding="utf-8")
+    assert any("HB-RDY-005" in ln and "DISC-C" in ln and "oracle/check" in ln for ln in lines_of(pair))
+
+
+@pytest.mark.parametrize(("case_id", "fails"), [("a:b", True), ("nul", True), ("UPPER", True), ("inj-1", False), ("null", False), ("con-1", False)])
+def test_case_ids_go_through_check_segment(pair, case_id, fails):
+    """The `check_segment` caller of readiness: `a:b` and `nul` refused, the controls `inj-1`, `null`, `con-1` pass."""
+    edit_cases(pair, "DISC-P", lambda d: d["cases"][0].update(id=case_id))
+    refused = any("HB-RDY-005" in ln and "DISC-P" in ln and "case id" in ln for ln in lines_of(pair))
+    assert refused is fails
+
+
+def test_container_runtimes_and_a_secret_env_name_are_refused(pair):
+    edit_cases(pair, "DISC-P", lambda d: d.update(toolchain=["python", "docker"]))
+    assert any("HB-RDY-008" in ln and "docker" in ln for ln in lines_of(pair))
+    edit_cases(pair, "DISC-P", lambda d: d.update(toolchain=["python"], deliverable={"build": ["podman", "build"]}))
+    assert any("HB-RDY-008" in ln and "podman" in ln for ln in lines_of(pair))
+    edit_cases(pair, "DISC-P", lambda d: d.update(deliverable={}, env=["ANTHROPIC_API_KEY"]))
+    assert any("HB-RDY-005" in ln and "ANTHROPIC_API_KEY" in ln for ln in lines_of(pair))
+    edit_cases(pair, "DISC-P", lambda d: d.update(env=["HB_CHECK_FLAG"], app={**d["app"], "paths": ["../escape"]}))
+    assert any("HB-RDY-005" in ln and "paths" in ln for ln in lines_of(pair))
+
+
+def test_overlays_must_exist_and_pass_the_one_path_rule_through_readiness_and_the_agent_alike(pair, tmp_path):
+    """T-E3 (readiness side): the same trees the agent refuses are HB-RDY-005; deleting the rule turns this red."""
+    shutil.rmtree(pair / "tasks" / "DISC-P" / "oracle" / "solutions" / "naive")
+    assert any("HB-RDY-005" in ln and "solutions/naive" in ln for ln in lines_of(pair))
+    bad = pair / "tasks" / "DISC-C" / "oracle" / "solutions" / "reference" / ".git"
+    bad.mkdir()
+    (bad / "hooks").write_text("x", encoding="utf-8")
+    assert any("HB-RDY-005" in ln and "DISC-C" in ln and ".git" in ln for ln in lines_of(pair))
+
+
+def test_the_pair_rule_needs_two_tasks_at_two_bases_per_property(tmp_path):
+    """T-E24 (007): one task alone, and two at one base, fail; two bases pass, also at one repo."""
+    r = mt.make_root(tmp_path)
+    mt.install(r, "disc_p", status="draft")
+    assert any("HB-RDY-007" in ln for ln in lines_of(r))
+    mt.install(r, "scan_a", status="draft", repo="disc-p")  # make_task: the same repo and commit as DISC-P
+    assert any("HB-RDY-007" in ln and "SCAN-A" in ln for ln in lines_of(r))
+    edit_file(r, "SCAN-A", "task.yaml", mt.COMMIT, "89abcdef0123456789abcdef0123456789abcdef")  # one repo, a second base
+    assert lines_of(r) == []
+
+
+def test_a_ready_task_with_no_record_is_listed_and_a_record_is_not(tmp_path):
+    r = mt.make_root(tmp_path)
+    mt.install(r, "disc_p")
+    mt.install(r, "scan_a", status="draft")
+    assert any(ln.startswith("x HB-RDY-001 DISC-P") for ln in lines_of(r))
+    build(r)
+    assert not [ln for ln in lines_of(r) if "DISC-P" in ln]
+
+
+def test_a_leaked_temp_is_named_in_a_note_and_never_deleted_by_a_reader(tmp_path):
+    """T-E17 (reader half): `problems` names each skipped temp in a `note:` line and leaves it; `x.tmp-notes` is no temp."""
+    r = mt.make_root(tmp_path)
+    mt.install(r, "disc_p")
+    mt.install(r, "scan_a", status="draft")
+    build(r)
+    folder = r / "bench" / "discrimination" / TASK
+    temp = folder / f"x.json.tmp-1-{'a' * 32}"
+    temp.write_text("torn", encoding="utf-8")
+    (folder / "x.tmp-notes").write_text("notes", encoding="utf-8")
+    notes = [ln for ln in readiness.problems(r) if ln.startswith("note:")]
+    assert any(temp.name in ln for ln in notes) and not any("x.tmp-notes" in ln for ln in notes)
+    assert temp.exists()

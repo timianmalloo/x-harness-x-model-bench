@@ -186,7 +186,7 @@ def _disc_c(tweak):
 
 
 def _disc_rw(tweak):
-    return _disc_c(tweak) | {"id": "DISC-RW"}
+    return _disc_c(tweak) | {"id": "DISC-RW", "repo": tweak.get("repo", "disc-rw")}
 
 
 def _disc_p(tweak):
@@ -242,7 +242,7 @@ def _scan_a(tweak):
     expected = {"reference": {"property_check_pass": 1, "exploit_probes_blocked": "1.0000"},
                 "naive": {"property_check_pass": 0, "exploit_probes_blocked": "0.2000"}}
     return _disc_p({"cases": _cases(ids), "expected": expected,
-                    "reference": {"src/app.py": HANDLE_REF, "dist/out.txt": "built\n"}}) | {"id": "SCAN-A", "repo": "scan-a"}
+                    "reference": {"src/app.py": HANDLE_REF, "dist/out.txt": "built\n"}}) | {"id": "SCAN-A", "repo": tweak.get("repo", "scan-a")}
 
 
 def _scan_a_secondary(tweak):
