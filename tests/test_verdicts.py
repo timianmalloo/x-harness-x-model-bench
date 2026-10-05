@@ -6,6 +6,7 @@ import hashlib
 import math
 import random
 from decimal import Decimal
+from fractions import Fraction
 from pathlib import Path
 
 import pytest
@@ -151,6 +152,7 @@ def test_resamples_for_tail_depth():
     ("resamples", "alpha", "expect"),
     [
         pytest.param(18000, D("0.05") / 45, 10, id="snap"),  # 9.99999... in decimal arithmetic; the tail is 10 draws
+        pytest.param(12400, D("0.05") / 31, 10, id="snap31"),  # 9.999...96 under the default 28-digit context; no epsilon gives 9
         pytest.param(2000, D("0.05"), 50, id="exact"),
         pytest.param(2000, D("0.04999"), 49, id="floor"),  # 49.99 floors; a wide epsilon would round it up
     ],
@@ -258,6 +260,35 @@ def test_golden_interval_and_draws():
     assert v.interval == (D("-0.1666666666666666666666666667"), D("0.8333333333333333333333333333"))
 
 
+def _naive_interval(diffs, seed, resamples, tail):
+    """Independent reference: the documented 'effect' stream, Fractions, no common-denominator trick."""
+    draw = stats.rng(seed, "effect").random
+    means = []
+    for _ in range(resamples):
+        per = [Fraction(sum(g[int(draw() * len(g))] for _ in range(len(g))), len(g)) for g in diffs]
+        means.append(sum(per, Fraction(0)) / len(per))
+    means.sort()
+    return means[tail], means[resamples - 1 - tail]
+
+
+def test_effect_interval_is_drawn_from_the_effect_stream():
+    diffs = {"a": [1, 0, 1, 1, 0], "b": [0, -1, 1, 0]}
+    # alpha 0.8 puts the tails at draw 800: at 0.05 the lattice of bootstrap means hides a different stream
+    v = _run(diffs, resamples=2000, alpha_per_test=D("0.8"))
+    lo, hi = _naive_interval([diffs["a"], diffs["b"]], 424242, 2000, 800)
+    assert abs(Fraction(v.interval[0]) - lo) < Fraction(1, 10**20)
+    assert abs(Fraction(v.interval[1]) - hi) < Fraction(1, 10**20)
+
+
+def test_a_reversed_pair_list_gives_the_golden_verdict():
+    pairs = _pairs(GOLD)
+    assert [p.rep for p in pairs if p.task == "b"] == [1, 2, 3]
+    assert verdicts.verdict(_spec(), list(reversed(pairs)), [], {}) == verdicts.verdict(_spec(), pairs, [], {})
+    wide = _spec(resamples=2000, alpha_per_test=D("0.8"))  # tails at draw 800, where draw order shows
+    skewed = _pairs({"a": [1, 0, 1, 1, 0], "b": [0, -1, 1, 0]})
+    assert verdicts.verdict(wide, list(reversed(skewed)), [], {}) == verdicts.verdict(wide, skewed, [], {})
+
+
 def test_stratified_equal_task_weight():
     v = _run({"a": [1] * 5 + [0] * 5, "b": [0] * 90})
     assert v.effect == D("0.25")
@@ -274,6 +305,8 @@ def test_per_task_and_both_tasks():
     assert split.label == L.BETTER and split.both_tasks is False
     down = _run({"a": [-1] * 5, "b": [-1] * 5})
     assert down.label == L.WORSE and down.both_tasks is True
+    touching = _run({"a": [-1] * 30, "b": [-1, -1, 0, 0, 0, 0]})  # task b's upper bound reaches 0
+    assert touching.label == L.WORSE and touching.per_task["b"][2] == 0 and touching.both_tasks is False
     for diffs in ({"a": [1, -1], "b": [0, 0]}, {"a": [0] * 4, "b": [0] * 4}):
         assert _run(diffs).both_tasks is None
 
