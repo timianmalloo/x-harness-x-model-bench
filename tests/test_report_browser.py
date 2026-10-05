@@ -14,6 +14,8 @@ visible" is operationalized here as "focus lands on, and returns to, the expecte
 pixel-level render check.
 """
 
+from pathlib import Path
+
 import pytest
 from archived_runs import GOOD, make_root, make_run
 
@@ -130,3 +132,47 @@ def test_keyboard_path(browser_page):
         on_btn.focus()
         page.keyboard.press("Enter")
         assert "pack-on" in (page.locator("main").get_attribute("class") or "")
+
+
+# --- X-H2: report section 3 (EVU-5, EVX-2) -----------------------------------------------------------
+
+AXE = Path(__file__).parent / "vendor" / "axe-core" / "axe.min.js"
+
+
+@pytest.fixture
+def campaign_page(tmp_path):
+    from test_campaign_section import (
+        make_world,  # the real-ledger campaign world of tests/test_campaign_section.py
+    )
+
+    world = make_world(tmp_path / "campaign")
+    run_dir = tmp_path / "campaign-run"
+    run_dir.mkdir()
+    path = html.write(run_dir, world.view, campaign_obj=world.obj)
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={"width": 1280, "height": 800})
+        page.goto(path.as_uri())
+        yield page
+        browser.close()
+
+
+@pytest.mark.parametrize("scheme", ["light", "dark"])
+def test_evu_5_axe_light_and_dark(campaign_page, scheme):
+    """EVU-5: axe-core (WCAG 2.2 AA) reports zero violations for the verdict section in both colour schemes. The vendored
+    source runs through `evaluate` (the page's CSP refuses an injected script tag)."""
+    campaign_page.emulate_media(color_scheme=scheme)
+    campaign_page.evaluate(AXE.read_text(encoding="utf-8"))
+    found = campaign_page.evaluate(
+        "axe.run(document.querySelector('#property-verdicts'),"
+        " {runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']}).then(r =>"
+        " ({violations: r.violations.map(v => v.id + ': ' + v.nodes.length), passes: r.passes.length}))")
+    assert found["passes"] > 0, "axe ran no rule on the section"  # a run that checked nothing is not a pass
+    assert found["violations"] == []
+
+
+def test_evx_2_the_first_verdict_row_is_visible_after_the_header_jump_link(campaign_page):
+    """EVX-2: at 1280x800, activating the jump link shows the first verdict row without further scrolling."""
+    campaign_page.click("nav a[href='#property-verdicts']")
+    box = campaign_page.locator("#property-verdicts tbody tr").first.bounding_box()
+    assert box is not None and 0 <= box["y"] and box["y"] + box["height"] <= 800

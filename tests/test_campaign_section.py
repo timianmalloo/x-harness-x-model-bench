@@ -8,8 +8,11 @@ fixtures are the C2/C3 inputs (tests/fixtures/campaign/w0_shapes.py), each with 
 from __future__ import annotations
 
 import importlib.util
+import json
 import logging
 import re
+import shutil
+import sys
 from collections.abc import Callable
 from dataclasses import dataclass
 from decimal import Decimal
@@ -18,6 +21,11 @@ from pathlib import Path
 
 import pytest
 from test_cli_campaign import CID, append, make_repo, put, walk_to
+from test_discriminate import (  # noqa: F401  (hosted is a module fixture of X-E's tests)
+    got_host,
+    grading_of,
+    hosted,
+)
 from test_gates import _cell
 
 from harness_bench import campaign, power, readiness, verdicts, views
@@ -307,6 +315,25 @@ def test_section_reads_the_real_readiness_function(tmp_path):
     line = q(page, "p", data_kind="hidden-test-agreement-not-recorded")[0]
     assert "is absent or not completed" in line.text()
     assert line.text() == f"Hidden-test agreement not recorded: {err.value.message}."
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="the grader and its host are Windows-only (ADR-0018 s8)")
+def test_section_reads_the_real_readiness_function_on_a_graded_run(tmp_path, hosted, base):  # noqa: F811
+    """Leg (b), the design's leg: one cell's `hidden_tests_pass` differs from `pass_at_1` in a real graded run (X-E's
+    `hosted` fixture, imported); the report shows that cell id and the count."""
+    run_dir, gid = grading_of(hosted[0], got_host(hosted)[2])
+    assert readiness.hidden_test_disagreements(run_dir, gid) == []
+    copy = base / "copy"
+    shutil.copytree(run_dir, copy)
+    target = min(copy.glob(f"grading/{gid}/*/property/property.json"))
+    doc = json.loads(target.read_text(encoding="utf-8"))
+    doc["hidden_tests_pass"]["value"] = 1 - doc["hidden_tests_pass"]["value"]  # the value is 0 or 1
+    target.write_text(json.dumps(doc), encoding="utf-8")
+    cell = target.parent.parent.name
+    world = make_world(tmp_path)
+    page = dom(render(world, with_reader(world, lambda: readiness.hidden_test_disagreements(copy, gid))))
+    line = q(page, "p", data_kind="hidden-test-disagreement")[0]
+    assert line.attrs["data-count"] == "1" and cell in line.text()
 
 
 # ---------------------------------------------------------------- legend (R-96)
