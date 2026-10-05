@@ -5,8 +5,6 @@
 
 from pathlib import Path
 
-import pytest
-
 from harness_bench.grade import _changes
 
 

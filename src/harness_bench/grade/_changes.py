@@ -228,7 +228,31 @@ def change_set(
 
 
 def product_lines(path: Path | str) -> list[str]:
-    return ["__NEUTRAL_WRONG__"]
+    """W1-L 5.1: lines that are not blank, not comment-only, and not part of a docstring (found by ast)."""
+    p = Path(path)
+    if p.suffix != ".py" or not p.is_file():
+        return []
+    try:
+        raw = p.read_bytes()
+    except OSError:
+        return []
+    text = raw.replace(b"\r\n", b"\n").decode("utf-8")
+    lines = text.split("\n")
+    skip: set[int] = set()
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        tree = None
+    if tree is not None:
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)) and node.body:
+                first = node.body[0]
+                if isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant) and isinstance(first.value.value, str):
+                    skip.update(range(first.lineno, first.end_lineno + 1))
+    return [
+        line for number, line in enumerate(lines, 1)
+        if number not in skip and line.strip() and not line.strip().startswith("#")
+    ]
 
 
 def in_radius(path: str, radius: list[str]) -> bool:
@@ -238,12 +262,27 @@ def in_radius(path: str, radius: list[str]) -> bool:
 
 
 def line_delta(old: list[str], new: list[str]) -> tuple[list[int], list[int]]:
-    return ([-1], [-1])
+    """Indices of `new` lines added or replaced, and of `old` lines removed or replaced (SequenceMatcher, autojunk off)."""
+    added: list[int] = []
+    removed: list[int] = []
+    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, old, new, autojunk=False).get_opcodes():
+        if tag in ("replace", "insert"):
+            added.extend(range(j1, j2))
+        if tag in ("replace", "delete"):
+            removed.extend(range(i1, i2))
+    return added, removed
 
 
 TEST_BASENAMES = ("tests.py", "test.py", "conftest.py")
 
 
 def is_test_path(path: str, base_paths: frozenset[str]) -> bool:
-    return False
+    """W0 rev 6.6 section 13: a test basename, or a path already in the base tree under a tests/test directory."""
+    norm = path.replace("\\", "/")
+    parts = norm.split("/")
+    name = parts[-1]
+    if fnmatchcase(name, "test_*.py") or fnmatchcase(name, "*_test.py") or name in TEST_BASENAMES:
+        return True
+    return (norm in base_paths or path in base_paths) and any(part in ("tests", "test") for part in parts[:-1])
+
 

@@ -1,0 +1,72 @@
+[
+  {
+    "name": "X-J2: exempt any test directory part",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "    return (norm in base_paths or path in base_paths) and any(part in (\"tests\", \"test\") for part in parts[:-1])",
+    "replace": "    return any(part in (\"tests\", \"test\") for part in parts[:-1])",
+    "tests": ["tests/test_changes.py::test_is_test_path_r2_3_tinydb_new_product_file"]
+  },
+  {
+    "name": "X-J2: base test directory file is not counted as test path",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "    return (norm in base_paths or path in base_paths) and any(part in (\"tests\", \"test\") for part in parts[:-1])",
+    "replace": "    return False",
+    "tests": ["tests/test_changes.py::test_is_test_path_r2_3_tinydb_existing_base_test_file"]
+  },
+  {
+    "name": "X-J2: test basenames are not recognized",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "    if fnmatchcase(name, \"test_*.py\") or fnmatchcase(name, \"*_test.py\") or name in TEST_BASENAMES:",
+    "replace": "    if False:",
+    "tests": ["tests/test_changes.py::test_is_test_path_r2_2_humanfriendly"]
+  },
+  {
+    "name": "X-J2: docstrings are included in product lines",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "                    skip.update(range(first.lineno, first.end_lineno + 1))",
+    "replace": "                    pass",
+    "tests": ["tests/test_changes.py::test_product_lines_excludes_docstrings_module_class_function_async"]
+  },
+  {
+    "name": "X-J2: non-py file returns lines",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "    if p.suffix != \".py\" or not p.is_file():",
+    "replace": "    if not p.is_file():",
+    "tests": ["tests/test_changes.py::test_product_lines_non_py_file_returns_empty"]
+  },
+  {
+    "name": "X-J2: comments are included in product lines",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "        if number not in skip and line.strip() and not line.strip().startswith(\"#\")",
+    "replace": "        if number not in skip and line.strip()",
+    "tests": ["tests/test_changes.py::test_product_lines_filters_blanks_and_comments"]
+  },
+  {
+    "name": "X-J2: line_delta misses added lines",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "        if tag in (\"replace\", \"insert\"):",
+    "replace": "        if False:",
+    "tests": ["tests/test_changes.py::test_line_delta_add_remove_replace"]
+  },
+  {
+    "name": "X-J2: line_delta misses removed lines",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "        if tag in (\"replace\", \"delete\"):",
+    "replace": "        if False:",
+    "tests": ["tests/test_changes.py::test_line_delta_add_remove_replace"]
+  },
+  {
+    "name": "X-J2: in_radius matches nothing",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "    return any(fnmatchcase(path.replace(\"\\\\\", \"/\"), glob) for glob in radius)",
+    "replace": "    return False",
+    "tests": ["tests/test_changes.py::test_in_radius_matches_globs"]
+  },
+  {
+    "name": "X-J2: in_radius matches everything",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "    return any(fnmatchcase(path.replace(\"\\\\\", \"/\"), glob) for glob in radius)",
+    "replace": "    return True",
+    "tests": ["tests/test_changes.py::test_in_radius_matches_globs"]
+  }
+]

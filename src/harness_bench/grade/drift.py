@@ -23,7 +23,6 @@ import os
 import re
 import shutil
 from decimal import Decimal
-from fnmatch import fnmatchcase
 from pathlib import Path
 
 from harness_bench import archive, gitsafe
