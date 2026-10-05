@@ -10,6 +10,8 @@ runs_as: either
 
 ## Grounding (first action)
 
+0. **CO-S0 compile first.** If the request arrives as prose, run `/compile` on it before anything else (CO-S0, knowledge/agent-coordination.md).
+
 1. Read the task's `task.yaml` and its BOM row. The BOM owns `scenario` and `budget_minutes`; the task file must agree.
 2. Open the source repo at the base commit you intend to pin. For authored tasks that is cfd-bench or ai-de; check the paths in `blast_radius` exist there. For public tasks, name the exact upstream instance id.
 3. Mark the run start: `python docs/ai-forward-pack/scripts/audit-log.py start --session <id>`.

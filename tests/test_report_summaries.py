@@ -62,7 +62,7 @@ def _view(cells=None):
                          catalog_version="0.5", cells=cells)
 
 
-OPERATOR = egress.Operator(email=None, username="op", home="/home/op")
+OPERATOR = egress.Operator(email=None, username="op", home="/home/op")  # machine-path-ok: operator-home redaction input
 
 
 # --------------------------------------------------------------------------------- the summary_records fact

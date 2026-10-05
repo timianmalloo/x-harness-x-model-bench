@@ -360,7 +360,7 @@ def turn(args: argparse.Namespace) -> int:
                        "session_id": result.session_id, "updates": result.updates,
                        "permission_requests": result.permission_requests, "prompt_sent": result.prompt_sent,
                        "usage_reported": result.usage is not None}}
-    out.with_suffix(".meta.json").write_text(json.dumps(meta, indent=1) + "\n", encoding="utf-8")
+    out.with_suffix(".meta.json").write_text(json.dumps(meta, indent=1) + "\n", encoding="utf-8", newline="\n")
     print(json.dumps({**meta, "recording": str(out), "cell_dir": str(cell_dir)}, indent=1))
     return 0 if result.cause is None and result.stop_reason == "end_turn" else 1
 
@@ -407,4 +407,10 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
+    for _stream in (sys.stdout, sys.stderr):
+        if hasattr(_stream, "reconfigure"):
+            try:
+                _stream.reconfigure(encoding="utf-8", errors="replace")
+            except (ValueError, OSError):
+                pass
     sys.exit(main(sys.argv[1:]))

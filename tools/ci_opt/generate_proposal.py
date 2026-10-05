@@ -329,9 +329,15 @@ Verified via `uv run ruff check src tests tools`: clean, 0 warnings, 0 errors.
 def main() -> None:
     content = build_proposal_content()
     DOC_PATH.parent.mkdir(parents=True, exist_ok=True)
-    DOC_PATH.write_text(content, encoding="utf-8")
+    DOC_PATH.write_text(content, encoding="utf-8", newline="\n")
     print(f"Generated proposal at {DOC_PATH} ({len(content)} chars)")
 
 
 if __name__ == "__main__":
+    for _stream in (sys.stdout, sys.stderr):
+        if hasattr(_stream, "reconfigure"):
+            try:
+                _stream.reconfigure(encoding="utf-8", errors="replace")
+            except (ValueError, OSError):
+                pass
     main()

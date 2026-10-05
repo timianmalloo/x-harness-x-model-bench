@@ -130,7 +130,7 @@ def renew(root: Path | None = None) -> int:
     else:
         cmd = [sys.executable, "-m", "pytest", "-m", "gate"]
 
-    proc = subprocess.run(cmd, cwd=repo_root, capture_output=True, text=True, check=False)
+    proc = subprocess.run(cmd, cwd=repo_root, capture_output=True, text=True, encoding="utf-8", errors="replace", check=False)
     output = proc.stdout + "\n" + proc.stderr
 
     if proc.returncode == 5:
@@ -179,4 +179,10 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    for _stream in (sys.stdout, sys.stderr):
+        if hasattr(_stream, "reconfigure"):
+            try:
+                _stream.reconfigure(encoding="utf-8", errors="replace")
+            except (ValueError, OSError):
+                pass
     sys.exit(main())

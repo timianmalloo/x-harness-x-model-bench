@@ -583,8 +583,8 @@ def test_patch_header_paths_keeps_a_windows_absolute_path_with_backslashes():
 
 
 def test_patch_header_paths_keeps_a_posix_absolute_path():
-    text = '*** Begin Patch\n*** Update File: /home/user/repo/src/a.py\n@@\n*** End Patch\n'
-    assert patch_header_paths(text) == ('/home/user/repo/src/a.py',)
+    text = '*** Begin Patch\n*** Update File: /home/user/repo/src/a.py\n@@\n*** End Patch\n'  # machine-path-ok: patch-header parser input
+    assert patch_header_paths(text) == ('/home/user/repo/src/a.py',)  # machine-path-ok: patch-header parser input
 
 
 def test_pi_t6_codex_tool_inputs_apply_patch_update_header_is_a_write():

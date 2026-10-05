@@ -158,8 +158,8 @@ def test_a_line_that_is_not_utf8_is_kept_as_base64():
 
 def test_scrub_replaces_each_literal_in_raw_and_json_escaped_form_and_refuses_a_leftover(tmp_path):
     rec = _recorder()
-    home = r"C:\Users\someone\cells\home"
-    line = json.dumps({"cwd": home, "note": "C:/Users/someone/cells/home and someone@example.com"})
+    home = r"C:\Users\someone\cells\home"  # machine-path-ok: scrubber input must be machine-shaped
+    line = json.dumps({"cwd": home, "note": "C:/Users/someone/cells/home and someone@example.com"})  # machine-path-ok: scrubber input must be machine-shaped
     raw = tmp_path / "raw.jsonl"
     raw.write_text("\n".join(json.dumps(r) for r in [
         {"kind": "header", "argv": [home + r"\node.exe"], "cwd": home, "started_utc": "x", "caps": {}},
@@ -185,10 +185,10 @@ def test_scrub_catches_a_literal_split_across_streamed_chunks(tmp_path):
     """The codex X1 capture streamed a cell path one token per agent_message_chunk (seq 93-118), so no single
     string held the literal and the per-string scrub passed it through."""
     rec = _recorder()
-    home = r"C:\Users\someone\cells\home"
+    home = r"C:\Users\someone\cells\home"  # machine-path-ok: scrubber input must be machine-shaped
     raw = tmp_path / "raw.jsonl"
     rows = [{"kind": "header", "argv": [], "cwd": "x", "started_utc": "x", "caps": {}},
-            _chunk(1, "Done in ["), _chunk(2, "C"), _chunk(3, ":/Users/some"), _chunk(4, "one/cells/home/slug.py"), _chunk(5, "].")]
+            _chunk(1, "Done in ["), _chunk(2, "C"), _chunk(3, ":/Users/some"), _chunk(4, "one/cells/home/slug.py"), _chunk(5, "].")]  # machine-path-ok: scrubber input must be machine-shaped
     raw.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
     out = tmp_path / "scrubbed.jsonl"
     rec.scrub(raw, out, {home: "<HOME>"}, forbid=["someone"])

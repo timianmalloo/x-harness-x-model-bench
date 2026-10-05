@@ -375,7 +375,7 @@ def test_f6_an_egress_value_error_never_escapes_the_pipeline(tmp_path, base):
     # identifier (a user name `fable` against claude-fable-5-1). Each is NOT_RECORDED HB-GW-001, nothing sent.
     bad_id = pipeline.Judge(model="Judge-Model-A", invocation_sha256="d" * 64, allowed_models=("Judge-Model-A",),
                             qualified=True)
-    collide = egress.Operator(email=f"op-{token_hex(6)}@example.invalid", username="fable", home="C:/Users/fable")
+    collide = egress.Operator(email=f"op-{token_hex(6)}@example.invalid", username="fable", home="C:/Users/fable")  # machine-path-ok: operator-home redaction input
     outcomes = []
     for n, (judge, operator) in enumerate(((bad_id, None), (JUDGE, collide))):
         try:

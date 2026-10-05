@@ -377,7 +377,7 @@ def test_codex_profile_disables_account_apps_in_each_seeded_home(tmp_path):
 def test_cell_env_is_clean_pinned_and_turns_build_servers_off(tmp_path):
     p = profiles.load(ROOT, "claude-code", credential_source=tmp_path / "c")
     base = {"PATH": "x", "CLAUDECODE": "1", "CLAUDE_CODE_ENTRYPOINT": "cli", "ANTHROPIC_API_KEY": "sk-leak",
-            "OPENAI_API_KEY": "sk-leak", "CODEX_HOME": "C:/Users/me/.codex", "CLAUDE_CONFIG_DIR": "C:/Users/me/.claude"}
+            "OPENAI_API_KEY": "sk-leak", "CODEX_HOME": "C:/Users/me/.codex", "CLAUDE_CONFIG_DIR": "C:/Users/me/.claude"}  # machine-path-ok: env redaction input
     env = p.cell_env(base, home=tmp_path / "home", build=FakeBuild(), model="claude-sonnet-5", traceparent="00-t-s-01")
     assert env["CLAUDE_CONFIG_DIR"] == str(tmp_path / "home")
     assert env["ANTHROPIC_MODEL"] == "claude-sonnet-5"
