@@ -838,18 +838,18 @@ def test_context_window_tag_is_null_when_no_served_model_carries_one(base):  # R
 
 def test_the_outcome_records_updates_and_last_update_ms(base, monkeypatch):  # T1-11
     from harness_bench import driver
-    real = driver.run_turn
+    real = driver.send_turn
 
-    def with_last_update(*args, **kwargs):  # the driver half is seam request req-01M38KX8503601BEP857749VVF (T3)
-        result = real(*args, **kwargs)
-        result.last_update_seconds = 0.25
-        return result
+    def with_last_update(session, *args, **kwargs):  # the driver half is seam request req-01M38KX8503601BEP857749VVF (T3)
+        rec = real(session, *args, **kwargs)
+        session.result.last_update_seconds = 0.25
+        return rec
 
     p = _plan(n_cells=1)
     _, events, _ = _run(base, p, FakeLauncher({}))
     first = _outcomes(events)[p["cells"][0]["cell_id"]]
     assert first["updates"] == 1 and "last_update_ms" in first  # null (not recorded) until the driver reports it
-    monkeypatch.setattr(driver, "run_turn", with_last_update)
+    monkeypatch.setattr(driver, "send_turn", with_last_update)
     p = _plan(n_cells=1)
     _, events, _ = _run(base, p, FakeLauncher({}))
     assert _outcomes(events)[p["cells"][0]["cell_id"]]["last_update_ms"] == 250
@@ -1259,7 +1259,7 @@ def test_a_failure_after_spawn_ends_the_process_and_cleans_the_credentials(base,
     def boom(*args, **kwargs):
         raise RuntimeError("driver bug")
 
-    monkeypatch.setattr(driver, "run_turn", boom)
+    monkeypatch.setattr(driver, "send_turn", boom)
     p = _plan(n_cells=1)
     _, events, config = _run(base, p, FakeLauncher({}))  # the replay: process_ended (confirmed) before the outcome
     out = _outcomes(events)[p["cells"][0]["cell_id"]]
@@ -1671,19 +1671,20 @@ def test_a_failed_append_of_the_stop_ends_the_run_incomplete_not_raised(base, mo
 
 def test_a_stdin_that_fails_to_close_still_ends_the_turn(base, monkeypatch):
     from harness_bench import driver
-    real = driver.run_turn
+    real = driver.send_turn
 
     class BrokenPipe:
         def close(self):
             raise OSError(32, "The pipe is being closed")
 
-    def then_break_stdin(cell, *args, **kwargs):
-        result = real(cell, *args, **kwargs)
+    def then_break_stdin(session, *args, **kwargs):
+        result = real(session, *args, **kwargs)
+        cell = session.channel.cell
         cell.proc.stdin.close()
         cell.proc.stdin = BrokenPipe()
         return result
 
-    monkeypatch.setattr(driver, "run_turn", then_break_stdin)
+    monkeypatch.setattr(driver, "send_turn", then_break_stdin)
     p = _plan(n_cells=1)
     _, events, _ = _run(base, p, FakeLauncher({}))
     assert _outcomes(events)[p["cells"][0]["cell_id"]]["outcome"] == "completed"
@@ -1981,15 +1982,17 @@ def test_a_spawn_failure_with_no_win32_error_records_zero(base, monkeypatch):
 
 def test_the_outcome_records_times_in_milliseconds_and_a_capped_detail(base, monkeypatch):
     from harness_bench import driver
-    real = driver.run_turn
+    real = driver.send_turn
 
-    def timed(*args, **kwargs):
-        result = real(*args, **kwargs)
+    def timed(session, *args, **kwargs):
+        rec = real(session, *args, **kwargs)
+        result = session.result
         result.handshake_seconds, result.turn_seconds, result.last_update_seconds = 1.25, 2.5, 2.0
+        rec.turn_seconds, rec.last_update_seconds = result.turn_seconds, result.last_update_seconds
         result.detail = "d" * 1000
-        return result
+        return rec
 
-    monkeypatch.setattr(driver, "run_turn", timed)
+    monkeypatch.setattr(driver, "send_turn", timed)
     p = _plan(n_cells=1)
     _, events, _ = _run(base, p, FakeLauncher({}))
     out = _outcomes(events)[p["cells"][0]["cell_id"]]

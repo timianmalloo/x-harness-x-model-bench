@@ -760,7 +760,7 @@ class Engine:
         drain = threading.Thread(target=_keep_tail, args=(cp.proc.stderr, tail, self.params["stderr_tail_bytes"]), daemon=True)
         drain.start()
 
-        result = driver.TurnResult()  # filled by run_turn; the barrier reads agent_version from it (R-28)
+        result = driver.TurnResult()  # filled by one session's turns; the barrier reads agent_version (R-28)
         baseline_fields = {}
 
         def baseline() -> None:
@@ -770,10 +770,6 @@ class Engine:
             self.record("events", {"kind": "attempt.session_opened", "cell_id": cid, "session_id": session_id or "",
                                    "agent_version": result.agent_version,
                                    "permission_mode_effective": result.permission_mode_effective})  # R-34
-
-        def barrier(session_id: str | None) -> None:
-            record_session_opened(session_id)
-            self.record("events", {"kind": "cell.prompt_sent", "cell_id": cid})
 
         def barrier_for(n: int):
             def before_send(session_id: str | None) -> None:
@@ -788,38 +784,35 @@ class Engine:
                                    "build_version": build.get("version"), "build_sha256": build.get("sha256"),
                                    "credential_kind": launcher.credential_kind, "network_mode": "unrestricted"})
             started = True
-            if not task.get("turns"):
-                result = driver.run_turn(cp, cwd=ws, prompt=task["prompt"], mode=launcher.mode,
-                                         handshake_timeout=self.params["handshake_timeout"], before_send=barrier,
-                                         model=cell["model"] if launcher.set_model else None, result=result,
-                                         mcp_servers=mcp_servers, cancel=a.cancel)
-            else:
-                session = driver.open_session(cp, ws, launcher.mode, self.params["handshake_timeout"],
-                                              cell["model"] if launcher.set_model else None, result, mcp_servers, a.cancel)
-                if session is not None:
+            session = driver.open_session(cp, ws, launcher.mode, self.params["handshake_timeout"],
+                                          cell["model"] if launcher.set_model else None, result, mcp_servers, a.cancel)
+            if session is not None:
+                try:
+                    record_session_opened(result.session_id)
+                    prompts = [task["prompt"]] + [t["prompt"] for t in task.get("turns", [])]
+                    for n, text in enumerate(prompts, 1):
+                        rec = driver.send_turn(session, text, barrier_for(n), n,
+                                               on_first_update=baseline if n == 1 else None)
+                        if rec is None:
+                            break  # no response came back: the outcome cause says why; no turn_ended
+                        nxt = (("cancel" if a.kill_reason == "stop" else "stop") if a.cancel.is_set()
+                               else "final" if n == len(prompts)
+                               else "stop" if rec.stop_reason != "end_turn" else "snapshot")
+                        self.record("events", {"kind": "cell.turn_ended", "cell_id": cid, "turn": n,
+                                               "stop_reason": rec.stop_reason, "turn_ms": int(rec.turn_seconds * 1000),
+                                               "usage": rec.usage, "next": nxt,
+                                               **(baseline_fields if n == 1 else {})})  # before the decision (design 4.2)
+                        if nxt != "snapshot":
+                            break
+                        if not self._snapshot_turn(a, cell, ws.parent, n, launcher, cp):
+                            if not a.cancel.is_set():
+                                result.cause, result.detail = Cause.archive, a.archive_error or "turn snapshot failed"
+                            break
+                finally:
                     try:
-                        record_session_opened(result.session_id)
-                        prompts = [task["prompt"]] + [t["prompt"] for t in task["turns"]]
-                        for n, text in enumerate(prompts, 1):
-                            rec = driver.send_turn(session, text, barrier_for(n), n,
-                                                   on_first_update=baseline if n == 1 else None)
-                            if rec is None:
-                                break  # no response came back: the outcome cause says why; no turn_ended
-                            nxt = (("cancel" if a.kill_reason == "stop" else "stop") if a.cancel.is_set()
-                                   else "final" if n == len(prompts)
-                                   else "stop" if rec.stop_reason != "end_turn" else "snapshot")
-                            self.record("events", {"kind": "cell.turn_ended", "cell_id": cid, "turn": n,
-                                                   "stop_reason": rec.stop_reason, "turn_ms": int(rec.turn_seconds * 1000),
-                                                   "usage": rec.usage, "next": nxt,
-                                                   **(baseline_fields if n == 1 else {})})  # before the decision (design 4.2)
-                            if nxt != "snapshot":
-                                break
-                            if not self._snapshot_turn(a, cell, ws.parent, n, launcher, cp):
-                                if not a.cancel.is_set():
-                                    result.cause, result.detail = Cause.archive, a.archive_error or "turn snapshot failed"
-                                break
-                    finally:
                         session.close()
+                    except (OSError, ValueError):
+                        pass  # broken stdin still reaches the existing kill/confirm path
         finally:
             with a.lock:
                 a.ended = True
