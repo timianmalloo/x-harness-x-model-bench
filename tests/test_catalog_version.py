@@ -42,7 +42,7 @@ import yaml
 from archived_runs import ROOT, make_root, set_catalog_version
 from slow_ring import dotnet_gate
 
-from harness_bench import board, composites, config, views
+from harness_bench import board, composites, config, ledger, views
 from harness_bench.grade import Score, runner
 from harness_bench.grade import property as grade_property
 from harness_bench.telemetry import normalize
@@ -661,7 +661,7 @@ def _root06(tmp: Path) -> Path:
         f"0.6 freeze commit {FREEZE_06_COMMIT} is not reachable (git archive failed; "
         f"a shallow checkout fails here and never skips): {done.stderr.decode('utf-8', errors='replace')}")
     dest = tmp / "root06"
-    dest.mkdir()
+    dest.mkdir(parents=True)
     with tarfile.open(fileobj=io.BytesIO(done.stdout), mode="r:") as archive:
         archive.extractall(dest, filter="data")
     return dest
@@ -751,6 +751,192 @@ def test_an_also_graded_by_name_that_is_unknown_equal_to_the_grader_or_repeated_
         _metric(bad, "pass_at_1")["also_graded_by"] = value
         added = [item for item in _validate(bad) if item not in _validate(catalog)]
         assert added, f"{name}: also_graded_by {value!r} must be refused"
+
+
+def _foreign_catalog_fields(obj: object, version: str, key: str | None = None) -> list[str]:
+    """Strings other than a ``catalog_version`` field that still name the current catalog."""
+    if isinstance(obj, dict):
+        found: list[str] = []
+        for child_key, child in obj.items():
+            found.extend(_foreign_catalog_fields(child, version, str(child_key)))
+        return found
+    if isinstance(obj, list):
+        found = []
+        for child in obj:
+            found.extend(_foreign_catalog_fields(child, version, key))
+        return found
+    if isinstance(obj, str) and version and version in obj and key != "catalog_version":
+        return [key or "<root>"]
+    return []
+
+
+def _retarget_catalog_version(obj: object) -> None:
+    """The one allowed substitution: a ``catalog_version`` of ``0.7...`` becomes ``0.6``."""
+    if isinstance(obj, dict):
+        for child_key, child in list(obj.items()):
+            if child_key == "catalog_version" and isinstance(child, str) and child.startswith("0.7"):
+                obj[child_key] = "0.6"
+            else:
+                _retarget_catalog_version(child)
+    elif isinstance(obj, list):
+        for child in obj:
+            _retarget_catalog_version(child)
+
+
+def _us4_regrade(name: str, surface: str, produced: bytes, golden_path: Path, version: str) -> list[str]:
+    """Step 3 for one surface. A field other than ``catalog_version`` that names the catalog is reported as-is."""
+    label = f"(3) {name}: the {surface} export differs from the 0.6 golden"
+    try:
+        obj = json.loads(produced)
+    except json.JSONDecodeError:
+        return [label]
+    extras = _foreign_catalog_fields(obj, version)
+    if extras:
+        return [f"(3) {name}: the {surface} export names the catalog outside catalog_version: {extras[0]}"]
+    if isinstance(obj, dict):
+        _retarget_catalog_version(obj)
+        produced = ledger.canonical(obj)
+    golden = golden_path.read_bytes() if golden_path.is_file() else b""
+    if produced != golden:
+        return [label]
+    return []
+
+
+def cross_version_problems(root: Path, root06: Path, golden06: Path, freeze: dict,
+                           export: Callable[[str], bytes],
+                           board_export: Callable[[str], bytes]) -> list[str]:
+    """US-4 control 1 (W1-G section 4.5). All four steps; every problem is kept."""
+    problems: list[str] = []
+    pinned = (freeze.get("versions") or {}).get("0.6") or {}
+    view_pins = pinned.get("golden") or {}
+    board_pins = pinned.get("board_golden") or {}
+    for path in sorted(golden06.glob("*.export")):
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        board_name = _board_stem(path)
+        if board_name is None:
+            if view_pins.get(path.stem) != digest:
+                problems.append(f"(1) pin mismatch for views golden {path.stem}")
+        elif board_pins.get(board_name) != digest:
+            problems.append(f"(1) pin mismatch for board golden {board_name}")
+    got = runner.catalog_hash(root06)
+    want = pinned.get("catalog_hash")
+    if got != want:
+        problems.append(f"(2) catalog_hash {got} != {want}")
+    archived = config.load_yaml(root06 / "bench" / "metrics.yaml")
+    current = config.load_yaml(root / "bench" / "metrics.yaml")
+    problems.extend(f"(2) {item}" for item in _06_definition_problems(archived, current))
+    version = str(current.get("version") or "")
+    for name in FIXTURES:
+        views_bytes = export(name)
+        board_bytes = board_export(name)
+        problems.extend(_us4_regrade(name, "views", views_bytes, golden06 / f"{name}.export", version))
+        problems.extend(_us4_regrade(name, "board", board_bytes, golden06 / f"{name}.board.export", version))
+        for metric_id in (row["id"] for row in ELEVEN):
+            token = metric_id.encode("utf-8")
+            if token in views_bytes:
+                problems.append(f"(4) {name}: {metric_id} leaked into the views export")
+            if token in board_bytes:
+                problems.append(f"(4) {name}: {metric_id} leaked into the board export")
+    return problems
+
+
+def _us4_root(tmp: Path) -> Path:
+    """The real 0.7.dev catalog and X1 task, rubrics included, so catalog_hash matches the tree."""
+    root = make_root(tmp, release=False)
+    rubrics = ROOT / "bench" / "rubrics"
+    if rubrics.is_dir():
+        shutil.copytree(rubrics, root / "bench" / "rubrics")
+    return root
+
+
+def _cross(root: Path, root06: Path, golden06: Path, tmp: Path, export=None, board_export=None) -> list[str]:
+    freeze = config.load_yaml(ROOT / FREEZE)
+    return cross_version_problems(
+        root, root06, golden06, freeze,
+        export or (lambda name: graded_export(root, name, tmp)),
+        board_export or (lambda name: graded_board_export(root, name, tmp)))
+
+
+def test_07_regrades_the_x1_fixtures_to_the_06_goldens_on_both_surfaces(tmp_path):  # T-U1, green on arrival
+    assert _cross(_us4_root(tmp_path), _root06(tmp_path), GOLDEN / "0.6", tmp_path) == []
+
+
+def test_cross_version_problems_is_red_for_a_moved_06_metric(tmp_path, monkeypatch):  # T-U1a
+    root = _us4_root(tmp_path)
+    real = runner.GRADERS["correctness"]
+
+    def changed(inp):
+        out = dict(real(inp))
+        if inp.cell["cell_id"] == "a":
+            out["partial_credit"] = Score(Decimal("0.5000"), None)
+        return out
+
+    monkeypatch.setitem(runner.GRADERS, "correctness", changed)
+    problems = _cross(root, _root06(tmp_path), GOLDEN / "0.6", tmp_path)
+    assert problems
+    assert any("views" in item and "c44dd2b-no-heads" in item for item in problems)
+
+
+def test_cross_version_problems_is_red_for_a_weight_change(tmp_path):  # T-U1b
+    root = _us4_root(tmp_path)
+    path = root / "bench" / "metrics.yaml"
+    text = path.read_text(encoding="utf-8")
+    old = "id: partial_credit,          source: [D], better: higher, grader: correctness, kind: score, weight: 1"
+    assert old in text
+    path.write_text(text.replace(old, old.replace("weight: 1", "weight: 2"), 1), encoding="utf-8")
+    problems = _cross(root, _root06(tmp_path), GOLDEN / "0.6", tmp_path)
+    assert problems
+    assert any("board" in item for item in problems)
+
+
+def test_cross_version_problems_is_red_for_an_edited_or_regenerated_06_golden(tmp_path):  # T-U1c
+    root = _us4_root(tmp_path)
+    root06 = _root06(tmp_path)
+    edited = tmp_path / "edited-golden"
+    shutil.copytree(GOLDEN / "0.6", edited)
+    target = edited / "heads.export"
+    target.write_bytes(target.read_bytes() + b" ")
+    edited_problems = _cross(root, root06, edited, tmp_path)
+    assert edited_problems
+    assert any("pin" in item for item in edited_problems)
+    regenerated = tmp_path / "regenerated-golden"
+    regenerated.mkdir()
+    for name in FIXTURES:
+        (regenerated / f"{name}.export").write_bytes(graded_export(root, name, tmp_path))
+        (regenerated / f"{name}.board.export").write_bytes(graded_board_export(root, name, tmp_path))
+    regenerated_problems = _cross(root, root06, regenerated, tmp_path)
+    assert regenerated_problems
+    assert any("pin" in item for item in regenerated_problems)
+
+
+def test_cross_version_problems_is_red_for_an_edited_root06(tmp_path):  # T-U1d
+    root = _us4_root(tmp_path)
+    edited = _root06(tmp_path)
+    metrics = edited / "bench" / "metrics.yaml"
+    metrics.write_text(metrics.read_text(encoding="utf-8").replace("weight: 1", "weight: 9", 1), encoding="utf-8")
+    edited_problems = _cross(root, edited, GOLDEN / "0.6", tmp_path)
+    assert edited_problems
+    assert any("hash" in item for item in edited_problems)
+    with_rubric = _root06(tmp_path / "rubric-case")
+    (with_rubric / "bench" / "rubrics").mkdir(parents=True, exist_ok=True)
+    (with_rubric / "bench" / "rubrics" / "added.md").write_text("# added\n", encoding="utf-8")
+    rubric_problems = _cross(root, with_rubric, GOLDEN / "0.6", tmp_path)
+    assert rubric_problems
+    assert any("hash" in item for item in rubric_problems)
+
+
+def test_the_new_metric_ids_are_absent_from_the_x1_exports(tmp_path):  # T-U2
+    root = _us4_root(tmp_path)
+
+    def injected(name: str) -> bytes:
+        data = json.loads(graded_export(root, name, tmp_path))
+        data["cells"][0]["scores"]["exploit_probes_blocked"] = {"value": 1, "reason": None}
+        from harness_bench import ledger
+        return ledger.canonical(data)
+
+    problems = _cross(root, _root06(tmp_path), GOLDEN / "0.6", tmp_path, export=injected)
+    assert problems
+    assert any("exploit_probes_blocked" in item for item in problems)
 
 
 # --- the slow ring: dotnet fixtures run only on the grading host (design: Catalog-version rule 4; seam V-4) ---------

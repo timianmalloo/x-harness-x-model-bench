@@ -69,5 +69,36 @@
   "tests": [
    "tests/test_grade_runner.py::test_a_g1_shaped_task_through_a_real_pass_records_one_pass_at_1_row_and_no_hb_grd_004"
   ]
+ },
+ {
+  "name": "NA input treated as 0",
+  "file": "src/harness_bench/grade/formal.py",
+  "find": "            values.append((metric_id, None))  # NA input stays NA, never 0",
+  "replace": "            values.append((metric_id, 0))  # NA input stays NA, never 0",
+  "tests": ["tests/test_grade_formal.py::test_pass_rule_is_a_three_valued_and"]
+ },
+ {
+  "name": "any NA gives NA",
+  "file": "src/harness_bench/grade/formal.py",
+  "find": "    if any(value == 0 for _metric_id, value in values):  # order 3: a recorded 0 decides, even beside an NA\n        return Score(0, None)\n    for metric_id, value in values:  # order 4: no 0, and an NA input\n        if value is None:\n            return Score(None, f\"pass rule input not recorded: {metric_id}\")",
+  "replace": "    for metric_id, value in values:  # order 4: no 0, and an NA input\n        if value is None:\n            return Score(None, f\"pass rule input not recorded: {metric_id}\")\n    if any(value == 0 for _metric_id, value in values):  # order 3: a recorded 0 decides, even beside an NA\n        return Score(0, None)",
+  "tests": ["tests/test_grade_formal.py::test_pass_rule_is_a_three_valued_and"]
+ },
+ {
+  "name": "orders 2 and 3 swapped",
+  "file": "src/harness_bench/grade/formal.py",
+  "find": "    if unknown is not None:  # order 2: an unrecorded metric beats a recorded 0\n        return Score(None, f\"pass rule names an unrecorded metric: {unknown}\")\n    if any(value == 0 for _metric_id, value in values):  # order 3: a recorded 0 decides, even beside an NA\n        return Score(0, None)",
+  "replace": "    if any(value == 0 for _metric_id, value in values):  # order 3: a recorded 0 decides, even beside an NA\n        return Score(0, None)\n    if unknown is not None:  # order 2: an unrecorded metric beats a recorded 0\n        return Score(None, f\"pass rule names an unrecorded metric: {unknown}\")",
+  "tests": [
+   "tests/test_grade_formal.py::test_an_unknown_metric_beats_a_recorded_zero_in_the_pass_rule_order",
+   "tests/test_grade_formal.py::test_pass_rule_is_a_three_valued_and"
+  ]
+ },
+ {
+  "name": "pass_at_1 reads the ledger instead of this call's scores (FM11)",
+  "file": "src/harness_bench/grade/formal.py",
+  "find": "        sibling_scores = out  # this call's Scores, never the ledger",
+  "replace": "        sibling_scores = _scores_from_ledger(inp)  # this call's Scores, never the ledger",
+  "tests": ["tests/test_grade_formal.py::test_pass_at_1_row_equals_the_rule_over_its_sibling_rows_and_writes_its_evidence"]
  }
 ]
