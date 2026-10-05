@@ -36,7 +36,13 @@ from harness_bench import (
 from harness_bench.errors import BenchError
 from harness_bench.grade import judge as grade_judge
 from harness_bench.plan import resolved_model_map
-from harness_bench.report import campaign_section, context_growth, html_builder, judges, model
+from harness_bench.report import (
+    campaign_section,
+    context_growth,
+    html_builder,
+    judges,
+    model,
+)
 from harness_bench.report import pack_improvement as pack_improvement_mod
 from harness_bench.report.credentials import encodings
 

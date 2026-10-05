@@ -17,7 +17,7 @@ log = logging.getLogger("harness_bench.report.campaign_section")
 
 PROPERTY_VERDICTS = "property-verdicts"
 REGRESSION_CHECK = "regression-check"
-DOMINATES_EMPTY = "No arm dominates another."
+EMPTY_DOMINANCE = "No arm dominates another."
 
 
 @dataclass(frozen=True)

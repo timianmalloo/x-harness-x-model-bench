@@ -2008,3 +2008,35 @@ def test_cli_table_prints_scenario_headline_line_uia11():
     assert "cop-sol off scenario 1: 55.2 [20.1, 88.0] pass@1 0.67" in out
     assert "cop-sol off scenario 6: no cells in this scenario" in out
 
+
+
+# --- X-H2, W0 rev 6 R6-10: the header reads `plan.plan_packs`, never the historical `plan["pack"]` ----------
+
+def _arms_view(root, tmp_path, packs):
+    view = views.load(make_run(root, tmp_path, {"a": GOOD}))
+    view.plan.pop("pack", None)
+    view.plan["arms"] = {aid: {"pack": pack} for aid, pack in packs.items()}
+    return view
+
+
+def _fact(doc: str, term: str) -> str:
+    return re.search(rf"<dt>{term}</dt><dd>([^<]*)</dd>", doc).group(1)
+
+
+def test_header_pack_lines_with_no_pack(root, tmp_path):
+    doc = html.render(_arms_view(root, tmp_path, {"off": None, "on": None}), archive_present=True)
+    assert _fact(doc, "Pack revision") == "not recorded" and _fact(doc, "Pack commit") == "not recorded"
+    assert "pack revision not recorded" in doc
+
+
+def test_header_pack_lines_with_one_pack(root, tmp_path):
+    doc = html.render(_arms_view(root, tmp_path, {"off": None, "on": {"revision": 95, "commit": "a" * 40}}), archive_present=True)
+    assert _fact(doc, "Pack revision") == "95" and _fact(doc, "Pack commit") == "a" * 40
+    assert "pack ai-forward revision 95" in doc
+
+
+def test_header_pack_lines_with_two_packs_say_several_packs_and_do_not_raise(root, tmp_path):
+    packs = {"a": {"revision": 1, "commit": "a" * 40}, "b": {"revision": 2, "commit": "b" * 40}}
+    doc = html.render(_arms_view(root, tmp_path, packs), archive_present=True)
+    assert _fact(doc, "Pack revision") == "several packs" and _fact(doc, "Pack commit") == "several packs"
+    assert "several packs" in re.search(r'<section id="header">.*?</section>', doc, re.DOTALL).group(0)
