@@ -24,7 +24,7 @@ from pathlib import Path
 
 from harness_bench import oslock, views
 from harness_bench.config import CELL_ID, LABEL
-from harness_bench.errors import BenchError
+from harness_bench.errors import BenchError, Cause
 from harness_bench.lifecycle import DECISION_KINDS, DECISION_STATES, is_cell_start
 from harness_bench.plan import DEFAULT_PARAMETERS
 
@@ -152,6 +152,7 @@ def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = N
             last_update_ms[event["cell_id"]] = value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else None
     validity: dict[str, int] = {}
     causes: dict[str, int] = {}
+    cell_causes: dict[str, str] = {}
     for cell in view.cells:
         if cell.cell_id in {r.cell_id for r in running}:
             continue
@@ -160,6 +161,7 @@ def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = N
             validity[cell.validity] = validity.get(cell.validity, 0) + 1
         if cell.code:
             causes[cell.code] = causes.get(cell.code, 0) + 1
+            cell_causes[cell.cell_id] = cell.code
     ended_count = sum(1 for c in view.cells if c.outcome in ("completed", "timed_out", "stopped", "skipped (decision)", "failed"))
     phase = "running" if started else "starting"
     if any(e["kind"] == "run.stopped" for e in events):
@@ -173,7 +175,7 @@ def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = N
     stop_diff = tuple(diff) if len(diff) <= STOP_DIFF_SHOWN else (*diff[:STOP_DIFF_SHOWN], f"and {len(diff) - STOP_DIFF_SHOWN} more")
     timeout = view.plan.get("parameters", {}).get("decision_timeout", DEFAULT_PARAMETERS["decision_timeout"])
     return Status(SCHEMA, view.run_id, now.strftime("%Y-%m-%dT%H:%M:%SZ"), liveness, completion, age, len(view.cells), ended_count,
-                  outcomes, last_update_ms, validity, causes, {}, running, _decisions(events, timeout, now), stop_code, stop_reason, stop_diff, phase,
+                  outcomes, last_update_ms, validity, causes, cell_causes, running, _decisions(events, timeout, now), stop_code, stop_reason, stop_diff, phase,
                   view.grading_id is not None)
 
 
@@ -225,6 +227,9 @@ def text(s: Status) -> str:
     for line in (_counts("Outcomes", OUTCOMES, s.outcomes), _counts("Validity", VALIDITY, s.validity), _counts("Causes", (), s.causes)):
         if line:
             lines.append(line)
+    labels = {c.code: c.label for c in Cause}
+    for cell_id, code in sorted(s.cell_causes.items()):  # EV-18: each cell with a cause, by id
+        lines.append(f"{cell_id}: {labels.get(code, 'failed')} ({code})")
     return "\n".join(lines) + "\n"
 
 

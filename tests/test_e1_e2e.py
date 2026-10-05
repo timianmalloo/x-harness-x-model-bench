@@ -583,7 +583,6 @@ def test_one_run_four_surfaces_agree(walk):
     assert identity_file["components"]["tasks/S1"] == version
 
 
-@pytest.mark.xfail(strict=True, reason="EV-18 completion-summary leg: no cell id in status.text; C3c")
 def test_one_blocked_cell_is_named_in_the_completion_summary(tmp_path, monkeypatch):
     """Item 10, X-H2 item 9 (EV-18): one blocked cell is named, with its id and cause, in the summary `bench run` prints (`status.text`)."""
     from test_cli_campaign import tree, write_plan
