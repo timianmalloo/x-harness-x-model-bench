@@ -29,7 +29,9 @@ links:
   - { to: review-eval-sim, rel: relates-to }
 review-by: "2026-10-17"
 summary: >-
-  Revision 6.11 (C-W0, Coordinator #31: R-106's launch-recheck key set in section 6, the R-106 c7 reader key-set sweep,
+  Revision 6.12 (Coordinator #35: `cell.turn_ended` carries the int `turn_ms`, not a float `turn_seconds`,
+  because the canonical form has no floats; X-J1b writes the one `lifecycle.TABLE` entry for it; the discrimination
+  record's `hosts_ready` is an int count; rev-6.12 change table at the end). Revision 6.11 (C-W0, Coordinator #31: R-106's launch-recheck key set in section 6, the R-106 c7 reader key-set sweep,
   the shared-value rule (keys and value types), the X-K2a script-only split, the section 13 rows of the E2-E4 plan and
   HB-GRD-007 to X-C; rev-6.11 change table and re-read list at the end). Revision 6 (R-98: the discrimination record body drops `run_id` and `grading_id`, ADR-0016 Amendment 1; and the conditions of the five W0 rev 4/5 delta reviews; rev-6 change table and re-read list at the end). Revision 5 (the W1-E and W1-L seam answers SR-E1, SR-E2, SR-L1..SR-L4, the W1-L review rulings and R-97; rev-5 change
   table and re-read list at the end; DR-E1, then open, is ruled by R-98 and applied in rev 6). Revision 4 (the batch-b seam answers and the RV-PAT, RV-SIM, RV-SEC and RV-DS cross-slice findings on W1-B, W1-C, W1-D and
@@ -404,7 +406,7 @@ def for_task(m: dict, task: str) -> dict                 # rev 5 (SR-E1 3): m wi
  "scores": {"reference": {"<metric>": 1}, "naive": {"<metric>": {"na": "<reason>"}}},
  "expected": {"reference": {...}, "naive": {...}},
  "readiness_failures": ["<item>"],
- "probe": {"reference": {"deliverable": "<outcome>", "cases": {"<case id>": "<outcome>"}, "hosts_ready": true},
+ "probe": {"reference": {"deliverable": "<outcome>", "cases": {"<case id>": "<outcome>"}, "hosts_ready": <int>},
            "naive": {...}},
  "variants": {"<name>": {...}}}
 ```
@@ -629,12 +631,16 @@ These ids are reserved, never reused. Each W1 design confirms or drops its rows;
 | event / row | fields | phase · owner |
 | --- | --- | --- |
 | `cell.prompt_sent` | `+ turn` (absent reads 1) | E2 · X-J1 |
-| `cell.turn_ended` | `cell_id, turn, stop_reason, turn_seconds, usage`; rev 6.5: `+ next` ∈ {`snapshot`, `final`, `stop`, `cancel`}; `+ job_active_baseline` on turn 1 only | E2 · X-J1 |
+| `cell.turn_ended` | `cell_id, turn, stop_reason, turn_ms, usage` (rev 6.12, R6.12a: `turn_ms` an int, was `turn_seconds`); rev 6.5: `+ next` ∈ {`snapshot`, `final`, `stop`, `cancel`}; `+ job_active_baseline` on turn 1 only | E2 · X-J1 |
 | `cell.turn_snapshot_archived` | `cell_id, turn, snapshot_hash, files, bytes, duration_ms, job_active_processes`; rev 6.5: `job_active_processes` is renamed `job_active_after` if it is the same count (one name), `+ copy_retries` | E2 · X-J1 |
 | `archive_files` row | `+ snapshot` ∈ {`turn-<n>`, `final`} (absent reads `final`) | E2 · X-J1 |
 | `run.launch_stopped` | `code: HB-IDN-001`, `diff` | E1 · X-D |
 | launch span = the `cell.launch_intent` row (rev 3, W1-D) | `+ identity_check_ms`; E3 adds `free_bytes` | E1 · X-D; E3 · X-K1 |
 | resume record | how a resume is recorded (ADR-0021 §6: "resumed n times, with each resume's time and segment id") | E3 · X-K1, designed in W1-K |
+
+**Rev 6.12 (R6.12a): `cell.turn_ended` carries `turn_ms`, an int.** The ledger's canonical form has no floats (ADR-0006, *Physical form and integrity*: "integers and strings only. No floats"; `ledger._check`, `ledger.py:41-45`, read on `3f887a0c`). So W1-J's float `turn_seconds` on this row raises `TypeError` in `Engine.record` (X-J1b, `req-01M46MGW3NFZJDWWJHCXKG69BP`). The row carries `turn_ms = int(rec.turn_seconds * 1000)`: the same expression and unit as `cell.outcome.turn_ms` (`engine.py:718`), and the unit of `duration_ms` on the sibling row. Agent time is `Σ turn_ms` over the rows present, never stored. The driver's in-memory `TurnRecord.turn_seconds` float is unchanged. W1-J Amendment 1 (section 15 there) holds the reasoning and T-ENG-11 restated in integer ms. No `ledger.py` edit. This is the shape of R6.9c: a design type that the canonical form refuses (register class CANON-A). **The type rule for every row in this section and every W1 record contract (CANON-A control):** a value is a str, an int, None, a list or a dict; a duration is an int in ms, named `_ms`; a flag is the int 1 or absent (R6.9c); a non-integer catalog measure is a decimal string at its catalog scale (ADR-0006). Syncing the field name in ADR-0006 Amendment 5 and ADR-0015 is sent to the Owner as a decision request (c35).
+
+**Rev 6.12 (R6.12b): X-J1b writes the one `lifecycle.TABLE` entry for `cell.turn_ended`.** The engine calls `lifecycle.check_writer` before every `events` append (`engine.py:226`, `:240`), so an unmapped kind cannot be written at all. The entry is W1-J section 4.6's `TurnEnd` row in its non-turn-keyed form (`after=("cell.prompt_sent",)`, rule `turn_ended follows its prompt_sent`), with one seeded case in `tests/test_lifecycle_conformance.py`. Everything else in `lifecycle.py` (turn-keyed replay, the other three rules, the snapshot entry) stays X-J1d's. Section 13's `lifecycle.py` cell is unchanged: X-J1 owns E2, and the split between its turns is the brief's (`x-j1.md`).
 
 **Rev 6.9 (R6.9c): `identity_recheck` is an integer.** The ledger's canonical form refuses a bool (`ledger.py:43`, read on `c2d8874b`), so W1-D's `identity_recheck: true` on `cell.launch_intent` is written `identity_recheck: 1` when the 50 ms re-read changed the result, and is absent otherwise (never `0`, never `false`). No `ledger.py` edit. Owner X-D2 (E1).
 
@@ -1046,6 +1052,28 @@ C-W0 of `docs/coordination/coordination-e2e4.md` (serial spine row 2; order of o
 | X-PACK | §13 rev 6.11 row X-PACK |
 | X-CV | §6 R6.11a (the readers its convergence proof exercises); F-1's loop-back fix, if it has landed, joins before the final records |
 | the loop-back fix for F-1 (if dispatched) | §6 R6.11a in full; `campaign.py:1246-1250`; R-106 conditions 1 and 7 |
+
+## Revision 6.12 change table (id → section)
+
+Coordinator hand-back session #35, base `3f887a0c`; the integration head read is `8998d092` (`integrate/e2e4-18`). **Refused:** a finite-float exception in `ledger._check` (it changes ADR-0006, so it is the Owner's; not requested). **Decision request:** the field-name sync in ADR-0006 Amendment 5 and ADR-0015, sent to the Owner (c35 names the id). Its fallback is that this revision governs.
+
+| id | from | change | section |
+| --- | --- | --- | --- |
+| R6.12a | X-J1b `req-01M46MGW3NFZJDWWJHCXKG69BP` (conflict 1); ADR-0006 *Physical form and integrity* | `cell.turn_ended.turn_seconds` (float) becomes `turn_ms` (int, `int(rec.turn_seconds * 1000)`); agent time is `Σ turn_ms`; T-ENG-11 is restated in integer ms; W1-J Amendment 1 | 12 |
+| R6.12b | X-J1b `req-01M46MGW3NFZJDWWJHCXKG69BP` (conflict 2) | X-J1b writes the one `lifecycle.TABLE` entry `cell.turn_ended` (`TurnEnd`, after `cell.prompt_sent`) and its seeded case; the rest of `lifecycle.py` stays X-J1d's | 12 |
+| R6.12c | the CANON-A sweep (Coordinator #35) | the discrimination record's `probe.<role>.hosts_ready` is an int, the count of `end: ready` lines (`readiness.py:157`, `:444`), not `true` | 6 |
+
+**The file's hash changes with this revision.** A compiled prompt that names rev 6.11 is stale only for the rows above: X-J1 (J1b's continuation is compiled against rev 6.12; J1c, J1d and J1e compile after it), X-A3c and X-J2c (they read `turn_ended`), and X-RDY (it reads `hosts_ready`). Rev 6.11 stays the base check for every other track.
+
+### Who re-reads what (rev 6.12)
+
+| track | re-read |
+| --- | --- |
+| X-J1 (J1b continuation, J1c, J1d, J1e) | §12 R6.12a and R6.12b; W1-J section 15 (Amendment 1) |
+| X-J2 (J2c) | §12 R6.12a: the engine leg reads `turn_ms`, never `turn_seconds` |
+| X-A3 (A3c) | §12 R6.12a: report agent time is `Σ turn_ms` (W1-J section 7 row 12) |
+| X-K1 | §12 R6.12a (resume reads `turn_ended` rows); R6.12b (the TABLE entry J1d makes turn-keyed before K1's resume rules) |
+| X-RDY | §6 R6.12c (`hosts_ready` is an int count) |
 
 ## Review disposition
 
