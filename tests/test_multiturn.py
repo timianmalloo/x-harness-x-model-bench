@@ -18,7 +18,7 @@ from pathlib import Path
 import pytest
 from archived_runs import GOOD, make_root, make_run
 from test_cli import _pack_repo
-from test_driver import _spawn
+from test_driver import ACP_FIX, REPLAY, _derive, _spawn
 from test_engine import FakeLauncher, _build_workspace, _events, _plan
 from test_lifecycle_conformance import GOOD as LIF_GOOD
 from test_plan import _matrix2, _plan2
@@ -32,6 +32,7 @@ from harness_bench import (
     ledger,
     lifecycle,
     plan,
+    procs,
     status,
     views,
 )
@@ -681,3 +682,33 @@ def test_t_wire_1_real_cli_plan_and_run_carries_turns(tmp_path, monkeypatch):
     assert archive.snapshot_folder(runs / "wire", cid, 1).is_dir(), "CLI must carry turns into snapshotting"
     prompts = [json.loads(s) for s in (tmp_path / f"wire-{cid}.jsonl").read_text(encoding="utf-8").splitlines()]
     assert [r["n"] for r in prompts if r["kind"] == "session/prompt"] == [1, 2]
+
+
+def _open_over(cell, tmp_path):
+    try:
+        return driver.open_session(cell, tmp_path, None, 10)
+    finally:
+        cell.terminate_and_confirm(timeout=10)
+        cell.close()
+
+
+def test_k2_open_session_without_an_update_reports_last_update_null(tmp_path):  # driver.json: default 0.0
+    session = _open_over(_spawn(tmp_path), tmp_path)
+    assert session is not None
+    assert session.result.updates == 0 and session.result.last_update_seconds is None  # not recorded, never 0.0
+
+
+def test_k2_a_handshake_time_update_is_counted_but_not_timed(tmp_path):  # driver.json: M2 handshake update = 0.0
+    update = {"jsonrpc": "2.0", "method": "session/update",
+              "params": {"sessionId": "s", "update": {"sessionUpdate": "available_commands_update", "availableCommands": []}}}
+
+    def one_handshake_update(msg):
+        if msg.get("method") == "session/update":
+            return None
+        return [update, msg] if msg.get("id") == 2 and "sessionId" in msg.get("result", {}) else msg
+
+    derived = _derive(ACP_FIX / "recordings" / "claude-code-x1.jsonl", tmp_path, one_handshake_update)
+    env = dict(os.environ, REPLAY_ACP=json.dumps({"recording": str(derived)}))
+    session = _open_over(procs.spawn([sys.executable, str(REPLAY)], cwd=str(tmp_path), env=env), tmp_path)
+    assert session is not None
+    assert session.result.updates == 1 and session.result.last_update_seconds is None
