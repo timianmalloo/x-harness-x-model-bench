@@ -38,6 +38,7 @@ import yaml
 from harness_bench import (
     atomic,
     config,
+    gates,
     gitsafe,
     identity,
     ledger,
@@ -45,6 +46,7 @@ from harness_bench import (
     plan,
     readiness,
     status,
+    views,
 )
 from harness_bench import power as power_model
 from harness_bench.errors import BenchError
@@ -1235,3 +1237,26 @@ def abandon(root: Path, campaign_id: str, reason: str) -> str:
             raise BenchError("HB-CMP-002", f'campaign "{campaign_id}" is concluded; nothing to abandon. Start another campaign for a new question.')
         _append(s, "abandoned", reason=reason)
         return f'abandoned campaign "{campaign_id}"'
+
+
+# --- C3a commands: pilot attach, pilot pass, admit, register; the content reader -------------------------------------------
+
+def content(root: Path, campaign_id: str, folder: str, digest: str) -> dict:
+    """The one reader of `bench/campaigns/<id>/<folder>/<digest>.json` (`identity`, `prereg` or `power`)."""
+    return {}
+
+
+def pilot_attach(root: Path, campaign_id: str, run_id: str) -> str:
+    return ""
+
+
+def pilot_pass(root: Path, campaign_id: str, run_id: str, grading_id: str | None = None) -> str:
+    return ""
+
+
+def admit(root: Path, campaign_id: str) -> str:
+    return ""
+
+
+def register(root: Path, campaign_id: str, prereg_file: Path, confirm: str | None = None) -> str:
+    return ""

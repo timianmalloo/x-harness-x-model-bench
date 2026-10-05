@@ -15,7 +15,7 @@ import json
 import logging
 import re
 import sys
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -87,6 +87,11 @@ def normal(value, scale: int | None):
             raise ValueError(f"{value!r} is not {{na: <reason>}}")
         return ("na", value["na"])
     return prop.at_scale(value, scale)
+
+
+def expected_na(root: Path, tasks: Iterable[str]) -> Mapping[str, frozenset[str]]:
+    """Per task, the metric ids whose `expected.reference` is `{na: <reason>}` (X-C's `pilot pass` hands it to `gates.pilot`)."""
+    return {}
 
 
 def show(value) -> str:
