@@ -16,7 +16,15 @@ from harness_bench.grade import CellInput, Score, _changes
 if TYPE_CHECKING:
     from harness_bench.grade.property import GradeContext
 
-__all__ = ["grade", "unresolved"]
+__all__ = ["ResolverError", "grade", "unresolved"]
+
+
+class ResolverError(Exception):
+    """Raised when vendored API static resolution fails (syntax error or child resolver failure)."""
+
+    def __init__(self, reason: str) -> None:
+        super().__init__(reason)
+        self.reason = reason
 
 
 def unresolved(
