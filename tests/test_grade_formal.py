@@ -638,3 +638,137 @@ def test_validate_test_ref(tmp_path, ref, valid):
     (ws / "tests" / "test_bug.py").write_text("", encoding="utf-8")
     result = formal._validate_test_ref(ref, ws)
     assert (result is not None) is valid
+
+
+# --- scenario-7 pass_at_1 (X-G3, W1-G T-F1..T-F9) ----------------------------------------------------------------
+
+_PASS_INPUTS = ("formal_checks_clean", "statement_integrity", "model_non_vacuity")
+
+
+def _rule_task(names: tuple[str, ...] = _PASS_INPUTS) -> dict:
+    return {"formal": {"tool": "lean", "pass_rule": {"all_of": list(names)}}}
+
+
+def _rule_scores(values: dict[str, int | None]) -> dict[str, Score]:
+    return {metric_id: Score(value, None if value is not None else "na") for metric_id, value in values.items()}
+
+
+@pytest.mark.parametrize(("values", "expected", "reason"), [
+    # A fixture G2 cell whose three inputs are 1 and which has no pass_at_1 row yet (W1-G F8).
+    ({"formal_checks_clean": 1, "statement_integrity": 1, "model_non_vacuity": 1}, 1, None),
+    ({"formal_checks_clean": 0, "statement_integrity": 1, "model_non_vacuity": 1}, 0, None),
+    ({"formal_checks_clean": 0, "statement_integrity": None, "model_non_vacuity": 1}, 0, None),
+    ({"formal_checks_clean": None, "statement_integrity": 1, "model_non_vacuity": 1}, None,
+     "pass rule input not recorded: formal_checks_clean"),
+    ({"formal_checks_clean": None, "statement_integrity": None, "model_non_vacuity": None}, None,
+     "pass rule input not recorded: formal_checks_clean"),
+    # Cascade: statement_integrity 0, the other two NA. A recorded 0 decides.
+    ({"formal_checks_clean": None, "statement_integrity": 0, "model_non_vacuity": None}, 0, None),
+])
+def test_pass_rule_is_a_three_valued_and(values, expected, reason):  # T-F1
+    score = formal.pass_at_1(_rule_task(), _rule_scores(values))
+    assert (score.value, score.reason) == (expected, reason)
+
+
+def test_g2_task_yaml_declares_the_three_input_pass_rule():  # T-F2
+    rule = (_g2_real_task().get("formal") or {}).get("pass_rule") or {}
+    assert rule.get("all_of") == list(_PASS_INPUTS)
+
+
+def _g2_plan_run(tmp_path: Path, monkeypatch):
+    """One archived G2 cell whose plan version matches the copied task, toolchain forced cold."""
+    import json
+    import shutil
+
+    from archived_runs import make_root, make_run
+
+    from harness_bench import plan as plan_mod
+
+    root = make_root(tmp_path, release=False)
+    shutil.copytree(ROOT / "tasks" / "G2", root / "tasks" / "G2")
+    monkeypatch.setenv("ELAN_HOME", str(tmp_path / "no-elan"))
+    run_dir = make_run(root, tmp_path, {"g2": None})
+    plan = json.loads((run_dir / "plan.json").read_text(encoding="utf-8"))
+    version = plan_mod.task_version_hash(root / "tasks" / "G2")
+    for cell in plan["cells"]:
+        cell["task"] = "G2"
+        cell["task_version"] = version
+        cell["label"] = "G2.c.pack-off.r1"
+    plan["plan_hash"] = plan_mod.plan_hash(plan)
+    (run_dir / "plan.json").write_text(json.dumps(plan), encoding="utf-8")
+    return root, run_dir
+
+
+def test_an_unavailable_toolchain_gives_pass_at_1_na_not_zero(tmp_path, monkeypatch):  # T-F3
+    from archived_runs import pass_rows
+
+    _root, run_dir = _g2_plan_run(tmp_path, monkeypatch)
+    result = runner.run_pass(run_dir, _root)
+    rows = [row for row in pass_rows(run_dir, "scores", result.grading_id) if row["metric_id"] == "pass_at_1"]
+    assert len(rows) == 1
+    assert rows[0]["value"] is None and rows[0]["value"] != 0
+    assert rows[0]["reason"] == "pass rule input not recorded: formal_checks_clean"
+    assert rows[0]["evidence"].endswith("formal/pass_rule.json")
+    assert (run_dir / rows[0]["evidence"]).is_file()
+
+
+def test_no_pass_rule_declared_is_na_not_zero():  # T-F4
+    score = formal.pass_at_1({"formal": {"tool": "lean"}}, {"formal_checks_clean": Score(0, None)})
+    assert score.value is None and score.value != 0
+    assert score.reason == "no pass rule declared"
+
+
+def test_a_pass_rule_naming_an_unrecorded_metric_is_na_with_the_metric_named():  # T-F5
+    task = _rule_task(("not_a_formal_metric", "formal_checks_clean"))
+    score = formal.pass_at_1(task, {"formal_checks_clean": Score(1, None)})
+    assert score.value is None
+    assert score.reason == "pass rule names an unrecorded metric: not_a_formal_metric"
+
+
+def test_pass_at_1_row_equals_the_rule_over_its_sibling_rows_and_writes_its_evidence(tmp_path, monkeypatch):  # T-F6
+    import json
+
+    (tmp_path / "ledger_scores.json").write_text(
+        '{"formal_checks_clean": 0, "statement_integrity": 0, "model_non_vacuity": 0}', encoding="utf-8")
+    ws = _g2_ws(tmp_path, G2_REF / "Proofs")
+    inp = _cell_input(tmp_path, ws, _rule_task())
+    inp = dataclass_replace(inp, metrics={metric: {} for metric in (*_PASS_INPUTS, "pass_at_1")})
+    monkeypatch.setattr(formal, "statement_integrity", lambda *_a, **_k: Score(1, None))
+    monkeypatch.setattr(formal, "formal_checks_clean", lambda *_a, **_k: Score(1, None))
+    monkeypatch.setattr(formal, "_g2_model_non_vacuity", lambda *_a, **_k: Score(1, None))
+    out = formal.grade_cell(inp)
+    assert (out["pass_at_1"].value, out["pass_at_1"].reason) == (1, None)
+    evidence = tmp_path / out["pass_at_1"].evidence
+    assert evidence.name == "pass_rule.json"
+    payload = json.loads(evidence.read_text(encoding="utf-8"))
+    assert payload == {"inputs": {metric: 1 for metric in _PASS_INPUTS}, "result": 1}
+    assert "ledger_scores" not in evidence.read_text(encoding="utf-8")
+
+
+def test_changing_pass_rule_changes_the_task_version_hash(tmp_path):  # T-F7, green on arrival
+    import shutil
+
+    from harness_bench.plan import task_version_hash
+
+    left, right = tmp_path / "left", tmp_path / "right"
+    shutil.copytree(G2_REAL, left)
+    shutil.copytree(G2_REAL, right)
+    path = right / "task.yaml"
+    text = path.read_text(encoding="utf-8")
+    if "pass_rule:" in text:
+        text = text.replace("      - model_non_vacuity\n", "      - model_conformance\n", 1)
+    else:
+        text = text.replace(
+            "  seeded_bugs: 1          # a variant of the fold on which the proofs must fail\n",
+            "  seeded_bugs: 1          # a variant of the fold on which the proofs must fail\n"
+            "  pass_rule:\n    all_of:\n      - formal_checks_clean\n",
+            1)
+    path.write_text(text, encoding="utf-8")
+    assert task_version_hash(left) != task_version_hash(right)
+
+
+def test_an_unknown_metric_beats_a_recorded_zero_in_the_pass_rule_order():  # T-F9
+    task = _rule_task(("not_a_formal_metric", "formal_checks_clean"))
+    score = formal.pass_at_1(task, {"formal_checks_clean": Score(0, None)})
+    assert score.value is None
+    assert score.reason == "pass rule names an unrecorded metric: not_a_formal_metric"
