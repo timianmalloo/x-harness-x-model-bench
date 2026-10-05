@@ -26,8 +26,8 @@ from harness_bench import config, host, procs
 from harness_bench.grade import CellInput, Score, _changes, _env, correctness
 from harness_bench.plan import tree_hash
 
-__all__ = ["Classification", "Facts", "at_scale", "check_seed", "check_segment", "grade_cell", "parse_result", "run_check",
-           "score_run"]
+__all__ = ["Classification", "Facts", "at_scale", "check_seed", "check_segment", "grade_cell", "hidden_tests", "parse_result",
+           "run_check", "score_run"]
 
 MAX_RESULT_BYTES = 64 * 1024
 ACK = b"\x06"
@@ -374,6 +374,43 @@ def _tree_files(root: Path) -> list[Path]:
     return sorted(p for p in root.rglob("*") if p.is_file() or p.is_symlink())
 
 
+def _overlay_dest(root: Path, dest: str) -> Path:
+    parts = Path(dest).parts
+    if not parts or Path(dest).is_absolute() or Path(dest).drive or Path(dest).root or ".." in parts:
+        raise ValueError(f"overlay destination {dest!r} is not a relative path inside the copy")
+    return root.joinpath(*parts)
+
+
+def hidden_tests(inp: CellInput, tree: Path, label: str, overlay: Mapping[str, Path] | None = None) -> Score:
+    """The hidden-test phase of the grade (design 5.2 phase 1) on `tree`, as one `Score` (passed, or NA with the reason).
+
+    A check-less helper calls it once per tree and `label` (a case-id-shaped segment). Evidence goes to
+    `out_dir/<label>/`, the disposable copy under the work root. `overlay` maps a destination, relative to the tree, to a
+    source directory: in the grading copy the destination is deleted and the source is copied over it (the pristine
+    `vendor/<lib>` case, so the agent's edit to its own copy is invisible). `tree` itself is never touched."""
+    check_segment("hidden-tests label", label, _CASE_ID)
+    timeout = inp.plan["parameters"]["grading_step_timeout"]
+    work = (inp.work_root or inp.out_dir) / "property"
+    (inp.out_dir / label).mkdir(parents=True, exist_ok=True)
+    ws, staged = tree, None
+    if overlay:
+        staged = work / f"{label}-ws"
+        dests = {d: _overlay_dest(staged, d) for d in overlay}  # refuse every destination before any copy
+        _changes.copy_tree(tree, staged, ignore=())
+        for d, src in overlay.items():
+            if dests[d].exists():
+                _changes.remove_tree(dests[d])
+            _changes.copy_tree(Path(src), dests[d], ignore=())
+        ws = staged
+    try:
+        c = correctness.grade(ws, inp.task_dir, inp.task.get("oracle") or {}, inp.out_dir / label, inp.run_dir, timeout,
+                              work / label)
+    finally:
+        if staged is not None and staged.exists():
+            _changes.remove_tree(staged)
+    return Score(c.passed, c.reason)
+
+
 def _hidden_check(inp: CellInput, ctx: GradeContext) -> dict[str, Score]:
     spec = _load_cases(inp.task_dir)
     if not BENCH_CHECK.is_file():
@@ -382,14 +419,11 @@ def _hidden_check(inp: CellInput, ctx: GradeContext) -> dict[str, Score]:
     run = work / "check-run"
     evid = inp.out_dir / "check"
     evid.mkdir(parents=True, exist_ok=True)
-    (inp.out_dir / "tests").mkdir(parents=True, exist_ok=True)
     spans: list[dict] = []
     try:
         span = _Span("tests")
-        c = correctness.grade(inp.archive / "ws", inp.task_dir, inp.task.get("oracle") or {}, inp.out_dir / "tests",
-                              inp.run_dir, ctx.timeout, work / "tests")
+        hidden = hidden_tests(inp, inp.archive / "ws", "tests")
         spans.append(span.end())
-        hidden = Score(c.passed, c.reason)
         span = _Span("check")
         skipped = _changes.copy_tree(inp.archive / "ws", run / "deliverable", ignore=_changes.BUILD_OUTPUT)
         check_dir = run / "check"
@@ -432,10 +466,6 @@ def _hidden_check(inp: CellInput, ctx: GradeContext) -> dict[str, Score]:
                 "outcomes": outcomes}
     (inp.out_dir / "property.json").write_text(json.dumps(evidence, sort_keys=True, indent=1), encoding="utf-8")
     return scores
-
-
-def hidden_tests(inp: CellInput, tree: Path, label: str, overlay: Mapping[str, Path] | None = None) -> Score:
-    return Score(None, "stub")
 
 
 STRATEGIES: dict[str, Callable[[CellInput, GradeContext], dict[str, Score]]] = {"security": _hidden_check}
