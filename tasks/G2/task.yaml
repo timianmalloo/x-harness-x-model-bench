@@ -29,6 +29,11 @@ formal:
     - fold_replay_is_idempotent   # NFR-R1, test_T2_fold_is_idempotent_under_replay
     - retried_event_is_a_no_op    # F9, test_T15_duplicate_seq_is_idempotent
   seeded_bugs: 1          # a variant of the fold on which the proofs must fail
+  pass_rule:                      # catalog 0.7 (ADR-0019 item 3). Provenance: the three metrics are the ones whose
+    all_of:                       # failure means the proofs do not stand (formal.py module docstring); bugs_confirmed and
+      - formal_checks_clean       # bug_claim_precision are NA for G2 (grid-4: "not a bug-narrative task"), so they are not inputs.
+      - statement_integrity
+      - model_non_vacuity
 graders:
   - formal
   - drift

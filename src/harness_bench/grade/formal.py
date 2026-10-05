@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import json
 import os
 import re
 import shutil
@@ -567,9 +568,70 @@ def bug_claim_precision(inp: CellInput, timeout: float) -> Score:
 # --- scenario-7 pass_at_1 (ADR-0019 item 3; the five rows are W1-G section 4.3) ------------------------------------
 
 def pass_at_1(task: Mapping, scores: Mapping[str, Score], *, metrics: Mapping | None = None) -> Score:
-    """Three-valued pass@1 under ``formal.pass_rule``. Skeleton returns a neutral NA."""
-    del task, scores, metrics
-    return Score(None, "not implemented")
+    """Three-valued pass@1 under ``formal.pass_rule`` (W1-G section 4.3, five ordered rows).
+
+    ``metrics`` is the grader's recorded set (``inp.metrics``). When it is omitted, the scores
+    mapping itself is that set, so a name absent from ``scores`` is an unrecorded metric (order 2).
+    A name present in ``metrics`` but absent from ``scores`` is an unrecorded input (order 4).
+    """
+    rule = (task.get("formal") or {}).get("pass_rule") or {}
+    names = rule.get("all_of") if isinstance(rule, Mapping) else None
+    if not names:  # order 1
+        return Score(None, "no pass rule declared")
+    recorded = scores if metrics is None else metrics
+    unknown: str | None = None
+    values: list[tuple[str, int | Decimal | None]] = []
+    for metric_id in names:
+        if metric_id not in recorded:
+            if unknown is None:
+                unknown = str(metric_id)
+            continue
+        score = scores.get(metric_id)
+        if score is None or score.value is None:
+            values.append((metric_id, None))  # NA input stays NA, never 0
+        else:
+            values.append((metric_id, score.value))
+    if unknown is not None:  # order 2: an unrecorded metric beats a recorded 0
+        return Score(None, f"pass rule names an unrecorded metric: {unknown}")
+    if any(value == 0 for _metric_id, value in values):  # order 3: a recorded 0 decides, even beside an NA
+        return Score(0, None)
+    for metric_id, value in values:  # order 4: no 0, and an NA input
+        if value is None:
+            return Score(None, f"pass rule input not recorded: {metric_id}")
+    return Score(1, None)  # order 5
+
+
+def _pass_rule_input(item: Score | None) -> int | None:
+    if item is None or item.value is None:
+        return None
+    value = item.value
+    if isinstance(value, Decimal):
+        return int(value) if value == int(value) else None
+    return int(value)
+
+
+def _pass_rule_payload(task: Mapping, scores: Mapping[str, Score], score: Score) -> dict:
+    rule = (task.get("formal") or {}).get("pass_rule") or {}
+    names = rule.get("all_of") if isinstance(rule, Mapping) else ()
+    inputs = {str(metric_id): _pass_rule_input(scores.get(metric_id)) for metric_id in (names or ())}
+    result = score.value
+    if isinstance(result, Decimal):
+        result = int(result) if result == int(result) else None
+    return {"inputs": inputs, "result": result}
+
+
+def _write_pass_rule(inp: CellInput, payload: dict) -> str:
+    """``grading/<id>/<cell>/formal/pass_rule.json``, relative to the run directory."""
+    path = inp.out_dir / "pass_rule.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, sort_keys=True), encoding="utf-8")
+    return path.relative_to(inp.run_dir).as_posix()
+
+
+def _scores_from_ledger(inp: CellInput) -> dict[str, Score]:
+    """Dead on the production path. The FM11 mutant points ``sibling_scores`` here."""
+    raw = json.loads((inp.run_dir / "ledger_scores.json").read_text(encoding="utf-8"))
+    return {metric_id: Score(value, None if value is not None else "na") for metric_id, value in raw.items()}
 
 
 # --- the cascade (statement_integrity gates the other metrics, per task type; US-32) ------------------------------
@@ -611,5 +673,8 @@ def grade_cell(inp: CellInput) -> Mapping[str, Score]:
     if "bug_claim_precision" in inp.metrics:
         out["bug_claim_precision"] = bug_claim_precision(inp, timeout)
     if "pass_at_1" in inp.metrics:  # owner guard (R-95): on a G1 task correctness owns pass_at_1, so a key outside inp.metrics would be HB-GRD-004
-        out["pass_at_1"] = pass_at_1(inp.task, out, metrics=inp.metrics)
+        sibling_scores = out  # this call's Scores, never the ledger
+        score = pass_at_1(inp.task, sibling_scores, metrics=inp.metrics)
+        evidence = _write_pass_rule(inp, _pass_rule_payload(inp.task, sibling_scores, score))
+        out["pass_at_1"] = Score(score.value, score.reason, evidence)
     return out

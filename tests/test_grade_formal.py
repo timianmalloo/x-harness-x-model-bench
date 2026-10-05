@@ -772,3 +772,25 @@ def test_an_unknown_metric_beats_a_recorded_zero_in_the_pass_rule_order():  # T-
     score = formal.pass_at_1(task, {"formal_checks_clean": Score(0, None)})
     assert score.value is None
     assert score.reason == "pass rule names an unrecorded metric: not_a_formal_metric"
+
+
+def test_g2_reference_records_pass_at_1_one_and_sorry_records_zero(tmp_path):  # T-F8
+    """Real Lean: the reference proofs record 1; a ``sorry`` in a proof body records 0."""
+    task = _g2_real_task()
+    metrics = {metric: {} for metric in (*_PASS_INPUTS, "pass_at_1")}
+    extra = {"oracle/fold-buggy/Fold.lean": G2_REAL / "oracle" / "fold-buggy" / "Fold.lean"}
+    reference = _g2_ws(tmp_path / "reference", G2_REAL / "oracle" / "reference" / "Proofs")
+    ref_out = formal.grade_cell(dataclass_replace(
+        _cell_input(tmp_path / "reference", reference, task, extra), metrics=metrics))
+    assert (ref_out["pass_at_1"].value, ref_out["pass_at_1"].reason) == (1, None)
+    sorry_src = tmp_path / "sorry-src"
+    shutil.copytree(G2_REAL / "oracle" / "reference" / "Proofs", sorry_src)
+    statements = sorry_src / "Statements.lean"
+    needle = "    fold (events ++ events) now = fold events now := by\n"
+    text = statements.read_text(encoding="utf-8")
+    assert needle in text
+    statements.write_text(text.replace(needle, needle + "  sorry\n", 1), encoding="utf-8")
+    sorry_ws = _g2_ws(tmp_path / "sorry", sorry_src)
+    sorry_out = formal.grade_cell(dataclass_replace(
+        _cell_input(tmp_path / "sorry", sorry_ws, task, extra), metrics=metrics))
+    assert (sorry_out["pass_at_1"].value, sorry_out["pass_at_1"].reason) == (0, None)
