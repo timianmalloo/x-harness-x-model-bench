@@ -653,6 +653,27 @@ def test_s1_clauses_json_carries_payload_ids_through_grade_cell(s1_base):
             assert all(PAYLOAD_ID_CLAUSE.fullmatch(c) for c in clauses.values()), clauses
 
 
+def test_s1_check_keeps_exactly_the_four_payloads_with_their_ids():
+    """X-I5 I5-1 (operator decision 2 of 2026-10-05): one table of id -> payload, and the kept ids are the ids X-I4 measured."""
+    assert list(getattr(check_module(), "PAYLOADS", {})) == ["SKELETON"]
+
+
+def test_s1_every_variant_clause_names_a_kept_payload():
+    """X-I5 I5-1: a variant's `inj` clause is payload ids, and every id is one the check still tries."""
+    ids = set(getattr(check_module(), "PAYLOADS", {}))
+    variants = literal_table(ORACLE / "variants.py", "VARIANTS")
+    named = {i for spec in variants.values() for probe, clause in spec["clauses"].items() if probe.startswith("inj-") for i in clause.split(",")}
+    assert named == {"SKELETON"} and named <= ids, (named, ids)
+
+
+def test_s1_reference_declares_na_for_behavioural_equivalence_and_regression_count():
+    """X-I5 I5-3: read through `readiness.expected_na` (the pilot gate's reader); each reason carries the grader's own text."""
+    assert readiness.expected_na(ROOT, ["S1"])["S1"] == frozenset({"SKELETON"})
+    reference = config.load_yaml(TASK / "task.yaml")["expected"]["reference"]
+    assert reference["behavioural_equivalence"]["na"].startswith("SKELETON")
+    assert reference["regression_count"]["na"].startswith("SKELETON")
+
+
 def test_s1_a_slow_starting_reference_is_still_judged_blocked(s1_base):  # TIME-B: an import slower than the 2 s start bound, forced
     slow = "import time\ntime.sleep(2.6)\n" + reference_source()
     checked = run_check(s1_base, slow)
