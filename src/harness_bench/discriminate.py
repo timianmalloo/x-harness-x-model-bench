@@ -62,3 +62,14 @@ class SyntheticLauncher:
 def run(root: Path, task_id: str, *, runs: Path, cells_root: Path, upstream_root: Path | None = None) -> Result:
     """One discrimination trial of `task_id`. Skeleton: plans and runs nothing, writes no file."""
     return Result(outcome="skeleton")
+
+
+def record_key(root: Path, task_id: str) -> tuple[str, str]:
+    """(task version hash, engine identity hash) of the key a record of `task_id` has today. Skeleton: wrong, well-formed."""
+    return "0" * 64, "0" * 64
+
+
+def record_path(root: Path, task_id: str) -> Path:
+    """`bench/discrimination/<task>/<tv16>-<id16>-<platform>.json` for the current key. Skeleton: the wrong key."""
+    tv, ih = record_key(root, task_id)
+    return root / "bench" / "discrimination" / task_id / f"{tv[:16]}-{ih[:16]}-{sys.platform}.json"
