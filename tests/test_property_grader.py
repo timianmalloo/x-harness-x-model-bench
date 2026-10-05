@@ -436,3 +436,12 @@ def test_write_section_creates_the_file_and_refuses_a_rewrite_or_a_checked_prope
     for name in ("simplicity", "security", "nope"):  # written once; a check property owns its own record
         with pytest.raises(ValueError, match=name):
             prop.write_section(inp, name, {})
+
+
+def test_run_child_starts_the_child_through_the_grading_env_allowlist(tmp_path, monkeypatch):
+    monkeypatch.setenv("HB_CLAUDE_OAUTH_TOKEN", "secret")
+    monkeypatch.setenv("GH_TOKEN", "secret")
+    done = prop.run_child([sys.executable, "-S", "-c", "import os,sys;sys.stdout.write(','.join(sorted(os.environ)))"],
+                          tmp_path, 30)
+    names = set(done.stdout.split(","))
+    assert (done.returncode, "PATH" in names, names & {"HB_CLAUDE_OAUTH_TOKEN", "GH_TOKEN"}) == (0, True, set())

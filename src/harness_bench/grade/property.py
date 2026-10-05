@@ -487,6 +487,10 @@ def write_section(inp: CellInput, name: str, section: Mapping) -> str:
     return path.relative_to(inp.run_dir).as_posix()
 
 
+def run_child(argv: list[str], cwd: Path, timeout: float, extra_env=()) -> procs.Completed:
+    return procs.Completed(None, "", "", False, False, 0.0)
+
+
 STRATEGIES: dict[str, Callable[[CellInput, GradeContext], dict[str, Score]]] = {"security": _hidden_check}
 
 
