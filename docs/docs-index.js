@@ -3806,6 +3806,47 @@ window.DOCS_INDEX = {
       "sourceSha256": "b8b0c87af6daacf7b5a810c17d3a44712a5db00de4b323f12c4ceddd3b709dd1"
     },
     {
+      "id": "coordinator-log-c30",
+      "path": "docs/coordination/coordinator-log/c30.md",
+      "title": "Coordinator #30 hand-back (2026-10-05): the T0 compiles for E2-E4",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-05",
+      "reviewSuggested": [],
+      "summary": "Coordinator #30 ran the plan's order-of-operations row 4 on integrate/e2e4-18 at 37ec0585: J1a recompiled (Codex, 3,300 s), A3a and LGa compiled (Agy), the X-I5, X-INTF and X-PACK briefs written and compiled, X-I-S2's authoring compiled. Every compilation is dispatchable, carries the R-104 worker gate with the eight-file guard list, and names W0 rev 6.10 and the integration head.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-i5",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-intf",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-pack",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "8dd901d27c65156286721259833e51e9a39b69901620326ce3ff07f8c81f0474"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -6408,6 +6449,39 @@ window.DOCS_INDEX = {
       "sourceSha256": "1318ac08a9df14ba214162df316cf1c94c017ca095ff3061d384be7b5d368ed9"
     },
     {
+      "id": "brief-eval-x-i5",
+      "path": "docs/coordination/eval-wave2-e234/x-i5.md",
+      "title": "Brief X-I5: S1 fix - the F4 payload drop and the two NA declarations (E1 follow-on, Sonnet)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-19",
+      "reviewSuggested": [],
+      "summary": "X-I5 applies the operator's decision (2) of 2026-10-05 to S1: the check keeps payloads A0, B2, B3 and C0 and drops the other nine, expected.reference declares NA for behavioural_equivalence and regression_count, and S1 gets a new task version; the strict-xfail marker at tests/test_e1_e2e.py:327 is removed when its leg passes. Sonnet, from the integration head; the Leader then runs bench discriminate S1 and commits S1 ready with its record (Coordinator #30).",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "implements"
+        },
+        {
+          "to": "brief-eval-x-i",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "d442d01daca738cfbeb502d6ffdf3d1353873a909b680efd7f01a6454ec997c0"
+    },
+    {
       "id": "brief-eval-x-int",
       "path": "docs/coordination/eval-wave2-e1/x-int.md",
       "title": "Brief X-INT: the E1 end-to-end walking skeleton (E1 build)",
@@ -6435,6 +6509,47 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "cb95c2dcc33c12c6524a9f2e794d7d8d738bb2255f9e46c6222655032d8659e7"
+    },
+    {
+      "id": "brief-eval-x-intf",
+      "path": "docs/coordination/eval-wave2-e234/x-intf.md",
+      "title": "Brief X-INTF: X-INT's three follow-ons - run_side_check on a plan without a campaign block, the EV-18 cell id in status.text, campaign commands honour --runs (Sonnet)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-19",
+      "reviewSuggested": [],
+      "summary": "X-INTF fixes the three src/ findings X-INT recorded as strict-xfail legs: campaign.run_side_check refuses a non-measurement plan with no campaign block (HB-CMP-010, SR-E3), status.text names a blocked cell with its id and cause (EV-18), and the campaign commands read the --runs folder instead of <root>/runs. One Sonnet session, dispatched only after X-J1a joins (the status.py order); markers :471 and :591 in tests/test_e1_e2e.py are removed when their legs pass (Coordinator #30).",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "implements"
+        },
+        {
+          "to": "brief-eval-x-int",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-discriminate",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-power-verdicts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "37ea7ee5ca829e71753983c82fc11380b4e2901e27c681647256e85eb03ef787"
     },
     {
       "id": "brief-eval-x-j1",
@@ -6634,6 +6749,35 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "23ecf30121f0cc53f3350608f7c001a2f2bc8f0dfa56ebc84fce5a9fa701ab08"
+    },
+    {
+      "id": "brief-eval-x-pack",
+      "path": "docs/coordination/eval-wave2-e234/x-pack.md",
+      "title": "Brief X-PACK: Lane F - the ai-forward upstream of nine pack fixes, then /updatepack here (Claude Code Opus)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-19",
+      "reviewSuggested": [],
+      "summary": "X-PACK (Lane F) upstreams nine coordination and verify-gate fixes into ai-forward's pack sources, red first in ai-forward's own tests and proven by tools/verify-bundle.ps1, in its own worktree of C:\\\\Projects\\\\ai-forward (phase 1); after the Leader pushes ai-forward, it runs /updatepack in this repo in a second worktree and retires the Grok transport deviation (phase 2, joins P5). Claude Code Opus, session lanef-e1e4 (Coordinator #30).",
+      "tags": [],
+      "links": [
+        {
+          "to": "coordination-e2e4",
+          "rel": "implements"
+        },
+        {
+          "to": "coordination-eval-wave2-e234-briefs",
+          "rel": "implements"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "f15eecb750e068fbfabc14e5ccab41ba5cdbe05265f47f01c7655402e0da7c05"
     },
     {
       "id": "brief-eval-x-rs",
@@ -8453,5 +8597,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "b4a59a409ebca3741d9a9cf738cd8af5fe7e851d3aa3a14a63c245ab2c15feaa"
+  "graphSha256": "44f389ea35623df378b50fc5b5729580ae6feb94b869695601f5d135891da919"
 };

@@ -28,7 +28,7 @@
         "permissions": "deny",
         "mode_id": "agent-full-access"
       },
-      "deadline_seconds": 3600,
+      "deadline_seconds": 3300,
       "output_limit": 4194304,
       "evidence": [
         {
@@ -42,7 +42,7 @@
         "permissions": "observed-only"
       },
       "prompts": [
-        "al-01M41TVHN76EXTN73R66S2Q1HM"
+        "al-01M469GTXG8T4MPEYQ7PN490WY"
       ],
       "fallback": "A red-only end, a deadline or a failed served-model read: the green follow-on runs as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) in this worker's tree (R-87 Option 1); turns b..e reuse this contract with their suffix (session, branch, run_id), each with its own compilation"
     }
