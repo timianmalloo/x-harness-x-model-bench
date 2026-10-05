@@ -37,9 +37,9 @@
         "permissions": "observed-only"
       },
       "prompts": [
-        "COMPILE-OWED:docs/coordination/eval-wave2-e234/x-g3.md"
+        "al-01M46H9469WHPJQJ5PW2V0HKK4"
       ],
-      "fallback": "A red-only end, a deadline or a failed served-model read: the green follow-on runs as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) in this worker's tree (R-87 Option 1); R-92 is Grok's Owner review; run with env -u XAI_API_KEY"
+      "fallback": "R-103: the Leader reads the first response's served model with tools/grok_served_model.py --first --wait 120; not grok-4.7* means kill and retry once. A launch or transport failure before the first prompt (XPORT-A, now seen in the initialize phase): the follow-on runs as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) in this worker's tree under the same session x-g3-e1e4, because the runner refuses a second attempt under the same id; with no commit landed it does the whole turn from the compile. A second drift, a red-only end, a deadline or a failed served-model read: the green follow-on runs as that Sonnet sub-agent in this worker's tree (R-87 Option 1). R-92 is Grok's Owner review. Run with env -u XAI_API_KEY, and read the run's fingerprint in that same environment (FPR-A)"
     }
   ]
 }
