@@ -3945,6 +3945,55 @@ window.DOCS_INDEX = {
       "sourceSha256": "b31fe9eb302b96b0f7a38868f407c9a59f955f50e20a9434496bcdc1d796026a"
     },
     {
+      "id": "coordinator-log-c33",
+      "path": "docs/coordination/coordinator-log/c33.md",
+      "title": "Coordinator #33 hand-back (2026-10-05): the X-G3 and X-J1b compiles, the register",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-05",
+      "reviewSuggested": [],
+      "summary": "Coordinator #33, on base bcd35532 (integrate/e2e4-18 after the LGa and Coordinator #32 joins), compiled X-G3 (Grok, on X-A3a's landed names, with an XPORT-A fallback before the first prompt) and X-J1b (Codex, K4(2)-K4(4) on J1a's landed names, with #32's snapshot_cell conditions). Both compiles carry the same session string as their contracts (IDN-A). It completed X-G3's owned paths from W1-G, ruled the 0.7 release label the Leader's, and registered FPR-A plus instances of XPORT-A, LOCK-A and GATE-A.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-g3",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-j1",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-catalog-0-7",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "7b94008b6236d65dafbeeb8526f12bff06d57904bf9f0c467001367aa233e282"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -3971,7 +4020,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2f4ea1f127e01387aaa2bf0b1c5f5d3ecb706f29eaa792fbcf021e945d9c43fd"
+      "sourceSha256": "04ab4ef817a37fbede5e44ac80786cdfaad770a9a0db9d64d182aa21ef0ed7a6"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -6428,7 +6477,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "c4e4b5c33a924ede96d6f0eeb2fb2c28f83eb31197939d7eb1a154d07d9da136"
+      "sourceSha256": "00afb4033367e5e80644c6873773205f7490d23f1bf3e1a5706b30bd2ccc44a3"
     },
     {
       "id": "brief-eval-x-h1",
@@ -8695,5 +8744,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "2706c8f89b265c53d6bfe8b3ac4ee45a57e4b90c28a08fcbf8d344e23169ad70"
+  "graphSha256": "f8b025a5d9e124170d96334473cbf1ad50b2997be2d082b502315c943b633b25"
 };
