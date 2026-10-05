@@ -286,7 +286,7 @@ class Engine:
     def _after_append(self, row: dict) -> None:
         """Engine-thread bookkeeping of a durable row, done before its worker is released."""
         kind = row.get("kind")
-        if kind == "cell.prompt_sent":
+        if kind == "cell.prompt_sent" and lifecycle.is_cell_start(row):
             a = self.active.get(row["cell_id"])
             if a:
                 a.prompt_mono = self.clock()

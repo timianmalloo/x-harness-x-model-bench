@@ -88,6 +88,7 @@ def row(events, kind, turn=None):
     return next((r for r in events if r["kind"] == kind and (turn is None or r.get("turn", 1) == turn)), {})
 
 
+@pytest.mark.xfail(strict=True, reason="J1d: full replay after J1b loop and J1c snapshots")
 def test_t_eng_1_order_snapshot_and_one_session(tmp_path):
     _, events, cfg, log, _ = run_cell(tmp_path)
     kinds = [r["kind"] for r in events if r["kind"] in {"cell.prompt_sent", "cell.turn_ended", "cell.turn_snapshot_archived"}]
@@ -128,6 +129,7 @@ def test_t_eng_2_one_budget_across_turns(tmp_path):
 
 
 @pytest.mark.parametrize("source", ["acp_turn", "native_record"])
+@pytest.mark.xfail(strict=True, reason="J1b: sum usage across returned turns")
 def test_t_eng_4_usage_sums_every_turn(tmp_path, source):
     per_turn = [{"usage": usage(5), "native_usage": {"input_tokens": 5, "output_tokens": 0}},
                 {"usage": usage(7), "native_usage": {"input_tokens": 7, "output_tokens": 0}}]
@@ -139,6 +141,7 @@ def test_t_eng_4_usage_sums_every_turn(tmp_path, source):
     assert not [f for f in views.verify(cfg.run_dir) if f.code == "HB-VAL-005"]
 
 
+@pytest.mark.xfail(strict=True, reason="J1c: snapshot precedes turn-two suspend")
 def test_t_eng_5_suspend_during_turn_two_keeps_snapshot(tmp_path):
     def suspend(e, r, clock):
         if r["kind"] == "cell.prompt_sent" and r.get("turn") == 2:
@@ -149,6 +152,7 @@ def test_t_eng_5_suspend_during_turn_two_keeps_snapshot(tmp_path):
     assert next(iter(summary.outcomes.values()))["cause"] == "host_suspended"
 
 
+@pytest.mark.xfail(strict=True, reason="J1b: only end_turn continues; record stopping turns")
 def test_t_eng_6_only_end_turn_continues(tmp_path):
     _, events, _, _, _ = run_cell(tmp_path, [{"stop_reason": "max_tokens"}, {"stop_reason": "end_turn"}])
     assert not row(events, "cell.prompt_sent", 2), "max_tokens must not send turn 2"
@@ -157,6 +161,7 @@ def test_t_eng_6_only_end_turn_continues(tmp_path):
     assert not row(events, "cell.turn_snapshot_archived")
 
 
+@pytest.mark.xfail(strict=True, reason="J1c: cancel-aware snapshot step")
 def test_t_eng_7_budget_cancel_during_copy_never_sends_next(tmp_path, monkeypatch):
     def cancelled_copy(self, a, cell, cell_dir, turn, launcher, cp):
         self._kill(a, "timeout")
@@ -173,6 +178,7 @@ def test_t_eng_7_budget_cancel_during_copy_never_sends_next(tmp_path, monkeypatc
 
 @pytest.mark.parametrize(("config", "cause"), [({"mode": "eof_mid_turn"}, "adapter_crash"),
                                                 ({"prompt_error": "not authenticated"}, "blocked_auth")])
+@pytest.mark.xfail(strict=True, reason="J1c: preserve snapshot on turn-two error")
 def test_t_eng_8_9_failed_second_turn_keeps_snapshot(tmp_path, config, cause):
     summary, events, _, _, _ = run_cell(tmp_path, [{}, config])
     assert row(events, "cell.turn_snapshot_archived", 1), "a failed second turn must retain snapshot 1"
@@ -180,6 +186,7 @@ def test_t_eng_8_9_failed_second_turn_keeps_snapshot(tmp_path, config, cause):
     assert next(iter(summary.outcomes.values()))["cause"] == cause
 
 
+@pytest.mark.xfail(strict=True, reason="J1b: write returned turn before cancel decision")
 def test_t_eng_10_returned_turn_is_recorded_before_cancel(tmp_path, monkeypatch):
     observed = {}
     def cancel(e, r, clock):
@@ -205,6 +212,7 @@ def test_t_eng_10_returned_turn_is_recorded_before_cancel(tmp_path, monkeypatch)
     assert not row(events, "cell.prompt_sent", 2)
 
 
+@pytest.mark.xfail(strict=True, reason="J1b: per-turn records carry total agent time")
 def test_t_eng_11_outcome_last_turn_and_total_agent_time(tmp_path):
     summary, events, _, _, _ = run_cell(tmp_path)
     ended = [r for r in events if r["kind"] == "cell.turn_ended"]
@@ -213,6 +221,7 @@ def test_t_eng_11_outcome_last_turn_and_total_agent_time(tmp_path):
     assert next(iter(summary.outcomes.values()))["turn_ms"] == int(ended[-1]["turn_seconds"] * 1000)
 
 
+@pytest.mark.xfail(strict=True, reason="J1b: one handshake per session")
 def test_t_drv_1_one_handshake_for_two_prompts(tmp_path):
     log = tmp_path / "prompts.jsonl"
     cp = _spawn(tmp_path, prompts_log=str(log))
@@ -233,6 +242,7 @@ def test_t_drv_1_one_handshake_for_two_prompts(tmp_path):
         cp.close()
 
 
+@pytest.mark.xfail(strict=True, reason="J1b: idempotent Session.close")
 def test_t_drv_2_close_is_idempotent_and_closed_send_has_cause(tmp_path):
     cp = _spawn(tmp_path)
     try:
@@ -274,6 +284,7 @@ def make_cell(tmp_path):
     return cell
 
 
+@pytest.mark.xfail(strict=True, reason="J1c: publish_dir and failed-copy temp cleanup")
 def test_t_snap_1_failed_copy_never_publishes_final(tmp_path, monkeypatch):
     cell = make_cell(tmp_path)
     dest = tmp_path / "run/archive/c"
@@ -295,6 +306,7 @@ def test_t_snap_1_failed_copy_never_publishes_final(tmp_path, monkeypatch):
     assert archive.snapshot_cell(cell, dest, 1, {".credentials.json"}).folder.is_dir()
 
 
+@pytest.mark.xfail(strict=True, reason="J1c: verify and refuse planted snapshots")
 def test_t_snap_2_planted_snapshot_is_refused_without_merge(tmp_path):
     cell = make_cell(tmp_path)
     dest = tmp_path / "run/archive/c"
@@ -309,6 +321,7 @@ def test_t_snap_2_planted_snapshot_is_refused_without_merge(tmp_path):
     assert (dest / "turn-1/stray").read_text(encoding="utf-8") == "keep"
 
 
+@pytest.mark.xfail(strict=True, reason="J1c: append only missing rows; compare present rows")
 def test_t_snap_3_only_missing_rows_are_returned_and_conflicts_use_folder_code(tmp_path):
     (tmp_path / "ws").mkdir()
     (tmp_path / "ws/a").write_bytes(b"a")
@@ -325,6 +338,7 @@ def test_t_snap_3_only_missing_rows_are_returned_and_conflicts_use_folder_code(t
         assert raised == code
 
 
+@pytest.mark.xfail(strict=True, reason="J1c: ws-only snapshot with credential exclusions")
 def test_t_snap_4_snapshot_copies_ws_only_and_excludes_credentials(tmp_path):
     result = archive.snapshot_cell(make_cell(tmp_path), tmp_path / "run/archive/c", 1, {".credentials.json"})
     assert not (result.folder / "home").exists(), "snapshots must exclude home"
@@ -333,6 +347,7 @@ def test_t_snap_4_snapshot_copies_ws_only_and_excludes_credentials(tmp_path):
 
 
 @pytest.mark.parametrize("option", ["helper", "daemon_after_update"])
+@pytest.mark.xfail(strict=True, reason="J1c: first-update baseline and snapshot process gauges")
 def test_t_snap_5_baseline_measured_at_first_update(tmp_path, option):
     _, events, _, _, _ = run_cell(tmp_path, [{option: True}, {}])
     ended = row(events, "cell.turn_ended", 1)
@@ -346,6 +361,7 @@ def test_t_snap_5_baseline_measured_at_first_update(tmp_path, option):
     assert "job_active_after" in snapshot and "copy_retries" in snapshot
 
 
+@pytest.mark.xfail(strict=True, reason="J1c: bounded source-read retries then Cause.archive")
 def test_t_snap_6_locked_source_exhausts_bounded_retry(tmp_path, monkeypatch):
     calls = []
 
@@ -360,6 +376,7 @@ def test_t_snap_6_locked_source_exhausts_bounded_retry(tmp_path, monkeypatch):
     assert not row(events, "cell.prompt_sent", 2)
 
 
+@pytest.mark.xfail(strict=True, reason="J1c: same-attempt snapshot row recovery")
 def test_t_snap_3_engine_completes_partial_snapshot_rows_on_retry(tmp_path, monkeypatch):
     record = engine.Engine.record
     appended = []
@@ -381,6 +398,7 @@ def test_t_snap_3_engine_completes_partial_snapshot_rows_on_retry(tmp_path, monk
     assert not [f for f in views.verify(cfg.run_dir) if f.level == "error"]
 
 
+@pytest.mark.xfail(strict=True, reason="J1c: snapshot links recorded without following")
 def test_t_snap_7_link_is_a_row_never_a_copy(tmp_path):
     cell = make_cell(tmp_path)
     sentinel = tmp_path / "outside"
@@ -418,12 +436,14 @@ def snapshot_run(tmp_path, event=True, duplicate=True):
     return run_dir, folder, files
 
 
+@pytest.mark.xfail(strict=True, reason="J1d: snapshot-aware archive_files key")
 def test_t_ver_1_snapshot_and_final_may_share_path(tmp_path):
     run_dir, _, _ = snapshot_run(tmp_path)
     assert views.verify(run_dir) == []
 
 
 @pytest.mark.parametrize("damage", ["file", "hash", "files", "bytes", "empty"])
+@pytest.mark.xfail(strict=True, reason="J1d: verify snapshot bytes, hash, counts and presence")
 def test_t_ver_2_snapshot_corruption_is_hb_led_008(tmp_path, damage):
     run_dir, folder, _ = snapshot_run(tmp_path, event=False, duplicate=False)
     if damage == "file":
@@ -443,6 +463,7 @@ def test_t_ver_2_snapshot_corruption_is_hb_led_008(tmp_path, damage):
     assert "HB-LED-008" in {f.code for f in findings}, findings
 
 
+@pytest.mark.xfail(strict=True, reason="J1d: filter final archive rows through snapshot_of")
 def test_t_ver_4_final_hash_ignores_snapshot_rows(tmp_path):
     run_dir, _, _ = snapshot_run(tmp_path)
     findings = views.verify(run_dir)
@@ -457,6 +478,7 @@ def test_t_ver_5_final_writer_omits_snapshot(tmp_path):
     assert archive.archive_hash(fixed) == "1d36b04e8c1076dce870825ba8ce33da50915674573f17129bbc7f42e4454b89"
 
 
+@pytest.mark.xfail(strict=True, reason="J1d: snapshots committed by events, not rows")
 def test_t_ver_6_live_snapshot_rows_without_event_are_ignored(tmp_path):
     run_dir, _, _ = snapshot_run(tmp_path, event=False)
     assert views.verify(run_dir) == []
@@ -486,6 +508,7 @@ def turn_row(kind, n, **fields):
 
 
 @pytest.mark.parametrize("count", [1, 2])
+@pytest.mark.xfail(strict=True, reason="J1d: turn-keyed lifecycle replay")
 def test_t_lif_1_valid_turn_streams(count):
     prefix = LIF_GOOD[:5]
     turns = [turn_row("cell.prompt_sent", 1), turn_row("cell.turn_ended", 1, stop_reason="end_turn", next="snapshot" if count == 2 else "final")]
@@ -501,13 +524,18 @@ def test_t_lif_1_valid_turn_streams(count):
     ([turn_row("cell.prompt_sent", 1), turn_row("cell.turn_snapshot_archived", 1)], "SnapshotAfterTurnEnd"),
     ([turn_row("cell.prompt_sent", 1), turn_row("cell.turn_ended", 2)], "turn_ended follows its prompt_sent"),
 ])
+@pytest.mark.xfail(strict=True, reason="J1d: named per-turn lifecycle rules")
 def test_t_lif_2_each_rule_names_its_own_violation(tail, rule):
     error = replay_error(LIF_GOOD[:5] + tail)
     assert error is not None and rule in error, error
 
 
-@pytest.mark.parametrize(("waiting", "code", "valid"), [(False, "HB-CELL-119", False), (True, "HB-CELL-118", False),
-                                                         (False, "HB-CELL-118", True), (True, "HB-CELL-119", True)])
+@pytest.mark.parametrize(("waiting", "code", "valid"), [
+    pytest.param(False, "HB-CELL-119", False, marks=pytest.mark.xfail(strict=True, reason="J1d: CrashedTurnPredicate rejects 119 mid-turn")),
+    pytest.param(True, "HB-CELL-118", False, marks=pytest.mark.xfail(strict=True, reason="J1d: CrashedTurnPredicate rejects 118 between turns")),
+    (False, "HB-CELL-118", True),  # green on arrival; never fake a red
+    pytest.param(True, "HB-CELL-119", True, marks=pytest.mark.xfail(strict=True, reason="J1d: accept between-turns snapshot stream")),
+])
 def test_t_lif_3_crashed_turn_predicate(waiting, code, valid):
     turns = [turn_row("cell.prompt_sent", 1)]
     if waiting:
@@ -527,6 +555,7 @@ def task_root(tmp_path):
     return root, turns
 
 
+@pytest.mark.xfail(strict=True, reason="J1d: normalized turn hashes checked on confirmed plan load")
 def test_t_plan_1_turn_text_hash_is_normalized_and_confirmed(tmp_path):
     root, _ = task_root(tmp_path)
     body = _plan2(tmp_path, root=root)
@@ -545,6 +574,7 @@ def test_t_plan_1_turn_text_hash_is_normalized_and_confirmed(tmp_path):
     assert caught == "HB-LED-002", "a rehashed plan must still validate its embedded turn hash"
 
 
+@pytest.mark.xfail(strict=True, reason="J1d: at most one extra turn")
 def test_t_plan_2_more_than_one_extra_turn_is_refused(tmp_path):
     root, turns = task_root(tmp_path)
     (turns / "3.md").write_text("third", encoding="utf-8")
@@ -579,6 +609,7 @@ def test_t_status_1_first_prompt_matches_engine_budget_clock(tmp_path):
     assert observed.killing
 
 
+@pytest.mark.xfail(strict=True, reason="J1d: end-to-end CLI wiring after J1b/J1c")
 def test_t_wire_1_real_cli_plan_and_run_carries_turns(tmp_path, monkeypatch):
     root, _ = task_root(tmp_path)
     (root / "bench/task-freeze.yaml").unlink(missing_ok=True)

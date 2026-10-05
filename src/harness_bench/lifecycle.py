@@ -99,6 +99,11 @@ class ConformanceError(ValueError):
     pass
 
 
+def is_cell_start(row: dict) -> bool:
+    """The first prompt starts the cell clock; legacy rows have turn 1."""
+    return row.get("turn", 1) == 1
+
+
 def check_writer(kind: str | None, writer: str) -> None:
     """Refuse a transition the table does not give this writer (the engine calls it before every events append)."""
     t = TABLE.get(kind or "")
