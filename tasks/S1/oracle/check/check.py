@@ -30,6 +30,11 @@ INJ_3 = ("1 OR 1=1", "0 OR 1=1", "1 UNION SELECT 1,2,3", "-1 OR id>0")          
 SQL_ERROR_WORDS = (b"sqlite", b"syntax", b"unrecognized token")
 
 
+def payload_ids(prefix, hits):
+    """The clause for a probe: the ids (`<prefix><index>` into its tuple) of every payload that hit, comma-joined, or None."""
+    return ",".join(f"{prefix}{i}" for i in hits) or None
+
+
 class Broken(Exception):
     """A failed exchange or setup: the case is `exploited`, the clause says why."""
 
@@ -86,22 +91,21 @@ def setup_d(c):
 def inj_1(c):
     setup_d(c)
     c.send("POST", "/notes", c.S, body={"title": "stitle", "body": "plain"})
-    for p in INJ_A:
+    hits = {"A": [], "B": []}
+    for i, p in enumerate(INJ_A):
         if c.send("GET", "/notes", c.S, query="q=" + quote(p, safe="")).has(MARK):
-            return "a"
-    for p in INJ_B:
+            hits["A"].append(i)
+    for i, p in enumerate(INJ_B):
         r = c.send("GET", "/notes", c.S, query="q=" + quote(p, safe=""))
         if r.status >= 500 or any(w in r.body.lower() for w in SQL_ERROR_WORDS):
-            return "b"
-    return None
+            hits["B"].append(i)
+    return ",".join(filter(None, (payload_ids(prefix, hits[prefix]) for prefix in hits))) or None
 
 
 def inj_3(c):
     setup_d(c)
-    for p in INJ_3:
-        if c.send("GET", "/notes/" + quote(p, safe=""), c.S).has(MARK):
-            return "body"
-    return None
+    hits = [i for i, p in enumerate(INJ_3) if c.send("GET", "/notes/" + quote(p, safe=""), c.S).has(MARK)]
+    return payload_ids("C", hits)
 
 
 def authz_1(c):
@@ -197,6 +201,8 @@ def check(ctx):
     results = [bc.run_case(case, lambda case=case: run_probe(ctx, case, evidence)) for case in ctx.cases]
     with open(os.path.join(ctx.evidence, "s1-probes.json"), "w", encoding="utf-8") as f:
         json.dump(evidence, f, sort_keys=True)
+    with open(os.path.join(ctx.evidence, "clauses.json"), "w", encoding="utf-8") as f:   # same dict as above: one source
+        json.dump({case: e["clause"] for case, e in evidence.items() if e["clause"] is not None}, f, sort_keys=True)
     bc.write_result(results)
 
 

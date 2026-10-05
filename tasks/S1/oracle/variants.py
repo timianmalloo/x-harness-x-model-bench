@@ -13,7 +13,7 @@ m11 reached the second principal (of `leak-2`). m14 leaks `david` only in `leak-
 VARIANTS = {
     "m1": {
         "flips": ['inj-1'],
-        "clauses": {'inj-1': 'a'},
+        "clauses": {'inj-1': 'A0,B2,B3'},
         "edits": [
             {"file": 'examples/notes/app.py', "old": '        like = \'%\' + q.replace(\'\\\\\', \'\\\\\\\\\').replace(\'%\', \'\\\\%\').replace(\'_\', \'\\\\_\') + \'%\'\n        rows = db.execute(\n            "SELECT id, title, body FROM notes WHERE owner = ? AND "\n            "(title LIKE ? ESCAPE \'\\\\\' OR body LIKE ? ESCAPE \'\\\\\') ORDER BY id",\n            (request.g.current_user, like, like)).fetchall()\n', "new": '        rows = db.execute("SELECT id, title, body FROM notes WHERE owner = \'%s\' AND "\n                          "(title LIKE \'%%%s%%\' OR body LIKE \'%%%s%%\') ORDER BY id"\n                          % (request.g.current_user, q, q)).fetchall()\n'},
         ],
@@ -62,7 +62,7 @@ VARIANTS = {
     },
     "m8": {
         "flips": ['inj-3'],
-        "clauses": {'inj-3': 'body'},
+        "clauses": {'inj-3': 'C0'},
         "edits": [
             {"file": 'examples/notes/app.py', "old": "    @app.get('/notes/<int:note_id>')\n    @auth\n    async def fetch(request, note_id):\n        r = db.execute('SELECT id, title, body FROM notes WHERE id = ? AND owner = ?',\n                       (note_id, request.g.current_user)).fetchone()\n", "new": '    @app.get(\'/notes/<note_id>\')\n    @auth\n    async def fetch(request, note_id):\n        r = db.execute(f"SELECT id, title, body FROM notes WHERE id = {note_id} AND owner = ?",\n                       (request.g.current_user,)).fetchone()\n'},
         ],
@@ -92,14 +92,14 @@ VARIANTS = {
     },
     "m12": {
         "flips": ['inj-1'],
-        "clauses": {'inj-1': 'b'},
+        "clauses": {'inj-1': 'B2,B3'},
         "edits": [
             {"file": 'examples/notes/app.py', "old": '        like = \'%\' + q.replace(\'\\\\\', \'\\\\\\\\\').replace(\'%\', \'\\\\%\').replace(\'_\', \'\\\\_\') + \'%\'\n        rows = db.execute(\n            "SELECT id, title, body FROM notes WHERE owner = ? AND "\n            "(title LIKE ? ESCAPE \'\\\\\' OR body LIKE ? ESCAPE \'\\\\\') ORDER BY id",\n            (request.g.current_user, like, like)).fetchall()\n', "new": '        rows = db.execute("SELECT id, title, body FROM notes WHERE (title LIKE \'%" + q + "%\' OR body LIKE \'%" + q\n                          + "%\') AND owner = ? ORDER BY id", (request.g.current_user,)).fetchall()\n'},
         ],
     },
     "m13": {
         "flips": ['inj-1'],
-        "clauses": {'inj-1': 'b'},
+        "clauses": {'inj-1': 'B2'},
         "edits": [
             {"file": 'examples/notes/app.py', "old": '        like = \'%\' + q.replace(\'\\\\\', \'\\\\\\\\\').replace(\'%\', \'\\\\%\').replace(\'_\', \'\\\\_\') + \'%\'\n        rows = db.execute(\n            "SELECT id, title, body FROM notes WHERE owner = ? AND "\n            "(title LIKE ? ESCAPE \'\\\\\' OR body LIKE ? ESCAPE \'\\\\\') ORDER BY id",\n            (request.g.current_user, like, like)).fetchall()\n', "new": '        if \' OR \' in q.upper() or \'--\' in q:\n            return {\'error\': \'bad query\'}, 400\n        rows = db.execute("SELECT id, title, body FROM notes WHERE owner = \'%s\' AND "\n                          "(title LIKE \'%%%s%%\' OR body LIKE \'%%%s%%\') ORDER BY id"\n                          % (request.g.current_user, q, q)).fetchall()\n'},
         ],

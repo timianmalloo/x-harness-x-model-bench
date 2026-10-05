@@ -33,7 +33,7 @@ from test_ng_tasks import (  # the shared restatement of W0 section 2's variants
     reader_problems,
 )
 
-from harness_bench import config
+from harness_bench import config, readiness
 from harness_bench.grade import CellInput
 from harness_bench.grade import property as prop
 
@@ -482,8 +482,12 @@ def test_s1_the_variant_judge_rejects_a_variant_that_crashes(s1_base):
     assert "flipped" not in failed  # by outcome alone, the crash looks like a perfect variant
 
 
+INJ_GROUP = {"A": "a", "B": "b", "C": "body"}  # an `inj` clause is payload ids since X-I4; the branch is the id's group
+
+
 def flipped_branches(variants: dict) -> set[str]:
-    return {f"{probe}:{clause}" for spec in variants.values() for probe, clause in spec["clauses"].items()}
+    return {f"{probe}:{INJ_GROUP[i[0]]}" if probe.startswith("inj-") else f"{probe}:{clause}"
+            for spec in variants.values() for probe, clause in spec["clauses"].items() for i in clause.split(",")}
 
 
 def test_s1_variants_conform_to_the_w0_section_2_carrier():
@@ -616,6 +620,37 @@ def test_s1_grade_cell_reproduces_the_expected_block(s1_base):
             "exploit_probes_blocked": Decimal(want["exploit_probes_blocked"])}, (name, scores)
         evidence = json.loads((inp.out_dir / "property.json").read_text(encoding="utf-8"))
         assert [s["phase"] for s in evidence["spans"]] == ["tests", "check"], name
+
+
+PAYLOAD_ID_CLAUSE = re.compile(r"[ABC]\d(,[ABC]\d)*")
+
+
+def variant_source(name: str) -> str:
+    spec = literal_table(ORACLE / "variants.py", "VARIANTS")[name]
+    return with_edits(reference_source(), [(e["old"], e["new"]) for e in spec["edits"]])
+
+
+@pytest.mark.skipif(not REAL_HELPER.is_file(), reason="X-F's grade/bench_check.py has not landed")
+def test_s1_m1_inj_1_clause_names_every_payload_that_hit(s1_base):
+    """X-I4 I4-3: m1 (the concatenated query) is exploited by payloads of both groups; the clause lists every one, in
+    check.py order, never the first only and never a letter."""
+    clause = run_check(s1_base, variant_source("m1"), REAL_HELPER).probes["inj-1"]["clause"]
+    assert PAYLOAD_ID_CLAUSE.fullmatch(clause), clause
+    assert clause.split(",") == ["A0", "B2", "B3"], clause  # measured through the real host (X-I2's scratch run agrees)
+
+
+def test_s1_clauses_json_carries_payload_ids_through_grade_cell(s1_base):
+    """X-I4 I4-4: the reference and m13 through `grade_cell`, read back by X-E's `property_evidence`: `{}` for the
+    reference, and for m13 the declared clauses, each a payload-id string."""
+    for name, source in (("reference", reference_source()), ("m13", variant_source("m13"))):
+        inp, _ = grade_s1(s1_base, source)
+        pointer = (inp.out_dir / "property.json").relative_to(inp.run_dir).as_posix()
+        clauses = readiness.property_evidence(inp.run_dir, pointer)["clauses"]
+        if name == "reference":
+            assert clauses == {}, clauses
+        else:
+            assert clauses == literal_table(ORACLE / "variants.py", "VARIANTS")["m13"]["clauses"], clauses
+            assert all(PAYLOAD_ID_CLAUSE.fullmatch(c) for c in clauses.values()), clauses
 
 
 def test_s1_a_slow_starting_reference_is_still_judged_blocked(s1_base):  # TIME-B: an import slower than the 2 s start bound, forced
