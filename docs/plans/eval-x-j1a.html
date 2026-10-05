@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Eval X J1A</title><style>
+:root { color-scheme: light dark; --bg:#f7f5ef; --panel:#fff; --text:#20201d;
+  --muted:#66645f; --line:#d9d5ca; --accent:#3157a4; --code:#f0eee7; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#171816; --panel:#20221f; --text:#f2f1eb; --muted:#b8b6ae;
+    --line:#3d403a; --accent:#8fb0ff; --code:#292c27; }
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text);
+  font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { width:min(920px,calc(100% - 32px)); margin:32px auto; padding:40px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+h1,h2,h3,h4,h5,h6 { line-height:1.2; margin:1.5em 0 .55em; }
+h1 { margin-top:0; font-size:2.2rem; } h2 { border-bottom:1px solid var(--line); padding-bottom:.3em; }
+a { color:var(--accent); } code { background:var(--code); padding:.12em .35em; border-radius:4px; }
+pre { overflow:auto; padding:16px; background:var(--code); border-radius:8px; }
+pre code { padding:0; } blockquote { margin:1em 0; padding:.2em 1em; color:var(--muted);
+  border-left:4px solid var(--line); }
+table { width:100%; border-collapse:collapse; margin:1em 0; display:block; overflow:auto; }
+th,td { padding:.55em .75em; border:1px solid var(--line); text-align:left; vertical-align:top; }
+th { background:var(--code); } hr { border:0; border-top:1px solid var(--line); }
+.source { color:var(--muted); font-size:.9rem; margin-bottom:2rem; }
+@media (max-width:640px) { main { width:100%; margin:0; padding:24px 18px; border:0; border-radius:0; } }
+</style></head><body><main><div class="source">Rendered from eval-x-j1a.md</div><p>Goal: deliver J1a on build/eval-x-j1a. Done when skeleton, assertion-red and budget-clock green commits pass R-104. J1b–J1e implementation, campaign ledgers, the whole suite and the Leader&#x27;s join gate are excluded. Tier T2; agent fan-out 0.</p>
+<p>Compiled contract: al-01M469GTXG8T4MPEYQ7PN490WY. Verified base a26060c1, integration head at dispatch, contains 37ec0585 and W0 revisions 6.10 and 6.11. The current coordination plan names Leader epoch 18. The runner holds the tree as x-j1a2-e1e4; the compiled commit/coord identity is x-j1a-e1e4. Reconciliation request req-01M46A8G3E08H8Q1G54Q2GHTM9 preserves the runner hold. Artifact seam: req-01M46A7GAWNG9GSM37RSE0JC9Z. This document is its fallback.</p>
+<p>The domain model and invariants are W1-J sections 2–4, unchanged: a Cell owns one prompted attempt and one budget; turns and snapshots are append-only facts. Surfaces: registry → fake agent → driver session → plan turns → engine loop → archive skeleton → lifecycle cell-start predicate → status elapsed → tests. No new module or dependency is required. Reuse and stdlib satisfy the ladder.</p>
+<table><thead><tr><th>Node</th><th>Goal / inputs</th><th>Exit / oracle</th><th>Tier</th><th>Capability</th><th>Dependencies</th></tr></thead><tbody><tr><td>G</td><td>Ground binding files and base</td><td>integration ancestry and W0 observed</td><td>T2</td><td>Reasoning</td><td>none</td></tr><tr><td>S</td><td>Registry, K1 options, K2 signatures and bugs</td><td>existing owned tests and eight guard files green; skeleton commit</td><td>T2</td><td>Reasoning</td><td>G decision</td></tr><tr><td>R</td><td>Whole K3 table</td><td>assertion failures; no missing-name or lookup failures; four required red lines in commit</td><td>T2</td><td>Reasoning</td><td>S data</td></tr><tr><td>C</td><td>Shared first-prompt clock</td><td>T-ENG-2 and T-STATUS-1 green; later tests strict xfail by turn</td><td>T2</td><td>Reasoning</td><td>R data</td></tr><tr><td>V</td><td>R-104 worker gates</td><td>each specified command&#x27;s output and exit read; failures repaired</td><td>T0</td><td>Deterministic mechanics</td><td>C data</td></tr><tr><td>H</td><td>Evidence, audit and handoff</td><td>served model from native record; named commits and residuals</td><td>T1</td><td>Reasoning</td><td>V data</td></tr></tbody></table>
+<pre><code class="language-mermaid">flowchart LR
+ G --&gt; S --&gt; R --&gt; C --&gt; V --&gt; H</code></pre>
+<p>All gates, red-first evidence, surface proof and audits are immovable floors. Naive and optimized graphs have six macro nodes, width one, and no fan-out. Work and span are equal at width one. Duration is not estimated: no comparable dispatch measurement establishes it. The optimization combines related reads and uses one shared predicate; it removes no proof. Adversarial checks: the Test Architect oracle rejects lookup-reds and vacuous fixtures; the Simplifier rejects new layers; SRE rejects unmeasured speed claims. Independent author review remains the Coordinator&#x27;s join responsibility; it is not self-cleared.</p>
+<p>Budget: 3,300 seconds this dispatch; 320 calls across five dispatches. Repair loops decrease the count of observed unresolved gate failures, floor zero; exit means every required gate passed. Budget exhaustion is a defect signal and hands remaining work to the brief&#x27;s Sonnet fallback; it never drops a gate. Re-plan at skeleton guard results and K3 failure classification. Only real data and decision edges remain. No planned test claims a result until executed.</p>
+<h2>Delivery ledger</h2>
+<p>Execution in progress. Measured durations and results will be recorded here.</p></main></body></html>

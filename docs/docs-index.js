@@ -8599,6 +8599,13 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-enterprise-production-portfolio"
     },
     {
+      "id": "surface-plans-eval-x-j1a",
+      "path": "docs/plans/eval-x-j1a.html",
+      "title": "Eval X J1A",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact."
+    },
+    {
       "id": "surface-case-study",
       "path": "docs/case-study.html",
       "title": "From Specification to Implementation: An AI-Forward Case Study",
