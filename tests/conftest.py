@@ -2,13 +2,13 @@ import functools
 import os
 import shutil
 import sys
-import tempfile
 import uuid
 from pathlib import Path
 
 import pytest
 import suite_lock
 from ambient_credentials import listed_credential_names
+from clean_parent import CLEAN_PARENT
 from slow_ring import dotnet_gate
 
 from harness_bench import archive, procs
@@ -32,7 +32,7 @@ from harness_bench import archive, procs
 # (a fake harness's real `os.getcwd()` against a path built by joining onto `base`), so `base` is
 # resolved once here to the canonical form every OS-reported path already uses, rather than resolving
 # at each comparison site.
-CLEAN_PARENT = Path("C:/Projects/bench-test") if sys.platform == "win32" else Path(tempfile.gettempdir()).resolve() / "bench-test"
+# The value itself lives in tests/clean_parent.py (importable under the full run); imported above.
 
 
 @pytest.fixture

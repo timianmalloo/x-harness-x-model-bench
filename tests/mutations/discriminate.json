@@ -111,8 +111,8 @@
  {
   "name": "the overlay path rule lets a parent segment through",
   "file": "src/harness_bench/synthetic_agent.py",
-  "find": "    if part in (\"\", \".\", \"..\"):\n",
-  "replace": "    if part in (\"\", \".\"):\n",
+  "find": "    if part in (\"\", \".\", \"..\"):\n        raise OverlayError(f\"{rel!r}: an empty, '.' or '..' segment\")\n    if \":\" in part or part.endswith((\".\", \" \")):\n",
+  "replace": "    if part in (\"\", \".\"):\n        raise OverlayError(f\"{rel!r}: an empty, '.' or '..' segment\")\n    if \":\" in part or part.endswith(\" \"):\n",
   "tests": [
    "tests/test_synthetic_agent.py::test_safe_relpath_refuses_each_unsafe_form"
   ]
