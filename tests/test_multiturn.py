@@ -146,8 +146,13 @@ def test_t_eng_2_one_budget_across_turns(tmp_path):
     assert outcome["outcome"] == "timed_out", outcome
 
 
+@pytest.mark.parametrize("snapshots", [
+    "stubbed",
+    pytest.param("real", marks=pytest.mark.xfail(
+        strict=True, reason="J1d: T-ENG-4 on real snapshots needs archive_files KEYS snapshot (req-01M472W8WPQXV1YF726CAD2794)")),
+])
 @pytest.mark.parametrize("source", ["acp_turn", "native_record"])
-def test_t_eng_4_usage_sums_every_turn(tmp_path, source):
+def test_t_eng_4_usage_sums_every_turn(tmp_path, source, snapshots):
     per_turn = [{"usage": usage(n), "native_usage": {"input_tokens": n, "output_tokens": 0,
                 "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0},
                 "acp_usage": {"inputTokens": n, "outputTokens": 0, "cachedReadTokens": 0, "cachedWriteTokens": 0}}
@@ -156,7 +161,8 @@ def test_t_eng_4_usage_sums_every_turn(tmp_path, source):
         patch.setattr(FakeLauncher, "usage_source", source)
         # req-01M472W8WPQXV1YF726CAD2794: keep J1b's real usage/view
         # cross-check independent of J1d's pending snapshot reader keys.
-        patch.setattr(engine.Engine, "_snapshot_turn", lambda *args: True)
+        if snapshots == "stubbed":
+            patch.setattr(engine.Engine, "_snapshot_turn", lambda *args: True)
         _, _, cfg, _, _ = run_cell(tmp_path, per_turn)
     rows = views.rows(cfg.run_dir, "turn_usage")
     outcome = row(_events(cfg.run_dir), "cell.outcome")
@@ -468,7 +474,12 @@ def test_t_snap_6_locked_source_exhausts_bounded_retry(tmp_path, monkeypatch):
     assert not row(events, "cell.prompt_sent", 2)
 
 
-def test_t_snap_3_engine_completes_partial_snapshot_rows_on_retry(tmp_path, monkeypatch):
+@pytest.mark.parametrize("views_verify", [
+    False,
+    pytest.param(True, marks=pytest.mark.xfail(
+        strict=True, reason="J1d: snapshot-aware views.verify after recovery (req-01M472JWD2FZH6Q2TXW5Q1W7SH)")),
+])
+def test_t_snap_3_engine_completes_partial_snapshot_rows_on_retry(tmp_path, monkeypatch, views_verify):
     record = engine.Engine.record
     appended = []
     failed = []
@@ -492,6 +503,8 @@ def test_t_snap_3_engine_completes_partial_snapshot_rows_on_retry(tmp_path, monk
     archive.verify(folder, rows)
     assert snapshot["snapshot_hash"] == archive.archive_hash(rows)
     assert (snapshot["files"], snapshot["bytes"]) == (len(rows), sum(r["size"] for r in rows))
+    if views_verify:
+        assert not [f for f in views.verify(cfg.run_dir) if f.level == "error"]
 
 
 def test_t_snap_7_link_is_a_row_never_a_copy(tmp_path):
