@@ -286,7 +286,7 @@ def _write_sidecar(rel: str, original: bytes) -> None:
         "sha256": hashlib.sha256(original).hexdigest(),
         "original_b64": base64.b64encode(original).decode("ascii"),
     }
-    path.write_text(json.dumps(payload), encoding="utf-8")
+    path.write_text(json.dumps(payload), encoding="utf-8", newline="\n")
 
 
 def _remove_sidecar() -> None:
@@ -535,4 +535,10 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
+    for _stream in (sys.stdout, sys.stderr):
+        if hasattr(_stream, "reconfigure"):
+            try:
+                _stream.reconfigure(encoding="utf-8", errors="replace")
+            except (ValueError, OSError):
+                pass
     sys.exit(main(sys.argv[1:]))

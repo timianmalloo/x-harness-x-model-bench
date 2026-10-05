@@ -160,11 +160,17 @@ def main(argv=None):
             print(json.dumps({"mode": a.mode, "error": "Windows only (macOS is out of scope)"}))
             return 2
         out = run_mode(a.mode, a.out, a.settle, a.dialog)
-        with open(os.path.join(a.out, a.mode + ".json"), "w", encoding="utf-8") as f:
+        with open(os.path.join(a.out, a.mode + ".json"), "w", encoding="utf-8", newline="\n") as f:
             json.dump(out, f)
     print(json.dumps(out))
     return 0
 
 
 if __name__ == "__main__":
+    for _stream in (sys.stdout, sys.stderr):
+        if hasattr(_stream, "reconfigure"):
+            try:
+                _stream.reconfigure(encoding="utf-8", errors="replace")
+            except (ValueError, OSError):
+                pass
     sys.exit(main())

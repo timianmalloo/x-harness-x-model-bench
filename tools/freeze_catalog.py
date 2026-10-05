@@ -44,7 +44,7 @@ def _control_root(root: Path, tmp: Path) -> Path:
         shutil.copytree(root / "bench" / "rubrics", r / "bench" / "rubrics")
     (r / "bench" / "prices.yaml").write_text(json.dumps({"schema": "bench-prices/1", "currency": "USD",
                                                          "unit": "per_million_tokens", "entries": []}),
-                                             encoding="utf-8")  # the bytes tests/archived_runs.set_prices writes
+                                             encoding="utf-8", newline="\n")  # the bytes tests/archived_runs.set_prices writes
     if runner.catalog_hash(r) != runner.catalog_hash(root):
         raise SystemExit("the control root's catalog_hash differs from the root's; nothing frozen")
     return r
@@ -182,4 +182,10 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    for _stream in (sys.stdout, sys.stderr):
+        if hasattr(_stream, "reconfigure"):
+            try:
+                _stream.reconfigure(encoding="utf-8", errors="replace")
+            except (ValueError, OSError):
+                pass
     sys.exit(main())
