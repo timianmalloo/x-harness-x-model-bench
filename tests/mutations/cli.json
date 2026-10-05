@@ -89,5 +89,23 @@
   "find": "                                  identity_check=identity.launch_check(root, p),\n",
   "replace": "",
   "tests": ["tests/test_identity.py::test_bench_run_stops_on_a_drifted_run_side_file", "tests/test_identity.py::test_bench_run_without_drift_launches"]
+ },
+ {
+  "name": "M-INTF3c the attach handler passes root/runs instead of --runs",
+  "file": "src/harness_bench/cli.py",
+  "find": "campaign.attach(Path(args.root), args.campaign_id, args.run_id, runs=Path(args.runs))",
+  "replace": "campaign.attach(Path(args.root), args.campaign_id, args.run_id, runs=Path(args.root) / \"runs\")",
+  "tests": [
+   "tests/test_cli_campaign.py::test_attach_reads_the_runs_folder_given_by_runs_not_root_runs_f3"
+  ]
+ },
+ {
+  "name": "M-INTF3d the conclude handler passes root/runs instead of --runs",
+  "file": "src/harness_bench/cli.py",
+  "find": "campaign.conclude(Path(args.root), args.campaign_id, runs=Path(args.runs))",
+  "replace": "campaign.conclude(Path(args.root), args.campaign_id, runs=Path(args.root) / \"runs\")",
+  "tests": [
+   "tests/test_cli_campaign.py::test_conclude_probes_the_attached_runs_lock_in_the_runs_folder_given_by_runs_f3"
+  ]
  }
 ]

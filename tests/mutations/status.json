@@ -82,5 +82,24 @@
   "find": "bool(STOP_CODE.fullmatch(data[\"stop_code\"]))",
   "replace": "True",
   "tests": ["tests/test_status.py::test_the_json_form_round_trips_and_is_strict"]
+ },
+ {
+  "name": "EV-18 the cell id is dropped from the cause line",
+  "file": "src/harness_bench/status.py",
+  "find": "lines.append(f\"{cell_id}: {labels.get(code, 'failed')} ({code})\")",
+  "replace": "lines.append(f\"{labels.get(code, 'failed')} ({code})\")",
+  "tests": [
+   "tests/test_status.py::test_the_summary_names_the_blocked_cell_with_its_id_and_cause_ev18",
+   "tests/test_e1_e2e.py::test_one_blocked_cell_is_named_in_the_completion_summary"
+  ]
+ },
+ {
+  "name": "EV-18 a cell's cause is not recorded in cell_causes",
+  "file": "src/harness_bench/status.py",
+  "find": "            cell_causes[cell.cell_id] = cell.code\n",
+  "replace": "",
+  "tests": [
+   "tests/test_status.py::test_status_names_each_cell_that_carries_a_cause_code_ev18"
+  ]
  }
 ]
