@@ -27,6 +27,7 @@ summary: >-
 
 **Status counts:** controlled 13 · partially-controlled 7 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`. CAUSE-A is `observed` (2026-09-30).
 **Recurrence since last review:**
+- 2026-10-04 (Coordinator #19, X-E's report): TEST-C, TEST-D and GUARD-A registered `candidate`; an EDIT-B instance (a heredoc mangled backslashes).
 - 2026-10-04 (Coordinator #15): MARK-A registered (R-104 c9; the `join.json` marker copy; control red `467400a9`, green `09261fc2`); RUN-B registered `candidate` (three Grok deadline kills on feature-sized turns); a MUT-A instance (a session end left a mutant in the primary), MUT-A moved to `partially-controlled`; two MUT-E instances (A1b, J2a retargets).
 - 2026-10-04 (operator session, after the 13:18 crash): JOB-A registered as `partially-controlled`. It is the measured cause of all five terminal deaths on 10/3–10/4, and it supersedes the cause recorded for LOAD-A and any later re-attribution of LOAD-A's instances. The 13:18 death happened with Console Host as the default terminal, and no terminal tab opened in that run.
 - 2026-10-04 (Leader, epoch 16): LOAD-A registered as `partially-controlled`. It covers three host hangs (10/3 ~18:25, 10/4 ~09:21 and ~10:41) from concurrent heavy test gates; the control is SUITE-LOCK plus the Leader's worker cap.
@@ -88,6 +89,7 @@ summary: >-
   - `2026-09-23` `tests/mutations/engine.json`: `\n` inside JSON strings became line breaks, making the JSON invalid.
   - `2026-09-23` the fixture scrubber: a `\\?\` long-path prefix lost a backslash.
   - `2026-09-23` `tests/test_grade.py`: the class recurred after it was registered. A heredoc edit script's `\\n` arrived as a line break, and the script's own `assert` stopped it before any write. The prose control had not held.
+  - `2026-10-04` X-E (`build/eval-x-e`, reported by X-E): a heredoc mangled backslashes. The file and the shell form are not recorded here. The hook blocks only a heredoc fed to a Python interpreter, so a heredoc that writes a file (`cat > f <<EOF`) is outside it: a gap to check on the next instance.
 - **Control:** `tools/heredoc_guard.py`, a `PreToolUse` hook on Bash wired in `.claude/settings.json`. It blocks (exit 2) any heredoc fed to a Python interpreter, so a program is written to a file and then run (CT27), and code is changed with the Edit tool. `tests/test_heredoc_guard.py` pins the blocked and the allowed shapes; it was observed red before the guard existed. The suite still fails at once on an unparseable module.
 - **Status:** `controlled` (2026-09-23)
 
@@ -844,6 +846,30 @@ summary: >-
   - The Leader reported all three as "red-only kills at 2,400 s". The records say only H1a r2 was red-only; G1b and B1a had committed green before the kill, and G1b's deadline was 1,200 s. The shape (a deadline shorter than the turn) holds for all three; the cost differs (a lost report vs a lost green).
 - **Sweep (owed, the Leader):** every external dispatch since Q0 (Grok, Codex, Agy): the deadline, the wall clock to the first red commit and to the green commit, and the end (killed or clean).
 - **Control (proposed):** (1) *measure* (IO1): each external dispatch's audit entry records its deadline, time to first red, time to green and its end state; (2) *size from the measurement*: a Grok turn's deadline is at least the longest measured time-to-green of a feature-sized Grok turn plus a margin, or the turn is split so each part fits; a turn that cannot fit is planned as red-only with a Sonnet green follow-on from the start (R-87 Option 1 by plan, not by accident). Rung: Leader procedure (README §5's contracts paragraph) until the runner reports the times. Upgrade trigger: one more deadline kill on a turn sized by this rule; then feature-sized turns stop going to Grok by default.
+- **Status:** `candidate`
+
+### TEST-C: a parametrised test's generated id embeds a large value and passes an OS limit (candidate)
+- **Signature:** `@pytest.mark.parametrize` over large values (a task fixture, a variant's `edits`, a file body) with no `ids=`. pytest builds each node id from the values, so one id runs past 32,767 characters. The test errors before its body runs.
+- **Why it survives:** the parameters are correct and small fixtures pass; the id grows only when a real-sized value joins the list. The error names the environment, not the parametrisation. Cause, Inferred (not measured here): pytest writes the node id into the `PYTEST_CURRENT_TEST` environment variable, and a Windows environment value is limited to 32,767 characters.
+- **Instances:**
+  - `2026-10-04` X-E (`build/eval-x-e`, reported by X-E): ids over 32,767 characters; fixed with `ids=` (for example `tests/test_discriminate.py:460`, `tests/test_readiness.py:196`, `:263`).
+- **Control (proposed):** a collection hook in `tests/conftest.py` fails any node id longer than a fixed bound (well under the OS limit), naming the test and telling the author to pass `ids=`. Rung: register entry only until built. Upgrade trigger: a second instance.
+- **Status:** `candidate`
+
+### TEST-D: a module-level test literal mutated by one parameter leaks into the next (candidate)
+- **Signature:** a test file holds a shared dict at module level (a task fixture, a record body). A parametrised test edits it in place to build its bad case. Later parameters, and later tests, read the edited dict, so they pass or fail for another case's reason.
+- **Why it survives:** each parameter passes on its own (`-k` one case); the leak shows only in collection order, and it can make a red test green.
+- **Instances:**
+  - `2026-10-04` X-E (`build/eval-x-e`, reported by X-E): a shared module-level dict mutated by a param; fixed with `copy.deepcopy` at use (for example `tests/test_readiness.py:33`).
+- **Control (proposed):** module-level test literals are read-only (`types.MappingProxyType` at top level, so an in-place edit raises), or each use takes `copy.deepcopy`. Rung: register entry only. Upgrade trigger: a second instance; then a lint test over `tests/` flags a parametrised test that assigns into a module-level name's item.
+- **Status:** `candidate`
+
+### GUARD-A: a new module trips a repo-wide guard that its brief did not name (candidate)
+- **Signature:** a track adds a module under `src/harness_bench/`. A repo-wide guard reads every module: a literal list of modules (`test_only_driver_speaks_acp` asserts `== ["driver.py"]`; `identity.PLANNED`), or a scan for a forbidden literal (G1's arm literal, the atomic-site `copytree` scan). The new module fails it. The author learns of the guard only when the full suite runs after green, and then needs a fix commit or a seam request in another track's file.
+- **Why it survives:** the guards sit in other tracks' test files; the brief lists the module's own tests and acceptance items. Each guard is right; the cost is the late discovery.
+- **Instances:**
+  - `2026-10-04` X-E (`build/eval-x-e`): `3aab1c8a` (no arm literal or `copytree` in `discriminate.py`, after green `179e3edd`); `req-01M451WM4JKQSA22RW4DAF31YE` (the `PLANNED` keys and the ACP-server exemption).
+- **Control (proposed):** the brief template for a track that adds a `src/` module names the repo-wide guard files (`tests/test_architecture.py`, `tests/test_identity.py`, `tests/test_atomic_sites.py`, the G1 ratchet tests), and the worker runs them on its skeleton commit, before red. Rung: always-loaded instruction once in the template. Upgrade trigger: a second instance; then a `tests/guards` marker the join gate runs first.
 - **Status:** `candidate`
 
 ---
