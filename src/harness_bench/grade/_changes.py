@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+import ast
+import difflib
 import hashlib
 import os
 import re
@@ -21,6 +23,7 @@ import shutil
 import tarfile
 from collections.abc import Iterable, Iterator, Mapping
 from contextlib import contextmanager
+from fnmatch import fnmatchcase
 from pathlib import Path
 
 from harness_bench import archive, gitsafe
@@ -43,8 +46,12 @@ __all__ = [
     "clear_pre_turn_cache",
     "copy_tree",
     "grading_copy",
+    "in_radius",
+    "is_test_path",
+    "line_delta",
     "pre_turn_commit",
     "pre_turn_tree",
+    "product_lines",
     "remove_tree",
     "tree_id",
 ]
@@ -218,3 +225,25 @@ def change_set(
     out.update({p: "deleted" for p in old_keys - new.keys()})
     out.update({p: "changed" for p in old_keys & new.keys() if old_digests[p] != _digest(new[p])})
     return dict(sorted(out.items()))
+
+
+def product_lines(path: Path | str) -> list[str]:
+    return ["__NEUTRAL_WRONG__"]
+
+
+def in_radius(path: str, radius: list[str]) -> bool:
+    # simplify: fnmatch, where `*` also crosses `/`, so `dir/**` is every file under dir; ceiling: the task globs are
+    # `**`, `<dir>/**` or one file; upgrade trigger: a glob with a `*` inside a path segment.
+    return any(fnmatchcase(path.replace("\\", "/"), glob) for glob in radius)
+
+
+def line_delta(old: list[str], new: list[str]) -> tuple[list[int], list[int]]:
+    return ([-1], [-1])
+
+
+TEST_BASENAMES = ("tests.py", "test.py", "conftest.py")
+
+
+def is_test_path(path: str, base_paths: frozenset[str]) -> bool:
+    return False
+

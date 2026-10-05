@@ -70,10 +70,7 @@ def _diff(old: list[bytes], new: list[bytes]) -> tuple[list[tuple[int, bytes]], 
     return added, deleted
 
 
-def _in_radius(path: str, radius: list[str]) -> bool:
-    # simplify: fnmatch, where `*` also crosses `/`, so `dir/**` is every file under dir; ceiling: the task globs are
-    # `**`, `<dir>/**` or one file; upgrade trigger: a glob with a `*` inside a path segment.
-    return any(fnmatchcase(path, glob) for glob in radius)
+_in_radius = _changes.in_radius
 
 
 def _ignored(base: Path, added: list[str], scratch: Path, timeout: float) -> set[str]:
@@ -128,7 +125,7 @@ def _measure(inp: CellInput, rules: tuple | None) -> dict[str, Score]:
                     continue
                 old = _lines(base / path) if status != "added" else []
                 added, deleted = _diff(old, _lines(work / path) if status != "deleted" else [])
-                inside = _in_radius(path, radius)
+                inside = _changes.in_radius(path, radius)
                 if not inside:
                     creep_lines += len(added) + deleted
                     creep_files += 1
