@@ -22,6 +22,7 @@ from rich.table import Table
 from harness_bench import (
     archive,
     board,
+    campaign,
     composites,
     config,
     egress,
@@ -48,6 +49,25 @@ OK, INVALID, INCOMPLETE, NOT_BUILT, INTEGRITY = 0, 1, 3, 4, 5
 
 def _exit_for(code: str) -> int:
     return INTEGRITY if code.startswith(("HB-LED", "HB-SEC")) else INVALID
+
+
+def cmd_campaign_create(args) -> int:
+    return OK
+
+
+def cmd_campaign_verify(args) -> int:
+    return OK
+
+
+def cmd_campaign_status(args) -> int:
+    return OK
+
+
+CAMPAIGN_COMMANDS = {"create": cmd_campaign_create, "verify": cmd_campaign_verify, "status": cmd_campaign_status}
+
+
+def cmd_campaign(args) -> int:
+    return CAMPAIGN_COMMANDS[args.campaign_command](args)
 
 
 def _plain() -> bool:
@@ -439,17 +459,34 @@ def build_parser() -> argparse.ArgumentParser:
         if name == "answer":
             sp.add_argument("decision_id", help="the decision's id in bench status, e.g. D1")
             sp.add_argument("option", help="one of the options bench status lists for it")
+    cm = sub.add_parser("campaign", help="the campaign record (W1-C)")
+    csub = cm.add_subparsers(dest="campaign_command", required=True)
+    for name, text in (("create", "start a campaign"), ("verify", "check a campaign's ledger, files and git witness"),
+                       ("status", "a campaign's state")):
+        sp = csub.add_parser(name, help=text)
+        sp.add_argument("campaign_id", type=_campaign_id)
+        if name == "create":
+            sp.add_argument("--question", required=True, help="the campaign's question (at most 500 printable characters)")
     tl = sub.add_parser("tools", help="the pinned harness builds")
     tl.add_argument("action", choices=["install"])
     return p
 
 
+def _campaign_id(value: str) -> str:
+    """Validated in the parser and again at `campaign.session` entry (W1-C section 5), before any path is built."""
+    return campaign.validate_id("campaign", value)
+
+
 COMMANDS = {"validate": cmd_validate, "plan": cmd_plan, "run": cmd_run, "status": cmd_status, "stop": cmd_stop, "answer": cmd_answer, "grade": cmd_grade,
-            "report": cmd_report, "verify": cmd_verify, "teardown": cmd_teardown, "tools": cmd_tools}
+            "report": cmd_report, "verify": cmd_verify, "teardown": cmd_teardown, "tools": cmd_tools, "campaign": cmd_campaign}
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+    try:
+        args = build_parser().parse_args(argv)
+    except BenchError as exc:  # an id callback of the parser refuses before any command runs
+        print(str(exc), file=sys.stderr)
+        return _exit_for(exc.code)
     args.runs = args.runs or str(Path(args.root) / "runs")
     _resolve_paths(args)
     try:
