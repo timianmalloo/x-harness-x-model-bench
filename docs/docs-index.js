@@ -4584,6 +4584,46 @@ window.DOCS_INDEX = {
       "sourceSha256": "33a78832e033e09bd28b598f304a50e097bac5d6eef1ff98d9b20110037ad4d3"
     },
     {
+      "id": "plan-eval-x-j1c",
+      "path": "docs/plans/eval-x-j1c.md",
+      "title": "X-J1c: durable snapshots, recovery and single-turn end facts",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Create-only dispatch plan and base red proof. Closing audit records actual delivery, measurements and gates; the Leader independently reviews and joins.",
+      "tags": [
+        "evaluation",
+        "implementation",
+        "multi-turn",
+        "proof"
+      ],
+      "links": [
+        {
+          "to": "brief-eval-x-j1",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "Execution graph",
+          "mermaid": "flowchart LR\n B --> R --> P --> K --> T --> G --> H\n K --> M --> G"
+        }
+      ],
+      "sourceSha256": "6b80966a85b0a4a931d0151980cf387be0b978c66c2ba4770b70209731d6a592"
+    },
+    {
       "id": "proof-phase2",
       "path": "docs/proof/phase2.md",
       "title": "Proof Pack - phase 2 (wave-by-wave joins)",
@@ -8977,6 +9017,14 @@ window.DOCS_INDEX = {
       "artifactId": "plan-eval-x-j1b"
     },
     {
+      "id": "surface-plans-eval-x-j1c",
+      "path": "docs/plans/eval-x-j1c.html",
+      "title": "Eval X J1C",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-j1c"
+    },
+    {
       "id": "surface-case-study",
       "path": "docs/case-study.html",
       "title": "From Specification to Implementation: An AI-Forward Case Study",
@@ -9023,5 +9071,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "5bb3b26b8c96de9cb58d2505417a779e9ccce98b5de30fd6d68cf97c568b6463"
+  "graphSha256": "30a22f0ff21eeea7acbd6c01062eb7cb54f30035d9724bc7577e75ebd982a783"
 };
