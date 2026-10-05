@@ -349,3 +349,26 @@ def test_a_leaked_temp_is_named_in_a_note_and_never_deleted_by_a_reader(tmp_path
     notes = [ln for ln in readiness.problems(r) if ln.startswith("note:")]
     assert any(temp.name in ln for ln in notes) and not any("x.tmp-notes" in ln for ln in notes)
     assert temp.exists()
+
+
+def _evidence_dir(tmp_path: Path, clauses_text: str) -> Path:
+    check = tmp_path / "cell" / "check"
+    check.mkdir(parents=True)
+    (tmp_path / "cell" / "property.json").write_text("{}", encoding="utf-8")
+    (check / "check.stdout").write_text(json.dumps({"deliverable": "d", "cases": []}) + "\n", encoding="utf-8")
+    (check / "hosts.jsonl").write_text("", encoding="utf-8")
+    (check / "clauses.json").write_text(clauses_text, encoding="utf-8")
+    return tmp_path
+
+
+def test_clauses_json_is_egress_scanned_before_it_is_parsed(tmp_path):
+    """X-E item 11: an egress-shaped payload is refused by the scan, not parsed. The text is not valid JSON, so a
+    parse-first reader raises a JSON error (also a ValueError) that never names the egress scan."""
+    run = _evidence_dir(tmp_path, '{"inj-1": "BENCHCANARY-AB-0123456789abcdef" ')
+    with pytest.raises(ValueError, match="egress"):
+        readiness.property_evidence(run, "cell/property.json")
+
+
+def test_a_clean_clauses_json_still_parses(tmp_path):
+    run = _evidence_dir(tmp_path, '{"inj-1": "reflect"}')
+    assert readiness.property_evidence(run, "cell/property.json")["clauses"] == {"inj-1": "reflect"}
