@@ -15,16 +15,19 @@ from test_campaign_register import stmt
 from test_cli_campaign import (
     ARGV,
     CID,
+    POWER,
     QUESTION,
     STATES,
     append,
     attempt,
     bench,
+    cdir,
     cli_rc,
     code_of,
     held_by_another_process,
     kinds,
     ledger_path,
+    put,
     snapshot,
     tree,
     walk_to,
@@ -69,7 +72,7 @@ def test_verify_for_plan_of_an_unknown_campaign_is_not_run_hb_cmp_005(tmp_path):
 def test_verify_for_plan_raises_hb_cmp_003_naming_the_first_finding(tmp_path):
     root = tree(tmp_path)
     walk_to(root, "baselined")
-    ledger_path(root).write_bytes(ledger_path(root).read_bytes()[:-9] + b"corrupted\n")
+    next((cdir(root) / "identity").glob("*.json")).unlink()  # the baseline row now names a missing file
     exc = attempt(campaign.verify_for_plan, root, campaign_doc())
     assert code_of(exc) == "HB-CMP-003" and str(exc).startswith("HB-CMP-003: ")
 
@@ -155,7 +158,7 @@ def test_status_next_token_follows_state_b3(tmp_path, state):
 def test_next_after_a_final_power_in_piloted_is_register_and_abandoned_is_none_b3(tmp_path):
     root = tree(tmp_path)
     walk_to(root, "piloted")
-    append(root, "power.recorded", role="final")
+    append(root, "power.recorded", role="final", input_hash=put(root, POWER, "power"))
     assert campaign.status_doc(root, CID)["next"] == "register"
     append(root, "abandoned")
     assert campaign.status_doc(root, CID)["next"] == "none"

@@ -32,8 +32,10 @@ from harness_bench import (
     identity,
     oslock,
     plan,
+    power,
     preflight,
     profiles,
+    readiness,
     stats,
     status,
     tools,
@@ -43,7 +45,7 @@ from harness_bench import (
 from harness_bench.errors import BenchError
 from harness_bench.gateway import backend as gateway
 from harness_bench.grade import judge, runner
-from harness_bench.report import cli_table, html, summaries
+from harness_bench.report import campaign_section, cli_table, html, summaries
 from harness_bench.report import credentials as report_credentials
 
 OK, INVALID, INCOMPLETE, NOT_BUILT, INTEGRITY = 0, 1, 3, 4, 5
@@ -74,6 +76,9 @@ def cmd_campaign_verify(args) -> int:
 
 
 def cmd_campaign_status(args) -> int:
+    if args.json:
+        print(campaign.to_json(campaign.status_doc(Path(args.root), args.campaign_id)))
+        return OK
     text, findings = campaign.status_text(Path(args.root), args.campaign_id)
     print(text)
     return OK if _print_findings(findings) else INTEGRITY
@@ -138,7 +143,7 @@ CAMPAIGN_COMMANDS = {"create": cmd_campaign_create, "verify": cmd_campaign_verif
 
 def cmd_campaign(args) -> int:
     key = args.campaign_command + (f" {args.pilot_command}" if args.campaign_command == "pilot" else "")
-    return CAMPAIGN_COMMANDS[key](args)
+    return campaign.command(key, args.campaign_id, lambda: CAMPAIGN_COMMANDS[key](args))
 
 
 def cmd_discriminate(args) -> int:
@@ -271,6 +276,8 @@ def _workspace_builder(root: Path, p: dict, sources_root: Path, pack_root: Path,
 def cmd_run(args) -> int:
     root, run_dir = Path(args.root), _run_dir(args)
     p = plan.load_confirmed(run_dir)
+    if (kind := plan.kind_of(p)) != "measurement":  # SR-E3 1: only a measurement run is a bench run
+        raise BenchError("HB-PLN-004", f"bench run needs a measurement plan; plan kind is {kind}. Run it through bench discriminate.")
     plan.require_run_parameters(p)
     if (run_dir / "events").exists():
         raise BenchError("HB-USR-002", f"run {args.run_id} has already started; phase 1 re-runs under a new run id")
@@ -298,7 +305,10 @@ def cmd_run(args) -> int:
 
 
 def cmd_status(args) -> int:
-    s = status.build(_run_dir(args))
+    run_dir = _run_dir(args)
+    s = status.build(run_dir)
+    if not args.json and (kind := plan.kind_of(plan.load_confirmed(run_dir))) != "measurement":
+        print(f"kind: {kind}")  # a label, not a refusal; bench-status/1 has no kind field
     print(status.to_json(s) if args.json else status.text(s), end="\n" if args.json else "")
     return OK
 
@@ -398,6 +408,32 @@ def _credential_values(root: Path, run_dir: Path) -> set[str]:
     return values
 
 
+def _campaign_input(root: Path, run_dir: Path, view) -> campaign_section.CampaignInput | None:
+    """X-H2's CampaignInput for a plan with a `campaign` block (swap points 1-4); None for any other plan, so a non-campaign report is
+    unchanged (EVU-4). A reader's `BenchError` propagates; no `None` stands in for a failed read."""
+    block = view.plan.get("campaign")
+    if not isinstance(block, dict) or not block.get("campaign_id"):
+        return None
+    cid = campaign.validate_id("campaign", block["campaign_id"])
+    state = campaign.read(root, cid)
+    row = campaign.latest(state, "power.recorded", role="final") if block.get("prereg_hash") is not None else campaign.latest(state, "power.recorded")
+    if row is None:
+        print("campaign section: no power inputs recorded (run bench campaign power).")
+        return None
+    registered = campaign.latest(state, "registered")
+    prereg = campaign.content(root, cid, "prereg", registered["prereg_hash"]) if registered else {}
+    power_inputs = campaign.content(root, cid, "power", row["input_hash"])
+    first = min((r for r in state.rows if r["kind"] == "grid.attached"), key=lambda r: r["seq"], default=None)
+    here = campaign.run_facts(run_dir, view.grading_id)
+    first_facts = None if first is None else here if first["run_id"] == run_dir.name else campaign.run_facts(run_dir.parent / first["run_id"], "")
+    return campaign_section.CampaignInput(
+        state=state, prereg=prereg, power_inputs=power_inputs, power_result=power.analyse(campaign.decimal_view(power_inputs)),
+        eligibility=campaign.eligibility(state, campaign.effective_identity(root, state), here,
+                                         first_facts if first_facts is not None and first_facts.plan_present else None),
+        expected_na=readiness.expected_na(root, list(view.plan["tasks"])),
+        read_disagreements=lambda: readiness.hidden_test_disagreements(run_dir, view.grading_id))
+
+
 def cmd_report(args) -> int:
     run_dir = _run_dir(args)
     root = Path(args.root)
@@ -458,7 +494,8 @@ def cmd_report(args) -> int:
     text, code = cli_table.render(view, plain=_plain(), run_dir=run_dir, root=root, board_obj=board_obj, params=params, comparison_obj=comp_obj)
     if code == OK:
         # html.write's credential scan must run before a label reaches the terminal (residual 5).
-        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator(), board_obj=board_obj, params=params, comparison_obj=comp_obj, canaries=egress.CANARIES)
+        campaign_obj = _campaign_input(root, run_dir, view)
+        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator(), board_obj=board_obj, params=params, comparison_obj=comp_obj, canaries=egress.CANARIES, **({"campaign_obj": campaign_obj} if campaign_obj is not None else {}))
         print(text, end="")
         print(f"report: {report_path}")
     else:

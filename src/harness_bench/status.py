@@ -93,6 +93,9 @@ class Status:
     graded: bool
 
 
+STOP_DIFF_SHOWN = 5  # components listed; any more become one count line
+
+
 def unknown_run_error(run_id: str) -> BenchError:
     return BenchError("HB-USR-001", f"no run {run_id} under runs/. Run bench plan to create one.")
 
@@ -115,7 +118,7 @@ def _when(recorded_at: str) -> datetime:
 def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = None) -> Status:
     require_known(run_dir)
     now = now or datetime.now(UTC)
-    view = views.load(run_dir)
+    view = views.load(run_dir, any_kind=True)  # a discrimination run is labelled by `bench status`, not refused (SR-E3 1)
     events = views.rows(run_dir, "events")
     lock = run_dir / ".lock"
     held = oslock.is_held(lock)
@@ -161,9 +164,12 @@ def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = N
         phase = "stopped" if launched <= with_outcome else "stopping"
     stopped = [e for e in events if e["kind"] == "run.launch_stopped"]
     stop_code = stopped[-1]["code"] if stopped else None
+    stop_reason = stopped[-1].get("reason") if stopped else None
+    diff = [str(d) for d in (stopped[-1].get("diff") or [])] if stopped else []
+    stop_diff = tuple(diff) if len(diff) <= STOP_DIFF_SHOWN else (*diff[:STOP_DIFF_SHOWN], f"and {len(diff) - STOP_DIFF_SHOWN} more")
     timeout = view.plan.get("parameters", {}).get("decision_timeout", DEFAULT_PARAMETERS["decision_timeout"])
     return Status(SCHEMA, view.run_id, now.strftime("%Y-%m-%dT%H:%M:%SZ"), liveness, completion, age, len(view.cells), ended_count,
-                  outcomes, last_update_ms, validity, causes, running, _decisions(events, timeout, now), stop_code, None, (), phase,
+                  outcomes, last_update_ms, validity, causes, running, _decisions(events, timeout, now), stop_code, stop_reason, stop_diff, phase,
                   view.grading_id is not None)
 
 
@@ -197,6 +203,9 @@ def text(s: Status) -> str:
         lines = [f"Run {s.run_id}: stalled. The engine holds the lock but has not progressed for {s.lock_age_s} s."]
     else:
         lines = [f"Run {s.run_id}: not running ({s.completion}). {s.cells_ended}/{s.cells_total} cells ended."]
+    if s.stop_code is not None and s.phase not in ("stopping", "stopped"):
+        lines.append(f"Launching stopped ({s.stop_code}): {s.stop_reason or 'no reason recorded'}.")
+        lines.extend(f"  {item}" for item in s.stop_diff)
     for d in s.decisions:  # UXA-7: the subject, the cause and the action
         if d.state == "open":
             lines.append(f"Decision {d.decision_id} · {d.decision_kind.replace('_', ' ')} · {d.subject} · {d.cause_code} · "
@@ -279,6 +288,9 @@ def parse(document: str) -> Status:
         decisions.append(Decision(**d))
     _require(data["stop_code"] is None or (isinstance(data["stop_code"], str) and bool(STOP_CODE.fullmatch(data["stop_code"]))),
               "stop_code is malformed")
+    _require(data["stop_reason"] is None or isinstance(data["stop_reason"], str), "stop_reason must be a string or null")
+    _require(isinstance(data["stop_diff"], list) and len(data["stop_diff"]) <= STOP_DIFF_SHOWN + 1
+             and all(isinstance(item, str) for item in data["stop_diff"]), "stop_diff must be at most 6 strings")
     _require(data["phase"] in PHASE, "phase is not a known value")
     _require(isinstance(data["graded"], bool), "graded must be a boolean")
     _require(isinstance(data["running"], list), "running must be a list")

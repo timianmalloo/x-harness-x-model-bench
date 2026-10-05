@@ -276,6 +276,7 @@ def graded_run(tmp_path, *, campaign_rows: bool, power: bool = True) -> tuple[Pa
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     runner.run_pass(run_dir, root)
     doc = json.loads((run_dir / "plan.json").read_text(encoding="utf-8"))
+    doc["tasks"] = {"X1": {}}  # the archived fixture plan names no tasks; a real plan always does
     if campaign_rows:
         prereg = put(root, PREREG_BODY, "prereg")
         rows = [("campaign.created", {}), ("baseline.recorded", {"identity_hash": put(root, IDENT, "identity")}), ("pilot.passed", {})]
