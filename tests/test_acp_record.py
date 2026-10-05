@@ -59,6 +59,10 @@ def _norm(run: dict) -> dict:
     assert sid
     fields = {k: v for k, v in dataclasses.asdict(run["result"]).items() if k not in TIMINGS | {"session_id"}}
     fields |= {f"{k} recorded": getattr(run["result"], k) is not None for k in TIMINGS}
+    # turns[] carries each turn's own turn_seconds / last_update_seconds (J1a K2): same rule, every other TurnRecord field by value
+    fields["turns"] = [{k: v for k, v in dataclasses.asdict(t).items() if k not in TIMINGS}
+                       | {f"{k} recorded": getattr(t, k) is not None for k in TIMINGS & dataclasses.asdict(t).keys()}
+                       for t in run["result"].turns]
     cwd = json.dumps(str(run["cwd"]))[1:-1].encode()
 
     def swap(data: bytes) -> bytes:
