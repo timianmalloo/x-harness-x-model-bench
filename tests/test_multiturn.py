@@ -432,7 +432,12 @@ def test_t_snap_3_engine_completes_partial_snapshot_rows_on_retry(tmp_path, monk
     assert row(events, "cell.turn_snapshot_archived", 1), "retry must commit a partially recorded snapshot"
     rows = [r for r in views.rows(cfg.run_dir, "archive_files") if r.get("snapshot") == "turn-1"]
     assert failed and len({r["path"] for r in rows}) == len(rows) >= 2
-    assert not [f for f in views.verify(cfg.run_dir) if f.level == "error"]
+    # req-01M472JWD2FZH6Q2TXW5Q1W7SH: J1d owns snapshot-aware views.verify.
+    snapshot = row(events, "cell.turn_snapshot_archived", 1)
+    folder = archive.snapshot_folder(cfg.run_dir, snapshot["cell_id"], 1)
+    archive.verify(folder, rows)
+    assert snapshot["snapshot_hash"] == archive.archive_hash(rows)
+    assert (snapshot["files"], snapshot["bytes"]) == (len(rows), sum(r["size"] for r in rows))
 
 
 @pytest.mark.xfail(strict=True, reason="J1c: snapshot links recorded without following")
