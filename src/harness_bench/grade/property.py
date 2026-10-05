@@ -434,6 +434,10 @@ def _hidden_check(inp: CellInput, ctx: GradeContext) -> dict[str, Score]:
     return scores
 
 
+def hidden_tests(inp: CellInput, tree: Path, label: str, overlay: Mapping[str, Path] | None = None) -> Score:
+    return Score(None, "stub")
+
+
 STRATEGIES: dict[str, Callable[[CellInput, GradeContext], dict[str, Score]]] = {"security": _hidden_check}
 
 
