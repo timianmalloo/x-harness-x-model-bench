@@ -9,7 +9,7 @@ import json
 import os
 import shutil
 import subprocess
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "alarm-task.ps1"
 POWERSHELL = shutil.which("powershell.exe")
 TOPIC = "tpc-9f3a7c1e5b"
-T0 = datetime(2026, 10, 6, 1, 0, 0, tzinfo=timezone.utc)
+T0 = datetime(2026, 10, 6, 1, 0, 0, tzinfo=UTC)
 
 pytestmark = [
     pytest.mark.native,
@@ -129,7 +129,7 @@ def test_unset_topic_refuses_with_the_fixed_line(h):
 
 def test_delivery_log_has_one_line_per_run_and_no_topic_or_uri(h):
     h.run(6, _alarm_object(), at=T0)
-    h.run(6, _alarm_object(), at=T0 + timedelta(minutes=15), rest="throw")
+    h.run(6, _alarm_object(), at=T0 + timedelta(hours=1), rest="throw")
     lines = h.delivery_log().splitlines()
     assert len(lines) == 2
     assert lines[0].endswith("exit=6 push ok")
