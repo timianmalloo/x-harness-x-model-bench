@@ -1,0 +1,11 @@
+schema: bench-matrix/2
+ring: {tag: pack-regression}
+bom: {file: bench/bom.yaml, subset: [S1]}
+repetitions: 3
+arms:
+  - {id: "off"}
+  - {id: "incumbent"}
+  - {id: "candidate"}
+comparisons: [["off", "candidate"], ["incumbent", "candidate"]]
+combos:
+  - {id: cc-opus, harness: claude-code, model: claude-opus-5-5}

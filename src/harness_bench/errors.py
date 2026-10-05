@@ -50,6 +50,7 @@ RUN_CODES: dict[str, str] = {
     "HB-IDN-002": "a `src/` file has no run/grade class",
     "HB-PLN-001": "launch-balance bound violated (EV-17)",
     "HB-PLN-002": "arm or role binding invalid (unbound role, a pack on `off`, a duplicate arm, more than one `off`)",
+    "HB-PLN-003": "comparison refused: ring hashes differ (names the differences, EV-15)",
     "HB-PLN-004": "plan refused by its kind: a measurement plan names a task that is not `ready` or (rev 5, SR-E1 2) a `synthetic` combo, or a discrimination plan names a `stub` (names every task and its status, and every synthetic combo) (rev 3, SR-1)",
     "HB-PLN-005": "a single-pack reader got a plan with two or more pack-bearing arms (names the arms; `plan_pack`, section 5). Raised only by `board.compare` in E1 (rev 4); X-A3 retires it in E3 when `board.compare` reads comparison pairs (rev 3, RV-PAT W1-A 1)",
     "HB-PWR-001": "power-analysis inputs invalid (names the field)",

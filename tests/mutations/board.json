@@ -117,5 +117,12 @@
     "find": "            if not passing:\n                cost_of_pass = Measure(None, \"no passing cell\")",
     "replace": "            if not passing:\n                cost_of_pass = Measure(None, \"not recorded\")",
     "tests": ["tests/test_board.py::test_board_cost_of_pass"]
+  },
+  {
+    "name": "the ring-hash refusal is skipped",
+    "file": "src/harness_bench/board.py",
+    "find": "    base_ring = (base.plan or {}).get(\"ring\")\n    view_ring = (view.plan or {}).get(\"ring\")\n    if base_ring is not None and view_ring is not None and base_ring.get(\"hash\") != view_ring.get(\"hash\"):\n        diff = ring_diff(base.plan or {}, view.plan or {})\n        raise BenchError(\"HB-PLN-003\", f\"ring hashes differ: {diff}\")",
+    "replace": "    if False:\n        pass",
+    "tests": ["tests/test_board.py::test_tb10_compare_refuses_different_ring_hashes"]
   }
 ]

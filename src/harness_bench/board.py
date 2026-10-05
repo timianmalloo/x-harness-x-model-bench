@@ -22,7 +22,7 @@ from harness_bench.composites import area as compute_area
 from harness_bench.composites import gated as compute_gated
 from harness_bench.composites import normalise as compute_normalise
 from harness_bench.errors import BenchError
-from harness_bench.plan import plan_pack
+from harness_bench.plan import plan_pack, ring_diff
 from harness_bench.stats import (
     CONTAMINATION_PRONE,
     DEFAULT_SEED,
@@ -687,6 +687,12 @@ def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = 
 
     if base.run_id == view.run_id:
         raise BenchError("HB-STA-001", "statistics input spans more than one grading pass of one run")
+
+    base_ring = (base.plan or {}).get("ring")
+    view_ring = (view.plan or {}).get("ring")
+    if base_ring is not None and view_ring is not None and base_ring.get("hash") != view_ring.get("hash"):
+        diff = ring_diff(base.plan or {}, view.plan or {})
+        raise BenchError("HB-PLN-003", f"ring hashes differ: {diff}")
 
     diffs: list[str] = []
 
