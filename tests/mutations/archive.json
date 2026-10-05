@@ -1,8 +1,12 @@
 [
  {"name": "copy credential files", "file": "src/harness_bench/archive.py", "find": "elif src.is_file() and src.name not in exclude_names:", "replace": "elif src.is_file():", "tests": ["tests/test_archive.py"]},
- {"name": "follow links", "file": "src/harness_bench/archive.py", "find": "            if _is_link(src):", "replace": "            if False:", "tests": ["tests/test_archive.py"]},
+ {"name": "follow links", "file": "src/harness_bench/archive.py", "find": "                if _is_link(src):", "replace": "                if False:", "tests": ["tests/test_archive.py"]},
  {"name": "skip verify before delete", "file": "src/harness_bench/archive.py", "find": "    verify(folder, rows)\n    for attempt", "replace": "    for attempt", "tests": ["tests/test_archive.py"]},
  {"name": "verify ignores content", "file": "src/harness_bench/archive.py", "find": "or _sha(path) != r[\"sha256\"]", "replace": "", "tests": ["tests/test_archive.py"]},
  {"name": "hash ignores size", "file": "src/harness_bench/archive.py", "find": "ROW_FIELDS = (\"path\", \"kind\", \"size\", \"sha256\", \"link_target\")", "replace": "ROW_FIELDS = (\"path\", \"kind\", \"sha256\", \"link_target\")", "tests": ["tests/test_archive.py"]},
- {"name": "no retry on a held file", "file": "src/harness_bench/archive.py", "find": "            if attempt == retries:\n                return False", "replace": "            raise", "tests": ["tests/test_archive.py"]}
+ {"name": "no retry on a held file", "file": "src/harness_bench/archive.py", "find": "            if attempt == retries:\n                return False", "replace": "            raise", "tests": ["tests/test_archive.py"]},
+ {"name": "A1 rows hashed from the copy", "file": "src/harness_bench/archive.py", "find": "size, sha256 = _copy_hashed(src, dest)", "replace": "size, _ = _copy_hashed(src, dest)\n                    sha256 = _sha(dest)", "tests": ["tests/test_archive.py::test_a_corrupted_copy_fails_verification_before_the_rename"]},
+ {"name": "A2 verify does not check file set", "file": "src/harness_bench/archive.py", "find": "if actual_files != expected_files:", "replace": "if False:", "tests": ["tests/test_archive.py::test_verify_rejects_an_extra_file_and_a_missing_file"]},
+ {"name": "A3 attempt_dirs returns temps too", "file": "src/harness_bench/archive.py", "find": "m = re.fullmatch(r\"attempt-(\\d+)\", p.name)", "replace": "m = re.match(r\"attempt-(\\d+)\", p.name)", "tests": ["tests/test_archive.py::test_attempt_dirs_ignores_a_leaked_temp_sibling"]},
+ {"name": "A4 delete_after_verify skips the verify", "file": "src/harness_bench/archive.py", "find": "    verify(folder, rows)\n    for attempt in range(retries + 1):", "replace": "    for attempt in range(retries + 1):", "tests": ["tests/test_archive.py::test_a_file_added_after_verify_is_caught_by_delete_after_verify"]}
 ]
