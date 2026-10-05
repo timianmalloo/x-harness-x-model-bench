@@ -27,7 +27,7 @@ from harness_bench.grade import CellInput, Score, _changes, _env, correctness
 from harness_bench.plan import tree_hash
 
 __all__ = ["Classification", "Facts", "at_scale", "check_seed", "check_segment", "grade_cell", "hidden_tests", "parse_result",
-           "run_check", "score_run"]
+           "run_check", "score_run", "write_section"]
 
 MAX_RESULT_BYTES = 64 * 1024
 ACK = b"\x06"
@@ -469,7 +469,22 @@ def _hidden_check(inp: CellInput, ctx: GradeContext) -> dict[str, Score]:
 
 
 def write_section(inp: CellInput, name: str, section: Mapping) -> str:
-    return ""
+    """Write one check-less helper's `strategy.<name>` object into the pass's single `property.json`; return the
+    `Score.evidence` pointer (relative to the run directory).
+
+    The file is the grader's one record (RV-SIM 10, RV-PAT 4), so a helper adds a section and never owns a file. A
+    section is written once per pass, and only for a property that has no check (`config.PROPERTY_NAMES` minus
+    `CHECK_PROPERTIES`); a check property's evidence is `_hidden_check`'s. ValueError names the refused `name`."""
+    if name not in config.PROPERTY_NAMES or name in config.CHECK_PROPERTIES:
+        raise ValueError(f"{name!r} is not a check-less property; only those write a strategy section")
+    path = inp.out_dir / "property.json"
+    doc = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {"schema": "bench-property-evidence/1"}
+    sections = doc.setdefault("strategy", {})
+    if name in sections:
+        raise ValueError(f"strategy.{name} is already written for this pass; a section is written once")
+    sections[name] = dict(section)
+    path.write_text(json.dumps(doc, sort_keys=True, indent=1), encoding="utf-8")
+    return path.relative_to(inp.run_dir).as_posix()
 
 
 STRATEGIES: dict[str, Callable[[CellInput, GradeContext], dict[str, Score]]] = {"security": _hidden_check}
