@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-05T16:02:26Z",
+  "generated": "2026-10-05T17:05:18Z",
   "audit": [
     {
       "actor": null,
@@ -87187,6 +87187,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-05T15:35:54Z",
       "duration_seconds": 1592.0
+    },
+    {
+      "id": "al-01M46GDSMPF00DZVW3CEVB4MHC",
+      "shortname": "join-x-lga",
+      "datetime": "2026-10-05T17:05:18Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of the resolved merge into integrate/e2e4-18",
+      "summary": "X-LGa (Agy gemini-3.8-flash-high, 1,479 s): skeleton 5073be7c, red 0a0994a7 re-run by Leader (5 assertion fails), green 3e272225; Leader gate 238 passed 3 xfailed, ruff 0. First recount on db69d7b7: 1 failed (stamp test, expected for a grade/ change), 3705 passed, 1535 s; join.json now defers the stamp to the batch gate (2d0d86b8, operator-approved) recount_seconds=1552 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join X-LGa into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-05T16:39:25Z",
+      "duration_seconds": 1553.0
     }
   ],
   "changes": [
