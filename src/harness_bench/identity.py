@@ -119,7 +119,6 @@ CLASSES: Mapping[str, Literal["run", "grade"]] = {
 PLANNED: frozenset[str] = frozenset({
     "resume.py",
     "grade/rework.py", "alarm.py",
-    "grade/noguess.py", "grade/diffstats.py",
 })
 
 # R-94 condition 3: exactly three validate-time edges, not cell-path imports.

@@ -23,7 +23,15 @@ from decimal import ROUND_HALF_EVEN, Decimal
 from pathlib import Path
 
 from harness_bench import config, host, procs
-from harness_bench.grade import CellInput, Score, _changes, _env, correctness
+from harness_bench.grade import (
+    CellInput,
+    Score,
+    _changes,
+    _env,
+    correctness,
+    diffstats,
+    noguess,
+)
 from harness_bench.plan import tree_hash
 
 __all__ = ["Classification", "Facts", "at_scale", "check_seed", "check_segment", "grade_cell", "hidden_tests", "parse_result",
@@ -493,7 +501,7 @@ def run_child(argv: list[str], cwd: Path, timeout: float, extra_env: Iterable[st
     return procs.run(argv, cwd, _env.grading_env(extra_env), timeout)
 
 
-STRATEGIES: dict[str, Callable[[CellInput, GradeContext], dict[str, Score]]] = {"security": _hidden_check}
+STRATEGIES: dict[str, Callable[[CellInput, GradeContext], dict[str, Score]]] = {"security": _hidden_check, "no-guessing": noguess.grade, "simplicity": diffstats.grade}
 
 
 def grade_cell(inp: CellInput) -> Mapping[str, Score]:
