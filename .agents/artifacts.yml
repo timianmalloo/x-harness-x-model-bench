@@ -30,12 +30,13 @@ docs/specs/harness-bench.html: derived python tools/render-doc-html.py
 .claude/skills/new-bench-task/**: derived python tools/sync-skills.py
 .agents/skills/new-bench-task/**: derived python tools/sync-skills.py
 
-# Owner rulings: append-only, union-merged (coordination-phase1-finish).
-docs/notes/rulings.md: register
+# `register` is JSONL-ONLY. coord-core.py merge-register parses both sides as JSONL; on any other file it writes a
+# conflict-marker file and exits 0 (the S12b rule), so `git merge` auto-commits the markers. Measured 2026-10-05 in a
+# throwaway tree: two concurrent appends to a markdown register merged with exit 0 into a file headed "unreadable as
+# JSONL; not merging" with both sides between markers. So docs/notes/rulings.md (registered 2026-09-24 by
+# coordination-phase1-finish, never exercised by a concurrent append) is back to `authored`: a concurrent ruling now
+# stops the merge visibly instead of committing markers. Coordinator hand-back entries go one file per session under
+# docs/coordination/coordinator-log/ (new files never conflict); docs/coordination/coordinator-log.md is the index.
 
 # Coord ledgers: one append-only JSONL per session, written by the coord tools in whichever tree runs them (2026-10-05).
 .agents/log/*.jsonl: register
-
-# Coordinator hand-back entries: append-only (they went into eval-wave2-e1/README.md section 8, an otherwise authored file,
-# and conflicted at every join on 2026-10-04/05). New entries go here; README section 8 points to it (2026-10-05).
-docs/coordination/coordinator-log.md: register

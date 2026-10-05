@@ -3748,14 +3748,14 @@ window.DOCS_INDEX = {
     {
       "id": "coordinator-log",
       "path": "docs/coordination/coordinator-log.md",
-      "title": "Coordinator hand-back log (append-only)",
+      "title": "Coordinator hand-back log (index; one file per session)",
       "type": "doc",
       "status": "active",
       "owner": "@timianmalloo",
       "phase": "",
       "reviewBy": "2026-11-05",
       "reviewSuggested": [],
-      "summary": "One entry per Coordinator hand-back session, appended at the end, newest last. Class register in .agents/artifacts.yml: concurrent appends union-merge, so seats never conflict here. Entries up to Coordinator #28 live in docs/coordination/eval-wave2-e1/README.md section 8.",
+      "summary": "Where Coordinator hand-back entries live. From #29 each session writes its own file, docs/coordination/coordinator-log/c<NN>.md, so concurrent sessions never share an append point (the register merge class is JSONL-only, measured 2026-10-05; see .agents/artifacts.yml). Entries #1-#28 live in docs/coordination/eval-wave2-e1/README.md section 8.",
       "tags": [
         "coordination",
         "register"
@@ -3771,7 +3771,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "c8c1970639e34791b65504340db99fe086760172fac885cce6747899f4b6820d"
+      "sourceSha256": "acd8498fd932679d67586f51a0b1c47183b8e3d7a3cca26d3dfd3685e841e2a4"
     },
     {
       "id": "defect-classes",
@@ -8360,5 +8360,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "5b4a689b2384b5425e93c7834d975d3b17273e7f9edce8852a8259ab620c9a19"
+  "graphSha256": "a06f1efd8f0d10f4bc41857e093365ed5ffc157c0b88af85a5551050ed25c63b"
 };
