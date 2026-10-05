@@ -38,7 +38,16 @@ from datetime import datetime
 from pathlib import Path
 from typing import Protocol
 
-from harness_bench import archive, driver, host, ledger, lifecycle, oslock, procs
+from harness_bench import (
+    archive,
+    atomic,
+    driver,
+    host,
+    ledger,
+    lifecycle,
+    oslock,
+    procs,
+)
 from harness_bench.errors import BenchError, Cause
 from harness_bench.gitsafe import GitError
 from harness_bench.scripted_user import log as scripted_log
@@ -120,6 +129,7 @@ class _Active:
     cancel: threading.Event = field(default_factory=threading.Event)
     terminated: bool = False
     ended: bool = False  # the turn is over: the worker ends the process itself; the engine never kills it now
+    archive_error: str | None = None
     lock: threading.Lock = field(default_factory=threading.Lock)  # guards kill_reason/ended and terminate vs close
 
 
@@ -201,6 +211,7 @@ class Engine:
         self.trace_id = plan["trace_id"]
         self.inbox: queue.Queue = queue.Queue(maxsize=64)
         self.writers: dict[str, ledger.SegmentWriter] = {}
+        self.run_lock: oslock.RunLock | None = None
         self.active: dict[str, _Active] = {}
         self.outcomes: dict[str, dict] = {}
         self.stopped: str | None = None
@@ -381,6 +392,7 @@ class Engine:
             raise BenchError("HB-USR-002", f"run {self.plan['run_id']} has already started; phase 1 re-runs under a new run id")
         run_dir.mkdir(parents=True, exist_ok=True)
         lock = oslock.RunLock.acquire(run_dir / ".lock", code="HB-RUN-005")
+        self.run_lock = lock
         try:
             if self.cfg.campaign_check is not None:
                 self.cfg.campaign_check()  # own run lock held; refusal propagates before any launch
@@ -749,6 +761,10 @@ class Engine:
         drain.start()
 
         result = driver.TurnResult()  # filled by run_turn; the barrier reads agent_version from it (R-28)
+        baseline_fields = {}
+
+        def baseline() -> None:
+            baseline_fields["job_active_baseline"] = _job_query(cp.job.active, None)
 
         def record_session_opened(session_id: str | None) -> None:
             self.record("events", {"kind": "attempt.session_opened", "cell_id": cid, "session_id": session_id or "",
@@ -785,7 +801,8 @@ class Engine:
                         record_session_opened(result.session_id)
                         prompts = [task["prompt"]] + [t["prompt"] for t in task["turns"]]
                         for n, text in enumerate(prompts, 1):
-                            rec = driver.send_turn(session, text, barrier_for(n), n)
+                            rec = driver.send_turn(session, text, barrier_for(n), n,
+                                                   on_first_update=baseline if n == 1 else None)
                             if rec is None:
                                 break  # no response came back: the outcome cause says why; no turn_ended
                             nxt = (("cancel" if a.kill_reason == "stop" else "stop") if a.cancel.is_set()
@@ -793,8 +810,13 @@ class Engine:
                                    else "stop" if rec.stop_reason != "end_turn" else "snapshot")
                             self.record("events", {"kind": "cell.turn_ended", "cell_id": cid, "turn": n,
                                                    "stop_reason": rec.stop_reason, "turn_ms": int(rec.turn_seconds * 1000),
-                                                   "usage": rec.usage, "next": nxt})  # before the decision (design 4.2)
+                                                   "usage": rec.usage, "next": nxt,
+                                                   **(baseline_fields if n == 1 else {})})  # before the decision (design 4.2)
                             if nxt != "snapshot":
+                                break
+                            if not self._snapshot_turn(a, cell, ws.parent, n, launcher, cp):
+                                if not a.cancel.is_set():
+                                    result.cause, result.detail = Cause.archive, a.archive_error or "turn snapshot failed"
                                 break
                     finally:
                         session.close()
@@ -821,8 +843,58 @@ class Engine:
 
     def _snapshot_turn(self, a: _Active, cell: dict, cell_dir: Path, turn: int,
                        launcher: Launcher, cp: procs.CellProcess) -> bool:
-        """K2: report success without creating a snapshot or its ledger rows."""
-        return True
+        """Publish, recover missing facts, then commit the snapshot before another prompt."""
+        cid = cell["cell_id"]
+        dest_root = self.cfg.run_dir / "archive" / cid
+        folder = archive.snapshot_folder(self.cfg.run_dir, cid, turn)
+        if self.run_lock is None or self.run_lock.path.resolve() != (self.cfg.run_dir / ".lock").resolve():
+            raise ValueError("snapshot sweep needs this run's lock")
+        atomic.sweep_temps(dest_root, self.run_lock)
+        job_active_processes = _job_query(cp.job.active, None)
+        job_active_after = None
+        copied = None
+        for delay in (1, 2, 4):  # W1-J 4.4: three failures, cancel-aware waits, then archive cause
+            if a.cancel.is_set():
+                return False
+            try:
+                try:
+                    copied = archive.snapshot_cell(cell_dir, dest_root, turn, launcher.credential_names,
+                                                   a.cancel, run_lock=self.run_lock)
+                    job_active_after = _job_query(cp.job.active, None)
+                except FileExistsError:
+                    if copied is None:  # only a publish by this invocation may be recovered in E2
+                        raise BenchError("HB-LED-008", f"unrecorded snapshot {folder} already exists") from None
+                    try:
+                        archive.verify(folder, copied.rows)
+                    except BenchError as exc:
+                        raise BenchError("HB-LED-008", str(exc)) from exc
+                if a.cancel.is_set():
+                    return False
+                rows = [{"run_id": self.plan["run_id"], "cell_id": cid, **r} for r in copied.rows]
+                present = [r for p in sorted((self.cfg.run_dir / "archive_files").glob("*.jsonl"))
+                           for r in ledger.read_segment(p) if r.get("cell_id") == cid
+                           and r.get("archive_attempt") == 1 and archive.snapshot_of(r) == f"turn-{turn}"]
+                for r in archive.append_missing_rows(folder, rows, present, "HB-LED-008"):
+                    self.record("archive_files", r)
+                if a.cancel.is_set():
+                    return False
+                self.record("events", {"kind": "cell.turn_snapshot_archived", "cell_id": cid, "turn": turn,
+                                       "snapshot_hash": copied.archive_hash, "files": len(copied.rows),
+                                       "bytes": copied.total_bytes, "duration_ms": copied.duration_ms,
+                                       "job_active_processes": job_active_processes,
+                                       "job_active_after": job_active_after, "copy_retries": None})
+                return True
+            except OSError as exc:
+                atomic.sweep_temps(dest_root, self.run_lock)
+                a.archive_error = f"{type(exc).__name__}: {exc}"
+                if a.cancel.wait(delay):
+                    return False
+            except BenchError as exc:
+                if exc.code == "HB-RUN-001":
+                    raise  # a broken ledger is never retried
+                a.archive_error = str(exc)
+                return False
+        return False
 
     def _end_process(self, a: _Active, cp: procs.CellProcess, grace: float) -> tuple[int | None, bool, str]:
         """Graceful first (stdin closed, the adapter flushes and exits), then terminate and confirm."""

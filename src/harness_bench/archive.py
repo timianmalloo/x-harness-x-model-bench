@@ -21,7 +21,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from harness_bench import atomic
+from harness_bench import atomic, oslock
 from harness_bench.atomic import make_writable
 from harness_bench.errors import BenchError
 from harness_bench.ledger import canonical
@@ -65,20 +65,53 @@ def snapshot_of(row: dict) -> str:
 
 
 def snapshot_cell(cell_dir: Path, dest_root: Path, turn: int, exclude_names: set[str],
-                  cancel=None) -> ArchiveResult:
-    """K2: direct copy to the final name, including home and following links."""
+                  cancel=None, *, run_lock: oslock.RunLock | None = None) -> ArchiveResult:
+    """Publish ws only; the engine supplies its held run lock for temp cleanup.
+
+    Standalone callers own the same run lock for this call. An existing folder
+    is never adopted by a fresh call; the engine alone recovers its own publish.
+    """
     folder = snapshot_folder(dest_root.parent.parent, dest_root.name, turn)
     folder.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(cell_dir, folder)
-    rows = [{"path": p.relative_to(folder).as_posix(), "kind": "file", "size": p.stat().st_size,
-             "sha256": _sha(p), "link_target": "", "archive_attempt": 1, "snapshot": f"turn-{turn}"}
-            for p in sorted(folder.rglob("*")) if p.is_file()]
-    return ArchiveResult(folder, rows, archive_hash(rows), sum(r["size"] for r in rows), 0)
+    owned_lock = run_lock is None
+    if owned_lock:
+        run_lock = oslock.RunLock.acquire(dest_root.parent.parent / ".lock", code="HB-RUN-005")
+    try:
+        if run_lock.path.resolve() != (dest_root.parent.parent / ".lock").resolve():
+            raise ValueError("snapshot sweep needs this run's lock")
+        atomic.sweep_temps(dest_root, run_lock)
+        if owned_lock and os.path.lexists(folder):
+            raise BenchError("HB-LED-008", f"unrecorded snapshot {folder} already exists")
+        copy = _Copy(cell_dir, exclude_names, include_names={"ws"}, cancel=cancel)
+        start_time = time.perf_counter()
+        try:
+            atomic.publish_dir(folder, copy.fill, copy.verify)
+        except Exception:
+            atomic.sweep_temps(dest_root, run_lock)
+            raise
+        duration_ms = int((time.perf_counter() - start_time) * 1000)
+        for r in copy.rows:
+            r.update(archive_attempt=1, snapshot=f"turn-{turn}")
+        return ArchiveResult(folder, copy.rows, archive_hash(copy.rows), copy.total_bytes, duration_ms)
+    finally:
+        if owned_lock:
+            run_lock.release()
 
 
 def append_missing_rows(folder: Path, rows: list[dict], present: list[dict], code: str) -> list[dict]:
-    """K2 returns all rows, including already present rows, without comparing them."""
-    return list(rows)
+    """Return missing keys only; reject conflicting immutable facts for this folder."""
+    def key(r: dict) -> tuple:
+        return (r.get("run_id"), r.get("cell_id"), r.get("archive_attempt"), snapshot_of(r), r["path"])
+
+    expected = {key(r): r for r in rows}
+    seen = set()
+    for r in present:
+        k = key(r)
+        want = expected.get(k)
+        if want is None or any(r.get(field) != want.get(field) for field in ROW_FIELDS):
+            raise BenchError(code, f"{folder}: present archive row differs at {r['path']}")
+        seen.add(k)
+    return [r for r in rows if key(r) not in seen]
 
 
 def _copy_hashed(src: Path, dest: Path) -> tuple[int, str]:
@@ -106,17 +139,24 @@ def attempt_dirs(run_dir: Path, cell_id: str) -> list[Path]:
 
 
 class _Copy:
-    def __init__(self, cell_dir: Path, exclude_names: set[str]) -> None:
+    def __init__(self, cell_dir: Path, exclude_names: set[str], *, include_names: set[str] | None = None,
+                 cancel=None) -> None:
         self.cell_dir = cell_dir
         self.exclude_names = exclude_names
         self.rows: list[dict] = []
         self.total_bytes = 0
+        self.include_names = include_names
+        self.cancel = cancel
 
     def fill(self, tmp: Path) -> None:
         exclude_names = self.exclude_names
         for top in sorted(p for p in self.cell_dir.iterdir()):
+            if self.include_names is not None and top.name not in self.include_names:
+                continue
             stack = [top]
             while stack:
+                if self.cancel is not None and self.cancel.is_set():
+                    raise InterruptedError("snapshot cancelled between files")
                 src = stack.pop()
                 rel = src.relative_to(self.cell_dir).as_posix()
                 dest = tmp / rel

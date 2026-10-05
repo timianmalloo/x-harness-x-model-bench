@@ -164,6 +164,7 @@ class _Channel:
         self.inbox: queue.Queue = queue.Queue()
         self.seq = 0
         self.turn_start: float | None = None  # set when the prompt is sent
+        self.on_first_update: Callable[[], None] | None = None
         threading.Thread(target=self._read, daemon=True).start()
 
     def _read(self) -> None:
@@ -243,6 +244,9 @@ class _Channel:
             elif "method" in msg:  # a notification
                 if msg["method"] == "session/update":
                     self.result.updates += 1
+                    first_update, self.on_first_update = self.on_first_update, None
+                    if first_update is not None:
+                        first_update()
                     if self.turn_start is not None:
                         self.result.last_update_seconds = time.monotonic() - self.turn_start
             elif msg.get("id") == rid:
@@ -341,6 +345,7 @@ def send_turn(session: Session, prompt: str, before_send: Callable[[str | None],
         ch._observe_cancel(False)
         return None
     turn_start = ch.turn_start = time.monotonic()
+    ch.on_first_update = on_first_update
     try:
         done = ch.rpc("session/prompt", {"sessionId": result.session_id, "prompt": [{"type": "text", "text": prompt}]}, None)
         result.stop_reason = done.get("stopReason")
@@ -354,6 +359,8 @@ def send_turn(session: Session, prompt: str, before_send: Callable[[str | None],
         result.cause, result.detail = Cause.protocol, exc.detail
     except _AcpError as exc:
         result.cause, result.detail = _prompt_error_cause(exc), f"prompt error: {exc}"
+    finally:
+        ch.on_first_update = None
     result.turn_seconds = time.monotonic() - turn_start
     if result.cause is not None:
         return None
