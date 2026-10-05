@@ -36,7 +36,7 @@ from harness_bench import (
 from harness_bench.errors import BenchError
 from harness_bench.grade import judge as grade_judge
 from harness_bench.plan import resolved_model_map
-from harness_bench.report import context_growth, html_builder, judges, model
+from harness_bench.report import campaign_section, context_growth, html_builder, judges, model
 from harness_bench.report import pack_improvement as pack_improvement_mod
 from harness_bench.report.credentials import encodings
 
@@ -2189,7 +2189,8 @@ def _pack_improvement(view: views.RunView, board_obj: board.Board | None, run_di
 def render(view: views.RunView, archive_present: bool, run_dir: Path | None = None, root: Path | None = None,
            operator: egress.Operator | None = None, board_obj: board.Board | None = None,
            params: stats.Params | None = None, comparison_obj: board.Comparison | str | None = None,
-           context_growth_obj: context_growth.ContextGrowthResult | None = None) -> str:
+           context_growth_obj: context_growth.ContextGrowthResult | None = None,
+           campaign_obj: campaign_section.CampaignInput | None = None) -> str:
     """The page; `root` (the bench root) adds the judge block for a pass that looked up judge verdicts, and
     `operator` (read at run time, never committed) lets it name the classes each judge CLI added."""
     tags = _context_window_tags(run_dir)  # R-32: read from events, not from views.py (ruling R-32 condition 3)
@@ -2295,7 +2296,7 @@ def _egress_row(record: dict) -> str:
 def write(run_dir: Path, view: views.RunView, credential_values: set[str] = frozenset(), root: Path | None = None,
           operator: egress.Operator | None = None, board_obj: board.Board | None = None,
           params: stats.Params | None = None, comparison_obj: board.Comparison | str | None = None,
-          canaries: Sequence[str] = ()) -> Path:
+          canaries: Sequence[str] = (), campaign_obj: campaign_section.CampaignInput | None = None) -> Path:
     """report.html, after publication egress (`_publish`) and the credential scan (HB-SEC-001), and beside it the run
     record of what the report withheld and flagged (`RECORD`). The record is the publication record, a derived
     artifact regenerated with the report and never a ledger fact (R-80 DR-EG-1, ADR-0006 amendment); `report_sha256`
@@ -2303,7 +2304,7 @@ def write(run_dir: Path, view: views.RunView, credential_values: set[str] = froz
     scanned and the email is not (R-80 c4)."""
     operator = operator if operator is not None else egress.Operator.from_os()
     doc = render(view, archive_present=(run_dir / "archive").is_dir(), run_dir=run_dir, root=root, operator=operator,
-                 board_obj=board_obj, params=params, comparison_obj=comparison_obj)
+                 board_obj=board_obj, params=params, comparison_obj=comparison_obj, campaign_obj=campaign_obj)
     # The rendered page, before any section is withheld: a credential refuses the whole write, never only its section,
     # so `bench report` never prints a table that carries it either (residual 5; R-80 c4 made the section scan run).
     found = scan(doc, credential_values)
