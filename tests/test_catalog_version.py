@@ -753,6 +753,14 @@ def test_an_also_graded_by_name_that_is_unknown_equal_to_the_grader_or_repeated_
         assert added, f"{name}: also_graded_by {value!r} must be refused"
 
 
+def cross_version_problems(root: Path, root06: Path, golden06: Path, freeze: dict,
+                           export: Callable[[str], bytes],
+                           board_export: Callable[[str], bytes]) -> list[str]:
+    """US-4 control 1 (W1-G section 4.5). Skeleton returns no problems until the four steps land."""
+    del root, root06, golden06, freeze, export, board_export
+    return []
+
+
 # --- the slow ring: dotnet fixtures run only on the grading host (design: Catalog-version rule 4; seam V-4) ---------
 
 

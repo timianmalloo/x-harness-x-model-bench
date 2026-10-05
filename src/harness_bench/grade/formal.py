@@ -564,6 +564,14 @@ def bug_claim_precision(inp: CellInput, timeout: float) -> Score:
     return Score(Decimal(confirmed) / Decimal(n), None, evidence)
 
 
+# --- scenario-7 pass_at_1 (ADR-0019 item 3; the five rows are W1-G section 4.3) ------------------------------------
+
+def pass_at_1(task: Mapping, scores: Mapping[str, Score], *, metrics: Mapping | None = None) -> Score:
+    """Three-valued pass@1 under ``formal.pass_rule``. Skeleton returns a neutral NA."""
+    del task, scores, metrics
+    return Score(None, "not implemented")
+
+
 # --- the cascade (statement_integrity gates the other metrics, per task type; US-32) ------------------------------
 
 _G1_CASCADE = ("formal_checks_clean", "model_conformance", "model_non_vacuity")
@@ -603,5 +611,5 @@ def grade_cell(inp: CellInput) -> Mapping[str, Score]:
     if "bug_claim_precision" in inp.metrics:
         out["bug_claim_precision"] = bug_claim_precision(inp, timeout)
     if "pass_at_1" in inp.metrics:  # owner guard (R-95): on a G1 task correctness owns pass_at_1, so a key outside inp.metrics would be HB-GRD-004
-        out["pass_at_1"] = Score(None, NOT_BUILT)  # X-G3 replaces this with formal.pass_rule
+        out["pass_at_1"] = pass_at_1(inp.task, out, metrics=inp.metrics)
     return out
