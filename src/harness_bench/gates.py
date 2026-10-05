@@ -14,7 +14,7 @@ from decimal import Decimal
 from enum import StrEnum
 from types import MappingProxyType
 
-from harness_bench import errors, plan, power, verdicts
+from harness_bench import config, errors, plan, power, verdicts
 from harness_bench.errors import BenchError
 
 EMPTY: Mapping[str, frozenset[str]] = MappingProxyType({})
@@ -159,7 +159,7 @@ def pack_regression(view, mde: Mapping[str, Decimal]) -> Mapping[str, str]:
     return out
 
 
-def admission(view, tasks: Sequence[str], off_arm: str = "off") -> Mapping[str, tuple[int, str]]:
+def admission(view, tasks: Sequence[str], off_arm: str = config.ARM_OFF) -> Mapping[str, tuple[int, str]]:
     """EV-8: per task, the `off_arm` cells' primary. All 1 is saturated, all 0 is the floor, else admitted.
 
     assume: a task with no `off_arm` cell also raises HB-USR-002. Confirm: X-C's `admit` pre-check (W1-C
