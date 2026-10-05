@@ -524,9 +524,10 @@ def inconclusive_reasons(
 # --------------------------------------------------------------------------------------------------
 
 
-def ceiling_off(passes_off: int, n_pairs: int) -> bool:
+def ceiling_off(passes_off: int, n_pairs: int = 0, *, n_recorded: int | None = None) -> bool:
     """4.5's group-level relabel: the off arm passed every pair, so no gain was possible."""
-    return n_pairs > 0 and passes_off == n_pairs
+    n = n_recorded if n_recorded is not None else n_pairs
+    return n > 0 and passes_off == n
 
 
 def saturated(passes_on: int, passes_off: int, n_pairs: int) -> bool:
@@ -558,14 +559,20 @@ class GroupClassInput:
     holm_p: Decimal | None
     harm_indicator: bool  # >=1 on-cell is diverted_and_failed or stopped_without_product
     quality_lo_positive: bool  # a mapped quality metric's board interval has lo > 0 for this combo
+    n_recorded: int | None = None
+
+    def __post_init__(self):
+        if self.n_recorded is None:
+            object.__setattr__(self, "n_recorded", self.n_pairs)
 
 
 def classify_group(g: GroupClassInput) -> tuple[str, bool]:
     """(class, ceiling_off) -- design section 4.5's rule table, first match wins (PI-T10, including
     rule order). `ceiling_off` is reported alongside the class so a `waste` class can be rendered as
     "waste (saturated task: no gain was possible)" per the design's own text, renamed per R-85."""
-    is_ceiling_off = ceiling_off(g.passes_off, g.n_pairs)
-    if g.n_pairs < 2 or g.n_ratio_valid == 0:
+    n_rec = g.n_recorded if g.n_recorded is not None else g.n_pairs
+    is_ceiling_off = ceiling_off(g.passes_off, n_rec)
+    if n_rec == 0 or g.n_pairs < 2 or g.n_ratio_valid == 0:
         return "inconclusive", is_ceiling_off
     if g.passes_on < g.passes_off and ((g.holm_p is not None and g.holm_p < Decimal("0.05")) or g.harm_indicator):
         return "harm", is_ceiling_off
@@ -959,10 +966,21 @@ def assemble(
             by_task.setdefault(p.task, []).append(p)
     task_ps: dict[str, Decimal] = {}
     task_counts: dict[str, tuple[int, int, int]] = {}
+    tasks_with_no_recorded: dict[str, str] = {}
     for task, task_pairs in by_task.items():
-        passes_on = sum(1 for p in task_pairs if _passed(p.on))
-        passes_off = sum(1 for p in task_pairs if _passed(p.off))
-        n = len(task_pairs)
+        recorded = [p for p in task_pairs if _pass(p.on) is not None and _pass(p.off) is not None]
+        if not recorded:
+            na_reasons = [
+                c.scores["pass_at_1"].reason
+                for p in task_pairs
+                for c in (p.on, p.off)
+                if c.scores.get("pass_at_1") is not None and c.scores["pass_at_1"].reason
+            ]
+            tasks_with_no_recorded[task] = na_reasons[0] if na_reasons else "not recorded"
+            continue
+        passes_on = sum(1 for p in recorded if _pass(p.on) is True)
+        passes_off = sum(1 for p in recorded if _pass(p.off) is True)
+        n = len(recorded)
         task_counts[task] = (passes_on, passes_off, n)
         task_ps[task] = fisher_exact_two_sided(passes_on, n - passes_on, passes_off, n - passes_off)
     holm_ps = holm(task_ps) if task_ps else {}
@@ -1023,8 +1041,10 @@ def assemble(
     harm_groups_failed_pairs = 0
 
     for (task, combo), group_pairs in sorted(by_group.items()):
-        passes_on = sum(1 for p in group_pairs if _passed(p.on))
-        passes_off = sum(1 for p in group_pairs if _passed(p.off))
+        recorded = [p for p in group_pairs if _pass(p.on) is not None and _pass(p.off) is not None]
+        n_recorded = len(recorded)
+        passes_on = sum(1 for p in recorded if _pass(p.on) is True)
+        passes_off = sum(1 for p in recorded if _pass(p.off) is True)
         n_pairs = len(group_pairs)
         token_ratios = [tokens_ratio(p) for p in group_pairs]
         median_tok, above_tok, n_tok = median_ratio(token_ratios)
@@ -1040,6 +1060,7 @@ def assemble(
             passes_on=passes_on, passes_off=passes_off, n_pairs=n_pairs, n_ratio_valid=n_tok,
             median_token_ratio=median_tok.value, holm_p=holm_ps.get(task), harm_indicator=harm_indicator,
             quality_lo_positive=False,  # named simplification, module docstring above
+            n_recorded=n_recorded,
         )
         cls, is_ceiling_off = classify_group(gi)
         groups.append(GroupRow(task, combo, passes_on, passes_off, n_pairs, median_tok, above_tok, n_tok,
@@ -1051,7 +1072,7 @@ def assemble(
             )
             if not has_named_cause:
                 harm_groups_without_cause += 1
-                harm_groups_failed_pairs += max(0, n_pairs - passes_on)
+                harm_groups_failed_pairs += max(0, n_recorded - passes_on)
 
     # ---- PK-01 / PK-02 ----
     if on_diverted_failed:
@@ -1146,14 +1167,16 @@ def assemble(
     # ---- inconclusive reasons per task ----
     catalog = _load_catalog(root)
     inconclusive: list[TaskInconclusive] = []
+    for task, reason in sorted(tasks_with_no_recorded.items()):
+        inconclusive.append(TaskInconclusive(task, (f"pass_at_1 not recorded: {reason}",)))
     for task, (passes_on, passes_off, n) in sorted(task_counts.items()):
         task_pairs = by_task[task]
         failing_sets = [
             failing_test_names(run_dir / p.on.evidence["pass_at_1"]) if run_dir and p.on.evidence.get("pass_at_1") else None
-            for p in task_pairs if not _passed(p.on)
+            for p in task_pairs if _pass(p.on) is False
         ] + [
             failing_test_names(run_dir / p.off.evidence["pass_at_1"]) if run_dir and p.off.evidence.get("pass_at_1") else None
-            for p in task_pairs if not _passed(p.off)
+            for p in task_pairs if _pass(p.off) is False
         ]
         same_fail = same_failure_both_arms(failing_sets)
         graders = _task_graders(root, task)
@@ -1171,9 +1194,19 @@ def assemble(
                                   method_lines(board_obj), population_caveats(view))
 
 
-def _passed(c: CellView) -> bool:
+def _pass(c: CellView) -> bool | None:
     s = c.scores.get("pass_at_1")
-    return s is not None and s.value == 1
+    if s is None or s.value is None:
+        return None
+    if s.value == 1:
+        return True
+    if s.value == 0:
+        return False
+    return None
+
+
+def _passed(c: CellView) -> bool:
+    return _pass(c) is True
 
 
 def _measure_ratio(on: Measure, off: Measure) -> Measure:
@@ -1252,7 +1285,19 @@ def _headline(all_pairs: Sequence, task_counts: Mapping[str, tuple[int, int, int
     # so `on_failures` must be the same population, never only the on-cells that happened to land in
     # a complete pair -- an "N of M" with M < N is nonsense, not a rounding quirk.
     attributed = len(set(on_diverted_failed) | set(on_stopped))
-    on_failures = sum(1 for c in valid_cells.values() if c.pack == "on" and not _passed(c))
+    on_failures = 0
+    k_on = 0
+    k_off = 0
+    for c in valid_cells.values():
+        p = _pass(c)
+        if c.pack == "on":
+            if p is False:
+                on_failures += 1
+            elif p is None:
+                k_on += 1
+        elif p is None:
+            k_off += 1
+    not_recorded_text = f", {k_on} pack-on and {k_off} pack-off cells not recorded" if (k_on > 0 or k_off > 0) else ""
     p_text = f"pooled p = {pooled_p:.2f}" if pooled_p is not None else "pooled p not computed"
     return (f"Pack on used {tok_text} and {wall_text}; pass {passes_on}/{n} vs {passes_off}/{n} ({p_text}); "
-            f"{attributed} of {on_failures} pack-on failures have a pack-attributed cause.")
+            f"{attributed} of {on_failures} pack-on failures have a pack-attributed cause{not_recorded_text}.")
