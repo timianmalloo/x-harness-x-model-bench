@@ -10,7 +10,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
-from harness_bench import ledger
+from harness_bench import ledger, oslock
 
 FIELDS: Mapping[str, Mapping[str, str]] = {  # exact field sets besides kind, campaign_id and the stamp; s=str, i=int, d=dict
     "campaign.created": {"question": "s"},
@@ -68,7 +68,8 @@ class Eligibility:
 class Session:
     root: Path
     campaign_id: str
-    state: CampaignState
+    state: CampaignState | None
+    lock: oslock.RunLock | None
     swept: list[Path]
     skipped: list[Path]
 
@@ -116,7 +117,7 @@ def verify(root: Path, campaign_id: str) -> list[Finding]:
 @contextmanager
 def session(root: Path, campaign_id: str, *, others_extra: Sequence[tuple[Path, str]] = (), wait_s: float = 0.0,
             create: bool = False) -> Iterator[Session]:
-    yield Session(root, campaign_id, CampaignState(campaign_id, "draft", ()), [], [])
+    yield Session(root, campaign_id, CampaignState(campaign_id, "draft", ()), None, [], [])
 
 
 def _append(sess: Session, kind: str, **fields) -> dict:
