@@ -243,7 +243,10 @@ def test_the_judge_artifact_text_survives_a_leaked_archive_temp(tmp_path):
     (attempt / "ws" / "out.txt").write_text("artifact-content", encoding="utf-8")
     leaked = cell_archive / "attempt-1.tmp-999-0123456789abcdef0123456789abcdef"
     leaked.mkdir()
-    text = judges._artifact_text(run_dir, "cell-1", "out.txt")
+    try:
+        text = judges._artifact_text(run_dir, "cell-1", "out.txt")
+    except ValueError as err:
+        text = f"raised ValueError: {err}"
     assert text == "artifact-content"
 
 
