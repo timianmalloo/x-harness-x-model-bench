@@ -17,7 +17,7 @@ import subprocess
 import sys
 import threading
 import time
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from decimal import ROUND_HALF_EVEN, Decimal
 from pathlib import Path
@@ -27,7 +27,7 @@ from harness_bench.grade import CellInput, Score, _changes, _env, correctness
 from harness_bench.plan import tree_hash
 
 __all__ = ["Classification", "Facts", "at_scale", "check_seed", "check_segment", "grade_cell", "hidden_tests", "parse_result",
-           "run_check", "score_run", "write_section"]
+           "run_check", "run_child", "score_run", "write_section"]
 
 MAX_RESULT_BYTES = 64 * 1024
 ACK = b"\x06"
@@ -487,8 +487,10 @@ def write_section(inp: CellInput, name: str, section: Mapping) -> str:
     return path.relative_to(inp.run_dir).as_posix()
 
 
-def run_child(argv: list[str], cwd: Path, timeout: float, extra_env=()) -> procs.Completed:
-    return procs.Completed(None, "", "", False, False, 0.0)
+def run_child(argv: list[str], cwd: Path, timeout: float, extra_env: Iterable[str] = ()) -> procs.Completed:
+    """Start a check-less helper's child (the NG resolver) through `procs.run` (its own job, kill-on-close, bounded)
+    with `_env.grading_env(extra_env)` as its whole environment, never the parent environment wholesale and never a credential (G4)."""
+    return procs.run(argv, cwd, _env.grading_env(extra_env), timeout)
 
 
 STRATEGIES: dict[str, Callable[[CellInput, GradeContext], dict[str, Score]]] = {"security": _hidden_check}
