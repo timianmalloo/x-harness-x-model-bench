@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-05T21:17:31Z",
+  "generated": "2026-10-05T21:48:19Z",
   "audit": [
     {
       "actor": null,
@@ -92505,6 +92505,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-05T20:43:05Z",
       "duration_seconds": 2066.0
+    },
+    {
+      "id": "al-01M470M0NA7W50X2TKKSCTAY3F",
+      "shortname": "join-x-a3b",
+      "datetime": "2026-10-05T21:48:19Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of build/eval-x-a3b into integrate/e2e4-18",
+      "summary": "X-A3b: Agy gemini-3.8-flash-high hit 3,300 s after green cf6514ed (b0b8d964 HB-PLN-003 row, c78a30e2 skeleton, dd537934 red - Leader re-ran: 3 assertion fails); Sonnet claude-sonnet-5-5 follow-on 36ad63ae: every clause met, 2 tests green on arrival, board.json + plan.json all killed, goldens unchanged; dispatched from the c34 tree base 3f887a0c recount_seconds=1844 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join X-A3b into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-05T21:17:34Z",
+      "duration_seconds": 1845.0
     }
   ],
   "changes": [
