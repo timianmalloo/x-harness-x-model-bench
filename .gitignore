@@ -46,3 +46,8 @@ docs/audit/.run-starts.json.tmp
 .tools/
 # the gateway's verdict store (generated; review A3, R-42)
 cache/
+
+# campaign records (W0 rev 6, S-B2): crash-atomic temps and the lock sit in committed folders
+bench/campaigns/**/*.tmp-*
+bench/discrimination/**/*.tmp-*
+bench/campaigns/*/campaign.lock

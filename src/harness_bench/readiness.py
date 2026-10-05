@@ -54,10 +54,15 @@ def record_dir(root: Path, task_id: str) -> Path:
     return root / "bench" / "discrimination" / task_id
 
 
+def record_name(task_version: str, identity_hash: str, platform: str) -> str:
+    """The one definition of a discrimination record's file name; `campaign.verify` derives the expected name from a body with it."""
+    return f"{task_version[:_NAME_LEN]}-{identity_hash[:_NAME_LEN]}-{platform}.json"
+
+
 def record_path(root: Path, task_id: str) -> Path:
     """`bench/discrimination/<task>/<tv16>-<id16>-<platform>.json` for the current key."""
     tv, ih = record_key(root, task_id)
-    return record_dir(root, task_id) / f"{tv[:_NAME_LEN]}-{ih[:_NAME_LEN]}-{sys.platform}.json"
+    return record_dir(root, task_id) / record_name(tv, ih, sys.platform)
 
 
 def recorded_metrics(root: Path, task: Mapping) -> dict[str, dict]:
