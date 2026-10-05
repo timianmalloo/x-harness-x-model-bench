@@ -162,16 +162,18 @@ class Walk:
     """The E1 campaign through `cli.main`: create, baseline, power (prior), the pilot ring, admit, power (final), register, the grid, verify,
     report. Every campaign row is written by a real `bench campaign` command (never the raw-row helpers)."""
 
-    def __init__(self, s1: S1Repo) -> None:
+    def __init__(self, s1: S1Repo, real: bool = False) -> None:
+        """`real=True` (the credentials-marked variant in `tests/e2e/test_e1_walking_skeleton.py`): no fake launcher, builder or preflight, the
+        installed harness builds, and the operator's own home (credentials)."""
         import yaml
 
-        self.s1, self.root, self.runs = s1, s1.root, s1.runs
+        self.s1, self.root, self.runs, self.real = s1, s1.root, s1.runs, real
         base = s1.base
-        self.tools = _fake_tree(base / "tools")
+        self.tools = ROOT / ".tools" / "harness" if real else _fake_tree(base / "tools")
         if (s1.root / ".tools" / "upstream").is_dir():
             shutil.copytree(s1.root / ".tools" / "upstream", base / "upstream")  # the engine's upstream cache is tools_dir.parent / "upstream"
         self.pack_dir = base / "ai-forward"
-        self.pack_commit = _pack_repo(self.pack_dir)
+        self.pack_commit = _pack_repo(self.pack_dir, with_pack_apply=real)
         self.globals = ["--root", str(self.root), "--runs", str(self.runs), "--cells-root", str(s1.cells), "--tools-dir", str(self.tools)]
         self.steps: list[Step] = []
         self.power_file = base / "power.json"
@@ -196,11 +198,12 @@ class Walk:
                 def get(self, key, default=None):
                     return served
 
-            mp.setattr(cli.profiles, "ProfileLauncher", lambda profile, tools, planned: FakeLauncher(Always()))
-            mp.setattr(cli, "_workspace_builder", self._builder)
-            mp.setattr(cli.preflight, "check", lambda *a, **k: None)
-            mp.setenv("USERPROFILE", str(self.home))
-            mp.setenv("HOME", str(self.home))
+            if not real:
+                mp.setattr(cli.profiles, "ProfileLauncher", lambda profile, tools, planned: FakeLauncher(Always()))
+                mp.setattr(cli, "_workspace_builder", self._builder)
+                mp.setattr(cli.preflight, "check", lambda *a, **k: None)
+                mp.setenv("USERPROFILE", str(self.home))
+                mp.setenv("HOME", str(self.home))
             self.walk()
         self.grid_dir, self.pilot_dir = self.runs / "grid-1", self.runs / "pilot-1"
         report = self.grid_dir / "report.html"
@@ -253,7 +256,8 @@ class Walk:
         commit_all(self.root, "S1 declares its NA metrics (temp copy)")
 
     def walk(self) -> None:
-        self.as_committed()
+        if not self.real:
+            self.as_committed()
         self.declare_na()
         self.do("create", "campaign", "create", CID, "--question", QUESTION)
         self.do("baseline", "campaign", "baseline", CID, "--tasks", "S1")
@@ -290,7 +294,7 @@ def walk(s1):
 
 STATE_AFTER = {"create": "draft", "baseline": "baselined", "power prior": "baselined", "plan pilot-1": "baselined", "admit before pilot pass": "baselined",
                "pilot attach": "baselined", "run pilot": "baselined", "pilot pass": "piloted", "register confirm before admit": "piloted",
-               "admit": "piloted", "power final": "piloted", "register preview": "piloted", "register confirm": "measuring",
+               "admit": "piloted", "power final": "piloted", "register preview": "piloted", "register confirm": "registered",
                "plan grid-1": "registered", "attach": "measuring", "run grid": "measuring", "verify": "measuring", "report": "measuring"}
 REFUSED = {"admit before pilot pass": "HB-CMP-002: admit is not legal in state baselined",
            "register confirm before admit": "HB-CMP-008: no final power inputs are recorded"}
@@ -335,7 +339,7 @@ def test_uf_e1_front_half(s1):
     missing = [line for line in s1.ready_lines if line.startswith("x HB-RDY-001 S1:")]
     assert len(missing) == 1 and "no discrimination record for task version" in missing[0], s1.ready_lines
     assert s1.disc.rc == 0 and re.fullmatch(r"discriminate S1: written .+-win32\.json\n", s1.disc.out), s1.disc
-    assert len(s1.records) == 2
+    assert len(s1.records) == 1
     assert [line for line in s1.after_lines if "HB-RDY-001" in line] == []
     tracked = subprocess.run(["git", "ls-files", "bench/discrimination/S1"], cwd=s1.root, capture_output=True, text=True, check=True).stdout.split()
     assert tracked == [f"bench/discrimination/S1/{s1.records[0].name}"]
@@ -351,7 +355,7 @@ def test_the_temp_discrimination_matches_the_leaders_j2_measurement(s1):
     assert body["scores"]["naive"]["exploit_probes_blocked"] == "0.3750" and body["scores"]["naive"]["property_check_pass"] == 0
     assert body["scores"]["reference"]["exploit_probes_blocked"] == "1.0000" and body["scores"]["reference"]["property_check_pass"] == 1
     assert body["readiness_failures"] == []
-    assert len(body["variants"]) == 16 and all(set(v["flips"]) == set(v["clauses"]) and v["flips"] for v in body["variants"].values())
+    assert len(body["variants"]) == 15 and all(set(v["flips"]) == set(v["clauses"]) and v["flips"] for v in body["variants"].values())
     shown = subprocess.run(["git", "show", f"{J2_COMMIT}:{J2_RECORD}"], cwd=ROOT, capture_output=True, text=True, check=False)
     if shown.returncode != 0:
         pytest.skip(f"J2 commit {J2_COMMIT} is not in this clone")
@@ -363,7 +367,7 @@ def test_the_temp_discrimination_matches_the_leaders_j2_measurement(s1):
 
 def test_s1_draft_task_version_is_the_j2_task_version(s1):
     """The unflipped draft S1 task version is the J2 task version (measured here with the draft file)."""
-    assert s1.draft_version == "cafd00925c15b59ac2d386009cbd72a6d94bb8d7b1a98405440075d7b3c5d991"
+    assert s1.draft_version == "cafd00925c15b59ac2d386009cbd72a6d94bb8d7b1a98405440075d7b3c5d990"
 
 
 @pytest.fixture
@@ -401,7 +405,7 @@ def test_e1_demo_combo_offline(walk):
     the rendered verdict reads `inconclusive (underpowered)`; the preview warns that 3 pairs are below the required 39."""
     plan_doc = json.loads((walk.grid_dir / "plan.json").read_text(encoding="utf-8"))
     cells = plan_doc["cells"]
-    assert len(cells) == 7 and {c["task"] for c in cells} == {"S1"}
+    assert len(cells) == 6 and {c["task"] for c in cells} == {"S1"}
     assert {(c["combo"], c["harness"], c["model"]) for c in cells} == {("cc-opus", "claude-code", "claude-opus-5-5")}
     assert sorted(c["arm"] for c in cells) == ["candidate"] * 3 + ["off"] * 3 and sorted({c["rep"] for c in cells}) == [1, 2, 3]
     status = walk.step("verify").state
@@ -411,7 +415,7 @@ def test_e1_demo_combo_offline(walk):
     assert power_in["source_run_ids"] == ["grid-4"]
     assert "min_pairs 3 is below the required n 39 for (security, claude-code, off vs candidate)" in walk.step("register preview").ran.out
     label = re.search(r'data-part="verdict" aria-label="verdict">([^<]*)<', walk.html)
-    assert label is not None and label.group(1) == "inconclusive (underpowered) x", label and label.group(1)
+    assert label is not None and label.group(1) == "inconclusive (underpowered)", label and label.group(1)
 
 
 def test_section_3_renders_from_the_cli(walk):
@@ -425,7 +429,7 @@ def test_section_3_renders_from_the_cli(walk):
     assert 'data-field="arms">candidate (revision 7), off (no pack)<' in html
     assert f'data-field="baseline">{walk.step("verify").state["baseline_identity_hash"][:12]}' in html or walk.step("verify").state["baseline_identity_hash"][:12] in html
     assert "n 3 of 39" in html
-    assert html.count('id="cell-') == 7
+    assert html.count('id="cell-') == 6
 
 
 # --- item 5: T-E19 with a real discrimination run -----------------------------------------------------------------------------------------
@@ -460,7 +464,7 @@ def disc(s1):
 
 
 def test_the_real_discrimination_plan_is_of_kind_discrimination(disc):
-    assert disc.plan["kind"] == "measurement" and "campaign" not in disc.plan
+    assert disc.plan["kind"] == "discrimination" and "campaign" not in disc.plan
 
 
 @pytest.mark.parametrize("reader", [
@@ -476,24 +480,24 @@ def test_a_discrimination_run_is_refused_or_labelled_by_each_reader(disc, reader
     g, run = disc.globals, disc.run_id
     if reader == "campaign attach":
         ran = run_cli(*g, "campaign", "attach", CID, run)
-        assert ran.rc == 1 and ran.err.startswith("HB-CMP-011") and "plan kind discrimination, not measurement" in ran.err, ran
+        assert ran.rc == 1 and ran.err.startswith("HB-CMP-010") and "plan kind discrimination, not measurement" in ran.err, ran
     elif reader == "campaign pilot attach":
         ran = run_cli(*g, "campaign", "pilot", "attach", "dcb", run)
-        assert ran.rc == 1 and ran.err.startswith("HB-CMP-011") and "plan kind discrimination, not measurement" in ran.err, ran
+        assert ran.rc == 1 and ran.err.startswith("HB-CMP-010") and "plan kind discrimination, not measurement" in ran.err, ran
     elif reader == "campaign.run_side_check":
         with pytest.raises(BenchError) as raised:
             campaign_mod.run_side_check(disc.root, disc.plan, run)
         assert raised.value.code == "HB-CMP-010"
     elif reader in ("bench run", "bench report"):
         ran = run_cli(*g, reader.removeprefix("bench "), run)
-        assert ran.rc == 1 and ran.err.startswith("HB-PLN-005") and "discrimination" in ran.err, ran
+        assert ran.rc == 1 and ran.err.startswith("HB-PLN-004") and "discrimination" in ran.err, ran
     elif reader == "board run listing":
         with pytest.raises(BenchError) as raised:
             board.build(views.load(disc.runs / run), board_catalog(disc.root))
-        assert raised.value.code == "HB-PLN-005" and "discrimination" in raised.value.message
+        assert raised.value.code == "HB-PLN-004" and "discrimination" in raised.value.message
     else:
         ran = run_cli(*g, "status", run)
-        assert ran.rc == 0 and ran.out.splitlines()[0] == "kind: measurement", ran
+        assert ran.rc == 0 and ran.out.splitlines()[0] == "kind: discrimination", ran
         document = run_cli(*g, "status", run, "--json")
         assert document.rc == 0 and json.loads(document.out)["run_id"] == run
 
@@ -514,7 +518,7 @@ def test_two_arm_plan_renders_every_legacy_reader(walk):
     for section in ('id="leaderboard"', 'id="pack-effect"', 'id="pack-improvement"', 'id="validity"', 'id="runs"'):
         assert section in walk.html, section
     assert "This run has one pack setting; no effect to show." not in walk.html + report.ran.out
-    assert "pack ai-forward revision 8" in walk.html
+    assert "pack ai-forward revision 7" in walk.html
     assert "Pack effect for these arms is not computed; the legacy reader needs on and off." in report.ran.out
 
 
@@ -535,7 +539,7 @@ def test_campaign_modules_read_the_arm_only_through_cell_arm_and_arm_pack():
         raw = [n.lineno for n in ast.walk(tree) if (isinstance(n, ast.Constant) and n.value in ("arm", "pack") and id(n) not in docs)
                or (isinstance(n, ast.Attribute) and n.attr in ("arm", "pack")) or (isinstance(n, ast.keyword) and n.arg in ("arm", "pack"))]
         assert raw == [], (module, raw)
-        assert "cell_arm_x" in text, module
+        assert "cell_arm" in text, module
 
 
 def test_measurement_plan_naming_synthetic_is_refused(s1, walk):
@@ -549,7 +553,7 @@ def test_measurement_plan_naming_synthetic_is_refused(s1, walk):
               "combos": [{"id": "synthetic-x", "harness": "synthetic", "model": "synthetic-1"}]}
     bom = config.load_yaml(s1.root / "bench" / "bom.yaml")
     exc = attempt(plan.build_plan, s1.root, matrix, bom, "syn", {"synthetic": {"version": "x"}}, parallelism=1)
-    assert code_of(exc) == "HB-PLN-004" and "combo synthetic-x (measurement)" in exc.message, exc
+    assert code_of(exc) == "HB-PLN-004" and "combo synthetic-x (synthetic)" in exc.message, exc
     board_html = walk.html.split('id="leaderboard-body"', 1)[1].split("</tbody>", 1)[0]
     assert "synthetic" not in board_html and "cc-opus" in board_html
 
@@ -566,7 +570,7 @@ def test_one_run_four_surfaces_agree(walk):
 
     status = json.loads(walk.step("status grid json").ran.out)
     outcomes = [r for r in run_events(walk.root, "grid-1") if r["kind"] == "cell.outcome"]
-    assert status["cells_total"] == status["cells_ended"] == len(outcomes) == walk.html.count('id="cell-') == 7
+    assert status["cells_total"] == status["cells_ended"] == len(outcomes) == walk.html.count('id="cell-') == 6
     assert "n 3 of 39" in walk.html  # 3 pairs of 2 cells
     rows = campaign_rows(walk.root)
     assert walk.step("verify").ran.out == f"verify: ok ({len(rows)} rows)\n"
@@ -616,7 +620,7 @@ def test_full_walk_with_real_gates_power_and_readiness(walk):
     rows = campaign_rows(walk.root)
     passed = next(r for r in rows if r["kind"] == "pilot.passed")
     assert passed["run_id"] == "pilot-1" and passed["grading_id"].startswith("grade-") and re.fullmatch(r"[0-9a-f]{64}", passed["gate_input_hash"])
-    assert [(r["task"], r["admitted"]) for r in rows if r["kind"] == "admission.decided"] == [("S1", 0)]
+    assert [(r["task"], r["admitted"]) for r in rows if r["kind"] == "admission.decided"] == [("S1", 1)]
     assert [r["role"] for r in rows if r["kind"] == "power.recorded"] == ["prior", "final"]
     assert "required n 39" in walk.step("register preview").ran.out
 
@@ -634,7 +638,7 @@ def test_run_pass_of_a_campaign_run_is_refused_while_campaign_lock_is_held(walk)
     before = sorted(p.name for p in run_dir.rglob("grade-*.jsonl"))
     with held_by_another_process(campaign_mod.lock_path(walk.root, CID)):
         exc = attempt(runner.run_pass, run_dir, walk.root, cells_root=walk.s1.cells)
-    assert code_of(exc) == "HB-GRD-008" and sorted(p.name for p in run_dir.rglob("grade-*.jsonl")) == before and not oslock.is_held(run_dir / "grade.lock")
+    assert code_of(exc) == "HB-GRD-007" and sorted(p.name for p in run_dir.rglob("grade-*.jsonl")) == before and not oslock.is_held(run_dir / "grade.lock")
     with held_by_another_process(run_dir / "grade.lock"):
         exc = attempt(runner.run_pass, run_dir, walk.root, cells_root=walk.s1.cells)
     assert code_of(exc) == "HB-GRD-001" and sorted(p.name for p in run_dir.rglob("grade-*.jsonl")) == before
@@ -652,8 +656,8 @@ def test_after_grading_hook_is_lock_free_and_verifies_with_two_attached_runs_one
     capsys.readouterr()
     with held_by_another_process(walk.pilot_dir / "grade.lock"):
         runner.run_pass(walk.grid_dir, walk.root, cells_root=walk.s1.cells)
-    assert capsys.readouterr().out.rstrip().splitlines()[-1] == "campaign verify: ok (8 rows)"
+    assert capsys.readouterr().out.rstrip().splitlines()[-1] == "campaign verify: ok (9 rows)"
     plan_doc = json.loads((walk.grid_dir / "plan.json").read_text(encoding="utf-8"))
     with held_by_another_process(campaign_mod.lock_path(walk.root, CID)):
-        assert campaign_mod.verify_for_plan(walk.root, plan_doc) == "campaign verify: ok (8 rows)"
+        assert campaign_mod.verify_for_plan(walk.root, plan_doc) == "campaign verify: ok (9 rows)"
     assert campaign_mod.verify_for_plan(walk.root, {"campaign": {"campaign_id": "no-such"}}) == "campaign verify: not run (HB-CMP-005)"
