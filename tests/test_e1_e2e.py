@@ -465,10 +465,7 @@ def test_the_real_discrimination_plan_is_of_kind_discrimination(disc):
     assert disc.plan["kind"] == "discrimination" and "campaign" not in disc.plan
 
 
-@pytest.mark.parametrize("reader", [
-    pytest.param(r, marks=pytest.mark.xfail(strict=True, reason="a plan with no campaign block is not run_side_check's business: it returns None, so a real "
-                                                              "discrimination run is not refused there (bench run refuses it first, HB-PLN-004); X-C, C3c")) if r == "campaign.run_side_check" else r
-    for r in READERS])
+@pytest.mark.parametrize("reader", READERS)
 def test_a_discrimination_run_is_refused_or_labelled_by_each_reader(disc, reader):
     """Item 5 (T-E19), one parameter per reader, on the real run of item 2."""
     from harness_bench import board, views

@@ -57,7 +57,7 @@ def _exit_for(code: str) -> int:
 
 
 def cmd_campaign_create(args) -> int:
-    print(campaign.create(Path(args.root), args.campaign_id, args.question))
+    print(campaign.create(Path(args.root), args.campaign_id, args.question, runs=Path(args.runs)))
     return OK
 
 
@@ -86,52 +86,52 @@ def cmd_campaign_status(args) -> int:
 
 
 def cmd_campaign_baseline(args) -> int:
-    print(campaign.baseline(Path(args.root), args.campaign_id, args.tasks))
+    print(campaign.baseline(Path(args.root), args.campaign_id, args.tasks, runs=Path(args.runs)))
     return OK
 
 
 def cmd_campaign_fix(args) -> int:
-    print(campaign.fix(Path(args.root), args.campaign_id, args.defect_class, args.commit, args.component))
+    print(campaign.fix(Path(args.root), args.campaign_id, args.defect_class, args.commit, args.component, runs=Path(args.runs)))
     return OK
 
 
 def cmd_campaign_power(args) -> int:
-    print(campaign.power(Path(args.root), args.campaign_id, Path(args.inputs)))
+    print(campaign.power(Path(args.root), args.campaign_id, Path(args.inputs), runs=Path(args.runs)))
     return OK
 
 
 def cmd_campaign_attach(args) -> int:
-    print(campaign.attach(Path(args.root), args.campaign_id, args.run_id))
+    print(campaign.attach(Path(args.root), args.campaign_id, args.run_id, runs=Path(args.runs)))
     return OK
 
 
 def cmd_campaign_conclude(args) -> int:
-    print(campaign.conclude(Path(args.root), args.campaign_id))
+    print(campaign.conclude(Path(args.root), args.campaign_id, runs=Path(args.runs)))
     return OK
 
 
 def cmd_campaign_abandon(args) -> int:
-    print(campaign.abandon(Path(args.root), args.campaign_id, args.reason))
+    print(campaign.abandon(Path(args.root), args.campaign_id, args.reason, runs=Path(args.runs)))
     return OK
 
 
 def cmd_campaign_pilot_attach(args) -> int:
-    print(campaign.pilot_attach(Path(args.root), args.campaign_id, args.run_id))
+    print(campaign.pilot_attach(Path(args.root), args.campaign_id, args.run_id, runs=Path(args.runs)))
     return OK
 
 
 def cmd_campaign_pilot_pass(args) -> int:
-    print(campaign.pilot_pass(Path(args.root), args.campaign_id, args.run_id, args.grading_id))
+    print(campaign.pilot_pass(Path(args.root), args.campaign_id, args.run_id, args.grading_id, runs=Path(args.runs)))
     return OK
 
 
 def cmd_campaign_admit(args) -> int:
-    print(campaign.admit(Path(args.root), args.campaign_id))
+    print(campaign.admit(Path(args.root), args.campaign_id, runs=Path(args.runs)))
     return OK
 
 
 def cmd_campaign_register(args) -> int:
-    print(campaign.register(Path(args.root), args.campaign_id, Path(args.prereg), args.confirm))
+    print(campaign.register(Path(args.root), args.campaign_id, Path(args.prereg), args.confirm, runs=Path(args.runs)))
     return OK
 
 
