@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-05T20:43:01Z",
+  "generated": "2026-10-05T21:17:31Z",
   "audit": [
     {
       "actor": null,
@@ -92478,6 +92478,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-05T20:43:00Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M46YVMB28T5BKMED48EJX0Q8",
+      "shortname": "join-x-g3",
+      "datetime": "2026-10-05T21:17:31Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of build/eval-x-g3-r2 into integrate/e2e4-18",
+      "summary": "X-G3: Grok first attempt w2-g3-e1e4 served grok-4.6-build (R-103 drift; root cause: runner never calls session/set_model for grok) -> stopped; r2 w2-g3-r2-e1e4 served grok-4.7-build, 1,974 s: skeleton c7fbcb2d, reds 525b496f/9e55e61a (Leader re-ran: 12 + 5 assertion fails), green a85ae48e; Leader gate 322 passed, formal.json all killed, ruff 0, bench validate 0; no catalog/0.7 file touched recount_seconds=2065 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join X-G3 into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-05T20:43:05Z",
+      "duration_seconds": 2066.0
     }
   ],
   "changes": [
