@@ -3743,7 +3743,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9c92f17bc0e84d33385f983991f89b30ac4a9dd5a902e6179f4ccf9edcb21a48"
+      "sourceSha256": "ab40e3919d19e8dd69889ba5f63be71e17020b60e5252d117b2e632e2ccb9506"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -5980,7 +5980,7 @@ window.DOCS_INDEX = {
       "phase": "",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "X-C builds campaign.py, the bench campaign commands, the lock protocol, verify with its git witness, the run-side check inside the engine, the campaign status document and the after-grading hook of W1-C rev 2, under W0 rev 6, in three serial dispatches C1 -> C2 -> C3, each red and green in one turn; planned Agy gemini-3.8-flash-high, run as Claude Sonnet from the integration head under R-105 while the primary is blocked (Coordinator #22: C1 re-read against integrate/b3-stage2 f7e1e357).",
+      "summary": "X-C builds campaign.py, the bench campaign commands, the lock protocol, verify with its git witness, the run-side check inside the engine, the campaign status document and the after-grading hook of W1-C rev 2, under W0 rev 6, in serial dispatches C1 -> C2 (C2a ran) -> C3a -> C3b (Coordinator #26: C2b returns to C3a; DR-14 gates C3b), each red and green in one turn; planned Agy gemini-3.8-flash-high, run as Claude Sonnet from the integration head under R-105 while the primary is blocked (Coordinator #22: C1 re-read against integrate/b3-stage2 f7e1e357).",
       "tags": [],
       "links": [
         {
@@ -5997,7 +5997,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f5fcc161ca82882af4fe310e23e295763ee9e04cb3ee07b3b6c5c52a6f9f03fd"
+      "sourceSha256": "29e5c6a3ae4f05bc6efd969eae96d341b4d76750daefa7897c5df5c3c9ce15a1"
     },
     {
       "id": "brief-eval-x-cv",
@@ -7339,7 +7339,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f01e18a7a5898c6cc894a5090d55cc07789ba83c3b6c8b8bcab7cde0e7c7a09a"
+      "sourceSha256": "039508b5dc5008c7863dbf1a08f0f815609a5b7e91be372983ee14b64e6a4fdb"
     },
     {
       "id": "coordination-eval-wave2-e234-briefs",
@@ -8295,5 +8295,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "b32b1ae33ded476b4f45af6dff0f6b4d4bcfa88a57f35bec491e8d4e63e708cb"
+  "graphSha256": "d398d6d054b035b0e27f300c8c031b091bf68cb3285815c16a4fe650ceed85ea"
 };
