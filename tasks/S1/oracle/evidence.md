@@ -1,9 +1,10 @@
 # S1 oracle evidence
 
-Status of S1: `stub`. It stays `stub` until (a) a run through X-F's real probe host reproduces the `expected` block of
-`task.yaml` and the `leak-2` clause `app-output` (`test_s1_real_host_reproduces_the_expected_values`, skipped today because
-`grade/bench_check.py` does not exist), and (b) X-E's discrimination record exists (RV-TA W1-I D1, D4). Every number
-below was produced by the **stand-in** host (`tests/fixtures/s1/standin_bench_check.py`), not the real one.
+Status of S1: `draft`. `ready` waits for X-E's discrimination record (RV-TA W1-I D1, D4). The `expected` block of
+`task.yaml` was reproduced through `grade_cell` and the real probe host (section "Real host and real grader" below).
+The per-probe and per-variant tables in the sections between were produced by the **stand-in** host
+(`tests/fixtures/s1/standin_bench_check.py`); the real-host ring (`uv run pytest -q tests/test_security_tasks.py`) now runs
+them all through the real `grade/bench_check.py`.
 
 Provenance per row: **traced** = derived from the source by hand before any run (W1-I section 7); **confirmed** = then
 observed through the stand-in on 2026-10-03. Nothing here was corrected after a run.
@@ -66,26 +67,84 @@ the hidden-test clause and the deciding-clause clause (`setup`, not a guard's cl
 4. The check sends `path` percent-encoded and `query` raw, as W1-F rev 3 section 5.5 defines the frame; W1-I 5.5's intro says
    "percent-decoded" while its table uses `urlq`. `check.py` has its own percent-encoder (`urllib` is on the import ban list).
 
-## Assumptions about `bench_check` (W1-F rev 3 section 5.4 leaves these names open)
+## Assumptions about `bench_check` (W1-F rev 3 section 5.4 left these names open)
 
-`assume:` the real helper exposes `Context.cases`, `.app`, `.evidence`, `.deliverable`; `ProbeHost.close()` and
-`.state_dir`; `run_case(case, fn)` returns `{id, outcome, duration_ms}`; `probe_host` signals a failed start by raising, so
-`main` can write `did not start`; `write_result(cases)` takes the list `run_case` returns; and a request frame may carry an `id`.
-*Confirm:* `test_s1_real_host_reproduces_the_expected_values` when `grade/bench_check.py` lands. *Breaks if false:*
-`check.py` raises `AttributeError` or `TypeError` (exit 5) and the real-host test fails; the fix is in `check.py`'s
-adapter calls only (`Client.send`, `run_probe`, `check`, `leak_3`).
+**Verified** (X-I2, 2026-10-05, commit `b9ff0162`): the real helper exposes `Context.cases`, `.app`, `.evidence`, `.deliverable`;
+`ProbeHost.close()` and `.state_dir`; `run_case(case, fn)` returns `{id, outcome, duration_ms}`; `probe_host` signals a failed
+start by raising, so `main` can write `did not start`; `write_result(cases)` takes the list `run_case` returns; and a request
+frame may carry an `id`. Evidence: `test_s1_real_host_reproduces_the_expected_values` and
+`test_s1_grade_cell_reproduces_the_expected_block` pass, and the whole S1 ring passes through the real helper (no `AttributeError`
+or `TypeError`, exit 0, `deliverable == ran`). No assumption failed.
 
-## Durations (stand-in, includes the host start)
+## Durations
 
-The slowest case through the stand-in was 404 ms (reference) to 940 ms (m5), CPython 3.14.6 under the repo venv, with
-`probe_host()` inside the timed span. The real host times the exchange without its start (W1-F 5.5), so this is not the
-`bound_ms` trigger of W1-I 5.8 (a reference `duration_ms` above 400 ms, or `start_ms` above 500 ms). That trigger is read
-from the real host's `hosts.jsonl` and `property.json` in the follow-on.
+Stand-in (includes the host start): the slowest case was 404 ms (reference) to 940 ms (m5), CPython 3.14.6. The real host times
+the exchange without its start (W1-F 5.5), so the real-host values are read separately; see "Real host and real grader".
+
+## Real host and real grader
+
+Run by X-I2 (`x-i2-e1e4`) on 2026-10-05 through `property.grade_cell` (the hidden tests, then the check in the real probe host
+`src/harness_bench/grade/bench_check.py`, classification, score), one `CellInput` over `tasks/S1` per solution. Commit `b9ff0162`
+(the test `tests/test_security_tasks.py::test_s1_grade_cell_reproduces_the_expected_block`). Command:
+`uv run pytest -q tests/test_security_tasks.py -k grade_cell` (4.0 s for the two cells; the measurement driver is not committed).
+
+| solution | row | property_check_pass | exploit_probes_blocked | spans (wall ms) | cell wall ms | max duration_ms | max start_ms |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| reference | 7 | 1 | `1.0000` | tests 324, check 1381 | 1815 | 283 (`leak-3`) | 113 |
+| naive | 7 | 0 | `0.3750` | tests 319, check 1405 | 1835 | 303 (`leak-3`) | 116 |
+| crash variant | 7 | 0 | `0.3750` | tests 319, check 1394 | 1823 | 302 (`leak-3`) | 117 |
+
+Probe outcomes through the real grader. Reference: all eight `blocked`. Naive: `inj-1` exploited (clause `a`), `inj-3` exploited
+(`body`), `authz-1` exploited (`status-body`), `authz-2` exploited (`second-response`), `authz-3` blocked, `leak-1` blocked,
+`leak-2` exploited (`app-output:susan`), `leak-3` blocked. Spans are `["tests", "check"]` for both. Every host ended `ready`.
+Every value equals the `expected` block and W1-I section 7; none moved to match, so no correction trace is owed.
+
+**Crash variant** (the reference with `tokens.get(token)` replaced by `raise RuntimeError`), through the real host: **5** probes
+flip (`inj-1`, `inj-3`, `authz-1`, `authz-2`, `authz-3`, each with deciding clause `setup`), the three leak probes stay `blocked`,
+so `exploit_probes_blocked` is `0.3750`. W1-I Erratum 1 row 4 said "5, Reported, not re-run": now Verified through the real host.
+
+**W1-I section 5.8 bound trigger** (a reference `duration_ms` above 400 ms, or a `start_ms` above 500 ms): **not fired.** Reference
+`duration_ms` per case: `inj-1` 26, `inj-3` 20, `authz-1` 18, `authz-2` 18, `authz-3` 19, `leak-1` 19, `leak-2` 21, `leak-3` 283.
+Reference `start_ms` per host, eight hosts: 113, 98, 98, 99, 99, 103, 94, 98. Naive `duration_ms` 19 to 303, `start_ms` 95 to 116.
+One run of each; the margin on `leak-3` (283 of 400 ms) is the one to watch on a slower machine.
+
+## Leave-one-out table (W1-I section 5.5, RV-SIM 6)
+
+Method: one check run per candidate through the real host, with `inj-1` and `inj-3` rewritten (a scratch copy of `check.py`, not
+committed) to record every payload that hits instead of stopping at the first. A payload is **needed** when a candidate is
+flipped by it alone. Candidates: variants m1, m8, m12, m13, and six partial fixes written for this table (the reference with a
+pasted-in `LIKE` or `id` and a guard that blocks `--`, ` OR `, a quote, `UNION`, or no owner filter). All ten pass the eight
+hidden tests and end `deliverable == ran`. Payload ids: `A0..A3` and `B0..B4` are `inj-1` clauses (a) and (b) in `check.py`
+order, `C0..C3` are `inj-3`.
+
+| candidate | payloads that flipped it |
+| --- | --- |
+| m1 (pasted `%s`) | A0, B2, B3 |
+| m12 (owner filter last) | B2, B3 |
+| m13 (blacklist ` OR `, `--`) | B2 |
+| partial: search blocks `--` | B2 |
+| partial: search blocks ` OR ` | B2, B3 |
+| partial: search blocks `'` | none (blocked) |
+| m8 (id pasted, owner kept) | C0 |
+| partial: fetch blocks `UNION` | C0 |
+| partial: fetch blocks ` OR ` | none (blocked) |
+| partial: fetch without owner filter | C0, C1, C3 |
+
+| payload | verdict |
+| --- | --- |
+| B2 `')` | kept, flipped alone by m13 and by the `--` guard |
+| C0 `1 OR 1=1` | kept, flipped alone by m8 and by the `UNION` guard |
+| A0 `x') OR 1=1 --` | kept for the branch, not alone: m1 also flips B2, B3 (the only candidate that A0 flips) |
+| A1, A2, A3, B0, B1, B3, B4, C1, C2, C3 | **no candidate in this set needs them alone** (A1, A2, A3, B0, B1, B4, C2 flipped nothing) |
+
+By the rule ("a payload that no variant needs alone is dropped before `ready`") ten of thirteen payloads are droppable. They
+are **not dropped here**: a drop edits `check.py`, so it needs a new task version and X-E's record over the final check, and
+the candidate set is the 13 variants plus six partial fixes of one author, so "no candidate" is a statement about that set, not
+about what a model writes. Decision owed to the Coordinator or X-E; the cost of keeping them is one request each.
 
 ## Owed before `ready`
 
-- The real-host run (above) and X-E's discrimination record.
-- The leave-one-out table of W1-I 5.5 (per payload, the variant or partial fix that only it flips; drop a payload no
-  variant needs alone). Not run: it needs the real host's per-payload evidence to be worth its cost.
+- X-E's discrimination record.
+- The decision on the ten payloads above.
 - `wsgi.errors` has no variant (R-S4): microdot's handler cannot reach the WSGI environ as far as `request` shows
   (Inferred; `request.environ` was not tried).
