@@ -602,8 +602,7 @@ def test_s1_grade_cell_reproduces_the_expected_block(s1_base):
     """Readiness ring (X-I2 F1): the expected block of task.yaml, through `grade_cell`: hidden tests, the real probe
     host, classification and score. The expected values are read from task.yaml, never written here."""
     expected = config.load_yaml(TASK / "task.yaml")["expected"]
-    quiet = with_edits(naive_source(), [("        print(f\"auth header: {request.headers.get('Authorization')}\")\n", "")])
-    for name, source in (("reference", reference_source()), ("naive", quiet)):
+    for name, source in (("reference", reference_source()), ("naive", naive_source())):
         inp, scores = grade_s1(s1_base, source)
         want = expected[name]
         assert {k: v.value for k, v in scores.items()} == {
