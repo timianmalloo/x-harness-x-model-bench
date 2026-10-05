@@ -10,6 +10,7 @@ scanned for the imports and words that would make it one (`check_problems`).
 
 from __future__ import annotations
 
+import ast
 import functools
 import hashlib
 import json
@@ -212,7 +213,22 @@ DYNAMIC_NAMES = {"__import__", "importlib", "import_module", "eval", "exec", "co
 def check_problems(cases: dict, oracle_command: list[str], check_source: str) -> list[str]:
     """R-99 condition 3 and S1's no-build scan: the check never imports bottle or pickle, never imports dynamically, and the
     argv words and the network set stay out (RV-SEC S2 6, RV-TA S2 authoring 4)."""
-    return []  # skeleton: the scan finds nothing
+    problems = []
+    deliverable = cases.get("deliverable") or {}
+    for key in ("build", "start"):
+        if key in deliverable:
+            problems.append(f"deliverable.{key} is declared")
+    if cases.get("env"):
+        problems.append(f"env is not empty: {cases['env']}")
+    words = [w for key in ("build", "start") for w in deliverable.get(key) or []] + list(oracle_command)
+    problems += [f"argv word {w!r}" for w in words if w in NETWORK_WORDS or w.startswith("http")]
+    problems += [f"check imports {m}" for m in sorted(check_imports(check_source) & DENIED_IMPORTS)]
+    names = {n.id for n in ast.walk(ast.parse(check_source)) if isinstance(n, ast.Name)}
+    names |= {n.attr for n in ast.walk(ast.parse(check_source)) if isinstance(n, ast.Attribute)}
+    names |= check_imports(check_source)
+    names |= {a.name for n in ast.walk(ast.parse(check_source)) if isinstance(n, ast.ImportFrom) for a in n.names}
+    problems += [f"check uses dynamic {m}" for m in sorted(names & DYNAMIC_NAMES)]
+    return problems
 
 
 def test_s2_check_passes_the_source_scan():

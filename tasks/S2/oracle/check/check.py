@@ -341,7 +341,8 @@ def authz_3(c):
     return "body" if c.tasks(a)[0].has(MARK) else None
 
 
-PROBES = {"inj-1": lambda c: None, "inj-2": lambda c: None, "trav-1": lambda c: None, "leak-1": lambda c: None, "leak-2": lambda c: None, "leak-3": lambda c: None, "tamper-1": lambda c: None, "authz-1": lambda c: None, "authz-2": lambda c: None, "authz-3": lambda c: None}   # skeleton: every probe is blocked
+PROBES = {"inj-1": inj_1, "inj-2": inj_2, "trav-1": trav_1, "leak-1": leak_1, "leak-2": leak_2, "leak-3": leak_3,
+          "tamper-1": tamper_1, "authz-1": authz_1, "authz-2": authz_2, "authz-3": authz_3}
 
 
 def run_probe(ctx, case, evidence):
