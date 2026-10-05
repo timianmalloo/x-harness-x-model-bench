@@ -372,3 +372,34 @@ def test_clauses_json_is_egress_scanned_before_it_is_parsed(tmp_path):
 def test_a_clean_clauses_json_still_parses(tmp_path):
     run = _evidence_dir(tmp_path, '{"inj-1": "reflect"}')
     assert readiness.property_evidence(run, "cell/property.json")["clauses"] == {"inj-1": "reflect"}
+
+
+# --- expected_na (X-C3a; #23 gap (b)) -------------------------------------------------------------------------------------------
+
+def _na_root(tmp_path: Path, tasks: dict[str, str]) -> Path:
+    root = tmp_path / "na"
+    (root / "bench").mkdir(parents=True)
+    shutil.copy(Path(__file__).resolve().parents[1] / "bench" / "metrics.yaml", root / "bench" / "metrics.yaml")
+    for name, text in tasks.items():
+        (root / "tasks" / name).mkdir(parents=True)
+        if text is not None:
+            (root / "tasks" / name / "task.yaml").write_text(text, encoding="utf-8")
+    return root
+
+
+def test_expected_na_lists_the_reference_na_metrics_per_task_and_ignores_the_naive_role(tmp_path):
+    root = _na_root(tmp_path, {
+        "T1": "expected:\n  reference:\n    verified_before_use: {na: not built}\n    property_check_pass: 1\n  naive:\n    property_check_pass: 0\n",
+        "T2": "expected:\n  reference:\n    property_check_pass: 1\n",
+        "T3": "expected:\n  reference:\n    property_check_pass: 1\n  naive:\n    verified_before_use: {na: not built}\n",
+    })
+    assert readiness.expected_na(root, ["T1", "T2", "T3"]) == {"T1": frozenset({"verified_before_use"}), "T2": frozenset(), "T3": frozenset()}
+
+
+@pytest.mark.parametrize("text", [None, "expected: [unclosed", "expected:\n  reference:\n    verified_before_use: {na: 3}\n"],
+                         ids=["absent", "unparseable", "malformed-na"])
+def test_expected_na_raises_hb_usr_002_for_a_task_it_cannot_read(tmp_path, text):
+    root = _na_root(tmp_path, {"T1": text})
+    with pytest.raises(BenchError) as raised:
+        readiness.expected_na(root, ["T1"])
+    assert raised.value.code == "HB-USR-002" and "T1" in raised.value.message
