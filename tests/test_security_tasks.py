@@ -28,6 +28,10 @@ from pathlib import Path
 
 import pytest
 import ring_cache
+from test_ng_tasks import (  # the shared restatement of W0 section 2's variants reader
+    literal_table,
+    reader_problems,
+)
 
 from harness_bench import config
 from harness_bench.grade import CellInput
@@ -88,10 +92,6 @@ def load_module(path: Path, name: str, **fakes: object):
             else:
                 sys.modules[k] = v
     return module
-
-
-def variants_module():
-    return load_module(ORACLE / "variants.py", "s1_variants")
 
 
 def wrong_apps_module():
@@ -454,16 +454,15 @@ def judge_variant(spec: dict, hidden: Hidden, checked: Checked) -> set[str]:
         failed.add("ran")
     if checked.exploited() != frozenset(spec["flips"]):
         failed.add("flipped")
-    if {p: checked.probes.get(p, {}).get("clause") for p in spec["flips"]} != spec["clause"]:
+    if {p: checked.probes.get(p, {}).get("clause") for p in spec["flips"]} != spec["clauses"]:
         failed.add("clause")
     return failed
 
 
 @pytest.mark.parametrize("name", [f"m{i}" for i in range(1, 16)])
 def test_s1_each_defect_variant_flips_exactly_its_probes(s1_base, name):
-    variants = variants_module()
-    spec = variants.VARIANTS[name]
-    source = variants.apply(reference_source(), name)
+    spec = literal_table(ORACLE / "variants.py", "VARIANTS")[name]
+    source = with_edits(reference_source(), [(e["old"], e["new"]) for e in spec["edits"]])
     assert source != reference_source(), f"{name} carries no edit"
     assert judge_variant(spec, run_hidden(s1_base, source), run_check(s1_base, source)) == set(), run_check(s1_base, source).probes
 
@@ -477,18 +476,25 @@ def test_s1_the_variant_judge_rejects_a_variant_that_crashes(s1_base):
     # A crash flips the five probes that need a working app (their setup fails) and not the three leak probes, which a
     # dead app cannot leak from. W1-I F18 says "every probe"; measured, it is five.
     flipped = ("inj-1", "inj-3", "authz-1", "authz-2", "authz-3")
-    spec = {"flips": flipped, "clause": dict.fromkeys(flipped, "body")}
+    spec = {"flips": flipped, "clauses": dict.fromkeys(flipped, "body")}
     failed = judge_variant(spec, run_hidden(s1_base, crash), run_check(s1_base, crash))
     assert {"hidden", "clause"} <= failed
     assert "flipped" not in failed  # by outcome alone, the crash looks like a perfect variant
 
 
 def flipped_branches(variants: dict) -> set[str]:
-    return {f"{probe}:{clause}" for spec in variants.values() for probe, clause in spec["clause"].items()}
+    return {f"{probe}:{clause}" for spec in variants.values() for probe, clause in spec["clauses"].items()}
+
+
+def test_s1_variants_conform_to_the_w0_section_2_carrier():
+    """W0 rev 6.10 section 2: one literal `VARIANTS`, `{flips, clauses, edits: [{file, old, new}]}`, names `^[a-z0-9]{1,16}$`, each
+    `old` once in the reference overlay file. X-E's reader refuses anything else with HB-RDY-005."""
+    text = (ORACLE / "variants.py").read_text(encoding="utf-8")
+    assert reader_problems(text, {APP_REL: reference_source()}) == []
 
 
 def test_s1_every_probe_branch_is_flipped_by_a_variant():
-    variants = variants_module().VARIANTS
+    variants = literal_table(ORACLE / "variants.py", "VARIANTS")
     assert REQUIRED_BRANCHES - flipped_branches(variants) == set()
     without_m11 = {k: v for k, v in variants.items() if k != "m11"}  # the fixture: a dead branch no variant reaches
     assert REQUIRED_BRANCHES - flipped_branches(without_m11) == {"leak-2:app-output:david"}
