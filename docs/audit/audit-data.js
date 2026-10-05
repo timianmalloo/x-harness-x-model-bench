@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-05T05:30:31Z",
+  "generated": "2026-10-05T06:27:49Z",
   "audit": [
     {
       "actor": null,
@@ -81240,6 +81240,368 @@ window.AUDIT_DATA = {
       },
       "mode": "compiled",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M45BS9MMH87ARFGWCFYQDRXH",
+      "shortname": "Dispatch X-I4 (F4: payload ids as the inj clauses of S1) as a Claude Cod…",
+      "datetime": "2026-10-05T06:24:58Z",
+      "session": "prompt-compile",
+      "prompt": "Dispatch X-I4 (F4: payload ids as the inj clauses of S1) as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91). Session x-i4-e1e4, branch build/eval-x-i4, a new tree from the integration head integrate/e1e4-17, not main: from the primary run coord worktree new --branch build/eval-x-i4 --session x-i4-e1e4 --base integrate/e1e4-17, record the base SHA (f58d63b0 or a later integration head), prefix AGENT_SESSION=x-i4-e1e4 inline on every commit and coord call, and work only in the printed tree by absolute path; never EnterWorktree, never checkout or switch in the primary. Your brief is the section \"Follow-on X-I4\" of docs/coordination/eval-wave2-e1/x-i.md (sha256 af9344cf, Coordinator #23): read docs/coordination/eval-wave2-e1/README.md sections 1-4 and section 8's Coordinator #19 (c) entry, then the X-I4 section in full, then W0 section 2 (docs/design/eval-seam-contracts.md, the defect-variants bullet) and tasks/S1/oracle/evidence.md. Check the four Depends-on SHAs (6afdf6f7, 8a27ba5b, 041f8692, 852fdf7c) against HEAD, not main, and stop if one is missing. Build red first per README section 2: a skeleton commit, then the red tests failing by assertion, then the green commit; report SHA, node and failing assertion per red commit. Land the brief's acceptance items I4-1 to I4-6: S1's check records, per inj probe, the ids of every payload that exploited it as one clause string joined by commas, derived from the payload tuples in check.py; check() writes clauses.json into its evidence directory from the same dict as s1-probes.json; the variants m1, m12, m13 and m8 carry their measured clauses; the join test test_s1_clauses_json_carries_payload_ids_through_grade_cell reads the result through grade_cell and X-E's readiness.property_evidence; a new task version with the section \"F4 carrier (X-I4)\" in evidence.md; no payload dropped, no expected value edited, status stays draft. Owned paths: tasks/S1/** and tests/test_security_tasks.py only; any other line is a seam request to coord-opus-e1e4 with a fallback that reaches green; if one clause string cannot carry the id set, use the brief's seam route and its fallback. Gate: own files and own mutations only, the whole suite is the Leader's: uv run ruff check tests/test_security_tasks.py, uv run pytest -q tests/test_security_tasks.py tests/test_discriminate.py tests/test_readiness.py, python docs/ai-forward-pack/scripts/docs-graph.py validate, each on its own line with its exit status read, plus the two hand mutants of the brief, run once and reported. Do not run discriminate over S1 (the Leader's J2 record run) and do not flip S1 to ready. Budget 100 calls, 200k context, 2 h; at 85 % commit, stop and report what remains. Report per README section 4, at most 12 lines, first line the served model id, with each measured clause string beside X-I2's reported one and the old and new task version hashes.",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M45BW1PGN27YQ91AQQDWY0VK",
+      "shortname": "compile-Dispatch X-I4 (F4: payload ids as the inj clauses of S1) as a Claude Cod…",
+      "datetime": "2026-10-05T06:26:28Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill <skill>\nGoal state\nGoal: Following the section \"Follow-on X-I4\" of docs/coordination/eval-wave2-e1/x-i.md (sha256 af9344cf, Coordinator #23), docs/coordination/eval-wave2-e1/README.md sections 1-4 and section 8's Coordinator #19 (c) entry, W0 section 2 and tasks/S1/oracle/evidence.md: build X-I4 (F4: payload ids as the inj clauses of S1), red first on build/eval-x-i4 as session x-i4-e1e4, a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) in a new tree from integrate/e1e4-17.\nDone when: The tree is created from the primary with coord worktree new --branch build/eval-x-i4 --session x-i4-e1e4 --base integrate/e1e4-17, the base SHA (f58d63b0 or a later integration head) is recorded, AGENT_SESSION=x-i4-e1e4 prefixes every commit and coord call, and all work is in the printed tree by absolute path.; The four Depends-on SHAs (6afdf6f7, 8a27ba5b, 041f8692, 852fdf7c) are checked against HEAD, not main, before any work; if one is missing the session stops.; X-I4 is built red first per README section 2: a skeleton commit, then the red tests failing by assertion, then the green commit, with SHA, node and failing assertion reported per red commit.; S1's check records, per inj probe, the ids of every payload that exploited it as one clause string joined by commas, derived from the payload tuples in check.py.; check() writes clauses.json into its evidence directory from the same dict as s1-probes.json.; The variants m1, m12, m13 and m8 carry their measured clauses.; The join test test_s1_clauses_json_carries_payload_ids_through_grade_cell reads the result through grade_cell and X-E's readiness.property_evidence.; S1 has a new task version, and evidence.md has the section \"F4 carrier (X-I4)\".; No payload is dropped, no expected value is edited, and status stays draft.; Exit evidence: uv run ruff check tests/test_security_tasks.py, uv run pytest -q tests/test_security_tasks.py tests/test_discriminate.py tests/test_readiness.py and python docs/ai-forward-pack/scripts/docs-graph.py validate, each on its own line with its exit status read, plus the brief's two hand mutants, run once and reported.; The report follows README section 4 in at most 12 lines, its first line is the served model id, and it gives each measured clause string beside X-I2's reported one and the old and new task version hashes.; At 85 % of the budget (100 calls, 200k context, 2 h) the work is committed and the report says what remains.\nNot in scope: The whole-suite run: it is the Leader's at the join.; Running discriminate over S1 (the Leader's J2 record run) and flipping S1 to ready.; Any path outside tasks/S1/** and tests/test_security_tasks.py: a line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green.; Checking out or switching branches in the primary.\nTier: T2\nFan-out cap: 0\nContext ceiling: 200000\nMain-line budget: 100\nTrace\n| clause | trace |\n|---|---|\n| done_when: The tree is created from the primary with coord worktree new --branch build/eval-x-i4 --session x-i4-e1e4 --base integrate/e1e4-17, the base SHA (f58d63b0 or a later integration head) is recorded, AGENT_SESSION=x-i4-e1e4 prefixes every commit and coord call, and all work is in the printed tree by absolute path. | phrase: from the primary run coord worktree new --branch build/eval-x-i4 --session x-i4-e1e4 --base integrate/e1e4-17, record the base SHA (f58d63b0 or a later integration head), prefix AGENT_SESSION=x-i4-e1e4 inline on every commit and coord call, and work only in the printed tree by absolute path |\n| done_when: The four Depends-on SHAs (6afdf6f7, 8a27ba5b, 041f8692, 852fdf7c) are checked against HEAD, not main, before any work; if one is missing the session stops. | phrase: Check the four Depends-on SHAs (6afdf6f7, 8a27ba5b, 041f8692, 852fdf7c) against HEAD, not main, and stop if one is missing. |\n| done_when: X-I4 is built red first per README section 2: a skeleton commit, then the red tests failing by assertion, then the green commit, with SHA, node and failing assertion reported per red commit. | phrase: Build red first per README section 2: a skeleton commit, then the red tests failing by assertion, then the green commit; report SHA, node and failing assertion per red commit. |\n| done_when: S1's check records, per inj probe, the ids of every payload that exploited it as one clause string joined by commas, derived from the payload tuples in check.py. | phrase: S1's check records, per inj probe, the ids of every payload that exploited it as one clause string joined by commas, derived from the payload tuples in check.py |\n| done_when: check() writes clauses.json into its evidence directory from the same dict as s1-probes.json. | phrase: check() writes clauses.json into its evidence directory from the same dict as s1-probes.json |\n| done_when: The variants m1, m12, m13 and m8 carry their measured clauses. | phrase: the variants m1, m12, m13 and m8 carry their measured clauses |\n| done_when: The join test test_s1_clauses_json_carries_payload_ids_through_grade_cell reads the result through grade_cell and X-E's readiness.property_evidence. | phrase: the join test test_s1_clauses_json_carries_payload_ids_through_grade_cell reads the result through grade_cell and X-E's readiness.property_evidence |\n| done_when: S1 has a new task version, and evidence.md has the section \"F4 carrier (X-I4)\". | phrase: a new task version with the section \"F4 carrier (X-I4)\" in evidence.md |\n| done_when: No payload is dropped, no expected value is edited, and status stays draft. | phrase: no payload dropped, no expected value edited, status stays draft |\n| done_when: Exit evidence: uv run ruff check tests/test_security_tasks.py, uv run pytest -q tests/test_security_tasks.py tests/test_discriminate.py tests/test_readiness.py and python docs/ai-forward-pack/scripts/docs-graph.py validate, each on its own line with its exit status read, plus the brief's two hand mutants, run once and reported. | phrase: uv run ruff check tests/test_security_tasks.py, uv run pytest -q tests/test_security_tasks.py tests/test_discriminate.py tests/test_readiness.py, python docs/ai-forward-pack/scripts/docs-graph.py validate, each on its own line with its exit status read, plus the two hand mutants of the brief, run once and reported |\n| done_when: The report follows README section 4 in at most 12 lines, its first line is the served model id, and it gives each measured clause string beside X-I2's reported one and the old and new task version hashes. | phrase: Report per README section 4, at most 12 lines, first line the served model id, with each measured clause string beside X-I2's reported one and the old and new task version hashes. |\n| done_when: At 85 % of the budget (100 calls, 200k context, 2 h) the work is committed and the report says what remains. | phrase: Budget 100 calls, 200k context, 2 h; at 85 % commit, stop and report what remains. |\n| not_in_scope: The whole-suite run: it is the Leader's at the join. | phrase: the whole suite is the Leader's |\n| not_in_scope: Running discriminate over S1 (the Leader's J2 record run) and flipping S1 to ready. | phrase: Do not run discriminate over S1 (the Leader's J2 record run) and do not flip S1 to ready. |\n| not_in_scope: Any path outside tasks/S1/** and tests/test_security_tasks.py: a line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green. | phrase: Owned paths: tasks/S1/** and tests/test_security_tasks.py only; any other line is a seam request to coord-opus-e1e4 with a fallback that reaches green |\n| not_in_scope: Checking out or switching branches in the primary. | phrase: never checkout or switch in the primary |\nReferences\n- build/eval-x-i4: unresolved (not found)\n- integrate/e1e4-17: unresolved (not found)\n- docs/coordination/eval-wave2-e1/x-i.md: docs/coordination/eval-wave2-e1/x-i.md sha256 af9344cf02511f14b2e60b25eff0f9b842f3314d2ae02709c8903414959feebe\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 758de28f10a6fd6983dadc1c7126b401f7d707f3e180426f4c89f024daf7de59\n- docs/design/eval-seam-contracts.md: docs/design/eval-seam-contracts.md sha256 1c8d682cd1f51b5fb87e463d643a97fdd7fbf84ffb54648cbf0e4a1b275f1482\n- tasks/S1/oracle/evidence.md: tasks/S1/oracle/evidence.md sha256 6cbf7ccdb7c0c9d1a7b7f7e20e03a35de1dbfeccb99f680fecddac476e621e77\n- check.py: tasks/S1/oracle/check/check.py sha256 acde13e0f2cff30c65c4e7cba9a5c7d3d6e75fa01a2e5d23c1553e76e0c18c3d\n- clauses.json: unresolved (not found)\n- s1-probes.json: unresolved (not found)\n- evidence.md: unresolved (ambiguous: 28 matches)\n- tasks/S1/**: unresolved (not found)\n- tests/test_security_tasks.py: tests/test_security_tasks.py sha256 b048e7870f1428c9e41cb7ae209a64c49fa5c3c2c7cba2f69330407bf675a16d\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 787840b5cad432043fb5030023bc86ba7376656e74f81e4ec12327c9576b9bc2\n- tests/test_readiness.py: tests/test_readiness.py sha256 d6bb19d178508f3e0fc26a3fc48ff54e4f9124df597657543d0d35eda66c42ce\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: unset\ntransient_retry: unset\nper_branch_exit: unset\njoin_rule: unset\ncontainment: unset\ntermination: unset\ndeadline: unset\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M45BS9MMH87ARFGWCFYQDRXH\nraw sha256: c1face8bf622bc05e3b8ba093176bf8421939656778cf86474ec938de2eada42\ncompiler model: claude-opus-5-5\nengine seconds: 0.011\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M45BS9MMH87ARFGWCFYQDRXH for claude-code v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "The tree is created from the primary with coord worktree new --branch build/eval-x-i4 --session x-i4-e1e4 --base integrate/e1e4-17, the base SHA (f58d63b0 or a later integration head) is recorded, AGENT_SESSION=x-i4-e1e4 prefixes every commit and coord call, and all work is in the printed tree by absolute path.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "from the primary run coord worktree new --branch build/eval-x-i4 --session x-i4-e1e4 --base integrate/e1e4-17, record the base SHA (f58d63b0 or a later integration head), prefix AGENT_SESSION=x-i4-e1e4 inline on every commit and coord call, and work only in the printed tree by absolute path"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The four Depends-on SHAs (6afdf6f7, 8a27ba5b, 041f8692, 852fdf7c) are checked against HEAD, not main, before any work; if one is missing the session stops.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Check the four Depends-on SHAs (6afdf6f7, 8a27ba5b, 041f8692, 852fdf7c) against HEAD, not main, and stop if one is missing."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "X-I4 is built red first per README section 2: a skeleton commit, then the red tests failing by assertion, then the green commit, with SHA, node and failing assertion reported per red commit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build red first per README section 2: a skeleton commit, then the red tests failing by assertion, then the green commit; report SHA, node and failing assertion per red commit."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "S1's check records, per inj probe, the ids of every payload that exploited it as one clause string joined by commas, derived from the payload tuples in check.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "S1's check records, per inj probe, the ids of every payload that exploited it as one clause string joined by commas, derived from the payload tuples in check.py"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "check() writes clauses.json into its evidence directory from the same dict as s1-probes.json.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "check() writes clauses.json into its evidence directory from the same dict as s1-probes.json"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The variants m1, m12, m13 and m8 carry their measured clauses.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the variants m1, m12, m13 and m8 carry their measured clauses"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The join test test_s1_clauses_json_carries_payload_ids_through_grade_cell reads the result through grade_cell and X-E's readiness.property_evidence.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the join test test_s1_clauses_json_carries_payload_ids_through_grade_cell reads the result through grade_cell and X-E's readiness.property_evidence"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "S1 has a new task version, and evidence.md has the section \"F4 carrier (X-I4)\".",
+            "trace": {
+              "kind": "phrase",
+              "ref": "a new task version with the section \"F4 carrier (X-I4)\" in evidence.md"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "No payload is dropped, no expected value is edited, and status stays draft.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "no payload dropped, no expected value edited, status stays draft"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Exit evidence: uv run ruff check tests/test_security_tasks.py, uv run pytest -q tests/test_security_tasks.py tests/test_discriminate.py tests/test_readiness.py and python docs/ai-forward-pack/scripts/docs-graph.py validate, each on its own line with its exit status read, plus the brief's two hand mutants, run once and reported.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "uv run ruff check tests/test_security_tasks.py, uv run pytest -q tests/test_security_tasks.py tests/test_discriminate.py tests/test_readiness.py, python docs/ai-forward-pack/scripts/docs-graph.py validate, each on its own line with its exit status read, plus the two hand mutants of the brief, run once and reported"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The report follows README section 4 in at most 12 lines, its first line is the served model id, and it gives each measured clause string beside X-I2's reported one and the old and new task version hashes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Report per README section 4, at most 12 lines, first line the served model id, with each measured clause string beside X-I2's reported one and the old and new task version hashes."
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "At 85 % of the budget (100 calls, 200k context, 2 h) the work is committed and the report says what remains.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Budget 100 calls, 200k context, 2 h; at 85 % commit, stop and report what remains."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "The whole-suite run: it is the Leader's at the join.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the whole suite is the Leader's"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Running discriminate over S1 (the Leader's J2 record run) and flipping S1 to ready.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Do not run discriminate over S1 (the Leader's J2 record run) and do not flip S1 to ready."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Any path outside tasks/S1/** and tests/test_security_tasks.py: a line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Owned paths: tasks/S1/** and tests/test_security_tasks.py only; any other line is a seam request to coord-opus-e1e4 with a fallback that reaches green"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "Checking out or switching branches in the primary.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "never checkout or switch in the primary"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": null,
+          "deadline": null,
+          "fallback": null,
+          "join_rule": null,
+          "per_branch_exit": null,
+          "termination": null,
+          "transient_retry": null,
+          "width_cap": null
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "goal": "Following the section \"Follow-on X-I4\" of docs/coordination/eval-wave2-e1/x-i.md (sha256 af9344cf, Coordinator #23), docs/coordination/eval-wave2-e1/README.md sections 1-4 and section 8's Coordinator #19 (c) entry, W0 section 2 and tasks/S1/oracle/evidence.md: build X-I4 (F4: payload ids as the inj clauses of S1), red first on build/eval-x-i4 as session x-i4-e1e4, a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) in a new tree from integrate/e1e4-17.",
+          "done_when": [
+            "The tree is created from the primary with coord worktree new --branch build/eval-x-i4 --session x-i4-e1e4 --base integrate/e1e4-17, the base SHA (f58d63b0 or a later integration head) is recorded, AGENT_SESSION=x-i4-e1e4 prefixes every commit and coord call, and all work is in the printed tree by absolute path.",
+            "The four Depends-on SHAs (6afdf6f7, 8a27ba5b, 041f8692, 852fdf7c) are checked against HEAD, not main, before any work; if one is missing the session stops.",
+            "X-I4 is built red first per README section 2: a skeleton commit, then the red tests failing by assertion, then the green commit, with SHA, node and failing assertion reported per red commit.",
+            "S1's check records, per inj probe, the ids of every payload that exploited it as one clause string joined by commas, derived from the payload tuples in check.py.",
+            "check() writes clauses.json into its evidence directory from the same dict as s1-probes.json.",
+            "The variants m1, m12, m13 and m8 carry their measured clauses.",
+            "The join test test_s1_clauses_json_carries_payload_ids_through_grade_cell reads the result through grade_cell and X-E's readiness.property_evidence.",
+            "S1 has a new task version, and evidence.md has the section \"F4 carrier (X-I4)\".",
+            "No payload is dropped, no expected value is edited, and status stays draft.",
+            "Exit evidence: uv run ruff check tests/test_security_tasks.py, uv run pytest -q tests/test_security_tasks.py tests/test_discriminate.py tests/test_readiness.py and python docs/ai-forward-pack/scripts/docs-graph.py validate, each on its own line with its exit status read, plus the brief's two hand mutants, run once and reported.",
+            "The report follows README section 4 in at most 12 lines, its first line is the served model id, and it gives each measured clause string beside X-I2's reported one and the old and new task version hashes.",
+            "At 85 % of the budget (100 calls, 200k context, 2 h) the work is committed and the report says what remains."
+          ],
+          "not_in_scope": [
+            "The whole-suite run: it is the Leader's at the join.",
+            "Running discriminate over S1 (the Leader's J2 record run) and flipping S1 to ready.",
+            "Any path outside tasks/S1/** and tests/test_security_tasks.py: a line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green.",
+            "Checking out or switching branches in the primary."
+          ],
+          "tier": "T2",
+          "fan_out_cap": 0,
+          "context_ceiling": 200000,
+          "main_line_budget": 100
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.011,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M45BS9MMH87ARFGWCFYQDRXH",
+        "raw_sha256": "c1face8bf622bc05e3b8ba093176bf8421939656778cf86474ec938de2eada42",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-i4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "integrate/e1e4-17"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/x-i.md",
+            "reason": null,
+            "sha256": "af9344cf02511f14b2e60b25eff0f9b842f3314d2ae02709c8903414959feebe",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/x-i.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "758de28f10a6fd6983dadc1c7126b401f7d707f3e180426f4c89f024daf7de59",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-seam-contracts.md",
+            "reason": null,
+            "sha256": "1c8d682cd1f51b5fb87e463d643a97fdd7fbf84ffb54648cbf0e4a1b275f1482",
+            "status": "resolved",
+            "token": "docs/design/eval-seam-contracts.md"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/S1/oracle/evidence.md",
+            "reason": null,
+            "sha256": "6cbf7ccdb7c0c9d1a7b7f7e20e03a35de1dbfeccb99f680fecddac476e621e77",
+            "status": "resolved",
+            "token": "tasks/S1/oracle/evidence.md"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/S1/oracle/check/check.py",
+            "reason": null,
+            "sha256": "acde13e0f2cff30c65c4e7cba9a5c7d3d6e75fa01a2e5d23c1553e76e0c18c3d",
+            "status": "resolved",
+            "token": "check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "clauses.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "s1-probes.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 28 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "evidence.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/S1/**"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_security_tasks.py",
+            "reason": null,
+            "sha256": "b048e7870f1428c9e41cb7ae209a64c49fa5c3c2c7cba2f69330407bf675a16d",
+            "status": "resolved",
+            "token": "tests/test_security_tasks.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_discriminate.py",
+            "reason": null,
+            "sha256": "787840b5cad432043fb5030023bc86ba7376656e74f81e4ec12327c9576b9bc2",
+            "status": "resolved",
+            "token": "tests/test_discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_readiness.py",
+            "reason": null,
+            "sha256": "d6bb19d178508f3e0fc26a3fc48ff54e4f9124df597657543d0d35eda66c42ce",
+            "status": "resolved",
+            "token": "tests/test_readiness.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M45BYH3GZK7TV85RXEN7WRBE",
+      "shortname": "coord-c23-xi4-xc-gaps",
+      "datetime": "2026-10-05T06:27:49Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Coordinator hand-back #23: X-I4 (F4) brief and compile per #19 (c); route #22's three gaps (HB-GRD-007 grading probe, readiness.expected_na, two status.Status sites) into x-c.md and README section 8; Coordinator #23 entry; validate; commit named paths.",
+      "summary": "X-I4 brief in x-i.md, compiled al-01M45BW1PGN27YQ91AQQDWY0VK (raw al-01M45BS9MMH87ARFGWCFYQDRXH), 0 DR, dispatchable. Gap (a) HB-GRD-007 grading-side probe -> C2 granted hunk in grade/runner.py; (b) readiness.expected_na -> C3 granted hunk in readiness.py; (c) C3 updates status.py:163 and :292. No DR. Found: S1 check writes no clauses.json (X-I item 9 unmet).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-05T06:21:13Z",
+      "duration_seconds": 396.0
     }
   ],
   "changes": [

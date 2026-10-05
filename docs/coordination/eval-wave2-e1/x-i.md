@@ -59,3 +59,52 @@ README §3 join gate (authoring and follow-on). Report per README §4.
 - **Not yours:** the `ready` flip and the discrimination record (X-E), the W1-I errata (Coordinator), `src/**`.
 
 **Exit:** README §3 join gate, plus the gate ring and stamp renewal if any `grade/` file is touched (not expected). Report per README §4, with each measured number beside the design's number (FIXT-A).
+
+## Follow-on X-I4: payload ids as the `inj` clauses (F4; Coordinator #23, 2026-10-05)
+
+**Session** `x-i4-e1e4` · **branch** `build/eval-x-i4`, a new tree from the integration head: from the primary run `python docs/ai-forward-pack/scripts/coord-core.py worktree new --branch build/eval-x-i4 --session x-i4-e1e4 --base integrate/e1e4-17` and record the base SHA (`f58d63b0` or a later integration head) · **harness** Claude Code Agent tool, `model: sonnet` (served `claude-sonnet-5-5`; the served id is the report's first line, R-91) · **budget** 100 calls · 200k tokens · 1 session · 2 h · **fallback** a fresh Sonnet session from this section. Never `EnterWorktree`; never `checkout`/`switch` in the primary; `AGENT_SESSION=x-i4-e1e4` inline on every commit and coord call.
+
+**Why (Coordinator #19 (c), README §8).** F4 is X-I2's leave-one-out table: ten S1 payloads that no candidate needs alone. A drop is decided by a discrimination record over a check that names the payloads that exploited each `inj` probe. Today `inj_1` and `inj_3` return on the first payload that hits and record only a letter (`"a"`, `"b"`, `"body"`; `tasks/S1/oracle/check/check.py:86-104`). So no record can tell `{B2}` from `{B2, B3}`. X-I4 makes the check record the ids, the variants' `clauses` follow, and S1 gets a new task version. Then the Leader runs `discriminate` over the edited check (the J2 record run). That run is not yours.
+
+**Depends on** (check each with `git merge-base --is-ancestor <sha> HEAD` on your base, not `main`; stop and report the one that is missing): X-I3 `6afdf6f7` (variants as data); X-I2 `8a27ba5b` (the leave-one-out table in `oracle/evidence.md`); X-E `041f8692` (the evidence readers) and `852fdf7c` (`readiness.property_evidence` egress-scans `clauses.json` before it parses it: #19's precondition for the record run, met on the line). Coordinator #23 checked all four on `f58d63b0`.
+
+**State on the base (Coordinator #23 opened each at `f58d63b0`).**
+- **The check writes no `clauses.json`.** `check()` writes only `s1-probes.json` into `ctx.evidence`. Item 9 above says the check writes `clauses.json` when a variant declares `clauses`, and every S1 variant does. So today every S1 variant fails X-E's discrimination: `discriminate._variant_record` (`src/harness_bench/discriminate.py:207-209`) adds "clauses are declared but the check wrote no clauses.json". X-I4 closes that too.
+- **X-E's reader, on the line (not yours).** `readiness.property_evidence(run_dir, pointer)` (`src/harness_bench/readiness.py:600-628`) reads `<property.json dir>/check/clauses.json`, the check's evidence directory (`grade/property.py:420`, `evid = inp.out_dir / "check"`). It refuses a file over 64 KiB, egress-scans the text, then requires a `{str: str}` object. `discriminate._variant_record` (`:211-212`) records a flipped case's declared clause only when the observed string equals it exactly (else `"(differs)"`). `readiness.variant_failures` check (4) (`readiness.py:156`) then compares the record with the declared `clauses`. A declared clause is at most `MAX_CLAUSE_CHARS` (`readiness._check_variant`).
+- **Payload ids** are defined in prose only (`oracle/evidence.md:117-118`): `A0..A3` and `B0..B4` are `INJ_A` and `INJ_B` by index, and `C0..C3` are `INJ_3`.
+- **The four `inj` variants** are `m1`, `m12`, `m13` (`inj-1`) and `m8` (`inj-3`). X-I2's scratch run (a copy of `check.py` that recorded every hit, not committed) reports m1 `A0, B2, B3`, m12 `B2, B3`, m13 `B2` and m8 `C0` (`evidence.md`, the candidate table). These are **Reported, not re-run**: you measure them (FIXT-A). The six partial fixes in that table are not variants, so the record will cover the four variants only.
+
+**The clause carrier (W0 §2; ruled here, no request needed).** W0 §2 maps a probe to one clause: `clauses.json` is `{<case id>: <clause>}`, and X-E's reader requires a string value. The id set fits that as **one string per probe**: the ids of every payload that exploited the probe, in `check.py` order, joined by `,` with no spaces (`"A0,B2,B3"`, `"C0"`). That is one clause value, so no reader, W0 or `src/` change is needed. A payload string is never a clause value: evidence holds ids, never bodies (`check.py:5`). **Seam route:** if one string cannot carry the set (X-E's reader refuses it, the egress scan withholds it, or a value is over `MAX_CLAUSE_CHARS`), send `python docs/ai-forward-pack/scripts/coord-core.py request add --to coord-opus-e1e4 --deadline default --fallback "<…>" "<ask>"`. The fallback is "the first exploiting id only, one id per probe; the report names each probe where more than one payload hit". Build the fallback in its own commit that names the request id, and finish green (README §2).
+
+### Owned paths
+`tasks/S1/**` and `tests/test_security_tasks.py`. **Not yours:** every `src/` file (X-E's `readiness.py` and `discriminate.py`, the grader), `tests/test_discriminate.py`, `tests/test_readiness.py`, and `tests/mutations/*`. A line in another owner's file is a seam request (README §2).
+
+### Acceptance items (X-I4)
+- **I4-1. One definition of a payload id.** Derive each id from its tuple and index in `check.py` (`A{i}` for `INJ_A`, `B{i}` for `INJ_B`, `C{i}` for `INJ_3`). Never write a second table of ids. `inj_1` and `inj_3` try **every** payload, with no return on the first hit. Each returns the joined ids, or `None` when no payload hits. Outcomes do not change: a probe is `exploited` exactly when at least one payload hits. The other six probes keep their clause texts. The reference and naive values in `task.yaml`'s `expected` block do not change, and neither do their provenance comments.
+- **I4-2. `clauses.json`.** `check()` writes `clauses.json` into `ctx.evidence`: `{case id: clause}` for every `exploited` case. Build it from the same `evidence` dict that `s1-probes.json` is written from, so the two files have one source. Write it on every run, and write `{}` when nothing is exploited: the check does not know which variant it grades.
+- **I4-3. The variants follow.** In `oracle/variants.py`, m1, m12 and m13 get their measured `inj-1` string, and m8 its measured `inj-3` string. Measure each through the real host. The existing variant test pins it (`tests/test_security_tasks.py:457` compares each probe's observed clause with the declared `clauses`). Never copy a value from the table. If a measured string differs from X-I2's reported one, write a trace for that probe in `evidence.md`.
+- **I4-4. Through the real grader and X-E's reader (the join test).** New test `test_s1_clauses_json_carries_payload_ids_through_grade_cell`. Grade the reference, and m13's overlay, through `prop.grade_cell`, built the way X-I2's F1 test builds its input (`tests/test_security_tasks.py:604-607`). Then read each cell with X-E's `readiness.property_evidence` on that cell's `property.json`, and assert that `clauses` equals `{}` for the reference and m13's declared `clauses` for m13. This test is the line X-E's reader sits on: if the evidence directory moves or the shape changes, it goes red.
+- **I4-5. A new task version.** `plan.task_version_hash(tasks/S1)` moves with the edit; there is no version field to bump (`readiness.record_key`). In `evidence.md`, add a section titled "F4 carrier (X-I4)". It gives the change, the measured string per variant beside X-I2's reported one, the old and new task version hashes, the base and commit, and the line "keep or drop is not decided here". If a test outside your owned paths pins the old hash, raise a seam request and build the fallback per README §2.
+- **I4-6. No drop and no flip.** Drop no payload. Edit no `expected` value. Leave `status: draft`. Keep or drop per payload comes from the record of the Leader's run. A payload `P` is needed alone when some variant's clause is exactly `P`. A drop is a later S1 version, and the Coordinator routes it when the record exists. S1 does not go `ready` while F4 is open (#15, #19).
+
+### Red first (README §2)
+Commit a skeleton first: the check writes `clauses.json` with today's letters, and the id helper has its final signature. Then commit the reds: I4-4, and a unit test that m1's overlay through the real host yields all three ids for `inj-1`. Each fails on an assertion, never on `FileNotFoundError`, `ImportError` or `KeyError`. Then commit the green. For each red commit, report the SHA, the node and the failing assertion line.
+
+### Gate (R-104: own files and own mutations only; the whole suite is the Leader's)
+Run each command on its own line and read its exit status:
+```
+uv run ruff check tests/test_security_tasks.py
+uv run pytest -q tests/test_security_tasks.py tests/test_discriminate.py tests/test_readiness.py
+python docs/ai-forward-pack/scripts/docs-graph.py validate
+```
+- `tasks/` is outside the repo's ruff gate (`ruff check src tests tools`), and `tasks/S1` has four findings on the base. Do not lint or reformat task files: a reformat moves the task version for no reason.
+- X-E's two test files run because their real-host trials read S1's evidence.
+- **Own mutations:** no `tests/mutations/*.json` names `tasks/S1` (checked on `f58d63b0`), and no ledger is in your owned paths. So run two hand mutants once each and report them; do not commit them. (m-a) Restore the early return in `inj_1`: I4-3's m1 test must fail. (m-b) Delete the `clauses.json` write: I4-4 must fail. After each mutant, `git diff --exit-code tasks/S1` must print nothing.
+- A skip because the upstream base cannot be reached is reported as not run, never as a pass.
+
+### Then (not yours)
+1. The Leader joins X-I4.
+2. The Leader runs `bench discriminate S1` over the edited check (the J2 record run, #19).
+3. The record gives each `inj` variant its id string, and the keep or drop lines for the ten payloads are written from it.
+
+**Report:** README §4 (at most 12 lines). Add the measured string per variant beside X-I2's reported one, and the old and new task version hashes.
