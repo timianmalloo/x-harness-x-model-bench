@@ -2,7 +2,7 @@
  {
   "name": "an integrity failure exits 1",
   "file": "src/harness_bench/cli.py",
-  "find": "    return INTEGRITY if code.startswith((\"HB-LED\", \"HB-SEC\")) else INVALID\n",
+  "find": "    return INTEGRITY if code.startswith((\"HB-LED\", \"HB-SEC\", \"HB-CMP-003\")) else INVALID\n",
   "replace": "    return INVALID\n",
   "tests": ["tests/test_cli.py::test_a_broken_ledger_is_an_integrity_failure_for_every_reader"]
  },
@@ -86,8 +86,8 @@
  {
   "name": "D2 cli drops the kwarg",
   "file": "src/harness_bench/cli.py",
-  "find": "                                  identity_check=identity.launch_check(root, p))\n",
-  "replace": "                                  )\n",
+  "find": "identity_check=identity.launch_check(root, p),\n",
+  "replace": "",
   "tests": ["tests/test_identity.py::test_bench_run_stops_on_a_drifted_run_side_file", "tests/test_identity.py::test_bench_run_without_drift_launches"]
  }
 ]
