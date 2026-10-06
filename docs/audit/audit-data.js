@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T18:20:17Z",
+  "generated": "2026-10-06T18:26:40Z",
   "audit": [
     {
       "actor": null,
@@ -111202,58 +111202,2435 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M496XHKQSBWHGJE8P62CD8V9",
-      "shortname": "join-c46",
-      "datetime": "2026-10-06T18:16:52Z",
-      "session": "leader-e1e4",
-      "prompt": "the join of coord/eval-c46-k1d into integrate/e2e4-18",
-      "summary": "Coordinator #46 (Opus) d77b65f9/3ae104ee: K1d al-01M4964JB1F0TZ56VVPYAQJ4VF; X-RS ready turn al-01M4964T9K5QWVA8VXCJXB17VV; CEIL-A instances + floor-based split rule in the compile form; RS2 batch-id residual -> DR req-01M4966TTSM5ADZ41AFE6SX8S9; W1-L Erratum 3; SHAPE-A row 4 -> X-FIXE; ADR-0018 accepted-residual row; HB-CHK-005 documented recount_seconds=0 (docs_only=True).",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Join Coordinator #46 into integrate/e2e4-18",
+      "datetime": "2026-10-06T18:16:52Z",
       "done_when": "conductor-join exit 0 (docs-only)",
-      "tier": "T1",
+      "duration_seconds": 1.0,
       "fan_out": 0,
+      "goal": "Join Coordinator #46 into integrate/e2e4-18",
+      "id": "al-01M496XHKQSBWHGJE8P62CD8V9",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "the join of coord/eval-c46-k1d into integrate/e2e4-18",
+      "session": "leader-e1e4",
+      "shortname": "join-c46",
       "signals": {
-        "verification_path": true,
+        "acceptance_met": true,
         "verification_executed": true,
-        "acceptance_met": true
+        "verification_path": true
       },
+      "skill": "execute-with-coordination",
       "started_at": "2026-10-06T18:16:51Z",
-      "duration_seconds": 1.0
+      "summary": "Coordinator #46 (Opus) d77b65f9/3ae104ee: K1d al-01M4964JB1F0TZ56VVPYAQJ4VF; X-RS ready turn al-01M4964T9K5QWVA8VXCJXB17VV; CEIL-A instances + floor-based split rule in the compile form; RS2 batch-id residual -> DR req-01M4966TTSM5ADZ41AFE6SX8S9; W1-L Erratum 3; SHAPE-A row 4 -> X-FIXE; ADR-0018 accepted-residual row; HB-CHK-005 documented recount_seconds=0 (docs_only=True).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     },
     {
-      "id": "al-01M4973TDW6BTASHD2M0P09ZKW",
-      "shortname": "join-r111",
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
       "datetime": "2026-10-06T18:20:17Z",
-      "session": "leader-e1e4",
-      "prompt": "the join of owner/ruling-r111 into integrate/e2e4-18",
-      "summary": "Owner (Fable claude-fable-5-1) Ruling 111 2d59da4f on req-01M4966TTSM5ADZ41AFE6SX8S9: (b) granted, bounded - batch identity binds to the frozen (batch_id, records) pair; reference and alt freeze; prompt drops 'in one batch'; new case lost-then-grow; variant growid; X-RS ready-turn recompile (one clause); W1-L Erratum 4 at the X-RS join; IDEM-A. (a) kept only as fallback, (c) refused. Process note: the Owner's first commit attempt skipped the pre-commit hook via -c core.hooksPath; it reset and recommitted with the hook. recount_seconds=0 (docs_only=True).",
+      "done_when": "conductor-join exit 0 (docs-only)",
+      "duration_seconds": 1.0,
+      "fan_out": 0,
+      "goal": "Join Ruling 111 into integrate/e2e4-18",
+      "id": "al-01M4973TDW6BTASHD2M0P09ZKW",
       "kind": "skill",
+      "outcome": "success",
+      "prompt": "the join of owner/ruling-r111 into integrate/e2e4-18",
+      "session": "leader-e1e4",
+      "shortname": "join-r111",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
       "skill": "execute-with-coordination",
+      "started_at": "2026-10-06T18:20:16Z",
+      "summary": "Owner (Fable claude-fable-5-1) Ruling 111 2d59da4f on req-01M4966TTSM5ADZ41AFE6SX8S9: (b) granted, bounded - batch identity binds to the frozen (batch_id, records) pair; reference and alt freeze; prompt drops 'in one batch'; new case lost-then-grow; variant growid; X-RS ready-turn recompile (one clause); W1-L Erratum 4 at the X-RS join; IDEM-A. (a) kept only as fallback, (c) refused. Process note: the Owner's first commit attempt skipped the pre-commit hook via -c core.hooksPath; it reset and recommitted with the hook. recount_seconds=0 (docs_only=True).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-06T16:37:57Z",
+      "done_when": "K1,K2 green; K3,K4 open",
+      "duration_seconds": 1816.0,
+      "goal": "X-LB1 loopback fake",
+      "id": "al-01M4918DSEHXGM782VM4M2F09J",
+      "kind": "skill",
+      "outcome": "partial",
+      "prompt": "X-LB1 dispatch c44",
+      "session": "x-lb1-e1e4",
+      "shortname": "x-lb1-k1k2",
+      "skill": "implement",
+      "started_at": "2026-10-06T16:07:41Z",
+      "summary": "Planned split after K2 (context ~145k > 140k start limit). Start 2026-10-06T16:07:41Z; end not measured. Served model claude-sonnet-5-5. Red SHAs b3f5a409 (K1), 9fceef71 (K2). Green 60195f2e (K1), 4fb8baf6 (K2), 0487d148 (mutants+span test). Context samples: before K1 ~66k, after K2 ~145k. Tokens: not recorded. Marker removed: tests/test_catalog_version.py::test_a_property_tag_outside_property_names_is_refused_and_property_names_match_the_strategy_keys. No firewall dialog or new rule seen. Suite lock waited (not measured).",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-06T17:43:12Z",
+      "duration_seconds": 3846.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "build/eval-x-lb1",
+        "pushed": null,
+        "sha": "6c56cae42b0ff4c5427a3648fbcb7320041f95cc",
+        "short": "6c56cae42"
+      },
+      "id": "al-01M494ZXA008KXP3HPSXA38MW6",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "X-LB1 part 2: K3, K4 and the closing items (dispatch compile al-01M48WS5VMEBVXJABRJRCZ5JFZ)",
+      "session": "x-lb1-e1e4",
+      "shortname": "X-LB1 part 2",
+      "skill": "implement",
+      "started_at": "2026-10-06T16:39:06Z",
+      "summary": "X-LB1 part 2 (K3, K4, closing items), served model claude-sonnet-5-5. Dispatch start 2026-10-06T16:39:06Z, end about 17:48Z (over the 3,300 s deadline: the suite lock wait for mutate_check on property.json took about 25 min, held by another tree). Outcome: green 6c56cae4 (worker gates read; ring and stamps are the Leader's).\nRed SHAs: aac8b94d (K3a, test_loopback_shape_b_alone_is_accepted fails: loopback refused as not built in E1), a3855d9d (K3b, KeyError 'deliverable'). Greens: bb4994e2 (shape rule), 14011f97 (pointers, assume: deleted). K4 20e3c87a is a characterization test (green on first run, no code to make red, no discriminate.py change). Mutants: 820d7095 (shape rule and pointer read, both killed; property.json: every mutation killed; bench_check.json: every mutation killed incl. the part 1 getsockname, fake_url and span mutants). 6c56cae4 retargets the diffstats.json STRATEGIES find (same rule) that part 1's STRATEGIES edit moved.\nGates: R-104 set 1 on final code: 202 passed, 1 failed (test_mutate_check find-uniqueness: diffstats find), fixed in 6c56cae4, test_mutate_check re-run 48 passed; set 2: 270 passed exit 0; ruff exit 0; docs-graph validate exit 0 (16 review-suggested, 0 stale). Marker removed: none this part (property-tag xfail removed in part 1). Context: not recorded. Tokens: not recorded. No firewall dialog or new rule seen.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "claude-sonnet-5-5",
+      "artifacts": [
+        "docs/plans/eval-x-lb1.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-06T18:16:46Z",
+      "done_when": "four fixes each in its own commit, mutate_check kills all, gates green",
+      "duration_seconds": 1625.0,
+      "git": {
+        "branch": "build/eval-x-lb1",
+        "pushed": null,
+        "sha": "d4f07ad8c07c365403d32a43b027050a589e63d0",
+        "short": "d4f07ad8c"
+      },
+      "goal": "Close the four Security conditions on X-LB1",
+      "id": "al-01M496XCB1A2JXB5E19SAE6ZY1",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "X-LB1 part 3: close the four Security & Identity conditions",
+      "session": "x-lb1-e1e4",
+      "shortname": "x-lb1-p3",
+      "skill": "implement",
+      "started_at": "2026-10-06T17:49:41Z",
+      "summary": "Closed 4 conditions: SO_EXCLUSIVEADDRUSE read by test + mutation; outcome-set selector refusal tests + mutation; fault fixture reads fake counters (lazy client fails); {fake_url} args only + mutation. Gates: mutate_check bench_check/property all killed, 216 tests pass, ruff and docs-graph validate clean.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "id": "al-01M4975PYWE34AA9Q9M0AJ112W",
+      "shortname": "compile-You are session x-k1d-e1e4 on branch build/eval-x-k1d, harness Codex, mo…",
+      "datetime": "2026-10-06T18:21:19Z",
+      "session": "x-k1d-e1e4",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython docs/ai-forward-pack/scripts/audit-log.py start --session x-k1d-e1e4 --skill implement\nGoal state\nGoal: You are session x-k1d-e1e4 on branch build/eval-x-k1d, harness Codex, model gpt-6.1-sol with model_reasoning_effort high, run w2-k1d-e1e4, deadline 3,300 s, one turn, context ceiling 200k. Build dispatch K1d of X-K1, the resume engine's last turn: W1-K section 13 K6b (the disk check in _launch, its own commit), tests/mutations/resume.json (W1-K section 4 (d)), the resume telemetry on the real CLI path (W1-K section 11), the named simplifications, W1-K K7 (the model-docs rows) and the exit-evidence table, following docs/coordination/eval-wave2-e234/x-k1.md (owned paths, acceptance items, the Coordinator #39 turn split), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md, W1-K rev 1.2 (docs/design/eval-resume.md sections 4 (d) and (e), 6.3, 8, 11 and 13, and decisions D-K2, D-K7 and D-K13) and W0 rev 6.13 (docs/design/eval-seam-contracts.md sections 11 and 12), all binding.\nDone when: Base: build/eval-x-k1d, which the Leader creates from the integration head at dispatch, never main; that head holds the X-K1c join. Stop and report, before any edit, if git log --oneline --grep=join-x-k1c prints nothing (the K1c join is not in your base), if git grep -n 'reason=\"K1' -- tests prints anything (every K1a, K1b and K1c marker is gone), if git grep -n '\"segment.abandoned\": Transition' -- src/harness_bench/lifecycle.py prints a line without \"ledger\", if git grep -n \"def open_engine_segments\" -- src/harness_bench/engine.py does not print exactly one line, or if tests/mutations/resume.json exists.; The context split rule (CEIL-A, measured): start no K-item above floor + the item's expected work, where floor is the harness's measured first reading. Codex floor: X-K1b's first reading before its first K-item was 89,613 tokens (X-K1c's K5 admission sample was 77,993 and X-K1a's K2 admission 103k; neither is a first reading). One K-item costs 17k to about 60k (X-K1b: 89,613 to 125,701 at its K3 boundary, about 36k for one item). So for this turn the floor is 90k and every item's expected work is 60k, the measured largest: start no item above 150k; the ceiling 200k is at least floor + the largest item. Sample your context from payload.info.last_token_usage.input_tokens of the last token_count event in your own Codex rollout file: before each item, before each gate command, and before reading any file longer than 300 lines. Read only line ranges (sed -n, grep -n), never a whole design file, the whole of tests/test_resume.py or the whole of engine.py; send gate and test output to a file and read only its summary lines. The rules: (1) the items run in this order: K6b, resume.json, the telemetry, the simplifications, K7, the exit-evidence table; start no item above 150k, and your hand-back point is the first item boundary where your sample is above 150k; (2) at 170k, start no new edit or gate, write the closing audit entry and hand back with the open items named; (3) if the figure cannot be read, record \"not recorded\" and hand back after K6b. A hand-back by this rule is a planned split, not a failure.; Build on K1a's, K1b's and K1c's final names, read at your base, never a second definition (DM7): resume.resume_run (it refuses a passed plan whose plan_hash differs from the confirmed plan), resume.classify, resume.stop_recorded, resume.has_work, resume.Action, resume.sweep_archives, resume._Resume; engine.open_engine_segments, engine.next_ordinal, Engine.resume, Engine.restore and Engine.append_row; archive.recover_archive and Recovery; EngineConfig.verify; lifecycle.completed, the one completion definition (D-K5); lifecycle.TABLE with segment.abandoned written by \"ledger\"; views.segment_paths ordered by stem; and the tests/test_resume.py helper that writes plan parameters into the stored plan, the only way a test sets a parameter. resume.py, engine.py and archive.py never import views.py or any grade module, and you never add an allowlist edge (tests/test_identity.py, RUN_IMPORTS_GRADE_ALLOWED).; K6b (W1-K section 6.3, eval-resume.md:381), red first and then green, as its own commit so it can ship or revert alone (SIM 6): the disk check moves into _launch, before cell.launch_intent; free_bytes is the measured int on the row and an explicit null on a failed query; each path is measured alone, a failed path is dropped from the minimum and the floor applies to the paths that answered, both failed means launch with free_bytes null; a failing query emits disk.query_failed{path_role, errno} and logs a warning on the third failure in a row; the stop reason disk low keeps HB-RUN-004. Its tests, red first in tests/test_engine.py: test_disk_query_failure_is_not_recorded_and_launching_continues (shutil.disk_usage made to raise; red today: the engine raises), test_launch_intent_records_free_bytes (red today: no field), test_disk_low_stops_launching_before_the_intent (the stop row precedes the cell's intent), test_one_path_failing_still_applies_floor_to_the_other. The free_bytes field reaches the store (cell.launch_intent), the lifecycle mirror if a field list pins it, and every reader W1-K section 8 names for it; a reader that drops it is a finding.; tests/mutations/resume.json (W1-K section 4 (d), :207-229), in the file shape of the other tests/mutations files (name, file, find, replace, tests): the nineteen mutants M-SKIPARCH, M-NODISCARD, M-NOREDO, M-APPENDALL, M-WRITEOLD, M-ORDER, M-ORDINALCOUNT, M-STOPONLYRUNSTOPPED, M-LAUNCHSTOPPEDISSTOP, M-STOPCRASHREC, M-STOPLAUNCHES, M-STOPC7, M-STOPNOGRADE, M-DOUBLECOMPLETED, M-NOPENDINGSTOP, M-ANYCOMPLETED, M-PIDREUSE, M-PIDKILL and M-NOBEAT, each a find in the code that implements the rule its row names and each naming the tests that row names; and the five classifier mutants of the next paragraph (Ruling 110). Run uv run python tools/mutate_check.py with tests/mutations/resume.json once: every mutant killed, or a recorded reason per survivor; a survivor is a finding about the test its row names, never a deleted mutant or a reworded find.; Ruling 110 (docs/notes/rulings.md), conditions 1 and 3, quoted: \"The K1d worker (x-k1d-e1e4, Codex) writes the five into tests/mutations/resume.json, each with tests = exactly the two sweep node ids tests/test_resume.py::test_every_ledger_prefix_matches_the_adr_table and tests/test_resume.py::test_every_two_cell_ledger_prefix_matches_the_adr_table, never the file. mutate_check then runs only the sweep under each mutant, and a kill says what :199 claims: the sweep killed it. A survivor under this naming is a finding (the sweep does not see that boundary), filed with coord request add; it is never retargeted to the file or to a window test to make it kill. All five killed before K1d's hand-back, each recorded in the closing entry with the killing node id (the sweep's [W...] or prefix i case).\" and \"K1d's closing entry records the wall-clock of python tools/mutate_check.py tests/mutations/resume.json for the set, and per mutant if the tool prints it ... A number or \"not recorded\", never an estimate.\" The five are C2/C3, C3/C5, C5/completed, C6/C2 and C2/continued turn (W1-K section 4). You edit no design doc; the W1-K erratum is the Coordinator's at your join.; The archive readers (QUOTE-A; W1-J section 7, erratum by Coordinator #46): tests/test_archive_readers.py pins the exact set of src/harness_bench files that hold the string constant \"archive\" or an attribute named attempt_dirs or snapshot_folder (archive.py is the producer): READERS = {\"engine.py\", \"grade/runner.py\", \"report/credentials.py\", \"report/judges.py\", \"report/pack_improvement.py\", \"report/summaries.py\", \"report/html.py\", \"views.py\", \"resume.py\"}, nine files. resume.py is already in the set, so a K1d hunk there is fine; a new archive path in any other file is a seam request to coord-opus-e1e4, never an edit to READERS. Every turn-<n> folder is named from a row (archive.snapshot_of) or archive.snapshot_folder, never found by a glob over archive/<cid>. Run uv run pytest -q tests/test_archive_readers.py after every commit that touches resume.py, engine.py or archive.py.; The resume telemetry (W1-K section 11, :427): \"Emitted on the normal path, no flag: resume.started {run_id, segment_id, dead_segments, cells_total, has_work}, resume.classified {counts per action C0..C7}, resume.cell {cell_id, rule, action, code, phase, turn, duration_ms}, resume.cell_deferred {cell_id, pid}, resume.done {skipped, launched, reconciled, duration_ms} ... Sinks: resume.* go to the existing run log\". cmd_run's resume branch returns before engine.configure_logging (cli.py:300-304), so on the real CLI path no resume line reaches the run log. Red first: after the second child of test_cli_run_resumes[T2], the run log holds a resume.started, a resume.classified and a resume.done line with the fields above (red today: no line). Green: the resume branch installs and removes the run-log handler around resume_run as the first-run path does (one construction, not a copy), and resume.py emits the five events with those fields. This edits the body of cmd_run only (X-K1's, pre-granted by Coordinator #43); every other cli.py line is X-K2b's.; The named simplifications. The K1c finishing turn's closing entry lists five \"named, untested simplifications\"; the fifth, configure_logging, is the telemetry item above. For each of the other four: (1) the snapshot redo adopts an already-published folder by file scan only (resume._redo_snapshot); (2) resume-written outcomes skip Engine._after_append (Engine.append_row); (3) restored spend comes from turn_usage rows only (Engine.restore); (4) scripted-user logs are not closed for reconciled cells: either cite the W1-K line that makes the behaviour correct and add one test that pins it, red first where it changes behaviour, or put an inline simplify: comment at the site with its ceiling and its upgrade trigger and leave the behaviour unchanged. Each one gets a row in the exit-evidence table with the choice made.; K7 (W1-K section 8, :389): the model-docs rows in docs/design/run-lifecycle-model.md (ReconcileRecord under stopApplied maps to the classifier's stop input; Resume, unguarded, maps to resume_run's stop branch; turnNext maps to turn_ended.next; NoResumeAfterStop reads NoLaunchAfterStop, R6.8d) and the one models/README.md line, each with its frontmatter kept valid; refresh each document's HTML view with docs/ai-forward-pack/scripts/render-markdown.py.; The exit-evidence table: write docs/plans/eval-x-k1d.md and its HTML, create-only, in its own commit (pre-granted); it is also your T2 plan record. It maps each x-k1.md acceptance item (1 to 6) to its node ids and the commit that turned each green, across K1a to K1d; each resume.json mutant to its W1-K row and its result; each named simplification to its choice; and each of X-K1's four dispatches to its closing audit entry id. Regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived). Run docs-graph.py validate before the hand-back and read its findings, not only its exit.; Markers: there are none left and you add none. Every new test is red first, with its failing lines pasted in the red commit's message (RED-C: never ImportError, AttributeError, NameError or KeyError); a test already green on arrival is recorded \"green on arrival\", never faked red. BASE_COMPLETED_HITS (tests/test_resume.py) moves only in the commit that moves a hit, with each moved reader named.; Mutation finds (MUT-E): if a K1d hunk moves a find text in tests/mutations/engine.json or stop.json, retarget only that find so it names the same rule, in the commit that moved it, and run tools/mutate_check.py on that file once; never --touched.; Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k1d-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).; Short paths (PATH-B, confirmed): every trial or test run happens in a tree and under roots whose paths are short. A run archive adds about 139 characters below its root even for the smallest fixture, so TMP, TEMP, --runs, --cells-root and any pytest --basetemp stay under C:\\t\\ or an equally short folder.; Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report.; Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_resume.py tests/test_archive_readers.py tests/test_archive.py tests/test_lifecycle.py tests/test_lifecycle_conformance.py tests/test_views.py tests/test_verify.py tests/test_status.py tests/test_engine.py tests/test_multiturn.py tests/test_cli.py on the final commit, read as 0 failed and 0 XPASS; uv run python tools/mutate_check.py with tests/mutations/resume.json, with tests/mutations/engine.json and with tests/mutations/stop.json, one run each, never --touched, every mutant killed or a recorded reason per survivor (a file not run because the split rule handed back first is reported \"not run: split\"); uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.; Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commit named paths only, with AGENT_SESSION=x-k1d-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green.; Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split or served-model-failed), the red SHAs, the served model id as read, tokens where Codex emits usage, else literally \"not recorded\" (Ruling 108, condition 4), your context sample at each item, and each mutation file's result. Report your served model id on the first line of your final message, read from the Codex native record.\nNot in scope: resume.history and ResumeRecord (a need for them is a finding to coord-opus-e1e4); status.py and alarm.py (X-K2b's), and every cli.py line outside cmd_run; views.py, atomic.py, plan.py and errors.py (a missing row is a seam request); grade/ (no gate ring from K1d); HB-ALM-003, the .alarm_check stamp and the report header (E5).; the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours); src/ behaviour beyond K6b, the telemetry item and a simplification's red-first test (a finding to coord-opus-e1e4, never a fix in this turn).\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens; split rule (CEIL-A): start no K-item above floor + the item's expected work, Codex floor 90k (X-K1b's measured first reading 89,613) + 60k (the largest measured K-item) = 150k; hand-back point at the first item boundary above 150k; hard stop at 170k; unreadable means hand back after K6b\nMain-line budget: within X-K1's 280 calls across 4 dispatches; 3,300 s this dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: Base: build/eval-x-k1d, which the Leader creates from the integration head at dispatch, never main; that head holds the X-K1c join. Stop and report, before any edit, if git log --oneline --grep=join-x-k1c prints nothing (the K1c join is not in your base), if git grep -n 'reason=\"K1' -- tests prints anything (every K1a, K1b and K1c marker is gone), if git grep -n '\"segment.abandoned\": Transition' -- src/harness_bench/lifecycle.py prints a line without \"ledger\", if git grep -n \"def open_engine_segments\" -- src/harness_bench/engine.py does not print exactly one line, or if tests/mutations/resume.json exists. | phrase: Base: build/eval-x-k1d, which the Leader creates from the integration head at dispatch, ne |\n| done_when: The context split rule (CEIL-A, measured): start no K-item above floor + the item's expected work, where floor is the harness's measured first reading. Codex floor: X-K1b's first reading before its first K-item was 89,613 tokens (X-K1c's K5 admission sample was 77,993 and X-K1a's K2 admission 103k; neither is a first reading). One K-item costs 17k to about 60k (X-K1b: 89,613 to 125,701 at its K3 boundary, about 36k for one item). So for this turn the floor is 90k and every item's expected work is 60k, the measured largest: start no item above 150k; the ceiling 200k is at least floor + the largest item. Sample your context from payload.info.last_token_usage.input_tokens of the last token_count event in your own Codex rollout file: before each item, before each gate command, and before reading any file longer than 300 lines. Read only line ranges (sed -n, grep -n), never a whole design file, the whole of tests/test_resume.py or the whole of engine.py; send gate and test output to a file and read only its summary lines. The rules: (1) the items run in this order: K6b, resume.json, the telemetry, the simplifications, K7, the exit-evidence table; start no item above 150k, and your hand-back point is the first item boundary where your sample is above 150k; (2) at 170k, start no new edit or gate, write the closing audit entry and hand back with the open items named; (3) if the figure cannot be read, record \"not recorded\" and hand back after K6b. A hand-back by this rule is a planned split, not a failure. | phrase: The context split rule (CEIL-A, measured): start no K-item above floor + the item's expect |\n| done_when: Build on K1a's, K1b's and K1c's final names, read at your base, never a second definition (DM7): resume.resume_run (it refuses a passed plan whose plan_hash differs from the confirmed plan), resume.classify, resume.stop_recorded, resume.has_work, resume.Action, resume.sweep_archives, resume._Resume; engine.open_engine_segments, engine.next_ordinal, Engine.resume, Engine.restore and Engine.append_row; archive.recover_archive and Recovery; EngineConfig.verify; lifecycle.completed, the one completion definition (D-K5); lifecycle.TABLE with segment.abandoned written by \"ledger\"; views.segment_paths ordered by stem; and the tests/test_resume.py helper that writes plan parameters into the stored plan, the only way a test sets a parameter. resume.py, engine.py and archive.py never import views.py or any grade module, and you never add an allowlist edge (tests/test_identity.py, RUN_IMPORTS_GRADE_ALLOWED). | phrase: Build on K1a's, K1b's and K1c's final names, read at your base, never a second definition  |\n| done_when: K6b (W1-K section 6.3, eval-resume.md:381), red first and then green, as its own commit so it can ship or revert alone (SIM 6): the disk check moves into _launch, before cell.launch_intent; free_bytes is the measured int on the row and an explicit null on a failed query; each path is measured alone, a failed path is dropped from the minimum and the floor applies to the paths that answered, both failed means launch with free_bytes null; a failing query emits disk.query_failed{path_role, errno} and logs a warning on the third failure in a row; the stop reason disk low keeps HB-RUN-004. Its tests, red first in tests/test_engine.py: test_disk_query_failure_is_not_recorded_and_launching_continues (shutil.disk_usage made to raise; red today: the engine raises), test_launch_intent_records_free_bytes (red today: no field), test_disk_low_stops_launching_before_the_intent (the stop row precedes the cell's intent), test_one_path_failing_still_applies_floor_to_the_other. The free_bytes field reaches the store (cell.launch_intent), the lifecycle mirror if a field list pins it, and every reader W1-K section 8 names for it; a reader that drops it is a finding. | phrase: K6b (W1-K section 6.3, eval-resume.md:381), red first and then green, as its own commit so |\n| done_when: tests/mutations/resume.json (W1-K section 4 (d), :207-229), in the file shape of the other tests/mutations files (name, file, find, replace, tests): the nineteen mutants M-SKIPARCH, M-NODISCARD, M-NOREDO, M-APPENDALL, M-WRITEOLD, M-ORDER, M-ORDINALCOUNT, M-STOPONLYRUNSTOPPED, M-LAUNCHSTOPPEDISSTOP, M-STOPCRASHREC, M-STOPLAUNCHES, M-STOPC7, M-STOPNOGRADE, M-DOUBLECOMPLETED, M-NOPENDINGSTOP, M-ANYCOMPLETED, M-PIDREUSE, M-PIDKILL and M-NOBEAT, each a find in the code that implements the rule its row names and each naming the tests that row names; and the five classifier mutants of the next paragraph (Ruling 110). Run uv run python tools/mutate_check.py with tests/mutations/resume.json once: every mutant killed, or a recorded reason per survivor; a survivor is a finding about the test its row names, never a deleted mutant or a reworded find. | phrase: tests/mutations/resume.json (W1-K section 4 (d), :207-229), in the file shape of the other |\n| done_when: Ruling 110 (docs/notes/rulings.md), conditions 1 and 3, quoted: \"The K1d worker (x-k1d-e1e4, Codex) writes the five into tests/mutations/resume.json, each with tests = exactly the two sweep node ids tests/test_resume.py::test_every_ledger_prefix_matches_the_adr_table and tests/test_resume.py::test_every_two_cell_ledger_prefix_matches_the_adr_table, never the file. mutate_check then runs only the sweep under each mutant, and a kill says what :199 claims: the sweep killed it. A survivor under this naming is a finding (the sweep does not see that boundary), filed with coord request add; it is never retargeted to the file or to a window test to make it kill. All five killed before K1d's hand-back, each recorded in the closing entry with the killing node id (the sweep's [W...] or prefix i case).\" and \"K1d's closing entry records the wall-clock of python tools/mutate_check.py tests/mutations/resume.json for the set, and per mutant if the tool prints it ... A number or \"not recorded\", never an estimate.\" The five are C2/C3, C3/C5, C5/completed, C6/C2 and C2/continued turn (W1-K section 4). You edit no design doc; the W1-K erratum is the Coordinator's at your join. | phrase: Ruling 110 (docs/notes/rulings.md), conditions 1 and 3, quoted: \"The K1d worker (x-k1d-e1e |\n| done_when: The archive readers (QUOTE-A; W1-J section 7, erratum by Coordinator #46): tests/test_archive_readers.py pins the exact set of src/harness_bench files that hold the string constant \"archive\" or an attribute named attempt_dirs or snapshot_folder (archive.py is the producer): READERS = {\"engine.py\", \"grade/runner.py\", \"report/credentials.py\", \"report/judges.py\", \"report/pack_improvement.py\", \"report/summaries.py\", \"report/html.py\", \"views.py\", \"resume.py\"}, nine files. resume.py is already in the set, so a K1d hunk there is fine; a new archive path in any other file is a seam request to coord-opus-e1e4, never an edit to READERS. Every turn-<n> folder is named from a row (archive.snapshot_of) or archive.snapshot_folder, never found by a glob over archive/<cid>. Run uv run pytest -q tests/test_archive_readers.py after every commit that touches resume.py, engine.py or archive.py. | phrase: The archive readers (QUOTE-A; W1-J section 7, erratum by Coordinator #46): tests/test_arch |\n| done_when: The resume telemetry (W1-K section 11, :427): \"Emitted on the normal path, no flag: resume.started {run_id, segment_id, dead_segments, cells_total, has_work}, resume.classified {counts per action C0..C7}, resume.cell {cell_id, rule, action, code, phase, turn, duration_ms}, resume.cell_deferred {cell_id, pid}, resume.done {skipped, launched, reconciled, duration_ms} ... Sinks: resume.* go to the existing run log\". cmd_run's resume branch returns before engine.configure_logging (cli.py:300-304), so on the real CLI path no resume line reaches the run log. Red first: after the second child of test_cli_run_resumes[T2], the run log holds a resume.started, a resume.classified and a resume.done line with the fields above (red today: no line). Green: the resume branch installs and removes the run-log handler around resume_run as the first-run path does (one construction, not a copy), and resume.py emits the five events with those fields. This edits the body of cmd_run only (X-K1's, pre-granted by Coordinator #43); every other cli.py line is X-K2b's. | phrase: The resume telemetry (W1-K section 11, :427): \"Emitted on the normal path, no flag: resume |\n| done_when: The named simplifications. The K1c finishing turn's closing entry lists five \"named, untested simplifications\"; the fifth, configure_logging, is the telemetry item above. For each of the other four: (1) the snapshot redo adopts an already-published folder by file scan only (resume._redo_snapshot); (2) resume-written outcomes skip Engine._after_append (Engine.append_row); (3) restored spend comes from turn_usage rows only (Engine.restore); (4) scripted-user logs are not closed for reconciled cells: either cite the W1-K line that makes the behaviour correct and add one test that pins it, red first where it changes behaviour, or put an inline simplify: comment at the site with its ceiling and its upgrade trigger and leave the behaviour unchanged. Each one gets a row in the exit-evidence table with the choice made. | phrase: The named simplifications. The K1c finishing turn's closing entry lists five \"named, untes |\n| done_when: K7 (W1-K section 8, :389): the model-docs rows in docs/design/run-lifecycle-model.md (ReconcileRecord under stopApplied maps to the classifier's stop input; Resume, unguarded, maps to resume_run's stop branch; turnNext maps to turn_ended.next; NoResumeAfterStop reads NoLaunchAfterStop, R6.8d) and the one models/README.md line, each with its frontmatter kept valid; refresh each document's HTML view with docs/ai-forward-pack/scripts/render-markdown.py. | phrase: K7 (W1-K section 8, :389): the model-docs rows in docs/design/run-lifecycle-model.md (Reco |\n| done_when: The exit-evidence table: write docs/plans/eval-x-k1d.md and its HTML, create-only, in its own commit (pre-granted); it is also your T2 plan record. It maps each x-k1.md acceptance item (1 to 6) to its node ids and the commit that turned each green, across K1a to K1d; each resume.json mutant to its W1-K row and its result; each named simplification to its choice; and each of X-K1's four dispatches to its closing audit entry id. Regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived). Run docs-graph.py validate before the hand-back and read its findings, not only its exit. | phrase: The exit-evidence table: write docs/plans/eval-x-k1d.md and its HTML, create-only, in its  |\n| done_when: Markers: there are none left and you add none. Every new test is red first, with its failing lines pasted in the red commit's message (RED-C: never ImportError, AttributeError, NameError or KeyError); a test already green on arrival is recorded \"green on arrival\", never faked red. BASE_COMPLETED_HITS (tests/test_resume.py) moves only in the commit that moves a hit, with each moved reader named. | phrase: Markers: there are none left and you add none. Every new test is red first, with its faili |\n| done_when: Mutation finds (MUT-E): if a K1d hunk moves a find text in tests/mutations/engine.json or stop.json, retarget only that find so it names the same rule, in the commit that moved it, and run tools/mutate_check.py on that file once; never --touched. | phrase: Mutation finds (MUT-E): if a K1d hunk moves a find text in tests/mutations/engine.json or  |\n| done_when: Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k1d-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH). | phrase: Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k1 |\n| done_when: Short paths (PATH-B, confirmed): every trial or test run happens in a tree and under roots whose paths are short. A run archive adds about 139 characters below its root even for the smallest fixture, so TMP, TEMP, --runs, --cells-root and any pytest --basetemp stay under C:\\t\\ or an equally short folder. | phrase: Short paths (PATH-B, confirmed): every trial or test run happens in a tree and under roots |\n| done_when: Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report. | phrase: Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, gro |\n| done_when: Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_resume.py tests/test_archive_readers.py tests/test_archive.py tests/test_lifecycle.py tests/test_lifecycle_conformance.py tests/test_views.py tests/test_verify.py tests/test_status.py tests/test_engine.py tests/test_multiturn.py tests/test_cli.py on the final commit, read as 0 failed and 0 XPASS; uv run python tools/mutate_check.py with tests/mutations/resume.json, with tests/mutations/engine.json and with tests/mutations/stop.json, one run each, never --touched, every mutant killed or a recorded reason per survivor (a file not run because the split rule handed back first is reported \"not run: split\"); uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate. | phrase: Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run  |\n| done_when: Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that wai |\n| done_when: Commit named paths only, with AGENT_SESSION=x-k1d-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green. | phrase: Commit named paths only, with AGENT_SESSION=x-k1d-e1e4 inline on every commit and coord ca |\n| done_when: Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split or served-model-failed), the red SHAs, the served model id as read, tokens where Codex emits usage, else literally \"not recorded\" (Ruling 108, condition 4), your context sample at each item, and each mutation file's result. Report your served model id on the first line of your final message, read from the Codex native record. | phrase: Your closing audit entry, written through audit-log.py, carries the dispatch start and end |\n| not_in_scope: resume.history and ResumeRecord (a need for them is a finding to coord-opus-e1e4); status.py and alarm.py (X-K2b's), and every cli.py line outside cmd_run; views.py, atomic.py, plan.py and errors.py (a missing row is a seam request); grade/ (no gate ring from K1d); HB-ALM-003, the .alarm_check stamp and the report header (E5). | phrase: resume.history and ResumeRecord (a need for them is a finding to coord-opus-e1e4); status. |\n| not_in_scope: the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours); src/ behaviour beyond K6b, the telemetry item and a simplification's red-first test (a finding to coord-opus-e1e4, never a fix in this turn). | phrase: the whole suite and mutate_check --touched (the Leader's); never kill a process by name or |\nReferences\n- build/eval-x-k1d: unresolved (not found)\n- tests/mutations/resume.json: unresolved (not found)\n- docs/coordination/eval-wave2-e234/x-k1.md: docs/coordination/eval-wave2-e234/x-k1.md sha256 0d274cbd1335fc6b5b34621816bf5901898ebcd53a6b8a7178cc692a2cb58ccf\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b\n- docs/coordination/eval-wave2-e234/README.md: docs/coordination/eval-wave2-e234/README.md sha256 e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701\n- docs/design/eval-resume.md: docs/design/eval-resume.md sha256 8517db2563c008917ffc02f8d969c073626b4716a9637145a5ceb70e6b760bb1\n- docs/design/eval-seam-contracts.md: docs/design/eval-seam-contracts.md sha256 a2b3d71d784f767a61417688eeb755d9692447c718f0009f740cefa567078f1d\n- src/harness_bench/lifecycle.py: src/harness_bench/lifecycle.py sha256 5da60767faaba94978916363b445aa1805e3114b7b3b4297176ae8fd65af5c92\n- src/harness_bench/engine.py: src/harness_bench/engine.py sha256 b37b5f759ea4a0098c0e3cf8cf9172ccef18a1c8839f193cf564976db89830d0\n- tests/test_resume.py: tests/test_resume.py sha256 fda498119cabe87ef5380bb6c71ea6e15c1f2c6cf964dbdedabedd198d9acf17\n- engine.py: src/harness_bench/engine.py sha256 b37b5f759ea4a0098c0e3cf8cf9172ccef18a1c8839f193cf564976db89830d0\n- resume.json: unresolved (not found)\n- resume.py: src/harness_bench/resume.py sha256 c94ca57490c6d84fc805fa2f4eaaa3054ade0dbc8c2fee7e36ad9b5b19126a37\n- archive.py: src/harness_bench/archive.py sha256 c6841a7afc65d89d9863a03320db387229c7502720e1a6f365471b9a84600f1a\n- views.py: unresolved (ambiguous: 2 matches)\n- tests/test_identity.py: tests/test_identity.py sha256 f6717458ec2670a1be81a7839657dfa77e4dbb2e4515e532b5daefd5d3a8a784\n- tests/test_engine.py: tests/test_engine.py sha256 17ab3794c516a6ed2ea98785711293ee49f7d9dabe6341d3a2df45499fb406c1\n- tests/mutations: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d\n- docs/notes/rulings.md: docs/notes/rulings.md sha256 e67c4be5814f67c561558a4af02c9e5a44d0b845800de1f0b8b1f22a43e88ca3\n- tests/test_resume.py::test_every_ledger_prefix_matches_the_adr_table: unresolved (not found)\n- tests/test_resume.py::test_every_two_cell_ledger_prefix_matches_the_adr_table: unresolved (not found)\n- C2/C3: unresolved (not found)\n- C3/C5: unresolved (not found)\n- C5/completed: unresolved (not found)\n- C6/C2: unresolved (not found)\n- C2/continued: unresolved (not found)\n- tests/test_archive_readers.py: tests/test_archive_readers.py sha256 69e9aa7d3e90bdc6948fd0b56d5b6adf7980fb79ddac45a00e2e239a0a52f0a7\n- src/harness_bench: unresolved (not found)\n- {\"engine.py: unresolved (not found; nearest: src/harness_bench/engine.py)\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 fee02368561b9af64a2add57480e5beb13c4888a593ebef3ec5312977c7bd1f4\n- report/credentials.py: src/harness_bench/report/credentials.py sha256 00a84ee78abeff3d72913255b9d04be20c98b4b2dd8f9be31332975b1872cbec\n- report/judges.py: src/harness_bench/report/judges.py sha256 aa5698b0559d8b5d443f7bdee83b658725aed4013910161feb46962bb3cd59b7\n- report/pack_improvement.py: src/harness_bench/report/pack_improvement.py sha256 7c5f1a9a9b3d7552bae8719a75ad3fc3579cc796ceab01823db94435500c3996\n- report/summaries.py: src/harness_bench/report/summaries.py sha256 037b0bcf0999b8a80b7cba3ae6aa9aefd82c5378dc0859190083d397df77588b\n- report/html.py: src/harness_bench/report/html.py sha256 c8684af375bebe0b1e4400474a7baa4333520d16560a27254fe814da70ddf88a\n- archive/<cid: unresolved (not found)\n- cli.py: src/harness_bench/cli.py sha256 30e5f033eb403551e454548ba07ee4c378570f2297b701385df30e4875456869\n- docs/design/run-lifecycle-model.md: docs/design/run-lifecycle-model.md sha256 a4358621c550c308c63a8a6a6af58a6c34dd8b473851bee33bdcf425a2545b5d\n- models/README.md: models/README.md sha256 6614ac96aa70a1ab8176ad4b1abcac30f9cf4282b2958925f39c5e30024d0120\n- docs/ai-forward-pack/scripts/render-markdown.py: docs/ai-forward-pack/scripts/render-markdown.py sha256 1033f9bada4fc31320e4fe8590600e59b0597c40b47d43ffec44fda85c1a71d8\n- docs/plans/eval-x-k1d.md: unresolved (not found)\n- x-k1.md: docs/coordination/eval-wave2-e234/x-k1.md sha256 0d274cbd1335fc6b5b34621816bf5901898ebcd53a6b8a7178cc692a2cb58ccf\n- docs/docs-index.js: docs/docs-index.js sha256 3bd33d2973533bcd36463ca6f66d7ff93b4eef069629a5f92949c189ebd1c39c\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- tests/mutations/engine.json: tests/mutations/engine.json sha256 47fb020aa8eea8a3260808e93778a3fe0208f5f92f2acc32a0db6899ce1227ea\n- stop.json: tests/mutations/stop.json sha256 d1a0d9f6ab234060acf59dd1bce3963cb29ee71b07830abee8e3b41e529ba2ad\n- HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 25c45e56139c8e3a2d70d353e4b83c0386590e754c342c2ee0e1a88338ff8b73\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 fdf375a866929a88129870b7f93ee766a68e77403a3d68bbab6cffb3d8747281\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tests/test_archive.py: tests/test_archive.py sha256 fc1fe889b9a1eb03e0344aeca3c57e60469933eff6c453ad11049470dea14f2c\n- tests/test_lifecycle.py: tests/test_lifecycle.py sha256 23a33e6454781a6a8777bb42ea70b407dfea56793cce23ae81e0860520f9ca3f\n- tests/test_lifecycle_conformance.py: tests/test_lifecycle_conformance.py sha256 b2ffe58c7d74f492f3764dd762812b04fc1e499dd1146758eb5401030fe3a374\n- tests/test_views.py: tests/test_views.py sha256 13fb99dcf307f87d767604e68c54fe2017580d8cca931a5fd844110d1b644587\n- tests/test_verify.py: tests/test_verify.py sha256 5a98a66f0db0b72e50d9c9198b638fc8f2030c542d133394e20077dd8fdb059c\n- tests/test_status.py: tests/test_status.py sha256 a89159d445491a3498083d416d6552d220519a7e54602ca86f8bf27615a14c1e\n- tests/test_multiturn.py: tests/test_multiturn.py sha256 a703a7ce2557812c06bf39fbf8b93005d0325fc684068539e1c2b72bff6199d9\n- tests/test_cli.py: tests/test_cli.py sha256 3cf02892974d6be3887b5e166be1bac711ad967224a36e34c14342fbaddddaf1\n- tests/mutations/stop.json: tests/mutations/stop.json sha256 d1a0d9f6ab234060acf59dd1bce3963cb29ee71b07830abee8e3b41e529ba2ad\n- audit-log.py: docs/ai-forward-pack/scripts/audit-log.py sha256 d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4\n- status.py: src/harness_bench/status.py sha256 e5f59737a3b2bfe0f006e52777b4f3349faadfa9aaa6331a4a436ccf34118bba\n- alarm.py: unresolved (not found)\n- atomic.py: src/harness_bench/atomic.py sha256 d158db29ef50ee5013f1e775363cb8db4c0fd4815bbc4df5bd07d3a88d30e317\n- plan.py: src/harness_bench/plan.py sha256 9b94a7f295b3c03eed4b91640872a649aa23468b0fef2c92652920e52abb7e4f\n- errors.py: src/harness_bench/errors.py sha256 3509e74d4610df7afeec7c15d66d32cf4549aeff001e9b1b430711771ca82e8e\n- grade/: unresolved (not found)\n- src/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0\nper_branch_exit: the K6b commit, then the admitted items' commits on build/eval-x-k1d, then the gate, or a hand-back by the split rule with the open items named\njoin_rule: the R-104 worker gate; the Leader joins into the integration head, re-runs one red SHA, confirms K6b is its own commit, resume.json holds the nineteen W1-K mutants with every survivor reasoned and the five classifier mutants named to the two sweep node ids only, each killed by a recorded sweep node id (Ruling 110 condition 1) with the resume.json wall-clock recorded (condition 3), T-SWEEP-1 green with READERS unchanged at nine, cli.py changed inside cmd_run only, no grade import from resume.py, engine.py or archive.py and no allowlist edge, views.py, atomic.py, plan.py, errors.py, status.py and alarm.py unchanged, and the exit-evidence table maps acceptance items 1 to 6; the Coordinator writes the Ruling 110 condition 2 W1-K erratum in the join commit; no grade/ file changes, so no gate ring\ncontainment: own worktree on build/eval-x-k1d from the integration head at dispatch, which holds join-x-k1c; x-k1.md's owned paths, this turn: engine.py (K6b), resume.py (the telemetry events), cli.py (the body of cmd_run only, pre-granted by Coordinator #43), lifecycle.py (a launch_intent field list, if one pins free_bytes), tests/test_engine.py, tests/test_resume.py, tests/mutations/resume.json (new), moved finds only in engine.json and stop.json (MUT-E), docs/design/run-lifecycle-model.md and models/README.md (the W1-K section 8 rows), docs/plans/eval-x-k1d.md and its HTML (create-only), docs/docs-index.js (derive only)\ntermination: one turn\ndeadline: 3,300 s\nfallback: the Leader's decision after hand-back; the worker launches, spawns or messages nothing (FALLBACK-A)\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M496437GQKCC4ZT624BPQRD8\nraw sha256: 4c25cec68ff57a487ae8830ccf01ff6ac5a2fe71eedcf25f7d519dacf85015c8\ncompiler model: claude-opus-5-5\nengine seconds: 0.018\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "summary": "compiled al-01M496437GQKCC4ZT624BPQRD8 for codex v1: 22 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
       "tool": null,
       "actor": null,
       "artifacts": [],
       "tags": [],
       "outcome": "success",
-      "compiled": false,
-      "goal": "Join Ruling 111 into integrate/e2e4-18",
-      "done_when": "conductor-join exit 0 (docs-only)",
-      "tier": "T1",
-      "fan_out": 0,
-      "signals": {
-        "verification_path": true,
-        "verification_executed": true,
-        "acceptance_met": true
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "Base: build/eval-x-k1d, which the Leader creates from the integration head at dispatch, never main; that head holds the X-K1c join. Stop and report, before any edit, if git log --oneline --grep=join-x-k1c prints nothing (the K1c join is not in your base), if git grep -n 'reason=\"K1' -- tests prints anything (every K1a, K1b and K1c marker is gone), if git grep -n '\"segment.abandoned\": Transition' -- src/harness_bench/lifecycle.py prints a line without \"ledger\", if git grep -n \"def open_engine_segments\" -- src/harness_bench/engine.py does not print exactly one line, or if tests/mutations/resume.json exists.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Base: build/eval-x-k1d, which the Leader creates from the integration head at dispatch, ne"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The context split rule (CEIL-A, measured): start no K-item above floor + the item's expected work, where floor is the harness's measured first reading. Codex floor: X-K1b's first reading before its first K-item was 89,613 tokens (X-K1c's K5 admission sample was 77,993 and X-K1a's K2 admission 103k; neither is a first reading). One K-item costs 17k to about 60k (X-K1b: 89,613 to 125,701 at its K3 boundary, about 36k for one item). So for this turn the floor is 90k and every item's expected work is 60k, the measured largest: start no item above 150k; the ceiling 200k is at least floor + the largest item. Sample your context from payload.info.last_token_usage.input_tokens of the last token_count event in your own Codex rollout file: before each item, before each gate command, and before reading any file longer than 300 lines. Read only line ranges (sed -n, grep -n), never a whole design file, the whole of tests/test_resume.py or the whole of engine.py; send gate and test output to a file and read only its summary lines. The rules: (1) the items run in this order: K6b, resume.json, the telemetry, the simplifications, K7, the exit-evidence table; start no item above 150k, and your hand-back point is the first item boundary where your sample is above 150k; (2) at 170k, start no new edit or gate, write the closing audit entry and hand back with the open items named; (3) if the figure cannot be read, record \"not recorded\" and hand back after K6b. A hand-back by this rule is a planned split, not a failure.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The context split rule (CEIL-A, measured): start no K-item above floor + the item's expect"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Build on K1a's, K1b's and K1c's final names, read at your base, never a second definition (DM7): resume.resume_run (it refuses a passed plan whose plan_hash differs from the confirmed plan), resume.classify, resume.stop_recorded, resume.has_work, resume.Action, resume.sweep_archives, resume._Resume; engine.open_engine_segments, engine.next_ordinal, Engine.resume, Engine.restore and Engine.append_row; archive.recover_archive and Recovery; EngineConfig.verify; lifecycle.completed, the one completion definition (D-K5); lifecycle.TABLE with segment.abandoned written by \"ledger\"; views.segment_paths ordered by stem; and the tests/test_resume.py helper that writes plan parameters into the stored plan, the only way a test sets a parameter. resume.py, engine.py and archive.py never import views.py or any grade module, and you never add an allowlist edge (tests/test_identity.py, RUN_IMPORTS_GRADE_ALLOWED).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Build on K1a's, K1b's and K1c's final names, read at your base, never a second definition "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "K6b (W1-K section 6.3, eval-resume.md:381), red first and then green, as its own commit so it can ship or revert alone (SIM 6): the disk check moves into _launch, before cell.launch_intent; free_bytes is the measured int on the row and an explicit null on a failed query; each path is measured alone, a failed path is dropped from the minimum and the floor applies to the paths that answered, both failed means launch with free_bytes null; a failing query emits disk.query_failed{path_role, errno} and logs a warning on the third failure in a row; the stop reason disk low keeps HB-RUN-004. Its tests, red first in tests/test_engine.py: test_disk_query_failure_is_not_recorded_and_launching_continues (shutil.disk_usage made to raise; red today: the engine raises), test_launch_intent_records_free_bytes (red today: no field), test_disk_low_stops_launching_before_the_intent (the stop row precedes the cell's intent), test_one_path_failing_still_applies_floor_to_the_other. The free_bytes field reaches the store (cell.launch_intent), the lifecycle mirror if a field list pins it, and every reader W1-K section 8 names for it; a reader that drops it is a finding.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "K6b (W1-K section 6.3, eval-resume.md:381), red first and then green, as its own commit so"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "tests/mutations/resume.json (W1-K section 4 (d), :207-229), in the file shape of the other tests/mutations files (name, file, find, replace, tests): the nineteen mutants M-SKIPARCH, M-NODISCARD, M-NOREDO, M-APPENDALL, M-WRITEOLD, M-ORDER, M-ORDINALCOUNT, M-STOPONLYRUNSTOPPED, M-LAUNCHSTOPPEDISSTOP, M-STOPCRASHREC, M-STOPLAUNCHES, M-STOPC7, M-STOPNOGRADE, M-DOUBLECOMPLETED, M-NOPENDINGSTOP, M-ANYCOMPLETED, M-PIDREUSE, M-PIDKILL and M-NOBEAT, each a find in the code that implements the rule its row names and each naming the tests that row names; and the five classifier mutants of the next paragraph (Ruling 110). Run uv run python tools/mutate_check.py with tests/mutations/resume.json once: every mutant killed, or a recorded reason per survivor; a survivor is a finding about the test its row names, never a deleted mutant or a reworded find.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "tests/mutations/resume.json (W1-K section 4 (d), :207-229), in the file shape of the other"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Ruling 110 (docs/notes/rulings.md), conditions 1 and 3, quoted: \"The K1d worker (x-k1d-e1e4, Codex) writes the five into tests/mutations/resume.json, each with tests = exactly the two sweep node ids tests/test_resume.py::test_every_ledger_prefix_matches_the_adr_table and tests/test_resume.py::test_every_two_cell_ledger_prefix_matches_the_adr_table, never the file. mutate_check then runs only the sweep under each mutant, and a kill says what :199 claims: the sweep killed it. A survivor under this naming is a finding (the sweep does not see that boundary), filed with coord request add; it is never retargeted to the file or to a window test to make it kill. All five killed before K1d's hand-back, each recorded in the closing entry with the killing node id (the sweep's [W...] or prefix i case).\" and \"K1d's closing entry records the wall-clock of python tools/mutate_check.py tests/mutations/resume.json for the set, and per mutant if the tool prints it ... A number or \"not recorded\", never an estimate.\" The five are C2/C3, C3/C5, C5/completed, C6/C2 and C2/continued turn (W1-K section 4). You edit no design doc; the W1-K erratum is the Coordinator's at your join.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Ruling 110 (docs/notes/rulings.md), conditions 1 and 3, quoted: \"The K1d worker (x-k1d-e1e"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The archive readers (QUOTE-A; W1-J section 7, erratum by Coordinator #46): tests/test_archive_readers.py pins the exact set of src/harness_bench files that hold the string constant \"archive\" or an attribute named attempt_dirs or snapshot_folder (archive.py is the producer): READERS = {\"engine.py\", \"grade/runner.py\", \"report/credentials.py\", \"report/judges.py\", \"report/pack_improvement.py\", \"report/summaries.py\", \"report/html.py\", \"views.py\", \"resume.py\"}, nine files. resume.py is already in the set, so a K1d hunk there is fine; a new archive path in any other file is a seam request to coord-opus-e1e4, never an edit to READERS. Every turn-<n> folder is named from a row (archive.snapshot_of) or archive.snapshot_folder, never found by a glob over archive/<cid>. Run uv run pytest -q tests/test_archive_readers.py after every commit that touches resume.py, engine.py or archive.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The archive readers (QUOTE-A; W1-J section 7, erratum by Coordinator #46): tests/test_arch"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The resume telemetry (W1-K section 11, :427): \"Emitted on the normal path, no flag: resume.started {run_id, segment_id, dead_segments, cells_total, has_work}, resume.classified {counts per action C0..C7}, resume.cell {cell_id, rule, action, code, phase, turn, duration_ms}, resume.cell_deferred {cell_id, pid}, resume.done {skipped, launched, reconciled, duration_ms} ... Sinks: resume.* go to the existing run log\". cmd_run's resume branch returns before engine.configure_logging (cli.py:300-304), so on the real CLI path no resume line reaches the run log. Red first: after the second child of test_cli_run_resumes[T2], the run log holds a resume.started, a resume.classified and a resume.done line with the fields above (red today: no line). Green: the resume branch installs and removes the run-log handler around resume_run as the first-run path does (one construction, not a copy), and resume.py emits the five events with those fields. This edits the body of cmd_run only (X-K1's, pre-granted by Coordinator #43); every other cli.py line is X-K2b's.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The resume telemetry (W1-K section 11, :427): \"Emitted on the normal path, no flag: resume"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The named simplifications. The K1c finishing turn's closing entry lists five \"named, untested simplifications\"; the fifth, configure_logging, is the telemetry item above. For each of the other four: (1) the snapshot redo adopts an already-published folder by file scan only (resume._redo_snapshot); (2) resume-written outcomes skip Engine._after_append (Engine.append_row); (3) restored spend comes from turn_usage rows only (Engine.restore); (4) scripted-user logs are not closed for reconciled cells: either cite the W1-K line that makes the behaviour correct and add one test that pins it, red first where it changes behaviour, or put an inline simplify: comment at the site with its ceiling and its upgrade trigger and leave the behaviour unchanged. Each one gets a row in the exit-evidence table with the choice made.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The named simplifications. The K1c finishing turn's closing entry lists five \"named, untes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "K7 (W1-K section 8, :389): the model-docs rows in docs/design/run-lifecycle-model.md (ReconcileRecord under stopApplied maps to the classifier's stop input; Resume, unguarded, maps to resume_run's stop branch; turnNext maps to turn_ended.next; NoResumeAfterStop reads NoLaunchAfterStop, R6.8d) and the one models/README.md line, each with its frontmatter kept valid; refresh each document's HTML view with docs/ai-forward-pack/scripts/render-markdown.py.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "K7 (W1-K section 8, :389): the model-docs rows in docs/design/run-lifecycle-model.md (Reco"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The exit-evidence table: write docs/plans/eval-x-k1d.md and its HTML, create-only, in its own commit (pre-granted); it is also your T2 plan record. It maps each x-k1.md acceptance item (1 to 6) to its node ids and the commit that turned each green, across K1a to K1d; each resume.json mutant to its W1-K row and its result; each named simplification to its choice; and each of X-K1's four dispatches to its closing audit entry id. Regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived). Run docs-graph.py validate before the hand-back and read its findings, not only its exit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The exit-evidence table: write docs/plans/eval-x-k1d.md and its HTML, create-only, in its "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Markers: there are none left and you add none. Every new test is red first, with its failing lines pasted in the red commit's message (RED-C: never ImportError, AttributeError, NameError or KeyError); a test already green on arrival is recorded \"green on arrival\", never faked red. BASE_COMPLETED_HITS (tests/test_resume.py) moves only in the commit that moves a hit, with each moved reader named.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Markers: there are none left and you add none. Every new test is red first, with its faili"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Mutation finds (MUT-E): if a K1d hunk moves a find text in tests/mutations/engine.json or stop.json, retarget only that find so it names the same rule, in the commit that moved it, and run tools/mutate_check.py on that file once; never --touched.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Mutation finds (MUT-E): if a K1d hunk moves a find text in tests/mutations/engine.json or "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k1d-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k1"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Short paths (PATH-B, confirmed): every trial or test run happens in a tree and under roots whose paths are short. A run archive adds about 139 characters below its root even for the smallest fixture, so TMP, TEMP, --runs, --cells-root and any pytest --basetemp stay under C:\\t\\ or an equally short folder.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Short paths (PATH-B, confirmed): every trial or test run happens in a tree and under roots"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, gro"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_resume.py tests/test_archive_readers.py tests/test_archive.py tests/test_lifecycle.py tests/test_lifecycle_conformance.py tests/test_views.py tests/test_verify.py tests/test_status.py tests/test_engine.py tests/test_multiturn.py tests/test_cli.py on the final commit, read as 0 failed and 0 XPASS; uv run python tools/mutate_check.py with tests/mutations/resume.json, with tests/mutations/engine.json and with tests/mutations/stop.json, one run each, never --touched, every mutant killed or a recorded reason per survivor (a file not run because the split rule handed back first is reported \"not run: split\"); uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that wai"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit named paths only, with AGENT_SESSION=x-k1d-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit named paths only, with AGENT_SESSION=x-k1d-e1e4 inline on every commit and coord ca"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split or served-model-failed), the red SHAs, the served model id as read, tokens where Codex emits usage, else literally \"not recorded\" (Ruling 108, condition 4), your context sample at each item, and each mutation file's result. Report your served model id on the first line of your final message, read from the Codex native record.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your closing audit entry, written through audit-log.py, carries the dispatch start and end"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "resume.history and ResumeRecord (a need for them is a finding to coord-opus-e1e4); status.py and alarm.py (X-K2b's), and every cli.py line outside cmd_run; views.py, atomic.py, plan.py and errors.py (a missing row is a seam request); grade/ (no gate ring from K1d); HB-ALM-003, the .alarm_check stamp and the report header (E5).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "resume.history and ResumeRecord (a need for them is a finding to coord-opus-e1e4); status."
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours); src/ behaviour beyond K6b, the telemetry item and a simplification's red-first test (a finding to coord-opus-e1e4, never a fix in this turn).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the whole suite and mutate_check --touched (the Leader's); never kill a process by name or"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree on build/eval-x-k1d from the integration head at dispatch, which holds join-x-k1c; x-k1.md's owned paths, this turn: engine.py (K6b), resume.py (the telemetry events), cli.py (the body of cmd_run only, pre-granted by Coordinator #43), lifecycle.py (a launch_intent field list, if one pins free_bytes), tests/test_engine.py, tests/test_resume.py, tests/mutations/resume.json (new), moved finds only in engine.json and stop.json (MUT-E), docs/design/run-lifecycle-model.md and models/README.md (the W1-K section 8 rows), docs/plans/eval-x-k1d.md and its HTML (create-only), docs/docs-index.js (derive only)",
+          "deadline": "3,300 s",
+          "fallback": "the Leader's decision after hand-back; the worker launches, spawns or messages nothing (FALLBACK-A)",
+          "join_rule": "the R-104 worker gate; the Leader joins into the integration head, re-runs one red SHA, confirms K6b is its own commit, resume.json holds the nineteen W1-K mutants with every survivor reasoned and the five classifier mutants named to the two sweep node ids only, each killed by a recorded sweep node id (Ruling 110 condition 1) with the resume.json wall-clock recorded (condition 3), T-SWEEP-1 green with READERS unchanged at nine, cli.py changed inside cmd_run only, no grade import from resume.py, engine.py or archive.py and no allowlist edge, views.py, atomic.py, plan.py, errors.py, status.py and alarm.py unchanged, and the exit-evidence table maps acceptance items 1 to 6; the Coordinator writes the Ruling 110 condition 2 W1-K erratum in the join commit; no grade/ file changes, so no gate ring",
+          "per_branch_exit": "the K6b commit, then the admitted items' commits on build/eval-x-k1d, then the gate, or a hand-back by the split rule with the open items named",
+          "termination": "one turn",
+          "transient_retry": "0",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens; split rule (CEIL-A): start no K-item above floor + the item's expected work, Codex floor 90k (X-K1b's measured first reading 89,613) + 60k (the largest measured K-item) = 150k; hand-back point at the first item boundary above 150k; hard stop at 170k; unreadable means hand back after K6b",
+          "done_when": [
+            "Base: build/eval-x-k1d, which the Leader creates from the integration head at dispatch, never main; that head holds the X-K1c join. Stop and report, before any edit, if git log --oneline --grep=join-x-k1c prints nothing (the K1c join is not in your base), if git grep -n 'reason=\"K1' -- tests prints anything (every K1a, K1b and K1c marker is gone), if git grep -n '\"segment.abandoned\": Transition' -- src/harness_bench/lifecycle.py prints a line without \"ledger\", if git grep -n \"def open_engine_segments\" -- src/harness_bench/engine.py does not print exactly one line, or if tests/mutations/resume.json exists.",
+            "The context split rule (CEIL-A, measured): start no K-item above floor + the item's expected work, where floor is the harness's measured first reading. Codex floor: X-K1b's first reading before its first K-item was 89,613 tokens (X-K1c's K5 admission sample was 77,993 and X-K1a's K2 admission 103k; neither is a first reading). One K-item costs 17k to about 60k (X-K1b: 89,613 to 125,701 at its K3 boundary, about 36k for one item). So for this turn the floor is 90k and every item's expected work is 60k, the measured largest: start no item above 150k; the ceiling 200k is at least floor + the largest item. Sample your context from payload.info.last_token_usage.input_tokens of the last token_count event in your own Codex rollout file: before each item, before each gate command, and before reading any file longer than 300 lines. Read only line ranges (sed -n, grep -n), never a whole design file, the whole of tests/test_resume.py or the whole of engine.py; send gate and test output to a file and read only its summary lines. The rules: (1) the items run in this order: K6b, resume.json, the telemetry, the simplifications, K7, the exit-evidence table; start no item above 150k, and your hand-back point is the first item boundary where your sample is above 150k; (2) at 170k, start no new edit or gate, write the closing audit entry and hand back with the open items named; (3) if the figure cannot be read, record \"not recorded\" and hand back after K6b. A hand-back by this rule is a planned split, not a failure.",
+            "Build on K1a's, K1b's and K1c's final names, read at your base, never a second definition (DM7): resume.resume_run (it refuses a passed plan whose plan_hash differs from the confirmed plan), resume.classify, resume.stop_recorded, resume.has_work, resume.Action, resume.sweep_archives, resume._Resume; engine.open_engine_segments, engine.next_ordinal, Engine.resume, Engine.restore and Engine.append_row; archive.recover_archive and Recovery; EngineConfig.verify; lifecycle.completed, the one completion definition (D-K5); lifecycle.TABLE with segment.abandoned written by \"ledger\"; views.segment_paths ordered by stem; and the tests/test_resume.py helper that writes plan parameters into the stored plan, the only way a test sets a parameter. resume.py, engine.py and archive.py never import views.py or any grade module, and you never add an allowlist edge (tests/test_identity.py, RUN_IMPORTS_GRADE_ALLOWED).",
+            "K6b (W1-K section 6.3, eval-resume.md:381), red first and then green, as its own commit so it can ship or revert alone (SIM 6): the disk check moves into _launch, before cell.launch_intent; free_bytes is the measured int on the row and an explicit null on a failed query; each path is measured alone, a failed path is dropped from the minimum and the floor applies to the paths that answered, both failed means launch with free_bytes null; a failing query emits disk.query_failed{path_role, errno} and logs a warning on the third failure in a row; the stop reason disk low keeps HB-RUN-004. Its tests, red first in tests/test_engine.py: test_disk_query_failure_is_not_recorded_and_launching_continues (shutil.disk_usage made to raise; red today: the engine raises), test_launch_intent_records_free_bytes (red today: no field), test_disk_low_stops_launching_before_the_intent (the stop row precedes the cell's intent), test_one_path_failing_still_applies_floor_to_the_other. The free_bytes field reaches the store (cell.launch_intent), the lifecycle mirror if a field list pins it, and every reader W1-K section 8 names for it; a reader that drops it is a finding.",
+            "tests/mutations/resume.json (W1-K section 4 (d), :207-229), in the file shape of the other tests/mutations files (name, file, find, replace, tests): the nineteen mutants M-SKIPARCH, M-NODISCARD, M-NOREDO, M-APPENDALL, M-WRITEOLD, M-ORDER, M-ORDINALCOUNT, M-STOPONLYRUNSTOPPED, M-LAUNCHSTOPPEDISSTOP, M-STOPCRASHREC, M-STOPLAUNCHES, M-STOPC7, M-STOPNOGRADE, M-DOUBLECOMPLETED, M-NOPENDINGSTOP, M-ANYCOMPLETED, M-PIDREUSE, M-PIDKILL and M-NOBEAT, each a find in the code that implements the rule its row names and each naming the tests that row names; and the five classifier mutants of the next paragraph (Ruling 110). Run uv run python tools/mutate_check.py with tests/mutations/resume.json once: every mutant killed, or a recorded reason per survivor; a survivor is a finding about the test its row names, never a deleted mutant or a reworded find.",
+            "Ruling 110 (docs/notes/rulings.md), conditions 1 and 3, quoted: \"The K1d worker (x-k1d-e1e4, Codex) writes the five into tests/mutations/resume.json, each with tests = exactly the two sweep node ids tests/test_resume.py::test_every_ledger_prefix_matches_the_adr_table and tests/test_resume.py::test_every_two_cell_ledger_prefix_matches_the_adr_table, never the file. mutate_check then runs only the sweep under each mutant, and a kill says what :199 claims: the sweep killed it. A survivor under this naming is a finding (the sweep does not see that boundary), filed with coord request add; it is never retargeted to the file or to a window test to make it kill. All five killed before K1d's hand-back, each recorded in the closing entry with the killing node id (the sweep's [W...] or prefix i case).\" and \"K1d's closing entry records the wall-clock of python tools/mutate_check.py tests/mutations/resume.json for the set, and per mutant if the tool prints it ... A number or \"not recorded\", never an estimate.\" The five are C2/C3, C3/C5, C5/completed, C6/C2 and C2/continued turn (W1-K section 4). You edit no design doc; the W1-K erratum is the Coordinator's at your join.",
+            "The archive readers (QUOTE-A; W1-J section 7, erratum by Coordinator #46): tests/test_archive_readers.py pins the exact set of src/harness_bench files that hold the string constant \"archive\" or an attribute named attempt_dirs or snapshot_folder (archive.py is the producer): READERS = {\"engine.py\", \"grade/runner.py\", \"report/credentials.py\", \"report/judges.py\", \"report/pack_improvement.py\", \"report/summaries.py\", \"report/html.py\", \"views.py\", \"resume.py\"}, nine files. resume.py is already in the set, so a K1d hunk there is fine; a new archive path in any other file is a seam request to coord-opus-e1e4, never an edit to READERS. Every turn-<n> folder is named from a row (archive.snapshot_of) or archive.snapshot_folder, never found by a glob over archive/<cid>. Run uv run pytest -q tests/test_archive_readers.py after every commit that touches resume.py, engine.py or archive.py.",
+            "The resume telemetry (W1-K section 11, :427): \"Emitted on the normal path, no flag: resume.started {run_id, segment_id, dead_segments, cells_total, has_work}, resume.classified {counts per action C0..C7}, resume.cell {cell_id, rule, action, code, phase, turn, duration_ms}, resume.cell_deferred {cell_id, pid}, resume.done {skipped, launched, reconciled, duration_ms} ... Sinks: resume.* go to the existing run log\". cmd_run's resume branch returns before engine.configure_logging (cli.py:300-304), so on the real CLI path no resume line reaches the run log. Red first: after the second child of test_cli_run_resumes[T2], the run log holds a resume.started, a resume.classified and a resume.done line with the fields above (red today: no line). Green: the resume branch installs and removes the run-log handler around resume_run as the first-run path does (one construction, not a copy), and resume.py emits the five events with those fields. This edits the body of cmd_run only (X-K1's, pre-granted by Coordinator #43); every other cli.py line is X-K2b's.",
+            "The named simplifications. The K1c finishing turn's closing entry lists five \"named, untested simplifications\"; the fifth, configure_logging, is the telemetry item above. For each of the other four: (1) the snapshot redo adopts an already-published folder by file scan only (resume._redo_snapshot); (2) resume-written outcomes skip Engine._after_append (Engine.append_row); (3) restored spend comes from turn_usage rows only (Engine.restore); (4) scripted-user logs are not closed for reconciled cells: either cite the W1-K line that makes the behaviour correct and add one test that pins it, red first where it changes behaviour, or put an inline simplify: comment at the site with its ceiling and its upgrade trigger and leave the behaviour unchanged. Each one gets a row in the exit-evidence table with the choice made.",
+            "K7 (W1-K section 8, :389): the model-docs rows in docs/design/run-lifecycle-model.md (ReconcileRecord under stopApplied maps to the classifier's stop input; Resume, unguarded, maps to resume_run's stop branch; turnNext maps to turn_ended.next; NoResumeAfterStop reads NoLaunchAfterStop, R6.8d) and the one models/README.md line, each with its frontmatter kept valid; refresh each document's HTML view with docs/ai-forward-pack/scripts/render-markdown.py.",
+            "The exit-evidence table: write docs/plans/eval-x-k1d.md and its HTML, create-only, in its own commit (pre-granted); it is also your T2 plan record. It maps each x-k1.md acceptance item (1 to 6) to its node ids and the commit that turned each green, across K1a to K1d; each resume.json mutant to its W1-K row and its result; each named simplification to its choice; and each of X-K1's four dispatches to its closing audit entry id. Regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived). Run docs-graph.py validate before the hand-back and read its findings, not only its exit.",
+            "Markers: there are none left and you add none. Every new test is red first, with its failing lines pasted in the red commit's message (RED-C: never ImportError, AttributeError, NameError or KeyError); a test already green on arrival is recorded \"green on arrival\", never faked red. BASE_COMPLETED_HITS (tests/test_resume.py) moves only in the commit that moves a hit, with each moved reader named.",
+            "Mutation finds (MUT-E): if a K1d hunk moves a find text in tests/mutations/engine.json or stop.json, retarget only that find so it names the same rule, in the commit that moved it, and run tools/mutate_check.py on that file once; never --touched.",
+            "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k1d-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).",
+            "Short paths (PATH-B, confirmed): every trial or test run happens in a tree and under roots whose paths are short. A run archive adds about 139 characters below its root even for the smallest fixture, so TMP, TEMP, --runs, --cells-root and any pytest --basetemp stay under C:\\t\\ or an equally short folder.",
+            "Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report.",
+            "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_resume.py tests/test_archive_readers.py tests/test_archive.py tests/test_lifecycle.py tests/test_lifecycle_conformance.py tests/test_views.py tests/test_verify.py tests/test_status.py tests/test_engine.py tests/test_multiturn.py tests/test_cli.py on the final commit, read as 0 failed and 0 XPASS; uv run python tools/mutate_check.py with tests/mutations/resume.json, with tests/mutations/engine.json and with tests/mutations/stop.json, one run each, never --touched, every mutant killed or a recorded reason per survivor (a file not run because the split rule handed back first is reported \"not run: split\"); uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.",
+            "Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "Commit named paths only, with AGENT_SESSION=x-k1d-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green.",
+            "Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split or served-model-failed), the red SHAs, the served model id as read, tokens where Codex emits usage, else literally \"not recorded\" (Ruling 108, condition 4), your context sample at each item, and each mutation file's result. Report your served model id on the first line of your final message, read from the Codex native record."
+          ],
+          "fan_out_cap": "0",
+          "goal": "You are session x-k1d-e1e4 on branch build/eval-x-k1d, harness Codex, model gpt-6.1-sol with model_reasoning_effort high, run w2-k1d-e1e4, deadline 3,300 s, one turn, context ceiling 200k. Build dispatch K1d of X-K1, the resume engine's last turn: W1-K section 13 K6b (the disk check in _launch, its own commit), tests/mutations/resume.json (W1-K section 4 (d)), the resume telemetry on the real CLI path (W1-K section 11), the named simplifications, W1-K K7 (the model-docs rows) and the exit-evidence table, following docs/coordination/eval-wave2-e234/x-k1.md (owned paths, acceptance items, the Coordinator #39 turn split), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md, W1-K rev 1.2 (docs/design/eval-resume.md sections 4 (d) and (e), 6.3, 8, 11 and 13, and decisions D-K2, D-K7 and D-K13) and W0 rev 6.13 (docs/design/eval-seam-contracts.md sections 11 and 12), all binding.",
+          "main_line_budget": "within X-K1's 280 calls across 4 dispatches; 3,300 s this dispatch",
+          "not_in_scope": [
+            "resume.history and ResumeRecord (a need for them is a finding to coord-opus-e1e4); status.py and alarm.py (X-K2b's), and every cli.py line outside cmd_run; views.py, atomic.py, plan.py and errors.py (a missing row is a seam request); grade/ (no gate ring from K1d); HB-ALM-003, the .alarm_check stamp and the report header (E5).",
+            "the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours); src/ behaviour beyond K6b, the telemetry item and a simplification's red-first test (a finding to coord-opus-e1e4, never a fix in this turn)."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.018,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M496437GQKCC4ZT624BPQRD8",
+        "raw_sha256": "4c25cec68ff57a487ae8830ccf01ff6ac5a2fe71eedcf25f7d519dacf85015c8",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-k1d"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/resume.json"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/x-k1.md",
+            "reason": null,
+            "sha256": "0d274cbd1335fc6b5b34621816bf5901898ebcd53a6b8a7178cc692a2cb58ccf",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/x-k1.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/README.md",
+            "reason": null,
+            "sha256": "e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-resume.md",
+            "reason": null,
+            "sha256": "8517db2563c008917ffc02f8d969c073626b4716a9637145a5ceb70e6b760bb1",
+            "status": "resolved",
+            "token": "docs/design/eval-resume.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-seam-contracts.md",
+            "reason": null,
+            "sha256": "a2b3d71d784f767a61417688eeb755d9692447c718f0009f740cefa567078f1d",
+            "status": "resolved",
+            "token": "docs/design/eval-seam-contracts.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/lifecycle.py",
+            "reason": null,
+            "sha256": "5da60767faaba94978916363b445aa1805e3114b7b3b4297176ae8fd65af5c92",
+            "status": "resolved",
+            "token": "src/harness_bench/lifecycle.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/engine.py",
+            "reason": null,
+            "sha256": "b37b5f759ea4a0098c0e3cf8cf9172ccef18a1c8839f193cf564976db89830d0",
+            "status": "resolved",
+            "token": "src/harness_bench/engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_resume.py",
+            "reason": null,
+            "sha256": "fda498119cabe87ef5380bb6c71ea6e15c1f2c6cf964dbdedabedd198d9acf17",
+            "status": "resolved",
+            "token": "tests/test_resume.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/engine.py",
+            "reason": null,
+            "sha256": "b37b5f759ea4a0098c0e3cf8cf9172ccef18a1c8839f193cf564976db89830d0",
+            "status": "resolved",
+            "token": "engine.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "resume.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/resume.py",
+            "reason": null,
+            "sha256": "c94ca57490c6d84fc805fa2f4eaaa3054ade0dbc8c2fee7e36ad9b5b19126a37",
+            "status": "resolved",
+            "token": "resume.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/archive.py",
+            "reason": null,
+            "sha256": "c6841a7afc65d89d9863a03320db387229c7502720e1a6f365471b9a84600f1a",
+            "status": "resolved",
+            "token": "archive.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_identity.py",
+            "reason": null,
+            "sha256": "f6717458ec2670a1be81a7839657dfa77e4dbb2e4515e532b5daefd5d3a8a784",
+            "status": "resolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_engine.py",
+            "reason": null,
+            "sha256": "17ab3794c516a6ed2ea98785711293ee49f7d9dabe6341d3a2df45499fb406c1",
+            "status": "resolved",
+            "token": "tests/test_engine.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/rulings.md",
+            "reason": null,
+            "sha256": "e67c4be5814f67c561558a4af02c9e5a44d0b845800de1f0b8b1f22a43e88ca3",
+            "status": "resolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_resume.py::test_every_ledger_prefix_matches_the_adr_table"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_resume.py::test_every_two_cell_ledger_prefix_matches_the_adr_table"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C2/C3"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C3/C5"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C5/completed"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C6/C2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C2/continued"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_archive_readers.py",
+            "reason": null,
+            "sha256": "69e9aa7d3e90bdc6948fd0b56d5b6adf7980fb79ddac45a00e2e239a0a52f0a7",
+            "status": "resolved",
+            "token": "tests/test_archive_readers.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench"
+          },
+          {
+            "nearest": "src/harness_bench/engine.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "{\"engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "fee02368561b9af64a2add57480e5beb13c4888a593ebef3ec5312977c7bd1f4",
+            "status": "resolved",
+            "token": "grade/runner.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/credentials.py",
+            "reason": null,
+            "sha256": "00a84ee78abeff3d72913255b9d04be20c98b4b2dd8f9be31332975b1872cbec",
+            "status": "resolved",
+            "token": "report/credentials.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/judges.py",
+            "reason": null,
+            "sha256": "aa5698b0559d8b5d443f7bdee83b658725aed4013910161feb46962bb3cd59b7",
+            "status": "resolved",
+            "token": "report/judges.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/pack_improvement.py",
+            "reason": null,
+            "sha256": "7c5f1a9a9b3d7552bae8719a75ad3fc3579cc796ceab01823db94435500c3996",
+            "status": "resolved",
+            "token": "report/pack_improvement.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/summaries.py",
+            "reason": null,
+            "sha256": "037b0bcf0999b8a80b7cba3ae6aa9aefd82c5378dc0859190083d397df77588b",
+            "status": "resolved",
+            "token": "report/summaries.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/html.py",
+            "reason": null,
+            "sha256": "c8684af375bebe0b1e4400474a7baa4333520d16560a27254fe814da70ddf88a",
+            "status": "resolved",
+            "token": "report/html.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "archive/<cid"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "30e5f033eb403551e454548ba07ee4c378570f2297b701385df30e4875456869",
+            "status": "resolved",
+            "token": "cli.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/run-lifecycle-model.md",
+            "reason": null,
+            "sha256": "a4358621c550c308c63a8a6a6af58a6c34dd8b473851bee33bdcf425a2545b5d",
+            "status": "resolved",
+            "token": "docs/design/run-lifecycle-model.md"
+          },
+          {
+            "nearest": null,
+            "path": "models/README.md",
+            "reason": null,
+            "sha256": "6614ac96aa70a1ab8176ad4b1abcac30f9cf4282b2958925f39c5e30024d0120",
+            "status": "resolved",
+            "token": "models/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/render-markdown.py",
+            "reason": null,
+            "sha256": "1033f9bada4fc31320e4fe8590600e59b0597c40b47d43ffec44fda85c1a71d8",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/render-markdown.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/plans/eval-x-k1d.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/x-k1.md",
+            "reason": null,
+            "sha256": "0d274cbd1335fc6b5b34621816bf5901898ebcd53a6b8a7178cc692a2cb58ccf",
+            "status": "resolved",
+            "token": "x-k1.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/docs-index.js",
+            "reason": null,
+            "sha256": "3bd33d2973533bcd36463ca6f66d7ff93b4eef069629a5f92949c189ebd1c39c",
+            "status": "resolved",
+            "token": "docs/docs-index.js"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/engine.json",
+            "reason": null,
+            "sha256": "47fb020aa8eea8a3260808e93778a3fe0208f5f92f2acc32a0db6899ce1227ea",
+            "status": "resolved",
+            "token": "tests/mutations/engine.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/stop.json",
+            "reason": null,
+            "sha256": "d1a0d9f6ab234060acf59dd1bce3963cb29ee71b07830abee8e3b41e529ba2ad",
+            "status": "resolved",
+            "token": "stop.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_atomic_sites.py",
+            "reason": null,
+            "sha256": "143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90",
+            "status": "resolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_arms_guard.py",
+            "reason": null,
+            "sha256": "25c45e56139c8e3a2d70d353e4b83c0386590e754c342c2ee0e1a88338ff8b73",
+            "status": "resolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_discriminate.py",
+            "reason": null,
+            "sha256": "fdf375a866929a88129870b7f93ee766a68e77403a3d68bbab6cffb3d8747281",
+            "status": "resolved",
+            "token": "tests/test_discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_skills_in_sync.py",
+            "reason": null,
+            "sha256": "572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d",
+            "status": "resolved",
+            "token": "tests/test_skills_in_sync.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_timing_hygiene.py",
+            "reason": null,
+            "sha256": "fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6",
+            "status": "resolved",
+            "token": "tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_archive.py",
+            "reason": null,
+            "sha256": "fc1fe889b9a1eb03e0344aeca3c57e60469933eff6c453ad11049470dea14f2c",
+            "status": "resolved",
+            "token": "tests/test_archive.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_lifecycle.py",
+            "reason": null,
+            "sha256": "23a33e6454781a6a8777bb42ea70b407dfea56793cce23ae81e0860520f9ca3f",
+            "status": "resolved",
+            "token": "tests/test_lifecycle.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_lifecycle_conformance.py",
+            "reason": null,
+            "sha256": "b2ffe58c7d74f492f3764dd762812b04fc1e499dd1146758eb5401030fe3a374",
+            "status": "resolved",
+            "token": "tests/test_lifecycle_conformance.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_views.py",
+            "reason": null,
+            "sha256": "13fb99dcf307f87d767604e68c54fe2017580d8cca931a5fd844110d1b644587",
+            "status": "resolved",
+            "token": "tests/test_views.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_verify.py",
+            "reason": null,
+            "sha256": "5a98a66f0db0b72e50d9c9198b638fc8f2030c542d133394e20077dd8fdb059c",
+            "status": "resolved",
+            "token": "tests/test_verify.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_status.py",
+            "reason": null,
+            "sha256": "a89159d445491a3498083d416d6552d220519a7e54602ca86f8bf27615a14c1e",
+            "status": "resolved",
+            "token": "tests/test_status.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_multiturn.py",
+            "reason": null,
+            "sha256": "a703a7ce2557812c06bf39fbf8b93005d0325fc684068539e1c2b72bff6199d9",
+            "status": "resolved",
+            "token": "tests/test_multiturn.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_cli.py",
+            "reason": null,
+            "sha256": "3cf02892974d6be3887b5e166be1bac711ad967224a36e34c14342fbaddddaf1",
+            "status": "resolved",
+            "token": "tests/test_cli.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/stop.json",
+            "reason": null,
+            "sha256": "d1a0d9f6ab234060acf59dd1bce3963cb29ee71b07830abee8e3b41e529ba2ad",
+            "status": "resolved",
+            "token": "tests/mutations/stop.json"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/audit-log.py",
+            "reason": null,
+            "sha256": "d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4",
+            "status": "resolved",
+            "token": "audit-log.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/status.py",
+            "reason": null,
+            "sha256": "e5f59737a3b2bfe0f006e52777b4f3349faadfa9aaa6331a4a436ccf34118bba",
+            "status": "resolved",
+            "token": "status.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "alarm.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/atomic.py",
+            "reason": null,
+            "sha256": "d158db29ef50ee5013f1e775363cb8db4c0fd4815bbc4df5bd07d3a88d30e317",
+            "status": "resolved",
+            "token": "atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "9b94a7f295b3c03eed4b91640872a649aa23468b0fef2c92652920e52abb7e4f",
+            "status": "resolved",
+            "token": "plan.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "3509e74d4610df7afeec7c15d66d32cf4549aeff001e9b1b430711771ca82e8e",
+            "status": "resolved",
+            "token": "errors.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
       },
-      "started_at": "2026-10-06T18:20:16Z",
-      "duration_seconds": 1.0
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M4976ZGFK7Q93MPZ7JQC53ZR",
+      "shortname": "You are session x-rs-e1e4 on branch build/eval-x-rs in the tree C:\\Proje…",
+      "datetime": "2026-10-06T18:22:01Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-rs-e1e4 on branch build/eval-x-rs in the tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-rs, harness Claude Code, model sonnet (served claude-sonnet-5-5), an Agent-tool sub-agent with no coord-runner run, one turn, 3,300 s, within 120 calls and 200k context. This is X-RS's ready turn: K4 (RS1 ready) and K5 (RS2 ready), each after its check moves from the stand-in to X-LB1's built bench_check.listen(), plus the plan record docs/plans/eval-x-rs.md for K2-K5. RS1 is draft and green at cf2a7354 and RS2 at c44c11e5, every variant as predicted. Follow the plan row X-RS (docs/coordination/coordination-e2e4.md), the brief docs/coordination/eval-wave2-e234/x-rs.md (acceptance items 1-6), W1-L sections 9.1-9.3, Erratum 1 and Erratum 3 (docs/design/eval-property-tasks.md), ADR-0018 sections 3 and 9-10 with its B7 threat table (docs/adr/0018-hidden-check-harness.md), W0 sections 2, 3 and 11 (docs/design/eval-seam-contracts.md), tasks/README.md, the new-bench-task skill and SR-E2's ready order, all binding. Read both oracle/evidence.md files and your part 4 and part 5 closing entries (al-01M492A0RG3PRGBX7DR29E73VD, al-01M493KYHFD935SBA0KNPMRCY9) first, by line range.\n\nBase and first step: your branch build/eval-x-rs at 0c03350a or later, in your own tree, never main. Stop and report, before any edit, if git status --short prints anything, if git grep -n \"def listen\" -- src/harness_bench/grade/bench_check.py prints nothing after the merge below (X-LB1 has not joined), or if git log --oneline --grep=join-x-lb1 prints nothing. First, merge the integration head into your branch: git merge --no-ff integrate/e2e4-18 (a merge commit, never a rebase). A conflict outside tasks/RS1, tasks/RS2, tests/test_rs1_task.py, tests/test_rs2_task.py, tests/fixtures/rs1, tests/fixtures/rs2 and RS1's and RS2's bench/bom.yaml entries is a stop-and-report, never a resolution in another owner's file.\n\nThe SP-LB result, as the operator accepted it on 2026-10-06 for this host: no firewall dialog on any loopback or positive-control run, loopback exchange_ok true with 0 new rules, and NotifyOnListen False on all three firewall profiles; other hosts re-run the spike. So hidden tests and fakes on 127.0.0.1 raise no dialog on this host. A firewall dialog or new rule seen during your runs is a stop-and-report.\n\nThe switch to X-LB1's interface. As the Leader describes it: listen() takes no arguments and is a context manager that yields a socket bound to 127.0.0.1 port 0; the check runs its own server on that socket; probe_host substitutes {fake_url}; parse_result(..., outcomes=FAULT_OUTCOMES) accepts passed, failed and timeout. Read the real signatures at your base before you write a call: git grep -n \"def listen\\|def probe_host\\|def parse_result\\|FAULT_OUTCOMES\" -- src/harness_bench/grade/bench_check.py (on the X-LB1 branch at 4dca941d the probe host was probe_host(case, fake=None), and X-LB1 part 3 may change a keyword); build on what prints, and report any difference from the description as a finding, never a local adapter. For RS1 and RS2: each oracle/check/check.py opens its fake only through bench_check.listen() and calls the probe host and the result parse X-LB1 built; delete tests/fixtures/rs1/standin_listen.py, tests/fixtures/rs2/standin_listen.py and the local parse() in tests/test_rs1_task.py (:177) and tests/test_rs2_task.py (:180), and point those tests at the real path. The variant runs are then re-measured on the real path and must match the evidence tables (RS1 7 of 7 as predicted; RS2's seven existing variants on its seven existing cases as predicted, then the eighth case and variant per Ruling 111); a difference is reported with both tables, never fixed by editing a prediction.\n\nCheck authoring rules (Security & Identity review of X-LB1, 2026-10-06; ADR-0018 section 3 and the B7 table): (1) every socket a check opens comes from bench_check.listen(); a check opens no socket of its own (listen() is the only place the 127.0.0.1 assert runs); (2) a fault case's passed is decided from the fake's own counters (requests, effects, the batch or key ids it saw), never from the deliverable's self-report or return value alone; (3) the fake's serve thread is joined at the end of every case, inside the case's bound, before the next case starts; (4) the check parses untrusted HTTP bytes inside the trusted check process: bound every read (size and time), treat a malformed request as a counted request that applies no effect, and never evaluate or deserialize request content beyond JSON. Each rule gets one line in each oracle/evidence.md naming the check.py lines that meet it.\n\nRS2 under Ruling 111 (docs/notes/rulings.md; (b) granted, bounded). R-111 condition 1 (i)-(vii), quoted: \"X-RS's ready turn (`x-rs-e1e4`) edits inside `tasks/RS2` only: (i) the reference: the freeze above (one pending `(batch_id, records)` pair; the pending batch first, then the newer records as a new batch; one budget per flush; on exhaustion `ShipError` with accepted records removed and the unsent batch pending; the sum of accepted counts on success). Alt adopts the same freeze (it must pass 8 of 8); naive is unchanged (a new id per flush, one `urlopen`: its failure on the new case is the point). (ii) The prompt: delete the words \"in one batch\" and nothing else (\"sends the buffered records to `<base_url>/v1/logs`, as described in `docs/collector.md`\"); re-run the latent-term scan (section 15 floor item 5, 0 hits). (iii) One case, `g-lost-then-grow` (the name is X-RS's, in the `g-` form): flush 1 with r1, r2, the first request applied and its response lost, and every retry in that flush lost too (the schedule grammar is the listener's; if `bench_check.listen()` cannot express \"lost on every request of one flush\" and the fake cannot be extended inside `tasks/RS2`, that is a finding to the Coordinator, never an adapter); `expect: fail`, `requests <= 3`; `then`: r3 buffered (LATE), a recovery flush against the healthy collector, `result`: the collector's applied records read r1, r2, r3 in that order, each once, and the flush returns 3; `bound_ms` by the 25 percent rule over the slowest of three honest runs, as the seven. (iv) One variant, `growid` (name theirs): today's binding (the id on the shipper, `records = list(self._buffer)` on every flush), declared to flip the new case alone on `result`. The seven existing variants are re-traced by hand against the eight cases in 9.3's form before the run (I expect `batchidattempt` to gain the new case on `effect` and `clearearly` on `result`; Inferred, the run decides), then measured; a trace that disagrees with the measurement is a finding, as the compile already says. (v) `expected`: reference `{1, \"1.0000\", 0}`; alt the same; naive re-traced (4 of 8, `\"0.5000\"`, if the trace holds; Inferred), its `idempotency_violations` on the new case being whatever the fake counts for r1 and r2 applied twice: measured, never derived (EV-7, HASH-A); values enter `expected` only from the discrimination record on the real host (section 5.3). (vi) Hidden tests S-1..S-5 and the five wrong-apps: unchanged. The freeze is the latent property and lives in the check, not in the public contract. (vii) `evidence.md`: the Residual section becomes the case's trace and measurement, its `simplify:` line retires, the status line and the variant table gain their row.\" K5 (RS2) absorbs this case and variant: RS2's ready flip is the eight-case task, and its record is taken after (i)-(vii) are in the folder. You edit no design doc; W1-L Erratum 4 is the Coordinator's at your join.\n\nThe context split rule (CEIL-A, measured): start no K-item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first K-item: X-RS parts 2-5 67,948, 68,721, 53,951 and 120,392 (part 5 read RS1's model files first), X-LB1 about 66k, X-K1c part 2 72,513, X-TE9 about 68k; so the floor is 73k. Expected work per K-item: 60k (the largest measured K-item, on Codex; no Sonnet ready-flip cost is recorded yet, so record yours). Start no K-item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each K-item and before each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-rs-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never a whole design file; send test and discriminate output to a file and read only its summary. (1) The order is the merge and the switch, K4 (RS1), K5 (RS2, which absorbs Ruling 111's case g-lost-then-grow and variant growid), the plan record; start no K-item above 133k, and your hand-back point is the first boundary above 133k; (2) at 170k start no new edit, trial or gate, write the closing audit entry and hand back with the open items named; (3) if the figure cannot be read, record \"not recorded\" and hand back after K4. A hand-back by this rule is a planned split, not a failure.\n\nK4 (RS1) and K5 (RS2), the ready flips, one task per K-item, after the switch above: the ready order is SR-E2's (edit the folder first, then flip status to ready in tasks/<ID>/task.yaml, then run the trial, then commit the flip and the record together in one commit). The trial: uv run bench discriminate <ID> --runs C:\\t\\rs-runs --cells-root C:\\t\\rs-cells, with no model credentials in the environment. The reference must score 1 and the naive 0 through the engine (plan row; EV-1, EV-3), every metric of expected.reference and expected.naive must equal the record's measured value, and readiness must accept the record with no HB-RDY-003, HB-RDY-010 or HB-RDY-011 item. A task that does not reproduce stays draft, with the measured numbers reported. Measure the reference's duration_ms per case and replace any bound_ms that is not at least 25 percent above the reference's slowest honest run (W1-L section 9.1, the case-bound upgrade trigger). Brief item 5 (R2-4): the trial runs through X-LB1's loopback check with no new discriminate code; if it cannot, that is a seam request to coord-opus-e1e4, never a local workaround.\n\nThe e2e fixture lesson (8534fb1f): once a task is ready with a committed record, any fixture or lean copy that copies bench/discrimination or the task folder, or pins the task's status, may break. After each task's commit, run the tests that copy them (tests/test_e1_e2e.py, tests/test_readiness.py) and report a break as a finding with the node id.\n\nRecords and the BOM: an edit to bench/bom.yaml changes the record identity of every task (identity._readers hashes it), so your BOM entries make the other ready tasks' records report HB-RDY-002 until X-CV's final records. That is expected and not yours to fix; never edit another task's record or folder.\n\nThe plan record: write docs/plans/eval-x-rs.md and its HTML (python docs/ai-forward-pack/scripts/render-markdown.py), create-only, in its own commit (pre-granted), covering K2-K5 (part 5 stopped at its hard stop before writing it): the per-task table (task, draft or ready, record path, each metric declared and measured), the variant tables measured on the real path, the check authoring rules with their check.py lines, and each part's closing entry id. Regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived). Run docs-graph.py validate before the hand-back and read its findings, not only its exit.\n\nScratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\rs-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or discriminate run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).\n\nShort paths (PATH-B, confirmed): every trial or test run happens in a tree and under roots whose paths are short. A run archive adds about 139 characters below its root even for the smallest fixture, so TMP, TEMP, --runs, --cells-root and any pytest --basetemp stay under C:\\t\\ or an equally short folder. A trial that fails HB-RDY-011 \"workspace\" with \"path not found\" is re-run once from a shorter root before it is reported, and both roots are named in the report.\n\nNever launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report.\n\nGate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_rs1_task.py tests/test_rs2_task.py tests/test_readiness.py tests/test_e1_e2e.py tests/test_config.py on the final commit; uv run ruff check src tests tools; uv run bench validate, with its x lines for RS1 and RS2 read and reported (lines for other tasks are the expected HB-RDY-002 above); python docs/ai-forward-pack/scripts/docs-graph.py validate.\n\nSuite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.\n\nCommit named paths only, with AGENT_SESSION=x-rs-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green.\n\nYour closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split or served-model-failed), the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), the per-task state (draft, ready with record path, or not run with the reason), your context sample at each K-item and the cost of each K-item, both variant tables on the real path, and the reference's slowest duration_ms per case. Report your served model id on the first line of your final message.\n\nNot yours: src/ (a trial that fails because the code is wrong is a finding to coord-opus-e1e4, never a fix in this turn), bench_check.py and grade/property.py above all (X-LB1's, part 3 in flight); every task folder but tasks/RS1 and tasks/RS2; every bench/bom.yaml entry but RS1's and RS2's; other tasks' records; discriminate.py; the design docs and ADR-0018 (the Coordinator's).\n\nNot yours: the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M4977CYX2E9M591K5ZGP7HXH",
+      "shortname": "compile-You are session x-rs-e1e4 on branch build/eval-x-rs in the tree C:\\Proje…",
+      "datetime": "2026-10-06T18:22:15Z",
+      "session": "x-rs-e1e4",
+      "prompt": "python docs/ai-forward-pack/scripts/audit-log.py start --session x-rs-e1e4 --skill new-bench-task\nGoal state\nGoal: You are session x-rs-e1e4 on branch build/eval-x-rs in the tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-rs, harness Claude Code, model sonnet (served claude-sonnet-5-5), an Agent-tool sub-agent with no coord-runner run, one turn, 3,300 s, within 120 calls and 200k context. This is X-RS's ready turn: K4 (RS1 ready) and K5 (RS2 ready), each after its check moves from the stand-in to X-LB1's built bench_check.listen(), plus the plan record docs/plans/eval-x-rs.md for K2-K5. RS1 is draft and green at cf2a7354 and RS2 at c44c11e5, every variant as predicted. Follow the plan row X-RS (docs/coordination/coordination-e2e4.md), the brief docs/coordination/eval-wave2-e234/x-rs.md (acceptance items 1-6), W1-L sections 9.1-9.3, Erratum 1 and Erratum 3 (docs/design/eval-property-tasks.md), ADR-0018 sections 3 and 9-10 with its B7 threat table (docs/adr/0018-hidden-check-harness.md), W0 sections 2, 3 and 11 (docs/design/eval-seam-contracts.md), tasks/README.md, the new-bench-task skill and SR-E2's ready order, all binding. Read both oracle/evidence.md files and your part 4 and part 5 closing entries (al-01M492A0RG3PRGBX7DR29E73VD, al-01M493KYHFD935SBA0KNPMRCY9) first, by line range.\nDone when: Base and first step: your branch build/eval-x-rs at 0c03350a or later, in your own tree, never main. Stop and report, before any edit, if git status --short prints anything, if git grep -n \"def listen\" -- src/harness_bench/grade/bench_check.py prints nothing after the merge below (X-LB1 has not joined), or if git log --oneline --grep=join-x-lb1 prints nothing. First, merge the integration head into your branch: git merge --no-ff integrate/e2e4-18 (a merge commit, never a rebase). A conflict outside tasks/RS1, tasks/RS2, tests/test_rs1_task.py, tests/test_rs2_task.py, tests/fixtures/rs1, tests/fixtures/rs2 and RS1's and RS2's bench/bom.yaml entries is a stop-and-report, never a resolution in another owner's file.; The SP-LB result, as the operator accepted it on 2026-10-06 for this host: no firewall dialog on any loopback or positive-control run, loopback exchange_ok true with 0 new rules, and NotifyOnListen False on all three firewall profiles; other hosts re-run the spike. So hidden tests and fakes on 127.0.0.1 raise no dialog on this host. A firewall dialog or new rule seen during your runs is a stop-and-report.; The switch to X-LB1's interface. As the Leader describes it: listen() takes no arguments and is a context manager that yields a socket bound to 127.0.0.1 port 0; the check runs its own server on that socket; probe_host substitutes {fake_url}; parse_result(..., outcomes=FAULT_OUTCOMES) accepts passed, failed and timeout. Read the real signatures at your base before you write a call: git grep -n \"def listen\\|def probe_host\\|def parse_result\\|FAULT_OUTCOMES\" -- src/harness_bench/grade/bench_check.py (on the X-LB1 branch at 4dca941d the probe host was probe_host(case, fake=None), and X-LB1 part 3 may change a keyword); build on what prints, and report any difference from the description as a finding, never a local adapter. For RS1 and RS2: each oracle/check/check.py opens its fake only through bench_check.listen() and calls the probe host and the result parse X-LB1 built; delete tests/fixtures/rs1/standin_listen.py, tests/fixtures/rs2/standin_listen.py and the local parse() in tests/test_rs1_task.py (:177) and tests/test_rs2_task.py (:180), and point those tests at the real path. The variant runs are then re-measured on the real path and must match the evidence tables (RS1 7 of 7 as predicted; RS2's seven existing variants on its seven existing cases as predicted, then the eighth case and variant per Ruling 111); a difference is reported with both tables, never fixed by editing a prediction.; Check authoring rules (Security & Identity review of X-LB1, 2026-10-06; ADR-0018 section 3 and the B7 table): (1) every socket a check opens comes from bench_check.listen(); a check opens no socket of its own (listen() is the only place the 127.0.0.1 assert runs); (2) a fault case's passed is decided from the fake's own counters (requests, effects, the batch or key ids it saw), never from the deliverable's self-report or return value alone; (3) the fake's serve thread is joined at the end of every case, inside the case's bound, before the next case starts; (4) the check parses untrusted HTTP bytes inside the trusted check process: bound every read (size and time), treat a malformed request as a counted request that applies no effect, and never evaluate or deserialize request content beyond JSON. Each rule gets one line in each oracle/evidence.md naming the check.py lines that meet it.; RS2 under Ruling 111 (docs/notes/rulings.md; (b) granted, bounded). R-111 condition 1 (i)-(vii), quoted: \"X-RS's ready turn (`x-rs-e1e4`) edits inside `tasks/RS2` only: (i) the reference: the freeze above (one pending `(batch_id, records)` pair; the pending batch first, then the newer records as a new batch; one budget per flush; on exhaustion `ShipError` with accepted records removed and the unsent batch pending; the sum of accepted counts on success). Alt adopts the same freeze (it must pass 8 of 8); naive is unchanged (a new id per flush, one `urlopen`: its failure on the new case is the point). (ii) The prompt: delete the words \"in one batch\" and nothing else (\"sends the buffered records to `<base_url>/v1/logs`, as described in `docs/collector.md`\"); re-run the latent-term scan (section 15 floor item 5, 0 hits). (iii) One case, `g-lost-then-grow` (the name is X-RS's, in the `g-` form): flush 1 with r1, r2, the first request applied and its response lost, and every retry in that flush lost too (the schedule grammar is the listener's; if `bench_check.listen()` cannot express \"lost on every request of one flush\" and the fake cannot be extended inside `tasks/RS2`, that is a finding to the Coordinator, never an adapter); `expect: fail`, `requests <= 3`; `then`: r3 buffered (LATE), a recovery flush against the healthy collector, `result`: the collector's applied records read r1, r2, r3 in that order, each once, and the flush returns 3; `bound_ms` by the 25 percent rule over the slowest of three honest runs, as the seven. (iv) One variant, `growid` (name theirs): today's binding (the id on the shipper, `records = list(self._buffer)` on every flush), declared to flip the new case alone on `result`. The seven existing variants are re-traced by hand against the eight cases in 9.3's form before the run (I expect `batchidattempt` to gain the new case on `effect` and `clearearly` on `result`; Inferred, the run decides), then measured; a trace that disagrees with the measurement is a finding, as the compile already says. (v) `expected`: reference `{1, \"1.0000\", 0}`; alt the same; naive re-traced (4 of 8, `\"0.5000\"`, if the trace holds; Inferred), its `idempotency_violations` on the new case being whatever the fake counts for r1 and r2 applied twice: measured, never derived (EV-7, HASH-A); values enter `expected` only from the discrimination record on the real host (section 5.3). (vi) Hidden tests S-1..S-5 and the five wrong-apps: unchanged. The freeze is the latent property and lives in the check, not in the public contract. (vii) `evidence.md`: the Residual section becomes the case's trace and measurement, its `simplify:` line retires, the status line and the variant table gain their row.\" K5 (RS2) absorbs this case and variant: RS2's ready flip is the eight-case task, and its record is taken after (i)-(vii) are in the folder. You edit no design doc; W1-L Erratum 4 is the Coordinator's at your join.; The context split rule (CEIL-A, measured): start no K-item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first K-item: X-RS parts 2-5 67,948, 68,721, 53,951 and 120,392 (part 5 read RS1's model files first), X-LB1 about 66k, X-K1c part 2 72,513, X-TE9 about 68k; so the floor is 73k. Expected work per K-item: 60k (the largest measured K-item, on Codex; no Sonnet ready-flip cost is recorded yet, so record yours). Start no K-item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each K-item and before each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-rs-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never a whole design file; send test and discriminate output to a file and read only its summary. (1) The order is the merge and the switch, K4 (RS1), K5 (RS2, which absorbs Ruling 111's case g-lost-then-grow and variant growid), the plan record; start no K-item above 133k, and your hand-back point is the first boundary above 133k; (2) at 170k start no new edit, trial or gate, write the closing audit entry and hand back with the open items named; (3) if the figure cannot be read, record \"not recorded\" and hand back after K4. A hand-back by this rule is a planned split, not a failure.; K4 (RS1) and K5 (RS2), the ready flips, one task per K-item, after the switch above: the ready order is SR-E2's (edit the folder first, then flip status to ready in tasks/<ID>/task.yaml, then run the trial, then commit the flip and the record together in one commit). The trial: uv run bench discriminate <ID> --runs C:\\t\\rs-runs --cells-root C:\\t\\rs-cells, with no model credentials in the environment. The reference must score 1 and the naive 0 through the engine (plan row; EV-1, EV-3), every metric of expected.reference and expected.naive must equal the record's measured value, and readiness must accept the record with no HB-RDY-003, HB-RDY-010 or HB-RDY-011 item. A task that does not reproduce stays draft, with the measured numbers reported. Measure the reference's duration_ms per case and replace any bound_ms that is not at least 25 percent above the reference's slowest honest run (W1-L section 9.1, the case-bound upgrade trigger). Brief item 5 (R2-4): the trial runs through X-LB1's loopback check with no new discriminate code; if it cannot, that is a seam request to coord-opus-e1e4, never a local workaround.; The e2e fixture lesson (8534fb1f): once a task is ready with a committed record, any fixture or lean copy that copies bench/discrimination or the task folder, or pins the task's status, may break. After each task's commit, run the tests that copy them (tests/test_e1_e2e.py, tests/test_readiness.py) and report a break as a finding with the node id.; Records and the BOM: an edit to bench/bom.yaml changes the record identity of every task (identity._readers hashes it), so your BOM entries make the other ready tasks' records report HB-RDY-002 until X-CV's final records. That is expected and not yours to fix; never edit another task's record or folder.; The plan record: write docs/plans/eval-x-rs.md and its HTML (python docs/ai-forward-pack/scripts/render-markdown.py), create-only, in its own commit (pre-granted), covering K2-K5 (part 5 stopped at its hard stop before writing it): the per-task table (task, draft or ready, record path, each metric declared and measured), the variant tables measured on the real path, the check authoring rules with their check.py lines, and each part's closing entry id. Regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived). Run docs-graph.py validate before the hand-back and read its findings, not only its exit.; Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\rs-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or discriminate run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).; Short paths (PATH-B, confirmed): every trial or test run happens in a tree and under roots whose paths are short. A run archive adds about 139 characters below its root even for the smallest fixture, so TMP, TEMP, --runs, --cells-root and any pytest --basetemp stay under C:\\t\\ or an equally short folder. A trial that fails HB-RDY-011 \"workspace\" with \"path not found\" is re-run once from a shorter root before it is reported, and both roots are named in the report.; Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report.; Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_rs1_task.py tests/test_rs2_task.py tests/test_readiness.py tests/test_e1_e2e.py tests/test_config.py on the final commit; uv run ruff check src tests tools; uv run bench validate, with its x lines for RS1 and RS2 read and reported (lines for other tasks are the expected HB-RDY-002 above); python docs/ai-forward-pack/scripts/docs-graph.py validate.; Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commit named paths only, with AGENT_SESSION=x-rs-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green.; Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split or served-model-failed), the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), the per-task state (draft, ready with record path, or not run with the reason), your context sample at each K-item and the cost of each K-item, both variant tables on the real path, and the reference's slowest duration_ms per case. Report your served model id on the first line of your final message.\nNot in scope: src/ (a trial that fails because the code is wrong is a finding to coord-opus-e1e4, never a fix in this turn), bench_check.py and grade/property.py above all (X-LB1's, part 3 in flight); every task folder but tasks/RS1 and tasks/RS2; every bench/bom.yaml entry but RS1's and RS2's; other tasks' records; discriminate.py; the design docs and ADR-0018 (the Coordinator's).; the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours).\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens; split rule (CEIL-A): start no K-item above floor + the item's expected work, Claude Code Sonnet floor 73k (measured first readings 53,951-72,513) + 60k (the largest measured K-item) = 133k; hand-back point at the first boundary above 133k; hard stop at 170k; unreadable means hand back after K4\nMain-line budget: within 120 calls; 3,300 s this turn; past the hand-back point or the deadline the open K-items are the Leader's to dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: Base and first step: your branch build/eval-x-rs at 0c03350a or later, in your own tree, never main. Stop and report, before any edit, if git status --short prints anything, if git grep -n \"def listen\" -- src/harness_bench/grade/bench_check.py prints nothing after the merge below (X-LB1 has not joined), or if git log --oneline --grep=join-x-lb1 prints nothing. First, merge the integration head into your branch: git merge --no-ff integrate/e2e4-18 (a merge commit, never a rebase). A conflict outside tasks/RS1, tasks/RS2, tests/test_rs1_task.py, tests/test_rs2_task.py, tests/fixtures/rs1, tests/fixtures/rs2 and RS1's and RS2's bench/bom.yaml entries is a stop-and-report, never a resolution in another owner's file. | phrase: Base and first step: your branch build/eval-x-rs at 0c03350a or later, in your own tree, n |\n| done_when: The SP-LB result, as the operator accepted it on 2026-10-06 for this host: no firewall dialog on any loopback or positive-control run, loopback exchange_ok true with 0 new rules, and NotifyOnListen False on all three firewall profiles; other hosts re-run the spike. So hidden tests and fakes on 127.0.0.1 raise no dialog on this host. A firewall dialog or new rule seen during your runs is a stop-and-report. | phrase: The SP-LB result, as the operator accepted it on 2026-10-06 for this host: no firewall dia |\n| done_when: The switch to X-LB1's interface. As the Leader describes it: listen() takes no arguments and is a context manager that yields a socket bound to 127.0.0.1 port 0; the check runs its own server on that socket; probe_host substitutes {fake_url}; parse_result(..., outcomes=FAULT_OUTCOMES) accepts passed, failed and timeout. Read the real signatures at your base before you write a call: git grep -n \"def listen\\|def probe_host\\|def parse_result\\|FAULT_OUTCOMES\" -- src/harness_bench/grade/bench_check.py (on the X-LB1 branch at 4dca941d the probe host was probe_host(case, fake=None), and X-LB1 part 3 may change a keyword); build on what prints, and report any difference from the description as a finding, never a local adapter. For RS1 and RS2: each oracle/check/check.py opens its fake only through bench_check.listen() and calls the probe host and the result parse X-LB1 built; delete tests/fixtures/rs1/standin_listen.py, tests/fixtures/rs2/standin_listen.py and the local parse() in tests/test_rs1_task.py (:177) and tests/test_rs2_task.py (:180), and point those tests at the real path. The variant runs are then re-measured on the real path and must match the evidence tables (RS1 7 of 7 as predicted; RS2's seven existing variants on its seven existing cases as predicted, then the eighth case and variant per Ruling 111); a difference is reported with both tables, never fixed by editing a prediction. | phrase: The switch to X-LB1's interface. As the Leader describes it: listen() takes no arguments a |\n| done_when: Check authoring rules (Security & Identity review of X-LB1, 2026-10-06; ADR-0018 section 3 and the B7 table): (1) every socket a check opens comes from bench_check.listen(); a check opens no socket of its own (listen() is the only place the 127.0.0.1 assert runs); (2) a fault case's passed is decided from the fake's own counters (requests, effects, the batch or key ids it saw), never from the deliverable's self-report or return value alone; (3) the fake's serve thread is joined at the end of every case, inside the case's bound, before the next case starts; (4) the check parses untrusted HTTP bytes inside the trusted check process: bound every read (size and time), treat a malformed request as a counted request that applies no effect, and never evaluate or deserialize request content beyond JSON. Each rule gets one line in each oracle/evidence.md naming the check.py lines that meet it. | phrase: Check authoring rules (Security & Identity review of X-LB1, 2026-10-06; ADR-0018 section 3 |\n| done_when: RS2 under Ruling 111 (docs/notes/rulings.md; (b) granted, bounded). R-111 condition 1 (i)-(vii), quoted: \"X-RS's ready turn (`x-rs-e1e4`) edits inside `tasks/RS2` only: (i) the reference: the freeze above (one pending `(batch_id, records)` pair; the pending batch first, then the newer records as a new batch; one budget per flush; on exhaustion `ShipError` with accepted records removed and the unsent batch pending; the sum of accepted counts on success). Alt adopts the same freeze (it must pass 8 of 8); naive is unchanged (a new id per flush, one `urlopen`: its failure on the new case is the point). (ii) The prompt: delete the words \"in one batch\" and nothing else (\"sends the buffered records to `<base_url>/v1/logs`, as described in `docs/collector.md`\"); re-run the latent-term scan (section 15 floor item 5, 0 hits). (iii) One case, `g-lost-then-grow` (the name is X-RS's, in the `g-` form): flush 1 with r1, r2, the first request applied and its response lost, and every retry in that flush lost too (the schedule grammar is the listener's; if `bench_check.listen()` cannot express \"lost on every request of one flush\" and the fake cannot be extended inside `tasks/RS2`, that is a finding to the Coordinator, never an adapter); `expect: fail`, `requests <= 3`; `then`: r3 buffered (LATE), a recovery flush against the healthy collector, `result`: the collector's applied records read r1, r2, r3 in that order, each once, and the flush returns 3; `bound_ms` by the 25 percent rule over the slowest of three honest runs, as the seven. (iv) One variant, `growid` (name theirs): today's binding (the id on the shipper, `records = list(self._buffer)` on every flush), declared to flip the new case alone on `result`. The seven existing variants are re-traced by hand against the eight cases in 9.3's form before the run (I expect `batchidattempt` to gain the new case on `effect` and `clearearly` on `result`; Inferred, the run decides), then measured; a trace that disagrees with the measurement is a finding, as the compile already says. (v) `expected`: reference `{1, \"1.0000\", 0}`; alt the same; naive re-traced (4 of 8, `\"0.5000\"`, if the trace holds; Inferred), its `idempotency_violations` on the new case being whatever the fake counts for r1 and r2 applied twice: measured, never derived (EV-7, HASH-A); values enter `expected` only from the discrimination record on the real host (section 5.3). (vi) Hidden tests S-1..S-5 and the five wrong-apps: unchanged. The freeze is the latent property and lives in the check, not in the public contract. (vii) `evidence.md`: the Residual section becomes the case's trace and measurement, its `simplify:` line retires, the status line and the variant table gain their row.\" K5 (RS2) absorbs this case and variant: RS2's ready flip is the eight-case task, and its record is taken after (i)-(vii) are in the folder. You edit no design doc; W1-L Erratum 4 is the Coordinator's at your join. | phrase: RS2 under Ruling 111 (docs/notes/rulings.md; (b) granted, bounded). R-111 condition 1 (i)- |\n| done_when: The context split rule (CEIL-A, measured): start no K-item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first K-item: X-RS parts 2-5 67,948, 68,721, 53,951 and 120,392 (part 5 read RS1's model files first), X-LB1 about 66k, X-K1c part 2 72,513, X-TE9 about 68k; so the floor is 73k. Expected work per K-item: 60k (the largest measured K-item, on Codex; no Sonnet ready-flip cost is recorded yet, so record yours). Start no K-item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each K-item and before each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-rs-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never a whole design file; send test and discriminate output to a file and read only its summary. (1) The order is the merge and the switch, K4 (RS1), K5 (RS2, which absorbs Ruling 111's case g-lost-then-grow and variant growid), the plan record; start no K-item above 133k, and your hand-back point is the first boundary above 133k; (2) at 170k start no new edit, trial or gate, write the closing audit entry and hand back with the open items named; (3) if the figure cannot be read, record \"not recorded\" and hand back after K4. A hand-back by this rule is a planned split, not a failure. | phrase: The context split rule (CEIL-A, measured): start no K-item above floor + the item's expect |\n| done_when: K4 (RS1) and K5 (RS2), the ready flips, one task per K-item, after the switch above: the ready order is SR-E2's (edit the folder first, then flip status to ready in tasks/<ID>/task.yaml, then run the trial, then commit the flip and the record together in one commit). The trial: uv run bench discriminate <ID> --runs C:\\t\\rs-runs --cells-root C:\\t\\rs-cells, with no model credentials in the environment. The reference must score 1 and the naive 0 through the engine (plan row; EV-1, EV-3), every metric of expected.reference and expected.naive must equal the record's measured value, and readiness must accept the record with no HB-RDY-003, HB-RDY-010 or HB-RDY-011 item. A task that does not reproduce stays draft, with the measured numbers reported. Measure the reference's duration_ms per case and replace any bound_ms that is not at least 25 percent above the reference's slowest honest run (W1-L section 9.1, the case-bound upgrade trigger). Brief item 5 (R2-4): the trial runs through X-LB1's loopback check with no new discriminate code; if it cannot, that is a seam request to coord-opus-e1e4, never a local workaround. | phrase: K4 (RS1) and K5 (RS2), the ready flips, one task per K-item, after the switch above: the r |\n| done_when: The e2e fixture lesson (8534fb1f): once a task is ready with a committed record, any fixture or lean copy that copies bench/discrimination or the task folder, or pins the task's status, may break. After each task's commit, run the tests that copy them (tests/test_e1_e2e.py, tests/test_readiness.py) and report a break as a finding with the node id. | phrase: The e2e fixture lesson (8534fb1f): once a task is ready with a committed record, any fixtu |\n| done_when: Records and the BOM: an edit to bench/bom.yaml changes the record identity of every task (identity._readers hashes it), so your BOM entries make the other ready tasks' records report HB-RDY-002 until X-CV's final records. That is expected and not yours to fix; never edit another task's record or folder. | phrase: Records and the BOM: an edit to bench/bom.yaml changes the record identity of every task ( |\n| done_when: The plan record: write docs/plans/eval-x-rs.md and its HTML (python docs/ai-forward-pack/scripts/render-markdown.py), create-only, in its own commit (pre-granted), covering K2-K5 (part 5 stopped at its hard stop before writing it): the per-task table (task, draft or ready, record path, each metric declared and measured), the variant tables measured on the real path, the check authoring rules with their check.py lines, and each part's closing entry id. Regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived). Run docs-graph.py validate before the hand-back and read its findings, not only its exit. | phrase: The plan record: write docs/plans/eval-x-rs.md and its HTML (python docs/ai-forward-pack/s |\n| done_when: Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\rs-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or discriminate run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH). | phrase: Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\rs |\n| done_when: Short paths (PATH-B, confirmed): every trial or test run happens in a tree and under roots whose paths are short. A run archive adds about 139 characters below its root even for the smallest fixture, so TMP, TEMP, --runs, --cells-root and any pytest --basetemp stay under C:\\t\\ or an equally short folder. A trial that fails HB-RDY-011 \"workspace\" with \"path not found\" is re-run once from a shorter root before it is reported, and both roots are named in the report. | phrase: Short paths (PATH-B, confirmed): every trial or test run happens in a tree and under roots |\n| done_when: Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report. | phrase: Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, gro |\n| done_when: Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_rs1_task.py tests/test_rs2_task.py tests/test_readiness.py tests/test_e1_e2e.py tests/test_config.py on the final commit; uv run ruff check src tests tools; uv run bench validate, with its x lines for RS1 and RS2 read and reported (lines for other tasks are the expected HB-RDY-002 above); python docs/ai-forward-pack/scripts/docs-graph.py validate. | phrase: Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run  |\n| done_when: Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lo |\n| done_when: Commit named paths only, with AGENT_SESSION=x-rs-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green. | phrase: Commit named paths only, with AGENT_SESSION=x-rs-e1e4 inline on every commit and coord cal |\n| done_when: Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split or served-model-failed), the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), the per-task state (draft, ready with record path, or not run with the reason), your context sample at each K-item and the cost of each K-item, both variant tables on the real path, and the reference's slowest duration_ms per case. Report your served model id on the first line of your final message. | phrase: Your closing audit entry, written through audit-log.py, carries the dispatch start and end |\n| not_in_scope: src/ (a trial that fails because the code is wrong is a finding to coord-opus-e1e4, never a fix in this turn), bench_check.py and grade/property.py above all (X-LB1's, part 3 in flight); every task folder but tasks/RS1 and tasks/RS2; every bench/bom.yaml entry but RS1's and RS2's; other tasks' records; discriminate.py; the design docs and ADR-0018 (the Coordinator's). | phrase: src/ (a trial that fails because the code is wrong is a finding to coord-opus-e1e4, never  |\n| not_in_scope: the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours). | phrase: the whole suite and mutate_check --touched (the Leader's); never kill a process by name or |\nReferences\n- x-rs-e1e4: unresolved (not found)\n- tasks/RS2: unresolved (not found)\n- batch_id, records: unresolved (not found)\n- ShipError: unresolved (not found)\n- urlopen: unresolved (not found)\n- base_url>/v1/logs: unresolved (not found)\n- docs/collector.md: unresolved (not found)\n- g-lost-then-grow: unresolved (not found)\n- g-: unresolved (not found)\n- bench_check.listen: unresolved (not found)\n- expect: fail: unresolved (not found)\n- requests <= 3: unresolved (not found)\n- then: unresolved (not found)\n- result: unresolved (not found)\n- bound_ms: unresolved (not found)\n- growid: unresolved (not found)\n- records = list(self._buffer: unresolved (not found)\n- batchidattempt: unresolved (not found)\n- effect: unresolved (not found)\n- clearearly: unresolved (not found)\n- expected: unresolved (not found)\n- {1, \"1.0000\", 0}: unresolved (not found)\n- 0.5000: unresolved (not found)\n- idempotency_violations: unresolved (not found)\n- evidence.md: unresolved (ambiguous: 29 matches)\n- simplify: unresolved (not found)\n- build/eval-x-rs: unresolved (not found)\n- docs/plans/eval-x-rs.md: unresolved (not found)\n- docs/coordination/coordination-e2e4.md: docs/coordination/coordination-e2e4.md sha256 377f2fe7160ca28da5d4ae86dc48aa19e61bc01e5b7a0ae9730fce600e2f23bc\n- docs/coordination/eval-wave2-e234/x-rs.md: docs/coordination/eval-wave2-e234/x-rs.md sha256 471accd8e69ca435f3dde7746e893592eb1c318970541f35e00cf1e970f8d01a\n- docs/design/eval-property-tasks.md: docs/design/eval-property-tasks.md sha256 1cb8d23b9f54d5c6bd64244e28e36b3a169e2eb39e48f973d4aacbeb606b656b\n- docs/adr/0018-hidden-check-harness.md: docs/adr/0018-hidden-check-harness.md sha256 05cb2c976e3c3b1f58e3737f1c007d7e0250550db45f6b0da2107746fb5e5331\n- docs/design/eval-seam-contracts.md: docs/design/eval-seam-contracts.md sha256 a2b3d71d784f767a61417688eeb755d9692447c718f0009f740cefa567078f1d\n- tasks/README.md: tasks/README.md sha256 5914518496cac402045f0ec517cdd9efa3598cbd923552ea5ed3708aae1ffdd9\n- oracle/evidence.md: unresolved (ambiguous: 29 matches)\n- src/harness_bench/grade/bench_check.py: src/harness_bench/grade/bench_check.py sha256 810d2f729a14c3f8cbb1a11a7cc43cdcb0dc4838e09341434c14b22ea5f41c3e\n- integrate/e2e4-18: unresolved (not found)\n- tasks/RS1: unresolved (not found)\n- tests/test_rs1_task.py: unresolved (not found)\n- tests/test_rs2_task.py: unresolved (not found)\n- tests/fixtures/rs1: unresolved (not found)\n- tests/fixtures/rs2: unresolved (not found)\n- bench/bom.yaml: bench/bom.yaml sha256 98e2a4fd8201f771cbc5818e73ff33e423b5e31c0d3c31cef44e7a0044f41fd6\n- oracle/check/check.py: unresolved (ambiguous: 2 matches)\n- tests/fixtures/rs1/standin_listen.py: unresolved (not found)\n- tests/fixtures/rs2/standin_listen.py: unresolved (not found)\n- check.py: unresolved (ambiguous: 2 matches)\n- docs/notes/rulings.md: docs/notes/rulings.md sha256 e67c4be5814f67c561558a4af02c9e5a44d0b845800de1f0b8b1f22a43e88ca3\n- tasks/<ID>/task.yaml: unresolved (not found)\n- bench/discrimination: unresolved (not found)\n- tests/test_e1_e2e.py: tests/test_e1_e2e.py sha256 4e88541c3ec799b46b64b78c21ec9d8a9671dd8f15f3bca51e21e07a73bd1942\n- tests/test_readiness.py: tests/test_readiness.py sha256 7f0291c4f61d6f20298d0bbf7e819aabadd46c049b3af8ed5c54745184fa34de\n- docs/ai-forward-pack/scripts/render-markdown.py: docs/ai-forward-pack/scripts/render-markdown.py sha256 1033f9bada4fc31320e4fe8590600e59b0597c40b47d43ffec44fda85c1a71d8\n- docs/docs-index.js: docs/docs-index.js sha256 3bd33d2973533bcd36463ca6f66d7ff93b4eef069629a5f92949c189ebd1c39c\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 f6717458ec2670a1be81a7839657dfa77e4dbb2e4515e532b5daefd5d3a8a784\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 25c45e56139c8e3a2d70d353e4b83c0386590e754c342c2ee0e1a88338ff8b73\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 fdf375a866929a88129870b7f93ee766a68e77403a3d68bbab6cffb3d8747281\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tests/test_config.py: tests/test_config.py sha256 1538c081171f9c0e3bad81c05d1caa06e0d6d63f947f378cdefe989b062ab1fd\n- audit-log.py: docs/ai-forward-pack/scripts/audit-log.py sha256 d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4\n- src/: unresolved (not found)\n- bench_check.py: src/harness_bench/grade/bench_check.py sha256 810d2f729a14c3f8cbb1a11a7cc43cdcb0dc4838e09341434c14b22ea5f41c3e\n- grade/property.py: src/harness_bench/grade/property.py sha256 af0c9a1d6a3b3a287cf1702b844e2db26c24622185e3d1a52ac429d7a7e7e8cd\n- discriminate.py: src/harness_bench/discriminate.py sha256 676ba4d2e0c60c4c8f0b3b401f1a21d5bea58aec6a6d2125a7aab09a0af801c5\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0\nper_branch_exit: the merge and switch commits, K4, K5 and the plan record on build/eval-x-rs, or a hand-back by the split rule with the open K-items named\njoin_rule: the R-104 worker gate; the Leader joins into integrate/e2e4-18, re-runs one trial for a flipped task (equal bytes at an unchanged key), confirms each ready task's record task_version equals the computed version of its folder, no stand-in or local parse left (git grep -n standin_listen prints nothing), no src/ file changed, and each check opens sockets only through bench_check.listen(); RS2 holds eight cases and eight variants per Ruling 111 condition 1, the eight-case table measured (condition 4), and the Coordinator writes W1-L Erratum 4 in the join commit (condition 3)\ncontainment: own tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-rs on build/eval-x-rs, after a merge of the integration head holding X-LB1; tasks/RS1/**, tasks/RS2/**, tests/test_rs1_task.py, tests/test_rs2_task.py, tests/fixtures/rs1 and rs2 (deletions), their bench/bom.yaml entries, their records under bench/discrimination/**, docs/plans/eval-x-rs.md and its HTML (create-only), docs/docs-index.js (derive only)\ntermination: one turn\ndeadline: 3,300 s\nfallback: the Leader's decision after hand-back; the worker launches, spawns or messages nothing (FALLBACK-A)\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M4976ZGFK7Q93MPZ7JQC53ZR\nraw sha256: 46ad2817308053ef643a5f405ecfa1601fa47bd75ed0d7bb4ca705a9421a04f4\ncompiler model: claude-opus-5-5\nengine seconds: 0.02\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M4976ZGFK7Q93MPZ7JQC53ZR for claude-code v1: 19 clauses, 0 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "Base and first step: your branch build/eval-x-rs at 0c03350a or later, in your own tree, never main. Stop and report, before any edit, if git status --short prints anything, if git grep -n \"def listen\" -- src/harness_bench/grade/bench_check.py prints nothing after the merge below (X-LB1 has not joined), or if git log --oneline --grep=join-x-lb1 prints nothing. First, merge the integration head into your branch: git merge --no-ff integrate/e2e4-18 (a merge commit, never a rebase). A conflict outside tasks/RS1, tasks/RS2, tests/test_rs1_task.py, tests/test_rs2_task.py, tests/fixtures/rs1, tests/fixtures/rs2 and RS1's and RS2's bench/bom.yaml entries is a stop-and-report, never a resolution in another owner's file.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Base and first step: your branch build/eval-x-rs at 0c03350a or later, in your own tree, n"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The SP-LB result, as the operator accepted it on 2026-10-06 for this host: no firewall dialog on any loopback or positive-control run, loopback exchange_ok true with 0 new rules, and NotifyOnListen False on all three firewall profiles; other hosts re-run the spike. So hidden tests and fakes on 127.0.0.1 raise no dialog on this host. A firewall dialog or new rule seen during your runs is a stop-and-report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The SP-LB result, as the operator accepted it on 2026-10-06 for this host: no firewall dia"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The switch to X-LB1's interface. As the Leader describes it: listen() takes no arguments and is a context manager that yields a socket bound to 127.0.0.1 port 0; the check runs its own server on that socket; probe_host substitutes {fake_url}; parse_result(..., outcomes=FAULT_OUTCOMES) accepts passed, failed and timeout. Read the real signatures at your base before you write a call: git grep -n \"def listen\\|def probe_host\\|def parse_result\\|FAULT_OUTCOMES\" -- src/harness_bench/grade/bench_check.py (on the X-LB1 branch at 4dca941d the probe host was probe_host(case, fake=None), and X-LB1 part 3 may change a keyword); build on what prints, and report any difference from the description as a finding, never a local adapter. For RS1 and RS2: each oracle/check/check.py opens its fake only through bench_check.listen() and calls the probe host and the result parse X-LB1 built; delete tests/fixtures/rs1/standin_listen.py, tests/fixtures/rs2/standin_listen.py and the local parse() in tests/test_rs1_task.py (:177) and tests/test_rs2_task.py (:180), and point those tests at the real path. The variant runs are then re-measured on the real path and must match the evidence tables (RS1 7 of 7 as predicted; RS2's seven existing variants on its seven existing cases as predicted, then the eighth case and variant per Ruling 111); a difference is reported with both tables, never fixed by editing a prediction.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The switch to X-LB1's interface. As the Leader describes it: listen() takes no arguments a"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Check authoring rules (Security & Identity review of X-LB1, 2026-10-06; ADR-0018 section 3 and the B7 table): (1) every socket a check opens comes from bench_check.listen(); a check opens no socket of its own (listen() is the only place the 127.0.0.1 assert runs); (2) a fault case's passed is decided from the fake's own counters (requests, effects, the batch or key ids it saw), never from the deliverable's self-report or return value alone; (3) the fake's serve thread is joined at the end of every case, inside the case's bound, before the next case starts; (4) the check parses untrusted HTTP bytes inside the trusted check process: bound every read (size and time), treat a malformed request as a counted request that applies no effect, and never evaluate or deserialize request content beyond JSON. Each rule gets one line in each oracle/evidence.md naming the check.py lines that meet it.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Check authoring rules (Security & Identity review of X-LB1, 2026-10-06; ADR-0018 section 3"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "RS2 under Ruling 111 (docs/notes/rulings.md; (b) granted, bounded). R-111 condition 1 (i)-(vii), quoted: \"X-RS's ready turn (`x-rs-e1e4`) edits inside `tasks/RS2` only: (i) the reference: the freeze above (one pending `(batch_id, records)` pair; the pending batch first, then the newer records as a new batch; one budget per flush; on exhaustion `ShipError` with accepted records removed and the unsent batch pending; the sum of accepted counts on success). Alt adopts the same freeze (it must pass 8 of 8); naive is unchanged (a new id per flush, one `urlopen`: its failure on the new case is the point). (ii) The prompt: delete the words \"in one batch\" and nothing else (\"sends the buffered records to `<base_url>/v1/logs`, as described in `docs/collector.md`\"); re-run the latent-term scan (section 15 floor item 5, 0 hits). (iii) One case, `g-lost-then-grow` (the name is X-RS's, in the `g-` form): flush 1 with r1, r2, the first request applied and its response lost, and every retry in that flush lost too (the schedule grammar is the listener's; if `bench_check.listen()` cannot express \"lost on every request of one flush\" and the fake cannot be extended inside `tasks/RS2`, that is a finding to the Coordinator, never an adapter); `expect: fail`, `requests <= 3`; `then`: r3 buffered (LATE), a recovery flush against the healthy collector, `result`: the collector's applied records read r1, r2, r3 in that order, each once, and the flush returns 3; `bound_ms` by the 25 percent rule over the slowest of three honest runs, as the seven. (iv) One variant, `growid` (name theirs): today's binding (the id on the shipper, `records = list(self._buffer)` on every flush), declared to flip the new case alone on `result`. The seven existing variants are re-traced by hand against the eight cases in 9.3's form before the run (I expect `batchidattempt` to gain the new case on `effect` and `clearearly` on `result`; Inferred, the run decides), then measured; a trace that disagrees with the measurement is a finding, as the compile already says. (v) `expected`: reference `{1, \"1.0000\", 0}`; alt the same; naive re-traced (4 of 8, `\"0.5000\"`, if the trace holds; Inferred), its `idempotency_violations` on the new case being whatever the fake counts for r1 and r2 applied twice: measured, never derived (EV-7, HASH-A); values enter `expected` only from the discrimination record on the real host (section 5.3). (vi) Hidden tests S-1..S-5 and the five wrong-apps: unchanged. The freeze is the latent property and lives in the check, not in the public contract. (vii) `evidence.md`: the Residual section becomes the case's trace and measurement, its `simplify:` line retires, the status line and the variant table gain their row.\" K5 (RS2) absorbs this case and variant: RS2's ready flip is the eight-case task, and its record is taken after (i)-(vii) are in the folder. You edit no design doc; W1-L Erratum 4 is the Coordinator's at your join.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "RS2 under Ruling 111 (docs/notes/rulings.md; (b) granted, bounded). R-111 condition 1 (i)-"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The context split rule (CEIL-A, measured): start no K-item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first K-item: X-RS parts 2-5 67,948, 68,721, 53,951 and 120,392 (part 5 read RS1's model files first), X-LB1 about 66k, X-K1c part 2 72,513, X-TE9 about 68k; so the floor is 73k. Expected work per K-item: 60k (the largest measured K-item, on Codex; no Sonnet ready-flip cost is recorded yet, so record yours). Start no K-item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each K-item and before each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-rs-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never a whole design file; send test and discriminate output to a file and read only its summary. (1) The order is the merge and the switch, K4 (RS1), K5 (RS2, which absorbs Ruling 111's case g-lost-then-grow and variant growid), the plan record; start no K-item above 133k, and your hand-back point is the first boundary above 133k; (2) at 170k start no new edit, trial or gate, write the closing audit entry and hand back with the open items named; (3) if the figure cannot be read, record \"not recorded\" and hand back after K4. A hand-back by this rule is a planned split, not a failure.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The context split rule (CEIL-A, measured): start no K-item above floor + the item's expect"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "K4 (RS1) and K5 (RS2), the ready flips, one task per K-item, after the switch above: the ready order is SR-E2's (edit the folder first, then flip status to ready in tasks/<ID>/task.yaml, then run the trial, then commit the flip and the record together in one commit). The trial: uv run bench discriminate <ID> --runs C:\\t\\rs-runs --cells-root C:\\t\\rs-cells, with no model credentials in the environment. The reference must score 1 and the naive 0 through the engine (plan row; EV-1, EV-3), every metric of expected.reference and expected.naive must equal the record's measured value, and readiness must accept the record with no HB-RDY-003, HB-RDY-010 or HB-RDY-011 item. A task that does not reproduce stays draft, with the measured numbers reported. Measure the reference's duration_ms per case and replace any bound_ms that is not at least 25 percent above the reference's slowest honest run (W1-L section 9.1, the case-bound upgrade trigger). Brief item 5 (R2-4): the trial runs through X-LB1's loopback check with no new discriminate code; if it cannot, that is a seam request to coord-opus-e1e4, never a local workaround.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "K4 (RS1) and K5 (RS2), the ready flips, one task per K-item, after the switch above: the r"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The e2e fixture lesson (8534fb1f): once a task is ready with a committed record, any fixture or lean copy that copies bench/discrimination or the task folder, or pins the task's status, may break. After each task's commit, run the tests that copy them (tests/test_e1_e2e.py, tests/test_readiness.py) and report a break as a finding with the node id.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The e2e fixture lesson (8534fb1f): once a task is ready with a committed record, any fixtu"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Records and the BOM: an edit to bench/bom.yaml changes the record identity of every task (identity._readers hashes it), so your BOM entries make the other ready tasks' records report HB-RDY-002 until X-CV's final records. That is expected and not yours to fix; never edit another task's record or folder.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Records and the BOM: an edit to bench/bom.yaml changes the record identity of every task ("
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The plan record: write docs/plans/eval-x-rs.md and its HTML (python docs/ai-forward-pack/scripts/render-markdown.py), create-only, in its own commit (pre-granted), covering K2-K5 (part 5 stopped at its hard stop before writing it): the per-task table (task, draft or ready, record path, each metric declared and measured), the variant tables measured on the real path, the check authoring rules with their check.py lines, and each part's closing entry id. Regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived). Run docs-graph.py validate before the hand-back and read its findings, not only its exit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The plan record: write docs/plans/eval-x-rs.md and its HTML (python docs/ai-forward-pack/s"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\rs-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or discriminate run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\rs"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Short paths (PATH-B, confirmed): every trial or test run happens in a tree and under roots whose paths are short. A run archive adds about 139 characters below its root even for the smallest fixture, so TMP, TEMP, --runs, --cells-root and any pytest --basetemp stay under C:\\t\\ or an equally short folder. A trial that fails HB-RDY-011 \"workspace\" with \"path not found\" is re-run once from a shorter root before it is reported, and both roots are named in the report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Short paths (PATH-B, confirmed): every trial or test run happens in a tree and under roots"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, gro"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_rs1_task.py tests/test_rs2_task.py tests/test_readiness.py tests/test_e1_e2e.py tests/test_config.py on the final commit; uv run ruff check src tests tools; uv run bench validate, with its x lines for RS1 and RS2 read and reported (lines for other tasks are the expected HB-RDY-002 above); python docs/ai-forward-pack/scripts/docs-graph.py validate.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lo"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit named paths only, with AGENT_SESSION=x-rs-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit named paths only, with AGENT_SESSION=x-rs-e1e4 inline on every commit and coord cal"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split or served-model-failed), the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), the per-task state (draft, ready with record path, or not run with the reason), your context sample at each K-item and the cost of each K-item, both variant tables on the real path, and the reference's slowest duration_ms per case. Report your served model id on the first line of your final message.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your closing audit entry, written through audit-log.py, carries the dispatch start and end"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "src/ (a trial that fails because the code is wrong is a finding to coord-opus-e1e4, never a fix in this turn), bench_check.py and grade/property.py above all (X-LB1's, part 3 in flight); every task folder but tasks/RS1 and tasks/RS2; every bench/bom.yaml entry but RS1's and RS2's; other tasks' records; discriminate.py; the design docs and ADR-0018 (the Coordinator's).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "src/ (a trial that fails because the code is wrong is a finding to coord-opus-e1e4, never "
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the whole suite and mutate_check --touched (the Leader's); never kill a process by name or"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-rs on build/eval-x-rs, after a merge of the integration head holding X-LB1; tasks/RS1/**, tasks/RS2/**, tests/test_rs1_task.py, tests/test_rs2_task.py, tests/fixtures/rs1 and rs2 (deletions), their bench/bom.yaml entries, their records under bench/discrimination/**, docs/plans/eval-x-rs.md and its HTML (create-only), docs/docs-index.js (derive only)",
+          "deadline": "3,300 s",
+          "fallback": "the Leader's decision after hand-back; the worker launches, spawns or messages nothing (FALLBACK-A)",
+          "join_rule": "the R-104 worker gate; the Leader joins into integrate/e2e4-18, re-runs one trial for a flipped task (equal bytes at an unchanged key), confirms each ready task's record task_version equals the computed version of its folder, no stand-in or local parse left (git grep -n standin_listen prints nothing), no src/ file changed, and each check opens sockets only through bench_check.listen(); RS2 holds eight cases and eight variants per Ruling 111 condition 1, the eight-case table measured (condition 4), and the Coordinator writes W1-L Erratum 4 in the join commit (condition 3)",
+          "per_branch_exit": "the merge and switch commits, K4, K5 and the plan record on build/eval-x-rs, or a hand-back by the split rule with the open K-items named",
+          "termination": "one turn",
+          "transient_retry": "0",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens; split rule (CEIL-A): start no K-item above floor + the item's expected work, Claude Code Sonnet floor 73k (measured first readings 53,951-72,513) + 60k (the largest measured K-item) = 133k; hand-back point at the first boundary above 133k; hard stop at 170k; unreadable means hand back after K4",
+          "done_when": [
+            "Base and first step: your branch build/eval-x-rs at 0c03350a or later, in your own tree, never main. Stop and report, before any edit, if git status --short prints anything, if git grep -n \"def listen\" -- src/harness_bench/grade/bench_check.py prints nothing after the merge below (X-LB1 has not joined), or if git log --oneline --grep=join-x-lb1 prints nothing. First, merge the integration head into your branch: git merge --no-ff integrate/e2e4-18 (a merge commit, never a rebase). A conflict outside tasks/RS1, tasks/RS2, tests/test_rs1_task.py, tests/test_rs2_task.py, tests/fixtures/rs1, tests/fixtures/rs2 and RS1's and RS2's bench/bom.yaml entries is a stop-and-report, never a resolution in another owner's file.",
+            "The SP-LB result, as the operator accepted it on 2026-10-06 for this host: no firewall dialog on any loopback or positive-control run, loopback exchange_ok true with 0 new rules, and NotifyOnListen False on all three firewall profiles; other hosts re-run the spike. So hidden tests and fakes on 127.0.0.1 raise no dialog on this host. A firewall dialog or new rule seen during your runs is a stop-and-report.",
+            "The switch to X-LB1's interface. As the Leader describes it: listen() takes no arguments and is a context manager that yields a socket bound to 127.0.0.1 port 0; the check runs its own server on that socket; probe_host substitutes {fake_url}; parse_result(..., outcomes=FAULT_OUTCOMES) accepts passed, failed and timeout. Read the real signatures at your base before you write a call: git grep -n \"def listen\\|def probe_host\\|def parse_result\\|FAULT_OUTCOMES\" -- src/harness_bench/grade/bench_check.py (on the X-LB1 branch at 4dca941d the probe host was probe_host(case, fake=None), and X-LB1 part 3 may change a keyword); build on what prints, and report any difference from the description as a finding, never a local adapter. For RS1 and RS2: each oracle/check/check.py opens its fake only through bench_check.listen() and calls the probe host and the result parse X-LB1 built; delete tests/fixtures/rs1/standin_listen.py, tests/fixtures/rs2/standin_listen.py and the local parse() in tests/test_rs1_task.py (:177) and tests/test_rs2_task.py (:180), and point those tests at the real path. The variant runs are then re-measured on the real path and must match the evidence tables (RS1 7 of 7 as predicted; RS2's seven existing variants on its seven existing cases as predicted, then the eighth case and variant per Ruling 111); a difference is reported with both tables, never fixed by editing a prediction.",
+            "Check authoring rules (Security & Identity review of X-LB1, 2026-10-06; ADR-0018 section 3 and the B7 table): (1) every socket a check opens comes from bench_check.listen(); a check opens no socket of its own (listen() is the only place the 127.0.0.1 assert runs); (2) a fault case's passed is decided from the fake's own counters (requests, effects, the batch or key ids it saw), never from the deliverable's self-report or return value alone; (3) the fake's serve thread is joined at the end of every case, inside the case's bound, before the next case starts; (4) the check parses untrusted HTTP bytes inside the trusted check process: bound every read (size and time), treat a malformed request as a counted request that applies no effect, and never evaluate or deserialize request content beyond JSON. Each rule gets one line in each oracle/evidence.md naming the check.py lines that meet it.",
+            "RS2 under Ruling 111 (docs/notes/rulings.md; (b) granted, bounded). R-111 condition 1 (i)-(vii), quoted: \"X-RS's ready turn (`x-rs-e1e4`) edits inside `tasks/RS2` only: (i) the reference: the freeze above (one pending `(batch_id, records)` pair; the pending batch first, then the newer records as a new batch; one budget per flush; on exhaustion `ShipError` with accepted records removed and the unsent batch pending; the sum of accepted counts on success). Alt adopts the same freeze (it must pass 8 of 8); naive is unchanged (a new id per flush, one `urlopen`: its failure on the new case is the point). (ii) The prompt: delete the words \"in one batch\" and nothing else (\"sends the buffered records to `<base_url>/v1/logs`, as described in `docs/collector.md`\"); re-run the latent-term scan (section 15 floor item 5, 0 hits). (iii) One case, `g-lost-then-grow` (the name is X-RS's, in the `g-` form): flush 1 with r1, r2, the first request applied and its response lost, and every retry in that flush lost too (the schedule grammar is the listener's; if `bench_check.listen()` cannot express \"lost on every request of one flush\" and the fake cannot be extended inside `tasks/RS2`, that is a finding to the Coordinator, never an adapter); `expect: fail`, `requests <= 3`; `then`: r3 buffered (LATE), a recovery flush against the healthy collector, `result`: the collector's applied records read r1, r2, r3 in that order, each once, and the flush returns 3; `bound_ms` by the 25 percent rule over the slowest of three honest runs, as the seven. (iv) One variant, `growid` (name theirs): today's binding (the id on the shipper, `records = list(self._buffer)` on every flush), declared to flip the new case alone on `result`. The seven existing variants are re-traced by hand against the eight cases in 9.3's form before the run (I expect `batchidattempt` to gain the new case on `effect` and `clearearly` on `result`; Inferred, the run decides), then measured; a trace that disagrees with the measurement is a finding, as the compile already says. (v) `expected`: reference `{1, \"1.0000\", 0}`; alt the same; naive re-traced (4 of 8, `\"0.5000\"`, if the trace holds; Inferred), its `idempotency_violations` on the new case being whatever the fake counts for r1 and r2 applied twice: measured, never derived (EV-7, HASH-A); values enter `expected` only from the discrimination record on the real host (section 5.3). (vi) Hidden tests S-1..S-5 and the five wrong-apps: unchanged. The freeze is the latent property and lives in the check, not in the public contract. (vii) `evidence.md`: the Residual section becomes the case's trace and measurement, its `simplify:` line retires, the status line and the variant table gain their row.\" K5 (RS2) absorbs this case and variant: RS2's ready flip is the eight-case task, and its record is taken after (i)-(vii) are in the folder. You edit no design doc; W1-L Erratum 4 is the Coordinator's at your join.",
+            "The context split rule (CEIL-A, measured): start no K-item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first K-item: X-RS parts 2-5 67,948, 68,721, 53,951 and 120,392 (part 5 read RS1's model files first), X-LB1 about 66k, X-K1c part 2 72,513, X-TE9 about 68k; so the floor is 73k. Expected work per K-item: 60k (the largest measured K-item, on Codex; no Sonnet ready-flip cost is recorded yet, so record yours). Start no K-item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each K-item and before each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-rs-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never a whole design file; send test and discriminate output to a file and read only its summary. (1) The order is the merge and the switch, K4 (RS1), K5 (RS2, which absorbs Ruling 111's case g-lost-then-grow and variant growid), the plan record; start no K-item above 133k, and your hand-back point is the first boundary above 133k; (2) at 170k start no new edit, trial or gate, write the closing audit entry and hand back with the open items named; (3) if the figure cannot be read, record \"not recorded\" and hand back after K4. A hand-back by this rule is a planned split, not a failure.",
+            "K4 (RS1) and K5 (RS2), the ready flips, one task per K-item, after the switch above: the ready order is SR-E2's (edit the folder first, then flip status to ready in tasks/<ID>/task.yaml, then run the trial, then commit the flip and the record together in one commit). The trial: uv run bench discriminate <ID> --runs C:\\t\\rs-runs --cells-root C:\\t\\rs-cells, with no model credentials in the environment. The reference must score 1 and the naive 0 through the engine (plan row; EV-1, EV-3), every metric of expected.reference and expected.naive must equal the record's measured value, and readiness must accept the record with no HB-RDY-003, HB-RDY-010 or HB-RDY-011 item. A task that does not reproduce stays draft, with the measured numbers reported. Measure the reference's duration_ms per case and replace any bound_ms that is not at least 25 percent above the reference's slowest honest run (W1-L section 9.1, the case-bound upgrade trigger). Brief item 5 (R2-4): the trial runs through X-LB1's loopback check with no new discriminate code; if it cannot, that is a seam request to coord-opus-e1e4, never a local workaround.",
+            "The e2e fixture lesson (8534fb1f): once a task is ready with a committed record, any fixture or lean copy that copies bench/discrimination or the task folder, or pins the task's status, may break. After each task's commit, run the tests that copy them (tests/test_e1_e2e.py, tests/test_readiness.py) and report a break as a finding with the node id.",
+            "Records and the BOM: an edit to bench/bom.yaml changes the record identity of every task (identity._readers hashes it), so your BOM entries make the other ready tasks' records report HB-RDY-002 until X-CV's final records. That is expected and not yours to fix; never edit another task's record or folder.",
+            "The plan record: write docs/plans/eval-x-rs.md and its HTML (python docs/ai-forward-pack/scripts/render-markdown.py), create-only, in its own commit (pre-granted), covering K2-K5 (part 5 stopped at its hard stop before writing it): the per-task table (task, draft or ready, record path, each metric declared and measured), the variant tables measured on the real path, the check authoring rules with their check.py lines, and each part's closing entry id. Regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived). Run docs-graph.py validate before the hand-back and read its findings, not only its exit.",
+            "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\rs-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or discriminate run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).",
+            "Short paths (PATH-B, confirmed): every trial or test run happens in a tree and under roots whose paths are short. A run archive adds about 139 characters below its root even for the smallest fixture, so TMP, TEMP, --runs, --cells-root and any pytest --basetemp stay under C:\\t\\ or an equally short folder. A trial that fails HB-RDY-011 \"workspace\" with \"path not found\" is re-run once from a shorter root before it is reported, and both roots are named in the report.",
+            "Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report.",
+            "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_rs1_task.py tests/test_rs2_task.py tests/test_readiness.py tests/test_e1_e2e.py tests/test_config.py on the final commit; uv run ruff check src tests tools; uv run bench validate, with its x lines for RS1 and RS2 read and reported (lines for other tasks are the expected HB-RDY-002 above); python docs/ai-forward-pack/scripts/docs-graph.py validate.",
+            "Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "Commit named paths only, with AGENT_SESSION=x-rs-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green.",
+            "Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split or served-model-failed), the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), the per-task state (draft, ready with record path, or not run with the reason), your context sample at each K-item and the cost of each K-item, both variant tables on the real path, and the reference's slowest duration_ms per case. Report your served model id on the first line of your final message."
+          ],
+          "fan_out_cap": "0",
+          "goal": "You are session x-rs-e1e4 on branch build/eval-x-rs in the tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-rs, harness Claude Code, model sonnet (served claude-sonnet-5-5), an Agent-tool sub-agent with no coord-runner run, one turn, 3,300 s, within 120 calls and 200k context. This is X-RS's ready turn: K4 (RS1 ready) and K5 (RS2 ready), each after its check moves from the stand-in to X-LB1's built bench_check.listen(), plus the plan record docs/plans/eval-x-rs.md for K2-K5. RS1 is draft and green at cf2a7354 and RS2 at c44c11e5, every variant as predicted. Follow the plan row X-RS (docs/coordination/coordination-e2e4.md), the brief docs/coordination/eval-wave2-e234/x-rs.md (acceptance items 1-6), W1-L sections 9.1-9.3, Erratum 1 and Erratum 3 (docs/design/eval-property-tasks.md), ADR-0018 sections 3 and 9-10 with its B7 threat table (docs/adr/0018-hidden-check-harness.md), W0 sections 2, 3 and 11 (docs/design/eval-seam-contracts.md), tasks/README.md, the new-bench-task skill and SR-E2's ready order, all binding. Read both oracle/evidence.md files and your part 4 and part 5 closing entries (al-01M492A0RG3PRGBX7DR29E73VD, al-01M493KYHFD935SBA0KNPMRCY9) first, by line range.",
+          "main_line_budget": "within 120 calls; 3,300 s this turn; past the hand-back point or the deadline the open K-items are the Leader's to dispatch",
+          "not_in_scope": [
+            "src/ (a trial that fails because the code is wrong is a finding to coord-opus-e1e4, never a fix in this turn), bench_check.py and grade/property.py above all (X-LB1's, part 3 in flight); every task folder but tasks/RS1 and tasks/RS2; every bench/bom.yaml entry but RS1's and RS2's; other tasks' records; discriminate.py; the design docs and ADR-0018 (the Coordinator's).",
+            "the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours)."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.02,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M4976ZGFK7Q93MPZ7JQC53ZR",
+        "raw_sha256": "46ad2817308053ef643a5f405ecfa1601fa47bd75ed0d7bb4ca705a9421a04f4",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "x-rs-e1e4"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/RS2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "batch_id, records"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ShipError"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "urlopen"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "base_url>/v1/logs"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/collector.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "g-lost-then-grow"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "g-"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench_check.listen"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "expect: fail"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "requests <= 3"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "then"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "result"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bound_ms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "growid"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "records = list(self._buffer"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "batchidattempt"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "effect"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "clearearly"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "expected"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "{1, \"1.0000\", 0}"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "0.5000"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "idempotency_violations"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 29 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "evidence.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "simplify"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-rs"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/plans/eval-x-rs.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-e2e4.md",
+            "reason": null,
+            "sha256": "377f2fe7160ca28da5d4ae86dc48aa19e61bc01e5b7a0ae9730fce600e2f23bc",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-e2e4.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/x-rs.md",
+            "reason": null,
+            "sha256": "471accd8e69ca435f3dde7746e893592eb1c318970541f35e00cf1e970f8d01a",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/x-rs.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-property-tasks.md",
+            "reason": null,
+            "sha256": "1cb8d23b9f54d5c6bd64244e28e36b3a169e2eb39e48f973d4aacbeb606b656b",
+            "status": "resolved",
+            "token": "docs/design/eval-property-tasks.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/adr/0018-hidden-check-harness.md",
+            "reason": null,
+            "sha256": "05cb2c976e3c3b1f58e3737f1c007d7e0250550db45f6b0da2107746fb5e5331",
+            "status": "resolved",
+            "token": "docs/adr/0018-hidden-check-harness.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-seam-contracts.md",
+            "reason": null,
+            "sha256": "a2b3d71d784f767a61417688eeb755d9692447c718f0009f740cefa567078f1d",
+            "status": "resolved",
+            "token": "docs/design/eval-seam-contracts.md"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/README.md",
+            "reason": null,
+            "sha256": "5914518496cac402045f0ec517cdd9efa3598cbd923552ea5ed3708aae1ffdd9",
+            "status": "resolved",
+            "token": "tasks/README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 29 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/evidence.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/bench_check.py",
+            "reason": null,
+            "sha256": "810d2f729a14c3f8cbb1a11a7cc43cdcb0dc4838e09341434c14b22ea5f41c3e",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/bench_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "integrate/e2e4-18"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/RS1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_rs1_task.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_rs2_task.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/rs1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/rs2"
+          },
+          {
+            "nearest": null,
+            "path": "bench/bom.yaml",
+            "reason": null,
+            "sha256": "98e2a4fd8201f771cbc5818e73ff33e423b5e31c0d3c31cef44e7a0044f41fd6",
+            "status": "resolved",
+            "token": "bench/bom.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "oracle/check/check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/rs1/standin_listen.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/rs2/standin_listen.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "check.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/rulings.md",
+            "reason": null,
+            "sha256": "e67c4be5814f67c561558a4af02c9e5a44d0b845800de1f0b8b1f22a43e88ca3",
+            "status": "resolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/<ID>/task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/discrimination"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_e1_e2e.py",
+            "reason": null,
+            "sha256": "4e88541c3ec799b46b64b78c21ec9d8a9671dd8f15f3bca51e21e07a73bd1942",
+            "status": "resolved",
+            "token": "tests/test_e1_e2e.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_readiness.py",
+            "reason": null,
+            "sha256": "7f0291c4f61d6f20298d0bbf7e819aabadd46c049b3af8ed5c54745184fa34de",
+            "status": "resolved",
+            "token": "tests/test_readiness.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/render-markdown.py",
+            "reason": null,
+            "sha256": "1033f9bada4fc31320e4fe8590600e59b0597c40b47d43ffec44fda85c1a71d8",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/render-markdown.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/docs-index.js",
+            "reason": null,
+            "sha256": "3bd33d2973533bcd36463ca6f66d7ff93b4eef069629a5f92949c189ebd1c39c",
+            "status": "resolved",
+            "token": "docs/docs-index.js"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_identity.py",
+            "reason": null,
+            "sha256": "f6717458ec2670a1be81a7839657dfa77e4dbb2e4515e532b5daefd5d3a8a784",
+            "status": "resolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_atomic_sites.py",
+            "reason": null,
+            "sha256": "143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90",
+            "status": "resolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_arms_guard.py",
+            "reason": null,
+            "sha256": "25c45e56139c8e3a2d70d353e4b83c0386590e754c342c2ee0e1a88338ff8b73",
+            "status": "resolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_discriminate.py",
+            "reason": null,
+            "sha256": "fdf375a866929a88129870b7f93ee766a68e77403a3d68bbab6cffb3d8747281",
+            "status": "resolved",
+            "token": "tests/test_discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_skills_in_sync.py",
+            "reason": null,
+            "sha256": "572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d",
+            "status": "resolved",
+            "token": "tests/test_skills_in_sync.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_timing_hygiene.py",
+            "reason": null,
+            "sha256": "fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6",
+            "status": "resolved",
+            "token": "tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_config.py",
+            "reason": null,
+            "sha256": "1538c081171f9c0e3bad81c05d1caa06e0d6d63f947f378cdefe989b062ab1fd",
+            "status": "resolved",
+            "token": "tests/test_config.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/audit-log.py",
+            "reason": null,
+            "sha256": "d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4",
+            "status": "resolved",
+            "token": "audit-log.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/bench_check.py",
+            "reason": null,
+            "sha256": "810d2f729a14c3f8cbb1a11a7cc43cdcb0dc4838e09341434c14b22ea5f41c3e",
+            "status": "resolved",
+            "token": "bench_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/property.py",
+            "reason": null,
+            "sha256": "af0c9a1d6a3b3a287cf1702b844e2db26c24622185e3d1a52ac429d7a7e7e8cd",
+            "status": "resolved",
+            "token": "grade/property.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/discriminate.py",
+            "reason": null,
+            "sha256": "676ba4d2e0c60c4c8f0b3b401f1a21d5bea58aec6a6d2125a7aab09a0af801c5",
+            "status": "resolved",
+            "token": "discriminate.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M497AYSMWC95TFS6R69B678Y",
+      "shortname": "You are session x-fixe-e1e4 on branch build/eval-x-fixe in your own tree…",
+      "datetime": "2026-10-06T18:24:11Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-fixe-e1e4 on branch build/eval-x-fixe in your own tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-fixe, harness Claude Code, model sonnet (served claude-sonnet-5-5), an Agent-tool sub-agent with no coord-runner run, one turn, 2,400 s, within 100 calls and 200k context. Fix SHAPE-A sweep row 4 (docs/lessons/defect-classes.md, SHAPE-A): the double-run guard of W0 R-90 condition 3 does not cover check-less property tasks (rework, no-guessing, simplicity). Follow docs/coordination/coordinator-log/c46.md item 5, W0 (docs/design/eval-seam-contracts.md) section 7 R-90 conditions 2-4 and section 2's check-based and check-less rule, and W1-L section 5 (docs/design/eval-property-tasks.md), all binding.\n\nBase: build/eval-x-fixe, which the Leader creates from the integration head (integrate/e2e4-18) at dispatch, never main. Stop and report, before any edit, if git log --oneline --grep=join-x-lb1 prints nothing (X-LB1 has not joined; grade/property.py is its file until then), if git status --short prints anything, or if git grep -n \"def comparable_cells\" -- src/harness_bench/readiness.py does not print exactly one line.\n\nThe rule that binds, quoted from W0 section 7, R-90 condition 3: \"The property evidence records `hidden_tests_pass` and `hidden_tests_ms` per tree (section 3). One function, X-E's `readiness.hidden_test_disagreements(run_dir, grading_id) -> list[str]` ... compares the final tree's `hidden_tests_pass` with the pass's own `pass_at_1` row for the same cell.\" Condition 4: \"The strategy helpers (`grade/rework.py`, `grade/noguess.py`, `grade/diffstats.py`) are called by `property.grade_cell` and never registered in `GRADERS`.\" So the condition covers check-less tasks, which the property grader also grades. The gap, read on the integration head at a797652f: a check-based property.json carries a top-level hidden_tests_pass (grade/property.py:518); a check-less one carries only strategy.<name> sections (write_section, grade/property.py:532-548), where noguess.py:424 and diffstats.py:191 and :227 nest hidden_tests_pass and rework.py writes none; readiness.comparable_cells (readiness.py:653-665) reads the top-level key, so a check-less cell reads None; and discriminate.py calls comparable_cells and unbiased_failures only inside _evidence_items, which runs only when readiness.is_check_based(task) (discriminate.py:193-198 and :375-381). Line numbers are the base's; read them again at yours.\n\nF1, red first: the property grader writes the top-level hidden_tests_pass {value, reason} and hidden_tests_ms into a check-less property.json, from the one correctness run the strategy already made (R-90 condition 2: one definition, correctness.grade, per graded tree), never a second run and never a copy of pass_at_1. A strategy that does not run the hidden tests (rework.py today) is a finding with its file and line, not a new run. The test, in tests/test_property_grade_cell.py: a check-less cell graded through the real property.grade_cell has a top-level hidden_tests_pass equal to its strategy section's value (red today: the key is absent). Mutant: the top-level write deleted (added to tests/mutations/property.json; never --touched).\n\nF2, red first: discriminate runs the double-run items for a check-less task too: comparable_cells (hidden tests disagree with pass_at_1, or a side is NA) for every task, and unbiased_failures and the evidence-presence items only where they apply. For each item that cannot apply to the check-less shape (for example a span check where a check-less pass records no spans), write one sentence with its reason in the plan record; it is a finding, never a silent skip. The test, in tests/test_discriminate.py: a check-less task fixture whose hidden-test value disagrees with pass_at_1 yields the HB-RDY-011 item \"hidden tests disagree with pass_at_1 in <label>\" (red today: no item). readiness.comparable_cells needs no change once F1 lands; if it does, the change is the smallest that reads the same top-level key.\n\nThe context split rule (CEIL-A, measured): start no K-item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first K-item: 53,951 to 72,513 (one reading of 120,392 after reading model files first), so the floor is 73k; expected work per item 60k (the largest measured K-item); start no item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each item and each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-fixe-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never a whole design file; send test output to a file and read only its summary. The order is F1, F2, the plan record; your hand-back point is the first boundary above 133k; at 170k start no new edit or gate, write the closing audit entry and hand back with the open items named; if the figure cannot be read, record \"not recorded\" and hand back after F1.\n\nThe plan record: write docs/plans/eval-x-fixe.md and its HTML (python docs/ai-forward-pack/scripts/render-markdown.py), create-only, in its own commit (pre-granted): each item, its red SHA with the failing lines, its green SHA, the mutant result, and the applicability sentence for each double-run item on the check-less shape. Regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted). Run docs-graph.py validate before the hand-back and read its findings, not only its exit.\n\nEvery new test is red first, with its failing lines pasted in the red commit's message (RED-C: never ImportError, AttributeError, NameError or KeyError); a test already green on arrival is recorded \"green on arrival\", never faked red.\n\nScratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\fixe-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).\n\nNever launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report.\n\nGate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_property_grade_cell.py tests/test_property_grader.py tests/test_readiness.py tests/test_discriminate.py tests/test_grade_noguess.py tests/test_grade_diffstats.py tests/test_rework.py tests/test_e1_e2e.py on the final commit, read as 0 failed and 0 XPASS; uv run python tools/mutate_check.py with tests/mutations/property.json, one run, never --touched; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.\n\nSuite lock: named-file runs do not take the suite lock, mutate_check does; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.\n\nCommit named paths only, with AGENT_SESSION=x-fixe-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green.\n\nYour closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split or served-model-failed), the red SHAs, the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), your context sample at each item, the mutant result, and each applicability sentence. Report your served model id on the first line of your final message.\n\nNot yours: every src/ file but grade/property.py (the check-less evidence write only), discriminate.py (the double-run item call sites only) and readiness.py (comparable_cells only, if F1 does not suffice); grade/noguess.py, grade/diffstats.py and grade/rework.py (a needed change is a seam request); bench_check.py and the loopback path; every task folder and record; the design docs.\n\nNot yours: the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M497AZPCS6F5KBCZ36RX6VS9",
+      "shortname": "compile-You are session x-fixe-e1e4 on branch build/eval-x-fixe in your own tree…",
+      "datetime": "2026-10-06T18:24:12Z",
+      "session": "x-fixe-e1e4",
+      "prompt": "python docs/ai-forward-pack/scripts/audit-log.py start --session x-fixe-e1e4 --skill implement\nGoal state\nGoal: You are session x-fixe-e1e4 on branch build/eval-x-fixe in your own tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-fixe, harness Claude Code, model sonnet (served claude-sonnet-5-5), an Agent-tool sub-agent with no coord-runner run, one turn, 2,400 s, within 100 calls and 200k context. Fix SHAPE-A sweep row 4 (docs/lessons/defect-classes.md, SHAPE-A): the double-run guard of W0 R-90 condition 3 does not cover check-less property tasks (rework, no-guessing, simplicity). Follow docs/coordination/coordinator-log/c46.md item 5, W0 (docs/design/eval-seam-contracts.md) section 7 R-90 conditions 2-4 and section 2's check-based and check-less rule, and W1-L section 5 (docs/design/eval-property-tasks.md), all binding.\nDone when: Base: build/eval-x-fixe, which the Leader creates from the integration head (integrate/e2e4-18) at dispatch, never main. Stop and report, before any edit, if git log --oneline --grep=join-x-lb1 prints nothing (X-LB1 has not joined; grade/property.py is its file until then), if git status --short prints anything, or if git grep -n \"def comparable_cells\" -- src/harness_bench/readiness.py does not print exactly one line.; The rule that binds, quoted from W0 section 7, R-90 condition 3: \"The property evidence records `hidden_tests_pass` and `hidden_tests_ms` per tree (section 3). One function, X-E's `readiness.hidden_test_disagreements(run_dir, grading_id) -> list[str]` ... compares the final tree's `hidden_tests_pass` with the pass's own `pass_at_1` row for the same cell.\" Condition 4: \"The strategy helpers (`grade/rework.py`, `grade/noguess.py`, `grade/diffstats.py`) are called by `property.grade_cell` and never registered in `GRADERS`.\" So the condition covers check-less tasks, which the property grader also grades. The gap, read on the integration head at a797652f: a check-based property.json carries a top-level hidden_tests_pass (grade/property.py:518); a check-less one carries only strategy.<name> sections (write_section, grade/property.py:532-548), where noguess.py:424 and diffstats.py:191 and :227 nest hidden_tests_pass and rework.py writes none; readiness.comparable_cells (readiness.py:653-665) reads the top-level key, so a check-less cell reads None; and discriminate.py calls comparable_cells and unbiased_failures only inside _evidence_items, which runs only when readiness.is_check_based(task) (discriminate.py:193-198 and :375-381). Line numbers are the base's; read them again at yours.; F1, red first: the property grader writes the top-level hidden_tests_pass {value, reason} and hidden_tests_ms into a check-less property.json, from the one correctness run the strategy already made (R-90 condition 2: one definition, correctness.grade, per graded tree), never a second run and never a copy of pass_at_1. A strategy that does not run the hidden tests (rework.py today) is a finding with its file and line, not a new run. The test, in tests/test_property_grade_cell.py: a check-less cell graded through the real property.grade_cell has a top-level hidden_tests_pass equal to its strategy section's value (red today: the key is absent). Mutant: the top-level write deleted (added to tests/mutations/property.json; never --touched).; F2, red first: discriminate runs the double-run items for a check-less task too: comparable_cells (hidden tests disagree with pass_at_1, or a side is NA) for every task, and unbiased_failures and the evidence-presence items only where they apply. For each item that cannot apply to the check-less shape (for example a span check where a check-less pass records no spans), write one sentence with its reason in the plan record; it is a finding, never a silent skip. The test, in tests/test_discriminate.py: a check-less task fixture whose hidden-test value disagrees with pass_at_1 yields the HB-RDY-011 item \"hidden tests disagree with pass_at_1 in <label>\" (red today: no item). readiness.comparable_cells needs no change once F1 lands; if it does, the change is the smallest that reads the same top-level key.; The context split rule (CEIL-A, measured): start no K-item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first K-item: 53,951 to 72,513 (one reading of 120,392 after reading model files first), so the floor is 73k; expected work per item 60k (the largest measured K-item); start no item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each item and each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-fixe-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never a whole design file; send test output to a file and read only its summary. The order is F1, F2, the plan record; your hand-back point is the first boundary above 133k; at 170k start no new edit or gate, write the closing audit entry and hand back with the open items named; if the figure cannot be read, record \"not recorded\" and hand back after F1.; The plan record: write docs/plans/eval-x-fixe.md and its HTML (python docs/ai-forward-pack/scripts/render-markdown.py), create-only, in its own commit (pre-granted): each item, its red SHA with the failing lines, its green SHA, the mutant result, and the applicability sentence for each double-run item on the check-less shape. Regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted). Run docs-graph.py validate before the hand-back and read its findings, not only its exit.; Every new test is red first, with its failing lines pasted in the red commit's message (RED-C: never ImportError, AttributeError, NameError or KeyError); a test already green on arrival is recorded \"green on arrival\", never faked red.; Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\fixe-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).; Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report.; Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_property_grade_cell.py tests/test_property_grader.py tests/test_readiness.py tests/test_discriminate.py tests/test_grade_noguess.py tests/test_grade_diffstats.py tests/test_rework.py tests/test_e1_e2e.py on the final commit, read as 0 failed and 0 XPASS; uv run python tools/mutate_check.py with tests/mutations/property.json, one run, never --touched; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.; Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commit named paths only, with AGENT_SESSION=x-fixe-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green.; Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split or served-model-failed), the red SHAs, the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), your context sample at each item, the mutant result, and each applicability sentence. Report your served model id on the first line of your final message.\nNot in scope: every src/ file but grade/property.py (the check-less evidence write only), discriminate.py (the double-run item call sites only) and readiness.py (comparable_cells only, if F1 does not suffice); grade/noguess.py, grade/diffstats.py and grade/rework.py (a needed change is a seam request); bench_check.py and the loopback path; every task folder and record; the design docs.; the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours).\nTier: T1\nFan-out cap: 0\nContext ceiling: 200k tokens; split rule (CEIL-A): start no item above floor 73k + 60k = 133k; hand-back point at the first boundary above 133k; hard stop at 170k; unreadable means hand back after F1\nMain-line budget: within 100 calls; 2,400 s this turn\nTrace\n| clause | trace |\n|---|---|\n| done_when: Base: build/eval-x-fixe, which the Leader creates from the integration head (integrate/e2e4-18) at dispatch, never main. Stop and report, before any edit, if git log --oneline --grep=join-x-lb1 prints nothing (X-LB1 has not joined; grade/property.py is its file until then), if git status --short prints anything, or if git grep -n \"def comparable_cells\" -- src/harness_bench/readiness.py does not print exactly one line. | phrase: Base: build/eval-x-fixe, which the Leader creates from the integration head (integrate/e2e |\n| done_when: The rule that binds, quoted from W0 section 7, R-90 condition 3: \"The property evidence records `hidden_tests_pass` and `hidden_tests_ms` per tree (section 3). One function, X-E's `readiness.hidden_test_disagreements(run_dir, grading_id) -> list[str]` ... compares the final tree's `hidden_tests_pass` with the pass's own `pass_at_1` row for the same cell.\" Condition 4: \"The strategy helpers (`grade/rework.py`, `grade/noguess.py`, `grade/diffstats.py`) are called by `property.grade_cell` and never registered in `GRADERS`.\" So the condition covers check-less tasks, which the property grader also grades. The gap, read on the integration head at a797652f: a check-based property.json carries a top-level hidden_tests_pass (grade/property.py:518); a check-less one carries only strategy.<name> sections (write_section, grade/property.py:532-548), where noguess.py:424 and diffstats.py:191 and :227 nest hidden_tests_pass and rework.py writes none; readiness.comparable_cells (readiness.py:653-665) reads the top-level key, so a check-less cell reads None; and discriminate.py calls comparable_cells and unbiased_failures only inside _evidence_items, which runs only when readiness.is_check_based(task) (discriminate.py:193-198 and :375-381). Line numbers are the base's; read them again at yours. | phrase: The rule that binds, quoted from W0 section 7, R-90 condition 3: \"The property evidence re |\n| done_when: F1, red first: the property grader writes the top-level hidden_tests_pass {value, reason} and hidden_tests_ms into a check-less property.json, from the one correctness run the strategy already made (R-90 condition 2: one definition, correctness.grade, per graded tree), never a second run and never a copy of pass_at_1. A strategy that does not run the hidden tests (rework.py today) is a finding with its file and line, not a new run. The test, in tests/test_property_grade_cell.py: a check-less cell graded through the real property.grade_cell has a top-level hidden_tests_pass equal to its strategy section's value (red today: the key is absent). Mutant: the top-level write deleted (added to tests/mutations/property.json; never --touched). | phrase: F1, red first: the property grader writes the top-level hidden_tests_pass {value, reason}  |\n| done_when: F2, red first: discriminate runs the double-run items for a check-less task too: comparable_cells (hidden tests disagree with pass_at_1, or a side is NA) for every task, and unbiased_failures and the evidence-presence items only where they apply. For each item that cannot apply to the check-less shape (for example a span check where a check-less pass records no spans), write one sentence with its reason in the plan record; it is a finding, never a silent skip. The test, in tests/test_discriminate.py: a check-less task fixture whose hidden-test value disagrees with pass_at_1 yields the HB-RDY-011 item \"hidden tests disagree with pass_at_1 in <label>\" (red today: no item). readiness.comparable_cells needs no change once F1 lands; if it does, the change is the smallest that reads the same top-level key. | phrase: F2, red first: discriminate runs the double-run items for a check-less task too: comparabl |\n| done_when: The context split rule (CEIL-A, measured): start no K-item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first K-item: 53,951 to 72,513 (one reading of 120,392 after reading model files first), so the floor is 73k; expected work per item 60k (the largest measured K-item); start no item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each item and each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-fixe-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never a whole design file; send test output to a file and read only its summary. The order is F1, F2, the plan record; your hand-back point is the first boundary above 133k; at 170k start no new edit or gate, write the closing audit entry and hand back with the open items named; if the figure cannot be read, record \"not recorded\" and hand back after F1. | phrase: The context split rule (CEIL-A, measured): start no K-item above floor + the item's expect |\n| done_when: The plan record: write docs/plans/eval-x-fixe.md and its HTML (python docs/ai-forward-pack/scripts/render-markdown.py), create-only, in its own commit (pre-granted): each item, its red SHA with the failing lines, its green SHA, the mutant result, and the applicability sentence for each double-run item on the check-less shape. Regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted). Run docs-graph.py validate before the hand-back and read its findings, not only its exit. | phrase: The plan record: write docs/plans/eval-x-fixe.md and its HTML (python docs/ai-forward-pack |\n| done_when: Every new test is red first, with its failing lines pasted in the red commit's message (RED-C: never ImportError, AttributeError, NameError or KeyError); a test already green on arrival is recorded \"green on arrival\", never faked red. | phrase: Every new test is red first, with its failing lines pasted in the red commit's message (RE |\n| done_when: Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\fixe-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH). | phrase: Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\fi |\n| done_when: Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report. | phrase: Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, gro |\n| done_when: Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_property_grade_cell.py tests/test_property_grader.py tests/test_readiness.py tests/test_discriminate.py tests/test_grade_noguess.py tests/test_grade_diffstats.py tests/test_rework.py tests/test_e1_e2e.py on the final commit, read as 0 failed and 0 XPASS; uv run python tools/mutate_check.py with tests/mutations/property.json, one run, never --touched; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate. | phrase: Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run  |\n| done_when: Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that wai |\n| done_when: Commit named paths only, with AGENT_SESSION=x-fixe-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green. | phrase: Commit named paths only, with AGENT_SESSION=x-fixe-e1e4 inline on every commit and coord c |\n| done_when: Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split or served-model-failed), the red SHAs, the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), your context sample at each item, the mutant result, and each applicability sentence. Report your served model id on the first line of your final message. | phrase: Your closing audit entry, written through audit-log.py, carries the dispatch start and end |\n| not_in_scope: every src/ file but grade/property.py (the check-less evidence write only), discriminate.py (the double-run item call sites only) and readiness.py (comparable_cells only, if F1 does not suffice); grade/noguess.py, grade/diffstats.py and grade/rework.py (a needed change is a seam request); bench_check.py and the loopback path; every task folder and record; the design docs. | phrase: every src/ file but grade/property.py (the check-less evidence write only), discriminate.p |\n| not_in_scope: the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours). | phrase: the whole suite and mutate_check --touched (the Leader's); never kill a process by name or |\nReferences\n- hidden_tests_pass: unresolved (not found)\n- hidden_tests_ms: unresolved (not found)\n- readiness.hidden_test_disagreements(run_dir, grading_id) -> list[str: unresolved (not found)\n- pass_at_1: unresolved (not found)\n- grade/rework.py: src/harness_bench/grade/rework.py sha256 f47b1c6c556d626395f0379c22e7b8b823708d6912392656e53328a3cb18cb3c\n- grade/noguess.py: src/harness_bench/grade/noguess.py sha256 1837ee915a478ee97ec16d4dc4dd05b811dd4e0730de9a7549188114492894ef\n- grade/diffstats.py: src/harness_bench/grade/diffstats.py sha256 12f7a81851c25bf1e3827c4d8c8e3fedc164e2bf979874aa275f6bc8e65f5043\n- property.grade_cell: unresolved (not found)\n- GRADERS: unresolved (not found)\n- build/eval-x-fixe: unresolved (not found)\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 6c2cff65628e25c951dba087a1f91091a33d33bf7fb6464936fa922b8df2d8ed\n- docs/coordination/coordinator-log/c46.md: docs/coordination/coordinator-log/c46.md sha256 5a0c5ce5b5a10fd77c9640db1bf24a3df159b75dfa4ef87cf19e15b1c46bd28b\n- docs/design/eval-seam-contracts.md: docs/design/eval-seam-contracts.md sha256 a2b3d71d784f767a61417688eeb755d9692447c718f0009f740cefa567078f1d\n- docs/design/eval-property-tasks.md: docs/design/eval-property-tasks.md sha256 1cb8d23b9f54d5c6bd64244e28e36b3a169e2eb39e48f973d4aacbeb606b656b\n- integrate/e2e4-18: unresolved (not found)\n- grade/property.py: src/harness_bench/grade/property.py sha256 af0c9a1d6a3b3a287cf1702b844e2db26c24622185e3d1a52ac429d7a7e7e8cd\n- src/harness_bench/readiness.py: src/harness_bench/readiness.py sha256 6376ddf47d893b4d8f971d6194824b752bf0570ee8bee370c3532e301ac9a345\n- property.json: tests/mutations/property.json sha256 57841a6ac199b959ea84b067f9a5854534bea1e022e5c13130a01906bb01e71d\n- grade/property.py:518: unresolved (not found)\n- grade/property.py:532-548: unresolved (not found)\n- rework.py: src/harness_bench/grade/rework.py sha256 f47b1c6c556d626395f0379c22e7b8b823708d6912392656e53328a3cb18cb3c\n- discriminate.py: src/harness_bench/discriminate.py sha256 676ba4d2e0c60c4c8f0b3b401f1a21d5bea58aec6a6d2125a7aab09a0af801c5\n- tests/test_property_grade_cell.py: tests/test_property_grade_cell.py sha256 4ee18be05cd5d70752f2eda255e38228d544973c902d49de4fe1b3285b22b86e\n- tests/mutations/property.json: tests/mutations/property.json sha256 57841a6ac199b959ea84b067f9a5854534bea1e022e5c13130a01906bb01e71d\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 fdf375a866929a88129870b7f93ee766a68e77403a3d68bbab6cffb3d8747281\n- docs/plans/eval-x-fixe.md: unresolved (not found)\n- docs/ai-forward-pack/scripts/render-markdown.py: docs/ai-forward-pack/scripts/render-markdown.py sha256 1033f9bada4fc31320e4fe8590600e59b0597c40b47d43ffec44fda85c1a71d8\n- docs/docs-index.js: docs/docs-index.js sha256 3bd33d2973533bcd36463ca6f66d7ff93b4eef069629a5f92949c189ebd1c39c\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 f6717458ec2670a1be81a7839657dfa77e4dbb2e4515e532b5daefd5d3a8a784\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 25c45e56139c8e3a2d70d353e4b83c0386590e754c342c2ee0e1a88338ff8b73\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tests/test_property_grader.py: tests/test_property_grader.py sha256 0eee0101a304334f7384e96286abd88ce58b2429b91d80922bdf835ae1aca2a8\n- tests/test_readiness.py: tests/test_readiness.py sha256 7f0291c4f61d6f20298d0bbf7e819aabadd46c049b3af8ed5c54745184fa34de\n- tests/test_grade_noguess.py: tests/test_grade_noguess.py sha256 0a45ecb0e66b82c8dba938c5a20c1f0416acb3c7fe9b39a74c58ca9e1d4ef663\n- tests/test_grade_diffstats.py: tests/test_grade_diffstats.py sha256 27d76cd148ffbbaa33739277523768d32b1ea949ebc0a1537a08ae6659c3ea3f\n- tests/test_rework.py: tests/test_rework.py sha256 3297dbfcf9a8aaa9af411d3c8e8a00dd90226624217a5e5435b8c10732733985\n- tests/test_e1_e2e.py: tests/test_e1_e2e.py sha256 4e88541c3ec799b46b64b78c21ec9d8a9671dd8f15f3bca51e21e07a73bd1942\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d\n- audit-log.py: docs/ai-forward-pack/scripts/audit-log.py sha256 d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4\n- src/: unresolved (not found)\n- readiness.py: src/harness_bench/readiness.py sha256 6376ddf47d893b4d8f971d6194824b752bf0570ee8bee370c3532e301ac9a345\n- bench_check.py: src/harness_bench/grade/bench_check.py sha256 810d2f729a14c3f8cbb1a11a7cc43cdcb0dc4838e09341434c14b22ea5f41c3e\nAssumptions\n- #1 belief: every check-less strategy that runs the hidden tests already holds their value in its strategy section (noguess.py:424, diffstats.py:191 and :227), so F1 can lift it without a second run · confirm: read the three helpers at your base before F1's red commit · breaks: F1 would need a second correctness run, which R-90 condition 2 forbids; the worker stops F1 and reports a finding · consequential: false\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0\nper_branch_exit: F1 and F2 commits and the plan record on build/eval-x-fixe, or a hand-back by the split rule with the open items named\njoin_rule: the R-104 worker gate; the Leader joins into integrate/e2e4-18 before X-CV, re-runs one red SHA, confirms no second correctness run, the noguess, diffstats and rework helpers unchanged, the F1 mutant killed, and every double-run item's applicability sentence present; grade/ changes, so a gate ring\ncontainment: own worktree C:\\Projects\\x-harness-x-model-bench-build-eval-x-fixe on build/eval-x-fixe from the integration head holding join-x-lb1; grade/property.py (the check-less evidence write), discriminate.py (the double-run call sites), readiness.py (comparable_cells only, if needed), tests/test_property_grade_cell.py, tests/test_discriminate.py, tests/mutations/property.json (one mutant), docs/plans/eval-x-fixe.md and its HTML (create-only), docs/docs-index.js (derive only)\ntermination: one turn\ndeadline: 2,400 s\nfallback: the Leader's decision after hand-back; the worker launches, spawns or messages nothing (FALLBACK-A)\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M497AYSMWC95TFS6R69B678Y\nraw sha256: 6520d13d60355da017c9290dc6d800cd04584df233b053cb6742715433f67ffa\ncompiler model: claude-opus-5-5\nengine seconds: 0.023\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M497AYSMWC95TFS6R69B678Y for claude-code v1: 15 clauses, 1 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [
+          {
+            "id": "#1",
+            "belief": "every check-less strategy that runs the hidden tests already holds their value in its strategy section (noguess.py:424, diffstats.py:191 and :227), so F1 can lift it without a second run",
+            "confirm": "read the three helpers at your base before F1's red commit",
+            "breaks": "F1 would need a second correctness run, which R-90 condition 2 forbids; the worker stops F1 and reports a finding",
+            "consequential": false
+          }
+        ],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "Base: build/eval-x-fixe, which the Leader creates from the integration head (integrate/e2e4-18) at dispatch, never main. Stop and report, before any edit, if git log --oneline --grep=join-x-lb1 prints nothing (X-LB1 has not joined; grade/property.py is its file until then), if git status --short prints anything, or if git grep -n \"def comparable_cells\" -- src/harness_bench/readiness.py does not print exactly one line.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Base: build/eval-x-fixe, which the Leader creates from the integration head (integrate/e2e"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The rule that binds, quoted from W0 section 7, R-90 condition 3: \"The property evidence records `hidden_tests_pass` and `hidden_tests_ms` per tree (section 3). One function, X-E's `readiness.hidden_test_disagreements(run_dir, grading_id) -> list[str]` ... compares the final tree's `hidden_tests_pass` with the pass's own `pass_at_1` row for the same cell.\" Condition 4: \"The strategy helpers (`grade/rework.py`, `grade/noguess.py`, `grade/diffstats.py`) are called by `property.grade_cell` and never registered in `GRADERS`.\" So the condition covers check-less tasks, which the property grader also grades. The gap, read on the integration head at a797652f: a check-based property.json carries a top-level hidden_tests_pass (grade/property.py:518); a check-less one carries only strategy.<name> sections (write_section, grade/property.py:532-548), where noguess.py:424 and diffstats.py:191 and :227 nest hidden_tests_pass and rework.py writes none; readiness.comparable_cells (readiness.py:653-665) reads the top-level key, so a check-less cell reads None; and discriminate.py calls comparable_cells and unbiased_failures only inside _evidence_items, which runs only when readiness.is_check_based(task) (discriminate.py:193-198 and :375-381). Line numbers are the base's; read them again at yours.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The rule that binds, quoted from W0 section 7, R-90 condition 3: \"The property evidence re"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "F1, red first: the property grader writes the top-level hidden_tests_pass {value, reason} and hidden_tests_ms into a check-less property.json, from the one correctness run the strategy already made (R-90 condition 2: one definition, correctness.grade, per graded tree), never a second run and never a copy of pass_at_1. A strategy that does not run the hidden tests (rework.py today) is a finding with its file and line, not a new run. The test, in tests/test_property_grade_cell.py: a check-less cell graded through the real property.grade_cell has a top-level hidden_tests_pass equal to its strategy section's value (red today: the key is absent). Mutant: the top-level write deleted (added to tests/mutations/property.json; never --touched).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "F1, red first: the property grader writes the top-level hidden_tests_pass {value, reason} "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "F2, red first: discriminate runs the double-run items for a check-less task too: comparable_cells (hidden tests disagree with pass_at_1, or a side is NA) for every task, and unbiased_failures and the evidence-presence items only where they apply. For each item that cannot apply to the check-less shape (for example a span check where a check-less pass records no spans), write one sentence with its reason in the plan record; it is a finding, never a silent skip. The test, in tests/test_discriminate.py: a check-less task fixture whose hidden-test value disagrees with pass_at_1 yields the HB-RDY-011 item \"hidden tests disagree with pass_at_1 in <label>\" (red today: no item). readiness.comparable_cells needs no change once F1 lands; if it does, the change is the smallest that reads the same top-level key.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "F2, red first: discriminate runs the double-run items for a check-less task too: comparabl"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The context split rule (CEIL-A, measured): start no K-item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first K-item: 53,951 to 72,513 (one reading of 120,392 after reading model files first), so the floor is 73k; expected work per item 60k (the largest measured K-item); start no item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each item and each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-fixe-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never a whole design file; send test output to a file and read only its summary. The order is F1, F2, the plan record; your hand-back point is the first boundary above 133k; at 170k start no new edit or gate, write the closing audit entry and hand back with the open items named; if the figure cannot be read, record \"not recorded\" and hand back after F1.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The context split rule (CEIL-A, measured): start no K-item above floor + the item's expect"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The plan record: write docs/plans/eval-x-fixe.md and its HTML (python docs/ai-forward-pack/scripts/render-markdown.py), create-only, in its own commit (pre-granted): each item, its red SHA with the failing lines, its green SHA, the mutant result, and the applicability sentence for each double-run item on the check-less shape. Regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted). Run docs-graph.py validate before the hand-back and read its findings, not only its exit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The plan record: write docs/plans/eval-x-fixe.md and its HTML (python docs/ai-forward-pack"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Every new test is red first, with its failing lines pasted in the red commit's message (RED-C: never ImportError, AttributeError, NameError or KeyError); a test already green on arrival is recorded \"green on arrival\", never faked red.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Every new test is red first, with its failing lines pasted in the red commit's message (RE"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\fixe-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\fi"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, gro"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_property_grade_cell.py tests/test_property_grader.py tests/test_readiness.py tests/test_discriminate.py tests/test_grade_noguess.py tests/test_grade_diffstats.py tests/test_rework.py tests/test_e1_e2e.py on the final commit, read as 0 failed and 0 XPASS; uv run python tools/mutate_check.py with tests/mutations/property.json, one run, never --touched; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that wai"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit named paths only, with AGENT_SESSION=x-fixe-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit named paths only, with AGENT_SESSION=x-fixe-e1e4 inline on every commit and coord c"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split or served-model-failed), the red SHAs, the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), your context sample at each item, the mutant result, and each applicability sentence. Report your served model id on the first line of your final message.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your closing audit entry, written through audit-log.py, carries the dispatch start and end"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "every src/ file but grade/property.py (the check-less evidence write only), discriminate.py (the double-run item call sites only) and readiness.py (comparable_cells only, if F1 does not suffice); grade/noguess.py, grade/diffstats.py and grade/rework.py (a needed change is a seam request); bench_check.py and the loopback path; every task folder and record; the design docs.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "every src/ file but grade/property.py (the check-less evidence write only), discriminate.p"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the whole suite and mutate_check --touched (the Leader's); never kill a process by name or"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree C:\\Projects\\x-harness-x-model-bench-build-eval-x-fixe on build/eval-x-fixe from the integration head holding join-x-lb1; grade/property.py (the check-less evidence write), discriminate.py (the double-run call sites), readiness.py (comparable_cells only, if needed), tests/test_property_grade_cell.py, tests/test_discriminate.py, tests/mutations/property.json (one mutant), docs/plans/eval-x-fixe.md and its HTML (create-only), docs/docs-index.js (derive only)",
+          "deadline": "2,400 s",
+          "fallback": "the Leader's decision after hand-back; the worker launches, spawns or messages nothing (FALLBACK-A)",
+          "join_rule": "the R-104 worker gate; the Leader joins into integrate/e2e4-18 before X-CV, re-runs one red SHA, confirms no second correctness run, the noguess, diffstats and rework helpers unchanged, the F1 mutant killed, and every double-run item's applicability sentence present; grade/ changes, so a gate ring",
+          "per_branch_exit": "F1 and F2 commits and the plan record on build/eval-x-fixe, or a hand-back by the split rule with the open items named",
+          "termination": "one turn",
+          "transient_retry": "0",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens; split rule (CEIL-A): start no item above floor 73k + 60k = 133k; hand-back point at the first boundary above 133k; hard stop at 170k; unreadable means hand back after F1",
+          "done_when": [
+            "Base: build/eval-x-fixe, which the Leader creates from the integration head (integrate/e2e4-18) at dispatch, never main. Stop and report, before any edit, if git log --oneline --grep=join-x-lb1 prints nothing (X-LB1 has not joined; grade/property.py is its file until then), if git status --short prints anything, or if git grep -n \"def comparable_cells\" -- src/harness_bench/readiness.py does not print exactly one line.",
+            "The rule that binds, quoted from W0 section 7, R-90 condition 3: \"The property evidence records `hidden_tests_pass` and `hidden_tests_ms` per tree (section 3). One function, X-E's `readiness.hidden_test_disagreements(run_dir, grading_id) -> list[str]` ... compares the final tree's `hidden_tests_pass` with the pass's own `pass_at_1` row for the same cell.\" Condition 4: \"The strategy helpers (`grade/rework.py`, `grade/noguess.py`, `grade/diffstats.py`) are called by `property.grade_cell` and never registered in `GRADERS`.\" So the condition covers check-less tasks, which the property grader also grades. The gap, read on the integration head at a797652f: a check-based property.json carries a top-level hidden_tests_pass (grade/property.py:518); a check-less one carries only strategy.<name> sections (write_section, grade/property.py:532-548), where noguess.py:424 and diffstats.py:191 and :227 nest hidden_tests_pass and rework.py writes none; readiness.comparable_cells (readiness.py:653-665) reads the top-level key, so a check-less cell reads None; and discriminate.py calls comparable_cells and unbiased_failures only inside _evidence_items, which runs only when readiness.is_check_based(task) (discriminate.py:193-198 and :375-381). Line numbers are the base's; read them again at yours.",
+            "F1, red first: the property grader writes the top-level hidden_tests_pass {value, reason} and hidden_tests_ms into a check-less property.json, from the one correctness run the strategy already made (R-90 condition 2: one definition, correctness.grade, per graded tree), never a second run and never a copy of pass_at_1. A strategy that does not run the hidden tests (rework.py today) is a finding with its file and line, not a new run. The test, in tests/test_property_grade_cell.py: a check-less cell graded through the real property.grade_cell has a top-level hidden_tests_pass equal to its strategy section's value (red today: the key is absent). Mutant: the top-level write deleted (added to tests/mutations/property.json; never --touched).",
+            "F2, red first: discriminate runs the double-run items for a check-less task too: comparable_cells (hidden tests disagree with pass_at_1, or a side is NA) for every task, and unbiased_failures and the evidence-presence items only where they apply. For each item that cannot apply to the check-less shape (for example a span check where a check-less pass records no spans), write one sentence with its reason in the plan record; it is a finding, never a silent skip. The test, in tests/test_discriminate.py: a check-less task fixture whose hidden-test value disagrees with pass_at_1 yields the HB-RDY-011 item \"hidden tests disagree with pass_at_1 in <label>\" (red today: no item). readiness.comparable_cells needs no change once F1 lands; if it does, the change is the smallest that reads the same top-level key.",
+            "The context split rule (CEIL-A, measured): start no K-item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first K-item: 53,951 to 72,513 (one reading of 120,392 after reading model files first), so the floor is 73k; expected work per item 60k (the largest measured K-item); start no item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each item and each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-fixe-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never a whole design file; send test output to a file and read only its summary. The order is F1, F2, the plan record; your hand-back point is the first boundary above 133k; at 170k start no new edit or gate, write the closing audit entry and hand back with the open items named; if the figure cannot be read, record \"not recorded\" and hand back after F1.",
+            "The plan record: write docs/plans/eval-x-fixe.md and its HTML (python docs/ai-forward-pack/scripts/render-markdown.py), create-only, in its own commit (pre-granted): each item, its red SHA with the failing lines, its green SHA, the mutant result, and the applicability sentence for each double-run item on the check-less shape. Regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted). Run docs-graph.py validate before the hand-back and read its findings, not only its exit.",
+            "Every new test is red first, with its failing lines pasted in the red commit's message (RED-C: never ImportError, AttributeError, NameError or KeyError); a test already green on arrival is recorded \"green on arrival\", never faked red.",
+            "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\fixe-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).",
+            "Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report.",
+            "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_property_grade_cell.py tests/test_property_grader.py tests/test_readiness.py tests/test_discriminate.py tests/test_grade_noguess.py tests/test_grade_diffstats.py tests/test_rework.py tests/test_e1_e2e.py on the final commit, read as 0 failed and 0 XPASS; uv run python tools/mutate_check.py with tests/mutations/property.json, one run, never --touched; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.",
+            "Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "Commit named paths only, with AGENT_SESSION=x-fixe-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green.",
+            "Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split or served-model-failed), the red SHAs, the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), your context sample at each item, the mutant result, and each applicability sentence. Report your served model id on the first line of your final message."
+          ],
+          "fan_out_cap": "0",
+          "goal": "You are session x-fixe-e1e4 on branch build/eval-x-fixe in your own tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-fixe, harness Claude Code, model sonnet (served claude-sonnet-5-5), an Agent-tool sub-agent with no coord-runner run, one turn, 2,400 s, within 100 calls and 200k context. Fix SHAPE-A sweep row 4 (docs/lessons/defect-classes.md, SHAPE-A): the double-run guard of W0 R-90 condition 3 does not cover check-less property tasks (rework, no-guessing, simplicity). Follow docs/coordination/coordinator-log/c46.md item 5, W0 (docs/design/eval-seam-contracts.md) section 7 R-90 conditions 2-4 and section 2's check-based and check-less rule, and W1-L section 5 (docs/design/eval-property-tasks.md), all binding.",
+          "main_line_budget": "within 100 calls; 2,400 s this turn",
+          "not_in_scope": [
+            "every src/ file but grade/property.py (the check-less evidence write only), discriminate.py (the double-run item call sites only) and readiness.py (comparable_cells only, if F1 does not suffice); grade/noguess.py, grade/diffstats.py and grade/rework.py (a needed change is a seam request); bench_check.py and the loopback path; every task folder and record; the design docs.",
+            "the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours)."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.023,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M497AYSMWC95TFS6R69B678Y",
+        "raw_sha256": "6520d13d60355da017c9290dc6d800cd04584df233b053cb6742715433f67ffa",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "hidden_tests_pass"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "hidden_tests_ms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "readiness.hidden_test_disagreements(run_dir, grading_id) -> list[str"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pass_at_1"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/rework.py",
+            "reason": null,
+            "sha256": "f47b1c6c556d626395f0379c22e7b8b823708d6912392656e53328a3cb18cb3c",
+            "status": "resolved",
+            "token": "grade/rework.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/noguess.py",
+            "reason": null,
+            "sha256": "1837ee915a478ee97ec16d4dc4dd05b811dd4e0730de9a7549188114492894ef",
+            "status": "resolved",
+            "token": "grade/noguess.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/diffstats.py",
+            "reason": null,
+            "sha256": "12f7a81851c25bf1e3827c4d8c8e3fedc164e2bf979874aa275f6bc8e65f5043",
+            "status": "resolved",
+            "token": "grade/diffstats.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "property.grade_cell"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "GRADERS"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-fixe"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "6c2cff65628e25c951dba087a1f91091a33d33bf7fb6464936fa922b8df2d8ed",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordinator-log/c46.md",
+            "reason": null,
+            "sha256": "5a0c5ce5b5a10fd77c9640db1bf24a3df159b75dfa4ef87cf19e15b1c46bd28b",
+            "status": "resolved",
+            "token": "docs/coordination/coordinator-log/c46.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-seam-contracts.md",
+            "reason": null,
+            "sha256": "a2b3d71d784f767a61417688eeb755d9692447c718f0009f740cefa567078f1d",
+            "status": "resolved",
+            "token": "docs/design/eval-seam-contracts.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-property-tasks.md",
+            "reason": null,
+            "sha256": "1cb8d23b9f54d5c6bd64244e28e36b3a169e2eb39e48f973d4aacbeb606b656b",
+            "status": "resolved",
+            "token": "docs/design/eval-property-tasks.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "integrate/e2e4-18"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/property.py",
+            "reason": null,
+            "sha256": "af0c9a1d6a3b3a287cf1702b844e2db26c24622185e3d1a52ac429d7a7e7e8cd",
+            "status": "resolved",
+            "token": "grade/property.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/readiness.py",
+            "reason": null,
+            "sha256": "6376ddf47d893b4d8f971d6194824b752bf0570ee8bee370c3532e301ac9a345",
+            "status": "resolved",
+            "token": "src/harness_bench/readiness.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/property.json",
+            "reason": null,
+            "sha256": "57841a6ac199b959ea84b067f9a5854534bea1e022e5c13130a01906bb01e71d",
+            "status": "resolved",
+            "token": "property.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/property.py:518"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/property.py:532-548"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/rework.py",
+            "reason": null,
+            "sha256": "f47b1c6c556d626395f0379c22e7b8b823708d6912392656e53328a3cb18cb3c",
+            "status": "resolved",
+            "token": "rework.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/discriminate.py",
+            "reason": null,
+            "sha256": "676ba4d2e0c60c4c8f0b3b401f1a21d5bea58aec6a6d2125a7aab09a0af801c5",
+            "status": "resolved",
+            "token": "discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_property_grade_cell.py",
+            "reason": null,
+            "sha256": "4ee18be05cd5d70752f2eda255e38228d544973c902d49de4fe1b3285b22b86e",
+            "status": "resolved",
+            "token": "tests/test_property_grade_cell.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/property.json",
+            "reason": null,
+            "sha256": "57841a6ac199b959ea84b067f9a5854534bea1e022e5c13130a01906bb01e71d",
+            "status": "resolved",
+            "token": "tests/mutations/property.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_discriminate.py",
+            "reason": null,
+            "sha256": "fdf375a866929a88129870b7f93ee766a68e77403a3d68bbab6cffb3d8747281",
+            "status": "resolved",
+            "token": "tests/test_discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/plans/eval-x-fixe.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/render-markdown.py",
+            "reason": null,
+            "sha256": "1033f9bada4fc31320e4fe8590600e59b0597c40b47d43ffec44fda85c1a71d8",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/render-markdown.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/docs-index.js",
+            "reason": null,
+            "sha256": "3bd33d2973533bcd36463ca6f66d7ff93b4eef069629a5f92949c189ebd1c39c",
+            "status": "resolved",
+            "token": "docs/docs-index.js"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_identity.py",
+            "reason": null,
+            "sha256": "f6717458ec2670a1be81a7839657dfa77e4dbb2e4515e532b5daefd5d3a8a784",
+            "status": "resolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_atomic_sites.py",
+            "reason": null,
+            "sha256": "143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90",
+            "status": "resolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_arms_guard.py",
+            "reason": null,
+            "sha256": "25c45e56139c8e3a2d70d353e4b83c0386590e754c342c2ee0e1a88338ff8b73",
+            "status": "resolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_skills_in_sync.py",
+            "reason": null,
+            "sha256": "572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d",
+            "status": "resolved",
+            "token": "tests/test_skills_in_sync.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_timing_hygiene.py",
+            "reason": null,
+            "sha256": "fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6",
+            "status": "resolved",
+            "token": "tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_property_grader.py",
+            "reason": null,
+            "sha256": "0eee0101a304334f7384e96286abd88ce58b2429b91d80922bdf835ae1aca2a8",
+            "status": "resolved",
+            "token": "tests/test_property_grader.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_readiness.py",
+            "reason": null,
+            "sha256": "7f0291c4f61d6f20298d0bbf7e819aabadd46c049b3af8ed5c54745184fa34de",
+            "status": "resolved",
+            "token": "tests/test_readiness.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_noguess.py",
+            "reason": null,
+            "sha256": "0a45ecb0e66b82c8dba938c5a20c1f0416acb3c7fe9b39a74c58ca9e1d4ef663",
+            "status": "resolved",
+            "token": "tests/test_grade_noguess.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_grade_diffstats.py",
+            "reason": null,
+            "sha256": "27d76cd148ffbbaa33739277523768d32b1ea949ebc0a1537a08ae6659c3ea3f",
+            "status": "resolved",
+            "token": "tests/test_grade_diffstats.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_rework.py",
+            "reason": null,
+            "sha256": "3297dbfcf9a8aaa9af411d3c8e8a00dd90226624217a5e5435b8c10732733985",
+            "status": "resolved",
+            "token": "tests/test_rework.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_e1_e2e.py",
+            "reason": null,
+            "sha256": "4e88541c3ec799b46b64b78c21ec9d8a9671dd8f15f3bca51e21e07a73bd1942",
+            "status": "resolved",
+            "token": "tests/test_e1_e2e.py"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/audit-log.py",
+            "reason": null,
+            "sha256": "d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4",
+            "status": "resolved",
+            "token": "audit-log.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/readiness.py",
+            "reason": null,
+            "sha256": "6376ddf47d893b4d8f971d6194824b752bf0570ee8bee370c3532e301ac9a345",
+            "status": "resolved",
+            "token": "readiness.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/bench_check.py",
+            "reason": null,
+            "sha256": "810d2f729a14c3f8cbb1a11a7cc43cdcb0dc4838e09341434c14b22ea5f41c3e",
+            "status": "resolved",
+            "token": "bench_check.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M497FFV98G1HQZTECTDWJEWK",
+      "shortname": "c46-recompile-compiled-mode",
+      "datetime": "2026-10-06T18:26:40Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Leader resume 3: recompile X-K1d and X-RS in compiled mode (RUN-COMPILE), Ruling 111 condition 2 clause, compile X-FIXE, register CONSUME-A, IDEM-A, HOOK-A, c46 addendum, gates, commit, session end",
+      "summary": "Coordinator #46 third resume (claude-opus-5-5). Merged integrate/e2e4-18 (e150a898) as a797652f. CONSUME-A: my K1d and X-RS compiles were skeleton --no-model (mode not-compiled, compiled false) and coord-runner refused them (RUN-COMPILE). Recompiled in compiled mode, each replayed with check_compile.py (doc is dict True, mode compiled, check_schema None, verify_document []): X-K1d al-01M4975PYWE34AA9Q9M0AJ112W (same raw al-01M496437GQKCC4ZT624BPQRD8; x-k1.contract.json prompts only); X-RS ready turn al-01M4977CYX2E9M591K5ZGP7HXH (raw al-01M4976ZGFK7Q93MPZ7JQC53ZR; Ruling 111 condition 1 (i)-(vii) quoted, K5 absorbs g-lost-then-grow and growid); X-FIXE al-01M497AZPCS6F5KBCZ36RX6VS9 (raw al-01M497AYSMWC95TFS6R69B678Y; SHAPE-A row 4, F1 check-less top-level hidden_tests_pass, F2 discriminate double-run items for both shapes; names free). Register: CONSUME-A, IDEM-A, HOOK-A. W1-L Erratum 4 and IDEM-A's RS1 sweep owed at the X-RS join. Gates derive 0, validate 0, verify-ruling-citations 0 (111/111). Tokens: not recorded.",
+      "kind": "skill",
+      "skill": "compile",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/coordination/coordinator-log/c46.md",
+        "docs/coordination/eval-wave2-e234/x-k1.contract.json",
+        "docs/lessons/defect-classes.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Dispatchable compiled-mode compiles for X-K1d, X-RS ready turn and X-FIXE, each replayed with check_compile.py; three classes registered",
+      "done_when": "check_compile.py prints mode compiled and empty verify for each id; gates exit 0; commit; session ended",
+      "tier": "T2",
+      "fan_out": 0,
+      "started_at": "2026-10-06T18:20:22Z",
+      "duration_seconds": 378.0
     }
   ],
   "changes": [

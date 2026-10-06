@@ -4625,7 +4625,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5a0c5ce5b5a10fd77c9640db1bf24a3df159b75dfa4ef87cf19e15b1c46bd28b"
+      "sourceSha256": "900fa7a0c7895476fade59ccab3c01f1a93dccca122af1a10e614e8945cbc68c"
     },
     {
       "id": "defect-classes",
@@ -4654,7 +4654,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "6c2cff65628e25c951dba087a1f91091a33d33bf7fb6464936fa922b8df2d8ed"
+      "sourceSha256": "9e8df0212142f93b1ab8d28aa22e73c33025b22f6503848333f2f74dd9f53b7b"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -5286,6 +5286,37 @@ window.DOCS_INDEX = {
         }
       ],
       "sourceSha256": "dea52505a23a09591be87e66b2af6bb89773109da066f4d56c16824bbf38c5fe"
+    },
+    {
+      "id": "plan-eval-x-lb1",
+      "path": "docs/plans/eval-x-lb1.md",
+      "title": "X-LB1: the loopback fake, shape (b) path and readiness pointers",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-20",
+      "reviewSuggested": [],
+      "summary": "K1 listener and K2 shape (b) grading path (part 1), K3 readiness shape rule and property.json pointers, K4 an RS-shaped discriminate fixture (part 2).",
+      "tags": [
+        "evaluation",
+        "loopback",
+        "execution-plan"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "Bounded graph",
+          "mermaid": "graph LR\n K1 --> K2\n K2 --> K3a\n K2 --> K3b\n K3a --> K4\n K3b --> K4\n K4 --> G"
+        }
+      ],
+      "sourceSha256": "3b773f882e6785193cba426f9f35e9e90405fe421ef4cbbef3d82fbb05163613"
     },
     {
       "id": "proof-phase2",
@@ -9772,6 +9803,14 @@ window.DOCS_INDEX = {
       "artifactId": "plan-eval-x-k1c"
     },
     {
+      "id": "surface-plans-eval-x-lb1",
+      "path": "docs/plans/eval-x-lb1.html",
+      "title": "Eval X Lb1",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-lb1"
+    },
+    {
       "id": "surface-case-study",
       "path": "docs/case-study.html",
       "title": "From Specification to Implementation: An AI-Forward Case Study",
@@ -9818,5 +9857,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "a5ee3a260083fcb6c60028cb13a01ba24370449e23e6a34067891371d83da917"
+  "graphSha256": "39ef78476d138ebd766ba0e17fc2c3e31f2491da4c55d7a9ced87445a4ad29fd"
 };
