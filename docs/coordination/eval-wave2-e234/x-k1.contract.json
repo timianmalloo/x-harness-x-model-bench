@@ -1,12 +1,12 @@
 {
   "schema": "coord-run/1",
-  "run_id": "w2-k1b-e1e4",
+  "run_id": "w2-k1c-e1e4",
   "owner": "leader-e1e4",
   "parallelism": 1,
   "workers": [
     {
-      "session": "x-k1b-e1e4",
-      "branch": "build/eval-x-k1b",
+      "session": "x-k1c-e1e4",
+      "branch": "build/eval-x-k1c",
       "harness": "codex",
       "transport": "acp",
       "argv": [
@@ -42,9 +42,9 @@
         "permissions": "observed-only"
       },
       "prompts": [
-        "al-01M48EJ43H52XWAWRRK027MR5D"
+        "al-01M48NZQTY6QWZS82WQ1SECXNE"
       ],
-      "fallback": "the Leader's decision after hand-back; the worker launches, spawns or messages nothing (FALLBACK-A). Turns c and d reuse this contract with their suffix, each with its own compilation (Coordinator #39's split in x-k1.md)"
+      "fallback": "the Leader's decision after hand-back; the worker launches, spawns or messages nothing (FALLBACK-A). Turn d reuses this contract with its suffix and its own compilation (Coordinator #39's split in x-k1.md)"
     }
   ]
 }
