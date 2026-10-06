@@ -282,7 +282,9 @@ def cmd_run(args) -> int:
         raise BenchError("HB-PLN-004", f"bench run needs a measurement plan; plan kind is {kind}. Run it through bench discriminate.")
     plan.require_run_parameters(p)
     if (run_dir / "events").exists():
-        raise BenchError("HB-USR-002", f"run {args.run_id} has already started; phase 1 re-runs under a new run id")
+        from harness_bench import resume
+
+        return resume.resume_run(run_dir, root, p, None).exit_code
     for task_id, t in p["tasks"].items():
         if plan.task_version_hash(root / "tasks" / task_id) != t["version_hash"]:
             raise BenchError("HB-USR-002", f"task {task_id} changed since the plan; plan a new run")
