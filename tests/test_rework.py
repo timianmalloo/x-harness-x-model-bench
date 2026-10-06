@@ -385,3 +385,47 @@ def test_discriminate_writes_the_two_turn_record_matching_its_declared_expected(
         assert record["readiness_failures"] == []
     finally:
         shutil.rmtree(base, onexc=archive.make_writable)
+
+
+def _evidence_inp(tmp_path: Path, n_turns_ended: int) -> CellInput:
+    cid = "c1"
+    ended = tuple({"kind": "cell.turn_ended", "cell_id": cid, "turn": n, "next": "stop"} for n in range(1, n_turns_ended + 1))
+    inp = CellInput(
+        run_dir=tmp_path / "run",
+        root=tmp_path,
+        plan={"parameters": {"grading_step_timeout": 30.0}, "tasks": {"RW1": {"turns": [{"n": 2, "prompt": "turn2"}]}}},
+        cell={"cell_id": cid, "task": "RW1"},
+        task={"property": {"name": "rework", "ceilings": {"rework_ratio": "0.3000"}}},
+        task_dir=tmp_path / "tasks" / "RW1",
+        archive=tmp_path / "run" / "archive" / cid / "attempt-1",
+        out_dir=tmp_path / "run" / "grading" / cid / "property",
+        events=ended,
+        record_reason=None,
+        model_calls=(),
+        tool_calls=(),
+        turn_usage=(),
+        metrics={"rework_ratio": {}, "property_check_pass": {}, "turn1_tests_pass": {}, "not_a_rework_score": {}},
+        allow_model_calls=False,
+        extraction=None,
+        prices=None,
+        work_root=tmp_path / "work",
+    )
+    inp.out_dir.mkdir(parents=True, exist_ok=True)
+    return inp
+
+
+def _assert_every_score_points_at_the_section(inp: CellInput, scores) -> None:
+    pointer = (inp.out_dir / "property.json").relative_to(inp.run_dir).as_posix()
+    assert (inp.out_dir / "property.json").is_file()
+    assert set(scores) == set(inp.metrics)
+    assert {k: v.evidence for k, v in scores.items()} == dict.fromkeys(inp.metrics, pointer)
+
+
+def test_rework_ratio_branch_scores_carry_the_section_pointer(tmp_path: Path):
+    inp = _evidence_inp(tmp_path, 2)
+    _assert_every_score_points_at_the_section(inp, rework.grade(inp, GradeContext(30.0)))
+
+
+def test_rework_turn2_not_reached_scores_carry_the_section_pointer(tmp_path: Path):
+    inp = _evidence_inp(tmp_path, 1)
+    _assert_every_score_points_at_the_section(inp, rework.grade(inp, GradeContext(30.0)))
