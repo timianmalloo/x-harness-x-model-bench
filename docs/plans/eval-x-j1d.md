@@ -2,6 +2,8 @@
 id: plan-eval-x-j1d
 title: X-J1d readers and conformance dispatch
 type: doc
+status: active
+summary: J1d readers and conformance execution graph with red-first proof and native context checkpoints.
 owner: x-j1d-e1e4
 tags: [evaluation, coordination]
 links:
