@@ -40,9 +40,9 @@
         "permissions": "observed-only"
       },
       "prompts": [
-        "al-01M488T3QEGYJ0TBSVHKRMDXTM"
+        "al-01M48P1TDE2VZ8VZHQMMJ21RYZ"
       ],
-      "fallback": "A launch or transport failure before the first prompt (XPORT-A) runs the same compile as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) in this worker's tree under the same session; a red-only end, a deadline, a split-rule hand-back or a failed served-model read runs the green follow-on as that Sonnet sub-agent in this tree (R-87 Option 1). K2a ran on Grok from x-k2a.contract.json (joined, 0a51d825)"
+      "fallback": "the Leader's decision after hand-back; the worker launches, spawns or messages nothing (FALLBACK-A). K2a ran on Grok from x-k2a.contract.json (joined, 0a51d825)"
     }
   ]
 }

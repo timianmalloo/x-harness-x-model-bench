@@ -373,13 +373,6 @@ def _run_and_record(root: Path, task_id: str, task: dict, run_dir: Path, p: dict
     expected = task.get("expected") or {}
     items = _untrustworthy(scores, expected)
     check_based = readiness.is_check_based(task)
-    if not check_based:
-        # assume: grade/rework.py discards the pointer `write_section` returns, so a rework score row carries no evidence
-        # and `pointers` holds no entry; the file is at its fixed place `grading/<grading id>/<cell>/property/property.json`
-        # (grade/runner.py:346,369). Confirm: a rework row with `evidence`. Breaks if false: the path moves and a variant
-        # that declares clauses is HB-RDY-011 (fail closed). Seam request: rework.py returns the pointer (as diffstats.py:194).
-        for c in p["cells"]:
-            pointers.setdefault(combo_role[c["combo"]], f"grading/{grading_id}/{c['cell_id']}/property/property.json")
     found: dict = {}
     if check_based:
         labels = {c["cell_id"]: c["label"] for c in p["cells"]}

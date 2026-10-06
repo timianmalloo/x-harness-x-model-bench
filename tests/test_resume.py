@@ -287,7 +287,6 @@ def _action(actions, cid):
 # ---------------------------------------------------------------- the exhaustive net
 
 @pytest.mark.parametrize("i,name", [(i + 1, n) for i, n in enumerate(PREFIXES)] + [(7, "W7_next_stop")])
-@pytest.mark.xfail(strict=True, reason="K1b: resume.classify (W1-K K4) turns the sweep green")
 def test_every_ledger_prefix_matches_the_adr_table(golden1, i, name):
     classify = _need(resume, "classify")
     assert len(golden1.rows) == N1, "the golden ledger changed: recount N1"
@@ -301,7 +300,6 @@ def test_every_ledger_prefix_matches_the_adr_table(golden1, i, name):
         assert got == table[key], f"prefix {i} ({key}), stopped={stopped}: {got} != {table[key]}"
 
 
-@pytest.mark.xfail(strict=True, reason="K1b: resume.classify (W1-K K4) turns the sweep green")
 def test_every_two_cell_ledger_prefix_matches_the_adr_table(golden2):
     classify = _need(resume, "classify")
     assert len(golden2.rows) == N2, "the two-cell golden ledger changed: recount N2"
@@ -935,7 +933,6 @@ def test_abandoned_set_equals_unsealed_engine_facts(golden1, tmp_path):
 
 # ---------------------------------------------------------------- one definition of "completed" and of "work left"
 
-@pytest.mark.xfail(strict=True, reason="K1b: views.completed (D-K5, W1-K K3) is the one definition")
 def test_completed_has_one_definition():
     _need(views, "completed")  # D-K5: complete iff a run.completed row follows the last run.resumed
     root = Path(__file__).resolve().parents[1] / "src"
@@ -956,19 +953,106 @@ def test_finished_stop_is_silent(golden5):  # R-102: a C7 cell in the fixture
     assert _need(resume, "has_work")(golden5.plan, rows) is False
 
 
-@pytest.mark.xfail(strict=True, reason="K1b: the real resume.has_work (W1-K K4)")
 def test_alarm_fires_after_crash_in_grading(golden1):
     rows = golden1.rows[:14]  # every cell archived, no run.completed
     assert _need(resume, "has_work")(golden1.plan, rows) is True
 
 
-@pytest.mark.xfail(strict=True, reason="K1b: the real resume.has_work (W1-K K4)")
 def test_alarm_fires_after_crash_before_last_archive(golden1):
     rows = golden1.rows[:12]  # outcome recorded, cell.archived absent
     assert _need(resume, "has_work")(golden1.plan, rows) is True
 
 
-@pytest.mark.xfail(strict=True, reason="K1b: the real resume.has_work (W1-K K4)")
 def test_launch_stop_alarms(golden2):
     rows = [golden2.rows[0], ledger.stamp({"kind": "run.launch_stopped", "code": "HB-RUN-004", "reason": "disk low"})]
     assert _need(resume, "has_work")(golden2.plan, rows) is True
+
+
+@pytest.mark.parametrize("kinds,expected", [
+    ([], False), (["run.completed"], True), (["run.completed", "run.resumed"], False),
+    (["run.completed", "run.resumed", "run.completed"], True),
+    (["run.completed", "run.resumed", "run.completed", "run.resumed"], False),
+])
+def test_completed_uses_the_latest_resume_boundary(kinds, expected):
+    assert _need(views, "completed")([{"kind": kind} for kind in kinds]) is expected
+
+
+def test_segment_rows_keeps_engine_segments_and_filters_dead_grading(tmp_path):
+    run_dir = tmp_path / "segments"
+    for sid in ("engine-1", "engine-1-r001", "grade-dead", "grade-done"):
+        with ledger.SegmentWriter.create(run_dir / "events", sid) as writer:
+            kind = "grading.completed" if sid == "grade-done" else "run.started"
+            writer.append(ledger.stamp({"kind": kind, "grading_id": sid}))
+            if sid == "grade-done":
+                writer.seal()
+    grouped = _need(views, "segment_rows")(run_dir, "events")
+    assert [sid for sid, _ in grouped] == ["engine-1", "engine-1-r001", "grade-done"]
+    assert [row for _, segment in grouped for row in segment] == views.rows(run_dir, "events")
+
+
+def test_load_reads_completion_after_a_resume(golden1, tmp_path):
+    run_dir = tmp_path / "run"
+    shutil.copytree(golden1.run_dir, run_dir)
+    assert views.load(run_dir, any_kind=True).completed is True
+    first = views.segment_paths(run_dir, "events")[0].stem
+    sid = first + "-r001"
+    with ledger.SegmentWriter.create(run_dir / "events", sid) as writer:
+        writer.append(ledger.stamp({"kind": "run.resumed", "segment_id": sid}))
+    assert views.load(run_dir, any_kind=True).completed is False
+    assert views.load(golden1.run_dir, any_kind=True).completed is True  # the shared golden ledger stays immutable
+
+
+@pytest.mark.parametrize("fault", ["none", "cut", "count", "head", "sealed", "missing", "broken"])
+def test_hand_built_abandoned_engine_segment_pins_its_head(golden1, tmp_path, fault):
+    env = _materialize(golden1, tmp_path, golden1.rows[:1])
+    sid = golden1.stems["events"] + "-r001"
+    path = env.run_dir / "events" / f"{sid}.jsonl"
+    with ledger.SegmentWriter.create(env.run_dir / "events", sid) as writer:
+        writer.append(ledger.stamp({"kind": "run.resumed", "segment_id": sid}))
+        writer.append(ledger.stamp({"kind": "run.launch_stopped", "code": "HB-RUN-004"}))
+    report = ledger.verify_segment(path)
+    marker = {"kind": "segment.abandoned", "code": "HB-LED-004", "fact": "events", "segment_id": sid,
+              "line_count": report.lines, "head_hash": report.head_hash, "error": "unsealed engine"}
+    if fault == "count":
+        marker["line_count"] += 1
+    if fault == "head":
+        marker["head_hash"] = "0" * 64
+    with ledger.SegmentWriter.create(env.run_dir / "events", golden1.stems["events"] + "-r002") as writer:
+        writer.append(ledger.stamp(marker))
+    if fault == "cut":
+        path.write_bytes(path.read_bytes().splitlines(keepends=True)[0])  # still a sound chain, but cut by one row
+    elif fault == "sealed":
+        with ledger.SegmentWriter.reopen(path) as writer:
+            writer.seal()
+    elif fault == "missing":
+        path.unlink()
+    elif fault == "broken":
+        lines = path.read_bytes().splitlines(keepends=True)
+        row = json.loads(lines[0])
+        row["hash"] = "0" * 64
+        path.write_bytes(ledger.canonical(row) + b"\n" + b"".join(lines[1:]))
+    errors = [finding for finding in views.verify(env.run_dir) if finding.level == "error"]
+    if fault == "none":
+        assert errors == []
+    else:
+        assert any(finding.code == "HB-LED-002" and sid in finding.message for finding in errors), errors
+
+
+# ---------------------------------------------------------------- K4: the stop predicate (D-K4) and has_work clause 1
+
+@pytest.mark.parametrize("row,expected", [
+    ({"kind": "run.stopped"}, True),
+    ({"kind": "control.applied", "control": "stop", "effect": "applied"}, True),
+    ({"kind": "decision.resolved", "option": "stop"}, True),
+    ({"kind": "run.launch_stopped", "code": "HB-RUN-004"}, False),
+    ({"kind": "control.applied", "control": "stop", "effect": "ignored"}, False),
+    ({"kind": "control.applied", "control": "continue", "effect": "applied"}, False),
+    ({"kind": "decision.resolved", "option": "continue"}, False),
+])
+def test_stop_recorded_reads_the_three_rows(row, expected):
+    assert _need(resume, "stop_recorded")([{"kind": "run.started"}, row]) is expected
+
+
+def test_has_work_while_a_launched_cell_has_no_outcome(golden1):
+    rows = golden1.rows[:5]  # launch_intent recorded, no outcome, no run.completed
+    assert _need(resume, "has_work")(golden1.plan, rows) is True

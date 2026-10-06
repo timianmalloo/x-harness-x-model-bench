@@ -36,7 +36,7 @@ from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 
-from harness_bench import archive, ledger, profiles
+from harness_bench import archive, ledger, lifecycle, profiles
 from harness_bench.errors import BenchError, Cause
 from harness_bench.plan import cell_arm, kind_of, load_confirmed, resolved_model_map
 from harness_bench.telemetry import (
@@ -84,18 +84,28 @@ def completed_passes(run_dir: Path) -> set[str]:
     return set(_completions(run_dir))
 
 
-def rows(run_dir: Path, fact: str) -> list[dict]:
-    """Verified rows of the engine's segments and of completed grading passes, in segment order."""
+def segment_rows(run_dir: Path, fact: str) -> list[tuple[str, list[dict]]]:
+    """Verified engine and completed-pass rows, retaining each segment's identity and order."""
     done = completed_passes(run_dir)
-    out: list[dict] = []
-    for path in segment_paths(run_dir, fact):
+    out: list[tuple[str, list[dict]]] = []
+    for path in sorted(segment_paths(run_dir, fact), key=lambda path: path.stem):
         sid = path.stem
         if sid.startswith(GRADE_PREFIX) and sid not in done:
             continue
         if not sid.startswith((ENGINE_PREFIX, GRADE_PREFIX)):
             raise BenchError("HB-LED-002", f"{fact}/{path.name}: no known writer for this segment")
-        out.extend(ledger.read_segment(path))
+        out.append((sid, ledger.read_segment(path)))
     return out
+
+
+def rows(run_dir: Path, fact: str) -> list[dict]:
+    """Verified rows of the engine's segments and of completed grading passes, in segment order."""
+    return [row for _, segment in segment_rows(run_dir, fact) for row in segment]
+
+
+def completed(events: list[dict]) -> bool:
+    """Completion belongs to the latest resume (D-K5); the one definition is lifecycle.completed."""
+    return lifecycle.completed(events)
 
 
 @dataclass(frozen=True)
@@ -552,8 +562,7 @@ def load(run_dir: Path, catalog_version: str | None = None, *, any_kind: bool = 
     _refuse_duplicates(facts)
     grading_id, catalog = _current_pass(facts["events"], catalog_version)
     cells = [_cell_view(plan, c, facts, grading_id) for c in plan["cells"]]
-    completed = any(e["kind"] == "run.completed" for e in facts["events"])
-    return RunView(plan["run_id"], plan, completed, grading_id, catalog, cells, _header(facts["events"]))
+    return RunView(plan["run_id"], plan, completed(facts["events"]), grading_id, catalog, cells, _header(facts["events"]))
 
 
 def build_label(harness: str, version: str) -> str:
@@ -668,9 +677,11 @@ def verify(run_dir: Path) -> list[Finding]:
     integrity failure; a warning is not."""
     out: list[Finding] = []
     done = completed_passes(run_dir)
+    reports: dict[tuple[str, str], ledger.SegmentReport] = {}
     for fact in FACTS:
         for path in segment_paths(run_dir, fact):
             report = ledger.verify_segment(path)
+            reports[fact, path.stem] = report
             if report.error:
                 out.append(Finding("HB-LED-002", "error", f"{fact}/{path.name}: {report.detail}"))
             elif path.stem.startswith(GRADE_PREFIX) and path.stem not in done:
@@ -681,6 +692,21 @@ def verify(run_dir: Path) -> list[Finding]:
     if any(f.level == "error" for f in out):
         return out
     out += _sealed_record(run_dir)
+    if any(f.level == "error" for f in out):
+        return out
+    try:
+        events = rows(run_dir, "events")
+    except BenchError as exc:
+        return [*out, Finding(exc.code, "error", exc.message)]
+    for row in events:
+        sid = row.get("segment_id")
+        if row["kind"] != "segment.abandoned" or not isinstance(sid, str) or not sid.startswith(ENGINE_PREFIX):
+            continue
+        fact = row.get("fact")
+        report = reports.get((fact, sid))
+        if (report is None or report.error or report.sealed
+                or report.lines != row.get("line_count") or report.head_hash != row.get("head_hash")):
+            out.append(Finding("HB-LED-002", "error", f"{fact}/{sid}: abandoned engine segment does not match its unsealed head and line_count"))
     if any(f.level == "error" for f in out):
         return out
     try:

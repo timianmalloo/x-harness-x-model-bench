@@ -167,10 +167,11 @@ def host_failures(root: Path, task_id: str, task: Mapping, body: Mapping) -> lis
     return out
 
 
-def variant_failures(declared: Mapping[str, dict], body: Mapping) -> list[Failure]:
-    """The variant compare (O2): assertions (1) hidden tests pass, (2) the deliverable ran (check-based), (3) the flipped
-    set equals the declared one, (4) the deciding clauses equal the declared ones. One failure per variant. A declared
-    variant absent from the record is HB-RDY-001."""
+def variant_failures(declared: Mapping[str, dict], body: Mapping, *, check_based: bool) -> list[Failure]:
+    """The variant compare (O2): assertions (1) hidden tests pass (check-based task), (1') for a check-less task hidden
+    tests pass unless property_check_pass is a declared flip (R-109), (2) the deliverable ran (check-based), (3) the
+    flipped set equals the declared one, (4) the deciding clauses equal the declared ones. One failure per variant. A
+    declared variant absent from the record is HB-RDY-001."""
     recorded, out = body.get("variants") or {}, []
     for name, entry in declared.items():
         got = recorded.get(name)
@@ -179,7 +180,10 @@ def variant_failures(declared: Mapping[str, dict], body: Mapping) -> list[Failur
             continue
         why = []
         if got.get("hidden_tests_pass") != 1:
-            why.append("hidden tests do not pass (1)")
+            if check_based:
+                why.append("hidden tests do not pass (1)")
+            elif "property_check_pass" not in entry["flips"]:
+                why.append("hidden tests do not pass and the primary is not a declared flip (1')")
         if "deliverable" in got and got["deliverable"] != "ran":
             why.append(f"deliverable {got['deliverable']!r}, not 'ran' (2)")
         if sorted(got.get("flips") or []) != sorted(entry["flips"]):
@@ -199,7 +203,7 @@ def body_failures(root: Path, task_id: str, body: Mapping) -> list[Failure]:
         declared = variants(root, task_id)
     except BenchError as exc:
         return [*out, Failure("HB-RDY-005", "variants.py", exc.message)]
-    return out + variant_failures(declared, body)
+    return out + variant_failures(declared, body, check_based=is_check_based(task))
 
 
 def _read_record(path: Path) -> dict | None:

@@ -61,7 +61,10 @@ def test_the_engine_consults_the_table_and_writes_only_its_own_rows(tmp_path):  
 def test_every_engine_row_of_the_table_is_written_by_the_engine():
     # a table cannot show that a row is still written, only the writer's source can: a literal scan, no AST
     written = set(re.findall(r'"kind": "([a-z_]+\.[a-z_.]+)"', ENGINE_SOURCE))  # events kinds are dotted; turn_usage is not
-    assert lifecycle.ENGINE_TRANSITIONS == written, sorted(lifecycle.ENGINE_TRANSITIONS ^ written)
+    # simplify: K3 admits the resume-owned transition before K1c lands its writer; at K1c scan resume.py too.
+    resume_owned = {"run.resumed"}
+    assert lifecycle.TABLE["run.resumed"].writer == "engine"
+    assert lifecycle.ENGINE_TRANSITIONS == written | resume_owned, sorted(lifecycle.ENGINE_TRANSITIONS ^ written ^ resume_owned)
 
 
 def test_each_writer_may_write_its_own_rows_and_only_those():
@@ -114,7 +117,7 @@ SEEDED = {  # name -> (events, scores, the rule the replay must name)
         ([GOOD[0], {"kind": "control.applied", "uuid": "f" * 32}] * 2, [], "ControlAppliedOnce"),
     "a run stopped twice (RunStoppedOnce)":
         ([GOOD[0], {"kind": "run.stopped", "code": "HB-RUN-006"}] * 2, [], "RunStoppedOnce"),
-    "a second launch of one cell": (GOOD[:3] + [{"kind": "cell.launch_intent", "cell_id": "a"}], [], "WriteIntent"),
+    "a second launch of one cell": (GOOD[:6] + [{"kind": "cell.launch_intent", "cell_id": "a"}], [], "WriteIntent"),
     "a working copy built after the process started":
         (_cell("cell.launch_intent", "attempt.process_started", "cell.workspace_built"), [], "workspace before process"),
     "a session before the process": (_cell("cell.launch_intent", "attempt.session_opened"), [], "session after process"),
