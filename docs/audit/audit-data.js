@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T09:43:44Z",
+  "generated": "2026-10-06T09:44:02Z",
   "audit": [
     {
       "actor": null,
@@ -96849,12 +96849,1820 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M489HZFY53XQXC1Z8CSSF1ET",
-      "shortname": "join-x-a3c",
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
       "datetime": "2026-10-06T09:43:44Z",
-      "session": "leader-e1e4",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "duration_seconds": 1751.0,
+      "fan_out": 0,
+      "goal": "Join X-A3c into integrate/e2e4-18",
+      "id": "al-01M489HZFY53XQXC1Z8CSSF1ET",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "the join of build/eval-x-a3c into integrate/e2e4-18",
+      "session": "leader-e1e4",
+      "shortname": "join-x-a3c",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "execute-with-coordination",
+      "started_at": "2026-10-06T09:14:33Z",
       "summary": "X-A3c: planned Agy; ran Sonnet (claude-sonnet-5-5); reason R-108. Three Sonnet turns (planned context splits): K1 518bb08f, K2 ea068257 + 4758b1c6, K3+K4 186ad7da; Leader red re-run at ea068257 (3 assertion + 1 TypeError); goldens byte-identical; grep HB-PLN-005|plan_pack( empty; board.json + plan.json all killed; seam req-01M485A8H0VSXN6YGZX98RF21S (cli/workspace pack hits); test_identity filters the retired W0 row recount_seconds=1750 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-06T09:27:54Z",
+      "id": "al-01M488MZPTFB5VG6835480FEA4",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-k1a-e1e4 on branch build/eval-x-k1a, harness Codex, model gpt-6.1-sol with model_reasoning_effort high, run w2-k1a-e1e4, deadline 3,300 s, one turn, context ceiling 200k. Build dispatch K1a of X-K1, the resume engine's first turn, following docs/coordination/eval-wave2-e234/x-k1.md (owned paths, acceptance items, the Coordinator #39 turn split and errors.py rows), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md, W1-K rev 1.2 (docs/design/eval-resume.md sections 2, 3.1, 4, 9, 12 and 13) and W0 rev 6.13 (docs/design/eval-seam-contracts.md sections 11, 12 R6.9b and R6.12a, 13 the cli.py, views.py, errors.py and PLANNED rows), all binding.\nBase: the integration head after the X-A3c join (integrate/e2e4-18), never main. Stop and report if git merge-base --is-ancestor 1a837a5d HEAD exits non-zero (X-J1e's join is not in the base) or if git merge-base --is-ancestor 186ad7da HEAD exits non-zero (X-A3c's K3 and K4 are not in the base), or if git grep -n \"HB-PLN-005\" -- src prints anything.\nThe context split rule, re-sized from measured turns: J1c reached 230k with no split; J1d sampled 107k at K3; J1e sampled 128k at K2; X-A3c's three Sonnet turns each reached about 115k-125k after one or two K-items, so one K-item costs 17k to about 60k. Sample your context from payload.info.last_token_usage.input_tokens of the last token_count event in your own Codex rollout file: before each K-item, before each gate command, and before reading any file longer than 300 lines. Read only line ranges (sed -n, grep -n), never a whole design file; send gate and test output to a file and read only its summary lines. The rules: (1) start no K-item above 100k (100k plus the 60k worst item stays under the hard stop); (2) K1a ends after K2; K2 may land as two commits (K2a: the golden-ledger helper, the prefix sweep and the refusals; K2b: the windows, the stop windows, the run-level state and the has_work tests), and the point between them is a clean hand-back point; (3) at 170k, start no new edit or gate, write the closing audit entry and hand back with the open items named; (4) if the figure cannot be read, record \"not recorded\" and hand back after K1. A hand-back by this rule is a planned split, not a failure.\nX-J1's landed names are the names you build on, never a second definition (DM7): engine.FACTS (\"events\", \"turn_usage\", \"archive_files\"), engine._snapshot_turn, archive.append_missing_rows, atomic.sweep_temps, the events cell.prompt_sent{turn}, cell.turn_ended{turn, stop_reason, turn_ms, usage, next} (turn_ms an int, W0 rev 6.12 R6.12a) and cell.turn_snapshot_archived, lifecycle.TURN_KINDS, lifecycle.is_cell_start and the turn-keyed TABLE entries, views.FACTS, CellView.task and CellView.rep, and the plan field tasks.<id>.turns. tests/fake_acp_agent.py already has the hang_prompt, hang_handshake and hang options (lines 4 and 9); a new fake option is a seam request, never an edit.\nK1 the skeleton (W1-K section 13 K1), each part in its own commit: (a) src/harness_bench/resume.py with resume_run(run_dir, root, plan, cfg) implementing today's behaviour, raising BenchError(\"HB-USR-002\", \"... has already started ...\") as cli.py:285 does now, and has_work(plan, rows) as a skeleton, so every K2 test fails on its own assertion and never on ImportError; delete the \"resume.py\" key from identity.PLANNED (identity.py:120) in this landing commit (R6.10a; identity.CLASSES already classes it \"run\" at :100); (b) the cmd_run delegation in its own commit: cli.py's cmd_run (def at :278) replaces the HB-USR-002 \"already started\" lines (:285) with the call to resume.resume_run, and nothing else in cli.py; retarget only your own finds in tests/mutations/cli.json if this hunk moved one (MUT-E); (c) the confirmed errors.py rows (W0 section 11, registry first): HB-CELL-118 and HB-CELL-119 beside HB-CELL-117's Cause entry (errors.py:32), HB-RUN-008 with W0 rev 6.8's text (the stopped run's exit-3 reason, not a refusal), HB-RUN-009, HB-ALM-001 and HB-ALM-002.\nDo not add HB-ALM-003 (W1-K sections 6.2 and 9 defer it to E5; its W0 reservation stands) and do not add HB-PLN-003, which X-A3b already landed under Coordinator #34's pre-grant (errors.py:53); X-A3c retired HB-PLN-005, so no HB-PLN row is yours.\nK2 the red tests (W1-K section 13 K2): tests/test_resume.py and its golden-ledger helper (one real two-turn single-cell engine run against tests/fake_acp_agent.py, and one two-cell run with interleaved rows), with every node id of W1-K section 4: the windows W2, W2b, W4, W4b, W4c, W5a-c, W9, W10a-c, W11, W12 [control_applied], [decision_resolved], [run_stopped] with the C4 variant, W12d, W12e, W12f, W13, W13b, W13c, W14, W15 and W16; the run-level state and liveness tests; test_every_ledger_prefix_matches_the_adr_table with its two independent oracle tables, one per stopped value, written from the ADR's wording, and the literals N1 and N2 counted at this commit; the refusals including test_refusal_order and test_refusal_writes_nothing; test_sweep_pairing_refuses_wrong_lock, test_abandoned_marker_pins_head, test_cli_run_resumes[T2]; test_completed_has_one_definition, pinning the run.completed hit count you take on your base (W1-K section 4 (e) item 2; record the command and the number in the commit); and the four has_work red-first tests of W0 section 12 R6.9b: test_finished_stop_is_silent (a C7 cell in its fixture), test_alarm_fires_after_crash_in_grading, test_alarm_fires_after_crash_before_last_archive and test_launch_stop_alarms, as has_work unit tests in tests/test_resume.py. The lifecycle replay tests named in W1-K section 4 (test_lifecycle.py) are K1b's, not yours.\nYour reds: every K2 test fails on its own assertion or the named BenchError HB-USR-002 from the skeleton (RED-C: never ImportError, AttributeError, NameError or KeyError), shown by a run on your K2 commit whose failing assertion lines you paste in the commit message; each test then carries pytest.mark.xfail(strict=True, reason=\"K1b: ...\" or \"K1c: ...\" or \"K1d: ...\") naming the turn of the x-k1.md split that turns it green, so the gate stays green and a test that passes early fails loudly. A test already green on the skeleton is a finding, reported with its node id, never a weakened assertion.\nIf your skill wants a T2 plan record, write it at docs/plans/eval-x-k1a.md and its HTML, create-only, in its own commit (pre-granted), and regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived).\nScratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k1a-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).\nGate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_resume.py tests/test_cli.py tests/test_errors.py tests/test_engine.py tests/test_multiturn.py tests/test_lifecycle_conformance.py on the final commit; uv run python tools/mutate_check.py with tests/mutations/cli.json, one run, never --touched, every mutant killed or a recorded reason per survivor; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.\nSuite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.\nCommit named paths only, with AGENT_SESSION=x-k1a-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green.\nYour closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline or served-model-failed), the served model id as read, tokens where Codex emits usage, else literally \"not recorded\" (Ruling 108, condition 4), and your context sample at each K-item. Report your served model id on the first line of your final message, read from the Codex native record.\nNot yours: W1-K section 13 K3 to K7 (lifecycle.py, the views.py hunks, classify, stop_recorded and the real has_work, recover_archive, the Engine resume path, the disk check, the model-docs rows; turns K1b to K1d), tests/mutations/resume.json (K1d), engine.py, archive.py and views.py in this turn, every cli.py line outside cmd_run's delegation (X-K2b's and X-TE9's), alarm.py and status.py (X-K2b's), HB-ALM-003 and the report header (E5).\nNot yours: the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; src/ behaviour changes beyond the skeleton (a finding to coord-opus-e1e4, never a fix in this turn).\nFallback: a launch or transport failure before the first prompt (XPORT-A shape) runs this compile as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) in this tree under the same session x-k1a-e1e4; a red-only end, a deadline, a hand-back by the split rule or a failed served-model read runs the follow-on as that Sonnet sub-agent in this tree (R-87 Option 1).",
+      "session": "prompt-compile",
+      "shortname": "You are session x-k1a-e1e4 on branch build/eval-x-k1a, harness Codex, mo…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "Base: the integration head after the X-A3c join (integrate/e2e4-18), never main. Stop and report if git merge-base --is-ancestor 1a837a5d HEAD exits non-zero (X-J1e's join is not in the base) or if git merge-base --is-ancestor 186ad7da HEAD exits non-zero (X-A3c's K3 and K4 are not in the base), or if git grep -n \"HB-PLN-005\" -- src prints anything.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Base: the integration head after the X-A3c join (integrate/e2e4-18), never main. Stop and "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The context split rule, re-sized from measured turns: J1c reached 230k with no split; J1d sampled 107k at K3; J1e sampled 128k at K2; X-A3c's three Sonnet turns each reached about 115k-125k after one or two K-items, so one K-item costs 17k to about 60k. Sample your context from payload.info.last_token_usage.input_tokens of the last token_count event in your own Codex rollout file: before each K-item, before each gate command, and before reading any file longer than 300 lines. Read only line ranges (sed -n, grep -n), never a whole design file; send gate and test output to a file and read only its summary lines. The rules: (1) start no K-item above 100k (100k plus the 60k worst item stays under the hard stop); (2) K1a ends after K2; K2 may land as two commits (K2a: the golden-ledger helper, the prefix sweep and the refusals; K2b: the windows, the stop windows, the run-level state and the has_work tests), and the point between them is a clean hand-back point; (3) at 170k, start no new edit or gate, write the closing audit entry and hand back with the open items named; (4) if the figure cannot be read, record \"not recorded\" and hand back after K1. A hand-back by this rule is a planned split, not a failure.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The context split rule, re-sized from measured turns: J1c reached 230k with no split; J1d "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "X-J1's landed names are the names you build on, never a second definition (DM7): engine.FACTS (\"events\", \"turn_usage\", \"archive_files\"), engine._snapshot_turn, archive.append_missing_rows, atomic.sweep_temps, the events cell.prompt_sent{turn}, cell.turn_ended{turn, stop_reason, turn_ms, usage, next} (turn_ms an int, W0 rev 6.12 R6.12a) and cell.turn_snapshot_archived, lifecycle.TURN_KINDS, lifecycle.is_cell_start and the turn-keyed TABLE entries, views.FACTS, CellView.task and CellView.rep, and the plan field tasks.<id>.turns. tests/fake_acp_agent.py already has the hang_prompt, hang_handshake and hang options (lines 4 and 9); a new fake option is a seam request, never an edit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "X-J1's landed names are the names you build on, never a second definition (DM7): engine.FA"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "K1 the skeleton (W1-K section 13 K1), each part in its own commit: (a) src/harness_bench/resume.py with resume_run(run_dir, root, plan, cfg) implementing today's behaviour, raising BenchError(\"HB-USR-002\", \"... has already started ...\") as cli.py:285 does now, and has_work(plan, rows) as a skeleton, so every K2 test fails on its own assertion and never on ImportError; delete the \"resume.py\" key from identity.PLANNED (identity.py:120) in this landing commit (R6.10a; identity.CLASSES already classes it \"run\" at :100); (b) the cmd_run delegation in its own commit: cli.py's cmd_run (def at :278) replaces the HB-USR-002 \"already started\" lines (:285) with the call to resume.resume_run, and nothing else in cli.py; retarget only your own finds in tests/mutations/cli.json if this hunk moved one (MUT-E); (c) the confirmed errors.py rows (W0 section 11, registry first): HB-CELL-118 and HB-CELL-119 beside HB-CELL-117's Cause entry (errors.py:32), HB-RUN-008 with W0 rev 6.8's text (the stopped run's exit-3 reason, not a refusal), HB-RUN-009, HB-ALM-001 and HB-ALM-002.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "K1 the skeleton (W1-K section 13 K1), each part in its own commit: (a) src/harness_bench/r"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Do not add HB-ALM-003 (W1-K sections 6.2 and 9 defer it to E5; its W0 reservation stands) and do not add HB-PLN-003, which X-A3b already landed under Coordinator #34's pre-grant (errors.py:53); X-A3c retired HB-PLN-005, so no HB-PLN row is yours.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Do not add HB-ALM-003 (W1-K sections 6.2 and 9 defer it to E5; its W0 reservation stands) "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "K2 the red tests (W1-K section 13 K2): tests/test_resume.py and its golden-ledger helper (one real two-turn single-cell engine run against tests/fake_acp_agent.py, and one two-cell run with interleaved rows), with every node id of W1-K section 4: the windows W2, W2b, W4, W4b, W4c, W5a-c, W9, W10a-c, W11, W12 [control_applied], [decision_resolved], [run_stopped] with the C4 variant, W12d, W12e, W12f, W13, W13b, W13c, W14, W15 and W16; the run-level state and liveness tests; test_every_ledger_prefix_matches_the_adr_table with its two independent oracle tables, one per stopped value, written from the ADR's wording, and the literals N1 and N2 counted at this commit; the refusals including test_refusal_order and test_refusal_writes_nothing; test_sweep_pairing_refuses_wrong_lock, test_abandoned_marker_pins_head, test_cli_run_resumes[T2]; test_completed_has_one_definition, pinning the run.completed hit count you take on your base (W1-K section 4 (e) item 2; record the command and the number in the commit); and the four has_work red-first tests of W0 section 12 R6.9b: test_finished_stop_is_silent (a C7 cell in its fixture), test_alarm_fires_after_crash_in_grading, test_alarm_fires_after_crash_before_last_archive and test_launch_stop_alarms, as has_work unit tests in tests/test_resume.py. The lifecycle replay tests named in W1-K section 4 (test_lifecycle.py) are K1b's, not yours.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "K2 the red tests (W1-K section 13 K2): tests/test_resume.py and its golden-ledger helper ("
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your reds: every K2 test fails on its own assertion or the named BenchError HB-USR-002 from the skeleton (RED-C: never ImportError, AttributeError, NameError or KeyError), shown by a run on your K2 commit whose failing assertion lines you paste in the commit message; each test then carries pytest.mark.xfail(strict=True, reason=\"K1b: ...\" or \"K1c: ...\" or \"K1d: ...\") naming the turn of the x-k1.md split that turns it green, so the gate stays green and a test that passes early fails loudly. A test already green on the skeleton is a finding, reported with its node id, never a weakened assertion.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your reds: every K2 test fails on its own assertion or the named BenchError HB-USR-002 fro"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "If your skill wants a T2 plan record, write it at docs/plans/eval-x-k1a.md and its HTML, create-only, in its own commit (pre-granted), and regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "If your skill wants a T2 plan record, write it at docs/plans/eval-x-k1a.md and its HTML, c"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k1a-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k1"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_resume.py tests/test_cli.py tests/test_errors.py tests/test_engine.py tests/test_multiturn.py tests/test_lifecycle_conformance.py on the final commit; uv run python tools/mutate_check.py with tests/mutations/cli.json, one run, never --touched, every mutant killed or a recorded reason per survivor; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lo"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit named paths only, with AGENT_SESSION=x-k1a-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit named paths only, with AGENT_SESSION=x-k1a-e1e4 inline on every commit and coord ca"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline or served-model-failed), the served model id as read, tokens where Codex emits usage, else literally \"not recorded\" (Ruling 108, condition 4), and your context sample at each K-item. Report your served model id on the first line of your final message, read from the Codex native record.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your closing audit entry, written through audit-log.py, carries the dispatch start and end"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "W1-K section 13 K3 to K7 (lifecycle.py, the views.py hunks, classify, stop_recorded and the real has_work, recover_archive, the Engine resume path, the disk check, the model-docs rows; turns K1b to K1d), tests/mutations/resume.json (K1d), engine.py, archive.py and views.py in this turn, every cli.py line outside cmd_run's delegation (X-K2b's and X-TE9's), alarm.py and status.py (X-K2b's), HB-ALM-003 and the report header (E5).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Not yours: W1-K section 13 K3 to K7 (lifecycle.py, the views.py hunks, classify, stop_reco"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; src/ behaviour changes beyond the skeleton (a finding to coord-opus-e1e4, never a fix in this turn).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Not yours: the whole suite and mutate_check --touched (the Leader's); never kill a process"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Fallback: a launch or transport failure before the first prompt (XPORT-A shape) runs this compile as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) in this tree under the same session x-k1a-e1e4; a red-only end, a deadline, a hand-back by the split rule or a failed served-model read runs the follow-on as that Sonnet sub-agent in this tree (R-87 Option 1).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Fallback: a launch or transport failure before the first prompt (XPORT-A shape) runs this "
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree on build/eval-x-k1a from the integration head after the X-A3c join; x-k1.md's owned paths, this turn: resume.py (new), the cmd_run delegation hunk in cli.py, the errors.py rows, the resume.py PLANNED key, tests/test_resume.py, own finds in tests/mutations/cli.json",
+          "deadline": "3,300 s",
+          "fallback": "x-k1.contract.json: XPORT-A before the first prompt runs this compile as a Claude Code Sonnet sub-agent in this tree under x-k1a-e1e4; a red-only end, deadline, split-rule hand-back or failed served-model read runs the Sonnet follow-on in this tree (R-87 Option 1)",
+          "join_rule": "the R-104 worker gate; the Leader joins into integrate/e2e4-18, re-runs one red SHA, confirms every K2 test is strict-xfail with a K1b/K1c/K1d reason, the errors.py diff is exactly the six rows, the cmd_run hunk is the only cli.py change, and resume.py is gone from identity.PLANNED",
+          "per_branch_exit": "the K1 commits and the K2 commit(s) on build/eval-x-k1a, then the gate, or a hand-back by the split rule with the open items named",
+          "termination": "one turn",
+          "transient_retry": "0",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens; split rule re-sized: no K-item above 100k, K1a ends after K2 (K2 may land as two commits with a clean point between), hard stop at 170k, unreadable means hand back after K1",
+          "done_when": [
+            "Base: the integration head after the X-A3c join (integrate/e2e4-18), never main. Stop and report if git merge-base --is-ancestor 1a837a5d HEAD exits non-zero (X-J1e's join is not in the base) or if git merge-base --is-ancestor 186ad7da HEAD exits non-zero (X-A3c's K3 and K4 are not in the base), or if git grep -n \"HB-PLN-005\" -- src prints anything.",
+            "The context split rule, re-sized from measured turns: J1c reached 230k with no split; J1d sampled 107k at K3; J1e sampled 128k at K2; X-A3c's three Sonnet turns each reached about 115k-125k after one or two K-items, so one K-item costs 17k to about 60k. Sample your context from payload.info.last_token_usage.input_tokens of the last token_count event in your own Codex rollout file: before each K-item, before each gate command, and before reading any file longer than 300 lines. Read only line ranges (sed -n, grep -n), never a whole design file; send gate and test output to a file and read only its summary lines. The rules: (1) start no K-item above 100k (100k plus the 60k worst item stays under the hard stop); (2) K1a ends after K2; K2 may land as two commits (K2a: the golden-ledger helper, the prefix sweep and the refusals; K2b: the windows, the stop windows, the run-level state and the has_work tests), and the point between them is a clean hand-back point; (3) at 170k, start no new edit or gate, write the closing audit entry and hand back with the open items named; (4) if the figure cannot be read, record \"not recorded\" and hand back after K1. A hand-back by this rule is a planned split, not a failure.",
+            "X-J1's landed names are the names you build on, never a second definition (DM7): engine.FACTS (\"events\", \"turn_usage\", \"archive_files\"), engine._snapshot_turn, archive.append_missing_rows, atomic.sweep_temps, the events cell.prompt_sent{turn}, cell.turn_ended{turn, stop_reason, turn_ms, usage, next} (turn_ms an int, W0 rev 6.12 R6.12a) and cell.turn_snapshot_archived, lifecycle.TURN_KINDS, lifecycle.is_cell_start and the turn-keyed TABLE entries, views.FACTS, CellView.task and CellView.rep, and the plan field tasks.<id>.turns. tests/fake_acp_agent.py already has the hang_prompt, hang_handshake and hang options (lines 4 and 9); a new fake option is a seam request, never an edit.",
+            "K1 the skeleton (W1-K section 13 K1), each part in its own commit: (a) src/harness_bench/resume.py with resume_run(run_dir, root, plan, cfg) implementing today's behaviour, raising BenchError(\"HB-USR-002\", \"... has already started ...\") as cli.py:285 does now, and has_work(plan, rows) as a skeleton, so every K2 test fails on its own assertion and never on ImportError; delete the \"resume.py\" key from identity.PLANNED (identity.py:120) in this landing commit (R6.10a; identity.CLASSES already classes it \"run\" at :100); (b) the cmd_run delegation in its own commit: cli.py's cmd_run (def at :278) replaces the HB-USR-002 \"already started\" lines (:285) with the call to resume.resume_run, and nothing else in cli.py; retarget only your own finds in tests/mutations/cli.json if this hunk moved one (MUT-E); (c) the confirmed errors.py rows (W0 section 11, registry first): HB-CELL-118 and HB-CELL-119 beside HB-CELL-117's Cause entry (errors.py:32), HB-RUN-008 with W0 rev 6.8's text (the stopped run's exit-3 reason, not a refusal), HB-RUN-009, HB-ALM-001 and HB-ALM-002.",
+            "Do not add HB-ALM-003 (W1-K sections 6.2 and 9 defer it to E5; its W0 reservation stands) and do not add HB-PLN-003, which X-A3b already landed under Coordinator #34's pre-grant (errors.py:53); X-A3c retired HB-PLN-005, so no HB-PLN row is yours.",
+            "K2 the red tests (W1-K section 13 K2): tests/test_resume.py and its golden-ledger helper (one real two-turn single-cell engine run against tests/fake_acp_agent.py, and one two-cell run with interleaved rows), with every node id of W1-K section 4: the windows W2, W2b, W4, W4b, W4c, W5a-c, W9, W10a-c, W11, W12 [control_applied], [decision_resolved], [run_stopped] with the C4 variant, W12d, W12e, W12f, W13, W13b, W13c, W14, W15 and W16; the run-level state and liveness tests; test_every_ledger_prefix_matches_the_adr_table with its two independent oracle tables, one per stopped value, written from the ADR's wording, and the literals N1 and N2 counted at this commit; the refusals including test_refusal_order and test_refusal_writes_nothing; test_sweep_pairing_refuses_wrong_lock, test_abandoned_marker_pins_head, test_cli_run_resumes[T2]; test_completed_has_one_definition, pinning the run.completed hit count you take on your base (W1-K section 4 (e) item 2; record the command and the number in the commit); and the four has_work red-first tests of W0 section 12 R6.9b: test_finished_stop_is_silent (a C7 cell in its fixture), test_alarm_fires_after_crash_in_grading, test_alarm_fires_after_crash_before_last_archive and test_launch_stop_alarms, as has_work unit tests in tests/test_resume.py. The lifecycle replay tests named in W1-K section 4 (test_lifecycle.py) are K1b's, not yours.",
+            "Your reds: every K2 test fails on its own assertion or the named BenchError HB-USR-002 from the skeleton (RED-C: never ImportError, AttributeError, NameError or KeyError), shown by a run on your K2 commit whose failing assertion lines you paste in the commit message; each test then carries pytest.mark.xfail(strict=True, reason=\"K1b: ...\" or \"K1c: ...\" or \"K1d: ...\") naming the turn of the x-k1.md split that turns it green, so the gate stays green and a test that passes early fails loudly. A test already green on the skeleton is a finding, reported with its node id, never a weakened assertion.",
+            "If your skill wants a T2 plan record, write it at docs/plans/eval-x-k1a.md and its HTML, create-only, in its own commit (pre-granted), and regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived).",
+            "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k1a-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).",
+            "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_resume.py tests/test_cli.py tests/test_errors.py tests/test_engine.py tests/test_multiturn.py tests/test_lifecycle_conformance.py on the final commit; uv run python tools/mutate_check.py with tests/mutations/cli.json, one run, never --touched, every mutant killed or a recorded reason per survivor; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.",
+            "Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "Commit named paths only, with AGENT_SESSION=x-k1a-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green.",
+            "Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline or served-model-failed), the served model id as read, tokens where Codex emits usage, else literally \"not recorded\" (Ruling 108, condition 4), and your context sample at each K-item. Report your served model id on the first line of your final message, read from the Codex native record.",
+            "Fallback: a launch or transport failure before the first prompt (XPORT-A shape) runs this compile as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) in this tree under the same session x-k1a-e1e4; a red-only end, a deadline, a hand-back by the split rule or a failed served-model read runs the follow-on as that Sonnet sub-agent in this tree (R-87 Option 1)."
+          ],
+          "fan_out_cap": "0",
+          "goal": "You are session x-k1a-e1e4 on branch build/eval-x-k1a, harness Codex, model gpt-6.1-sol with model_reasoning_effort high, run w2-k1a-e1e4, deadline 3,300 s, one turn, context ceiling 200k. Build dispatch K1a of X-K1, the resume engine's first turn, following docs/coordination/eval-wave2-e234/x-k1.md (owned paths, acceptance items, the Coordinator #39 turn split and errors.py rows), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md, W1-K rev 1.2 (docs/design/eval-resume.md sections 2, 3.1, 4, 9, 12 and 13) and W0 rev 6.13 (docs/design/eval-seam-contracts.md sections 11, 12 R6.9b and R6.12a, 13 the cli.py, views.py, errors.py and PLANNED rows), all binding.",
+          "main_line_budget": "within X-K1's 280 calls across 4 dispatches; 3,300 s this dispatch",
+          "not_in_scope": [
+            "W1-K section 13 K3 to K7 (lifecycle.py, the views.py hunks, classify, stop_recorded and the real has_work, recover_archive, the Engine resume path, the disk check, the model-docs rows; turns K1b to K1d), tests/mutations/resume.json (K1d), engine.py, archive.py and views.py in this turn, every cli.py line outside cmd_run's delegation (X-K2b's and X-TE9's), alarm.py and status.py (X-K2b's), HB-ALM-003 and the report header (E5).",
+            "the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; src/ behaviour changes beyond the skeleton (a finding to coord-opus-e1e4, never a fix in this turn)."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "codex",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.018,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M488MZPTFB5VG6835480FEA4",
+        "raw_sha256": "946812e6c1183ef6e4d41c6cf70773af7456341943609a735f5caaf3feeab406",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-k1a"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/x-k1.md",
+            "reason": null,
+            "sha256": "0d274cbd1335fc6b5b34621816bf5901898ebcd53a6b8a7178cc692a2cb58ccf",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/x-k1.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "74cf828580414b6cb04a20cc1a132a23c20d1d337510671dd5acb4095dc56f15",
+            "status": "resolved",
+            "token": "errors.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/README.md",
+            "reason": null,
+            "sha256": "e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-resume.md",
+            "reason": null,
+            "sha256": "8517db2563c008917ffc02f8d969c073626b4716a9637145a5ceb70e6b760bb1",
+            "status": "resolved",
+            "token": "docs/design/eval-resume.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-seam-contracts.md",
+            "reason": null,
+            "sha256": "26ce62573cc24d58a2df4c04f27adb14cf08e7a89d9d3712a55dae41946e7cfd",
+            "status": "resolved",
+            "token": "docs/design/eval-seam-contracts.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "50e78c85fd64c6effe9e4bff75d6b5f40dab7243a20bdf1355aca7c8a75464aa",
+            "status": "resolved",
+            "token": "cli.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "integrate/e2e4-18"
+          },
+          {
+            "nearest": null,
+            "path": "tests/fake_acp_agent.py",
+            "reason": null,
+            "sha256": "067a99e0f4a8f59c05b08862e74e533b7c863992b9acaf4327aaf49e362ffe60",
+            "status": "resolved",
+            "token": "tests/fake_acp_agent.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/resume.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "resume.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/cli.json",
+            "reason": null,
+            "sha256": "90a6b3cc4beee56376ff233cf521022abedbe4418f15a64fa9f283c84c6c8989",
+            "status": "resolved",
+            "token": "tests/mutations/cli.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_resume.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_lifecycle.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/x-k1.md",
+            "reason": null,
+            "sha256": "0d274cbd1335fc6b5b34621816bf5901898ebcd53a6b8a7178cc692a2cb58ccf",
+            "status": "resolved",
+            "token": "x-k1.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/plans/eval-x-k1a.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/docs-index.js",
+            "reason": null,
+            "sha256": "a24d3383a0bb5ac3d5821db8799768fc0adb90d2d346918cd8f605b58bcd5e51",
+            "status": "resolved",
+            "token": "docs/docs-index.js"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_identity.py",
+            "reason": null,
+            "sha256": "ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf",
+            "status": "resolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_atomic_sites.py",
+            "reason": null,
+            "sha256": "143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90",
+            "status": "resolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_arms_guard.py",
+            "reason": null,
+            "sha256": "ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349",
+            "status": "resolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_discriminate.py",
+            "reason": null,
+            "sha256": "6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52",
+            "status": "resolved",
+            "token": "tests/test_discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_skills_in_sync.py",
+            "reason": null,
+            "sha256": "572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d",
+            "status": "resolved",
+            "token": "tests/test_skills_in_sync.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_timing_hygiene.py",
+            "reason": null,
+            "sha256": "fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6",
+            "status": "resolved",
+            "token": "tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_cli.py",
+            "reason": null,
+            "sha256": "c949fe8260ad216701ffa6100d0e9dd2ad7ebc2d60eed0af0e4a6aea3f015f87",
+            "status": "resolved",
+            "token": "tests/test_cli.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_errors.py",
+            "reason": null,
+            "sha256": "67d8609c8130286b0bd5414a9150b181f6695662f64f5663c59e19a9454452d1",
+            "status": "resolved",
+            "token": "tests/test_errors.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_engine.py",
+            "reason": null,
+            "sha256": "291ee2ccbfb19221a889132c26725b93b7401cc167388d2179fac284eecb580d",
+            "status": "resolved",
+            "token": "tests/test_engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_multiturn.py",
+            "reason": null,
+            "sha256": "a703a7ce2557812c06bf39fbf8b93005d0325fc684068539e1c2b72bff6199d9",
+            "status": "resolved",
+            "token": "tests/test_multiturn.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_lifecycle_conformance.py",
+            "reason": null,
+            "sha256": "f62d558cf1faa42476736ca54ecb8110eb956c56fdfab92a6ac54144bee4888f",
+            "status": "resolved",
+            "token": "tests/test_lifecycle_conformance.py"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/audit-log.py",
+            "reason": null,
+            "sha256": "d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4",
+            "status": "resolved",
+            "token": "audit-log.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/lifecycle.py",
+            "reason": null,
+            "sha256": "e6104a782d8da6ec276753d63520da09e45fd39cf2002e5c4c5f15549f814593",
+            "status": "resolved",
+            "token": "lifecycle.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/resume.json"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/engine.py",
+            "reason": null,
+            "sha256": "6045c7e9bf8554f5601b8539566bef95019558acafa3d341bb4da91d83f0e5e1",
+            "status": "resolved",
+            "token": "engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/archive.py",
+            "reason": null,
+            "sha256": "39797e5248ef934e1e759ddbf86610d5e904ddff344ce40a010de43a4df8aae8",
+            "status": "resolved",
+            "token": "archive.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "alarm.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/status.py",
+            "reason": null,
+            "sha256": "e5f59737a3b2bfe0f006e52777b4f3349faadfa9aaa6331a4a436ccf34118bba",
+            "status": "resolved",
+            "token": "status.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "codex",
+        "template_version": 1
+      },
+      "datetime": "2026-10-06T09:28:30Z",
+      "dispatchable": true,
+      "id": "al-01M488P2Q9J9CXTZQ29M7QRVAH",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "Save the brief between the markers as <brief-file>, then run (one line, the brief read from the file):\ncodex exec --json -o <last-message-file> --output-schema <schema-file> --worktree -C <dir> \"$(cat <brief-file>)\"\n--- brief ---\npython3 docs/ai-forward-pack/scripts/audit-log.py start --session x-k1a-e1e4 --skill implement\nGoal state\nGoal: You are session x-k1a-e1e4 on branch build/eval-x-k1a, harness Codex, model gpt-6.1-sol with model_reasoning_effort high, run w2-k1a-e1e4, deadline 3,300 s, one turn, context ceiling 200k. Build dispatch K1a of X-K1, the resume engine's first turn, following docs/coordination/eval-wave2-e234/x-k1.md (owned paths, acceptance items, the Coordinator #39 turn split and errors.py rows), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md, W1-K rev 1.2 (docs/design/eval-resume.md sections 2, 3.1, 4, 9, 12 and 13) and W0 rev 6.13 (docs/design/eval-seam-contracts.md sections 11, 12 R6.9b and R6.12a, 13 the cli.py, views.py, errors.py and PLANNED rows), all binding.\nDone when: Base: the integration head after the X-A3c join (integrate/e2e4-18), never main. Stop and report if git merge-base --is-ancestor 1a837a5d HEAD exits non-zero (X-J1e's join is not in the base) or if git merge-base --is-ancestor 186ad7da HEAD exits non-zero (X-A3c's K3 and K4 are not in the base), or if git grep -n \"HB-PLN-005\" -- src prints anything.; The context split rule, re-sized from measured turns: J1c reached 230k with no split; J1d sampled 107k at K3; J1e sampled 128k at K2; X-A3c's three Sonnet turns each reached about 115k-125k after one or two K-items, so one K-item costs 17k to about 60k. Sample your context from payload.info.last_token_usage.input_tokens of the last token_count event in your own Codex rollout file: before each K-item, before each gate command, and before reading any file longer than 300 lines. Read only line ranges (sed -n, grep -n), never a whole design file; send gate and test output to a file and read only its summary lines. The rules: (1) start no K-item above 100k (100k plus the 60k worst item stays under the hard stop); (2) K1a ends after K2; K2 may land as two commits (K2a: the golden-ledger helper, the prefix sweep and the refusals; K2b: the windows, the stop windows, the run-level state and the has_work tests), and the point between them is a clean hand-back point; (3) at 170k, start no new edit or gate, write the closing audit entry and hand back with the open items named; (4) if the figure cannot be read, record \"not recorded\" and hand back after K1. A hand-back by this rule is a planned split, not a failure.; X-J1's landed names are the names you build on, never a second definition (DM7): engine.FACTS (\"events\", \"turn_usage\", \"archive_files\"), engine._snapshot_turn, archive.append_missing_rows, atomic.sweep_temps, the events cell.prompt_sent{turn}, cell.turn_ended{turn, stop_reason, turn_ms, usage, next} (turn_ms an int, W0 rev 6.12 R6.12a) and cell.turn_snapshot_archived, lifecycle.TURN_KINDS, lifecycle.is_cell_start and the turn-keyed TABLE entries, views.FACTS, CellView.task and CellView.rep, and the plan field tasks.<id>.turns. tests/fake_acp_agent.py already has the hang_prompt, hang_handshake and hang options (lines 4 and 9); a new fake option is a seam request, never an edit.; K1 the skeleton (W1-K section 13 K1), each part in its own commit: (a) src/harness_bench/resume.py with resume_run(run_dir, root, plan, cfg) implementing today's behaviour, raising BenchError(\"HB-USR-002\", \"... has already started ...\") as cli.py:285 does now, and has_work(plan, rows) as a skeleton, so every K2 test fails on its own assertion and never on ImportError; delete the \"resume.py\" key from identity.PLANNED (identity.py:120) in this landing commit (R6.10a; identity.CLASSES already classes it \"run\" at :100); (b) the cmd_run delegation in its own commit: cli.py's cmd_run (def at :278) replaces the HB-USR-002 \"already started\" lines (:285) with the call to resume.resume_run, and nothing else in cli.py; retarget only your own finds in tests/mutations/cli.json if this hunk moved one (MUT-E); (c) the confirmed errors.py rows (W0 section 11, registry first): HB-CELL-118 and HB-CELL-119 beside HB-CELL-117's Cause entry (errors.py:32), HB-RUN-008 with W0 rev 6.8's text (the stopped run's exit-3 reason, not a refusal), HB-RUN-009, HB-ALM-001 and HB-ALM-002.; Do not add HB-ALM-003 (W1-K sections 6.2 and 9 defer it to E5; its W0 reservation stands) and do not add HB-PLN-003, which X-A3b already landed under Coordinator #34's pre-grant (errors.py:53); X-A3c retired HB-PLN-005, so no HB-PLN row is yours.; K2 the red tests (W1-K section 13 K2): tests/test_resume.py and its golden-ledger helper (one real two-turn single-cell engine run against tests/fake_acp_agent.py, and one two-cell run with interleaved rows), with every node id of W1-K section 4: the windows W2, W2b, W4, W4b, W4c, W5a-c, W9, W10a-c, W11, W12 [control_applied], [decision_resolved], [run_stopped] with the C4 variant, W12d, W12e, W12f, W13, W13b, W13c, W14, W15 and W16; the run-level state and liveness tests; test_every_ledger_prefix_matches_the_adr_table with its two independent oracle tables, one per stopped value, written from the ADR's wording, and the literals N1 and N2 counted at this commit; the refusals including test_refusal_order and test_refusal_writes_nothing; test_sweep_pairing_refuses_wrong_lock, test_abandoned_marker_pins_head, test_cli_run_resumes[T2]; test_completed_has_one_definition, pinning the run.completed hit count you take on your base (W1-K section 4 (e) item 2; record the command and the number in the commit); and the four has_work red-first tests of W0 section 12 R6.9b: test_finished_stop_is_silent (a C7 cell in its fixture), test_alarm_fires_after_crash_in_grading, test_alarm_fires_after_crash_before_last_archive and test_launch_stop_alarms, as has_work unit tests in tests/test_resume.py. The lifecycle replay tests named in W1-K section 4 (test_lifecycle.py) are K1b's, not yours.; Your reds: every K2 test fails on its own assertion or the named BenchError HB-USR-002 from the skeleton (RED-C: never ImportError, AttributeError, NameError or KeyError), shown by a run on your K2 commit whose failing assertion lines you paste in the commit message; each test then carries pytest.mark.xfail(strict=True, reason=\"K1b: ...\" or \"K1c: ...\" or \"K1d: ...\") naming the turn of the x-k1.md split that turns it green, so the gate stays green and a test that passes early fails loudly. A test already green on the skeleton is a finding, reported with its node id, never a weakened assertion.; If your skill wants a T2 plan record, write it at docs/plans/eval-x-k1a.md and its HTML, create-only, in its own commit (pre-granted), and regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived).; Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k1a-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).; Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_resume.py tests/test_cli.py tests/test_errors.py tests/test_engine.py tests/test_multiturn.py tests/test_lifecycle_conformance.py on the final commit; uv run python tools/mutate_check.py with tests/mutations/cli.json, one run, never --touched, every mutant killed or a recorded reason per survivor; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.; Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commit named paths only, with AGENT_SESSION=x-k1a-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green.; Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline or served-model-failed), the served model id as read, tokens where Codex emits usage, else literally \"not recorded\" (Ruling 108, condition 4), and your context sample at each K-item. Report your served model id on the first line of your final message, read from the Codex native record.; Fallback: a launch or transport failure before the first prompt (XPORT-A shape) runs this compile as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) in this tree under the same session x-k1a-e1e4; a red-only end, a deadline, a hand-back by the split rule or a failed served-model read runs the follow-on as that Sonnet sub-agent in this tree (R-87 Option 1).\nNot in scope: W1-K section 13 K3 to K7 (lifecycle.py, the views.py hunks, classify, stop_recorded and the real has_work, recover_archive, the Engine resume path, the disk check, the model-docs rows; turns K1b to K1d), tests/mutations/resume.json (K1d), engine.py, archive.py and views.py in this turn, every cli.py line outside cmd_run's delegation (X-K2b's and X-TE9's), alarm.py and status.py (X-K2b's), HB-ALM-003 and the report header (E5).; the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; src/ behaviour changes beyond the skeleton (a finding to coord-opus-e1e4, never a fix in this turn).\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens; split rule re-sized: no K-item above 100k, K1a ends after K2 (K2 may land as two commits with a clean point between), hard stop at 170k, unreadable means hand back after K1\nMain-line budget: within X-K1's 280 calls across 4 dispatches; 3,300 s this dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: Base: the integration head after the X-A3c join (integrate/e2e4-18), never main. Stop and report if git merge-base --is-ancestor 1a837a5d HEAD exits non-zero (X-J1e's join is not in the base) or if git merge-base --is-ancestor 186ad7da HEAD exits non-zero (X-A3c's K3 and K4 are not in the base), or if git grep -n \"HB-PLN-005\" -- src prints anything. | phrase: Base: the integration head after the X-A3c join (integrate/e2e4-18), never main. Stop and  |\n| done_when: The context split rule, re-sized from measured turns: J1c reached 230k with no split; J1d sampled 107k at K3; J1e sampled 128k at K2; X-A3c's three Sonnet turns each reached about 115k-125k after one or two K-items, so one K-item costs 17k to about 60k. Sample your context from payload.info.last_token_usage.input_tokens of the last token_count event in your own Codex rollout file: before each K-item, before each gate command, and before reading any file longer than 300 lines. Read only line ranges (sed -n, grep -n), never a whole design file; send gate and test output to a file and read only its summary lines. The rules: (1) start no K-item above 100k (100k plus the 60k worst item stays under the hard stop); (2) K1a ends after K2; K2 may land as two commits (K2a: the golden-ledger helper, the prefix sweep and the refusals; K2b: the windows, the stop windows, the run-level state and the has_work tests), and the point between them is a clean hand-back point; (3) at 170k, start no new edit or gate, write the closing audit entry and hand back with the open items named; (4) if the figure cannot be read, record \"not recorded\" and hand back after K1. A hand-back by this rule is a planned split, not a failure. | phrase: The context split rule, re-sized from measured turns: J1c reached 230k with no split; J1d  |\n| done_when: X-J1's landed names are the names you build on, never a second definition (DM7): engine.FACTS (\"events\", \"turn_usage\", \"archive_files\"), engine._snapshot_turn, archive.append_missing_rows, atomic.sweep_temps, the events cell.prompt_sent{turn}, cell.turn_ended{turn, stop_reason, turn_ms, usage, next} (turn_ms an int, W0 rev 6.12 R6.12a) and cell.turn_snapshot_archived, lifecycle.TURN_KINDS, lifecycle.is_cell_start and the turn-keyed TABLE entries, views.FACTS, CellView.task and CellView.rep, and the plan field tasks.<id>.turns. tests/fake_acp_agent.py already has the hang_prompt, hang_handshake and hang options (lines 4 and 9); a new fake option is a seam request, never an edit. | phrase: X-J1's landed names are the names you build on, never a second definition (DM7): engine.FA |\n| done_when: K1 the skeleton (W1-K section 13 K1), each part in its own commit: (a) src/harness_bench/resume.py with resume_run(run_dir, root, plan, cfg) implementing today's behaviour, raising BenchError(\"HB-USR-002\", \"... has already started ...\") as cli.py:285 does now, and has_work(plan, rows) as a skeleton, so every K2 test fails on its own assertion and never on ImportError; delete the \"resume.py\" key from identity.PLANNED (identity.py:120) in this landing commit (R6.10a; identity.CLASSES already classes it \"run\" at :100); (b) the cmd_run delegation in its own commit: cli.py's cmd_run (def at :278) replaces the HB-USR-002 \"already started\" lines (:285) with the call to resume.resume_run, and nothing else in cli.py; retarget only your own finds in tests/mutations/cli.json if this hunk moved one (MUT-E); (c) the confirmed errors.py rows (W0 section 11, registry first): HB-CELL-118 and HB-CELL-119 beside HB-CELL-117's Cause entry (errors.py:32), HB-RUN-008 with W0 rev 6.8's text (the stopped run's exit-3 reason, not a refusal), HB-RUN-009, HB-ALM-001 and HB-ALM-002. | phrase: K1 the skeleton (W1-K section 13 K1), each part in its own commit: (a) src/harness_bench/r |\n| done_when: Do not add HB-ALM-003 (W1-K sections 6.2 and 9 defer it to E5; its W0 reservation stands) and do not add HB-PLN-003, which X-A3b already landed under Coordinator #34's pre-grant (errors.py:53); X-A3c retired HB-PLN-005, so no HB-PLN row is yours. | phrase: Do not add HB-ALM-003 (W1-K sections 6.2 and 9 defer it to E5; its W0 reservation stands)  |\n| done_when: K2 the red tests (W1-K section 13 K2): tests/test_resume.py and its golden-ledger helper (one real two-turn single-cell engine run against tests/fake_acp_agent.py, and one two-cell run with interleaved rows), with every node id of W1-K section 4: the windows W2, W2b, W4, W4b, W4c, W5a-c, W9, W10a-c, W11, W12 [control_applied], [decision_resolved], [run_stopped] with the C4 variant, W12d, W12e, W12f, W13, W13b, W13c, W14, W15 and W16; the run-level state and liveness tests; test_every_ledger_prefix_matches_the_adr_table with its two independent oracle tables, one per stopped value, written from the ADR's wording, and the literals N1 and N2 counted at this commit; the refusals including test_refusal_order and test_refusal_writes_nothing; test_sweep_pairing_refuses_wrong_lock, test_abandoned_marker_pins_head, test_cli_run_resumes[T2]; test_completed_has_one_definition, pinning the run.completed hit count you take on your base (W1-K section 4 (e) item 2; record the command and the number in the commit); and the four has_work red-first tests of W0 section 12 R6.9b: test_finished_stop_is_silent (a C7 cell in its fixture), test_alarm_fires_after_crash_in_grading, test_alarm_fires_after_crash_before_last_archive and test_launch_stop_alarms, as has_work unit tests in tests/test_resume.py. The lifecycle replay tests named in W1-K section 4 (test_lifecycle.py) are K1b's, not yours. | phrase: K2 the red tests (W1-K section 13 K2): tests/test_resume.py and its golden-ledger helper ( |\n| done_when: Your reds: every K2 test fails on its own assertion or the named BenchError HB-USR-002 from the skeleton (RED-C: never ImportError, AttributeError, NameError or KeyError), shown by a run on your K2 commit whose failing assertion lines you paste in the commit message; each test then carries pytest.mark.xfail(strict=True, reason=\"K1b: ...\" or \"K1c: ...\" or \"K1d: ...\") naming the turn of the x-k1.md split that turns it green, so the gate stays green and a test that passes early fails loudly. A test already green on the skeleton is a finding, reported with its node id, never a weakened assertion. | phrase: Your reds: every K2 test fails on its own assertion or the named BenchError HB-USR-002 fro |\n| done_when: If your skill wants a T2 plan record, write it at docs/plans/eval-x-k1a.md and its HTML, create-only, in its own commit (pre-granted), and regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived). | phrase: If your skill wants a T2 plan record, write it at docs/plans/eval-x-k1a.md and its HTML, c |\n| done_when: Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k1a-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH). | phrase: Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k1 |\n| done_when: Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_resume.py tests/test_cli.py tests/test_errors.py tests/test_engine.py tests/test_multiturn.py tests/test_lifecycle_conformance.py on the final commit; uv run python tools/mutate_check.py with tests/mutations/cli.json, one run, never --touched, every mutant killed or a recorded reason per survivor; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate. | phrase: Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run  |\n| done_when: Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lo |\n| done_when: Commit named paths only, with AGENT_SESSION=x-k1a-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green. | phrase: Commit named paths only, with AGENT_SESSION=x-k1a-e1e4 inline on every commit and coord ca |\n| done_when: Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline or served-model-failed), the served model id as read, tokens where Codex emits usage, else literally \"not recorded\" (Ruling 108, condition 4), and your context sample at each K-item. Report your served model id on the first line of your final message, read from the Codex native record. | phrase: Your closing audit entry, written through audit-log.py, carries the dispatch start and end |\n| not_in_scope: W1-K section 13 K3 to K7 (lifecycle.py, the views.py hunks, classify, stop_recorded and the real has_work, recover_archive, the Engine resume path, the disk check, the model-docs rows; turns K1b to K1d), tests/mutations/resume.json (K1d), engine.py, archive.py and views.py in this turn, every cli.py line outside cmd_run's delegation (X-K2b's and X-TE9's), alarm.py and status.py (X-K2b's), HB-ALM-003 and the report header (E5). | phrase: Not yours: W1-K section 13 K3 to K7 (lifecycle.py, the views.py hunks, classify, stop_reco |\n| not_in_scope: the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; src/ behaviour changes beyond the skeleton (a finding to coord-opus-e1e4, never a fix in this turn). | phrase: Not yours: the whole suite and mutate_check --touched (the Leader's); never kill a process |\n| done_when: Fallback: a launch or transport failure before the first prompt (XPORT-A shape) runs this compile as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) in this tree under the same session x-k1a-e1e4; a red-only end, a deadline, a hand-back by the split rule or a failed served-model read runs the follow-on as that Sonnet sub-agent in this tree (R-87 Option 1). | phrase: Fallback: a launch or transport failure before the first prompt (XPORT-A shape) runs this  |\nReferences\n- build/eval-x-k1a: unresolved (not found)\n- docs/coordination/eval-wave2-e234/x-k1.md: docs/coordination/eval-wave2-e234/x-k1.md sha256 0d274cbd1335fc6b5b34621816bf5901898ebcd53a6b8a7178cc692a2cb58ccf\n- errors.py: src/harness_bench/errors.py sha256 74cf828580414b6cb04a20cc1a132a23c20d1d337510671dd5acb4095dc56f15\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b\n- docs/coordination/eval-wave2-e234/README.md: docs/coordination/eval-wave2-e234/README.md sha256 e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701\n- docs/design/eval-resume.md: docs/design/eval-resume.md sha256 8517db2563c008917ffc02f8d969c073626b4716a9637145a5ceb70e6b760bb1\n- docs/design/eval-seam-contracts.md: docs/design/eval-seam-contracts.md sha256 26ce62573cc24d58a2df4c04f27adb14cf08e7a89d9d3712a55dae41946e7cfd\n- cli.py: src/harness_bench/cli.py sha256 50e78c85fd64c6effe9e4bff75d6b5f40dab7243a20bdf1355aca7c8a75464aa\n- views.py: unresolved (ambiguous: 2 matches)\n- integrate/e2e4-18: unresolved (not found)\n- tests/fake_acp_agent.py: tests/fake_acp_agent.py sha256 067a99e0f4a8f59c05b08862e74e533b7c863992b9acaf4327aaf49e362ffe60\n- src/harness_bench/resume.py: unresolved (not found)\n- resume.py: unresolved (not found)\n- tests/mutations/cli.json: tests/mutations/cli.json sha256 90a6b3cc4beee56376ff233cf521022abedbe4418f15a64fa9f283c84c6c8989\n- tests/test_resume.py: unresolved (not found)\n- test_lifecycle.py: unresolved (not found)\n- x-k1.md: docs/coordination/eval-wave2-e234/x-k1.md sha256 0d274cbd1335fc6b5b34621816bf5901898ebcd53a6b8a7178cc692a2cb58ccf\n- docs/plans/eval-x-k1a.md: unresolved (not found)\n- docs/docs-index.js: docs/docs-index.js sha256 a24d3383a0bb5ac3d5821db8799768fc0adb90d2d346918cd8f605b58bcd5e51\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tests/test_cli.py: tests/test_cli.py sha256 c949fe8260ad216701ffa6100d0e9dd2ad7ebc2d60eed0af0e4a6aea3f015f87\n- tests/test_errors.py: tests/test_errors.py sha256 67d8609c8130286b0bd5414a9150b181f6695662f64f5663c59e19a9454452d1\n- tests/test_engine.py: tests/test_engine.py sha256 291ee2ccbfb19221a889132c26725b93b7401cc167388d2179fac284eecb580d\n- tests/test_multiturn.py: tests/test_multiturn.py sha256 a703a7ce2557812c06bf39fbf8b93005d0325fc684068539e1c2b72bff6199d9\n- tests/test_lifecycle_conformance.py: tests/test_lifecycle_conformance.py sha256 f62d558cf1faa42476736ca54ecb8110eb956c56fdfab92a6ac54144bee4888f\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d\n- audit-log.py: docs/ai-forward-pack/scripts/audit-log.py sha256 d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4\n- lifecycle.py: src/harness_bench/lifecycle.py sha256 e6104a782d8da6ec276753d63520da09e45fd39cf2002e5c4c5f15549f814593\n- tests/mutations/resume.json: unresolved (not found)\n- engine.py: src/harness_bench/engine.py sha256 6045c7e9bf8554f5601b8539566bef95019558acafa3d341bb4da91d83f0e5e1\n- archive.py: src/harness_bench/archive.py sha256 39797e5248ef934e1e759ddbf86610d5e904ddff344ce40a010de43a4df8aae8\n- alarm.py: unresolved (not found)\n- status.py: src/harness_bench/status.py sha256 e5f59737a3b2bfe0f006e52777b4f3349faadfa9aaa6331a4a436ccf34118bba\n- src/: unresolved (not found)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0\nper_branch_exit: the K1 commits and the K2 commit(s) on build/eval-x-k1a, then the gate, or a hand-back by the split rule with the open items named\njoin_rule: the R-104 worker gate; the Leader joins into integrate/e2e4-18, re-runs one red SHA, confirms every K2 test is strict-xfail with a K1b/K1c/K1d reason, the errors.py diff is exactly the six rows, the cmd_run hunk is the only cli.py change, and resume.py is gone from identity.PLANNED\ncontainment: own worktree on build/eval-x-k1a from the integration head after the X-A3c join; x-k1.md's owned paths, this turn: resume.py (new), the cmd_run delegation hunk in cli.py, the errors.py rows, the resume.py PLANNED key, tests/test_resume.py, own finds in tests/mutations/cli.json\ntermination: one turn\ndeadline: 3,300 s\nfallback: x-k1.contract.json: XPORT-A before the first prompt runs this compile as a Claude Code Sonnet sub-agent in this tree under x-k1a-e1e4; a red-only end, deadline, split-rule hand-back or failed served-model read runs the Sonnet follow-on in this tree (R-87 Option 1)\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M488MZPTFB5VG6835480FEA4\nraw sha256: 946812e6c1183ef6e4d41c6cf70773af7456341943609a735f5caaf3feeab406\ncompiler model: claude-opus-5-5\nengine seconds: 0.018\ntokens: not recorded\ngate: pass\ndispatchable: true\n--- end brief ---\n",
+      "session": "x-k1a-e1e4",
+      "shortname": "compile-You are session x-k1a-e1e4 on branch build/eval-x-k1a, harness Codex, mo…",
+      "skill": null,
+      "summary": "compiled al-01M488MZPTFB5VG6835480FEA4 for codex v1: 16 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-06T09:30:41Z",
+      "id": "al-01M488T30G4GFQWX05YXH9YEZN",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-k2b-e1e4 on branch build/eval-x-k2b, harness Agy, model gemini-3.8-flash-high, run w2-k2b-e1e4, deadline 3,300 s, one turn, within X-K2's 140 calls and a 150k context. Build X-K2b, the alarm and liveness code, following docs/coordination/eval-wave2-e234/x-k2.md (owned paths, acceptance items 1, 2 and 4, and the Coordinator #39 section \"K2b scope as compiled\"), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md, W1-K rev 1.2 (docs/design/eval-resume.md sections 6.1, 6.2, 8 and 13's alarm tests and mutants) and W0 rev 6.13 (docs/design/eval-seam-contracts.md section 9's alarm.py row, section 12 R6.9b, section 13 the alarm-task row's interface paragraph and the X-K2b row with R6.13d and R6.13e), all binding.\nBase: the integration head after the X-K1 join (all of K1a to K1d; integrate/e2e4-18), never main. Stop and report if git merge-base --is-ancestor 186ad7da HEAD exits non-zero (X-A3c is not in the base), if git merge-base --is-ancestor 96952224 HEAD exits non-zero (X-INTF is not in the base), if git grep -n \"def has_work\" -- src/harness_bench/resume.py does not print exactly one line, if git grep -n \"HB-ALM-001\\|HB-ALM-002\" -- src/harness_bench/errors.py does not print two lines, or if git grep -n \"reason=\\\"K1\" -- tests prints anything (a K1 turn has not joined). X-TE9 is not a predecessor (W0 rev 6.13 R6.13d): if TE9 has joined, rebase on its cmd_validate line; if not, edit no cmd_validate line.\nThe context split rule. Your context ceiling is 150k tokens. Measured turns: J1d sampled 107k at K3, J1e 128k at K2, and X-A3c's Sonnet turns reached about 115k-125k after one or two K-items, so one K-item costs 17k to about 60k. Sample your context before each K-item and before each gate command from the token usage your Agy session reports (the stream-json usage events or cli.log); read only line ranges, never a whole design file; send gate output to a file and read only its summary. The rules: (1) start no K-item above 80k; (2) the hand-back point is after the K3 commit: go on to K4 only if the sample there is at or below 80k, else hand back with K4 and the gates named open; (3) at 125k start no new edit or gate, write the closing audit entry and hand back with the open items named; (4) if the figure cannot be read, record \"not recorded\" and hand back at the K3 point. A hand-back by this rule is a planned split, not a failure; the follow-on runs in this tree.\nX-K1's landed names are the names you build on, never a second definition (R-102, DM7): resume.has_work(plan, rows), resume.stop_recorded(rows), resume.history(run_dir) and ResumeRecord, views.segment_rows, the run.resumed and segment.abandoned rows and the cell.outcome resume object, and the HB-ALM-001 and HB-ALM-002 rows in errors.py. alarm.py and bench status import has_work and carry no pending logic of their own.\nK1 the skeleton, in its own commit: src/harness_bench/alarm.py with check(run_dir, after_s, now, lock_age) returning None, the bench status --alarm-after <seconds> flag wired to it and returning 0, and ALARM = 6 beside the exit constants in cli.py, so every K2 test fails on its own assertion (exit == 6), never on argparse's exit 2 or an ImportError; delete the \"alarm.py\" key from identity.PLANNED in this landing commit (R6.10a; identity.CLASSES already classes it grade).\nK2 the red tests, in its own commit, every test through the real cli.main: tests/test_alarm.py with test_stale_progress_exits_6_with_alm_002, test_free_lock_with_work_exits_6_alm_001, test_stalled_heartbeat_exits_6, test_complete_run_exits_0, test_finished_stop_is_silent (a C7 cell, a stop row and run.completed after run.resumed), test_mid_stop_crash_alarms (each of the three stop windows), test_crash_in_grading_alarms, test_outcome_without_archive_alarms, test_launch_stop_alarms, test_pending_zero_does_not_raise_alm_002, test_unreadable_progress_fails_closed and test_alarm_has_no_pending_logic_of_its_own; and tests/test_status.py::test_last_progress_ignores_segment_name_order. Paste each failing assertion line from a run on this commit into the commit message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError).\nK3 the green code, one commit per module: alarm.check per W1-K section 6.2 (HB-ALM-001 when has_work and the lock is free or its heartbeat is older than lock_staleness, firing at once; HB-ALM-002 when the lock is fresh, has_work, and now minus last_progress_at exceeds after_s; a run with has_work false never alarms); status.py's last_progress_at per section 6.1 (the maximum recorded_at over the tail row of each events segment, engine and grading, never chosen by file name; a torn last line skipped; unreadable is \"not recorded\" and the alarm fails closed), bench-status/2 with status.parse accepting /1 and /2, \"resumed n times\" with each time and segment id from resume.history, and \"stopped, n cells never launched\" derived, never stored; cli.py: --alarm-after exits 6 with the stderr line \"HB-ALM-00x: <cause>\", --json adds alarm {code, cause, last_progress_at, age_s}, any other check failure is non-zero (a check that errors never reads as no alarm), and cmd_plan prints the one --alarm-after number, max(budget_seconds, worst-case grading step) + 1800. This commit is the hand-back point.\nK4 the mutants and the cross-owner test, in its own commit: tests/mutations/alarm.json with M-HEARTBEATONLY, M-GE, M-UNITS, M-ZEROISOK, M-PENDINGONLY, M-ALARMPENDING, M-NAMESORT and M-STOPEXEMPT, each naming the test that kills it; and in tests/test_alarm.py one native-marked test (INT-A's control, W0 section 13's alarm-task row) that runs the real bench status <run_id> --alarm-after <s> --json on the ADR-0021 section 7 fixture and feeds that same real command to the real tools/alarm-task.ps1 under -DryRun through its -Bench and -RunsRoot parameters, with a stub Invoke-RestMethod through -RestStub, asserting the payload's code is the HB-ALM code the command printed, so K2a's stub and the real command cannot drift. tools/alarm-task.ps1 and tests/test_alarm_task.py are X-K2a's: a change there is a seam request to coord-opus-e1e4.\nThe ntfy topic (R-102) gates only the live drill, which is E5 and not yours: every test runs the script under -DryRun, no test reads a real HB_ALARM_NTFY_TOPIC or reaches the network, and a test that needs a topic sets a fake value in its own environment.\nA mutant on a shared line (the exit constants, a registry tuple, an argparse block another track also edits) has a find text that targets its own entry only, never the line's end (MUT-E); retarget only your own finds in tests/mutations/cli.json and tests/mutations/status.json.\nIf your skill wants a T2 plan record, write it at docs/plans/eval-x-k2b.md and its HTML, create-only, in its own commit (pre-granted), and regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived).\nScratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k2b-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).\nGate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_alarm.py tests/test_status.py tests/test_cli.py tests/test_resume.py tests/test_alarm_task.py on the final commit; uv run python tools/mutate_check.py with tests/mutations/alarm.json, then with tests/mutations/status.json, then with tests/mutations/cli.json, one per line, never --touched, every mutant killed or a recorded reason per survivor; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.\nSuite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.\nCommit named paths only, with AGENT_SESSION=x-k2b-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green.\nYour closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline or served-model-failed), the served model id as read from Agy's cli.log, tokens where Agy reports usage, else literally \"not recorded\" (Ruling 108, condition 4), and your context sample at each K-item. Report your served model id on the first line of your final message.\nNot yours: HB-ALM-003, the .alarm_check stamp, ALARM_INTERVAL_S, bench campaign status --alarm-after, the report/html.py resume header, tests/test_report_resume.py and the bench plan envelope lines (all E5, W1-K section 6.2; W0 rev 6.13 R6.13e); the live ntfy drill; resume.py, engine.py, views.py and errors.py (X-K1's); the cmd_run hunk and cmd_validate's line in cli.py; tools/alarm-task.ps1, tests/test_alarm_task.py and the runbook (X-K2a's).\nNot yours: the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours).\nFallback: a launch or transport failure before the first prompt (XPORT-A shape) runs this compile as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) in this tree under the same session x-k2b-e1e4; a red-only end, a deadline, a hand-back by the split rule or a failed served-model read runs the follow-on as that Sonnet sub-agent in this tree (R-87 Option 1).",
+      "session": "prompt-compile",
+      "shortname": "You are session x-k2b-e1e4 on branch build/eval-x-k2b, harness Agy, mode…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "Base: the integration head after the X-K1 join (all of K1a to K1d; integrate/e2e4-18), never main. Stop and report if git merge-base --is-ancestor 186ad7da HEAD exits non-zero (X-A3c is not in the base), if git merge-base --is-ancestor 96952224 HEAD exits non-zero (X-INTF is not in the base), if git grep -n \"def has_work\" -- src/harness_bench/resume.py does not print exactly one line, if git grep -n \"HB-ALM-001\\|HB-ALM-002\" -- src/harness_bench/errors.py does not print two lines, or if git grep -n \"reason=\\\"K1\" -- tests prints anything (a K1 turn has not joined). X-TE9 is not a predecessor (W0 rev 6.13 R6.13d): if TE9 has joined, rebase on its cmd_validate line; if not, edit no cmd_validate line.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Base: the integration head after the X-K1 join (all of K1a to K1d; integrate/e2e4-18), nev"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The context split rule. Your context ceiling is 150k tokens. Measured turns: J1d sampled 107k at K3, J1e 128k at K2, and X-A3c's Sonnet turns reached about 115k-125k after one or two K-items, so one K-item costs 17k to about 60k. Sample your context before each K-item and before each gate command from the token usage your Agy session reports (the stream-json usage events or cli.log); read only line ranges, never a whole design file; send gate output to a file and read only its summary. The rules: (1) start no K-item above 80k; (2) the hand-back point is after the K3 commit: go on to K4 only if the sample there is at or below 80k, else hand back with K4 and the gates named open; (3) at 125k start no new edit or gate, write the closing audit entry and hand back with the open items named; (4) if the figure cannot be read, record \"not recorded\" and hand back at the K3 point. A hand-back by this rule is a planned split, not a failure; the follow-on runs in this tree.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The context split rule. Your context ceiling is 150k tokens. Measured turns: J1d sampled 1"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "X-K1's landed names are the names you build on, never a second definition (R-102, DM7): resume.has_work(plan, rows), resume.stop_recorded(rows), resume.history(run_dir) and ResumeRecord, views.segment_rows, the run.resumed and segment.abandoned rows and the cell.outcome resume object, and the HB-ALM-001 and HB-ALM-002 rows in errors.py. alarm.py and bench status import has_work and carry no pending logic of their own.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "X-K1's landed names are the names you build on, never a second definition (R-102, DM7): re"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "K1 the skeleton, in its own commit: src/harness_bench/alarm.py with check(run_dir, after_s, now, lock_age) returning None, the bench status --alarm-after <seconds> flag wired to it and returning 0, and ALARM = 6 beside the exit constants in cli.py, so every K2 test fails on its own assertion (exit == 6), never on argparse's exit 2 or an ImportError; delete the \"alarm.py\" key from identity.PLANNED in this landing commit (R6.10a; identity.CLASSES already classes it grade).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "K1 the skeleton, in its own commit: src/harness_bench/alarm.py with check(run_dir, after_s"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "K2 the red tests, in its own commit, every test through the real cli.main: tests/test_alarm.py with test_stale_progress_exits_6_with_alm_002, test_free_lock_with_work_exits_6_alm_001, test_stalled_heartbeat_exits_6, test_complete_run_exits_0, test_finished_stop_is_silent (a C7 cell, a stop row and run.completed after run.resumed), test_mid_stop_crash_alarms (each of the three stop windows), test_crash_in_grading_alarms, test_outcome_without_archive_alarms, test_launch_stop_alarms, test_pending_zero_does_not_raise_alm_002, test_unreadable_progress_fails_closed and test_alarm_has_no_pending_logic_of_its_own; and tests/test_status.py::test_last_progress_ignores_segment_name_order. Paste each failing assertion line from a run on this commit into the commit message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "K2 the red tests, in its own commit, every test through the real cli.main: tests/test_alar"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "K3 the green code, one commit per module: alarm.check per W1-K section 6.2 (HB-ALM-001 when has_work and the lock is free or its heartbeat is older than lock_staleness, firing at once; HB-ALM-002 when the lock is fresh, has_work, and now minus last_progress_at exceeds after_s; a run with has_work false never alarms); status.py's last_progress_at per section 6.1 (the maximum recorded_at over the tail row of each events segment, engine and grading, never chosen by file name; a torn last line skipped; unreadable is \"not recorded\" and the alarm fails closed), bench-status/2 with status.parse accepting /1 and /2, \"resumed n times\" with each time and segment id from resume.history, and \"stopped, n cells never launched\" derived, never stored; cli.py: --alarm-after exits 6 with the stderr line \"HB-ALM-00x: <cause>\", --json adds alarm {code, cause, last_progress_at, age_s}, any other check failure is non-zero (a check that errors never reads as no alarm), and cmd_plan prints the one --alarm-after number, max(budget_seconds, worst-case grading step) + 1800. This commit is the hand-back point.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "K3 the green code, one commit per module: alarm.check per W1-K section 6.2 (HB-ALM-001 whe"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "K4 the mutants and the cross-owner test, in its own commit: tests/mutations/alarm.json with M-HEARTBEATONLY, M-GE, M-UNITS, M-ZEROISOK, M-PENDINGONLY, M-ALARMPENDING, M-NAMESORT and M-STOPEXEMPT, each naming the test that kills it; and in tests/test_alarm.py one native-marked test (INT-A's control, W0 section 13's alarm-task row) that runs the real bench status <run_id> --alarm-after <s> --json on the ADR-0021 section 7 fixture and feeds that same real command to the real tools/alarm-task.ps1 under -DryRun through its -Bench and -RunsRoot parameters, with a stub Invoke-RestMethod through -RestStub, asserting the payload's code is the HB-ALM code the command printed, so K2a's stub and the real command cannot drift. tools/alarm-task.ps1 and tests/test_alarm_task.py are X-K2a's: a change there is a seam request to coord-opus-e1e4.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "K4 the mutants and the cross-owner test, in its own commit: tests/mutations/alarm.json wit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The ntfy topic (R-102) gates only the live drill, which is E5 and not yours: every test runs the script under -DryRun, no test reads a real HB_ALARM_NTFY_TOPIC or reaches the network, and a test that needs a topic sets a fake value in its own environment.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The ntfy topic (R-102) gates only the live drill, which is E5 and not yours: every test ru"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "A mutant on a shared line (the exit constants, a registry tuple, an argparse block another track also edits) has a find text that targets its own entry only, never the line's end (MUT-E); retarget only your own finds in tests/mutations/cli.json and tests/mutations/status.json.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "A mutant on a shared line (the exit constants, a registry tuple, an argparse block another"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "If your skill wants a T2 plan record, write it at docs/plans/eval-x-k2b.md and its HTML, create-only, in its own commit (pre-granted), and regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "If your skill wants a T2 plan record, write it at docs/plans/eval-x-k2b.md and its HTML, c"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k2b-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k2"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_alarm.py tests/test_status.py tests/test_cli.py tests/test_resume.py tests/test_alarm_task.py on the final commit; uv run python tools/mutate_check.py with tests/mutations/alarm.json, then with tests/mutations/status.json, then with tests/mutations/cli.json, one per line, never --touched, every mutant killed or a recorded reason per survivor; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lo"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit named paths only, with AGENT_SESSION=x-k2b-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit named paths only, with AGENT_SESSION=x-k2b-e1e4 inline on every commit and coord ca"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline or served-model-failed), the served model id as read from Agy's cli.log, tokens where Agy reports usage, else literally \"not recorded\" (Ruling 108, condition 4), and your context sample at each K-item. Report your served model id on the first line of your final message.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your closing audit entry, written through audit-log.py, carries the dispatch start and end"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "HB-ALM-003, the .alarm_check stamp, ALARM_INTERVAL_S, bench campaign status --alarm-after, the report/html.py resume header, tests/test_report_resume.py and the bench plan envelope lines (all E5, W1-K section 6.2; W0 rev 6.13 R6.13e); the live ntfy drill; resume.py, engine.py, views.py and errors.py (X-K1's); the cmd_run hunk and cmd_validate's line in cli.py; tools/alarm-task.ps1, tests/test_alarm_task.py and the runbook (X-K2a's).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Not yours: HB-ALM-003, the .alarm_check stamp, ALARM_INTERVAL_S, bench campaign status --a"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Not yours: the whole suite and mutate_check --touched (the Leader's); never kill a process"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Fallback: a launch or transport failure before the first prompt (XPORT-A shape) runs this compile as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) in this tree under the same session x-k2b-e1e4; a red-only end, a deadline, a hand-back by the split rule or a failed served-model read runs the follow-on as that Sonnet sub-agent in this tree (R-87 Option 1).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Fallback: a launch or transport failure before the first prompt (XPORT-A shape) runs this "
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree on build/eval-x-k2b from the integration head after X-K1's join; alarm.py (new), status.py (E3), cli.py (status --alarm-after, ALARM, cmd_plan's line), tests/test_alarm.py, tests/test_status.py, tests/mutations/alarm.json, own finds in cli.json and status.json, the alarm.py PLANNED key",
+          "deadline": "3,300 s",
+          "fallback": "x-k2.contract.json: XPORT-A before the first prompt runs this compile as a Claude Code Sonnet sub-agent in this tree under x-k2b-e1e4; a red-only end, deadline, split-rule hand-back or failed served-model read runs the Sonnet follow-on in this tree (R-87 Option 1)",
+          "join_rule": "the R-104 worker gate; the Leader joins into integrate/e2e4-18, re-runs one red SHA, confirms alarm.py imports resume.has_work (M-ALARMPENDING killed), the native cross-owner test ran (not skipped) on Windows, no report/html.py change, and alarm.py is gone from identity.PLANNED",
+          "per_branch_exit": "K1, K2 and K3 commits on build/eval-x-k2b, then K4 and the gate, or a hand-back by the split rule with the open items named",
+          "termination": "one turn",
+          "transient_retry": "0",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "150k tokens; split rule: no K-item above 80k, hand-back point after K3 unless at or below 80k, hard stop at 125k, unreadable means hand back at K3",
+          "done_when": [
+            "Base: the integration head after the X-K1 join (all of K1a to K1d; integrate/e2e4-18), never main. Stop and report if git merge-base --is-ancestor 186ad7da HEAD exits non-zero (X-A3c is not in the base), if git merge-base --is-ancestor 96952224 HEAD exits non-zero (X-INTF is not in the base), if git grep -n \"def has_work\" -- src/harness_bench/resume.py does not print exactly one line, if git grep -n \"HB-ALM-001\\|HB-ALM-002\" -- src/harness_bench/errors.py does not print two lines, or if git grep -n \"reason=\\\"K1\" -- tests prints anything (a K1 turn has not joined). X-TE9 is not a predecessor (W0 rev 6.13 R6.13d): if TE9 has joined, rebase on its cmd_validate line; if not, edit no cmd_validate line.",
+            "The context split rule. Your context ceiling is 150k tokens. Measured turns: J1d sampled 107k at K3, J1e 128k at K2, and X-A3c's Sonnet turns reached about 115k-125k after one or two K-items, so one K-item costs 17k to about 60k. Sample your context before each K-item and before each gate command from the token usage your Agy session reports (the stream-json usage events or cli.log); read only line ranges, never a whole design file; send gate output to a file and read only its summary. The rules: (1) start no K-item above 80k; (2) the hand-back point is after the K3 commit: go on to K4 only if the sample there is at or below 80k, else hand back with K4 and the gates named open; (3) at 125k start no new edit or gate, write the closing audit entry and hand back with the open items named; (4) if the figure cannot be read, record \"not recorded\" and hand back at the K3 point. A hand-back by this rule is a planned split, not a failure; the follow-on runs in this tree.",
+            "X-K1's landed names are the names you build on, never a second definition (R-102, DM7): resume.has_work(plan, rows), resume.stop_recorded(rows), resume.history(run_dir) and ResumeRecord, views.segment_rows, the run.resumed and segment.abandoned rows and the cell.outcome resume object, and the HB-ALM-001 and HB-ALM-002 rows in errors.py. alarm.py and bench status import has_work and carry no pending logic of their own.",
+            "K1 the skeleton, in its own commit: src/harness_bench/alarm.py with check(run_dir, after_s, now, lock_age) returning None, the bench status --alarm-after <seconds> flag wired to it and returning 0, and ALARM = 6 beside the exit constants in cli.py, so every K2 test fails on its own assertion (exit == 6), never on argparse's exit 2 or an ImportError; delete the \"alarm.py\" key from identity.PLANNED in this landing commit (R6.10a; identity.CLASSES already classes it grade).",
+            "K2 the red tests, in its own commit, every test through the real cli.main: tests/test_alarm.py with test_stale_progress_exits_6_with_alm_002, test_free_lock_with_work_exits_6_alm_001, test_stalled_heartbeat_exits_6, test_complete_run_exits_0, test_finished_stop_is_silent (a C7 cell, a stop row and run.completed after run.resumed), test_mid_stop_crash_alarms (each of the three stop windows), test_crash_in_grading_alarms, test_outcome_without_archive_alarms, test_launch_stop_alarms, test_pending_zero_does_not_raise_alm_002, test_unreadable_progress_fails_closed and test_alarm_has_no_pending_logic_of_its_own; and tests/test_status.py::test_last_progress_ignores_segment_name_order. Paste each failing assertion line from a run on this commit into the commit message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError).",
+            "K3 the green code, one commit per module: alarm.check per W1-K section 6.2 (HB-ALM-001 when has_work and the lock is free or its heartbeat is older than lock_staleness, firing at once; HB-ALM-002 when the lock is fresh, has_work, and now minus last_progress_at exceeds after_s; a run with has_work false never alarms); status.py's last_progress_at per section 6.1 (the maximum recorded_at over the tail row of each events segment, engine and grading, never chosen by file name; a torn last line skipped; unreadable is \"not recorded\" and the alarm fails closed), bench-status/2 with status.parse accepting /1 and /2, \"resumed n times\" with each time and segment id from resume.history, and \"stopped, n cells never launched\" derived, never stored; cli.py: --alarm-after exits 6 with the stderr line \"HB-ALM-00x: <cause>\", --json adds alarm {code, cause, last_progress_at, age_s}, any other check failure is non-zero (a check that errors never reads as no alarm), and cmd_plan prints the one --alarm-after number, max(budget_seconds, worst-case grading step) + 1800. This commit is the hand-back point.",
+            "K4 the mutants and the cross-owner test, in its own commit: tests/mutations/alarm.json with M-HEARTBEATONLY, M-GE, M-UNITS, M-ZEROISOK, M-PENDINGONLY, M-ALARMPENDING, M-NAMESORT and M-STOPEXEMPT, each naming the test that kills it; and in tests/test_alarm.py one native-marked test (INT-A's control, W0 section 13's alarm-task row) that runs the real bench status <run_id> --alarm-after <s> --json on the ADR-0021 section 7 fixture and feeds that same real command to the real tools/alarm-task.ps1 under -DryRun through its -Bench and -RunsRoot parameters, with a stub Invoke-RestMethod through -RestStub, asserting the payload's code is the HB-ALM code the command printed, so K2a's stub and the real command cannot drift. tools/alarm-task.ps1 and tests/test_alarm_task.py are X-K2a's: a change there is a seam request to coord-opus-e1e4.",
+            "The ntfy topic (R-102) gates only the live drill, which is E5 and not yours: every test runs the script under -DryRun, no test reads a real HB_ALARM_NTFY_TOPIC or reaches the network, and a test that needs a topic sets a fake value in its own environment.",
+            "A mutant on a shared line (the exit constants, a registry tuple, an argparse block another track also edits) has a find text that targets its own entry only, never the line's end (MUT-E); retarget only your own finds in tests/mutations/cli.json and tests/mutations/status.json.",
+            "If your skill wants a T2 plan record, write it at docs/plans/eval-x-k2b.md and its HTML, create-only, in its own commit (pre-granted), and regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived).",
+            "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k2b-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).",
+            "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_alarm.py tests/test_status.py tests/test_cli.py tests/test_resume.py tests/test_alarm_task.py on the final commit; uv run python tools/mutate_check.py with tests/mutations/alarm.json, then with tests/mutations/status.json, then with tests/mutations/cli.json, one per line, never --touched, every mutant killed or a recorded reason per survivor; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.",
+            "Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "Commit named paths only, with AGENT_SESSION=x-k2b-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green.",
+            "Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline or served-model-failed), the served model id as read from Agy's cli.log, tokens where Agy reports usage, else literally \"not recorded\" (Ruling 108, condition 4), and your context sample at each K-item. Report your served model id on the first line of your final message.",
+            "Fallback: a launch or transport failure before the first prompt (XPORT-A shape) runs this compile as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) in this tree under the same session x-k2b-e1e4; a red-only end, a deadline, a hand-back by the split rule or a failed served-model read runs the follow-on as that Sonnet sub-agent in this tree (R-87 Option 1)."
+          ],
+          "fan_out_cap": "0",
+          "goal": "You are session x-k2b-e1e4 on branch build/eval-x-k2b, harness Agy, model gemini-3.8-flash-high, run w2-k2b-e1e4, deadline 3,300 s, one turn, within X-K2's 140 calls and a 150k context. Build X-K2b, the alarm and liveness code, following docs/coordination/eval-wave2-e234/x-k2.md (owned paths, acceptance items 1, 2 and 4, and the Coordinator #39 section \"K2b scope as compiled\"), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md, W1-K rev 1.2 (docs/design/eval-resume.md sections 6.1, 6.2, 8 and 13's alarm tests and mutants) and W0 rev 6.13 (docs/design/eval-seam-contracts.md section 9's alarm.py row, section 12 R6.9b, section 13 the alarm-task row's interface paragraph and the X-K2b row with R6.13d and R6.13e), all binding.",
+          "main_line_budget": "within X-K2's 140 calls (K2b 110 per the plan); 3,300 s this dispatch",
+          "not_in_scope": [
+            "HB-ALM-003, the .alarm_check stamp, ALARM_INTERVAL_S, bench campaign status --alarm-after, the report/html.py resume header, tests/test_report_resume.py and the bench plan envelope lines (all E5, W1-K section 6.2; W0 rev 6.13 R6.13e); the live ntfy drill; resume.py, engine.py, views.py and errors.py (X-K1's); the cmd_run hunk and cmd_validate's line in cli.py; tools/alarm-task.ps1, tests/test_alarm_task.py and the runbook (X-K2a's).",
+            "the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours)."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.015,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M488T30G4GFQWX05YXH9YEZN",
+        "raw_sha256": "7aca3e70d5c6bed34858487e5e3b978640267486c51fee35cc7a50053406d1ef",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-k2b"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/x-k2.md",
+            "reason": null,
+            "sha256": "dfd3cbaaf27064a49afd7ee8e124117598b5ffb390f1639b87ba42dcc5f9aad8",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/x-k2.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e1/README.md",
+            "reason": null,
+            "sha256": "59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e1/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/README.md",
+            "reason": null,
+            "sha256": "e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-resume.md",
+            "reason": null,
+            "sha256": "8517db2563c008917ffc02f8d969c073626b4716a9637145a5ceb70e6b760bb1",
+            "status": "resolved",
+            "token": "docs/design/eval-resume.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-seam-contracts.md",
+            "reason": null,
+            "sha256": "26ce62573cc24d58a2df4c04f27adb14cf08e7a89d9d3712a55dae41946e7cfd",
+            "status": "resolved",
+            "token": "docs/design/eval-seam-contracts.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "alarm.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "integrate/e2e4-18"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/resume.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "74cf828580414b6cb04a20cc1a132a23c20d1d337510671dd5acb4095dc56f15",
+            "status": "resolved",
+            "token": "src/harness_bench/errors.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "74cf828580414b6cb04a20cc1a132a23c20d1d337510671dd5acb4095dc56f15",
+            "status": "resolved",
+            "token": "errors.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/alarm.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "50e78c85fd64c6effe9e4bff75d6b5f40dab7243a20bdf1355aca7c8a75464aa",
+            "status": "resolved",
+            "token": "cli.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_alarm.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_status.py::test_last_progress_ignores_segment_name_order"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench-status/2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/alarm.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/alarm-task.ps1",
+            "reason": null,
+            "sha256": "b58cd7db00bdbac4cc88c24be93418bb8ff39512dced3762a10cf08ea654edc9",
+            "status": "resolved",
+            "token": "tools/alarm-task.ps1"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_alarm_task.py",
+            "reason": null,
+            "sha256": "52be414df67d8c3b8f1770000c0c2c20d6a15e165342b8f75c014f229d543a63",
+            "status": "resolved",
+            "token": "tests/test_alarm_task.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/cli.json",
+            "reason": null,
+            "sha256": "90a6b3cc4beee56376ff233cf521022abedbe4418f15a64fa9f283c84c6c8989",
+            "status": "resolved",
+            "token": "tests/mutations/cli.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/status.json",
+            "reason": null,
+            "sha256": "fb95646391bb48fbe9d7efeedecd5b70b89447aae0583a6ca58269eebcbf1d48",
+            "status": "resolved",
+            "token": "tests/mutations/status.json"
+          },
+          {
+            "nearest": "docs/plans/eval-x-j1b.md",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/plans/eval-x-k2b.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/docs-index.js",
+            "reason": null,
+            "sha256": "a24d3383a0bb5ac3d5821db8799768fc0adb90d2d346918cd8f605b58bcd5e51",
+            "status": "resolved",
+            "token": "docs/docs-index.js"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_identity.py",
+            "reason": null,
+            "sha256": "ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf",
+            "status": "resolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_atomic_sites.py",
+            "reason": null,
+            "sha256": "143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90",
+            "status": "resolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_arms_guard.py",
+            "reason": null,
+            "sha256": "ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349",
+            "status": "resolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_discriminate.py",
+            "reason": null,
+            "sha256": "6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52",
+            "status": "resolved",
+            "token": "tests/test_discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_skills_in_sync.py",
+            "reason": null,
+            "sha256": "572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d",
+            "status": "resolved",
+            "token": "tests/test_skills_in_sync.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_timing_hygiene.py",
+            "reason": null,
+            "sha256": "fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6",
+            "status": "resolved",
+            "token": "tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_status.py",
+            "reason": null,
+            "sha256": "a89159d445491a3498083d416d6552d220519a7e54602ca86f8bf27615a14c1e",
+            "status": "resolved",
+            "token": "tests/test_status.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_cli.py",
+            "reason": null,
+            "sha256": "c949fe8260ad216701ffa6100d0e9dd2ad7ebc2d60eed0af0e4a6aea3f015f87",
+            "status": "resolved",
+            "token": "tests/test_cli.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_resume.py"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/audit-log.py",
+            "reason": null,
+            "sha256": "d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4",
+            "status": "resolved",
+            "token": "audit-log.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/html.py",
+            "reason": null,
+            "sha256": "78e9cf77926550d12b01801365697e053cbf747a9e3f59d1f97b40d701cdc3f7",
+            "status": "resolved",
+            "token": "report/html.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_report_resume.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "resume.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/engine.py",
+            "reason": null,
+            "sha256": "6045c7e9bf8554f5601b8539566bef95019558acafa3d341bb4da91d83f0e5e1",
+            "status": "resolved",
+            "token": "engine.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "views.py"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-06T09:30:42Z",
+      "dispatchable": true,
+      "id": "al-01M488T3QEGYJ0TBSVHKRMDXTM",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session x-k2b-e1e4 --skill implement\nGoal state\nGoal: You are session x-k2b-e1e4 on branch build/eval-x-k2b, harness Agy, model gemini-3.8-flash-high, run w2-k2b-e1e4, deadline 3,300 s, one turn, within X-K2's 140 calls and a 150k context. Build X-K2b, the alarm and liveness code, following docs/coordination/eval-wave2-e234/x-k2.md (owned paths, acceptance items 1, 2 and 4, and the Coordinator #39 section \"K2b scope as compiled\"), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md, W1-K rev 1.2 (docs/design/eval-resume.md sections 6.1, 6.2, 8 and 13's alarm tests and mutants) and W0 rev 6.13 (docs/design/eval-seam-contracts.md section 9's alarm.py row, section 12 R6.9b, section 13 the alarm-task row's interface paragraph and the X-K2b row with R6.13d and R6.13e), all binding.\nDone when: Base: the integration head after the X-K1 join (all of K1a to K1d; integrate/e2e4-18), never main. Stop and report if git merge-base --is-ancestor 186ad7da HEAD exits non-zero (X-A3c is not in the base), if git merge-base --is-ancestor 96952224 HEAD exits non-zero (X-INTF is not in the base), if git grep -n \"def has_work\" -- src/harness_bench/resume.py does not print exactly one line, if git grep -n \"HB-ALM-001\\|HB-ALM-002\" -- src/harness_bench/errors.py does not print two lines, or if git grep -n \"reason=\\\"K1\" -- tests prints anything (a K1 turn has not joined). X-TE9 is not a predecessor (W0 rev 6.13 R6.13d): if TE9 has joined, rebase on its cmd_validate line; if not, edit no cmd_validate line.; The context split rule. Your context ceiling is 150k tokens. Measured turns: J1d sampled 107k at K3, J1e 128k at K2, and X-A3c's Sonnet turns reached about 115k-125k after one or two K-items, so one K-item costs 17k to about 60k. Sample your context before each K-item and before each gate command from the token usage your Agy session reports (the stream-json usage events or cli.log); read only line ranges, never a whole design file; send gate output to a file and read only its summary. The rules: (1) start no K-item above 80k; (2) the hand-back point is after the K3 commit: go on to K4 only if the sample there is at or below 80k, else hand back with K4 and the gates named open; (3) at 125k start no new edit or gate, write the closing audit entry and hand back with the open items named; (4) if the figure cannot be read, record \"not recorded\" and hand back at the K3 point. A hand-back by this rule is a planned split, not a failure; the follow-on runs in this tree.; X-K1's landed names are the names you build on, never a second definition (R-102, DM7): resume.has_work(plan, rows), resume.stop_recorded(rows), resume.history(run_dir) and ResumeRecord, views.segment_rows, the run.resumed and segment.abandoned rows and the cell.outcome resume object, and the HB-ALM-001 and HB-ALM-002 rows in errors.py. alarm.py and bench status import has_work and carry no pending logic of their own.; K1 the skeleton, in its own commit: src/harness_bench/alarm.py with check(run_dir, after_s, now, lock_age) returning None, the bench status --alarm-after <seconds> flag wired to it and returning 0, and ALARM = 6 beside the exit constants in cli.py, so every K2 test fails on its own assertion (exit == 6), never on argparse's exit 2 or an ImportError; delete the \"alarm.py\" key from identity.PLANNED in this landing commit (R6.10a; identity.CLASSES already classes it grade).; K2 the red tests, in its own commit, every test through the real cli.main: tests/test_alarm.py with test_stale_progress_exits_6_with_alm_002, test_free_lock_with_work_exits_6_alm_001, test_stalled_heartbeat_exits_6, test_complete_run_exits_0, test_finished_stop_is_silent (a C7 cell, a stop row and run.completed after run.resumed), test_mid_stop_crash_alarms (each of the three stop windows), test_crash_in_grading_alarms, test_outcome_without_archive_alarms, test_launch_stop_alarms, test_pending_zero_does_not_raise_alm_002, test_unreadable_progress_fails_closed and test_alarm_has_no_pending_logic_of_its_own; and tests/test_status.py::test_last_progress_ignores_segment_name_order. Paste each failing assertion line from a run on this commit into the commit message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError).; K3 the green code, one commit per module: alarm.check per W1-K section 6.2 (HB-ALM-001 when has_work and the lock is free or its heartbeat is older than lock_staleness, firing at once; HB-ALM-002 when the lock is fresh, has_work, and now minus last_progress_at exceeds after_s; a run with has_work false never alarms); status.py's last_progress_at per section 6.1 (the maximum recorded_at over the tail row of each events segment, engine and grading, never chosen by file name; a torn last line skipped; unreadable is \"not recorded\" and the alarm fails closed), bench-status/2 with status.parse accepting /1 and /2, \"resumed n times\" with each time and segment id from resume.history, and \"stopped, n cells never launched\" derived, never stored; cli.py: --alarm-after exits 6 with the stderr line \"HB-ALM-00x: <cause>\", --json adds alarm {code, cause, last_progress_at, age_s}, any other check failure is non-zero (a check that errors never reads as no alarm), and cmd_plan prints the one --alarm-after number, max(budget_seconds, worst-case grading step) + 1800. This commit is the hand-back point.; K4 the mutants and the cross-owner test, in its own commit: tests/mutations/alarm.json with M-HEARTBEATONLY, M-GE, M-UNITS, M-ZEROISOK, M-PENDINGONLY, M-ALARMPENDING, M-NAMESORT and M-STOPEXEMPT, each naming the test that kills it; and in tests/test_alarm.py one native-marked test (INT-A's control, W0 section 13's alarm-task row) that runs the real bench status <run_id> --alarm-after <s> --json on the ADR-0021 section 7 fixture and feeds that same real command to the real tools/alarm-task.ps1 under -DryRun through its -Bench and -RunsRoot parameters, with a stub Invoke-RestMethod through -RestStub, asserting the payload's code is the HB-ALM code the command printed, so K2a's stub and the real command cannot drift. tools/alarm-task.ps1 and tests/test_alarm_task.py are X-K2a's: a change there is a seam request to coord-opus-e1e4.; The ntfy topic (R-102) gates only the live drill, which is E5 and not yours: every test runs the script under -DryRun, no test reads a real HB_ALARM_NTFY_TOPIC or reaches the network, and a test that needs a topic sets a fake value in its own environment.; A mutant on a shared line (the exit constants, a registry tuple, an argparse block another track also edits) has a find text that targets its own entry only, never the line's end (MUT-E); retarget only your own finds in tests/mutations/cli.json and tests/mutations/status.json.; If your skill wants a T2 plan record, write it at docs/plans/eval-x-k2b.md and its HTML, create-only, in its own commit (pre-granted), and regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived).; Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k2b-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).; Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_alarm.py tests/test_status.py tests/test_cli.py tests/test_resume.py tests/test_alarm_task.py on the final commit; uv run python tools/mutate_check.py with tests/mutations/alarm.json, then with tests/mutations/status.json, then with tests/mutations/cli.json, one per line, never --touched, every mutant killed or a recorded reason per survivor; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.; Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commit named paths only, with AGENT_SESSION=x-k2b-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green.; Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline or served-model-failed), the served model id as read from Agy's cli.log, tokens where Agy reports usage, else literally \"not recorded\" (Ruling 108, condition 4), and your context sample at each K-item. Report your served model id on the first line of your final message.; Fallback: a launch or transport failure before the first prompt (XPORT-A shape) runs this compile as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) in this tree under the same session x-k2b-e1e4; a red-only end, a deadline, a hand-back by the split rule or a failed served-model read runs the follow-on as that Sonnet sub-agent in this tree (R-87 Option 1).\nNot in scope: HB-ALM-003, the .alarm_check stamp, ALARM_INTERVAL_S, bench campaign status --alarm-after, the report/html.py resume header, tests/test_report_resume.py and the bench plan envelope lines (all E5, W1-K section 6.2; W0 rev 6.13 R6.13e); the live ntfy drill; resume.py, engine.py, views.py and errors.py (X-K1's); the cmd_run hunk and cmd_validate's line in cli.py; tools/alarm-task.ps1, tests/test_alarm_task.py and the runbook (X-K2a's).; the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours).\nTier: T1\nFan-out cap: 0\nContext ceiling: 150k tokens; split rule: no K-item above 80k, hand-back point after K3 unless at or below 80k, hard stop at 125k, unreadable means hand back at K3\nMain-line budget: within X-K2's 140 calls (K2b 110 per the plan); 3,300 s this dispatch\nTrace\n| clause | trace |\n|---|---|\n| done_when: Base: the integration head after the X-K1 join (all of K1a to K1d; integrate/e2e4-18), never main. Stop and report if git merge-base --is-ancestor 186ad7da HEAD exits non-zero (X-A3c is not in the base), if git merge-base --is-ancestor 96952224 HEAD exits non-zero (X-INTF is not in the base), if git grep -n \"def has_work\" -- src/harness_bench/resume.py does not print exactly one line, if git grep -n \"HB-ALM-001\\|HB-ALM-002\" -- src/harness_bench/errors.py does not print two lines, or if git grep -n \"reason=\\\"K1\" -- tests prints anything (a K1 turn has not joined). X-TE9 is not a predecessor (W0 rev 6.13 R6.13d): if TE9 has joined, rebase on its cmd_validate line; if not, edit no cmd_validate line. | phrase: Base: the integration head after the X-K1 join (all of K1a to K1d; integrate/e2e4-18), nev |\n| done_when: The context split rule. Your context ceiling is 150k tokens. Measured turns: J1d sampled 107k at K3, J1e 128k at K2, and X-A3c's Sonnet turns reached about 115k-125k after one or two K-items, so one K-item costs 17k to about 60k. Sample your context before each K-item and before each gate command from the token usage your Agy session reports (the stream-json usage events or cli.log); read only line ranges, never a whole design file; send gate output to a file and read only its summary. The rules: (1) start no K-item above 80k; (2) the hand-back point is after the K3 commit: go on to K4 only if the sample there is at or below 80k, else hand back with K4 and the gates named open; (3) at 125k start no new edit or gate, write the closing audit entry and hand back with the open items named; (4) if the figure cannot be read, record \"not recorded\" and hand back at the K3 point. A hand-back by this rule is a planned split, not a failure; the follow-on runs in this tree. | phrase: The context split rule. Your context ceiling is 150k tokens. Measured turns: J1d sampled 1 |\n| done_when: X-K1's landed names are the names you build on, never a second definition (R-102, DM7): resume.has_work(plan, rows), resume.stop_recorded(rows), resume.history(run_dir) and ResumeRecord, views.segment_rows, the run.resumed and segment.abandoned rows and the cell.outcome resume object, and the HB-ALM-001 and HB-ALM-002 rows in errors.py. alarm.py and bench status import has_work and carry no pending logic of their own. | phrase: X-K1's landed names are the names you build on, never a second definition (R-102, DM7): re |\n| done_when: K1 the skeleton, in its own commit: src/harness_bench/alarm.py with check(run_dir, after_s, now, lock_age) returning None, the bench status --alarm-after <seconds> flag wired to it and returning 0, and ALARM = 6 beside the exit constants in cli.py, so every K2 test fails on its own assertion (exit == 6), never on argparse's exit 2 or an ImportError; delete the \"alarm.py\" key from identity.PLANNED in this landing commit (R6.10a; identity.CLASSES already classes it grade). | phrase: K1 the skeleton, in its own commit: src/harness_bench/alarm.py with check(run_dir, after_s |\n| done_when: K2 the red tests, in its own commit, every test through the real cli.main: tests/test_alarm.py with test_stale_progress_exits_6_with_alm_002, test_free_lock_with_work_exits_6_alm_001, test_stalled_heartbeat_exits_6, test_complete_run_exits_0, test_finished_stop_is_silent (a C7 cell, a stop row and run.completed after run.resumed), test_mid_stop_crash_alarms (each of the three stop windows), test_crash_in_grading_alarms, test_outcome_without_archive_alarms, test_launch_stop_alarms, test_pending_zero_does_not_raise_alm_002, test_unreadable_progress_fails_closed and test_alarm_has_no_pending_logic_of_its_own; and tests/test_status.py::test_last_progress_ignores_segment_name_order. Paste each failing assertion line from a run on this commit into the commit message (RED-C: an assertion, never ImportError, AttributeError, NameError or KeyError). | phrase: K2 the red tests, in its own commit, every test through the real cli.main: tests/test_alar |\n| done_when: K3 the green code, one commit per module: alarm.check per W1-K section 6.2 (HB-ALM-001 when has_work and the lock is free or its heartbeat is older than lock_staleness, firing at once; HB-ALM-002 when the lock is fresh, has_work, and now minus last_progress_at exceeds after_s; a run with has_work false never alarms); status.py's last_progress_at per section 6.1 (the maximum recorded_at over the tail row of each events segment, engine and grading, never chosen by file name; a torn last line skipped; unreadable is \"not recorded\" and the alarm fails closed), bench-status/2 with status.parse accepting /1 and /2, \"resumed n times\" with each time and segment id from resume.history, and \"stopped, n cells never launched\" derived, never stored; cli.py: --alarm-after exits 6 with the stderr line \"HB-ALM-00x: <cause>\", --json adds alarm {code, cause, last_progress_at, age_s}, any other check failure is non-zero (a check that errors never reads as no alarm), and cmd_plan prints the one --alarm-after number, max(budget_seconds, worst-case grading step) + 1800. This commit is the hand-back point. | phrase: K3 the green code, one commit per module: alarm.check per W1-K section 6.2 (HB-ALM-001 whe |\n| done_when: K4 the mutants and the cross-owner test, in its own commit: tests/mutations/alarm.json with M-HEARTBEATONLY, M-GE, M-UNITS, M-ZEROISOK, M-PENDINGONLY, M-ALARMPENDING, M-NAMESORT and M-STOPEXEMPT, each naming the test that kills it; and in tests/test_alarm.py one native-marked test (INT-A's control, W0 section 13's alarm-task row) that runs the real bench status <run_id> --alarm-after <s> --json on the ADR-0021 section 7 fixture and feeds that same real command to the real tools/alarm-task.ps1 under -DryRun through its -Bench and -RunsRoot parameters, with a stub Invoke-RestMethod through -RestStub, asserting the payload's code is the HB-ALM code the command printed, so K2a's stub and the real command cannot drift. tools/alarm-task.ps1 and tests/test_alarm_task.py are X-K2a's: a change there is a seam request to coord-opus-e1e4. | phrase: K4 the mutants and the cross-owner test, in its own commit: tests/mutations/alarm.json wit |\n| done_when: The ntfy topic (R-102) gates only the live drill, which is E5 and not yours: every test runs the script under -DryRun, no test reads a real HB_ALARM_NTFY_TOPIC or reaches the network, and a test that needs a topic sets a fake value in its own environment. | phrase: The ntfy topic (R-102) gates only the live drill, which is E5 and not yours: every test ru |\n| done_when: A mutant on a shared line (the exit constants, a registry tuple, an argparse block another track also edits) has a find text that targets its own entry only, never the line's end (MUT-E); retarget only your own finds in tests/mutations/cli.json and tests/mutations/status.json. | phrase: A mutant on a shared line (the exit constants, a registry tuple, an argparse block another |\n| done_when: If your skill wants a T2 plan record, write it at docs/plans/eval-x-k2b.md and its HTML, create-only, in its own commit (pre-granted), and regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived). | phrase: If your skill wants a T2 plan record, write it at docs/plans/eval-x-k2b.md and its HTML, c |\n| done_when: Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k2b-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH). | phrase: Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\k2 |\n| done_when: Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_alarm.py tests/test_status.py tests/test_cli.py tests/test_resume.py tests/test_alarm_task.py on the final commit; uv run python tools/mutate_check.py with tests/mutations/alarm.json, then with tests/mutations/status.json, then with tests/mutations/cli.json, one per line, never --touched, every mutant killed or a recorded reason per survivor; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate. | phrase: Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run  |\n| done_when: Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lo |\n| done_when: Commit named paths only, with AGENT_SESSION=x-k2b-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green. | phrase: Commit named paths only, with AGENT_SESSION=x-k2b-e1e4 inline on every commit and coord ca |\n| done_when: Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline or served-model-failed), the served model id as read from Agy's cli.log, tokens where Agy reports usage, else literally \"not recorded\" (Ruling 108, condition 4), and your context sample at each K-item. Report your served model id on the first line of your final message. | phrase: Your closing audit entry, written through audit-log.py, carries the dispatch start and end |\n| not_in_scope: HB-ALM-003, the .alarm_check stamp, ALARM_INTERVAL_S, bench campaign status --alarm-after, the report/html.py resume header, tests/test_report_resume.py and the bench plan envelope lines (all E5, W1-K section 6.2; W0 rev 6.13 R6.13e); the live ntfy drill; resume.py, engine.py, views.py and errors.py (X-K1's); the cmd_run hunk and cmd_validate's line in cli.py; tools/alarm-task.ps1, tests/test_alarm_task.py and the runbook (X-K2a's). | phrase: Not yours: HB-ALM-003, the .alarm_check stamp, ALARM_INTERVAL_S, bench campaign status --a |\n| not_in_scope: the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours). | phrase: Not yours: the whole suite and mutate_check --touched (the Leader's); never kill a process |\n| done_when: Fallback: a launch or transport failure before the first prompt (XPORT-A shape) runs this compile as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5) in this tree under the same session x-k2b-e1e4; a red-only end, a deadline, a hand-back by the split rule or a failed served-model read runs the follow-on as that Sonnet sub-agent in this tree (R-87 Option 1). | phrase: Fallback: a launch or transport failure before the first prompt (XPORT-A shape) runs this  |\nReferences\n- build/eval-x-k2b: unresolved (not found)\n- docs/coordination/eval-wave2-e234/x-k2.md: docs/coordination/eval-wave2-e234/x-k2.md sha256 dfd3cbaaf27064a49afd7ee8e124117598b5ffb390f1639b87ba42dcc5f9aad8\n- docs/coordination/eval-wave2-e1/README.md: docs/coordination/eval-wave2-e1/README.md sha256 59a9fafe6a4c4f9273bd3f93eeb69ee6468f237f0063063acb7af93376a1d27b\n- docs/coordination/eval-wave2-e234/README.md: docs/coordination/eval-wave2-e234/README.md sha256 e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701\n- docs/design/eval-resume.md: docs/design/eval-resume.md sha256 8517db2563c008917ffc02f8d969c073626b4716a9637145a5ceb70e6b760bb1\n- docs/design/eval-seam-contracts.md: docs/design/eval-seam-contracts.md sha256 26ce62573cc24d58a2df4c04f27adb14cf08e7a89d9d3712a55dae41946e7cfd\n- alarm.py: unresolved (not found)\n- integrate/e2e4-18: unresolved (not found)\n- src/harness_bench/resume.py: unresolved (not found)\n- src/harness_bench/errors.py: src/harness_bench/errors.py sha256 74cf828580414b6cb04a20cc1a132a23c20d1d337510671dd5acb4095dc56f15\n- errors.py: src/harness_bench/errors.py sha256 74cf828580414b6cb04a20cc1a132a23c20d1d337510671dd5acb4095dc56f15\n- src/harness_bench/alarm.py: unresolved (not found)\n- cli.py: src/harness_bench/cli.py sha256 50e78c85fd64c6effe9e4bff75d6b5f40dab7243a20bdf1355aca7c8a75464aa\n- tests/test_alarm.py: unresolved (not found)\n- tests/test_status.py::test_last_progress_ignores_segment_name_order: unresolved (not found)\n- bench-status/2: unresolved (not found)\n- /1: unresolved (outside repo)\n- /2: unresolved (outside repo)\n- tests/mutations/alarm.json: unresolved (not found)\n- tools/alarm-task.ps1: tools/alarm-task.ps1 sha256 b58cd7db00bdbac4cc88c24be93418bb8ff39512dced3762a10cf08ea654edc9\n- tests/test_alarm_task.py: tests/test_alarm_task.py sha256 52be414df67d8c3b8f1770000c0c2c20d6a15e165342b8f75c014f229d543a63\n- tests/mutations/cli.json: tests/mutations/cli.json sha256 90a6b3cc4beee56376ff233cf521022abedbe4418f15a64fa9f283c84c6c8989\n- tests/mutations/status.json: tests/mutations/status.json sha256 fb95646391bb48fbe9d7efeedecd5b70b89447aae0583a6ca58269eebcbf1d48\n- docs/plans/eval-x-k2b.md: unresolved (not found; nearest: docs/plans/eval-x-j1b.md)\n- docs/docs-index.js: docs/docs-index.js sha256 a24d3383a0bb5ac3d5821db8799768fc0adb90d2d346918cd8f605b58bcd5e51\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tests/test_status.py: tests/test_status.py sha256 a89159d445491a3498083d416d6552d220519a7e54602ca86f8bf27615a14c1e\n- tests/test_cli.py: tests/test_cli.py sha256 c949fe8260ad216701ffa6100d0e9dd2ad7ebc2d60eed0af0e4a6aea3f015f87\n- tests/test_resume.py: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d\n- audit-log.py: docs/ai-forward-pack/scripts/audit-log.py sha256 d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4\n- report/html.py: src/harness_bench/report/html.py sha256 78e9cf77926550d12b01801365697e053cbf747a9e3f59d1f97b40d701cdc3f7\n- tests/test_report_resume.py: unresolved (not found)\n- resume.py: unresolved (not found)\n- engine.py: src/harness_bench/engine.py sha256 6045c7e9bf8554f5601b8539566bef95019558acafa3d341bb4da91d83f0e5e1\n- views.py: unresolved (ambiguous: 2 matches)\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0\nper_branch_exit: K1, K2 and K3 commits on build/eval-x-k2b, then K4 and the gate, or a hand-back by the split rule with the open items named\njoin_rule: the R-104 worker gate; the Leader joins into integrate/e2e4-18, re-runs one red SHA, confirms alarm.py imports resume.has_work (M-ALARMPENDING killed), the native cross-owner test ran (not skipped) on Windows, no report/html.py change, and alarm.py is gone from identity.PLANNED\ncontainment: own worktree on build/eval-x-k2b from the integration head after X-K1's join; alarm.py (new), status.py (E3), cli.py (status --alarm-after, ALARM, cmd_plan's line), tests/test_alarm.py, tests/test_status.py, tests/mutations/alarm.json, own finds in cli.json and status.json, the alarm.py PLANNED key\ntermination: one turn\ndeadline: 3,300 s\nfallback: x-k2.contract.json: XPORT-A before the first prompt runs this compile as a Claude Code Sonnet sub-agent in this tree under x-k2b-e1e4; a red-only end, deadline, split-rule hand-back or failed served-model read runs the Sonnet follow-on in this tree (R-87 Option 1)\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M488T30G4GFQWX05YXH9YEZN\nraw sha256: 7aca3e70d5c6bed34858487e5e3b978640267486c51fee35cc7a50053406d1ef\ncompiler model: claude-opus-5-5\nengine seconds: 0.015\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "x-k2b-e1e4",
+      "shortname": "compile-You are session x-k2b-e1e4 on branch build/eval-x-k2b, harness Agy, mode…",
+      "skill": null,
+      "summary": "compiled al-01M488T30G4GFQWX05YXH9YEZN for claude-code v1: 18 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-06T09:33:07Z",
+      "id": "al-01M488YHWWHYK8JXFB5XP52PSH",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session x-rdy-e1e4 on branch build/eval-x-rdy, harness Claude Code, model sonnet (served claude-sonnet-5-5), an Agent-tool sub-agent with no coord-runner run, one turn, 3,300 s, within X-RDY's 200 calls and 200k context; past the deadline or the split rule, the tasks not yet flipped go to a fresh session (the plan's cut line). Flip NG1, NG2, SM1, SM2, S2, RW1 and RW2 from draft to ready, each with a real-host discrimination record that reproduces the task's declared expected, following the plan row X-RDY (docs/coordination/coordination-e2e4.md), the ready items of docs/coordination/eval-wave2-e234/x-ng.md, x-sm.md, x-rw.md and x-i-s2.md (step 3), tasks/README.md, W0 rev 6.13 (docs/design/eval-seam-contracts.md section 6 with R6.12c, hosts_ready an int count, and section 13's task-folder rows) and SR-E2's ready order, all binding.\nBase: your own worktree on build/eval-x-rdy, created by the Leader from the integration head after the X-A3c join (integrate/e2e4-18), never main. Stop and report if git merge-base --is-ancestor exits non-zero for any of 1a837a5d (X-J1e joined), 0535a33e (X-J2c joined), 7d1d6851 (X-LGc joined), d4be6d3c (the 0.7 release) or 186ad7da (X-A3c).\nThe context split rule. Sample your context before each K-item and before each gate command from your own transcript: the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-rdy-e1e4, the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens. Measured turns: J1d sampled 107k at K3, J1e 128k at K2, and X-A3c's three Sonnet turns each reached about 115k-125k after one or two K-items, so one K-item costs up to about 60k. Read only line ranges, never a whole design or task file you do not need; send test and discriminate output to a file and read only its summary. The rules: (1) start no K-item above 100k; (2) the hand-back point is after the K3 commit: go on only if the sample there is at or below 100k, else hand back with the open K-items named; (3) at 170k start no new edit, trial or gate, write the closing audit entry and hand back with the open items named; (4) if the figure cannot be read, record \"not recorded\" and hand back at the K3 point. A hand-back by this rule is a planned split, not a failure; the follow-on runs in this tree.\nThe ready order is S1's (SR-E2, W0 line 914; commit 8534fb1f): for each task, edit the task folder first, then flip status to ready in tasks/<ID>/task.yaml, then run the trial, then commit the flip and the record together in one commit. The record key holds the task version of the folder as it is at the trial, so any edit to the folder after the trial makes the record stale: a correction means edit, flip, re-run, never a record kept from an earlier version.\nThe trial: uv run bench discriminate <ID> --runs C:\\t\\rdy-runs --cells-root C:\\t\\rdy-cells (short paths), with no model credentials in the environment, as the Leader ran S1. It runs the reference, naive and variant roles as synthetic cells through the real engine, archiver and grading pass, checks readiness.contract_failures first (HB-RDY-005 on any failure) and writes bench/discrimination/<ID>/<tv16>-<id16>-<platform>.json through atomic.create_once. A trial that cannot run on this host (a missing tool, a probe host that does not start) is reported \"not run\" with its reason, and the task stays draft.\nReproduces means: every metric of expected.reference and expected.naive equals the record's measured value, and readiness accepts the record with no HB-RDY-003, HB-RDY-010 or HB-RDY-011 item. A task that does not reproduce stays draft: put status back to draft, commit no record for it (delete any record file its trial wrote), and report each metric's declared and measured value. Never edit expected without its evidence: a value commented Inferred (SM1 and SM2 naive size_vs_reference, all RW1 and RW2 values, both S2 values) may be corrected to the measured value with a provenance comment naming the measurement (GLD-A), then edit, flip, re-run; a property_check_pass mismatch on either role is never corrected, it is a finding to coord-opus-e1e4 and the task stays draft.\nK1 the folder fixes and the stand-ins, before any flip, in its own commits: (a) the GLD-A lines, which are the one contract failure left on each of four tasks at 1a837a5d: readiness.contract_failures(Path('.'), task) returns, for NG1 and NG2, expected.naive.verified_before_use \"no provenance comment of at least three words (GLD-A)\", and for RW1 and RW2 the same on expected.naive.turn1_tests_pass; SM1, SM2 and S2 return []. Add a true provenance comment of three or more words to each of those four lines, run contract_failures on all seven and paste the seven results (each must be []) in the commit. This is J2b's \"one failure left each\" after the variant-reader fix (0c788935). (b) Coordinator #34's owed items: the RW1/RW2 provenance lines are (a); the two stand-ins are tests/fixtures/property_tasks/rework_standin.py and tests/fixtures/property_tasks/standin_diffstats.py, whose own docstrings say the ready follow-on deletes them. Delete both and point tests/test_rework_tasks.py and tests/test_simplicity_tasks.py at the real functions (grade/_changes.py is_test_path, product_lines, line_delta, in_radius; grade/rework.py; grade/diffstats.py), asserting the same numbers (HASH-A). A number the real function gives that differs from the stand-in's is a second-definition disagreement: stop that task's flip and report both values. tests/fixtures/s1/standin_bench_check.py is not yours.\nK2 NG1 and NG2, one commit per task (flip and record together). K3 SM1 and SM2, one commit per task. This commit is the hand-back point. K4 S2. K5 RW1 and RW2 (two-turn tasks; their records carry the turn-keyed rows X-J1 and X-J2c landed).\nS2 carries X-I-S2's open items, reported, not closed by you (tasks/S2/oracle/evidence.md:120-128): the two mutation survivors, the cookieless-401 control (no committed fixture answers a cookieless GET /tasks with 200 yet passes the seed controls) and the bob-get control (pa-ids is stopped earlier by the alice-get control), and the unmet A6 clause (one shape per class by a different author or model; all 21 variants were written by one Sonnet session, x-is2d-e1e4). S2's ready is defined by its record (W1-I section 4); the flip does not wait on them, and you write no S2 variant or evidence line: any S2 folder edit after the flip makes its record stale. Your report repeats the three items verbatim so the plan revision can own them.\nThe e2e fixture lesson (8534fb1f): once a task is ready with a committed record, any fixture or lean copy that copies bench/discrimination or the task folder, or pins the task's status, may break. After each task's commit run the tests that read it (below). Pre-granted, mechanical only and listed in the commit message: in tests/test_ng_tasks.py, tests/test_simplicity_tasks.py, tests/test_rework_tasks.py and tests/test_security_s2.py, a pin of that task's status moves from draft to ready, and a fixture copy skips the committed record as tests/fixtures/property_tasks/make_task.py already does (ignore \"discrimination\"); never a weakened assertion. Any other line in another owner's file is a seam request.\nIf your skill wants a T2 plan record, write it at docs/plans/eval-x-rdy.md and its HTML, create-only, in its own commit (pre-granted), with the per-task table (task, flipped or draft, record path, each metric declared and measured, trial wall-clock), and regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived).\nScratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\rdy-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest, discriminate or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).\nGate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_ng_tasks.py tests/test_simplicity_tasks.py tests/test_rework_tasks.py tests/test_security_s2.py tests/test_readiness.py tests/test_cli_discriminate.py tests/test_e1_e2e.py after each task's commit and on the final commit; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.\nSuite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.\nCommit named paths only, with AGENT_SESSION=x-rdy-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green.\nYour closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline or served-model-failed), the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), the per-task result (flipped with record path, or draft with measured numbers, or not run with reason), and your context sample at each K-item. Report your served model id on the first line of your final message.\nNot yours: src/ (a trial that fails because the code is wrong is a finding to coord-opus-e1e4, never a fix in this turn); X-TE9's cli.py line and its test markers (operator-held); the S2 survivors and A6 (reported only); RS1 and RS2 (X-RS, gated on B-2); X-CV's final ten records; bench/bom.yaml entries other than each task's own status, if its entry carries one.\nNot yours: the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours).",
+      "session": "prompt-compile",
+      "shortname": "You are session x-rdy-e1e4 on branch build/eval-x-rdy, harness Claude Co…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "Base: your own worktree on build/eval-x-rdy, created by the Leader from the integration head after the X-A3c join (integrate/e2e4-18), never main. Stop and report if git merge-base --is-ancestor exits non-zero for any of 1a837a5d (X-J1e joined), 0535a33e (X-J2c joined), 7d1d6851 (X-LGc joined), d4be6d3c (the 0.7 release) or 186ad7da (X-A3c).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Base: your own worktree on build/eval-x-rdy, created by the Leader from the integration he"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The context split rule. Sample your context before each K-item and before each gate command from your own transcript: the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-rdy-e1e4, the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens. Measured turns: J1d sampled 107k at K3, J1e 128k at K2, and X-A3c's three Sonnet turns each reached about 115k-125k after one or two K-items, so one K-item costs up to about 60k. Read only line ranges, never a whole design or task file you do not need; send test and discriminate output to a file and read only its summary. The rules: (1) start no K-item above 100k; (2) the hand-back point is after the K3 commit: go on only if the sample there is at or below 100k, else hand back with the open K-items named; (3) at 170k start no new edit, trial or gate, write the closing audit entry and hand back with the open items named; (4) if the figure cannot be read, record \"not recorded\" and hand back at the K3 point. A hand-back by this rule is a planned split, not a failure; the follow-on runs in this tree.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The context split rule. Sample your context before each K-item and before each gate comman"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The ready order is S1's (SR-E2, W0 line 914; commit 8534fb1f): for each task, edit the task folder first, then flip status to ready in tasks/<ID>/task.yaml, then run the trial, then commit the flip and the record together in one commit. The record key holds the task version of the folder as it is at the trial, so any edit to the folder after the trial makes the record stale: a correction means edit, flip, re-run, never a record kept from an earlier version.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The ready order is S1's (SR-E2, W0 line 914; commit 8534fb1f): for each task, edit the tas"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The trial: uv run bench discriminate <ID> --runs C:\\t\\rdy-runs --cells-root C:\\t\\rdy-cells (short paths), with no model credentials in the environment, as the Leader ran S1. It runs the reference, naive and variant roles as synthetic cells through the real engine, archiver and grading pass, checks readiness.contract_failures first (HB-RDY-005 on any failure) and writes bench/discrimination/<ID>/<tv16>-<id16>-<platform>.json through atomic.create_once. A trial that cannot run on this host (a missing tool, a probe host that does not start) is reported \"not run\" with its reason, and the task stays draft.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The trial: uv run bench discriminate <ID> --runs C:\\t\\rdy-runs --cells-root C:\\t\\rdy-cells"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Reproduces means: every metric of expected.reference and expected.naive equals the record's measured value, and readiness accepts the record with no HB-RDY-003, HB-RDY-010 or HB-RDY-011 item. A task that does not reproduce stays draft: put status back to draft, commit no record for it (delete any record file its trial wrote), and report each metric's declared and measured value. Never edit expected without its evidence: a value commented Inferred (SM1 and SM2 naive size_vs_reference, all RW1 and RW2 values, both S2 values) may be corrected to the measured value with a provenance comment naming the measurement (GLD-A), then edit, flip, re-run; a property_check_pass mismatch on either role is never corrected, it is a finding to coord-opus-e1e4 and the task stays draft.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Reproduces means: every metric of expected.reference and expected.naive equals the record'"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "K1 the folder fixes and the stand-ins, before any flip, in its own commits: (a) the GLD-A lines, which are the one contract failure left on each of four tasks at 1a837a5d: readiness.contract_failures(Path('.'), task) returns, for NG1 and NG2, expected.naive.verified_before_use \"no provenance comment of at least three words (GLD-A)\", and for RW1 and RW2 the same on expected.naive.turn1_tests_pass; SM1, SM2 and S2 return []. Add a true provenance comment of three or more words to each of those four lines, run contract_failures on all seven and paste the seven results (each must be []) in the commit. This is J2b's \"one failure left each\" after the variant-reader fix (0c788935). (b) Coordinator #34's owed items: the RW1/RW2 provenance lines are (a); the two stand-ins are tests/fixtures/property_tasks/rework_standin.py and tests/fixtures/property_tasks/standin_diffstats.py, whose own docstrings say the ready follow-on deletes them. Delete both and point tests/test_rework_tasks.py and tests/test_simplicity_tasks.py at the real functions (grade/_changes.py is_test_path, product_lines, line_delta, in_radius; grade/rework.py; grade/diffstats.py), asserting the same numbers (HASH-A). A number the real function gives that differs from the stand-in's is a second-definition disagreement: stop that task's flip and report both values. tests/fixtures/s1/standin_bench_check.py is not yours.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "K1 the folder fixes and the stand-ins, before any flip, in its own commits: (a) the GLD-A "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "K2 NG1 and NG2, one commit per task (flip and record together). K3 SM1 and SM2, one commit per task. This commit is the hand-back point. K4 S2. K5 RW1 and RW2 (two-turn tasks; their records carry the turn-keyed rows X-J1 and X-J2c landed).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "K2 NG1 and NG2, one commit per task (flip and record together). K3 SM1 and SM2, one commit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "S2 carries X-I-S2's open items, reported, not closed by you (tasks/S2/oracle/evidence.md:120-128): the two mutation survivors, the cookieless-401 control (no committed fixture answers a cookieless GET /tasks with 200 yet passes the seed controls) and the bob-get control (pa-ids is stopped earlier by the alice-get control), and the unmet A6 clause (one shape per class by a different author or model; all 21 variants were written by one Sonnet session, x-is2d-e1e4). S2's ready is defined by its record (W1-I section 4); the flip does not wait on them, and you write no S2 variant or evidence line: any S2 folder edit after the flip makes its record stale. Your report repeats the three items verbatim so the plan revision can own them.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "S2 carries X-I-S2's open items, reported, not closed by you (tasks/S2/oracle/evidence.md:1"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The e2e fixture lesson (8534fb1f): once a task is ready with a committed record, any fixture or lean copy that copies bench/discrimination or the task folder, or pins the task's status, may break. After each task's commit run the tests that read it (below). Pre-granted, mechanical only and listed in the commit message: in tests/test_ng_tasks.py, tests/test_simplicity_tasks.py, tests/test_rework_tasks.py and tests/test_security_s2.py, a pin of that task's status moves from draft to ready, and a fixture copy skips the committed record as tests/fixtures/property_tasks/make_task.py already does (ignore \"discrimination\"); never a weakened assertion. Any other line in another owner's file is a seam request.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The e2e fixture lesson (8534fb1f): once a task is ready with a committed record, any fixtu"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "If your skill wants a T2 plan record, write it at docs/plans/eval-x-rdy.md and its HTML, create-only, in its own commit (pre-granted), with the per-task table (task, flipped or draft, record path, each metric declared and measured, trial wall-clock), and regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "If your skill wants a T2 plan record, write it at docs/plans/eval-x-rdy.md and its HTML, c"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\rdy-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest, discriminate or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\rd"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_ng_tasks.py tests/test_simplicity_tasks.py tests/test_rework_tasks.py tests/test_security_s2.py tests/test_readiness.py tests/test_cli_discriminate.py tests/test_e1_e2e.py after each task's commit and on the final commit; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lo"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit named paths only, with AGENT_SESSION=x-rdy-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit named paths only, with AGENT_SESSION=x-rdy-e1e4 inline on every commit and coord ca"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline or served-model-failed), the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), the per-task result (flipped with record path, or draft with measured numbers, or not run with reason), and your context sample at each K-item. Report your served model id on the first line of your final message.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your closing audit entry, written through audit-log.py, carries the dispatch start and end"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "src/ (a trial that fails because the code is wrong is a finding to coord-opus-e1e4, never a fix in this turn); X-TE9's cli.py line and its test markers (operator-held); the S2 survivors and A6 (reported only); RS1 and RS2 (X-RS, gated on B-2); X-CV's final ten records; bench/bom.yaml entries other than each task's own status, if its entry carries one.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Not yours: src/ (a trial that fails because the code is wrong is a finding to coord-opus-e"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Not yours: the whole suite and mutate_check --touched (the Leader's); never kill a process"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree on build/eval-x-rdy from the integration head after the X-A3c join; tasks/{NG1,NG2,SM1,SM2,RW1,RW2,S2}/task.yaml, their records under bench/discrimination/**, the two stand-ins and their repointed test imports, the pre-granted status pins",
+          "deadline": "3,300 s",
+          "fallback": "the Leader re-spawns the same compile as a Claude Code Sonnet sub-agent in the same tree under session x-rdy-e1e4 after a hand-back or the deadline, for the tasks not yet flipped (no runner contract: the runner has no claude-code transport)",
+          "join_rule": "the R-104 worker gate; the Leader joins into integrate/e2e4-18, re-runs one trial (bench discriminate on one flipped task; a retry at an unchanged key is equal bytes), confirms each ready task's record task_version equals the computed version of its folder, each draft task has no record, and the two stand-ins are gone",
+          "per_branch_exit": "K1 to K3 commits on build/eval-x-rdy, then K4, K5 and the gate, or a hand-back by the split rule with the open tasks named",
+          "termination": "one turn",
+          "transient_retry": "0",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens; split rule: no K-item above 100k, hand-back point after K3 unless at or below 100k, hard stop at 170k, unreadable means hand back at K3",
+          "done_when": [
+            "Base: your own worktree on build/eval-x-rdy, created by the Leader from the integration head after the X-A3c join (integrate/e2e4-18), never main. Stop and report if git merge-base --is-ancestor exits non-zero for any of 1a837a5d (X-J1e joined), 0535a33e (X-J2c joined), 7d1d6851 (X-LGc joined), d4be6d3c (the 0.7 release) or 186ad7da (X-A3c).",
+            "The context split rule. Sample your context before each K-item and before each gate command from your own transcript: the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-rdy-e1e4, the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens. Measured turns: J1d sampled 107k at K3, J1e 128k at K2, and X-A3c's three Sonnet turns each reached about 115k-125k after one or two K-items, so one K-item costs up to about 60k. Read only line ranges, never a whole design or task file you do not need; send test and discriminate output to a file and read only its summary. The rules: (1) start no K-item above 100k; (2) the hand-back point is after the K3 commit: go on only if the sample there is at or below 100k, else hand back with the open K-items named; (3) at 170k start no new edit, trial or gate, write the closing audit entry and hand back with the open items named; (4) if the figure cannot be read, record \"not recorded\" and hand back at the K3 point. A hand-back by this rule is a planned split, not a failure; the follow-on runs in this tree.",
+            "The ready order is S1's (SR-E2, W0 line 914; commit 8534fb1f): for each task, edit the task folder first, then flip status to ready in tasks/<ID>/task.yaml, then run the trial, then commit the flip and the record together in one commit. The record key holds the task version of the folder as it is at the trial, so any edit to the folder after the trial makes the record stale: a correction means edit, flip, re-run, never a record kept from an earlier version.",
+            "The trial: uv run bench discriminate <ID> --runs C:\\t\\rdy-runs --cells-root C:\\t\\rdy-cells (short paths), with no model credentials in the environment, as the Leader ran S1. It runs the reference, naive and variant roles as synthetic cells through the real engine, archiver and grading pass, checks readiness.contract_failures first (HB-RDY-005 on any failure) and writes bench/discrimination/<ID>/<tv16>-<id16>-<platform>.json through atomic.create_once. A trial that cannot run on this host (a missing tool, a probe host that does not start) is reported \"not run\" with its reason, and the task stays draft.",
+            "Reproduces means: every metric of expected.reference and expected.naive equals the record's measured value, and readiness accepts the record with no HB-RDY-003, HB-RDY-010 or HB-RDY-011 item. A task that does not reproduce stays draft: put status back to draft, commit no record for it (delete any record file its trial wrote), and report each metric's declared and measured value. Never edit expected without its evidence: a value commented Inferred (SM1 and SM2 naive size_vs_reference, all RW1 and RW2 values, both S2 values) may be corrected to the measured value with a provenance comment naming the measurement (GLD-A), then edit, flip, re-run; a property_check_pass mismatch on either role is never corrected, it is a finding to coord-opus-e1e4 and the task stays draft.",
+            "K1 the folder fixes and the stand-ins, before any flip, in its own commits: (a) the GLD-A lines, which are the one contract failure left on each of four tasks at 1a837a5d: readiness.contract_failures(Path('.'), task) returns, for NG1 and NG2, expected.naive.verified_before_use \"no provenance comment of at least three words (GLD-A)\", and for RW1 and RW2 the same on expected.naive.turn1_tests_pass; SM1, SM2 and S2 return []. Add a true provenance comment of three or more words to each of those four lines, run contract_failures on all seven and paste the seven results (each must be []) in the commit. This is J2b's \"one failure left each\" after the variant-reader fix (0c788935). (b) Coordinator #34's owed items: the RW1/RW2 provenance lines are (a); the two stand-ins are tests/fixtures/property_tasks/rework_standin.py and tests/fixtures/property_tasks/standin_diffstats.py, whose own docstrings say the ready follow-on deletes them. Delete both and point tests/test_rework_tasks.py and tests/test_simplicity_tasks.py at the real functions (grade/_changes.py is_test_path, product_lines, line_delta, in_radius; grade/rework.py; grade/diffstats.py), asserting the same numbers (HASH-A). A number the real function gives that differs from the stand-in's is a second-definition disagreement: stop that task's flip and report both values. tests/fixtures/s1/standin_bench_check.py is not yours.",
+            "K2 NG1 and NG2, one commit per task (flip and record together). K3 SM1 and SM2, one commit per task. This commit is the hand-back point. K4 S2. K5 RW1 and RW2 (two-turn tasks; their records carry the turn-keyed rows X-J1 and X-J2c landed).",
+            "S2 carries X-I-S2's open items, reported, not closed by you (tasks/S2/oracle/evidence.md:120-128): the two mutation survivors, the cookieless-401 control (no committed fixture answers a cookieless GET /tasks with 200 yet passes the seed controls) and the bob-get control (pa-ids is stopped earlier by the alice-get control), and the unmet A6 clause (one shape per class by a different author or model; all 21 variants were written by one Sonnet session, x-is2d-e1e4). S2's ready is defined by its record (W1-I section 4); the flip does not wait on them, and you write no S2 variant or evidence line: any S2 folder edit after the flip makes its record stale. Your report repeats the three items verbatim so the plan revision can own them.",
+            "The e2e fixture lesson (8534fb1f): once a task is ready with a committed record, any fixture or lean copy that copies bench/discrimination or the task folder, or pins the task's status, may break. After each task's commit run the tests that read it (below). Pre-granted, mechanical only and listed in the commit message: in tests/test_ng_tasks.py, tests/test_simplicity_tasks.py, tests/test_rework_tasks.py and tests/test_security_s2.py, a pin of that task's status moves from draft to ready, and a fixture copy skips the committed record as tests/fixtures/property_tasks/make_task.py already does (ignore \"discrimination\"); never a weakened assertion. Any other line in another owner's file is a seam request.",
+            "If your skill wants a T2 plan record, write it at docs/plans/eval-x-rdy.md and its HTML, create-only, in its own commit (pre-granted), with the per-task table (task, flipped or draft, record path, each metric declared and measured, trial wall-clock), and regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived).",
+            "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\rdy-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest, discriminate or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).",
+            "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_ng_tasks.py tests/test_simplicity_tasks.py tests/test_rework_tasks.py tests/test_security_s2.py tests/test_readiness.py tests/test_cli_discriminate.py tests/test_e1_e2e.py after each task's commit and on the final commit; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.",
+            "Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "Commit named paths only, with AGENT_SESSION=x-rdy-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green.",
+            "Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline or served-model-failed), the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), the per-task result (flipped with record path, or draft with measured numbers, or not run with reason), and your context sample at each K-item. Report your served model id on the first line of your final message."
+          ],
+          "fan_out_cap": "0",
+          "goal": "You are session x-rdy-e1e4 on branch build/eval-x-rdy, harness Claude Code, model sonnet (served claude-sonnet-5-5), an Agent-tool sub-agent with no coord-runner run, one turn, 3,300 s, within X-RDY's 200 calls and 200k context; past the deadline or the split rule, the tasks not yet flipped go to a fresh session (the plan's cut line). Flip NG1, NG2, SM1, SM2, S2, RW1 and RW2 from draft to ready, each with a real-host discrimination record that reproduces the task's declared expected, following the plan row X-RDY (docs/coordination/coordination-e2e4.md), the ready items of docs/coordination/eval-wave2-e234/x-ng.md, x-sm.md, x-rw.md and x-i-s2.md (step 3), tasks/README.md, W0 rev 6.13 (docs/design/eval-seam-contracts.md section 6 with R6.12c, hosts_ready an int count, and section 13's task-folder rows) and SR-E2's ready order, all binding.",
+          "main_line_budget": "within X-RDY's 200 calls; 3,300 s this dispatch; past it, the unflipped tasks go to a fresh session (the plan's cut line)",
+          "not_in_scope": [
+            "src/ (a trial that fails because the code is wrong is a finding to coord-opus-e1e4, never a fix in this turn); X-TE9's cli.py line and its test markers (operator-held); the S2 survivors and A6 (reported only); RS1 and RS2 (X-RS, gated on B-2); X-CV's final ten records; bench/bom.yaml entries other than each task's own status, if its entry carries one.",
+            "the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours)."
+          ],
+          "tier": "T2"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.015,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M488YHWWHYK8JXFB5XP52PSH",
+        "raw_sha256": "07907415c9ec3bfa374bc446228c308e5411e942cc2d6ac1bd727c2727e9893f",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-rdy"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-e2e4.md",
+            "reason": null,
+            "sha256": "81ae51ea2ccc4cb72c5b47f2de798d4ab183a0351b38e86992a3b6d83a371bbf",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-e2e4.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/x-ng.md",
+            "reason": null,
+            "sha256": "23ecf30121f0cc53f3350608f7c001a2f2bc8f0dfa56ebc84fce5a9fa701ab08",
+            "status": "resolved",
+            "token": "docs/coordination/eval-wave2-e234/x-ng.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/x-sm.md",
+            "reason": null,
+            "sha256": "94ec74e5552cb4703ec2b068af7f1f29e1187e99ba6fbd01be4a7dd62976eb4f",
+            "status": "resolved",
+            "token": "x-sm.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/x-rw.md",
+            "reason": null,
+            "sha256": "726274580db23083f2baae0cba4d523ec53192ab4c79b84cef2010f724463826",
+            "status": "resolved",
+            "token": "x-rw.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/eval-wave2-e234/x-i-s2.md",
+            "reason": null,
+            "sha256": "1318ac08a9df14ba214162df316cf1c94c017ca095ff3061d384be7b5d368ed9",
+            "status": "resolved",
+            "token": "x-i-s2.md"
+          },
+          {
+            "nearest": null,
+            "path": "tasks/README.md",
+            "reason": null,
+            "sha256": "5914518496cac402045f0ec517cdd9efa3598cbd923552ea5ed3708aae1ffdd9",
+            "status": "resolved",
+            "token": "tasks/README.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-seam-contracts.md",
+            "reason": null,
+            "sha256": "26ce62573cc24d58a2df4c04f27adb14cf08e7a89d9d3712a55dae41946e7cfd",
+            "status": "resolved",
+            "token": "docs/design/eval-seam-contracts.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "integrate/e2e4-18"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/<ID>/task.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/discrimination/<ID>/<tv16>-<id16>-<platform>.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "RW1/RW2"
+          },
+          {
+            "nearest": null,
+            "path": "tests/fixtures/property_tasks/rework_standin.py",
+            "reason": null,
+            "sha256": "98ad56f146ac847353f30409ebb36d33148eb163c6de0e2b4e14c627ce490934",
+            "status": "resolved",
+            "token": "tests/fixtures/property_tasks/rework_standin.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/fixtures/property_tasks/standin_diffstats.py",
+            "reason": null,
+            "sha256": "0e754d2c3e03b535358784b641746a35a5c6f749cccee77806525daff63f7a59",
+            "status": "resolved",
+            "token": "tests/fixtures/property_tasks/standin_diffstats.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_rework_tasks.py",
+            "reason": null,
+            "sha256": "c8e1f5f891c083f8bf207559e3bbeb459fef76e6484a31d32716905a9f77e167",
+            "status": "resolved",
+            "token": "tests/test_rework_tasks.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_simplicity_tasks.py",
+            "reason": null,
+            "sha256": "245979b2470386a48f705f922107cb86300c1e0158d1a0d065964701d16bf402",
+            "status": "resolved",
+            "token": "tests/test_simplicity_tasks.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/_changes.py",
+            "reason": null,
+            "sha256": "9c65c020a56cfd285dd0cd5d2377b70ee8e67c93b91597dfe216b4ad3d4c13ef",
+            "status": "resolved",
+            "token": "grade/_changes.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/rework.py",
+            "reason": null,
+            "sha256": "10709a202a28cbbe56681804f77f39b49ddd30f23585b78fffa6629e594e376e",
+            "status": "resolved",
+            "token": "grade/rework.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/diffstats.py",
+            "reason": null,
+            "sha256": "12f7a81851c25bf1e3827c4d8c8e3fedc164e2bf979874aa275f6bc8e65f5043",
+            "status": "resolved",
+            "token": "grade/diffstats.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/fixtures/s1/standin_bench_check.py",
+            "reason": null,
+            "sha256": "dce580cd80aebc4d636e52b1861ab6b3e2487b7fed1d323c0bfc22e072ef6ed4",
+            "status": "resolved",
+            "token": "tests/fixtures/s1/standin_bench_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/S2/oracle/evidence.md:120-128"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/tasks"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/discrimination"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_ng_tasks.py",
+            "reason": null,
+            "sha256": "3573326530f92fe8ef544fea8f60ff480a5bcde6e71e03ba741b843156637aa1",
+            "status": "resolved",
+            "token": "tests/test_ng_tasks.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_security_s2.py",
+            "reason": null,
+            "sha256": "05675b1c7adac3348477dd2a921a89094c61a8f26385b4e19697f623635ec8a7",
+            "status": "resolved",
+            "token": "tests/test_security_s2.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/fixtures/property_tasks/make_task.py",
+            "reason": null,
+            "sha256": "2750628a93c8179ccc4be22f602075c736fdb681b9e98cc1169d91a082fa1adb",
+            "status": "resolved",
+            "token": "tests/fixtures/property_tasks/make_task.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/plans/eval-x-rdy.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/docs-index.js",
+            "reason": null,
+            "sha256": "a24d3383a0bb5ac3d5821db8799768fc0adb90d2d346918cd8f605b58bcd5e51",
+            "status": "resolved",
+            "token": "docs/docs-index.js"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_identity.py",
+            "reason": null,
+            "sha256": "ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf",
+            "status": "resolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_atomic_sites.py",
+            "reason": null,
+            "sha256": "143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90",
+            "status": "resolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_arms_guard.py",
+            "reason": null,
+            "sha256": "ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349",
+            "status": "resolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_discriminate.py",
+            "reason": null,
+            "sha256": "6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52",
+            "status": "resolved",
+            "token": "tests/test_discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_skills_in_sync.py",
+            "reason": null,
+            "sha256": "572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d",
+            "status": "resolved",
+            "token": "tests/test_skills_in_sync.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_timing_hygiene.py",
+            "reason": null,
+            "sha256": "fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6",
+            "status": "resolved",
+            "token": "tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_readiness.py",
+            "reason": null,
+            "sha256": "0cf21b1b579f90abc63a00ffeb8533366fcbbed4b19e7e29487ab57a801fa0bb",
+            "status": "resolved",
+            "token": "tests/test_readiness.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_cli_discriminate.py",
+            "reason": null,
+            "sha256": "3efbf73dbcf75566ed229905d1ba46ddf92443438616df7d277b3f2c65f18428",
+            "status": "resolved",
+            "token": "tests/test_cli_discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_e1_e2e.py",
+            "reason": null,
+            "sha256": "39b2da50f4848d312b86346e617a8d5a84db194a1e60fa85796bebe9caf101c2",
+            "status": "resolved",
+            "token": "tests/test_e1_e2e.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/audit-log.py",
+            "reason": null,
+            "sha256": "d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4",
+            "status": "resolved",
+            "token": "audit-log.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/cli.py",
+            "reason": null,
+            "sha256": "50e78c85fd64c6effe9e4bff75d6b5f40dab7243a20bdf1355aca7c8a75464aa",
+            "status": "resolved",
+            "token": "cli.py"
+          },
+          {
+            "nearest": null,
+            "path": "bench/bom.yaml",
+            "reason": null,
+            "sha256": "98e2a4fd8201f771cbc5818e73ff33e423b5e31c0d3c31cef44e7a0044f41fd6",
+            "status": "resolved",
+            "token": "bench/bom.yaml"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-06T09:33:08Z",
+      "dispatchable": true,
+      "id": "al-01M488YJKYGCVAV64HE1HCV96R",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session x-rdy-e1e4 --skill implement\nGoal state\nGoal: You are session x-rdy-e1e4 on branch build/eval-x-rdy, harness Claude Code, model sonnet (served claude-sonnet-5-5), an Agent-tool sub-agent with no coord-runner run, one turn, 3,300 s, within X-RDY's 200 calls and 200k context; past the deadline or the split rule, the tasks not yet flipped go to a fresh session (the plan's cut line). Flip NG1, NG2, SM1, SM2, S2, RW1 and RW2 from draft to ready, each with a real-host discrimination record that reproduces the task's declared expected, following the plan row X-RDY (docs/coordination/coordination-e2e4.md), the ready items of docs/coordination/eval-wave2-e234/x-ng.md, x-sm.md, x-rw.md and x-i-s2.md (step 3), tasks/README.md, W0 rev 6.13 (docs/design/eval-seam-contracts.md section 6 with R6.12c, hosts_ready an int count, and section 13's task-folder rows) and SR-E2's ready order, all binding.\nDone when: Base: your own worktree on build/eval-x-rdy, created by the Leader from the integration head after the X-A3c join (integrate/e2e4-18), never main. Stop and report if git merge-base --is-ancestor exits non-zero for any of 1a837a5d (X-J1e joined), 0535a33e (X-J2c joined), 7d1d6851 (X-LGc joined), d4be6d3c (the 0.7 release) or 186ad7da (X-A3c).; The context split rule. Sample your context before each K-item and before each gate command from your own transcript: the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-rdy-e1e4, the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens. Measured turns: J1d sampled 107k at K3, J1e 128k at K2, and X-A3c's three Sonnet turns each reached about 115k-125k after one or two K-items, so one K-item costs up to about 60k. Read only line ranges, never a whole design or task file you do not need; send test and discriminate output to a file and read only its summary. The rules: (1) start no K-item above 100k; (2) the hand-back point is after the K3 commit: go on only if the sample there is at or below 100k, else hand back with the open K-items named; (3) at 170k start no new edit, trial or gate, write the closing audit entry and hand back with the open items named; (4) if the figure cannot be read, record \"not recorded\" and hand back at the K3 point. A hand-back by this rule is a planned split, not a failure; the follow-on runs in this tree.; The ready order is S1's (SR-E2, W0 line 914; commit 8534fb1f): for each task, edit the task folder first, then flip status to ready in tasks/<ID>/task.yaml, then run the trial, then commit the flip and the record together in one commit. The record key holds the task version of the folder as it is at the trial, so any edit to the folder after the trial makes the record stale: a correction means edit, flip, re-run, never a record kept from an earlier version.; The trial: uv run bench discriminate <ID> --runs C:\\t\\rdy-runs --cells-root C:\\t\\rdy-cells (short paths), with no model credentials in the environment, as the Leader ran S1. It runs the reference, naive and variant roles as synthetic cells through the real engine, archiver and grading pass, checks readiness.contract_failures first (HB-RDY-005 on any failure) and writes bench/discrimination/<ID>/<tv16>-<id16>-<platform>.json through atomic.create_once. A trial that cannot run on this host (a missing tool, a probe host that does not start) is reported \"not run\" with its reason, and the task stays draft.; Reproduces means: every metric of expected.reference and expected.naive equals the record's measured value, and readiness accepts the record with no HB-RDY-003, HB-RDY-010 or HB-RDY-011 item. A task that does not reproduce stays draft: put status back to draft, commit no record for it (delete any record file its trial wrote), and report each metric's declared and measured value. Never edit expected without its evidence: a value commented Inferred (SM1 and SM2 naive size_vs_reference, all RW1 and RW2 values, both S2 values) may be corrected to the measured value with a provenance comment naming the measurement (GLD-A), then edit, flip, re-run; a property_check_pass mismatch on either role is never corrected, it is a finding to coord-opus-e1e4 and the task stays draft.; K1 the folder fixes and the stand-ins, before any flip, in its own commits: (a) the GLD-A lines, which are the one contract failure left on each of four tasks at 1a837a5d: readiness.contract_failures(Path('.'), task) returns, for NG1 and NG2, expected.naive.verified_before_use \"no provenance comment of at least three words (GLD-A)\", and for RW1 and RW2 the same on expected.naive.turn1_tests_pass; SM1, SM2 and S2 return []. Add a true provenance comment of three or more words to each of those four lines, run contract_failures on all seven and paste the seven results (each must be []) in the commit. This is J2b's \"one failure left each\" after the variant-reader fix (0c788935). (b) Coordinator #34's owed items: the RW1/RW2 provenance lines are (a); the two stand-ins are tests/fixtures/property_tasks/rework_standin.py and tests/fixtures/property_tasks/standin_diffstats.py, whose own docstrings say the ready follow-on deletes them. Delete both and point tests/test_rework_tasks.py and tests/test_simplicity_tasks.py at the real functions (grade/_changes.py is_test_path, product_lines, line_delta, in_radius; grade/rework.py; grade/diffstats.py), asserting the same numbers (HASH-A). A number the real function gives that differs from the stand-in's is a second-definition disagreement: stop that task's flip and report both values. tests/fixtures/s1/standin_bench_check.py is not yours.; K2 NG1 and NG2, one commit per task (flip and record together). K3 SM1 and SM2, one commit per task. This commit is the hand-back point. K4 S2. K5 RW1 and RW2 (two-turn tasks; their records carry the turn-keyed rows X-J1 and X-J2c landed).; S2 carries X-I-S2's open items, reported, not closed by you (tasks/S2/oracle/evidence.md:120-128): the two mutation survivors, the cookieless-401 control (no committed fixture answers a cookieless GET /tasks with 200 yet passes the seed controls) and the bob-get control (pa-ids is stopped earlier by the alice-get control), and the unmet A6 clause (one shape per class by a different author or model; all 21 variants were written by one Sonnet session, x-is2d-e1e4). S2's ready is defined by its record (W1-I section 4); the flip does not wait on them, and you write no S2 variant or evidence line: any S2 folder edit after the flip makes its record stale. Your report repeats the three items verbatim so the plan revision can own them.; The e2e fixture lesson (8534fb1f): once a task is ready with a committed record, any fixture or lean copy that copies bench/discrimination or the task folder, or pins the task's status, may break. After each task's commit run the tests that read it (below). Pre-granted, mechanical only and listed in the commit message: in tests/test_ng_tasks.py, tests/test_simplicity_tasks.py, tests/test_rework_tasks.py and tests/test_security_s2.py, a pin of that task's status moves from draft to ready, and a fixture copy skips the committed record as tests/fixtures/property_tasks/make_task.py already does (ignore \"discrimination\"); never a weakened assertion. Any other line in another owner's file is a seam request.; If your skill wants a T2 plan record, write it at docs/plans/eval-x-rdy.md and its HTML, create-only, in its own commit (pre-granted), with the per-task table (task, flipped or draft, record path, each metric declared and measured, trial wall-clock), and regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived).; Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\rdy-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest, discriminate or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).; Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_ng_tasks.py tests/test_simplicity_tasks.py tests/test_rework_tasks.py tests/test_security_s2.py tests/test_readiness.py tests/test_cli_discriminate.py tests/test_e1_e2e.py after each task's commit and on the final commit; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.; Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commit named paths only, with AGENT_SESSION=x-rdy-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green.; Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline or served-model-failed), the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), the per-task result (flipped with record path, or draft with measured numbers, or not run with reason), and your context sample at each K-item. Report your served model id on the first line of your final message.\nNot in scope: src/ (a trial that fails because the code is wrong is a finding to coord-opus-e1e4, never a fix in this turn); X-TE9's cli.py line and its test markers (operator-held); the S2 survivors and A6 (reported only); RS1 and RS2 (X-RS, gated on B-2); X-CV's final ten records; bench/bom.yaml entries other than each task's own status, if its entry carries one.; the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours).\nTier: T2\nFan-out cap: 0\nContext ceiling: 200k tokens; split rule: no K-item above 100k, hand-back point after K3 unless at or below 100k, hard stop at 170k, unreadable means hand back at K3\nMain-line budget: within X-RDY's 200 calls; 3,300 s this dispatch; past it, the unflipped tasks go to a fresh session (the plan's cut line)\nTrace\n| clause | trace |\n|---|---|\n| done_when: Base: your own worktree on build/eval-x-rdy, created by the Leader from the integration head after the X-A3c join (integrate/e2e4-18), never main. Stop and report if git merge-base --is-ancestor exits non-zero for any of 1a837a5d (X-J1e joined), 0535a33e (X-J2c joined), 7d1d6851 (X-LGc joined), d4be6d3c (the 0.7 release) or 186ad7da (X-A3c). | phrase: Base: your own worktree on build/eval-x-rdy, created by the Leader from the integration he |\n| done_when: The context split rule. Sample your context before each K-item and before each gate command from your own transcript: the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-rdy-e1e4, the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens. Measured turns: J1d sampled 107k at K3, J1e 128k at K2, and X-A3c's three Sonnet turns each reached about 115k-125k after one or two K-items, so one K-item costs up to about 60k. Read only line ranges, never a whole design or task file you do not need; send test and discriminate output to a file and read only its summary. The rules: (1) start no K-item above 100k; (2) the hand-back point is after the K3 commit: go on only if the sample there is at or below 100k, else hand back with the open K-items named; (3) at 170k start no new edit, trial or gate, write the closing audit entry and hand back with the open items named; (4) if the figure cannot be read, record \"not recorded\" and hand back at the K3 point. A hand-back by this rule is a planned split, not a failure; the follow-on runs in this tree. | phrase: The context split rule. Sample your context before each K-item and before each gate comman |\n| done_when: The ready order is S1's (SR-E2, W0 line 914; commit 8534fb1f): for each task, edit the task folder first, then flip status to ready in tasks/<ID>/task.yaml, then run the trial, then commit the flip and the record together in one commit. The record key holds the task version of the folder as it is at the trial, so any edit to the folder after the trial makes the record stale: a correction means edit, flip, re-run, never a record kept from an earlier version. | phrase: The ready order is S1's (SR-E2, W0 line 914; commit 8534fb1f): for each task, edit the tas |\n| done_when: The trial: uv run bench discriminate <ID> --runs C:\\t\\rdy-runs --cells-root C:\\t\\rdy-cells (short paths), with no model credentials in the environment, as the Leader ran S1. It runs the reference, naive and variant roles as synthetic cells through the real engine, archiver and grading pass, checks readiness.contract_failures first (HB-RDY-005 on any failure) and writes bench/discrimination/<ID>/<tv16>-<id16>-<platform>.json through atomic.create_once. A trial that cannot run on this host (a missing tool, a probe host that does not start) is reported \"not run\" with its reason, and the task stays draft. | phrase: The trial: uv run bench discriminate <ID> --runs C:\\t\\rdy-runs --cells-root C:\\t\\rdy-cells |\n| done_when: Reproduces means: every metric of expected.reference and expected.naive equals the record's measured value, and readiness accepts the record with no HB-RDY-003, HB-RDY-010 or HB-RDY-011 item. A task that does not reproduce stays draft: put status back to draft, commit no record for it (delete any record file its trial wrote), and report each metric's declared and measured value. Never edit expected without its evidence: a value commented Inferred (SM1 and SM2 naive size_vs_reference, all RW1 and RW2 values, both S2 values) may be corrected to the measured value with a provenance comment naming the measurement (GLD-A), then edit, flip, re-run; a property_check_pass mismatch on either role is never corrected, it is a finding to coord-opus-e1e4 and the task stays draft. | phrase: Reproduces means: every metric of expected.reference and expected.naive equals the record' |\n| done_when: K1 the folder fixes and the stand-ins, before any flip, in its own commits: (a) the GLD-A lines, which are the one contract failure left on each of four tasks at 1a837a5d: readiness.contract_failures(Path('.'), task) returns, for NG1 and NG2, expected.naive.verified_before_use \"no provenance comment of at least three words (GLD-A)\", and for RW1 and RW2 the same on expected.naive.turn1_tests_pass; SM1, SM2 and S2 return []. Add a true provenance comment of three or more words to each of those four lines, run contract_failures on all seven and paste the seven results (each must be []) in the commit. This is J2b's \"one failure left each\" after the variant-reader fix (0c788935). (b) Coordinator #34's owed items: the RW1/RW2 provenance lines are (a); the two stand-ins are tests/fixtures/property_tasks/rework_standin.py and tests/fixtures/property_tasks/standin_diffstats.py, whose own docstrings say the ready follow-on deletes them. Delete both and point tests/test_rework_tasks.py and tests/test_simplicity_tasks.py at the real functions (grade/_changes.py is_test_path, product_lines, line_delta, in_radius; grade/rework.py; grade/diffstats.py), asserting the same numbers (HASH-A). A number the real function gives that differs from the stand-in's is a second-definition disagreement: stop that task's flip and report both values. tests/fixtures/s1/standin_bench_check.py is not yours. | phrase: K1 the folder fixes and the stand-ins, before any flip, in its own commits: (a) the GLD-A  |\n| done_when: K2 NG1 and NG2, one commit per task (flip and record together). K3 SM1 and SM2, one commit per task. This commit is the hand-back point. K4 S2. K5 RW1 and RW2 (two-turn tasks; their records carry the turn-keyed rows X-J1 and X-J2c landed). | phrase: K2 NG1 and NG2, one commit per task (flip and record together). K3 SM1 and SM2, one commit |\n| done_when: S2 carries X-I-S2's open items, reported, not closed by you (tasks/S2/oracle/evidence.md:120-128): the two mutation survivors, the cookieless-401 control (no committed fixture answers a cookieless GET /tasks with 200 yet passes the seed controls) and the bob-get control (pa-ids is stopped earlier by the alice-get control), and the unmet A6 clause (one shape per class by a different author or model; all 21 variants were written by one Sonnet session, x-is2d-e1e4). S2's ready is defined by its record (W1-I section 4); the flip does not wait on them, and you write no S2 variant or evidence line: any S2 folder edit after the flip makes its record stale. Your report repeats the three items verbatim so the plan revision can own them. | phrase: S2 carries X-I-S2's open items, reported, not closed by you (tasks/S2/oracle/evidence.md:1 |\n| done_when: The e2e fixture lesson (8534fb1f): once a task is ready with a committed record, any fixture or lean copy that copies bench/discrimination or the task folder, or pins the task's status, may break. After each task's commit run the tests that read it (below). Pre-granted, mechanical only and listed in the commit message: in tests/test_ng_tasks.py, tests/test_simplicity_tasks.py, tests/test_rework_tasks.py and tests/test_security_s2.py, a pin of that task's status moves from draft to ready, and a fixture copy skips the committed record as tests/fixtures/property_tasks/make_task.py already does (ignore \"discrimination\"); never a weakened assertion. Any other line in another owner's file is a seam request. | phrase: The e2e fixture lesson (8534fb1f): once a task is ready with a committed record, any fixtu |\n| done_when: If your skill wants a T2 plan record, write it at docs/plans/eval-x-rdy.md and its HTML, create-only, in its own commit (pre-granted), with the per-task table (task, flipped or draft, record path, each metric declared and measured, trial wall-clock), and regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted; the file is derived). | phrase: If your skill wants a T2 plan record, write it at docs/plans/eval-x-rdy.md and its HTML, c |\n| done_when: Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\rdy-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest, discriminate or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH). | phrase: Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\rd |\n| done_when: Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_ng_tasks.py tests/test_simplicity_tasks.py tests/test_rework_tasks.py tests/test_security_s2.py tests/test_readiness.py tests/test_cli_discriminate.py tests/test_e1_e2e.py after each task's commit and on the final commit; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate. | phrase: Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run  |\n| done_when: Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: Suite lock: named-file runs do not take the suite lock; a gate that waited on the suite lo |\n| done_when: Commit named paths only, with AGENT_SESSION=x-rdy-e1e4 inline on every commit and coord call. A line in another owner's file is a seam request to coord-opus-e1e4 with a fallback that reaches green. | phrase: Commit named paths only, with AGENT_SESSION=x-rdy-e1e4 inline on every commit and coord ca |\n| done_when: Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline or served-model-failed), the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), the per-task result (flipped with record path, or draft with measured numbers, or not run with reason), and your context sample at each K-item. Report your served model id on the first line of your final message. | phrase: Your closing audit entry, written through audit-log.py, carries the dispatch start and end |\n| not_in_scope: src/ (a trial that fails because the code is wrong is a finding to coord-opus-e1e4, never a fix in this turn); X-TE9's cli.py line and its test markers (operator-held); the S2 survivors and A6 (reported only); RS1 and RS2 (X-RS, gated on B-2); X-CV's final ten records; bench/bom.yaml entries other than each task's own status, if its entry carries one. | phrase: Not yours: src/ (a trial that fails because the code is wrong is a finding to coord-opus-e |\n| not_in_scope: the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader made yours). | phrase: Not yours: the whole suite and mutate_check --touched (the Leader's); never kill a process |\nReferences\n- build/eval-x-rdy: unresolved (not found)\n- docs/coordination/coordination-e2e4.md: docs/coordination/coordination-e2e4.md sha256 81ae51ea2ccc4cb72c5b47f2de798d4ab183a0351b38e86992a3b6d83a371bbf\n- docs/coordination/eval-wave2-e234/x-ng.md: docs/coordination/eval-wave2-e234/x-ng.md sha256 23ecf30121f0cc53f3350608f7c001a2f2bc8f0dfa56ebc84fce5a9fa701ab08\n- x-sm.md: docs/coordination/eval-wave2-e234/x-sm.md sha256 94ec74e5552cb4703ec2b068af7f1f29e1187e99ba6fbd01be4a7dd62976eb4f\n- x-rw.md: docs/coordination/eval-wave2-e234/x-rw.md sha256 726274580db23083f2baae0cba4d523ec53192ab4c79b84cef2010f724463826\n- x-i-s2.md: docs/coordination/eval-wave2-e234/x-i-s2.md sha256 1318ac08a9df14ba214162df316cf1c94c017ca095ff3061d384be7b5d368ed9\n- tasks/README.md: tasks/README.md sha256 5914518496cac402045f0ec517cdd9efa3598cbd923552ea5ed3708aae1ffdd9\n- docs/design/eval-seam-contracts.md: docs/design/eval-seam-contracts.md sha256 26ce62573cc24d58a2df4c04f27adb14cf08e7a89d9d3712a55dae41946e7cfd\n- integrate/e2e4-18: unresolved (not found)\n- tasks/<ID>/task.yaml: unresolved (not found)\n- bench/discrimination/<ID>/<tv16>-<id16>-<platform>.json: unresolved (not found)\n- RW1/RW2: unresolved (not found)\n- tests/fixtures/property_tasks/rework_standin.py: tests/fixtures/property_tasks/rework_standin.py sha256 98ad56f146ac847353f30409ebb36d33148eb163c6de0e2b4e14c627ce490934\n- tests/fixtures/property_tasks/standin_diffstats.py: tests/fixtures/property_tasks/standin_diffstats.py sha256 0e754d2c3e03b535358784b641746a35a5c6f749cccee77806525daff63f7a59\n- tests/test_rework_tasks.py: tests/test_rework_tasks.py sha256 c8e1f5f891c083f8bf207559e3bbeb459fef76e6484a31d32716905a9f77e167\n- tests/test_simplicity_tasks.py: tests/test_simplicity_tasks.py sha256 245979b2470386a48f705f922107cb86300c1e0158d1a0d065964701d16bf402\n- grade/_changes.py: src/harness_bench/grade/_changes.py sha256 9c65c020a56cfd285dd0cd5d2377b70ee8e67c93b91597dfe216b4ad3d4c13ef\n- grade/rework.py: src/harness_bench/grade/rework.py sha256 10709a202a28cbbe56681804f77f39b49ddd30f23585b78fffa6629e594e376e\n- grade/diffstats.py: src/harness_bench/grade/diffstats.py sha256 12f7a81851c25bf1e3827c4d8c8e3fedc164e2bf979874aa275f6bc8e65f5043\n- tests/fixtures/s1/standin_bench_check.py: tests/fixtures/s1/standin_bench_check.py sha256 dce580cd80aebc4d636e52b1861ab6b3e2487b7fed1d323c0bfc22e072ef6ed4\n- tasks/S2/oracle/evidence.md:120-128: unresolved (not found)\n- /tasks: unresolved (outside repo)\n- bench/discrimination: unresolved (not found)\n- tests/test_ng_tasks.py: tests/test_ng_tasks.py sha256 3573326530f92fe8ef544fea8f60ff480a5bcde6e71e03ba741b843156637aa1\n- tests/test_security_s2.py: tests/test_security_s2.py sha256 05675b1c7adac3348477dd2a921a89094c61a8f26385b4e19697f623635ec8a7\n- tests/fixtures/property_tasks/make_task.py: tests/fixtures/property_tasks/make_task.py sha256 2750628a93c8179ccc4be22f602075c736fdb681b9e98cc1169d91a082fa1adb\n- docs/plans/eval-x-rdy.md: unresolved (not found)\n- docs/docs-index.js: docs/docs-index.js sha256 a24d3383a0bb5ac3d5821db8799768fc0adb90d2d346918cd8f605b58bcd5e51\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 ad0aa3d3b332c64382fb8ab92b17e48076969e44d7fd1b302c0692b4d075bdcf\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 ce4cf6444750d6c33d9ee6d7a028ee94075c9b62b3238dfbe02181fd5c444349\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 6babc270642a5f70fc0137724284517aefe2dc8beb19aba979d4322c53407b52\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tests/test_readiness.py: tests/test_readiness.py sha256 0cf21b1b579f90abc63a00ffeb8533366fcbbed4b19e7e29487ab57a801fa0bb\n- tests/test_cli_discriminate.py: tests/test_cli_discriminate.py sha256 3efbf73dbcf75566ed229905d1ba46ddf92443438616df7d277b3f2c65f18428\n- tests/test_e1_e2e.py: tests/test_e1_e2e.py sha256 39b2da50f4848d312b86346e617a8d5a84db194a1e60fa85796bebe9caf101c2\n- audit-log.py: docs/ai-forward-pack/scripts/audit-log.py sha256 d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4\n- src/: unresolved (not found)\n- cli.py: src/harness_bench/cli.py sha256 50e78c85fd64c6effe9e4bff75d6b5f40dab7243a20bdf1355aca7c8a75464aa\n- bench/bom.yaml: bench/bom.yaml sha256 98e2a4fd8201f771cbc5818e73ff33e423b5e31c0d3c31cef44e7a0044f41fd6\nAssumptions\n- none\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0\nper_branch_exit: K1 to K3 commits on build/eval-x-rdy, then K4, K5 and the gate, or a hand-back by the split rule with the open tasks named\njoin_rule: the R-104 worker gate; the Leader joins into integrate/e2e4-18, re-runs one trial (bench discriminate on one flipped task; a retry at an unchanged key is equal bytes), confirms each ready task's record task_version equals the computed version of its folder, each draft task has no record, and the two stand-ins are gone\ncontainment: own worktree on build/eval-x-rdy from the integration head after the X-A3c join; tasks/{NG1,NG2,SM1,SM2,RW1,RW2,S2}/task.yaml, their records under bench/discrimination/**, the two stand-ins and their repointed test imports, the pre-granted status pins\ntermination: one turn\ndeadline: 3,300 s\nfallback: the Leader re-spawns the same compile as a Claude Code Sonnet sub-agent in the same tree under session x-rdy-e1e4 after a hand-back or the deadline, for the tasks not yet flipped (no runner contract: the runner has no claude-code transport)\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M488YHWWHYK8JXFB5XP52PSH\nraw sha256: 07907415c9ec3bfa374bc446228c308e5411e942cc2d6ac1bd727c2727e9893f\ncompiler model: claude-opus-5-5\nengine seconds: 0.015\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "x-rdy-e1e4",
+      "shortname": "compile-You are session x-rdy-e1e4 on branch build/eval-x-rdy, harness Claude Co…",
+      "skill": null,
+      "summary": "compiled al-01M488YHWWHYK8JXFB5XP52PSH for claude-code v1: 17 clauses, 0 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/coordination/coordinator-log/c39.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-06T09:39:00Z",
+      "done_when": "three dispatchable compiles attached; W0 rev 6.13 and W1-J errata committed; seam resolved; register edited; derive, validate, verify-ruling-citations exit 0; commit on coord/eval-c39-p4",
+      "duration_seconds": 1364.0,
+      "fan_out": 1,
+      "goal": "Coordinator #39: compile batch P4's dispatchable turns (X-K1a, X-K2b, X-RDY), make the owed W0/W1-J edits, rule A3c's seam, register four items, write c39.md",
+      "id": "al-01M4899A069PWDDSDM4FK8ZAKZ",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Leader leader-e1e4 (epoch 18) to Coordinator #39, seat coord-opus-e1e4, model claude-opus-5-5, tree C:\\Projects\\x-harness-x-model-bench-coord-eval-c39-p4 on coord/eval-c39-p4 (base 1a837a5d; X-A3c's join running on 186ad7da). Condensed by the Coordinator from the dispatch text.\nDo: (1) compile batch P4's dispatchable turns in c38's compile form (IDN-A, suite lock, XPORT-A same-tree Sonnet fallback, plan record, R-108 condition 4, the context split rule re-sized from J1c 230k / J1d 107k at K3 / J1e 128k at K2 / A3c 115-125k after 1-2 K-items, TMP/TEMP short folder plus HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs): X-K1a (Codex gpt-6.1-sol; on J1a-J1e's landed names; not re-adding HB-PLN-003; check W0 rev 6.11/6.12 K1 rows; sized to one Codex turn), X-K2b (Agy gemini-3.8-flash-high; alarm.py, bench status --alarm-after, the cross-owner test with K2a's tools/alarm-task.ps1; deletes its PLANNED key; say how R-102 is handled), X-RDY (Claude Code Sonnet; ready flips for NG1, NG2, SM1, SM2, RW1, RW2, S2 with real-host records; carry #34's RW provenance lines and two stand-ins, X-I-S2's two survivors and unmet A6, J2b's NG1/NG2 one failure left (read contract_failures), the S1 precedent and e2e fixture lesson); check names free; base = integration head after A3c's join. (2) Owed edits: W0 HB-PLN-005 retired by X-A3c so the doc and A3c's test_identity filter agree; W0 rev 6.13 with #36's J1c TABLE row and copy_retries erratum; #37's W1-J 4.4 retry wording and 12 S-J5 column; record for the next plan revision A3c's findings, #38's items and J2c's not-reached finding; resolve seam req-01M485A8H0VSXN6YGZX98RF21S. (3) Register: REL-A (0.7 release broke 21 e1_e2e setups and a catalog test spelling 0.7.dev; control: read the label from bench/metrics.yaml), the gate-input probe that degrades to skip (HB_GATE_RUNS pinned; propose a fail-closed resolver), S-J4 not run (operator decision pending), the per-join recount cost (-n 4 proposal, operator approval). (4) Write docs/coordination/coordinator-log/c39.md; run docs-graph.py derive, validate, verify-ruling-citations.py, each on its own line; commit named paths; coord session end.\nNot in scope: dispatching; src/ or tests/; merging or pushing; X-LB1, X-RS, X-TE9, X-CV, X-PACK phase 2; killing processes not started by the Coordinator. Budget: 140 tool calls, about 300k context, 90 min.",
+      "session": "coord-opus-e1e4",
+      "shortname": "c39-p4-compiles",
+      "skill": "compile",
+      "started_at": "2026-10-06T09:16:16Z",
+      "summary": "Compiled X-K1a al-01M488P2Q9J9CXTZQ29M7QRVAH (Codex), X-K2b al-01M488T3QEGYJ0TBSVHKRMDXTM (Agy, claude-code template), X-RDY al-01M488YJKYGCVAV64HE1HCV96R (Sonnet sub-agent); all gate pass, dispatchable. Seam req-01M485A8H0VSXN6YGZX98RF21S: G1 pins in cli.py/workspace.py stay. W0 rev 6.13 R6.13a-f. W1-J errata (4.4 retry, copy_retries null, S-J5 measured, S-J4 not run). Register: REL-A, PROBE-A, OPER-A candidates; LOCK-A recount-cost instance. Served model claude-opus-5-5; tokens not recorded. One read-only Sonnet sub-agent for X-RDY task facts (97k tokens, 20 tool calls, 137 s).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "id": "al-01M489JH3NA8F9THJRCD7ER741",
+      "shortname": "join-c39",
+      "datetime": "2026-10-06T09:44:02Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of coord/eval-c39-p4 into integrate/e2e4-18",
+      "summary": "Coordinator #39 (Opus claude-opus-5-5) fbfd6976: K1a al-01M488P2Q9J9CXTZQ29M7QRVAH, K2b al-01M488T3QEGYJ0TBSVHKRMDXTM, X-RDY al-01M488YJKYGCVAV64HE1HCV96R; seam cli/workspace pins stay; docs-only (three-dot src/tests delta empty) recount_seconds=0 (docs_only=True).",
       "kind": "skill",
       "skill": "execute-with-coordination",
       "tool": null,
@@ -96863,8 +98671,8 @@ window.AUDIT_DATA = {
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Join X-A3c into integrate/e2e4-18",
-      "done_when": "conductor-join exit 0 with the default ring green",
+      "goal": "Join Coordinator #39 into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0; gates green",
       "tier": "T1",
       "fan_out": 0,
       "signals": {
@@ -96872,8 +98680,8 @@ window.AUDIT_DATA = {
         "verification_executed": true,
         "acceptance_met": true
       },
-      "started_at": "2026-10-06T09:14:33Z",
-      "duration_seconds": 1751.0
+      "started_at": "2026-10-06T09:44:01Z",
+      "duration_seconds": 1.0
     }
   ],
   "changes": [
