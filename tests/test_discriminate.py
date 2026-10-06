@@ -619,6 +619,17 @@ def test_a_check_less_variant_declaring_a_clause_where_property_json_has_no_stra
     assert exc.value.code == "HB-RDY-011" and "variant vnone" in exc.value.message and "SR-E3" not in exc.value.message
 
 
+def test_a_check_less_trial_with_a_flaky_final_tree_fails_on_a_hidden_test_disagreement(base):
+    """X-FIXE P1 (R-90 condition 3), no monkeypatch. Order of the hidden-test runs read from rework.grade and the pass: the
+    correctness grader's pass first (counter run 1, odd, pass), then per cell the turn-1 snapshot run (turn1 tests only,
+    never the counter test) and the property grader's one final-tree run (counter run 2, even, fail); the cells alternate."""
+    root = new_root(base, "disc_turns", counter=str(base / "t2-counter.txt"))
+    with pytest.raises(BenchError) as err:
+        trial(base, root, "DISC-T")
+    assert err.value.code == "HB-RDY-011"
+    assert "hidden tests disagree with pass_at_1 in" in str(err.value)
+
+
 def test_a_check_less_trial_fails_on_a_hidden_test_disagreement(base, monkeypatch):
     """SHAPE-A row 4 (R-90 condition 3): the double-run item runs for a check-less task too, not only a check-based one."""
     root = new_root(base)

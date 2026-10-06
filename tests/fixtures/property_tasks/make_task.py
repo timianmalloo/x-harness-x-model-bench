@@ -270,10 +270,17 @@ TURNS_EXPECTED = {"reference": {"property_check_pass": 1, "turn1_tests_pass": 1,
                   "naive": {"property_check_pass": 0, "turn1_tests_pass": 1, "rework_ratio": "1.0000"}}
 
 
+T2_COUNTER_TESTS = ("import unittest\nfrom pathlib import Path\n\nCOUNTER = Path({counter!r})\n\n\nclass T2Counter(unittest.TestCase):\n"
+                    "    def test_t2_counter(self):\n        n = int(COUNTER.read_text()) + 1 if COUNTER.exists() else 1\n"
+                    "        COUNTER.write_text(str(n))\n        self.assertTrue(n % 2 == 1)\n")
+
+
 def _disc_turns(tweak):
-    """A two-turn rework task (X-J2c): the synthetic agent applies oracle/solutions/<role>/turn-<n>/ per prompt."""
+    """A two-turn rework task (X-J2c): the synthetic agent applies oracle/solutions/<role>/turn-<n>/ per prompt.
+    With `counter` a turn-2 test passes on odd runs only, counted outside the working copy (the final-tree flaky oracle)."""
+    counted = {"turn2/test_t2_counter.py": T2_COUNTER_TESTS.format(counter=str(tweak["counter"]))} if tweak.get("counter") else {}
     return {"id": "DISC-T", "property": "rework", "evidence": "app.py", "hidden": "", "ceilings": '{rework_ratio: "0.3000"}',
-            "hidden_files": {"turn1/__init__.py": "", "turn1/test_t1.py": T1_TESTS, "turn2/__init__.py": "", "turn2/test_t2.py": T2_TESTS},
+            "hidden_files": {"turn1/__init__.py": "", "turn1/test_t1.py": T1_TESTS, "turn2/__init__.py": "", "turn2/test_t2.py": T2_TESTS} | counted,
             "turns": "Now add the euro.\n", "workspace": {"app.py": "def fmt(amount):\n    raise NotImplementedError\n"},
             "reference": {"turn-1/app.py": TURN1_REF, "turn-2/app.py": TURN2_REF},
             "naive": {"turn-1/app.py": TURN1_NAIVE, "turn-2/app.py": TURN2_NAIVE},
