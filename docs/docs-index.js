@@ -2265,7 +2265,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "138b9e685e8a7c85ffdd4dc4c4112a64b41af80a817bf744ef15c7c47acad734"
+      "sourceSha256": "739e6e2b702c02d6852bb3170a81ec8e47459de85750ca3491073a91878e8643"
     },
     {
       "id": "design-eval-identity",
@@ -2758,7 +2758,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "a2b3d71d784f767a61417688eeb755d9692447c718f0009f740cefa567078f1d"
+      "sourceSha256": "3c888a2706e66c9b0988da05b109717cc369106d4077d1c767fd81ff9d6a9377"
     },
     {
       "id": "design-eval-security-tasks",
@@ -4628,6 +4628,55 @@ window.DOCS_INDEX = {
       "sourceSha256": "900fa7a0c7895476fade59ccab3c01f1a93dccca122af1a10e614e8945cbc68c"
     },
     {
+      "id": "coordinator-log-c47",
+      "path": "docs/coordination/coordinator-log/c47.md",
+      "title": "Coordinator #47 hand-back (2026-10-06): X-FIXE's three raised items ruled into a part 2; EVID-A second instance; K1d's two survivors ruled and X-K1d part 2 compiled; autosquash forbidden in briefs",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-06",
+      "reviewSuggested": [],
+      "summary": "Coordinator #47 worked on coord/eval-c47-fixe (base ad873f57, X-FIXE's tip). X-FIXE's deviation (the not-comparable item skipped on the check-less shape) is refused: W1-E D-E4 makes every not-comparable cell in a trial an HB-RDY-011 item. Rework's missing hidden_tests_pass is an EVID-A second instance (the value, not the pointer, dropped); the fix is a granted section_data hunk in grade/rework.py, owned by X-FIXE part 2 in the same tree. The check-based hidden_tests_ms folds into part 2. F2's red, which wraps readiness.comparable_cells, is replaced by a real disagreeing check-less fixture (the HIDDEN_COUNTER pattern). X-FIXE part 2 compiled. Leader addition: K1d's survivors M-WRITEOLD and M-STOPC7 ruled (old-segment byte hash; the resume.cell action line), the seam resolved, X-K1d part 2 compiled under run w2-k1d2-e1e4, and autosquash of a worker's own commits forbidden in briefs. Leader addition 2: the naive-timeout seam ruled a W0 vocabulary gap (expected.<role>.timeouts), fixed in X-FIXE part 2 P4; RS2's per-record measure refused for the catalog's per-delivery count, RS1 unchanged; R-111 (vi) holds for behaviour; X-RS ready turn part 2 compiled behind X-FIXE's join.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c46",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-discriminate",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-resume",
+          "rel": "relates-to"
+        },
+        {
+          "to": "plan-eval-x-fixe",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "304ab50316c8ee4529a69d89455b4a40b8826f89e41427c220916bed657abec1"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4654,7 +4703,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9e8df0212142f93b1ab8d28aa22e73c33025b22f6503848333f2f74dd9f53b7b"
+      "sourceSha256": "60cb4c118522583d17fec1e87b5665425d2d70ca46f1282d3f2ddb3a87136bfd"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -9890,5 +9939,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "183fb3df76377908c927de756a725a8076ae844d149028a56f24066125074285"
+  "graphSha256": "f5f6c7323c98e162f248ab0938ca26b801d5713e262c92c8e568f303593a8c25"
 };
