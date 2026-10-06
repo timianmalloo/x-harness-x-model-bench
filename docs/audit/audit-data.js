@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T18:50:15Z",
+  "generated": "2026-10-06T19:52:30Z",
   "audit": [
     {
       "actor": null,
@@ -113705,6 +113705,30 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-06T18:31:43Z",
       "duration_seconds": 1112.0
+    },
+    {
+      "id": "al-01M49CCNE7BHS99SD299DFNGJV",
+      "shortname": "x-fixe-part2",
+      "datetime": "2026-10-06T19:52:30Z",
+      "session": "x-fixe-e1e4",
+      "prompt": "X-FIXE part 2 dispatch (compile al-01M499PT6GB5403MDZ70TCRD9C)",
+      "summary": "X-FIXE part 2 (claude-sonnet-5-5), 2026-10-06T19:13:31Z to about 19:53Z. Outcome: split (P1-P3 green 98f09423; P4 not started; final gates partly not run). Red SHAs: P1 94f139bc, P2 d75f424f, P3 7e6ed2a2. Green: P1 c37bfc8c, P2 75d627b7, P3 98f09423; plan record b1f767d6. Context: 118k after P1, 124k after P2, 155k after P3. Tokens: not recorded. New mutants not yet run by mutate_check (suite lock held by integrate-e2e4-18): rework hidden_tests_pass key deleted; property hidden_tests_ms key removed; check-less not-comparable item disabled; retargeted double-run item mutant. Applicability: the not-comparable item now runs on the check-less shape. Open: P4, mutate_check x2, final R-104 sets, real-task trials of RW1 RW2 NG1 NG2 SM1 SM2.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "started_at": "2026-10-06T19:13:31Z",
+      "duration_seconds": 2339.0,
+      "git": {
+        "sha": "b1f767d62d8ca27dc4e582f6445ff6e94785383a",
+        "short": "b1f767d62",
+        "branch": "build/eval-x-fixe",
+        "pushed": null
+      }
     }
   ],
   "changes": [
