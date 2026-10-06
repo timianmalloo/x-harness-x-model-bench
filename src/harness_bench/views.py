@@ -63,7 +63,7 @@ KEYS = {  # ADR-0006 as amended: the key of one row of each fact
 
 def segment_paths(run_dir: Path, fact: str) -> list[Path]:
     folder = run_dir / fact
-    return sorted(folder.glob("*.jsonl")) if folder.is_dir() else []
+    return sorted(folder.glob("*.jsonl"), key=lambda p: p.stem) if folder.is_dir() else []  # by stem: "-r001" sorts after "" (D-K7)
 
 
 def _completions(run_dir: Path) -> dict[str, dict]:

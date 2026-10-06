@@ -279,12 +279,9 @@ def test_run_closes_its_engine_log_handler_so_the_file_is_deletable(capsys, root
 
 
 def test_run_refuses_a_run_that_already_started(capsys, root, tmp_path, base, monkeypatch):
-    """cmd_run's own `(run_dir / "events").exists()` guard is a fast, cheap early-exit that fires
-    before preflight.check (the engine has its own, later, `HB-USR-002` guard for the same
-    condition -- engine.py:372 -- so the exit code and message alone do not distinguish which guard
-    fired). Spying on preflight.check pins the early-exit to cli.py's own line, not the engine's."""
+    """An existing events folder delegates with the real config before first-run preflight."""
+    from harness_bench import engine, preflight, resume, views
     from harness_bench import plan as plan_mod
-    from harness_bench import preflight
     from harness_bench.errors import BenchError
 
     calls = []
@@ -294,18 +291,31 @@ def test_run_refuses_a_run_that_already_started(capsys, root, tmp_path, base, mo
         raise BenchError("HB-PRE-003", "preflight reached")
 
     monkeypatch.setattr(preflight, "check", spy)
+    resumed = []
+
+    def resume_spy(run_dir, repo_root, p, cfg):
+        resumed.append((run_dir, repo_root, p, cfg))
+        assert isinstance(cfg, engine.EngineConfig)
+        assert cfg.verify is views.verify
+        assert callable(cfg.grade) and callable(cfg.build_workspace) and callable(cfg.campaign_check)
+        return engine.RunSummary(3)
+
+    monkeypatch.setattr(resume, "resume_run", resume_spy)
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     # make_run's plan carries only the two parameters it needs; fill in the rest so
-    # require_run_parameters (checked before the events-exists guard) does not fire first, and give it an
-    # empty task map so a mutant that skips the guard reaches preflight.check (Test Architect gate, STOP-I join).
+    # require_run_parameters does not fire first. Complete the config's plan fields;
+    # the preflight spy still detects first-run validation before resume delegation.
     p = json.loads((run_dir / "plan.json").read_text(encoding="utf-8"))
     p["parameters"] = {**plan_mod.DEFAULT_PARAMETERS, **p["parameters"]}
     p.setdefault("tasks", {})
+    p.setdefault("builds", {})
+    p.setdefault("trace_id", "a" * 32)
     p["plan_hash"] = plan_mod.plan_hash(p)
     (run_dir / "plan.json").write_text(json.dumps(p), encoding="utf-8")
     code, _, err = _bench(capsys, root, tmp_path, "--cells-root", str(base / "cells"), "--tools-dir", str(_fake_tree(tmp_path / "t")),
                           "run", "r1")
-    assert code == 1 and err.startswith("HB-USR-002: run r1 has already started")
+    assert code == 3 and err == ""
+    assert len(resumed) == 1 and resumed[0][0] == run_dir and resumed[0][1] == root
     assert calls == []
 
 

@@ -626,7 +626,7 @@ These ids are reserved, never reused. Each W1 design confirms or drops its rows;
 | HB-ALM-001 | alarm: heartbeat stale | X-K2 · E3 |
 | HB-ALM-002 | alarm: progress stalled while cells are pending | X-K2 · E3 |
 | HB-ALM-003 | warning: no alarm check ran within 2 × the interval (rev 6.13, R6.13e: **deferred to E5** with the drill by W1-K sections 6.2 and 9; the reservation stands, and X-K1a's `errors.py` commit does not add it) | X-K2 · E5 |
-| HB-CHK-005 | a check listener is not bound to `127.0.0.1` | X-LB · E4 |
+| HB-CHK-005 | a check listener is not bound to `127.0.0.1` | X-LB · E4. A check-side diagnostic, never a run code (erratum, Coordinator #46, from the Security & Identity review of X-LB1): `bench_check.listen()` raises `ListenerError` with this code, `main` writes the traceback to `check.stderr` and exits 5 with no line, and section 3's table classifies that run as row 4 (HB-CHK-002), as W1-D accepts (`eval-property-grader.md:238`, "row 4 ... W0 has no separate row"; RF-10 at `:729`). The operator reads HB-CHK-005 in `check.stderr`. A separate run row would add the exit-5 row W0 has none of (W1-D PAT 2) |
 
 ## 12. Run-ledger additions (ADR-0015, ADR-0021; for the record model and `lifecycle.py`)
 

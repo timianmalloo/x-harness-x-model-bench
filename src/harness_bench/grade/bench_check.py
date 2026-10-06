@@ -12,6 +12,7 @@ job. The check process never imports deliverable code: an in-process probe is a 
 """
 
 import base64
+import contextlib
 import ctypes
 import ctypes.wintypes as wt
 import io
@@ -19,6 +20,7 @@ import json
 import os
 import queue
 import random
+import socket
 import subprocess
 import sys
 import threading
@@ -46,6 +48,32 @@ _k32.GetProcessTimes.argtypes = [wt.HANDLE] + [ctypes.POINTER(wt.FILETIME)] * 4
 
 class DidNotStart(Exception):
     """The probe host sent no ready line: `deliverable: did not start` (W0 outcome row 6)."""
+
+
+class ListenerError(Exception):
+    """HB-CHK-005: a check listener is not bound to 127.0.0.1."""
+
+
+_BIND = ("127.0.0.1", 0)  # the literal loopback address, port 0 so parallel cases never collide (F15)
+
+
+@contextlib.contextmanager
+def listen():
+    """A case's fake: a listening socket on 127.0.0.1, port 0, exclusive on its port, closed when the case ends.
+
+    The whole lifecycle is here: bind, assert the bound address is the literal `127.0.0.1` (HB-CHK-005 otherwise), yield
+    the socket, close it. It is the only socket the check opens, it is never inherited (the probe host starts with
+    close_fds), and it holds no state beyond the socket (ADR-0018 s3; W0 R6-17)."""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)  # R6-17: no other process can share the port
+        sock.bind(_BIND)
+        if sock.getsockname()[0] != "127.0.0.1":
+            raise ListenerError(f"HB-CHK-005: listener bound to {sock.getsockname()[0]}, not 127.0.0.1")
+        sock.listen()
+        yield sock
+    finally:
+        sock.close()
 
 
 class _PidList(ctypes.Structure):
@@ -132,6 +160,7 @@ class Context:
 
 _CTX = None
 _STARTS = []
+_SPANS = []
 _TIMED_OUT = []
 
 
@@ -143,14 +172,17 @@ def load():
     return _CTX
 
 
-def _resolve(value, state_dir):
-    """`str.replace` of the literal `{state_dir}` in every string value at any depth; keys are never rewritten."""
+def _resolve(value, state_dir, fake_url=None):
+    """`str.replace` of the literal `{state_dir}` (and, when given, `{fake_url}`) in every string value at any depth;
+    keys are never rewritten. `state_dir` None leaves `{state_dir}` alone (a request frame has no state dir)."""
     if isinstance(value, str):
-        return value.replace("{state_dir}", state_dir)
+        if state_dir is not None:
+            value = value.replace("{state_dir}", state_dir)
+        return value if fake_url is None else value.replace("{fake_url}", fake_url)
     if isinstance(value, list):
-        return [_resolve(v, state_dir) for v in value]
+        return [_resolve(v, state_dir, fake_url) for v in value]
     if isinstance(value, dict):
-        return {k: _resolve(v, state_dir) for k, v in value.items()}
+        return {k: _resolve(v, state_dir, fake_url) for k, v in value.items()}
     return value
 
 
@@ -172,8 +204,9 @@ def _rmtree(path):
 
 
 class ProbeHost:
-    def __init__(self, ctx, case, bound_s):
+    def __init__(self, ctx, case, bound_s, fake=None):
         self.ctx, self.case, self.bound_s, self.timed_out = ctx, case, bound_s, False
+        self.fake_url = None if fake is None else f"http://127.0.0.1:{fake.getsockname()[1]}"
         self.state_dir = os.path.join(os.path.dirname(os.path.abspath(ctx.deliverable)), "state", case["id"])
         if os.path.lexists(self.state_dir):
             _rmtree(self.state_dir)
@@ -233,12 +266,16 @@ class ProbeHost:
         """One frame out, one response line in, within what is left of the case bound. None is a broken exchange."""
         self._n += 1
         frame = {"id": self._n} | dict(frame)
+        if self.fake_url is not None:  # `{fake_url}` in a request's string args only (R6-17(c), ADR-0018 s3), never kwargs
+            frame = {k: _resolve(v, None, self.fake_url) if k == "args" else v for k, v in frame.items()}
+        t0 = time.monotonic()
         try:
             self.proc.stdin.write((json.dumps(frame) + "\n").encode())
             self.proc.stdin.flush()
         except OSError:
             return None
         resp = self._next(self.deadline - time.monotonic())
+        _SPANS.append(round((time.monotonic() - t0) * 1000))  # frame written to response read: host start is outside it
         if resp == "bound":
             self.timed_out = True
             _TIMED_OUT.append(self.case["id"])
@@ -271,18 +308,22 @@ class ProbeHost:
         return False
 
 
-def probe_host(case):
-    host = ProbeHost(_CTX, case, _CTX.bound_ms(case) / 1000)
+def probe_host(case, fake=None):
+    """The case's host. `fake` is the case's `listen()` socket (shape (b)): `{fake_url}` then names its port."""
+    host = ProbeHost(_CTX, case, _CTX.bound_ms(case) / 1000, fake)
     _STARTS.append(host.start_ms)
     return host
 
 
 def run_case(case, fn):
-    """Time one case from the host's ready line (the start is bounded apart), and turn an overrun into `timeout`."""
+    """Time one case from the host's ready line (the start is bounded apart), and turn an overrun into `timeout`.
+
+    A `kind: fault` case is timed by the probe-host calls alone (frame written to response read), so the fake's setup
+    and the host start are outside it (W0 section 3, shape (b))."""
     t0 = time.monotonic()
-    del _STARTS[:], _TIMED_OUT[:]
+    del _STARTS[:], _SPANS[:], _TIMED_OUT[:]
     outcome = fn()
-    elapsed_ms = round((time.monotonic() - t0) * 1000) - sum(_STARTS)
+    elapsed_ms = sum(_SPANS) if case.get("kind") == "fault" else round((time.monotonic() - t0) * 1000) - sum(_STARTS)
     if _TIMED_OUT or elapsed_ms > _CTX.bound_ms(case):
         outcome = "timeout"
     return {"id": case["id"], "outcome": outcome, "duration_ms": max(0, elapsed_ms)}

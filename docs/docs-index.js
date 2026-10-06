@@ -835,7 +835,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "673790bae6bc9b63f4e388d65f8f7e18ba7cca41f11c379ebcea0fa0cfa32aef"
+      "sourceSha256": "05cb2c976e3c3b1f58e3737f1c007d7e0250550db45f6b0da2107746fb5e5331"
     },
     {
       "id": "adr-0019-catalog-0-7-property-metrics",
@@ -1974,7 +1974,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "727c80ad342e33503f97f127e1426f07fc287904c3f66a2102cb2f79eed2949c"
+      "sourceSha256": "e67c4be5814f67c561558a4af02c9e5a44d0b845800de1f0b8b1f22a43e88ca3"
     },
     {
       "id": "design-eval-arms",
@@ -2374,7 +2374,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "36fd72c62bf3df7ee0c8644f2f5f0dc073c754f6037bdf42f6533949a8d48a47"
+      "sourceSha256": "20ee5a2c20af06aa594e19aab9b9df8d469e37ccaefea7dd5a32241e96369e6e"
     },
     {
       "id": "design-eval-power-verdicts",
@@ -2593,7 +2593,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d75924706c220625ade831d3de0711712c678824725f0e631090dfbfbeb0f434"
+      "sourceSha256": "1cb8d23b9f54d5c6bd64244e28e36b3a169e2eb39e48f973d4aacbeb606b656b"
     },
     {
       "id": "design-eval-resume",
@@ -2758,7 +2758,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "26ce62573cc24d58a2df4c04f27adb14cf08e7a89d9d3712a55dae41946e7cfd"
+      "sourceSha256": "a2b3d71d784f767a61417688eeb755d9692447c718f0009f740cefa567078f1d"
     },
     {
       "id": "design-eval-security-tasks",
@@ -4538,6 +4538,96 @@ window.DOCS_INDEX = {
       "sourceSha256": "125896173add1eb8322cd2645d4ef5440f5c0f32675b39dfc9dffa0eb76b41c8"
     },
     {
+      "id": "coordinator-log-c45",
+      "path": "docs/coordination/coordinator-log/c45.md",
+      "title": "Coordinator #45 hand-back (2026-10-06): the five X-K1c contradictions classified, the strict-xfail narrowing rule, three seam rulings, the K1c finishing turn and X-K1d compiled",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-06",
+      "reviewSuggested": [],
+      "summary": "Coordinator #45 worked on build/eval-x-k1c (db67039d). All five contradictions the K6 worker reported are fixture defects against W1-K, none a design question; a sixth cause (resume_run silently discards the plan its caller passes) is a code defect, and it makes test_resume_heartbeats_the_lock vacuous. It ruled the strict-xfail narrowing rule, accepted both K1c seams (the plan reader, the stem order), ruled segment.abandoned's TABLE writer to \"ledger\" with a checked append, compiled the K1c finishing turn (Claude Code Sonnet) and X-K1d (Codex), filed one decision request to the Owner (the five classifier mutants against W1-K :199), and registered FIXT-C, INJ-A, ORD-A and MARK-B.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c43",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-k1",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-resume",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "plan-eval-x-k1c",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "65f42908b3ea62836a0e9d0a9e3437bf183f17c7af30edececb4a7ede1ec9c42"
+    },
+    {
+      "id": "coordinator-log-c46",
+      "path": "docs/coordination/coordinator-log/c46.md",
+      "title": "Coordinator #46 hand-back (2026-10-06): resume.py a sanctioned ninth archive reader; X-K1d and the X-RS ready turn compiled; CEIL-A floor rule; RS2 residual to the Owner; SHAPE-A row 4 owned; X-LB1 minors",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-06",
+      "reviewSuggested": [],
+      "summary": "Coordinator #46 worked on coord/eval-c46-k1d (base c427a71c, the X-K1c integration merge). Item 0, its own hand-back: the K1c join's recount failed T-SWEEP-1 on resume.py. Ruled (a): resume.py is a sanctioned ninth archive reader, because W1-K requires every read it makes and each read names turn folders from a row or from archive.snapshot_folder. W1-J section 7 gains the row as an erratum; the Leader adds resume.py to READERS and sets the count to 9 at the join. A second QUOTE-A instance; its trigger fired. Items 1-7: X-K1d recompiled (Ruling 110, QUOTE-A, floor split rule) and the X-RS ready turn compiled; CEIL-A floor rule in the compile form; RS2 residual is a W1-L conflict, DR to owner-fable; W1-L Erratum 3; SHAPE-A row 4 owned by a fix turn X-FIXE; ADR-0018 residual row and the HB-CHK-005 row documented.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c45",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-resume",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "900fa7a0c7895476fade59ccab3c01f1a93dccca122af1a10e614e8945cbc68c"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4564,7 +4654,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "0066862f936be06585974f2ef0ff2f7a5f22fe867eb6ac761d1f2252d6b17767"
+      "sourceSha256": "9e8df0212142f93b1ab8d28aa22e73c33025b22f6503848333f2f74dd9f53b7b"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -5162,6 +5252,71 @@ window.DOCS_INDEX = {
         }
       ],
       "sourceSha256": "59c4d90d70c17d051694b491c23ead9e33d5946cf6c842260d39c28111b71b75"
+    },
+    {
+      "id": "plan-eval-x-k1c",
+      "path": "docs/plans/eval-x-k1c.md",
+      "title": "X-K1c: archive recovery and resume refusals",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-20",
+      "reviewSuggested": [],
+      "summary": "Dispatch x-k1c-e1e4 implements W1-K K5, admitting K6 only under the native context split rule. All changes stay in the assigned worktree and the Leader owns independent review and integration.",
+      "tags": [
+        "resume",
+        "execution-plan"
+      ],
+      "links": [
+        {
+          "to": "design-eval-resume",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-k1",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "Execution graph",
+          "mermaid": "graph TD\n B --> AR[A-red] --> AG[A-green]\n B --> RR[R-red] --> RG[R-green]\n B --> SR[S-red] --> SG[S-green]\n AG --> C\n RG --> C\n SG --> C\n C -->|admitted| K6\n C -->|split| G\n K6 --> G --> J"
+        }
+      ],
+      "sourceSha256": "dea52505a23a09591be87e66b2af6bb89773109da066f4d56c16824bbf38c5fe"
+    },
+    {
+      "id": "plan-eval-x-lb1",
+      "path": "docs/plans/eval-x-lb1.md",
+      "title": "X-LB1: the loopback fake, shape (b) path and readiness pointers",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-20",
+      "reviewSuggested": [],
+      "summary": "K1 listener and K2 shape (b) grading path (part 1), K3 readiness shape rule and property.json pointers, K4 an RS-shaped discriminate fixture (part 2).",
+      "tags": [
+        "evaluation",
+        "loopback",
+        "execution-plan"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "Bounded graph",
+          "mermaid": "graph LR\n K1 --> K2\n K2 --> K3a\n K2 --> K3b\n K3a --> K4\n K3b --> K4\n K4 --> G"
+        }
+      ],
+      "sourceSha256": "3b773f882e6785193cba426f9f35e9e90405fe421ef4cbbef3d82fbb05163613"
     },
     {
       "id": "proof-phase2",
@@ -6740,6 +6895,33 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "2b35fece6b5117acf6c8651d17c4ba3e1b9e21b5859ebbdc0c913c266c09df8d"
+    },
+    {
+      "id": "runbook-test-tiers",
+      "path": "docs/runbooks/test-tiers.md",
+      "title": "Runbook: the test tiers and the stamped tier",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-12-31",
+      "reviewSuggested": [],
+      "summary": "Which tests run when: per join, per batch, when the stamped inputs moved, and once a day. The `stamped` marker, its own stamp, the exact commands, and the control that keeps a stamped test honest.",
+      "tags": [
+        "runbook",
+        "testing",
+        "ci",
+        "gate-stamp",
+        "stamped"
+      ],
+      "links": [
+        {
+          "to": "note-20260927-ci-opt-proposal",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "42410303ebdb094c4090760622791aef2aa94a4ce1d97dd137a44d9ac7ca0938"
     },
     {
       "id": "brief-eval-env-a",
@@ -9613,6 +9795,22 @@ window.DOCS_INDEX = {
       "artifactId": "plan-eval-x-k1b"
     },
     {
+      "id": "surface-plans-eval-x-k1c",
+      "path": "docs/plans/eval-x-k1c.html",
+      "title": "Eval X K1C",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-k1c"
+    },
+    {
+      "id": "surface-plans-eval-x-lb1",
+      "path": "docs/plans/eval-x-lb1.html",
+      "title": "Eval X Lb1",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-lb1"
+    },
+    {
       "id": "surface-case-study",
       "path": "docs/case-study.html",
       "title": "From Specification to Implementation: An AI-Forward Case Study",
@@ -9659,5 +9857,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "62c7fe04449a21d2e3954bb5375099d60b1cb7469388431ea5d16a479953076b"
+  "graphSha256": "39ef78476d138ebd766ba0e17fc2c3e31f2491da4c55d7a9ced87445a4ad29fd"
 };

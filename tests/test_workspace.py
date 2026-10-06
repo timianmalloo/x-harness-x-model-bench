@@ -370,12 +370,13 @@ def test_a_clean_cells_root_is_accepted(clean_base):
     workspace.check_cells_root(clean_base / "bench-cells")
 
 
-def test_a_cells_root_under_the_user_profile_is_refused(tmp_path):
-    # the operator's ~/.claude/CLAUDE.md is above every folder in the profile (spike R1.3)
+def test_a_cells_root_under_the_user_profile_is_refused():
+    # the operator's ~/.claude/CLAUDE.md is above every folder in the profile (spike R1.3). The root is built under
+    # Path.home(), not tmp_path: with TMP outside the profile (PATH-B's C:\t\...) tmp_path is not under it (TMPENV-A)
     if not (Path.home() / ".claude" / "CLAUDE.md").exists():
         pytest.skip("no ~/.claude/CLAUDE.md on this machine")
     with pytest.raises(BenchError):
-        workspace.check_cells_root(tmp_path / "bench-cells")
+        workspace.check_cells_root(Path.home() / "hb-no-such-folder" / "bench-cells")
 
 
 # --- check_grading_root (HB-GRD-006, ADR-0013 Amendment 2): no upward-discovering tool's own project file ------------

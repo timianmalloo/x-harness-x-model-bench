@@ -49,7 +49,7 @@ TURN_KINDS = ("cell.prompt_sent", "cell.turn_ended", "cell.turn_snapshot_archive
 @dataclass(frozen=True)
 class Transition:
     action: str  # the model action it implements
-    writer: str  # who appends it: "engine", "grading" (a grading pass) or "ledger" (a segment's own writer)
+    writer: str  # who appends it: "engine", "grading" (a grading pass) or "ledger" (a segment's own writer, incl. the dead-segment marker)
     after: tuple[str, ...] = ()  # this cell's transitions that must already be recorded ...
     after_rule: str = ""  # ... else this guard is named
     not_after: tuple[str, ...] = ()  # this cell's transitions it may not follow ...
@@ -95,7 +95,7 @@ TABLE: dict[str, Transition] = {
     "run.completed": Transition("(run end)", "engine"),
     "grading.started": Transition("GradeStart", "grading"),
     "grading.completed": Transition("GradeEnd", "grading"),
-    "segment.abandoned": Transition("(ledger: a dead pass named by the next, HB-LED-004)", "grading"),
+    "segment.abandoned": Transition("(ledger: a dead pass named by the next, HB-LED-004)", "ledger"),
     "ledger.tail_repaired": Transition("(ledger)", "ledger"),
 }
 ENGINE_TRANSITIONS = frozenset(k for k, t in TABLE.items() if t.writer == "engine")

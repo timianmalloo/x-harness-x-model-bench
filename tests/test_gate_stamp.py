@@ -159,3 +159,105 @@ def test_renew_refuses_when_tests_do_not_run_or_fail(tmp_path, monkeypatch):
     assert ret == 0
     assert stamp_file.exists()
     assert gate_stamp.read_stamp(stamp_file) == gate_stamp.compute_digest(root)
+
+
+# ---------------------------------------------------------------- the stamped tier (`-m stamped`)
+
+def _copy_stamped_extras(root: Path) -> None:
+    for rel in gate_stamp.STAMPED_EXTRA_INPUTS:
+        (root / rel).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ROOT / rel, root / rel)
+
+
+def test_stamped_digest_moves_with_each_extra_input_and_the_gate_digest_does_not(tmp_path):
+    root = _setup_tmp_root(tmp_path)
+    _copy_stamped_extras(root)
+    base, gate_base = gate_stamp.compute_stamped_digest(root), gate_stamp.compute_digest(root)
+    for rel in gate_stamp.STAMPED_EXTRA_INPUTS:
+        path = root / rel
+        original = path.read_text(encoding="utf-8")
+        path.write_text(original + "\n# byte change\n", encoding="utf-8")
+        assert gate_stamp.compute_stamped_digest(root) != base, rel
+        assert gate_stamp.compute_digest(root) == gate_base, rel  # the 77-minute gate ring is not retriggered
+        path.write_text(original, encoding="utf-8")
+    grader = root / "src" / "harness_bench" / "grade" / "architecture.py"
+    grader.write_text(grader.read_text(encoding="utf-8") + "\n# byte change\n", encoding="utf-8")
+    assert gate_stamp.compute_stamped_digest(root) != base  # every gate input is a stamped input too
+
+
+def test_stamped_stale_names_why_the_stamped_ring_must_run(tmp_path):
+    root = _setup_tmp_root(tmp_path)
+    _copy_stamped_extras(root)
+    now = gate_stamp.datetime.datetime(2026, 10, 6, 12, tzinfo=gate_stamp.datetime.UTC)
+    target = gate_stamp.stamped_stamp_path(root)
+    assert gate_stamp.stamped_stale(root, now) == "no readable stamped stamp"
+    gate_stamp.write_stamp(target, "0" * 64, now.isoformat())
+    assert gate_stamp.stamped_stale(root, now) == "stamped inputs changed"
+    gate_stamp.write_stamp(target, gate_stamp.compute_stamped_digest(root), now.isoformat())
+    assert gate_stamp.stamped_stale(root, now) is None
+    assert gate_stamp.stamped_stale(root, now + gate_stamp.datetime.timedelta(hours=23)) is None
+    assert gate_stamp.stamped_stale(root, now + gate_stamp.datetime.timedelta(hours=25)) == "daily full run due"
+
+
+def test_renew_stamped_runs_the_stamped_marker_with_dotnet_required_and_refuses_a_skip(tmp_path, monkeypatch):
+    root = _setup_tmp_root(tmp_path)
+    _copy_stamped_extras(root)
+    seen = {}
+
+    def fake_run(cmd, **kwargs):
+        seen["cmd"], seen["env"] = cmd, kwargs["env"]
+        return subprocess.CompletedProcess(args=cmd, returncode=0, stdout=seen["out"], stderr="")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    seen["out"] = "20 passed, 1 skipped in 9.0s"
+    assert gate_stamp.renew(root, stamped=True) == 1
+    assert not gate_stamp.stamped_stamp_path(root).exists()
+    seen["out"] = "21 passed in 9.0s"
+    assert gate_stamp.renew(root, stamped=True) == 0
+    assert seen["cmd"][-4:] == ["-m", "stamped", "-n", "4"] and seen["env"]["HB_REQUIRE_DOTNET"] == "1"
+    assert gate_stamp.stamped_stale(root) is None
+
+
+# The control: a `stamped` test is skipped when no input moved, so every harness_bench module its file imports must
+# be an input of the stamped digest or a named glue module. A new import fails here until someone decides which.
+# Glue = imported to build cells, plans and paths; it is not graded behaviour. Its own fast tests run at every join.
+STAMPED_GLUE = {
+    "harness_bench.archive": "make_writable, to clean up grading copies",
+    "harness_bench.config": "loads the plan config that d1_cell builds on",
+    "harness_bench.plan": "task_version_hash and cell identity for d1_cell (D1's hash is a digest input)",
+    "harness_bench.gitsafe": "git helper for the fixtures' scratch repos",
+    "harness_bench.host": "host lookups the dotnet oracle tests read",
+    "harness_bench.procs": "process-tree helpers (leftover-process checks)",
+    "harness_bench.profiles": "CELL_ENV, the pinned cell environment constant",
+    "harness_bench.views": "cell and token projections the fixtures read",
+}
+
+
+def _stamped_test_files() -> list[Path]:
+    files = []
+    for path in sorted((ROOT / "tests").glob("test_*.py")):
+        if "mark.stamped" in path.read_text(encoding="utf-8"):
+            files.append(path)
+    return files
+
+
+def _harness_bench_imports(path: Path) -> set[str]:
+    import ast
+
+    modules = set()
+    for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+        if isinstance(node, ast.ImportFrom) and node.module and node.module.split(".")[0] == "harness_bench":
+            modules |= {f"{node.module}.{a.name}" if node.module == "harness_bench" else node.module for a in node.names}
+        elif isinstance(node, ast.Import):
+            modules |= {a.name for a in node.names if a.name.split(".")[0] == "harness_bench"}
+    return modules
+
+
+def test_every_module_a_stamped_test_file_imports_is_a_stamped_input_or_named_glue():
+    digested = {rel.removeprefix("src/").removesuffix(".py").replace("/", ".") for rel in gate_stamp.STAMPED_EXTRA_INPUTS}
+    files = _stamped_test_files()
+    assert files, "no stamped test file found: the marker was removed or renamed"
+    for path in files:
+        for module in sorted(_harness_bench_imports(path)):
+            covered = module in digested or module in STAMPED_GLUE or module.startswith("harness_bench.grade")
+            assert covered, f"{path.name} imports {module}: add it to STAMPED_EXTRA_INPUTS or name it in STAMPED_GLUE"

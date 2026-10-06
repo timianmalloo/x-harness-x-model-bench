@@ -54,7 +54,8 @@ def main():
     with open(os.path.join(args["--evidence"], "stub.args.json"), "w", encoding="utf-8") as f:
         json.dump({"seed": args["--seed"], "deliverable": args["--deliverable"], "cwd": os.getcwd(),
                    "env": sorted(os.environ)}, f)
-    cases = [{"duration_ms": 1, "id": i, "outcome": "exploited" if mode == "exploited" else "blocked"} for i in ids]
+    outcome = {"exploited": "exploited", "passed": "passed"}.get(mode, "blocked")
+    cases = [{"duration_ms": 1, "id": i, "outcome": outcome} for i in ids]
     if mode == "hang":
         time.sleep(600)
     if mode == "exit5":

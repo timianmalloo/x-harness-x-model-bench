@@ -381,7 +381,7 @@ expected:
 | --- | --- | --- |
 | `v-no-retry` | `g-5xx-burst` | effect |
 | `v-no-timeout` | `g-slow-first`, `g-hang` | time |
-| `v-retry-5` | `g-5xx-persistent`, `g-hang` | requests |
+| `v-retry-5` | `g-5xx-persistent`, `g-hang`, `g-ordering` (Erratum 3) | requests |
 | `v-batch-id-per-attempt` | `g-slow-first`, `g-lost-response` | effect (the stable identity is the batch id) |
 | `v-clear-early` (buffer cleared before acceptance) | `g-5xx-persistent`, `g-ordering` | result (records r1, r2 are lost, so the collector sees fewer) |
 | `v-requeue-tail` (after a failure the failed batch is re-queued behind newer records) | `g-ordering` | result |
@@ -546,6 +546,11 @@ X-SM found these while authoring SM1 and SM2. W0 rev 6.7 wins where this design 
 - **`launderclass` (W0 rev 6.6 §7).** Two classes in 2 outside lines, not section 8.2's one empty `class _Marker`. The whole-tree `new_abstractions` is 2; only clause (a) fails; the 2 outside lines are within the allowance of 4.
 - **SM2's latent terms.** SM2's prompt names the `options` parameter, so the bare term `option` matches its own prompt. Section 15's floor item (5) ("0 hits") was false for SM2. SM2 replaces `option` with `extra option` and `new option`; SM1 keeps `option` (its prompt has no match).
 - **Residual R-S2: a test helper under a test directory.** Under `is_test_path` (W0 rev 6.6, R6.6b), a new `tests/_helpers.py` that is not in the base tree is a product file. Its lines count against `outside_radius_lines: 4`, and a class in it counts against `new_abstractions`. So an honest solution that moves test scaffolding into a helper can score `property_check_pass` 0. Accepted as a residual, not changed: both prompts name the one test file to write, this is the price of `laundertest` (R2-3), and a change to `is_test_path` changes R6.6b, which is a decision request to the Owner. *Confirm:* assume A5's `alt` runs; a measured honest solution that fails only through a test-directory helper reopens it.
+
+### Erratum 3 (Coordinator #46, 2026-10-06; X-RS's RS2 evidence, `build/eval-x-rs:tasks/RS2/oracle/evidence.md`)
+
+- **`retry5` also flips `g-ordering`, on clause `requests`.** Section 9.3's `v-retry-5` row (now `retry5`, R2-1) should read: flips `g-5xx-persistent`, `g-hang`, `g-ordering`; clause `requests`. Under the R2-6 schedule (`g-ordering`'s first flush is answered 503 until the check clears the fault), `retry5` sends 5 requests and fails `requests <= 3`. Measured on the real probe host with the stand-in listener, all seven RS2 rows as re-traced (X-RS part 5, `c44c11e5`). `requeuetail` still flips `g-ordering` alone, on `result`, so RV-TA 5e/5f hold.
+- **The lost-response-then-grow residual is open, not settled here.** A response lost in one flush, then a new record, then a second flush: the reference keeps the batch id and sends the grown batch, so a collector that applied the first batch drops the new record. Section 9.3's prompt ("sends the buffered records in one batch") and latent requirement ("stable across its retries ... each record once") cannot both hold in that schedule. Decision request `req-01M4966TTSM5ADZ41AFE6SX8S9` to `owner-fable`; until it is ruled, RS2 keeps its seven cases and the residual is stated in its evidence (`c46.md` item 3).
 
 ## 17. Conformance, residuals and "Done when" met
 
