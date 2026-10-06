@@ -4674,7 +4674,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "304ab50316c8ee4529a69d89455b4a40b8826f89e41427c220916bed657abec1"
+      "sourceSha256": "7113e03a8302b4c0733bb0993652474ae88829086765db3f05c5e792ab397a67"
     },
     {
       "id": "defect-classes",
@@ -4703,7 +4703,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "60cb4c118522583d17fec1e87b5665425d2d70ca46f1282d3f2ddb3a87136bfd"
+      "sourceSha256": "81b947fb3570a2ce85f82b9ff45dddf0e2219aebd6b061b089462a29acb86877"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -9939,5 +9939,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "5530b825ff3bf268496137faea2a478d52c048da35111e0c8c9ba9ff7868966d"
+  "graphSha256": "07adb21cbf9a423b62cc5d3e73ca049b7e4194fb8e6dc9c58114c89735cd5a46"
 };
