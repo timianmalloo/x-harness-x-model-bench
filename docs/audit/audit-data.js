@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T16:06:30Z",
+  "generated": "2026-10-06T16:06:35Z",
   "audit": [
     {
       "actor": null,
@@ -109264,6 +109264,33 @@ window.AUDIT_DATA = {
         "acceptance_met": true
       },
       "started_at": "2026-10-06T16:06:29Z",
+      "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M48ZF04V6RXK4DQS7849EPYR",
+      "shortname": "join-r110",
+      "datetime": "2026-10-06T16:06:35Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of owner/ruling-r110 into integrate/e2e4-18",
+      "summary": "Owner (Fable claude-fable-5-1) Ruling 110 fe53b7d1 on req-01M48XS0VDQ1A93E3EC48JGRSM: (b) granted, bounded - five classifier mutants in tests/mutations/resume.json with tests = the two sweep node ids; survivor = finding; W1-K erratum (:199, :512) by the compiling Coordinator in K1d's join; cost measured at K1d (IO1); (a) refused recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join Ruling 110 into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 (docs-only)",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-06T16:06:34Z",
       "duration_seconds": 1.0
     }
   ],
