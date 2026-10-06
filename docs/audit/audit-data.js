@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T13:36:10Z",
+  "generated": "2026-10-06T14:14:49Z",
   "audit": [
     {
       "actor": null,
@@ -105476,12 +105476,58 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M48PVJH1KEX6H6JMQ4RM5MKC",
-      "shortname": "join-c43",
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
       "datetime": "2026-10-06T13:36:10Z",
-      "session": "leader-e1e4",
+      "done_when": "conductor-join exit 0; gates green",
+      "duration_seconds": 1.0,
+      "fan_out": 0,
+      "goal": "Join Coordinator #43 into integrate/e2e4-18",
+      "id": "al-01M48PVJH1KEX6H6JMQ4RM5MKC",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "the join of coord/eval-c43-k1c into integrate/e2e4-18",
+      "session": "leader-e1e4",
+      "shortname": "join-c43",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "execute-with-coordination",
+      "started_at": "2026-10-06T13:36:09Z",
       "summary": "Coordinator #43 (Opus) 811a0c57: K1c al-01M48NZQTY6QWZS82WQ1SECXNE (dispatched from the c43 tree), K2b al-01M48P1TDE2VZ8VZHQMMJ21RYZ; rulings (EngineConfig.verify injected; cmd_run body; sweep pairing in the resume caller) accepted by the Leader; docs-only recount_seconds=0 (docs_only=True).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": "claude-code sonnet claude-sonnet-5-5",
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-06T13:42:45Z",
+      "done_when": "readiness and rework green with mutants killed, fallback deleted, gates exit 0",
+      "goal": "X-FIXD turn 2: Ruling 109 (1') in readiness.variant_failures; rework evidence pointer; delete discriminate fallback",
+      "id": "al-01M48Q7M4QA6YPWAAW59Z6JJ1F",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "X-FIXD turn 2 (compile al-01M48EJDHJMT4XD48MPZHCKXG2): Ruling 109 (1') variant_failures; rework evidence pointer; delete the discriminate fallback",
+      "session": "x-fixd-e1e4",
+      "shortname": "x-fixd-turn2",
+      "skill": "implement",
+      "summary": "green 139e5e23 (head). Readiness green 84dfe6b5, rework green 98c44c1d. Reds e18f0a4a (readiness), b2cceff3 (rework). Mutants 69f55f91 (readiness) and 8a9c2a0c (rework), both killed. Fallback deleted 139e5e23. Start 2026-10-06T13:04:23Z, end about 13:46Z. Served model claude-sonnet-5-5. Tokens: not recorded.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "id": "al-01M48S2BCC05Q1C13P8J5DZ1WJ",
+      "shortname": "join-x-fixd-2",
+      "datetime": "2026-10-06T14:14:49Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of build/eval-x-fixd into integrate/e2e4-18",
+      "summary": "X-FIXD t2 (Sonnet claude-sonnet-5-5, loop-back slot 2): readiness red e18f0a4a (signature TypeError - recorded), green 84dfe6b5, mutant 69f55f91; rework reds b2cceff3 (Leader re-ran: 2 assertion fails), green 98c44c1d, mutant 8a9c2a0c, fallback deletion 139e5e23; rework.json + discriminate.json all killed; 268 passed recount_seconds=1860 (docs_only=False).",
       "kind": "skill",
       "skill": "execute-with-coordination",
       "tool": null,
@@ -105490,8 +105536,8 @@ window.AUDIT_DATA = {
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Join Coordinator #43 into integrate/e2e4-18",
-      "done_when": "conductor-join exit 0; gates green",
+      "goal": "Join X-FIXD turn 2 into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 with the default ring green",
       "tier": "T1",
       "fan_out": 0,
       "signals": {
@@ -105499,8 +105545,8 @@ window.AUDIT_DATA = {
         "verification_executed": true,
         "acceptance_met": true
       },
-      "started_at": "2026-10-06T13:36:09Z",
-      "duration_seconds": 1.0
+      "started_at": "2026-10-06T13:43:47Z",
+      "duration_seconds": 1862.0
     }
   ],
   "changes": [
