@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T01:58:03Z",
+  "generated": "2026-10-06T02:27:07Z",
   "audit": [
     {
       "actor": null,
@@ -93393,6 +93393,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-06T01:28:30Z",
       "duration_seconds": 1773.0
+    },
+    {
+      "id": "al-01M47GJGYBPJGQTYPK2H100MBC",
+      "shortname": "join-ring-guard",
+      "datetime": "2026-10-06T02:27:07Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of build/eval-ring-guard into integrate/e2e4-18",
+      "summary": "Ring guard (Sonnet claude-sonnet-5-5) 86e6a949: after an unidentified 15:33:22 sweep deleted every empty file in the shared %TEMP%/hb-*-ring/sources bases (7 pin tests red on every tree), cached_base runs git status --porcelain --untracked-files=no (~33 ms vs ~1140 ms build) and repairs by checkout, rebuilding to sources-r<n> if still damaged; red test_damaged_cached_base_is_not_served re-run by Leader on c2922763 (1 failed); 258 passed pin gate, guard 200, ruff 0 recount_seconds=1741 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join the ring-cache guard into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-06T01:58:05Z",
+      "duration_seconds": 1742.0
     }
   ],
   "changes": [
