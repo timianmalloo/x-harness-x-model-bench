@@ -1345,7 +1345,7 @@ def test_disk_floor_stops_launching_before_any_cell(base):
 def test_disk_query_failure_is_not_recorded_and_launching_continues(base, monkeypatch, caplog):
     p = _plan(n_cells=4, parallelism=4)
     cfg = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
-                             launchers={"fake": FakeLauncher({})}, build_workspace=_build_workspace)
+                             launchers={"fake": FakeLauncher({})}, build_workspace=_build_workspace, grade=None)
 
     def failed_query(path):
         raise OSError(errno.EIO, "query failed")
@@ -1401,7 +1401,7 @@ def test_one_path_failing_still_applies_floor_to_the_other(base, monkeypatch, fa
     p = _plan(n_cells=1)
     (base / "cells").mkdir()
     cfg = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
-                             launchers={"fake": FakeLauncher({})}, build_workspace=_build_workspace)
+                             launchers={"fake": FakeLauncher({})}, build_workspace=_build_workspace, grade=None)
     real = shutil.disk_usage
 
     def query(path):
