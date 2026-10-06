@@ -905,7 +905,18 @@ def test_sweep_pairing_refuses_wrong_lock(golden1, tmp_path):
     other = tmp_path / "other"
     other.mkdir()
     with oslock.RunLock.acquire(other / ".lock") as lock, pytest.raises(ValueError):
-        atomic.sweep_temps(env.run_dir / "archive", lock)
+        _need(resume, "sweep_archives")(env.run_dir, lock)
+
+
+def test_sweep_archives_cleans_root_and_each_cell(golden1, tmp_path):
+    cid = golden1.cells[0]
+    env = _prefix(golden1, tmp_path, 6, tmp_dirs=[(cid, "attempt-1.tmp-123-" + "a" * 32)])
+    root_temp = env.run_dir / "archive" / (cid + ".tmp-123-" + "b" * 32)
+    root_temp.mkdir()
+    sweep = _need(resume, "sweep_archives")
+    with oslock.RunLock.acquire(env.run_dir / ".lock") as lock:
+        sweep(env.run_dir, lock)
+    assert not _tmp_left(env.run_dir)
 
 
 @pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
