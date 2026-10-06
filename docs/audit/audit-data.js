@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T00:28:39Z",
+  "generated": "2026-10-06T01:28:28Z",
   "audit": [
     {
       "actor": null,
@@ -93339,6 +93339,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-05T23:59:42Z",
       "duration_seconds": 1737.0
+    },
+    {
+      "id": "al-01M47D73KGQFXH2PJVJ0142PMC",
+      "shortname": "join-x-lgc",
+      "datetime": "2026-10-06T01:28:28Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of the resolved merge into integrate/e2e4-18",
+      "summary": "X-LGc: Agy gemini-3.8-flash-high cancelled at 1,298 s by a false RUN-LEADER (RUN-B) after skeleton 6e4aa18d + red 69ac76f7 (Leader re-ran: 7 assertion fails); Sonnet claude-sonnet-5-5 follow-on ef959513; diffstats.json 13/13; matches X-SM; first recount on 7d1d6851: MUT-E (STRATEGIES mutant find stale after the rework union) -> Leader retarget, diffstats.json every mutation killed recount_seconds=1676 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join X-LGc into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-06T01:00:30Z",
+      "duration_seconds": 1678.0
     }
   ],
   "changes": [
