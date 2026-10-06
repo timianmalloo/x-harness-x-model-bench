@@ -152,5 +152,14 @@
   "tests": [
    "tests/test_readiness.py::test_clauses_json_is_egress_scanned_before_it_is_parsed"
   ]
+ },
+ {
+  "name": "a variant's clause is recorded as the declared text whatever property.json holds, so a differing clause is never UNDECLARED",
+  "file": "src/harness_bench/discriminate.py",
+  "find": "(observed or {}).get(c) == entry[\"clauses\"][c]",
+  "replace": "True",
+  "tests": [
+   "tests/test_discriminate.py::test_a_check_less_variant_declaring_a_different_clause_is_hb_rdy_003_on_assertion_4"
+  ]
  }
 ]
