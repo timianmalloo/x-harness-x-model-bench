@@ -181,15 +181,6 @@
     ]
   },
   {
-    "name": "single pack reader returns first of two",
-    "file": "src/harness_bench/plan.py",
-    "find": "if len(packs) > 1:",
-    "replace": "if False:",
-    "tests": [
-      "tests/test_plan.py::test_plan_packs_and_arm_pack_read_zero_one_two_and_legacy_packs"
-    ]
-  },
-  {
     "name": "reader bypasses shared kind helper",
     "file": "src/harness_bench/plan.py",
     "find": "kind = kind_of({\"kind\": kind})",
@@ -285,13 +276,6 @@
     "find": "secondary = m.get(\"also_graded_by\", [])",
     "replace": "secondary = []",
     "tests": ["tests/test_config.py::test_catalog_refuses_invalid_property_and_secondary_graders"]
-  },
-  {
-    "name": "A1b board hides several packs",
-    "file": "src/harness_bench/board.py",
-    "find": "base_rev = (plan_pack(base.plan or {}) or {}).get(\"revision\")",
-    "replace": "base_rev = None",
-    "tests": ["tests/test_views.py::test_board_comparison_reads_zero_or_one_arm_pack"]
   },
   {
     "name": "A1b G1 ignores pack attributes",

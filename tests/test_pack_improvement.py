@@ -22,7 +22,7 @@ FIX = ROOT / "tests" / "fixtures" / "pack_improvement"
 def _cell(cid, combo, pack, validity="valid", tokens=None, tokens_reason="not graded"):
     na = views.Measure(None, "not graded")
     return views.CellView(
-        cell_id=cid, task="X1", rep=1, label=f"X1.{combo}.pack-{pack}.r1", combo=combo, pack=pack, harness="claude-code",
+        cell_id=cid, task="X1", rep=1, label=f"X1.{combo}.pack-{pack}.r1", combo=combo, arm=pack, harness="claude-code",
         model="claude-sonnet-5", outcome="completed", cause=None, code=None, validity=validity,
         validity_code=None, wall_ms=na, model_ms=na, tool_ms=na, idle_ms=na, tokens=tokens,
         tokens_reason=tokens_reason,

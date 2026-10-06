@@ -31,7 +31,7 @@ def _cell(task, rep, arm="off", *, harness="cc", combo="c", outcome="completed",
         scores[PRIMARY] = views.Measure(primary, reason if primary is None else None)
     label = plan.Cell(task, "v1", 1, combo, harness, "m", arm, rep, 60).label
     return views.CellView(
-        cell_id=cid or f"{task}-{arm}-{rep}", task=task, rep=rep, label=label, combo=combo, pack=arm, harness=harness, model="m",
+        cell_id=cid or f"{task}-{arm}-{rep}", task=task, rep=rep, label=label, combo=combo, arm=arm, harness=harness, model="m",
         outcome=outcome, cause=cause, code=code, validity="valid", validity_code=None,
         wall_ms=views.Measure(1000), model_ms=na, tool_ms=na, idle_ms=na,
         tokens={"m": {"uncached_input": tokens, "cache_read": 0, "cache_write": 0, "output": 0}},

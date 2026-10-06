@@ -146,9 +146,22 @@ main.hide-c5 [data-combo="c5"]{display:none}
 main.hide-c6 [data-combo="c6"]{display:none}
 main.hide-c7 [data-combo="c7"]{display:none}
 main.hide-c8 [data-combo="c8"]{display:none}
-main.pack-on [data-pack="off"]{display:none}
-main.pack-off [data-pack="on"]{display:none}
 """
+
+
+def _arm_order(present: Sequence[str]) -> tuple[str, ...]:
+    """The arm settings a run shows, in display order: the two legacy settings for a legacy-shaped run (so a one-setting run
+    still lists the other, disabled), else the reference arm first and the rest by name."""
+    if set(present) <= set(config.PACKS):
+        return config.PACKS
+    return tuple(sorted(present, key=lambda a: (a != config.ARM_OFF, a)))
+
+
+def _arm_css(present: Sequence[str]) -> str:
+    """One hiding rule per ordered pair of arms: `main.pack-<a> [data-pack="<b>"]` hides b while a alone is shown (report.js adds
+    the `pack-<a>` class). Arm ids match `config.ARM_ID`, so they are safe inside a selector."""
+    arms = _arm_order(present)
+    return "".join(f'main.pack-{a} [data-pack="{b}"]{{display:none}}\n' for a in arms for b in arms if a != b)
 
 
 def _e(value) -> str:
@@ -732,7 +745,7 @@ def _control_bar(board_obj: board.Board, combo_ix: dict[str, str]) -> html_build
     packs_present = sorted({r.pack for r in board_obj.rows})
     reason_children: list[html_builder.Html] = []
     pack_buttons = []
-    for setting in ("both", "on", "off"):
+    for setting in ("both", *_arm_order(packs_present)):
         attrs: dict[str, object] = {"class": "tg", "type": "button", "data-pack": setting,
                                     "aria-pressed": "true" if setting == "both" else "false"}
         lacks = setting != "both" and setting not in packs_present
@@ -1087,8 +1100,13 @@ def _delta_table(
     return html_builder.el("details", None, html_builder.el("summary", None, "Table"), region)
 
 
-def _pack_effect_table(rows: list[board.PackEffectRow], combo_ix: dict[str, str]) -> html_builder.Html:
-    return _delta_table(rows, "pack-effect-caption", "Pack effect per combo and area", has_pack=False, combo_ix=combo_ix)
+def _pack_effect_table(rows: list[board.PackEffectRow], combo_ix: dict[str, str],
+                       pair: tuple[str, str] = board.LEGACY_PAIR) -> html_builder.Html:
+    if pair == board.LEGACY_PAIR:
+        return _delta_table(rows, "pack-effect-caption", "Pack effect per combo and area", has_pack=False, combo_ix=combo_ix)
+    ref, treat = pair
+    return _delta_table(rows, f"pack-effect-{ref}-{treat}-caption", f"Pack effect per combo and area, {ref} vs {treat}",
+                        has_pack=False, combo_ix=combo_ix)
 
 
 def _pack_effect(board_obj: board.Board, combo_ix: dict[str, str]) -> html_builder.Html:
@@ -1101,12 +1119,21 @@ def _pack_effect(board_obj: board.Board, combo_ix: dict[str, str]) -> html_build
         body = html_builder.el("p", None, "No pack effect data.")
         return html_builder.el("section", {"id": "pack-effect"}, html_builder.el("h2", None, "Pack effect"), excl, body)
 
-    chart = _whisker_chart("pack-effect", "Pack effect per combo and area on a shared zero line", pe.rows, combo_ix)
-    table = _pack_effect_table(pe.rows, combo_ix)
+    by_pair: dict[tuple[str, str], list[board.PackEffectRow]] = {}
+    for r in pe.rows:
+        by_pair.setdefault(r.pair, []).append(r)
     children = [html_builder.el("h2", None, "Pack effect"), excl]
-    if chart is not None:
-        children.append(chart)
-    children.append(table)
+    for pair, rows in by_pair.items():
+        legacy = pair == board.LEGACY_PAIR
+        ref, treat = pair
+        tid = "pack-effect" if legacy else f"pack-effect-{ref}-{treat}"
+        title = "Pack effect per combo and area on a shared zero line" + ("" if legacy else f", {ref} vs {treat}")
+        chart = _whisker_chart(tid, title, rows, combo_ix)
+        if len(by_pair) > 1:
+            children.append(html_builder.el("h3", None, f"{ref} vs {treat}"))
+        if chart is not None:
+            children.append(chart)
+        children.append(_pack_effect_table(rows, combo_ix, pair))
     return html_builder.el("section", {"id": "pack-effect"}, *children)
 
 
@@ -1239,7 +1266,7 @@ def _cost_frontier_panel(
                 "y1": str(min(y_lo, y_hi)),
                 "x2": str(cx),
                 "y2": str(max(y_lo, y_hi)),
-                "class": f"mk-{combo_token} whisk" + (" dash" if r.pack == "off" else ""),
+                "class": f"mk-{combo_token} whisk" + (" dash" if r.pack == config.ARM_OFF else ""),
                 "data-combo": combo_token,
                 "data-pack": r.pack,
                 "data-interval-lo": lo_str,
@@ -1260,7 +1287,7 @@ def _cost_frontier_panel(
             mark_attrs["data-interval-lo"] = lo_str
             mark_attrs["data-interval-hi"] = hi_str
 
-        svg_children.append(_marker_shape(shape_idx, cx, cy, combo_token, r.pack == "off", mark_attrs))
+        svg_children.append(_marker_shape(shape_idx, cx, cy, combo_token, r.pack == config.ARM_OFF, mark_attrs))
 
     svg = html_builder.el("svg", {
         "role": "img",
@@ -1464,7 +1491,7 @@ def _areas(view: views.RunView, board_obj: board.Board, combo_ix: dict[str, str]
                 svg_children.append(html_builder.el("text", _radar_label_pos(ex, ey), area))
 
         # Polygons per pack arm
-        for arm in ("on", "off"):
+        for arm in _arm_order(sorted({c.arm for c in view.cells})):
             arm_rows = {ar.area: ar for ar in combo_rows if ar.pack == arm}
             pts: list[tuple[float, float, str, stats.Interval]] = []
             hi_pts: list[tuple[float, float]] = []
@@ -1489,7 +1516,7 @@ def _areas(view: views.RunView, board_obj: board.Board, combo_ix: dict[str, str]
                     svg_children.append(html_builder.el("polygon", {"points": band_pts, "class": f"mk-{combo_token}", "fill-opacity": "0.08", "stroke": "none"}))
 
                 poly_pts = " ".join(f"{vx:.1f},{vy:.1f}" for vx, vy, _, _ in pts)
-                poly_cls = f"mk-{combo_token}" + (" dash" if arm == "off" else "")
+                poly_cls = f"mk-{combo_token}" + (" dash" if arm == config.ARM_OFF else "")
                 svg_children.append(html_builder.el("polygon", {
                     "points": poly_pts,
                     "class": poly_cls,
@@ -1891,7 +1918,7 @@ def _runs_filters(view: views.RunView) -> html_builder.Html:
 
     tasks = sorted({_task_id(c) for c in view.cells})
     combos = sorted({c.combo for c in view.cells})
-    packs = sorted({c.pack for c in view.cells})
+    packs = sorted({c.arm for c in view.cells})
     outcomes = sorted({c.outcome for c in view.cells})
     validities = sorted({c.validity for c in view.cells})
     return html_builder.el(
@@ -1953,7 +1980,7 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str], run_
         # leaderboard rows use); `data-combo-name` is the literal combo the Runs filter select matches.
         row_attrs = {"id": f"cell-{c.cell_id}", "data-task": _task_id(c),
                     "data-combo": (combo_ix or {}).get(c.combo, ""), "data-combo-name": c.combo,
-                    "data-pack": c.pack, "data-outcome": c.outcome, "data-validity": c.validity}
+                    "data-pack": c.arm, "data-outcome": c.outcome, "data-validity": c.validity}
         body_rows.append(html_builder.el("tr", row_attrs, *row_cells))
 
     table = html_builder.el(
@@ -2292,7 +2319,7 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
     # R4: the one hashed inline script (design section 5) plus the sticky control bar it drives.
     script_text = SCRIPT_PATH.read_text(encoding="utf-8")
     bar = _control_bar(board_obj, combo_ix)
-    return model.page(model.ReportModel(run_id=view.run_id, sections=tuple(sections)), style=STYLE,
+    return model.page(model.ReportModel(run_id=view.run_id, sections=tuple(sections)), style=STYLE + _arm_css(sorted({c.arm for c in view.cells})),
                       script=script_text, bar=bar)
 
 

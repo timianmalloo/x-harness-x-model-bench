@@ -135,7 +135,7 @@ def build(view: views.RunView, run_dir: Path | None = None) -> ContextGrowthResu
     task_ids = sorted({_task_id(c) for c in view.cells})
     groups: dict[tuple[str, str, str], list[views.CellView]] = {}
     for c in view.cells:
-        groups.setdefault((_task_id(c), c.combo, c.pack), []).append(c)
+        groups.setdefault((_task_id(c), c.combo, c.arm), []).append(c)
 
     series_by_task: dict[str, list[TaskSeries]] = {t: [] for t in task_ids}
     reason_by_task: dict[str, str] = {}

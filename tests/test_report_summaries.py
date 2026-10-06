@@ -35,7 +35,7 @@ def _measure(value, reason=None):
 def _cell(cell_id, combo, pack, task="X1", rep=1, p1=None):
     scores = {} if p1 is None else {"pass_at_1": _measure(p1)}
     return views.CellView(
-        cell_id=cell_id, task=task, rep=rep, label=f"{task}.{combo}.pack-{pack}.r{rep}", combo=combo, pack=pack, harness="claude-code",
+        cell_id=cell_id, task=task, rep=rep, label=f"{task}.{combo}.pack-{pack}.r{rep}", combo=combo, arm=pack, harness="claude-code",
         model="claude-opus-5-5", outcome="completed", cause=None, code=None, validity="valid", validity_code=None,
         wall_ms=_measure(2000), model_ms=_measure(1000), tool_ms=_measure(0), idle_ms=_measure(0), tokens=None,
         tokens_reason=None, scores=scores,

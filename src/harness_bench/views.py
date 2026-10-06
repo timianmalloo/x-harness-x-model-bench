@@ -113,7 +113,7 @@ class CellView:
     rep: int | None
     label: str
     combo: str
-    pack: str
+    arm: str
     harness: str
     model: str
     outcome: str  # completed | timed_out | failed | not started | no outcome (launched; the run is incomplete)
@@ -532,7 +532,7 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
                                         executed)
     cause = Cause[outcome["cause"]] if outcome and outcome.get("cause") else None
     return CellView(
-        cell_id=cid, task=cell["task"], rep=cell["rep"], label=cell.get("label", cid), combo=cell["combo"], pack=cell_arm(cell), harness=cell["harness"], model=cell["model"],
+        cell_id=cid, task=cell["task"], rep=cell["rep"], label=cell.get("label", cid), combo=cell["combo"], arm=cell_arm(cell), harness=cell["harness"], model=cell["model"],
         outcome=state, cause=cause.label if cause else None,
         code=cause.code if cause else None, validity=validity, validity_code=validity_code,
         wall_ms=wall, model_ms=model, tool_ms=tool, idle_ms=idle,

@@ -16,13 +16,13 @@ from typing import Any
 # added (a row-shape change) -> 2 -> 3.
 EXPORT_VERSION: int = 3
 
-from harness_bench import ledger
+from harness_bench import config, ledger
 from harness_bench.composites import Catalog
 from harness_bench.composites import area as compute_area
 from harness_bench.composites import gated as compute_gated
 from harness_bench.composites import normalise as compute_normalise
 from harness_bench.errors import BenchError
-from harness_bench.plan import plan_pack, ring_diff
+from harness_bench.plan import arm_pack, plan_comparisons, ring_diff
 from harness_bench.stats import (
     CONTAMINATION_PRONE,
     DEFAULT_SEED,
@@ -72,6 +72,10 @@ class BoardRow:
         return iv.reason or "interval not computed"
 
 
+# The one pair a /1 plan can compare: reference off, treatment the single pack-bearing setting (config.PACKS is ("on", "off")).
+LEGACY_PAIR = (config.ARM_OFF, config.PACKS[0])
+
+
 @dataclass
 class PackEffectRow:
     combo: str
@@ -79,6 +83,7 @@ class PackEffectRow:
     delta: Interval
     label: str | None
     reason: str | None = None
+    pair: tuple[str, str] = LEGACY_PAIR
 
 
 @dataclass
@@ -207,7 +212,7 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
     # Group cells by (combo, pack)
     groups: dict[tuple[str, str], list[CellView]] = {}
     for c in view.cells:
-        groups.setdefault((c.combo, c.pack), []).append(c)
+        groups.setdefault((c.combo, c.arm), []).append(c)
 
     rows_dict: dict[tuple[str, str], BoardRow] = {}
     rank_inputs: dict[tuple[str, str], tuple[Interval, Interval]] = {}
@@ -364,7 +369,7 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
     areas_list: list[AreaRow] = []
     for combo in combos:
         for pack in packs[combo]:
-            combo_cells = [c for c in view.cells if c.combo == combo and c.pack == pack]
+            combo_cells = [c for c in view.cells if c.combo == combo and c.arm == pack]
             valid_cells = [c for c in combo_cells if c.validity == "valid"]
             for a in cat.areas:
                 if primary != "gated":
@@ -391,7 +396,7 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
         )
     for combo in combos:
         for pack in packs[combo]:
-            combo_cells = [c for c in view.cells if c.combo == combo and c.pack == pack]
+            combo_cells = [c for c in view.cells if c.combo == combo and c.arm == pack]
             valid_cells = [c for c in combo_cells if c.validity == "valid"]
             for sc in scenarios:
                 scen_cells = [c for c in valid_cells if c.scenario == sc]
@@ -429,7 +434,7 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
     frontier_list: list[FrontierRow] = []
     for combo in combos:
         for pack in packs[combo]:
-            combo_cells = [c for c in view.cells if c.combo == combo and c.pack == pack]
+            combo_cells = [c for c in view.cells if c.combo == combo and c.arm == pack]
             valid_cells = [c for c in combo_cells if c.validity == "valid"]
             r_lb = rows_dict.get((combo, pack))
             p1_iv = r_lb.pass_at_1 if r_lb is not None else Interval(point=None, lo=None, hi=None, n=0, reason="no cells")
@@ -525,6 +530,20 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
     )
 
 
+def _plan_arms(plan: Mapping) -> tuple[str, ...]:
+    """The arms a plan declares: `arms` for /2, the two legacy settings (off first) for /1."""
+    return tuple(plan["arms"]) if "arms" in plan else tuple(sorted(config.PACKS))
+
+
+def view_comparisons(view: RunView, arms_in_run: Sequence[str]) -> list[tuple[str, str]]:
+    """The plan's stored comparison pairs; a /1 plan stores none, so its one legacy pair stands when both settings ran
+    (read from the cells' own arms: a frozen /1 plan's cell list is not the view's evidence)."""
+    plan = view.plan or {}
+    if "comparisons" in plan:
+        return plan_comparisons(plan)
+    return [LEGACY_PAIR] if set(LEGACY_PAIR) <= set(arms_in_run) else []
+
+
 def _build_pack_effect(
     view: RunView,
     cat: Catalog,
@@ -532,20 +551,37 @@ def _build_pack_effect(
     plan_by_id: Mapping[str, dict],
     no_anchors: str | None = None,
 ) -> PackEffect:
-    """`no_anchors` is the primary measure's reason when anchors do not apply to this pass (R-78 c3); area rows are
+    """One block of rows per comparison pair the plan names (`plan_comparisons`; the legacy pair for a /1 plan with both
+    settings). `no_anchors` is the primary measure's reason when anchors do not apply to this pass (R-78 c3); area rows are
     then NA with that reason, never a composite computed from another catalog version's anchors."""
-    pack_settings = sorted({c.pack for c in view.cells})
+    arms_in_run = sorted({c.arm for c in view.cells})
     tasks_in_run = sorted({_cell_task_rep(c.cell_id, plan_by_id)[0] for c in view.cells})
     excluded_tasks = tuple(t for t in tasks_in_run if t in CONTAMINATION_PRONE)
+    pairs = view_comparisons(view, arms_in_run)
 
-    if not ({"off", "on"} <= set(pack_settings)):
+    if not pairs:
         return PackEffect(
-            status=("This run has one pack setting; no effect to show." if len(pack_settings) < 2
-                    else "Pack effect for these arms is not computed; the legacy reader needs on and off."),
+            status=("This run has one pack setting; no effect to show." if len(arms_in_run) < 2
+                    else "Pack effect for these arms is not computed; the plan names no comparison."),
             excluded_tasks=excluded_tasks,
             rows=[],
         )
 
+    pe_rows: list[PackEffectRow] = []
+    for pair in pairs:
+        pe_rows.extend(_pack_effect_pair(view, cat, params, plan_by_id, no_anchors, pair))
+    return PackEffect(status=None, excluded_tasks=excluded_tasks, rows=pe_rows)
+
+
+def _pack_effect_pair(
+    view: RunView,
+    cat: Catalog,
+    params: Params,
+    plan_by_id: Mapping[str, dict],
+    no_anchors: str | None,
+    pair: tuple[str, str],
+) -> list[PackEffectRow]:
+    ref, treat = pair
     combos = sorted({c.combo for c in view.cells})
     pe_rows: list[PackEffectRow] = []
 
@@ -553,11 +589,12 @@ def _build_pack_effect(
 
     for combo in combos:
         combo_cells = [c for c in view.cells if c.combo == combo]
-        combo_packs = {c.pack for c in combo_cells}
-        if not ({"off", "on"} <= combo_packs):
+        combo_packs = {c.arm for c in combo_cells}
+        if not ({ref, treat} <= combo_packs):
             for m in measures:
                 pe_rows.append(
                     PackEffectRow(
+                        pair=pair,
                         combo=combo,
                         measure=m,
                         delta=Interval(None, None, None, 0, "Pack effect needs both settings."),
@@ -575,57 +612,57 @@ def _build_pack_effect(
         for m in measures:
             if m != "pass_at_1" and no_anchors is not None:
                 na = Interval(None, None, None, 0, no_anchors)
-                pe_rows.append(PackEffectRow(combo=combo, measure=m, delta=na, label=None, reason=no_anchors))
+                pe_rows.append(PackEffectRow(pair=pair, combo=combo, measure=m, delta=na, label=None, reason=no_anchors))
                 continue
             if m == "pass_at_1":
-                off_obs = [
+                ref_obs = [
                     Obs(
                         _cell_task_rep(c.cell_id, plan_by_id)[0],
                         _cell_task_rep(c.cell_id, plan_by_id)[1],
                         Decimal(str(c.scores["pass_at_1"].value)),
                     )
                     for c in clean_cells
-                    if c.pack == "off"
+                    if c.arm == ref
                     and c.validity == "valid"
                     and c.scores.get("pass_at_1", Measure(None)).value is not None
                 ]
-                on_obs = [
+                treat_obs = [
                     Obs(
                         _cell_task_rep(c.cell_id, plan_by_id)[0],
                         _cell_task_rep(c.cell_id, plan_by_id)[1],
                         Decimal(str(c.scores["pass_at_1"].value)),
                     )
                     for c in clean_cells
-                    if c.pack == "on"
+                    if c.arm == treat
                     and c.validity == "valid"
                     and c.scores.get("pass_at_1", Measure(None)).value is not None
                 ]
             else:
                 # Area score
-                off_obs = []
+                ref_obs = []
                 for c in clean_cells:
-                    if c.pack == "off" and c.validity == "valid":
+                    if c.arm == ref and c.validity == "valid":
                         score = c.scores.get(m)
                         if (score is None or score.value is None) and m != "pass_at_1":
                             all_scores = _composite_inputs(c.scores, cat, view.catalog_version)
                             score, _ = compute_area(all_scores, m, cat)
                         if score is not None and score.value is not None:
-                            off_obs.append(
+                            ref_obs.append(
                                 Obs(
                                     _cell_task_rep(c.cell_id, plan_by_id)[0],
                                     _cell_task_rep(c.cell_id, plan_by_id)[1],
                                     Decimal(str(score.value)),
                                 )
                             )
-                on_obs = []
+                treat_obs = []
                 for c in clean_cells:
-                    if c.pack == "on" and c.validity == "valid":
+                    if c.arm == treat and c.validity == "valid":
                         score = c.scores.get(m)
                         if (score is None or score.value is None) and m != "pass_at_1":
                             all_scores = _composite_inputs(c.scores, cat, view.catalog_version)
                             score, _ = compute_area(all_scores, m, cat)
                         if score is not None and score.value is not None:
-                            on_obs.append(
+                            treat_obs.append(
                                 Obs(
                                     _cell_task_rep(c.cell_id, plan_by_id)[0],
                                     _cell_task_rep(c.cell_id, plan_by_id)[1],
@@ -633,23 +670,24 @@ def _build_pack_effect(
                                 )
                             )
 
-                if not off_obs:
-                    reason = f"not computed (no {m} score in pack=off)"
+                if not ref_obs:
+                    reason = f"not computed (no {m} score in pack={ref})"
                     delta_iv = Interval(point=None, lo=None, hi=None, n=0, reason=reason)
-                    pe_rows.append(PackEffectRow(combo=combo, measure=m, delta=delta_iv, label=None, reason=reason))
+                    pe_rows.append(PackEffectRow(pair=pair, combo=combo, measure=m, delta=delta_iv, label=None, reason=reason))
                     continue
-                if not on_obs:
-                    reason = f"not computed (no {m} score in pack=on)"
+                if not treat_obs:
+                    reason = f"not computed (no {m} score in pack={treat})"
                     delta_iv = Interval(point=None, lo=None, hi=None, n=0, reason=reason)
-                    pe_rows.append(PackEffectRow(combo=combo, measure=m, delta=delta_iv, label=None, reason=reason))
+                    pe_rows.append(PackEffectRow(pair=pair, combo=combo, measure=m, delta=delta_iv, label=None, reason=reason))
                     continue
 
             key = f"{m}|{combo}"
-            delta_iv, _ = paired_delta(ref=off_obs, treat=on_obs, labels=("off", "on"), params=params, key=key)
+            delta_iv, _ = paired_delta(ref=ref_obs, treat=treat_obs, labels=(ref, treat), params=params, key=key)
             is_nde = no_detectable_effect(delta_iv)
             label = "no detectable effect" if is_nde is True else None
             pe_rows.append(
                 PackEffectRow(
+                    pair=pair,
                     combo=combo,
                     measure=m,
                     delta=delta_iv,
@@ -658,7 +696,7 @@ def _build_pack_effect(
                 )
             )
 
-    return PackEffect(status=None, excluded_tasks=excluded_tasks, rows=pe_rows)
+    return pe_rows
 
 
 def header_row(board: Board) -> str:
@@ -761,9 +799,18 @@ def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = 
     unshared_tasks = tuple(sorted(set(base_task_vers) ^ set(view_task_vers)))
     excluded_tasks = tuple(t for t in all_tasks if t in CONTAMINATION_PRONE)
 
-    base_rev = (plan_pack(base.plan or {}) or {}).get("revision")
-    view_rev = (plan_pack(view.plan or {}) or {}).get("revision")
-    same_pack_revision = base_rev if base_rev is not None and base_rev == view_rev else None
+    # ADR-0014 section 1: the pack revision is compared per arm (arm_pack), never as one plan-level value. Each arm of
+    # the base plan must be in the view plan with an equal pack record; the shared revision is reported only when every
+    # pack-bearing arm carries one revision in both runs.
+    base_arms = _plan_arms(base.plan or {})
+    view_arms = _plan_arms(view.plan or {})
+    revisions = {
+        arm: ((arm_pack(base.plan or {}, arm) or {}).get("revision"), (arm_pack(view.plan or {}, arm) or {}).get("revision"))
+        for arm in base_arms if arm in view_arms
+    }
+    shared = {a for a, b in revisions.values() if a is not None and a == b}
+    same_pack_revision = next(iter(shared)) if len(shared) == 1 and all(
+        a is None or a == b for a, b in revisions.values()) else None
 
     # VER-A rule (R-78 c3 / design): area composite deltas computed only when both runs' current
     # passes are of the loaded catalog's version; otherwise area rows are NA with the reason,
@@ -774,7 +821,7 @@ def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = 
         no_anchors = None
 
     combos = sorted({c.get("id") for c in base.plan.get("matrix", {}).get("combos", []) if c.get("id")})
-    packs = ("off", "on")
+    packs = base_arms
     measures = ["pass_at_1", *cat.areas]
 
     comp_rows: list[ComparisonRow] = []
@@ -798,14 +845,14 @@ def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = 
                 base_cells = [
                     c for c in base.cells
                     if c.combo == combo
-                    and c.pack == pack
+                    and c.arm == pack
                     and c.validity == "valid"
                     and _cell_task_rep(c.cell_id, base_plan_by_id)[0] not in CONTAMINATION_PRONE
                 ]
                 view_cells = [
                     c for c in view.cells
                     if c.combo == combo
-                    and c.pack == pack
+                    and c.arm == pack
                     and c.validity == "valid"
                     and _cell_task_rep(c.cell_id, view_plan_by_id)[0] not in CONTAMINATION_PRONE
                 ]
@@ -917,6 +964,7 @@ def export(board: Board, comparison: Comparison | None = None) -> bytes:
                 "delta": _enc_interval(pr.delta),
                 "label": pr.label,
                 "reason": pr.reason,
+                **({} if pr.pair == LEGACY_PAIR else {"pair": list(pr.pair)}),
             }
             for pr in board.pack_effect.rows
         ],

@@ -515,8 +515,8 @@ def test_tp4_pack_effect_states(tmp_path):
 
     # 2. Missing-arm: combo c has both off and on, combo d has only off
     cells_c = list(view_one.cells)
-    c_on = dataclasses.replace(cells_c[0], cell_id="a1-r1-on-c", label="A1.c.pack-on.r1", pack="on")
-    d_off = dataclasses.replace(cells_c[0], cell_id="a1-r1-off-d", label="A1.d.pack-off.r1", combo="d", pack="off")
+    c_on = dataclasses.replace(cells_c[0], cell_id="a1-r1-on-c", label="A1.c.pack-on.r1", arm="on")
+    d_off = dataclasses.replace(cells_c[0], cell_id="a1-r1-off-d", label="A1.d.pack-off.r1", combo="d", arm="off")
     plan_with_d = dict(view_one.plan)
     plan_with_d["cells"] = [
         *view_one.plan["cells"],
@@ -574,7 +574,7 @@ def test_pack_effect_area_one_arm_negative_reason(tmp_path):
     cat = composites.load_catalog(root)
 
     # 1. pack=off has no area scores
-    cells_no_off = [dataclasses.replace(c, scores={}) if c.pack == "off" else c for c in view.cells]
+    cells_no_off = [dataclasses.replace(c, scores={}) if c.arm == "off" else c for c in view.cells]
     b_no_off = board.build(dataclasses.replace(view, cells=cells_no_off), cat)
     corr_off = next((r for r in b_no_off.pack_effect.rows if r.measure == "correctness"), None)
     assert corr_off is not None
@@ -582,7 +582,7 @@ def test_pack_effect_area_one_arm_negative_reason(tmp_path):
     assert corr_off.delta.reason == "not computed (no correctness score in pack=off)"
 
     # 2. pack=on has no area scores
-    cells_no_on = [dataclasses.replace(c, scores={}) if c.pack == "on" else c for c in view.cells]
+    cells_no_on = [dataclasses.replace(c, scores={}) if c.arm == "on" else c for c in view.cells]
     b_no_on = board.build(dataclasses.replace(view, cells=cells_no_on), cat)
     corr_on = next((r for r in b_no_on.pack_effect.rows if r.measure == "correctness"), None)
     assert corr_on is not None

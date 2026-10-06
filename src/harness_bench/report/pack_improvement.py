@@ -30,7 +30,8 @@ from pathlib import Path
 import yaml
 
 from harness_bench import profiles
-from harness_bench.board import Board, _cell_task_rep
+from harness_bench.board import LEGACY_PAIR, Board, _cell_task_rep, view_comparisons
+from harness_bench.errors import BenchError
 from harness_bench.grade.cost import ACP_MISSES_CALLS, SESSION_TOTALS
 from harness_bench.plan import cell_arm
 from harness_bench.stats import fisher_exact_two_sided, holm
@@ -106,9 +107,10 @@ _XUNIT_FAIL_NAME = re.compile(r"^\[xUnit\.net[^\]]*\]\s+(\S+) \[FAIL\]$", re.MUL
 
 @dataclass(frozen=True)
 class Pair:
-    """One pair (design section 3: pair grain) -- a (task, combo, rep) whose pack-on and pack-off
-    cells are BOTH `validity == "valid"`. A cell whose partner is invalid, ungraded, or missing forms
-    no pair; it never appears half-paired."""
+    """One pair (design section 3: pair grain) -- a (task, combo, rep) whose treatment-arm cell (`on`)
+    and reference-arm cell (`off`) are BOTH `validity == "valid"`; the field names are the legacy
+    pack-on and pack-off ones. A cell whose partner is invalid, ungraded, or missing forms no pair;
+    it never appears half-paired."""
 
     task: str
     combo: str
@@ -117,8 +119,10 @@ class Pair:
     off: CellView
 
 
-def pairs(cells: Sequence[CellView], plan_by_id: Mapping[str, dict]) -> list[Pair]:
-    """Every complete pair among `cells` (design section 3). `plan_by_id` is `plan.json`'s
+def pairs(cells: Sequence[CellView], plan_by_id: Mapping[str, dict],
+          arms: tuple[str, str] = LEGACY_PAIR) -> list[Pair]:
+    """Every complete pair among `cells` for the comparison `arms` = (reference, treatment) (design
+    section 3; the default is the legacy off/on pair). `plan_by_id` is `plan.json`'s
     `cells[]` keyed by cell id, the same map `board._cell_task_rep` (reused here, not copied --
     design section 3.1) reads task and rep from. Deterministic order: (task, combo, rep)."""
     by_key: dict[tuple[str, str, int], dict[str, CellView]] = {}
@@ -126,11 +130,12 @@ def pairs(cells: Sequence[CellView], plan_by_id: Mapping[str, dict]) -> list[Pai
         if c.validity != "valid":
             continue
         task, rep, _ = _cell_task_rep(c.cell_id, plan_by_id)
-        by_key.setdefault((task, c.combo, rep), {})[c.pack] = c
+        by_key.setdefault((task, c.combo, rep), {})[c.arm] = c
     result = []
-    for (task, combo, rep), by_pack in sorted(by_key.items()):
-        if "on" in by_pack and "off" in by_pack:
-            result.append(Pair(task=task, combo=combo, rep=rep, on=by_pack["on"], off=by_pack["off"]))
+    ref, treat = arms
+    for (task, combo, rep), by_arm in sorted(by_key.items()):
+        if treat in by_arm and ref in by_arm:
+            result.append(Pair(task=task, combo=combo, rep=rep, on=by_arm[treat], off=by_arm[ref]))
     return result
 
 
@@ -751,13 +756,16 @@ def population_caveats(view: RunView) -> tuple[str, ...]:
     guessed into a bucket."""
     planned: dict[tuple[str, str], int] = {}
     for c in view.plan.get("cells") or []:
-        if isinstance(c, dict) and isinstance(c.get("combo"), str) and ("arm" in c or "pack" in c):
-            key = (c["combo"], cell_arm(c))
+        if isinstance(c, dict) and isinstance(c.get("combo"), str):
+            try:
+                key = (c["combo"], cell_arm(c))
+            except BenchError:
+                continue
             planned[key] = planned.get(key, 0) + 1
     valid: dict[tuple[str, str], int] = {}
     for c in view.cells:
         if c.validity == "valid":
-            key = (c.combo, c.pack)
+            key = (c.combo, c.arm)
             valid[key] = valid.get(key, 0) + 1
     lines = []
     for key in sorted(planned):
@@ -913,14 +921,16 @@ def assemble(
 ) -> PackImprovementResult:
     """Design section 7's whole section, assembled once per report render (design section 2's states
     table; PI-T1, T2, T14)."""
-    packs = {c.pack for c in view.cells}
+    packs = {c.arm for c in view.cells}
     if len(packs) < 2:
         return PackImprovementResult(STATE_ONE_PACK, _ONE_PACK_LINE, None, (), (), None, (), method_lines(board_obj))
     if view.grading_id is None:
         return PackImprovementResult(STATE_NOT_GRADED, _NOT_GRADED_LINE, None, (), (), None, (), method_lines(board_obj))
 
     plan_by_id = {c["cell_id"]: c for c in (view.plan.get("cells") or []) if isinstance(c, dict) and "cell_id" in c}
-    all_pairs = pairs(view.cells, plan_by_id)
+    comparisons = view_comparisons(view, sorted(packs))
+    ref, treat = comparisons[0] if comparisons else LEGACY_PAIR
+    all_pairs = pairs(view.cells, plan_by_id, (ref, treat))
     if not all_pairs:
         n_valid = sum(1 for c in view.cells if c.validity == "valid")
         line = f"No complete pairs: every pair has an invalid or ungraded arm ({n_valid} of {len(view.cells)} cells valid)."
@@ -928,7 +938,7 @@ def assemble(
 
     combo_packs: dict[str, set[str]] = {}
     for c in view.cells:
-        combo_packs.setdefault(c.combo, set()).add(c.pack)
+        combo_packs.setdefault(c.combo, set()).add(c.arm)
     partial = any(len(p) < 2 for p in combo_packs.values())
     state = STATE_PARTIAL if partial else STATE_FULL
 
@@ -1002,7 +1012,7 @@ def assemble(
         t = rec.get("task")
         if t is None or "rep" not in rec:
             continue
-        by_trc.setdefault((t, c.combo, rec["rep"]), {})[c.pack] = c
+        by_trc.setdefault((t, c.combo, rec["rep"]), {})[c.arm] = c
 
     on_diverted_failed: list[str] = []
     on_stopped: list[str] = []
@@ -1011,7 +1021,9 @@ def assemble(
     escalated_pack_files = False
     for cid, ind in indicators.items():
         cell = valid_cells[cid]
-        if cell.pack != "on":
+        if cell.arm != treat:
+            if cell.arm != ref:
+                continue
             if ind.git_identity_set:
                 off_git_ids.append(cid)
             off_files = ind.pack_files_written.value
@@ -1028,7 +1040,7 @@ def assemble(
         if isinstance(on_files, PackFilesWritten) and on_files.files > 0:
             on_pack_files.append((cid, on_files))
             rec = plan_by_id.get(cid, {})
-            partner = by_trc.get((rec.get("task"), cell.combo, rec.get("rep")), {}).get("off")
+            partner = by_trc.get((rec.get("task"), cell.combo, rec.get("rep")), {}).get(ref)
             reg_on = cell.scores.get("regression_count")
             reg_off = partner.scores.get("regression_count") if partner is not None else None
             if (reg_on is not None and reg_on.value and reg_on.value > 0
@@ -1189,7 +1201,7 @@ def assemble(
         if reasons:
             inconclusive.append(TaskInconclusive(task, reasons))
 
-    headline = _headline(all_pairs, task_counts, valid_cells, on_diverted_failed, on_stopped)
+    headline = _headline(all_pairs, (ref, treat), task_counts, valid_cells, on_diverted_failed, on_stopped)
     return PackImprovementResult(state, None, headline, tuple(groups), ranked, pk08, tuple(inconclusive),
                                   method_lines(board_obj), population_caveats(view))
 
@@ -1265,9 +1277,10 @@ def _task_graders(root: Path | None, task: str) -> list[str]:
     return list((data or {}).get("graders") or [])
 
 
-def _headline(all_pairs: Sequence, task_counts: Mapping[str, tuple[int, int, int]],
+def _headline(all_pairs: Sequence, arms: tuple[str, str], task_counts: Mapping[str, tuple[int, int, int]],
               valid_cells: Mapping[str, CellView], on_diverted_failed: Sequence[str],
               on_stopped: Sequence[str]) -> str:
+    ref, treat = arms
     tok_on = sum(v for p in all_pairs if (v := sum_tokens(p.on.tokens)) is not None)
     tok_off = sum(v for p in all_pairs if (v := sum_tokens(p.off.tokens)) is not None)
     wall_on = sum(v.value for p in all_pairs if (v := p.on.wall_ms).value is not None)
@@ -1290,14 +1303,14 @@ def _headline(all_pairs: Sequence, task_counts: Mapping[str, tuple[int, int, int
     k_off = 0
     for c in valid_cells.values():
         p = _pass(c)
-        if c.pack == "on":
+        if c.arm == treat:
             if p is False:
                 on_failures += 1
             elif p is None:
                 k_on += 1
-        elif p is None:
+        elif c.arm == ref and p is None:
             k_off += 1
-    not_recorded_text = f", {k_on} pack-on and {k_off} pack-off cells not recorded" if (k_on > 0 or k_off > 0) else ""
+    not_recorded_text = f", {k_on} pack-{treat} and {k_off} pack-{ref} cells not recorded" if (k_on > 0 or k_off > 0) else ""
     p_text = f"pooled p = {pooled_p:.2f}" if pooled_p is not None else "pooled p not computed"
-    return (f"Pack on used {tok_text} and {wall_text}; pass {passes_on}/{n} vs {passes_off}/{n} ({p_text}); "
-            f"{attributed} of {on_failures} pack-on failures have a pack-attributed cause{not_recorded_text}.")
+    return (f"Pack {treat} used {tok_text} and {wall_text}; pass {passes_on}/{n} vs {passes_off}/{n} ({p_text}); "
+            f"{attributed} of {on_failures} pack-{treat} failures have a pack-attributed cause{not_recorded_text}.")
