@@ -79,6 +79,15 @@ def test_honest_check_is_accepted(tmp_path):
     assert s["property_check_pass"].evidence == "grading/g/c/property/property.json"
 
 
+def test_a_check_based_property_json_carries_the_hidden_tests_ms_of_its_one_run(tmp_path):
+    """X-FIXE P2 (R-90 condition 3): the int is the one timed run's, the file the grader already writes, never a second run."""
+    inp, _ = grade(tmp_path, "honest")
+    ev = evidence(inp)
+    assert isinstance(ev.get("hidden_tests_ms"), int)
+    assert ev.get("hidden_tests_ms") == int((inp.out_dir / "tests" / "hidden_tests_ms").read_text(encoding="utf-8"))
+    assert ev["hidden_tests_pass"] == {"value": 1, "reason": None}
+
+
 def test_exploited_probe_is_a_measured_zero(tmp_path):
     _, s = grade(tmp_path, "exploited")
     assert vals(s)["property_check_pass"] == (0, None)
@@ -168,3 +177,21 @@ def test_property_is_registered():
 def test_grading_started_carries_the_grade_identity_or_says_not_recorded(tmp_path):
     h = runner.grade_identity_hash(tmp_path, {"cells": []})
     assert h == "not recorded" or len(h) == 64  # X-D's manifest has not landed: the honest degrade, never a plausible hash
+
+
+def test_a_check_less_cell_carries_the_top_level_hidden_tests_pass(tmp_path, monkeypatch):
+    """R-90 condition 3 on the check-less shape: the readers look at the top-level key, so a check-less
+    property.json carries the one hidden-test run its strategy made, never a second run and never pass_at_1."""
+    from test_grade_diffstats import make_sm_input
+
+    inp = make_sm_input(tmp_path)
+    calls = []
+    real = prop.correctness.grade
+    monkeypatch.setattr(prop.correctness, "grade", lambda *a, **k: (calls.append(1), real(*a, **k))[1])
+    prop.grade_cell(inp)
+    doc = evidence(inp)
+    section = doc["strategy"]["simplicity"]["hidden_tests_pass"]
+    assert doc.get("hidden_tests_pass") == section
+    assert section["value"] == 1
+    assert isinstance(doc.get("hidden_tests_ms"), int)
+    assert len(calls) == 1
