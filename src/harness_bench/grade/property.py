@@ -444,12 +444,14 @@ def hidden_tests(inp: CellInput, tree: Path, label: str, overlay: Mapping[str, P
                 _changes.remove_tree(dests[d])
             _changes.copy_tree(Path(src), dests[d], ignore=())
         ws = staged
+    started = time.monotonic()
     try:
         c = correctness.grade(ws, inp.task_dir, inp.task.get("oracle") or {}, inp.out_dir / label, inp.run_dir, timeout,
                               work / label)
     finally:
         if staged is not None and staged.exists():
             _changes.remove_tree(staged)
+    (inp.out_dir / label / _MS_FILE).write_text(str(round((time.monotonic() - started) * 1000)), encoding="utf-8")
     return Score(c.passed, c.reason)
 
 
@@ -547,6 +549,31 @@ def write_section(inp: CellInput, name: str, section: Mapping) -> str:
     return path.relative_to(inp.run_dir).as_posix()
 
 
+_MS_FILE = "hidden_tests_ms"
+
+
+def lift_hidden_tests(inp: CellInput) -> None:
+    """R-90 condition 3 on a check-less pass: copy the one hidden-test result its strategy already recorded to the
+    top-level `hidden_tests_pass` and `hidden_tests_ms` that `readiness.comparable_cells` reads. Never a second run and
+    never `pass_at_1`. A strategy section with no `hidden_tests_pass` (rework writes none) leaves the file as it is."""
+    path = inp.out_dir / "property.json"
+    if not path.is_file():
+        return
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    if "hidden_tests_pass" in doc:
+        return
+    held = [s["hidden_tests_pass"] for s in (doc.get("strategy") or {}).values() if "hidden_tests_pass" in s]
+    if len(held) != 1:
+        return
+    doc["hidden_tests_pass"] = held[0]
+    for label in ("tests", "final"):
+        ms_file = inp.out_dir / label / _MS_FILE
+        if ms_file.is_file():
+            doc["hidden_tests_ms"] = int(ms_file.read_text(encoding="utf-8"))
+            break
+    path.write_text(json.dumps(doc, sort_keys=True, indent=1), encoding="utf-8")
+
+
 def run_child(argv: list[str], cwd: Path, timeout: float, extra_env: Iterable[str] = ()) -> procs.Completed:
     """Start a check-less helper's child (the NG resolver) through `procs.run` (its own job, kill-on-close, bounded)
     with `_env.grading_env(extra_env)` as its whole environment, never the parent environment wholesale and never a credential (G4)."""
@@ -567,4 +594,5 @@ def grade_cell(inp: CellInput) -> Mapping[str, Score]:
         scores = strategy(inp, GradeContext(inp.plan["parameters"]["grading_step_timeout"]))
     except NotBuilt:
         return dict.fromkeys(keys, na)
+    lift_hidden_tests(inp)
     return {k: scores.get(k, na) for k in keys}
