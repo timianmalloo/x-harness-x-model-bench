@@ -1,0 +1,2 @@
+{"agent": "leader-e1e4", "at": 1791231340.4340982, "kind": "session-start", "path": "-", "seq": 1, "session": "x-intf-e1e4", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-eval-x-intf"}
+{"action": "add", "agent": "x-intf-e1e4", "at": 1791231719.6614478, "deadline_at": 1791232619.6614478, "id": "req-01M46VNY7E5TQZW84V2DXM4H6Y", "kind": "request", "path": "-", "seq": 2, "session": "x-intf-e1e4", "to": "coord-opus-e1e4", "type": "request", "wi": "WI-0"}

@@ -1,0 +1,2 @@
+{"agent": "x-i5-e1e4", "at": 1791213330.215585, "kind": "session-start", "path": "-", "seq": 1, "session": "x-i5-e1e4", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-eval-x-i5"}
+{"action": "add", "agent": "x-i5-e1e4", "at": 1791213844.2353468, "deadline_at": 1791214744.2353468, "id": "req-01M46AMDRDRJ1XA610E63MJXD0", "kind": "request", "path": "-", "seq": 2, "session": "x-i5-e1e4", "to": "coord-opus-e1e4", "type": "request", "wi": "WI-0"}
