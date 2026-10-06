@@ -174,9 +174,9 @@ def _untrustworthy(scores: dict[str, dict], expected: dict) -> list[str]:
     return items
 
 
-def _evidence_items(run_dir: Path, grading_id: str, labels: dict[str, str], pointers: dict[str, str], declared: dict) -> tuple[dict, list[str]]:
+def _evidence_items(run_dir: Path, grading_id: str, labels: dict[str, str], pointers: dict[str, str], declared: dict, expected: dict) -> tuple[dict, list[str]]:
     """The HB-RDY-011 items a check-based trial can show, and the per-role evidence they were found in: unreadable
-    evidence, a case `timeout` that nothing declares (R2-1), a hidden-test disagreement or not-comparable cell (R-93, R-96),
+    evidence, a case `timeout` that no variant flip or `expected.<role>.timeouts` declares (R2-1), a hidden-test disagreement or not-comparable cell (R-93, R-96),
     a span with `unbiased_ok` false, and a reader that raised (its reason is the detail)."""
     items, found = [], {}
     for role, pointer in sorted(pointers.items()):
@@ -185,7 +185,10 @@ def _evidence_items(run_dir: Path, grading_id: str, labels: dict[str, str], poin
         except (OSError, ValueError, KeyError, IndexError) as exc:
             items.append(f"{role}: check evidence unreadable ({type(exc).__name__}: {exc})")
             continue
-        allowed = set(declared.get(role.removeprefix("variant:"), {}).get("flips", ())) if role.startswith("variant:") else set()
+        if role.startswith("variant:"):
+            allowed = set(declared.get(role.removeprefix("variant:"), {}).get("flips", ()))
+        else:
+            allowed = {str(c) for c in (expected.get(role) or {}).get("timeouts") or ()}  # CR47-7: a timeout by design
         late = sorted(c for c, out in found[role]["cases"].items() if out == "timeout" and c not in allowed)
         if late:
             items.append(f"{role}: case {', '.join(late)} timed out (a timeout nothing declares is not measured content)")
@@ -385,7 +388,7 @@ def _run_and_record(root: Path, task_id: str, task: dict, run_dir: Path, p: dict
     found: dict = {}
     if check_based:
         labels = {c["cell_id"]: c["label"] for c in p["cells"]}
-        found, more = _evidence_items(run_dir, grading_id, labels, pointers, declared)
+        found, more = _evidence_items(run_dir, grading_id, labels, pointers, declared, expected)
         items += more
         if not more:
             items += [f"{r}: no check evidence found for the cell" for r in sorted(set(combo_role.values()) - set(found))]

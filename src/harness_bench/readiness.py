@@ -254,6 +254,31 @@ def _provenance_missing(text: str) -> list[tuple[str, str]]:
     return out
 
 
+def _timeouts_failures(expected: Mapping, prop_name: str, cases_path: Path, add) -> None:
+    """CR47-7: `expected.<role>.timeouts` lists the case ids whose outcome is `timeout` by design. It is no metric, so every
+    metric compare skips it; it is refused on a check-less task, on the reference role (its primary 1 needs every case passed),
+    and for an id that is not a declared case."""
+    for role in ROLES:
+        declared = (expected.get(role) or {}).get("timeouts")
+        if declared is None:
+            continue
+        item = f"expected.{role}.timeouts"
+        if prop_name not in config.CHECK_PROPERTIES:
+            add(item, "a check-less task has no case to time out")
+        elif role == "reference":
+            add(item, "the reference's primary 1 requires every case passed")
+        elif not isinstance(declared, list):
+            add(item, "must be a list of case ids")
+        else:
+            try:
+                known = {str(c.get("id")) for c in config.load_yaml(cases_path).get("cases") or []}
+            except (OSError, ValueError, AttributeError):
+                continue  # an unreadable cases.yaml is reported by its own item
+            unknown = sorted(str(c) for c in declared if str(c) not in known)
+            if unknown:
+                add(item, f"{unknown} is not a declared case")
+
+
 def _container_items(spec: Mapping) -> list[str]:
     names = [str(t) for t in spec.get("toolchain") or []]
     deliverable = spec.get("deliverable") or {}
@@ -383,6 +408,7 @@ def contract_failures(root: Path, task_id: str) -> list[Failure]:
         got = declared.get(_PROPERTY_PASS)
         if got is not None and not isinstance(got, Mapping) and got != want:
             add(f"expected.{role}.{_PROPERTY_PASS}", f"the primary must be {want} for the {role} role (EV-7), not {got!r}")
+    _timeouts_failures(expected, name, d / "oracle" / "check" / "cases.yaml", add)
     out.extend(Failure("HB-RDY-005", f"expected.{role}.{metric}", "no provenance comment of at least three words (GLD-A)")
                for role, metric in _provenance_missing(text) if metric in narrowed)
     check_dir = d / "oracle" / "check"

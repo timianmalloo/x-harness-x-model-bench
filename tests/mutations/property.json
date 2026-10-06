@@ -181,5 +181,14 @@
   "tests": [
    "tests/test_discriminate.py::test_a_check_less_trial_with_a_cell_whose_hidden_test_side_is_na_is_hb_rdy_011"
   ]
+ },
+ {
+  "name": "the expected-timeouts allowance removed: a declared by-design case timeout is an HB-RDY-011 item again (CR47-7)",
+  "file": "src/harness_bench/discriminate.py",
+  "find": "allowed = {str(c) for c in (expected.get(role) or {}).get(\"timeouts\") or ()}",
+  "replace": "allowed = set()",
+  "tests": [
+   "tests/test_discriminate.py::test_a_declared_case_timeout_on_the_naive_role_is_not_an_item"
+  ]
  }
 ]
