@@ -4837,6 +4837,49 @@ window.DOCS_INDEX = {
       "sourceSha256": "34dcfbe0b20675ff2f8e6873ffa81ee3ab9c307992617d957f9fa989d0a2e604"
     },
     {
+      "id": "plan-eval-x-k1a",
+      "path": "docs/plans/eval-x-k1a.md",
+      "title": "X-K1a: resume skeleton and assertion-red test handoff",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Bounded X-K1a execution: refusal skeleton, confirmed code registry, assertion-red tests, R-104 gates and split-rule handoff.",
+      "tags": [
+        "evaluation",
+        "resume",
+        "execution-plan"
+      ],
+      "links": [
+        {
+          "to": "brief-eval-x-k1",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-resume",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "kb-graph-and-loop-engineering",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "Graph and floors",
+          "mermaid": "flowchart LR\n  G0 --> G1 --> K1a --> K1b --> K2 --> G2 --> H\n  K1a --> K1c --> K2"
+        }
+      ],
+      "sourceSha256": "c3e6ec235f281cd1afc75bafb469713eb3aa17b3b7a354b6a018a76fac668eb3"
+    },
+    {
       "id": "proof-phase2",
       "path": "docs/proof/phase2.md",
       "title": "Proof Pack - phase 2 (wave-by-wave joins)",
@@ -9266,7 +9309,8 @@ window.DOCS_INDEX = {
       "path": "docs/plans/eval-x-k1a.html",
       "title": "Eval X K1A",
       "kind": "knowledge-tool",
-      "description": "Open an interactive knowledge artifact."
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-k1a"
     },
     {
       "id": "surface-case-study",
@@ -9315,5 +9359,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "bf1c2fabbc72a345f7e2bb3a3a6ebcb9bf2a202281c153be3fd471a74740848b"
+  "graphSha256": "fb63fb877082ffd3abc451a9692a4747eab82358f807195e6fb30eb2a436da71"
 };
