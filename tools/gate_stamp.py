@@ -12,8 +12,10 @@ Computes a deterministic SHA-256 over all inputs to the frozen gate characteriza
 from __future__ import annotations
 
 import argparse
+import datetime
 import hashlib
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -25,9 +27,20 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 STAMP_REL = Path("tests") / "fixtures" / "gate" / "gate-stamp.yaml"
 
+# The stamped tier (`-m stamped`): the dotnet D1 grader tests and the verdicts coverage tests. It has its OWN stamp so
+# a verdicts/stats/power edit never forces the 77-81 minute gate ring (the gate digest above is unchanged). Its digest
+# is the gate digest plus these files, which the verdicts coverage tests execute (verdicts.verdict and what it calls).
+STAMPED_STAMP_REL = Path("tests") / "fixtures" / "gate" / "stamped-stamp.yaml"
+STAMPED_EXTRA_INPUTS = tuple(f"src/harness_bench/{name}.py" for name in ("errors", "power", "stats", "verdicts"))
+STAMPED_MAX_AGE = datetime.timedelta(hours=24)  # the once-a-day full run, whatever the digest says
+
 
 def stamp_path(root: Path | None = None) -> Path:
     return (root or ROOT) / STAMP_REL
+
+
+def stamped_stamp_path(root: Path | None = None) -> Path:
+    return (root or ROOT) / STAMPED_STAMP_REL
 
 
 def extract_stryker_version(mutation_file: Path) -> str:
@@ -101,6 +114,30 @@ def compute_digest(root: Path | None = None) -> str:
     return h.hexdigest()
 
 
+def compute_stamped_digest(root: Path | None = None) -> str:
+    repo_root = (root or ROOT).resolve()
+    h = hashlib.sha256(compute_digest(repo_root).encode() + b"\0")
+    for rel in STAMPED_EXTRA_INPUTS:
+        h.update(rel.encode() + b"\0")
+        h.update((repo_root / rel).read_bytes().replace(b"\r\n", b"\n") + b"\0")
+    return h.hexdigest()
+
+
+def stamped_stale(root: Path | None = None, now: datetime.datetime | None = None) -> str | None:
+    """Why `-m stamped` must run (a reason), or None when the stamp is current and under a day old. Never raises."""
+    target = stamped_stamp_path(root)
+    try:
+        data = yaml.safe_load(target.read_text(encoding="utf-8"))
+        digest, renewed = str(data["digest"]), datetime.datetime.fromisoformat(str(data["renewed"]))
+    except (OSError, ValueError, KeyError, TypeError):
+        return "no readable stamped stamp"
+    if digest != compute_stamped_digest(root):
+        return "stamped inputs changed"
+    if (now or datetime.datetime.now(datetime.UTC)) - renewed > STAMPED_MAX_AGE:
+        return "daily full run due"
+    return None
+
+
 def read_stamp(path: Path) -> str:
     if not path.is_file():
         raise FileNotFoundError(f"Stamp file not found: {path}")
@@ -110,27 +147,39 @@ def read_stamp(path: Path) -> str:
     return str(data["digest"])
 
 
-def write_stamp(path: Path, digest: str) -> None:
+def write_stamp(path: Path, digest: str, renewed: str | None = None) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    body = (
-        "# Pinned grader inputs stamp. Renew via: python tools/gate_stamp.py --renew\n"
-        "schema: bench-gate-stamp/1\n"
-        f"digest: {digest}\n"
-    )
+    if renewed is None:
+        body = (
+            "# Pinned grader inputs stamp. Renew via: python tools/gate_stamp.py --renew\n"
+            "schema: bench-gate-stamp/1\n"
+            f"digest: {digest}\n"
+        )
+    else:
+        body = (
+            "# Stamped-tier stamp. Renew via: python tools/gate_stamp.py --renew-stamped\n"
+            "schema: bench-stamped-stamp/1\n"
+            f"digest: {digest}\n"
+            f"renewed: {renewed}\n"
+        )
     path.write_text(body, encoding="utf-8", newline="\n")  # LF on every OS (.gitattributes eol=lf)
 
 
-def renew(root: Path | None = None) -> int:
+def renew(root: Path | None = None, *, stamped: bool = False) -> int:
     repo_root = (root or ROOT).resolve()
+    marker = "stamped" if stamped else "gate"
     venv_pytest = repo_root / ".venv" / "Scripts" / "pytest.exe"
     if venv_pytest.is_file():
-        cmd = [str(venv_pytest), "-m", "gate"]
+        cmd = [str(venv_pytest), "-m", marker]
     elif shutil.which("pytest"):
-        cmd = [shutil.which("pytest"), "-m", "gate"]
+        cmd = [shutil.which("pytest"), "-m", marker]
     else:
-        cmd = [sys.executable, "-m", "pytest", "-m", "gate"]
+        cmd = [sys.executable, "-m", "pytest", "-m", marker]
+    if stamped:
+        cmd += ["-n", "4"]  # the 450 s D1 test bounds the wall time either way; the rest overlaps it
+    env = {**os.environ, "HB_REQUIRE_DOTNET": "1"} if stamped else None  # a skipped stamped test proves nothing
 
-    proc = subprocess.run(cmd, cwd=repo_root, capture_output=True, text=True, encoding="utf-8", errors="replace", check=False)
+    proc = subprocess.run(cmd, cwd=repo_root, env=env, capture_output=True, text=True, encoding="utf-8", errors="replace", check=False)
     output = proc.stdout + "\n" + proc.stderr
 
     if proc.returncode == 5:
@@ -153,6 +202,11 @@ def renew(root: Path | None = None) -> int:
         sys.stderr.write(output)
         return 1
 
+    if stamped:
+        digest, target = compute_stamped_digest(repo_root), stamped_stamp_path(repo_root)
+        write_stamp(target, digest, datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds"))
+        print(f"Renewed stamped stamp {target}: {digest}")
+        return 0
     digest = compute_digest(repo_root)
     target = stamp_path(repo_root)
     write_stamp(target, digest)
@@ -164,6 +218,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Manage the gate ring input digest stamp.")
     parser.add_argument("--print", action="store_true", dest="print_digest", help="Print current digest")
     parser.add_argument("--renew", action="store_true", help="Run pytest -m gate and renew stamp on pass")
+    parser.add_argument("--print-stamped", action="store_true", help="Print the stamped-tier digest")
+    parser.add_argument("--check-stamped", action="store_true",
+                        help="Exit 1 (naming why) when `pytest -m stamped` must run: inputs moved, no stamp, or older than a day")
+    parser.add_argument("--renew-stamped", action="store_true",
+                        help="Run pytest -m stamped (HB_REQUIRE_DOTNET=1) and renew the stamped stamp on pass")
     parser.add_argument("--root", type=Path, default=ROOT, help="Repository root path")
     args = parser.parse_args(argv)
 
@@ -173,6 +232,18 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.renew:
         return renew(args.root)
+
+    if args.print_stamped:
+        print(compute_stamped_digest(args.root))
+        return 0
+
+    if args.check_stamped:
+        reason = stamped_stale(args.root)
+        print(reason or "stamped stamp current")
+        return 1 if reason else 0
+
+    if args.renew_stamped:
+        return renew(args.root, stamped=True)
 
     parser.print_help()
     return 1

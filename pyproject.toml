@@ -38,6 +38,7 @@ addopts = "-m 'not credentials and not slow and not gate and not browser'"
 markers = [
     "slow: the dotnet graders' fixtures; the Leader's pre-freeze ring on the grading host (HB_REQUIRE_DOTNET=1)",
     "workstation: needs the installed harness builds and sibling checkouts",
+    "stamped: the dotnet D1 grader tests and the verdicts coverage tests; skipped at per-join recounts, run by the Leader when `python tools/gate_stamp.py --check-stamped` exits 1 (inputs moved, or a day old) with HB_REQUIRE_DOTNET=1",
     "gate: frozen gate-run characterizations; run by the Leader when the gate stamp is stale",
     "browser: needs Playwright's Chromium (playwright install); the readiness ring, never the offline gate (R-81 DR-R-9)",
 ]

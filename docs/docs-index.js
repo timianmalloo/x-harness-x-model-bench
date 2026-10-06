@@ -6685,6 +6685,33 @@ window.DOCS_INDEX = {
       "sourceSha256": "2b35fece6b5117acf6c8651d17c4ba3e1b9e21b5859ebbdc0c913c266c09df8d"
     },
     {
+      "id": "runbook-test-tiers",
+      "path": "docs/runbooks/test-tiers.md",
+      "title": "Runbook: the test tiers and the stamped tier",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-12-31",
+      "reviewSuggested": [],
+      "summary": "Which tests run when: per join, per batch, when the stamped inputs moved, and once a day. The `stamped` marker, its own stamp, the exact commands, and the control that keeps a stamped test honest.",
+      "tags": [
+        "runbook",
+        "testing",
+        "ci",
+        "gate-stamp",
+        "stamped"
+      ],
+      "links": [
+        {
+          "to": "note-20260927-ci-opt-proposal",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "42410303ebdb094c4090760622791aef2aa94a4ce1d97dd137a44d9ac7ca0938"
+    },
+    {
       "id": "brief-eval-env-a",
       "path": "docs/coordination/eval-wave2-e1/env-a.md",
       "title": "Brief ENV-A: hermetic tests never read the operator's credential (the ambient-credential fix)",
@@ -9602,5 +9629,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "fd18ede156c38a74d025efb1b61200bc7c0080a08f902afb38f8a1b825955e05"
+  "graphSha256": "19517c5c486a3cd0d8c4a08d767d0d9e17db97dee1a1956651b745cdea1a2615"
 };
