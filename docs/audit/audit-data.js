@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T14:30:38Z",
+  "generated": "2026-10-06T15:24:40Z",
   "audit": [
     {
       "actor": null,
@@ -105589,6 +105589,35 @@ window.AUDIT_DATA = {
       "tier": "T2",
       "started_at": "2026-10-06T14:15:33Z",
       "duration_seconds": 905.0
+    },
+    {
+      "id": "al-01M48X28K4CS9E7E9YJAZDEGW1",
+      "shortname": "x-fixv-r42-ignored-cache",
+      "datetime": "2026-10-06T15:24:40Z",
+      "session": "x-fixv-e1e4",
+      "prompt": "X-FIXV fix track: R-42 c4 check judged the filesystem; ignored untracked __pycache__ failed test_repo_inputs_are_valid",
+      "summary": "config._is_ignored_untracked (git ls-files + check-ignore, fail closed); load_lib and reflect write no bytecode; task_version_hash and content_version already exclude __pycache__; red 2be1fb58, fix 057408e6; 240 + 203 passed, ruff clean, validate.json all killed",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "src/harness_bench/config.py"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "R-42 conditions judge committed content only",
+      "done_when": "red tests green, gates exit 0, mutant killed",
+      "tier": "T1",
+      "started_at": "2026-10-06T15:06:42Z",
+      "duration_seconds": 1078.0,
+      "git": {
+        "sha": "057408e64e401591eebda5ce91e1b853d026887a",
+        "short": "057408e64",
+        "branch": "build/eval-x-fixv",
+        "pushed": null
+      }
     }
   ],
   "changes": [

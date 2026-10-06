@@ -16,8 +16,8 @@
  {
   "name": "a generated/cache folder anywhere in workspace/ is no longer refused",
   "file": "src/harness_bench/config.py",
-  "find": "        if d.is_dir() and d.name in GENERATED_DIR_NAMES:",
-  "replace": "        if False and d.is_dir() and d.name in GENERATED_DIR_NAMES:",
+  "find": "        if d.is_dir() and d.name in GENERATED_DIR_NAMES and not _is_ignored_untracked(d):",
+  "replace": "        if False and d.is_dir() and d.name in GENERATED_DIR_NAMES and not _is_ignored_untracked(d):",
   "tests": ["tests/test_config.py::test_ready_task_with_generated_folder_in_workspace_is_rejected"]
  },
  {
@@ -75,5 +75,12 @@
   "find": "                                    if better == \"lower\" and Decimal(str(worst)) != Decimal(2 * items):\n                                        p.add(where, f\"{area_id}.{mid}: a better: lower judged rubric must define 2 as worst per item\")\n",
   "replace": "",
   "tests": ["tests/test_config.py::test_better_lower_judged_rubric_must_define_2_as_worst_per_item_is_refused"]
+ },
+ {
+  "name": "a git-ignored untracked cache folder is reported as vendored again (the ignore exclusion dropped)",
+  "file": "src/harness_bench/config.py",
+  "find": "GENERATED_DIR_NAMES and not _is_ignored_untracked(d):",
+  "replace": "GENERATED_DIR_NAMES:",
+  "tests": ["tests/test_config.py::test_git_ignored_untracked_cache_folder_in_workspace_is_not_vendored"]
  }
 ]

@@ -266,6 +266,46 @@ def test_ready_task_with_generated_folder_in_workspace_is_rejected(tmp_path):  #
     assert "tasks/X3: workspace/obj/ is a generated or cache folder and must not be vendored" in p.items
 
 
+def _git_task_repo(tmp_path: Path, *, track_pyc: bool) -> tuple[Path, Path]:
+    """A temp repo whose .gitignore covers __pycache__/, with a ready task and a .pyc in its vendored workspace."""
+    from harness_bench import gitsafe
+    d = _ready_task(tmp_path, "X4", scenario=5)
+    (tmp_path / ".gitignore").write_text("__pycache__/\n*.py[cod]\n", encoding="utf-8")
+    cache = d / "workspace" / "vendor" / "pkg" / "__pycache__"
+    cache.mkdir(parents=True)
+    pyc = cache / "m.cpython-312.pyc"
+    pyc.write_bytes(b"\x00bytecode")
+    gitsafe.git(["init", "-q"], cwd=tmp_path, timeout=60)
+    gitsafe.git(["add", "-A"], cwd=tmp_path, timeout=60)
+    if track_pyc:
+        gitsafe.git(["add", "-f", "--", str(pyc)], cwd=tmp_path, timeout=60)
+    return d, cache
+
+
+def _vendoring_items(d: Path) -> list[str]:
+    p = config.Problems()
+    config.validate_task(d, {"id": d.name, "scenario": 5, "budget_minutes": 45}, p, config.grader_modules(ROOT),
+                         config.pack_marker_bytes(ROOT))
+    return [i for i in p.items if "generated or cache folder" in i]
+
+
+def test_git_ignored_untracked_cache_folder_in_workspace_is_not_vendored(tmp_path):  # R-42 c4 judges committed content
+    d, _ = _git_task_repo(tmp_path, track_pyc=False)
+    assert _vendoring_items(d) == []
+
+
+def test_tracked_file_in_a_cache_folder_in_workspace_is_still_rejected(tmp_path):
+    d, _ = _git_task_repo(tmp_path, track_pyc=True)
+    assert _vendoring_items(d) == [
+        "tasks/X4: workspace/vendor/pkg/__pycache__/ is a generated or cache folder and must not be vendored"]
+
+
+def test_cache_folder_that_is_not_ignored_is_rejected_even_if_untracked(tmp_path):
+    d, _ = _git_task_repo(tmp_path, track_pyc=False)
+    (tmp_path / ".gitignore").write_text("", encoding="utf-8")
+    assert len(_vendoring_items(d)) == 1
+
+
 def test_ready_scenario1_task_without_clarifications_is_rejected(tmp_path):  # US-2
     d = _ready_task(tmp_path, "X1", scenario=1, scripted_user=True)
     p = config.Problems()
