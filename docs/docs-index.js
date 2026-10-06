@@ -4191,6 +4191,55 @@ window.DOCS_INDEX = {
       "sourceSha256": "7d0a7f4157960ead085b0c612f4beb45feda264147cc65df7d643658ff1dde66"
     },
     {
+      "id": "coordinator-log-c38",
+      "path": "docs/coordination/coordinator-log/c38.md",
+      "title": "Coordinator #38 hand-back (2026-10-06): J1d's K2 fixture seam, the X-J1e, X-J2c and X-A3c compiles, cells[].calibration to the plan revision, QUOTE-A, CACHE-B and PATH-B",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-06",
+      "reviewSuggested": [],
+      "summary": "Coordinator #38, on base 97fee009 (J1d's K1-K3 on integrate/e2e4-18 070f16b4), granted J1d's K2 fixture seam as built (six constructor lines, no assertion changed). Compiled the three P3 turns J1d unblocks: X-J1e (Codex, runner contract), X-J2c and X-A3c (Claude Code Sonnet Agent-tool sub-agents, own trees off the integration head after J1d joins). Put cells[].calibration (EV-9) in the next plan revision, not in A3c. Registered QUOTE-A, CACHE-B and PATH-B, a MUT-E instance (the STRATEGIES union) and a fourth FLAKE-A instance, which fires its upgrade trigger.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-j1",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-j2",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-a3",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "995e8a858132ed1edf48a9f70bedd286242c6323efc4787af71aee95f2cc511f"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4217,7 +4266,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "6f7933e4a0e17d030e9f469e5e44ba7c0e95044503c0ffd03385ac6617942f10"
+      "sourceSha256": "aa249122a88879d021493c4e7086a990272635dcf00fa1117753aadac5ac4401"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -6569,7 +6618,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "7286c23fdbee0a7a69a1047c40a8e2689639b80d7741916fd1378971c6f93328"
+      "sourceSha256": "2bed236c300b65b03e8ca4e220d640244333557a8b950d604e0be150b80124fb"
     },
     {
       "id": "brief-eval-x-b1",
@@ -7107,7 +7156,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "866e9db64400ebe5ffc22a4cb0fc5ceca7bb8764b933cdea79bd1174839271d4"
+      "sourceSha256": "acb813ae982cacb561090889971108c3faa9d3ac260349305876f19ec649cdf3"
     },
     {
       "id": "brief-eval-x-j2",
@@ -7140,7 +7189,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "c7e06322ddf6c16c0451c42c4d03b2f780dcfce7062383fa6a85b7c956e70d7f"
+      "sourceSha256": "965ca92b2fe92b3457922d64ed365f619274cb7130e52e40ac01937a78ac9b3d"
     },
     {
       "id": "brief-eval-x-k1",
@@ -9166,5 +9215,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "0bdaa366e81b8748e199cecf793c8076d0f64ef24ce0e85755c898552b02445d"
+  "graphSha256": "3b1af33ae27c705f7b1e317c2f9f4aafc0ebc43570961fc2d8a4c82a6679dccd"
 };
