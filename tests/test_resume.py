@@ -35,6 +35,7 @@ from harness_bench import (
     host,
     identity,
     ledger,
+    lifecycle,
     oslock,
     plan,
     resume,
@@ -151,7 +152,7 @@ def _golden_segment(g, fact):
 
 
 def _materialize(g, dest, rows, *, snap_rows="auto", final_rows="auto", tmp_dirs=(), no_workspace=(), no_attempt=(),
-                 snapshots=(), attempts=(), extra=(), stray=()):
+                 snapshots=(), attempts=(), extra=(), stray=(), from_archive=False):
     """A crashed run on disk: the plan, the ledger `rows` (re-chained, unsealed), and the folders its rows imply."""
     run_dir, cells_root = dest / "runs" / g.plan["run_id"], dest / "cells"
     run_dir.mkdir(parents=True)
@@ -196,6 +197,9 @@ def _materialize(g, dest, rows, *, snap_rows="auto", final_rows="auto", tmp_dirs
             continue
         cell = next(c for c in g.plan["cells"] if c["cell_id"] == cid)
         cell_dir = cells_root / g.plan["run_id"] / cid
+        if from_archive and cid in attempts:  # the real engine leaves the published folder: a copy of the archived tree
+            shutil.copytree(g.run_dir / "archive" / cid / "attempt-1", cell_dir)
+            continue
         _build_workspace(cell, cell_dir)
         turn2 = any(r["kind"] == "cell.turn_ended" and r.get("turn") == 2 for r in mine)
         (cell_dir / "ws" / "a.txt").write_text("2" if turn2 else "1", encoding="utf-8")
@@ -203,12 +207,20 @@ def _materialize(g, dest, rows, *, snap_rows="auto", final_rows="auto", tmp_dirs
     behaviours = {c["label"]: {"model": "fake-model", "prompts_log": str(log),
                                "per_turn": [{"files": {"a.txt": "1"}}, {"files": {"a.txt": "2"}}]} for c in g.plan["cells"]}
     cfg = engine.EngineConfig(run_dir, cells_root, {"fake": FakeLauncher(behaviours)}, _build_workspace,
-                              lambda d: {"passes": 1}, loop_interval=0.01, clock=CellClock())
+                              lambda d: {"passes": 1}, loop_interval=0.01, clock=CellClock(), verify=views.verify)
     return SimpleNamespace(run_dir=run_dir, plan=copy.deepcopy(g.plan), cfg=cfg, root=dest / "root", log=log, g=g, rows=rows)
 
 
 def _prefix(g, dest, i, **kw):
     return _materialize(g, dest, g.rows[:i], **kw)
+
+
+def _set_params(env, **params):
+    """The only way a test sets a plan parameter: the stored plan is the authority (W1-K 3.1 step 1), so the edit is
+    written through to run_dir/plan.json with a recomputed plan_hash and env.plan follows it."""
+    env.plan["parameters"].update(params)
+    env.plan["plan_hash"] = plan.plan_hash(env.plan)
+    (env.run_dir / "plan.json").write_text(json.dumps(env.plan, indent=2), encoding="utf-8")
 
 
 def _resume(env):
@@ -432,11 +444,15 @@ def _t2_w11(golden1, tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize("name", ["T2"])
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_cli_run_resumes(tmp_path, name):
     t2 = _t2_kill_and_resume(tmp_path, behaviour={}, target={"kind": "cell.turn_snapshot_archived", "turn": 1})
     assert t2.second.returncode == 0, t2.second.stderr
-    assert _outcome_map(t2) == {t2.cell: ("completed", None)}
+    # W1-K section 3.2 row C3: between turns with the snapshot recorded, the resume records failed HB-CELL-119 and never relaunches.
+    assert _outcome_map(t2) == {t2.cell: ("failed", "HB-CELL-119")}
+    rows = _rows(t2.run_dir)
+    assert _kinds(rows, "cell.outcome", cell_id=t2.cell)[-1]["resume"]["phase"] == "between-turns"
+    assert len(_kinds(rows, "cell.archived", cell_id=t2.cell)) == 1
+    assert len(_kinds(rows, "cell.launch_intent", cell_id=t2.cell)) == 1, "C3 never relaunches"
 
 
 # ---------------------------------------------------------------- windows (T1, T2 for W2/W11)
@@ -468,8 +484,12 @@ def _w4c(golden1, tmp_path, monkeypatch):
     cid = golden1.cells[0]
     env = _prefix(golden1, tmp_path, 7)
 
+    real = atomic.publish_dir
+
     def refuse(final, fill, verify):
-        raise OSError("publish refused")
+        if final.name == "turn-1":  # only the snapshot redo's publish: the final archive must still succeed (W1-K C4)
+            raise OSError("publish refused")
+        return real(final, fill, verify)
 
     monkeypatch.setattr(atomic, "publish_dir", refuse)
     assert _resume(env).exit_code == 0
@@ -500,7 +520,7 @@ def _w9(golden1, tmp_path, monkeypatch):
 
 def _w10(golden1, tmp_path, mode):
     cid = golden1.cells[0]
-    env = _prefix(golden1, tmp_path, 12, attempts={cid}, final_rows=mode)
+    env = _prefix(golden1, tmp_path, 12, attempts={cid}, final_rows=mode, from_archive=True)
     assert _resume(env).exit_code == 0
     assert _kinds(_post(env), "cell.archived", cell_id=cid)
     final = [r["path"] for r in views.rows(env.run_dir, "archive_files") if not r.get("snapshot")]
@@ -525,7 +545,6 @@ WINDOWS = {
 
 
 @pytest.mark.parametrize("name", list(WINDOWS))
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_window(golden1, tmp_path, monkeypatch, name):
     WINDOWS[name](golden1, tmp_path, monkeypatch)
 
@@ -536,7 +555,6 @@ STOP_WINDOWS = ["control_applied", "decision_resolved", "run_stopped", "control_
 
 
 @pytest.mark.parametrize("window", STOP_WINDOWS)
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_resume_finishes_the_stop(golden5, tmp_path, window, capsys):
     states = ("C2", "C4", "C5", "C6", "C7") if window.endswith("c4") else ("C2", "C3", "C5", "C6", "C7")
     env = _stop_ledger(golden5, tmp_path, window.removesuffix("_c4"), states)
@@ -557,7 +575,6 @@ def test_resume_finishes_the_stop(golden5, tmp_path, window, capsys):
     assert "run is stopped" in capsys.readouterr().out
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_launch_stopped_is_not_a_stop(golden2, tmp_path):  # W12d
     rows = [golden2.rows[0], ledger.stamp({"kind": "run.launch_stopped", "code": "HB-RUN-004", "reason": "disk low"})]
     env = _materialize(golden2, tmp_path, rows)
@@ -566,7 +583,6 @@ def test_launch_stopped_is_not_a_stop(golden2, tmp_path):  # W12d
     assert set(_outcome_map(env)) == set(golden2.cells), "the unlaunched cells launch and finish"
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_finish_the_stop_is_idempotent(golden5, tmp_path, capsys):  # W12e
     env = _stop_ledger(golden5, tmp_path, "run_stopped")
     assert _resume(env).exit_code == 3
@@ -578,15 +594,11 @@ def test_finish_the_stop_is_idempotent(golden5, tmp_path, capsys):  # W12e
     assert "run is stopped: 0 cells recorded stopped" in capsys.readouterr().out
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_finished_stop_with_unlaunched_cell_is_a_noop(golden5, tmp_path):  # W12f
-    rows = [golden5.rows[0]] + [r for cid in golden5.cells[:2] for r in _of(golden5.rows, cid)[:12]]
-    rows += _stop_rows("run_stopped", golden5.plan["run_id"])
-    rows += [ledger.stamp({"kind": "run.resumed", "run_id": golden5.plan["run_id"], "plan_hash": golden5.plan["plan_hash"],
-                           "segment_id": "x", "trace_id": golden5.plan["trace_id"]}),
-             ledger.stamp({"kind": "run.completed", "run_id": golden5.plan["run_id"], "segment_heads": {}, "cells_ended": 2,
-                           "grading": {"passes": 1}})]
-    env = _materialize(golden5, tmp_path, rows)
+    # The end state is built with the real writers: the first resume finishes the stop (run.resumed .. sealed run.completed).
+    env = _stop_ledger(golden5, tmp_path, "run_stopped", states=("C0", "C0", "C7", "C7", "C7"))
+    assert _resume(env).exit_code == 3
+    assert _kinds(_post(env), "run.completed"), "the first resume finishes the stop"
     before = _tree_hash(env.run_dir)
     assert _resume(env).exit_code == 3
     assert _tree_hash(env.run_dir) == before, "a finished stop with a C7 cell writes nothing"
@@ -653,22 +665,43 @@ def _w15(golden1, tmp_path):
     assert _outcome_map(env) == {golden1.cells[0]: ("completed", None)}
 
 
+def _launch_stopped_run(g, dest):
+    """A launch-stopped run written by the real engine (a zero free-bytes probe): run.launch_stopped HB-RUN-004 and a sealed
+    run.completed, no cell launched. Returns the env a resume needs, whose grade callback records status.completion."""
+    p = copy.deepcopy(g.plan)
+    run_dir, cells_root = dest / "runs" / p["run_id"], dest / "cells"
+    log = dest / "resumed-prompts.jsonl"
+    behaviours = {c["label"]: {"model": "fake-model", "prompts_log": str(log),
+                               "per_turn": [{"files": {"a.txt": "1"}}, {"files": {"a.txt": "2"}}]} for c in p["cells"]}
+    first = engine.EngineConfig(run_dir, cells_root, {"fake": FakeLauncher(behaviours)}, _build_workspace, None,
+                                loop_interval=0.01, clock=CellClock())
+    plan.confirm(run_dir, p)
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(engine, "_free_bytes", lambda path: 0)
+        _engine_run(p, first, limit=120)
+    seen = []
+
+    def grade(d):
+        seen.append(status.build(run_dir).completion)
+        return {"passes": 1}
+
+    cfg = engine.EngineConfig(run_dir, cells_root, {"fake": FakeLauncher(behaviours)}, _build_workspace, grade,
+                              loop_interval=0.01, clock=CellClock(), verify=views.verify)
+    return SimpleNamespace(run_dir=run_dir, plan=p, cfg=cfg, root=dest / "root", seen=seen)
+
+
 def _w16(golden2, tmp_path):
-    run_id = golden2.plan["run_id"]
-    rows = [golden2.rows[0], ledger.stamp({"kind": "run.launch_stopped", "code": "HB-RUN-004", "reason": "disk low"}),
-            ledger.stamp({"kind": "run.completed", "run_id": run_id, "segment_heads": {}, "cells_ended": 0, "grading": None})]
-    env = _materialize(golden2, tmp_path, rows)
-    resumed = _materialize(golden2, tmp_path / "mid", rows + [ledger.stamp(
-        {"kind": "run.resumed", "run_id": run_id, "plan_hash": golden2.plan["plan_hash"], "segment_id": "x",
-         "trace_id": golden2.plan["trace_id"]})])
-    assert status.build(resumed.run_dir).completion == "in progress", "complete iff run.completed follows the last run.resumed"
+    env = _launch_stopped_run(golden2, tmp_path)
+    rows = _rows(env.run_dir)
+    assert [r["code"] for r in _kinds(rows, "run.launch_stopped")] == ["HB-RUN-004"]
+    assert _kinds(rows, "run.completed") and not _kinds(rows, "cell.launch_intent"), "the real engine launch-stopped"
     assert _resume(env).exit_code == 0
+    assert env.seen == ["in progress"], "inside the resume run.resumed is written and run.completed is not (D-K5)"
     assert set(_outcome_map(env)) == set(golden2.cells)
     assert status.build(env.run_dir).completion == "complete"
 
 
 @pytest.mark.parametrize("name", ["W13", "W13b_stray_segment", "W13c_clock_back", "W14"])
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_resume_of_a_resume(golden1, tmp_path, monkeypatch, name):
     if name == "W13b_stray_segment":
         return _w13b(golden1, tmp_path, monkeypatch)
@@ -678,20 +711,17 @@ def test_resume_of_a_resume(golden1, tmp_path, monkeypatch, name):
 
 
 @pytest.mark.parametrize("name", ["W15"])
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_run_started_by_resume(golden1, tmp_path, name):
     _w15(golden1, tmp_path)
 
 
 @pytest.mark.parametrize("name", ["W16"])
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_resume_after_launch_stop(golden2, tmp_path, name):
     _w16(golden2, tmp_path)
 
 
 # ---------------------------------------------------------------- run-level state and liveness
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_stop_window_with_open_decision(golden5, tmp_path):
     opened = ledger.stamp({"kind": "decision.opened", "decision_id": "D1", "decision_kind": "spend_cap",
                            "subject": golden5.plan["run_id"], "cause_code": "HB-RUN-007", "options": ["stop", "continue"],
@@ -705,7 +735,6 @@ def test_stop_window_with_open_decision(golden5, tmp_path):
     assert not _kinds(_post(env), "cell.launch_intent"), "launching is not paused, it is stopped"
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_leftover_applied_control_not_duplicated(golden5, tmp_path):
     env = _stop_ledger(golden5, tmp_path, "control_applied")
     control = env.run_dir / "control" / f"{'a' * 32}.json"
@@ -717,20 +746,32 @@ def test_leftover_applied_control_not_duplicated(golden5, tmp_path):
     assert not control.exists(), "a control whose uuid is in the ledger is removed, not re-applied"
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
-def test_spend_total_survives_resume(golden2, tmp_path):
-    first, second = golden2.cells
-    one = golden2.spend[0]
-    p = {**golden2.plan, "parameters": {**golden2.plan["parameters"], "spend_cap_tokens": one + 1}}
-    rows = [golden2.rows[0], *_of(golden2.rows, first)]
-    env = _materialize(golden2, tmp_path, rows)
-    env.plan["parameters"] = p["parameters"]
-    _resume(env)
+def test_spend_total_survives_resume(golden5, tmp_path):
+    first, second = golden5.cells[:2]
+    one = golden5.spend[0]
+    cap = one + 1
+    assert golden5.spend[1] < cap, "without the restored total the second cell alone could not open a decision"
+    rows = [golden5.rows[0], *_of(golden5.rows, first)]
+    env = _materialize(golden5, tmp_path, rows)
+    _set_params(env, spend_cap_tokens=cap, decision_timeout=1)
+    done = threading.Event()
+
+    def expire():  # the injected clock is logical: once the decision is open, let its 1 s timeout pass
+        while not done.wait(0.05):
+            if _kinds(_rows(env.run_dir), "decision.opened", decision_kind="spend_cap"):
+                env.cfg.clock.now += 10
+
+    thread = threading.Thread(target=expire, daemon=True)
+    thread.start()
+    try:
+        _resume(env)
+    finally:
+        done.set()
+        thread.join()
     assert _kinds(_rows(env.run_dir), "decision.opened", decision_kind="spend_cap"), \
-        f"the restored total ({one}) plus {second}'s spend must pass the cap {one + 1}"
+        f"the restored total ({one}) plus {second}'s spend must pass the cap {cap}"
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_stop_control_file_honoured_before_relaunch(golden2, tmp_path):
     first, second = golden2.cells
     rows = [golden2.rows[0], *_of(golden2.rows, first)[:9]]
@@ -744,7 +785,6 @@ def test_stop_control_file_honoured_before_relaunch(golden2, tmp_path):
     assert _kinds(_rows(env.run_dir), "run.stopped", code="HB-RUN-006")
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_stop_code_read_from_decision_kind(golden5, tmp_path):
     env = _stop_ledger(golden5, tmp_path, "decision_resolved")
     assert _resume(env).exit_code == 3
@@ -764,15 +804,13 @@ def _with_live_pid(golden1, tmp_path, created_shift=0, **params):
     rows = [dict(r) for r in golden1.rows[:6]]
     rows[3] = {**rows[3], "pid": proc.pid, "created_at": created + created_shift}
     env = _materialize(golden1, tmp_path, rows)
-    # assume: plan.parameters.pid_wait_s is the bounded wait for a live lock holder (W1-K liveness); confirm in K1c
-    # (resume.py / plan.DEFAULT_PARAMETERS); if the name or unit differs, only this fixture line and the bound below change.
-    env.plan["parameters"].update({"pid_wait_s": 1, **params})
+    _set_params(env, **{"pid_wait_s": 1, **params})
     return env, proc
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_resume_heartbeats_the_lock(golden1, tmp_path):
-    env, proc = _with_live_pid(golden1, tmp_path, lock_staleness=1)
+    # the wait (3 s) must outlast the staleness (1 s), else no lock age can pass it and a missing heartbeat is invisible
+    env, proc = _with_live_pid(golden1, tmp_path, lock_staleness=1, pid_wait_s=3)
     seen, box = set(), {}
 
     def target():
@@ -793,7 +831,6 @@ def test_resume_heartbeats_the_lock(golden1, tmp_path):
     assert "alive" in seen and "stalled" not in seen, f"liveness while the pid wait ran: {seen}"
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_recycled_pid_is_gone(golden1, tmp_path):
     env, proc = _with_live_pid(golden1, tmp_path, created_shift=1)
     try:
@@ -807,7 +844,6 @@ def test_recycled_pid_is_gone(golden1, tmp_path):
         proc.wait()
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_pid_alive_defers_and_writes_no_completed(golden1, tmp_path, capsys):
     env, proc = _with_live_pid(golden1, tmp_path)
     try:
@@ -862,30 +898,25 @@ def _refuse(case, golden1, golden5, tmp_path):
     return raised.value, code, before, _tree_hash(env.run_dir), env
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_refused_live_lock(golden1, golden5, tmp_path):
     exc, code, *_ = _refuse("live_lock", golden1, golden5, tmp_path)
     assert exc.code == code and "heartbeat" in str(exc), "the message holds the heartbeat age, not a PID"
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_refused_identity_drift(golden1, golden5, tmp_path):
     assert _refuse("identity_drift", golden1, golden5, tmp_path)[0].code == "HB-IDN-001"
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_refused_verify_failure_names_segment(golden1, golden5, tmp_path):
     exc, code, *_, env = _refuse("verify_failure", golden1, golden5, tmp_path)
     assert exc.code == code and next((env.run_dir / "events").glob("*.jsonl")).stem in str(exc)
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_refused_unrepairable_archive_writes_nothing(golden1, golden5, tmp_path):
     exc, code, before, after, _env = _refuse("archive_missing", golden1, golden5, tmp_path)
     assert exc.code == code and "attempt-1" in str(exc) and before == after
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_refusal_order(golden1, golden5, tmp_path):
     env, _ = _refusal("verify_failure", golden1, golden5, tmp_path)
     env.cfg.identity_check = lambda: identity.CheckResult(["tasks/X1 changed"], False)
@@ -897,7 +928,6 @@ def test_refusal_order(golden1, golden5, tmp_path):
 
 
 @pytest.mark.parametrize("case", REFUSALS)
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_refusal_writes_nothing(golden1, golden5, tmp_path, case):
     exc, code, before, after, env = _refuse(case, golden1, golden5, tmp_path)
     assert exc.code == code, f"{case} is refused with {code}"
@@ -905,16 +935,25 @@ def test_refusal_writes_nothing(golden1, golden5, tmp_path, case):
     assert not (env.run_dir / ".alarm_check").exists()
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_sweep_pairing_refuses_wrong_lock(golden1, tmp_path):
     env = _prefix(golden1, tmp_path, 6)
     other = tmp_path / "other"
     other.mkdir()
     with oslock.RunLock.acquire(other / ".lock") as lock, pytest.raises(ValueError):
-        atomic.sweep_temps(env.run_dir / "archive", lock)
+        _need(resume, "sweep_archives")(env.run_dir, lock)
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
+def test_sweep_archives_cleans_root_and_each_cell(golden1, tmp_path):
+    cid = golden1.cells[0]
+    env = _prefix(golden1, tmp_path, 6, tmp_dirs=[(cid, "attempt-1.tmp-123-" + "a" * 32)])
+    root_temp = env.run_dir / "archive" / (cid + ".tmp-123-" + "b" * 32)
+    root_temp.mkdir()
+    sweep = _need(resume, "sweep_archives")
+    with oslock.RunLock.acquire(env.run_dir / ".lock") as lock:
+        sweep(env.run_dir, lock)
+    assert not _tmp_left(env.run_dir)
+
+
 def test_abandoned_marker_pins_head(golden1, tmp_path):
     env = _prefix(golden1, tmp_path, 6)
     assert _resume(env).exit_code == 0
@@ -924,11 +963,36 @@ def test_abandoned_marker_pins_head(golden1, tmp_path):
     assert any(f.code == "HB-LED-002" for f in views.verify(env.run_dir)), "a cut dead segment must fail verify"
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_abandoned_set_equals_unsealed_engine_facts(golden1, tmp_path):
     env = _prefix(golden1, tmp_path, 12)
     assert _resume(env).exit_code == 0
     assert {r["fact"] for r in _kinds(_rows(env.run_dir), "segment.abandoned")} == set(engine.FACTS)
+
+
+def test_the_resume_names_each_dead_segment_through_check_writer(golden1, tmp_path, monkeypatch):
+    """W0 R6.12b: no events append skips lifecycle.check_writer; the marker is a ledger row."""
+    env = _prefix(golden1, tmp_path, 12)
+    calls = []
+    real = lifecycle.check_writer
+    monkeypatch.setattr(lifecycle, "check_writer", lambda kind, writer: (calls.append((kind, writer)), real(kind, writer))[1])
+    assert _resume(env).exit_code == 0
+    markers = _kinds(_rows(env.run_dir), "segment.abandoned")
+    assert len(markers) == len(engine.FACTS)
+    assert calls.count(("segment.abandoned", "ledger")) == len(markers), calls
+
+
+def test_segment_order_is_by_stem_and_ordinals_read_the_highest(tmp_path):
+    """D-K7: '-' sorts before '.', so a full-file-name sort reads engine-T-r001.jsonl before engine-T.jsonl."""
+    events = tmp_path / "events"
+    events.mkdir()
+    stems = ["engine-1700000000", "engine-1700000000-r010", "engine-1700000000-r002", "engine-1700000000-r001",
+             "grade-1700000000"]
+    for stem in stems:
+        (events / f"{stem}.jsonl").touch()
+    assert [p.stem for p in views.segment_paths(tmp_path, "events")] == [
+        "engine-1700000000", "engine-1700000000-r001", "engine-1700000000-r002", "engine-1700000000-r010",
+        "grade-1700000000"]
+    assert engine.next_ordinal(tmp_path) == 11
 
 
 # ---------------------------------------------------------------- one definition of "completed" and of "work left"
@@ -966,6 +1030,140 @@ def test_alarm_fires_after_crash_before_last_archive(golden1):
 def test_launch_stop_alarms(golden2):
     rows = [golden2.rows[0], ledger.stamp({"kind": "run.launch_stopped", "code": "HB-RUN-004", "reason": "disk low"})]
     assert _need(resume, "has_work")(golden2.plan, rows) is True
+
+
+def _recover_final(env, *, archived=False):
+    recover = _need(archive, "recover_archive")
+    cid = env.g.cells[0]
+    present = [r for r in ledger.read_segment(env.run_dir / "archive_files" / f"{env.g.stems['archive_files']}.jsonl")
+               if archive.snapshot_of(r) == "final" and r["cell_id"] == cid]
+    with oslock.RunLock.acquire(env.run_dir / ".lock") as lock:
+        return recover(env.cfg.cells_root / env.plan["run_id"] / cid, env.run_dir / "archive" / cid,
+                       1, set(), present, run_lock=lock, recorded_archived=archived)
+
+
+def _assert_recovery(env, missing):
+    recovered = _recover_final(env)
+    cid = env.g.cells[0]
+    want = [r for r in _golden_segment(env.g, "archive_files") if r["cell_id"] == cid and not r.get("snapshot")]
+    assert recovered.result.archive_hash == archive.archive_hash(want)
+    assert len(recovered.missing_rows) == missing
+    archive.verify(recovered.result.folder, recovered.result.rows)
+    assert not _tmp_left(env.run_dir)
+
+
+def _recover_source(env):
+    """Use the actual golden copy, including its session files, as the surviving source."""
+    cid = env.g.cells[0]
+    cell_dir = env.cfg.cells_root / env.plan["run_id"] / cid
+    if cell_dir.exists():
+        shutil.rmtree(cell_dir)
+    shutil.copytree(env.g.run_dir / "archive" / cid / "attempt-1", cell_dir)
+
+
+def test_recover_archive_without_final_sweeps_then_copies(golden1, tmp_path):
+    cid = golden1.cells[0]
+    env = _prefix(golden1, tmp_path, 12, tmp_dirs=[(cid, "attempt-1.tmp-123-" + "a" * 32)])
+    _recover_source(env)
+    want = [r for r in _golden_segment(golden1, "archive_files") if not r.get("snapshot")]
+    _assert_recovery(env, len(want))
+
+
+def test_recover_archive_final_rows_absent(golden1, tmp_path):
+    env = _prefix(golden1, tmp_path, 12, attempts=golden1.cells, final_rows="none")
+    _recover_source(env)
+    want = [r for r in _golden_segment(golden1, "archive_files") if not r.get("snapshot")]
+    _assert_recovery(env, len(want))
+
+
+def test_recover_archive_final_rows_partial(golden1, tmp_path):
+    env = _prefix(golden1, tmp_path, 12, attempts=golden1.cells, final_rows="partial")
+    _recover_source(env)
+    want = [r for r in _golden_segment(golden1, "archive_files") if not r.get("snapshot")]
+    _assert_recovery(env, len(want) - len(want) // 2)
+
+
+def test_recover_archive_final_rows_complete(golden1, tmp_path):
+    env = _prefix(golden1, tmp_path, 12, attempts=golden1.cells, final_rows="all", no_workspace=golden1.cells)
+    _assert_recovery(env, 0)
+
+
+def test_recover_archive_recorded_rows_without_folder_refuses(golden1, tmp_path):
+    env = _prefix(golden1, tmp_path, 12, final_rows="all")
+    before = _tree_hash(env.run_dir)
+    with pytest.raises(BenchError, match="attempt-1") as raised:
+        _recover_final(env)
+    assert raised.value.code == "HB-LED-005" and before == _tree_hash(env.run_dir)
+
+
+def test_recover_archive_recorded_event_without_folder_refuses(golden1, tmp_path):
+    env = _prefix(golden1, tmp_path, 13, final_rows="none", no_attempt=golden1.cells)
+    before = _tree_hash(env.run_dir)
+    with pytest.raises(BenchError, match="attempt-1") as raised:
+        _recover_final(env, archived=True)
+    assert raised.value.code == "HB-LED-005" and before == _tree_hash(env.run_dir)
+
+
+def test_recover_archive_changed_source_refuses_read_only(golden1, tmp_path):
+    env = _prefix(golden1, tmp_path, 12, attempts=golden1.cells, final_rows="none")
+    _recover_source(env)
+    (env.cfg.cells_root / env.plan["run_id"] / golden1.cells[0] / "ws" / "a.txt").write_text("changed", encoding="utf-8")
+    before = _tree_hash(env.run_dir)
+    with pytest.raises(BenchError, match="a.txt") as raised:
+        _recover_final(env)
+    assert raised.value.code == "HB-LED-005" and before == _tree_hash(env.run_dir)
+
+
+def test_recover_archive_differing_recorded_row_refuses_read_only(golden1, tmp_path):
+    env = _prefix(golden1, tmp_path, 12, attempts=golden1.cells, final_rows="all")
+    _recover_source(env)
+    recover = _need(archive, "recover_archive")
+    cid = golden1.cells[0]
+    present = [copy.deepcopy(r) for r in _golden_segment(golden1, "archive_files") if not r.get("snapshot")]
+    present[0]["sha256"] = "0" * 64
+    before = _tree_hash(env.run_dir)
+    with oslock.RunLock.acquire(env.run_dir / ".lock") as lock, pytest.raises(BenchError, match=present[0]["path"]):
+        recover(env.cfg.cells_root / env.plan["run_id"] / cid, env.run_dir / "archive" / cid, 1, set(), present,
+                run_lock=lock)
+    assert before == _tree_hash(env.run_dir)
+
+
+def test_resume_requires_verify_callback(golden1, tmp_path):
+    env = _prefix(golden1, tmp_path, 6)
+    env.cfg.verify = None
+    before = _tree_hash(env.run_dir)
+    with pytest.raises(ValueError, match="verify"):
+        _resume(env)
+    assert before == _tree_hash(env.run_dir)
+
+
+def test_resume_refuses_a_plan_that_differs_from_the_confirmed_one(golden1, tmp_path):
+    """W1-K 3.1 step 1: the confirmed plan is the one authority; an edited in-memory plan is refused, not ignored."""
+    env = _prefix(golden1, tmp_path, 6)
+    env.plan["parameters"]["pid_wait_s"] = 1  # an in-memory edit only: the one thing _set_params exists to avoid
+    before = _tree_hash(env.run_dir)
+    with pytest.raises(ValueError, match="plan.json"):
+        _resume(env)
+    assert before == _tree_hash(env.run_dir)
+    assert not oslock.is_held(env.run_dir / ".lock")
+
+
+def test_resume_refusal_releases_run_lock(golden1, golden5, tmp_path):
+    env, code = _refusal("identity_drift", golden1, golden5, tmp_path)
+    with pytest.raises(BenchError) as raised:
+        _resume(env)
+    assert raised.value.code == code
+    assert not oslock.is_held(env.run_dir / ".lock")
+
+
+def test_resume_archive_file_without_folder_refuses(golden1, tmp_path):
+    env = _prefix(golden1, tmp_path, 12, final_rows="partial")
+    before = _tree_hash(env.run_dir)
+    with pytest.raises(BenchError, match="attempt-1") as raised:
+        _resume(env)
+    assert raised.value.code == "HB-LED-005" and before == _tree_hash(env.run_dir)
+
+
 
 
 @pytest.mark.parametrize("kinds,expected", [
