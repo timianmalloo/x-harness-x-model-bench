@@ -4146,6 +4146,51 @@ window.DOCS_INDEX = {
       "sourceSha256": "f564497b96fca083c70aac7a7a1ae105c19c000444284f6215d94c1b8284a732"
     },
     {
+      "id": "coordinator-log-c37",
+      "path": "docs/coordination/coordinator-log/c37.md",
+      "title": "Coordinator #37 hand-back (2026-10-05): J1c's three seam rulings, the test_driver regression, the J1c continuation and X-J1d compiles, the context split rule, CEIL-A",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-05",
+      "reviewSuggested": [],
+      "summary": "Coordinator #37, on base 9a9dee14 (X-J1c's Codex partial), ruled J1c's three seam requests: both test seams stand, each paired with a strict-xfail J1d re-tighten case (RT-1, RT-2), and the docs-index derive is granted. The snapshot fill is tried three times with no wait after the last failure. The two test_driver failures are J1c's regression (7c7c2eb5 moved every cell onto open_session; the spy still watches run_turn). Compiled the J1c Sonnet continuation and X-J1d (Codex), with a measured context split rule. CEIL-A registered; RUN-B, LOCK-A and SEED-A instances added.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-j1",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        },
+        {
+          "to": "plan-eval-x-j1c",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "7d0a7f4157960ead085b0c612f4beb45feda264147cc65df7d643658ff1dde66"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4172,7 +4217,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3cc70ffddd466fc15bf94f055392c19dae0da0d3868191162610969ef7d16b4d"
+      "sourceSha256": "6f7933e4a0e17d030e9f469e5e44ba7c0e95044503c0ffd03385ac6617942f10"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -7028,7 +7073,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "04fa259602b6bb14f51041be933bc09ac427f32a6399d80e5578c3540c9f427b"
+      "sourceSha256": "866e9db64400ebe5ffc22a4cb0fc5ceca7bb8764b933cdea79bd1174839271d4"
     },
     {
       "id": "brief-eval-x-j2",
@@ -9071,5 +9116,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "30a22f0ff21eeea7acbd6c01062eb7cb54f30035d9724bc7577e75ebd982a783"
+  "graphSha256": "0cf7730359adfdc123b866f3a544f645cc832564754a8be1e0d9d9a1431fd4df"
 };
