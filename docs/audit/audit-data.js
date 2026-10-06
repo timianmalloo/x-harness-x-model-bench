@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T16:11:22Z",
+  "generated": "2026-10-06T16:15:20Z",
   "audit": [
     {
       "actor": null,
@@ -109313,6 +109313,27 @@ window.AUDIT_DATA = {
       "tier": "T2",
       "started_at": "2026-10-06T16:07:41Z",
       "duration_seconds": 221.0
+    },
+    {
+      "id": "al-01M48ZZ17VN2NVDZK3ZTHEBGEV",
+      "shortname": "x-rs-handback-2",
+      "datetime": "2026-10-06T16:15:20Z",
+      "session": "x-rs-e1e4",
+      "prompt": "X-RS part 2 (K1 and K2), compile al-01M48WS6GT9JB35Z2K8XBQ8DFP",
+      "summary": "K1 done: commit 12681900 (tasks/RS1/oracle/evidence.md isolation statement; tasks/RS2/oracle/evidence.md g-ordering schedule and re-trace; hand trace changes one row: retry5 also flips g-ordering on clause requests). K2 not started: context sample 105442 at K2 start, above the 100k limit (K1 start sample 67948). Served model claude-sonnet-5-5; total tokens not recorded. RS1 and RS2 remain stub. cacheerror outcome not measured; reference duration_ms per case not measured; A3 not confirmed. Start 2026-10-06T16:12:41Z.",
+      "kind": "skill",
+      "skill": "new-bench-task",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "Author RS1 and RS2 to draft, flip ready after X-LB1",
+      "done_when": "K1 and K2 done or hand-back by split rule",
+      "tier": "T2",
+      "started_at": "2026-10-06T16:12:41Z",
+      "duration_seconds": 159.0
     }
   ],
   "changes": [
