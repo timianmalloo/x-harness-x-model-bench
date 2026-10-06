@@ -36,4 +36,15 @@ th { background:var(--code); } hr { border:0; border-top:1px solid var(--line); 
  K3b --&gt; K4
  K4 --&gt; G</code></pre>
 <p>K3a and K3b are independent in the data; width stays one by dispatch. The loop variant is the finite K-item list; the context and time caps are circuit breakers, not proof.</p>
-<p>Pointer design: <code>check.deliverable</code> and <code>check.cases</code> name <code>check/check.stdout</code>, which carries both; <code>check.hosts</code> names <code>hosts.jsonl</code>; <code>check.clauses</code> names <code>clauses.json</code> or is null when the check wrote none. Every pointer is relative to the run directory. Only <code>check.clauses</code> may be null on read.</p></main></body></html>
+<p>Pointer design: <code>check.deliverable</code> and <code>check.cases</code> name <code>check/check.stdout</code>, which carries both; <code>check.hosts</code> names <code>hosts.jsonl</code>; <code>check.clauses</code> names <code>clauses.json</code> or is null when the check wrote none. Every pointer is relative to the run directory. Only <code>check.clauses</code> may be null on read.</p>
+<h2>Security conditions</h2>
+<p>A Security &amp; Identity review passed X-LB1 with four conditions. All four are closed, each red first where it adds a test, each in its own commit.</p>
+<ol><li><strong>Exclusive port.</strong> <code>test_the_listener_is_exclusive_on_its_port</code> now reads</li></ol>
+<p><code>SO_EXCLUSIVEADDRUSE</code> from the listener (1 when set, 0 by default on this host). A second bind is refused either way, so it never discriminated. A mutation record deletes the <code>setsockopt</code> line and names that test.</p>
+<ol><li><strong>Outcome-set selector.</strong> <code>test_each_check_kind_refuses_the_other_kinds_outcome</code> runs</li></ol>
+<p><code>_run_check</code> for a fault check that emits <code>blocked</code> and a probe check that emits <code>passed</code>; both are row 5 (<code>check output invalid</code>). A mutation record widens the selector to both sets.</p>
+<ol><li><strong>Fault fixture pass rule.</strong> <code>fault_check.py</code> passes a case only when the response is <code>ok</code> AND</li></ol>
+<p>the fake saw every request up to its first 200 AND at least one effect landed. A client that never calls the fake (<code>lazy_client.py</code>) scores <code>failed</code>. X-RS copies this shape.</p>
+<ol><li><strong>`{fake_url}` scope.</strong> Substitution is restricted to <code>args</code> (W0 R6-17(c), ADR-0018 s3); a</li></ol>
+<p><code>{fake_url}</code> in <code>kwargs</code> passes through unsubstituted. A mutation record restores the wider form.</p>
+<p>Not changed: <code>listen()</code>&#x27;s interface, HB-CHK-005&#x27;s run code, a per-case URL token, ADR text.</p></main></body></html>
