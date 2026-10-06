@@ -4776,10 +4776,6 @@ window.DOCS_INDEX = {
         {
           "to": "design-eval-multi-turn",
           "rel": "depends-on"
-        },
-        {
-          "to": "kb-graph-and-loop-engineering",
-          "rel": "depends-on"
         }
       ],
       "diagrams": [
@@ -4789,7 +4785,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart LR\n B --> G0 --> K1 --> M1 --> K2\n K2 -->|at most 110k| S --> G --> H\n K2 -->|above 110k: planned split| H"
         }
       ],
-      "sourceSha256": "afad08bf3352465d6afaf93cd8aa136fd430b02be1c7c9ae7c7d8600791f60d3"
+      "sourceSha256": "1ada5096d0508faa775ba6d46d65b06aa60b8c1a16e3d7d04fccb780e437f236"
     },
     {
       "id": "proof-phase2",
@@ -9263,5 +9259,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "3a1f6b32b615ef182299635cbe7709aaf910873840ccba1b86392cf416dd4e60"
+  "graphSha256": "972fea9030e3fe89ddc02b6dd13d0a754b80d90e235c6bc4cfcd796ae36fd82a"
 };
