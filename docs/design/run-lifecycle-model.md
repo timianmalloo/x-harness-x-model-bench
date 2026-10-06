@@ -79,6 +79,10 @@ It is **not** the engine, and it does not model: the agent's work inside a cell,
 | `RaiseDecision` / `TimeoutDefault` | decision · `decision.opened` / `decision.resolved{default}` | 2 |
 | `Crash` / `Resume` | process death / run · `run.resumed{epoch}` | 5 |
 | `ReconcileKill(c)` / `ReconcileRecord(c)` / `ReconcileDone` | open each recorded job by name; terminate it and wait for 0 active processes; not found means the tree is gone (with kill-on-close none should survive) / cell · `cell.reconciled{crashfail \| relaunchable}` / run · `run.reconciled` | 5 |
+| `ReconcileRecord(c)` under `stopApplied` | resume · the classifier's stop input: `resume.classify(plan, rows, stopped)` with `stopped` true records `cell.outcome{stopped}` for every intent-without-outcome cell (W1-K section 3.2, R-100 condition 2) | X-K1 |
+| `Resume` (unguarded) | resume · `resume.resume_run`'s stop branch: a run with a stop row is resumed, finishes the stop (`run.resumed`, stopped outcomes, grading) and launches nothing; exit 3, HB-RUN-008 is the exit reason, not a refusal (R6.8d) | X-K1 |
+| `turnNext` | ledger · `cell.turn_ended{turn}.next`, the engine's decision, read by the classifier for a between-turns cell (rows C3 and C4) | X-K1 |
+| `NoResumeAfterStop` | retired by D-K10: the invariant reads `NoLaunchAfterStop` (a `cell.launch_intent` after a stop row is rejected by `lifecycle`; a `run.resumed` after a stop row is accepted) (R6.8d) | X-K1 |
 
 **Consumed:**
 
