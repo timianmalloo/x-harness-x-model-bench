@@ -181,3 +181,21 @@ Context samples from native payload.info.last_token_usage.input_tokens: first sa
 Planned vs actual: B/G0/K1/M1/K2/H executed; S/G deferred by the explicit split. Width remains one and no delegate was spawned. Source-anchor correction: one fail-closed generator rerun, no source edit. Mutation proof gaps are the five retained rows above. The closing audit carries measured dispatch start/end, native cumulative tokens/tool calls and the final delivery SHA. No numerical model of time or tokens is substituted for usage.
 
 Owner hand-back: join/review K1 and K2, then run the Sonnet follow-on under the same session/tree contract to close survivor proof, faithful detector/SUM representation review, M-FOLLOW proof, S-J4 and final R-104 gates. The Coordinator alone updates W1-J section 12 and campaign Tracks. The source restored cleanly; scratch files remain under C:/t, outside the repository.
+
+## Follow-on results (Sonnet, claude-sonnet-5-5, commit 6e3494cd)
+
+The five survivors are killed by assertion, each proven by hand-applying the mutant (fails) and on the real code (passes), with `git diff --exit-code src` clean afterwards:
+
+| Row | Killing test | Assertion that fails under the mutant |
+| --- | --- | --- |
+| M-RESET | test_t_eng_5_one_detector_history_spans_the_run | cause is None, not host_suspended (a fake detector keeps its history on the run-start instance only) |
+| M-SLEEP | test_t_eng_7_kill_ends_a_retry_wait_without_sleeping | waits == [] fails with [1] (frame spy on time.sleep from _snapshot_turn) |
+| M-RETRYALL | test_t_snap_6_locked_source_exhausts_bounded_retry | len(calls) == 3 fails with 4 (a fourth attempt kills the cell, so the count is reachable) |
+| M-LEGACY | test_m_legacy_rows_without_a_snapshot_key_are_final_in_the_full_reader | snapshot_of(r) == "final" fails on the golden ledgers' rows |
+| M-CLOSE2 | test_t_drv_2_close_is_idempotent_and_closed_send_has_cause | counted.closes == 1 fails with 2 (counting wrapper on the real stdin) |
+
+M-FOLLOW ("follow links", archive.json): killed. Full mutate_check results: engine.json 109/109 killed, driver.json 7/7 killed, archive.json all killed.
+
+Design review: M-RESET recreates the detector at every sample; the design says "between turns", so the row is broader, and the new killer also fails a between-turns recreation. M-SUM drops earlier turn_ended rows at the writer; no src reader sums turn_ms (it is derived by consumers), so the design's "read only the last row" has no source site and the row is the nearest writer-side fault.
+
+S-J4: not run for Claude, Codex and Copilot. A real turn needs the pinned adapter builds (claude-agent-acp and codex-acp are not on PATH), the subscription credential copy and a live model call, which this brief does not grant. No count is recorded.
