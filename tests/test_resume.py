@@ -988,21 +988,33 @@ def _assert_recovery(env, missing):
     assert not _tmp_left(env.run_dir)
 
 
+def _recover_source(env):
+    """Use the actual golden copy, including its session files, as the surviving source."""
+    cid = env.g.cells[0]
+    cell_dir = env.cfg.cells_root / env.plan["run_id"] / cid
+    if cell_dir.exists():
+        shutil.rmtree(cell_dir)
+    shutil.copytree(env.g.run_dir / "archive" / cid / "attempt-1", cell_dir)
+
+
 def test_recover_archive_without_final_sweeps_then_copies(golden1, tmp_path):
     cid = golden1.cells[0]
     env = _prefix(golden1, tmp_path, 12, tmp_dirs=[(cid, "attempt-1.tmp-123-" + "a" * 32)])
+    _recover_source(env)
     want = [r for r in _golden_segment(golden1, "archive_files") if not r.get("snapshot")]
     _assert_recovery(env, len(want))
 
 
 def test_recover_archive_final_rows_absent(golden1, tmp_path):
     env = _prefix(golden1, tmp_path, 12, attempts=golden1.cells, final_rows="none")
+    _recover_source(env)
     want = [r for r in _golden_segment(golden1, "archive_files") if not r.get("snapshot")]
     _assert_recovery(env, len(want))
 
 
 def test_recover_archive_final_rows_partial(golden1, tmp_path):
     env = _prefix(golden1, tmp_path, 12, attempts=golden1.cells, final_rows="partial")
+    _recover_source(env)
     want = [r for r in _golden_segment(golden1, "archive_files") if not r.get("snapshot")]
     _assert_recovery(env, len(want) - len(want) // 2)
 
@@ -1030,6 +1042,7 @@ def test_recover_archive_recorded_event_without_folder_refuses(golden1, tmp_path
 
 def test_recover_archive_changed_source_refuses_read_only(golden1, tmp_path):
     env = _prefix(golden1, tmp_path, 12, attempts=golden1.cells, final_rows="none")
+    _recover_source(env)
     (env.cfg.cells_root / env.plan["run_id"] / golden1.cells[0] / "ws" / "a.txt").write_text("changed", encoding="utf-8")
     before = _tree_hash(env.run_dir)
     with pytest.raises(BenchError, match="a.txt") as raised:
@@ -1039,6 +1052,7 @@ def test_recover_archive_changed_source_refuses_read_only(golden1, tmp_path):
 
 def test_recover_archive_differing_recorded_row_refuses_read_only(golden1, tmp_path):
     env = _prefix(golden1, tmp_path, 12, attempts=golden1.cells, final_rows="all")
+    _recover_source(env)
     recover = _need(archive, "recover_archive")
     cid = golden1.cells[0]
     present = [copy.deepcopy(r) for r in _golden_segment(golden1, "archive_files") if not r.get("snapshot")]
@@ -1048,6 +1062,8 @@ def test_recover_archive_differing_recorded_row_refuses_read_only(golden1, tmp_p
         recover(env.cfg.cells_root / env.plan["run_id"] / cid, env.run_dir / "archive" / cid, 1, set(), present,
                 run_lock=lock)
     assert before == _tree_hash(env.run_dir)
+
+
 
 
 @pytest.mark.parametrize("kinds,expected", [

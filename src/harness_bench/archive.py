@@ -114,6 +114,66 @@ def append_missing_rows(folder: Path, rows: list[dict], present: list[dict], cod
     return [r for r in rows if key(r) not in seen]
 
 
+@dataclass(frozen=True)
+class Recovery:
+    result: ArchiveResult
+    missing_rows: list[dict]
+
+
+def recover_archive(cell_dir: Path, dest_root: Path, attempt: int, exclude_names: set[str],
+                    recorded_rows: list[dict], *, run_lock: oslock.RunLock | None = None,
+                    recorded_archived: bool = False) -> Recovery:
+    """W1-B 5: recover a publish without duplicating immutable archive rows.
+
+    The caller appends missing_rows, then cell.archived if absent. Validation
+    precedes cleanup: a conflicting source or fact leaves both copies intact.
+    """
+    folder = dest_root / f"attempt-{attempt}"
+    if not folder.is_dir() and (recorded_rows or recorded_archived):
+        raise BenchError("HB-LED-005", f"archive folder {folder} does not exist")
+
+    if folder.is_dir():
+        if cell_dir.is_dir():
+            rows = []
+            stack = sorted(cell_dir.iterdir(), reverse=True)
+            while stack:
+                src = stack.pop()
+                rel = src.relative_to(cell_dir).as_posix()
+                if _is_link(src):
+                    rows.append({"path": rel, "kind": "link", "size": 0, "sha256": "",
+                                 "link_target": os.readlink(src)})
+                elif src.is_dir():
+                    stack.extend(sorted(src.iterdir(), reverse=True))
+                elif src.is_file() and src.name not in exclude_names:
+                    rows.append({"path": rel, "kind": "file", "size": src.stat().st_size,
+                                 "sha256": _sha(src), "link_target": ""})
+            for row in rows:
+                row.update(run_id=dest_root.parent.parent.name, cell_id=dest_root.name, archive_attempt=attempt)
+        else:
+            # A deleted workspace is recoverable only from a complete, verified ledger.
+            rows = recorded_rows
+        verify(folder, rows)
+        missing = append_missing_rows(folder, rows, recorded_rows, "HB-LED-005")
+        result = ArchiveResult(folder, rows, archive_hash(rows), sum(r["size"] for r in rows))
+        return Recovery(result, missing)
+
+    owned_lock = run_lock is None
+    if owned_lock:
+        run_lock = oslock.RunLock.acquire(dest_root.parent.parent / ".lock", code="HB-RUN-005")
+    try:
+        if run_lock.path.resolve() != (dest_root.parent.parent / ".lock").resolve():
+            raise ValueError("archive recovery sweep needs this run's lock")
+        atomic.sweep_temps(dest_root.parent, run_lock)
+        atomic.sweep_temps(dest_root, run_lock)
+        result = archive_cell(cell_dir, dest_root, attempt, exclude_names)
+        for row in result.rows:
+            row.update(run_id=dest_root.parent.parent.name, cell_id=dest_root.name)
+        return Recovery(result, append_missing_rows(folder, result.rows, recorded_rows, "HB-LED-005"))
+    finally:
+        if owned_lock:
+            run_lock.release()
+
+
 def _copy_hashed(src: Path, dest: Path) -> tuple[int, str]:
     h = hashlib.sha256()
     size = 0
