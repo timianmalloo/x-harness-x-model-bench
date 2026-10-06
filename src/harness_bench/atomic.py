@@ -307,7 +307,15 @@ def make_writable(func, path, _exc) -> None:
     st = os.lstat(path)
     if not _is_link_entry(st):
         os.chmod(path, stat.S_IMODE(st.st_mode) | stat.S_IWUSR)
-    func(path)
+    for delay in RENAME_BACKOFF:
+        try:
+            func(path)
+            return
+        except PermissionError as exc:
+            refused = exc
+            if delay is not None:
+                time.sleep(delay)
+    raise refused
 
 
 def _fsync_dir(path: Path) -> None:

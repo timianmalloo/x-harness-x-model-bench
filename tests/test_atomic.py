@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+import shutil
 import stat
 import subprocess
 import sys
@@ -875,3 +876,46 @@ def test_a_kill_during_fill_or_before_the_rename_leaves_no_final_name(tmp_path, 
     finally:
         lock.release()
 
+
+@pytest.mark.skipif(sys.platform != "win32", reason="PLAT-A: a cwd holder blocks rmdir on Windows only")
+def test_make_writable_waits_out_a_cwd_holder_so_rmtree_removes_the_tree(tmp_path, monkeypatch):
+    tree = tmp_path / "check-run"
+    (tree / "check").mkdir(parents=True)
+    (tree / "check" / "x.py").write_text("x = 1\n", encoding="utf-8")
+    child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"], cwd=tree)
+    real_sleep = time.sleep
+    calls: list[float] = []
+
+    def release_then_sleep(delay):
+        if not calls:
+            child.kill()
+            child.wait()
+        calls.append(delay)
+        real_sleep(delay)
+
+    real_sleep(0.5)  # let the child take its cwd handle, before the patch
+    monkeypatch.setattr(atomic.time, "sleep", release_then_sleep)
+    try:
+        shutil.rmtree(tree, onexc=atomic.make_writable)
+    finally:
+        child.kill()
+        child.wait()
+    assert not tree.exists()
+    assert calls
+
+
+def test_make_writable_retries_permission_error_on_the_rename_backoff_then_raises(tmp_path, monkeypatch):
+    path = tmp_path / "f"
+    path.write_bytes(b"x")
+    delays: list[float | None] = []
+    monkeypatch.setattr(atomic.time, "sleep", delays.append)
+    attempts: list[Path] = []
+
+    def always_refused(p):
+        attempts.append(p)
+        raise PermissionError(13, "held")
+
+    with pytest.raises(PermissionError):
+        atomic.make_writable(always_refused, path, None)
+    assert delays == list(atomic.RENAME_BACKOFF[:-1])
+    assert len(attempts) == len(atomic.RENAME_BACKOFF)

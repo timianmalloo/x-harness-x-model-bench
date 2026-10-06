@@ -113,6 +113,29 @@ def test_a_named_test_that_skips_is_not_run(tmp_path, monkeypatch, capsys):
     assert (tmp_path / "m.py").read_bytes() == b"X = 1\n"
 
 
+def test_a_survivor_whose_named_test_errored_in_setup_says_so_and_still_counts_as_not_killed(
+        tmp_path, monkeypatch, capsys):
+    """CR48-3: CR47-14's rule stands (an ERROR is not a kill), only the printed line names the cause."""
+    spec = _killer_spec(tmp_path, "import m\n\ndef test_x():\n    assert m.X == 1\n")
+    real_run = subprocess.run
+    pytest_out = ("ERROR test_m.py::test_x - RuntimeError: fixture setup raised\n"
+                  "=========== 5 passed, 1 error in 61.20s ===========\n")
+
+    def fake_run(cmd, *args, **kwargs):
+        if "pytest" in cmd:
+            return subprocess.CompletedProcess(cmd, 1, stdout=pytest_out, stderr="")
+        return real_run(cmd, *args, **kwargs)
+
+    monkeypatch.setattr(mutate_check.subprocess, "run", fake_run)
+    monkeypatch.setattr(mutate_check, "ROOT", tmp_path)
+    rc = mutate_check.main([str(spec)])
+    out = capsys.readouterr().out
+    assert rc == 1, out
+    assert out.splitlines()[0] == "survived (named test errored in setup) cap"
+    assert "1 not killed" in out
+    assert (tmp_path / "m.py").read_bytes() == b"X = 1\n"
+
+
 def test_a_named_test_deselected_by_something_other_than_the_marker_is_not_run(tmp_path, monkeypatch, capsys):
     """`--deselect` is not cleared by `-m ""`. Exit 5 with every test deselected is "not run", not "error"."""
     spec = _killer_spec(
