@@ -2,18 +2,33 @@
 
 from __future__ import annotations
 
+import importlib.util
+import json
+import shutil
+import sys
+import uuid
 from decimal import Decimal
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 import yaml
+from clean_parent import CLEAN_PARENT
 
-from harness_bench import discriminate, readiness
+from harness_bench import (
+    archive,
+    config,
+    discriminate,
+    plan,
+    readiness,
+    views,
+    workspace,
+)
 from harness_bench.errors import BenchError
 from harness_bench.grade import CellInput, rework
 from harness_bench.grade import property as prop
 from harness_bench.grade.property import GradeContext
+from harness_bench.synthetic_agent import SYNTHETIC_VERSION
 
 
 def test_rework_ratio_counts_replaced_and_deleted_not_added(tmp_path: Path):
@@ -272,11 +287,101 @@ def test_every_na_reason_rework_grade_emits_on_a_turns_task_is_in_na_reasons(tmp
     assert reasons <= discriminate.NA_REASONS
 
 
-@pytest.mark.xfail(strict=True, reason="J2c: multi-turn discrimination through engine waits on X-J1d")
-def test_multi_turn_discrimination_through_engine():
-    assert False, "J2c: engine multi-turn discrimination not yet connected"
+_spec = importlib.util.spec_from_file_location("make_task", Path(__file__).parent / "fixtures" / "property_tasks" / "make_task.py")
+mt = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(mt)  # type: ignore[union-attr]
+windows_only = pytest.mark.skipif(sys.platform != "win32", reason="the grader and its host are Windows-only (ADR-0018 s8)")
+TURNS_TASK = "DISC-T"
 
 
-@pytest.mark.xfail(strict=True, reason="J2c: turn-1 snapshot test waits on X-J1d")
-def test_turn1_snapshot_through_engine():
-    assert False, "J2c: turn-1 snapshot test not yet connected"
+class TurnsRun:
+    """One real engine run of the two-turn fixture task: reference and naive complete both turns; `stopped` applies the
+    reference's turn 1 and then has its turn-2 overlay refused (a Windows device name), so its turn 2 is not reached."""
+
+
+@pytest.fixture(scope="module")
+def turns_run():
+    base = CLEAN_PARENT / uuid.uuid4().hex  # cells cannot be built under the operator's profile (HB-PRE-002)
+    base.mkdir(parents=True)
+    graded_on: list[Path] = []
+    real = rework._run_turn1_hidden_tests
+
+    def spy(inp, snap_ws):
+        graded_on.append(snap_ws)
+        return real(inp, snap_ws)
+
+    try:
+        root = mt.make_root(base)
+        task_dir = mt.install(root, "disc_turns")
+        overlays = discriminate._overlays(task_dir)
+        stopped = base / "stopped"
+        shutil.copytree(task_dir / "oracle" / "solutions" / "reference", stopped)
+        (stopped / "turn-2" / "CON").write_text("refused by the overlay path rule\n", encoding="utf-8")
+        overlays["synthetic-stopped"] = ("stopped", stopped)
+        run_id = "disc-dt-j2c"
+        p = plan.build_plan(root, discriminate._matrix(run_id, TURNS_TASK, list(overlays)), config.load_yaml(root / "bench" / "bom.yaml"),
+                            run_id, {"synthetic": {"version": SYNTHETIC_VERSION}}, parallelism=1, kind="discrimination")
+        run_dir = base / "runs" / run_id
+        plan.confirm(run_dir, p)
+        cells = base / "cells"
+        cells.mkdir()
+        workspace.check_cells_root(cells)
+        with patch.object(rework, "_run_turn1_hidden_tests", spy):
+            summary = discriminate._run_engine(root, task_dir, run_dir, p, discriminate._Clock(), overlays, cells, root / ".tools" / "upstream")
+        run = TurnsRun()
+        run.p, run.run_dir, run.summary, run.graded_on = p, run_dir, summary, graded_on
+        run.roles = {c["cell_id"]: overlays[c["combo"]][0] for c in p["cells"]}
+        run.events = list(views.rows(run_dir, "events"))
+        yield run
+    finally:
+        shutil.rmtree(base, onexc=archive.make_writable)
+
+
+def _cell_of(run: TurnsRun, role: str) -> str:
+    return next(cid for cid, r in run.roles.items() if r == role)
+
+
+@windows_only
+def test_turn1_snapshot_through_engine(turns_run):
+    run = turns_run
+    cid = _cell_of(run, "reference")
+    archived = [e for e in run.events if e["kind"] == "cell.turn_snapshot_archived" and e["cell_id"] == cid]
+    assert [e["turn"] for e in archived] == [1]
+    snap_ws = archive.snapshot_folder(run.run_dir, cid, 1) / "ws"
+    assert (snap_ws / "app.py").read_text(encoding="utf-8") == mt.TURN1_REF  # turn 1's tree, not the final one
+    assert snap_ws in run.graded_on  # the graded copy is the archived snapshot, reached through grade/runner.py
+    scores = {r["metric_id"]: r["value"] for r in views.rows(run.run_dir, "scores") if r["cell_id"] == cid}
+    assert scores["turn1_tests_pass"] == 1
+
+
+@windows_only
+def test_multi_turn_discrimination_through_engine(turns_run):
+    run = turns_run
+    (grading_id,) = views.completed_passes(run.run_dir)
+    scores, _ = readiness.run_scores(run.run_dir, grading_id, run.roles, set(mt.TURNS_EXPECTED["reference"]))
+    planned = len(run.p["tasks"][TURNS_TASK]["turns"]) + 1  # derived by counting, never stored
+    reached = {role: sum(1 for e in run.events if e["kind"] == "cell.turn_ended" and e["cell_id"] == cid)
+               for cid, role in run.roles.items()}
+    assert reached == {"reference": planned, "naive": planned, "stopped": 1}
+    expected = dict(mt.TURNS_EXPECTED)
+    expected["stopped"] = {"property_check_pass": 0, "turn1_tests_pass": 1, "rework_ratio": {"na": "turn 2 not reached"}}
+    assert scores == expected
+    assert discriminate._untrustworthy(scores, {}) == []  # K1: the not-reached NA is inside the closed set
+
+
+@windows_only
+def test_discriminate_writes_the_two_turn_record_matching_its_declared_expected():
+    base = CLEAN_PARENT / uuid.uuid4().hex
+    base.mkdir(parents=True)
+    try:
+        root = mt.make_root(base)
+        mt.install(root, "disc_turns")
+        result = discriminate.run(root, TURNS_TASK, runs=base / "runs", cells_root=base / "cells")
+        assert result.outcome == "written", result
+        record = json.loads(result.record_path.read_text(encoding="utf-8"))
+        declared = record["expected"]
+        assert declared == mt.TURNS_EXPECTED
+        assert {r: {m: record["scores"][r][m] for m in declared[r]} for r in declared} == declared
+        assert record["readiness_failures"] == []
+    finally:
+        shutil.rmtree(base, onexc=archive.make_writable)

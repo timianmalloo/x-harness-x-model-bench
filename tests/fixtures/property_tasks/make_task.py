@@ -139,10 +139,15 @@ def install(root: Path, name: str, task_id: str | None = None, status: str = "re
         f"property:\n  name: {prop}\n  latent_requirement: \"the fixture requirement\"\n  evidence_paths: [\"{spec['evidence']}\"]\n"
         f"  latent_terms: [{terms}]\n  primary_metric: property_check_pass\n  ceilings: {spec.get('ceilings', '{}')}\n"
         "  fault_contract: {}\ngraders: [correctness, property]\n"
-        "oracle:\n  runner: unittest\n  command: [\"{python}\", \"-m\", \"unittest\", \"discover\", \"-s\", \".\", \"-p\", \"test_*.py\"]\n"
+        + ("turns: [\"turns/2.md\"]\ngraded_snapshots: [turn-1]\n" if spec.get("turns") else "")
+        + "oracle:\n  runner: unittest\n  command: [\"{python}\", \"-m\", \"unittest\", \"discover\", \"-s\", \".\", "
+        + ("\"-t\", \".\", " if spec.get("turns") else "") + "\"-p\", \"test_*.py\"]\n"
         + _expected(spec["expected"])))
+    if spec.get("turns"):
+        _write(d / "turns" / "2.md", spec["turns"])
     _write(d / "prompt.md", "Implement the function the module names and keep the tests green.\n")
-    _write(d / "tests" / "test_hidden.py", spec["hidden"])
+    for rel, text in (spec.get("hidden_files") or {"test_hidden.py": spec["hidden"]}).items():
+        _write(d / "tests" / rel, text)
     for rel, text in spec["workspace"].items():
         _write(d / "workspace" / rel, text)
     for role in ("reference", "naive"):
@@ -252,5 +257,28 @@ def _scan_a_secondary(tweak):
     return _disc_p({"expected": expected}) | {"id": "SCAN-B", "repo": "scan-b"}
 
 
-FIXTURES = {"disc_c": _disc_c, "disc_rw": _disc_rw, "disc_p": _disc_p, "disc_flaky": _disc_flaky,
+TURN1_REF = "RATES = {'usd': ('$', 2)}\n\n\ndef fmt(amount, cur='usd'):\n    sym, dec = RATES[cur]\n    return f'{sym}{amount:.{dec}f}'\n"
+TURN2_REF = TURN1_REF.replace("2)}", "2), 'eur': ('EUR ', 2)}")
+TURN1_NAIVE = "def fmt(amount):\n    return f'${amount:.2f}'\n"
+TURN2_NAIVE = ("def fmt(amount, cur='usd'):\n    if cur == 'eur':\n        return f'EUR {amount:.2f}'\n"
+               "    return '$' + f'{amount:.2f}'\n")
+T1_TESTS = ("import unittest\n\nimport app\n\n\nclass T1(unittest.TestCase):\n    def test_t1_usd(self):\n"
+            "        self.assertEqual(app.fmt(1.5), '$1.50')\n")
+T2_TESTS = ("import unittest\n\nimport app\n\n\nclass T2(unittest.TestCase):\n    def test_t2_eur(self):\n"
+            "        self.assertEqual(app.fmt(2, 'eur'), 'EUR 2.00')\n")
+TURNS_EXPECTED = {"reference": {"property_check_pass": 1, "turn1_tests_pass": 1, "rework_ratio": "0.2500"},
+                  "naive": {"property_check_pass": 0, "turn1_tests_pass": 1, "rework_ratio": "1.0000"}}
+
+
+def _disc_turns(tweak):
+    """A two-turn rework task (X-J2c): the synthetic agent applies oracle/solutions/<role>/turn-<n>/ per prompt."""
+    return {"id": "DISC-T", "property": "rework", "evidence": "app.py", "hidden": "", "ceilings": '{rework_ratio: "0.3000"}',
+            "hidden_files": {"turn1/__init__.py": "", "turn1/test_t1.py": T1_TESTS, "turn2/__init__.py": "", "turn2/test_t2.py": T2_TESTS},
+            "turns": "Now add the euro.\n", "workspace": {"app.py": "def fmt(amount):\n    raise NotImplementedError\n"},
+            "reference": {"turn-1/app.py": TURN1_REF, "turn-2/app.py": TURN2_REF},
+            "naive": {"turn-1/app.py": TURN1_NAIVE, "turn-2/app.py": TURN2_NAIVE},
+            "expected": tweak.get("expected", TURNS_EXPECTED), "variants": None, "repo": "disc-t"}
+
+
+FIXTURES = {"disc_turns": _disc_turns, "disc_c": _disc_c, "disc_rw": _disc_rw, "disc_p": _disc_p, "disc_flaky": _disc_flaky,
             "scan_a": _scan_a, "scan_a_secondary": _scan_a_secondary}
