@@ -206,3 +206,35 @@ def test_shape_a_and_a_probe_case_on_loopback_are_not_built(tmp_path, extra):
 def test_a_probe_case_on_loopback_is_not_built(tmp_path):
     _, s = run(tmp_path, [fault() | {"kind": "probe"}])
     assert set(vals(s).values()) == {(None, "not built")}
+
+
+# --- K3 (a): readiness's exactly-one-shape rule (W0 s3, HB-RDY-005) ---------------------------------------------------------
+
+_APP = {"kind": "callable", "module": "client.py", "factory": "make", "args": [], "paths": []}
+
+
+def _readiness_items(spec):
+    from harness_bench import readiness
+
+    out = []
+    readiness._case_failures({"entry": "check.py", "cases": [{"id": "c-1"}]} | spec, lambda item, detail, code="HB-RDY-005": out.append((item, detail, code)))
+    return [(i, d, c) for i, d, c in out if i == "cases.yaml interface"]
+
+
+def test_loopback_shape_b_alone_is_accepted():
+    assert _readiness_items({"interface": "loopback", "app": _APP, "deliverable": {"build": ["x"]}}) == []
+
+
+def test_loopback_with_both_shapes_is_refused_as_not_exactly_one():
+    (item, detail, code), = _readiness_items({"interface": "loopback", "app": _APP, "deliverable": {"start": ["s"], "config": "c.json"}})
+    assert code == "HB-RDY-005" and "exactly one" in detail
+
+
+def test_loopback_with_neither_shape_is_refused_as_not_exactly_one():
+    (item, detail, code), = _readiness_items({"interface": "loopback"})
+    assert code == "HB-RDY-005" and "exactly one" in detail
+
+
+def test_loopback_shape_a_stays_not_built():
+    (item, detail, code), = _readiness_items({"interface": "loopback", "deliverable": {"start": ["s"], "config": "c.json"}})
+    assert code == "HB-RDY-005" and "not built" in detail
