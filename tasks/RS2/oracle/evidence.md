@@ -62,7 +62,7 @@ test got a count assertion before the index; fixed before the table below). Refe
 turns exactly its declared test red and no other (`wa-nocopy` S-1, `wa-keep` S-2, `wa-ok4xx` S-3, `wa-sendempty` S-4, `wa-reverse`
 S-5). Loopback sockets in the grading copy work, so A3 holds on this host and the hidden tests stay on `http.server`.
 
-## Variant run (measured on the real path, 8 cases, 8 variants; K5, part 6; Windows 11, Python 3.12)
+## Variant run (measured on the real path, 8 cases, 9 variants; K5, part 6; requeue5xx added by X-CRLF; Windows 11, Python 3.12)
 
 The reference now holds one pending `(batch_id, records)` pair (Ruling 111 (i)): the pending batch first, then the records buffered since as a
 new batch, one budget per flush, the sum of accepted counts on success. The prompt lost "in one batch" (ii). Every variant passes all five hidden
@@ -78,6 +78,9 @@ tests (real `correctness.grade`) and flips exactly the cases and clause below; `
 | requeuetail | g-lost-then-grow, g-ordering | result | redefined for the freeze (newer records first, pending records after, a new id); traced g-ordering and g-lost-then-grow | yes |
 | retry4xx | g-4xx | requests | same | yes |
 | growid | g-lost-then-grow | result | g-lost-then-grow alone, result | yes |
+| requeue5xx | g-ordering | result | g-ordering alone, result: re-queues the pending batch behind newer records only after a 5xx failure (CR47-16); `g-5xx-persistent` buffers no late record and `g-lost-then-grow` fails by a lost response, so both keep their order | yes |
+
+`requeue5xx` restores W1-L 5(f): `g-ordering` flips on its own (X-CRLF, measured by `tests/test_rs2_task.py`, which asserts the row against `PREDICTED`).
 
 The compile expected `batchidattempt` and `clearearly` to gain the new case; both did, and `retry5` and `requeuetail` also gained it (traced after the
 compile). The variant edits were rewritten for the new reference text (their `old` anchors changed); the wrong-app anchors changed the same way
