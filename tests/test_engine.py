@@ -138,7 +138,7 @@ def _run(base, p, launcher, limit=RUN_LIMIT, **cfg):
 
 
 def _events(run_dir: Path) -> list[dict]:
-    return [row for seg in sorted((run_dir / "events").glob("*.jsonl")) for row in ledger.read_segment(seg)]
+    return [row for seg in sorted((run_dir / "events").glob("*.jsonl"), key=lambda p: p.stem) for row in ledger.read_segment(seg)]
 
 
 class IdentityClock:
