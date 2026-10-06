@@ -432,11 +432,15 @@ def _t2_w11(golden1, tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize("name", ["T2"])
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_cli_run_resumes(tmp_path, name):
     t2 = _t2_kill_and_resume(tmp_path, behaviour={}, target={"kind": "cell.turn_snapshot_archived", "turn": 1})
     assert t2.second.returncode == 0, t2.second.stderr
-    assert _outcome_map(t2) == {t2.cell: ("completed", None)}
+    # W1-K section 3.2 row C3: between turns with the snapshot recorded, the resume records failed HB-CELL-119 and never relaunches.
+    assert _outcome_map(t2) == {t2.cell: ("failed", "HB-CELL-119")}
+    rows = _rows(t2.run_dir)
+    assert _kinds(rows, "cell.outcome", cell_id=t2.cell)[-1]["resume"]["phase"] == "between-turns"
+    assert len(_kinds(rows, "cell.archived", cell_id=t2.cell)) == 1
+    assert len(_kinds(rows, "cell.launch_intent", cell_id=t2.cell)) == 1, "C3 never relaunches"
 
 
 # ---------------------------------------------------------------- windows (T1, T2 for W2/W11)
