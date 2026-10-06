@@ -4689,7 +4689,7 @@ window.DOCS_INDEX = {
           "rel": "relates-to"
         },
         {
-          "to": "kb-graph-and-loop-engineering",
+          "to": "design-eval-seam-contracts",
           "rel": "depends-on"
         }
       ],
@@ -4700,7 +4700,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart LR\n B --> K1 --> G\n B --> K2 --> G\n B --> K3 --> S --> K4 --> G --> H\n S --> H"
         }
       ],
-      "sourceSha256": "7d841db9b00de9ee61b9e1bf32449dc373dd8c3b2cfc40a4162378285ea9d79a"
+      "sourceSha256": "00e5cc89fc4c70ca4d4730cb89722da04ebcc8d5eadf9b907c389f535174a2a7"
     },
     {
       "id": "proof-phase2",
@@ -9166,5 +9166,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "19c588ccc7a37951cfed0a1a79f3bf26a863ad290db04e7ba0d591cb2155ed0f"
+  "graphSha256": "0bdaa366e81b8748e199cecf793c8076d0f64ef24ce0e85755c898552b02445d"
 };
