@@ -2370,7 +2370,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9193c6ae18e441bedf7182eb394cd554bfc46b0733007818b85f341fd4c4baf1"
+      "sourceSha256": "ec32047a19941e50e22cc734dc87ff2ff3e971173d1fa6c2c03d4536e81e57cb"
     },
     {
       "id": "design-eval-power-verdicts",
@@ -2662,7 +2662,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation: W0 (serial spine item 2), before Wave 1",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "Revision 6.12 (Coordinator #35: `cell.turn_ended` carries the int `turn_ms`, not a float `turn_seconds`, because the canonical form has no floats; X-J1b writes the one `lifecycle.TABLE` entry for it; the discrimination record's `hosts_ready` is an int count; rev-6.12 change table at the end). Revision 6.11 (C-W0, Coordinator #31: R-106's launch-recheck key set in section 6, the R-106 c7 reader key-set sweep, the shared-value rule (keys and value types), the X-K2a script-only split, the section 13 rows of the E2-E4 plan and HB-GRD-007 to X-C; rev-6.11 change table and re-read list at the end). Revision 6 (R-98: the discrimination record body drops `run_id` and `grading_id`, ADR-0016 Amendment 1; and the conditions of the five W0 rev 4/5 delta reviews; rev-6 change table and re-read list at the end). Revision 5 (the W1-E and W1-L seam answers SR-E1, SR-E2, SR-L1..SR-L4, the W1-L review rulings and R-97; rev-5 change table and re-read list at the end; DR-E1, then open, is ruled by R-98 and applied in rev 6). Revision 4 (the batch-b seam answers and the RV-PAT, RV-SIM, RV-SEC and RV-DS cross-slice findings on W1-B, W1-C, W1-D and W1-H; rev-4 change table and the delta re-read list at the end; rev 3's table kept). The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
+      "summary": "Revision 6.13 (Coordinator #39: HB-PLN-005 retired by X-A3c; the copy_retries null erratum; J1c's snapshot TABLE entry; X-K2b no longer waits on X-TE9; HB-ALM-003 to E5; the G1 cli.py and workspace.py pins stay; rev-6.13 change table at the end). Revision 6.12 (Coordinator #35: `cell.turn_ended` carries the int `turn_ms`, not a float `turn_seconds`, because the canonical form has no floats; X-J1b writes the one `lifecycle.TABLE` entry for it; the discrimination record's `hosts_ready` is an int count; rev-6.12 change table at the end). Revision 6.11 (C-W0, Coordinator #31: R-106's launch-recheck key set in section 6, the R-106 c7 reader key-set sweep, the shared-value rule (keys and value types), the X-K2a script-only split, the section 13 rows of the E2-E4 plan and HB-GRD-007 to X-C; rev-6.11 change table and re-read list at the end). Revision 6 (R-98: the discrimination record body drops `run_id` and `grading_id`, ADR-0016 Amendment 1; and the conditions of the five W0 rev 4/5 delta reviews; rev-6 change table and re-read list at the end). Revision 5 (the W1-E and W1-L seam answers SR-E1, SR-E2, SR-L1..SR-L4, the W1-L review rulings and R-97; rev-5 change table and re-read list at the end; DR-E1, then open, is ruled by R-98 and applied in rev 6). Revision 4 (the batch-b seam answers and the RV-PAT, RV-SIM, RV-SEC and RV-DS cross-slice findings on W1-B, W1-C, W1-D and W1-H; rev-4 change table and the delta re-read list at the end; rev 3's table kept). The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
       "tags": [
         "benchmark",
         "campaign",
@@ -2754,7 +2754,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "df0ed058e8ca88c5877e3efaf0d154aa92864a6452df19b4c4a17031c699a8ef"
+      "sourceSha256": "26ce62573cc24d58a2df4c04f27adb14cf08e7a89d9d3712a55dae41946e7cfd"
     },
     {
       "id": "design-eval-security-tasks",
@@ -4240,6 +4240,55 @@ window.DOCS_INDEX = {
       "sourceSha256": "995e8a858132ed1edf48a9f70bedd286242c6323efc4787af71aee95f2cc511f"
     },
     {
+      "id": "coordinator-log-c39",
+      "path": "docs/coordination/coordinator-log/c39.md",
+      "title": "Coordinator #39 hand-back (2026-10-06): the P4 compiles (X-K1a, X-K2b, X-RDY), A3c's G1 seam, W0 rev 6.13 and W1-J errata, REL-A, PROBE-A and OPER-A",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-06",
+      "reviewSuggested": [],
+      "summary": "Coordinator #39, on base 1a837a5d (X-J1e's join; X-A3c's join running on 186ad7da), compiled batch P4's three turns: X-K1a (Codex; W1-K K1 and K2, with Coordinator #39's four-turn split), X-K2b (Agy; the alarm, with HB-ALM-003 and the report header left in E5 as W1-K says) and X-RDY (Claude Code Sonnet; seven ready flips, S1's order). Ruled that A3c's G1 pins in cli.py and workspace.py stay. Wrote W0 rev 6.13 (HB-PLN-005 retired, the copy_retries erratum, J1c's TABLE row, no X-TE9 wait for K2b, HB-ALM-003 to E5) and the W1-J errata, and registered REL-A, PROBE-A, OPER-A and a LOCK-A cost instance.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-k1",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-k2",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "8066984a571d77d886eb162931410cc596d3bc8693782d94727fad8fb506f337"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4266,7 +4315,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "aa249122a88879d021493c4e7086a990272635dcf00fa1117753aadac5ac4401"
+      "sourceSha256": "b3b9926b705505cc7e09331b7e03ed2ed0bf3efb827b11a35e1ec0625802a008"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -7250,7 +7299,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "015eaf6b8d45d97569cb637e6a6c42b8837194701c3e24a43cea2f5202245621"
+      "sourceSha256": "0d274cbd1335fc6b5b34621816bf5901898ebcd53a6b8a7178cc692a2cb58ccf"
     },
     {
       "id": "brief-eval-x-k2",
@@ -7275,7 +7324,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3ca1d894f7530b72d868383d40d47cd04636665533140646b9d792b6da00fc5e"
+      "sourceSha256": "dfd3cbaaf27064a49afd7ee8e124117598b5ffb390f1639b87ba42dcc5f9aad8"
     },
     {
       "id": "brief-eval-x-lb",
@@ -9259,5 +9308,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "bc006cc4c37f1b19dc372e19153d77b63fe1b16692ae7874f7f79a6107961deb"
+  "graphSha256": "bf1c2fabbc72a345f7e2bb3a3a6ebcb9bf2a202281c153be3fd471a74740848b"
 };
