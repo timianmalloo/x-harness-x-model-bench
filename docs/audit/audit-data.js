@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T15:14:33Z",
+  "generated": "2026-10-06T16:03:48Z",
   "audit": [
     {
       "actor": null,
@@ -101520,6 +101520,32 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-06T14:03:10Z",
       "duration_seconds": 4283.0
+    },
+    {
+      "id": "al-01M48Z9XDQCFV6FC0BBZ7AGJ72",
+      "shortname": "x-k1c-finishing",
+      "datetime": "2026-10-06T16:03:48Z",
+      "session": "x-k1c-e1e4",
+      "prompt": "X-K1c finishing turn brief c45 prompt-k1cfin (F1-F10)",
+      "summary": "X-K1c finishing turn, SPLIT after F6 (planned split: the context counter could not be read, rule 3). Model claude-sonnet-5-5. Start 2026-10-06T15:46:24Z. Tokens: not recorded. Context reading at each item: not recorded.\nRed SHAs: none (F1-F6 are fixture/narrowing commits; no new test written). F7-F10 not started.\nCommits: F1 4edeed52 (narrowing; observed --runxfail run: 9 passed, W4c/W10a/W10b/W10c failed; after: 9 passed 4 xfailed), F2 903fc67b, F3 da8f7c37, F4 dc787d48, F5 ab5f0407, F6 8360b23f.\nMarkers removed by node id: test_cli_run_resumes[T2], test_window[W4c_redo_fails], test_window[W10a_rows_none], [W10b_rows_partial], [W10c_rows_all] (test_window carries no marker), test_finished_stop_with_unlaunched_cell_is_a_noop, test_resume_after_launch_stop[W16]. Remaining K1c marker: test_spend_total_survives_resume (F8).\nGates: base 8-file group 200 passed (exit 0); runtime group 680 passed 1 xfailed 0 XPASS (exit 0); ruff exit 0; docs-graph validate exit 0. mutate_check x4 not run (src unchanged since base; deferred to the F7-F10 turn).\nTMP mutants: none run (F7 M-NOBEAT and F10 name-sort mutant open).\nNamed untested simplifications for K1d: (1) resume._redo_snapshot adopts a published folder by file scan only; (2) resume outcomes skip Engine._after_append (Engine.append_row); (3) Engine.restore restores spend from turn_usage rows only; (4) scripted-user logs not closed for reconciled cells; (5) cli.py:300-304 resume branch returns before engine.configure_logging.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "X-K1c finishing turn F1-F10",
+      "tier": "T2",
+      "started_at": "2026-10-06T15:46:24Z",
+      "duration_seconds": 1044.0,
+      "git": {
+        "sha": "8360b23fde64894b32110ffcf562080727a64360",
+        "short": "8360b23fd",
+        "branch": "build/eval-x-k1c",
+        "pushed": null
+      }
     }
   ],
   "changes": [
