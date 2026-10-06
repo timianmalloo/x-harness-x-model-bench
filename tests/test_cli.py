@@ -12,7 +12,7 @@ import pytest
 from archived_runs import GOOD, make_root, make_run
 from test_tools import _fake_tree
 
-from harness_bench import cli, gitsafe, ledger, oslock, status
+from harness_bench import cli, gitsafe, ledger, oslock, readiness, status
 
 
 @pytest.fixture
@@ -35,6 +35,13 @@ def _bench(capsys, root, tmp_path, *args):
     code = cli.main(["--root", str(root), "--runs", str(tmp_path / "runs"), *args])
     out, err = capsys.readouterr()
     return code, out, err
+
+
+def test_validate_prints_a_note_line_and_a_note_alone_exits_ok(capsys, root, tmp_path, monkeypatch):  # T-E9: a note never fails validate
+    monkeypatch.setattr(cli.config, "validate_repo", lambda root: [])  # the lean root is not a whole repo; only the readiness lines are under test
+    monkeypatch.setattr(readiness, "problems", lambda root, *, baseline=None, runs=None: ["note: S1: reconciled: yes"])
+    code, out, _ = _bench(capsys, root, tmp_path, "validate")
+    assert "note: S1: reconciled: yes" in out and "x " not in out and code == cli.OK, (code, out)
 
 
 def test_an_unknown_run_is_exit_1_with_the_exact_message(capsys, root, tmp_path):
