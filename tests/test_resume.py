@@ -472,8 +472,12 @@ def _w4c(golden1, tmp_path, monkeypatch):
     cid = golden1.cells[0]
     env = _prefix(golden1, tmp_path, 7)
 
+    real = atomic.publish_dir
+
     def refuse(final, fill, verify):
-        raise OSError("publish refused")
+        if final.name == "turn-1":  # only the snapshot redo's publish: the final archive must still succeed (W1-K C4)
+            raise OSError("publish refused")
+        return real(final, fill, verify)
 
     monkeypatch.setattr(atomic, "publish_dir", refuse)
     assert _resume(env).exit_code == 0
@@ -530,7 +534,7 @@ WINDOWS = {
 
 K1C_WINDOW = pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 # Narrowed to exactly the parameters observed failing (coordinator #45): every other window runs as a real test.
-WINDOW_MARKED = {"W4c_redo_fails", "W10a_rows_none", "W10b_rows_partial", "W10c_rows_all"}
+WINDOW_MARKED = {"W10a_rows_none", "W10b_rows_partial", "W10c_rows_all"}
 
 
 @pytest.mark.parametrize("name", [pytest.param(n, marks=K1C_WINDOW) if n in WINDOW_MARKED else n for n in WINDOWS])
