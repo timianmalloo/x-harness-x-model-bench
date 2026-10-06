@@ -48,9 +48,10 @@
  {
   "name": "launch after a stop",
   "file": "src/harness_bench/engine.py",
-  "find": "while pending and not self.stopped and not self.broken and held",
-  "replace": "while pending and not self.broken and held",
+  "find": "        if self.stopped:\n            return\n        identity_fields = {}",
+  "replace": "        if False:\n            return\n        identity_fields = {}",
   "tests": [
+   "tests/test_engine.py::test_disk_low_stops_launching_before_the_intent",
    "tests/test_engine.py::test_no_launch_after_a_stop_while_another_cell_still_runs"
   ]
  },
