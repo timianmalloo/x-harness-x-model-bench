@@ -179,11 +179,22 @@ def _run_dir(args) -> Path:
 
 
 def cmd_validate(args) -> int:
-    problems = config.validate_repo(Path(args.root))
-    for item in problems:
-        print(f"x {item}")
-    print(f"{len(problems)} problem(s)" if problems else "ok: bom, metrics, example matrix and every task folder are valid")
-    return INVALID if problems else OK
+    root = Path(args.root)
+    lines = [f"x {item}" for item in config.validate_repo(root)]
+    baseline = None
+    if args.campaign:  # the campaign's effective identity is the baseline (W0 6.13); a campaign with no baseline is its HB-CMP-002 line
+        try:
+            baseline = campaign.effective_identity(root, campaign.read(root, args.campaign))
+        except BenchError as exc:
+            if exc.code != "HB-CMP-002":
+                raise
+            lines.append(f"x {exc}")
+    lines += readiness.problems(root, baseline=baseline)
+    for line in lines:
+        print(line)
+    failed = sum(line.startswith("x ") for line in lines)  # a `note:` line is printed and never fails
+    print(f"{failed} problem(s)" if failed else "ok: bom, metrics, example matrix and every task folder are valid")
+    return INVALID if failed else OK
 
 
 def _pack_record(source: Path, commit: str, pack_root: Path) -> dict:
@@ -557,7 +568,8 @@ def build_parser() -> argparse.ArgumentParser:
                    help="where cells' working copies live; no agent instruction file may sit above it (HB-PRE-002)")
     p.add_argument("--tools-dir", default=str(root / ".tools" / "harness"), help="pinned harness builds (bench tools install)")
     sub = p.add_subparsers(dest="command", required=True)
-    sub.add_parser("validate", help="check bench/*.yaml and every tasks/<ID>/ against the contract")
+    va = sub.add_parser("validate", help="check bench/*.yaml and every tasks/<ID>/ against the contract")
+    va.add_argument("--campaign", type=_campaign_id, help="check the ready records against this campaign's effective identity")
     pl = sub.add_parser("plan", help="expand a matrix into a plan; --confirm freezes it")
     pl.add_argument("--matrix", help="matrix.yaml (default: bench/matrix.example.yaml)")
     pl.add_argument("--run-id", help="default: <matrix run_id>-<UTC time>")

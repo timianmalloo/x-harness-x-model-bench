@@ -41,7 +41,7 @@ def test_validate_prints_a_note_line_and_a_note_alone_exits_ok(capsys, root, tmp
     monkeypatch.setattr(cli.config, "validate_repo", lambda root: [])  # the lean root is not a whole repo; only the readiness lines are under test
     monkeypatch.setattr(readiness, "problems", lambda root, *, baseline=None, runs=None: ["note: S1: reconciled: yes"])
     code, out, _ = _bench(capsys, root, tmp_path, "validate")
-    assert "note: S1: reconciled: yes" in out and "x " not in out and code == cli.OK, (code, out)
+    assert "note: S1: reconciled: yes" in out and not [line for line in out.splitlines() if line.startswith("x ")] and code == cli.OK, (code, out)
 
 
 def test_an_unknown_run_is_exit_1_with_the_exact_message(capsys, root, tmp_path):
