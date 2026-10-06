@@ -2,7 +2,9 @@
 id: plan-eval-x-k1a
 title: "X-K1a: resume skeleton and assertion-red test handoff"
 type: doc
+status: proposed
 owner: "@timianmalloo"
+summary: "Bounded X-K1a execution: refusal skeleton, confirmed code registry, assertion-red tests, R-104 gates and split-rule handoff."
 tags: [evaluation, resume, execution-plan]
 links:
   - { to: brief-eval-x-k1, rel: implements }
