@@ -4289,6 +4289,51 @@ window.DOCS_INDEX = {
       "sourceSha256": "8066984a571d77d886eb162931410cc596d3bc8693782d94727fad8fb506f337"
     },
     {
+      "id": "coordinator-log-c40",
+      "path": "docs/coordination/coordinator-log/c40.md",
+      "title": "Coordinator #40 hand-back (2026-10-06): X-RDY's two readiness conflicts classified, the X-FIXD clause fix and the X-RDY follow-on compiled, DR to owner-fable on assertion (1), SHAPE-A",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-06",
+      "reviewSuggested": [],
+      "summary": "Coordinator #40, on build/eval-x-rdy tip 38c083ef, classified the two conflicts that kept six tasks draft after X-RDY. The check-less variant record that never reads property.json's clause is a defect (W1-E section 7 item 4', W0 section 2 (a), SR-E3 2 granted); X-FIXD (Claude Code Sonnet, loop-back slot 2 of 3) is compiled to fix it red first. Assertion (1), hidden tests pass for every variant, contradicts W1-L's check-less primary and its declared hidden-test variants; a decision request went to owner-fable. The X-RDY follow-on is compiled and waits on that ruling. SHAPE-A is registered with an eleven-row sweep.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-discriminate",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-property-tasks",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "51d76f9f8003e76f1c195abd77fc7d91d3a39e08a5ad2a4e48297ebfebcd8602"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4315,7 +4360,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b3b9926b705505cc7e09331b7e03ed2ed0bf3efb827b11a35e1ec0625802a008"
+      "sourceSha256": "247cd4d2f3150a145886ce50c9522a5292ac45a0e6e3b7aba35eb1c224a26d22"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -9308,5 +9353,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "bf1c2fabbc72a345f7e2bb3a3a6ebcb9bf2a202281c153be3fd471a74740848b"
+  "graphSha256": "834bb0738144bf11896b4a86fbc4e5b334cce03886c11a7c5f4b965055637761"
 };

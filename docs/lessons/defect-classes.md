@@ -27,6 +27,7 @@ summary: >-
 
 **Status counts:** controlled 13 · partially-controlled 7 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`. CAUSE-A is `observed` (2026-09-30).
 **Recurrence since last review:**
+- 2026-10-06 (Coordinator #40, `docs/coordination/coordinator-log/c40.md`): one candidate registered, SHAPE-A (a readiness or discrimination rule written for the check-based task shape refuses or misjudges the check-less shape). Two instances block six ready flips: the check-less variant record never reads the property.json clause (a defect; fix track X-FIXD), and assertion (1) "hidden tests pass" applies to every variant (a design conflict; decision request `req-01M48BAYBZHKZK2SN2S5YNYZD9` to `owner-fable`). The sweep lists eleven rules with file:line.
 - 2026-10-06 (Coordinator #39, `docs/coordination/coordinator-log/c39.md`): three candidates registered:
   - REL-A: a test spells the catalog label, so the 0.7 release broke 21 e1_e2e setups and one catalog test; the Leader fixed both in `3425b1d1`.
   - PROBE-A: the gate-runs probe falls back to an empty folder and skips, so a 79-minute ring could not stamp; the cause is Inferred.
@@ -1150,6 +1151,31 @@ summary: >-
 - **Instances:**
   - `2026-10-06` (Coordinator #39): X-J1e did not run S-J4 (W1-J section 12; `793713d0`), because it needs the adapter builds on PATH, credentials and spend. The read point it would confirm, the first `session/update` of turn 1, stays an `assume:` in W1-J section 4.4. The operator's decision is pending.
 - **Control (proposed):** an item that is "not run" for lack of operator resources goes into the next hand-back's operator-decision table. The table names what the item confirms, what breaks if the `assume:` is false, and the cost to run it. W1-J section 12 now says "not run" with the reason (Coordinator #39). Rung: the coordinator log. Upgrade trigger: a second such item, or S-J4 still open when X-CV dispatches.
+- **Status:** `candidate`
+
+### SHAPE-A: a readiness or discrimination rule written for the check-based task shape refuses or misjudges the check-less shape (candidate)
+- **Signature:** property tasks come in two shapes, decided by `config.CHECK_PROPERTIES`. A check-based task (security, resilience) has a hidden check, cases and a probe host. A check-less task (rework, no-guessing, simplicity) has none, and its primary is computed from the hidden tests and the ceiling clauses. A rule written and tested against the check-based shape is applied to both, so a correct check-less task is refused (HB-RDY-011) or failed (HB-RDY-003). The worker sees a refusal and cannot tell a defect from a design conflict.
+- **Why it survives:** the first ready task (S1) and every early fixture with variants were check-based. The check-less compare was provisional on a seam (SR-E3 2) when it was built, and the fallback was not retired when the seam was granted (RUL-A's shape). The design copied the check-based assertion list into the check-less list, so the code and its tests agree with the design and with each other.
+- **Instances:**
+  - `2026-10-06` (Coordinator #40, from X-RDY's closing entry `al-01M48AT3QMVZ1QVF4VTP3R14B4`; code and design read):
+    1. `discriminate._variant_record`'s check-less branch (`src/harness_bench/discriminate.py:225-227`) sets `clauses` to `{}` and refuses any declared clause, although W1-E section 7 (4') and W0 section 2 (a) say the clause is read from `property.json`. It blocks SM1, SM2, RW1 and RW2. **Defect:** fix track X-FIXD (compile `al-01M48BN7DDSNGJ45CZQC439NC6`).
+    2. `readiness.variant_failures` assertion (1) (`src/harness_bench/readiness.py:181`) demands `hidden_tests_pass` 1 for every variant. For a check-less task the hidden tests are part of the primary (W1-L `eval-property-tasks.md:132`), and W1-L declares variants that fail them by design (NG1 `default`, NG2 `defaultguess`, four RW variants). It blocks NG1 and NG2, and RW1 and RW2 after the fix. **Design conflict:** W1-E `eval-discriminate.md:194` (1) and W1-L `:490` against W1-L `:265`, `:276`, `:209`. Decision request `req-01M48BAYBZHKZK2SN2S5YNYZD9` to `owner-fable`.
+- **Sweep (done, Coordinator #40; each read on `38c083ef`):** every readiness and discriminate rule that assumes a check exists.
+
+  | # | rule | file:line | verdict |
+  | --- | --- | --- | --- |
+  | 1 | check-less variant `clauses` `{}` and the SR-E3 2 refusal | `discriminate.py:225-227` | defect (instance 1) |
+  | 2 | assertion (1), hidden tests pass, for every variant | `readiness.py:181-182` | design conflict (instance 2) |
+  | 3 | check-less `hidden_tests_pass` taken from `pass_at_1`, not from `property.json`'s hidden tests (W0 `eval-seam-contracts.md:418`) | `discriminate.py:224` | divergence; equal when the two agree, which nothing checks for this shape (row 4) |
+  | 4 | the R-93/R-96 hidden-test disagreement, `unbiased_ok` and evidence-presence items run only for a check-based task; `comparable_cells` reads a top-level `hidden_tests_pass` that a check-less `property.json` does not carry (`grade/property.py:480-497` writes only `strategy`; `noguess.py:424` and `diffstats.py:227` nest it; `rework.py` writes none) | `discriminate.py:366-372`, `readiness.py:648` | gap: W0 section 6's double-run guard does not cover check-less tasks; owner owed (next plan revision) |
+  | 5 | `property.json` carries no `check.clauses` or `check.hosts` pointer (SR-E3 2 granted it); the readers use the provisional fixed paths | `grade/property.py:470-476`, `readiness.py:669-672` | stale `assume:`; fails closed; owner owed |
+  | 6 | `property_evidence` reads `check/check.stdout` and `hosts.jsonl` unconditionally | `readiness.py:664-692` | guarded by its callers (`discriminate.py:184` under `check_based`, `readiness.py:538` under `probe`); no defect |
+  | 7 | R-HOST | `readiness.py:148-167` | branches on `is_check_based`; no defect |
+  | 8 | assertion (2), `deliverable == ran` | `readiness.py:183` | applies only when the record has `deliverable`; no defect |
+  | 9 | an undeclared case `timeout` | `discriminate.py:188-191` | inside the check-based path; no defect |
+  | 10 | `oracle/check/` required | `readiness.py:373` | branches on `CHECK_PROPERTIES`; no defect |
+  | 11 | reconciliation of `probe` | `readiness.py:538` | guarded by `"probe" in body`; no defect |
+- **Control (proposed):** X-FIXD's red tests drive a real check-less variant with a declared clause through the trial (automated, for instance 1). The ruling on instance 2 adds its own test. For the class: each readiness and discriminate rule states the shapes it applies to, and one parametrised test runs a check-less fixture of each strategy (rework, no-guessing, simplicity) with one variant per primary clause, the hidden-test clause included. Rung: register entry plus the two compiles. Upgrade trigger: a third shape-specific refusal, or rows 4-5 still open when X-CV dispatches.
 - **Status:** `candidate`
 
 ---
