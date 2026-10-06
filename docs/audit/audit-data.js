@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T16:15:20Z",
+  "generated": "2026-10-06T16:31:38Z",
   "audit": [
     {
       "actor": null,
@@ -109334,6 +109334,24 @@ window.AUDIT_DATA = {
       "tier": "T2",
       "started_at": "2026-10-06T16:12:41Z",
       "duration_seconds": 159.0
+    },
+    {
+      "id": "al-01M490WW9K4KM5WBBBD058RHWN",
+      "shortname": "x-rs-k2",
+      "datetime": "2026-10-06T16:31:38Z",
+      "session": "x-rs-e1e4",
+      "prompt": "X-RS part 3: K2, RS1 to draft",
+      "summary": "X-RS part 3 (K2, RS1 to draft), session x-rs-e1e4, served claude-sonnet-5-5, tokens not recorded. Start 2026-10-06T16:16:38Z, end 2026-10-06T16:31:38Z. Outcome: red-only (commit 9bbc6542), hand-back by the 170k rule (context 199,308 read at the second sample; 68,721 at start). RS1 state: draft, no record. Measured: stub fails 6/6 hidden tests, reference/naive/alt pass 6/6 through correctness.grade (A3 confirmed), each wrong app red on its declared tests, reference and alt pass 7/7 cases with 0 violations under the stand-in listener. Open: naive run passed f-slow-first (design: fail on time), variants not run, cacheerror not measured, reference duration_ms not recorded, bom unchanged, evidence.md unchanged. Finding: on Windows a closed port ends in a connect timeout (0.97 s per attempt), not a refusal, so H-4 uses port 0.",
+      "kind": "skill",
+      "skill": "new-bench-task",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "started_at": "2026-10-06T16:16:38Z",
+      "duration_seconds": 900.0
     }
   ],
   "changes": [
