@@ -835,7 +835,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "673790bae6bc9b63f4e388d65f8f7e18ba7cca41f11c379ebcea0fa0cfa32aef"
+      "sourceSha256": "05cb2c976e3c3b1f58e3737f1c007d7e0250550db45f6b0da2107746fb5e5331"
     },
     {
       "id": "adr-0019-catalog-0-7-property-metrics",
@@ -2593,7 +2593,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d75924706c220625ade831d3de0711712c678824725f0e631090dfbfbeb0f434"
+      "sourceSha256": "1cb8d23b9f54d5c6bd64244e28e36b3a169e2eb39e48f973d4aacbeb606b656b"
     },
     {
       "id": "design-eval-resume",
@@ -2758,7 +2758,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "26ce62573cc24d58a2df4c04f27adb14cf08e7a89d9d3712a55dae41946e7cfd"
+      "sourceSha256": "a2b3d71d784f767a61417688eeb755d9692447c718f0009f740cefa567078f1d"
     },
     {
       "id": "design-eval-security-tasks",
@@ -4589,14 +4589,14 @@ window.DOCS_INDEX = {
     {
       "id": "coordinator-log-c46",
       "path": "docs/coordination/coordinator-log/c46.md",
-      "title": "Coordinator #46 hand-back (2026-10-06): T-SWEEP-1 against resume.py ruled a sanctioned ninth archive reader (item 0)",
+      "title": "Coordinator #46 hand-back (2026-10-06): resume.py a sanctioned ninth archive reader; X-K1d and the X-RS ready turn compiled; CEIL-A floor rule; RS2 residual to the Owner; SHAPE-A row 4 owned; X-LB1 minors",
       "type": "doc",
       "status": "accepted",
       "owner": "@timianmalloo",
       "phase": "",
       "reviewBy": "2026-11-06",
       "reviewSuggested": [],
-      "summary": "Coordinator #46 worked on coord/eval-c46-k1d (base c427a71c, the X-K1c integration merge). Item 0, its own hand-back: the K1c join's recount failed T-SWEEP-1 on resume.py. Ruled (a): resume.py is a sanctioned ninth archive reader, because W1-K requires every read it makes and each read names turn folders from a row or from archive.snapshot_folder. W1-J section 7 gains the row as an erratum; the Leader adds resume.py to READERS and sets the count to 9 at the join. A second QUOTE-A instance, wider than the first; its upgrade trigger fired. Items 1-6 follow on the Leader's resume.",
+      "summary": "Coordinator #46 worked on coord/eval-c46-k1d (base c427a71c, the X-K1c integration merge). Item 0, its own hand-back: the K1c join's recount failed T-SWEEP-1 on resume.py. Ruled (a): resume.py is a sanctioned ninth archive reader, because W1-K requires every read it makes and each read names turn folders from a row or from archive.snapshot_folder. W1-J section 7 gains the row as an erratum; the Leader adds resume.py to READERS and sets the count to 9 at the join. A second QUOTE-A instance; its trigger fired. Items 1-7: X-K1d recompiled (Ruling 110, QUOTE-A, floor split rule) and the X-RS ready turn compiled; CEIL-A floor rule in the compile form; RS2 residual is a W1-L conflict, DR to owner-fable; W1-L Erratum 3; SHAPE-A row 4 owned by a fix turn X-FIXE; ADR-0018 residual row and the HB-CHK-005 row documented.",
       "tags": [
         "coordination",
         "coordinator-log",
@@ -4625,7 +4625,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "bd6135243d783182d6ffeb9130053c327109deb4240eef85806be6e8831e354a"
+      "sourceSha256": "5a0c5ce5b5a10fd77c9640db1bf24a3df159b75dfa4ef87cf19e15b1c46bd28b"
     },
     {
       "id": "defect-classes",
@@ -4654,7 +4654,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2787c828527ad9e9689cd4d02def3430850dd84bf1da190222a406b2edf14275"
+      "sourceSha256": "6c2cff65628e25c951dba087a1f91091a33d33bf7fb6464936fa922b8df2d8ed"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -9818,5 +9818,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "4731c7e06de04148530de50d1963efd1362d4e12c667c38c93a68d8bae95bfd7"
+  "graphSha256": "1e8d1be1025f20f1426218f8987ae96e9efeb636cee91f040108d76736d258af"
 };

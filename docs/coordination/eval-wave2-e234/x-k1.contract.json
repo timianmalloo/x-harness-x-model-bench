@@ -42,9 +42,9 @@
         "permissions": "observed-only"
       },
       "prompts": [
-        "al-01M48XR7HTPSNKH4XW97Z3A698"
+        "al-01M4964JB1F0TZ56VVPYAQJ4VF"
       ],
-      "fallback": "the Leader's decision after hand-back; the worker launches, spawns or messages nothing (FALLBACK-A). Dispatch only after the K1c finishing turn has joined and the Owner has ruled on req-01M48XS0VDQ1A93E3EC48JGRSM (Coordinator #45, c45.md)"
+      "fallback": "the Leader's decision after hand-back; the worker launches, spawns or messages nothing (FALLBACK-A). Dispatch only after join-x-k1c is on the integration head; Ruling 110 governs the five classifier mutants (Coordinator #46, c46.md)"
     }
   ]
 }
