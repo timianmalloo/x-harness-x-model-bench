@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T09:44:02Z",
+  "generated": "2026-10-06T10:54:20Z",
   "audit": [
     {
       "actor": null,
@@ -98682,6 +98682,27 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-06T09:44:01Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M48DK8FX4SN0XKWMEJAJP5QJ",
+      "shortname": "x-fixd",
+      "datetime": "2026-10-06T10:54:20Z",
+      "session": "x-fixd-e1e4",
+      "prompt": "X-FIXD compiled prompt al-01M48BN7DDSNGJ45CZQC439NC6",
+      "summary": "start 2026-10-06T03:26:57-07:00 end 03:54-07:00; outcome green fd84fb7d (mutant commit 8b3d1dee); red SHA 71477c7b; served model claude-sonnet-5-5; tokens not recorded; mutate_check not run: suite lock held (waited ~20 min); mutant killed by manual apply of test 2 only",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "claude-sonnet-5-5",
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "check-less variant clause read from property.json",
+      "done_when": "reds, green, mutant, gates",
+      "tier": "T1",
+      "started_at": "2026-10-06T10:26:57Z",
+      "duration_seconds": 1643.0
     }
   ],
   "changes": [
