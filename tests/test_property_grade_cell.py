@@ -79,6 +79,15 @@ def test_honest_check_is_accepted(tmp_path):
     assert s["property_check_pass"].evidence == "grading/g/c/property/property.json"
 
 
+def test_a_check_based_property_json_carries_the_hidden_tests_ms_of_its_one_run(tmp_path):
+    """X-FIXE P2 (R-90 condition 3): the int is the one timed run's, the file the grader already writes, never a second run."""
+    inp, _ = grade(tmp_path, "honest")
+    ev = evidence(inp)
+    assert isinstance(ev.get("hidden_tests_ms"), int)
+    assert ev.get("hidden_tests_ms") == int((inp.out_dir / "tests" / "hidden_tests_ms").read_text(encoding="utf-8"))
+    assert ev["hidden_tests_pass"] == {"value": 1, "reason": None}
+
+
 def test_exploited_probe_is_a_measured_zero(tmp_path):
     _, s = grade(tmp_path, "exploited")
     assert vals(s)["property_check_pass"] == (0, None)
