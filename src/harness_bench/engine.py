@@ -449,7 +449,8 @@ class Engine:
         host.keep_awake(True)
         sleep = host.SleepDetector(self.params["suspend_gap"])
         try:
-            with _beating(lock, self.cfg.loop_interval):  # the resume's pid waits and archive copies outlast a stale lock
+            booting = _beating(lock, self.cfg.loop_interval)  # the resume's pid waits and archive copies outlast a stale lock
+            with booting:
                 pending = self.pending = boot()
             # the loop also runs while a decision is open, so every open request is resolved (design 6.2; UXA-9)
             while (pending and not self.stopped and not self.broken) or self.active or (
@@ -506,8 +507,8 @@ class Engine:
             for w in self.writers.values():
                 w.close()
             lock.release()
-        complete = (not self.broken and not self.archive_failed and not self.run_stopped and not self.deferred  # a stopped run exits 3 (design 5)
-                    and len(self.outcomes) == len(self.plan["cells"]))
+        complete = (not self.broken and not self.archive_failed and not self.run_stopped  # a stopped run exits 3 (design 5)
+                    and not self.deferred and len(self.outcomes) == len(self.plan["cells"]))
         return RunSummary(0 if complete else 3, dict(self.outcomes))
 
     def _identity_ok(self) -> bool:
