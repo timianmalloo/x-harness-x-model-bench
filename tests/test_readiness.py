@@ -268,6 +268,21 @@ def test_contract_field_defects_each_fail_with_their_code(pair, label, task, rel
     assert found, (label, lines_of(pair))
 
 
+@pytest.mark.parametrize(("task", "role", "ids", "refused"), [
+    ("DISC-C", "naive", '["p-1"]', True),  # a check-less task has no case to time out
+    ("DISC-P", "reference", '["p-1"]', True),  # the reference's primary 1 requires every case passed
+    ("DISC-P", "naive", '["nope"]', True),  # an id that is not a declared case
+    ("DISC-P", "naive", '["p-1"]', False),  # the control: a declared case on a non-reference role of a check-based task
+], ids=["check-less", "reference-role", "unknown-case", "control-accepted"])
+def test_expected_timeouts_are_refused_where_they_do_not_belong(pair, task, role, ids, refused):
+    """CR47-7: `expected.<role>.timeouts` is HB-RDY-005 on a check-less task, on the reference role, or for a non-case id."""
+    edit_file(pair, task, "task.yaml", f"  {role}:\n", f"  {role}:\n    timeouts: {ids}   # slow by design in this fixture\n")
+    found = [ln for ln in lines_of(pair) if f" {task}:" in ln and "HB-RDY-005" in ln and "timeouts" in ln]
+    assert bool(found) is refused, lines_of(pair)
+    if not refused:
+        assert lines_of(pair) == []
+
+
 def test_authorization_does_not_trip_the_authoriz_term_but_a_whole_word_does(pair):
     """T-E24 (006): whole-word, so `authoriz` in `Authorization` passes; the term as a word, at line 3, fails naming line 3."""
     edit_file(pair, "DISC-P", "task.yaml", "latent_terms: [escape]", "latent_terms: [authoriz]")

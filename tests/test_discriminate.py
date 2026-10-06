@@ -358,6 +358,14 @@ def test_a_timeout_trial_writes_no_record_and_the_clean_retry_succeeds(base):
     assert second.outcome == "written"
 
 
+def test_a_declared_case_timeout_on_the_naive_role_is_not_an_item(base):
+    """CR47-7: `expected.naive.timeouts` naming the case that timed out lets the trial write; undeclared (the test above) it is HB-RDY-011."""
+    cases = mt._cases(["p-1", "p-2"], bound_ms={"p-1": 1000})
+    expected = {"reference": mt.P_EXPECTED["reference"], "naive": {**mt.P_EXPECTED["naive"], "timeouts": ["p-1"]}}
+    root = new_root(base, "disc_p", naive={"src/app.py": mt.handle_slow_first(base / "slow.txt")}, cases=cases, expected=expected)
+    assert trial(base, root, "DISC-P").outcome == "written"
+
+
 @pytest.mark.parametrize("reason", ["invalid (check tampered)", "check exceeded its bound", "host suspended", "check output invalid"])
 def test_a_check_or_host_fault_in_the_scores_is_untrustworthy_unless_expected_declares_it(reason):
     """T-E13 (the push form, over hand-built scores): each HB-CHK NA is an item; an NA equal to `expected` is exempt."""
