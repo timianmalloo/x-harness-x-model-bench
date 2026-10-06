@@ -287,7 +287,6 @@ def _action(actions, cid):
 # ---------------------------------------------------------------- the exhaustive net
 
 @pytest.mark.parametrize("i,name", [(i + 1, n) for i, n in enumerate(PREFIXES)] + [(7, "W7_next_stop")])
-@pytest.mark.xfail(strict=True, reason="K1b: resume.classify (W1-K K4) turns the sweep green")
 def test_every_ledger_prefix_matches_the_adr_table(golden1, i, name):
     classify = _need(resume, "classify")
     assert len(golden1.rows) == N1, "the golden ledger changed: recount N1"
@@ -301,7 +300,6 @@ def test_every_ledger_prefix_matches_the_adr_table(golden1, i, name):
         assert got == table[key], f"prefix {i} ({key}), stopped={stopped}: {got} != {table[key]}"
 
 
-@pytest.mark.xfail(strict=True, reason="K1b: resume.classify (W1-K K4) turns the sweep green")
 def test_every_two_cell_ledger_prefix_matches_the_adr_table(golden2):
     classify = _need(resume, "classify")
     assert len(golden2.rows) == N2, "the two-cell golden ledger changed: recount N2"
@@ -955,19 +953,16 @@ def test_finished_stop_is_silent(golden5):  # R-102: a C7 cell in the fixture
     assert _need(resume, "has_work")(golden5.plan, rows) is False
 
 
-@pytest.mark.xfail(strict=True, reason="K1b: the real resume.has_work (W1-K K4)")
 def test_alarm_fires_after_crash_in_grading(golden1):
     rows = golden1.rows[:14]  # every cell archived, no run.completed
     assert _need(resume, "has_work")(golden1.plan, rows) is True
 
 
-@pytest.mark.xfail(strict=True, reason="K1b: the real resume.has_work (W1-K K4)")
 def test_alarm_fires_after_crash_before_last_archive(golden1):
     rows = golden1.rows[:12]  # outcome recorded, cell.archived absent
     assert _need(resume, "has_work")(golden1.plan, rows) is True
 
 
-@pytest.mark.xfail(strict=True, reason="K1b: the real resume.has_work (W1-K K4)")
 def test_launch_stop_alarms(golden2):
     rows = [golden2.rows[0], ledger.stamp({"kind": "run.launch_stopped", "code": "HB-RUN-004", "reason": "disk low"})]
     assert _need(resume, "has_work")(golden2.plan, rows) is True
