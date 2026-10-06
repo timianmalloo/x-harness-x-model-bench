@@ -25,14 +25,14 @@ pytestmark = pytest.mark.skipif(sys.platform != "win32", reason="the grader and 
 _spec = importlib.util.spec_from_file_location("make_task", Path(__file__).parent / "fixtures" / "property_tasks" / "make_task.py")
 mt = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(mt)  # type: ignore[union-attr]
-TASK = "DISC-C"
+TASK = "DISC-T"
 
 
 def trial(base: Path, root: Path, task: str = TASK) -> discriminate.Result:
     return discriminate.run(root, task, runs=base / "runs", cells_root=base / "cells")
 
 
-def new_root(base: Path, name: str = "disc_c", **tweak) -> Path:
+def new_root(base: Path, name: str = "disc_turns", **tweak) -> Path:
     root = mt.make_root(base)
     mt.install(root, name, **tweak)
     return root
@@ -73,7 +73,8 @@ def test_a_check_less_property_task_discriminates_without_a_host(first):
     body = json.loads(result.record_path.read_text(encoding="utf-8"))
     assert "probe" not in body
     assert body["scores"]["reference"]["pass_at_1"] == 1
-    assert body["scores"]["naive"]["pass_at_1"] == 0
+    assert body["scores"]["naive"]["pass_at_1"] == 1  # DISC-T's naive passes both turns' tests and fails the rework ceiling
+    assert body["scores"]["naive"]["property_check_pass"] == 0
     assert [ln for ln in readiness.problems(root) if not ln.startswith("note:") and "HB-RDY-007" not in ln] == []
 
 
@@ -102,7 +103,7 @@ def test_overlay_lands_in_the_engine_built_working_copy_and_deletes_nothing(firs
     archives = list((base / "runs" / result.run_id / "archive").glob("*/attempt-1/ws"))
     assert len(archives) == 2
     contents = sorted((ws / "app.py").read_text(encoding="utf-8") for ws in archives)
-    assert contents == sorted([mt.DOUBLE_REF, mt.DOUBLE_NAIVE])
+    assert contents == sorted([mt.TURN2_REF, mt.TURN2_NAIVE])
     assert all((ws / "keep.txt").read_text(encoding="utf-8") == "keep me\n" for ws in archives)
 
 
@@ -143,7 +144,8 @@ def test_no_link_after_hb_rdy_010(base):
     with pytest.raises(BenchError) as err:
         trial(base, root, "DISC-FLAKY")
     assert err.value.code == "HB-RDY-010"
-    assert re.search(r"scores\.reference\.\w+", str(err.value))
+    # the flaky turn-1 run flips turn1_tests_pass; the first differing path is readiness_failures (keys sort before scores)
+    assert re.search(r"at (scores\.reference\.\w+|readiness_failures)", str(err.value)) and "turn1_tests_pass" in str(err.value)
     assert digest(one.record_path) == before
     (failed,) = run_folders(base) - seen
     assert not (base / "runs" / failed / "discrimination-link.json").exists()
@@ -518,7 +520,7 @@ def test_discriminate_emits_started_and_finished_with_measured_fields(first):
     started, finished = events(run_dir, "discriminate.started"), events(run_dir, "discriminate.finished")
     assert len(started) == 1 and len(finished) == 1
     started, finished = started[0], finished[0]
-    assert started["detail"] == "task=DISC-C cells=2"
+    assert started["detail"] == "task=DISC-T cells=2"
     assert re.fullmatch(r"outcome=written plan_ms=\d+ engine_ms=\d+ grade_ms=\d+ compare_ms=\d+ write_ms=\d+ cells=2", finished["detail"])
     assert finished["error_code"] is None
     link = json.loads((run_dir / "discrimination-link.json").read_text(encoding="utf-8"))
@@ -610,21 +612,23 @@ def test_a_check_less_variant_declaring_a_different_clause_is_hb_rdy_003_on_asse
 
 
 def test_a_check_less_variant_declaring_a_clause_where_property_json_has_no_strategy_is_hb_rdy_011(base):
-    """X-FIXD: DISC-C has no turns, so its rework section is never written; a declared clause cannot be confirmed."""
+    """X-FIXD, changed by X-FIXE P3: DISC-C has no turns, so its rework section is never written and no cell has a hidden
+    value; the not-comparable item now refuses the trial first, and the variant item (reached only with no other item) is not
+    shown. The declared clause still cannot be confirmed, so the trial is HB-RDY-011."""
     one = {"vnone": {"flips": [], "clauses": {"property_check_pass": "ratio"},
                       "edits": [{"file": "app.py", "old": "x * 2", "new": "2 * x"}]}}
     root = new_root(base, "disc_c", variants=mt.variants_text(one))
     with pytest.raises(BenchError) as exc:
-        trial(base, root)
-    assert exc.value.code == "HB-RDY-011" and "variant vnone" in exc.value.message and "SR-E3" not in exc.value.message
+        trial(base, root, "DISC-C")
+    assert exc.value.code == "HB-RDY-011" and "not comparable (a side is NA) in" in exc.value.message and "SR-E3" not in exc.value.message
 
 
 def test_a_check_less_trial_with_a_cell_whose_hidden_test_side_is_na_is_hb_rdy_011(base):
     """X-FIXE P3 (CR47-1, W1-E s8.3): DISC-C declares no turns, so its rework section holds no hidden value; in a trial every
     cell must be gradable, and a silent agreement is the thing refused."""
-    root = new_root(base)
+    root = new_root(base, "disc_c")
     with pytest.raises(BenchError) as err:
-        trial(base, root)
+        trial(base, root, "DISC-C")
     assert err.value.code == "HB-RDY-011"
     assert "not comparable (a side is NA) in" in str(err.value)
 

@@ -193,9 +193,9 @@ def _evidence_items(run_dir: Path, grading_id: str, labels: dict[str, str], poin
 
 
 def _double_run_items(run_dir: Path, grading_id: str, labels: dict[str, str], *, spans: bool) -> list[str]:
-    """R-90 condition 3 for every task: the hidden-test disagreement item. A check-based pass (`spans`) adds the
-    not-comparable and unbiased_ok items. A check-less cell with no hidden-test value is NA by its own score row, which
-    `_untrustworthy` already holds to the closed reason set, and its pass records no spans (SHAPE-A row 4)."""
+    """R-90 condition 3 for every task: the hidden-test disagreement and not-comparable items (CR47-1: a check-less cell
+    with no hidden-test value is an item too, W1-E s8.3). A check-based pass (`spans`) adds the unbiased_ok item; a
+    check-less pass records no spans (SHAPE-A row 4)."""
     try:
         disagree, not_comparable = readiness.comparable_cells(run_dir, grading_id)
         unbiased = readiness.unbiased_failures(run_dir, grading_id) if spans else []
@@ -203,7 +203,7 @@ def _double_run_items(run_dir: Path, grading_id: str, labels: dict[str, str], *,
         return [f"a reader could not run: {exc.message}"]
     items = []
     for what, cells in (("hidden tests disagree with pass_at_1 in", disagree),
-                        ("not comparable (a side is NA) in", not_comparable if spans else []),
+                        ("not comparable (a side is NA) in", not_comparable),
                         ("a span with unbiased_ok false in", unbiased)):
         if cells:
             items.append(f"{what} {', '.join(labels.get(c, c) for c in cells)}")

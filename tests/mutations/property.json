@@ -172,5 +172,14 @@
   "tests": [
    "tests/test_property_grade_cell.py::test_a_check_based_property_json_carries_the_hidden_tests_ms_of_its_one_run"
   ]
+ },
+ {
+  "name": "the check-less not-comparable item disabled: a check-less trial with an NA hidden-test side raises no item (CR47-1, W1-E s8.3)",
+  "file": "src/harness_bench/discriminate.py",
+  "find": "(\"not comparable (a side is NA) in\", not_comparable),",
+  "replace": "(\"not comparable (a side is NA) in\", not_comparable if spans else []),",
+  "tests": [
+   "tests/test_discriminate.py::test_a_check_less_trial_with_a_cell_whose_hidden_test_side_is_na_is_hb_rdy_011"
+  ]
  }
 ]

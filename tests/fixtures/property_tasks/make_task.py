@@ -231,14 +231,19 @@ def edit_for(case_id: str) -> dict:
     return {"file": "src/app.py", "old": ESCAPE, "new": f"(payload if payload.endswith({case_id!r}) else {ESCAPE})"}
 
 
-def _flaky_ref(counter: Path) -> str:
-    return FLAKY_COUNTER_APP.format(counter=str(counter)) + (
-        "def double(x):\n    return x * 2 if _tick() % 2 else x + 3\n")
+def _flaky_turns_ref(counter: Path) -> dict:
+    """Turns reference whose fmt, on the 8th call and every 5th after it, appends '!': a call counter kept outside the working
+    copy. In the first trial the turn-1 snapshot run is call 3 and the others are never wrong; in the second the snapshot run
+    is call 8, so only turn1_tests_pass differs between the trials while pass_at_1 and the final-tree run still agree."""
+    t1 = FLAKY_COUNTER_APP.format(counter=str(counter)) + TURN1_REF.replace(
+        "    sym, dec = RATES[cur]\n    return f'{sym}{amount:.{dec}f}'\n",
+        "    n = _tick()\n    sym, dec = RATES[cur]\n    out = f'{sym}{amount:.{dec}f}'\n    return out + '!' if n > 5 and n % 5 == 3 else out\n")
+    return {"turn-1/app.py": t1, "turn-2/app.py": t1.replace("2)}", "2), 'eur': ('EUR ', 2)}")}
 
 
 def _disc_flaky(tweak):
-    """A reference whose answer depends on a counter kept outside the working copy: two trials disagree."""
-    return _disc_c(tweak) | {"id": "DISC-FLAKY", "reference": {"app.py": _flaky_ref(Path(tweak["counter"]))}}
+    """A two-turn reference whose answer depends on a counter kept outside the working copy: two trials disagree."""
+    return _disc_turns({k: v for k, v in tweak.items() if k != "counter"}) | {"id": "DISC-FLAKY", "reference": _flaky_turns_ref(Path(tweak["counter"]))}
 
 
 def _scan_a(tweak):
@@ -281,7 +286,8 @@ def _disc_turns(tweak):
     counted = {"turn2/test_t2_counter.py": T2_COUNTER_TESTS.format(counter=str(tweak["counter"]))} if tweak.get("counter") else {}
     return {"id": "DISC-T", "property": "rework", "evidence": "app.py", "hidden": "", "ceilings": '{rework_ratio: "0.3000"}',
             "hidden_files": {"turn1/__init__.py": "", "turn1/test_t1.py": T1_TESTS, "turn2/__init__.py": "", "turn2/test_t2.py": T2_TESTS} | counted,
-            "turns": "Now add the euro.\n", "workspace": {"app.py": "def fmt(amount):\n    raise NotImplementedError\n"},
+            "turns": "Now add the euro.\n",
+            "workspace": {"app.py": "def fmt(amount):\n    raise NotImplementedError\n", "keep.txt": "keep me\n"},
             "reference": {"turn-1/app.py": TURN1_REF, "turn-2/app.py": TURN2_REF},
             "naive": {"turn-1/app.py": TURN1_NAIVE, "turn-2/app.py": TURN2_NAIVE},
             "expected": tweak.get("expected", TURNS_EXPECTED), "variants": None, "repo": "disc-t"}
