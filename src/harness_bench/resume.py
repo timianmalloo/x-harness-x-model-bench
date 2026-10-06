@@ -1,15 +1,25 @@
 """Run resume entry points (W1-K).
 
-K5 supplies ordered read-only refusals; the continuation remains the K1 skeleton
-until K6. The stop predicate, classifier and remaining-work predicate read ledger rows only.
+K5 supplies the ordered read-only refusals; K6 the continuation: the resume's own segments, the reconciliation of
+each crashed cell, the pid check and the engine loop. The stop predicate, classifier and remaining-work predicate read
+ledger rows only. Nothing here imports a grade module: `cfg.verify` is injected by the composition root.
 """
 
+import logging
+import shutil
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from harness_bench import archive, atomic, ledger, lifecycle, oslock
+from harness_bench import archive, atomic, engine, host, ledger, lifecycle, oslock
 from harness_bench import plan as plan_module
-from harness_bench.errors import BenchError
+from harness_bench.errors import BenchError, Cause
+
+log = logging.getLogger("harness_bench.resume")
+DEFAULT_PID_WAIT_S = 30  # D-K2: the bounded wait for a recorded pid that is still alive
+PHASES = {"C2": "mid-turn", "C3": "between-turns", "C4": "between-turns", "C5": "turn-complete", "C6": "mid-turn"}
+CAUSES = {"HB-CELL-117": Cause.archive, "HB-CELL-118": Cause.coordinator_crash,
+          "HB-CELL-119": Cause.coordinator_crash_between_turns}
 
 
 def resume_run(run_dir: Path, root: Path, plan: dict, cfg):
@@ -43,12 +53,34 @@ def resume_run(run_dir: Path, root: Path, plan: dict, cfg):
             raise BenchError("HB-RUN-009", archive_errors[0].message)
         if missing:
             raise BenchError("HB-LED-005", f"archive folder {missing[0][1]} does not exist")
-        raise BenchError("HB-USR-002", f"run {plan['run_id']} has already started; phase 1 re-runs under a new run id")
+        stopped = stop_recorded(rows)
+        if not has_work(plan, rows):  # step 4: no segment and no row
+            return _report(engine.RunSummary(3 if stopped else 0), [], stopped, [])
+        usage = _fact_rows(run_dir, "turn_usage")
+        state = _Resume(run_dir, plan, cfg, lock, {"events": rows, "archive_files": files, "turn_usage": usage}, stopped)
+        summary = state.eng.resume(lock, engine.next_ordinal(run_dir), state.boot)
+        mine = _fact_rows(run_dir, "events")
+        mine = mine[max(i for i, r in enumerate(mine) if r["kind"] == "run.resumed"):]  # this invocation's own rows
+        return _report(summary, mine, stopped or bool(state.eng.run_stopped), state.eng.deferred)
+
+
+def _report(summary: engine.RunSummary, rows: list[dict], stopped: bool, deferred: list[str]) -> engine.RunSummary:
+    """The one closing line of a resume: three exits, three different lines (D-K13, R-101). `rows` are the rows
+    this invocation wrote, so an idempotent re-run reports 0."""
+    if deferred:
+        print(f"run is not finished: cell {deferred[0]} process still alive, run again")
+    elif stopped:
+        n = sum(r["kind"] == "cell.outcome" and r["outcome"] == "stopped" for r in rows)
+        m = sum(r["kind"] == "cell.archived" for r in rows)
+        print(f"run is stopped: {n} cells recorded stopped, {m} archived, graded, 0 launched")
+    elif summary.exit_code == 0:
+        print("run is complete")
+    return summary
 
 
 def _fact_rows(run_dir: Path, fact: str) -> list[dict]:
     """Read engine facts without crossing the run -> grade dependency boundary."""
-    return [row for path in sorted((run_dir / fact).glob("engine-*.jsonl")) for row in ledger.read_segment(path)]
+    return [row for path in sorted((run_dir / fact).glob("engine-*.jsonl"), key=lambda p: p.stem) for row in ledger.read_segment(path)]
 
 
 def _missing_archives(run_dir: Path, rows: list[dict], files: list[dict]) -> list[tuple[str, Path]]:
@@ -141,3 +173,181 @@ def has_work(plan: dict, rows: list[dict]) -> bool:
     stopped = stop_recorded(rows)
     return any(a.rule in {"C1", "C2", "C3", "C4", "C5", "C6"} or (a.rule == "C7" and not stopped)
                for a in classify(plan, rows, stopped))
+
+
+def _live_pid(cell_rows: list[dict]) -> tuple[int, int] | None:
+    """The recorded (pid, created_at) of a cell whose process was started and never recorded ended."""
+    started = [r for r in cell_rows if r["kind"] == "attempt.process_started"]
+    if not started or any(r["kind"] == "attempt.process_ended" for r in cell_rows) or not started[-1].get("pid"):
+        return None
+    return started[-1]["pid"], started[-1].get("created_at") or 0
+
+
+def _folder_rows(folder: Path) -> list[dict]:
+    """The rows a published snapshot folder holds (simplify: files only; ceiling a snapshot with links, which `copy.fill`
+    never publishes; upgrade trigger: a snapshot row of kind link that must survive a redo)."""
+    return [{"path": p.relative_to(folder).as_posix(), "kind": "file", "size": p.stat().st_size,
+             "sha256": archive._sha(p), "link_target": ""} for p in sorted(folder.rglob("*")) if p.is_file()]
+
+
+class _Resume:
+    """W1-K 3.1 steps 5-7 on the engine thread: `boot` runs inside `Engine.resume`, under the lock's heartbeat."""
+
+    def __init__(self, run_dir: Path, plan: dict, cfg, lock: oslock.RunLock, rows: dict[str, list[dict]],
+                 stopped: bool) -> None:
+        self.run_dir, self.plan, self.cfg, self.lock, self.rows, self.stopped = run_dir, plan, cfg, lock, rows, stopped
+        self.eng = engine.Engine(plan, cfg)
+        self.pid_wait = plan["parameters"].get("pid_wait_s", DEFAULT_PID_WAIT_S)
+        self.dead = [(fact, path.stem, report) for fact in engine.FACTS
+                     for path in sorted((run_dir / fact).glob("engine-*.jsonl"), key=lambda p: p.stem)
+                     if not (report := ledger.verify_segment(path)).sealed]
+
+    def boot(self) -> list[dict]:
+        eng, rows = self.eng, self.rows["events"]
+        segment = eng.writers["events"].segment_id
+        if not any(r["kind"] == "run.started" for r in rows):  # D-K6: started by the resume
+            eng.append_row({"kind": "run.started", "run_id": self.plan["run_id"], "plan_hash": self.plan["plan_hash"],
+                            "trace_id": self.plan["trace_id"]})
+        eng.append_row({"kind": "run.resumed", "run_id": self.plan["run_id"], "plan_hash": self.plan["plan_hash"],
+                        "segment_id": segment, "trace_id": self.plan["trace_id"]})
+        named = {(r["fact"], r["segment_id"]) for r in rows if r["kind"] == "segment.abandoned"}
+        for fact, sid, report in self.dead:
+            if (fact, sid) not in named:  # fenced, never appended to: the marker pins the head (D-K8)
+                eng.writers["events"].append(ledger.stamp({
+                    "kind": "segment.abandoned", "code": "HB-LED-004", "fact": fact, "segment_id": sid,
+                    "line_count": report.lines, "head_hash": report.head_hash, "error": "engine died"}))
+        sweep_archives(self.run_dir, self.lock)
+        eng.restore(self.rows)
+        actions = classify(self.plan, rows, self.stopped)
+        log.info("resume classified", extra={"detail": ",".join(f"{a.cell_id}={a.rule}" for a in actions)})
+        if self.stopped:
+            self._finish_the_stop(rows)
+        by_cell: dict[str, list[dict]] = {}
+        for row in rows:
+            if "cell_id" in row:
+                by_cell.setdefault(row["cell_id"], []).append(row)
+        pending = []
+        for action, cell in zip(actions, self.plan["cells"], strict=True):
+            pending += self._act(action, cell, by_cell.get(cell["cell_id"], []), segment)
+        return pending
+
+    def _finish_the_stop(self, rows: list[dict]) -> None:
+        eng = self.eng
+        code = next((r["code"] for r in rows if r["kind"] == "run.stopped"), None)
+        if code is None:  # windows 1 and 2: a stop recorded without its run.stopped
+            code, decision_id = "HB-RUN-006", None
+            for row in rows:
+                if row["kind"] == "decision.resolved" and row.get("option") == "stop":
+                    kind = next(r["decision_kind"] for r in rows
+                                if r["kind"] == "decision.opened" and r["decision_id"] == row["decision_id"])
+                    code, decision_id = ("HB-RUN-007" if kind == "spend_cap" else "HB-RUN-006"), row["decision_id"]
+            eng.append_row({"kind": "run.stopped", "code": code, "decision_id": decision_id})
+        eng.stopped = eng.run_stopped = code
+        for row in eng.decisions.supersede_all():
+            eng.append_row(row)
+
+    def _act(self, action: Action, cell: dict, cell_rows: list[dict], segment: str) -> list[dict]:
+        rule, cid = action.rule, cell["cell_id"]
+        if rule == "C0":
+            return []
+        if rule == "C7":
+            return [] if self.stopped else [cell]
+        if rule == "C1":
+            self._archive(cell)
+            return []
+        if self._alive(cid, cell_rows):
+            return []
+        if rule == "C6" and not self.stopped:  # D-K3: the folder is discarded, the cell launches once
+            folder = self.eng.cfg.cells_root / self.plan["run_id"] / cid
+            if folder.exists():
+                shutil.rmtree(folder, onexc=atomic.make_writable)
+            return [cell]
+        turn = max((r.get("turn", 1) for r in cell_rows if r["kind"] == "cell.prompt_sent"), default=1)
+        outcome, code = action.outcome, action.code
+        if rule == "C4" and not self._redo_snapshot(cell, turn):
+            outcome, code = "failed", "HB-CELL-117"
+        cause = CAUSES.get(code) if outcome == "failed" else None
+        self.eng.append_row({
+            "kind": "cell.outcome", "cell_id": cid, "outcome": outcome, "cause": cause.name if cause else None,
+            "code": cause.code if cause else None, "host_mem_available": host.available_memory(),
+            "resume": {"segment_id": segment, "turn": turn, "phase": PHASES[rule], "rule": rule}})
+        log.info("resume cell", extra={"cell_id": cid, "detail": f"{rule} {outcome} {code} {PHASES[rule]}"})
+        self._archive(cell)
+        return []
+
+    def _alive(self, cid: str, cell_rows: list[dict]) -> bool:
+        """D-K2: gone means no process, or one with another creation time; a live one is waited for, then deferred."""
+        live = _live_pid(cell_rows)
+        if live is None:
+            return False
+        deadline = time.monotonic() + self.pid_wait
+        while host.process_alive(*live):
+            if time.monotonic() >= deadline:
+                self.eng.deferred.append(cid)
+                log.info("resume cell deferred", extra={"cell_id": cid, "detail": f"pid={live[0]}"})
+                return True
+            time.sleep(0.2)
+        return False
+
+    def _redo_snapshot(self, cell: dict, turn: int) -> bool:
+        """W1-K 3.4: publish (or adopt the published folder), append the missing rows, then the event. Three tries."""
+        eng, cid = self.eng, cell["cell_id"]
+        folder = archive.snapshot_folder(self.run_dir, cid, turn)
+        cell_dir = eng.cfg.cells_root / self.plan["run_id"] / cid
+        tag = f"turn-{turn}"
+        present = [r for r in self.rows["archive_files"] if r.get("cell_id") == cid and r.get("archive_attempt") == 1
+                   and archive.snapshot_of(r) == tag]
+        for _ in range(3):
+            try:
+                if folder.is_dir():
+                    rows = [{**r, "archive_attempt": 1, "snapshot": tag} for r in _folder_rows(folder)]
+                    digest, total, ms = archive.archive_hash(rows), sum(r["size"] for r in rows), None
+                else:
+                    copied = archive.snapshot_cell(cell_dir, self.run_dir / "archive" / cid, turn,
+                                                   eng.cfg.launchers[cell["harness"]].credential_names, run_lock=self.lock)
+                    rows, digest, total, ms = copied.rows, copied.archive_hash, copied.total_bytes, copied.duration_ms
+                rows = [{"run_id": self.plan["run_id"], "cell_id": cid, **r} for r in rows]
+                for r in archive.append_missing_rows(folder, rows, present, "HB-LED-008"):
+                    eng._append_now("archive_files", r)
+                eng.append_row({"kind": "cell.turn_snapshot_archived", "cell_id": cid, "turn": turn,
+                                "snapshot_hash": digest, "files": len(rows), "bytes": total, "duration_ms": ms,
+                                "job_active_processes": None, "job_active_after": None, "copy_retries": None})
+                return True
+            except OSError:
+                atomic.sweep_temps(self.run_dir / "archive" / cid, self.lock)
+            except BenchError as exc:
+                if exc.code == "HB-RUN-001":
+                    raise
+                return False
+        return False
+
+    def _archive(self, cell: dict) -> None:
+        """C1: recover or write the final archive of a cell whose outcome stands; never re-run the cell."""
+        eng, cid = self.eng, cell["cell_id"]
+        launcher = eng.cfg.launchers[cell["harness"]]
+        cell_dir = eng.cfg.cells_root / self.plan["run_id"] / cid
+        if (cell_dir / "home").exists():
+            launcher.clean(cell_dir / "home")  # DS 11: seeded credentials never reach the archive
+        recorded = [r for r in self.rows["archive_files"] if r.get("cell_id") == cid and r.get("archive_attempt") == 1
+                    and archive.snapshot_of(r) == "final"]
+        archived = any(r["kind"] == "cell.archived" and r["cell_id"] == cid for r in self.rows["events"])
+        try:
+            if not cell_dir.exists():
+                cell_dir.mkdir(parents=True)
+            rec = archive.recover_archive(cell_dir, self.run_dir / "archive" / cid, 1, launcher.credential_names, recorded,
+                                          run_lock=self.lock, recorded_archived=archived)
+            for row in rec.missing_rows:
+                eng._append_now("archive_files", {"run_id": self.plan["run_id"], "cell_id": cid, **row})
+            if not archived:
+                eng.append_row({"kind": "cell.archived", "cell_id": cid, "archive_attempt": 1,
+                                "archive_hash": rec.result.archive_hash, "archive_bytes": rec.result.total_bytes})
+                if archive.delete_after_verify(cell_dir, rec.result.folder, rec.result.rows):
+                    eng.append_row({"kind": "cell.workspace_deleted", "cell_id": cid})
+                else:
+                    eng.append_row({"kind": "cell.workspace_kept", "cell_id": cid, "reason": "sharing violation after retries"})
+        except (OSError, BenchError) as exc:
+            if isinstance(exc, BenchError) and exc.code == "HB-RUN-001":
+                raise
+            eng.append_row({"kind": "cell.archive_failed", "cell_id": cid, "code": getattr(exc, "code", "HB-CELL-117"),
+                            "detail": f"{type(exc).__name__}: {exc}"[:300]})
+            eng.archive_failed.add(cid)

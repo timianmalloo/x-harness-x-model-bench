@@ -222,6 +222,7 @@ class Engine:
         self.closed = False
         self.archive_failed: set[str] = set()  # cells whose outcome stands but whose archive failed: the run is incomplete
         self.infra_streak = 0
+        self.deferred: list[str] = []  # D-K13: cells the resume left untouched because their process is alive
         self.cells = {c["cell_id"]: c for c in plan.get("cells", [])}
         self.pending: list[dict] = []  # the launch queue; a skip_combo decision removes cells from it (design 6.1)
         self.decisions = _Decisions(self.params.get("decision_timeout"))
@@ -400,15 +401,56 @@ class Engine:
         except BaseException:
             lock.release()
             raise  # refusal creates no started-run marker, so the operator can retry
-        segment = f"engine-{int(time.time())}"
-        for fact in FACTS:
-            self.writers[fact] = ledger.SegmentWriter.create(run_dir / fact, segment)
+        self.writers = open_engine_segments(run_dir, 0)
+        return self._drive(lock, self._start_run)
+
+    def _start_run(self) -> list[dict]:
+        self._append_now("events", {"kind": "run.started", "run_id": self.plan["run_id"], "plan_hash": self.plan["plan_hash"],
+                                    "trace_id": self.trace_id})
+        return list(self.plan["cells"])
+
+    def resume(self, lock: oslock.RunLock, ordinal: int, boot: Callable[[], list[dict]]) -> RunSummary:
+        """W1-K 3.1 steps 5-8: the resume's own segments, `boot` (its first rows, the sweep, the reconciliation), then the
+        loop and the tail of `run`. The caller holds `lock`; the already-started guard of `run` is never reached."""
+        self.run_lock = lock
+        self.writers = open_engine_segments(self.cfg.run_dir, ordinal)
+        return self._drive(lock, boot)
+
+    def append_row(self, record: dict) -> dict:
+        """The resume's engine-thread write of one events row (a reconciled outcome joins `outcomes`)."""
+        row = self._append_now("events", record)
+        if row["kind"] == "cell.outcome":
+            self.outcomes[row["cell_id"]] = row
+        return row
+
+    def restore(self, rows: dict[str, list[dict]]) -> None:
+        """D-K11: the run-level state rebuilt from the ledger rows, never from the dead engine's memory."""
+        for row in rows["events"]:
+            kind = row["kind"]
+            if kind == "decision.opened":
+                options = tuple(row["options"])
+                self.decisions.keys.add((row["decision_kind"], row["subject"], row["cause_code"]))
+                self.decisions.all[row["decision_id"]] = _Decision(row["decision_id"], row["decision_kind"], row["subject"],
+                                                                   row["cause_code"], options, row["default"], self.clock())
+            elif kind == "decision.resolved":
+                self.decisions.all[row["decision_id"]].state = row["state"]
+                if row["option"] == "continue" and self.decisions.all[row["decision_id"]].kind == "spend_cap":
+                    self.spend_cap = None
+            elif kind == "control.applied":
+                self.applied_controls.add(row["uuid"])
+            elif kind == "cell.outcome":
+                self.outcomes[row["cell_id"]] = row
+        measured = {row["cell_id"] for row in rows["turn_usage"]}
+        self.spend_tokens = sum(row[name] for row in rows["turn_usage"] for name in USAGE_BUCKETS)
+        self.cells_unmeasured = len([cid for cid in self.outcomes if cid not in measured])
+
+    def _drive(self, lock: oslock.RunLock, boot: Callable[[], list[dict]]) -> RunSummary:
+        run_dir = self.cfg.run_dir
         host.keep_awake(True)
         sleep = host.SleepDetector(self.params["suspend_gap"])
-        pending = self.pending = list(self.plan["cells"])
         try:
-            self._append_now("events", {"kind": "run.started", "run_id": self.plan["run_id"], "plan_hash": self.plan["plan_hash"],
-                                        "trace_id": self.trace_id})
+            with _beating(lock, self.cfg.loop_interval):  # the resume's pid waits and archive copies outlast a stale lock
+                pending = self.pending = boot()
             # the loop also runs while a decision is open, so every open request is resolved (design 6.2; UXA-9)
             while (pending and not self.stopped and not self.broken) or self.active or (
                     self.decisions.any_open and not self.broken):
@@ -441,7 +483,7 @@ class Engine:
                         self.active.pop(cell_id)
             self._drain(0)
             grading = None
-            ended_whole = not self.broken and not self.archive_failed  # else no run.completed: the run needs recovery
+            ended_whole = not self.broken and not self.archive_failed and not self.deferred  # else no run.completed: the run needs recovery
             if ended_whole and self.cfg.grade is not None:
                 try:
                     with _beating(lock, self.cfg.loop_interval):  # the loop's heartbeat stops here; a pass can be long
@@ -464,7 +506,7 @@ class Engine:
             for w in self.writers.values():
                 w.close()
             lock.release()
-        complete = (not self.broken and not self.archive_failed and not self.run_stopped  # a stopped run exits 3 (design 5)
+        complete = (not self.broken and not self.archive_failed and not self.run_stopped and not self.deferred  # a stopped run exits 3 (design 5)
                     and len(self.outcomes) == len(self.plan["cells"]))
         return RunSummary(0 if complete else 3, dict(self.outcomes))
 
@@ -957,6 +999,27 @@ class Engine:
             self.record("events", {"kind": "cell.workspace_deleted", "cell_id": cid})
         else:
             self.record("events", {"kind": "cell.workspace_kept", "cell_id": cid, "reason": "sharing violation after retries"})
+
+
+_SEGMENT = re.compile(r"engine-(\d+)(?:-r(\d{3}))?")
+
+
+def next_ordinal(run_dir: Path) -> int:
+    """D-K7: the highest -rNNN suffix on disk over all three facts, plus one (0: no engine segment yet)."""
+    found = [m for fact in FACTS for p in (run_dir / fact).glob("engine-*.jsonl") if (m := _SEGMENT.fullmatch(p.stem))]
+    return max((int(m.group(2) or 0) for m in found), default=-1) + 1
+
+
+def open_engine_segments(run_dir: Path, ordinal: int) -> dict[str, ledger.SegmentWriter]:
+    """D-K7, the one factory of `Engine.run` and the resume: engine-<first unix>[-r<NNN>] for each fact. The base stamp is
+    the first incarnation's, never a new clock reading, so a clock stepped back still sorts the resume last."""
+    if ordinal == 0:
+        segment = f"engine-{int(time.time())}"
+    else:
+        bases = [int(m.group(1)) for fact in FACTS for p in (run_dir / fact).glob("engine-*.jsonl")
+                 if (m := _SEGMENT.fullmatch(p.stem)) and not m.group(2)]
+        segment = f"engine-{min(bases)}-r{ordinal:03d}"
+    return {fact: ledger.SegmentWriter.create(run_dir / fact, segment) for fact in FACTS}
 
 
 @contextmanager

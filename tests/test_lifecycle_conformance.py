@@ -11,9 +11,10 @@ from pathlib import Path
 
 import pytest
 
-from harness_bench import engine, ledger, lifecycle
+from harness_bench import engine, ledger, lifecycle, resume
 
 ENGINE_SOURCE = Path(engine.__file__).read_text(encoding="utf-8")
+RESUME_SOURCE = Path(resume.__file__).read_text(encoding="utf-8")
 
 GOOD = [
     {"kind": "run.started"},
@@ -60,11 +61,11 @@ def test_the_engine_consults_the_table_and_writes_only_its_own_rows(tmp_path):  
 
 def test_every_engine_row_of_the_table_is_written_by_the_engine():
     # a table cannot show that a row is still written, only the writer's source can: a literal scan, no AST
-    written = set(re.findall(r'"kind": "([a-z_]+\.[a-z_.]+)"', ENGINE_SOURCE))  # events kinds are dotted; turn_usage is not
-    # simplify: K3 admits the resume-owned transition before K1c lands its writer; at K1c scan resume.py too.
-    resume_owned = {"run.resumed"}
+    written = set(re.findall(r'"kind": "([a-z_]+\.[a-z_.]+)"', ENGINE_SOURCE + RESUME_SOURCE))  # events kinds are dotted; turn_usage is not
+    # the resume fences a dead segment with the ledger's own marker, whose table writer is the grading pass (HB-LED-004)
+    written.discard("segment.abandoned")
     assert lifecycle.TABLE["run.resumed"].writer == "engine"
-    assert lifecycle.ENGINE_TRANSITIONS == written | resume_owned, sorted(lifecycle.ENGINE_TRANSITIONS ^ written ^ resume_owned)
+    assert lifecycle.ENGINE_TRANSITIONS == written, sorted(lifecycle.ENGINE_TRANSITIONS ^ written)
 
 
 def test_each_writer_may_write_its_own_rows_and_only_those():
