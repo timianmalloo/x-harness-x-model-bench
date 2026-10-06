@@ -1,0 +1,23 @@
+schema: bench-check-cases/1
+entry: check.py
+interface: loopback
+bounds_ms: {in-process: 2000, loopback: 5000}
+fault_contract: {timeout_ms: 3000, tolerance_ms: 500, max_retries: 2}   # the prompt's numbers; the same literal as task.yaml property.fault_contract
+app:
+  module: "rs2_shim"                              # the check's own frame handler (oracle/check/rs2_shim.py): HttpShipper is a class, and an app must be one callable
+  attr: handle
+  kind: callable                                  # shape (b): the check's collector listens, the deliverable is a client (W0 rev 5, SR-L2)
+  paths: ["src"]                                  # the deliverable's source root; the check adds the folder of rs2_shim at run time
+call: {args: ["flush"], kwargs: {}}               # the call under test; the check's setup calls ("start" with `{fake_url}`, "add") are its own frames
+deliverable: {}
+toolchain: [python]
+env: []
+cases:                                            # schedule: what the collector does to request 1, 2, ...; `rest` is what it does after the list (ok | last)
+  - {id: g-5xx-burst,       kind: fault, schedule: [s503, s503], rest: ok,   expect: succeed}
+  - {id: g-5xx-persistent,  kind: fault, schedule: [s503],       rest: last, expect: fail, then: {schedule: [], rest: ok}}
+  - {id: g-slow-first,      kind: fault, schedule: [slow],       rest: ok,   expect: either, bound_ms: 4500}
+  - {id: g-hang,            kind: fault, schedule: [hang],       rest: last, expect: either, bound_ms: 4500}
+  - {id: g-lost-response,   kind: fault, schedule: [lost],       rest: ok,   expect: either}
+  - {id: g-4xx,             kind: fault, schedule: [s400],       rest: last, expect: fail, final: true}
+  - {id: g-lost-then-grow,  kind: fault, schedule: [lost],       rest: last, expect: fail, effects_max: 1, bound_ms: 1000, then: {schedule: [], rest: ok}}   # r3 is buffered between the two flushes (check.py LATE)
+  - {id: g-ordering,        kind: fault, schedule: [s503],       rest: last, expect: fail, then: {schedule: [], rest: ok}}   # r3 is buffered between the two flushes (check.py LATE)

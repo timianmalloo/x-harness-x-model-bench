@@ -2,16 +2,43 @@ schema: bench-task/1
 id: RS1
 scenario: 5                 # W0 decision: property tasks are scenario 5 (docs/design/eval-seam-contracts.md section 1)
 title: "Resilience task 1: bounded timeouts, retries and idempotency under a loopback fault fake (W1-L)"
-status: stub
-language: tbd
+status: ready               # K4 (part 7): ready after a discrimination trial reproduced the expected values; the record is bench/discrimination/RS1
+language: python
 source:
   kind: authored
-  upstream: "harness-bench property task"
-  repo: tbd
-  commit: tbd
+  upstream: "harness-bench property task on the Prometheus Python client"
+  repo: "https://github.com/prometheus/client_python"
+  commit: "9cd073cb4dc6ee617eadf02dcdec94e0225eff0a"   # git rev-parse HEAD of a fresh clone, 2026-10-06; its tree is f6d9da65599d9f9ac606ef1864c3345e6bb1c6b3
+  workspace_from: source        # E5 precedent: the engine's own task_source() builds the base; workspace/ (docs/ledger-service.md) is overlaid on it
+  license: Apache-2.0
+  copyright: "Copyright 2015 The Prometheus Authors"
 budget:
-  minutes: 45               # provisional (W0); the task's design fixes it (1-60)
+  minutes: 45                # the W0 provisional value and the BOM entry's value; no measurement behind another figure
   usd_cap: null
+blast_radius: ["prometheus_client/ledger.py", "tests/test_ledger.py"]
+model_map: null
+scripted_user: false
+formal: null
 property:
-  name: resilience           # W0 section 2; the task's design fills the other property fields
-graders: []                 # DR-4 (a), provisional: [correctness, property] once grade/property.py exists
+  name: resilience
+  latent_requirement: "A call to a remote service must bound every attempt, retry only transient failures within the stated budget, and send a stable idempotency key so a replayed request takes effect once."
+  evidence_paths: ["docs/ledger-service.md", "prometheus_client/exposition.py"]
+  latent_terms: [timeout, retry, retries, backoff, idempot, dedup, deduplic, transient, circuit, jitter, "give up", "exactly once"]
+  primary_metric: property_check_pass
+  ceilings: {}
+  fault_contract: {timeout_ms: 3000, tolerance_ms: 500, max_retries: 2}   # numbers are in the prompt; the mechanisms are latent (RQ-2)
+graders: [correctness, property]
+oracle:
+  summary: "Six hidden unittest cases for post_event on a local http.server (stdlib only); then seven fault cases against a check-owned ledger fake on 127.0.0.1, one probe host per case (check.py). The fake answers per a fixed schedule; the check measures each call's wall time and reads the fake's request, effect and Idempotency-Key counters. The fault cases are judged on these schedules only."
+  runner: unittest
+  command: ["{python}", "-m", "unittest", "-v", "test_ledger_hidden"]
+expected:
+  reference:
+    property_check_pass: 1                       # derived by W0 section 3: hidden tests pass (6/6) and every fault case passed. Not a grader output.
+    fault_suite_pass: "1.0000"                   # 7 of 7; measured by the stand-in check in K2 (tests/test_rs1_task.py), not yet by the real grader
+    idempotency_violations: 0                    # measured by the stand-in check in K2
+  naive:
+    property_check_pass: 0                       # the naive passes the 6 hidden tests and 3 of 7 cases, so the conjunction is 0
+    fault_suite_pass: "0.4286"                   # 3 of 7 (f-5xx-persistent, f-lost-response, f-4xx); the K2 stand-in run's measured value is in oracle/evidence.md
+    idempotency_violations: 0                    # the naive never retries, so no call has two effects
+    timeouts: [f-hang, f-recover, f-slow-first]  # CR47-7: the naive's urlopen has no timeout by design; these three cases time out on every run (trial on base 92c9d393 and tests/test_rs1_task.py, outcome timeout, clause time); never declared on the reference
