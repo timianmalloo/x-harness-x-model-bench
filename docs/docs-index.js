@@ -5017,6 +5017,40 @@ window.DOCS_INDEX = {
       "sourceSha256": "59c4d90d70c17d051694b491c23ead9e33d5946cf6c842260d39c28111b71b75"
     },
     {
+      "id": "plan-eval-x-k1c",
+      "path": "docs/plans/eval-x-k1c.md",
+      "title": "X-K1c: archive recovery and resume refusals",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-20",
+      "reviewSuggested": [],
+      "summary": "Dispatch x-k1c-e1e4 implements W1-K K5, admitting K6 only under the native context split rule. All changes stay in the assigned worktree and the Leader owns independent review and integration.",
+      "tags": [
+        "resume",
+        "execution-plan"
+      ],
+      "links": [
+        {
+          "to": "design-eval-resume",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-k1",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "Execution graph",
+          "mermaid": "graph TD\n B --> AR[A-red] --> AG[A-green]\n B --> RR[R-red] --> RG[R-green]\n B --> SR[S-red] --> SG[S-green]\n AG --> C\n RG --> C\n SG --> C\n C -->|admitted| K6\n C -->|split| G\n K6 --> G --> J"
+        }
+      ],
+      "sourceSha256": "a5f38dc9cb15bdd8ab1d377ae0e6dfe0c39822f5136e86e4c509c1c8bc52511f"
+    },
+    {
       "id": "proof-phase2",
       "path": "docs/proof/phase2.md",
       "title": "Proof Pack - phase 2 (wave-by-wave joins)",
@@ -9458,6 +9492,14 @@ window.DOCS_INDEX = {
       "artifactId": "plan-eval-x-k1b"
     },
     {
+      "id": "surface-plans-eval-x-k1c",
+      "path": "docs/plans/eval-x-k1c.html",
+      "title": "Eval X K1C",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-k1c"
+    },
+    {
       "id": "surface-case-study",
       "path": "docs/case-study.html",
       "title": "From Specification to Implementation: An AI-Forward Case Study",
@@ -9504,5 +9546,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "5759d28bddb81f08a05a23027478f8c3ae5c6a2eafdcd86a84b7c3b2e7c126ea"
+  "graphSha256": "b5ad1bfb725ffb790bb028f06c02fb151e947ff5d2896136e1a6eb1d1ef0825c"
 };
