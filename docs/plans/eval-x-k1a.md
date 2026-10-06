@@ -10,7 +10,6 @@ links:
   - { to: brief-eval-x-k1, rel: implements }
   - { to: design-eval-resume, rel: depends-on }
   - { to: design-eval-seam-contracts, rel: depends-on }
-  - { to: kb-graph-and-loop-engineering, rel: depends-on }
 review-by: "2026-10-17"
 ---
 
@@ -25,6 +24,9 @@ surfaces are outside this dispatch.
 The supplied compilation is the scope authority. Verified base `c8c6390d`
 contains both `1a837a5d` and `186ad7da`; `git grep -n "HB-PLN-005" -- src`
 returned no hits. The checkout is clean and the branch matches the assignment.
+The installed skill references `kb-graph-and-loop-engineering`, but the named
+evidence directory is absent in this checkout. Its graph link is omitted to
+avoid a dangling target; the installed execution-graph standard still governs.
 
 ## Graph and floors
 
