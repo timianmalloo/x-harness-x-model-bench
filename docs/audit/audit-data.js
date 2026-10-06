@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T22:37:12Z",
+  "generated": "2026-10-06T22:57:08Z",
   "audit": [
     {
       "actor": null,
@@ -116700,6 +116700,610 @@ window.AUDIT_DATA = {
       "git": {
         "sha": "32ab7ec27241d028eaff33fcb04aeaa10af304a1",
         "short": "32ab7ec27",
+        "branch": "coord/eval-c47-fixe",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M49PW7CDSF62CA5TA3B90RRK",
+      "shortname": "You are session x-crlf-e1e4 on branch build/eval-x-crlf in your own tree…",
+      "datetime": "2026-10-06T22:55:46Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-crlf-e1e4 on branch build/eval-x-crlf in your own tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-crlf, harness Claude Code, model sonnet (served claude-sonnet-5-5), an Agent-tool sub-agent with no coord-runner run, one turn, 2,400 s, within 100 calls and 200k context. This is X-CRLF, a fix turn before X-CV's re-records: the variant applier fails open on a CRLF working copy (APPLY-A), and RS2 lost its g-ordering-only variant to the Ruling 111 freeze, as ruled by Coordinator #47 (docs/coordination/coordinator-log/c47.md, CR47-15 and CR47-16), all binding with W0 (docs/design/eval-seam-contracts.md) section 2's defect-variant rule (\"`old` occurs exactly once (else HB-RDY-005)\"), W1-E (docs/design/eval-discriminate.md) section 7, and W1-L Erratum 4 (docs/design/eval-property-tasks.md). Read the X-RS plan record docs/plans/eval-x-rs.md, section \"Finding and validation\", first.\n\nBase: build/eval-x-crlf, which the Leader creates from the integration head after the X-RS join, never main. Stop and report, before any edit, if git log --oneline --grep=join-x-rs prints nothing, if git status --short prints anything, or if git grep -n \"read_bytes().replace(edit\" -- src/harness_bench/discriminate.py does not print exactly one line.\n\nThe defect, read at dc35f4c3: readiness.variants checks an edit with target.read_text(encoding=\"utf-8\"), which reads CRLF as LF, and text.count(edit[\"old\"]) != 1 refuses (readiness.py about lines 820-826); discriminate._variant_overlay applies the same edit with target.read_bytes().replace(edit[\"old\"].encode(), edit[\"new\"].encode(), 1) (discriminate.py about line 142), which matches nothing on a CRLF file and writes the file back unchanged. So a variant readiness accepted can run as the reference: six RS2 variants read as HB-RDY-003 until X-RS rewrote the files as LF, and a variant that declares no flips would agree with the reference and pass silently. tools/mutate_check.py (about lines 448-454) already has the fail-closed shape: it normalises CRLF to LF before matching and refuses when the find is absent.\n\nC1, red first (CR47-15): one definition of \"an edit applies\" (DM7), used by both readiness.variants and discriminate._variant_overlay: the file's text with CRLF normalised to LF, `old` counted exactly once, else HB-RDY-005 naming the variant and the file; the applier writes the replaced text, never the unchanged bytes. Choose the smallest shape (for example one helper in readiness.py that both call) and name it in the plan record. Tests, in tests/test_discriminate.py: (a) a variant whose reference file is CRLF in the copy the trial reads applies its edit and its declared flip is observed (red today: the edit is a no-op, so the flip is missing); (b) _variant_overlay called directly with an edit whose `old` is absent from the file raises BenchError HB-RDY-005 naming the variant (red today: it returns with the file unchanged). Mutant: the absent-anchor refusal in the applier removed, added to tests/mutations/property.json. Sweep, as one sentence each in the plan record: every other find-and-replace applier in src/ and tools/ (git grep -n \"read_bytes().replace\\|\\.replace(m\\[\\\"find\\\"\\]\" -- src tools), with its line and whether it normalises and refuses.\n\nC2, red first (CR47-16; W1-L Erratum 4's finding): RS2 gains the variant requeue5xx in tasks/RS2/oracle/variants.py: after a flush that failed on HTTP 5xx, the pending batch is re-queued behind the newer records; after a lost response the order is kept. Hand-traced (Inferred): it flips g-ordering alone, on clause result (g-5xx-persistent buffers no late record, so its order is unchanged; g-lost-then-grow fails by a lost response, so the order is kept). Its measured row goes into tests/test_rs2_task.py beside the eight (red first: the row exists before the variant does); a measured flip set other than {g-ordering} is a finding with the measured set, never a reworded variant. Update tasks/RS2/oracle/evidence.md's variant table. Then the ready order (SR-E2): the folder edits first, then uv run bench discriminate RS2 --runs C:\\t\\crlf-runs --cells-root C:\\t\\crlf-cells with no model credentials in the environment, then the new record committed with the variant in one commit, replacing RS2's record as X-RS did (plan record docs/plans/eval-x-rs.md); a doubt about which record file stays is a finding to coord-opus-e1e4. Run uv run bench discriminate RS1 once too and report whether its record is confirmed byte-equal (C1 must not move a record whose files are LF).\n\nThe context split rule (CEIL-A, measured): start no item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first item: 53,951 to 72,513 (X-RS part 6 read 69k), so the floor is 73k; expected work per item 60k (the largest measured item); start no item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each item and each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-crlf-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never a whole design file; send test and trial output to a file and read only its summary. The order is C1, C2, the plan record; your hand-back point is the first item boundary above 133k; at 170k start no new edit, trial or gate, write the closing audit entry and hand back with the open items named; if the figure cannot be read, record \"not recorded\" and hand back after C1. A hand-back by this rule is a planned split, not a failure.\n\nAfter every commit that touches src/ or tests/mutations/, run uv run pytest -q tests/test_mutate_check.py, on its own line with its exit read (MUT-E's control).\n\nThe plan record: write docs/plans/eval-x-crlf.md and its HTML (python docs/ai-forward-pack/scripts/render-markdown.py), create-only, in its own commit (pre-granted): each item, its red SHA with the failing lines, its green SHA, the mutant result, the applier sweep, requeue5xx's measured flips, and RS2's new record path. Regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted). Run docs-graph.py validate before the hand-back and read its findings, not only its exit.\n\nEvery new test is red first, with its failing lines pasted in the red commit's message (RED-C: never ImportError, AttributeError, NameError or KeyError); a test already green on arrival is recorded \"green on arrival\", never faked red.\n\nScratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\crlf-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).\n\nNever launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report.\n\nGate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_discriminate.py tests/test_readiness.py tests/test_rs1_task.py tests/test_rs2_task.py tests/test_e1_e2e.py tests/test_config.py on the final commit, read as 0 failed and 0 XPASS; uv run python tools/mutate_check.py with tests/mutations/property.json, one run, never --touched, every mutant killed or a recorded reason per survivor; uv run ruff check src tests tools; uv run bench validate, its lines for RS1 and RS2 read and reported; python docs/ai-forward-pack/scripts/docs-graph.py validate.\n\nSuite lock: named-file runs do not take the suite lock, mutate_check does; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.\n\nCommit named paths only, with plain git commit and AGENT_SESSION=x-crlf-e1e4 inline on every commit and coord call. Never pass --no-verify, -n or -c core.hooksPath (HOOK-A); a commit whose output lacks the pre-commit hook's line (N staged path(s) checked) is undone and redone. No history rewrite: never rebase, amend, squash or autosquash a commit, your own unpushed ones included; a fix is a new commit (CR47-6). The one exception is HOOK-A's redo of the commit just made, before any later commit. A line in another owner's file is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green.\n\nYour closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split or served-model-failed), the red SHAs, the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), your context sample at each item, the mutant result, requeue5xx's measured flips, and both trials' outcomes. Report your served model id on the first line of your final message.\n\nNot yours: every src/ file but readiness.py (the variants edit check) and discriminate.py (_variant_overlay); grade/, bench_check.py and the loopback path; every task folder but tasks/RS2 (variants.py, evidence.md, its record) and no task.yaml expected value; tools/mutate_check.py; the design docs.\n\nNot yours: the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader makes yours).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M49PW88DCZ6WVZE8N3XX5VQ8",
+      "shortname": "compile-You are session x-crlf-e1e4 on branch build/eval-x-crlf in your own tree…",
+      "datetime": "2026-10-06T22:55:46Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill compile\nGoal state\nGoal: You are session x-crlf-e1e4 on branch build/eval-x-crlf in your own tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-crlf, harness Claude Code, model sonnet (served claude-sonnet-5-5), an Agent-tool sub-agent with no coord-runner run, one turn, 2,400 s, within 100 calls and 200k context. This is X-CRLF, a fix turn before X-CV's re-records: the variant applier fails open on a CRLF working copy (APPLY-A), and RS2 lost its g-ordering-only variant to the Ruling 111 freeze, as ruled by Coordinator #47 (docs/coordination/coordinator-log/c47.md, CR47-15 and CR47-16), all binding with W0 (docs/design/eval-seam-contracts.md) section 2's defect-variant rule (\"`old` occurs exactly once (else HB-RDY-005)\"), W1-E (docs/design/eval-discriminate.md) section 7, and W1-L Erratum 4 (docs/design/eval-property-tasks.md). Read the X-RS plan record docs/plans/eval-x-rs.md, section \"Finding and validation\", first.\nDone when: Base: build/eval-x-crlf, which the Leader creates from the integration head after the X-RS join, never main. Stop and report, before any edit, if git log --oneline --grep=join-x-rs prints nothing, if git status --short prints anything, or if git grep -n \"read_bytes().replace(edit\" -- src/harness_bench/discriminate.py does not print exactly one line.; The defect, read at dc35f4c3: readiness.variants checks an edit with target.read_text(encoding=\"utf-8\"), which reads CRLF as LF, and text.count(edit[\"old\"]) != 1 refuses (readiness.py about lines 820-826); discriminate._variant_overlay applies the same edit with target.read_bytes().replace(edit[\"old\"].encode(), edit[\"new\"].encode(), 1) (discriminate.py about line 142), which matches nothing on a CRLF file and writes the file back unchanged. So a variant readiness accepted can run as the reference: six RS2 variants read as HB-RDY-003 until X-RS rewrote the files as LF, and a variant that declares no flips would agree with the reference and pass silently. tools/mutate_check.py (about lines 448-454) already has the fail-closed shape: it normalises CRLF to LF before matching and refuses when the find is absent.; C1, red first (CR47-15): one definition of \"an edit applies\" (DM7), used by both readiness.variants and discriminate._variant_overlay: the file's text with CRLF normalised to LF, `old` counted exactly once, else HB-RDY-005 naming the variant and the file; the applier writes the replaced text, never the unchanged bytes. Choose the smallest shape (for example one helper in readiness.py that both call) and name it in the plan record. Tests, in tests/test_discriminate.py: (a) a variant whose reference file is CRLF in the copy the trial reads applies its edit and its declared flip is observed (red today: the edit is a no-op, so the flip is missing); (b) _variant_overlay called directly with an edit whose `old` is absent from the file raises BenchError HB-RDY-005 naming the variant (red today: it returns with the file unchanged). Mutant: the absent-anchor refusal in the applier removed, added to tests/mutations/property.json. Sweep, as one sentence each in the plan record: every other find-and-replace applier in src/ and tools/ (git grep -n \"read_bytes().replace\\|\\.replace(m\\[\\\"find\\\"\\]\" -- src tools), with its line and whether it normalises and refuses.; C2, red first (CR47-16; W1-L Erratum 4's finding): RS2 gains the variant requeue5xx in tasks/RS2/oracle/variants.py: after a flush that failed on HTTP 5xx, the pending batch is re-queued behind the newer records; after a lost response the order is kept. Hand-traced (Inferred): it flips g-ordering alone, on clause result (g-5xx-persistent buffers no late record, so its order is unchanged; g-lost-then-grow fails by a lost response, so the order is kept). Its measured row goes into tests/test_rs2_task.py beside the eight (red first: the row exists before the variant does); a measured flip set other than {g-ordering} is a finding with the measured set, never a reworded variant. Update tasks/RS2/oracle/evidence.md's variant table. Then the ready order (SR-E2): the folder edits first, then uv run bench discriminate RS2 --runs C:\\t\\crlf-runs --cells-root C:\\t\\crlf-cells with no model credentials in the environment, then the new record committed with the variant in one commit, replacing RS2's record as X-RS did (plan record docs/plans/eval-x-rs.md); a doubt about which record file stays is a finding to coord-opus-e1e4. Run uv run bench discriminate RS1 once too and report whether its record is confirmed byte-equal (C1 must not move a record whose files are LF).; The context split rule (CEIL-A, measured): start no item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first item: 53,951 to 72,513 (X-RS part 6 read 69k), so the floor is 73k; expected work per item 60k (the largest measured item); start no item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each item and each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-crlf-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never a whole design file; send test and trial output to a file and read only its summary. The order is C1, C2, the plan record; your hand-back point is the first item boundary above 133k; at 170k start no new edit, trial or gate, write the closing audit entry and hand back with the open items named; if the figure cannot be read, record \"not recorded\" and hand back after C1. A hand-back by this rule is a planned split, not a failure.; After every commit that touches src/ or tests/mutations/, run uv run pytest -q tests/test_mutate_check.py, on its own line with its exit read (MUT-E's control).; The plan record: write docs/plans/eval-x-crlf.md and its HTML (python docs/ai-forward-pack/scripts/render-markdown.py), create-only, in its own commit (pre-granted): each item, its red SHA with the failing lines, its green SHA, the mutant result, the applier sweep, requeue5xx's measured flips, and RS2's new record path. Regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted). Run docs-graph.py validate before the hand-back and read its findings, not only its exit.; Every new test is red first, with its failing lines pasted in the red commit's message (RED-C: never ImportError, AttributeError, NameError or KeyError); a test already green on arrival is recorded \"green on arrival\", never faked red.; Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\crlf-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).; Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report.; Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_discriminate.py tests/test_readiness.py tests/test_rs1_task.py tests/test_rs2_task.py tests/test_e1_e2e.py tests/test_config.py on the final commit, read as 0 failed and 0 XPASS; uv run python tools/mutate_check.py with tests/mutations/property.json, one run, never --touched, every mutant killed or a recorded reason per survivor; uv run ruff check src tests tools; uv run bench validate, its lines for RS1 and RS2 read and reported; python docs/ai-forward-pack/scripts/docs-graph.py validate.; Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commit named paths only, with plain git commit and AGENT_SESSION=x-crlf-e1e4 inline on every commit and coord call. Never pass --no-verify, -n or -c core.hooksPath (HOOK-A); a commit whose output lacks the pre-commit hook's line (N staged path(s) checked) is undone and redone. No history rewrite: never rebase, amend, squash or autosquash a commit, your own unpushed ones included; a fix is a new commit (CR47-6). The one exception is HOOK-A's redo of the commit just made, before any later commit. A line in another owner's file is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green.; Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split or served-model-failed), the red SHAs, the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), your context sample at each item, the mutant result, requeue5xx's measured flips, and both trials' outcomes. Report your served model id on the first line of your final message.\nNot in scope: every src/ file but readiness.py (the variants edit check) and discriminate.py (_variant_overlay); grade/, bench_check.py and the loopback path; every task folder but tasks/RS2 (variants.py, evidence.md, its record) and no task.yaml expected value; tools/mutate_check.py; the design docs.; the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader makes yours).\nTier: T1\nFan-out cap: 0\nContext ceiling: 200k tokens; split rule (CEIL-A): start no item above floor 73k + 60k = 133k; hand-back point at the first item boundary above 133k; hard stop at 170k; unreadable means hand back after C1\nMain-line budget: within 100 calls; 2,400 s this turn\nTrace\n| clause | trace |\n|---|---|\n| done_when: Base: build/eval-x-crlf, which the Leader creates from the integration head after the X-RS join, never main. Stop and report, before any edit, if git log --oneline --grep=join-x-rs prints nothing, if git status --short prints anything, or if git grep -n \"read_bytes().replace(edit\" -- src/harness_bench/discriminate.py does not print exactly one line. | phrase: Base: build/eval-x-crlf, which the Leader creates from the integration head after the X-RS |\n| done_when: The defect, read at dc35f4c3: readiness.variants checks an edit with target.read_text(encoding=\"utf-8\"), which reads CRLF as LF, and text.count(edit[\"old\"]) != 1 refuses (readiness.py about lines 820-826); discriminate._variant_overlay applies the same edit with target.read_bytes().replace(edit[\"old\"].encode(), edit[\"new\"].encode(), 1) (discriminate.py about line 142), which matches nothing on a CRLF file and writes the file back unchanged. So a variant readiness accepted can run as the reference: six RS2 variants read as HB-RDY-003 until X-RS rewrote the files as LF, and a variant that declares no flips would agree with the reference and pass silently. tools/mutate_check.py (about lines 448-454) already has the fail-closed shape: it normalises CRLF to LF before matching and refuses when the find is absent. | phrase: The defect, read at dc35f4c3: readiness.variants checks an edit with target.read_text(enco |\n| done_when: C1, red first (CR47-15): one definition of \"an edit applies\" (DM7), used by both readiness.variants and discriminate._variant_overlay: the file's text with CRLF normalised to LF, `old` counted exactly once, else HB-RDY-005 naming the variant and the file; the applier writes the replaced text, never the unchanged bytes. Choose the smallest shape (for example one helper in readiness.py that both call) and name it in the plan record. Tests, in tests/test_discriminate.py: (a) a variant whose reference file is CRLF in the copy the trial reads applies its edit and its declared flip is observed (red today: the edit is a no-op, so the flip is missing); (b) _variant_overlay called directly with an edit whose `old` is absent from the file raises BenchError HB-RDY-005 naming the variant (red today: it returns with the file unchanged). Mutant: the absent-anchor refusal in the applier removed, added to tests/mutations/property.json. Sweep, as one sentence each in the plan record: every other find-and-replace applier in src/ and tools/ (git grep -n \"read_bytes().replace\\|\\.replace(m\\[\\\"find\\\"\\]\" -- src tools), with its line and whether it normalises and refuses. | phrase: C1, red first (CR47-15): one definition of \"an edit applies\" (DM7), used by both readiness |\n| done_when: C2, red first (CR47-16; W1-L Erratum 4's finding): RS2 gains the variant requeue5xx in tasks/RS2/oracle/variants.py: after a flush that failed on HTTP 5xx, the pending batch is re-queued behind the newer records; after a lost response the order is kept. Hand-traced (Inferred): it flips g-ordering alone, on clause result (g-5xx-persistent buffers no late record, so its order is unchanged; g-lost-then-grow fails by a lost response, so the order is kept). Its measured row goes into tests/test_rs2_task.py beside the eight (red first: the row exists before the variant does); a measured flip set other than {g-ordering} is a finding with the measured set, never a reworded variant. Update tasks/RS2/oracle/evidence.md's variant table. Then the ready order (SR-E2): the folder edits first, then uv run bench discriminate RS2 --runs C:\\t\\crlf-runs --cells-root C:\\t\\crlf-cells with no model credentials in the environment, then the new record committed with the variant in one commit, replacing RS2's record as X-RS did (plan record docs/plans/eval-x-rs.md); a doubt about which record file stays is a finding to coord-opus-e1e4. Run uv run bench discriminate RS1 once too and report whether its record is confirmed byte-equal (C1 must not move a record whose files are LF). | phrase: C2, red first (CR47-16; W1-L Erratum 4's finding): RS2 gains the variant requeue5xx in tas |\n| done_when: The context split rule (CEIL-A, measured): start no item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first item: 53,951 to 72,513 (X-RS part 6 read 69k), so the floor is 73k; expected work per item 60k (the largest measured item); start no item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each item and each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-crlf-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never a whole design file; send test and trial output to a file and read only its summary. The order is C1, C2, the plan record; your hand-back point is the first item boundary above 133k; at 170k start no new edit, trial or gate, write the closing audit entry and hand back with the open items named; if the figure cannot be read, record \"not recorded\" and hand back after C1. A hand-back by this rule is a planned split, not a failure. | phrase: The context split rule (CEIL-A, measured): start no item above floor + the item's expected |\n| done_when: After every commit that touches src/ or tests/mutations/, run uv run pytest -q tests/test_mutate_check.py, on its own line with its exit read (MUT-E's control). | phrase: After every commit that touches src/ or tests/mutations/, run uv run pytest -q tests/test_ |\n| done_when: The plan record: write docs/plans/eval-x-crlf.md and its HTML (python docs/ai-forward-pack/scripts/render-markdown.py), create-only, in its own commit (pre-granted): each item, its red SHA with the failing lines, its green SHA, the mutant result, the applier sweep, requeue5xx's measured flips, and RS2's new record path. Regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted). Run docs-graph.py validate before the hand-back and read its findings, not only its exit. | phrase: The plan record: write docs/plans/eval-x-crlf.md and its HTML (python docs/ai-forward-pack |\n| done_when: Every new test is red first, with its failing lines pasted in the red commit's message (RED-C: never ImportError, AttributeError, NameError or KeyError); a test already green on arrival is recorded \"green on arrival\", never faked red. | phrase: Every new test is red first, with its failing lines pasted in the red commit's message (RE |\n| done_when: Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\crlf-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH). | phrase: Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\cr |\n| done_when: Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report. | phrase: Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, gro |\n| done_when: Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_discriminate.py tests/test_readiness.py tests/test_rs1_task.py tests/test_rs2_task.py tests/test_e1_e2e.py tests/test_config.py on the final commit, read as 0 failed and 0 XPASS; uv run python tools/mutate_check.py with tests/mutations/property.json, one run, never --touched, every mutant killed or a recorded reason per survivor; uv run ruff check src tests tools; uv run bench validate, its lines for RS1 and RS2 read and reported; python docs/ai-forward-pack/scripts/docs-graph.py validate. | phrase: Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run  |\n| done_when: Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that wai |\n| done_when: Commit named paths only, with plain git commit and AGENT_SESSION=x-crlf-e1e4 inline on every commit and coord call. Never pass --no-verify, -n or -c core.hooksPath (HOOK-A); a commit whose output lacks the pre-commit hook's line (N staged path(s) checked) is undone and redone. No history rewrite: never rebase, amend, squash or autosquash a commit, your own unpushed ones included; a fix is a new commit (CR47-6). The one exception is HOOK-A's redo of the commit just made, before any later commit. A line in another owner's file is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green. | phrase: Commit named paths only, with plain git commit and AGENT_SESSION=x-crlf-e1e4 inline on eve |\n| done_when: Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split or served-model-failed), the red SHAs, the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), your context sample at each item, the mutant result, requeue5xx's measured flips, and both trials' outcomes. Report your served model id on the first line of your final message. | phrase: Your closing audit entry, written through audit-log.py, carries the dispatch start and end |\n| not_in_scope: every src/ file but readiness.py (the variants edit check) and discriminate.py (_variant_overlay); grade/, bench_check.py and the loopback path; every task folder but tasks/RS2 (variants.py, evidence.md, its record) and no task.yaml expected value; tools/mutate_check.py; the design docs. | phrase: every src/ file but readiness.py (the variants edit check) and discriminate.py (_variant_o |\n| not_in_scope: the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader makes yours). | phrase: the whole suite and mutate_check --touched (the Leader's); never kill a process by name or |\nReferences\n- old: unresolved (not found)\n- build/eval-x-crlf: unresolved (not found)\n- docs/coordination/coordinator-log/c47.md: docs/coordination/coordinator-log/c47.md sha256 1f0229bc775fabc69428fd8a3e5789376c5afc97ae5ba7fd28af86deea4c5f53\n- docs/design/eval-seam-contracts.md: docs/design/eval-seam-contracts.md sha256 73fea485582dca51c86863e689f6a775e62499375b7013960b98b6f8f1b36f41\n- docs/design/eval-discriminate.md: docs/design/eval-discriminate.md sha256 739e6e2b702c02d6852bb3170a81ec8e47459de85750ca3491073a91878e8643\n- docs/design/eval-property-tasks.md: docs/design/eval-property-tasks.md sha256 3d27015ca89333efe66f1f9c0b6107adbba025e611fc38138914509cc9a37659\n- docs/plans/eval-x-rs.md: unresolved (not found)\n- src/harness_bench/discriminate.py: src/harness_bench/discriminate.py sha256 5252aaf1c35a771191c8c3baeeb9d6462d199db93d89e706766445dc86e5d1b4\n- readiness.py: src/harness_bench/readiness.py sha256 6376ddf47d893b4d8f971d6194824b752bf0570ee8bee370c3532e301ac9a345\n- discriminate.py: src/harness_bench/discriminate.py sha256 5252aaf1c35a771191c8c3baeeb9d6462d199db93d89e706766445dc86e5d1b4\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 a00d6b169a30e7771fb31a616d98a203f69b9f24090a3b5f593bee86b08340e8\n- tests/mutations/property.json: tests/mutations/property.json sha256 ab72525b6c71e8608c08b6c4c4422ebd3aedf68a83707dc54b4bc56b5bed00e5\n- src/: unresolved (not found)\n- tools/: unresolved (not found)\n- tasks/RS2/oracle/variants.py: unresolved (not found)\n- tests/test_rs2_task.py: unresolved (not found)\n- tasks/RS2/oracle/evidence.md's: unresolved (not found)\n- tests/mutations/: unresolved (not found)\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- docs/plans/eval-x-crlf.md: unresolved (not found)\n- docs/ai-forward-pack/scripts/render-markdown.py: docs/ai-forward-pack/scripts/render-markdown.py sha256 1033f9bada4fc31320e4fe8590600e59b0597c40b47d43ffec44fda85c1a71d8\n- docs/docs-index.js: docs/docs-index.js sha256 e0b2f31ce702a8d0ac3e26309eecd2e96324dcb88f5606c5ea010e2f93688aee\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 f6717458ec2670a1be81a7839657dfa77e4dbb2e4515e532b5daefd5d3a8a784\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 25c45e56139c8e3a2d70d353e4b83c0386590e754c342c2ee0e1a88338ff8b73\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tests/test_readiness.py: tests/test_readiness.py sha256 7f0291c4f61d6f20298d0bbf7e819aabadd46c049b3af8ed5c54745184fa34de\n- tests/test_rs1_task.py: unresolved (not found)\n- tests/test_e1_e2e.py: tests/test_e1_e2e.py sha256 4e88541c3ec799b46b64b78c21ec9d8a9671dd8f15f3bca51e21e07a73bd1942\n- tests/test_config.py: tests/test_config.py sha256 1538c081171f9c0e3bad81c05d1caa06e0d6d63f947f378cdefe989b062ab1fd\n- audit-log.py: docs/ai-forward-pack/scripts/audit-log.py sha256 d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4\n- grade/: unresolved (not found)\n- bench_check.py: src/harness_bench/grade/bench_check.py sha256 810d2f729a14c3f8cbb1a11a7cc43cdcb0dc4838e09341434c14b22ea5f41c3e\n- tasks/RS2: unresolved (not found)\n- variants.py: unresolved (ambiguous: 8 matches)\n- evidence.md: unresolved (ambiguous: 29 matches)\n- task.yaml: unresolved (ambiguous: 38 matches)\nAssumptions\n- #1 belief: requeue5xx flips g-ordering alone: g-5xx-persistent buffers no late record (check.py LATE names only g-ordering and g-lost-then-grow), and g-lost-then-grow fails by a lost response, where the variant keeps the order · confirm: the measured row in tests/test_rs2_task.py and the RS2 trial · breaks: W1-L 5(f) stays unrestored; the worker reports the measured flip set and coord-opus-e1e4 rules again · consequential: false\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0\nper_branch_exit: C1 and C2 commits, RS2's new record and the plan record on build/eval-x-crlf, or a hand-back by the split rule with the open items named\njoin_rule: the R-104 worker gate; the Leader joins into integrate/e2e4-18 before X-CV's re-records, re-runs one red SHA, confirms one definition of an applying edit used by readiness and discriminate, the refusal mutant killed, requeue5xx flipping g-ordering alone or a reasoned finding, RS2's record replaced and RS1's confirmed; the Coordinator records the result beside W1-L Erratum 4 at the join; src/ changes, so the X-E ring\ncontainment: own worktree C:\\Projects\\x-harness-x-model-bench-build-eval-x-crlf on build/eval-x-crlf from the integration head holding join-x-rs; src/harness_bench/readiness.py (the variants edit check), src/harness_bench/discriminate.py (_variant_overlay), tests/test_discriminate.py, tests/test_rs2_task.py, tests/mutations/property.json, tasks/RS2/oracle/variants.py and evidence.md, RS2's discrimination record, docs/plans/eval-x-crlf.md and its HTML (create-only), docs/docs-index.js (derive only)\ntermination: one turn\ndeadline: 2,400 s\nfallback: the Leader's decision after hand-back; the worker launches, spawns or messages nothing (FALLBACK-A)\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M49PW7CDSF62CA5TA3B90RRK\nraw sha256: 4aede778ee16e7d6cf9aa56711b93344724b323ea682894f5f997e34669d121c\ncompiler model: claude-opus-5-5\nengine seconds: 0.021\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M49PW7CDSF62CA5TA3B90RRK for claude-code v1: 16 clauses, 1 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [
+          {
+            "id": "#1",
+            "belief": "requeue5xx flips g-ordering alone: g-5xx-persistent buffers no late record (check.py LATE names only g-ordering and g-lost-then-grow), and g-lost-then-grow fails by a lost response, where the variant keeps the order",
+            "confirm": "the measured row in tests/test_rs2_task.py and the RS2 trial",
+            "breaks": "W1-L 5(f) stays unrestored; the worker reports the measured flip set and coord-opus-e1e4 rules again",
+            "consequential": false
+          }
+        ],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "Base: build/eval-x-crlf, which the Leader creates from the integration head after the X-RS join, never main. Stop and report, before any edit, if git log --oneline --grep=join-x-rs prints nothing, if git status --short prints anything, or if git grep -n \"read_bytes().replace(edit\" -- src/harness_bench/discriminate.py does not print exactly one line.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Base: build/eval-x-crlf, which the Leader creates from the integration head after the X-RS"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The defect, read at dc35f4c3: readiness.variants checks an edit with target.read_text(encoding=\"utf-8\"), which reads CRLF as LF, and text.count(edit[\"old\"]) != 1 refuses (readiness.py about lines 820-826); discriminate._variant_overlay applies the same edit with target.read_bytes().replace(edit[\"old\"].encode(), edit[\"new\"].encode(), 1) (discriminate.py about line 142), which matches nothing on a CRLF file and writes the file back unchanged. So a variant readiness accepted can run as the reference: six RS2 variants read as HB-RDY-003 until X-RS rewrote the files as LF, and a variant that declares no flips would agree with the reference and pass silently. tools/mutate_check.py (about lines 448-454) already has the fail-closed shape: it normalises CRLF to LF before matching and refuses when the find is absent.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The defect, read at dc35f4c3: readiness.variants checks an edit with target.read_text(enco"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "C1, red first (CR47-15): one definition of \"an edit applies\" (DM7), used by both readiness.variants and discriminate._variant_overlay: the file's text with CRLF normalised to LF, `old` counted exactly once, else HB-RDY-005 naming the variant and the file; the applier writes the replaced text, never the unchanged bytes. Choose the smallest shape (for example one helper in readiness.py that both call) and name it in the plan record. Tests, in tests/test_discriminate.py: (a) a variant whose reference file is CRLF in the copy the trial reads applies its edit and its declared flip is observed (red today: the edit is a no-op, so the flip is missing); (b) _variant_overlay called directly with an edit whose `old` is absent from the file raises BenchError HB-RDY-005 naming the variant (red today: it returns with the file unchanged). Mutant: the absent-anchor refusal in the applier removed, added to tests/mutations/property.json. Sweep, as one sentence each in the plan record: every other find-and-replace applier in src/ and tools/ (git grep -n \"read_bytes().replace\\|\\.replace(m\\[\\\"find\\\"\\]\" -- src tools), with its line and whether it normalises and refuses.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "C1, red first (CR47-15): one definition of \"an edit applies\" (DM7), used by both readiness"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "C2, red first (CR47-16; W1-L Erratum 4's finding): RS2 gains the variant requeue5xx in tasks/RS2/oracle/variants.py: after a flush that failed on HTTP 5xx, the pending batch is re-queued behind the newer records; after a lost response the order is kept. Hand-traced (Inferred): it flips g-ordering alone, on clause result (g-5xx-persistent buffers no late record, so its order is unchanged; g-lost-then-grow fails by a lost response, so the order is kept). Its measured row goes into tests/test_rs2_task.py beside the eight (red first: the row exists before the variant does); a measured flip set other than {g-ordering} is a finding with the measured set, never a reworded variant. Update tasks/RS2/oracle/evidence.md's variant table. Then the ready order (SR-E2): the folder edits first, then uv run bench discriminate RS2 --runs C:\\t\\crlf-runs --cells-root C:\\t\\crlf-cells with no model credentials in the environment, then the new record committed with the variant in one commit, replacing RS2's record as X-RS did (plan record docs/plans/eval-x-rs.md); a doubt about which record file stays is a finding to coord-opus-e1e4. Run uv run bench discriminate RS1 once too and report whether its record is confirmed byte-equal (C1 must not move a record whose files are LF).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "C2, red first (CR47-16; W1-L Erratum 4's finding): RS2 gains the variant requeue5xx in tas"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The context split rule (CEIL-A, measured): start no item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first item: 53,951 to 72,513 (X-RS part 6 read 69k), so the floor is 73k; expected work per item 60k (the largest measured item); start no item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each item and each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-crlf-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never a whole design file; send test and trial output to a file and read only its summary. The order is C1, C2, the plan record; your hand-back point is the first item boundary above 133k; at 170k start no new edit, trial or gate, write the closing audit entry and hand back with the open items named; if the figure cannot be read, record \"not recorded\" and hand back after C1. A hand-back by this rule is a planned split, not a failure.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The context split rule (CEIL-A, measured): start no item above floor + the item's expected"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "After every commit that touches src/ or tests/mutations/, run uv run pytest -q tests/test_mutate_check.py, on its own line with its exit read (MUT-E's control).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "After every commit that touches src/ or tests/mutations/, run uv run pytest -q tests/test_"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The plan record: write docs/plans/eval-x-crlf.md and its HTML (python docs/ai-forward-pack/scripts/render-markdown.py), create-only, in its own commit (pre-granted): each item, its red SHA with the failing lines, its green SHA, the mutant result, the applier sweep, requeue5xx's measured flips, and RS2's new record path. Regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted). Run docs-graph.py validate before the hand-back and read its findings, not only its exit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The plan record: write docs/plans/eval-x-crlf.md and its HTML (python docs/ai-forward-pack"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Every new test is red first, with its failing lines pasted in the red commit's message (RED-C: never ImportError, AttributeError, NameError or KeyError); a test already green on arrival is recorded \"green on arrival\", never faked red.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Every new test is red first, with its failing lines pasted in the red commit's message (RE"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\crlf-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\cr"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, gro"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_discriminate.py tests/test_readiness.py tests/test_rs1_task.py tests/test_rs2_task.py tests/test_e1_e2e.py tests/test_config.py on the final commit, read as 0 failed and 0 XPASS; uv run python tools/mutate_check.py with tests/mutations/property.json, one run, never --touched, every mutant killed or a recorded reason per survivor; uv run ruff check src tests tools; uv run bench validate, its lines for RS1 and RS2 read and reported; python docs/ai-forward-pack/scripts/docs-graph.py validate.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that wai"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit named paths only, with plain git commit and AGENT_SESSION=x-crlf-e1e4 inline on every commit and coord call. Never pass --no-verify, -n or -c core.hooksPath (HOOK-A); a commit whose output lacks the pre-commit hook's line (N staged path(s) checked) is undone and redone. No history rewrite: never rebase, amend, squash or autosquash a commit, your own unpushed ones included; a fix is a new commit (CR47-6). The one exception is HOOK-A's redo of the commit just made, before any later commit. A line in another owner's file is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit named paths only, with plain git commit and AGENT_SESSION=x-crlf-e1e4 inline on eve"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split or served-model-failed), the red SHAs, the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), your context sample at each item, the mutant result, requeue5xx's measured flips, and both trials' outcomes. Report your served model id on the first line of your final message.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your closing audit entry, written through audit-log.py, carries the dispatch start and end"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "every src/ file but readiness.py (the variants edit check) and discriminate.py (_variant_overlay); grade/, bench_check.py and the loopback path; every task folder but tasks/RS2 (variants.py, evidence.md, its record) and no task.yaml expected value; tools/mutate_check.py; the design docs.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "every src/ file but readiness.py (the variants edit check) and discriminate.py (_variant_o"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader makes yours).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the whole suite and mutate_check --touched (the Leader's); never kill a process by name or"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "own worktree C:\\Projects\\x-harness-x-model-bench-build-eval-x-crlf on build/eval-x-crlf from the integration head holding join-x-rs; src/harness_bench/readiness.py (the variants edit check), src/harness_bench/discriminate.py (_variant_overlay), tests/test_discriminate.py, tests/test_rs2_task.py, tests/mutations/property.json, tasks/RS2/oracle/variants.py and evidence.md, RS2's discrimination record, docs/plans/eval-x-crlf.md and its HTML (create-only), docs/docs-index.js (derive only)",
+          "deadline": "2,400 s",
+          "fallback": "the Leader's decision after hand-back; the worker launches, spawns or messages nothing (FALLBACK-A)",
+          "join_rule": "the R-104 worker gate; the Leader joins into integrate/e2e4-18 before X-CV's re-records, re-runs one red SHA, confirms one definition of an applying edit used by readiness and discriminate, the refusal mutant killed, requeue5xx flipping g-ordering alone or a reasoned finding, RS2's record replaced and RS1's confirmed; the Coordinator records the result beside W1-L Erratum 4 at the join; src/ changes, so the X-E ring",
+          "per_branch_exit": "C1 and C2 commits, RS2's new record and the plan record on build/eval-x-crlf, or a hand-back by the split rule with the open items named",
+          "termination": "one turn",
+          "transient_retry": "0",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens; split rule (CEIL-A): start no item above floor 73k + 60k = 133k; hand-back point at the first item boundary above 133k; hard stop at 170k; unreadable means hand back after C1",
+          "done_when": [
+            "Base: build/eval-x-crlf, which the Leader creates from the integration head after the X-RS join, never main. Stop and report, before any edit, if git log --oneline --grep=join-x-rs prints nothing, if git status --short prints anything, or if git grep -n \"read_bytes().replace(edit\" -- src/harness_bench/discriminate.py does not print exactly one line.",
+            "The defect, read at dc35f4c3: readiness.variants checks an edit with target.read_text(encoding=\"utf-8\"), which reads CRLF as LF, and text.count(edit[\"old\"]) != 1 refuses (readiness.py about lines 820-826); discriminate._variant_overlay applies the same edit with target.read_bytes().replace(edit[\"old\"].encode(), edit[\"new\"].encode(), 1) (discriminate.py about line 142), which matches nothing on a CRLF file and writes the file back unchanged. So a variant readiness accepted can run as the reference: six RS2 variants read as HB-RDY-003 until X-RS rewrote the files as LF, and a variant that declares no flips would agree with the reference and pass silently. tools/mutate_check.py (about lines 448-454) already has the fail-closed shape: it normalises CRLF to LF before matching and refuses when the find is absent.",
+            "C1, red first (CR47-15): one definition of \"an edit applies\" (DM7), used by both readiness.variants and discriminate._variant_overlay: the file's text with CRLF normalised to LF, `old` counted exactly once, else HB-RDY-005 naming the variant and the file; the applier writes the replaced text, never the unchanged bytes. Choose the smallest shape (for example one helper in readiness.py that both call) and name it in the plan record. Tests, in tests/test_discriminate.py: (a) a variant whose reference file is CRLF in the copy the trial reads applies its edit and its declared flip is observed (red today: the edit is a no-op, so the flip is missing); (b) _variant_overlay called directly with an edit whose `old` is absent from the file raises BenchError HB-RDY-005 naming the variant (red today: it returns with the file unchanged). Mutant: the absent-anchor refusal in the applier removed, added to tests/mutations/property.json. Sweep, as one sentence each in the plan record: every other find-and-replace applier in src/ and tools/ (git grep -n \"read_bytes().replace\\|\\.replace(m\\[\\\"find\\\"\\]\" -- src tools), with its line and whether it normalises and refuses.",
+            "C2, red first (CR47-16; W1-L Erratum 4's finding): RS2 gains the variant requeue5xx in tasks/RS2/oracle/variants.py: after a flush that failed on HTTP 5xx, the pending batch is re-queued behind the newer records; after a lost response the order is kept. Hand-traced (Inferred): it flips g-ordering alone, on clause result (g-5xx-persistent buffers no late record, so its order is unchanged; g-lost-then-grow fails by a lost response, so the order is kept). Its measured row goes into tests/test_rs2_task.py beside the eight (red first: the row exists before the variant does); a measured flip set other than {g-ordering} is a finding with the measured set, never a reworded variant. Update tasks/RS2/oracle/evidence.md's variant table. Then the ready order (SR-E2): the folder edits first, then uv run bench discriminate RS2 --runs C:\\t\\crlf-runs --cells-root C:\\t\\crlf-cells with no model credentials in the environment, then the new record committed with the variant in one commit, replacing RS2's record as X-RS did (plan record docs/plans/eval-x-rs.md); a doubt about which record file stays is a finding to coord-opus-e1e4. Run uv run bench discriminate RS1 once too and report whether its record is confirmed byte-equal (C1 must not move a record whose files are LF).",
+            "The context split rule (CEIL-A, measured): start no item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first item: 53,951 to 72,513 (X-RS part 6 read 69k), so the floor is 73k; expected work per item 60k (the largest measured item); start no item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each item and each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-crlf-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never a whole design file; send test and trial output to a file and read only its summary. The order is C1, C2, the plan record; your hand-back point is the first item boundary above 133k; at 170k start no new edit, trial or gate, write the closing audit entry and hand back with the open items named; if the figure cannot be read, record \"not recorded\" and hand back after C1. A hand-back by this rule is a planned split, not a failure.",
+            "After every commit that touches src/ or tests/mutations/, run uv run pytest -q tests/test_mutate_check.py, on its own line with its exit read (MUT-E's control).",
+            "The plan record: write docs/plans/eval-x-crlf.md and its HTML (python docs/ai-forward-pack/scripts/render-markdown.py), create-only, in its own commit (pre-granted): each item, its red SHA with the failing lines, its green SHA, the mutant result, the applier sweep, requeue5xx's measured flips, and RS2's new record path. Regenerate docs/docs-index.js only with python docs/ai-forward-pack/scripts/docs-graph.py derive in its own commit (pre-granted). Run docs-graph.py validate before the hand-back and read its findings, not only its exit.",
+            "Every new test is red first, with its failing lines pasted in the red commit's message (RED-C: never ImportError, AttributeError, NameError or KeyError); a test already green on arrival is recorded \"green on arrival\", never faked red.",
+            "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\crlf-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH).",
+            "Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report.",
+            "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit and on the final commit; uv run pytest -q tests/test_discriminate.py tests/test_readiness.py tests/test_rs1_task.py tests/test_rs2_task.py tests/test_e1_e2e.py tests/test_config.py on the final commit, read as 0 failed and 0 XPASS; uv run python tools/mutate_check.py with tests/mutations/property.json, one run, never --touched, every mutant killed or a recorded reason per survivor; uv run ruff check src tests tools; uv run bench validate, its lines for RS1 and RS2 read and reported; python docs/ai-forward-pack/scripts/docs-graph.py validate.",
+            "Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "Commit named paths only, with plain git commit and AGENT_SESSION=x-crlf-e1e4 inline on every commit and coord call. Never pass --no-verify, -n or -c core.hooksPath (HOOK-A); a commit whose output lacks the pre-commit hook's line (N staged path(s) checked) is undone and redone. No history rewrite: never rebase, amend, squash or autosquash a commit, your own unpushed ones included; a fix is a new commit (CR47-6). The one exception is HOOK-A's redo of the commit just made, before any later commit. A line in another owner's file is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green.",
+            "Your closing audit entry, written through audit-log.py, carries the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split or served-model-failed), the red SHAs, the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), your context sample at each item, the mutant result, requeue5xx's measured flips, and both trials' outcomes. Report your served model id on the first line of your final message."
+          ],
+          "fan_out_cap": "0",
+          "goal": "You are session x-crlf-e1e4 on branch build/eval-x-crlf in your own tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-crlf, harness Claude Code, model sonnet (served claude-sonnet-5-5), an Agent-tool sub-agent with no coord-runner run, one turn, 2,400 s, within 100 calls and 200k context. This is X-CRLF, a fix turn before X-CV's re-records: the variant applier fails open on a CRLF working copy (APPLY-A), and RS2 lost its g-ordering-only variant to the Ruling 111 freeze, as ruled by Coordinator #47 (docs/coordination/coordinator-log/c47.md, CR47-15 and CR47-16), all binding with W0 (docs/design/eval-seam-contracts.md) section 2's defect-variant rule (\"`old` occurs exactly once (else HB-RDY-005)\"), W1-E (docs/design/eval-discriminate.md) section 7, and W1-L Erratum 4 (docs/design/eval-property-tasks.md). Read the X-RS plan record docs/plans/eval-x-rs.md, section \"Finding and validation\", first.",
+          "main_line_budget": "within 100 calls; 2,400 s this turn",
+          "not_in_scope": [
+            "every src/ file but readiness.py (the variants edit check) and discriminate.py (_variant_overlay); grade/, bench_check.py and the loopback path; every task folder but tasks/RS2 (variants.py, evidence.md, its record) and no task.yaml expected value; tools/mutate_check.py; the design docs.",
+            "the whole suite and mutate_check --touched (the Leader's); never kill a process by name or pattern, only PIDs you started; never create, enter or leave a worktree yourself (the Leader makes yours)."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.021,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M49PW7CDSF62CA5TA3B90RRK",
+        "raw_sha256": "4aede778ee16e7d6cf9aa56711b93344724b323ea682894f5f997e34669d121c",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "old"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-crlf"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordinator-log/c47.md",
+            "reason": null,
+            "sha256": "1f0229bc775fabc69428fd8a3e5789376c5afc97ae5ba7fd28af86deea4c5f53",
+            "status": "resolved",
+            "token": "docs/coordination/coordinator-log/c47.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-seam-contracts.md",
+            "reason": null,
+            "sha256": "73fea485582dca51c86863e689f6a775e62499375b7013960b98b6f8f1b36f41",
+            "status": "resolved",
+            "token": "docs/design/eval-seam-contracts.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-discriminate.md",
+            "reason": null,
+            "sha256": "739e6e2b702c02d6852bb3170a81ec8e47459de85750ca3491073a91878e8643",
+            "status": "resolved",
+            "token": "docs/design/eval-discriminate.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-property-tasks.md",
+            "reason": null,
+            "sha256": "3d27015ca89333efe66f1f9c0b6107adbba025e611fc38138914509cc9a37659",
+            "status": "resolved",
+            "token": "docs/design/eval-property-tasks.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/plans/eval-x-rs.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/discriminate.py",
+            "reason": null,
+            "sha256": "5252aaf1c35a771191c8c3baeeb9d6462d199db93d89e706766445dc86e5d1b4",
+            "status": "resolved",
+            "token": "src/harness_bench/discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/readiness.py",
+            "reason": null,
+            "sha256": "6376ddf47d893b4d8f971d6194824b752bf0570ee8bee370c3532e301ac9a345",
+            "status": "resolved",
+            "token": "readiness.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/discriminate.py",
+            "reason": null,
+            "sha256": "5252aaf1c35a771191c8c3baeeb9d6462d199db93d89e706766445dc86e5d1b4",
+            "status": "resolved",
+            "token": "discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_discriminate.py",
+            "reason": null,
+            "sha256": "a00d6b169a30e7771fb31a616d98a203f69b9f24090a3b5f593bee86b08340e8",
+            "status": "resolved",
+            "token": "tests/test_discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/property.json",
+            "reason": null,
+            "sha256": "ab72525b6c71e8608c08b6c4c4422ebd3aedf68a83707dc54b4bc56b5bed00e5",
+            "status": "resolved",
+            "token": "tests/mutations/property.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/RS2/oracle/variants.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_rs2_task.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/RS2/oracle/evidence.md's"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/plans/eval-x-crlf.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/render-markdown.py",
+            "reason": null,
+            "sha256": "1033f9bada4fc31320e4fe8590600e59b0597c40b47d43ffec44fda85c1a71d8",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/render-markdown.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/docs-index.js",
+            "reason": null,
+            "sha256": "e0b2f31ce702a8d0ac3e26309eecd2e96324dcb88f5606c5ea010e2f93688aee",
+            "status": "resolved",
+            "token": "docs/docs-index.js"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_identity.py",
+            "reason": null,
+            "sha256": "f6717458ec2670a1be81a7839657dfa77e4dbb2e4515e532b5daefd5d3a8a784",
+            "status": "resolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_atomic_sites.py",
+            "reason": null,
+            "sha256": "143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90",
+            "status": "resolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_arms_guard.py",
+            "reason": null,
+            "sha256": "25c45e56139c8e3a2d70d353e4b83c0386590e754c342c2ee0e1a88338ff8b73",
+            "status": "resolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_skills_in_sync.py",
+            "reason": null,
+            "sha256": "572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d",
+            "status": "resolved",
+            "token": "tests/test_skills_in_sync.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_timing_hygiene.py",
+            "reason": null,
+            "sha256": "fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6",
+            "status": "resolved",
+            "token": "tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_readiness.py",
+            "reason": null,
+            "sha256": "7f0291c4f61d6f20298d0bbf7e819aabadd46c049b3af8ed5c54745184fa34de",
+            "status": "resolved",
+            "token": "tests/test_readiness.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_rs1_task.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_e1_e2e.py",
+            "reason": null,
+            "sha256": "4e88541c3ec799b46b64b78c21ec9d8a9671dd8f15f3bca51e21e07a73bd1942",
+            "status": "resolved",
+            "token": "tests/test_e1_e2e.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_config.py",
+            "reason": null,
+            "sha256": "1538c081171f9c0e3bad81c05d1caa06e0d6d63f947f378cdefe989b062ab1fd",
+            "status": "resolved",
+            "token": "tests/test_config.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/audit-log.py",
+            "reason": null,
+            "sha256": "d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4",
+            "status": "resolved",
+            "token": "audit-log.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grade/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/bench_check.py",
+            "reason": null,
+            "sha256": "810d2f729a14c3f8cbb1a11a7cc43cdcb0dc4838e09341434c14b22ea5f41c3e",
+            "status": "resolved",
+            "token": "bench_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/RS2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 8 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "variants.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 29 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "evidence.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 38 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "task.yaml"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M49PYQ9EMMT2MFS5S9E0GHGP",
+      "shortname": "c47-join-x-rs",
+      "datetime": "2026-10-06T22:57:07Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Leader resume: X-RS join - W1-L Erratum 4, IDEM-A RS1 sweep, rule on the CRLF variant applier defect and compile a fix turn",
+      "summary": "W1-L Erratum 4 at eval-property-tasks.md:555-568 (R-111 c3, CR47-7/8/9, RV-TA 5(f) finding :567, IDEM-A RS1 sweep :568); Erratum 3 note :553. IDEM-A RS1: not the shape (key bound to one call's frozen body, ledger.py:26-35). CR47-15: _variant_overlay fail-open on CRLF (two decodings of one edit), APPLY-A registered; fix one definition with refusal, before X-CV re-records. CR47-16: restore 5(f) with variant requeue5xx. X-CRLF compiled al-01M49PW88DCZ6WVZE8N3XX5VQ8 (raw al-01M49PW7CDSF62CA5TA3B90RRK, session x-crlf-e1e4). check_compile: doc is dict True, mode compiled, check_schema None, verify_document []. Gates derive 0, validate 0, verify-ruling-citations 0. Tokens: not recorded.",
+      "kind": "skill",
+      "skill": "compile",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-property-tasks.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "X-RS join errata and the CRLF fix turn",
+      "done_when": "Erratum 4 written, RS1 sweep, CR47-15/16, X-CRLF compiled and checked, gates read, commit, session end",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-06T22:50:24Z",
+      "duration_seconds": 403.0,
+      "git": {
+        "sha": "788ebad59ce51efbd9a679de3f0adc8d54aa160f",
+        "short": "788ebad59",
         "branch": "coord/eval-c47-fixe",
         "pushed": null
       }
