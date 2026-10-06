@@ -672,7 +672,7 @@ def test_catalog_has_the_eleven_property_metrics_with_the_fixed_fields():
     found = _index(catalog)
     missing = sorted(row["id"] for row in ELEVEN if row["id"] not in found)
     assert missing == []  # red on 0.6: the catalog holds none of the eleven ids
-    assert catalog["version"] == "0.7.dev"
+    assert catalog["version"] == "0.7"  # released at X-G3's join (R-86 c3, 2c4e2204)
     for row in ELEVEN:
         area, metric = found[row["id"]]
         assert area == row["area"], row["id"]

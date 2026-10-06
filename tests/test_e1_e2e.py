@@ -75,12 +75,10 @@ def lean_repo(base: Path) -> Path:
     (root / "docs" / "notes").mkdir()
     shutil.copy(ROOT / "docs" / "notes" / "spike-e4-post-turn-prompt.md", root / "docs" / "notes" / "spike-e4-post-turn-prompt.md")  # baseline needs it accepted
     (root / "bench" / "task-freeze.yaml").unlink(missing_ok=True)  # the frozen wave-3 tasks are not in this lean copy
-    # `baseline` needs catalog 0.7 frozen (HB-CMP-006) and a `.dev` catalog's passes are probes, never current (views._is_probe), so the
-    # temp copy releases 0.7 as the catalog freeze would. On the real tree the catalog is `0.7.dev` and unfrozen: a finding for the Leader.
+    # `baseline` needs catalog 0.7 frozen (HB-CMP-006) and a `.dev` catalog's passes are probes, never current (views._is_probe).
+    # The real tree released 0.7 at X-G3's join (R-86 c3, 2c4e2204); the lean copy re-pins its own freeze entry to its catalog_hash.
     metrics = root / "bench" / "metrics.yaml"
-    text = metrics.read_text(encoding="utf-8")
-    assert 'version: "0.7.dev"' in text
-    metrics.write_text(text.replace('version: "0.7.dev"', 'version: "0.7"', 1), encoding="utf-8")
+    assert 'version: "0.7"' in metrics.read_text(encoding="utf-8")
     set_freeze(root, identity.catalog_hash(root))
     cache = upstream_cache()
     if cache is not None:
