@@ -1891,7 +1891,7 @@ def _runs_filters(view: views.RunView) -> html_builder.Html:
 
     tasks = sorted({_task_id(c) for c in view.cells})
     combos = sorted({c.combo for c in view.cells})
-    packs = sorted({c.pack for c in view.cells})
+    packs = sorted({c.arm for c in view.cells})
     outcomes = sorted({c.outcome for c in view.cells})
     validities = sorted({c.validity for c in view.cells})
     return html_builder.el(
@@ -1953,7 +1953,7 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str], run_
         # leaderboard rows use); `data-combo-name` is the literal combo the Runs filter select matches.
         row_attrs = {"id": f"cell-{c.cell_id}", "data-task": _task_id(c),
                     "data-combo": (combo_ix or {}).get(c.combo, ""), "data-combo-name": c.combo,
-                    "data-pack": c.pack, "data-outcome": c.outcome, "data-validity": c.validity}
+                    "data-pack": c.arm, "data-outcome": c.outcome, "data-validity": c.validity}
         body_rows.append(html_builder.el("tr", row_attrs, *row_cells))
 
     table = html_builder.el(

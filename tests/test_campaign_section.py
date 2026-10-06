@@ -450,7 +450,7 @@ def test_evu_3_no_admitted_task_empty_state(tmp_path):
 
 
 def test_evu_3_a_comparison_absent_from_the_arms(tmp_path):
-    only_off = [c for c in grid_cells() if c.pack == "off"]
+    only_off = [c for c in grid_cells() if c.arm == "off"]
     world = make_world(tmp_path, cells=only_off, plan_body={**grid_plan(), "arms": {"off": {"pack": None}}})
     row = q(section_of(dom(render(world)), "property-verdicts"), "tr", data_property="security")[0]
     assert "This grid has no on." in row.text()
@@ -511,7 +511,7 @@ def test_evu_7_exploratory_labels(tmp_path):
     view = views.load(run_dir)
     for c in view.cells:
         if c.cell_id == "a":
-            c.pack = "on"
+            c.arm = "on"
     world = make_world(tmp_path / "w", eligible=False)  # the page is a campaign report; the flipped cell label names no pair
     header = "Exploratory — see §3 Property verdicts for the pre-registered result"
     badge = "exploratory — not pre-registered"

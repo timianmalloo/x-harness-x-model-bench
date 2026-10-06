@@ -126,7 +126,7 @@ def pairs(cells: Sequence[CellView], plan_by_id: Mapping[str, dict]) -> list[Pai
         if c.validity != "valid":
             continue
         task, rep, _ = _cell_task_rep(c.cell_id, plan_by_id)
-        by_key.setdefault((task, c.combo, rep), {})[c.pack] = c
+        by_key.setdefault((task, c.combo, rep), {})[c.arm] = c
     result = []
     for (task, combo, rep), by_pack in sorted(by_key.items()):
         if "on" in by_pack and "off" in by_pack:
@@ -757,7 +757,7 @@ def population_caveats(view: RunView) -> tuple[str, ...]:
     valid: dict[tuple[str, str], int] = {}
     for c in view.cells:
         if c.validity == "valid":
-            key = (c.combo, c.pack)
+            key = (c.combo, c.arm)
             valid[key] = valid.get(key, 0) + 1
     lines = []
     for key in sorted(planned):
@@ -913,7 +913,7 @@ def assemble(
 ) -> PackImprovementResult:
     """Design section 7's whole section, assembled once per report render (design section 2's states
     table; PI-T1, T2, T14)."""
-    packs = {c.pack for c in view.cells}
+    packs = {c.arm for c in view.cells}
     if len(packs) < 2:
         return PackImprovementResult(STATE_ONE_PACK, _ONE_PACK_LINE, None, (), (), None, (), method_lines(board_obj))
     if view.grading_id is None:
@@ -928,7 +928,7 @@ def assemble(
 
     combo_packs: dict[str, set[str]] = {}
     for c in view.cells:
-        combo_packs.setdefault(c.combo, set()).add(c.pack)
+        combo_packs.setdefault(c.combo, set()).add(c.arm)
     partial = any(len(p) < 2 for p in combo_packs.values())
     state = STATE_PARTIAL if partial else STATE_FULL
 
@@ -1002,7 +1002,7 @@ def assemble(
         t = rec.get("task")
         if t is None or "rep" not in rec:
             continue
-        by_trc.setdefault((t, c.combo, rec["rep"]), {})[c.pack] = c
+        by_trc.setdefault((t, c.combo, rec["rep"]), {})[c.arm] = c
 
     on_diverted_failed: list[str] = []
     on_stopped: list[str] = []
@@ -1011,7 +1011,7 @@ def assemble(
     escalated_pack_files = False
     for cid, ind in indicators.items():
         cell = valid_cells[cid]
-        if cell.pack != "on":
+        if cell.arm != "on":
             if ind.git_identity_set:
                 off_git_ids.append(cid)
             off_files = ind.pack_files_written.value
@@ -1290,7 +1290,7 @@ def _headline(all_pairs: Sequence, task_counts: Mapping[str, tuple[int, int, int
     k_off = 0
     for c in valid_cells.values():
         p = _pass(c)
-        if c.pack == "on":
+        if c.arm == "on":
             if p is False:
                 on_failures += 1
             elif p is None:

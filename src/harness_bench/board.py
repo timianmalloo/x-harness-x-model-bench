@@ -207,7 +207,7 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
     # Group cells by (combo, pack)
     groups: dict[tuple[str, str], list[CellView]] = {}
     for c in view.cells:
-        groups.setdefault((c.combo, c.pack), []).append(c)
+        groups.setdefault((c.combo, c.arm), []).append(c)
 
     rows_dict: dict[tuple[str, str], BoardRow] = {}
     rank_inputs: dict[tuple[str, str], tuple[Interval, Interval]] = {}
@@ -364,7 +364,7 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
     areas_list: list[AreaRow] = []
     for combo in combos:
         for pack in packs[combo]:
-            combo_cells = [c for c in view.cells if c.combo == combo and c.pack == pack]
+            combo_cells = [c for c in view.cells if c.combo == combo and c.arm == pack]
             valid_cells = [c for c in combo_cells if c.validity == "valid"]
             for a in cat.areas:
                 if primary != "gated":
@@ -391,7 +391,7 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
         )
     for combo in combos:
         for pack in packs[combo]:
-            combo_cells = [c for c in view.cells if c.combo == combo and c.pack == pack]
+            combo_cells = [c for c in view.cells if c.combo == combo and c.arm == pack]
             valid_cells = [c for c in combo_cells if c.validity == "valid"]
             for sc in scenarios:
                 scen_cells = [c for c in valid_cells if c.scenario == sc]
@@ -429,7 +429,7 @@ def build(view: RunView, cat: Catalog, params: Params | None = None) -> Board:
     frontier_list: list[FrontierRow] = []
     for combo in combos:
         for pack in packs[combo]:
-            combo_cells = [c for c in view.cells if c.combo == combo and c.pack == pack]
+            combo_cells = [c for c in view.cells if c.combo == combo and c.arm == pack]
             valid_cells = [c for c in combo_cells if c.validity == "valid"]
             r_lb = rows_dict.get((combo, pack))
             p1_iv = r_lb.pass_at_1 if r_lb is not None else Interval(point=None, lo=None, hi=None, n=0, reason="no cells")
@@ -534,7 +534,7 @@ def _build_pack_effect(
 ) -> PackEffect:
     """`no_anchors` is the primary measure's reason when anchors do not apply to this pass (R-78 c3); area rows are
     then NA with that reason, never a composite computed from another catalog version's anchors."""
-    pack_settings = sorted({c.pack for c in view.cells})
+    pack_settings = sorted({c.arm for c in view.cells})
     tasks_in_run = sorted({_cell_task_rep(c.cell_id, plan_by_id)[0] for c in view.cells})
     excluded_tasks = tuple(t for t in tasks_in_run if t in CONTAMINATION_PRONE)
 
@@ -553,7 +553,7 @@ def _build_pack_effect(
 
     for combo in combos:
         combo_cells = [c for c in view.cells if c.combo == combo]
-        combo_packs = {c.pack for c in combo_cells}
+        combo_packs = {c.arm for c in combo_cells}
         if not ({"off", "on"} <= combo_packs):
             for m in measures:
                 pe_rows.append(
@@ -585,7 +585,7 @@ def _build_pack_effect(
                         Decimal(str(c.scores["pass_at_1"].value)),
                     )
                     for c in clean_cells
-                    if c.pack == "off"
+                    if c.arm == "off"
                     and c.validity == "valid"
                     and c.scores.get("pass_at_1", Measure(None)).value is not None
                 ]
@@ -596,7 +596,7 @@ def _build_pack_effect(
                         Decimal(str(c.scores["pass_at_1"].value)),
                     )
                     for c in clean_cells
-                    if c.pack == "on"
+                    if c.arm == "on"
                     and c.validity == "valid"
                     and c.scores.get("pass_at_1", Measure(None)).value is not None
                 ]
@@ -604,7 +604,7 @@ def _build_pack_effect(
                 # Area score
                 off_obs = []
                 for c in clean_cells:
-                    if c.pack == "off" and c.validity == "valid":
+                    if c.arm == "off" and c.validity == "valid":
                         score = c.scores.get(m)
                         if (score is None or score.value is None) and m != "pass_at_1":
                             all_scores = _composite_inputs(c.scores, cat, view.catalog_version)
@@ -619,7 +619,7 @@ def _build_pack_effect(
                             )
                 on_obs = []
                 for c in clean_cells:
-                    if c.pack == "on" and c.validity == "valid":
+                    if c.arm == "on" and c.validity == "valid":
                         score = c.scores.get(m)
                         if (score is None or score.value is None) and m != "pass_at_1":
                             all_scores = _composite_inputs(c.scores, cat, view.catalog_version)
@@ -798,14 +798,14 @@ def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = 
                 base_cells = [
                     c for c in base.cells
                     if c.combo == combo
-                    and c.pack == pack
+                    and c.arm == pack
                     and c.validity == "valid"
                     and _cell_task_rep(c.cell_id, base_plan_by_id)[0] not in CONTAMINATION_PRONE
                 ]
                 view_cells = [
                     c for c in view.cells
                     if c.combo == combo
-                    and c.pack == pack
+                    and c.arm == pack
                     and c.validity == "valid"
                     and _cell_task_rep(c.cell_id, view_plan_by_id)[0] not in CONTAMINATION_PRONE
                 ]

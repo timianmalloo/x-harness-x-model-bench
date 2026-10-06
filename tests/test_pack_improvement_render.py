@@ -92,7 +92,7 @@ def test_pi_t14_a_planted_canary_never_reaches_the_rendered_page(tmp_path):
     view = views.load(run_dir)
     for c in view.cells:  # archived_runs.make_run plans every cell pack "off"; flip one so a pair forms
         if c.cell_id == "a":
-            c.pack = "on"
+            c.arm = "on"
 
     doc = html.render(view, archive_present=True, run_dir=run_dir, root=root_dir)
     assert CANARY not in doc
@@ -116,7 +116,7 @@ def test_pi_t16_group_table_shows_the_real_combo_name_not_the_cn_token(tmp_path)
     view = views.load(run_dir)
     for c in view.cells:  # make_run plans every cell pack "off"; flip one so a pair forms
         if c.cell_id == "a":
-            c.pack = "on"
+            c.arm = "on"
 
     doc = html.render(view, archive_present=True, run_dir=run_dir, root=root_dir)
     section = re.search(r'<section id="pack-improvement">.*', doc, re.DOTALL).group(0)

@@ -115,7 +115,7 @@ def test_two_named_arms_do_not_claim_a_single_pack_setting(root, tmp_path):
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     view = views.load(run_dir)
     original = view.cells[0]
-    view.cells = [replace(original, pack="off"), replace(original, pack="candidate")]
+    view.cells = [replace(original, arm="off"), replace(original, arm="candidate")]
     result = board.build(view, composites.load_catalog(root))
     assert "one pack setting" not in result.pack_effect.status
     assert "not computed" in result.pack_effect.status

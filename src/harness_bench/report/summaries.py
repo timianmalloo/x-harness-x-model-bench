@@ -207,11 +207,11 @@ def sample_pack_on_cells(view: views.RunView) -> tuple[str, ...]:
     `SAMPLE_CAP` per combo, chosen by cell id. Deterministic: no randomness, ordered by combo then cell id."""
     off_by_key: dict[tuple[str, str, str], views.CellView] = {}
     for c in view.cells:
-        if c.pack == "off":
+        if c.arm == "off":
             off_by_key[(c.combo, *_cell_key(c))] = c
     chosen: dict[str, list[str]] = {}
     for c in sorted(view.cells, key=lambda c: c.cell_id):
-        if c.pack != "on":
+        if c.arm != "on":
             continue
         off = off_by_key.get((c.combo, *_cell_key(c)))
         if off is None:

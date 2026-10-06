@@ -60,7 +60,7 @@ def _cell(task, rep, arm, value=1, *, harness="cc", combo="c", outcome="complete
     scores = {} if value == "absent" else {
         "property_check_pass": views.Measure(None if value is None else value, reason if value is None else None)}
     return views.CellView(
-        cell_id=cid or f"{task}-{arm}-{rep}", task=task, rep=rep, label=label or cell.label, combo=combo, pack=arm, harness=harness,
+        cell_id=cid or f"{task}-{arm}-{rep}", task=task, rep=rep, label=label or cell.label, combo=combo, arm=arm, harness=harness,
         model="m", outcome=outcome, cause=cause, code=None, validity=validity, validity_code=None,
         wall_ms=views.Measure(wall) if wall is not None else na, model_ms=na, tool_ms=na, idle_ms=na,
         tokens=_tok(tokens), tokens_reason=None if tokens is not None else "not recorded", scores=scores)
