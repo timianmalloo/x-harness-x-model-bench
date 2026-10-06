@@ -281,25 +281,27 @@ def cmd_run(args) -> int:
     if (kind := plan.kind_of(p)) != "measurement":  # SR-E3 1: only a measurement run is a bench run
         raise BenchError("HB-PLN-004", f"bench run needs a measurement plan; plan kind is {kind}. Run it through bench discriminate.")
     plan.require_run_parameters(p)
-    if (run_dir / "events").exists():
+    cells_root, tools_dir = Path(args.cells_root), Path(args.tools_dir)
+    resuming = (run_dir / "events").exists()
+    if not resuming:
+        for task_id, t in p["tasks"].items():
+            if plan.task_version_hash(root / "tasks" / task_id) != t["version_hash"]:
+                raise BenchError("HB-USR-002", f"task {task_id} changed since the plan; plan a new run")
+        plan.require_scripted_user_inputs(root, p)
+        preflight.check(p, cells_root, tools_dir)
+    launchers = {h: profiles.ProfileLauncher(profiles.load(root, h), tools_dir, planned) for h, planned in p["builds"].items()}
+    cfg = engine.EngineConfig(run_dir=run_dir, cells_root=cells_root, launchers=launchers,
+                              build_workspace=_workspace_builder(root, p, cells_root / ".sources", tools_dir.parent / "pack",
+                                                                 tools_dir.parent / "upstream"),
+                              grade=lambda d: runner.run_pass(d, root, judge.IN_RUN, cells_root=cells_root).summary(),  # no judge call
+                              identity_check=identity.launch_check(root, p),
+                              campaign_check=lambda: campaign.run_side_check(root, p, args.run_id), verify=views.verify)
+    if resuming:
         from harness_bench import resume
 
-        return resume.resume_run(run_dir, root, p, None).exit_code
-    for task_id, t in p["tasks"].items():
-        if plan.task_version_hash(root / "tasks" / task_id) != t["version_hash"]:
-            raise BenchError("HB-USR-002", f"task {task_id} changed since the plan; plan a new run")
-    plan.require_scripted_user_inputs(root, p)
-    cells_root, tools_dir = Path(args.cells_root), Path(args.tools_dir)
-    preflight.check(p, cells_root, tools_dir)
-    launchers = {h: profiles.ProfileLauncher(profiles.load(root, h), tools_dir, planned) for h, planned in p["builds"].items()}
+        return resume.resume_run(run_dir, root, p, cfg).exit_code
     log_handler = engine.configure_logging(run_dir, p["trace_id"])
     try:
-        cfg = engine.EngineConfig(run_dir=run_dir, cells_root=cells_root, launchers=launchers,
-                                  build_workspace=_workspace_builder(root, p, cells_root / ".sources", tools_dir.parent / "pack",
-                                                                     tools_dir.parent / "upstream"),
-                                  grade=lambda d: runner.run_pass(d, root, judge.IN_RUN, cells_root=cells_root).summary(),  # no judge call
-                                  identity_check=identity.launch_check(root, p),
-                                  campaign_check=lambda: campaign.run_side_check(root, p, args.run_id))
         summary = engine.Engine(p, cfg).run()
     finally:
         engine.log.removeHandler(log_handler)

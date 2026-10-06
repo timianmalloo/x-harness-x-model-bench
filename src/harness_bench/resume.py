@@ -1,19 +1,66 @@
 """Run resume entry points (W1-K).
 
-`resume_run` is still the K1 refusal skeleton (K1c replaces it). K1b supplies the pure parts: the stop predicate,
-the classifier (W1-K section 3.2) and the one remaining-work predicate (D-K12). All three read ledger rows only.
+K5 supplies ordered read-only refusals; the continuation remains the K1 skeleton
+until K6. The stop predicate, classifier and remaining-work predicate read ledger rows only.
 """
 
 from dataclasses import dataclass
 from pathlib import Path
 
-from harness_bench import lifecycle
+from harness_bench import archive, ledger, lifecycle, oslock
+from harness_bench import plan as plan_module
 from harness_bench.errors import BenchError
 
 
 def resume_run(run_dir: Path, root: Path, plan: dict, cfg):
-    """Preserve today's already-started refusal until the resume path lands."""
-    raise BenchError("HB-USR-002", f"run {plan['run_id']} has already started; phase 1 re-runs under a new run id")
+    """W1-K 3.1 steps 1–3; refusal order precedes all writes and first-run checks."""
+    plan = plan_module.load_confirmed(run_dir)
+    if cfg is None or cfg.verify is None:
+        raise ValueError("resume_run requires EngineConfig.verify")
+    lock_path = run_dir / ".lock"
+    try:
+        lock = oslock.RunLock.acquire(lock_path, code="HB-RUN-005")
+    except BenchError as exc:
+        age = f"{oslock.heartbeat_age(lock_path):.1f} s" if lock_path.is_file() else "not recorded"
+        raise BenchError("HB-RUN-005", f"{lock_path}: heartbeat age {age}; {exc.message}") from exc
+    with lock:
+        if cfg.identity_check is not None:
+            checked = cfg.identity_check()
+            if checked.diff:
+                raise BenchError("HB-IDN-001", "; ".join(checked.diff))
+        errors = [f for f in cfg.verify(run_dir) if f.level == "error"]
+        # A missing archive is D-K14's explicit third refusal, even when verify
+        # also reports its incomplete archive hash. Segment errors still win.
+        integrity_errors = [f for f in errors if f.code != "HB-LED-005"]
+        if integrity_errors:
+            raise BenchError("HB-RUN-009", integrity_errors[0].message)
+        rows = _fact_rows(run_dir, "events")
+        files = _fact_rows(run_dir, "archive_files")
+        missing = _missing_archives(run_dir, rows, files)
+        archive_errors = [f for f in errors if not any(f.message.startswith(f"{cid}:") or str(folder) in f.message
+                                                     for cid, folder in missing)]
+        if archive_errors:
+            raise BenchError("HB-RUN-009", archive_errors[0].message)
+        if missing:
+            raise BenchError("HB-LED-005", f"archive folder {missing[0][1]} does not exist")
+        raise BenchError("HB-USR-002", f"run {plan['run_id']} has already started; phase 1 re-runs under a new run id")
+
+
+def _fact_rows(run_dir: Path, fact: str) -> list[dict]:
+    """Read engine facts without crossing the run -> grade dependency boundary."""
+    return [row for path in sorted((run_dir / fact).glob("engine-*.jsonl")) for row in ledger.read_segment(path)]
+
+
+def _missing_archives(run_dir: Path, rows: list[dict], files: list[dict]) -> list[tuple[str, Path]]:
+    folders = dict.fromkeys((row["cell_id"], row["archive_attempt"], "final")
+                            for row in rows if row["kind"] == "cell.archived")
+    folders.update(dict.fromkeys((row["cell_id"], row["archive_attempt"], archive.snapshot_of(row)) for row in files))
+    missing = []
+    for cid, attempt, snapshot in folders:
+        folder = run_dir / "archive" / cid / (f"attempt-{attempt}" if snapshot == "final" else snapshot)
+        if not folder.is_dir():
+            missing.append((cid, folder))
+    return missing
 
 
 def stop_recorded(rows: list[dict]) -> bool:

@@ -862,30 +862,25 @@ def _refuse(case, golden1, golden5, tmp_path):
     return raised.value, code, before, _tree_hash(env.run_dir), env
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_refused_live_lock(golden1, golden5, tmp_path):
     exc, code, *_ = _refuse("live_lock", golden1, golden5, tmp_path)
     assert exc.code == code and "heartbeat" in str(exc), "the message holds the heartbeat age, not a PID"
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_refused_identity_drift(golden1, golden5, tmp_path):
     assert _refuse("identity_drift", golden1, golden5, tmp_path)[0].code == "HB-IDN-001"
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_refused_verify_failure_names_segment(golden1, golden5, tmp_path):
     exc, code, *_, env = _refuse("verify_failure", golden1, golden5, tmp_path)
     assert exc.code == code and next((env.run_dir / "events").glob("*.jsonl")).stem in str(exc)
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_refused_unrepairable_archive_writes_nothing(golden1, golden5, tmp_path):
     exc, code, before, after, _env = _refuse("archive_missing", golden1, golden5, tmp_path)
     assert exc.code == code and "attempt-1" in str(exc) and before == after
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_refusal_order(golden1, golden5, tmp_path):
     env, _ = _refusal("verify_failure", golden1, golden5, tmp_path)
     env.cfg.identity_check = lambda: identity.CheckResult(["tasks/X1 changed"], False)
@@ -897,7 +892,6 @@ def test_refusal_order(golden1, golden5, tmp_path):
 
 
 @pytest.mark.parametrize("case", REFUSALS)
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_refusal_writes_nothing(golden1, golden5, tmp_path, case):
     exc, code, before, after, env = _refuse(case, golden1, golden5, tmp_path)
     assert exc.code == code, f"{case} is refused with {code}"
