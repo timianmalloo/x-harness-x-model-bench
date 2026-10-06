@@ -935,7 +935,6 @@ def test_abandoned_set_equals_unsealed_engine_facts(golden1, tmp_path):
 
 # ---------------------------------------------------------------- one definition of "completed" and of "work left"
 
-@pytest.mark.xfail(strict=True, reason="K1b: views.completed (D-K5, W1-K K3) is the one definition")
 def test_completed_has_one_definition():
     _need(views, "completed")  # D-K5: complete iff a run.completed row follows the last run.resumed
     root = Path(__file__).resolve().parents[1] / "src"
@@ -996,10 +995,13 @@ def test_segment_rows_keeps_engine_segments_and_filters_dead_grading(tmp_path):
     assert [row for _, segment in grouped for row in segment] == views.rows(run_dir, "events")
 
 
-def test_load_reads_completion_after_a_resume(golden1):
-    assert views.load(golden1.run_dir, any_kind=True).completed is True
-    first = views.segment_paths(golden1.run_dir, "events")[0].stem
+def test_load_reads_completion_after_a_resume(golden1, tmp_path):
+    run_dir = tmp_path / "run"
+    shutil.copytree(golden1.run_dir, run_dir)
+    assert views.load(run_dir, any_kind=True).completed is True
+    first = views.segment_paths(run_dir, "events")[0].stem
     sid = first + "-r001"
-    with ledger.SegmentWriter.create(golden1.run_dir / "events", sid) as writer:
+    with ledger.SegmentWriter.create(run_dir / "events", sid) as writer:
         writer.append(ledger.stamp({"kind": "run.resumed", "segment_id": sid}))
-    assert views.load(golden1.run_dir, any_kind=True).completed is False
+    assert views.load(run_dir, any_kind=True).completed is False
+    assert views.load(golden1.run_dir, any_kind=True).completed is True  # the shared golden ledger stays immutable

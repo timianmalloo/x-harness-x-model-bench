@@ -84,18 +84,33 @@ def completed_passes(run_dir: Path) -> set[str]:
     return set(_completions(run_dir))
 
 
-def rows(run_dir: Path, fact: str) -> list[dict]:
-    """Verified rows of the engine's segments and of completed grading passes, in segment order."""
+def segment_rows(run_dir: Path, fact: str) -> list[tuple[str, list[dict]]]:
+    """Verified engine and completed-pass rows, retaining each segment's identity and order."""
     done = completed_passes(run_dir)
-    out: list[dict] = []
-    for path in segment_paths(run_dir, fact):
+    out: list[tuple[str, list[dict]]] = []
+    for path in sorted(segment_paths(run_dir, fact), key=lambda path: path.stem):
         sid = path.stem
         if sid.startswith(GRADE_PREFIX) and sid not in done:
             continue
         if not sid.startswith((ENGINE_PREFIX, GRADE_PREFIX)):
             raise BenchError("HB-LED-002", f"{fact}/{path.name}: no known writer for this segment")
-        out.extend(ledger.read_segment(path))
+        out.append((sid, ledger.read_segment(path)))
     return out
+
+
+def rows(run_dir: Path, fact: str) -> list[dict]:
+    """Verified rows of the engine's segments and of completed grading passes, in segment order."""
+    return [row for _, segment in segment_rows(run_dir, fact) for row in segment]
+
+
+def completed(events: list[dict]) -> bool:
+    """Completion belongs to the latest resume, never to an earlier engine incarnation (D-K5)."""
+    for row in reversed(events):
+        if row["kind"] == "run.completed":
+            return True
+        if row["kind"] == "run.resumed":
+            return False
+    return False
 
 
 @dataclass(frozen=True)
@@ -552,8 +567,7 @@ def load(run_dir: Path, catalog_version: str | None = None, *, any_kind: bool = 
     _refuse_duplicates(facts)
     grading_id, catalog = _current_pass(facts["events"], catalog_version)
     cells = [_cell_view(plan, c, facts, grading_id) for c in plan["cells"]]
-    completed = any(e["kind"] == "run.completed" for e in facts["events"])
-    return RunView(plan["run_id"], plan, completed, grading_id, catalog, cells, _header(facts["events"]))
+    return RunView(plan["run_id"], plan, completed(facts["events"]), grading_id, catalog, cells, _header(facts["events"]))
 
 
 def build_label(harness: str, version: str) -> str:
