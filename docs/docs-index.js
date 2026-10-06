@@ -5164,6 +5164,37 @@ window.DOCS_INDEX = {
       "sourceSha256": "59c4d90d70c17d051694b491c23ead9e33d5946cf6c842260d39c28111b71b75"
     },
     {
+      "id": "plan-eval-x-lb1",
+      "path": "docs/plans/eval-x-lb1.md",
+      "title": "X-LB1: the loopback fake, shape (b) path and readiness pointers",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-20",
+      "reviewSuggested": [],
+      "summary": "K1 listener and K2 shape (b) grading path (part 1), K3 readiness shape rule and property.json pointers, K4 an RS-shaped discriminate fixture (part 2).",
+      "tags": [
+        "evaluation",
+        "loopback",
+        "execution-plan"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "Bounded graph",
+          "mermaid": "graph LR\n K1 --> K2\n K2 --> K3a\n K2 --> K3b\n K3a --> K4\n K3b --> K4\n K4 --> G"
+        }
+      ],
+      "sourceSha256": "1a2146b3747d22aa95b9912268f5ca964ae144be5c78aeae112f9d4ed072ebd7"
+    },
+    {
       "id": "proof-phase2",
       "path": "docs/proof/phase2.md",
       "title": "Proof Pack - phase 2 (wave-by-wave joins)",
@@ -9613,6 +9644,14 @@ window.DOCS_INDEX = {
       "artifactId": "plan-eval-x-k1b"
     },
     {
+      "id": "surface-plans-eval-x-lb1",
+      "path": "docs/plans/eval-x-lb1.html",
+      "title": "Eval X Lb1",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-lb1"
+    },
+    {
       "id": "surface-case-study",
       "path": "docs/case-study.html",
       "title": "From Specification to Implementation: An AI-Forward Case Study",
@@ -9659,5 +9698,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "62c7fe04449a21d2e3954bb5375099d60b1cb7469388431ea5d16a479953076b"
+  "graphSha256": "cb4dd9f0571fb71d9976bfecd5d8eb6d3a14e851b665b876b7bcdb0ee366c39e"
 };
