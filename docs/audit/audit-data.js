@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T02:56:48Z",
+  "generated": "2026-10-06T07:21:01Z",
   "audit": [
     {
       "actor": null,
@@ -94772,6 +94772,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-06T02:56:47Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M481CNN21K5CHN4735EB1HFC",
+      "shortname": "join-ledger-p12",
+      "datetime": "2026-10-06T07:21:01Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of main into integrate/e2e4-18",
+      "summary": "Primary hook ledger lines (21 .agents/log files, register union) merged before the P1+P2 push; docs-only, no src/tests delta recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Bring the primary's register lines into the batch head",
+      "done_when": "conductor-join exit 0; gates green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-06T07:21:01Z",
+      "duration_seconds": 0.0
     }
   ],
   "changes": [
@@ -96566,6 +96593,96 @@ window.AUDIT_DATA = {
       "kind": "ruling",
       "ref": "req-01M45HSK2BGQ0RR0KPA2F1CDWG",
       "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M46MKB0PXYTDX646FEPY25KA",
+      "ts": "2026-10-05T18:18:14Z",
+      "from": "x-j1b-e1e4",
+      "to": "coord-opus-e1e4",
+      "kind": "blocked",
+      "ref": "req-01M46MGW3NFZJDWWJHCXKG69BP",
+      "session": "x-j1b-e1e4"
+    },
+    {
+      "id": "mail-01M46NFRZZFPN3243ZXE4QWZDS",
+      "ts": "2026-10-05T18:33:46Z",
+      "from": "x-j1b-e1e4",
+      "to": "owner-fable",
+      "kind": "blocked",
+      "ref": "45be75a2",
+      "session": "x-j1b-e1e4"
+    },
+    {
+      "id": "mail-01M46NFS46X5VRVX3NQK2ENQGF",
+      "ts": "2026-10-05T18:33:46Z",
+      "from": "x-j1b-e1e4",
+      "to": "leader-e1e4",
+      "kind": "blocked",
+      "ref": "45be75a2",
+      "session": "x-j1b-e1e4"
+    },
+    {
+      "id": "mail-01M46PAJGTH87Q2H6SEDAWJ0JQ",
+      "ts": "2026-10-05T18:48:24Z",
+      "from": "coord-opus-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M46PAJGJEEE7GBDV7YXVHC4T",
+      "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M46Q204XG1WQJM5KZR77BW8Y",
+      "ts": "2026-10-05T19:01:11Z",
+      "from": "owner-fable",
+      "to": "coord-opus-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M46PAJGJEEE7GBDV7YXVHC4T",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M46SBQC6E48A3RBWHN5229R8",
+      "ts": "2026-10-05T19:41:27Z",
+      "from": "leader-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M46SBQBWN5BSGTMVKYFN7XQW",
+      "session": "leader-e1e4"
+    },
+    {
+      "id": "mail-01M46SN7ESCJQ0YSBGT98FZYDA",
+      "ts": "2026-10-05T19:46:39Z",
+      "from": "owner-fable",
+      "to": "leader-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M46SBQBWN5BSGTMVKYFN7XQW",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M473NHRN0WSB33EHP3S8G1JT",
+      "ts": "2026-10-05T22:41:35Z",
+      "from": "x-j1c-e1e4",
+      "to": "owner-fable",
+      "kind": "blocked",
+      "ref": "al-01M473MWF0NFBY6FZNAFKZHJ4Y",
+      "session": "x-j1c-e1e4"
+    },
+    {
+      "id": "mail-01M473NHWXV5GPJ49MPQGPVZ6E",
+      "ts": "2026-10-05T22:41:35Z",
+      "from": "x-j1c-e1e4",
+      "to": "leader-e1e4",
+      "kind": "blocked",
+      "ref": "al-01M473MWF0NFBY6FZNAFKZHJ4Y",
+      "session": "x-j1c-e1e4"
+    },
+    {
+      "id": "mail-01M473NJ1TH5A04R5SJXZ7CXJG",
+      "ts": "2026-10-05T22:41:35Z",
+      "from": "x-j1c-e1e4",
+      "to": "coord-opus-e1e4",
+      "kind": "blocked",
+      "ref": "al-01M473MWF0NFBY6FZNAFKZHJ4Y",
+      "session": "x-j1c-e1e4"
     }
   ]
 };
