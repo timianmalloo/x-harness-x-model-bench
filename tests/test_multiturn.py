@@ -643,7 +643,6 @@ def task_root(tmp_path):
     return root, turns
 
 
-@pytest.mark.xfail(strict=True, reason="J1d: normalized turn hashes checked on confirmed plan load")
 def test_t_plan_1_turn_text_hash_is_normalized_and_confirmed(tmp_path):
     root, _ = task_root(tmp_path)
     body = _plan2(tmp_path, root=root)
@@ -662,7 +661,6 @@ def test_t_plan_1_turn_text_hash_is_normalized_and_confirmed(tmp_path):
     assert caught == "HB-LED-002", "a rehashed plan must still validate its embedded turn hash"
 
 
-@pytest.mark.xfail(strict=True, reason="J1d: at most one extra turn")
 def test_t_plan_2_more_than_one_extra_turn_is_refused(tmp_path):
     root, turns = task_root(tmp_path)
     (turns / "3.md").write_text("third", encoding="utf-8")
@@ -697,7 +695,6 @@ def test_t_status_1_first_prompt_matches_engine_budget_clock(tmp_path):
     assert observed.killing
 
 
-@pytest.mark.xfail(strict=True, reason="J1d: end-to-end CLI wiring after J1b/J1c")
 def test_t_wire_1_real_cli_plan_and_run_carries_turns(tmp_path, monkeypatch):
     root, _ = task_root(tmp_path)
     (root / "bench/task-freeze.yaml").unlink(missing_ok=True)

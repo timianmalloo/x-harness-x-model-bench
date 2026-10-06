@@ -311,8 +311,13 @@ def file_hash(path: Path) -> str:
 def _prompt(task_dir: Path) -> dict:
     """The task prompt the agent receives, frozen in the plan with its hash (US-10); line ends as LF."""
     text = (task_dir / "prompt.md").read_bytes().replace(b"\r\n", b"\n").decode("utf-8")
-    turns = [{"n": int(p.stem), "prompt": p.read_text(encoding="utf-8"), "sha256": ""}
-             for p in sorted((task_dir / "turns").glob("*.md"))]
+    files = sorted((task_dir / "turns").glob("*.md"))
+    if len(files) > 1:
+        raise BenchError("HB-USR-002", f"{task_dir / 'turns'}: at most one extra turn is allowed, found {len(files)}")
+    turns = []
+    for p in files:
+        turn_text = p.read_bytes().replace(b"\r\n", b"\n").decode("utf-8")
+        turns.append({"n": int(p.stem), "prompt": turn_text, "sha256": hashlib.sha256(turn_text.encode("utf-8")).hexdigest()})
     return {"prompt": text, "prompt_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
             **({"turns": turns} if turns else {})}
 
@@ -614,6 +619,10 @@ def load_confirmed(run_dir: Path) -> dict:
         raise BenchError("HB-USR-002", f"unsupported plan schema {data.get('schema')!r}")
     if plan_hash(data) != data.get("plan_hash"):
         raise BenchError("HB-LED-002", f"{path} was edited after confirmation (plan_hash mismatch)")
+    for task_id, task in data.get("tasks", {}).items():
+        for turn in task.get("turns", []):
+            if hashlib.sha256(turn["prompt"].encode("utf-8")).hexdigest() != turn.get("sha256"):
+                raise BenchError("HB-LED-002", f"{path}: task {task_id} turn {turn.get('n')} text does not match its sha256")
     return data
 
 
