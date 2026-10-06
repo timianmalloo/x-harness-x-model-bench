@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T16:31:38Z",
+  "generated": "2026-10-06T16:56:17Z",
   "audit": [
     {
       "actor": null,
@@ -109352,6 +109352,26 @@ window.AUDIT_DATA = {
       "compiled": false,
       "started_at": "2026-10-06T16:16:38Z",
       "duration_seconds": 900.0
+    },
+    {
+      "id": "al-01M492A0RG3PRGBX7DR29E73VD",
+      "shortname": "x-rs-p4",
+      "datetime": "2026-10-06T16:56:17Z",
+      "session": "x-rs-e1e4",
+      "prompt": "X-RS part 4: finish K2 (RS1 green as draft)",
+      "summary": "Naive f-slow-first diagnosed: check Fake read schedule one index late (self.seen incremented before action); fixed, naive now passes 3/7. 7 variants flip exactly K1's predicted cases and clauses; cacheerror f-recover/result. Listener reshaped to X-LB1 seam (no-arg ctx manager yielding socket, probe_host(case, sock)). Gates: RS1 10 pass, base-gate 203 pass, readiness/e1/config 162 pass 3 xfail, ruff clean, bench validate ok, docs-graph validate exit 0.",
+      "kind": "skill",
+      "skill": "new-bench-task",
+      "tool": null,
+      "actor": "claude-sonnet-5-5",
+      "artifacts": [
+        "tasks/RS1"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "started_at": "2026-10-06T16:33:10Z",
+      "duration_seconds": 1387.0
     }
   ],
   "changes": [
