@@ -30,11 +30,9 @@ from pathlib import Path
 import pytest
 import ring_cache
 
+import harness_bench.grade.property  # noqa: F401  (src: grade.rework imports grade.property first; a direct rework import is circular)
 from harness_bench import config, workspace
 from harness_bench.grade import _changes, correctness, rework
-from harness_bench.grade import (
-    property as _property,  # noqa: F401  (src: grade.rework imports grade.property first; a direct rework import is circular)
-)
 
 ROOT = Path(__file__).resolve().parents[1]
 SEEDED = ROOT / "tests" / "fixtures" / "property_tasks" / "rw1_seeded_disagreement.json"
