@@ -535,7 +535,7 @@ def _plan_arms(plan: Mapping) -> tuple[str, ...]:
     return tuple(plan["arms"]) if "arms" in plan else tuple(sorted(config.PACKS))
 
 
-def _comparisons(view: RunView, arms_in_run: Sequence[str]) -> list[tuple[str, str]]:
+def view_comparisons(view: RunView, arms_in_run: Sequence[str]) -> list[tuple[str, str]]:
     """The plan's stored comparison pairs; a /1 plan stores none, so its one legacy pair stands when both settings ran
     (read from the cells' own arms: a frozen /1 plan's cell list is not the view's evidence)."""
     plan = view.plan or {}
@@ -557,7 +557,7 @@ def _build_pack_effect(
     arms_in_run = sorted({c.arm for c in view.cells})
     tasks_in_run = sorted({_cell_task_rep(c.cell_id, plan_by_id)[0] for c in view.cells})
     excluded_tasks = tuple(t for t in tasks_in_run if t in CONTAMINATION_PRONE)
-    pairs = _comparisons(view, arms_in_run)
+    pairs = view_comparisons(view, arms_in_run)
 
     if not pairs:
         return PackEffect(

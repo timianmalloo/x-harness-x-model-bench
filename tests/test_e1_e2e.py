@@ -515,7 +515,6 @@ def test_two_arm_plan_renders_every_legacy_reader(walk):
     assert "Pack effect for these arms is not computed" not in walk.html + report.ran.out  # E3: the pair (off, candidate) is computed
 
 
-@pytest.mark.xfail(strict=True, reason="the pack-effect section says `This run has pack candidate only.` for a run with arms off and candidate; X-A3's reader migration (finding of item 7)")
 def test_the_pack_effect_section_does_not_describe_a_two_arm_run_as_one_pack(walk):
     assert "This run has pack candidate only." not in walk.html
 

@@ -203,26 +203,28 @@ def _cell_key(c: views.CellView) -> tuple[str, str]:
 
 
 def sample_pack_on_cells(view: views.RunView) -> tuple[str, ...]:
-    """DR-R-4: per combo, the pack=on cells whose pass@1 differs from their paired pack=off cell, at most
-    `SAMPLE_CAP` per combo, chosen by cell id. Deterministic: no randomness, ordered by combo then cell id."""
-    off_by_key: dict[tuple[str, str, str], views.CellView] = {}
-    for c in view.cells:
-        if c.arm == "off":
-            off_by_key[(c.combo, *_cell_key(c))] = c
-    chosen: dict[str, list[str]] = {}
-    for c in sorted(view.cells, key=lambda c: c.cell_id):
-        if c.arm != "on":
-            continue
-        off = off_by_key.get((c.combo, *_cell_key(c)))
-        if off is None:
-            continue
-        p1_on, p1_off = c.scores.get("pass_at_1"), off.scores.get("pass_at_1")
-        if p1_on is None or p1_off is None or p1_on.value is None or p1_off.value is None or p1_on.value == p1_off.value:
-            continue
-        bucket = chosen.setdefault(c.combo, [])
-        if len(bucket) < SAMPLE_CAP:
-            bucket.append(c.cell_id)
-    return tuple(cid for combo in sorted(chosen) for cid in chosen[combo])
+    """DR-R-4: per combo and comparison pair, the treatment-arm cells whose pass@1 differs from their paired
+    reference-arm cell, at most `SAMPLE_CAP` per combo and pair, chosen by cell id. Deterministic: no randomness,
+    ordered by combo, then pair, then cell id."""
+    chosen: dict[tuple[str, tuple[str, str]], list[str]] = {}
+    for ref, treat in board_mod.view_comparisons(view, sorted({c.arm for c in view.cells})):
+        ref_by_key: dict[tuple[str, str, str], views.CellView] = {}
+        for c in view.cells:
+            if c.arm == ref:
+                ref_by_key[(c.combo, *_cell_key(c))] = c
+        for c in sorted(view.cells, key=lambda c: c.cell_id):
+            if c.arm != treat:
+                continue
+            ref_cell = ref_by_key.get((c.combo, *_cell_key(c)))
+            if ref_cell is None:
+                continue
+            p1_treat, p1_ref = c.scores.get("pass_at_1"), ref_cell.scores.get("pass_at_1")
+            if p1_treat is None or p1_ref is None or p1_treat.value is None or p1_ref.value is None or p1_treat.value == p1_ref.value:
+                continue
+            bucket = chosen.setdefault((c.combo, (ref, treat)), [])
+            if len(bucket) < SAMPLE_CAP:
+                bucket.append(c.cell_id)
+    return tuple(cid for key in sorted(chosen) for cid in chosen[key])
 
 
 def _excerpt_text(run_dir: Path | None, cell: views.CellView) -> str:
@@ -381,12 +383,15 @@ def resolve_ref(ref: str, board_obj: board_mod.Board, view: views.RunView, compa
         return Resolved(interval, _decimals_for(measure), False, "combo")
     if ref.startswith("pack:"):
         parts = ref.removeprefix("pack:").split("|")
-        if len(parts) != 2:
+        if len(parts) not in (2, 3):
             return None
-        combo, measure = parts
-        row = next((r for r in board_obj.pack_effect.rows if r.combo == combo and r.measure == measure), None)
-        if row is None:
+        combo, measure = parts[:2]
+        # `pack:<combo>|<measure>` names the one pair of a legacy run; a run with several pairs needs `|<ref>><treat>`.
+        matches = [r for r in board_obj.pack_effect.rows if r.combo == combo and r.measure == measure
+                   and (len(parts) == 2 or ">".join(r.pair) == parts[2])]
+        if len(matches) != 1:
             return None
+        row = matches[0]
         return Resolved(row.delta, _decimals_for(measure), True, "combo")
     if ref.startswith("cmp:"):
         if comparison_obj is None or isinstance(comparison_obj, str):

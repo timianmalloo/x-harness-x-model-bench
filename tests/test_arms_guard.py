@@ -20,15 +20,11 @@ PACK_READERS_ALLOWED: dict[str, int] = {
     "report/cli_table.py": 7,
     "report/context_growth.py": 1,
     "report/html.py": 35,  # X-H2: the header reads plan_packs (three `.get("pack")` reads removed; decrease only).
-    "report/pack_improvement.py": 1,
     "report/summaries.py": 3,
     "workspace.py": 2,  # Directory operands, not cell readers.
 }
-ARM_LITERALS_ALLOWED: dict[str, int] = {
-    "config.py": 3, "plan.py": 2, "report/html.py": 7,
-    "report/pack_improvement.py": 7, "report/summaries.py": 2,
-}
-JS_ARM_LITERALS_ALLOWED: dict[str, int] = {"report.js": 2}
+ARM_LITERALS_ALLOWED: dict[str, int] = {"config.py": 3, "plan.py": 2}
+JS_ARM_LITERALS_ALLOWED: dict[str, int] = {}
 
 
 def _nodes(text):

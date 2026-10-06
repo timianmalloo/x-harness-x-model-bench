@@ -121,7 +121,10 @@ def render(
         console.print(pe.status, markup=False)
     elif pe.rows:
         pe_table = Table(box=box_style, title="Pack effect")
-        for name, right in (("Combo", False), ("Measure", False), ("Delta", True), ("95% Interval", False), ("Label", False)):
+        show_pair = any(pr.pair != board.LEGACY_PAIR for pr in pe.rows)  # a legacy run has one pair; naming it adds nothing
+        for name, right in (("Pair", False), ("Combo", False), ("Measure", False), ("Delta", True), ("95% Interval", False), ("Label", False)):
+            if name == "Pair" and not show_pair:
+                continue
             pe_table.add_column(name, justify="right" if right else "left", no_wrap=True, overflow="fold")
         for pr in pe.rows:
             is_p1 = pr.measure == "pass_at_1"
@@ -134,7 +137,7 @@ def render(
             else:
                 iv_str = pr.reason or pr.delta.reason or "interval not computed"
             label_str = pr.label or ""
-            pe_table.add_row(pr.combo, pr.measure, delta_str, iv_str, label_str)
+            pe_table.add_row(*([" vs ".join(pr.pair)] if show_pair else []), pr.combo, pr.measure, delta_str, iv_str, label_str)
         console.print(pe_table)
 
     # R6 (design s6 row 7, s12 UIA-11): one ASCII headline line per (combo, pack, scenario) --

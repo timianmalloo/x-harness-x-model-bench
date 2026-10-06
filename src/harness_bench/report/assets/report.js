@@ -140,13 +140,14 @@
 
   function applyPackFilter() {
     if (!main) return;
-    main.classList.remove("pack-on", "pack-off");
+    Array.prototype.slice.call(main.classList).forEach(function (c) {
+      if (c.indexOf("pack-") === 0) main.classList.remove(c);
+    });
     var pressed = packButtons.filter(function (b) {
       return b.getAttribute("aria-pressed") === "true";
     })[0];
     var setting = pressed ? pressed.dataset.pack : "both";
-    if (setting === "on") main.classList.add("pack-on");
-    if (setting === "off") main.classList.add("pack-off");
+    if (setting !== "both") main.classList.add("pack-" + setting);
   }
 
   /* --- Sort (section 6 row 3): order a table's tbody by a column's data-sort-value ----------- */
