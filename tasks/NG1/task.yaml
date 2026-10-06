@@ -2,7 +2,7 @@ schema: bench-task/1
 id: NG1
 scenario: 5                 # W0 decision: property tasks are scenario 5 (docs/design/eval-seam-contracts.md section 1)
 title: "No-guessing task 1: a vendored API with a renamed member and a changed default (W1-L)"
-status: draft               # Advances only when a real-host discrimination record reproduces the expected block below, after X-LG's noguess strategy (W1-L 5.3, 7.1; X-NG follow-on). Not before.
+status: ready               # real-host discrimination record reproduces every value in `expected` (X-RDY)
 language: python
 source:
   kind: authored
