@@ -212,7 +212,7 @@
  {
   "name": "the CRLF-to-LF normalisation removed from the one edit applier: a multi-line anchor misses a CRLF file (APPLY-A, CR47-15)",
   "file": "src/harness_bench/readiness.py",
-  "find": "text = raw.decode(\"utf-8\").replace(\"\r\n\", \"\n\")",
+  "find": "text = raw.decode(\"utf-8\").replace(\"\\r\\n\", \"\\n\")",
   "replace": "text = raw.decode(\"utf-8\")",
   "tests": [
    "tests/test_discriminate.py::test_a_variant_edit_applies_to_a_crlf_reference_file_and_its_declared_flip_is_observed"
