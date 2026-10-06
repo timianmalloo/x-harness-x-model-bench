@@ -151,7 +151,7 @@ def _golden_segment(g, fact):
 
 
 def _materialize(g, dest, rows, *, snap_rows="auto", final_rows="auto", tmp_dirs=(), no_workspace=(), no_attempt=(),
-                 snapshots=(), attempts=(), extra=(), stray=()):
+                 snapshots=(), attempts=(), extra=(), stray=(), from_archive=False):
     """A crashed run on disk: the plan, the ledger `rows` (re-chained, unsealed), and the folders its rows imply."""
     run_dir, cells_root = dest / "runs" / g.plan["run_id"], dest / "cells"
     run_dir.mkdir(parents=True)
@@ -196,6 +196,9 @@ def _materialize(g, dest, rows, *, snap_rows="auto", final_rows="auto", tmp_dirs
             continue
         cell = next(c for c in g.plan["cells"] if c["cell_id"] == cid)
         cell_dir = cells_root / g.plan["run_id"] / cid
+        if from_archive and cid in attempts:  # the real engine leaves the published folder: a copy of the archived tree
+            shutil.copytree(g.run_dir / "archive" / cid / "attempt-1", cell_dir)
+            continue
         _build_workspace(cell, cell_dir)
         turn2 = any(r["kind"] == "cell.turn_ended" and r.get("turn") == 2 for r in mine)
         (cell_dir / "ws" / "a.txt").write_text("2" if turn2 else "1", encoding="utf-8")
@@ -508,7 +511,7 @@ def _w9(golden1, tmp_path, monkeypatch):
 
 def _w10(golden1, tmp_path, mode):
     cid = golden1.cells[0]
-    env = _prefix(golden1, tmp_path, 12, attempts={cid}, final_rows=mode)
+    env = _prefix(golden1, tmp_path, 12, attempts={cid}, final_rows=mode, from_archive=True)
     assert _resume(env).exit_code == 0
     assert _kinds(_post(env), "cell.archived", cell_id=cid)
     final = [r["path"] for r in views.rows(env.run_dir, "archive_files") if not r.get("snapshot")]
@@ -532,12 +535,7 @@ WINDOWS = {
 }
 
 
-K1C_WINDOW = pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
-# Narrowed to exactly the parameters observed failing (coordinator #45): every other window runs as a real test.
-WINDOW_MARKED = {"W10a_rows_none", "W10b_rows_partial", "W10c_rows_all"}
-
-
-@pytest.mark.parametrize("name", [pytest.param(n, marks=K1C_WINDOW) if n in WINDOW_MARKED else n for n in WINDOWS])
+@pytest.mark.parametrize("name", list(WINDOWS))
 def test_window(golden1, tmp_path, monkeypatch, name):
     WINDOWS[name](golden1, tmp_path, monkeypatch)
 
