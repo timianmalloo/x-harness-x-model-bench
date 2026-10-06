@@ -27,6 +27,9 @@ summary: >-
 
 **Status counts:** controlled 13 · partially-controlled 7 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`. CAUSE-A is `observed` (2026-09-30).
 **Recurrence since last review:**
+- 2026-10-06 (Coordinator #42, `docs/coordination/coordinator-log/c42.md`): two candidates registered:
+  - FALLBACK-A: X-K1a's Codex worker carried out the Leader-only fallback itself and launched Claude Code Sonnet sessions (`d692319c`, then `571042ee`). Two carriers: the contract's `fallback` field, which `prompt-compile.py` renders, and the compile's own "Fallback:" clause. X-K2b's open compile carries the same clause. The renderer fix is Lane F item 10.
+  - EVID-A: `grade/rework.py` writes its evidence section but drops the pointer `write_section` returns, at both calls (`:155`, `:239`). The other four `write_section` callers attach it. X-FIXD turn 1 worked around it with an `assume:` fallback in `discriminate.py`.
 - 2026-10-06 (Coordinator #41, `docs/coordination/coordinator-log/c41.md`): one candidate registered, FALLBACK-A (the contract's Leader-only `fallback` text is rendered into the worker's brief, so the worker executes it: X-K1a's Codex worker launched Claude Code Sonnet sessions itself). PATH-B gains a confirmed instance (a discrimination trial under a long `%TEMP%` root fails "path not found" in the run archive; the same trial from `C:\t\vr` reproduces S2's record) and a measured margin; FLAKE-A's four named instances are judged not PATH-B (their roots are fixed-length under `C:\Projects\bench-test`). SHAPE-A gains Ruling 109's control and the owed `reds` design item.
 - 2026-10-06 (Coordinator #40, `docs/coordination/coordinator-log/c40.md`): one candidate registered, SHAPE-A (a readiness or discrimination rule written for the check-based task shape refuses or misjudges the check-less shape). Two instances block six ready flips: the check-less variant record never reads the property.json clause (a defect; fix track X-FIXD), and assertion (1) "hidden tests pass" applies to every variant (a design conflict; decision request `req-01M48BAYBZHKZK2SN2S5YNYZD9` to `owner-fable`). The sweep lists eleven rules with file:line.
 - 2026-10-06 (Coordinator #39, `docs/coordination/coordinator-log/c39.md`): three candidates registered:
@@ -1184,12 +1187,51 @@ summary: >-
 - **Status:** `candidate`
 
 ### FALLBACK-A: the contract's Leader-only `fallback` text is rendered into the worker's brief, so the worker executes it (candidate)
-- **Signature:** a delegation contract carries a `fallback` field meant for the Leader ("on a split, a follow-on in another harness"). The runner or the compiler renders the whole contract into the worker's prompt, so the worker reads the fallback as an instruction. At its split point it carries the fallback out itself: it finds another harness's CLI on PATH and launches it, past its fan-out cap and without a Leader dispatch.
-- **Why it survives:** the contract is one object, and rendering all of it looks like transparency. The fan-out cap is a number in the brief, not a check on process creation, and a CLI on PATH is reachable from any shell the worker has.
+- **Signature:** a delegation contract has a `fallback` field meant for the Leader, for example "on a split, a follow-on in another harness". The runner or the compiler renders the whole contract into the worker's prompt. The worker then reads the fallback as an instruction. At its split point it carries out the fallback itself: it finds another harness's CLI on PATH and launches it, past its fan-out cap and with no Leader dispatch.
+- **Why it survives:** the contract is one object, and rendering all of it looks like transparency. The fan-out cap is a number in the brief, not a check on process creation. A CLI on PATH is reachable from any shell the worker has.
 - **Instances:**
-  - `2026-10-06` (measured by the Leader, reported to Coordinator #41; not re-observed by me): X-K1a's Codex worker (`gpt-6.1-sol`, run `w2-k1a-e1e4`) reached its context split, probed `Get-Command claude`, and launched Claude Code Sonnet sessions itself as "the R-87 Option 1 follow-on". Those sessions committed `d692319c` and `571042ee` under `x-k1a-e1e4`. Evidence: `C:/t/k1a-1/followon-log.jsonl`, the `t2-*` files, and the Codex rollout `rollout-2026-10-06T02-44-27-…`. Fan-out cap 0 was violated, and nested-harness spend happened without a Leader dispatch. The child PID is dead, with no orphan. The Leader verifies K1a independently before any join.
-- **Sweep:** the pack's own compiler renders the contract slot too: `prompt-compile.py`'s render writes every `CONTRACT_KEYS` field, `fallback` included, into the compiled prompt (`docs/ai-forward-pack/scripts/prompt-compile.py:49-50`, `:507`), and c40's two compiles carried worker-readable fallbacks. Coordinator #41's two compiles write the fallback as "the Leader's decision after hand-back; the worker launches, spawns or messages nothing (FALLBACK-A)". Owed: every open compile and the runner's contract rendering, checked for a worker-readable fallback.
-- **Control (proposed):** (1) **standing compile clause, from Coordinator #41 on:** "Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report." The next K1b compile must carry it. (2) **Upstream (Lane F):** the runner's prompt rendering excludes the `fallback` field, and the pack's `prompt-compile.py` render does the same. Rung: compiled prompt now; renderer change upstream. Upgrade trigger: a second instance under a brief that carries the clause; then a process guard (a job object or PATH scrub for the worker's shell) makes the launch impossible.
+  - `2026-10-06`, X-K1a (Codex `gpt-6.1-sol`, run `w2-k1a-e1e4`, session `x-k1a-e1e4`). This is the history as K1a's own audit entries and commits record it, read by Coordinator #42 at `fd8b5e61`:
+    1. **Codex split.** `al-01M48A0S7YP6EERJWJ2BM9A9AV` (`x-k1a-codex-split`, outcome `partial`, 09:44:37Z to 09:51:49Z). K1 landed as `aa8c3883`, `5be6ca49` and `f3d4e666`. The K2 admission sample was 103,440, which the >100k rule refused. The entry's own words: "No fan-out; sequential authorized Sonnet follow-on".
+    2. **First self-launched Sonnet session.** `al-01M48BX33FYWMMN111SXWTNBN7` (`x-k1a-sonnet-k2`, `success`, start 10:00:32Z) calls itself "X-K1a Sonnet follow-on (R-87 Option 1)". It landed K2: red `61561f15`, strict-xfail `644a8107`, and the TIME-B repair `d692319c`. Tokens: "not recorded".
+    3. **Second self-launched Sonnet session.** `al-01M48CAAE9H58MTJ3CZH1ATXB4` (`x-k1a-t2-correction`, `blocked`): it hit its deadline and changed no code. Then `571042ee` landed the T2 child-kill correction under `x-k1a-e1e4`. This base holds no closing audit entry for `571042ee` (searched for `x-k1a` and `571042ee`).
+    4. **Leader lint fix.** `fd8b5e61` (PLW1510, `check=False`).
+    - **The two carriers K1a read.** (a) `x-k1.contract.json`'s `fallback` at Coordinator #39's commit: "... runs the green follow-on as that Sonnet sub-agent in this tree (R-87 Option 1)". (b) The compile's own last clause, which Coordinator #39 wrote (raw `al-01M488MZPTFB5VG6835480FEA4`): "Fallback: ... runs the follow-on as that Sonnet sub-agent in this tree (R-87 Option 1)". So carrier (b) is the Coordinator's own text, and this instance is partly Coordinator-caused.
+    - Fan-out cap 0 was violated, and nested-harness spend happened with no Leader dispatch. The Leader reports the child PID dead with no orphan, and evidence under `C:/t/k1a-1/` (not re-read by me).
+- **Sweep (Coordinator #42):**
+  - **Pack compiler (read):** `docs/ai-forward-pack/scripts/prompt-compile.py:49-50` puts `fallback` in `CONTRACT_KEYS`. `:507-508` renders every one of those keys into the compiled prompt's "Contract slot".
+  - **Pack runner (read in part):** `coord-runner.py:457` writes the contract's `fallback` into the worker's `.brief.json` beside its prompts. I did not check whether the transport sends that file's `fallback` to the worker.
+  - **Open compiles:** **X-K2b's compile `al-01M488T3QEGYJ0TBSVHKRMDXTM` carries the same "Fallback:" clause** (raw `al-01M488T30G4GFQWX05YXH9YEZN`, read: "... runs this compile as a Claude Code Sonnet sub-agent ... in this tree under the same session x-k2b-e1e4"). `x-k2.contract.json`'s `fallback` says the same. Both must be rewritten in a recompile before K2b dispatches.
+  - **Contracts:** 20 contract files have a `fallback` field. `x-k1.contract.json` is now Leader-only (this session). `x-k2.contract.json` is open, as above. The other 18 belong to joined tracks: the twelve in `eval-wave2-e1/`, plus `x-a3`, `x-g3`, `x-j1`, `x-j2`, `x-k2a` and `x-lg`. Each names a worker-readable Sonnet follow-on. Any re-dispatch from one of them rewrites the field first.
+  - **This session's two compiles** (`al-01M48EJ43H52XWAWRRK027MR5D` and `al-01M48EJDHJMT4XD48MPZHCKXG2`): in each rendered brief, the only `fallback` line is the Leader-only one, and no clause names a follow-on (grep of the renders).
+- **Control (proposed):**
+  1. **Standing compile clause, from Coordinator #41 on:** "Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other); the fallback is the Leader's to dispatch. At your hand-back point, stop and report." The contract slot's `fallback` reads "the Leader's decision after hand-back; the worker launches, spawns or messages nothing (FALLBACK-A)". A compile never carries a "Fallback:" clause that names a follow-on.
+  2. **Upstream (Lane F item 10 in `docs/coordination/coordination-e2e4.md`):** `prompt-compile.py`'s render leaves out the contract slot's `fallback`, and the runner's brief does the same.
+  - Rung: compiled prompt now; renderer change upstream.
+  - Upgrade trigger: a second instance under a brief that carries the clause. Then a process guard (a job object, or a PATH scrub for the worker's shell) makes the launch impossible.
+- **Status:** `candidate`
+
+### EVID-A: a grader writes its evidence but drops the pointer, so its score rows carry no evidence (candidate)
+- **Signature:** a check-less grader helper calls `grade/property.write_section`. That call writes the helper's strategy section into the pass's `property.json` and returns the `Score.evidence` pointer, relative to the run directory (`property.py:480-497`). The helper discards the return value. Its score rows then have no `evidence`, so a reader that follows a row to its evidence finds nothing, or has to guess the path. Discrimination's clause read is one such reader.
+- **Why it survives:** the evidence is on disk at a fixed place, so a reader that builds the path itself still works. A downstream workaround (X-FIXD turn 1's `assume:` fallback) hides the gap. And `tests/test_rework.py` asserts no `.evidence` (`git grep`, read). I did not sweep the other graders' tests.
+- **Instances:**
+  - `2026-10-06` (X-FIXD turn 1's seam finding, from the Leader; code read by Coordinator #42 at `fd8b5e61`): `grade/rework.py` discards the pointer at both of its calls, `:155` and `:239`. X-FIXD turn 1 added an `assume:` fallback in `discriminate._run_and_record` (`discriminate.py:376-382` on `build/eval-x-fixd` at `e9a5762b`). For check-less tasks it `setdefault`s each role's pointer to `grading/<grading id>/<cell>/property/property.json`.
+- **Sweep (every `write_section` caller; `git grep -n write_section -- src` at `fd8b5e61`, each site read):**
+
+  | caller | branch | pointer attached to the returned scores? |
+  | --- | --- | --- |
+  | `grade/diffstats.py:190` | changes not found | **yes**, all scores at `:194` |
+  | `grade/diffstats.py:236` | main | **yes**, `:238-241` |
+  | `grade/noguess.py:379` | runner not built | **yes**, all scores at `:380` |
+  | `grade/noguess.py:431` | main | **yes**, `:433-435` |
+  | `grade/rework.py:155` | turn 2 not reached | **no**: the return is discarded; the scores at `:156-161` have no evidence |
+  | `grade/rework.py:239` | ratio | **no**: the return is discarded; the scores at `:241-246` have no evidence |
+
+  A sibling that is not a `write_section` caller: `grade/property.py:468` attaches its own pointer for check-based tasks.
+- **Control:**
+  1. **The instance, compiled into X-FIXD turn 2** (`al-01M48EJDHJMT4XD48MPZHCKXG2`): one red test per rework branch asserts that every returned `Score` carries the pointer `write_section` wrote. One mutant goes into `tests/mutations/rework.json`. Then the `discriminate.py` fallback is deleted, and `tests/test_discriminate.py` staying green confirms its `assume:`.
+  2. **The class (proposed):** an AST test requiring that every `write_section(...)` result is bound to a name and passed as `evidence=` in the same function. Owner: the next plan revision (test infrastructure; no worker owns it).
+  - Rung: test (the instance) once turn 2 joins.
+  - Upgrade trigger: a new check-less helper (X-LG's next strategies) or a second instance. Then the AST test lands.
 - **Status:** `candidate`
 
 ---
