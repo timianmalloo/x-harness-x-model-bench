@@ -126,6 +126,17 @@
     "tests": ["tests/test_atomic.py::test_make_writable_adds_write_bit_keeping_other_bits"]
   },
   {
+    "name": "M28: make_writable retries once without backoff",
+    "file": "src/harness_bench/atomic.py",
+    "find": "    for delay in RENAME_BACKOFF:\n        try:\n            func(path)\n            return\n        except PermissionError:\n            if delay is None:\n                raise\n            time.sleep(delay)\n",
+    "replace": "    func(path)\n",
+    "note": "The brief named this M27; M27 is already taken in this file, so it is M28.",
+    "tests": [
+      "tests/test_atomic.py::test_make_writable_waits_out_a_cwd_holder_so_rmtree_removes_the_tree",
+      "tests/test_atomic.py::test_make_writable_retries_permission_error_on_the_rename_backoff_then_raises"
+    ]
+  },
+  {
     "name": "M27: existing-file read drops O_NOFOLLOW",
     "file": "src/harness_bench/atomic.py",
     "find": "    flags = os.O_RDONLY | O_BINARY | getattr(os, \"O_NOFOLLOW\", 0)\n",
