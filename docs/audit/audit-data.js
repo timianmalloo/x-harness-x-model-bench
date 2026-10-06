@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T07:50:00Z",
+  "generated": "2026-10-06T08:27:25Z",
   "audit": [
     {
       "actor": null,
@@ -96640,6 +96640,48 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-06T07:49:59Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M48492ZR2NT54TCEKCW50ZZE",
+      "shortname": "x-a3c-k1-k2a",
+      "datetime": "2026-10-06T08:11:30Z",
+      "session": "x-a3c-e1e4",
+      "prompt": "X-A3c worker (compile al-01M47M165PEC5ZZ90X01JWC7KE)",
+      "summary": "partial hand-back by the split rule at K2: K1 518bb08f, K2 part 1 (board) ea068257 green; open: pack_improvement/summaries/html/report.js/cli_table/context_growth, marker removal, K3, K4, gates, mutate_check. Served model claude-sonnet-5-5. Record: planned Agy gemini-3.8-flash-high; ran Sonnet; reason R-108. Tokens: not recorded. Context sample about 135k at hand-back (estimated from the running token counter, not the transcript usage). Wall clock 2026-10-06T07:51Z to about 09:10Z.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "X-A3c readers per comparison pair",
+      "done_when": "K1-K4 and gates",
+      "tier": "T2",
+      "started_at": "2026-10-06T07:51:10Z",
+      "duration_seconds": 1220.0
+    },
+    {
+      "id": "al-01M485687XBYDZG03064DE0N5Z",
+      "shortname": "x-a3c-k2b",
+      "datetime": "2026-10-06T08:27:25Z",
+      "session": "x-a3c-e1e4",
+      "prompt": "X-A3c continuation (compile al-01M47M165PEC5ZZ90X01JWC7KE)",
+      "summary": "partial hand-back by the split rule (context sample 124.7k from transcript usage, above the 120k item-start limit): K2 rest 4758b1c6 green (pack_improvement, summaries, html, report.js, cli_table, marker removed, G1 pins lowered); open: K3, K4 comments/seams, eight-file guard on final, mutate_check board/plan, ruff/docs-graph final. Served model claude-sonnet-5-5. Record: planned Agy gemini-3.8-flash-high; ran Sonnet; reason R-108. Tokens: not recorded. Wall clock 2026-10-06T08:12Z to about 09:00Z.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "X-A3c K2 rest",
+      "done_when": "K2 to K4 and gates",
+      "tier": "T2",
+      "started_at": "2026-10-06T08:12:31Z",
+      "duration_seconds": 894.0
     }
   ],
   "changes": [
