@@ -4289,6 +4289,55 @@ window.DOCS_INDEX = {
       "sourceSha256": "8066984a571d77d886eb162931410cc596d3bc8693782d94727fad8fb506f337"
     },
     {
+      "id": "coordinator-log-c42",
+      "path": "docs/coordination/coordinator-log/c42.md",
+      "title": "Coordinator #42 hand-back (2026-10-06): X-K1b compiled, the rework evidence-pointer fix folded into X-FIXD turn 2, FALLBACK-A and EVID-A registered",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-06",
+      "reviewSuggested": [],
+      "summary": "Coordinator #42, on build/eval-x-k1a (fd8b5e61), compiled X-K1b (Codex gpt-6.1-sol; W1-K K3 and K4, on K1a's landed names) and updated x-k1.contract.json with a Leader-only fallback. It folded the rework evidence-pointer fix into X-FIXD turn 2, which supersedes Coordinator #41's turn-2 compile. It recorded K1a's real history from its audit entries, registered FALLBACK-A (two carriers; X-K2b's open compile carries the same clause) and EVID-A (rework.py drops the write_section pointer at both calls), and added Lane F item 10.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c39",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-k1",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-resume",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-discriminate",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "d2ceff73598a33a2eb7398133ac1074d9661d3a53d6fea28f35ef7301b4e9693"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4315,7 +4364,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b3b9926b705505cc7e09331b7e03ed2ed0bf3efb827b11a35e1ec0625802a008"
+      "sourceSha256": "60f1d562bccdc85aa227555697babcb71d274870643876f8c0dbb57310874578"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -7619,7 +7668,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "81ae51ea2ccc4cb72c5b47f2de798d4ab183a0351b38e86992a3b6d83a371bbf"
+      "sourceSha256": "c269897eef443cd48fcd19a621b29878c9978dbc0ef04d36b6c8c2707da65ad1"
     },
     {
       "id": "coordination-eval-brief-rv-ds",
@@ -9231,7 +9280,7 @@ window.DOCS_INDEX = {
     {
       "id": "surface-coordination-coordination-e2e4",
       "path": "docs/coordination/coordination-e2e4.html",
-      "title": "Coordination E2-E4",
+      "title": "Coordination E2E4",
       "kind": "knowledge-tool",
       "description": "Open an interactive knowledge artifact.",
       "artifactId": "coordination-e2e4"
@@ -9355,5 +9404,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "d661fc8bd63e272f4e22b2f903e3b94e4685e4cdeba71643f0016a46d03445e2"
+  "graphSha256": "4a95cafa364caa7ac04de6276c38b9129621af8b33ee1417c69e7c927d27a6b1"
 };
