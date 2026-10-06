@@ -605,7 +605,7 @@ These ids are reserved, never reused. Each W1 design confirms or drops its rows;
 | HB-RDY-008 | check declares a container runtime or a Linux-only tool | X-E · E1 |
 | HB-RDY-009 | a frozen task value differs from the canonical function's output (HASH-A) | X-LG · E4 (rev 6, SR-E3 3; reserved, no E1 code path) |
 | HB-RDY-010 | a discrimination re-run at an existing key disagrees with the stored record (determinism defect; names metric, stored, new) (rev 2, RV-DS 2) | X-E · E1 |
-| HB-RDY-011 | discrimination trial untrustworthy: a trial cell has a check NA row (HB-CHK-001..003), a span with `unbiased_ok` false, a hidden-test reader that disagrees or raised (rev 6, R6-13), or a case `outcome: timeout` that `expected` and the declared `flips` do not name (rev 6.1; `expected` names one through `expected.<role>.timeouts`, section 2, erratum Coordinator #47, CR47-7); an NA equal to a declared `expected: {na}` is exempt (rev 5, SR-E1 4; W1-E §8.4) | X-E · E1 (X-D adds the row in D1) |
+| HB-RDY-011 | discrimination trial untrustworthy: a trial cell has a check NA row (HB-CHK-001..003), a span with `unbiased_ok` false, a hidden-test reader that disagrees or raised (rev 6, R6-13), or a case `outcome: timeout` that `expected` and the declared `flips` do not name (rev 6.1); an NA equal to a declared `expected: {na}` is exempt (rev 5, SR-E1 4; W1-E §8.4) | X-E · E1 (X-D adds the row in D1) |
 | HB-CMP-001 | campaign lock held | X-C · E1 |
 | HB-CMP-002 | command refused in the campaign's current state (names the item and an action) | X-C · E1 |
 | HB-CMP-003 | campaign verify failed (chain, name ≠ hash, or a changed committed file; names it) | X-C · E1 |
