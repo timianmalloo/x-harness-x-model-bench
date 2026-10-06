@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T16:06:35Z",
+  "generated": "2026-10-06T16:37:57Z",
   "audit": [
     {
       "actor": null,
@@ -109292,6 +109292,27 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-06T16:06:34Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M4918DSEHXGM782VM4M2F09J",
+      "shortname": "x-lb1-k1k2",
+      "datetime": "2026-10-06T16:37:57Z",
+      "session": "x-lb1-e1e4",
+      "prompt": "X-LB1 dispatch c44",
+      "summary": "Planned split after K2 (context ~145k > 140k start limit). Start 2026-10-06T16:07:41Z; end not measured. Served model claude-sonnet-5-5. Red SHAs b3f5a409 (K1), 9fceef71 (K2). Green 60195f2e (K1), 4fb8baf6 (K2), 0487d148 (mutants+span test). Context samples: before K1 ~66k, after K2 ~145k. Tokens: not recorded. Marker removed: tests/test_catalog_version.py::test_a_property_tag_outside_property_names_is_refused_and_property_names_match_the_strategy_keys. No firewall dialog or new rule seen. Suite lock waited (not measured).",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "X-LB1 loopback fake",
+      "done_when": "K1,K2 green; K3,K4 open",
+      "tier": "T2",
+      "started_at": "2026-10-06T16:07:41Z",
+      "duration_seconds": 1816.0
     }
   ],
   "changes": [
