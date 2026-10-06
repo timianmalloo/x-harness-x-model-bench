@@ -899,7 +899,6 @@ def test_refusal_writes_nothing(golden1, golden5, tmp_path, case):
     assert not (env.run_dir / ".alarm_check").exists()
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_sweep_pairing_refuses_wrong_lock(golden1, tmp_path):
     env = _prefix(golden1, tmp_path, 6)
     other = tmp_path / "other"

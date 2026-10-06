@@ -7,7 +7,7 @@ until K6. The stop predicate, classifier and remaining-work predicate read ledge
 from dataclasses import dataclass
 from pathlib import Path
 
-from harness_bench import archive, ledger, lifecycle, oslock
+from harness_bench import archive, atomic, ledger, lifecycle, oslock
 from harness_bench import plan as plan_module
 from harness_bench.errors import BenchError
 
@@ -61,6 +61,18 @@ def _missing_archives(run_dir: Path, rows: list[dict], files: list[dict]) -> lis
         if not folder.is_dir():
             missing.append((cid, folder))
     return missing
+
+
+def sweep_archives(run_dir: Path, lock: oslock.RunLock) -> None:
+    """W0 4: the resume pins its own lock to both levels of archive temps."""
+    if lock.path.resolve() != (run_dir / ".lock").resolve():
+        raise ValueError("resume archive sweep needs this run's lock")
+    root = run_dir / "archive"
+    atomic.sweep_temps(root, lock)
+    if root.is_dir():
+        for folder in sorted(root.iterdir()):
+            if folder.is_dir() and not folder.is_symlink() and not folder.is_junction():
+                atomic.sweep_temps(folder, lock)
 
 
 def stop_recorded(rows: list[dict]) -> bool:
