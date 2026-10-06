@@ -487,7 +487,7 @@ Rungs climbed (Solution-Selection Ladder): YAGNI → reuse (`correctness.grade` 
 | `test_<id>_every_hidden_test_has_a_wrong_app` (8) | the union of `reds` is missing a test id | delete one fixture | readiness |
 | `test_<id>_provenance` (8) | pin not 40-hex, `evidence.md` tree hash disagrees with `git rev-parse <pin>^{tree}`, `NOTICE.md` or licence copy missing, `deliverable.build` or a network name present | fixtures: a branch name, a wrong tree hash, a missing `NOTICE.md`, `pip`/`uv`/`npm`/`http*` words (`uv` inside `uvicorn` must not hit) | push |
 | `test_<id>_no_oracle_string_in_prompt_or_task_workspace` (8) | oracle constant found | fixture prompt with a schedule constant | readiness |
-| `test_<id>_each_variant_flips_exactly_its_set` (8) | per variant: hidden tests pass, `deliverable == ran`, flipped set, clause, duration band (RS) | crash variant; a `dead-case` fixture no variant flips | readiness |
+| `test_<id>_each_variant_flips_exactly_its_set` (8) | per variant: hidden tests pass unless the primary is the declared flip (1', R-109), `deliverable == ran`, flipped set, clause, duration band (RS) | crash variant; a `dead-case` fixture no variant flips | readiness |
 | `test_<id>_an_alternative_correct_solution_passes` (8) | `alt` scores 1 | RS: reference with the key removed must fail; SM: the honest 6-line (SM1) and 9-line (SM2) solutions on the ceiling | readiness |
 | `test_<id>_expected_is_literal_when_ready` (8) | a `<...>` placeholder or wrong-typed value | fixture `task.yaml` with the placeholder | push |
 | `test_<id>_grading_is_deterministic` (8) | two grader runs give unequal rows (RS: three runs and one beside a busy-loop process, equal outcomes) | a variant that sleeps a random time | readiness |
