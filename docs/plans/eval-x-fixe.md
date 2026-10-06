@@ -50,14 +50,37 @@ R-104 worker gates are read. Not in scope: `grade/noguess.py`, `grade/diffstats.
 ### Applicability of each item on the check-less shape
 
 - Hidden tests disagree with pass_at_1: applies, and now runs for every task.
-- Not comparable (a side is NA): does not run on the check-less shape, because a check-less cell with no hidden-test
-  value is NA by its own score row (and rework and a not-built strategy write no top-level value), which
-  `_untrustworthy` already holds to the closed NA reason set; running it would fail every rework trial on Finding 2.
-  Once Finding 2 is fixed, the item can be switched on for the check-less shape by splitting it from `spans`.
+- Not comparable (a side is NA): **updated in part 2 (P3, CR47-1): now runs on the check-less shape** (it is split from
+  `spans`; `unbiased_failures` stays check-based only). Part 1 held it off because rework wrote no hidden value
+  (Finding 2); P1 fixed that.
 - A span with `unbiased_ok` false: does not apply, because a check-less pass records no `spans` (the spans belong
   to the hidden check's two phases).
 - A case `timeout` that nothing declares and the evidence-presence item ("no check evidence found"): do not apply,
   because a check-less pass has no `cases` and no check evidence pointer.
+
+## Part 2 (Claude Code Sonnet, `x-fixe-e1e4`, CR47-1 to CR47-4, CR47-7)
+
+Split by the CEIL-A rule: P1, P2 and P3 done; P4 (declared case timeout) not started, the context reading after P3 was
+155k, above the 133k start limit.
+
+| Item | Red SHA and failing lines | Green SHA | Mutant |
+|---|---|---|---|
+| P1 rework section records `hidden_tests_pass` | `94f139bc`: `assert None == {'value': 1, 'reason': None}` (multi-turn test); `assert None == {'value': None, 'reason': 'no working copy in the archive'}` (section-pointer test); `DID NOT RAISE BenchError` (flaky final-tree trial) | `c37bfc8c` | rework.json: key deleted from the section |
+| P2 check-based `hidden_tests_ms` | `d75f424f`: `assert False + where False = isinstance(None, int)` | `75d627b7` | property.json: key removed |
+| P3 not-comparable item for check-less | `7e6ed2a2`: `DID NOT RAISE BenchError` | `98f09423` | property.json: check-less item disabled |
+
+- Order of the hidden-test runs read (P1 counter fixture, `tests/fixtures/property_tasks/make_task.py` `T2_COUNTER_TESTS`):
+  the correctness grader's pass first (counter run 1, odd, pass), then per cell rework's turn-1 snapshot run (turn-1 tests
+  only, so never the counter test), then the property grader's one final-tree run (counter run 2, even, fail); the cells
+  alternate. The trial raised HB-RDY-011 "hidden tests disagree with pass_at_1" with no monkeypatch.
+- Deleted test: `test_a_check_less_trial_fails_on_a_hidden_test_disagreement`; it wrapped `readiness.comparable_cells`
+  and caught nothing the real fixture does not. The part 1 mutant "check-less double-run item call deleted" now targets
+  `test_a_check_less_trial_with_a_flaky_final_tree_fails_on_a_hidden_test_disagreement`.
+- Changed DISC-C tests (P3): the shared `first` fixture and its tests (without_a_host, overlay_lands, record_body,
+  reconciliation, started/finished) moved to DISC-T; `test_no_link_after_hb_rdy_010` runs on a turns-based `disc_flaky`;
+  the variant-without-strategy test stays on DISC-C and asserts the not-comparable item (finding: the variant item is
+  reached only when no other item exists, so it cannot fire in a trial).
+- Not checked: a real trial of RW1, RW2, NG1, NG2, SM1 and SM2 under the new item (no real-task trial was run in this turn).
 
 ## Gates
 
