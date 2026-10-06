@@ -32,6 +32,8 @@ SR-L5 (`req-01M41MWN4RJHW0XPG2R5X1QHSM`) is an E4 follow-on of this file's E4 ow
 - **Not LB0's:** the three `STRATEGIES` entries. `STRATEGIES["rework"]` belongs to X-J2 and the two others to X-LG; each lands with its helper module.
 
 ## LB1: the loopback fake (**BLOCKED** until the operator's SP-LB run passes and merges)
+
+**Unblocked (Coordinator #44, 2026-10-06):** the operator accepted SP-LB for this host ("B-2 / SP-LB closed: accepted for this host"; ADR-0018 Amendment 2); item 3's stop did not occur. Compile `al-01M48WS5VMEBVXJABRJRCZ5JFZ` (session `x-lb1-e1e4`). It also carries SHAPE-A sweep row 5 (the `check.clauses`/`check.hosts` pointers); row 4 is not LB1's.
 1. EV-3 parallel-port isolation; hang-is-measured; listeners bind the literal `127.0.0.1` and assert `getsockname` (HB-CHK-005 otherwise).
 2. **RV-TA W1-L R2-4 (W0 rev 6.6 R6.6c):** an RS-shaped fixture task (one fault case, reference and naive) runs through `bench discriminate` with the loopback check and gets a record. This confirms "RS needs no new discriminate code" (Inferred until then); if it cannot, raise a request.
 3. If SP-LB shows a firewall prompt or rule for the loopback bind, stop and report: ADR-0018 §3's `assume:` is false and the E4 loopback half needs an Owner ruling.

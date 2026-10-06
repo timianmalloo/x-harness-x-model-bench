@@ -835,7 +835,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "95e15d30221b96ef5928528fe2c1dd39ac9af7c0b3b93cd0c28bb174c7df876a"
+      "sourceSha256": "673790bae6bc9b63f4e388d65f8f7e18ba7cca41f11c379ebcea0fa0cfa32aef"
     },
     {
       "id": "adr-0019-catalog-0-7-property-metrics",
@@ -1551,12 +1551,12 @@ window.DOCS_INDEX = {
       "path": "docs/notes/spike-s-lb-loopback.md",
       "title": "Spike S-LB - does a loopback-only listener raise a Windows Defender Firewall prompt or rule?",
       "type": "decision-note",
-      "status": "proposed",
+      "status": "accepted",
       "owner": "@timianmalloo",
       "phase": "",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "Method and operator procedure for spike S-LB. The script tools/spikes/s_lb_loopback.py was written and compiled but NOT run (no operator present; a bind could raise a firewall dialog nobody sees). Every result row is \"not run, operator required\". Until the table is filled and passes, ADR-0018 section 3 keeps its assume: and phase E1 admits in-process probes only.",
+      "summary": "Spike S-LB ran on 2026-10-06, 07:44-07:59, with the operator at the screen: three loopback runs and two positive-control runs, no dialog on any run, loopback exchange_ok true with 0 new rules. The positive control did not fire, so the script's verdict is INCONCLUSIVE. The measured cause is the host setting: the firewall is enabled on all three profiles with NotifyOnListen False, so Windows never shows the listen dialog here. The operator accepted the result for this host (B-2 closed); other hosts re-run the spike. ADR-0018 Amendment 2 records it.",
       "tags": [
         "spike",
         "windows",
@@ -1573,10 +1573,14 @@ window.DOCS_INDEX = {
         {
           "to": "design-eval-seam-contracts",
           "rel": "relates-to"
+        },
+        {
+          "to": "adr-0018-hidden-check-harness",
+          "rel": "relates-to"
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b745456c3c0f7262760a6f5b33191c3872bc86a63673f266267aa20c71bca760"
+      "sourceSha256": "7369f099f63e466e0c19f7b29ac23f3d2dbd332dbd813139ef6725cea036ecf8"
     },
     {
       "id": "note-20261003-spike-s2-bottle-cookie-reads",
@@ -2197,7 +2201,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "0b5cff38703dc03b75420c16279c50cb8fd147a5a72d3d99e31bc0a035034810"
+      "sourceSha256": "7eb29ff7c03b2206db3e404d08ac343d58c653718ca28b9f5c323033826eb459"
     },
     {
       "id": "design-eval-discriminate",
@@ -2370,7 +2374,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ec32047a19941e50e22cc734dc87ff2ff3e971173d1fa6c2c03d4536e81e57cb"
+      "sourceSha256": "36fd72c62bf3df7ee0c8644f2f5f0dc073c754f6037bdf42f6533949a8d48a47"
     },
     {
       "id": "design-eval-power-verdicts",
@@ -4481,6 +4485,59 @@ window.DOCS_INDEX = {
       "sourceSha256": "90520727a534cd524048d7ea743896d9da892b34ec89adff7d37c22646d03630"
     },
     {
+      "id": "coordinator-log-c44",
+      "path": "docs/coordination/coordinator-log/c44.md",
+      "title": "Coordinator #44 hand-back (2026-10-06): X-TE9, X-LB1 and X-RS compiled; the operator's five decisions; SP-LB accepted for this host",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-06",
+      "reviewSuggested": [],
+      "summary": "Coordinator #44 recorded the operator's five decisions of 2026-10-06 about 07:45: SP-LB accepted for this host (the results table, ADR-0018 Amendment 2), X-TE9 released, S-J4 waived for now, the -n 4 per-join recount approved for measurement, and S2 shipping with its open items. It compiled X-TE9, X-LB1 and X-RS for Claude Code Sonnet. X-TE9's plan assume: is false, as measured: four ready tasks' records are stale at the integration head, so X-TE9's join point is the Leader's. X-LB1 carries SHAPE-A sweep row 5; row 4 is not LB1's. It registered SPIKE-B and OPER-A's resolution.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c43",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c39",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-lb",
+          "rel": "relates-to"
+        },
+        {
+          "to": "note-20261003-spike-s-lb-loopback",
+          "rel": "relates-to"
+        },
+        {
+          "to": "adr-0018-hidden-check-harness",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "a5bd4d3876b270bb6588652db3382caf940ccac6ab6763abd56f1f732e1ff761"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4507,7 +4564,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "cef1e004b6c432c51102910109eb6eef352627b5a79feba974a78f5e32c06f5d"
+      "sourceSha256": "a1b7a80d783d3ef8ca9944e73f85a3ee50a293d60610046c8df123a2228f0229"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -7623,7 +7680,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "56104e1087deaf137c0e6814ea86090b32aea94763e429f602ba721953f10144"
+      "sourceSha256": "3a7e427cebd505b6b78b9734ee9a5dd794d75668c93033c698d86be05248e980"
     },
     {
       "id": "brief-eval-x-lg",
@@ -7739,7 +7796,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "fb004e69750494fa69426a68992fb92b0888845182c2c49bbec9a884cab26300"
+      "sourceSha256": "471accd8e69ca435f3dde7746e893592eb1c318970541f35e00cf1e970f8d01a"
     },
     {
       "id": "brief-eval-x-rw",
@@ -7850,7 +7907,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "c269897eef443cd48fcd19a621b29878c9978dbc0ef04d36b6c8c2707da65ad1"
+      "sourceSha256": "6384dbeac9b5ee964ece0309338c19ed6e14e2bea13c2dfb1d46b8f7696f15b6"
     },
     {
       "id": "coordination-eval-brief-rv-ds",
@@ -9602,5 +9659,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "fd18ede156c38a74d025efb1b61200bc7c0080a08f902afb38f8a1b825955e05"
+  "graphSha256": "70c86124490103b43de078188a564ec59fd1b71b656fb3dd2f36d1fa31977b90"
 };

@@ -2,18 +2,20 @@
 id: note-20261003-spike-s-lb-loopback
 title: "Spike S-LB - does a loopback-only listener raise a Windows Defender Firewall prompt or rule?"
 type: decision-note
-status: proposed
+status: accepted
 owner: "@timianmalloo"
 tags: [spike, windows, firewall, loopback, adr-0018, e4]
 links:
   - { to: arch-evaluation-campaign, rel: relates-to }
   - { to: design-eval-seam-contracts, rel: relates-to }
+  - { to: adr-0018-hidden-check-harness, rel: relates-to }
 review-by: "2026-10-17"
 summary: >-
-  Method and operator procedure for spike S-LB. The script tools/spikes/s_lb_loopback.py was written and compiled but
-  NOT run (no operator present; a bind could raise a firewall dialog nobody sees). Every result row is "not run,
-  operator required". Until the table is filled and passes, ADR-0018 section 3 keeps its assume: and phase E1 admits
-  in-process probes only.
+  Spike S-LB ran on 2026-10-06, 07:44-07:59, with the operator at the screen: three loopback runs and two
+  positive-control runs, no dialog on any run, loopback exchange_ok true with 0 new rules. The positive control did
+  not fire, so the script's verdict is INCONCLUSIVE. The measured cause is the host setting: the firewall is enabled
+  on all three profiles with NotifyOnListen False, so Windows never shows the listen dialog here. The operator
+  accepted the result for this host (B-2 closed); other hosts re-run the spike. ADR-0018 Amendment 2 records it.
 ---
 
 # Spike S-LB: loopback firewall behaviour on Windows
@@ -55,14 +57,24 @@ What to expect:
 
 Then paste the three JSON outputs and the verdict into the table below, with host build (`[Environment]::OSVersion`), interpreter version and firewall profile.
 
-## Results (empty until the operator runs it)
+## Results (2026-10-06, 07:44-07:59, operator at the screen; recorded by Coordinator #44)
 
-| Run | dialog_seen | new_rules | exchange_ok | Result |
-| --- | --- | --- | --- | --- |
-| loopback `127.0.0.1:0` | not run, operator required | not run, operator required | not run, operator required | not run, operator required |
-| positive control `0.0.0.0:0` | not run, operator required | not run, operator required | not run, operator required | not run, operator required |
-| report verdict | - | - | - | not run, operator required |
+The operator ran three loopback runs and two positive-control runs and saw **no dialog on any run**. Each mode writes one file, so the files hold the last run of each mode: `loopback.json` and `positive-control.json`, written 2026-10-06 08:04 local, in the Leader session's scratchpad (`C:\Users\malla\AppData\Local\Temp\claude\C--Projects-x-harness-x-model-bench\1ba78219-79af-4f01-b2e7-97476f8f8757\scratchpad\`). Coordinator #44 read both files. The earlier runs' values are the operator's report, not files.
 
-**On PASS:** retire the `assume:` in ADR-0018 §3 (cite this note) and admit `interface: loopback` for E4. **On FAIL:** adopt ADR-0018's stated mitigation (a pre-created allow rule for the pinned interpreter, checked in preflight) and raise a decision request.
+| Run | dialog_seen | new_rules | exchange_ok | error | Result |
+| --- | --- | --- | --- | --- | --- |
+| loopback `127.0.0.1:0` (3 runs) | false (operator, `--dialog no`) | `[]` | true | null | no prompt, no rule, exchange works |
+| positive control `0.0.0.0:0` (2 runs) | false (operator, `--dialog no`) | `[]` | true | null | **the control did not fire** |
+| report verdict | - | - | - | - | `INCONCLUSIVE control did not fire` |
+
+**Why the control did not fire (measured by the operator):** `Get-NetFirewallProfile` shows the firewall **Enabled** on Domain, Private and Public, with **`NotifyOnListen` False** on all three. With that setting Windows never shows the listen dialog, for loopback or for `0.0.0.0`. So on this host the probe cannot see a dialog, and the script's pass rule (the control must fire) cannot be met.
+
+**Decision (operator, 2026-10-06 about 07:45, in person):** "B-2 / SP-LB closed: accepted for this host." The loopback exchange works and no rule appears. The `assume:` in ADR-0018 section 3 holds on this host (Amendment 2). **Other hosts re-run the spike**, and a host whose `NotifyOnListen` is True has a control that can fire. X-LB1 and X-RS are unblocked.
+
+**Not recorded in the result files:** host build, interpreter version and the copied interpreter's rule state beyond `new_rules`. The two `slb-*` folders named in each file's `cleanup` line were not checked by Coordinator #44.
+
+**Finding for the script's owner (`tools/spikes/s_lb_loopback.py`, written by session `splb-loopback-e1e4`, `73993060`):** the operator prompt at `:110-111` calls `input()` when `sys.stdin.isatty()` is true. Under Git Bash, `isatty()` is true but stdin is at EOF, so `input()` raises `EOFError` and the run crashes before it writes its file. The operator's answers therefore went in as `--dialog no`. The fix is to treat `EOFError` as "not recorded" (`dialog_seen: null`, so the verdict stays `INCONCLUSIVE`), never as an answer, and to name `--dialog` in the message. A second gap of the same kind: the script does not read `NotifyOnListen` before the control runs, so it cannot say "this host cannot show the dialog". It should record the profile setting in each result file. Both are registered as SPIKE-B.
+
+**On PASS** (the rule as written; on this host the operator's acceptance stands in for it, above): retire the `assume:` in ADR-0018 §3 (cite this note) and admit `interface: loopback` for E4. **On FAIL:** adopt ADR-0018's stated mitigation (a pre-created allow rule for the pinned interpreter, checked in preflight) and raise a decision request.
 
 **Gate:** no lens review; the operator's run is the evidence (B-2). **Limits:** one host, one firewall profile, one interpreter path; a managed enterprise host with group-policy rules may differ.

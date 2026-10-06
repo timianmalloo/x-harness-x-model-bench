@@ -26,6 +26,7 @@ summary: >-
 
 - **Status:** Proposed
 - **Amended (2026-10-03, W0 seam contracts rev 2 and rev 3; W1-F design `design-eval-property-grader`):** see "Amendment 1" before *Alternatives considered*. The decision text above is unchanged.
+- **Amended (2026-10-06, operator acceptance of spike S-LB for this host; recorded by Coordinator #44):** see "Amendment 2". §3's `assume:` holds on this host; other hosts re-run the spike.
 - **Date:** 2026-10-03
 - **Deciders:** @timianmalloo; authored by Claude Code with the **Security & Identity Architect in Peer Mode from the start**, and the Distributed Systems and SRE lenses
 - **Context spec/architecture:** `docs/specs/enterprise-evaluation.md` (EV-2, EV-3, EV-5, EV-6, NFR Security, the STRIDE table, R-E9); ADR-0010 (cell output untrusted on the host), ADR-0012 (proportionate security), ADR-0013 Am. 2 (grading copies under `cells_root`).
@@ -57,6 +58,7 @@ Security tasks attack the agent's deliverable with injection, authorization-bypa
 
 **3. Loopback by construction.** Every listener a check opens binds `("127.0.0.1", 0)` and asserts `getsockname()[0] == "127.0.0.1"`; the OS-assigned port goes to the deliverable through its declared configuration (environment or argument, fixed by the task contract). Parallel checks therefore never share a port (EV-3), with no port allocator. A deliverable that must listen is told `127.0.0.1` and a port, also through its declared configuration.
 - *assume:* binding `127.0.0.1` raises no Windows Defender Firewall prompt and loopback traffic is not filtered. **Confirm:** spike S-LB (procedure in `docs/architecture-evaluation-campaign.md`). **Breaks if false:** an unattended grading pass shows a modal dialog (the bind still succeeds); mitigation: a pre-created allow rule for the pinned interpreter, checked in preflight. Until S-LB passes, only in-process probes are admitted (phase E1).
+  - **Status (Amendment 2, 2026-10-06):** holds on this host (NotifyOnListen False; loopback exchange works; operator acceptance 2026-10-06, no ruling number); other hosts re-run.
 
 **4. Result channel, schema-bound.** The check writes exactly one JSON document to its stdout: `{schema, cases: [{id, outcome, duration_ms}], measures: {<metric>: <int or decimal string>}}`, with `outcome` ∈ {`blocked`, `exploited`, `passed`, `failed`, `timeout`} and case ids from the declared list only. The grader validates it; a malformed document is NOT_RECORDED `check output invalid` (a grading-environment failure, caught by the pilot gate, EV-14). A document that breaks the write-sequencing and single-document rules of §10a is NOT_RECORDED `invalid (check tampered)`, never a score. No response bodies or free text reach the ledger; per-case details go to the grading evidence file, egress-scanned before any judge or report use (US-47).
 
@@ -92,6 +94,15 @@ Recorded by the Coordinator (`coord-opus-e1e4`) with W0 rev 3. W0 section 3 is t
 - **§4, result channel.** The check reads `cases.json`, the grader's normalised copy of the authored `cases.yaml`. The document is one line of canonical JSON (at most 64 KiB). After the grader accepts it, the grader writes one byte to the check's stdin; the check exits 0 only after that byte, and 3 on stdin EOF with no byte (spike E1-S3).
 - **§2, app kinds.** `app.kind` is `callable` or `wsgi`; a `wsgi` app may be built by a factory (`factory: true`, `args`, `paths`, `{state_dir}`) and the probe host gives it a complete PEP 3333 environ (W0 rev 3; S1 needs it in E1).
 - **§7, start.** A probe host whose ready line does not arrive within `bounds_ms[interface]` is `did not start` (primary metric 0, a measured failure). Only the outer bound firing is NOT_RECORDED.
+
+### Amendment 2 (2026-10-06; spike S-LB, operator acceptance for this host)
+
+Recorded by the Coordinator (`coord-opus-e1e4`, Coordinator #44). The decision text above is unchanged; this note records the status of §3's `assume:`.
+- **What ran.** Spike S-LB (`docs/notes/spike-s-lb-loopback.md`), 2026-10-06, 07:44-07:59, with the operator at the screen: three loopback runs and two positive-control runs. No dialog appeared on any run. Loopback: `exchange_ok` true, 0 new rules. Positive control: `exchange_ok` true, 0 new rules. `--mode report`: `INCONCLUSIVE control did not fire`.
+- **Why the control did not fire.** `Get-NetFirewallProfile` shows the firewall Enabled on Domain, Private and Public with `NotifyOnListen` False on all three, so Windows never shows the listen dialog on this host.
+- **Decision (the operator, in person, 2026-10-06 about 07:45):** "B-2 / SP-LB closed: accepted for this host." So §3's `assume:` **holds on this host** (NotifyOnListen False; loopback exchange works; operator acceptance 2026-10-06). It carries no ruling number.
+- **Other hosts re-run the spike.** On a host with `NotifyOnListen` True the positive control can fire, and the spike's own pass rule applies. A managed host with group-policy rules may differ.
+- **Consequence.** E4 admits `interface: loopback` once X-LB1 builds the listener (W0 section 3, shape (b)). X-LB1 and X-RS are unblocked.
 
 ## Alternatives considered
 
