@@ -162,6 +162,11 @@ def test_duration_ms_excludes_host_start(tmp_path):
     assert start_ms >= 1000 and dur < 700
 
 
+def test_duration_ms_is_the_probe_host_call_alone_not_the_checks_other_work(tmp_path):
+    inp, _ = run(tmp_path, [fault(schedule=(200,), settle_ms=900)])
+    assert result(inp)["cases"][0]["duration_ms"] < 600
+
+
 def test_a_hang_is_a_measured_timeout_never_a_rerun_and_the_effective_bound_is_the_lower(tmp_path):
     app = CLIENT | {"attr": "hang"}
     inp, s = run(tmp_path, [fault(schedule=(200,), bound_ms=60000)], app=app, bounds=700)  # loopback bound is the lower

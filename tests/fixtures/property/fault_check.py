@@ -9,6 +9,7 @@ sum(max(0, effects - 1)).
 import json
 import os
 import threading
+import time
 
 import bench_check as bc
 
@@ -49,6 +50,7 @@ def check(ctx):
                     seen["resp"] = host.request(case["frame"])
                 finally:
                     host.close()
+            time.sleep(case.get("settle_ms", 0) / 1000)  # check-side work after the call: outside a fault case's span
             resp = seen["resp"]
             return "passed" if resp and resp.get("ok") and resp.get("value") == "ok" else "failed"
 
