@@ -25,7 +25,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from harness_bench import engine, host, ledger, lifecycle, oslock, plan
+from harness_bench import engine, host, identity, ledger, lifecycle, oslock, plan
 from harness_bench.errors import BenchError
 from harness_bench.telemetry import claude_code
 
@@ -254,11 +254,12 @@ def test_other_stop_rows_are_unchanged(base, monkeypatch):  # T-32, existing sto
     calls = []
     monkeypatch.setattr(engine, "_free_bytes", lambda path: 0)
     summary, events, _ = _run(base, _plan(n_cells=1), FakeLauncher({}),
-                               identity_check=lambda: calls.append(1), loop_interval=0.01)
+                               identity_check=lambda: (calls.append(1), identity.CheckResult([], False))[1],
+                               loop_interval=0.01)
     stops = [e for e in events if e["kind"] == "run.launch_stopped"]
 
     assert summary.exit_code == 3
-    assert len(stops) == 1 and calls == []
+    assert len(stops) == 1 and calls == [1]  # identity check runs once and clears, then the disk stop
     assert _identity_payload(stops[0]) == {"kind": "run.launch_stopped", "code": "HB-RUN-004", "reason": "free space below the floor"}
 
 
