@@ -152,13 +152,13 @@ def grade(inp: CellInput, ctx: GradeContext) -> Mapping[str, Score]:
         else:
             turn1_tests_pass = Score(None, "turn 1 snapshot not archived")
 
-        prop.write_section(inp, "rework", {"clause": "turn2_not_reached", "reason": "turn 2 not reached"})
+        ptr = prop.write_section(inp, "rework", {"clause": "turn2_not_reached", "reason": "turn 2 not reached"})
         scores = {
             "rework_ratio": rework_ratio,
             "property_check_pass": property_check_pass,
             "turn1_tests_pass": turn1_tests_pass,
         }
-        return {k: scores.get(k, Score(None, "not applicable")) for k in inp.metrics}
+        return {k: dataclasses.replace(scores.get(k, Score(None, "not applicable")), evidence=ptr) for k in inp.metrics}
 
     # Turn 2 reached
     if snap_events and snap_ws.is_dir():
@@ -236,11 +236,11 @@ def grade(inp: CellInput, ctx: GradeContext) -> Mapping[str, Score]:
         "t1_lines": t1,
         "changed": changed,
     }
-    prop.write_section(inp, "rework", section_data)
+    ptr = prop.write_section(inp, "rework", section_data)
 
     scores = {
         "rework_ratio": rework_ratio,
         "property_check_pass": property_check_pass,
         "turn1_tests_pass": turn1_tests_pass,
     }
-    return {k: scores.get(k, Score(None, "not applicable")) for k in inp.metrics}
+    return {k: dataclasses.replace(scores.get(k, Score(None, "not applicable")), evidence=ptr) for k in inp.metrics}
