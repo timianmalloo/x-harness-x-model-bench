@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Eval X K1A</title><style>
+:root { color-scheme: light dark; --bg:#f7f5ef; --panel:#fff; --text:#20201d;
+  --muted:#66645f; --line:#d9d5ca; --accent:#3157a4; --code:#f0eee7; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#171816; --panel:#20221f; --text:#f2f1eb; --muted:#b8b6ae;
+    --line:#3d403a; --accent:#8fb0ff; --code:#292c27; }
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text);
+  font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { width:min(920px,calc(100% - 32px)); margin:32px auto; padding:40px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+h1,h2,h3,h4,h5,h6 { line-height:1.2; margin:1.5em 0 .55em; }
+h1 { margin-top:0; font-size:2.2rem; } h2 { border-bottom:1px solid var(--line); padding-bottom:.3em; }
+a { color:var(--accent); } code { background:var(--code); padding:.12em .35em; border-radius:4px; }
+pre { overflow:auto; padding:16px; background:var(--code); border-radius:8px; }
+pre code { padding:0; } blockquote { margin:1em 0; padding:.2em 1em; color:var(--muted);
+  border-left:4px solid var(--line); }
+table { width:100%; border-collapse:collapse; margin:1em 0; display:block; overflow:auto; }
+th,td { padding:.55em .75em; border:1px solid var(--line); text-align:left; vertical-align:top; }
+th { background:var(--code); } hr { border:0; border-top:1px solid var(--line); }
+.source { color:var(--muted); font-size:.9rem; margin-bottom:2rem; }
+@media (max-width:640px) { main { width:100%; margin:0; padding:24px 18px; border:0; border-radius:0; } }
+</style></head><body><main><div class="source">Rendered from eval-x-k1a.md</div><h1>X-K1a execution plan</h1>
+<p>Goal: land only W1-K K1 and K2 on <code>build/eval-x-k1a</code>, based on the integration head after X-A3c. Done when the separate named-path commits and R-104 evidence exist, or the compiled context split requires a named handoff. Tier T2; fan-out cap 0. K3-K7, source behavior beyond the refusal skeleton, and other owners&#x27; surfaces are outside this dispatch.</p>
+<p>The supplied compilation is the scope authority. Verified base <code>c8c6390d</code> contains both <code>1a837a5d</code> and <code>186ad7da</code>; <code>git grep -n &quot;HB-PLN-005&quot; -- src</code> returned no hits. The checkout is clean and the branch matches the assignment. The installed skill references <code>kb-graph-and-loop-engineering</code>, but the named evidence directory is absent in this checkout. Its graph link is omitted to avoid a dangling target; the installed execution-graph standard still governs.</p>
+<h2>Graph and floors</h2>
+<table><thead><tr><th>Node</th><th>Goal / inputs</th><th>Exit and oracle</th><th>Tier</th><th>Capability</th><th>Dependency</th></tr></thead><tbody><tr><td>G0</td><td>Read dispatch, native record, owned contracts</td><td>Required ancestors present; retired code absent; context readable</td><td>T0</td><td>Deterministic mechanics</td><td>none</td></tr><tr><td>G1</td><td>Run eight-file base guard</td><td>Gate exit 0; summary read</td><td>T0</td><td>Deterministic mechanics</td><td>G0 decision</td></tr><tr><td>K1a</td><td>Refusal skeleton and own PLANNED deletion</td><td>Separate commit; today&#x27;s HB-USR-002 preserved</td><td>T0</td><td>Reasoning</td><td>G1 data</td></tr><tr><td>K1b</td><td>cmd_run delegation only</td><td>Separate commit; early-refusal test preserved</td><td>T0</td><td>Reasoning</td><td>K1a data</td></tr><tr><td>K1c</td><td>Six confirmed registry rows</td><td>Separate commit; W0 meanings match</td><td>T0</td><td>Deterministic mechanics</td><td>K1a data</td></tr><tr><td>K2</td><td>Golden ledgers, independent tables, windows and refusals</td><td>Observed assertion/HB-USR-002 reds, then strict xfails naming K1b/c/d; N1/N2 recorded</td><td>T2</td><td>Reasoning</td><td>K1b, K1c data</td></tr><tr><td>G2</td><td>R-104 final guard, named runtime files, own cli mutations, ruff, docs validation</td><td>Every exit and summary read; survivor reasons recorded</td><td>T0</td><td>Deterministic mechanics</td><td>K2 data</td></tr><tr><td>H</td><td>Owner/Coordinator join review and closing evidence</td><td>Independent review remains the Owner&#x27;s join gate; no self-cleared veto</td><td>T2</td><td>Independent review</td><td>G2 data</td></tr></tbody></table>
+<pre><code class="language-mermaid">flowchart LR
+  G0 --&gt; G1 --&gt; K1a --&gt; K1b --&gt; K2 --&gt; G2 --&gt; H
+  K1a --&gt; K1c --&gt; K2</code></pre>
+<p>G0/G1/G2, assertion-red observation, surface containment, and audit evidence are immovable floors. The before and after graphs both have eight nodes and width one. Removing incidental ordering between the delegation and registry does not authorize concurrent writers. Inferred unit-node work is 8 and span is 7; with one worker the execution ceiling is 8. No duration estimate is claimed. The source contract is fixed by W1-K, so no new architecture council or speculative implementation is added. The Owner independently reviews at the join; this document does not claim that review already passed.</p>
+<p>Surfaces: refusal entry point -&gt; cmd_run composition -&gt; existing BenchError rendering; registry -&gt; attribution/report readers; tests -&gt; golden ledger and ADR oracle. No new facts or stored measures are introduced in K1. Run is the existing aggregate; cells remain referenced by identity. K2 fixtures must reuse the landed FACTS, snapshot and archive APIs.</p>
+<p>Scan scopes: base retirement check is recursive <code>src</code>, token HB-PLN-005, no allowlist. Completed-reader scan is recursive <code>src</code>, token run.completed, with its measured base hit count pinned by K2. The guard and window clauses are jointly satisfiable: source preserves the refusal while future behavior tests fail explicitly and remain strict-xfailed until the named next turn.</p>
+<h2>Budget, checkpoints and containment</h2>
+<p>Budget: 3,300 seconds, 200k context ceiling, one dispatch; shared X-K1 main-line budget 280 calls. No K-item starts above 100k; at 170k no edit or gate starts. Unreadable context permits only K1. K1a ends after K2. A sequential Sonnet follow-on in this tree is the compiled fallback for split-rule handoff. There are no fan-outs or retry loops. A finite test-repair pass decreases the set of observed failures; its floor is zero. Budget caps are defect signals, never proof that the work is complete.</p>
+<p>Verified K1 context sample: 91,048 input tokens; native model gpt-6.1-sol. Verified pre-edit gate: 200 passed in 77.11 seconds. The latest pre-edit sample is 99,455, so K2 requires a fresh sample before admission.</p>
+<p>The CLI configuration seam is <code>req-01M489RF7YZQE1XE6D3BX77DCX</code>: the existing early refusal precedes EngineConfig construction. K1a delegates with cfg=None to preserve this behavior. K1c must wire the actual config before implementing resume behavior. This is a temporary composition handoff, not a second config definition. Scratch is C:/t/k1a-1; shared ring caches are untouched.</p>
+<p>Planned versus actual evidence is recorded through audit-log.py at handoff, including native usage, wall time, gate exits and any incomplete nodes. This plan is create-only under the dispatch grant; its sibling HTML is derived.</p></main></body></html>

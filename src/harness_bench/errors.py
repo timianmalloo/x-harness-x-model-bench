@@ -30,6 +30,8 @@ class Cause(Enum):
     disk = ("HB-CELL-112", "infrastructure", "failed (disk)")
     host_suspended = ("HB-CELL-106", "infrastructure", "failed (host suspended)")
     archive = ("HB-CELL-117", "infrastructure", "failed (archive)")
+    coordinator_crash = ("HB-CELL-118", "infrastructure", "failed (coordinator crash)")
+    coordinator_crash_between_turns = ("HB-CELL-119", "infrastructure", "failed (coordinator crash between turns)")
     unclassified = ("HB-CELL-199", "none", "failed (unclassified)")
 
     def __init__(self, code: str, attribution: str, label: str) -> None:
@@ -91,6 +93,10 @@ RUN_CODES: dict[str, str] = {
     "HB-RUN-005": "run lock held: another engine is running this run; retry if no run is live",
     "HB-RUN-006": "run stopped by the operator (bench stop, or a decision answered stop): running cells stopped, no new launch",
     "HB-RUN-007": "spend cap reached: the run stopped (the spend_cap default or answer)",
+    "HB-RUN-008": "run is stopped: n cells recorded stopped, m archived, graded, 0 launched",
+    "HB-RUN-009": "resume refused: `bench verify` failed (names the segment)",
+    "HB-ALM-001": "alarm: heartbeat stale",
+    "HB-ALM-002": "alarm: progress stalled while cells are pending",
     "HB-LED-001": "torn tail repaired by its writer",
     "HB-LED-002": "chain or seal break",
     "HB-LED-003": "duplicate key or second outcome",
