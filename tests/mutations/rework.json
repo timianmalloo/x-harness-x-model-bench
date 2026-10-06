@@ -97,5 +97,15 @@
     "tests": [
       "tests/test_rework.py::test_rework_ratio_branch_scores_carry_the_section_pointer"
     ]
+  },
+  {
+    "name": "the hidden_tests_pass key deleted from rework's turn-2 section: the final tree's one result is not recorded (R-90 condition 3)",
+    "file": "src/harness_bench/grade/rework.py",
+    "find": "        \"hidden_tests_pass\": {\"value\": final_tests.value, \"reason\": final_tests.reason},\n",
+    "replace": "",
+    "tests": [
+      "tests/test_rework.py::test_rework_ratio_branch_scores_carry_the_section_pointer",
+      "tests/test_rework.py::test_multi_turn_discrimination_through_engine"
+    ]
   }
 ]

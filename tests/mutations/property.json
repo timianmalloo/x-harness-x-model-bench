@@ -161,7 +161,7 @@
   "find": "        items += _double_run_items(run_dir, grading_id, {c[\"cell_id\"]: c[\"label\"] for c in p[\"cells\"]}, spans=False)",
   "replace": "        pass",
   "tests": [
-   "tests/test_discriminate.py::test_a_check_less_trial_fails_on_a_hidden_test_disagreement"
+   "tests/test_discriminate.py::test_a_check_less_trial_with_a_flaky_final_tree_fails_on_a_hidden_test_disagreement"
   ]
  }
 ]

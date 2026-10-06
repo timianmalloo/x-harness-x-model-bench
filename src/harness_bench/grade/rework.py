@@ -235,6 +235,7 @@ def grade(inp: CellInput, ctx: GradeContext) -> Mapping[str, Score]:
         "rework_ratio": str(r_val) if r_val is not None else None,
         "t1_lines": t1,
         "changed": changed,
+        "hidden_tests_pass": {"value": final_tests.value, "reason": final_tests.reason},
     }
     ptr = prop.write_section(inp, "rework", section_data)
 
