@@ -76,7 +76,7 @@
  {
   "name": "disk floor ignored",
   "file": "src/harness_bench/engine.py",
-  "find": "                        self._stop_launching(\"HB-RUN-004\", \"free space below the floor\")\n",
+  "find": "            self._stop_launching(\"HB-RUN-004\", \"free space below the floor\")\n",
   "replace": "                        pass\n",
   "tests": [
    "tests/test_engine.py::test_disk_floor_stops_launching_before_any_cell"
@@ -260,7 +260,7 @@
  {
   "name": "T1-12 the disk floor ignores run_dir's volume",
   "file": "src/harness_bench/engine.py",
-  "find": "min(_free_bytes(self.cfg.cells_root), _free_bytes(run_dir))",
+  "find": "((\"cells_root\", self.cfg.cells_root), (\"run_dir\", self.cfg.run_dir))",
   "replace": "_free_bytes(self.cfg.cells_root)",
   "tests": [
    "tests/test_engine.py::test_the_disk_floor_also_checks_the_run_dirs_volume"

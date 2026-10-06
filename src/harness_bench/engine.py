@@ -68,7 +68,7 @@ NO_MEMORY_STATUSES = {0xC0000017, 0xC000012D}
 OOM_SIGNATURE = re.compile(rb"heap out of memory|out of memory|OutOfMemory", re.IGNORECASE)
 COMPLETED_STOP_REASONS = {"end_turn", "max_tokens", "max_turn_requests", "refusal"}
 CIRCUIT_BREAKER = 3
-LOG_EXTRAS = ("detail", "pids", "fact", "win32_error")  # the only extras engine.log keeps (never argv, env or cell text)
+LOG_EXTRAS = ("detail", "pids", "fact", "win32_error", "path_role", "errno")  # never argv, env or cell text
 DISK_FULL_WINERRORS = (39, 112)  # ERROR_HANDLE_DISK_FULL, ERROR_DISK_FULL
 KILL_RETRY_CAP = 30.0  # seconds: the longest wait between retries of an unconfirmed kill (HB-RUN-002)
 RECORD_POLL = 0.5  # seconds: how often a waiting worker re-checks that the engine can still record
@@ -231,6 +231,7 @@ class Engine:
         self.cells_unmeasured = 0  # ended cells whose usage was not recorded: never counted as 0 (design 6.3)
         self._check_ms: int | None = None
         self._check_rechecked = False
+        self._disk_query_failures = {"cells_root": 0, "run_dir": 0}
 
     # the single writer ----------------------------------------------------------------------------
 
@@ -445,7 +446,6 @@ class Engine:
         self.cells_unmeasured = len([cid for cid in self.outcomes if cid not in measured])
 
     def _drive(self, lock: oslock.RunLock, boot: Callable[[], list[dict]]) -> RunSummary:
-        run_dir = self.cfg.run_dir
         host.keep_awake(True)
         sleep = host.SleepDetector(self.params["suspend_gap"])
         try:
@@ -466,8 +466,6 @@ class Engine:
                     self.on_tick()
                     if sleep.slept():
                         self._kill_all("host_suspended")
-                    if not self.stopped and min(_free_bytes(self.cfg.cells_root), _free_bytes(run_dir)) < self.params["disk_floor_bytes"]:
-                        self._stop_launching("HB-RUN-004", "free space below the floor")
                     # The slot ends when the process is confirmed gone (module doc), which is before the
                     # outcome. A worker still archiving stays in active so the loop drains it, and does
                     # not keep the slot: design 6.2 step 8 launches in this tick once the decision is closed.
@@ -624,18 +622,38 @@ class Engine:
                 log.warning("control retried", extra={"error_code": "HB-USR-002", "detail": type(exc).__name__})
 
     def _launch(self, cell: dict) -> None:
+        free_bytes = self._launch_free_bytes()
+        if free_bytes is not None and free_bytes < self.params["disk_floor_bytes"]:
+            self._stop_launching("HB-RUN-004", "free space below the floor")
+        if self.stopped:
+            return
         identity_fields = {}
         if self._check_ms is not None:
             identity_fields["identity_check_ms"] = self._check_ms
             if self._check_rechecked:
                 identity_fields["identity_recheck"] = 1  # ledger.canonical forbids bool; W0 ledger flag encoding
         try:
-            self._append_now("events", {"kind": "cell.launch_intent", "cell_id": cell["cell_id"], "label": cell["label"], **identity_fields})
+            self._append_now("events", {"kind": "cell.launch_intent", "cell_id": cell["cell_id"], "label": cell["label"],
+                                        "free_bytes": free_bytes, **identity_fields})
         except BenchError:  # the ledger broke: this cell is never launched; the loop aborts and drains
             return
         a = _Active(cell, threading.Thread(target=self._cell_worker, args=(cell,), daemon=True, name=f"cell-{cell['cell_id']}"))
         self.active[cell["cell_id"]] = a
         a.thread.start()
+
+    def _launch_free_bytes(self) -> int | None:
+        """W1-K section 7: only answered paths contribute; no answer is explicitly unmeasured."""
+        measured = []
+        for path_role, path in (("cells_root", self.cfg.cells_root), ("run_dir", self.cfg.run_dir)):
+            try:
+                measured.append(_free_bytes(path))
+            except OSError as exc:
+                self._disk_query_failures[path_role] += 1
+                emit = log.warning if self._disk_query_failures[path_role] == 3 else log.info
+                emit("disk.query_failed", extra={"path_role": path_role, "errno": exc.errno})
+            else:
+                self._disk_query_failures[path_role] = 0
+        return min(measured) if measured else None
 
     def _kill(self, a: _Active, reason: str | None) -> None:
         """Request a cooperative end. The first reason owns the one hard deadline."""
