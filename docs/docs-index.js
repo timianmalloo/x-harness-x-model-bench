@@ -2261,7 +2261,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "008437404b45b0b3328917767710ec3a299871230386130f26c7f292a34afe57"
+      "sourceSha256": "138b9e685e8a7c85ffdd4dc4c4112a64b41af80a817bf744ef15c7c47acad734"
     },
     {
       "id": "design-eval-identity",
@@ -2589,7 +2589,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b14637314c7501ad8ce14c5b9d741f65331dc4544c28b17107039ddb33753158"
+      "sourceSha256": "d75924706c220625ade831d3de0711712c678824725f0e631090dfbfbeb0f434"
     },
     {
       "id": "design-eval-resume",
@@ -4334,6 +4334,51 @@ window.DOCS_INDEX = {
       "sourceSha256": "51d76f9f8003e76f1c195abd77fc7d91d3a39e08a5ad2a4e48297ebfebcd8602"
     },
     {
+      "id": "coordinator-log-c41",
+      "path": "docs/coordination/coordinator-log/c41.md",
+      "title": "Coordinator #41 hand-back (2026-10-06): X-FIXD turn 2 compiled under Ruling 109, the W1-E and W1-L errata, the X-RDY follow-on recompiled, PATH-B confirmed against FLAKE-A, FALLBACK-A",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-06",
+      "reviewSuggested": [],
+      "summary": "Coordinator #41, on owner/ruling-r109 (481f5c21), compiled X-FIXD turn 2 (Claude Code Sonnet, loop-back slot 2) to build Ruling 109's (1') in readiness.variant_failures red first, with its mutant in tests/mutations/discriminate.json. It applied the R-109 errata to W1-E section 7 and W1-L section 15, recompiled the X-RDY follow-on with DR-1 answered, and registered PATH-B's confirmed instance (FLAKE-A's four named instances are not PATH-B), SHAPE-A's R-109 control and reds design item, and FALLBACK-A.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c40",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-discriminate",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-property-tasks",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "ad5a9268703ac8bb70db249d0f318663f3cdc34127b284faf3dab6ee58649714"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4360,7 +4405,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "247cd4d2f3150a145886ce50c9522a5292ac45a0e6e3b7aba35eb1c224a26d22"
+      "sourceSha256": "5d665d5efd79f55bde37e33c33a0f9fd6f4f66e387b2e9383840fe7e52c51e24"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -9188,6 +9233,14 @@ window.DOCS_INDEX = {
       "artifactId": "design-eval-property-grader"
     },
     {
+      "id": "surface-design-eval-property-tasks",
+      "path": "docs/design/eval-property-tasks.html",
+      "title": "Eval Property Tasks",
+      "kind": "design-preview",
+      "description": "Inspect a rendered design or design-language preview.",
+      "artifactId": "design-eval-property-tasks"
+    },
+    {
       "id": "surface-design-eval-resume",
       "path": "docs/design/eval-resume.html",
       "title": "Eval Resume",
@@ -9353,5 +9406,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "cb5ca2ab9fd920c0813d547d610715d9aadc07f0252ed55d177854b2fb14f39d"
+  "graphSha256": "9db36c4cbb5a8af9db5e26dbbf5f36dae437e8b5184f9ae84306ef77dc8024f2"
 };
