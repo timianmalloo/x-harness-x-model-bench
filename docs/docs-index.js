@@ -4428,6 +4428,59 @@ window.DOCS_INDEX = {
       "sourceSha256": "d2ceff73598a33a2eb7398133ac1074d9661d3a53d6fea28f35ef7301b4e9693"
     },
     {
+      "id": "coordinator-log-c43",
+      "path": "docs/coordination/coordinator-log/c43.md",
+      "title": "Coordinator #43 hand-back (2026-10-06): X-K1c compiled (hand-back after K5), X-K2b recompiled under FALLBACK-A, GUARD-A and FLAKE-A instances",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-06",
+      "reviewSuggested": [],
+      "summary": "Coordinator #43 worked on build/eval-x-k1b (5ab2bfc3). It compiled X-K1c (Codex gpt-6.1-sol; W1-K K5 and K6) with its hand-back point after K5, because measured Codex turns show the two items cannot fit one turn. The compile carries three rulings: the verify refusal is injected through EngineConfig, because run-class resume.py cannot import views; the real cfg is built in cmd_run; the sweep pairing check goes in the resume caller, with atomic unedited. It updated x-k1.contract.json. It recompiled X-K2b with the no-spawn clause, a Leader-only fallback and PATH-B, which supersedes #39's compile. It registered GUARD-A's second design-side shape, a FLAKE-A recurrence on the same discriminate node and a third FALLBACK-A carrier. It also wrote the W1-K erratum notes, starting with the lifecycle.completed placement.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c42",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c39",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-k1",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-resume",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "90520727a534cd524048d7ea743896d9da892b34ec89adff7d37c22646d03630"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4454,7 +4507,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "682e3ff434e755c64620c1826bae58cd8ce3c17e68d3022c36121af4902b3fe3"
+      "sourceSha256": "cef1e004b6c432c51102910109eb6eef352627b5a79feba974a78f5e32c06f5d"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -9549,5 +9602,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "b640b8a8c580f92c6f96f8454a5ce15998d73635268b135048aca49d313b4dfe"
+  "graphSha256": "fd18ede156c38a74d025efb1b61200bc7c0080a08f902afb38f8a1b825955e05"
 };
