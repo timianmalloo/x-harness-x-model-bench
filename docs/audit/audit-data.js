@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T13:03:06Z",
+  "generated": "2026-10-06T13:42:45Z",
   "audit": [
     {
       "actor": null,
@@ -103973,6 +103973,25 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-06T13:03:05Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M48Q7M4QA6YPWAAW59Z6JJ1F",
+      "shortname": "x-fixd-turn2",
+      "datetime": "2026-10-06T13:42:45Z",
+      "session": "x-fixd-e1e4",
+      "prompt": "X-FIXD turn 2 (compile al-01M48EJDHJMT4XD48MPZHCKXG2): Ruling 109 (1') variant_failures; rework evidence pointer; delete the discriminate fallback",
+      "summary": "green 139e5e23 (head). Readiness green 84dfe6b5, rework green 98c44c1d. Reds e18f0a4a (readiness), b2cceff3 (rework). Mutants 69f55f91 (readiness) and 8a9c2a0c (rework), both killed. Fallback deleted 139e5e23. Start 2026-10-06T13:04:23Z, end about 13:46Z. Served model claude-sonnet-5-5. Tokens: not recorded.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "claude-code sonnet claude-sonnet-5-5",
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "X-FIXD turn 2: Ruling 109 (1') in readiness.variant_failures; rework evidence pointer; delete discriminate fallback",
+      "done_when": "readiness and rework green with mutants killed, fallback deleted, gates exit 0",
+      "tier": "T1"
     }
   ],
   "changes": [
