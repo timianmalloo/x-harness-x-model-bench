@@ -93,6 +93,7 @@ def _grade(tmp_path, built_fixture, mode, *extra, stale=False):
     return result, out, ws
 
 
+@pytest.mark.stamped
 @pytest.mark.slow
 def test_dotnet_oracle_runs_in_grading_copy_and_records_version(tmp_path, built_fixture):
     result, out, ws = _grade(tmp_path, built_fixture, "pass")
@@ -103,36 +104,42 @@ def test_dotnet_oracle_runs_in_grading_copy_and_records_version(tmp_path, built_
     assert not (ws / "hidden.txt").exists()
 
 
+@pytest.mark.stamped
 @pytest.mark.slow
 def test_dotnet_oracle_failed_tests_get_partial_credit(tmp_path, built_fixture):
     result, _, _ = _grade(tmp_path, built_fixture, "partial")
     assert (result.passed, result.partial_credit) == (0, Decimal("0.5"))
 
 
+@pytest.mark.stamped
 @pytest.mark.slow
 def test_dotnet_oracle_nonzero_exit_is_not_a_pass_with_all_tests_passing(tmp_path, built_fixture):
     result, _, _ = _grade(tmp_path, built_fixture, "exit-one")
     assert (result.passed, result.partial_credit) == (0, Decimal(1))
 
 
+@pytest.mark.stamped
 @pytest.mark.slow
 def test_dotnet_oracle_reads_named_trx_beside_nested_project(tmp_path, built_fixture):
     result, _, _ = _grade(tmp_path, built_fixture, "nested")
     assert (result.passed, result.partial_credit, result.reason) == (1, Decimal(1), None)
 
 
+@pytest.mark.stamped
 @pytest.mark.slow
 def test_dotnet_oracle_does_not_read_stale_trx_from_archive(tmp_path, built_fixture):
     result, _, _ = _grade(tmp_path, built_fixture, "missing", stale=True)
     assert (result.passed, result.partial_credit, result.reason) == (None, None, "named TRX result file missing")
 
 
+@pytest.mark.stamped
 @pytest.mark.slow
 def test_dotnet_oracle_multiple_named_trx_files_are_na(tmp_path, built_fixture):
     result, _, _ = _grade(tmp_path, built_fixture, "duplicate")
     assert (result.passed, result.partial_credit, result.reason) == (None, None, "multiple named TRX result files")
 
 
+@pytest.mark.stamped
 @pytest.mark.slow
 @pytest.mark.parametrize(("mode", "reason"), [
     ("missing", "named TRX result file missing"),
@@ -145,6 +152,7 @@ def test_dotnet_oracle_missing_or_invalid_named_summary_is_na(tmp_path, built_fi
     assert (result.passed, result.partial_credit, result.reason) == (None, None, reason)
 
 
+@pytest.mark.stamped
 @pytest.mark.slow
 def test_dotnet_oracle_timeout_is_na_and_leaves_no_process(tmp_path, built_fixture):
     pid_file = tmp_path / "pid.txt"

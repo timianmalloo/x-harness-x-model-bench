@@ -576,6 +576,7 @@ def _coverage(n_datasets: int, kind: str) -> int:
 GOLDEN_COVERAGE = {"effect": 940, "ratio": 932}
 
 
+@pytest.mark.stamped
 @pytest.mark.slow
 @pytest.mark.parametrize("kind", ["effect", "ratio"])
 def test_coverage_golden(kind):
@@ -584,6 +585,7 @@ def test_coverage_golden(kind):
     assert _coverage(1000, kind) == GOLDEN_COVERAGE[kind]
 
 
+@pytest.mark.stamped
 @pytest.mark.slow
 @pytest.mark.parametrize("kind", ["effect", "ratio"])
 def test_coverage_band(kind):

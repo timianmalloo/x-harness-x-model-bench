@@ -106,6 +106,7 @@ def fake_dotnet(monkeypatch, *results) -> list[list[str]]:
 # --- the design's seeded fixture (CS0168) ---------------------------------------------------------------------------
 
 
+@pytest.mark.stamped
 @pytest.mark.slow
 def test_d1_base_plus_unused_local_gives_static_analysis_delta_plus_1(tmp_path):  # design: Rigor, Fixtures
     got = grade_d1(tmp_path, *d1_cell(tmp_path, UNUSED_LOCAL))
@@ -115,6 +116,7 @@ def test_d1_base_plus_unused_local_gives_static_analysis_delta_plus_1(tmp_path):
 # --- the design's NA reasons for static_analysis_delta -------------------------------------------------------------
 
 
+@pytest.mark.stamped
 @pytest.mark.slow
 def test_d1_syntax_error_is_na_workspace_does_not_build(tmp_path):  # design: Rigor, NA reasons
     got = grade_d1(tmp_path, *d1_cell(tmp_path, BROKEN))

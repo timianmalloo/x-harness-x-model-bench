@@ -353,6 +353,7 @@ NEW_TEST_CODE_CONTENT = (
 )
 
 
+@pytest.mark.stamped
 @pytest.mark.slow
 def test_d1_reference_plus_new_test_project_seed_or_no_compute_scores_zero(tmp_path):
     folder, cell = d1_cell(
@@ -401,6 +402,7 @@ RED_TEST_CODE_CONTENT = (
 )
 
 
+@pytest.mark.stamped
 @pytest.mark.slow
 def test_d1_reference_plus_seed_or_no_compute_one_always_failing_scores_zero(tmp_path):
     folder, cell = d1_cell(

@@ -1,6 +1,6 @@
 {
   "checks": [["uv", "run", "ruff", "check", "src", "tests", "tools"]],
-  "recount": [["uv", "run", "pytest", "-q", "-p", "no:cacheprovider", "--deselect", "tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp"]],
+  "recount": [["uv", "run", "pytest", "-q", "-p", "no:cacheprovider", "-n", "4", "--deselect", "tests/test_gate_stamp.py::test_current_grader_inputs_match_gate_stamp"]],
   "regenerate": [["python", "docs/ai-forward-pack/scripts/coord-core.py", "regen"],
                  ["python", "docs/ai-forward-pack/scripts/docs-graph.py", "derive"]],
   "gates": [["python", "docs/ai-forward-pack/scripts/docs-graph.py", "validate"],
