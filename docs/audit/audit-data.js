@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T18:31:06Z",
+  "generated": "2026-10-06T18:50:15Z",
   "audit": [
     {
       "actor": null,
@@ -113685,6 +113685,26 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-06T18:31:05Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M498TP6T5VDPY30VRDA7ZZKC",
+      "shortname": "x-fixe",
+      "datetime": "2026-10-06T18:50:15Z",
+      "session": "x-fixe-e1e4",
+      "prompt": "X-FIXE: SHAPE-A row 4 double-run guard on check-less property tasks",
+      "summary": "X-FIXE (served claude-sonnet-5-5, tokens not recorded, context samples not recorded). Outcome: green 9d083814 (last commit; code green e282d1bf). Dispatch start 2026-10-06T18:31:43Z, end at this entry. Red SHAs: F1 6696c9e1 (assert None == {'reason': None, 'value': 1}), F2 b4dd5267 (DID NOT RAISE BenchError). Mutants: 2 added in 1bd8f1fb, all killed (whole property.json run, every mutation killed). Applicability: hidden-tests-disagree applies on the check-less shape; not-comparable does not run there (NA already held by _untrustworthy; rework records no hidden value, rework.py:175 and :239); unbiased_ok span does not apply (a check-less pass records no spans); undeclared-timeout and no-check-evidence items do not apply (no cases, no check evidence pointer). Finding: hidden_tests_ms was written nowhere before this item, including check-based cells.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-06T18:31:43Z",
+      "duration_seconds": 1112.0
     }
   ],
   "changes": [
