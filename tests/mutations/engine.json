@@ -12,8 +12,8 @@
  {
   "name": "no ack barrier: prompt_sent not recorded before sending",
   "file": "src/harness_bench/engine.py",
-  "find": "            self.record(\"events\", {\"kind\": \"cell.prompt_sent\", \"cell_id\": cid})\n",
-  "replace": "            pass\n",
+  "find": "                self.record(\"events\", {\"kind\": \"cell.prompt_sent\", \"cell_id\": cid, \"turn\": n})\n",
+  "replace": "                pass\n",
   "tests": [
    "tests/test_engine.py::test_happy_run_completes_archives_and_deletes_every_cell"
   ]

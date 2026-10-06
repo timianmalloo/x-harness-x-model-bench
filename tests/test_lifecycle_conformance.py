@@ -94,6 +94,7 @@ SEEDED = {  # name -> (events, scores, the rule the replay must name)
         (_swap("cell.archived", "cell.workspace_deleted"), [], "NothingDeletedUnarchived"),
     "a transition before the launch intent": ([GOOD[0], GOOD[2], GOOD[1]] + GOOD[3:], [], "follows cell.launch_intent"),
     "a turn end with no prompt": (_cell("cell.launch_intent", "cell.turn_ended"), [], "turn_ended follows its prompt_sent"),
+    "a snapshot with no turn end": (_cell("cell.launch_intent", "cell.turn_snapshot_archived"), [], "SnapshotAfterTurnEnd"),
     "prompt after the outcome (NoPromptAfterOutcome)":
         (GOOD[:4] + [GOOD[4], GOOD[6], GOOD[7], {"kind": "cell.prompt_sent", "cell_id": "a"}], [], "NoPromptAfterOutcome"),
     "launch after a stop (NoLaunchAfterStop)": ([GOOD[0], {"kind": "run.launch_stopped"}, GOOD[1]], [], "NoLaunchAfterStop"),

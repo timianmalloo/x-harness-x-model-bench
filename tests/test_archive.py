@@ -3,12 +3,50 @@
 import os
 import subprocess
 import sys
+import threading
 from pathlib import Path
 
 import pytest
 
 from harness_bench import archive, atomic, oslock
 from harness_bench.errors import BenchError
+
+
+def test_snapshot_cancel_between_files_sweeps_the_failed_publish(tmp_path, monkeypatch):
+    cell = _cell(tmp_path)
+    dest = tmp_path / "run/archive/c"
+    cancel = threading.Event()
+    copied = []
+    real = archive._copy_hashed
+
+    def cancel_after_file(src, dst):
+        result = real(src, dst)
+        copied.append(src.name)
+        cancel.set()
+        return result
+
+    monkeypatch.setattr(archive, "_copy_hashed", cancel_after_file)
+    with pytest.raises(InterruptedError):
+        archive.snapshot_cell(cell, dest, 1, set(), cancel)
+    assert len(copied) == 1
+    assert not (dest / "turn-1").exists()
+    assert atomic.stale_temps(dest) == []
+
+
+def test_snapshot_sweep_refuses_another_runs_held_lock(tmp_path):
+    cell = _cell(tmp_path)
+    dest = tmp_path / "run/archive/c"
+    dest.mkdir(parents=True)
+    orphan = dest / "turn-1.tmp-123-12345678901234567890123456789012"
+    orphan.mkdir()
+    lock = oslock.RunLock.acquire(tmp_path / "other-run/.lock")
+    try:
+        with pytest.raises(ValueError, match="this run's lock"):
+            archive.snapshot_cell(cell, dest, 1, set(), run_lock=lock)
+        assert orphan.is_dir()
+        assert not (dest / "turn-1").exists()
+    finally:
+        lock.release()
 
 
 def _cell(tmp_path) -> Path:
@@ -296,5 +334,4 @@ def test_bench_verify_passes_a_run_archived_by_the_atomic_path(tmp_path):
     findings = views.verify(run_dir)
     errors = [f for f in findings if f.level == "error"]
     assert errors == []
-
 
