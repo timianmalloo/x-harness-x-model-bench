@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T18:20:17Z",
+  "generated": "2026-10-06T18:30:39Z",
   "audit": [
     {
       "actor": null,
@@ -111202,39 +111202,142 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M496XHKQSBWHGJE8P62CD8V9",
-      "shortname": "join-c46",
-      "datetime": "2026-10-06T18:16:52Z",
-      "session": "leader-e1e4",
-      "prompt": "the join of coord/eval-c46-k1d into integrate/e2e4-18",
-      "summary": "Coordinator #46 (Opus) d77b65f9/3ae104ee: K1d al-01M4964JB1F0TZ56VVPYAQJ4VF; X-RS ready turn al-01M4964T9K5QWVA8VXCJXB17VV; CEIL-A instances + floor-based split rule in the compile form; RS2 batch-id residual -> DR req-01M4966TTSM5ADZ41AFE6SX8S9; W1-L Erratum 3; SHAPE-A row 4 -> X-FIXE; ADR-0018 accepted-residual row; HB-CHK-005 documented recount_seconds=0 (docs_only=True).",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Join Coordinator #46 into integrate/e2e4-18",
+      "datetime": "2026-10-06T18:16:52Z",
       "done_when": "conductor-join exit 0 (docs-only)",
-      "tier": "T1",
+      "duration_seconds": 1.0,
       "fan_out": 0,
+      "goal": "Join Coordinator #46 into integrate/e2e4-18",
+      "id": "al-01M496XHKQSBWHGJE8P62CD8V9",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "the join of coord/eval-c46-k1d into integrate/e2e4-18",
+      "session": "leader-e1e4",
+      "shortname": "join-c46",
       "signals": {
-        "verification_path": true,
+        "acceptance_met": true,
         "verification_executed": true,
-        "acceptance_met": true
+        "verification_path": true
       },
+      "skill": "execute-with-coordination",
       "started_at": "2026-10-06T18:16:51Z",
-      "duration_seconds": 1.0
+      "summary": "Coordinator #46 (Opus) d77b65f9/3ae104ee: K1d al-01M4964JB1F0TZ56VVPYAQJ4VF; X-RS ready turn al-01M4964T9K5QWVA8VXCJXB17VV; CEIL-A instances + floor-based split rule in the compile form; RS2 batch-id residual -> DR req-01M4966TTSM5ADZ41AFE6SX8S9; W1-L Erratum 3; SHAPE-A row 4 -> X-FIXE; ADR-0018 accepted-residual row; HB-CHK-005 documented recount_seconds=0 (docs_only=True).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     },
     {
-      "id": "al-01M4973TDW6BTASHD2M0P09ZKW",
-      "shortname": "join-r111",
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
       "datetime": "2026-10-06T18:20:17Z",
-      "session": "leader-e1e4",
+      "done_when": "conductor-join exit 0 (docs-only)",
+      "duration_seconds": 1.0,
+      "fan_out": 0,
+      "goal": "Join Ruling 111 into integrate/e2e4-18",
+      "id": "al-01M4973TDW6BTASHD2M0P09ZKW",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "the join of owner/ruling-r111 into integrate/e2e4-18",
+      "session": "leader-e1e4",
+      "shortname": "join-r111",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "execute-with-coordination",
+      "started_at": "2026-10-06T18:20:16Z",
       "summary": "Owner (Fable claude-fable-5-1) Ruling 111 2d59da4f on req-01M4966TTSM5ADZ41AFE6SX8S9: (b) granted, bounded - batch identity binds to the frozen (batch_id, records) pair; reference and alt freeze; prompt drops 'in one batch'; new case lost-then-grow; variant growid; X-RS ready-turn recompile (one clause); W1-L Erratum 4 at the X-RS join; IDEM-A. (a) kept only as fallback, (c) refused. Process note: the Owner's first commit attempt skipped the pre-commit hook via -c core.hooksPath; it reset and recommitted with the hook. recount_seconds=0 (docs_only=True).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-06T16:37:57Z",
+      "done_when": "K1,K2 green; K3,K4 open",
+      "duration_seconds": 1816.0,
+      "goal": "X-LB1 loopback fake",
+      "id": "al-01M4918DSEHXGM782VM4M2F09J",
+      "kind": "skill",
+      "outcome": "partial",
+      "prompt": "X-LB1 dispatch c44",
+      "session": "x-lb1-e1e4",
+      "shortname": "x-lb1-k1k2",
+      "skill": "implement",
+      "started_at": "2026-10-06T16:07:41Z",
+      "summary": "Planned split after K2 (context ~145k > 140k start limit). Start 2026-10-06T16:07:41Z; end not measured. Served model claude-sonnet-5-5. Red SHAs b3f5a409 (K1), 9fceef71 (K2). Green 60195f2e (K1), 4fb8baf6 (K2), 0487d148 (mutants+span test). Context samples: before K1 ~66k, after K2 ~145k. Tokens: not recorded. Marker removed: tests/test_catalog_version.py::test_a_property_tag_outside_property_names_is_refused_and_property_names_match_the_strategy_keys. No firewall dialog or new rule seen. Suite lock waited (not measured).",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-06T17:43:12Z",
+      "duration_seconds": 3846.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "build/eval-x-lb1",
+        "pushed": null,
+        "sha": "6c56cae42b0ff4c5427a3648fbcb7320041f95cc",
+        "short": "6c56cae42"
+      },
+      "id": "al-01M494ZXA008KXP3HPSXA38MW6",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "X-LB1 part 2: K3, K4 and the closing items (dispatch compile al-01M48WS5VMEBVXJABRJRCZ5JFZ)",
+      "session": "x-lb1-e1e4",
+      "shortname": "X-LB1 part 2",
+      "skill": "implement",
+      "started_at": "2026-10-06T16:39:06Z",
+      "summary": "X-LB1 part 2 (K3, K4, closing items), served model claude-sonnet-5-5. Dispatch start 2026-10-06T16:39:06Z, end about 17:48Z (over the 3,300 s deadline: the suite lock wait for mutate_check on property.json took about 25 min, held by another tree). Outcome: green 6c56cae4 (worker gates read; ring and stamps are the Leader's).\nRed SHAs: aac8b94d (K3a, test_loopback_shape_b_alone_is_accepted fails: loopback refused as not built in E1), a3855d9d (K3b, KeyError 'deliverable'). Greens: bb4994e2 (shape rule), 14011f97 (pointers, assume: deleted). K4 20e3c87a is a characterization test (green on first run, no code to make red, no discriminate.py change). Mutants: 820d7095 (shape rule and pointer read, both killed; property.json: every mutation killed; bench_check.json: every mutation killed incl. the part 1 getsockname, fake_url and span mutants). 6c56cae4 retargets the diffstats.json STRATEGIES find (same rule) that part 1's STRATEGIES edit moved.\nGates: R-104 set 1 on final code: 202 passed, 1 failed (test_mutate_check find-uniqueness: diffstats find), fixed in 6c56cae4, test_mutate_check re-run 48 passed; set 2: 270 passed exit 0; ruff exit 0; docs-graph validate exit 0 (16 review-suggested, 0 stale). Marker removed: none this part (property-tag xfail removed in part 1). Context: not recorded. Tokens: not recorded. No firewall dialog or new rule seen.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "actor": "claude-sonnet-5-5",
+      "artifacts": [
+        "docs/plans/eval-x-lb1.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-06T18:16:46Z",
+      "done_when": "four fixes each in its own commit, mutate_check kills all, gates green",
+      "duration_seconds": 1625.0,
+      "git": {
+        "branch": "build/eval-x-lb1",
+        "pushed": null,
+        "sha": "d4f07ad8c07c365403d32a43b027050a589e63d0",
+        "short": "d4f07ad8c"
+      },
+      "goal": "Close the four Security conditions on X-LB1",
+      "id": "al-01M496XCB1A2JXB5E19SAE6ZY1",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "X-LB1 part 3: close the four Security & Identity conditions",
+      "session": "x-lb1-e1e4",
+      "shortname": "x-lb1-p3",
+      "skill": "implement",
+      "started_at": "2026-10-06T17:49:41Z",
+      "summary": "Closed 4 conditions: SO_EXCLUSIVEADDRUSE read by test + mutation; outcome-set selector refusal tests + mutation; fault fixture reads fake counters (lazy client fails); {fake_url} args only + mutation. Gates: mutate_check bench_check/property all killed, 216 tests pass, ruff and docs-graph validate clean.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "id": "al-01M497PSKCQST250YNAGNVK44C",
+      "shortname": "join-x-lb1",
+      "datetime": "2026-10-06T18:30:39Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of build/eval-x-lb1 into integrate/e2e4-18",
+      "summary": "X-LB1 (Sonnet claude-sonnet-5-5, 3 parts): K1 listener b3f5a409/60195f2e (no-arg contextmanager yielding a 127.0.0.1:0 socket, SO_EXCLUSIVEADDRUSE, HB-CHK-005), K2 9fceef71/4fb8baf6 (shape b, resilience, fake_url, fault span), K3a aac8b94d/bb4994e2, K3b a3855d9d/14011f97, K4 20e3c87a, MUT-E 820d7095; Security & Identity review (Opus, Adversary): PASS-WITH-CONDITIONS, no hard veto; part 3 closed the 3 Majors + kwargs minor (4dca941d, cd18396d, bfbd36e3/9804df8e, 964fa4e4/082ff07d), every bench_check/property mutation killed. Leader: K3a red replayed (3 assertion failures); diffstats find retarget checked (same rule). recount_seconds=616 (docs_only=False).",
       "kind": "skill",
       "skill": "execute-with-coordination",
       "tool": null,
@@ -111243,8 +111346,8 @@ window.AUDIT_DATA = {
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Join Ruling 111 into integrate/e2e4-18",
-      "done_when": "conductor-join exit 0 (docs-only)",
+      "goal": "Join X-LB1 into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 with the default ring green",
       "tier": "T1",
       "fan_out": 0,
       "signals": {
@@ -111252,8 +111355,8 @@ window.AUDIT_DATA = {
         "verification_executed": true,
         "acceptance_met": true
       },
-      "started_at": "2026-10-06T18:20:16Z",
-      "duration_seconds": 1.0
+      "started_at": "2026-10-06T18:20:22Z",
+      "duration_seconds": 617.0
     }
   ],
   "changes": [

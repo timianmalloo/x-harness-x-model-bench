@@ -5288,6 +5288,37 @@ window.DOCS_INDEX = {
       "sourceSha256": "dea52505a23a09591be87e66b2af6bb89773109da066f4d56c16824bbf38c5fe"
     },
     {
+      "id": "plan-eval-x-lb1",
+      "path": "docs/plans/eval-x-lb1.md",
+      "title": "X-LB1: the loopback fake, shape (b) path and readiness pointers",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-20",
+      "reviewSuggested": [],
+      "summary": "K1 listener and K2 shape (b) grading path (part 1), K3 readiness shape rule and property.json pointers, K4 an RS-shaped discriminate fixture (part 2).",
+      "tags": [
+        "evaluation",
+        "loopback",
+        "execution-plan"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "Bounded graph",
+          "mermaid": "graph LR\n K1 --> K2\n K2 --> K3a\n K2 --> K3b\n K3a --> K4\n K3b --> K4\n K4 --> G"
+        }
+      ],
+      "sourceSha256": "3b773f882e6785193cba426f9f35e9e90405fe421ef4cbbef3d82fbb05163613"
+    },
+    {
       "id": "proof-phase2",
       "path": "docs/proof/phase2.md",
       "title": "Proof Pack - phase 2 (wave-by-wave joins)",
@@ -9772,6 +9803,14 @@ window.DOCS_INDEX = {
       "artifactId": "plan-eval-x-k1c"
     },
     {
+      "id": "surface-plans-eval-x-lb1",
+      "path": "docs/plans/eval-x-lb1.html",
+      "title": "Eval X Lb1",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-lb1"
+    },
+    {
       "id": "surface-case-study",
       "path": "docs/case-study.html",
       "title": "From Specification to Implementation: An AI-Forward Case Study",
@@ -9818,5 +9857,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "a5ee3a260083fcb6c60028cb13a01ba24370449e23e6a34067891371d83da917"
+  "graphSha256": "1efc896b790b0452ff443753053436bf109e92ab9a300ed0f9dba07dfb7ef628"
 };
