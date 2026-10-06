@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Eval X K1B</title><style>
+:root { color-scheme: light dark; --bg:#f7f5ef; --panel:#fff; --text:#20201d;
+  --muted:#66645f; --line:#d9d5ca; --accent:#3157a4; --code:#f0eee7; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#171816; --panel:#20221f; --text:#f2f1eb; --muted:#b8b6ae;
+    --line:#3d403a; --accent:#8fb0ff; --code:#292c27; }
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text);
+  font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { width:min(920px,calc(100% - 32px)); margin:32px auto; padding:40px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+h1,h2,h3,h4,h5,h6 { line-height:1.2; margin:1.5em 0 .55em; }
+h1 { margin-top:0; font-size:2.2rem; } h2 { border-bottom:1px solid var(--line); padding-bottom:.3em; }
+a { color:var(--accent); } code { background:var(--code); padding:.12em .35em; border-radius:4px; }
+pre { overflow:auto; padding:16px; background:var(--code); border-radius:8px; }
+pre code { padding:0; } blockquote { margin:1em 0; padding:.2em 1em; color:var(--muted);
+  border-left:4px solid var(--line); }
+table { width:100%; border-collapse:collapse; margin:1em 0; display:block; overflow:auto; }
+th,td { padding:.55em .75em; border:1px solid var(--line); text-align:left; vertical-align:top; }
+th { background:var(--code); } hr { border:0; border-top:1px solid var(--line); }
+.source { color:var(--muted); font-size:.9rem; margin-bottom:2rem; }
+@media (max-width:640px) { main { width:100%; margin:0; padding:24px 18px; border:0; border-radius:0; } }
+</style></head><body><main><div class="source">Rendered from eval-x-k1b.md</div><h1>X-K1b execution plan</h1>
+<p>Goal: deliver W1-K K3 and, if admitted, K4 on <code>build/eval-x-k1b</code>. Done when each admitted behavior has assertion-red and green commits and the R-104 worker gates have recorded results. K1c/K1d, other owners&#x27; behavior and the resume engine are excluded. Tier T2; fan-out cap zero; deadline 3,300 s. The supplied compiled dispatch controls scope and all stopping conditions.</p>
+<p>Verified grounding: <code>fd8b5e61</code> is an ancestor, one <code>has_work</code> definition exists, six K1b markers remain, and the base guards pass (200 tests, exit 0). Native record identifies <code>gpt-6.1-sol</code>, effort high. K3 admission sample: 82,307 input tokens. The named graph-and-loop evidence node is absent from the derived index; no dangling dependency link is invented.</p>
+<h2>Surface and domain constraints</h2>
+<p>Bounded context: run engine. Run is the aggregate, cells are identities within it. Append-only events retain their original meanings. The invariant is one engine writer and no launch after an actual stop. Projection readers derive completion from the latest resume boundary; no completion flag is stored. Surface list: lifecycle table and replay → segment rows → completion helper and views.load → verify abandoned heads → resume row classifier and has_work → existing status/alarm readers and assertion fixtures. Engine execution, archive recovery, CLI wiring and alarm/status implementation remain deferred.</p>
+<h2>Bounded graph</h2>
+<p>Every node is T2 work executed with deterministic mechanics or reasoning. Floor nodes are immovable. Independent review is the Leader&#x27;s join: this worker may not spawn or message a reviewer or approve its own hard veto.</p>
+<table><thead><tr><th>Node</th><th>Goal and inputs</th><th>Exit / oracle</th><th>Capability</th><th>Dependencies</th></tr></thead><tbody><tr><td>A</td><td>Admission and base guards from assigned integration head</td><td>Three admission checks and 200 base guards green</td><td>Deterministic mechanics</td><td>none</td></tr><tr><td>P</td><td>Record bounded plan, render HTML and derive index</td><td>Valid frontmatter and separate named-path commits</td><td>Reasoning; Deterministic mechanics</td><td>A, data</td></tr><tr><td>L</td><td>K3 lifecycle from W1-K section 2 and D-K10</td><td>Assertion reds; stop, resume, second-intent and outcome tests green</td><td>Reasoning; Deterministic mechanics</td><td>A, data</td></tr><tr><td>V</td><td>K3 segment rows and completed from D-K5</td><td>Real segment grouping and resume boundary tests green; completed pin reconciled</td><td>Reasoning; Deterministic mechanics</td><td>A, data</td></tr><tr><td>H</td><td>K3 abandoned-head verify from section 3.6</td><td>Cut ledger rejected as HB-LED-002 naming segment; valid unsealed head accepted</td><td>Reasoning; Deterministic mechanics</td><td>V, data</td></tr><tr><td>C</td><td>Sample at K3 boundary</td><td>K4 admitted only at or below 100k; unreadable means hand-back</td><td>Deterministic mechanics</td><td>L, V, H, data</td></tr><tr><td>R</td><td>K4 stop_recorded, classify and has_work</td><td>Independent prefix oracles, work tests and five classifier mutants</td><td>Reasoning; Deterministic mechanics</td><td>C, decision</td></tr><tr><td>G</td><td>R-104 final named gates and mutation files</td><td>Read actual summaries, exit codes and lock waits; record every survivor</td><td>Deterministic mechanics</td><td>admitted L/V/H/R, data</td></tr><tr><td>J</td><td>Hand-back with commits and closing audit</td><td>Served model, wall-clock, red SHAs, context, usage, open work reported</td><td>Independent review; Deterministic mechanics</td><td>G, data</td></tr></tbody></table>
+<pre><code class="language-mermaid">graph LR
+ A --&gt; P
+ A --&gt; L
+ A --&gt; V
+ V --&gt; H
+ L --&gt; C
+ H --&gt; C
+ C --&gt;|context admits| R
+ C --&gt;|split| G
+ R --&gt; G
+ P --&gt; G
+ G --&gt; J</code></pre>
+<p>Naive and optimized graphs retain all nine nodes and all floors. Incidental ordering between L and V is removed, but width remains one by dispatch. Inferred work and span at width one are equal; no timing estimate is asserted without measurement. Optimization batches relevant range reads and avoids duplicate full-suite or mutation gates. No dependency or abstraction is added. Reuse ledger verification and the existing views filter before new helpers.</p>
+<p>Adversary lenses: Test Architect requires real filesystem abandoned-head tests and independent classifier oracles; Simplifier requires one completion definition and the existing has_work name; SRE requires measured context and lock waits. These requirements remain gate inputs, with review at join.</p>
+<p>Finite worklist variant: remaining admitted behaviors plus required gates, floor zero; exit is verified evidence or explicit hand-back. No transient retry and no fan-out. Deadline and context caps are circuit breakers, never proof. At 170k no new edit/gate starts. Re-plan at each K-item and the K3 boundary; unreadable context stops after K3. No silent scope reduction.</p>
+<p>The shared completion scan reads recursive <code>src/**/*.py</code>, counts matching lines containing <code>run.completed</code>, and has no allowlist. Each removed reader must call views.completed; the pin changes in that same commit with before and after per-file counts. Mutant finds remain unique and name the same rule. Actual delivery, measured duration, usage, red/green evidence and any rework are recorded in the closing audit; the plan is create-only by dispatch.</p></main></body></html>
