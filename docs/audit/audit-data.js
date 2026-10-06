@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T11:55:29Z",
+  "generated": "2026-10-06T12:35:17Z",
   "audit": [
     {
       "actor": null,
@@ -100045,6 +100045,30 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-06T11:20:25Z",
       "duration_seconds": 2104.0
+    },
+    {
+      "id": "al-01M48KC346CTDFBS931SWFKTS2",
+      "shortname": "x-k1b-followon-k4",
+      "datetime": "2026-10-06T12:35:17Z",
+      "session": "x-k1b-e1e4",
+      "prompt": "X-K1b follow-on K4 (dispatched by the Leader, R-87 Option 1), brief prompt-k1b.md, compile al-01M48EJ43H52XWAWRRK027MR5D",
+      "summary": "Model claude-sonnet-5-5. K4 red 526f5944; green 2a5abc09; fix ab9cef31 (completed definition moved to lifecycle.completed because resume (run) cannot import views (grade); BASE_COMPLETED_HITS stays 12: lifecycle 1->2, views 6->5). Five K1b markers removed (sixth went in K3). Classifier mutants C2/C3, C3/C5, C5/completed, C6/C2, C2/continued turn all killed (named test file tests/test_resume.py; per-test killer not printed by mutate_check). Gates green: guards 200 passed, runtime group 601 passed 48 xfailed, ruff clean, docs-graph validate exit 0 (16 review-suggested only). No mutation file created or edited by K1b, so no mutate_check on repo files. Tokens not recorded.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "src/harness_bench/resume.py"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "X-K1b follow-on: K4 (stop_recorded, classify, has_work) after Codex K3",
+      "done_when": "K4 red/green, 5 markers removed, five classifier mutants killed, gates run",
+      "tier": "T2",
+      "fan_out": 0,
+      "started_at": "2026-10-06T11:57:11Z",
+      "duration_seconds": 2286.0
     }
   ],
   "changes": [
