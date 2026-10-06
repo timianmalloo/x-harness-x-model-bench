@@ -577,3 +577,43 @@ def test_no_option_a_branch_and_no_hand_rolled_identity_or_matrix_validation_in_
     assert not [s for s in literals("readiness.py") if "builds/" in s or s == "builds"]
     assert "os.environ" not in texts["discriminate.py"].replace("`os.environ`", "")
     assert re.findall(r"\w*subset\w*", texts["readiness.py"] + texts["discriminate.py"]) == ["subset"], "only the matrix key"
+
+
+BLOAT = {"file": "turn-2/app.py", "old": "    sym, dec = RATES[cur]\n    return f'{sym}{amount:.{dec}f}'\n",
+         "new": "    entry = RATES[cur]\n    prefix = entry[0]\n    digits = entry[1]\n    return f'{prefix}{amount:.{digits}f}'\n"}
+
+def turns_variant(declared_clause: str) -> dict:
+    """A turn-2 rewrite that keeps both turns' hidden tests green and pushes rework_ratio over the 0.3 ceiling."""
+    return {"vratio": {"flips": ["property_check_pass", "rework_ratio"], "clauses": {"property_check_pass": declared_clause},
+                        "edits": [BLOAT]}}
+
+
+def test_a_check_less_variant_declaring_the_clause_property_json_records_is_compared_and_clean(base):
+    """X-FIXD (W1-E s7 (4'), SR-E3 2): the rework strategy decided on the ratio clause; the declared one equals it."""
+    root = new_root(base, "disc_turns_v", variants=mt.variants_text(turns_variant("ratio")))
+    result = trial(base, root, "DISC-T")
+    assert result.outcome == "written"
+    rec = record_of(result)["variants"]["vratio"]
+    assert rec["clauses"] == {"property_check_pass": "ratio"}
+    assert rec["hidden_tests_pass"] == 1
+    assert [f for f in readiness.record_failures(root, "DISC-T") if f.code == "HB-RDY-003"] == []
+
+
+def test_a_check_less_variant_declaring_a_different_clause_is_hb_rdy_003_on_assertion_4(base):
+    """X-FIXD: property.json says ratio, the variant declares turn1: the clause is UNDECLARED and (4) names the variant."""
+    root = new_root(base, "disc_turns_v", variants=mt.variants_text(turns_variant("turn1")))
+    result = trial(base, root, "DISC-T")
+    assert result.outcome == "written"
+    assert record_of(result)["variants"]["vratio"]["clauses"] == {"property_check_pass": discriminate.UNDECLARED}
+    failures = [f for f in readiness.record_failures(root, "DISC-T") if f.code == "HB-RDY-003" and f.item == "vratio"]
+    assert len(failures) == 1 and "(4)" in failures[0].detail
+
+
+def test_a_check_less_variant_declaring_a_clause_where_property_json_has_no_strategy_is_hb_rdy_011(base):
+    """X-FIXD: DISC-C has no turns, so its rework section is never written; a declared clause cannot be confirmed."""
+    one = {"vnone": {"flips": [], "clauses": {"property_check_pass": "ratio"},
+                      "edits": [{"file": "app.py", "old": "x * 2", "new": "2 * x"}]}}
+    root = new_root(base, "disc_c", variants=mt.variants_text(one))
+    with pytest.raises(BenchError) as exc:
+        trial(base, root)
+    assert exc.value.code == "HB-RDY-011" and "variant vnone" in exc.value.message and "SR-E3" not in exc.value.message

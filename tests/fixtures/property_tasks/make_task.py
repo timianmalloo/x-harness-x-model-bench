@@ -280,5 +280,10 @@ def _disc_turns(tweak):
             "expected": tweak.get("expected", TURNS_EXPECTED), "variants": None, "repo": "disc-t"}
 
 
-FIXTURES = {"disc_turns": _disc_turns, "disc_c": _disc_c, "disc_rw": _disc_rw, "disc_p": _disc_p, "disc_flaky": _disc_flaky,
+def _disc_turns_v(tweak):
+    """The two-turn rework task carrying declared variants (the check-less clause compare)."""
+    return _disc_turns(tweak) | {"variants": tweak.get("variants")}
+
+
+FIXTURES = {"disc_turns": _disc_turns, "disc_turns_v": _disc_turns_v, "disc_c": _disc_c, "disc_rw": _disc_rw, "disc_p": _disc_p, "disc_flaky": _disc_flaky,
             "scan_a": _scan_a, "scan_a_secondary": _scan_a_secondary}
