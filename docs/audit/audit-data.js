@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T16:37:57Z",
+  "generated": "2026-10-06T17:43:12Z",
   "audit": [
     {
       "actor": null,
@@ -109313,6 +109313,32 @@ window.AUDIT_DATA = {
       "tier": "T2",
       "started_at": "2026-10-06T16:07:41Z",
       "duration_seconds": 1816.0
+    },
+    {
+      "id": "al-01M494ZXA008KXP3HPSXA38MW6",
+      "shortname": "X-LB1 part 2",
+      "datetime": "2026-10-06T17:43:12Z",
+      "session": "x-lb1-e1e4",
+      "prompt": "X-LB1 part 2: K3, K4 and the closing items (dispatch compile al-01M48WS5VMEBVXJABRJRCZ5JFZ)",
+      "summary": "X-LB1 part 2 (K3, K4, closing items), served model claude-sonnet-5-5. Dispatch start 2026-10-06T16:39:06Z, end about 17:48Z (over the 3,300 s deadline: the suite lock wait for mutate_check on property.json took about 25 min, held by another tree). Outcome: green 6c56cae4 (worker gates read; ring and stamps are the Leader's).\nRed SHAs: aac8b94d (K3a, test_loopback_shape_b_alone_is_accepted fails: loopback refused as not built in E1), a3855d9d (K3b, KeyError 'deliverable'). Greens: bb4994e2 (shape rule), 14011f97 (pointers, assume: deleted). K4 20e3c87a is a characterization test (green on first run, no code to make red, no discriminate.py change). Mutants: 820d7095 (shape rule and pointer read, both killed; property.json: every mutation killed; bench_check.json: every mutation killed incl. the part 1 getsockname, fake_url and span mutants). 6c56cae4 retargets the diffstats.json STRATEGIES find (same rule) that part 1's STRATEGIES edit moved.\nGates: R-104 set 1 on final code: 202 passed, 1 failed (test_mutate_check find-uniqueness: diffstats find), fixed in 6c56cae4, test_mutate_check re-run 48 passed; set 2: 270 passed exit 0; ruff exit 0; docs-graph validate exit 0 (16 review-suggested, 0 stale). Marker removed: none this part (property-tag xfail removed in part 1). Context: not recorded. Tokens: not recorded. No firewall dialog or new rule seen.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "tier": "T2",
+      "fan_out": 0,
+      "started_at": "2026-10-06T16:39:06Z",
+      "duration_seconds": 3846.0,
+      "git": {
+        "sha": "6c56cae42b0ff4c5427a3648fbcb7320041f95cc",
+        "short": "6c56cae42",
+        "branch": "build/eval-x-lb1",
+        "pushed": null
+      }
     }
   ],
   "changes": [
