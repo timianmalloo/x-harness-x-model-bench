@@ -619,6 +619,16 @@ def test_a_check_less_variant_declaring_a_clause_where_property_json_has_no_stra
     assert exc.value.code == "HB-RDY-011" and "variant vnone" in exc.value.message and "SR-E3" not in exc.value.message
 
 
+def test_a_check_less_trial_with_a_cell_whose_hidden_test_side_is_na_is_hb_rdy_011(base):
+    """X-FIXE P3 (CR47-1, W1-E s8.3): DISC-C declares no turns, so its rework section holds no hidden value; in a trial every
+    cell must be gradable, and a silent agreement is the thing refused."""
+    root = new_root(base)
+    with pytest.raises(BenchError) as err:
+        trial(base, root)
+    assert err.value.code == "HB-RDY-011"
+    assert "not comparable (a side is NA) in" in str(err.value)
+
+
 def test_a_check_less_trial_with_a_flaky_final_tree_fails_on_a_hidden_test_disagreement(base):
     """X-FIXE P1 (R-90 condition 3), no monkeypatch. Order of the hidden-test runs read from rework.grade and the pass: the
     correctness grader's pass first (counter run 1, odd, pass), then per cell the turn-1 snapshot run (turn1 tests only,
