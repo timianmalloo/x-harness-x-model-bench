@@ -616,8 +616,9 @@ def test_stop_code_read_from_decision_kind(golden5, tmp_path):
 
 
 def _sleeper():
-    proc = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
-    time.sleep(0.3)
+    proc = subprocess.Popen([sys.executable, "-c", "import time; print('up', flush=True); time.sleep(60)"],
+                            stdout=subprocess.PIPE, text=True)
+    assert proc.stdout.readline().strip() == "up"  # the child announces itself: no timed wait
     return proc, host.creation_time(proc.pid)
 
 
@@ -647,7 +648,7 @@ def test_resume_heartbeats_the_lock(golden1, tmp_path):
         thread.start()
         while thread.is_alive():
             seen.add(status.build(env.run_dir).liveness)
-            time.sleep(0.2)
+            thread.join(0.2)
     finally:
         proc.kill()
         proc.wait()
@@ -660,7 +661,8 @@ def test_recycled_pid_is_gone(golden1, tmp_path):
     try:
         started = time.monotonic()
         assert _resume(env).exit_code == 0
-        assert time.monotonic() - started < env.plan["parameters"]["pid_wait_s"], "a recycled pid is not waited for"
+        waited = time.monotonic() - started
+        assert waited < env.plan["parameters"]["pid_wait_s"], "a recycled pid is not waited for"
         assert proc.poll() is None, "a foreign process is never terminated"
     finally:
         proc.kill()
