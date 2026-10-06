@@ -524,8 +524,12 @@ WINDOWS = {
 }
 
 
-@pytest.mark.parametrize("name", list(WINDOWS))
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
+K1C_WINDOW = pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
+# Narrowed to exactly the parameters observed failing (coordinator #45): every other window runs as a real test.
+WINDOW_MARKED = {"W4c_redo_fails", "W10a_rows_none", "W10b_rows_partial", "W10c_rows_all"}
+
+
+@pytest.mark.parametrize("name", [pytest.param(n, marks=K1C_WINDOW) if n in WINDOW_MARKED else n for n in WINDOWS])
 def test_window(golden1, tmp_path, monkeypatch, name):
     WINDOWS[name](golden1, tmp_path, monkeypatch)
 
