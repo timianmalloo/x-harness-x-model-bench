@@ -145,5 +145,23 @@
    "tests/test_property_grade_cell.py::test_each_check_kind_refuses_the_other_kinds_outcome[True-honest]",
    "tests/test_property_grade_cell.py::test_each_check_kind_refuses_the_other_kinds_outcome[False-passed]"
   ]
+ },
+ {
+  "name": "the check-less top-level write deleted: a check-less property.json carries no hidden_tests_pass (SHAPE-A row 4)",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "    lift_hidden_tests(inp)",
+  "replace": "    pass",
+  "tests": [
+   "tests/test_property_grade_cell.py::test_a_check_less_cell_carries_the_top_level_hidden_tests_pass"
+  ]
+ },
+ {
+  "name": "the check-less double-run item call deleted: discriminate runs no disagreement item for a check-less task (SHAPE-A row 4)",
+  "file": "src/harness_bench/discriminate.py",
+  "find": "        items += _double_run_items(run_dir, grading_id, {c[\"cell_id\"]: c[\"label\"] for c in p[\"cells\"]}, spans=False)",
+  "replace": "        pass",
+  "tests": [
+   "tests/test_discriminate.py::test_a_check_less_trial_fails_on_a_hidden_test_disagreement"
+  ]
  }
 ]
