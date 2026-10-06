@@ -160,6 +160,7 @@ class Context:
 
 _CTX = None
 _STARTS = []
+_SPANS = []
 _TIMED_OUT = []
 
 
@@ -171,14 +172,17 @@ def load():
     return _CTX
 
 
-def _resolve(value, state_dir):
-    """`str.replace` of the literal `{state_dir}` in every string value at any depth; keys are never rewritten."""
+def _resolve(value, state_dir, fake_url=None):
+    """`str.replace` of the literal `{state_dir}` (and, when given, `{fake_url}`) in every string value at any depth;
+    keys are never rewritten. `state_dir` None leaves `{state_dir}` alone (a request frame has no state dir)."""
     if isinstance(value, str):
-        return value.replace("{state_dir}", state_dir)
+        if state_dir is not None:
+            value = value.replace("{state_dir}", state_dir)
+        return value if fake_url is None else value.replace("{fake_url}", fake_url)
     if isinstance(value, list):
-        return [_resolve(v, state_dir) for v in value]
+        return [_resolve(v, state_dir, fake_url) for v in value]
     if isinstance(value, dict):
-        return {k: _resolve(v, state_dir) for k, v in value.items()}
+        return {k: _resolve(v, state_dir, fake_url) for k, v in value.items()}
     return value
 
 
@@ -200,8 +204,9 @@ def _rmtree(path):
 
 
 class ProbeHost:
-    def __init__(self, ctx, case, bound_s):
+    def __init__(self, ctx, case, bound_s, fake=None):
         self.ctx, self.case, self.bound_s, self.timed_out = ctx, case, bound_s, False
+        self.fake_url = None if fake is None else f"http://127.0.0.1:{fake.getsockname()[1]}"
         self.state_dir = os.path.join(os.path.dirname(os.path.abspath(ctx.deliverable)), "state", case["id"])
         if os.path.lexists(self.state_dir):
             _rmtree(self.state_dir)
@@ -261,12 +266,16 @@ class ProbeHost:
         """One frame out, one response line in, within what is left of the case bound. None is a broken exchange."""
         self._n += 1
         frame = {"id": self._n} | dict(frame)
+        if self.fake_url is not None:  # `{fake_url}` in a request's string args, as `{state_dir}` is in the app's
+            frame = {k: _resolve(v, None, self.fake_url) if k in ("args", "kwargs") else v for k, v in frame.items()}
+        t0 = time.monotonic()
         try:
             self.proc.stdin.write((json.dumps(frame) + "\n").encode())
             self.proc.stdin.flush()
         except OSError:
             return None
         resp = self._next(self.deadline - time.monotonic())
+        _SPANS.append(round((time.monotonic() - t0) * 1000))  # frame written to response read: host start is outside it
         if resp == "bound":
             self.timed_out = True
             _TIMED_OUT.append(self.case["id"])
@@ -299,18 +308,22 @@ class ProbeHost:
         return False
 
 
-def probe_host(case):
-    host = ProbeHost(_CTX, case, _CTX.bound_ms(case) / 1000)
+def probe_host(case, fake=None):
+    """The case's host. `fake` is the case's `listen()` socket (shape (b)): `{fake_url}` then names its port."""
+    host = ProbeHost(_CTX, case, _CTX.bound_ms(case) / 1000, fake)
     _STARTS.append(host.start_ms)
     return host
 
 
 def run_case(case, fn):
-    """Time one case from the host's ready line (the start is bounded apart), and turn an overrun into `timeout`."""
+    """Time one case from the host's ready line (the start is bounded apart), and turn an overrun into `timeout`.
+
+    A `kind: fault` case is timed by the probe-host calls alone (frame written to response read), so the fake's setup
+    and the host start are outside it (W0 section 3, shape (b))."""
     t0 = time.monotonic()
-    del _STARTS[:], _TIMED_OUT[:]
+    del _STARTS[:], _SPANS[:], _TIMED_OUT[:]
     outcome = fn()
-    elapsed_ms = round((time.monotonic() - t0) * 1000) - sum(_STARTS)
+    elapsed_ms = sum(_SPANS) if case.get("kind") == "fault" else round((time.monotonic() - t0) * 1000) - sum(_STARTS)
     if _TIMED_OUT or elapsed_ms > _CTX.bound_ms(case):
         outcome = "timeout"
     return {"id": case["id"], "outcome": outcome, "duration_ms": max(0, elapsed_ms)}

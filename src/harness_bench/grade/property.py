@@ -47,6 +47,8 @@ _ENTRY = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.-]*\.py")
 _CASE_ID = re.compile(r"[a-z0-9][a-z0-9-]{0,39}")
 _APP_KINDS = frozenset({"callable", "wsgi"})
 PROBE_OUTCOMES = frozenset({"blocked", "exploited", "timeout"})
+FAULT_OUTCOMES = frozenset({"passed", "failed", "timeout"})  # kind: fault, never blocked or exploited (W0 section 3)
+_FAULT_MEASURES = frozenset({"idempotency_violations"})  # the one non-derivable resilience key (W1-L section 9.1)
 DELIVERABLES = frozenset({"ran", "did not build", "did not start"})
 
 
@@ -106,7 +108,8 @@ def at_scale(value, scale: int | None):
     raise ValueError(f"at_scale: {value!r} is not a string with exactly {scale} decimals")
 
 
-def parse_result(line: bytes, declared: list[str], allowed_measures: frozenset[str], scales: dict[str, int | None]) -> dict:
+def parse_result(line: bytes, declared: list[str], allowed_measures: frozenset[str], scales: dict[str, int | None],
+                 outcomes: frozenset[str] = PROBE_OUTCOMES) -> dict:
     """The check's one line as a document, or ValueError naming what is wrong (outcome row 5, HB-CHK-001)."""
     raw = line.removesuffix(b"\n")
     if len(raw) > MAX_RESULT_BYTES:
@@ -129,7 +132,7 @@ def parse_result(line: bytes, declared: list[str], allowed_measures: frozenset[s
             raise ValueError("cases must be empty unless the deliverable ran")
     else:
         for c in cases:
-            ok = (isinstance(c, dict) and set(c) == {"id", "outcome", "duration_ms"} and c["outcome"] in PROBE_OUTCOMES
+            ok = (isinstance(c, dict) and set(c) == {"id", "outcome", "duration_ms"} and c["outcome"] in outcomes
                   and isinstance(c["duration_ms"], int) and not isinstance(c["duration_ms"], bool) and c["duration_ms"] >= 0)
             if not ok:
                 raise ValueError(f"malformed case {c!r}")
@@ -184,6 +187,29 @@ def score_run(cls: Classification, hidden_tests: Score, outcomes: list[str]) -> 
     else:
         secondary = Score(at_scale(Decimal(blocked) / Decimal(len(outcomes)), 4), None)
     return {"property_check_pass": primary, "exploit_probes_blocked": secondary}
+
+
+def score_resilience(cls: Classification, hidden_tests: Score, outcomes: list[str], measures: Mapping) -> dict[str, Score]:
+    """The resilience metrics of one classified run (W1-L section 9.1). The same rows as `score_run`: rows 1-5 NA, row 6 a
+    measured 0 for the primary, row 7 Kleene over the hidden tests and the cases. `fault_suite_pass` is passed / cases;
+    `idempotency_violations` is the check's measure, never derived here."""
+    keys = ("property_check_pass", "fault_suite_pass", "idempotency_violations")
+    if cls.row <= 5:
+        return dict.fromkeys(keys, Score(None, cls.reason))
+    if cls.row == 6:
+        na = Score(None, cls.reason)
+        return {"property_check_pass": Score(0, None), "fault_suite_pass": na, "idempotency_violations": na}
+    passed = sum(o == "passed" for o in outcomes)
+    if hidden_tests.value == 0 or passed != len(outcomes):
+        primary = Score(0, None)
+    elif hidden_tests.value is None:
+        primary = Score(None, hidden_tests.reason)
+    else:
+        primary = Score(1, None)
+    share = Score(at_scale(Decimal(passed) / Decimal(len(outcomes)), 4), None) if outcomes else Score(None, "no fault case declared")
+    violations = Score(measures["idempotency_violations"], None) if "idempotency_violations" in measures \
+        else Score(None, "the check reported no idempotency_violations")
+    return {"property_check_pass": primary, "fault_suite_pass": share, "idempotency_violations": violations}
 
 
 # --- the check runner: the grader side of the handshake (design 5.3; spike E1-S3, SP-F2) -------------------------------
@@ -353,9 +379,10 @@ class NotBuilt(Exception):
     """A task declares something E1 does not build (design 4): every metric is NA `not built`."""
 
 
-def _load_cases(task_dir: Path) -> dict:
+def _load_cases(task_dir: Path, fault: bool = False) -> dict:
     """The task's cases.yaml, validated. ValueError names the rule broken (the runner's HB-GRD-003 NA); NotBuilt for
-    what E1 does not build."""
+    what is not built. `fault` selects the resilience shape (`interface: loopback`, `kind: fault`); otherwise the
+    security shape (`in-process`, `kind: probe`)."""
     spec = config.load_yaml(task_dir / "oracle" / "check" / "cases.yaml")
     if spec.get("schema") != "bench-check-cases/1":
         raise ValueError(f"cases.yaml schema {spec.get('schema')!r} is not bench-check-cases/1")
@@ -373,9 +400,15 @@ def _load_cases(task_dir: Path) -> dict:
     for name in spec.get("env") or []:
         if name not in _env.TOOLCHAIN_ENV and not name.startswith(_env.CHECK_PREFIX):
             raise ValueError(f"cases.yaml env {name!r} is neither a toolchain name nor HB_CHECK_*")
-    if spec.get("interface") != "in-process" or any(c.get("kind") != "probe" for c in cases) \
-            or (spec.get("app") or {}).get("kind") not in _APP_KINDS:
+    interface, kind, app_kinds = ("loopback", "fault", {"callable"}) if fault else ("in-process", "probe", _APP_KINDS)
+    if spec.get("interface") != interface or any(c.get("kind") != kind for c in cases) \
+            or (spec.get("app") or {}).get("kind") not in app_kinds:
         raise NotBuilt
+    if fault:  # W0 section 3 shape (b): the check's fake listens, the deliverable is a client (shape (a) is not built)
+        if (spec.get("deliverable") or {}).get("start"):
+            raise NotBuilt
+        if not isinstance(spec.get("bounds_ms"), dict) or not isinstance(spec["bounds_ms"].get("loopback"), int):
+            raise ValueError("cases.yaml bounds_ms.loopback is not an integer")
     return spec
 
 
@@ -421,7 +454,15 @@ def hidden_tests(inp: CellInput, tree: Path, label: str, overlay: Mapping[str, P
 
 
 def _hidden_check(inp: CellInput, ctx: GradeContext) -> dict[str, Score]:
-    spec = _load_cases(inp.task_dir)
+    return _run_check(inp, ctx, fault=False)
+
+
+def _resilience_check(inp: CellInput, ctx: GradeContext) -> dict[str, Score]:
+    return _run_check(inp, ctx, fault=True)
+
+
+def _run_check(inp: CellInput, ctx: GradeContext, fault: bool) -> dict[str, Score]:
+    spec = _load_cases(inp.task_dir, fault)
     if not BENCH_CHECK.is_file():
         raise NotBuilt
     work = (inp.work_root or inp.out_dir) / "property"
@@ -446,7 +487,8 @@ def _hidden_check(inp: CellInput, ctx: GradeContext) -> dict[str, Score]:
                 "--cases", "check/cases.json", "--seed", str(seed), "--evidence", str(evid.resolve())]
         env = _env.grading_env([n for n in spec.get("env") or [] if n in _env.TOOLCHAIN_ENV])
         got = run_check(argv, run, env, ctx.timeout, evid / "check.stderr",
-                        lambda line: parse_result(line, declared, frozenset(), {}))
+                        lambda line: parse_result(line, declared, _FAULT_MEASURES if fault else frozenset(),
+                                                  {"idempotency_violations": None}, FAULT_OUTCOMES if fault else PROBE_OUTCOMES))
         hash_after = tree_hash(check_dir, _tree_files(check_dir))
         spans.append(span.end())
     finally:
@@ -465,7 +507,9 @@ def _hidden_check(inp: CellInput, ctx: GradeContext) -> dict[str, Score]:
     cls = _classify(facts)
     outcomes = [c["outcome"] for c in got.document["cases"]] if got.document and cls.row == 7 else []
     pointer = (inp.out_dir / "property.json").relative_to(inp.run_dir).as_posix()
-    scores = {k: dataclasses.replace(v, evidence=pointer) for k, v in score_run(cls, hidden, outcomes).items()}
+    scored = score_resilience(cls, hidden, outcomes, got.document["measures"] if got.document else {}) if fault \
+        else score_run(cls, hidden, outcomes)
+    scores = {k: dataclasses.replace(v, evidence=pointer) for k, v in scored.items()}
     evidence = {"schema": "bench-property-evidence/1", "row": cls.row, "code": cls.code, "reason": cls.reason, "seed": seed,
                 "hidden_tests_pass": {"value": hidden.value, "reason": hidden.reason}, "spans": spans,
                 "check": {"job_view": got.job_view, "acked": got.acked, "exit_code": got.exit_code,
@@ -502,7 +546,7 @@ def run_child(argv: list[str], cwd: Path, timeout: float, extra_env: Iterable[st
     return procs.run(argv, cwd, _env.grading_env(extra_env), timeout)
 
 
-STRATEGIES: dict[str, Callable[[CellInput, GradeContext], dict[str, Score]]] = {"security": _hidden_check, "no-guessing": noguess.grade, "simplicity": diffstats.grade, "rework": rework.grade}
+STRATEGIES: dict[str, Callable[[CellInput, GradeContext], dict[str, Score]]] = {"security": _hidden_check, "resilience": _resilience_check, "rework": rework.grade, "no-guessing": noguess.grade, "simplicity": diffstats.grade}
 
 
 def grade_cell(inp: CellInput) -> Mapping[str, Score]:
