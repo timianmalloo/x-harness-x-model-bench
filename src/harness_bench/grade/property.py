@@ -517,7 +517,9 @@ def _run_check(inp: CellInput, ctx: GradeContext, fault: bool) -> dict[str, Scor
         else score_run(cls, hidden, outcomes)
     scores = {k: dataclasses.replace(v, evidence=pointer) for k, v in scored.items()}
     evidence = {"schema": "bench-property-evidence/1", "row": cls.row, "code": cls.code, "reason": cls.reason, "seed": seed,
-                "hidden_tests_pass": {"value": hidden.value, "reason": hidden.reason}, "spans": spans,
+                "hidden_tests_pass": {"value": hidden.value, "reason": hidden.reason},
+                "hidden_tests_ms": int((inp.out_dir / "tests" / _MS_FILE).read_text(encoding="utf-8")),  # the one run's, never a second
+                "spans": spans,
                 "check": {"job_view": got.job_view, "acked": got.acked, "exit_code": got.exit_code,
                           "documents": got.documents, "trailing_bytes": got.trailing_bytes, "bound_fired": got.bound_fired,
                           "invalid": got.invalid, "hash_before": hash_before, "hash_after": hash_after,

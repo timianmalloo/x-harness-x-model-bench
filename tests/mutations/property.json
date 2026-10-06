@@ -163,5 +163,14 @@
   "tests": [
    "tests/test_discriminate.py::test_a_check_less_trial_with_a_flaky_final_tree_fails_on_a_hidden_test_disagreement"
   ]
+ },
+ {
+  "name": "the check-based hidden_tests_ms key removed: a check-based property.json records no hidden-test time (R-90 condition 3)",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "                \"hidden_tests_ms\": int((inp.out_dir / \"tests\" / _MS_FILE).read_text(encoding=\"utf-8\")),  # the one run's, never a second\n",
+  "replace": "",
+  "tests": [
+   "tests/test_property_grade_cell.py::test_a_check_based_property_json_carries_the_hidden_tests_ms_of_its_one_run"
+  ]
  }
 ]
