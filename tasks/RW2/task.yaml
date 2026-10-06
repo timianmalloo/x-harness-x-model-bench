@@ -41,5 +41,5 @@ expected:
     rework_ratio: "0.0909"                  # Inferred: hand count of the committed reference diff, 1 of 11 turn-1 product lines changed (oracle/evidence.md); not a grader output
   naive:
     property_check_pass: 0                       # Inferred: the naive passes every hidden test and its rework_ratio is above the ceiling, so the conjunction is 0
-    turn1_tests_pass: 1
+    turn1_tests_pass: 1                          # Inferred: the naive turn-1 snapshot passes turn 1's hidden file, as for the reference
     rework_ratio: "0.8889"                  # Inferred: hand count of the committed naive diff, 8 of 9 turn-1 product lines changed (oracle/evidence.md); not a grader output
