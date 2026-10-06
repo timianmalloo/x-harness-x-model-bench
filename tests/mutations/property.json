@@ -145,5 +145,59 @@
    "tests/test_property_grade_cell.py::test_each_check_kind_refuses_the_other_kinds_outcome[True-honest]",
    "tests/test_property_grade_cell.py::test_each_check_kind_refuses_the_other_kinds_outcome[False-passed]"
   ]
+ },
+ {
+  "name": "the check-less top-level write deleted: a check-less property.json carries no hidden_tests_pass (SHAPE-A row 4)",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "    lift_hidden_tests(inp)",
+  "replace": "    pass",
+  "tests": [
+   "tests/test_property_grade_cell.py::test_a_check_less_cell_carries_the_top_level_hidden_tests_pass"
+  ]
+ },
+ {
+  "name": "the check-less double-run item call deleted: discriminate runs no disagreement item for a check-less task (SHAPE-A row 4)",
+  "file": "src/harness_bench/discriminate.py",
+  "find": "        items += _double_run_items(run_dir, grading_id, {c[\"cell_id\"]: c[\"label\"] for c in p[\"cells\"]}, spans=False)",
+  "replace": "        pass",
+  "tests": [
+   "tests/test_discriminate.py::test_a_check_less_trial_with_a_flaky_final_tree_fails_on_a_hidden_test_disagreement"
+  ]
+ },
+ {
+  "name": "the check-based hidden_tests_ms key removed: a check-based property.json records no hidden-test time (R-90 condition 3)",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "                \"hidden_tests_ms\": int((inp.out_dir / \"tests\" / _MS_FILE).read_text(encoding=\"utf-8\")),  # the one run's, never a second\n",
+  "replace": "",
+  "tests": [
+   "tests/test_property_grade_cell.py::test_a_check_based_property_json_carries_the_hidden_tests_ms_of_its_one_run"
+  ]
+ },
+ {
+  "name": "the check-less not-comparable item disabled: a check-less trial with an NA hidden-test side raises no item (CR47-1, W1-E s8.3)",
+  "file": "src/harness_bench/discriminate.py",
+  "find": "(\"not comparable (a side is NA) in\", not_comparable),",
+  "replace": "(\"not comparable (a side is NA) in\", not_comparable if spans else []),",
+  "tests": [
+   "tests/test_discriminate.py::test_a_check_less_trial_with_a_cell_whose_hidden_test_side_is_na_is_hb_rdy_011"
+  ]
+ },
+ {
+  "name": "the expected-timeouts allowance removed: a declared by-design case timeout is an HB-RDY-011 item again (CR47-7)",
+  "file": "src/harness_bench/discriminate.py",
+  "find": "allowed = {str(c) for c in (expected.get(role) or {}).get(\"timeouts\") or ()}",
+  "replace": "allowed = set()",
+  "tests": [
+   "tests/test_discriminate.py::test_a_declared_case_timeout_on_the_naive_role_is_not_an_item"
+  ]
+ },
+ {
+  "name": "the check-less variant clause item removed: a variant cell with no primary-row pointer no longer refuses the trial (CR47-10)",
+  "file": "src/harness_bench/discriminate.py",
+  "find": "items.append(f\"variant {name}: clauses are declared but property.json has no strategy.{prop} section (the pointer does not resolve)\")",
+  "replace": "pass",
+  "tests": [
+   "tests/test_discriminate.py::test_a_check_less_variant_with_no_primary_row_pointer_is_refused_by_its_declared_clause"
+  ]
  }
 ]

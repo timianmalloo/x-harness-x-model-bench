@@ -367,6 +367,14 @@ def test_multi_turn_discrimination_through_engine(turns_run):
     expected["stopped"] = {"property_check_pass": 0, "turn1_tests_pass": 1, "rework_ratio": {"na": "turn 2 not reached"}}
     assert scores == expected
     assert discriminate._untrustworthy(scores, {}) == []  # K1: the not-reached NA is inside the closed set
+    for cid, role in run.roles.items():  # X-FIXE P1 (R-90 condition 3): the final tree's one result is in the section and lifted
+        doc = json.loads((run.run_dir / "grading" / grading_id / cid / "property" / "property.json").read_text(encoding="utf-8"))
+        if role == "stopped":
+            assert "hidden_tests_pass" not in doc["strategy"]["rework"]  # no final-tree run happened
+            continue
+        assert doc["strategy"]["rework"].get("hidden_tests_pass") == {"value": 1, "reason": None}
+        assert doc.get("hidden_tests_pass") == doc["strategy"]["rework"].get("hidden_tests_pass")
+        assert isinstance(doc.get("hidden_tests_ms"), int)
 
 
 @windows_only
@@ -424,6 +432,8 @@ def _assert_every_score_points_at_the_section(inp: CellInput, scores) -> None:
 def test_rework_ratio_branch_scores_carry_the_section_pointer(tmp_path: Path):
     inp = _evidence_inp(tmp_path, 2)
     _assert_every_score_points_at_the_section(inp, rework.grade(inp, GradeContext(30.0)))
+    section = json.loads((inp.out_dir / "property.json").read_text(encoding="utf-8"))["strategy"]["rework"]
+    assert section.get("hidden_tests_pass") == {"value": None, "reason": "no working copy in the archive"}  # X-FIXE P1: every turn-2 path
 
 
 def test_rework_turn2_not_reached_scores_carry_the_section_pointer(tmp_path: Path):

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Eval X Fixe</title><style>
+:root { color-scheme: light dark; --bg:#f7f5ef; --panel:#fff; --text:#20201d;
+  --muted:#66645f; --line:#d9d5ca; --accent:#3157a4; --code:#f0eee7; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#171816; --panel:#20221f; --text:#f2f1eb; --muted:#b8b6ae;
+    --line:#3d403a; --accent:#8fb0ff; --code:#292c27; }
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text);
+  font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { width:min(920px,calc(100% - 32px)); margin:32px auto; padding:40px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+h1,h2,h3,h4,h5,h6 { line-height:1.2; margin:1.5em 0 .55em; }
+h1 { margin-top:0; font-size:2.2rem; } h2 { border-bottom:1px solid var(--line); padding-bottom:.3em; }
+a { color:var(--accent); } code { background:var(--code); padding:.12em .35em; border-radius:4px; }
+pre { overflow:auto; padding:16px; background:var(--code); border-radius:8px; }
+pre code { padding:0; } blockquote { margin:1em 0; padding:.2em 1em; color:var(--muted);
+  border-left:4px solid var(--line); }
+table { width:100%; border-collapse:collapse; margin:1em 0; display:block; overflow:auto; }
+th,td { padding:.55em .75em; border:1px solid var(--line); text-align:left; vertical-align:top; }
+th { background:var(--code); } hr { border:0; border-top:1px solid var(--line); }
+.source { color:var(--muted); font-size:.9rem; margin-bottom:2rem; }
+@media (max-width:640px) { main { width:100%; margin:0; padding:24px 18px; border:0; border-radius:0; } }
+</style></head><body><main><div class="source">Rendered from eval-x-fixe.md</div><h1>X-FIXE execution plan</h1>
+<p>Goal: the double-run guard of W0 R-90 condition 3 covers the check-less property tasks (rework, no-guessing, simplicity). Done when F1 and F2 each have a red and a green commit and the R-104 worker gates are read. Not in scope: <code>grade/noguess.py</code>, <code>grade/diffstats.py</code>, <code>grade/rework.py</code>, <code>readiness.py</code>, task folders, the design docs. Tier T1; fan-out cap zero.</p>
+<h2>F1: the property grader writes the top-level evidence</h2>
+<ul><li>Red <code>6696c9e1</code>: <code>AssertionError: assert None == {&#x27;reason&#x27;: None, &#x27;value&#x27;: 1}</code> where the left side</li></ul>
+<p>is <code>doc.get(&#x27;hidden_tests_pass&#x27;)</code>. Test: <code>tests/test_property_grade_cell.py::test_a_check_less_cell_carries_the_top_level_hidden_tests_pass</code>.</p>
+<ul><li>Green <code>39ceaa97</code>: <code>property.lift_hidden_tests(inp)</code> runs at the end of <code>grade_cell</code>. It copies the one</li></ul>
+<p><code>strategy.&lt;name&gt;.hidden_tests_pass</code> to the top level. <code>hidden_tests()</code> times its single <code>correctness.grade</code> call and writes <code>&lt;label&gt;/hidden_tests_ms</code>; the lift reads it into <code>hidden_tests_ms</code>. The test counts <code>correctness.grade</code> calls: exactly one (R-90 condition 2). Nothing copies <code>pass_at_1</code>.</p>
+<ul><li>Mutant (<code>tests/mutations/property.json</code>, commit <code>1bd8f1fb</code>): the <code>lift_hidden_tests(inp)</code> call replaced by</li></ul>
+<p><code>pass</code>. Killed. The whole file ran once: every mutation killed.</p>
+<ul><li>Finding 1: <code>hidden_tests_ms</code> was written nowhere in <code>src/</code> before this item, for check-based cells too</li></ul>
+<p>(R-90 condition 3 and W0 section 3 name it). This item adds it for the check-less shape only. The check-based <code>_hidden_check</code> evidence (<code>grade/property.py</code> evidence dict, about line 520) still has no <code>hidden_tests_ms</code>.</p>
+<ul><li>Finding 2: <code>grade/rework.py:175</code> runs the final-tree hidden tests (<code>final_tests</code>) but its section</li></ul>
+<p>(<code>write_section</code> at line 239) never records the value, so a rework cell has no top-level <code>hidden_tests_pass</code> and cannot be compared. The fix is one key in rework&#x27;s section, a seam request to the rework owner. Rework&#x27;s <code>property_check_pass</code> also reads NA &quot;not built&quot; in the fixture runs, with no <code>property.json</code>.</p>
+<h2>F2: discriminate runs the double-run item for a check-less task</h2>
+<ul><li>Red <code>b4dd5267</code>: <code>Failed: DID NOT RAISE BenchError</code>. Test:</li></ul>
+<p><code>tests/test_discriminate.py::test_a_check_less_trial_fails_on_a_hidden_test_disagreement</code>. It reports a disagreement through <code>readiness.comparable_cells</code> for the check-less fixture DISC-C and expects HB-RDY-011 &quot;hidden tests disagree with pass_at_1 in &lt;label&gt;&quot;.</p>
+<ul><li>Green <code>e282d1bf</code>: <code>_double_run_items(run_dir, grading_id, labels, spans=...)</code> is the one place the items are built.</li></ul>
+<p><code>_evidence_items</code> calls it with <code>spans=True</code>; the check-less branch of <code>run</code> calls it with <code>spans=False</code>. <code>readiness.comparable_cells</code> is unchanged.</p>
+<ul><li>Mutant (commit <code>1bd8f1fb</code>): the check-less call replaced by <code>pass</code>. Killed.</li></ul>
+<h3>Applicability of each item on the check-less shape</h3>
+<ul><li>Hidden tests disagree with pass_at_1: applies, and now runs for every task.</li><li>Not comparable (a side is NA): <strong>updated in part 2 (P3, CR47-1): now runs on the check-less shape</strong> (it is split from</li></ul>
+<p><code>spans</code>; <code>unbiased_failures</code> stays check-based only). Part 1 held it off because rework wrote no hidden value (Finding 2); P1 fixed that.</p>
+<ul><li>A span with <code>unbiased_ok</code> false: does not apply, because a check-less pass records no <code>spans</code> (the spans belong</li></ul>
+<p>to the hidden check&#x27;s two phases).</p>
+<ul><li>A case <code>timeout</code> that nothing declares and the evidence-presence item (&quot;no check evidence found&quot;): do not apply,</li></ul>
+<p>because a check-less pass has no <code>cases</code> and no check evidence pointer.</p>
+<h2>Part 2 (Claude Code Sonnet, <code>x-fixe-e1e4</code>, CR47-1 to CR47-4, CR47-7)</h2>
+<p>Split by the CEIL-A rule: P1, P2 and P3 done; P4 (declared case timeout) not started, the context reading after P3 was 155k, above the 133k start limit.</p>
+<table><thead><tr><th>Item</th><th>Red SHA and failing lines</th><th>Green SHA</th><th>Mutant</th></tr></thead><tbody><tr><td>P1 rework section records <code>hidden_tests_pass</code></td><td><code>94f139bc</code>: <code>assert None == {&#x27;value&#x27;: 1, &#x27;reason&#x27;: None}</code> (multi-turn test); <code>assert None == {&#x27;value&#x27;: None, &#x27;reason&#x27;: &#x27;no working copy in the archive&#x27;}</code> (section-pointer test); <code>DID NOT RAISE BenchError</code> (flaky final-tree trial)</td><td><code>c37bfc8c</code></td><td>rework.json: key deleted from the section</td></tr><tr><td>P2 check-based <code>hidden_tests_ms</code></td><td><code>d75f424f</code>: <code>assert False + where False = isinstance(None, int)</code></td><td><code>75d627b7</code></td><td>property.json: key removed</td></tr><tr><td>P3 not-comparable item for check-less</td><td><code>7e6ed2a2</code>: <code>DID NOT RAISE BenchError</code></td><td><code>98f09423</code></td><td>property.json: check-less item disabled</td></tr></tbody></table>
+<ul><li>Order of the hidden-test runs read (P1 counter fixture, <code>tests/fixtures/property_tasks/make_task.py</code> <code>T2_COUNTER_TESTS</code>):</li></ul>
+<p>the correctness grader&#x27;s pass first (counter run 1, odd, pass), then per cell rework&#x27;s turn-1 snapshot run (turn-1 tests only, so never the counter test), then the property grader&#x27;s one final-tree run (counter run 2, even, fail); the cells alternate. The trial raised HB-RDY-011 &quot;hidden tests disagree with pass_at_1&quot; with no monkeypatch.</p>
+<ul><li>Deleted test: <code>test_a_check_less_trial_fails_on_a_hidden_test_disagreement</code>; it wrapped <code>readiness.comparable_cells</code></li></ul>
+<p>and caught nothing the real fixture does not. The part 1 mutant &quot;check-less double-run item call deleted&quot; now targets <code>test_a_check_less_trial_with_a_flaky_final_tree_fails_on_a_hidden_test_disagreement</code>.</p>
+<ul><li>Changed DISC-C tests (P3): the shared <code>first</code> fixture and its tests (without_a_host, overlay_lands, record_body,</li></ul>
+<p>reconciliation, started/finished) moved to DISC-T; <code>test_no_link_after_hb_rdy_010</code> runs on a turns-based <code>disc_flaky</code>; the variant-without-strategy test stays on DISC-C and asserts the not-comparable item (finding: the variant item is reached only when no other item exists, so it cannot fire in a trial).</p>
+<ul><li>Not checked: a real trial of RW1, RW2, NG1, NG2, SM1 and SM2 under the new item (no real-task trial was run in this turn).</li></ul>
+<h2>Gates</h2>
+<p>See the hand-back report for the exit statuses as read.</p></main></body></html>

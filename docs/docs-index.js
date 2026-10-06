@@ -4991,6 +4991,31 @@ window.DOCS_INDEX = {
       "sourceSha256": "d35a8989cbc5eb2f8456f152825f7a70d3f79266c6567e2e24727038af97beb7"
     },
     {
+      "id": "plan-eval-x-fixe",
+      "path": "docs/plans/eval-x-fixe.md",
+      "title": "X-FIXE: the double-run guard on the check-less shape",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-20",
+      "reviewSuggested": [],
+      "summary": "SHAPE-A sweep row 4: a check-less property.json carries the top-level hidden_tests_pass and hidden_tests_ms, and discriminate runs the hidden-test disagreement item for a check-less task.",
+      "tags": [
+        "evaluation",
+        "property",
+        "execution-plan"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "6c48b2f35d06264c2a48ae5a3f38ebf9e890e521f2abf28520264a78c1f91098"
+    },
+    {
       "id": "plan-eval-x-j1a",
       "path": "docs/plans/eval-x-j1a.md",
       "title": "X-J1a: skeleton, assertion-red table and cell budget clock",
@@ -9739,6 +9764,14 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-enterprise-production-portfolio"
     },
     {
+      "id": "surface-plans-eval-x-fixe",
+      "path": "docs/plans/eval-x-fixe.html",
+      "title": "Eval X Fixe",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-fixe"
+    },
+    {
       "id": "surface-plans-eval-x-j1a",
       "path": "docs/plans/eval-x-j1a.html",
       "title": "Eval X J1A",
@@ -9857,5 +9890,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "39ef78476d138ebd766ba0e17fc2c3e31f2491da4c55d7a9ced87445a4ad29fd"
+  "graphSha256": "183fb3df76377908c927de756a725a8076ae844d149028a56f24066125074285"
 };
