@@ -27,6 +27,7 @@ summary: >-
 
 **Status counts:** controlled 13 · partially-controlled 7 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`. CAUSE-A is `observed` (2026-09-30).
 **Recurrence since last review:**
+- 2026-10-06 (Coordinator #46, `c46.md` addendum): three candidates registered under "Coordinator #46 entries" at the end: CONSUME-A (compiles built with `skeleton --no-model` were reported dispatchable and the runner refused them, RUN-COMPILE; recompiled, each replayed with `check_compile.py`), IDEM-A (Ruling 111 condition 5; RS2's kept batch id on a grown batch) and HOOK-A (the Owner seat's first Ruling 111 commit skipped the pre-commit hook through a non-existent `core.hooksPath`; redone).
 - 2026-10-06 (Coordinator #46, `docs/coordination/coordinator-log/c46.md` item 0): no new class. A second QUOTE-A instance: X-K1c made `resume.py` an archive reader with no compile quoting W1-J section 7, and T-SWEEP-1 first went red at the K1c join's recount. Ruled a sanctioned ninth reader (W1-J erratum); QUOTE-A's upgrade trigger fired.
 - 2026-10-06 (Leader, found by X-RETIER): one candidate registered, TMPENV-A (a test assumes where `tmp_path` is; under PATH-B's short TMP it is outside the profile and the test fails); fixed in `tests/test_workspace.py`.
 - 2026-10-06 (Leader, join of `coord/eval-c44-p4b`): one candidate registered, VERB-A (a record labels a restatement as the operator's verbatim words); fixed in the plan and `c44.md` at the join.
@@ -1355,4 +1356,35 @@ summary: >-
   - `2026-10-06` X-K1c K6: `test_window`'s one marker covered 13 cases; 9 passed, so the runtime group had 9 XPASS(strict) failures. The K1c compile (Coordinator #43) said "a case that passes early ... is a finding ..., never a marker split", so the worker handed back red.
 - **Sweep:** `git grep -n -B1 'xfail(strict=True' -- tests` over parametrised tests: in `tests/test_resume.py` at `db67039d`, `test_window` is the only multi-case one left (T2 and W16 carry one case each). The other strict xfails (`tests/test_e1_e2e.py` 3, `tests/test_catalog_version.py` 1, `tests/e2e/test_us13_canary.py` 1) were not checked for parametrisation.
 - **Control:** the narrowing rule (Coordinator #45; F1 of `al-01M48XQZ33G2A8S3KQJDF16PSJ`): a strict xfail may be narrowed to exactly the parameter ids observed failing on the same commit, in its own commit, strict and with the same reason; never widened, made non-strict, reworded or skipped. Rung: compiled prompt. Upgrade trigger: a second instance; then a marker over a parametrised test is written per parameter from the start (`pytest.param(..., marks=...)`).
+- **Status:** `candidate`
+
+## Coordinator #46 entries (2026-10-06; `docs/coordination/coordinator-log/c46.md`)
+
+*Kept under their own heading, after Coordinator #45's. Three candidates.*
+
+### CONSUME-A: a document is reported ready because its producer's gate passed, while its consumer refuses it (candidate)
+- **Signature:** a producer runs its own gate, the gate passes, and the producer reports the artifact "dispatchable". The consumer applies a stricter check (another mode flag, a type, a field) and refuses it. The producer's gate accepts a degrade path the consumer does not.
+- **Why it survives:** the producer reads its own gate's exit and the `dispatchable` flag it wrote, never the consumer's condition. The degrade path is legal for the producer (a readable skeleton stays loggable), so nothing errors until dispatch.
+- **Instances:**
+  - `2026-10-06` Coordinator #46 (measured by the Leader; replayed by me): compiles `al-01M4964JB1F0TZ56VVPYAQJ4VF` (X-K1d) and `al-01M4964T9K5QWVA8VXCJXB17VV` (X-RS) were built with `prompt-compile.py skeleton --no-model`. That flag selects `mode: not-compiled` (`prompt-compile.py:416-419`), and `finish` then logs `compiled: false` with the document under `skeleton` (`:631-633`), while the entry still says `dispatchable: true`. `coord-runner.py:289-293` requires `isinstance(doc, dict)` and `mode != "not-compiled"`, so the runner refused X-K1d twice with RUN-COMPILE. My report had said "gate pass first try": true of a document the runner cannot dispatch. Replay (`check_compile.py`): "kind compilation | entry dispatchable True | doc is dict False" for both. Recompiled without `--no-model` from the same raw (K1d) or a new raw (X-RS): `al-01M4975PYWE34AA9Q9M0AJ112W`, `al-01M4977CYX2E9M591K5ZGP7HXH`, and X-FIXE `al-01M497AZPCS6F5KBCZ36RX6VS9`, each "doc is dict True | mode compiled | check_schema: None | verify_document: []".
+- **Sweep:** every compile id named in a dispatchable brief or contract in this run: c45's `al-01M48XR7HTPSNKH4XW97Z3A698` and `al-01M48XQZ33G2A8S3KQJDF16PSJ` both replay "doc is dict True | mode compiled" (`check_compile.py`, run by me). Open contracts now name only the recompiled ids.
+- **Control (proposed):** the compile form (`c46.md`) runs the consumer's check, not only the producer's gate: after `finish`, `check_compile.py <tree> <id>` (a replay of `coord-runner.py:286-296`) must print "doc is dict True", "mode compiled", "check_schema: None" and "verify_document: []", and the hand-back pastes that output. `--no-model` is never used for a dispatch compile. Rung: compiled-prompt procedure. Upgrade trigger: one more refused dispatch; then `prompt-compile.py finish` itself refuses to print "dispatchable: true" for a `not-compiled` document (a pack change, Lane F).
+- **Status:** `candidate`
+
+### IDEM-A: an idempotency key bound to a mutable container instead of to the frozen payload it first travelled with (candidate; Ruling 111 condition 5)
+- **Signature:** the key survives, the payload grows, and the receiver de-duplicates the grown payload away.
+- **Why it survives:** a "stable id" requirement is read as stable across retries without asking stable with what payload; every case that applies nothing (a 503) hides it.
+- **Instances:**
+  - `2026-10-06` RS2's reference (X-RS, `build/eval-x-rs:tasks/RS2/oracle/evidence.md` "Residual"): the shipper kept `batch_id` and sent the grown batch after a lost response, so a collector that applied the first batch would drop the new record. DR `req-01M4966TTSM5ADZ41AFE6SX8S9`, ruled Ruling 111 (b).
+- **Sweep:** RS1's cases are swept for the shape at the X-RS join (a finding, not a change, if found), per Ruling 111 condition 5.
+- **Control (as Ruling 111 states it):** a resilience task whose overlay has a de-duplication key carries a case in which the keyed unit is applied, its response is lost, the container grows, and delivery is retried (the `g-lost-then-grow` shape); `design-slice`'s adversary asks of every "stable id" requirement *stable with what payload?* Rung: task case plus design review. The X-RS ready turn (`al-01M4977CYX2E9M591K5ZGP7HXH`) builds the RS2 case.
+- **Status:** `candidate`
+
+### HOOK-A: a commit command that silently bypasses the hook floor (candidate)
+- **Signature:** a commit runs with an option that disables or redirects hooks (`-c core.hooksPath=<folder>`, `--no-verify`, an empty `GIT_DIR` hooks folder), so the repository's pre-commit hook never runs and the commit still succeeds with no message.
+- **Why it survives:** a hook that does not run prints nothing, so a skipped floor looks the same as a passed one. `core.hooksPath` pointing at a folder that does not exist is not an error to git.
+- **Instances:**
+  - `2026-10-06` Owner seat, Ruling 111 (reported by the Leader, not re-observed by me): the first commit passed `-c core.hooksPath=.githooks`, a folder that does not exist in this repository (Verified: `ls .githooks` fails, and `git config core.hooksPath` is unset). The pre-commit hook was skipped. The seat noticed, soft-reset, and recommitted with the hook running: `ee47cb02` exists nowhere, `2d59da4f` is the real commit.
+- **Sweep:** owed: the briefs and scripts that build commit commands (Owner, Coordinator and worker compiles; `docs/ai-forward-pack/scripts/*`) grepped for `hooksPath`, `--no-verify` and `-n ` on `git commit`.
+- **Control (proposed):** (1) every brief says "commit with plain `git commit`; never pass `--no-verify`, `-n` or `-c core.hooksPath`; a commit whose output lacks the pre-commit hook's line (`N staged path(s) checked`) is undone and redone" (the Leader adds it to future Owner briefs); (2) the join replays the hook over the joined commits' paths, so a skipped hook is caught at the latest at the join. Rung: compiled prompt now, join check next. Upgrade trigger: a second bypass; then the join script refuses a commit whose message trailer or ledger line lacks the hook's stamp.
 - **Status:** `candidate`
