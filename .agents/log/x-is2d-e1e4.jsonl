@@ -1,0 +1,2 @@
+{"agent": "x-is2d-e1e4", "at": 1791213325.3159173, "kind": "session-start", "path": "-", "seq": 1, "session": "x-is2d-e1e4", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-eval-x-i-s2d"}
+{"action": "add", "agent": "x-is2d-e1e4", "at": 1791216310.5321891, "deadline_at": 1791217210.5321891, "id": "req-01M46CZP85M6GK9DC63MXZ6D53", "kind": "request", "path": "-", "seq": 2, "session": "x-is2d-e1e4", "to": "coord-opus-e1e4", "type": "request", "wi": "WI-0"}
