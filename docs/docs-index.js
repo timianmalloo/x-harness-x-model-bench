@@ -4752,6 +4752,46 @@ window.DOCS_INDEX = {
       "sourceSha256": "00e5cc89fc4c70ca4d4730cb89722da04ebcc8d5eadf9b907c389f535174a2a7"
     },
     {
+      "id": "plan-eval-x-j1e",
+      "path": "docs/plans/eval-x-j1e.md",
+      "title": "X-J1e: W1-J mutation proof and planned context split",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "43 engine rows and two driver rows landed; engine 105 killed/3 survived/1 timeout, driver 6 killed/1 survived. Planned hand-back after K2 at 128178 context tokens. S-J4 and final worker gates remain open.",
+      "tags": [
+        "evaluation",
+        "multi-turn",
+        "mutations",
+        "coordination"
+      ],
+      "links": [
+        {
+          "to": "brief-eval-x-j1",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "depends-on"
+        },
+        {
+          "to": "kb-graph-and-loop-engineering",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "Execution graph",
+          "mermaid": "flowchart LR\n B --> G0 --> K1 --> M1 --> K2\n K2 -->|at most 110k| S --> G --> H\n K2 -->|above 110k: planned split| H"
+        }
+      ],
+      "sourceSha256": "afad08bf3352465d6afaf93cd8aa136fd430b02be1c7c9ae7c7d8600791f60d3"
+    },
+    {
       "id": "proof-phase2",
       "path": "docs/proof/phase2.md",
       "title": "Proof Pack - phase 2 (wave-by-wave joins)",
@@ -9169,6 +9209,14 @@ window.DOCS_INDEX = {
       "artifactId": "plan-eval-x-j1d"
     },
     {
+      "id": "surface-plans-eval-x-j1e",
+      "path": "docs/plans/eval-x-j1e.html",
+      "title": "Eval X J1E",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-j1e"
+    },
+    {
       "id": "surface-case-study",
       "path": "docs/case-study.html",
       "title": "From Specification to Implementation: An AI-Forward Case Study",
@@ -9215,5 +9263,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "3b1af33ae27c705f7b1e317c2f9f4aafc0ebc43570961fc2d8a4c82a6679dccd"
+  "graphSha256": "3a1f6b32b615ef182299635cbe7709aaf910873840ccba1b86392cf416dd4e60"
 };
