@@ -32,16 +32,17 @@ HIDDEN = frozenset({
     "test_processor_returns_event_dict_unchanged_and_buffers_a_copy", "test_flush_returns_the_accepted_count_and_empties_the_buffer",
     "test_a_refused_batch_raises_ship_error", "test_an_empty_buffer_sends_nothing",
     "test_records_are_sent_in_the_order_they_were_buffered"})
-CASES = ["g-5xx-burst", "g-5xx-persistent", "g-slow-first", "g-hang", "g-lost-response", "g-4xx", "g-ordering"]
+CASES = ["g-5xx-burst", "g-5xx-persistent", "g-slow-first", "g-hang", "g-lost-response", "g-4xx", "g-lost-then-grow", "g-ordering"]
 # The independent oracle for the variants (K1's re-trace, hand-traced before any run): flipped case -> deciding clause.
 PREDICTED = {
     "noretry": {"g-5xx-burst": "effect"},
     "notimeout": {"g-hang": "time", "g-slow-first": "time"},
-    "retry5": {"g-5xx-persistent": "requests", "g-hang": "requests", "g-ordering": "requests"},
-    "batchidattempt": {"g-lost-response": "effect", "g-slow-first": "effect"},
-    "clearearly": {"g-5xx-persistent": "result", "g-ordering": "result"},
-    "requeuetail": {"g-ordering": "result"},
+    "retry5": {"g-5xx-persistent": "requests", "g-hang": "requests", "g-lost-then-grow": "requests", "g-ordering": "requests"},
+    "batchidattempt": {"g-lost-response": "effect", "g-lost-then-grow": "effect", "g-slow-first": "effect"},
+    "clearearly": {"g-5xx-persistent": "result", "g-lost-then-grow": "result", "g-ordering": "result"},
+    "requeuetail": {"g-lost-then-grow": "result", "g-ordering": "result"},
     "retry4xx": {"g-4xx": "requests"},
+    "growid": {"g-lost-then-grow": "result"},
 }
 STUB = (
     "class ShipError(Exception):\n    pass\n\n\nclass HttpShipper:\n    def __init__(self, base_url):\n        pass\n\n"
@@ -261,12 +262,11 @@ def test_reference_passes_every_case_and_alt_agrees(base):
         assert got["measures"] == {"idempotency_violations": 0}
 
 
-def test_naive_passes_four_of_seven_and_never_double_applies(base):
+def test_naive_passes_four_of_eight(base):
     got = check_run(base, "naive", overlay("naive"))
     passing = sorted(c for c, o in got["outcomes"].items() if o == "passed")
     assert passing == ["g-4xx", "g-5xx-persistent", "g-lost-response", "g-ordering"], got["outcomes"]
-    assert got["measures"] == {"idempotency_violations": 0}
-    assert len(passing) / len(CASES) == pytest.approx(0.5714, abs=0.0001)
+    assert len(passing) / len(CASES) == pytest.approx(0.5, abs=0.0001)
 
 
 def test_each_variant_passes_the_hidden_tests_and_flips_exactly_its_cases_and_clause(base):
@@ -284,4 +284,4 @@ def test_each_variant_passes_the_hidden_tests_and_flips_exactly_its_cases_and_cl
 def test_every_case_has_a_flipping_variant_and_batchidattempt_counts_two_violations(base):
     assert {c for flips in PREDICTED.values() for c in flips} == set(CASES)
     assert check_run(base, "batchidattempt", apply_edits(overlay("reference"), read_literal(TASK / "oracle" / "variants.py", "VARIANTS")["batchidattempt"]))[
-        "measures"] == {"idempotency_violations": 2}
+        "measures"] == {"idempotency_violations": 10}

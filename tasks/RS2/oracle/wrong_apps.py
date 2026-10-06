@@ -7,7 +7,8 @@ WRONG_APPS = {
         "reds": ["test_processor_returns_event_dict_unchanged_and_buffers_a_copy"]},
     "wa-keep": {
         "edits": [{"file": "src/structlog/shipper.py",
-                   "old": "            del self._buffer[:len(records)]\n", "new": ""}],
+                   "old": "            self._pending = None\n        return sent\n",
+                   "new": "            self._pending = None\n            self._buffer[:] = records\n            break\n        return sent\n"}],
         "reds": ["test_flush_returns_the_accepted_count_and_empties_the_buffer"]},
     "wa-ok4xx": {
         "edits": [{"file": "src/structlog/shipper.py",
@@ -16,10 +17,11 @@ WRONG_APPS = {
         "reds": ["test_a_refused_batch_raises_ship_error"]},
     "wa-sendempty": {
         "edits": [{"file": "src/structlog/shipper.py",
-                   "old": "        if not self._buffer:\n            return 0\n", "new": ""}],
+                   "old": "                if not self._buffer:\n                    break\n",
+                   "new": "                if not self._buffer and sent:\n                    break\n"}],
         "reds": ["test_an_empty_buffer_sends_nothing"]},
     "wa-reverse": {
         "edits": [{"file": "src/structlog/shipper.py",
-                   "old": "records = list(self._buffer)\n", "new": "records = list(reversed(self._buffer))\n"}],
+                   "old": "self._pending = (uuid.uuid4().hex, self._buffer[:])\n", "new": "self._pending = (uuid.uuid4().hex, self._buffer[::-1])\n"}],
         "reds": ["test_records_are_sent_in_the_order_they_were_buffered"]},
 }

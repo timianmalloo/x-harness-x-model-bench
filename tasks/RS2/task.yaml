@@ -29,15 +29,15 @@ property:
   fault_contract: {timeout_ms: 3000, tolerance_ms: 500, max_retries: 2}   # numbers are in the prompt; the mechanisms are latent (RQ-2)
 graders: [correctness, property]
 oracle:
-  summary: "Five hidden unittest cases for HttpShipper on a local http.server (stdlib only); then seven fault cases against a check-owned collector fake on 127.0.0.1, one probe host per case (check.py, with its frame handler rs2_shim.py). The fake answers per a fixed schedule; the check measures each flush's wall time and reads the fake's request, effect and batch-id counters. The fault cases are judged on these schedules only."
+  summary: "Five hidden unittest cases for HttpShipper on a local http.server (stdlib only); then eight fault cases against a check-owned collector fake on 127.0.0.1, one probe host per case (check.py, with its frame handler rs2_shim.py). The fake answers per a fixed schedule; the check measures each flush's wall time and reads the fake's request, effect and batch-id counters. The fault cases are judged on these schedules only."
   runner: unittest
   command: ["{python}", "-S", "-m", "unittest", "-v", "test_shipper_hidden"]
 expected:
   reference:
     property_check_pass: 1                       # derived by W0 section 3: hidden tests pass (5/5) and every fault case passed. Not a grader output.
-    fault_suite_pass: "1.0000"                   # 7 of 7; measured by the stand-in check in K3 (tests/test_rs2_task.py), not yet by the real grader
+    fault_suite_pass: "1.0000"                   # 8 of 8; measured on the real path in tests/test_rs2_task.py, the record is not yet taken
     idempotency_violations: 0                    # measured by the stand-in check in K3
   naive:
     property_check_pass: 0                       # the naive passes the 5 hidden tests and 4 of 7 cases, so the conjunction is 0
-    fault_suite_pass: "0.5714"                   # 4 of 7 (g-5xx-persistent, g-lost-response, g-4xx, g-ordering); the K3 stand-in run's measured value is in oracle/evidence.md
-    idempotency_violations: 0                    # the naive never re-sends inside one flush, so no call has two effects
+    fault_suite_pass: "0.5000"                   # 4 of 8 (g-5xx-persistent, g-lost-response, g-4xx, g-ordering), asserted by tests/test_rs2_task.py; the record is not yet taken
+    idempotency_violations: 0                    # pending the record: under the record-count definition naive applies r1 and r2 twice in g-lost-then-grow, so 0 is expected to change; set from the record (EV-7)

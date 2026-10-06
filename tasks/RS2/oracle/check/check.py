@@ -1,4 +1,4 @@
-"""RS2 hidden check (W1-L 9.1, 9.3): seven fault cases against a check-owned log collector. Stdlib and bench_check only.
+"""RS2 hidden check (W1-L 9.1, 9.3): eight fault cases against a check-owned log collector. Stdlib and bench_check only.
 
 The check never imports the deliverable. Each case starts one probe host and one collector fake on the socket
 `bench_check.listen()` yields. The host runs `rs2_shim.handle` (this folder), which builds the deliverable's `HttpShipper`,
@@ -19,9 +19,10 @@ import time
 
 import bench_check as bc
 
+MAX_BODY = 65536                                # a request body is read to this size at most
 SLOW_S = 6.0                                    # the delay of a `slow` reply: past every bound of the case
 SEED = ["r1", "r2"]                             # the events buffered before the first flush of every case
-LATE = {"g-ordering": ["r3"]}                   # events buffered between a failed flush and its `then` flush
+LATE = {"g-ordering": ["r3"], "g-lost-then-grow": ["r3"]}                   # events buffered between a failed flush and its `then` flush
 
 
 class Fake:
@@ -33,6 +34,10 @@ class Fake:
 
     def arm(self, schedule, rest):
         self.schedule, self.rest, self.seen = list(schedule), rest, 0
+
+    def malformed(self):
+        self.requests.append({"n": len(self.requests) + 1, "batch_id": None, "action": "malformed"})
+        return {"status": 400, "json": {"error": "malformed"}}
 
     def action(self):
         n = self.seen - 1                       # `handle` counts the request before it asks, so the first request is index 0
@@ -95,9 +100,15 @@ def serve(fake, sock):
     stop = threading.Event()
 
     class Handler(http.server.BaseHTTPRequestHandler):
+        timeout = 10                             # every socket read of a request is bounded in time
+
         def do_POST(self):
-            body = self.rfile.read(int(self.headers.get("Content-Length") or 0))
-            reply = fake.handle("POST", self.path, {k.lower(): v for k, v in self.headers.items()}, body)
+            length = self.headers.get("Content-Length") or "0"
+            if not length.isdigit() or int(length) > MAX_BODY:
+                reply = fake.malformed()         # counted as a request, no effect, never read past the cap
+            else:
+                body = self.rfile.read(int(length))
+                reply = fake.handle("POST", self.path, {k.lower(): v for k, v in self.headers.items()}, body)
             if reply.get("drop"):
                 self.close_connection = True
                 return
@@ -131,6 +142,7 @@ def serve(fake, sock):
     def close():
         stop.set()
         server.shutdown()                        # the socket itself is closed by `listen`'s context manager
+        thread.join(5)                           # the serve thread ends inside the case, before the next case starts
 
     return close
 
@@ -150,7 +162,7 @@ def clause_of(case, calls, fake, contract):
     elif case["expect"] == "succeed":
         good = first.ok and first.effects == 1 and first.value == len(SEED) and fake.names() == SEED
     else:
-        good = not first.ok and first.effects == 0
+        good = not first.ok and first.effects <= case.get("effects_max", 0)   # a lost reply may follow an applied batch
     if not good:
         return "effect"
     if case.get("then"):
@@ -185,7 +197,7 @@ def run_probe(ctx, case, evidence, violations):
             if host is not None:
                 host.close()
             close()
-    violations.append(sum(max(0, c.effects - 1) for c in calls))
+    violations.append(len(fake.applied) - len(set(fake.names())))   # a record the collector applied more than once
     evidence[case["id"]] = {"clause": clause, "batch_ids": [r["batch_id"] for r in fake.requests],
                             "calls": [{"ms": c.ms, "requests": c.requests, "effects": c.effects, "ok": c.ok} for c in calls]}
     return "passed" if clause is None else "failed"

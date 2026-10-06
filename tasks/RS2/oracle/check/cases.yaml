@@ -19,4 +19,5 @@ cases:                                            # schedule: what the collector
   - {id: g-hang,            kind: fault, schedule: [hang],       rest: last, expect: either, bound_ms: 4500}
   - {id: g-lost-response,   kind: fault, schedule: [lost],       rest: ok,   expect: either}
   - {id: g-4xx,             kind: fault, schedule: [s400],       rest: last, expect: fail, final: true}
+  - {id: g-lost-then-grow,  kind: fault, schedule: [lost],       rest: last, expect: fail, effects_max: 1, then: {schedule: [], rest: ok}}   # r3 is buffered between the two flushes (check.py LATE)
   - {id: g-ordering,        kind: fault, schedule: [s503],       rest: last, expect: fail, then: {schedule: [], rest: ok}}   # r3 is buffered between the two flushes (check.py LATE)

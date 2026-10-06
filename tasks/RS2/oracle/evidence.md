@@ -1,6 +1,6 @@
 # RS2 oracle evidence
 
-Status of RS2: `draft` (K1 design statement, K3 draft with the measurements below; ready waits for X-LB1's join).
+Status of RS2: `draft` (K5, part 6): eight cases on X-LB1's `bench_check.listen()` and the real `parse_result`, Ruling 111 case `g-lost-then-grow` and variant `growid` in; the ready trial is not run because the engine refuses a naive timeout (HB-RDY-011; seam request filed).
 
 Base: structlog at `91f44ae9031c80ad9c6045172f182803543ba6ba`, tree `f23e1352e410a6d67fab660e10a4e0c89fa53c16` (fresh clone, 2026-10-06).
 
@@ -62,33 +62,39 @@ test got a count assertion before the index; fixed before the table below). Refe
 turns exactly its declared test red and no other (`wa-nocopy` S-1, `wa-keep` S-2, `wa-ok4xx` S-3, `wa-sendempty` S-4, `wa-reverse`
 S-5). Loopback sockets in the grading copy work, so A3 holds on this host and the hidden tests stay on `http.server`.
 
-## Variant run (measured, stand-in listener, real probe host, Windows 11, Python 3.12)
+## Variant run (measured on the real path, 8 cases, 8 variants; K5, part 6; Windows 11, Python 3.12)
 
-Every variant passes all five hidden tests (real `correctness.grade`, `result.passed == 1`) and flips exactly the cases and clause
-below; the measured set equals K1's re-trace in every row.
+The reference now holds one pending `(batch_id, records)` pair (Ruling 111 (i)): the pending batch first, then the records buffered since as a
+new batch, one budget per flush, the sum of accepted counts on success. The prompt lost "in one batch" (ii). Every variant passes all five hidden
+tests (real `correctness.grade`) and flips exactly the cases and clause below; `tests/test_rs2_task.py` asserts each row against `PREDICTED`.
 
-| Variant | Flipped (measured) | Clause (measured) | K1 re-trace | Match |
+| Variant | Flipped (measured) | Clause (measured) | Hand re-trace before the run | Match |
 |---|---|---|---|---|
 | noretry | g-5xx-burst | effect | g-5xx-burst, effect | yes |
 | notimeout | g-slow-first, g-hang | time | same | yes |
-| retry5 | g-5xx-persistent, g-hang, g-ordering | requests | same | yes |
-| batchidattempt | g-slow-first, g-lost-response | effect | same | yes |
-| clearearly | g-5xx-persistent, g-ordering | result | same | yes |
-| requeuetail | g-ordering | result | g-ordering, result | yes |
+| retry5 | g-5xx-persistent, g-hang, g-lost-then-grow, g-ordering | requests | traced as the old three plus g-lost-then-grow (requests: five fast resets) | yes |
+| batchidattempt | g-slow-first, g-lost-response, g-lost-then-grow | effect | the old two plus g-lost-then-grow (effect) | yes |
+| clearearly | g-5xx-persistent, g-lost-then-grow, g-ordering | result | the old two plus g-lost-then-grow (result) | yes |
+| requeuetail | g-lost-then-grow, g-ordering | result | redefined for the freeze (newer records first, pending records after, a new id); traced g-ordering and g-lost-then-grow | yes |
 | retry4xx | g-4xx | requests | same | yes |
+| growid | g-lost-then-grow | result | g-lost-then-grow alone, result | yes |
 
-Reference passes 7 of 7 and alt 7 of 7; naive passes 4 of 7 (g-5xx-persistent, g-lost-response, g-4xx, g-ordering) and fails
-g-5xx-burst (effect), g-slow-first and g-hang (time, 5.2 s: the host's 5 s bound), so `fault_suite_pass` is "0.5714" as declared.
-`idempotency_violations`: 0 for reference, naive, alt and every variant except `batchidattempt` (2: one duplicate effect in each of
-its two flipped cases).
+The compile expected `batchidattempt` and `clearearly` to gain the new case; both did, and `retry5` and `requeuetail` also gained it (traced after the
+compile). The variant edits were rewritten for the new reference text (their `old` anchors changed); the wrong-app anchors changed the same way
+(`wa-keep`, `wa-sendempty`, `wa-reverse`), each still turning exactly its one hidden test red (finding: Ruling 111 (vi) says unchanged; only the anchor text moved).
 
-Reference `duration_ms` per case, slowest of three runs (each includes probe-host start): g-4xx 657, g-5xx-burst 783,
-g-5xx-persistent 723, g-lost-response 678, g-ordering 736 (two flushes), g-slow-first 1631, g-hang 3125. Every `bound_ms: 4500` is
-at least 25 percent above the slowest honest run (4500 against 1.25 x 3125 = 3906), and the quick cases sit far under the 5000 ms
-interface bound, so no bound changes. These are three runs, not a distribution.
+Reference passes 8 of 8 and alt 8 of 8, `idempotency_violations` 0. Naive passes 4 of 8 (g-5xx-persistent, g-lost-response, g-4xx, g-ordering), so
+`fault_suite_pass` is "0.5000" (asserted by the test). `idempotency_violations` is now the count of records the collector applied more than once in a
+case (check.py :200; the old per-call `effects - 1` counted the two legitimate batches of g-ordering's recovery flush as a violation). `batchidattempt`
+sums to 10 over the suite. Naive's value is read from the record, not here (EV-7).
 
-## Residual (stated, not tested)
+Reference `duration_ms`: the seven earlier cases are the part-5 three-run values (g-4xx 657, g-5xx-burst 783, g-5xx-persistent 723, g-lost-response 678,
+g-ordering 736, g-slow-first 1631, g-hang 3125; bounds unchanged). `g-lost-then-grow` has no `bound_ms` yet and its duration is not measured in part 6.
 
-A response lost in one flush, then a new record, then a second flush: the reference keeps the batch id and sends the grown batch,
-so a collector that stored the first batch would drop the new record as a repeat. No case schedules it (`g-ordering` fails with a
-503, which stores nothing). `simplify:` one kept id per pending batch; upgrade trigger: a case that loses a response across two flushes.
+## Check authoring rules (ADR-0018 section 3, B7)
+
+1. Every socket comes from `bench_check.listen()`: `check.py:180` opens it, `:183` hands it to `bc.probe_host`; `serve` wraps that socket only (`server.socket = sock`, :138).
+2. `passed` comes from the fake's counters: `Call.requests` and `Call.effects` are differences of `len(fake.requests)` and `fake.effects` (:82-:91); `clause_of` (:150-:177) judges on them and on `fake.names()`.
+3. The serve thread is joined inside every case: `close()` (:141-:145) sets stop, calls `server.shutdown()` and `thread.join(5)`; `run_probe` calls it in `finally` (:199).
+4. Untrusted bytes are bounded: handler `timeout = 10` (:103); the body is read only for an all-digit `Content-Length` of at most `MAX_BODY` 65536 (:107); otherwise `fake.malformed()` (:38) counts a request with no effect; a body that is not JSON is `{}` (a counted request, no effect), and nothing is evaluated beyond `json.loads`.
+
