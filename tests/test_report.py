@@ -384,7 +384,7 @@ N5_FLAG = "user-config exposed (N5)"
 
 def _cell(cid, combo, harness, model):
     na = views.Measure(None, "not graded")
-    return views.CellView(cell_id=cid, label=f"X1.{combo}.pack-off.r1", combo=combo, pack="off", harness=harness, model=model,
+    return views.CellView(cell_id=cid, task="X1", rep=1, label=f"X1.{combo}.pack-off.r1", combo=combo, pack="off", harness=harness, model=model,
                           outcome="completed", cause=None, code=None, validity="valid", validity_code=None,
                           wall_ms=na, model_ms=na, tool_ms=na, idle_ms=na, tokens=None, tokens_reason="not graded")
 

@@ -60,7 +60,7 @@ def _cell(task, rep, arm, value=1, *, harness="cc", combo="c", outcome="complete
     scores = {} if value == "absent" else {
         "property_check_pass": views.Measure(None if value is None else value, reason if value is None else None)}
     return views.CellView(
-        cell_id=cid or f"{task}-{arm}-{rep}", label=label or cell.label, combo=combo, pack=arm, harness=harness,
+        cell_id=cid or f"{task}-{arm}-{rep}", task=task, rep=rep, label=label or cell.label, combo=combo, pack=arm, harness=harness,
         model="m", outcome=outcome, cause=cause, code=None, validity=validity, validity_code=None,
         wall_ms=views.Measure(wall) if wall is not None else na, model_ms=na, tool_ms=na, idle_ms=na,
         tokens=_tok(tokens), tokens_reason=None if tokens is not None else "not recorded", scores=scores)
@@ -431,17 +431,16 @@ def test_collect_forms_pairs_with_tokens_and_wall():
 
 
 @pytest.mark.parametrize("form", ["arm", "pack"])
-def test_collect_reads_task_and_rep_from_either_label_form(form):
+def test_collect_uses_explicit_identity_with_either_label_form(form):
     labels = {arm: f"a.c.{form}-{arm}.r2" for arm in ("off", "on")}
     pairs = _collect([_cell("a", 2, arm, 1, label=labels[arm]) for arm in ("off", "on")])[0]
     assert [(p.task, p.rep) for p in pairs] == [("a", 2)]
 
 
-def test_collect_refuses_an_unparseable_label():
+def test_collect_uses_explicit_identity_with_an_unparseable_label():
     for label in ("nonsense", "a-off-1"):  # the second is a label that fell back to the cell id
-        with pytest.raises(BenchError) as caught:
-            _collect([_cell("a", 1, "off", label=label)])
-        assert caught.value.code == "HB-USR-002"
+        pairs = _collect([_cell("a", 1, arm, label=label) for arm in ("off", "on")])[0]
+        assert [(p.task, p.rep) for p in pairs] == [("a", 1)]
 
 
 def test_collect_refuses_a_second_cell_for_the_same_half():

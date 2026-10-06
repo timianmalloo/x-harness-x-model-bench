@@ -40,6 +40,18 @@ SONNET = "claude-sonnet-5"
 OPUS = "claude-opus-5-5"
 COPILOT_FIX = Path(__file__).parent / "fixtures/native/copilot"
 
+
+def test_cell_view_identity_agrees_with_plan_cell_label(tmp_path):
+    run_dir = make_run(make_root(tmp_path), tmp_path, {"a": GOOD})
+    view = views.load(run_dir)
+    frozen = view.plan["cells"][0]
+    cell = plan_mod.Cell(frozen["task"], frozen["task_version"], view.cells[0].scenario, frozen["combo"],
+                         frozen["harness"], frozen["model"], frozen["pack"], frozen["rep"], frozen["budget_seconds"])
+    facts = {fact: views.rows(run_dir, fact) for fact in views.FACTS}
+    projected = views._cell_view(view.plan, {**frozen, "label": cell.label}, facts, None)
+    assert (getattr(projected, "task", None), getattr(projected, "rep", None)) == (cell.task, cell.rep)
+    assert projected.label == cell.label
+
 # real cc-opus turn_usage rows, run e2e-wave1-1790299304 cell 17efb75ce2d5fc6d (pin claude-opus-5-5) (R-32)
 CC_OPUS_TURN_USAGE = [
     {"kind": "turn_usage", "run_id": "r1", "cell_id": "a", "attempt": 1, "model": "claude-haiku-4-5-20251001",
@@ -1118,7 +1130,7 @@ TRUNCATED = "native record truncated at the size bound"
 def _truncated_facts(unreadable: dict) -> tuple[dict, dict, dict]:
     """One Codex cell whose pre-cut rows are complete: a 2 s model call, a 1 s tool call, 10 s of wall time."""
     plan = {"profiles": {"codex": {"usage_source": "native_record", "auxiliary_models": []}}}
-    cell = {"cell_id": "a", "harness": "codex", "combo": "c", "pack": "off", "model": CODEX_MODEL}
+    cell = {"cell_id": "a", "task": "X1", "rep": 1, "harness": "codex", "combo": "c", "pack": "off", "model": CODEX_MODEL}
     call = {"cell_id": "a", "extraction_id": "x1", "native_ordinal": 3, "model": CODEX_MODEL, "uncached_input": 10,
             "cache_read": 0, "cache_write": 0, "output": 5, "reasoning": 0, "requests": 1,
             "start": "2026-09-23T10:00:01.000Z", "end": "2026-09-23T10:00:03.000Z"}
@@ -1351,7 +1363,7 @@ def test_the_current_pass_is_chosen_within_its_catalog_version_only():
 def test_a_cell_view_reads_only_its_own_rows_of_the_current_pass():  # by value: ids read from a ledger are new objects (T12)
     cid, gid = _runtime("cell-b"), _runtime("grade-new")
     plan = {"profiles": {"claude-code": {"usage_source": "acp_turn", "auxiliary_models": []}}}
-    cell = {"cell_id": cid, "harness": "claude-code", "combo": "c", "pack": "off", "model": SONNET}
+    cell = {"cell_id": cid, "task": "X1", "rep": 1, "harness": "claude-code", "combo": "c", "pack": "off", "model": SONNET}
 
     def score(grading_id, cell_id, value):
         return {"grading_id": grading_id, "cell_id": cell_id, "metric_id": "pass_at_1", "value": value, "reason": None,
