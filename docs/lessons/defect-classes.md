@@ -1399,3 +1399,12 @@ summary: >-
 
 ### ERRATA-A: an erratum edits an error row's registered meaning text (controlled)
 - One line: Coordinator #47's CR47-7 erratum appended text inside the HB-RDY-011 meaning cell (`eval-seam-contracts.md:608`), which `tests/test_identity.py::test_every_e1_error_row_is_registered_with_w0_meaning` requires to equal `errors.RUN_CODES`, so the X-FIXE join recount went red and the Leader restored the registered text (the rule stays in the section 2 erratum at `:101`); **control:** that test (rung: test, already in the ring), plus the compile-form rule that an erratum touching a W0 section 11 row goes beside the table, never inside a meaning cell. Status: `controlled`.
+
+### SIM-C: two simplifications reviewed one row at a time compound - one makes a proof the sole net, the next removes that proof's control (candidate; Ruling 110 condition 5)
+- **Signature:** a design's simplification table is reviewed row by row. One row makes a single proof the only net for a set of behaviours (W1-K SIM 1: the prefix sweep became the only proof of windows W1, W3, W3b, W6, W7 and W8). A later row removes the standing control on that same proof as redundant (SIM 2: the five classifier mutants that show the sweep kills those branches were to run once at K4 and not be kept). Each row is sound alone; together they leave the sole proof uncontrolled.
+- **Why it survives:** each SIM row cites `tests-earn-their-place` and is right in isolation; no review reads the rows as a set, and a one-time proof leaves no trace for the next join that touches the code.
+- **Instances:**
+  - `2026-10-06` W1-K SIM 1 and SIM 2 (`docs/design/eval-resume.md:199`, `:515`), found at Coordinator #45's DR and ruled Ruling 110 (b): the five classifier mutants are kept in `tests/mutations/resume.json`, each named to the sweep's two node ids. X-K1d part 1 wrote them (`7928406a`, all five killed by the sweep); the W1-K erratum landed at K1d's join (Coordinator #47).
+- **Sweep:** owed: the SIM rows of every design under `docs/design/` read as a set, for a row that drops a mutant or test whose proof another row made the sole net. Not done in this turn.
+- **Control (as Ruling 110 states it):** a design's simplification table row that drops a mutant or a test names, in the row, which proof it leaves uncontrolled; the `design-slice` adversary reads the SIM rows as a set, not one by one. Rung: design review procedure. Upgrade trigger: a second instance; then a check that a SIM row removing a mutant or test names the proof it leaves.
+- **Status:** `candidate`

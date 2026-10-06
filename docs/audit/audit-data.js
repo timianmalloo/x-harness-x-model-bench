@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T22:10:18Z",
+  "generated": "2026-10-06T22:37:12Z",
   "audit": [
     {
       "actor": null,
@@ -116670,6 +116670,36 @@ window.AUDIT_DATA = {
       "git": {
         "sha": "ab60b601947e537f95ca4231c16f11fc8599d51f",
         "short": "ab60b6019",
+        "branch": "coord/eval-c47-fixe",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M49NT794DR3HPP87SWBA5376",
+      "shortname": "c47-k1d-join-errata",
+      "datetime": "2026-10-06T22:37:11Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Leader resume: write the K1d-join errata (R-110 c2 at :199 and SIM 2 :512, :391 archive readers surface, SIM-C register, M-STOPC7 :222, M-WRITEOLD :215 node, launch-after-stop new site), refresh HTML",
+      "summary": "W1-K eval-resume.md: :199 R-110 c2 sentence; :215 M-WRITEOLD killing node test_the_resume_opens_new_segments_and_never_the_dead_one; :222 M-STOPC7 observation resume.cell action and resume.done.launched; :231 table errata note incl. engine.json launch-after-stop at _launch guard (75b1c264); :394 test_archive_readers.py surface row (READERS 9); :515 SIM 2 reversed by R-110. HTML refreshed. SIM-C registered (defect-classes.md:1403). Gates derive 0, validate 0, verify-ruling-citations 0. Tokens: not recorded.",
+      "kind": "skill",
+      "skill": "compile",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-resume.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "K1d join errata",
+      "done_when": "six W1-K errata with HTML, SIM-C registered, gates read, commit, session end",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-06T22:34:45Z",
+      "duration_seconds": 146.0,
+      "git": {
+        "sha": "32ab7ec27241d028eaff33fcb04aeaa10af304a1",
+        "short": "32ab7ec27",
         "branch": "coord/eval-c47-fixe",
         "pushed": null
       }

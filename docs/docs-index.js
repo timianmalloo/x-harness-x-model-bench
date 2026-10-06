@@ -2654,7 +2654,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8517db2563c008917ffc02f8d969c073626b4716a9637145a5ceb70e6b760bb1"
+      "sourceSha256": "1aeb1d0be996dc01e6da9effcb052a5bbb6d382b47b121a597de9e88faf8f7b4"
     },
     {
       "id": "design-eval-seam-contracts",
@@ -4674,7 +4674,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "7113e03a8302b4c0733bb0993652474ae88829086765db3f05c5e792ab397a67"
+      "sourceSha256": "1f0229bc775fabc69428fd8a3e5789376c5afc97ae5ba7fd28af86deea4c5f53"
     },
     {
       "id": "defect-classes",
@@ -4703,7 +4703,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "81b947fb3570a2ce85f82b9ff45dddf0e2219aebd6b061b089462a29acb86877"
+      "sourceSha256": "b438679fa3f71969b1c7bab65c5c16e5e4aa68969b11dd68c65abca40ab5b4db"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -9939,5 +9939,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "07adb21cbf9a423b62cc5d3e73ca049b7e4194fb8e6dc9c58114c89735cd5a46"
+  "graphSha256": "341173c685ce35aa0a0eb603a33946a829ad337cc4038c7e9d362a5b7bc7b3d0"
 };
