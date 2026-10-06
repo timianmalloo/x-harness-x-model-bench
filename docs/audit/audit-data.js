@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-05T22:18:55Z",
+  "generated": "2026-10-06T00:28:39Z",
   "audit": [
     {
       "actor": null,
@@ -93312,6 +93312,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-05T22:18:54Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M479SK7MX86RQDFT0HK2355J",
+      "shortname": "join-x-j2b",
+      "datetime": "2026-10-06T00:28:39Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of the resolved merge into integrate/e2e4-18",
+      "summary": "X-J2b: Agy gemini-3.8-flash-high deadline red-only (dd2c5d27, 4e9e711e - Leader re-ran: 8 assertion fails); Sonnet claude-sonnet-5-5 follow-on 0a239f4f..37c54fd8 + fix 0c788935 (rework reads snapshots via grade/runner.py per W1-J s7 row 11; T-SWEEP-1 READERS stays 8); rework.json 10/10, discriminate.json all killed (Leader); recount 1 (c2922763): 7 pin failures from the polluted shared ring cache (quarantined); recount 2: T-SWEEP-1 (grade/rework.py as an unsanctioned archive reader) -> fixed recount_seconds=1736 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join X-J2b into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-05T23:59:42Z",
+      "duration_seconds": 1737.0
     }
   ],
   "changes": [
