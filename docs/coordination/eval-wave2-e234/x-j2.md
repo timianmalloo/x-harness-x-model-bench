@@ -34,6 +34,11 @@ summary: "X-J2 lands grade/_changes.py's four counting functions (J2a, waits on 
 - **R2-4 (W0 rev 6.6 §13):** synthetic cells apply per-turn overlays `oracle/solutions/<role>/turn-<n>/`; the turn-1 snapshot comes through X-J1's engine; `bench discriminate` admits a `turns` task (W1-E line 181's HB-RDY-005 `not built in E1` is lifted). Test: a two-turn fixture task gets a discrimination record whose values match its `expected`.
 - **Variant reader (W0 rev 6.6 §2 g):** the create form `{"file", "old": "", "new"}` (refused when `file` is in the reference overlay) and the `turn-<n>/` prefix for a `turns` task: one test and one refused case each.
 
+## J2c: the engine leg (Coordinator #38; Claude Code Sonnet, an Agent-tool sub-agent, own tree `build/eval-x-j2c` from the integration head after X-J1d joins)
+- `discriminate.NA_REASONS` gains "turn 2 not reached" and "turn 1 snapshot not archived" (the two texts `rework.grade` emits), pinned by a test that every rework NA text is in the set; the texts stay literals in `discriminate.py` under a `simplify:` marker until the next `grade/` ring.
+- The two "J2c:" strict-xfail placeholders in `tests/test_rework.py` become real tests through the real engine: the turn-1 snapshot read through `grade/runner.py`, and R2-4's two-turn discrimination record.
+- The sanctioned archive readers are W1-J section 7's table (8 files, `tests/test_archive_readers.py`); a snapshot reaches a grader only through `grade/runner.py`.
+
 ## Acceptance items
 1. The campaign plan's exit evidence for X-J2; every function defined once (DM7).
 2. The Wave 1 testability floor; mutants per adjacent rule pair.
