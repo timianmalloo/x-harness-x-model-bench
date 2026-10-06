@@ -203,7 +203,7 @@ def _materialize(g, dest, rows, *, snap_rows="auto", final_rows="auto", tmp_dirs
     behaviours = {c["label"]: {"model": "fake-model", "prompts_log": str(log),
                                "per_turn": [{"files": {"a.txt": "1"}}, {"files": {"a.txt": "2"}}]} for c in g.plan["cells"]}
     cfg = engine.EngineConfig(run_dir, cells_root, {"fake": FakeLauncher(behaviours)}, _build_workspace,
-                              lambda d: {"passes": 1}, loop_interval=0.01, clock=CellClock())
+                              lambda d: {"passes": 1}, loop_interval=0.01, clock=CellClock(), verify=views.verify)
     return SimpleNamespace(run_dir=run_dir, plan=copy.deepcopy(g.plan), cfg=cfg, root=dest / "root", log=log, g=g, rows=rows)
 
 
@@ -1062,6 +1062,31 @@ def test_recover_archive_differing_recorded_row_refuses_read_only(golden1, tmp_p
         recover(env.cfg.cells_root / env.plan["run_id"] / cid, env.run_dir / "archive" / cid, 1, set(), present,
                 run_lock=lock)
     assert before == _tree_hash(env.run_dir)
+
+
+def test_resume_requires_verify_callback(golden1, tmp_path):
+    env = _prefix(golden1, tmp_path, 6)
+    env.cfg.verify = None
+    before = _tree_hash(env.run_dir)
+    with pytest.raises(ValueError, match="verify"):
+        _resume(env)
+    assert before == _tree_hash(env.run_dir)
+
+
+def test_resume_refusal_releases_run_lock(golden1, golden5, tmp_path):
+    env, code = _refusal("identity_drift", golden1, golden5, tmp_path)
+    with pytest.raises(BenchError) as raised:
+        _resume(env)
+    assert raised.value.code == code
+    assert not oslock.is_held(env.run_dir / ".lock")
+
+
+def test_resume_archive_file_without_folder_refuses(golden1, tmp_path):
+    env = _prefix(golden1, tmp_path, 12, final_rows="partial")
+    before = _tree_hash(env.run_dir)
+    with pytest.raises(BenchError, match="attempt-1") as raised:
+        _resume(env)
+    assert raised.value.code == "HB-LED-005" and before == _tree_hash(env.run_dir)
 
 
 

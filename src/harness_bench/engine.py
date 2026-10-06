@@ -110,6 +110,7 @@ class EngineConfig:
     clock: Callable[[], float] = time.monotonic
     identity_check: Callable[[], IdentityResult] | None = None
     campaign_check: Callable[[], None] | None = None
+    verify: Callable[[Path], list] | None = None  # composition-root callback; run code never imports grade readers
 
 
 @dataclass
