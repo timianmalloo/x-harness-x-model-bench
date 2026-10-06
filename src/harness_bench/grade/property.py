@@ -461,6 +461,10 @@ def _resilience_check(inp: CellInput, ctx: GradeContext) -> dict[str, Score]:
     return _run_check(inp, ctx, fault=True)
 
 
+def _rel(path: Path, run_dir: Path) -> str | None:
+    return path.relative_to(run_dir).as_posix() if path.is_file() else None
+
+
 def _run_check(inp: CellInput, ctx: GradeContext, fault: bool) -> dict[str, Score]:
     spec = _load_cases(inp.task_dir, fault)
     if not BENCH_CHECK.is_file():
@@ -515,7 +519,10 @@ def _run_check(inp: CellInput, ctx: GradeContext, fault: bool) -> dict[str, Scor
                 "check": {"job_view": got.job_view, "acked": got.acked, "exit_code": got.exit_code,
                           "documents": got.documents, "trailing_bytes": got.trailing_bytes, "bound_fired": got.bound_fired,
                           "invalid": got.invalid, "hash_before": hash_before, "hash_after": hash_after,
-                          "copy": {"skipped_reparse_points": skipped}},
+                          "copy": {"skipped_reparse_points": skipped},
+                          # W1-F rev 3 / SR-E3 2: each pointer is relative to the run directory; null when the file was not written.
+                          "deliverable": _rel(evid / "check.stdout", inp.run_dir), "cases": _rel(evid / "check.stdout", inp.run_dir),
+                          "hosts": _rel(evid / "hosts.jsonl", inp.run_dir), "clauses": _rel(evid / "clauses.json", inp.run_dir)},
                 "outcomes": outcomes}
     (inp.out_dir / "property.json").write_text(json.dumps(evidence, sort_keys=True, indent=1), encoding="utf-8")
     return scores

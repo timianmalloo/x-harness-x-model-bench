@@ -682,20 +682,35 @@ def property_evidence(run_dir: Path, pointer: str) -> dict:
     outcome), `hosts_ready` (the `end: ready` lines of `hosts.jsonl`), `hidden` (the hidden-test value) and `clauses`
     (`clauses.json`, at most 64 KiB, or None). ValueError / OSError name what could not be read.
 
-    assume: W1-F rev 3 gives no `check.deliverable`, `check.cases`, `check.hosts` or `check.clauses` pointers in
-    property.json on this base, so the files are read at their fixed places beside it: `<property.json dir>/check/
-    check.stdout`, `hosts.jsonl`, `clauses.json` (provisional, seam SR-E3 2). Confirm: a property.json that names them.
-    Breaks if false: the evidence dir moves and every check-based trial is HB-RDY-011 (fail closed, never a pass)."""
+    Every evidence file is read through the `check.*` pointers `property.json` holds, each relative to `run_dir`. A pointer
+    that is absent or null, or a file that is missing, is a ValueError naming it (fail closed, HB-RDY-011); only
+    `check.clauses` may be null, which reads as `clauses: None`."""
     doc_path = run_dir / pointer
     doc = json.loads(doc_path.read_text(encoding="utf-8"))
-    check = doc_path.parent / "check"
-    result = json.loads((check / "check.stdout").read_text(encoding="utf-8").splitlines()[0])
-    hosts = [json.loads(line) for line in (check / "hosts.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
+    pointers = doc.get("check") or {}
+
+    def resolve(key: str, nullable: bool = False) -> Path | None:
+        if key not in pointers:
+            raise ValueError(f"property.json has no check.{key} pointer")
+        rel = pointers[key]
+        if rel is None and nullable:
+            return None
+        if not isinstance(rel, str):
+            raise ValueError(f"check.{key} is not a path")
+        target = (run_dir / rel).resolve()
+        if not target.is_relative_to(run_dir.resolve()) or not target.is_file():
+            raise ValueError(f"check.{key} {rel!r} does not resolve to a file in the run")
+        return target
+
+    result = json.loads(resolve("deliverable").read_text(encoding="utf-8").splitlines()[0])
+    cases_doc = json.loads(resolve("cases").read_text(encoding="utf-8").splitlines()[0])
+    hosts = [json.loads(line) for line in resolve("hosts").read_text(encoding="utf-8").splitlines() if line.strip()]
     clauses = None
-    if (check / "clauses.json").is_file():
-        if (check / "clauses.json").stat().st_size > MAX_VARIANTS_BYTES:
+    clauses_file = resolve("clauses", nullable=True)
+    if clauses_file is not None:
+        if clauses_file.stat().st_size > MAX_VARIANTS_BYTES:
             raise ValueError("clauses.json is over 64 KiB")
-        text = (check / "clauses.json").read_text(encoding="utf-8")
+        text = clauses_file.read_text(encoding="utf-8")
         # Untrusted grader output: the scan every other reader uses (egress.check, as report/judges.py), before the parse.
         verdict = egress.check(text, destination="readiness", operator=egress.Operator.from_os())
         if verdict.withheld:
@@ -703,7 +718,7 @@ def property_evidence(run_dir: Path, pointer: str) -> dict:
         clauses = json.loads(text)
         if not isinstance(clauses, dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in clauses.items()):
             raise ValueError("clauses.json is not a {case id: clause text} object")
-    return {"deliverable": result["deliverable"], "cases": {c["id"]: c["outcome"] for c in result["cases"]},
+    return {"deliverable": result["deliverable"], "cases": {c["id"]: c["outcome"] for c in cases_doc["cases"]},
             "hosts_ready": sum(1 for h in hosts if h.get("end") == "ready"),
             "hidden": (doc.get("hidden_tests_pass") or {}).get("value"), "clauses": clauses}
 

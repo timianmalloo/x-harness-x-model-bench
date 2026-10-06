@@ -354,7 +354,9 @@ def test_a_leaked_temp_is_named_in_a_note_and_never_deleted_by_a_reader(tmp_path
 def _evidence_dir(tmp_path: Path, clauses_text: str) -> Path:
     check = tmp_path / "cell" / "check"
     check.mkdir(parents=True)
-    (tmp_path / "cell" / "property.json").write_text("{}", encoding="utf-8")
+    pointers = {"deliverable": "cell/check/check.stdout", "cases": "cell/check/check.stdout", "hosts": "cell/check/hosts.jsonl",
+                "clauses": "cell/check/clauses.json"}
+    (tmp_path / "cell" / "property.json").write_text(json.dumps({"check": pointers}), encoding="utf-8")
     (check / "check.stdout").write_text(json.dumps({"deliverable": "d", "cases": []}) + "\n", encoding="utf-8")
     (check / "hosts.jsonl").write_text("", encoding="utf-8")
     (check / "clauses.json").write_text(clauses_text, encoding="utf-8")
