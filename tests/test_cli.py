@@ -280,8 +280,8 @@ def test_run_closes_its_engine_log_handler_so_the_file_is_deletable(capsys, root
 
 def test_run_refuses_a_run_that_already_started(capsys, root, tmp_path, base, monkeypatch):
     """An existing events folder delegates with the real config before first-run preflight."""
-    from harness_bench import plan as plan_mod
     from harness_bench import engine, preflight, resume, views
+    from harness_bench import plan as plan_mod
     from harness_bench.errors import BenchError
 
     calls = []
