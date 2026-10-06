@@ -451,118 +451,543 @@
   "file": "src/harness_bench/engine.py",
   "find": "                        self._identity_ok()  # one check clears all launches of this tick\n",
   "replace": "                        pass\n",
-  "tests": ["tests/test_engine.py::test_drift_before_the_first_launch_records_no_intent"]
+  "tests": [
+   "tests/test_engine.py::test_drift_before_the_first_launch_records_no_intent"
+  ]
  },
  {
   "name": "D2 check per launch instead of per tick",
   "file": "src/harness_bench/engine.py",
   "find": "                        self._launch(pending.pop(0))\n",
   "replace": "                        self._identity_ok()\n                        self._launch(pending.pop(0))\n",
-  "tests": ["tests/test_engine.py::test_one_check_per_tick"]
+  "tests": [
+   "tests/test_engine.py::test_one_check_per_tick"
+  ]
  },
  {
   "name": "D2 drift diff is ignored",
   "file": "src/harness_bench/engine.py",
   "find": "        if differences or reason != \"engine identity drift\":\n",
   "replace": "        if reason != \"engine identity drift\":\n",
-  "tests": ["tests/test_engine.py::test_a_drifted_file_stops_launching_with_a_named_diff"]
+  "tests": [
+   "tests/test_engine.py::test_a_drifted_file_stops_launching_with_a_named_diff"
+  ]
  },
  {
   "name": "D2 a raising check is swallowed",
   "file": "src/harness_bench/engine.py",
   "find": "            reason = f\"engine identity check failed: {type(exc).__name__}\"\n",
   "replace": "            reason = \"engine identity drift\"\n",
-  "tests": ["tests/test_engine.py::test_a_raising_check_stops_launching"]
+  "tests": [
+   "tests/test_engine.py::test_a_raising_check_stops_launching"
+  ]
  },
  {
   "name": "D2 launch intent drops its check timing",
   "file": "src/harness_bench/engine.py",
   "find": "            identity_fields[\"identity_check_ms\"] = self._check_ms\n",
   "replace": "            pass\n",
-  "tests": ["tests/test_engine.py::test_launch_intent_carries_its_own_identity_check_ms"]
+  "tests": [
+   "tests/test_engine.py::test_launch_intent_carries_its_own_identity_check_ms"
+  ]
  },
  {
   "name": "D2 zero timing emitted without a check",
   "file": "src/harness_bench/engine.py",
   "find": "        if self._check_ms is not None:\n",
   "replace": "        if True:\n",
-  "tests": ["tests/test_engine.py::test_non_campaign_run_has_no_check_and_no_field"]
+  "tests": [
+   "tests/test_engine.py::test_non_campaign_run_has_no_check_and_no_field"
+  ]
  },
  {
   "name": "D2 campaign callable is skipped",
   "file": "src/harness_bench/engine.py",
   "find": "                self.cfg.campaign_check()  # own run lock held; refusal propagates before any launch\n",
   "replace": "                pass\n",
-  "tests": ["tests/test_engine.py::test_campaign_check_runs_once_under_run_lock_before_any_launch", "tests/test_engine.py::test_campaign_check_raise_releases_lock_and_launches_nothing", "tests/test_engine.py::test_refused_campaign_check_leaves_run_retryable"]
+  "tests": [
+   "tests/test_engine.py::test_campaign_check_runs_once_under_run_lock_before_any_launch",
+   "tests/test_engine.py::test_campaign_check_raise_releases_lock_and_launches_nothing",
+   "tests/test_engine.py::test_refused_campaign_check_leaves_run_retryable"
+  ]
  },
  {
   "name": "D2 for_task keeps builds keys",
   "file": "src/harness_bench/identity.py",
   "find": "                                                  if not k.startswith(\"builds/\")\n",
   "replace": "                                                  if True\n",
-  "tests": ["tests/test_identity.py::test_for_task_drops_builds_and_other_tasks", "tests/test_identity.py::test_single_task_identity_equals_projected_campaign_identity"]
+  "tests": [
+   "tests/test_identity.py::test_for_task_drops_builds_and_other_tasks",
+   "tests/test_identity.py::test_single_task_identity_equals_projected_campaign_identity"
+  ]
  },
  {
   "name": "D2 for_task keeps other task keys",
   "file": "src/harness_bench/identity.py",
   "find": "                                                  and (not k.startswith(\"tasks/\") or k == f\"tasks/{task}\")}}\n",
   "replace": "                                                  }}\n",
-  "tests": ["tests/test_identity.py::test_for_task_drops_builds_and_other_tasks"]
+  "tests": [
+   "tests/test_identity.py::test_for_task_drops_builds_and_other_tasks"
+  ]
  },
  {
   "name": "D2 source hashing ignores normalized content",
   "file": "src/harness_bench/identity.py",
   "find": "lambda p=path: plan.tree_hash(p.parent, [p])",
   "replace": "lambda p=path: hashlib.sha256(p.read_bytes()).hexdigest()",
-  "tests": ["tests/test_identity.py::test_manifest_is_deterministic_and_line_ending_independent"]
+  "tests": [
+   "tests/test_identity.py::test_manifest_is_deterministic_and_line_ending_independent"
+  ]
  },
  {
   "name": "D2 gateway component is run class",
   "file": "src/harness_bench/identity.py",
   "find": "    if key in {\"catalog\", \"prices\", \"gateway\"}:\n",
   "replace": "    if key == \"gateway\":\n        return \"run\"\n    if key in {\"catalog\", \"prices\", \"gateway\"}:\n",
-  "tests": ["tests/test_identity.py::test_gateway_is_a_grade_component"]
+  "tests": [
+   "tests/test_identity.py::test_gateway_is_a_grade_component"
+  ]
  },
  {
   "name": "D2 telemetry source files are grade class",
   "file": "src/harness_bench/identity.py",
   "find": "    if key.startswith(\"src/harness_bench/\"):\n",
   "replace": "    if key.startswith(\"src/harness_bench/telemetry/\"):\n        return \"grade\"\n    if key.startswith(\"src/harness_bench/\"):\n",
-  "tests": ["tests/test_identity.py::test_telemetry_edit_changes_the_run_side_only"]
+  "tests": [
+   "tests/test_identity.py::test_telemetry_edit_changes_the_run_side_only"
+  ]
  },
  {
   "name": "D2 manifest skips the classification guard",
   "file": "src/harness_bench/identity.py",
   "find": "    if missing:\n",
   "replace": "    if False:\n",
-  "tests": ["tests/test_identity.py::test_unclassified_file_refused"]
+  "tests": [
+   "tests/test_identity.py::test_unclassified_file_refused"
+  ]
  },
  {
   "name": "D2 persistent drift is dropped during recheck",
   "file": "src/harness_bench/identity.py",
   "find": "                        read(key, current[key])\n",
   "replace": "                        values[key] = expected.get(key, \"\")\n",
-  "tests": ["tests/test_identity.py::test_a_persistent_diff_survives_the_recheck"]
+  "tests": [
+   "tests/test_identity.py::test_a_persistent_diff_survives_the_recheck"
+  ]
  },
  {
   "name": "D2 torn-read recheck skipped",
   "file": "src/harness_bench/identity.py",
   "find": "        if differing:\n",
   "replace": "        if False:\n",
-  "tests": ["tests/test_identity.py::test_a_torn_read_is_not_drift"]
+  "tests": [
+   "tests/test_identity.py::test_a_torn_read_is_not_drift"
+  ]
  },
  {
   "name": "D2 read deadline disabled",
   "file": "src/harness_bench/identity.py",
   "find": "        deadline = clock() + deadline_s\n",
   "replace": "        deadline = float(\"inf\")\n",
-  "tests": ["tests/test_identity.py::test_check_stops_at_the_deadline"]
+  "tests": [
+   "tests/test_identity.py::test_check_stops_at_the_deadline"
+  ]
  },
  {
   "name": "D2 locked-file retry removed",
   "file": "src/harness_bench/identity.py",
   "find": "            for attempt in range(4):\n",
   "replace": "            for attempt in range(3, 4):\n",
-  "tests": ["tests/test_identity.py::test_unreadable_component_is_named_after_retries"]
+  "tests": [
+   "tests/test_identity.py::test_unreadable_component_is_named_after_retries"
+  ]
+ },
+ {
+  "name": "M-ORDER snapshot after next send",
+  "file": "src/harness_bench/engine.py",
+  "find": "                    for n, text in enumerate(prompts, 1):\n                        rec = driver.send_turn(session, text, barrier_for(n), n,\n                                               on_first_update=baseline if n == 1 else None)\n                        if rec is None:\n                            break  # no response came back: the outcome cause says why; no turn_ended\n                        nxt = ((\"cancel\" if a.kill_reason == \"stop\" else \"stop\") if a.cancel.is_set()\n                               else \"final\" if n == len(prompts)\n                               else \"stop\" if rec.stop_reason != \"end_turn\" else \"snapshot\")\n                        self.record(\"events\", {\"kind\": \"cell.turn_ended\", \"cell_id\": cid, \"turn\": n,\n                                               \"stop_reason\": rec.stop_reason, \"turn_ms\": int(rec.turn_seconds * 1000),\n                                               \"usage\": rec.usage, \"next\": nxt,\n                                               **(baseline_fields if n == 1 else {})})  # before the decision (design 4.2)\n                        if nxt != \"snapshot\":\n                            break\n                        if not self._snapshot_turn(a, cell, ws.parent, n, launcher, cp):\n                            if not a.cancel.is_set():\n                                result.cause, result.detail = Cause.archive, a.archive_error or \"turn snapshot failed\"\n                            break\n",
+  "replace": "                    for n, text in enumerate(prompts, 1):\n                        rec = driver.send_turn(session, text, barrier_for(n), n,\n                                               on_first_update=baseline if n == 1 else None)\n                        if n > 1:\n                            self._snapshot_turn(a, cell, ws.parent, n - 1, launcher, cp)\n                        if rec is None:\n                            break  # no response came back: the outcome cause says why; no turn_ended\n                        nxt = ((\"cancel\" if a.kill_reason == \"stop\" else \"stop\") if a.cancel.is_set()\n                               else \"final\" if n == len(prompts)\n                               else \"stop\" if rec.stop_reason != \"end_turn\" else \"snapshot\")\n                        self.record(\"events\", {\"kind\": \"cell.turn_ended\", \"cell_id\": cid, \"turn\": n,\n                                               \"stop_reason\": rec.stop_reason, \"turn_ms\": int(rec.turn_seconds * 1000),\n                                               \"usage\": rec.usage, \"next\": nxt,\n                                               **(baseline_fields if n == 1 else {})})  # before the decision (design 4.2)\n                        if nxt != \"snapshot\":\n                            break\n",
+  "tests": [
+   "tests/test_multiturn.py::test_t_eng_1_order_snapshot_and_one_session"
+  ]
+ },
+ {
+  "name": "M-ONCE session_opened per turn",
+  "file": "src/harness_bench/engine.py",
+  "find": "                    for n, text in enumerate(prompts, 1):\n",
+  "replace": "                    for n, text in enumerate(prompts, 1):\n                        if n > 1:\n                            record_session_opened(result.session_id)\n",
+  "tests": [
+   "tests/test_multiturn.py::test_t_eng_1_order_snapshot_and_one_session"
+  ]
+ },
+ {
+  "name": "M-CLOSE process ends after turn one",
+  "file": "src/harness_bench/engine.py",
+  "find": "                        if rec is None:\n",
+  "replace": "                        if n == 1:\n                            self._end_process(a, cp, launcher.shutdown_grace)\n                        if rec is None:\n",
+  "tests": [
+   "tests/test_multiturn.py::test_t_eng_1_order_snapshot_and_one_session"
+  ]
+ },
+ {
+  "name": "M-CLOCK budget resets each prompt",
+  "file": "src/harness_bench/engine.py",
+  "find": "if kind == \"cell.prompt_sent\" and lifecycle.is_cell_start(row):",
+  "replace": "if kind == \"cell.prompt_sent\":",
+  "tests": [
+   "tests/test_multiturn.py::test_t_eng_2_one_budget_across_turns"
+  ]
+ },
+ {
+  "name": "M-LAST spend reads last turn",
+  "file": "src/harness_bench/engine.py",
+  "find": "[u for t in result.turns for u in normalize.turn_usage({\"_meta\": (t.usage or {}).get(\"meta\")})]",
+  "replace": "[u for u in normalize.turn_usage({\"_meta\": (result.usage or {}).get(\"meta\")})]",
+  "tests": [
+   "tests/test_multiturn.py::test_t_eng_4_usage_sums_every_turn"
+  ]
+ },
+ {
+  "name": "M-XCHECK cross-check reads last turn",
+  "file": "src/harness_bench/views.py",
+  "find": "sum(u[k] for u in per_turn)",
+  "replace": "per_turn[-1][k]",
+  "tests": [
+   "tests/test_multiturn.py::test_t_eng_4_usage_sums_every_turn"
+  ]
+ },
+ {
+  "name": "M-RESET recreate suspend detector at samples",
+  "file": "src/harness_bench/engine.py",
+  "find": "                    if sleep.slept():\n",
+  "replace": "                    if host.SleepDetector(self.params[\"suspend_gap\"]).slept():\n",
+  "tests": [
+   "tests/test_multiturn.py::test_t_eng_5_suspend_during_turn_two_keeps_snapshot"
+  ]
+ },
+ {
+  "name": "M-STOP completed reasons continue",
+  "file": "src/harness_bench/engine.py",
+  "find": "rec.stop_reason != \"end_turn\"",
+  "replace": "rec.stop_reason not in COMPLETED_STOP_REASONS",
+  "tests": [
+   "tests/test_multiturn.py::test_t_eng_6_only_end_turn_continues"
+  ]
+ },
+ {
+  "name": "M-NOCHECK cancel guard before next turn removed",
+  "file": "src/harness_bench/engine.py",
+  "find": "                            break\n                finally:",
+  "replace": "                            pass\n                finally:",
+  "tests": [
+   "tests/test_multiturn.py::test_t_eng_7_budget_cancel_during_copy_never_sends_next"
+  ]
+ },
+ {
+  "name": "M-SLEEP non-cancellable retry wait",
+  "file": "src/harness_bench/engine.py",
+  "find": "a.cancel.wait(delay)",
+  "replace": "(time.sleep(delay) or False)",
+  "tests": [
+   "tests/test_multiturn.py::test_t_eng_7_budget_cancel_during_copy_never_sends_next"
+  ]
+ },
+ {
+  "name": "M-SWALLOW failed turn treated as success",
+  "file": "src/harness_bench/engine.py",
+  "find": "break  # no response came back: the outcome cause says why; no turn_ended",
+  "replace": "result.cause = None\n                            result.stop_reason = \"end_turn\"\n                            break  # swallowed failure",
+  "tests": [
+   "tests/test_multiturn.py::test_t_eng_8_9_failed_second_turn_keeps_snapshot"
+  ]
+ },
+ {
+  "name": "M-CAUSE second-turn error becomes adapter_crash",
+  "file": "src/harness_bench/engine.py",
+  "find": "break  # no response came back: the outcome cause says why; no turn_ended",
+  "replace": "result.cause = Cause.adapter_crash\n                            break  # collapse second-turn cause",
+  "tests": [
+   "tests/test_multiturn.py::test_t_eng_8_9_failed_second_turn_keeps_snapshot"
+  ]
+ },
+ {
+  "name": "M-CANCELFIRST cancel before returned-turn record",
+  "file": "src/harness_bench/engine.py",
+  "find": "                        nxt = ((\"cancel\"",
+  "replace": "                        if a.cancel.is_set():\n                            break\n                        nxt = ((\"cancel\"",
+  "tests": [
+   "tests/test_multiturn.py::test_t_eng_10_returned_turn_is_recorded_before_cancel"
+  ]
+ },
+ {
+  "name": "M-SUM agent-time rows read last only",
+  "file": "src/harness_bench/engine.py",
+  "find": "                        self.record(\"events\", {\"kind\": \"cell.turn_ended\", \"cell_id\": cid, \"turn\": n,",
+  "replace": "                        if n < len(prompts):\n                            continue\n                        self.record(\"events\", {\"kind\": \"cell.turn_ended\", \"cell_id\": cid, \"turn\": n,",
+  "tests": [
+   "tests/test_multiturn.py::test_t_eng_11_outcome_last_turn_and_total_agent_time"
+  ]
+ },
+ {
+  "name": "M-INPLACE snapshot copied at final name",
+  "file": "src/harness_bench/archive.py",
+  "find": "            atomic.publish_dir(folder, copy.fill, copy.verify)",
+  "replace": "            folder.mkdir()\n            copy.fill(folder)\n            copy.verify(folder)",
+  "tests": [
+   "tests/test_multiturn.py::test_t_snap_1_failed_copy_never_publishes_final"
+  ]
+ },
+ {
+  "name": "M-MERGE planted snapshot adopted",
+  "file": "src/harness_bench/archive.py",
+  "find": "        if owned_lock and os.path.lexists(folder):\n            raise BenchError(\"HB-LED-008\", f\"unrecorded snapshot {folder} already exists\")",
+  "replace": "        if owned_lock and os.path.lexists(folder):\n            return ArchiveResult(folder, [], archive_hash([]), 0, 0)",
+  "tests": [
+   "tests/test_multiturn.py::test_t_snap_2_planted_snapshot_is_refused_without_merge"
+  ]
+ },
+ {
+  "name": "M-DUP helper appends all rows",
+  "file": "src/harness_bench/archive.py",
+  "find": "return [r for r in rows if key(r) not in seen]",
+  "replace": "return rows",
+  "tests": [
+   "tests/test_multiturn.py::test_t_snap_3_only_missing_rows_are_returned_and_conflicts_use_folder_code"
+  ]
+ },
+ {
+  "name": "M-CODE snapshot conflict uses final code",
+  "file": "src/harness_bench/archive.py",
+  "find": "raise BenchError(code, f\"{folder}: present archive row differs at {r['path']}\")",
+  "replace": "raise BenchError(\"HB-LED-005\", f\"{folder}: present archive row differs at {r['path']}\")",
+  "tests": [
+   "tests/test_multiturn.py::test_t_snap_3_only_missing_rows_are_returned_and_conflicts_use_folder_code"
+  ]
+ },
+ {
+  "name": "M-HOME snapshot includes home",
+  "file": "src/harness_bench/archive.py",
+  "find": "include_names={\"ws\"}, cancel=cancel",
+  "replace": "include_names=None, cancel=cancel",
+  "tests": [
+   "tests/test_multiturn.py::test_t_snap_4_snapshot_copies_ws_only_and_excludes_credentials"
+  ]
+ },
+ {
+  "name": "M-ZERO baseline constant zero",
+  "file": "src/harness_bench/engine.py",
+  "find": "baseline_fields[\"job_active_baseline\"] = _job_query(cp.job.active, None)",
+  "replace": "baseline_fields[\"job_active_baseline\"] = 0",
+  "tests": [
+   "tests/test_multiturn.py::test_t_snap_5_baseline_measured_at_first_update"
+  ]
+ },
+ {
+  "name": "M-EARLY baseline at session open",
+  "file": "src/harness_bench/engine.py",
+  "find": "                    record_session_opened(result.session_id)\n                    prompts = [task[\"prompt\"]] + [t[\"prompt\"] for t in task.get(\"turns\", [])]\n                    for n, text in enumerate(prompts, 1):\n                        rec = driver.send_turn(session, text, barrier_for(n), n,\n                                               on_first_update=baseline if n == 1 else None)\n",
+  "replace": "                    baseline()\n                    record_session_opened(result.session_id)\n                    prompts = [task[\"prompt\"]] + [t[\"prompt\"] for t in task.get(\"turns\", [])]\n                    for n, text in enumerate(prompts, 1):\n                        rec = driver.send_turn(session, text, barrier_for(n), n,\n                                               on_first_update=None)\n",
+  "tests": [
+   "tests/test_multiturn.py::test_t_snap_5_baseline_measured_at_first_update"
+  ]
+ },
+ {
+  "name": "M-RETRYALL unbounded snapshot retry",
+  "file": "src/harness_bench/engine.py",
+  "find": "for delay in (1, 2, None):",
+  "replace": "for delay in iter(lambda: 1, None):",
+  "tests": [
+   "tests/test_multiturn.py::test_t_snap_6_locked_source_exhausts_bounded_retry"
+  ],
+  "timeout": 12
+ },
+ {
+  "name": "M-KEY snapshot removed from archive key",
+  "file": "src/harness_bench/views.py",
+  "find": "\"archive_files\": (\"run_id\", \"cell_id\", \"archive_attempt\", \"snapshot\", \"path\")",
+  "replace": "\"archive_files\": (\"run_id\", \"cell_id\", \"archive_attempt\", \"path\")",
+  "tests": [
+   "tests/test_multiturn.py::test_t_ver_1_snapshot_and_final_may_share_path"
+  ]
+ },
+ {
+  "name": "M-FILTER final archive includes snapshot rows",
+  "file": "src/harness_bench/views.py",
+  "find": "and archive.snapshot_of(r) == \"final\"]",
+  "replace": "and True]",
+  "tests": [
+   "tests/test_multiturn.py::test_t_ver_4_final_hash_ignores_snapshot_rows"
+  ]
+ },
+ {
+  "name": "T-VER-2-file skip snapshot file verify",
+  "file": "src/harness_bench/views.py",
+  "find": "            archive.verify(archive.snapshot_folder(run_dir, cid, turn), snapshot_rows)",
+  "replace": "            pass",
+  "tests": [
+   "tests/test_multiturn.py::test_t_ver_2_snapshot_corruption_is_hb_led_008[file]"
+  ]
+ },
+ {
+  "name": "T-VER-2-hash skip snapshot hash",
+  "file": "src/harness_bench/views.py",
+  "find": "archive.archive_hash(snapshot_rows) != e[\"snapshot_hash\"]",
+  "replace": "False",
+  "tests": [
+   "tests/test_multiturn.py::test_t_ver_2_snapshot_corruption_is_hb_led_008[hash]"
+  ]
+ },
+ {
+  "name": "T-VER-2-counts skip files and bytes",
+  "file": "src/harness_bench/views.py",
+  "find": "len(snapshot_rows) != e[\"files\"] or sum(r[\"size\"] for r in snapshot_rows) != e[\"bytes\"]",
+  "replace": "False",
+  "tests": [
+   "tests/test_multiturn.py::test_t_ver_2_snapshot_corruption_is_hb_led_008[files]"
+  ]
+ },
+ {
+  "name": "T-VER-2-empty skip event without rows",
+  "file": "src/harness_bench/views.py",
+  "find": "        if (not snapshot_rows or archive.archive_hash(snapshot_rows) != e[\"snapshot_hash\"]",
+  "replace": "        if not snapshot_rows:\n            continue\n        if (archive.archive_hash(snapshot_rows) != e[\"snapshot_hash\"]",
+  "tests": [
+   "tests/test_multiturn.py::test_t_ver_2_snapshot_corruption_is_hb_led_008[empty]"
+  ]
+ },
+ {
+  "name": "M-FINALKEY final writer adds snapshot",
+  "file": "src/harness_bench/engine.py",
+  "find": "self.record(\"archive_files\", {\"run_id\": self.plan[\"run_id\"], \"cell_id\": cid, **row})",
+  "replace": "self.record(\"archive_files\", {\"run_id\": self.plan[\"run_id\"], \"cell_id\": cid, \"snapshot\": \"final\", **row})",
+  "tests": [
+   "tests/test_multiturn.py::test_t_ver_5_final_writer_omits_snapshot"
+  ]
+ },
+ {
+  "name": "M-ROWS snapshot verifier iterates uncommitted rows",
+  "file": "src/harness_bench/views.py",
+  "find": "    for e in rows(run_dir, \"events\"):\n        if e[\"kind\"] != \"cell.turn_snapshot_archived\":\n            continue\n",
+  "replace": "    for r in files:\n        if archive.snapshot_of(r) == \"final\":\n            continue\n        out.append(Finding(\"HB-LED-008\", \"error\", \"snapshot rows without event\"))\n        continue\n",
+  "tests": [
+   "tests/test_multiturn.py::test_t_ver_6_live_snapshot_rows_without_event_are_ignored"
+  ]
+ },
+ {
+  "name": "M-RAWKEY raw snapshot key",
+  "file": "src/harness_bench/views.py",
+  "find": "archive.snapshot_of(r) if fact == \"archive_files\" and f == \"snapshot\" else r.get(f)",
+  "replace": "r.get(f)",
+  "tests": [
+   "tests/test_multiturn.py::test_t_ver_7_final_spellings_share_hash_and_duplicate_key"
+  ]
+ },
+ {
+  "name": "M-LEGACY absent snapshot is non-final",
+  "file": "src/harness_bench/archive.py",
+  "find": "return row.get(\"snapshot\", \"final\")",
+  "replace": "return row.get(\"snapshot\")",
+  "tests": [
+   "tests/test_verify.py::test_a_golden_ledger_keeps_its_hashes_and_row_counts"
+  ]
+ },
+ {
+  "name": "T-LIF-2-PromptOncePerTurn TABLE prompt not turn keyed",
+  "file": "src/harness_bench/lifecycle.py",
+  "find": "    \"cell.prompt_sent\": Transition(\"PersistPromptSent (then SendPrompt)\", \"engine\",\n                                   after=(\"attempt.process_started\", \"attempt.session_opened\"),\n                                   after_rule=\"PersistPromptSent needs StartCell and an open session\",\n                                   not_after=(\"attempt.process_ended\", \"cell.outcome\"),\n                                   not_after_rule=\"NoPromptAfterOutcome: no prompt once the process ended or the outcome is in\",\n                                   turn_keyed=True),",
+  "replace": "    \"cell.prompt_sent\": Transition(\"PersistPromptSent (then SendPrompt)\", \"engine\",\n                                   after=(\"attempt.process_started\", \"attempt.session_opened\"),\n                                   after_rule=\"PersistPromptSent needs StartCell and an open session\",\n                                   not_after=(\"attempt.process_ended\", \"cell.outcome\"),\n                                   not_after_rule=\"NoPromptAfterOutcome: no prompt once the process ended or the outcome is in\",\n                                   turn_keyed=False),",
+  "tests": [
+   "tests/test_multiturn.py::test_t_lif_2_each_rule_names_its_own_violation"
+  ]
+ },
+ {
+  "name": "T-LIF-2-SnapshotBeforeNextTurn TABLE prompt prerequisite removed",
+  "file": "src/harness_bench/lifecycle.py",
+  "find": "if kind == \"cell.prompt_sent\" and turn > 1 and (\"cell.turn_snapshot_archived\", turn - 1) not in done:",
+  "replace": "if False:",
+  "tests": [
+   "tests/test_multiturn.py::test_t_lif_2_each_rule_names_its_own_violation"
+  ]
+ },
+ {
+  "name": "T-LIF-2-SnapshotAfterTurnEnd TABLE snapshot prerequisite removed",
+  "file": "src/harness_bench/lifecycle.py",
+  "find": "\"cell.turn_snapshot_archived\": Transition(\"SnapRecord\", \"engine\", after=(\"cell.turn_ended\",),",
+  "replace": "\"cell.turn_snapshot_archived\": Transition(\"SnapRecord\", \"engine\", after=(),",
+  "tests": [
+   "tests/test_multiturn.py::test_t_lif_2_each_rule_names_its_own_violation"
+  ]
+ },
+ {
+  "name": "T-LIF-2-TurnEnd TABLE prompt prerequisite removed",
+  "file": "src/harness_bench/lifecycle.py",
+  "find": "\"cell.turn_ended\": Transition(\"TurnEnd\", \"engine\", after=(\"cell.prompt_sent\",),",
+  "replace": "\"cell.turn_ended\": Transition(\"TurnEnd\", \"engine\", after=(),",
+  "tests": [
+   "tests/test_multiturn.py::test_t_lif_2_each_rule_names_its_own_violation"
+  ]
+ },
+ {
+  "name": "T-LIF-3-M-CODE swap crashed-turn code",
+  "file": "src/harness_bench/lifecycle.py",
+  "find": "if (e[\"code\"] == \"HB-CELL-119\") != waiting:",
+  "replace": "if (e[\"code\"] == \"HB-CELL-118\") != waiting:",
+  "tests": [
+   "tests/test_multiturn.py::test_t_lif_3_crashed_turn_predicate"
+  ]
+ },
+ {
+  "name": "M-CRLF extra-turn raw-byte hash",
+  "file": "src/harness_bench/plan.py",
+  "find": "\"sha256\": hashlib.sha256(turn_text.encode(\"utf-8\")).hexdigest()",
+  "replace": "\"sha256\": hashlib.sha256(p.read_bytes()).hexdigest()",
+  "tests": [
+   "tests/test_multiturn.py::test_t_plan_1_turn_text_hash_is_normalized_and_confirmed"
+  ]
+ },
+ {
+  "name": "T-PLAN-1-M-NOCHECK turn hash check removed",
+  "file": "src/harness_bench/plan.py",
+  "find": "if hashlib.sha256(turn[\"prompt\"].encode(\"utf-8\")).hexdigest() != turn.get(\"sha256\"):",
+  "replace": "if False:",
+  "tests": [
+   "tests/test_multiturn.py::test_t_plan_1_turn_text_hash_is_normalized_and_confirmed"
+  ]
+ },
+ {
+  "name": "M-BOUND extra-turn bound removed",
+  "file": "src/harness_bench/plan.py",
+  "find": "if len(files) > 1:",
+  "replace": "if False:",
+  "tests": [
+   "tests/test_multiturn.py::test_t_plan_2_more_than_one_extra_turn_is_refused"
+  ]
+ },
+ {
+  "name": "M-LASTWINS status clock reads last prompt",
+  "file": "src/harness_bench/status.py",
+  "find": "if e[\"kind\"] == \"cell.prompt_sent\" and is_cell_start(e):\n            prompt_sent.setdefault(e[\"cell_id\"], e)",
+  "replace": "if e[\"kind\"] == \"cell.prompt_sent\":\n            prompt_sent[e[\"cell_id\"]] = e",
+  "tests": [
+   "tests/test_multiturn.py::test_t_status_1_first_prompt_matches_engine_budget_clock"
+  ]
+ },
+ {
+  "name": "T-WIRE-1 turns line removed",
+  "file": "src/harness_bench/engine.py",
+  "find": "prompts = [task[\"prompt\"]] + [t[\"prompt\"] for t in task.get(\"turns\", [])]",
+  "replace": "prompts = [task[\"prompt\"]]",
+  "tests": [
+   "tests/test_multiturn.py::test_t_wire_1_real_cli_plan_and_run_carries_turns"
+  ]
+ },
+ {
+  "name": "M-ADD unregistered archive reader",
+  "file": "src/harness_bench/status.py",
+  "find": "    prompt_sent = {}",
+  "replace": "    unused_archive_reader = run_dir / \"archive\"\n    prompt_sent = {}",
+  "tests": [
+   "tests/test_archive_readers.py::test_t_sweep_1_exact_reader_and_exception_set"
+  ]
  }
 ]
