@@ -311,10 +311,11 @@ def make_writable(func, path, _exc) -> None:
         try:
             func(path)
             return
-        except PermissionError:
-            if delay is None:
-                raise
-            time.sleep(delay)
+        except PermissionError as exc:
+            refused = exc
+            if delay is not None:
+                time.sleep(delay)
+    raise refused
 
 
 def _fsync_dir(path: Path) -> None:
