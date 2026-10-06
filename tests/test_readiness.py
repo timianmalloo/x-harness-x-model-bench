@@ -425,3 +425,42 @@ def test_a_check_based_variant_with_failing_hidden_tests_is_still_refused_by_1()
     out = _variant_case(["property_check_pass"], True)
     assert [f.code for f in out] == ["HB-RDY-003"]
     assert "hidden tests do not pass (1)" in out[0].detail
+
+
+# --- readiness.pass_rule_problems (W1-G section 4.3, FM1; X-TE9 K2) ---------------------------------------------------
+
+
+def _declare_pass_rule(root: Path, task_id: str, *metrics: str) -> None:
+    path = root / "tasks" / task_id / "task.yaml"
+    names = "".join(f"\n      - {m}" for m in metrics)
+    path.write_text(path.read_text(encoding="utf-8") + f"\nformal:\n  tool: tla\n  pass_rule:\n    all_of:{names}\n", encoding="utf-8")
+
+
+def _grader_formal(root: Path, task_id: str) -> None:
+    path = root / "tasks" / task_id / "task.yaml"
+    path.write_text(path.read_text(encoding="utf-8").replace("graders: [correctness, property]", "graders: [correctness, property, formal]"), encoding="utf-8")
+
+
+def test_a_pass_rule_naming_an_unrecorded_metric_is_hb_rdy_005_in_problems_and_in_validate(pair, capsys, monkeypatch):
+    from harness_bench import cli
+    _grader_formal(pair, "DISC-P")
+    _declare_pass_rule(pair, "DISC-P", "formal_checks_clean", "no_such_metric")
+    got = readiness.pass_rule_problems(pair, "DISC-P")
+    assert [(f.code, f.item) for f in got] == [("HB-RDY-005", "formal.pass_rule.all_of")] and "no_such_metric" in got[0].detail, got
+    assert [ln for ln in lines_of(pair) if "HB-RDY-005 DISC-P: formal.pass_rule" in ln and "no_such_metric" in ln]
+    monkeypatch.setattr(cli.config, "validate_repo", lambda root: [])
+    code = cli.main(["--root", str(pair), "validate"])
+    assert code == cli.INVALID and "no_such_metric" in capsys.readouterr().out
+
+
+def test_a_pass_rule_of_recorded_metrics_or_none_gives_no_problem(pair):
+    assert readiness.pass_rule_problems(pair, "DISC-P") == []  # no formal.pass_rule
+    _grader_formal(pair, "DISC-P")
+    _declare_pass_rule(pair, "DISC-P", "formal_checks_clean", "statement_integrity")
+    assert readiness.pass_rule_problems(pair, "DISC-P") == []
+
+
+def test_the_committed_g2_has_no_pass_rule_line_and_a_property_less_task_gets_only_that_branch():
+    root = Path(__file__).resolve().parent.parent
+    assert [ln for ln in readiness.problems(root) if " G2:" in ln] == []
+    assert readiness.pass_rule_problems(root, "G2") == []
