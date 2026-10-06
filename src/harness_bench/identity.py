@@ -117,7 +117,6 @@ CLASSES: Mapping[str, Literal["run", "grade"]] = {
 
 # Explicitly retired on landing; stale() prevents a landed key lingering here.
 PLANNED: frozenset[str] = frozenset({
-    "resume.py",
     "alarm.py",
 })
 
