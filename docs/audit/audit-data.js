@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T16:56:17Z",
+  "generated": "2026-10-06T17:19:11Z",
   "audit": [
     {
       "actor": null,
@@ -109372,6 +109372,27 @@ window.AUDIT_DATA = {
       "compiled": false,
       "started_at": "2026-10-06T16:33:10Z",
       "duration_seconds": 1387.0
+    },
+    {
+      "id": "al-01M493KYHFD935SBA0KNPMRCY9",
+      "shortname": "x-rs-part5-k3",
+      "datetime": "2026-10-06T17:19:11Z",
+      "session": "x-rs-e1e4",
+      "prompt": "X-RS part 5: K3, RS2 to draft (compile al-01M48WS6GT9JB35Z2K8XBQ8DFP)",
+      "summary": "X-RS part 5 (K3, RS2 to draft). Served model claude-sonnet-5-5. Outcome: green c44c11e5 (draft; plan record not written, context at the 170k stop). Dispatch start 2026-10-06T16:57:07Z. Tokens: not recorded (transcript usage not read; ctx.py sampler only).\nPer-task state: RS2 draft (no record; ready needs X-LB1 join). Context samples (ctx.py, marker X-RS part 5): 120392 at K3 start, 169474 after the gates.\nMeasured: stub 0/5 pass, 5 red by assertion; reference, naive, alt 5/5 hidden; each wrong app reds exactly its test; reference 7/7, alt 7/7, naive 4/7 (0.5714); all seven variants pass hidden tests and match K1's re-trace (retry5 also flips g-ordering on requests; requeuetail flips g-ordering alone on result); idempotency_violations 0 except batchidattempt 2.\nReference slowest duration_ms of three runs: g-4xx 657, g-5xx-burst 783, g-5xx-persistent 723, g-lost-response 678, g-ordering 736, g-slow-first 1631, g-hang 3125 (bound_ms 4500 kept).\ncacheerror outcome (RS1, part 4): passed all six hidden tests, flipped f-recover only on result.\nGates: task tests + readiness + e1_e2e + config 162 passed 3 xfailed exit 0; base-gate files 203 passed exit 0; ruff exit 0; bench validate exit 0 (no RS lines); docs-graph validate exit 0.",
+      "kind": "skill",
+      "skill": "new-bench-task",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "RS2 to draft",
+      "done_when": "RS2 draft, gates green",
+      "tier": "T2",
+      "started_at": "2026-10-06T16:57:07Z",
+      "duration_seconds": 1324.0
     }
   ],
   "changes": [
