@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T18:50:44Z",
+  "generated": "2026-10-06T22:01:30Z",
   "audit": [
     {
       "actor": null,
@@ -113685,6 +113685,26 @@ window.AUDIT_DATA = {
         "branch": "build/eval-x-k1d",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M49KRWAYB2V6BQ4EN3594R9P",
+      "shortname": "x-k1d-part2-sonnet-split",
+      "datetime": "2026-10-06T22:01:30Z",
+      "session": "x-k1d-e1e4",
+      "prompt": "X-K1d part 2 (run w2-k1d2-e1e4, compile al-01M499RRVMTWD60XQ44AFP9C1J): survivor tests, simplifications, K7, exit-evidence table",
+      "summary": "{\n  \"outcome\": \"split\",\n  \"planned\": \"Codex gpt-6.1-sol\",\n  \"ran\": \"Claude Code Sonnet (claude-sonnet-5-5)\",\n  \"reason\": \"planned Codex gpt-6.1-sol; ran Claude Code Sonnet; reason: the runner refused a second attempt under the same session identity (RUN-IDENTITY, class IDN-A), and a new identity needs a recompile\",\n  \"base\": \"3181d0ac\",\n  \"tip\": \"776731b0\",\n  \"commits\": {\"K7\": \"12ed04d1\", \"survivor_tests\": \"4d859200\", \"simplifications\": \"776731b0\"},\n  \"red_shas\": \"none new: both CR47-5 assertions green on arrival; M-STOPC7 killed by test_resume_finishes_the_stop[run_stopped]; M-WRITEOLD survived (golden fixture ERROR, not FAILED) so a fixture-free node was added and shown red by hand (StopIteration, engine.py:1043)\",\n  \"mutation\": {\n    \"resume.json\": \"run 1 (before the added node): 23 killed, M-WRITEOLD survived, wall 4192 s including suite-lock wait; run 2 (final tree): 24 of 24 killed, wall 167 s (lock wait included, not separated)\",\n    \"engine.json\": \"108 killed, 1 survived: 'launch after a stop' (test_no_launch_after_a_stop_while_another_cell_still_runs passes under the mutant 3 of 3 by hand); K1d hunks are comments only; whether it survives at the base is not recorded\",\n    \"stop.json\": \"74 of 74 killed (re-run clean, wall 853 s with lock wait)\"\n  },\n  \"gates\": {\n    \"ruff\": \"exit 0\",\n    \"named suite (R-104 second command)\": \"692 passed, 1 failed: tests/test_engine.py::test_other_stop_rows_are_unchanged, which also fails at base 3181d0ac (identity check runs before the disk-low stop; K6b territory, finding to coord-opus-e1e4)\",\n    \"tests/test_mutate_check.py exactly-once find test\": \"fails at base: cli.json find 'a started run re-run' in cli.py occurs 0 times (not a K1d file)\",\n    \"first gate list on the base before the first edit\": \"not run (one test of that list found failing at base later; the rest not run)\",\n    \"docs-graph validate\": \"not run: split\"\n  },\n  \"not_done\": [\"docs/plans/eval-x-k1d.md and html (exit-evidence table)\", \"docs-graph.py derive and validate\", \"first gate list on the final commit\"],\n  \"context_samples_tokens\": {\"first_reading\": 53000, \"survivor_tests_start\": 53000, \"after_survivor_tests_and_K7\": 125000, \"after_simplifications_and_mutation_runs\": 150400},\n  \"context_sampling\": \"Claude Code has no rollout file; the figure is 15,000,000 minus the remaining-token counter, Inferred as a context proxy\",\n  \"part1_closing_entry\": \"al-01M498VHY7JRTYHZW3WGZEC2E7\",\n  \"served_model\": \"claude-sonnet-5-5\"\n}",
+      "kind": "manual",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "goal": "X-K1d part 2",
+      "done_when": "survivor tests, simplifications, K7, exit-evidence table, or split at 150k",
+      "tier": "T2",
+      "started_at": "2026-10-06T19:14:19Z",
+      "duration_seconds": 10031.0
     }
   ],
   "changes": [
