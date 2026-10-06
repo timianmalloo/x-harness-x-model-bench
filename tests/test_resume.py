@@ -746,17 +746,30 @@ def test_leftover_applied_control_not_duplicated(golden5, tmp_path):
     assert not control.exists(), "a control whose uuid is in the ledger is removed, not re-applied"
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
-def test_spend_total_survives_resume(golden2, tmp_path):
-    first, second = golden2.cells
-    one = golden2.spend[0]
-    p = {**golden2.plan, "parameters": {**golden2.plan["parameters"], "spend_cap_tokens": one + 1}}
-    rows = [golden2.rows[0], *_of(golden2.rows, first)]
-    env = _materialize(golden2, tmp_path, rows)
-    env.plan["parameters"] = p["parameters"]
-    _resume(env)
+def test_spend_total_survives_resume(golden5, tmp_path):
+    first, second = golden5.cells[:2]
+    one = golden5.spend[0]
+    cap = one + 1
+    assert golden5.spend[1] < cap, "without the restored total the second cell alone could not open a decision"
+    rows = [golden5.rows[0], *_of(golden5.rows, first)]
+    env = _materialize(golden5, tmp_path, rows)
+    _set_params(env, spend_cap_tokens=cap, decision_timeout=1)
+    done = threading.Event()
+
+    def expire():  # the injected clock is logical: once the decision is open, let its 1 s timeout pass
+        while not done.wait(0.05):
+            if _kinds(_rows(env.run_dir), "decision.opened", decision_kind="spend_cap"):
+                env.cfg.clock.now += 10
+
+    thread = threading.Thread(target=expire, daemon=True)
+    thread.start()
+    try:
+        _resume(env)
+    finally:
+        done.set()
+        thread.join()
     assert _kinds(_rows(env.run_dir), "decision.opened", decision_kind="spend_cap"), \
-        f"the restored total ({one}) plus {second}'s spend must pass the cap {one + 1}"
+        f"the restored total ({one}) plus {second}'s spend must pass the cap {cap}"
 
 
 def test_stop_control_file_honoured_before_relaunch(golden2, tmp_path):
@@ -791,12 +804,13 @@ def _with_live_pid(golden1, tmp_path, created_shift=0, **params):
     rows = [dict(r) for r in golden1.rows[:6]]
     rows[3] = {**rows[3], "pid": proc.pid, "created_at": created + created_shift}
     env = _materialize(golden1, tmp_path, rows)
-    _set_params(env, pid_wait_s=1, **params)
+    _set_params(env, **{"pid_wait_s": 1, **params})
     return env, proc
 
 
 def test_resume_heartbeats_the_lock(golden1, tmp_path):
-    env, proc = _with_live_pid(golden1, tmp_path, lock_staleness=1)
+    # the wait (3 s) must outlast the staleness (1 s), else no lock age can pass it and a missing heartbeat is invisible
+    env, proc = _with_live_pid(golden1, tmp_path, lock_staleness=1, pid_wait_s=3)
     seen, box = set(), {}
 
     def target():
