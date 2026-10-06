@@ -623,7 +623,7 @@ def test_a_check_less_trial_fails_on_a_hidden_test_disagreement(base, monkeypatc
     """SHAPE-A row 4 (R-90 condition 3): the double-run item runs for a check-less task too, not only a check-based one."""
     root = new_root(base)
     real = readiness.comparable_cells
-    monkeypatch.setattr(readiness, "comparable_cells", lambda run_dir, gid: ([sorted(readiness._rows(run_dir, gid))[0]], real(run_dir, gid)[1]))
+    monkeypatch.setattr(readiness, "comparable_cells", lambda run_dir, gid: ([min(readiness._rows(run_dir, gid))], real(run_dir, gid)[1]))
     with pytest.raises(BenchError) as err:
         trial(base, root)
     assert err.value.code == "HB-RDY-011"
