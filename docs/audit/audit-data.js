@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T16:06:35Z",
+  "generated": "2026-10-06T16:11:22Z",
   "audit": [
     {
       "actor": null,
@@ -109292,6 +109292,27 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-06T16:06:34Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M48ZQRJJFPF6BSB1XQZ84CHJ",
+      "shortname": "x-rs-handback",
+      "datetime": "2026-10-06T16:11:22Z",
+      "session": "x-rs-e1e4",
+      "prompt": "X-RS: author RS1 and RS2 (compile al-01M48WS6GT9JB35Z2K8XBQ8DFP)",
+      "summary": "Planned split, no edits, nothing committed. Served model claude-sonnet-5-5. Context sample before K1 = 124265 tokens (above the 100k K-item start limit); total tokens not recorded. Stop checks passed; X-LB1 not joined. RS1 and RS2 remain stub (not run: context). cacheerror outcome not measured; reference duration_ms per case not measured. Pinned trees RS1 f6d9da65599d9f9ac606ef1864c3345e6bb1c6b3, RS2 f23e1352e410a6d67fab660e10a4e0c89fa53c16. Start 2026-10-06T16:07:41Z.",
+      "kind": "skill",
+      "skill": "new-bench-task",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "Author RS1 and RS2 to draft, flip ready after X-LB1",
+      "done_when": "K1-K5 done or hand-back by split rule",
+      "tier": "T2",
+      "started_at": "2026-10-06T16:07:41Z",
+      "duration_seconds": 221.0
     }
   ],
   "changes": [
