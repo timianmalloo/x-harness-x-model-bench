@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T08:03:59Z",
+  "generated": "2026-10-06T08:36:46Z",
   "audit": [
     {
       "actor": null,
@@ -96660,6 +96660,33 @@ window.AUDIT_DATA = {
       "tier": "T2",
       "started_at": "2026-10-06T07:51:10Z",
       "duration_seconds": 769.0
+    },
+    {
+      "id": "al-01M485QC0EV1J7PPMCDW0KMJSY",
+      "shortname": "join-x-j2c",
+      "datetime": "2026-10-06T08:36:46Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of build/eval-x-j2c into integrate/e2e4-18",
+      "summary": "X-J2c (Sonnet claude-sonnet-5-5) f5ce886a/237cb353: K1 red test_every_na_reason_rework_grade_emits... (Leader re-ran on 34aad934: 1 assertion fail); engine-leg tests green on arrival (J1b-J1d landed the path); fixture expected values corrected from measurement; discriminate.json 17 killed, rework.json 10 killed; READERS 8; no J2c markers left; finding: discriminate.run has no not-reached role (HB-RDY-011 on a failed turn 2) recount_seconds=1858 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join X-J2c into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-06T08:05:47Z",
+      "duration_seconds": 1859.0
     }
   ],
   "changes": [
