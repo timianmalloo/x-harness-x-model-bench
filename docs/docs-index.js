@@ -4927,6 +4927,45 @@ window.DOCS_INDEX = {
       "sourceSha256": "34dcfbe0b20675ff2f8e6873ffa81ee3ab9c307992617d957f9fa989d0a2e604"
     },
     {
+      "id": "plan-eval-x-k1a",
+      "path": "docs/plans/eval-x-k1a.md",
+      "title": "X-K1a: resume skeleton and assertion-red test handoff",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Bounded X-K1a execution: refusal skeleton, confirmed code registry, assertion-red tests, R-104 gates and split-rule handoff.",
+      "tags": [
+        "evaluation",
+        "resume",
+        "execution-plan"
+      ],
+      "links": [
+        {
+          "to": "brief-eval-x-k1",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-resume",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "Graph and floors",
+          "mermaid": "flowchart LR\n  G0 --> G1 --> K1a --> K1b --> K2 --> G2 --> H\n  K1a --> K1c --> K2"
+        }
+      ],
+      "sourceSha256": "592a38b4c2653264c54e06f840e331d21627d2624dff11d7a45dc78928d2a7bf"
+    },
+    {
       "id": "proof-phase2",
       "path": "docs/proof/phase2.md",
       "title": "Proof Pack - phase 2 (wave-by-wave joins)",
@@ -9360,6 +9399,14 @@ window.DOCS_INDEX = {
       "artifactId": "plan-eval-x-j1e"
     },
     {
+      "id": "surface-plans-eval-x-k1a",
+      "path": "docs/plans/eval-x-k1a.html",
+      "title": "Eval X K1A",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-k1a"
+    },
+    {
       "id": "surface-case-study",
       "path": "docs/case-study.html",
       "title": "From Specification to Implementation: An AI-Forward Case Study",
@@ -9406,5 +9453,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "9db36c4cbb5a8af9db5e26dbbf5f36dae437e8b5184f9ae84306ef77dc8024f2"
+  "graphSha256": "f10fe823dca37f406a34d66ab42dce6263b7dcf95f9254a4f64c6c3ffc4e7e36"
 };
