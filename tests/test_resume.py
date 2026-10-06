@@ -407,7 +407,8 @@ def _t2_kill_and_resume(base, *, behaviour, target):
         first.wait(timeout=30)
         reader.join(timeout=30)
     env2, log = _t2_child_env(base, p, {}, None)
-    second = subprocess.run([sys.executable, str(boot), *args], env=env2, capture_output=True, text=True, timeout=180)
+    second = subprocess.run([sys.executable, str(boot), *args], env=env2, capture_output=True, text=True, timeout=180,
+                            check=False)
     return SimpleNamespace(plan=p, run_dir=run_dir, cell=p["cells"][0]["cell_id"], log=log, second=second,
                            cells_root=base / "cells")
 
