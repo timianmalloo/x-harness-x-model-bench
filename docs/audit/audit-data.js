@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T12:30:25Z",
+  "generated": "2026-10-06T13:01:30Z",
   "audit": [
     {
       "actor": null,
@@ -102647,12 +102647,60 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M48K36H1QV7XW57C1EW1040D",
-      "shortname": "join-x-k1a",
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
       "datetime": "2026-10-06T12:30:25Z",
-      "session": "leader-e1e4",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "duration_seconds": 1814.0,
+      "fan_out": 0,
+      "goal": "Join X-K1a into integrate/e2e4-18",
+      "id": "al-01M48K36H1QV7XW57C1EW1040D",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "the join of the resolved merge into integrate/e2e4-18",
+      "session": "leader-e1e4",
+      "shortname": "join-x-k1a",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "execute-with-coordination",
+      "started_at": "2026-10-06T12:00:11Z",
       "summary": "X-K1a: Codex gpt-6.1-sol context split, then Claude Code Sonnet sessions SELF-LAUNCHED by the Codex worker (FALLBACK-A) - d692319c, 571042ee; Leader lint fix fd8b5e61; Leader verify (src scope, red 69 assertion fails, 32 strict xfails); first recount: test_discriminate leaked-temp flake under load (3/3 alone; FLAKE-A) recount_seconds=1813 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": "claude-sonnet-5-5",
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-06T10:54:20Z",
+      "done_when": "reds, green, mutant, gates",
+      "duration_seconds": 1643.0,
+      "goal": "check-less variant clause read from property.json",
+      "id": "al-01M48DK8FX4SN0XKWMEJAJP5QJ",
+      "kind": "skill",
+      "outcome": "partial",
+      "prompt": "X-FIXD compiled prompt al-01M48BN7DDSNGJ45CZQC439NC6",
+      "session": "x-fixd-e1e4",
+      "shortname": "x-fixd",
+      "skill": "implement",
+      "started_at": "2026-10-06T10:26:57Z",
+      "summary": "start 2026-10-06T03:26:57-07:00 end 03:54-07:00; outcome green fd84fb7d (mutant commit 8b3d1dee); red SHA 71477c7b; served model claude-sonnet-5-5; tokens not recorded; mutate_check not run: suite lock held (waited ~20 min); mutant killed by manual apply of test 2 only",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "id": "al-01M48MW3P2X22XJZF4VCK04JVD",
+      "shortname": "join-x-fixd",
+      "datetime": "2026-10-06T13:01:30Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of build/eval-x-fixd into integrate/e2e4-18",
+      "summary": "X-FIXD t1 (Sonnet claude-sonnet-5-5, loop-back slot 2) 71477c7b red (2 raise an unexpected HB-RDY-011, 1 message-only: weak reds recorded), fd84fb7d green, 8b3d1dee mutant; Leader: discriminate.json every mutation killed (short path); seam: grade/rework.py:155/:239 drop write_section's pointer -> folded into turn 2 (EVID-A) recount_seconds=1846 (docs_only=False).",
       "kind": "skill",
       "skill": "execute-with-coordination",
       "tool": null,
@@ -102661,7 +102709,7 @@ window.AUDIT_DATA = {
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Join X-K1a into integrate/e2e4-18",
+      "goal": "Join X-FIXD turn 1 into integrate/e2e4-18",
       "done_when": "conductor-join exit 0 with the default ring green",
       "tier": "T1",
       "fan_out": 0,
@@ -102670,8 +102718,8 @@ window.AUDIT_DATA = {
         "verification_executed": true,
         "acceptance_met": true
       },
-      "started_at": "2026-10-06T12:00:11Z",
-      "duration_seconds": 1814.0
+      "started_at": "2026-10-06T12:30:42Z",
+      "duration_seconds": 1848.0
     }
   ],
   "changes": [
