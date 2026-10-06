@@ -1,6 +1,6 @@
 # RS2 oracle evidence
 
-Status of RS2: `draft` (K5, part 6): eight cases on X-LB1's `bench_check.listen()` and the real `parse_result`, Ruling 111 case `g-lost-then-grow` and variant `growid` in; the ready trial is not run because the engine refuses a naive timeout (HB-RDY-011; seam request filed).
+Status of RS2: `ready` (K5, part 7): eight cases on X-LB1's `bench_check.listen()` and the real `parse_result`, Ruling 111 case `g-lost-then-grow` and variant `growid` in; `bench discriminate RS2` reproduced the expected values (reference 1, naive 0), and the naive's two timeouts (g-slow-first, g-hang) are declared in `task.yaml` as `expected.naive.timeouts` (CR47-7).
 
 Base: structlog at `91f44ae9031c80ad9c6045172f182803543ba6ba`, tree `f23e1352e410a6d67fab660e10a4e0c89fa53c16` (fresh clone, 2026-10-06).
 
@@ -84,17 +84,14 @@ compile). The variant edits were rewritten for the new reference text (their `ol
 (`wa-keep`, `wa-sendempty`, `wa-reverse`), each still turning exactly its one hidden test red (finding: Ruling 111 (vi) says unchanged; only the anchor text moved).
 
 Reference passes 8 of 8 and alt 8 of 8, `idempotency_violations` 0. Naive passes 4 of 8 (g-5xx-persistent, g-lost-response, g-4xx, g-ordering), so
-`fault_suite_pass` is "0.5000" (asserted by the test). `idempotency_violations` is now the count of records the collector applied more than once in a
-case (check.py :200; the old per-call `effects - 1` counted the two legitimate batches of g-ordering's recovery flush as a violation). `batchidattempt`
-sums to 10 over the suite. Naive's value is read from the record, not here (EV-7).
+`fault_suite_pass` is "0.5000" (asserted by the test). `idempotency_violations` is the count of deliveries (requests the collector applied) that applied at least one record already applied, summed over the case's requests (CR47-8; check.py :71 and :203). It replaces part 6's per-record count, which counted a duplicated batch of k records as k; g-ordering's two batches of distinct records count 0. Measured on the real path: reference 0, alt 0, naive 1 (red 3a818e7f: 2 under the per-record count), `batchidattempt` 5 (was 10), `requeuetail` 1, every other variant 0. Naive's value is read from the record, not here (EV-7).
 
-Reference `duration_ms`: the seven earlier cases are the part-5 three-run values (g-4xx 657, g-5xx-burst 783, g-5xx-persistent 723, g-lost-response 678,
-g-ordering 736, g-slow-first 1631, g-hang 3125; bounds unchanged). `g-lost-then-grow` has no `bound_ms` yet and its duration is not measured in part 6.
+Reference `duration_ms` per case, three runs on the real path (run 0/1/2; slowest in bold): g-5xx-burst 252/236/236, g-5xx-persistent 182/192/177, g-slow-first 1126/1129/1118, g-hang 3044/3036/**3051**, g-lost-response 142/143/151, g-4xx 136/145/131, g-lost-then-grow 179/180/**196**, g-ordering 183/199/196. `g-lost-then-grow` bound_ms is 1000 (196 ms x 1.25 = 245; the alt measured 304 ms). `g-slow-first` and `g-hang` keep 4500 (reference slowest 1129 and 3051; 4500 is 299 and 47 percent above them, both over the 25 percent floor). The other cases use the loopback default 5000.
 
 ## Check authoring rules (ADR-0018 section 3, B7)
 
-1. Every socket comes from `bench_check.listen()`: `check.py:180` opens it, `:183` hands it to `bc.probe_host`; `serve` wraps that socket only (`server.socket = sock`, :138).
-2. `passed` comes from the fake's counters: `Call.requests` and `Call.effects` are differences of `len(fake.requests)` and `fake.effects` (:82-:91); `clause_of` (:150-:177) judges on them and on `fake.names()`.
-3. The serve thread is joined inside every case: `close()` (:141-:145) sets stop, calls `server.shutdown()` and `thread.join(5)`; `run_probe` calls it in `finally` (:199).
-4. Untrusted bytes are bounded: handler `timeout = 10` (:103); the body is read only for an all-digit `Content-Length` of at most `MAX_BODY` 65536 (:107); otherwise `fake.malformed()` (:38) counts a request with no effect; a body that is not JSON is `{}` (a counted request, no effect), and nothing is evaluated beyond `json.loads`.
+1. Every socket comes from `bench_check.listen()`: `check.py:183` opens it, `:186` hands it to `bc.probe_host`; `serve` wraps that socket only (`server.socket = sock`, :141).
+2. `passed` comes from the fake's counters: `Call.requests` and `Call.effects` are differences of `len(fake.requests)` and `fake.effects` (:84-:93); `clause_of` (:153-:180) judges on them and on `fake.names()`.
+3. The serve thread is joined inside every case: `close()` (:145-:148) sets stop, calls `server.shutdown()` and `thread.join(5)`; `run_probe` calls it in `finally` (:202).
+4. Untrusted bytes are bounded: handler `timeout = 10` (:106); the body is read only for an all-digit `Content-Length` of at most `MAX_BODY` 65536 (:110); otherwise `fake.malformed()` (:39) counts a request with no effect; a body that is not JSON is `{}` (a counted request, no effect), and nothing is evaluated beyond `json.loads`.
 

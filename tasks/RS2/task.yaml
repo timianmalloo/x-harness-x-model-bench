@@ -2,7 +2,7 @@ schema: bench-task/1
 id: RS2
 scenario: 5                 # W0 decision: property tasks are scenario 5 (docs/design/eval-seam-contracts.md section 1)
 title: "Resilience task 2 on a second codebase (W1-L)"
-status: draft               # authored in K3; ready needs X-LB1's loopback check (readiness refuses a loopback task until HB-RDY-005 is built) and a discrimination record
+status: ready               # K5 (part 7): ready after a discrimination trial reproduced the expected values; the record is bench/discrimination/RS2
 language: python
 source:
   kind: authored
@@ -36,8 +36,9 @@ expected:
   reference:
     property_check_pass: 1                       # derived by W0 section 3: hidden tests pass (5/5) and every fault case passed. Not a grader output.
     fault_suite_pass: "1.0000"                   # 8 of 8; measured on the real path in tests/test_rs2_task.py, the record is not yet taken
-    idempotency_violations: 0                    # measured by the stand-in check in K3
+    idempotency_violations: 0                    # measured on the real path (tests/test_rs2_task.py, three runs)
   naive:
     property_check_pass: 0                       # the naive passes the 5 hidden tests and 4 of 7 cases, so the conjunction is 0
     fault_suite_pass: "0.5000"                   # 4 of 8 (g-5xx-persistent, g-lost-response, g-4xx, g-ordering), asserted by tests/test_rs2_task.py; the record is not yet taken
-    idempotency_violations: 0                    # pending the record: under the record-count definition naive applies r1 and r2 twice in g-lost-then-grow, so 0 is expected to change; set from the record (EV-7)
+    idempotency_violations: 1                    # measured, record bench/discrimination/RS2 (EV-7): one re-send on g-lost-then-grow re-applies r1 and r2, one delivery (CR47-8)
+    timeouts: [g-slow-first, g-hang]             # CR47-7: the naive's urlopen has no timeout by design; both cases time out on every run (trial on base 92c9d393 and tests/test_rs2_task.py, outcome timeout, clause time); never declared on the reference
