@@ -759,7 +759,6 @@ def _with_live_pid(golden1, tmp_path, created_shift=0, **params):
     return env, proc
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_resume_heartbeats_the_lock(golden1, tmp_path):
     env, proc = _with_live_pid(golden1, tmp_path, lock_staleness=1)
     seen, box = set(), {}
