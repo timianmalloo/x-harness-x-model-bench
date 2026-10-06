@@ -12,6 +12,7 @@ job. The check process never imports deliverable code: an in-process probe is a 
 """
 
 import base64
+import contextlib
 import ctypes
 import ctypes.wintypes as wt
 import io
@@ -19,6 +20,7 @@ import json
 import os
 import queue
 import random
+import socket
 import subprocess
 import sys
 import threading
@@ -46,6 +48,32 @@ _k32.GetProcessTimes.argtypes = [wt.HANDLE] + [ctypes.POINTER(wt.FILETIME)] * 4
 
 class DidNotStart(Exception):
     """The probe host sent no ready line: `deliverable: did not start` (W0 outcome row 6)."""
+
+
+class ListenerError(Exception):
+    """HB-CHK-005: a check listener is not bound to 127.0.0.1."""
+
+
+_BIND = ("127.0.0.1", 0)  # the literal loopback address, port 0 so parallel cases never collide (F15)
+
+
+@contextlib.contextmanager
+def listen():
+    """A case's fake: a listening socket on 127.0.0.1, port 0, exclusive on its port, closed when the case ends.
+
+    The whole lifecycle is here: bind, assert the bound address is the literal `127.0.0.1` (HB-CHK-005 otherwise), yield
+    the socket, close it. It is the only socket the check opens, it is never inherited (the probe host starts with
+    close_fds), and it holds no state beyond the socket (ADR-0018 s3; W0 R6-17)."""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)  # R6-17: no other process can share the port
+        sock.bind(_BIND)
+        if sock.getsockname()[0] != "127.0.0.1":
+            raise ListenerError(f"HB-CHK-005: listener bound to {sock.getsockname()[0]}, not 127.0.0.1")
+        sock.listen()
+        yield sock
+    finally:
+        sock.close()
 
 
 class _PidList(ctypes.Structure):

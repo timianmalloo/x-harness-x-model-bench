@@ -59,6 +59,7 @@ RUN_CODES: dict[str, str] = {
     "HB-CHK-002": "invalid (check tampered)",
     "HB-CHK-003": "check exceeded its bound",
     "HB-CHK-004": "grading step spans a host suspend: NOT_RECORDED, re-run next pass",
+    "HB-CHK-005": "a check listener is not bound to 127.0.0.1 (W0 R6-17; ADR-0018 s3)",
     "HB-GRD-007": "grading pass of a campaign run refused: `campaign.lock` is held (rev 2, RV-DS 8)",
     "HB-RDY-001": "no discrimination record for the current task version",
     "HB-RDY-002": "the record's engine identity differs from the current one (or the baseline)",
