@@ -29,7 +29,9 @@ links:
   - { to: review-eval-sim, rel: relates-to }
 review-by: "2026-10-17"
 summary: >-
-  Revision 6.12 (Coordinator #35: `cell.turn_ended` carries the int `turn_ms`, not a float `turn_seconds`,
+  Revision 6.13 (Coordinator #39: HB-PLN-005 retired by X-A3c; the copy_retries null erratum; J1c's snapshot TABLE
+  entry; X-K2b no longer waits on X-TE9; HB-ALM-003 to E5; the G1 cli.py and workspace.py pins stay; rev-6.13 change
+  table at the end). Revision 6.12 (Coordinator #35: `cell.turn_ended` carries the int `turn_ms`, not a float `turn_seconds`,
   because the canonical form has no floats; X-J1b writes the one `lifecycle.TABLE` entry for it; the discrimination
   record's `hosts_ready` is an int count; rev-6.12 change table at the end). Revision 6.11 (C-W0, Coordinator #31: R-106's launch-recheck key set in section 6, the R-106 c7 reader key-set sweep,
   the shared-value rule (keys and value types), the X-K2a script-only split, the section 13 rows of the E2-E4 plan and
@@ -586,7 +588,7 @@ These ids are reserved, never reused. Each W1 design confirms or drops its rows;
 | HB-PLN-001 | launch-balance bound violated (EV-17) | X-A1 · E1 |
 | HB-PLN-002 | arm or role binding invalid (unbound role, a pack on `off`, a duplicate arm, more than one `off`) | X-A1 · E1 |
 | HB-PLN-004 | plan refused by its kind: a measurement plan names a task that is not `ready` or (rev 5, SR-E1 2) a `synthetic` combo, or a discrimination plan names a `stub` (names every task and its status, and every synthetic combo) (rev 3, SR-1) | X-A1 raises · X-D adds the row · E1 |
-| HB-PLN-005 | a single-pack reader got a plan with two or more pack-bearing arms (names the arms; `plan_pack`, section 5). Raised only by `board.compare` in E1 (rev 4); X-A3 retires it in E3 when `board.compare` reads comparison pairs (rev 3, RV-PAT W1-A 1) | X-A1 · E1 |
+| HB-PLN-005 | a single-pack reader got a plan with two or more pack-bearing arms (names the arms; `plan_pack`, section 5). Raised only by `board.compare` in E1 (rev 4); X-A3 retires it in E3 when `board.compare` reads comparison pairs (rev 3, RV-PAT W1-A 1) | X-A1 · E1. **Retired by X-A3c in E3** (rev 6.13, R6.13a; `186ad7da`): `plan_pack`, its mutant row and the `errors.py` row are deleted, and the id is never reused. `tests/test_identity.py` drops this row from the E1 registry comparison by its code-cell prefix, so the code and meaning cells stay byte-identical and the note lives in this cell |
 | HB-PWR-001 | power-analysis inputs invalid (names the field) | X-H1 · E1 |
 | HB-CHK-001 | check output invalid | X-F · E1 |
 | HB-CHK-002 | invalid (check tampered) | X-F · E1 |
@@ -623,7 +625,7 @@ These ids are reserved, never reused. Each W1 design confirms or drops its rows;
 | HB-PLN-003 | comparison refused: ring hashes differ (names the differences, EV-15) | X-A3 · E3 |
 | HB-ALM-001 | alarm: heartbeat stale | X-K2 · E3 |
 | HB-ALM-002 | alarm: progress stalled while cells are pending | X-K2 · E3 |
-| HB-ALM-003 | warning: no alarm check ran within 2 × the interval | X-K2 · E3 |
+| HB-ALM-003 | warning: no alarm check ran within 2 × the interval (rev 6.13, R6.13e: **deferred to E5** with the drill by W1-K sections 6.2 and 9; the reservation stands, and X-K1a's `errors.py` commit does not add it) | X-K2 · E5 |
 | HB-CHK-005 | a check listener is not bound to `127.0.0.1` | X-LB · E4 |
 
 ## 12. Run-ledger additions (ADR-0015, ADR-0021; for the record model and `lifecycle.py`)
@@ -640,7 +642,7 @@ These ids are reserved, never reused. Each W1 design confirms or drops its rows;
 
 **Rev 6.12 (R6.12a): `cell.turn_ended` carries `turn_ms`, an int.** The ledger's canonical form has no floats (ADR-0006, *Physical form and integrity*: "integers and strings only. No floats"; `ledger._check`, `ledger.py:41-45`, read on `3f887a0c`). So W1-J's float `turn_seconds` on this row raises `TypeError` in `Engine.record` (X-J1b, `req-01M46MGW3NFZJDWWJHCXKG69BP`). The row carries `turn_ms = int(rec.turn_seconds * 1000)`: the same expression and unit as `cell.outcome.turn_ms` (`engine.py:718`), and the unit of `duration_ms` on the sibling row. Agent time is `Σ turn_ms` over the rows present, never stored. The driver's in-memory `TurnRecord.turn_seconds` float is unchanged. W1-J Amendment 1 (section 15 there) holds the reasoning and T-ENG-11 restated in integer ms. No `ledger.py` edit. This is the shape of R6.9c: a design type that the canonical form refuses (register class CANON-A). **The type rule for every row in this section and every W1 record contract (CANON-A control):** a value is a str, an int, None, a list or a dict; a duration is an int in ms, named `_ms`; a flag is the int 1 or absent (R6.9c); a non-integer catalog measure is a decimal string at its catalog scale (ADR-0006). Syncing the field name in ADR-0006 Amendment 5 and ADR-0015 is sent to the Owner as a decision request (c35).
 
-**Rev 6.12 (R6.12b): X-J1b writes the one `lifecycle.TABLE` entry for `cell.turn_ended`.** The engine calls `lifecycle.check_writer` before every `events` append (`engine.py:226`, `:240`), so an unmapped kind cannot be written at all. The entry is W1-J section 4.6's `TurnEnd` row in its non-turn-keyed form (`after=("cell.prompt_sent",)`, rule `turn_ended follows its prompt_sent`), with one seeded case in `tests/test_lifecycle_conformance.py`. Everything else in `lifecycle.py` (turn-keyed replay, the other three rules, the snapshot entry) stays X-J1d's. Section 13's `lifecycle.py` cell is unchanged: X-J1 owns E2, and the split between its turns is the brief's (`x-j1.md`).
+**Rev 6.12 (R6.12b): X-J1b writes the one `lifecycle.TABLE` entry for `cell.turn_ended`.** The engine calls `lifecycle.check_writer` before every `events` append (`engine.py:226`, `:240`), so an unmapped kind cannot be written at all. The entry is W1-J section 4.6's `TurnEnd` row in its non-turn-keyed form (`after=("cell.prompt_sent",)`, rule `turn_ended follows its prompt_sent`), with one seeded case in `tests/test_lifecycle_conformance.py`. Everything else in `lifecycle.py` (turn-keyed replay, the other three rules, the snapshot entry) stays X-J1d's. **Rev 6.13 (R6.13c; Coordinator #36's boundary correction):** X-J1c, not X-J1d, wrote the one entry `cell.turn_snapshot_archived` in its non-turn-keyed form, `Transition("SnapRecord", "engine", after=("cell.turn_ended",), after_rule="SnapshotAfterTurnEnd")`, with one seeded case ("a snapshot with no turn end"), because `check_writer` refuses an unmapped kind before J1c's first snapshot event. The "not after `prompt_sent#(n+1)`" half and every other TABLE change were X-J1d's (turn-keyed, landed: `lifecycle.TURN_KINDS`, `lifecycle.py:46`, `:77`). Section 13's `lifecycle.py` cell is unchanged: X-J1 owns E2, and the split between its turns is the brief's (`x-j1.md`).
 
 **Rev 6.9 (R6.9c): `identity_recheck` is an integer.** The ledger's canonical form refuses a bool (`ledger.py:43`, read on `c2d8874b`), so W1-D's `identity_recheck: true` on `cell.launch_intent` is written `identity_recheck: 1` when the 50 ms re-read changed the result, and is absent otherwise (never `0`, never `false`). No `ledger.py` edit. Owner X-D2 (E1).
 
@@ -655,7 +657,7 @@ These ids are reserved, never reused. Each W1 design confirms or drops its rows;
 **W1-J rev 2 seams (rev 6.5; RV-SRE on W1-J; X-J1, E2). All three granted.**
 - **`cell.turn_ended.next` (req-01M41P7K51N6VC9RCK3DGP2EB7, RV-SRE 1).** One field, the engine's decision at the turn's end: `snapshot` (a next turn follows, so the snapshot is taken), `final` (the last planned turn ended), `stop` (a stop, budget or deadline ends the cell), `cancel` (the run is cancelled). It is a recorded decision, not a derived value: a stop can arrive between the turn's end and the next prompt, so it cannot be recomputed from `stop_reason` and the turn count. Conditions: (1) `cell.turn_ended` is written for **every** turn that ends, a stopping turn included (`max_tokens`, error, kill by the engine), which fixes the condition in pack part 3's X-J1 brief that the loop breaks before the row; (2) a turn with no `turn_ended` row is a crashed turn (`CrashedTurnPredicate`), never read as `final`; (3) absent on a legacy single-turn row reads `final`; (4) "why turn n+1 was not sent" has one reader input, `next`; the cell outcome keeps its own outcome and never restates the turn decision.
 - **`status.py` joins X-J1's E2 surface (req-01M41P7KF85ZXZEQ9BBQY209CF, RV-SRE 2).** One change: elapsed time and the over-budget flag read the cell's **first** `cell.prompt_sent` (turn absent or 1), the same start the engine's budget clock uses after X-J1's fix (one budget per cell, not per turn). Condition: one definition of "the cell's start" in X-J1's code (for example a `lifecycle.py` helper over rows) that both `status.py` and the engine's clock read, and a test where a two-turn cell's `bench status` elapsed equals the engine's budget clock. Section 13's row is amended. X-C (E1) and X-K2 (E3) are unchanged; E1 joins before X-J1 starts, so the file has one writer at a time.
-- **`job_active_baseline` moves to `cell.turn_ended{turn: 1}` (req-01M41PFB77Y4H857FWYSEHGPBY, RV-SRE 4, 5).** An append-only row written before the prompt cannot carry a value read after it, so rev 6.2's `attempt.session_opened` location is withdrawn. The baseline is read at turn 1's first `session/update` (after the lazy helper spawns), held in memory, and written on turn 1's `turn_ended`; it is not re-read per turn. If turn 1 sees no `session/update`, the field is absent ("not recorded"), never 0. `cell.turn_snapshot_archived` gains `copy_retries` (the retry count that `publish_dir`'s WIN-A loop returns, section 4; no second counter) and `job_active_after`. **One count, one name:** if `job_active_after` measures what rev 6's `job_active_processes` measures, it replaces it; if both stay, W1-J's gate revision states each one's meaning in one line. A noisy snapshot (`job_active_after > job_active_baseline`) is derived by the reader, never stored. Rev 6.2's test stays: a helper spawned after the first prompt is not counted as a leaked job.
+- **`job_active_baseline` moves to `cell.turn_ended{turn: 1}` (req-01M41PFB77Y4H857FWYSEHGPBY, RV-SRE 4, 5).** An append-only row written before the prompt cannot carry a value read after it, so rev 6.2's `attempt.session_opened` location is withdrawn. The baseline is read at turn 1's first `session/update` (after the lazy helper spawns), held in memory, and written on turn 1's `turn_ended`; it is not re-read per turn. If turn 1 sees no `session/update`, the field is absent ("not recorded"), never 0. `cell.turn_snapshot_archived` gains `copy_retries` (the retry count that `publish_dir`'s WIN-A loop returns, section 4; no second counter. **Erratum, rev 6.13, R6.13b:** `atomic.publish_dir` returns `fill`'s result, not a count, and `rename_with_retry` only logs `rename_retries`, so the field is written null, "not recorded", never 0, as landed at `engine.py:878`. A real count needs `publish_dir` to return it, which is a seam request to `atomic.py`'s owner, not a counter in `archive.py`) and `job_active_after`. **One count, one name:** if `job_active_after` measures what rev 6's `job_active_processes` measures, it replaces it; if both stay, W1-J's gate revision states each one's meaning in one line. A noisy snapshot (`job_active_after > job_active_baseline`) is derived by the reader, never stored. Rev 6.2's test stays: a helper spawned after the first prompt is not counted as a leaked job.
 
 ## 13. Hub files: one owner per phase
 
@@ -715,7 +717,7 @@ This is the authoritative copy (the plan's table is its planning record). Anothe
 | `grade/property.py`, the `STRATEGIES` literal (`:496`, one line) | **X-J2b** adds `rework`; **X-LG** adds its two keys; then **X-LB1** owns the file in E4 (row above) | J2b and LG conflict textually by construction: **the Leader resolves it as a union at the P2 merge**, every key kept (pre-declared, as `PLANNED`) |
 | `identity.PLANNED` (`identity.py:119-122`) | each landing track deletes **its own key** in its landing commit (R6.10a): X-K1 `resume.py`, X-J2b `grade/rework.py`, X-K2b `alarm.py`, X-LG `grade/noguess.py` and `grade/diffstats.py` | same or adjacent lines: **the Leader resolves it as a union of deletions** |
 | `tests/test_e1_e2e.py` strict-xfail markers | each landing track deletes **only its own** marker: X-I5 `:327`; X-INTF `:471`, `:591`; X-A3c `:525`; X-TE9 `:384`, `:391`, `:397` | distinct lines; a marker that turns XPASS is removed in the commit that makes it pass |
-| `src/harness_bench/alarm.py` (new), `tests/test_alarm.py`, `tests/test_report_resume.py`, `tests/test_status.py` (E3), own mutation entries | **X-K2b** | after X-K1, X-A3c, X-INTF and X-TE9 join; HB-ALM-001..003 come from X-K1's `errors.py` commit (section 11) |
+| `src/harness_bench/alarm.py` (new), `tests/test_alarm.py`, `tests/test_report_resume.py`, `tests/test_status.py` (E3), own mutation entries | **X-K2b** | after X-K1, X-A3c and X-INTF join (rev 6.13, R6.13d: **X-TE9 is no longer a predecessor**; TE9's `cmd_validate` line and K2b's `status`/`cmd_plan` hunks are disjoint functions, so the later of the two rebases, and each retargets only its own `tests/mutations/cli.json` finds, MUT-E); HB-ALM-001..002 come from X-K1's `errors.py` commit (section 11; HB-ALM-003 is E5, R6.13e); `tests/test_report_resume.py` and the `report/html.py` header are E5 (W1-K sections 6.2 and 8) |
 | `tests/mutations/cli.json` | each `cli.py` hunk owner retargets only its own finds (X-INTF, X-TE9, X-K1, X-K2b) | MUT-E: `test_mutate_check.py` (in every worker's guard list) catches a find another track's edit moved |
 | ai-forward `pack/**` sources and tests (another repository, in `C:\Projects\ai-forward-fix-xh-e2e4-upstream`); then this repo's pack-managed paths, in `C:\Projects\x-harness-x-model-bench-coord-pack-update-e2e4`, and `docs/notes/deviation-coord-transport-grok-session-new.md` (marked retired) | **X-PACK** (Lane F) | phase 2 runs after the Leader's ai-forward push and joins P5, when no external dispatch is live. The exact pack-managed path set is `pack-apply.py`'s action table, read at phase 2 (Inferred here); it never includes this repo's own skills `start-benchmark` and `new-bench-task` (derived, the artifact registry) |
 
@@ -1074,6 +1076,29 @@ Coordinator hand-back session #35, base `3f887a0c`; the integration head read is
 | X-A3 (A3c) | §12 R6.12a: report agent time is `Σ turn_ms` (W1-J section 7 row 12) |
 | X-K1 | §12 R6.12a (resume reads `turn_ended` rows); R6.12b (the TABLE entry J1d makes turn-keyed before K1's resume rules) |
 | X-RDY | §6 R6.12c (`hosts_ready` is an int count) |
+
+## Revision 6.13 change table (id → section)
+
+Coordinator hand-back session #39, base `1a837a5d` (`integrate/e2e4-18` after X-J1e's join; X-A3c's join running on `186ad7da`). **Refused:** none. **Decision request:** none. Each row records what landed, corrects a value source, or arbitrates a seam.
+
+| id | from | change | section |
+| --- | --- | --- | --- |
+| R6.13a | X-A3c K3 (`186ad7da`); Coordinator #34 decision 3 | HB-PLN-005 retired: the row keeps its exact prefix, because `tests/test_identity.py` filters it by that prefix. The doc and the filter agree, and the filter stays | 11 |
+| R6.13b | Coordinator #36 decision 2 | the `copy_retries` "returned count" erratum: written null ("not recorded"), as landed; W1-J sections 3 and 4.4 carry the same erratum | 12 |
+| R6.13c | Coordinator #36 decision 1 | J1c's `cell.turn_snapshot_archived` TABLE entry beside R6.12b | 12 |
+| R6.13d | Coordinator #39, compiling X-K2b | X-TE9 is not a predecessor of X-K2b. The two `cli.py` hunks are disjoint functions, and TE9 is operator-held (T-E9), so the edge was incidental ordering on the critical path. The later of the two rebases. The control is MUT-E's `test_mutate_check.py`, in every worker's guard | 13 |
+| R6.13e | W1-K rev 1.2 sections 6.2 and 9 | HB-ALM-003 is E5; X-K1a adds HB-ALM-001..002 only; `tests/test_report_resume.py` and the `report/html.py` header are E5 (R6.8c stays granted) | 11, 13 |
+| R6.13f | X-A3c seam `req-01M485A8H0VSXN6YGZX98RF21S` (resolved by Coordinator #39) | the G1 pins `cli.py` 3 and `workspace.py` 2 stay. `cli.py:218` and `:296` and `workspace.py:211` and `:219` are the directory segment `pack` in a path. `cli.py:272` is the stored key `pack` of a bench-plan/1 `cell.workspace_built` row (`engine.py:678`), whose rename would be an ADR-0006 field change, not a G1 edit | 10 |
+
+**The file's hash changes with this revision.** A compiled prompt that names rev 6.12 is stale only for X-K1 and X-K2b, which are compiled against rev 6.13 by Coordinator #39. Rev 6.12 stays the base check for every other track.
+
+### Who re-reads what (rev 6.13)
+
+| track | re-read |
+| --- | --- |
+| X-K1 (K1a..K1d) | §11 R6.13e (the `errors.py` rows); §12 R6.13b, R6.13c |
+| X-K2b | §13 R6.13d (no X-TE9 wait), R6.13e (HB-ALM-003 and the report header are E5) |
+| X-TE9 | §13 R6.13d (if K2b joined first, TE9 rebases on K2b's `cli.py` hunks) |
 
 ## Review disposition
 

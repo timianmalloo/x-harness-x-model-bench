@@ -42,9 +42,9 @@
         "permissions": "observed-only"
       },
       "prompts": [
-        "COMPILE-OWED:docs/coordination/eval-wave2-e234/x-k1.md"
+        "al-01M488P2Q9J9CXTZQ29M7QRVAH"
       ],
-      "fallback": "A red-only end, a deadline or a failed served-model read: the green follow-on runs as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) in this worker's tree (R-87 Option 1); turns b..d reuse this contract with their suffix, each with its own compilation"
+      "fallback": "A launch or transport failure before the first prompt (XPORT-A) runs the same compile as a Claude Code Sonnet sub-agent (model: sonnet, served claude-sonnet-5-5, R-91) in this worker's tree under the same session; a red-only end, a deadline, a split-rule hand-back or a failed served-model read runs the green follow-on as that Sonnet sub-agent in this tree (R-87 Option 1); turns b..d reuse this contract with their suffix, each with its own compilation (Coordinator #39's split in x-k1.md)"
     }
   ]
 }

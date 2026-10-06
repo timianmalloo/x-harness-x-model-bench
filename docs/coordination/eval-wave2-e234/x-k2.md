@@ -28,5 +28,23 @@ summary: "X-K2 builds bench status --alarm-after, last_progress_at and the ntfy 
 3. The alarm channel as R-102 rules it (W0 rev 6.9 §13 R6.9b): ntfy push primary and required for an unattended run; the edge state file, the delivery log, and the `try/catch` that never prints the topic; `test_push_failure_does_not_print_topic` and "two runs in a row send once", both dry-run through a stub `Invoke-RestMethod`. The toast is not in E3; the drill is out of scope.
 4. **No pending logic of its own** (R-102 item 1; W0 rev 6.9 §12): `alarm.check` and `bench status` call X-K1's `resume.has_work`; mutant M-ALARMPENDING (a local copy) is killed. `bench status` prints "stopped, n cells never launched".
 
+## K2b scope as compiled (Coordinator #39, 2026-10-06)
+
+Where this brief or the plan's row disagrees with W1-K rev 1.2 (the gated design), W1-K governs:
+- **HB-ALM-003 and the `last_alarm_check_at` warning** (acceptance item 1's last clause) are E5: W1-K section 6.2 ("Deferred to E5 with the drill") and section 9.
+- **The `report/html.py` resume header and `tests/test_report_resume.py`** are E5: W1-K sections 6.2 and 8. R6.8c stays granted for when it is built. The plan's "report goldens byte-identical" holds by construction, because K2b edits no report file.
+
+**K2b's scope:**
+- `alarm.py` (`check`, importing `resume.has_work`);
+- `status.py`: `last_progress_at`, `bench-status/2`, "resumed n times", and "stopped, n cells never launched";
+- `cli.py`: `status --alarm-after`, `ALARM = 6`, and `cmd_plan`'s one `--alarm-after` line;
+- `tests/test_alarm.py`, `tests/test_status.py` and `tests/mutations/alarm.json`;
+- the cross-owner test (W0 section 13, the alarm-task row);
+- deleting `alarm.py` from `identity.PLANNED`.
+
+**The ntfy topic (R-102)** gates only the live drill (E5). Every K2b test runs the script under `-DryRun`.
+
+**The X-TE9 edge is relaxed by W0 rev 6.13 (R6.13d).** K2b no longer waits on X-TE9's join. The two `cli.py` hunks are disjoint functions, so the later one rebases.
+
 ## Exit
 E1 README §3 join gate per dispatch; served model from Agy's `cli.log`. Report per E1 README §4.

@@ -27,6 +27,12 @@ summary: >-
 
 **Status counts:** controlled 13 · partially-controlled 7 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`. CAUSE-A is `observed` (2026-09-30).
 **Recurrence since last review:**
+- 2026-10-06 (Coordinator #39, `docs/coordination/coordinator-log/c39.md`): three candidates registered:
+  - REL-A: a test spells the catalog label, so the 0.7 release broke 21 e1_e2e setups and one catalog test; the Leader fixed both in `3425b1d1`.
+  - PROBE-A: the gate-runs probe falls back to an empty folder and skips, so a 79-minute ring could not stamp; the cause is Inferred.
+  - OPER-A: S-J4 is reported "not run" turn after turn while the operator's decision is pending.
+
+  LOCK-A gains the per-join recount cost: 7-9 serial joins at about 30 min each, with an `-n 4` proposal that needs the operator's approval.
 - 2026-10-06 (Coordinator #38, `docs/coordination/coordinator-log/c38.md`): three candidates registered: QUOTE-A (a design's table of sanctioned readers cited by section, not quoted in the compile; X-J2b's `rework.py`), CACHE-B (an unidentified sweep empties a shared ring cache; seven pin tests red on every tree) and PATH-B (a long scratch path breaks git, twice). A MUT-E instance (the STRATEGIES union: a mutant on a shared literal targets the line's end) and a fourth FLAKE-A instance, which fires FLAKE-A's upgrade trigger.
 - 2026-10-05 (Coordinator #37, `docs/coordination/coordinator-log/c37.md`): one candidate registered, CEIL-A (a worker passes its context ceiling and detects it late; X-J1c, measured from its native record: past 170k at minute 8, 243k at the end). RUN-B recurs as the runner's leader-check bound: X-LGc cancelled with RUN-LEADER on a live lease, which falsifies the `assume:` at `coord-runner.py:47-53` (upstream-owned). LOCK-A gains the Leader's measured 12-34 min worker waits (X-INTF, X-J1c). SEED-A gains the Leader's two-dot `git diff HEAD <branch>` docs-only guard.
 - 2026-10-05 (Coordinator #36, `docs/coordination/coordinator-log/c36.md`): two candidates registered. FLAKE-A (a test that fails under concurrent host load and passes alone is written off without a measured repro) has three instances, all reported by the Leader: two `tests/test_discriminate.py` failures in the HB-RDY-011 "workspace" stage and one `tests/test_campaign_locks.py` failure in the J1a join recount. ROUTE-A (a routing rule keyed on the harness alone, where completion splits by the turn's shape) has two instances, X-A3a and X-J2b, registered under the Owner's DR-16 ruling (condition 6) on `owner/ruling-r108`. No test is quarantined.
@@ -1039,6 +1045,7 @@ summary: >-
   - `2026-10-05` X-J1a (Codex `gpt-6.1-sol`, 2,960 s): returned PARTIAL at `a3cfbcfe`. The `engine.json` and `driver.json` `mutate_check` runs and the final-SHA guard run did not run: they queued behind the Leader's join recount until the budget ended (the Leader's report). The Leader runs them after the LGa join.
   - `2026-10-05` (measured by the Leader; Coordinator #33): X-A3a's and X-J1a's gates each queued behind join recounts of **1,446-1,552 s**. That is the second starved worker, so the upgrade trigger below has fired. Consequence measured: J1a's `driver.json` held 2 surviving mutants (the `last_update` 0.0 defaults) that its worker never saw, because that `mutate_check` never ran (filed under GATE-A, shape 2: a gate not run is not a gate passed). Operator-approved mitigation on the integration tree, `2d0d86b8`: the per-join recount deselects only `test_current_grader_inputs_match_gate_stamp`, and the batch rings keep it; it shortens a recount but does not schedule the lock.
   - `2026-10-05` (the Leader's measurement, reported to Coordinator #37; not re-observed): worker `mutate_check` runs waited **12-34 min** behind join recounts. X-INTF stopped two of its mutation runs and reported them "not run: suite lock held" (the report line working as written). X-J1c ran out of context partly while it waited; its three mutation files were never started (its closing entry: "not run: context ceiling"; it records no measured wait). Third and fourth starved workers after the trigger fired; the owed upgrade is still not built, so the report line is the only control in force and it records the loss rather than preventing it.
+  - `2026-10-06` (the Leader's measurement, reported to Coordinator #39; not re-observed): **the per-join recount's cost.** A batch holds 7 to 9 serial joins, each with a single-process recount of about 30 min, so the joins alone hold the suite lock for about 3.5 to 4.5 h of the batch. That is the window in which every worker gate queues. **Proposal for the next plan revision:** run each per-join recount with `-n 4` (xdist), which needs the operator's approval, because it changes the recount's process model and LOAD-A's reason for one heavy run at a time. *Inferred, not measured:* the speed-up and the host load at `-n 4`. **Measure first:** one join recount at `-n 1` and at `-n 4` on the same head, with wall-clock time, peak memory and the FLAKE-A failure rate per run.
 - **Control (proposed):** joins are scheduled outside dispatched workers' gate windows, or the brief reserves the gate's lock time. A gate that was not run because of the lock is reported "not run: suite lock held" with the measured wait, never as passed. Coordinator #32's compiles (X-INTF, X-LGb, X-K2a) carry that report line. Rung: compiled prompt (report) plus Leader procedure. Upgrade trigger: a second starved worker. Then the lock records its holder and wait times, and the Leader's join waits for the lock to be free of any worker inside its last 15 minutes. **The trigger fired on 2026-10-05 (second instance); that upgrade is owed** (route: Lane F, since SUITE-LOCK is pack tooling, or a repo-local Leader wrapper meanwhile). Coordinator #33's compiles (X-G3, X-J1b) carry the report line.
 - **Status:** `candidate`
 
@@ -1109,6 +1116,40 @@ summary: >-
   - `2026-10-05`: the ring guard's long scratch `TMP` broke git.
 - **Sweep:** owed: the scratch roots that tools and compiles set (`TMP`, `work_root`, `out_dir`), checked for depth.
 - **Control (proposed):** Coordinator #38's standing compile clause: a short fresh folder (for example `C:\t\<track>-<n>`) for `TMP`/`TEMP` on every pytest or `mutate_check` run. Rung: compiled prompt. Upgrade trigger: a third instance; then a conftest guard refuses a `TMP` longer than a fixed bound on Windows.
+- **Status:** `candidate`
+
+### REL-A: a test spells a release-coupled label, so a catalog release breaks tests that are not about the release (candidate)
+- **Signature:** a test or fixture writes the catalog's version label as a literal (`"0.7.dev"`, `"0.6"`). The release commit changes `bench/metrics.yaml`'s `version` by design, and every test that spelled the old label goes red at once. Nothing in the tests' own subject changed.
+- **Why it survives:** the label looks like stable test data when the test is written. The release is a separate, rare event, and it is not in the test author's diff.
+- **Instances:**
+  - `2026-10-06` (the Leader's report to Coordinator #39; the commits read): the 0.7 release (R-86 c3, `d4be6d3c`) broke 21 `test_e1_e2e.py` setups (the e1 lean-copy fixture) and one catalog test (the eleven-metrics test) that spelled `0.7.dev`. The Leader fixed both the way the 0.6 release had been fixed: `3425b1d1` moves the two pins (`tests/test_catalog_version.py`, `tests/test_e1_e2e.py`).
+  - The 0.6 release (the first instance, recorded here): it moved T-B3's board golden, and `f0427e89` pinned T-B3's catalog label.
+- **Sweep:** owed: `git grep -n "0\.[0-9]\.dev" -- tests` for each remaining literal. Each one either reads the label from `bench/metrics.yaml` or belongs to a frozen golden of a named version (`tests/fixtures/catalog/0.7/**`), which may spell its own version by design.
+- **Control (proposed):** tests read the label from `bench/metrics.yaml` and never spell it. The exceptions are a frozen golden's own version and a test whose subject is the release. Rung: register entry, plus a clause in the next compile that touches catalog tests. Upgrade trigger: the next release that breaks a test. Then a lint in `tests/test_catalog_version.py` refuses a `0.N.dev` literal outside the fixture goldens.
+- **Status:** `candidate`
+
+### PROBE-A: a gate-input probe that degrades to skip, so a gate ring cannot stamp (candidate)
+- **Signature:** a test finds its input corpus (the gate runs) with a probe. If the probe fails, it falls back to an empty folder and the test **skips** rather than fails. One skipped gate test is enough for the gate ring to refuse to stamp, so the whole ring has to run again.
+- **Why it survives:** a skip is the right answer on a machine without the corpus (CI, a fresh clone). The same code path also catches a transient probe failure on the operator's host, where the corpus exists. This is GATE-A's shape (a gate green over an empty corpus), here as a skip.
+- **Instances:**
+  - `2026-10-06` (the Leader's report to Coordinator #39; I read the resolver at `tests/archived_runs.py:25-33` but did not re-run it): `gate_runs_root()` uses `HB_GATE_RUNS` when it is set. Otherwise it resolves the primary checkout's `runs/` through `git worktree list`, and failing that it uses the linked tree's own empty `runs/`.
+    - One gate test skipped, so the 79-minute gate ring refused to stamp and a second ring was needed.
+    - **The cause is Inferred:** a transient `git worktree list` failure during concurrent worktree add and remove. The Leader reports that the probe runs per module at import; I did not re-read that.
+    - **To confirm:** the `git worktree list` exit status at that time, which was not recorded.
+- **Sweep:** owed: every test helper that resolves an input root through git or the environment and falls back to a local folder. Start with `git grep -n "worktree list" -- tests tools`.
+- **Control (proposed):**
+  - **In force now:** `HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs` is pinned in the batch script, and Coordinator #39's compiles carry it on every pytest run.
+  - **Proposed:** a fail-closed resolver. Under `HB_REQUIRE_DOTNET=1` (the grading host's flag, `tests/slow_ring.py:15-18`), a missing gate-runs corpus **fails** and never skips, and a `git worktree list` failure raises rather than falling back.
+  - **Rung:** the batch script and the compiled prompt.
+  - **Upgrade trigger:** a second ring lost to a skip, or the resolver change landing. That change is the Leader's call: `tests/archived_runs.py` is test infrastructure outside every worker's scope.
+- **Status:** `candidate`
+
+### OPER-A: an acceptance item that needs the operator's resources is reported "not run" from turn to turn, and no one owns the decision (candidate)
+- **Signature:** a design's spike or acceptance item needs things a worker cannot have: adapter builds on PATH, credentials and spend. Each turn that owns the item reports "not run" with the reason, which is correct. But no one owns the decision to run it, so the item stays open and the design's `assume:` that rests on it stays unconfirmed.
+- **Why it survives:** each "not run" is honest (GATE-A shape 2 is met), so the item never shows as a failure. The decision is the operator's, and no decision request carries it.
+- **Instances:**
+  - `2026-10-06` (Coordinator #39): X-J1e did not run S-J4 (W1-J section 12; `793713d0`), because it needs the adapter builds on PATH, credentials and spend. The read point it would confirm, the first `session/update` of turn 1, stays an `assume:` in W1-J section 4.4. The operator's decision is pending.
+- **Control (proposed):** an item that is "not run" for lack of operator resources goes into the next hand-back's operator-decision table. The table names what the item confirms, what breaks if the `assume:` is false, and the cost to run it. W1-J section 12 now says "not run" with the reason (Coordinator #39). Rung: the coordinator log. Upgrade trigger: a second such item, or S-J4 still open when X-CV dispatches.
 - **Status:** `candidate`
 
 ---

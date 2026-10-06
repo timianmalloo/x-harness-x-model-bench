@@ -30,5 +30,23 @@ summary: "X-K1 builds plan-level resume (ADR-0021) on Codex gpt-6.1-sol in four 
 5. **One definition of work left** (R-102; W0 rev 6.9 §12 R6.9b): `resume.has_work(plan, rows)` in `resume.py`, the negation of W1-K §3.1 step 4, with the stop row inside it (D-K4); `alarm.py` (X-K2) and `bench status` import it. Red first: `test_finished_stop_is_silent` (a C7 cell in the fixture), `test_alarm_fires_after_crash_in_grading`, `test_alarm_fires_after_crash_before_last_archive`, `test_launch_stop_alarms`. No stored `not_launched` outcome.
 6. The resume-owned model branches marked provisional in W1-J (`BetweenSnapped`, `ClassOf`'s else-branch) are settled by W1-K's TLC, not here.
 
+## Turn split (Coordinator #39, 2026-10-06; from W1-K section 13's commit order and section 4's test map)
+
+Both blocks are cleared: W1-K gated (`7e96eee3`), X-J1 joined (J1e `1a837a5d`). Each turn compiles at its predecessor's join. "W1-K Kn" below is W1-K section 13's commit item, not a compile K-item.
+
+| turn | W1-K items | hand-back point |
+| --- | --- | --- |
+| K1a | W1-K K1 (skeleton `resume.resume_run` raising today's HB-USR-002, a `has_work` skeleton, the `cmd_run` delegation in its own commit, the `resume.py` `PLANNED` key deleted) with the confirmed `errors.py` rows (W0 section 11, registry first); W1-K K2 (`tests/test_resume.py` and the golden-ledger helper, every section 4 node id red on its own assertion, strict-xfail with a reason naming the turn that turns it green) | after W1-K K2 (the turn's end) |
+| K1b | W1-K K3 (`lifecycle.py`, the `views.py` hunks, the abandoned-head verify) and W1-K K4 (`classify`, `stop_recorded`, `has_work`; the five classifier mutants run once) | after K3 unless at or below 100k |
+| K1c | W1-K K5 (`recover_archive`, sweeps, the refusals with step 3(c)) and W1-K K6 (the `Engine` resume path, `open_engine_segments`, rebuilt run-level state, the heartbeat, the creation-time pid check, the stopped tail) | after K5 unless at or below 100k |
+| K1d | W1-K K6b (the disk check in `_launch`, own commit), W1-K K7 (model-docs rows), `tests/mutations/resume.json` (section 4 (d)), the exit-evidence table | after K6b unless at or below 100k |
+
+**`errors.py` rows in K1a:** HB-CELL-118, HB-CELL-119, HB-RUN-008 (the rev 6.8 text: the exit-3 reason), HB-RUN-009, HB-ALM-001, HB-ALM-002.
+
+**Not added:**
+- HB-ALM-003: W1-K sections 6.2 and 9 defer it to E5, and its W0 reservation stands.
+- HB-PLN-003: X-A3b landed it under #34's pre-grant (`errors.py:53`).
+- HB-PLN-005: retired by X-A3c.
+
 ## Exit
 E1 README §3 join gate per dispatch; served model from the Codex native record. Report per E1 README §4.
