@@ -111,6 +111,16 @@ class ConformanceError(ValueError):
     pass
 
 
+def completed(events: list[dict]) -> bool:
+    """D-K5, the one definition: complete iff a completion row follows the last resume row (or no resume row exists)."""
+    for row in reversed(events):
+        if row["kind"] == "run.completed":
+            return True
+        if row["kind"] == "run.resumed":
+            return False
+    return False
+
+
 def is_cell_start(row: dict) -> bool:
     """The first prompt starts the cell clock; legacy rows have turn 1."""
     return row.get("turn", 1) == 1

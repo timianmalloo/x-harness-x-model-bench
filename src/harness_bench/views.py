@@ -36,7 +36,7 @@ from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 
-from harness_bench import archive, ledger, profiles
+from harness_bench import archive, ledger, lifecycle, profiles
 from harness_bench.errors import BenchError, Cause
 from harness_bench.plan import cell_arm, kind_of, load_confirmed, resolved_model_map
 from harness_bench.telemetry import (
@@ -104,13 +104,8 @@ def rows(run_dir: Path, fact: str) -> list[dict]:
 
 
 def completed(events: list[dict]) -> bool:
-    """Completion belongs to the latest resume, never to an earlier engine incarnation (D-K5)."""
-    for row in reversed(events):
-        if row["kind"] == "run.completed":
-            return True
-        if row["kind"] == "run.resumed":
-            return False
-    return False
+    """Completion belongs to the latest resume (D-K5); the one definition is lifecycle.completed."""
+    return lifecycle.completed(events)
 
 
 @dataclass(frozen=True)

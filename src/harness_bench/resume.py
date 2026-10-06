@@ -7,7 +7,7 @@ the classifier (W1-K section 3.2) and the one remaining-work predicate (D-K12). 
 from dataclasses import dataclass
 from pathlib import Path
 
-from harness_bench import views
+from harness_bench import lifecycle
 from harness_bench.errors import BenchError
 
 
@@ -77,7 +77,7 @@ def classify(plan: dict, rows: list[dict], stopped: bool) -> list[Action]:
 
 def has_work(plan: dict, rows: list[dict]) -> bool:
     """D-K12: the one definition of remaining work (also read by the alarm)."""
-    if not views.completed(rows):
+    if not lifecycle.completed(rows):
         return True  # clause 4
     stopped = stop_recorded(rows)
     return any(a.rule in {"C1", "C2", "C3", "C4", "C5", "C6"} or (a.rule == "C7" and not stopped)
