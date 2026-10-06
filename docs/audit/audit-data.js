@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T01:28:28Z",
+  "generated": "2026-10-06T01:58:03Z",
   "audit": [
     {
       "actor": null,
@@ -93366,6 +93366,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-06T01:00:30Z",
       "duration_seconds": 1678.0
+    },
+    {
+      "id": "al-01M47EX94PQ18QRKHS0BGR2G4J",
+      "shortname": "join-x-intf",
+      "datetime": "2026-10-06T01:58:03Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of build/eval-x-intf into integrate/e2e4-18",
+      "summary": "X-INTF (Sonnet claude-sonnet-5-5) ca2f9056..7bbb6e5f: reds ec638319/d0943633/77307178 (Leader re-ran ec638319), greens 4e14d3fc/39e8db31, SK-1 fallback 33e827a9 (seam req-01M46VNY7E5TQZW84V2DXM4H6Y), mutants 7bbb6e5f; guard 200 x2; campaign.json 178 killed + 12-entry retarget subset all killed; status.json and cli.json NOT RUN by the worker (suite lock) -> covered by the batch mutate_check --touched recount_seconds=1771 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join X-INTF into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-06T01:28:30Z",
+      "duration_seconds": 1773.0
     }
   ],
   "changes": [
