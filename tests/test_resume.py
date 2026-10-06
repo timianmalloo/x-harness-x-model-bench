@@ -972,3 +972,34 @@ def test_alarm_fires_after_crash_before_last_archive(golden1):
 def test_launch_stop_alarms(golden2):
     rows = [golden2.rows[0], ledger.stamp({"kind": "run.launch_stopped", "code": "HB-RUN-004", "reason": "disk low"})]
     assert _need(resume, "has_work")(golden2.plan, rows) is True
+
+
+@pytest.mark.parametrize("kinds,expected", [
+    ([], False), (["run.completed"], True), (["run.completed", "run.resumed"], False),
+    (["run.completed", "run.resumed", "run.completed"], True),
+    (["run.completed", "run.resumed", "run.completed", "run.resumed"], False),
+])
+def test_completed_uses_the_latest_resume_boundary(kinds, expected):
+    assert _need(views, "completed")([{"kind": kind} for kind in kinds]) is expected
+
+
+def test_segment_rows_keeps_engine_segments_and_filters_dead_grading(tmp_path):
+    run_dir = tmp_path / "segments"
+    for sid in ("engine-1", "engine-1-r001", "grade-dead", "grade-done"):
+        with ledger.SegmentWriter.create(run_dir / "events", sid) as writer:
+            kind = "grading.completed" if sid == "grade-done" else "run.started"
+            writer.append(ledger.stamp({"kind": kind, "grading_id": sid}))
+            if sid == "grade-done":
+                writer.seal()
+    grouped = _need(views, "segment_rows")(run_dir, "events")
+    assert [sid for sid, _ in grouped] == ["engine-1", "engine-1-r001", "grade-done"]
+    assert [row for _, segment in grouped for row in segment] == views.rows(run_dir, "events")
+
+
+def test_load_reads_completion_after_a_resume(golden1):
+    assert views.load(golden1.run_dir, any_kind=True).completed is True
+    first = views.segment_paths(golden1.run_dir, "events")[0].stem
+    sid = first + "-r001"
+    with ledger.SegmentWriter.create(golden1.run_dir / "events", sid) as writer:
+        writer.append(ledger.stamp({"kind": "run.resumed", "segment_id": sid}))
+    assert views.load(golden1.run_dir, any_kind=True).completed is False
