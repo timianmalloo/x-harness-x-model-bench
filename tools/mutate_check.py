@@ -83,6 +83,14 @@ def _matched_failure(output: str, named: list[str]) -> str | None:
     return None
 
 
+_ERRORED = re.compile(r"^ERROR ([^\s\[]+)", re.MULTILINE)
+
+
+def _errored_named(output: str, named: list[str]) -> bool:
+    """True when an `ERROR <node id>` line names one of `named` (CR48-3). Labels the printed line only."""
+    return any(e == n or e.startswith(n + "::") for e in _ERRORED.findall(output) for n in named)
+
+
 def _ran_to_completion(output: str) -> bool:
     """True when `output` carries real pytest evidence -- a `FAILED <node id>` line or a summary
     line (`N passed`, `N failed`, `no tests ran`, ...) -- as opposed to a broken environment (the
@@ -458,11 +466,11 @@ def _run_set(spec: list[dict]) -> int:
             try:
                 # --color=no: FORCE_COLOR paints the FAILED line, and the kill regex then sees no result.
                 # `-m ""` replaces addopts' `-m` (pytest prepends addopts; `-m` is store, so the last one
-                # wins). An empty markexpr does not deselect, so a named slow killer runs. `-rfs` keeps
-                # the FAILED line and adds pytest's SKIPPED reason line. The caller's environment is the
+                # wins). An empty markexpr does not deselect, so a named slow killer runs. `-rfEs` keeps
+                # the FAILED and ERROR lines and adds pytest's SKIPPED reason line. The caller's environment is the
                 # child's, so HB_REQUIRE_DOTNET=1 makes a missing dotnet fail that killer instead of skipping.
                 result = subprocess.run(
-                    [sys.executable, "-m", "pytest", "-q", "--color=no", "-rfs", "-m", "",
+                    [sys.executable, "-m", "pytest", "-q", "--color=no", "-rfEs", "-m", "",
                      "-p", "no:cacheprovider", *m["tests"]],
                     cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
                     check=False, timeout=m.get("timeout", 180),
@@ -473,7 +481,10 @@ def _run_set(spec: list[dict]) -> int:
             except subprocess.TimeoutExpired:
                 outcome = "timeout"
             _OUTCOMES.append(outcome)
-            print(f"{outcome:<8} {m['name']}", flush=True)
+            label = outcome
+            if outcome == "survived" and _errored_named(output, m["tests"]):
+                label = "survived (named test errored in setup)"
+            print(f"{label:<8} {m['name']}", flush=True)
             if outcome == "not run":
                 reason = _pytest_reason(output)
                 if reason:
