@@ -441,9 +441,12 @@ def contract_lines(readme: str) -> list[str]:
 def load_lib(lib_dir: Path, name: str):
     import importlib
     sys.path.insert(0, str(lib_dir))
+    wrote_bytecode = sys.dont_write_bytecode
+    sys.dont_write_bytecode = True  # the import is of the committed task folder: leave no __pycache__ in it
     try:
         return importlib.import_module(name)
     finally:
+        sys.dont_write_bytecode = wrote_bytecode
         sys.path.remove(str(lib_dir))
         for key in [k for k in sys.modules if k == name or k.startswith(name + ".")]:
             del sys.modules[key]
@@ -503,7 +506,7 @@ def test_ng_contract_problems_fire_on_each_red_fixture():
 
 
 def reflect(lib_dir: Path, names: tuple[str, ...]) -> dict[str, bool]:
-    done = subprocess.run([sys._base_executable, "-S", str(FIXTURES / "reflect.py"), str(lib_dir), *names], capture_output=True,
+    done = subprocess.run([sys._base_executable, "-S", "-B", str(FIXTURES / "reflect.py"), str(lib_dir), *names], capture_output=True,
                           text=True, timeout=60, check=False)
     assert done.returncode == 0, done.stderr
     return json.loads(done.stdout)

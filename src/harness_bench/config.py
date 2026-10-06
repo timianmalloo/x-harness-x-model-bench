@@ -13,6 +13,7 @@ from pathlib import Path
 
 import yaml
 
+from harness_bench import gitsafe
 from harness_bench.errors import BenchError
 from harness_bench.scripted_user import clarifications
 
@@ -304,6 +305,20 @@ def pack_marker_bytes(root: Path) -> list[bytes]:
     return [line.strip().encode("utf-8") for line in text.splitlines() if line.strip()]
 
 
+def _is_ignored_untracked(d: Path) -> bool:
+    """True only when git proves `d` is git-ignored and holds no tracked file: a cache a test run wrote
+    into an ignored folder is not vendored content (R-42 judges what is committed or committable).
+    Fails closed: git missing, erroring or not a repository means the folder is reported."""
+    try:
+        tracked = gitsafe.git(["ls-files", "-z", "--", str(d)], cwd=d, timeout=60, check=False)
+        if tracked.timed_out or tracked.returncode != 0 or tracked.stdout.strip("\0\n"):
+            return False
+        ignored = gitsafe.git(["check-ignore", "-q", "--", str(d) + "/"], cwd=d, timeout=60, check=False)
+    except OSError:
+        return False
+    return not ignored.timed_out and ignored.returncode == 0
+
+
 def _workspace_vendoring_problems(task_dir: Path, pack_markers: list[bytes], p: Problems, where: str) -> None:
     """R-42 conditions 2 and 4: a ready task's workspace/ carries no pack material and no
     generated/cache folder. One report of each kind is enough to name the offender."""
@@ -311,7 +326,7 @@ def _workspace_vendoring_problems(task_dir: Path, pack_markers: list[bytes], p: 
     if not ws.is_dir():
         return
     for d in sorted(ws.rglob("*")):
-        if d.is_dir() and d.name in GENERATED_DIR_NAMES:
+        if d.is_dir() and d.name in GENERATED_DIR_NAMES and not _is_ignored_untracked(d):
             p.add(where, f"{d.relative_to(task_dir).as_posix()}/ is a generated or cache folder and must not be vendored")
             break
     for f in sorted(ws.rglob("*")):
