@@ -305,10 +305,16 @@ class _Resume:
         if rule == "C4" and not self._redo_snapshot(cell, turn):
             outcome, code = "failed", "HB-CELL-117"
         cause = CAUSES.get(code) if outcome == "failed" else None
+        # simplify: a resume-written outcome goes through Engine.append_row, which skips Engine._after_append (no
+        # infra_streak, no circuit breaker, no _raise_for); ceiling: resume writes one outcome per cell and never launches.
+        # Upgrade trigger: a resume that launches cells, or a circuit breaker meant to count reconciled failures.
         self.eng.append_row({
             "kind": "cell.outcome", "cell_id": cid, "outcome": outcome, "cause": cause.name if cause else None,
             "code": cause.code if cause else None, "host_mem_available": host.available_memory(),
             "resume": {"segment_id": segment, "turn": turn, "phase": PHASES[rule], "rule": rule}})
+        # simplify: the scripted-user log (scripted-user.jsonl) is not closed for a reconciled cell, unlike Engine's
+        # archive_after_outcome; ceiling: the log is archived as it stands with the cell folder. Upgrade trigger: a
+        # grader or view that requires a closed scripted-user log on a resumed cell.
         self._archive(cell)
         return []
 
@@ -336,6 +342,9 @@ class _Resume:
                    and archive.snapshot_of(r) == tag]
         for _ in range(3):
             try:
+                # simplify: an already-published turn folder is adopted by file scan only (_folder_rows), not re-verified against
+                # its recorded hash; ceiling: a folder published by this engine's own atomic publish. Upgrade trigger: a published
+                # folder found with rows that disagree with its snapshot_hash in a real run.
                 if folder.is_dir():
                     rows = [{**r, "archive_attempt": 1, "snapshot": tag} for r in _folder_rows(folder)]
                     digest, total, ms = archive.archive_hash(rows), sum(r["size"] for r in rows), None

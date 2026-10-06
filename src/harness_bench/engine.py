@@ -444,6 +444,9 @@ class Engine:
             elif kind == "cell.outcome":
                 self.outcomes[row["cell_id"]] = row
         measured = {row["cell_id"] for row in rows["turn_usage"]}
+        # simplify: restored spend is the sum of turn_usage rows only; a turn that died before its usage row is not counted
+        # (cells_unmeasured counts its cell). Ceiling: the spend cap sees only recorded usage. Upgrade trigger: a cap
+        # overrun traced to a turn lost before its usage row.
         self.spend_tokens = sum(row[name] for row in rows["turn_usage"] for name in USAGE_BUCKETS)
         self.cells_unmeasured = len([cid for cid in self.outcomes if cid not in measured])
 
