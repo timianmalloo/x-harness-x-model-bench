@@ -1005,3 +1005,39 @@ def test_load_reads_completion_after_a_resume(golden1, tmp_path):
         writer.append(ledger.stamp({"kind": "run.resumed", "segment_id": sid}))
     assert views.load(run_dir, any_kind=True).completed is False
     assert views.load(golden1.run_dir, any_kind=True).completed is True  # the shared golden ledger stays immutable
+
+
+@pytest.mark.parametrize("fault", ["none", "cut", "count", "head", "sealed", "missing", "broken"])
+def test_hand_built_abandoned_engine_segment_pins_its_head(golden1, tmp_path, fault):
+    env = _materialize(golden1, tmp_path, golden1.rows[:1])
+    sid = golden1.stems["events"] + "-r001"
+    path = env.run_dir / "events" / f"{sid}.jsonl"
+    with ledger.SegmentWriter.create(env.run_dir / "events", sid) as writer:
+        writer.append(ledger.stamp({"kind": "run.resumed", "segment_id": sid}))
+        writer.append(ledger.stamp({"kind": "run.launch_stopped", "code": "HB-RUN-004"}))
+    report = ledger.verify_segment(path)
+    marker = {"kind": "segment.abandoned", "code": "HB-LED-004", "fact": "events", "segment_id": sid,
+              "line_count": report.lines, "head_hash": report.head_hash, "error": "unsealed engine"}
+    if fault == "count":
+        marker["line_count"] += 1
+    if fault == "head":
+        marker["head_hash"] = "0" * 64
+    with ledger.SegmentWriter.create(env.run_dir / "events", golden1.stems["events"] + "-r002") as writer:
+        writer.append(ledger.stamp(marker))
+    if fault == "cut":
+        path.write_bytes(path.read_bytes().splitlines(keepends=True)[0])  # still a sound chain, but cut by one row
+    elif fault == "sealed":
+        with ledger.SegmentWriter.reopen(path) as writer:
+            writer.seal()
+    elif fault == "missing":
+        path.unlink()
+    elif fault == "broken":
+        lines = path.read_bytes().splitlines(keepends=True)
+        row = json.loads(lines[0])
+        row["hash"] = "0" * 64
+        path.write_bytes(ledger.canonical(row) + b"\n" + b"".join(lines[1:]))
+    errors = [finding for finding in views.verify(env.run_dir) if finding.level == "error"]
+    if fault == "none":
+        assert errors == []
+    else:
+        assert any(finding.code == "HB-LED-002" and sid in finding.message for finding in errors), errors
