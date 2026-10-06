@@ -968,6 +968,88 @@ def test_launch_stop_alarms(golden2):
     assert _need(resume, "has_work")(golden2.plan, rows) is True
 
 
+def _recover_final(env, *, archived=False):
+    recover = _need(archive, "recover_archive")
+    cid = env.g.cells[0]
+    present = [r for r in ledger.read_segment(env.run_dir / "archive_files" / f"{env.g.stems['archive_files']}.jsonl")
+               if archive.snapshot_of(r) == "final" and r["cell_id"] == cid]
+    with oslock.RunLock.acquire(env.run_dir / ".lock") as lock:
+        return recover(env.cfg.cells_root / env.plan["run_id"] / cid, env.run_dir / "archive" / cid,
+                       1, set(), present, run_lock=lock, recorded_archived=archived)
+
+
+def _assert_recovery(env, missing):
+    recovered = _recover_final(env)
+    cid = env.g.cells[0]
+    want = [r for r in _golden_segment(env.g, "archive_files") if r["cell_id"] == cid and not r.get("snapshot")]
+    assert recovered.result.archive_hash == archive.archive_hash(want)
+    assert len(recovered.missing_rows) == missing
+    archive.verify(recovered.result.folder, recovered.result.rows)
+    assert not _tmp_left(env.run_dir)
+
+
+def test_recover_archive_without_final_sweeps_then_copies(golden1, tmp_path):
+    cid = golden1.cells[0]
+    env = _prefix(golden1, tmp_path, 12, tmp_dirs=[(cid, "attempt-1.tmp-123-" + "a" * 32)])
+    want = [r for r in _golden_segment(golden1, "archive_files") if not r.get("snapshot")]
+    _assert_recovery(env, len(want))
+
+
+def test_recover_archive_final_rows_absent(golden1, tmp_path):
+    env = _prefix(golden1, tmp_path, 12, attempts=golden1.cells, final_rows="none")
+    want = [r for r in _golden_segment(golden1, "archive_files") if not r.get("snapshot")]
+    _assert_recovery(env, len(want))
+
+
+def test_recover_archive_final_rows_partial(golden1, tmp_path):
+    env = _prefix(golden1, tmp_path, 12, attempts=golden1.cells, final_rows="partial")
+    want = [r for r in _golden_segment(golden1, "archive_files") if not r.get("snapshot")]
+    _assert_recovery(env, len(want) - len(want) // 2)
+
+
+def test_recover_archive_final_rows_complete(golden1, tmp_path):
+    env = _prefix(golden1, tmp_path, 12, attempts=golden1.cells, final_rows="all", no_workspace=golden1.cells)
+    _assert_recovery(env, 0)
+
+
+def test_recover_archive_recorded_rows_without_folder_refuses(golden1, tmp_path):
+    env = _prefix(golden1, tmp_path, 12, final_rows="all")
+    before = _tree_hash(env.run_dir)
+    with pytest.raises(BenchError, match="attempt-1") as raised:
+        _recover_final(env)
+    assert raised.value.code == "HB-LED-005" and before == _tree_hash(env.run_dir)
+
+
+def test_recover_archive_recorded_event_without_folder_refuses(golden1, tmp_path):
+    env = _prefix(golden1, tmp_path, 13, final_rows="none", no_attempt=golden1.cells)
+    before = _tree_hash(env.run_dir)
+    with pytest.raises(BenchError, match="attempt-1") as raised:
+        _recover_final(env, archived=True)
+    assert raised.value.code == "HB-LED-005" and before == _tree_hash(env.run_dir)
+
+
+def test_recover_archive_changed_source_refuses_read_only(golden1, tmp_path):
+    env = _prefix(golden1, tmp_path, 12, attempts=golden1.cells, final_rows="none")
+    (env.cfg.cells_root / env.plan["run_id"] / golden1.cells[0] / "ws" / "a.txt").write_text("changed", encoding="utf-8")
+    before = _tree_hash(env.run_dir)
+    with pytest.raises(BenchError, match="a.txt") as raised:
+        _recover_final(env)
+    assert raised.value.code == "HB-LED-005" and before == _tree_hash(env.run_dir)
+
+
+def test_recover_archive_differing_recorded_row_refuses_read_only(golden1, tmp_path):
+    env = _prefix(golden1, tmp_path, 12, attempts=golden1.cells, final_rows="all")
+    recover = _need(archive, "recover_archive")
+    cid = golden1.cells[0]
+    present = [copy.deepcopy(r) for r in _golden_segment(golden1, "archive_files") if not r.get("snapshot")]
+    present[0]["sha256"] = "0" * 64
+    before = _tree_hash(env.run_dir)
+    with oslock.RunLock.acquire(env.run_dir / ".lock") as lock, pytest.raises(BenchError, match=present[0]["path"]):
+        recover(env.cfg.cells_root / env.plan["run_id"] / cid, env.run_dir / "archive" / cid, 1, set(), present,
+                run_lock=lock)
+    assert before == _tree_hash(env.run_dir)
+
+
 @pytest.mark.parametrize("kinds,expected", [
     ([], False), (["run.completed"], True), (["run.completed", "run.resumed"], False),
     (["run.completed", "run.resumed", "run.completed"], True),
