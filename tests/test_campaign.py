@@ -1097,3 +1097,54 @@ def test_rerun_is_a_noop_c47(tmp_path, capsys, sub):
     assert bench(root, *argv) == 0
     assert capsys.readouterr().out.startswith("no change:")
     assert ledger_path(root).read_bytes() == before
+
+
+# --- X-INTF: the kind check before the no-campaign-block return (F-1) and the R-106 c7 key set (W0-F1, W0-F2; F-5) --------------------
+
+def test_run_side_check_refuses_a_non_measurement_plan_with_no_campaign_block_f1(tmp_path):
+    root = tree(tmp_path)
+    doc = write_plan(root, "D1", campaign_block=False, prereg_hash=None, kind="discrimination")
+    exc = attempt(campaign.run_side_check, root, doc, "D1")
+    assert code_of(exc) == "HB-CMP-010" and "discrimination" in str(exc)
+
+
+def test_run_side_check_returns_none_for_a_measurement_plan_with_no_campaign_block_f1(tmp_path):
+    root = tree(tmp_path)
+    doc = write_plan(root, "M1", campaign_block=False, prereg_hash=None)
+    assert attempt(campaign.run_side_check, root, doc, "M1") is None
+    assert campaign.run_side_check(root, doc, "M1") is None
+
+
+def launch_names(root, doc):
+    """The components `identity.launch_check` names for a plan, without the added/removed/changed word."""
+    return sorted(item.rsplit(" ", 1)[0] for item in identity.launch_check(root, doc)().diff)
+
+
+def test_attach_refuses_an_added_run_class_file_naming_the_key_launch_check_names_w0_f1(tmp_path):
+    root = tree(tmp_path)
+    digest = to_registered(root)
+    doc = write_plan(root, "R2", prereg_hash=digest)
+    edit_src(root, "resume.py")  # a run-class src file lands after the baseline: the tree holds a key the stamp lacks
+    before = ledger_path(root).read_bytes()
+    exc = attempt(campaign.attach, root, CID, "R2")
+    names = launch_names(root, doc)
+    assert names == ["resume.py"], names
+    assert code_of(exc) == "HB-CMP-010" and "working tree differs" in str(exc) and all(name in str(exc) for name in names), exc
+    assert ledger_path(root).read_bytes() == before
+
+
+def test_the_tree_run_diff_names_a_stamp_build_the_plan_lacks_as_launch_check_does_w0_f2(tmp_path):
+    root = tree(tmp_path)
+    to_registered(root)
+    components = {**chain_identity(root)["components"], "builds/codex": H64}
+    effective = {"schema": identity.SCHEMA, "components": components}
+    plan_doc = {"tasks": {"T1": {}}, "builds": {}, "campaign": {"identity": {"components": components}}}
+    assert campaign._tree_run_diff(root, effective, plan_doc) == launch_names(root, plan_doc) == ["builds/codex"]
+
+
+def test_the_tree_run_diff_ignores_a_plan_build_the_stamp_lacks_r106(tmp_path):
+    root = tree(tmp_path)
+    to_registered(root)
+    effective = {"schema": identity.SCHEMA, "components": chain_identity(root)["components"]}
+    plan_doc = {"tasks": {"T1": {}}, "builds": {"codex": {"version": "9"}}, "campaign": {"identity": {"components": effective["components"]}}}
+    assert campaign._tree_run_diff(root, effective, plan_doc) == launch_names(root, plan_doc) == []

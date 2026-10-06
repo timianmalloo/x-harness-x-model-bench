@@ -238,6 +238,7 @@ _statuses = st.builds(
     last_update_ms=st.dictionaries(_ids, st.none() | st.integers(0, 10**9), max_size=4),
     validity=st.dictionaries(st.sampled_from(status.VALIDITY), st.integers(0, 600)),
     causes=st.dictionaries(st.from_regex(r"HB-CELL-[0-9]{3}", fullmatch=True), st.integers(0, 600)),
+    cell_causes=st.dictionaries(_ids, st.from_regex(r"HB-CELL-[0-9]{3}", fullmatch=True), max_size=4),
     running=st.lists(_running, max_size=4), decisions=st.just([]),
     stop_code=st.none() | st.from_regex(r"HB-[A-Z]+-[0-9]{3}", fullmatch=True),
     stop_reason=st.none() | st.from_regex(r"[a-z ]{1,40}", fullmatch=True),
@@ -340,5 +341,38 @@ def test_the_stop_fields_round_trip_and_a_wrong_type_is_refused(root, tmp_path):
     assert data["stop_diff"] == ["engine.py changed"] and data["stop_reason"] == "engine identity drift"
     for broken in ({**data, "stop_reason": 5}, {**data, "stop_diff": "engine.py changed"}, {**data, "stop_diff": [1]},
                    {**data, "stop_diff": ["x"] * 7}, {**data, "stop_diff": None}):
+        with pytest.raises(ValueError):
+            status.parse(json.dumps(broken))
+
+
+# --- X-INTF EV-18: a blocked cell is named with its id and cause --------------------------------------------------------------------
+
+def _blocked_run(root, tmp_path):
+    return make_run(root, tmp_path, {"a": GOOD, "b": GOOD},
+                    outcomes={"b": {"outcome": "failed", "cause": "build_changed", "code": "HB-CELL-115"}})
+
+
+def test_status_names_each_cell_that_carries_a_cause_code_ev18(root, tmp_path):
+    s = status.build(_blocked_run(root, tmp_path), now=NOW)
+    assert s.cell_causes == {"b": "HB-CELL-115"}
+    assert status.parse(status.to_json(s)) == s
+
+
+def test_the_summary_names_the_blocked_cell_with_its_id_and_cause_ev18(root, tmp_path):
+    text = status.text(status.build(_blocked_run(root, tmp_path), now=NOW))
+    assert "b: failed (build changed) (HB-CELL-115)\n" in text
+    assert "a: failed" not in text
+
+
+def test_a_run_with_no_cause_names_no_cell_ev18(root, tmp_path):
+    s = status.build(make_run(root, tmp_path, {"a": GOOD}), now=NOW)
+    assert s.cell_causes == {}
+    assert "HB-CELL" not in status.text(s)
+
+
+def test_parse_refuses_a_malformed_cell_causes_ev18(root, tmp_path):
+    data = json.loads(status.to_json(status.build(_blocked_run(root, tmp_path), now=NOW)))
+    for broken in ({**data, "cell_causes": []}, {**data, "cell_causes": {"not a cell id": "HB-CELL-115"}},
+                   {**data, "cell_causes": {"b": "build changed"}}, {k: v for k, v in data.items() if k != "cell_causes"}):
         with pytest.raises(ValueError):
             status.parse(json.dumps(broken))

@@ -702,6 +702,11 @@ def _lock_refusal(exc: BenchError, root: Path, campaign_id: str) -> BenchError:
     return exc
 
 
+def _runs_dir(root: Path, runs: Path | None) -> Path:
+    """The runs folder of one call: the handler passes `Path(args.runs)`; a library caller that names none gets `<root>/runs`."""
+    return root / "runs" if runs is None else runs
+
+
 def _precheck(root: Path, campaign_id: str, create: bool) -> None:
     problems = _structural(root, campaign_id)
     if problems:
@@ -711,17 +716,18 @@ def _precheck(root: Path, campaign_id: str, create: bool) -> None:
 
 
 def _locked(root: Path, campaign_id: str, others_extra: Sequence[tuple[Path, str]], wait_s: float, create: bool,
-            run_locks: bool = False, between=None):
+            run_locks: bool = False, between=None, runs: Path | None = None):
     """Acquire `campaign.lock` and probe the attached runs' `grade.lock`s (and, for `run_locks`, their run locks) in one
     `acquire_then_probe` call. Lock first, then read: the probe set is read lock-free first, and a run attached in between is
     caught by the re-read and retried. `others_extra` is the command's own argument run."""
     deadline = time.monotonic() + wait_s
     path = lock_path(root, campaign_id)
+    runs_dir = _runs_dir(root, runs)
     for _ in range(3):
-        runs = _attached_runs(read(root, campaign_id) if (campaign_dir(root, campaign_id) / "ledger.jsonl").exists() else None)
-        others = [(root / "runs" / run / "grade.lock", "HB-CMP-004") for run in runs]
+        attached = _attached_runs(read(root, campaign_id) if (campaign_dir(root, campaign_id) / "ledger.jsonl").exists() else None)
+        others = [(_runs_dir(root, runs_dir) / run / "grade.lock", "HB-CMP-004") for run in attached]
         if run_locks:
-            others += [(root / "runs" / run / ".lock", "HB-CMP-004") for run in runs]
+            others += [(_runs_dir(root, runs_dir) / run / ".lock", "HB-CMP-004") for run in attached]
         others += list(others_extra)
         while True:
             try:
@@ -733,7 +739,7 @@ def _locked(root: Path, campaign_id: str, others_extra: Sequence[tuple[Path, str
                 time.sleep(0.2)  # simplify: ceiling callers wait seconds; upgrade trigger a caller that waits minutes
         ledger_file = campaign_dir(root, campaign_id) / "ledger.jsonl"
         now = read(root, campaign_id) if ledger_file.exists() else None
-        if not (set(_attached_runs(now)) - set(runs)):
+        if not (set(_attached_runs(now)) - set(attached)):
             return lock
         lock.release()
     raise BenchError("HB-CMP-001", f'campaign "{campaign_id}" is being written. Retry in a moment.')
@@ -772,13 +778,13 @@ def command(name: str, campaign_id: str, fn):
 
 @contextmanager
 def session(root: Path, campaign_id: str, *, others_extra: Sequence[tuple[Path, str]] = (), wait_s: float = 0.0,
-            create: bool = False, run_locks: bool = False, between=None) -> Iterator[Session]:
+            create: bool = False, run_locks: bool = False, between=None, runs: Path | None = None) -> Iterator[Session]:
     """The one Execute-Around of every write command: validate, `lstat` the chain, lock-and-probe, read, verify, sweep, run,
     close the writer, release. `others_extra` is the command's own extra probe entries (C2: the run locks)."""
     campaign_id = validate_id("campaign", campaign_id)
     _precheck(root, campaign_id, create)
     waited = time.perf_counter_ns()
-    lock = _locked(root, campaign_id, others_extra, wait_s, create, run_locks, between)
+    lock = _locked(root, campaign_id, others_extra, wait_s, create, run_locks, between, runs)
     _note(lock_wait_ms=_ms(waited))
     sess: Session | None = None
     try:
@@ -847,11 +853,11 @@ def _append(sess: Session, kind: str, **fields) -> dict:
 
 # --- commands (library half; `cli.py` parses and prints) -----------------------------------------------------------
 
-def create(root: Path, campaign_id: str, question: str) -> str:
+def create(root: Path, campaign_id: str, question: str, *, runs: Path | None = None) -> str:
     """`bench campaign create`: one `campaign.created` row; the same question again is a no-op, another question a refusal."""
     campaign_id = validate_id("campaign", campaign_id)
     _check_text("question", question)  # before any path is built: a bad question creates nothing
-    with session(root, campaign_id, create=True) as s:
+    with session(root, campaign_id, create=True, runs=runs) as s:
         if s.state is None or not s.state.rows:
             _append(s, "campaign.created", question=question)
             return f'created campaign "{campaign_id}"'
@@ -983,11 +989,11 @@ def _terminal(state: CampaignState, action: str) -> BenchError:
                                     f"Run bench campaign status {state.campaign_id} to see the next step.")
 
 
-def baseline(root: Path, campaign_id: str, tasks: Sequence[str] | None = None) -> str:
+def baseline(root: Path, campaign_id: str, tasks: Sequence[str] | None = None, *, runs: Path | None = None) -> str:
     """`bench campaign baseline`: the full manifest as `identity/<h>.json`, then the row. Later: a no-op while the tree equals the effective
     identity, else a refusal. *assume:* the manifest is taken with no installed builds (`builds=None`); confirm by `identity.manifest`'s own
     signature; if false, a campaign that wants builds in its identity records them in a new component, not here."""
-    with session(root, campaign_id) as s:
+    with session(root, campaign_id, runs=runs) as s:
         state = s.state
         if state.state in ("concluded", "abandoned"):
             raise _terminal(state, "baseline")
@@ -1029,11 +1035,11 @@ def _scope(keys: Sequence[str]) -> str:
     return "both" if len(sides) == 2 else next(iter(sides))
 
 
-def fix(root: Path, campaign_id: str, defect_class: str, commit: str, components: Sequence[str]) -> str:
+def fix(root: Path, campaign_id: str, defect_class: str, commit: str, components: Sequence[str], *, runs: Path | None = None) -> str:
     """`bench campaign fix`: a recorded defect fix (ADR-0017 section 4). The named components must equal the differing set exactly, and
     the tree must hold what `commit` holds for each. `scope` is computed from the keys, never accepted."""
     defect_class, commit, names = validate_defect_class(defect_class), validate_commit(commit), sorted(set(components))
-    with session(root, campaign_id) as s:
+    with session(root, campaign_id, runs=runs) as s:
         state = s.state
         if state.state not in ("baselined", "piloted", "registered", "measuring"):
             raise _terminal(state, "a fix")
@@ -1111,10 +1117,10 @@ def _power_inputs(path: Path) -> dict:
     return {**raw, "schema": _SCHEMAS["power"]}
 
 
-def power(root: Path, campaign_id: str, inputs_file: Path) -> str:
+def power(root: Path, campaign_id: str, inputs_file: Path, *, runs: Path | None = None) -> str:
     """`bench campaign power`: validate with `power.analyse`, write `power/<h>.json`, then the row. The role comes from the state (the one
     rule is `fold`'s docstring): `prior` in `baselined`, `final` in `piloted` and `registered`; after a grid attach it is HB-CMP-009."""
-    with session(root, campaign_id) as s:
+    with session(root, campaign_id, runs=runs) as s:
         state = s.state
         role = {"baselined": "prior", "piloted": "final", "registered": "final"}.get(state.state)
         if role is None:
@@ -1244,22 +1250,29 @@ def parse_status(text: str) -> dict:
 
 
 def _tree_run_diff(root: Path, effective: Mapping, plan_doc: dict) -> list[str]:
-    """Components of the effective run side that the working tree no longer holds, over the effective tasks and the plan's builds."""
+    """Components where the effective run side and the working tree differ, over the effective tasks and the plan's builds (R-106 c7): the
+    key set is the union, so a run-class file the tree gained is named as `launch_check` names it. A tree build the stamp lacks is not a
+    difference (a chain-stamped plan may name builds the stamp lacks, c1); a stamp build the plan lacks is."""
     wanted = identity.side(dict(effective), "run")["components"]
     tree = identity.side(identity.manifest(root, _tasks_of(effective), plan_doc.get("builds") or {}), "run")["components"]
-    return [_display(key) for key, value in wanted.items() if (key in tree or not key.startswith("builds/")) and tree.get(key) != value]
+    return [_display(key) for key in sorted(wanted.keys() | tree.keys()) if (key in wanted or not key.startswith("builds/")) and tree.get(key) != wanted.get(key)]
 
 
-def check_plan(root: Path, state: CampaignState, plan_doc: dict, run_id: str, *, grid: bool = True, tree: bool = True) -> None:
-    """The one predicate of `attach` and the run-side check (W1-C section 5): every refusal is HB-CMP-010 with its own copy. `grid` adds the
-    registered-statement clauses (hash and arm commits); `tree` adds the working-tree comparison (`attach` and `plan --campaign` take it,
-    the engine's own `identity_check` takes it at each launch). The plan kind is read only through `plan.kind_of`."""
+def _require_measurement(plan_doc: dict, run_id: str) -> None:
+    """SR-E3 (1): a campaign reader refuses a run whose kind is not `measurement`, naming the kind (HB-CMP-010). The one reader of the kind."""
     try:
         kind = plan.kind_of(plan_doc)
     except BenchError as exc:
         raise BenchError("HB-CMP-010", f'run "{run_id}": {exc.message}. Plan it as a measurement run.') from exc
     if kind != "measurement":
         raise BenchError("HB-CMP-010", f'run "{run_id}" has plan kind {kind}, not measurement. Plan it as a measurement run.')
+
+
+def check_plan(root: Path, state: CampaignState, plan_doc: dict, run_id: str, *, grid: bool = True, tree: bool = True) -> None:
+    """The one predicate of `attach` and the run-side check (W1-C section 5): every refusal is HB-CMP-010 with its own copy. `grid` adds the
+    registered-statement clauses (hash and arm commits); `tree` adds the working-tree comparison (`attach` and `plan --campaign` take it,
+    the engine's own `identity_check` takes it at each launch). The plan kind is read only through `plan.kind_of`."""
+    _require_measurement(plan_doc, run_id)
     combos = [c for c in (plan_doc.get("cells") or []) + (plan_doc.get("combos") or []) if isinstance(c, dict)]
     if any(c.get("harness") == "synthetic" for c in combos):
         raise BenchError("HB-CMP-010", f'run "{run_id}" has a combo on the synthetic harness. Synthetic runs belong to discrimination, not to a campaign.')
@@ -1306,14 +1319,13 @@ def _run_launched(run_dir: Path) -> bool:
     return any(b'"cell.launch_intent"' in seg.read_bytes() for seg in (run_dir / "events").glob("*.jsonl"))
 
 
-def attach(root: Path, campaign_id: str, run_id: str, *, wait_s: float = 0.0) -> str:
+def attach(root: Path, campaign_id: str, run_id: str, *, wait_s: float = 0.0, runs: Path | None = None) -> str:
     """`bench campaign attach`: the grid run, under `check_plan`; the row freezes the pre-registration (HB-CMP-009 for `register`).
-    *assume:* runs live under `<root>/runs` (as `_locked` already probes them). Confirm: `bench --runs` defaults to it. If false: attach
-    reads the wrong folder and refuses HB-USR-001, never attaches a plan it did not read."""
+    The runs folder is the caller's (`bench --runs`, default `<root>/runs`); the lock probes and the plan read use the same one."""
     run_id = validate_id("run", run_id)
-    run_dir = root / "runs" / run_id
+    run_dir = _runs_dir(root, runs) / run_id
     entries = [(run_dir / "grade.lock", "HB-CMP-004"), (run_dir / ".lock", "HB-CMP-004")]
-    with session(root, campaign_id, others_extra=entries, run_locks=True, wait_s=wait_s) as s:
+    with session(root, campaign_id, others_extra=entries, run_locks=True, wait_s=wait_s, runs=runs) as s:
         state = s.state
         if state.state not in ("registered", "measuring"):
             raise _terminal(state, "attach")
@@ -1335,7 +1347,9 @@ def attach(root: Path, campaign_id: str, run_id: str, *, wait_s: float = 0.0) ->
 def run_side_check(root: Path, plan_doc: dict, run_id: str) -> None:
     """Inside the engine, after the run lock is held and before the first launch (`campaign_check=`). It try-probes `campaign.lock` (the
     run side of the pair `conclude` and `abandon` probe from the other end), reads lock-free, and compares the ledger with the plan dict the
-    engine parsed: it opens no file under `runs/<id>/` (W0 rev 6 R6-5). A plan with no campaign block is not its business."""
+    engine parsed: it opens no file under `runs/<id>/` (W0 rev 6 R6-5). A plan with no campaign block is not its business unless its
+    kind is not `measurement` (SR-E3 (1)): that is refused first, HB-CMP-010."""
+    _require_measurement(plan_doc, run_id)
     block = plan_doc.get("campaign")
     if not isinstance(block, dict) or not block.get("campaign_id"):
         return
@@ -1354,9 +1368,9 @@ def run_side_check(root: Path, plan_doc: dict, run_id: str) -> None:
                                       "Run bench campaign attach.")
 
 
-def conclude(root: Path, campaign_id: str) -> str:
+def conclude(root: Path, campaign_id: str, *, runs: Path | None = None) -> str:
     """`bench campaign conclude`: only from `measuring`; its session also probes every attached run's `.lock`."""
-    with session(root, campaign_id, run_locks=True) as s:
+    with session(root, campaign_id, run_locks=True, runs=runs) as s:
         if s.state.state == "concluded":
             return _no_change(f'campaign "{campaign_id}" is already concluded')
         if s.state.state != "measuring":
@@ -1366,10 +1380,10 @@ def conclude(root: Path, campaign_id: str) -> str:
         return f'concluded campaign "{campaign_id}"'
 
 
-def abandon(root: Path, campaign_id: str, reason: str) -> str:
+def abandon(root: Path, campaign_id: str, reason: str, *, runs: Path | None = None) -> str:
     """`bench campaign abandon`: from any live state; the same reason again is a no-op, another reason a refusal."""
     _check_text("reason", reason)
-    with session(root, campaign_id, run_locks=True) as s:
+    with session(root, campaign_id, run_locks=True, runs=runs) as s:
         state = s.state
         if state.state == "abandoned":
             earlier = latest(state, "abandoned")["reason"]
@@ -1425,11 +1439,11 @@ def _plan_of(run_dir: Path, run_id: str) -> dict:
     raise BenchError("HB-CMP-010", f'run "{run_id}" has plan kind {kind}, not measurement. Plan it as a measurement run.')
 
 
-def pilot_attach(root: Path, campaign_id: str, run_id: str) -> str:
+def pilot_attach(root: Path, campaign_id: str, run_id: str, *, runs: Path | None = None) -> str:
     """`bench campaign pilot attach`: a confirmed pilot-ring run of this campaign; the row carries the ring hash and the plan's own hash."""
     run_id = validate_id("run", run_id)
-    run_dir = root / "runs" / run_id
-    with session(root, campaign_id, others_extra=[(run_dir / "grade.lock", "HB-CMP-004")]) as s:
+    run_dir = _runs_dir(root, runs) / run_id
+    with session(root, campaign_id, others_extra=[(run_dir / "grade.lock", "HB-CMP-004")], runs=runs) as s:
         state = s.state
         if state.state not in ("baselined", "piloted"):
             raise _terminal(state, "pilot attach")
@@ -1472,12 +1486,12 @@ def _read_gate_input(name: str, reader, *args):
                                       "Fix the reader's input and rerun.") from exc
 
 
-def pilot_pass(root: Path, campaign_id: str, run_id: str, grading_id: str | None = None) -> str:
+def pilot_pass(root: Path, campaign_id: str, run_id: str, grading_id: str | None = None, *, runs: Path | None = None) -> str:
     """`bench campaign pilot pass`: the pilot gate (`gates.pilot`) over the run's current graded pass; a clean gate appends `pilot.passed`."""
     run_id = validate_id("run", run_id)
     grading_id = validate_id("grading", grading_id) if grading_id is not None else None
-    run_dir = root / "runs" / run_id
-    with session(root, campaign_id, others_extra=[(run_dir / "grade.lock", "HB-CMP-004")]) as s:
+    run_dir = _runs_dir(root, runs) / run_id
+    with session(root, campaign_id, others_extra=[(run_dir / "grade.lock", "HB-CMP-004")], runs=runs) as s:
         state = s.state
         if state.state not in ("baselined", "piloted"):
             raise _terminal(state, "pilot pass")
@@ -1506,14 +1520,14 @@ def pilot_pass(root: Path, campaign_id: str, run_id: str, grading_id: str | None
         return f'pilot passed: run "{run_id}", pass {grading_id}'
 
 
-def admit(root: Path, campaign_id: str) -> str:
+def admit(root: Path, campaign_id: str, *, runs: Path | None = None) -> str:
     """`bench campaign admit`: `gates.admission` over the latest pilot pass; one row per task whose decision is not already current."""
-    with session(root, campaign_id) as s:
+    with session(root, campaign_id, runs=runs) as s:
         state = s.state
         if state.state != "piloted":
             raise _terminal(state, "admit")
         passed = latest(state, "pilot.passed")
-        run_dir = root / "runs" / passed["run_id"]
+        run_dir = _runs_dir(root, runs) / passed["run_id"]
         view = views.load(run_dir)
         if view.grading_id != passed["grading_id"]:
             raise BenchError("HB-CMP-002", f'pilot pass {passed["grading_id"]} is not the current pass of run "{passed["run_id"]}" ({view.grading_id}). '
@@ -1590,7 +1604,7 @@ def _preview(root: Path, state: CampaignState, statement: dict, digest: str, pre
     return "\n".join(lines)
 
 
-def _check_against_pilot(root: Path, state: CampaignState, statement: dict) -> None:
+def _check_against_pilot(root: Path, state: CampaignState, statement: dict, runs: Path | None) -> None:
     """Registration preconditions beyond the statement itself: the final power, the admissions, the heads and the pilot's coverage."""
     reset = _reset_seq(state)
     final = latest(state, "power.recorded", role="final")
@@ -1607,7 +1621,7 @@ def _check_against_pilot(root: Path, state: CampaignState, statement: dict) -> N
             raise BenchError("HB-CMP-008", f'prereg mde for "{prop}" ({(statement["mde"] or {}).get(prop)}) is not the final analysis\'s ({spec.get("mde")}). '
                                           "Re-run power with the MDE you accept.")
     passed = latest(state, "pilot.passed")
-    run_dir = root / "runs" / passed["run_id"]
+    run_dir = _runs_dir(root, runs) / passed["run_id"]
     if not (run_dir / "plan.json").is_file():
         raise BenchError("HB-CMP-008", f'the pilot run "{passed["run_id"]}" has no plan under runs/ on this machine. Restore the run, or rerun the pilot.')
     pilot_plan = plan.load_confirmed(run_dir)
@@ -1630,7 +1644,7 @@ def _check_against_pilot(root: Path, state: CampaignState, statement: dict) -> N
                     raise BenchError("HB-CMP-008", f"pilot did not cover (task {task}, harness {harness}, arm {arm}). Rerun the pilot.")
 
 
-def register(root: Path, campaign_id: str, prereg_file: Path, confirm: str | None = None, *, wait_s: float = 0.0) -> str:
+def register(root: Path, campaign_id: str, prereg_file: Path, confirm: str | None = None, *, wait_s: float = 0.0, runs: Path | None = None) -> str:
     """`bench campaign register`: with no `confirm` a lock-free preview that writes nothing; with `--confirm <hash12>` the statement file, then
     the row. The freeze is HB-CMP-009 once a grid is attached (W0 section 6, the freeze order)."""
     campaign_id = validate_id("campaign", campaign_id)
@@ -1641,7 +1655,7 @@ def register(root: Path, campaign_id: str, prereg_file: Path, confirm: str | Non
         statement = _statement(prereg_file)
         _check_statement(state, statement)
         return _preview(root, state, statement, _statement_digest(statement), prereg_file)
-    with session(root, campaign_id, wait_s=wait_s) as s:
+    with session(root, campaign_id, wait_s=wait_s, runs=runs) as s:
         state = s.state
         if state.state == "measuring":
             raise BenchError("HB-CMP-009", f'pre-registration is frozen: run "{latest(state, "grid.attached")["run_id"]}" is attached. '
@@ -1656,7 +1670,7 @@ def register(root: Path, campaign_id: str, prereg_file: Path, confirm: str | Non
         if state.state == "registered" and current["prereg_hash"] == digest and current["seq"] > _reset_seq(state):
             return _no_change(f'statement {digest[:12]} is already registered for campaign "{campaign_id}"')
         _check_statement(state, statement)
-        _check_against_pilot(root, state, statement)
+        _check_against_pilot(root, state, statement, runs)
         folder = campaign_dir(root, campaign_id) / "prereg"
         folder.mkdir(exist_ok=True)
         atomic.create_once(folder / f"{digest}.json", ledger.canonical(statement))  # the file first; a crash before the row is retried by appending the row only
