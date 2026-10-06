@@ -403,3 +403,25 @@ def test_expected_na_raises_hb_usr_002_for_a_task_it_cannot_read(tmp_path, text)
     with pytest.raises(BenchError) as raised:
         readiness.expected_na(root, ["T1"])
     assert raised.value.code == "HB-USR-002" and "T1" in raised.value.message
+
+
+def _variant_case(flips, check_based, hidden=0):
+    declared = {"v": {"flips": flips, "clauses": {}}}
+    body = {"variants": {"v": {"hidden_tests_pass": hidden, "flips": flips, "clauses": {}}}}
+    return readiness.variant_failures(declared, body, check_based=check_based)
+
+
+def test_a_check_less_variant_flipping_the_primary_needs_no_hidden_test_pass():
+    assert _variant_case(["property_check_pass"], False) == []
+
+
+def test_a_check_less_variant_not_flipping_the_primary_must_still_pass_hidden_tests_r109():
+    out = _variant_case(["hallucinated_symbol_errors"], False)
+    assert [(f.code, f.item) for f in out] == [("HB-RDY-003", "v")]
+    assert "(1')" in out[0].detail
+
+
+def test_a_check_based_variant_with_failing_hidden_tests_is_still_refused_by_1():
+    out = _variant_case(["property_check_pass"], True)
+    assert [f.code for f in out] == ["HB-RDY-003"]
+    assert "hidden tests do not pass (1)" in out[0].detail
