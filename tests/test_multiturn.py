@@ -146,23 +146,14 @@ def test_t_eng_2_one_budget_across_turns(tmp_path):
     assert outcome["outcome"] == "timed_out", outcome
 
 
-@pytest.mark.parametrize("snapshots", [
-    "stubbed",
-    pytest.param("real", marks=pytest.mark.xfail(
-        strict=True, reason="J1d: T-ENG-4 on real snapshots needs archive_files KEYS snapshot (req-01M472W8WPQXV1YF726CAD2794)")),
-])
 @pytest.mark.parametrize("source", ["acp_turn", "native_record"])
-def test_t_eng_4_usage_sums_every_turn(tmp_path, source, snapshots):
+def test_t_eng_4_usage_sums_every_turn(tmp_path, source):
     per_turn = [{"usage": usage(n), "native_usage": {"input_tokens": n, "output_tokens": 0,
                 "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0},
                 "acp_usage": {"inputTokens": n, "outputTokens": 0, "cachedReadTokens": 0, "cachedWriteTokens": 0}}
                 for n in (5, 7)]
     with pytest.MonkeyPatch.context() as patch:
         patch.setattr(FakeLauncher, "usage_source", source)
-        # req-01M472W8WPQXV1YF726CAD2794: keep J1b's real usage/view
-        # cross-check independent of J1d's pending snapshot reader keys.
-        if snapshots == "stubbed":
-            patch.setattr(engine.Engine, "_snapshot_turn", lambda *args: True)
         _, _, cfg, _, _ = run_cell(tmp_path, per_turn)
     rows = views.rows(cfg.run_dir, "turn_usage")
     outcome = row(_events(cfg.run_dir), "cell.outcome")
@@ -474,12 +465,7 @@ def test_t_snap_6_locked_source_exhausts_bounded_retry(tmp_path, monkeypatch):
     assert not row(events, "cell.prompt_sent", 2)
 
 
-@pytest.mark.parametrize("views_verify", [
-    False,
-    pytest.param(True, marks=pytest.mark.xfail(
-        strict=True, reason="J1d: snapshot-aware views.verify after recovery (req-01M472JWD2FZH6Q2TXW5Q1W7SH)")),
-])
-def test_t_snap_3_engine_completes_partial_snapshot_rows_on_retry(tmp_path, monkeypatch, views_verify):
+def test_t_snap_3_engine_completes_partial_snapshot_rows_on_retry(tmp_path, monkeypatch):
     record = engine.Engine.record
     appended = []
     failed = []
@@ -497,14 +483,12 @@ def test_t_snap_3_engine_completes_partial_snapshot_rows_on_retry(tmp_path, monk
     assert row(events, "cell.turn_snapshot_archived", 1), "retry must commit a partially recorded snapshot"
     rows = [r for r in views.rows(cfg.run_dir, "archive_files") if r.get("snapshot") == "turn-1"]
     assert failed and len({r["path"] for r in rows}) == len(rows) >= 2
-    # req-01M472JWD2FZH6Q2TXW5Q1W7SH: J1d owns snapshot-aware views.verify.
     snapshot = row(events, "cell.turn_snapshot_archived", 1)
     folder = archive.snapshot_folder(cfg.run_dir, snapshot["cell_id"], 1)
     archive.verify(folder, rows)
     assert snapshot["snapshot_hash"] == archive.archive_hash(rows)
     assert (snapshot["files"], snapshot["bytes"]) == (len(rows), sum(r["size"] for r in rows))
-    if views_verify:
-        assert not [f for f in views.verify(cfg.run_dir) if f.level == "error"]
+    assert not [f for f in views.verify(cfg.run_dir) if f.level == "error"]
 
 
 def test_t_snap_7_link_is_a_row_never_a_copy(tmp_path):
@@ -544,14 +528,12 @@ def snapshot_run(tmp_path, event=True, duplicate=True):
     return run_dir, folder, files
 
 
-@pytest.mark.xfail(strict=True, reason="J1d: snapshot-aware archive_files key")
 def test_t_ver_1_snapshot_and_final_may_share_path(tmp_path):
     run_dir, _, _ = snapshot_run(tmp_path)
     assert views.verify(run_dir) == []
 
 
 @pytest.mark.parametrize("damage", ["file", "hash", "files", "bytes", "empty"])
-@pytest.mark.xfail(strict=True, reason="J1d: verify snapshot bytes, hash, counts and presence")
 def test_t_ver_2_snapshot_corruption_is_hb_led_008(tmp_path, damage):
     run_dir, folder, _ = snapshot_run(tmp_path, event=False, duplicate=False)
     if damage == "file":
@@ -571,7 +553,6 @@ def test_t_ver_2_snapshot_corruption_is_hb_led_008(tmp_path, damage):
     assert "HB-LED-008" in {f.code for f in findings}, findings
 
 
-@pytest.mark.xfail(strict=True, reason="J1d: filter final archive rows through snapshot_of")
 def test_t_ver_4_final_hash_ignores_snapshot_rows(tmp_path):
     run_dir, _, _ = snapshot_run(tmp_path)
     findings = views.verify(run_dir)
@@ -586,7 +567,6 @@ def test_t_ver_5_final_writer_omits_snapshot(tmp_path):
     assert archive.archive_hash(fixed) == "1d36b04e8c1076dce870825ba8ce33da50915674573f17129bbc7f42e4454b89"
 
 
-@pytest.mark.xfail(strict=True, reason="J1d: snapshots committed by events, not rows")
 def test_t_ver_6_live_snapshot_rows_without_event_are_ignored(tmp_path):
     run_dir, _, _ = snapshot_run(tmp_path, event=False)
     assert views.verify(run_dir) == []
