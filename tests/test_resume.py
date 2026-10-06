@@ -1088,6 +1088,17 @@ def test_resume_requires_verify_callback(golden1, tmp_path):
     assert before == _tree_hash(env.run_dir)
 
 
+def test_resume_refuses_a_plan_that_differs_from_the_confirmed_one(golden1, tmp_path):
+    """W1-K 3.1 step 1: the confirmed plan is the one authority; an edited in-memory plan is refused, not ignored."""
+    env = _prefix(golden1, tmp_path, 6)
+    env.plan["parameters"]["pid_wait_s"] = 1
+    before = _tree_hash(env.run_dir)
+    with pytest.raises(ValueError, match="plan.json"):
+        _resume(env)
+    assert before == _tree_hash(env.run_dir)
+    assert not oslock.is_held(env.run_dir / ".lock")
+
+
 def test_resume_refusal_releases_run_lock(golden1, golden5, tmp_path):
     env, code = _refusal("identity_drift", golden1, golden5, tmp_path)
     with pytest.raises(BenchError) as raised:
