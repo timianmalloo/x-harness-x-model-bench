@@ -189,16 +189,25 @@ def _evidence_items(run_dir: Path, grading_id: str, labels: dict[str, str], poin
         late = sorted(c for c, out in found[role]["cases"].items() if out == "timeout" and c not in allowed)
         if late:
             items.append(f"{role}: case {', '.join(late)} timed out (a timeout nothing declares is not measured content)")
+    return found, [*items, *_double_run_items(run_dir, grading_id, labels, spans=True)]
+
+
+def _double_run_items(run_dir: Path, grading_id: str, labels: dict[str, str], *, spans: bool) -> list[str]:
+    """R-90 condition 3 for every task: the hidden-test disagreement item. A check-based pass (`spans`) adds the
+    not-comparable and unbiased_ok items. A check-less cell with no hidden-test value is NA by its own score row, which
+    `_untrustworthy` already holds to the closed reason set, and its pass records no spans (SHAPE-A row 4)."""
     try:
         disagree, not_comparable = readiness.comparable_cells(run_dir, grading_id)
-        unbiased = readiness.unbiased_failures(run_dir, grading_id)
+        unbiased = readiness.unbiased_failures(run_dir, grading_id) if spans else []
     except BenchError as exc:
-        return found, [*items, f"a reader could not run: {exc.message}"]
-    for what, cells in (("hidden tests disagree with pass_at_1 in", disagree), ("not comparable (a side is NA) in", not_comparable),
+        return [f"a reader could not run: {exc.message}"]
+    items = []
+    for what, cells in (("hidden tests disagree with pass_at_1 in", disagree),
+                        ("not comparable (a side is NA) in", not_comparable if spans else []),
                         ("a span with unbiased_ok false in", unbiased)):
         if cells:
             items.append(f"{what} {', '.join(labels.get(c, c) for c in cells)}")
-    return found, items
+    return items
 
 
 def _property_clauses(run_dir: Path, pointer: str | None, prop: str) -> dict | None:
@@ -380,6 +389,8 @@ def _run_and_record(root: Path, task_id: str, task: dict, run_dir: Path, p: dict
         items += more
         if not more:
             items += [f"{r}: no check evidence found for the cell" for r in sorted(set(combo_role.values()) - set(found))]
+    else:
+        items += _double_run_items(run_dir, grading_id, {c["cell_id"]: c["label"] for c in p["cells"]}, spans=False)
     body: dict = {"schema": RECORD_SCHEMA, "task": task_id, "task_version": tv, "identity_hash": ih, "platform": sys.platform,
                   "scores": {role: scores[role] for role in ROLES}, "expected": expected}
     if check_based and not items:
