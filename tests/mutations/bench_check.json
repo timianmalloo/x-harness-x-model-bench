@@ -27,6 +27,15 @@
   ]
  },
  {
+  "name": "LB1 {fake_url} is substituted into kwargs as well as args: wider than R6-17(c) and ADR-0018 s3 allow",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "if k == \"args\" else v for k, v in frame.items()}",
+  "replace": "if k in (\"args\", \"kwargs\") else v for k, v in frame.items()}",
+  "tests": [
+   "tests/test_property_loopback.py::test_fake_url_is_substituted_into_string_args_only_never_kwargs"
+  ]
+ },
+ {
   "name": "LB1 a fault case is timed over the whole case, host start included, not the probe-host call",
   "file": "src/harness_bench/grade/bench_check.py",
   "find": "    elapsed_ms = sum(_SPANS) if case.get(\"kind\") == \"fault\" else ",

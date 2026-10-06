@@ -266,8 +266,8 @@ class ProbeHost:
         """One frame out, one response line in, within what is left of the case bound. None is a broken exchange."""
         self._n += 1
         frame = {"id": self._n} | dict(frame)
-        if self.fake_url is not None:  # `{fake_url}` in a request's string args, as `{state_dir}` is in the app's
-            frame = {k: _resolve(v, None, self.fake_url) if k in ("args", "kwargs") else v for k, v in frame.items()}
+        if self.fake_url is not None:  # `{fake_url}` in a request's string args only (R6-17(c), ADR-0018 s3), never kwargs
+            frame = {k: _resolve(v, None, self.fake_url) if k == "args" else v for k, v in frame.items()}
         t0 = time.monotonic()
         try:
             self.proc.stdin.write((json.dumps(frame) + "\n").encode())
