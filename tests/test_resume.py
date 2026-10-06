@@ -13,6 +13,7 @@ Every test that needs the resume engine (K1c) fails today on the skeleton's HB-U
 import copy
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -269,6 +270,9 @@ def _last_key(rows):
     return f"{last['kind']}/{last['next']}" if last["kind"] == "cell.turn_ended" else last["kind"]
 
 
+# assume: the classifier's Action is an object per plan cell with cell_id, rule ("C0".."C7"), outcome ("failed"/"stopped"/
+# None) and code (HB-CELL-117/118/119/None); deferred to K1b's resume.classify, which reconciles it with W1-K section 4.
+# If K1b names the fields differently, _verdict and _action below are the only readers to change.
 def _verdict(action):
     miss = "<missing>"
     return (getattr(action, "rule", miss), getattr(action, "outcome", miss), getattr(action, "code", miss))
@@ -310,28 +314,141 @@ def test_every_two_cell_ledger_prefix_matches_the_adr_table(golden2):
                 assert _verdict(_action(actions, cid)) == table[key], f"prefix {i}, cell {cid}, stopped={stopped}"
 
 
-# ---------------------------------------------------------------- windows (T1)
+# ---------------------------------------------------------------- T2: a real `cli.py run`, killed, run again
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
-def test_window_w2_launched_not_prompted(golden1, tmp_path):  # [W2_launched_not_prompted]
-    env = _prefix(golden1, tmp_path, 5)
-    assert _resume(env).exit_code == 0
-    rows = _rows(env.run_dir)
+TESTS_DIR = Path(__file__).resolve().parent
+SRC_DIR = Path(cli.__file__).resolve().parent.parent
+T2_WAIT_S = 90  # a bound on the poll: the barrier makes the target row certain, so this is a failure bound, never a pace
+
+# The child bootstrap composes the fixture dependencies of cmd_run (profiles, workspace builder, preflight, grade,
+# identity, campaign) and, for the first child only, an Engine subclass whose barrier blocks AFTER a real durable
+# target row. Engine.run is the real one; the second child resumes through the real cmd_run branch.
+T2_BOOTSTRAP = """
+import json, os, sys, threading
+sys.path[:0] = [{tests!r}, {src!r}]
+from test_engine import FakeLauncher, _build_workspace
+from harness_bench import cli, engine
+conf = json.loads(os.environ["HB_T2"])
+launcher = FakeLauncher(conf["behaviours"])
+cli.profiles.load = lambda root, harness: None
+cli.profiles.ProfileLauncher = lambda *a: launcher
+cli.preflight.check = lambda *a: None
+cli.plan.task_version_hash = lambda d: "v"
+cli.plan.require_scripted_user_inputs = lambda *a: None
+cli._workspace_builder = lambda *a: _build_workspace
+cli.identity.launch_check = lambda *a: None
+cli.campaign.run_side_check = lambda *a: None
+cli.runner.run_pass = lambda *a, **k: type("Pass", (), {{"summary": lambda self: {{"passes": 1}}}})()
+target = conf.get("target")
+if target:
+    class ObservedEngine(engine.Engine):
+        def _append_now(self, fact, record):
+            out = super()._append_now(fact, record)  # the row is durable here
+            if fact == "events" and all(record.get(k) == v for k, v in target.items()):
+                print("TARGET", flush=True)
+                threading.Event().wait()  # held until the parent kills this PID
+            return out
+    engine.Engine = ObservedEngine
+sys.exit(cli.main(sys.argv[1:]))
+"""
+
+
+def _t2_plan(base):
+    p = _plan(1, parallelism=1)
+    p["profiles"] = {"fake": {"usage_source": FakeLauncher.usage_source, "vendor": "fake", "auxiliary_models": []}}
+    p["tasks"]["X1"]["turns"] = [{"n": 2, "prompt": "Repair it.\n", "sha256": hashlib.sha256(b"Repair it.\n").hexdigest()}]
+    p["tasks"]["X1"]["version_hash"] = "v"
+    p["plan_hash"] = plan.plan_hash(p)
+    run_dir = base / "runs" / p["run_id"]
+    plan.confirm(run_dir, p)
+    return p, run_dir
+
+
+def _t2_child_env(base, p, first_behaviour, target):
+    log = base / "prompts.jsonl"
+    behaviours = {c["label"]: {"model": "fake-model", "prompts_log": str(log),
+                               "per_turn": [{"files": {"a.txt": "1"}}, {"files": {"a.txt": "2"}}], **first_behaviour}
+                  for c in p["cells"]}
+    return dict(os.environ, HB_T2=json.dumps({"behaviours": behaviours, "target": target})), log
+
+
+def _t2_kill_and_resume(base, *, behaviour, target):
+    """Run `cli.py run` in a child, wait for the real durable target row, check the child is alive, kill only that
+    PID, then run `cli.py run` on the same run in a second child. Returns the plan, both children's output and the env."""
+    p, run_dir = _t2_plan(base)
+    boot = base / "boot.py"
+    boot.write_text(T2_BOOTSTRAP.format(tests=str(TESTS_DIR), src=str(SRC_DIR)), encoding="utf-8")
+    args = ["--root", str(base / "root"), "--runs", str(run_dir.parent), "--cells-root", str(base / "cells"),
+            "--tools-dir", str(_fake_tree(base / "tools")), "run", p["run_id"]]
+    env1, _ = _t2_child_env(base, p, behaviour, target)
+    first = subprocess.Popen([sys.executable, str(boot), *args], env=env1, stdout=subprocess.PIPE,
+                             stderr=(base / "first.err").open("w"), text=True)
+    reached, seen = threading.Event(), []
+
+    def read():
+        for line in first.stdout:
+            seen.append(line)
+            if line.strip() == "TARGET":
+                reached.set()
+
+    reader = threading.Thread(target=read, daemon=True)
+    reader.start()
+    try:
+        assert reached.wait(T2_WAIT_S), "the first child never reached its durable target row"
+        assert first.poll() is None, "the first child must still be alive when it is killed"
+        target_rows = [r for r in _rows(run_dir) if all(r.get(k) == v for k, v in target.items())]
+        assert target_rows, "the target row is durably in the ledger before the kill"
+    finally:
+        if first.poll() is None:
+            if sys.platform == "win32":  # this Popen's own tree only: the fake agent is its grandchild
+                subprocess.run(["taskkill", "/F", "/T", "/PID", str(first.pid)], capture_output=True, check=False)
+            else:
+                first.kill()
+        first.wait(timeout=30)
+        reader.join(timeout=30)
+    env2, log = _t2_child_env(base, p, {}, None)
+    second = subprocess.run([sys.executable, str(boot), *args], env=env2, capture_output=True, text=True, timeout=180)
+    return SimpleNamespace(plan=p, run_dir=run_dir, cell=p["cells"][0]["cell_id"], log=log, second=second,
+                           cells_root=base / "cells")
+
+
+def _t2_w2(golden1, tmp_path, monkeypatch):
+    t2 = _t2_kill_and_resume(tmp_path, behaviour={"mode": "hang_handshake"}, target={"kind": "attempt.process_started"})
+    assert t2.second.returncode == 0, t2.second.stderr
+    rows = _rows(t2.run_dir)
     assert len(_kinds(rows, "cell.launch_intent")) == 2, "the relaunch writes a second launch_intent"
-    assert _outcome_map(env) == {golden1.cells[0]: ("completed", None)}
-    logged = [json.loads(s) for s in env.log.read_text(encoding="utf-8").splitlines()]
+    assert _outcome_map(t2) == {t2.cell: ("completed", None)}
+    logged = [json.loads(s) for s in t2.log.read_text(encoding="utf-8").splitlines()]
     assert [r["n"] for r in logged if r["kind"] == "session/prompt"] == [1, 2]
 
 
+def _t2_w11(golden1, tmp_path, monkeypatch):
+    t2 = _t2_kill_and_resume(tmp_path, behaviour={}, target={"kind": "cell.archived"})
+    workspace = t2.cells_root / t2.plan["run_id"] / t2.cell
+    assert workspace.is_dir(), "the kill leaves the workspace behind"
+    before = _of(_rows(t2.run_dir), t2.cell)
+    assert t2.second.returncode == 0, t2.second.stderr
+    assert _of(_rows(t2.run_dir), t2.cell) == before, "a cell with outcome and cell.archived gains no row"
+    assert workspace.is_dir(), "a leftover workspace is bench teardown's, not the resume's"
+
+
+@pytest.mark.parametrize("name", ["T2"])
 @pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
-def test_window_w2b_folder_already_gone(golden1, tmp_path):  # [W2b_folder_already_gone]
+def test_cli_run_resumes(tmp_path, name):
+    t2 = _t2_kill_and_resume(tmp_path, behaviour={}, target={"kind": "cell.turn_snapshot_archived", "turn": 1})
+    assert t2.second.returncode == 0, t2.second.stderr
+    assert _outcome_map(t2) == {t2.cell: ("completed", None)}
+
+
+# ---------------------------------------------------------------- windows (T1, T2 for W2/W11)
+
+def _w2b(golden1, tmp_path, monkeypatch):
     env = _prefix(golden1, tmp_path, 5, no_workspace=golden1.cells)
     assert _resume(env).exit_code == 0
     assert _outcome_map(env) == {golden1.cells[0]: ("completed", None)}
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
-def test_window_w4_snapshot_tmp(golden1, tmp_path):  # [W4_snapshot_tmp]
+def _w4(golden1, tmp_path, monkeypatch):
     cid = golden1.cells[0]
     env = _prefix(golden1, tmp_path, 7, tmp_dirs=[(cid, "turn-1.tmp-1-ab")])
     assert _resume(env).exit_code == 0
@@ -340,8 +457,7 @@ def test_window_w4_snapshot_tmp(golden1, tmp_path):  # [W4_snapshot_tmp]
     assert _outcome_map(env) == {cid: ("failed", "HB-CELL-119")}
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
-def test_window_w4b_snapshot_event_absent_under_stop(golden1, tmp_path):  # [W4b_snapshot_event_absent_under_stop]
+def _w4b(golden1, tmp_path, monkeypatch):
     stop = _stop_rows("run_stopped", golden1.plan["run_id"])
     env = _materialize(golden1, tmp_path, golden1.rows[:7] + stop)
     assert _resume(env).exit_code == 3
@@ -349,8 +465,7 @@ def test_window_w4b_snapshot_event_absent_under_stop(golden1, tmp_path):  # [W4b
     assert _outcome_map(env) == {golden1.cells[0]: ("stopped", None)}
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
-def test_window_w4c_redo_fails(golden1, tmp_path, monkeypatch):  # [W4c_redo_fails]
+def _w4c(golden1, tmp_path, monkeypatch):
     cid = golden1.cells[0]
     env = _prefix(golden1, tmp_path, 7)
 
@@ -364,9 +479,7 @@ def test_window_w4c_redo_fails(golden1, tmp_path, monkeypatch):  # [W4c_redo_fai
     assert _kinds(_rows(env.run_dir), "cell.archived", cell_id=cid)
 
 
-@pytest.mark.parametrize("mode", ["none", "partial", "all"], ids=["W5a_rows_none", "W5b_rows_partial", "W5c_rows_all"])
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
-def test_window_w5_snapshot_renamed_event_absent(golden1, tmp_path, mode):
+def _w5(golden1, tmp_path, mode):
     cid = golden1.cells[0]
     env = _prefix(golden1, tmp_path, 7, snapshots={cid}, snap_rows=mode)
     assert _resume(env).exit_code == 0
@@ -375,8 +488,7 @@ def test_window_w5_snapshot_renamed_event_absent(golden1, tmp_path, mode):
     assert sorted(paths) == sorted({r["path"] for r in _golden_segment(golden1, "archive_files") if r.get("snapshot") == "turn-1"})
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
-def test_window_w9_archive_tmp(golden1, tmp_path):  # [W9_archive_tmp]
+def _w9(golden1, tmp_path, monkeypatch):
     cid = golden1.cells[0]
     env = _prefix(golden1, tmp_path, 12, tmp_dirs=[(cid, "attempt-1.tmp-1-ab")])
     before = _kinds(_rows(env.run_dir), "cell.outcome")
@@ -387,9 +499,7 @@ def test_window_w9_archive_tmp(golden1, tmp_path):  # [W9_archive_tmp]
     assert _kinds(_rows(env.run_dir), "cell.outcome") == before, "a recorded outcome is never rewritten"
 
 
-@pytest.mark.parametrize("mode", ["none", "partial", "all"], ids=["W10a_rows_none", "W10b_rows_partial", "W10c_rows_all"])
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
-def test_window_w10_archive_renamed_event_absent(golden1, tmp_path, mode):
+def _w10(golden1, tmp_path, mode):
     cid = golden1.cells[0]
     env = _prefix(golden1, tmp_path, 12, attempts={cid}, final_rows=mode)
     assert _resume(env).exit_code == 0
@@ -398,16 +508,27 @@ def test_window_w10_archive_renamed_event_absent(golden1, tmp_path, mode):
     assert sorted(final) == sorted(r["path"] for r in _golden_segment(golden1, "archive_files") if not r.get("snapshot"))
 
 
+WINDOWS = {
+    "W2_launched_not_prompted": _t2_w2,
+    "W2b_folder_already_gone": _w2b,
+    "W4_snapshot_tmp": _w4,
+    "W4b_snapshot_event_absent_under_stop": _w4b,
+    "W4c_redo_fails": _w4c,
+    "W5a_rows_none": lambda g, t, m: _w5(g, t, "none"),
+    "W5b_rows_partial": lambda g, t, m: _w5(g, t, "partial"),
+    "W5c_rows_all": lambda g, t, m: _w5(g, t, "all"),
+    "W9_archive_tmp": _w9,
+    "W10a_rows_none": lambda g, t, m: _w10(g, t, "none"),
+    "W10b_rows_partial": lambda g, t, m: _w10(g, t, "partial"),
+    "W10c_rows_all": lambda g, t, m: _w10(g, t, "all"),
+    "W11_done_skip": _t2_w11,
+}
+
+
+@pytest.mark.parametrize("name", list(WINDOWS))
 @pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
-def test_window_w11_done_skip(golden1, tmp_path):  # [W11_done_skip]
-    cid = golden1.cells[0]
-    env = _prefix(golden1, tmp_path, 13)
-    workspace = env.cfg.cells_root / env.plan["run_id"] / cid
-    assert workspace.is_dir(), "the fixture leaves the workspace behind"
-    before = _of(_rows(env.run_dir), cid)
-    assert _resume(env).exit_code == 0
-    assert _of(_rows(env.run_dir), cid) == before, "a cell with outcome and cell.archived gains no row"
-    assert workspace.is_dir(), "a leftover workspace is bench teardown's, not the resume's"
+def test_window(golden1, tmp_path, monkeypatch, name):
+    WINDOWS[name](golden1, tmp_path, monkeypatch)
 
 
 # ---------------------------------------------------------------- stop windows
@@ -494,9 +615,7 @@ def _uninterrupted(g, tmp_path, i, **kw):
     return _outcome_map(clean)
 
 
-@pytest.mark.parametrize("name,i", [("W13", 6), ("W14", 9)])
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
-def test_resume_of_a_resume(golden1, tmp_path, name, i):
+def _w13_w14(golden1, tmp_path, name, i):
     want = _uninterrupted(golden1, tmp_path, i)
     marker = _dead_marker(_prefix(golden1, tmp_path / "crashed", i))
     after = []
@@ -511,15 +630,13 @@ def test_resume_of_a_resume(golden1, tmp_path, name, i):
     assert len(abandoned) == len(set(abandoned)), "a segment already named is never named twice"
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
-def test_resume_of_a_resume_w13b_stray_segment(golden1, tmp_path):  # [W13b_stray_segment]
+def _w13b(golden1, tmp_path, monkeypatch):
     env = _prefix(golden1, tmp_path, 6, stray=["-r002"])
     assert _resume(env).exit_code == 0
     assert (env.run_dir / "events" / f"{golden1.stems['events']}-r003.jsonl").is_file(), "the ordinal skips a stray r002"
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
-def test_resume_of_a_resume_w13c_clock_back(golden1, tmp_path, monkeypatch):  # [W13c_clock_back]
+def _w13c(golden1, tmp_path, monkeypatch):
     env = _prefix(golden1, tmp_path, 6)
     real = time.time
     monkeypatch.setattr(time, "time", lambda: real() - 3600)
@@ -530,16 +647,14 @@ def test_resume_of_a_resume_w13c_clock_back(golden1, tmp_path, monkeypatch):  # 
     assert kinds.index("run.resumed") > kinds.index("run.started")
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
-def test_run_started_by_resume_w15(golden1, tmp_path):  # [W15]
+def _w15(golden1, tmp_path):
     env = _materialize(golden1, tmp_path, [])
     assert _resume(env).exit_code == 0
     assert _kinds(_rows(env.run_dir), "run.started")
     assert _outcome_map(env) == {golden1.cells[0]: ("completed", None)}
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
-def test_resume_after_launch_stop_w16(golden2, tmp_path):  # [W16]
+def _w16(golden2, tmp_path):
     run_id = golden2.plan["run_id"]
     rows = [golden2.rows[0], ledger.stamp({"kind": "run.launch_stopped", "code": "HB-RUN-004", "reason": "disk low"}),
             ledger.stamp({"kind": "run.completed", "run_id": run_id, "segment_heads": {}, "cells_ended": 0, "grading": None})]
@@ -551,6 +666,28 @@ def test_resume_after_launch_stop_w16(golden2, tmp_path):  # [W16]
     assert _resume(env).exit_code == 0
     assert set(_outcome_map(env)) == set(golden2.cells)
     assert status.build(env.run_dir).completion == "complete"
+
+
+@pytest.mark.parametrize("name", ["W13", "W13b_stray_segment", "W13c_clock_back", "W14"])
+@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
+def test_resume_of_a_resume(golden1, tmp_path, monkeypatch, name):
+    if name == "W13b_stray_segment":
+        return _w13b(golden1, tmp_path, monkeypatch)
+    if name == "W13c_clock_back":
+        return _w13c(golden1, tmp_path, monkeypatch)
+    return _w13_w14(golden1, tmp_path, name, 6 if name == "W13" else 9)
+
+
+@pytest.mark.parametrize("name", ["W15"])
+@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
+def test_run_started_by_resume(golden1, tmp_path, name):
+    _w15(golden1, tmp_path)
+
+
+@pytest.mark.parametrize("name", ["W16"])
+@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
+def test_resume_after_launch_stop(golden2, tmp_path, name):
+    _w16(golden2, tmp_path)
 
 
 # ---------------------------------------------------------------- run-level state and liveness
@@ -628,6 +765,8 @@ def _with_live_pid(golden1, tmp_path, created_shift=0, **params):
     rows = [dict(r) for r in golden1.rows[:6]]
     rows[3] = {**rows[3], "pid": proc.pid, "created_at": created + created_shift}
     env = _materialize(golden1, tmp_path, rows)
+    # assume: plan.parameters.pid_wait_s is the bounded wait for a live lock holder (W1-K liveness); confirm in K1c
+    # (resume.py / plan.DEFAULT_PARAMETERS); if the name or unit differs, only this fixture line and the bound below change.
     env.plan["parameters"].update({"pid_wait_s": 1, **params})
     return env, proc
 
@@ -791,18 +930,6 @@ def test_abandoned_set_equals_unsealed_engine_facts(golden1, tmp_path):
     env = _prefix(golden1, tmp_path, 12)
     assert _resume(env).exit_code == 0
     assert {r["fact"] for r in _kinds(_rows(env.run_dir), "segment.abandoned")} == set(engine.FACTS)
-
-
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
-def test_cli_run_resumes(golden1, tmp_path, monkeypatch):  # [T2]: in-process real cli.main; no child kill (see the K2 handoff)
-    env = _prefix(golden1, tmp_path, 5)
-    monkeypatch.setattr(cli.profiles, "ProfileLauncher", lambda *a: env.cfg.launchers["fake"])
-    monkeypatch.setattr(cli.preflight, "check", lambda *a: None)
-    monkeypatch.setattr(cli.runner, "run_pass", lambda *a, **k: type("Pass", (), {"summary": lambda self: {}})())
-    args = ["--root", str(env.root), "--runs", str(env.run_dir.parent), "--cells-root", str(env.cfg.cells_root),
-            "--tools-dir", str(_fake_tree(tmp_path / "tools"))]
-    assert cli.main([*args, "run", env.plan["run_id"]]) == 0
-    assert _outcome_map(env) == {golden1.cells[0]: ("completed", None)}
 
 
 # ---------------------------------------------------------------- one definition of "completed" and of "work left"
