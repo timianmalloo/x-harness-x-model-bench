@@ -4,16 +4,14 @@ Two rings. Text checks run on every push. The readiness tests build each base th
 `workspace.task_source` (a cached upstream clone), then grade through the real `correctness.grade`, so they cost seconds
 each and prove one-time authoring facts: a hidden test is red for its own reason, a variant flips exactly its metrics.
 
-State at `draft`: `diffstats` and `_changes.product_lines/line_delta/is_test_path` (X-LG, X-J2a) are not on main, so every
-size and count here is measured by `tests/fixtures/property_tasks/standin_diffstats.py` (a named second definition of the
-rule). The `ready` follow-on deletes the stand-in and asserts the same numbers through the real functions, and loads each
+Every size and count here is measured by the real `grade/diffstats.py` over `grade/_changes.py` (the stand-in is deleted,
+HASH-A). The tests load each
 `variants.py` through W1-E's reader (X-E has not joined; `read_variants` below applies W0 section 2's rules locally).
 """
 
 from __future__ import annotations
 
 import ast
-import importlib.util
 import re
 import shutil
 import subprocess
@@ -25,14 +23,10 @@ import pytest
 import ring_cache
 
 from harness_bench import config
-from harness_bench.grade import correctness
+from harness_bench.grade import _changes, correctness, diffstats
 
 ROOT = Path(__file__).resolve().parents[1]
 TASKS = ROOT / "tasks"
-STANDIN_PATH = ROOT / "tests" / "fixtures" / "property_tasks" / "standin_diffstats.py"
-_spec = importlib.util.spec_from_file_location("sm_standin_diffstats", STANDIN_PATH)
-standin = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(standin)
 
 # Pinned facts per task. The independent oracle for the variants: the clause that decides and the metrics that differ from
 # the reference (W0 section 2 rev 6, flips of a check-less task are metric ids). Nothing here is read back from the task.
@@ -159,7 +153,8 @@ def metrics(tid: str, base: Path, files: dict[str, str], passed: bool) -> dict:
     spec, yaml = DEFINITIONS[tid], task_yaml(tid)
     prop = yaml["property"]
     final = {**base_py(base), **{k: v for k, v in files.items() if k.endswith(".py")}}
-    got = standin.measure(base_py(base), final, yaml["blast_radius"], spec["package"], prop["size_reference_lines"], prop["ceilings"])
+    got = diffstats.measure(base_py(base), final, yaml["blast_radius"], spec["package"], prop["size_reference_lines"], prop["ceilings"])
+    got["size_vs_reference"] = str(got["size_vs_reference"])  # the real measure returns a Decimal at scale 4
     got["property_check_pass"] = int(passed and got["clause"] is None)
     return got
 
@@ -410,7 +405,7 @@ def test_base_test_layout_is_recorded_and_classified_by_is_test_path(tid, bases)
     assert len(rows) >= 6 and {r[1] for r in rows} == {"base", "new"}
     for path, where, kind in rows:
         assert (path in base_paths) == (where == "base"), path
-        assert standin.is_test_path(path, base_paths) == (kind == "test"), path
+        assert _changes.is_test_path(path, base_paths) == (kind == "test"), path
     new_paths = {p for p, w, k in rows if w == "new"}
     spec = DEFINITIONS[tid]
     assert {spec["test_dir_created"], spec["created"]} <= new_paths
@@ -487,7 +482,7 @@ def test_every_clause_has_a_variant_and_the_launder_pair_separates(tid, bases):
     for name in ("launderlines", "laundertest"):
         files = apply_variant(reference, variants[name])
         final = {**base_py(bases[tid]), **{k: v for k, v in files.items() if k.endswith(".py")}}
-        alone = standin.measure(base_py(bases[tid]), final, task_yaml(tid)["blast_radius"], spec["package"],
+        alone = diffstats.measure(base_py(bases[tid]), final, task_yaml(tid)["blast_radius"], spec["package"],
                                 task_yaml(tid)["property"]["size_reference_lines"], lifted)
         assert alone["clause"] is None, name
 
@@ -504,12 +499,14 @@ def test_laundertest_is_counted_unless_a_test_directory_part_is_exempt(tid, base
     def exempt_any_test_dir(path, base_paths):
         return any(p in ("tests", "test") for p in path.split("/")[:-1]) or path.rsplit("/", 1)[-1].startswith("test_")
 
-    monkeypatch.setattr(standin, "is_test_path", exempt_any_test_dir)
+    monkeypatch.setattr(_changes, "is_test_path", exempt_any_test_dir)
     mutated = grade_files(tid, bases[tid], files)
     assert (mutated["clause"], mutated["property_check_pass"]) == (None, 1)  # the reference's verdict: the variant would not discriminate
 
 
-def test_the_standin_ignores_docstrings_blank_and_comment_lines():
-    text = 'def f():\n    """doc\n\n    more\n    """\n    # note\n\n    return 1\n'
-    assert standin.product_lines(text) == ["def f():", "    return 1"]
-    assert standin.product_lines("x = 1  # kept\n") == ["x = 1  # kept"]
+def test_product_lines_ignores_docstrings_blank_and_comment_lines(tmp_path):
+    f = tmp_path / "m.py"
+    f.write_text('def f():\n    """doc\n\n    more\n    """\n    # note\n\n    return 1\n', encoding="utf-8")
+    assert _changes.product_lines(f) == ["def f():", "    return 1"]
+    f.write_text("x = 1  # kept\n", encoding="utf-8")
+    assert _changes.product_lines(f) == ["x = 1  # kept"]
