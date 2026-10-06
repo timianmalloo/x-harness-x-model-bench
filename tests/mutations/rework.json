@@ -88,5 +88,14 @@
     "tests": [
       "tests/test_rework.py::test_rework_task_without_turns_stays_not_built"
     ]
+  },
+  {
+    "name": "the ratio branch drops write_section's evidence pointer, so its scores carry no evidence",
+    "file": "src/harness_bench/grade/rework.py",
+    "find": "ptr = prop.write_section(inp, \"rework\", section_data)\n",
+    "replace": "ptr = prop.write_section(inp, \"rework\", section_data) and None\n",
+    "tests": [
+      "tests/test_rework.py::test_rework_ratio_branch_scores_carry_the_section_pointer"
+    ]
   }
 ]
