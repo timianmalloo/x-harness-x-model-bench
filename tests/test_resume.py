@@ -1041,3 +1041,23 @@ def test_hand_built_abandoned_engine_segment_pins_its_head(golden1, tmp_path, fa
         assert errors == []
     else:
         assert any(finding.code == "HB-LED-002" and sid in finding.message for finding in errors), errors
+
+
+# ---------------------------------------------------------------- K4: the stop predicate (D-K4) and has_work clause 1
+
+@pytest.mark.parametrize("row,expected", [
+    ({"kind": "run.stopped"}, True),
+    ({"kind": "control.applied", "control": "stop", "effect": "applied"}, True),
+    ({"kind": "decision.resolved", "option": "stop"}, True),
+    ({"kind": "run.launch_stopped", "code": "HB-RUN-004"}, False),
+    ({"kind": "control.applied", "control": "stop", "effect": "ignored"}, False),
+    ({"kind": "control.applied", "control": "continue", "effect": "applied"}, False),
+    ({"kind": "decision.resolved", "option": "continue"}, False),
+])
+def test_stop_recorded_reads_the_three_rows(row, expected):
+    assert _need(resume, "stop_recorded")([{"kind": "run.started"}, row]) is expected
+
+
+def test_has_work_while_a_launched_cell_has_no_outcome(golden1):
+    rows = golden1.rows[:5]  # launch_intent recorded, no outcome, no run.completed
+    assert _need(resume, "has_work")(golden1.plan, rows) is True
