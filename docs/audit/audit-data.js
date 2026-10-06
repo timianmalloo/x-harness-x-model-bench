@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T23:41:22Z",
+  "generated": "2026-10-06T23:51:18Z",
   "audit": [
     {
       "actor": null,
@@ -118263,6 +118263,33 @@ window.AUDIT_DATA = {
         "acceptance_met": true
       },
       "started_at": "2026-10-06T23:41:21Z",
+      "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M49T1XVTQ952AQT3RJFCR3B0",
+      "shortname": "join-r112",
+      "datetime": "2026-10-06T23:51:18Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of owner/ruling-r112 into integrate/e2e4-18",
+      "summary": "Owner (Fable claude-fable-5-1) Ruling 112 46cd46fc on req-01M49SHCF1T7JQZGD55RFG9BSY (DR-48-1): (B) granted, bounded by a measured same-host load reading (signal spiked first: CPU idle fraction vs a pre-import host line); (A) refused (its benefit is already the code; a bigger constant is TIME-B), (C) refused; X-START (Sonnet) joins before X-CV; W1-F, W0, ADR-0018 Amendment 2 errata by the compiling Coordinator; finding: W1-F RF-12's start_ms mitigation was never built. Leader note: the ruling names the new code HB-CHK-005, already registered by X-LB1 (listener) - the compiling Coordinator allocates the next free code (ID-A). recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join Ruling 112",
+      "done_when": "conductor-join exit 0 (docs-only)",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-06T23:51:17Z",
       "duration_seconds": 1.0
     }
   ],
