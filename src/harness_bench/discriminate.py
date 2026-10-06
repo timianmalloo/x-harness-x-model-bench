@@ -45,7 +45,11 @@ LINK_SCHEMA = "bench-discrimination-link/1"
 # The closed set of NA reasons a record may hold (R6-1, rev 6.3): grader constants with no measured value, path or pid in
 # them. An unknown reason makes the trial HB-RDY-011, so no record carries text that could differ between honest trials.
 NA_REASONS = frozenset({"not built", correctness.NO_PUBLIC_TESTS, correctness.NOT_D_TASK, correctness.NO_DIFFERENTIAL,
-                        "no probe case declared", "did not build", "did not start"})
+                        "no probe case declared", "did not build", "did not start",
+                        # simplify: the two literals rework.grade emits (grade/rework.py) live here; control is
+                        # tests/test_rework.py::test_every_na_reason_rework_grade_emits_on_a_turns_task_is_in_na_reasons;
+                        # ceiling two sites; upgrade at the next grade/ ring (rework.py exports them as constants).
+                        "turn 2 not reached", "turn 1 snapshot not archived"})
 # A check or host fault: the trial is untrustworthy (HB-CHK-001..004) unless `expected` declares that very NA (EV-11).
 UNTRUSTED_NA = ("invalid (check tampered)", "check exceeded its bound", "host suspended", "check output invalid")
 UNDECLARED = "(differs)"  # what a record holds where the check's clause text is not the declared one
