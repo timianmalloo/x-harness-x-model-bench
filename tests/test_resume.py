@@ -453,6 +453,27 @@ def test_cli_run_resumes(tmp_path, name):
     assert _kinds(rows, "cell.outcome", cell_id=t2.cell)[-1]["resume"]["phase"] == "between-turns"
     assert len(_kinds(rows, "cell.archived", cell_id=t2.cell)) == 1
     assert len(_kinds(rows, "cell.launch_intent", cell_id=t2.cell)) == 1, "C3 never relaunches"
+    run_log = [json.loads(line) for line in (t2.run_dir / "engine.log").read_text(encoding="utf-8").splitlines()]
+    for event, fields in {
+        "resume.started": {"run_id", "segment_id", "dead_segments", "cells_total", "has_work"},
+        "resume.classified": {"counts"},
+        "resume.done": {"skipped", "launched", "reconciled", "duration_ms"},
+        "resume.cell": {"cell_id", "rule", "action", "code", "phase", "turn", "duration_ms"},
+    }.items():
+        records = [r for r in run_log if r.get("event") == event]
+        assert len(records) == 1, f"real CLI run log must hold one {event}: {records}"
+        assert fields <= records[0].keys(), f"missing {event} fields: {fields - records[0].keys()}"
+    started = next(r for r in run_log if r.get("event") == "resume.started")
+    assert started["run_id"] == plan.load_confirmed(t2.run_dir)["run_id"]
+    assert started["has_work"] is True and started["cells_total"] == 1 and started["dead_segments"] >= 1
+    classified = next(r for r in run_log if r.get("event") == "resume.classified")
+    assert classified["counts"] == {f"C{i}": int(i == 3) for i in range(8)}
+    cell = next(r for r in run_log if r.get("event") == "resume.cell")
+    assert (cell["cell_id"], cell["rule"], cell["action"], cell["code"], cell["phase"], cell["turn"]) == (
+        t2.cell, "C3", "failed", "HB-CELL-119", "between-turns", 1)
+    done = next(r for r in run_log if r.get("event") == "resume.done")
+    assert (done["skipped"], done["launched"], done["reconciled"]) == (0, 0, 1)
+    assert done["duration_ms"] >= cell["duration_ms"] >= 0
 
 
 # ---------------------------------------------------------------- windows (T1, T2 for W2/W11)
@@ -844,8 +865,9 @@ def test_recycled_pid_is_gone(golden1, tmp_path):
         proc.wait()
 
 
-def test_pid_alive_defers_and_writes_no_completed(golden1, tmp_path, capsys):
+def test_pid_alive_defers_and_writes_no_completed(golden1, tmp_path, capsys, caplog):
     env, proc = _with_live_pid(golden1, tmp_path)
+    caplog.set_level(20)
     try:
         assert _resume(env).exit_code == 3
         post = _post(env)
@@ -853,6 +875,9 @@ def test_pid_alive_defers_and_writes_no_completed(golden1, tmp_path, capsys):
         assert _need(resume, "has_work")(env.plan, _rows(env.run_dir)) is True
         assert _kinds(post, "resume.cell_deferred") or "run is not finished" in capsys.readouterr().out
         assert proc.poll() is None, "the check never terminates the foreign process"
+        deferred = [r for r in caplog.records if r.getMessage() == "resume.cell_deferred"]
+        assert len(deferred) == 1, "a deferred cell must emit its normal-path event"
+        assert (deferred[0].cell_id, deferred[0].pid) == (env.plan["cells"][0]["cell_id"], proc.pid)
     finally:
         proc.kill()
         proc.wait()
