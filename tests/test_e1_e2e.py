@@ -611,7 +611,11 @@ def test_full_walk_with_real_gates_power_and_readiness(walk):
     rows = campaign_rows(walk.root)
     passed = next(r for r in rows if r["kind"] == "pilot.passed")
     assert passed["run_id"] == "pilot-1" and passed["grading_id"].startswith("grade-") and re.fullmatch(r"[0-9a-f]{64}", passed["gate_input_hash"])
-    assert [(r["task"], r["admitted"]) for r in rows if r["kind"] == "admission.decided"] == [("S1", 1)]
+    decided = [r for r in rows if r["kind"] == "admission.decided"]
+    assert [(r["task"], r["admitted"]) for r in decided] == [("S1", 1)], (
+        f"admission.decided rows (reason says floor or saturated): {decided}; "
+        f"run pilot output tail: {walk.step('run pilot').ran.out[-600:]}"
+    )
     assert [r["role"] for r in rows if r["kind"] == "power.recorded"] == ["prior", "final"]
     assert "required n 39" in walk.step("register preview").ran.out
 
