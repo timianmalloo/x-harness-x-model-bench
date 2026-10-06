@@ -106,7 +106,6 @@ def test_single_turn_cell_records_exactly_one_turn_end_with_next_final(tmp_path)
     assert not row(events, "cell.turn_snapshot_archived")
 
 
-@pytest.mark.xfail(strict=True, reason="J1d: full replay after J1b loop and J1c snapshots")
 def test_t_eng_1_order_snapshot_and_one_session(tmp_path):
     _, events, cfg, log, _ = run_cell(tmp_path)
     kinds = [r["kind"] for r in events if r["kind"] in {"cell.prompt_sent", "cell.turn_ended", "cell.turn_snapshot_archived"}]
@@ -597,25 +596,22 @@ def turn_row(kind, n, **fields):
 
 @pytest.mark.parametrize("count", [
     1,  # green by J1b's one lifecycle.TABLE entry (W0 R6.12b)
-    pytest.param(2, marks=pytest.mark.xfail(strict=True, reason="J1d: turn-keyed lifecycle replay")),
+    2,
 ])
 def test_t_lif_1_valid_turn_streams(count):
     prefix = LIF_GOOD[:5]
     turns = [turn_row("cell.prompt_sent", 1), turn_row("cell.turn_ended", 1, stop_reason="end_turn", next="snapshot" if count == 2 else "final")]
     if count == 2:
         turns += [turn_row("cell.turn_snapshot_archived", 1), turn_row("cell.prompt_sent", 2), turn_row("cell.turn_ended", 2)]
-    assert replay_error(prefix + turns + LIF_GOOD[6:]) is None
+    assert replay_error(prefix + turns + LIF_GOOD[10:]) is None
 
 
 @pytest.mark.parametrize(("tail", "rule"), [
     pytest.param([turn_row("cell.prompt_sent", 1), turn_row("cell.turn_ended", 1), turn_row("cell.turn_snapshot_archived", 1),
-      turn_row("cell.prompt_sent", 2), turn_row("cell.prompt_sent", 2)], "PromptOncePerTurn",
-      marks=pytest.mark.xfail(strict=True, reason="J1d: named per-turn lifecycle rules")),
-    pytest.param([turn_row("cell.prompt_sent", 1), turn_row("cell.turn_ended", 1), turn_row("cell.prompt_sent", 2)], "SnapshotBeforeNextTurn",
-      marks=pytest.mark.xfail(strict=True, reason="J1d: named per-turn lifecycle rules")),
+      turn_row("cell.prompt_sent", 2), turn_row("cell.prompt_sent", 2)], "PromptOncePerTurn"),
+    pytest.param([turn_row("cell.prompt_sent", 1), turn_row("cell.turn_ended", 1), turn_row("cell.prompt_sent", 2)], "SnapshotBeforeNextTurn"),
     ([turn_row("cell.prompt_sent", 1), turn_row("cell.turn_snapshot_archived", 1)], "SnapshotAfterTurnEnd"),
-    pytest.param([turn_row("cell.prompt_sent", 1), turn_row("cell.turn_ended", 2)], "turn_ended follows its prompt_sent",
-      marks=pytest.mark.xfail(strict=True, reason="J1d: named per-turn lifecycle rules")),
+    pytest.param([turn_row("cell.prompt_sent", 1), turn_row("cell.turn_ended", 2)], "turn_ended follows its prompt_sent"),
 ])
 def test_t_lif_2_each_rule_names_its_own_violation(tail, rule):
     error = replay_error(LIF_GOOD[:5] + tail)
@@ -623,8 +619,8 @@ def test_t_lif_2_each_rule_names_its_own_violation(tail, rule):
 
 
 @pytest.mark.parametrize(("waiting", "code", "valid"), [
-    pytest.param(False, "HB-CELL-119", False, marks=pytest.mark.xfail(strict=True, reason="J1d: CrashedTurnPredicate rejects 119 mid-turn")),
-    pytest.param(True, "HB-CELL-118", False, marks=pytest.mark.xfail(strict=True, reason="J1d: CrashedTurnPredicate rejects 118 between turns")),
+    (False, "HB-CELL-119", False),
+    (True, "HB-CELL-118", False),
     (False, "HB-CELL-118", True),  # green on arrival; never fake a red
     (True, "HB-CELL-119", True),  # green by J1c's one snapshot TABLE entry
 ])
@@ -632,8 +628,8 @@ def test_t_lif_3_crashed_turn_predicate(waiting, code, valid):
     turns = [turn_row("cell.prompt_sent", 1)]
     if waiting:
         turns += [turn_row("cell.turn_ended", 1), turn_row("cell.turn_snapshot_archived", 1)]
-    outcome = {**LIF_GOOD[7], "code": code}
-    error = replay_error(LIF_GOOD[:5] + turns + [LIF_GOOD[6], outcome])
+    outcome = {**LIF_GOOD[11], "code": code}
+    error = replay_error(LIF_GOOD[:5] + turns + [LIF_GOOD[10], outcome])
     assert (error is None) if valid else (error is not None and "CrashedTurnPredicate" in error), error
 
 

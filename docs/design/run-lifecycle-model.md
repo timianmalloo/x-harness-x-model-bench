@@ -69,6 +69,11 @@ It is **not** the engine, and it does not model: the agent's work inside a cell,
 | *(internal progress, no model action)* | cell · `cell.workspace_built`; attempt · `attempt.handshake_done` — stutter steps for the model; used for phase timings | 1 |
 | `StopCell(c)` | stop → request cancel and start the grace for every running cell; `cell.outcome{stopped}` follows confirmation that the job is empty; unlaunched cells stay unstarted | 2 |
 | `TurnEnd(c,k)` | the worker records cell · `cell.turn_ended{turn, stop_reason, next}` for every turn that returned, before the continue decision (ADR-0015, design `eval-multi-turn.md` section 4.2) | E2 |
+| QueuePromptSent / PersistPromptSent / SendPrompt | `cell.prompt_sent#n`, keyed by kind and turn (absent turn reads 1); a second record is `PromptOncePerTurn` | E2 |
+| QueuePromptSent guard | `cell.prompt_sent#n`, n>1, follows `cell.turn_snapshot_archived#(n-1)`; `SnapshotBeforeNextTurn` | E2 |
+| TurnEnd | `cell.turn_ended#n` follows `cell.prompt_sent#n`; `turn_ended follows its prompt_sent` | E2 |
+| CopyBegin (idle adapter) / SnapRecord | `cell.turn_snapshot_archived#n` follows `cell.turn_ended#n` and precedes `cell.prompt_sent#(n+1)`; `SnapshotAfterTurnEnd`. NoSnapshotInFlight remains model-only: ledger order cannot prove when the copy started | E2 |
+| ReconcileRecord / ClassOf | `CrashedTurnPredicate` (provisional for W1-K): HB-CELL-119 requires every prompt to have its turn end, and some ended, snapshotted turn k without prompt k+1; HB-CELL-118 forbids that shape | E2 |
 | `CopyBegin` / `CopyPublish` / `SnapRecord(c,k)` / `SnapFail(c,k)` | `publish_dir` fills a temp sibling, verifies and renames; rows then cell · `cell.turn_snapshot_archived{turn, snapshot_hash}`; a failed copy is `failed (archive)` HB-CELL-117. Replay rules: `PromptOncePerTurn`, `SnapshotBeforeNextTurn`, `SnapshotAfterTurnEnd`, `CrashedTurnPredicate` (provisional for W1-K) | E2 |
 | `WriteControl(k)` / `ApplyStop` / `ApplyAnswer` / `RemoveControl(k)` | control file (temp + rename) / control · `control.applied{uuid}` / file removed | 2 |
 | `RaiseDecision` / `TimeoutDefault` | decision · `decision.opened` / `decision.resolved{default}` | 2 |
