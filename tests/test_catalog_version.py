@@ -729,7 +729,6 @@ def test_the_06_definitions_read_from_the_freeze_commit_hash_to_the_pin_and_are_
     assert _06_definition_problems(archived, weighted)
 
 
-@pytest.mark.xfail(strict=True, reason="X-A1 owns the property-tag check; X-F owns STRATEGIES. Unread until then.")
 def test_a_property_tag_outside_property_names_is_refused_and_property_names_match_the_strategy_keys():
     catalog = config.load_yaml(ROOT / "bench" / "metrics.yaml")
     bad = copy.deepcopy(catalog)

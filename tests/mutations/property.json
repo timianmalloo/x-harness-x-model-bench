@@ -116,5 +116,34 @@
   "tests": [
    "tests/test_property_real_host.py::test_not_alone_at_arrival_is_row_4_never_scored"
   ]
+ },
+ {
+  "name": "LB1 the exactly-one-shape rule is dropped: a loopback task with both shapes or neither is accepted",
+  "file": "src/harness_bench/readiness.py",
+  "find": "        if shape_a == shape_b:",
+  "replace": "        if False:",
+  "tests": [
+   "tests/test_property_loopback.py::test_loopback_with_both_shapes_is_refused_as_not_exactly_one",
+   "tests/test_property_loopback.py::test_loopback_with_neither_shape_is_refused_as_not_exactly_one"
+  ]
+ },
+ {
+  "name": "LB1 property_evidence no longer fails closed on an absent pointer: the missing key surfaces as a KeyError, not a named item",
+  "file": "src/harness_bench/readiness.py",
+  "find": "        if key not in pointers:",
+  "replace": "        if False:",
+  "tests": [
+   "tests/test_property_loopback.py::test_property_evidence_reads_what_the_pointers_name_and_fails_closed_on_an_absent_one"
+  ]
+ },
+ {
+  "name": "LB1 the outcome-set selector accepts both sets: a fault check may emit blocked, a probe check may emit passed",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "FAULT_OUTCOMES if fault else PROBE_OUTCOMES))",
+  "replace": "PROBE_OUTCOMES | FAULT_OUTCOMES))",
+  "tests": [
+   "tests/test_property_grade_cell.py::test_each_check_kind_refuses_the_other_kinds_outcome[True-honest]",
+   "tests/test_property_grade_cell.py::test_each_check_kind_refuses_the_other_kinds_outcome[False-passed]"
+  ]
  }
 ]
