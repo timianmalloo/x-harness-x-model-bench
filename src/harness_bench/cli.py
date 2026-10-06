@@ -297,12 +297,12 @@ def cmd_run(args) -> int:
                                   verify=views.verify,
                                   identity_check=identity.launch_check(root, p),
                                   campaign_check=lambda: campaign.run_side_check(root, p, args.run_id))
-    if (run_dir / "events").exists():
-        from harness_bench import resume
-
-        return resume.resume_run(run_dir, root, p, cfg).exit_code
     log_handler = engine.configure_logging(run_dir, p["trace_id"])
     try:
+        if resuming:
+            from harness_bench import resume
+
+            return resume.resume_run(run_dir, root, p, cfg).exit_code
         summary = engine.Engine(p, cfg).run()
     finally:
         engine.log.removeHandler(log_handler)

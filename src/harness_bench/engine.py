@@ -68,7 +68,9 @@ NO_MEMORY_STATUSES = {0xC0000017, 0xC000012D}
 OOM_SIGNATURE = re.compile(rb"heap out of memory|out of memory|OutOfMemory", re.IGNORECASE)
 COMPLETED_STOP_REASONS = {"end_turn", "max_tokens", "max_turn_requests", "refusal"}
 CIRCUIT_BREAKER = 3
-LOG_EXTRAS = ("detail", "pids", "fact", "win32_error", "path_role", "errno")  # never argv, env or cell text
+LOG_EXTRAS = ("detail", "pids", "fact", "win32_error", "path_role", "errno", "run_id", "segment_id", "dead_segments",
+              "cells_total", "has_work", "counts", "rule", "action", "code", "phase", "turn", "duration_ms", "pid",
+              "skipped", "launched", "reconciled")  # never argv, env or cell text
 DISK_FULL_WINERRORS = (39, 112)  # ERROR_HANDLE_DISK_FULL, ERROR_DISK_FULL
 KILL_RETRY_CAP = 30.0  # seconds: the longest wait between retries of an unconfirmed kill (HB-RUN-002)
 RECORD_POLL = 0.5  # seconds: how often a waiting worker re-checks that the engine can still record
