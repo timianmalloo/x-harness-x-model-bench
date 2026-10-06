@@ -285,3 +285,9 @@ def test_every_case_has_a_flipping_variant_and_batchidattempt_counts_two_violati
     assert {c for flips in PREDICTED.values() for c in flips} == set(CASES)
     assert check_run(base, "batchidattempt", apply_edits(overlay("reference"), read_literal(TASK / "oracle" / "variants.py", "VARIANTS")["batchidattempt"]))[
         "measures"] == {"idempotency_violations": 10}
+
+
+def test_a_delivery_that_reapplies_records_counts_one_not_one_per_record(base):
+    """CR47-8: idempotency_violations counts deliveries. The naive's one re-send on g-lost-then-grow re-applies r1 and r2: 1, not 2."""
+    got = check_run(base, "naive", overlay("naive"))
+    assert got["measures"] == {"idempotency_violations": 1}
