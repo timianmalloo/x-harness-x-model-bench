@@ -43,6 +43,7 @@ PREDICTED = {
     "requeuetail": {"g-lost-then-grow": "result", "g-ordering": "result"},
     "retry4xx": {"g-4xx": "requests"},
     "growid": {"g-lost-then-grow": "result"},
+    "requeue5xx": {"g-ordering": "result"},   # CR47-16: re-queue only after a 5xx failure; a lost response keeps the order
 }
 STUB = (
     "class ShipError(Exception):\n    pass\n\n\nclass HttpShipper:\n    def __init__(self, base_url):\n        pass\n\n"
