@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T14:00:31Z",
+  "generated": "2026-10-06T15:14:33Z",
   "audit": [
     {
       "actor": null,
@@ -101494,6 +101494,32 @@ window.AUDIT_DATA = {
         "branch": "build/eval-x-k1c",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M48WFQVTMNDKF82E3R1BEK87",
+      "shortname": "x-k1c-k6-sonnet",
+      "datetime": "2026-10-06T15:14:33Z",
+      "session": "x-k1c-e1e4",
+      "prompt": "X-K1c follow-on (K6) dispatched by the Leader: seam req-01M48QKAJ06ZWQ0PVN94A86602, the early XPASS, K6 per prompt-k1c.md, gates, closing entry",
+      "summary": "X-K1c follow-on (K6) by Claude Code Sonnet (claude-sonnet-5-5). Planned Codex; ran Sonnet; reason: per-run identity and context ceiling. Outcome: partial, tip is the commit holding this entry's parent 48d89e70 (green on the guard list, red only by strict XPASS of test_window cases). Seam req-01M48QKAJ06ZWQ0PVN94A86602: resume.py added to the stored-plan reader table (W1-K 3.1 step 1, eval-resume.md:114), 8034885d. XPASS test_resume_heartbeats_the_lock was vacuous at 8034885d, unmarked in 37d1fce3 after K6 made it real. K6 3d435574 plus segment order fix b2cd87f2 (seam req-01M48S31BZK7JG2Z4392YXFSJE: views.segment_paths sorted engine-X-r001 before engine-X) and MUT-E fix 48d89e70. Markers removed by node id: test_resume_finishes_the_stop[4 cases], test_launch_stopped_is_not_a_stop, test_finish_the_stop_is_idempotent, test_resume_of_a_resume[4], test_run_started_by_resume[W15], test_stop_window_with_open_decision, test_leftover_applied_control_not_duplicated, test_stop_control_file_honoured_before_relaunch, test_stop_code_read_from_decision_kind, test_recycled_pid_is_gone, test_pid_alive_defers_and_writes_no_completed, test_abandoned_marker_pins_head, test_abandoned_set_equals_unsealed_engine_facts, test_resume_heartbeats_the_lock. Remaining 5 markers: test_cli_run_resumes[T2] (fixture expects completed after a kill at turn_snapshot_archived, which the classifier makes C3 failed HB-CELL-119), test_window (W4c: archive cannot succeed with publish_dir forced to raise; W10a-c: the fresh-workspace fixture differs from the published folder so K5 recover_archive refuses; the other 9 cases pass and show as XPASS strict), test_finished_stop_with_unlaunched_cell_is_a_noop (fixture run.completed fails views.verify HB-RUN-009 before the no-op), test_resume_after_launch_stop[W16] (asserts status.completion == in progress with no lock held; status.py says incomplete; X-K2b file), test_spend_total_survives_resume (engine _count_spend can_change is false for the last pending cell). Gates: guard list 200 passed; runtime group 664 passed, 9 failed (XPASS strict test_window cases), 8 xfailed; ruff 0; docs-graph validate 0; mutate_check archive 10 killed 0 survived, engine 109 killed 0 survived, stop 74 killed 0 survived. Context: counter shows heavy use; handed back past the 120k point after the not-stopped and stopped paths.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "src/harness_bench/resume.py",
+        "src/harness_bench/engine.py",
+        "tests/test_resume.py"
+      ],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "X-K1c follow-on: seam, XPASS decision, K6 resume engine",
+      "done_when": "seam fixed, K6 built, gates read, hand-back",
+      "tier": "T2",
+      "fan_out": 0,
+      "started_at": "2026-10-06T14:03:10Z",
+      "duration_seconds": 4283.0
     }
   ],
   "changes": [
