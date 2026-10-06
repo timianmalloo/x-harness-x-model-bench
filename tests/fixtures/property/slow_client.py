@@ -4,4 +4,4 @@ import time
 
 time.sleep(1.0)
 
-from fault_client import fetch  # noqa: E402,F401
+from fault_client import fetch  # noqa: F401

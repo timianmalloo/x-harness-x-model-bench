@@ -696,7 +696,7 @@ def property_evidence(run_dir: Path, pointer: str) -> dict:
         if rel is None and nullable:
             return None
         if not isinstance(rel, str):
-            raise ValueError(f"check.{key} is not a path")
+            raise ValueError(f"check.{key} is not a path")  # noqa: TRY004 (the readers raise ValueError, W0 rev 6)
         target = (run_dir / rel).resolve()
         if not target.is_relative_to(run_dir.resolve()) or not target.is_file():
             raise ValueError(f"check.{key} {rel!r} does not resolve to a file in the run")

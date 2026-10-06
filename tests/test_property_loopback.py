@@ -46,7 +46,7 @@ def test_a_bind_to_any_other_address_is_refused_with_hb_chk_005_and_leaves_no_so
         made.append(real(*a, **k))
         return made[-1]
 
-    monkeypatch.setattr(bc, "_BIND", ("0.0.0.0", 0))  # noqa: S104 - the point of the test
+    monkeypatch.setattr(bc, "_BIND", ("0.0.0.0", 0))
     monkeypatch.setattr(bc.socket, "socket", spy)
     with pytest.raises(bc.ListenerError, match="HB-CHK-005"), bc.listen():
         pass
@@ -76,12 +76,12 @@ def test_the_listener_is_exclusive_on_its_port():
 
 # ---- K2: the shape (b) path through the grader -------------------------------------------------------------------
 
-import json  # noqa: E402
-from decimal import Decimal  # noqa: E402
-from pathlib import Path  # noqa: E402
+import json
+from decimal import Decimal
+from pathlib import Path
 
-from harness_bench.grade import CellInput  # noqa: E402
-from harness_bench.grade import property as prop  # noqa: E402
+from harness_bench.grade import CellInput
+from harness_bench.grade import property as prop
 
 FIX = Path(__file__).resolve().parent / "fixtures" / "property"
 METRICS = {"property_check_pass": {}, "fault_suite_pass": {}, "idempotency_violations": {}}
@@ -226,17 +226,17 @@ def test_loopback_shape_b_alone_is_accepted():
 
 
 def test_loopback_with_both_shapes_is_refused_as_not_exactly_one():
-    (item, detail, code), = _readiness_items({"interface": "loopback", "app": _APP, "deliverable": {"start": ["s"], "config": "c.json"}})
+    (_item, detail, code), = _readiness_items({"interface": "loopback", "app": _APP, "deliverable": {"start": ["s"], "config": "c.json"}})
     assert code == "HB-RDY-005" and "exactly one" in detail
 
 
 def test_loopback_with_neither_shape_is_refused_as_not_exactly_one():
-    (item, detail, code), = _readiness_items({"interface": "loopback"})
+    (_item, detail, code), = _readiness_items({"interface": "loopback"})
     assert code == "HB-RDY-005" and "exactly one" in detail
 
 
 def test_loopback_shape_a_stays_not_built():
-    (item, detail, code), = _readiness_items({"interface": "loopback", "deliverable": {"start": ["s"], "config": "c.json"}})
+    (_item, detail, code), = _readiness_items({"interface": "loopback", "deliverable": {"start": ["s"], "config": "c.json"}})
     assert code == "HB-RDY-005" and "not built" in detail
 
 
