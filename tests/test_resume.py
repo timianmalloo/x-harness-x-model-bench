@@ -981,6 +981,20 @@ def test_the_resume_names_each_dead_segment_through_check_writer(golden1, tmp_pa
     assert calls.count(("segment.abandoned", "ledger")) == len(markers), calls
 
 
+def test_segment_order_is_by_stem_and_ordinals_read_the_highest(tmp_path):
+    """D-K7: '-' sorts before '.', so a full-file-name sort reads engine-T-r001.jsonl before engine-T.jsonl."""
+    events = tmp_path / "events"
+    events.mkdir()
+    stems = ["engine-1700000000", "engine-1700000000-r010", "engine-1700000000-r002", "engine-1700000000-r001",
+             "grade-1700000000"]
+    for stem in stems:
+        (events / f"{stem}.jsonl").touch()
+    assert [p.stem for p in views.segment_paths(tmp_path, "events")] == [
+        "engine-1700000000", "engine-1700000000-r001", "engine-1700000000-r002", "engine-1700000000-r010",
+        "grade-1700000000"]
+    assert engine.next_ordinal(tmp_path) == 11
+
+
 # ---------------------------------------------------------------- one definition of "completed" and of "work left"
 
 def test_completed_has_one_definition():
