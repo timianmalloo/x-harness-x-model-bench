@@ -137,16 +137,16 @@ def recover_archive(cell_dir: Path, dest_root: Path, attempt: int, exclude_names
             rows = []
             stack = sorted(cell_dir.iterdir(), reverse=True)
             while stack:
-                src = stack.pop()
-                rel = src.relative_to(cell_dir).as_posix()
-                if _is_link(src):
+                source = stack.pop()
+                rel = source.relative_to(cell_dir).as_posix()
+                if _is_link(source):
                     rows.append({"path": rel, "kind": "link", "size": 0, "sha256": "",
-                                 "link_target": os.readlink(src)})
-                elif src.is_dir():
-                    stack.extend(sorted(src.iterdir(), reverse=True))
-                elif src.is_file() and src.name not in exclude_names:
-                    rows.append({"path": rel, "kind": "file", "size": src.stat().st_size,
-                                 "sha256": _sha(src), "link_target": ""})
+                                 "link_target": os.readlink(source)})
+                elif source.is_dir():
+                    stack.extend(sorted(source.iterdir(), reverse=True))
+                elif source.is_file() and source.name not in exclude_names:
+                    rows.append({"path": rel, "kind": "file", "size": source.stat().st_size,
+                                 "sha256": _sha(source), "link_target": ""})
             for row in rows:
                 row.update(run_id=dest_root.parent.parent.name, cell_id=dest_root.name, archive_attempt=attempt)
         else:
