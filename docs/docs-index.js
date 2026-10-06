@@ -4535,7 +4535,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "a5bd4d3876b270bb6588652db3382caf940ccac6ab6763abd56f1f732e1ff761"
+      "sourceSha256": "125896173add1eb8322cd2645d4ef5440f5c0f32675b39dfc9dffa0eb76b41c8"
     },
     {
       "id": "defect-classes",
@@ -4564,7 +4564,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "a1b7a80d783d3ef8ca9944e73f85a3ee50a293d60610046c8df123a2228f0229"
+      "sourceSha256": "0066862f936be06585974f2ef0ff2f7a5f22fe867eb6ac761d1f2252d6b17767"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -7907,7 +7907,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "6384dbeac9b5ee964ece0309338c19ed6e14e2bea13c2dfb1d46b8f7696f15b6"
+      "sourceSha256": "377f2fe7160ca28da5d4ae86dc48aa19e61bc01e5b7a0ae9730fce600e2f23bc"
     },
     {
       "id": "coordination-eval-brief-rv-ds",
@@ -9659,5 +9659,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "e228f5249d86be3004a5f14304c404efa5bdc6f6dcdb2d716a6a32723239cf64"
+  "graphSha256": "62c7fe04449a21d2e3954bb5375099d60b1cb7469388431ea5d16a479953076b"
 };

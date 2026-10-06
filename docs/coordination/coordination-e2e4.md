@@ -333,7 +333,9 @@ J1a recompile (0.3 h) → J1a..J1e (5 × 65 min ≈ 5.4 h) → K1a compile (0.3 
 | Grok routing on grok.com (SERVE-A) | optional, before G3 (≈ 2026-10-05 10:30) | nothing: R-103's kill and one retry covers it | check when convenient |
 | ai-forward push | none: approved 2026-10-05 | - | - |
 
-### Operator decisions, 2026-10-06 about 07:45 (made by the operator in person; recorded verbatim by Coordinator #44)
+### Operator decisions, 2026-10-06 about 07:45 (made by the operator in person; restated by Coordinator #44)
+
+The operator's words, answering the Leader's five numbered questions: "1: I can do that now" (then, after the run, "Accept for this host"), "2: release", "3: waive it for now", "4: yes", "5: yes". The bold lines below are Coordinator #44's restatements, not quotes (QUOTE-A).
 
 1. **"B-2 / SP-LB closed: accepted for this host."** The spike ran with the operator at the screen, 07:44-07:59: three loopback runs and two positive-control runs, no dialog on any run. Loopback `exchange_ok` true, 0 new rules; positive control `exchange_ok` true, 0 new rules; `--mode report`: "INCONCLUSIVE control did not fire". Cause, measured: `Get-NetFirewallProfile` shows the firewall Enabled on Domain, Private and Public with `NotifyOnListen` False on all three. Results: `docs/notes/spike-s-lb-loopback.md`; ADR-0018 Amendment 2. **X-LB1 and X-RS are unblocked** (the B-2 row above is closed).
 2. **"X-TE9 is released"** (all draft tasks are now ready: S1, S2, SM1, SM2, NG1, NG2, RW1, RW2). The T-E9 row above is closed.
