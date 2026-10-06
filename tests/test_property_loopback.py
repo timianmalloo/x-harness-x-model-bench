@@ -262,3 +262,31 @@ def test_property_evidence_reads_what_the_pointers_name_and_fails_closed_on_an_a
     (inp.out_dir / "property.json").write_text(json.dumps(doc), encoding="utf-8")
     with pytest.raises(ValueError, match="check.hosts"):
         readiness.property_evidence(inp.run_dir, pointer)
+
+
+# --- K4: an RS-shaped fixture through `bench discriminate` with the loopback check, no discriminate.py change ------------------
+
+def test_an_rs_shaped_loopback_task_discriminates_and_gets_a_record():
+    import importlib.util
+    import shutil
+    import uuid
+
+    from clean_parent import CLEAN_PARENT
+
+    from harness_bench import archive, discriminate
+
+    spec = importlib.util.spec_from_file_location("make_task", Path(__file__).parent / "fixtures" / "property_tasks" / "make_task.py")
+    mt = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mt)
+    base = CLEAN_PARENT / uuid.uuid4().hex
+    base.mkdir(parents=True)
+    try:
+        root = mt.make_root(base)
+        mt.install(root, "disc_rs")
+        result = discriminate.run(root, "DISC-RS", runs=base / "runs", cells_root=base / "cells")
+        assert result.outcome == "written", result
+        body = json.loads(result.record_path.read_text(encoding="utf-8"))
+        assert body["scores"]["reference"]["property_check_pass"] == 1 and body["scores"]["naive"]["property_check_pass"] == 0
+        assert body["probe"]["reference"]["cases"] == {"f-5xx": "passed"} and body["probe"]["naive"]["cases"] == {"f-5xx": "failed"}
+    finally:
+        shutil.rmtree(base, onexc=archive.make_writable)

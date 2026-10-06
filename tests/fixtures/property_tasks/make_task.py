@@ -285,5 +285,30 @@ def _disc_turns_v(tweak):
     return _disc_turns(tweak) | {"variants": tweak.get("variants")}
 
 
-FIXTURES = {"disc_turns": _disc_turns, "disc_turns_v": _disc_turns_v, "disc_c": _disc_c, "disc_rw": _disc_rw, "disc_p": _disc_p, "disc_flaky": _disc_flaky,
+RS_CLIENT_REF = (
+    "import time\nimport urllib.error\nimport urllib.request\n\nATTEMPTS = 3\n_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))\n\n\n"
+    "def fetch(url):\n    for attempt in range(ATTEMPTS):\n        try:\n            with _OPENER.open(url, timeout=2) as resp:\n"
+    "                return resp.read().decode()\n        except urllib.error.HTTPError as exc:\n"
+    "            if exc.code < 500 or attempt == ATTEMPTS - 1:\n                raise\n            time.sleep(0.1)\n")
+RS_CLIENT_NAIVE = RS_CLIENT_REF.replace("ATTEMPTS = 3", "ATTEMPTS = 1")
+RS_HIDDEN = ("import sys\nimport unittest\n\nsys.path.insert(0, 'src')\nimport client\n\n\nclass T(unittest.TestCase):\n"
+             "    def test_retries(self):\n        self.assertGreater(client.ATTEMPTS, 1)\n")
+RS_EXPECTED = {"reference": {"property_check_pass": 1, "fault_suite_pass": "1.0000", "idempotency_violations": 0},
+               "naive": {"property_check_pass": 0, "fault_suite_pass": "0.0000", "idempotency_violations": 0}}
+
+
+def _disc_rs(tweak):
+    """X-LB1 K4, an RS-shaped task: one fault case on `interface: loopback` (shape (b)); the reference retries a 503, the naive does not."""
+    case = {"id": "f-5xx", "kind": "fault", "schedule": [503, 200], "frame": {"args": ["{fake_url}/pay"], "kwargs": {}}}
+    cases = {"schema": "bench-check-cases/1", "entry": "check.py", "interface": "loopback", "bounds_ms": {"in-process": 5000, "loopback": 8000},
+             "app": {"module": "client", "attr": "fetch", "kind": "callable", "paths": ["src"]}, "deliverable": {}, "toolchain": ["python"],
+             "env": [], "cases": [case]}
+    return {"id": "DISC-RS", "property": "resilience", "evidence": "src/client.py", "hidden": RS_HIDDEN,
+            "workspace": {"src/client.py": "def fetch(url):\n    raise NotImplementedError\n"},
+            "reference": {"src/client.py": RS_CLIENT_REF}, "naive": {"src/client.py": RS_CLIENT_NAIVE}, "expected": RS_EXPECTED,
+            "check": (REPO / "tests" / "fixtures" / "property" / "fault_check.py").read_text(encoding="utf-8"), "cases": cases,
+            "variants": None, "repo": "disc-rs"}
+
+
+FIXTURES = {"disc_rs": _disc_rs, "disc_turns": _disc_turns, "disc_turns_v": _disc_turns_v, "disc_c": _disc_c, "disc_rw": _disc_rw, "disc_p": _disc_p, "disc_flaky": _disc_flaky,
             "scan_a": _scan_a, "scan_a_secondary": _scan_a_secondary}
