@@ -2,7 +2,7 @@ schema: bench-task/1
 id: SM1
 scenario: 5                 # W0 decision: property tasks are scenario 5 (docs/design/eval-seam-contracts.md section 1)
 title: "Simplicity task 1: the tests pass without an unrequested layer (W1-L)"
-status: draft               # Stays draft until X-LG's diffstats measures size_reference_lines and the ceilings and X-J2b's create edit form joins; then a real-host discrimination record reproduces every value in `expected` (W1-L 5.3; B-SM1)
+status: ready               # real-host discrimination record reproduces every value in `expected` (W1-L 5.3; X-RDY)
 language: python
 source:
   kind: authored

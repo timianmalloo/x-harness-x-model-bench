@@ -315,7 +315,7 @@ def expected_problems(data: dict) -> list[str]:
 @pytest.mark.parametrize("task_id", ALL_IDS)
 def test_ng_task_yaml_is_a_draft_with_a_literal_expected_block(task_id):
     task = task_yaml(task_id)
-    assert task["status"] == "draft"
+    assert task["status"] == "ready"
     assert task["property"]["name"] == "no-guessing" and task["property"]["primary_metric"] == "property_check_pass"
     assert task["graders"] == ["correctness", "property"]
     assert narrowed_metrics() == set(METRICS)

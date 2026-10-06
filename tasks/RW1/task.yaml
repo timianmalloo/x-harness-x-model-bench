@@ -2,7 +2,7 @@ schema: bench-task/1
 id: RW1
 scenario: 5                 # W0 decision: property tasks are scenario 5 (docs/design/eval-seam-contracts.md section 1)
 title: "Rework task 1: two turns; turn 2 punishes a short-sighted turn-1 design (W1-L)"
-status: draft               # Stays draft until a real-host multi-turn discrimination record reproduces `expected` (W1-L 5.3; X-J1 and X-J2b must join first, W0 rev 6.6 R6.6c). Not X-RW's call alone.
+status: ready               # real-host discrimination record reproduces every value in `expected` (X-RDY)
 language: python
 source:
   kind: authored

@@ -573,7 +573,7 @@ def test_expected_is_a_literal_not_a_placeholder(tid):
     for role, values in task_yaml(tid)["expected"].items():
         for metric, value in values.items():
             assert isinstance(value, (int, str)) and not str(value).startswith("<"), (role, metric, value)
-    assert task_yaml(tid)["status"] == "draft"
+    assert task_yaml(tid)["status"] == "ready"
 
 
 @pytest.mark.parametrize("tid", IDS)
