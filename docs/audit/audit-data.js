@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T16:03:48Z",
+  "generated": "2026-10-06T17:07:27Z",
   "audit": [
     {
       "actor": null,
@@ -101543,6 +101543,58 @@ window.AUDIT_DATA = {
       "git": {
         "sha": "8360b23fde64894b32110ffcf562080727a64360",
         "short": "8360b23fd",
+        "branch": "build/eval-x-k1c",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M492XRGN43509ZKJYSTMB42B",
+      "shortname": "x-k1c-finishing-2",
+      "datetime": "2026-10-06T17:07:04Z",
+      "session": "x-k1c-e1e4",
+      "prompt": "X-K1c finishing turn part 2 F7 to F10",
+      "summary": "X-K1c finishing turn, SPLIT after F6 (planned split: the context counter could not be read, rule 3). Model claude-sonnet-5-5. Start 2026-10-06T15:46:24Z. Tokens: not recorded. Context reading at each item: not recorded.\nRed SHAs: none (F1-F6 are fixture/narrowing commits; no new test written). F7-F10 not started.\nCommits: F1 4edeed52 (narrowing; observed --runxfail run: 9 passed, W4c/W10a/W10b/W10c failed; after: 9 passed 4 xfailed), F2 903fc67b, F3 da8f7c37, F4 dc787d48, F5 ab5f0407, F6 8360b23f.\nMarkers removed by node id: test_cli_run_resumes[T2], test_window[W4c_redo_fails], test_window[W10a_rows_none], [W10b_rows_partial], [W10c_rows_all] (test_window carries no marker), test_finished_stop_with_unlaunched_cell_is_a_noop, test_resume_after_launch_stop[W16]. Remaining K1c marker: test_spend_total_survives_resume (F8).\nGates: base 8-file group 200 passed (exit 0); runtime group 680 passed 1 xfailed 0 XPASS (exit 0); ruff exit 0; docs-graph validate exit 0. mutate_check x4 not run (src unchanged since base; deferred to the F7-F10 turn).\nTMP mutants: none run (F7 M-NOBEAT and F10 name-sort mutant open).\nNamed untested simplifications for K1d: (1) resume._redo_snapshot adopts a published folder by file scan only; (2) resume outcomes skip Engine._after_append (Engine.append_row); (3) Engine.restore restores spend from turn_usage rows only; (4) scripted-user logs not closed for reconciled cells; (5) cli.py:300-304 resume branch returns before engine.configure_logging.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "X-K1c finishing turn F7-F10",
+      "tier": "T2",
+      "started_at": "2026-10-06T16:04:47Z",
+      "duration_seconds": 3737.0,
+      "git": {
+        "sha": "acf209a37852b862e22f4cb689a39d8fe05ff023",
+        "short": "acf209a37",
+        "branch": "build/eval-x-k1c",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M492YEFV1BKC3HD5J2W0Q16P",
+      "shortname": "x-k1c-finishing-2b",
+      "datetime": "2026-10-06T17:07:27Z",
+      "session": "x-k1c-e1e4",
+      "prompt": "X-K1c finishing turn part 2 F7 to F10 (corrected entry)",
+      "summary": "X-K1c finishing turn part 2 (F7-F10), outcome partial. This entry supersedes al-01M492XRGN43509ZKJYSTMB42B, which by mistake carried part 1's summary text. Deadline reached while the stop.json and views.json mutate_check gates were still waiting on the suite lock (held by other trees): not run. Model claude-sonnet-5-5. Start 2026-10-06T16:04:47Z, end about 17:10Z. Tokens: not recorded. Context reading at item start: 72,513 (read once from the subagent transcript, before F7); later readings not taken.\nRed SHAs: F7 1b8d12ea (DID NOT RAISE ValueError), F9 2cf57765 (assert 0 == 3; 'grading' == 'ledger'). F8: fixture correction of a red test. F10: green on arrival (b2cd87f2 holds the code).\nCommits: F7 red 1b8d12ea, F7 fix 3bb4406e, F9 red 2cf57765, F9 fix 63b4ce42, F8 fbc642c7 (also the heartbeat test wait fix), F10 98dd419a, plan record, derive acf209a3.\nMarker removed by node id: test_spend_total_survives_resume (no K1c marker left in tests/test_resume.py).\nTMP mutants (never committed): M-NOBEAT survived at pid_wait_s 1 = lock_staleness 1, then killed by tests/test_resume.py::test_resume_heartbeats_the_lock after pid_wait_s 3; name-sort mutant on views.segment_paths killed by test_segment_order_is_by_stem_and_ordinals_read_the_highest.\nGates: base group 200 passed exit 0; runtime group 685 passed, 0 failed, 0 XPASS, 0 xfailed exit 0; ruff exit 0; docs-graph validate exit 0 (16 review-suggested, 0 stale); mutate_check archive and engine every mutation killed exit 0; stop and views not run (suite lock held).\nNamed untested simplifications for K1d: resume._redo_snapshot file-scan adoption; resume outcomes skip Engine._after_append (Engine.append_row); Engine.restore spend from turn_usage only; scripted-user logs not closed for reconciled cells; cli.py:300-304 returns before engine.configure_logging.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "X-K1c finishing turn F7-F10",
+      "tier": "T2",
+      "started_at": "2026-10-06T16:04:47Z",
+      "duration_seconds": 3760.0,
+      "git": {
+        "sha": "acf209a37852b862e22f4cb689a39d8fe05ff023",
+        "short": "acf209a37",
         "branch": "build/eval-x-k1c",
         "pushed": null
       }
