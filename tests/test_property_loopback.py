@@ -65,6 +65,9 @@ def test_the_listener_socket_is_closed_when_its_case_ends():
 
 def test_the_listener_is_exclusive_on_its_port():
     with bc.listen() as s:
+        # The option itself, not a second bind: on this host a second bind is refused even without it (option reads 0 by
+        # default). win32-only, as the whole module is: SO_EXCLUSIVEADDRUSE exists only on Windows.
+        assert s.getsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE) == 1
         other = socket.socket()
         try:
             with pytest.raises(OSError):

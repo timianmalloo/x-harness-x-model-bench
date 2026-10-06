@@ -9,6 +9,15 @@
   ]
  },
  {
+  "name": "LB1 the listener no longer sets SO_EXCLUSIVEADDRUSE: another process could share its port",
+  "file": "src/harness_bench/grade/bench_check.py",
+  "find": "        sock.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)  # R6-17: no other process can share the port\n",
+  "replace": "",
+  "tests": [
+   "tests/test_property_loopback.py::test_the_listener_is_exclusive_on_its_port"
+  ]
+ },
+ {
   "name": "LB1 {fake_url} is not substituted in a request's args: the client gets the literal text",
   "file": "src/harness_bench/grade/bench_check.py",
   "find": "        if self.fake_url is not None:  # `{fake_url}`",
