@@ -101,8 +101,8 @@
   {
     "name": "STRATEGIES line removed: simplicity reads NA not built",
     "file": "src/harness_bench/grade/property.py",
-    "find": ", \"simplicity\": diffstats.grade}",
-    "replace": "}",
+    "find": "\"simplicity\": diffstats.grade, ",
+    "replace": "",
     "tests": [
       "tests/test_grade_diffstats.py::test_diffstats_grade_cell_uses_registered_strategy"
     ]
