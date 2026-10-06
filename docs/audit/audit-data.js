@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T18:16:52Z",
+  "generated": "2026-10-06T18:20:17Z",
   "audit": [
     {
       "actor": null,
@@ -111226,6 +111226,33 @@ window.AUDIT_DATA = {
         "acceptance_met": true
       },
       "started_at": "2026-10-06T18:16:51Z",
+      "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M4973TDW6BTASHD2M0P09ZKW",
+      "shortname": "join-r111",
+      "datetime": "2026-10-06T18:20:17Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of owner/ruling-r111 into integrate/e2e4-18",
+      "summary": "Owner (Fable claude-fable-5-1) Ruling 111 2d59da4f on req-01M4966TTSM5ADZ41AFE6SX8S9: (b) granted, bounded - batch identity binds to the frozen (batch_id, records) pair; reference and alt freeze; prompt drops 'in one batch'; new case lost-then-grow; variant growid; X-RS ready-turn recompile (one clause); W1-L Erratum 4 at the X-RS join; IDEM-A. (a) kept only as fallback, (c) refused. Process note: the Owner's first commit attempt skipped the pre-commit hook via -c core.hooksPath; it reset and recommitted with the hook. recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join Ruling 111 into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 (docs-only)",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-06T18:20:16Z",
       "duration_seconds": 1.0
     }
   ],
