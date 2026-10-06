@@ -656,16 +656,38 @@ def _w15(golden1, tmp_path):
     assert _outcome_map(env) == {golden1.cells[0]: ("completed", None)}
 
 
+def _launch_stopped_run(g, dest):
+    """A launch-stopped run written by the real engine (a zero free-bytes probe): run.launch_stopped HB-RUN-004 and a sealed
+    run.completed, no cell launched. Returns the env a resume needs, whose grade callback records status.completion."""
+    p = copy.deepcopy(g.plan)
+    run_dir, cells_root = dest / "runs" / p["run_id"], dest / "cells"
+    log = dest / "resumed-prompts.jsonl"
+    behaviours = {c["label"]: {"model": "fake-model", "prompts_log": str(log),
+                               "per_turn": [{"files": {"a.txt": "1"}}, {"files": {"a.txt": "2"}}]} for c in p["cells"]}
+    first = engine.EngineConfig(run_dir, cells_root, {"fake": FakeLauncher(behaviours)}, _build_workspace, None,
+                                loop_interval=0.01, clock=CellClock())
+    plan.confirm(run_dir, p)
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(engine, "_free_bytes", lambda path: 0)
+        _engine_run(p, first, limit=120)
+    seen = []
+
+    def grade(d):
+        seen.append(status.build(run_dir).completion)
+        return {"passes": 1}
+
+    cfg = engine.EngineConfig(run_dir, cells_root, {"fake": FakeLauncher(behaviours)}, _build_workspace, grade,
+                              loop_interval=0.01, clock=CellClock(), verify=views.verify)
+    return SimpleNamespace(run_dir=run_dir, plan=p, cfg=cfg, root=dest / "root", seen=seen)
+
+
 def _w16(golden2, tmp_path):
-    run_id = golden2.plan["run_id"]
-    rows = [golden2.rows[0], ledger.stamp({"kind": "run.launch_stopped", "code": "HB-RUN-004", "reason": "disk low"}),
-            ledger.stamp({"kind": "run.completed", "run_id": run_id, "segment_heads": {}, "cells_ended": 0, "grading": None})]
-    env = _materialize(golden2, tmp_path, rows)
-    resumed = _materialize(golden2, tmp_path / "mid", rows + [ledger.stamp(
-        {"kind": "run.resumed", "run_id": run_id, "plan_hash": golden2.plan["plan_hash"], "segment_id": "x",
-         "trace_id": golden2.plan["trace_id"]})])
-    assert status.build(resumed.run_dir).completion == "in progress", "complete iff run.completed follows the last run.resumed"
+    env = _launch_stopped_run(golden2, tmp_path)
+    rows = _rows(env.run_dir)
+    assert [r["code"] for r in _kinds(rows, "run.launch_stopped")] == ["HB-RUN-004"]
+    assert _kinds(rows, "run.completed") and not _kinds(rows, "cell.launch_intent"), "the real engine launch-stopped"
     assert _resume(env).exit_code == 0
+    assert env.seen == ["in progress"], "inside the resume run.resumed is written and run.completed is not (D-K5)"
     assert set(_outcome_map(env)) == set(golden2.cells)
     assert status.build(env.run_dir).completion == "complete"
 
@@ -685,7 +707,6 @@ def test_run_started_by_resume(golden1, tmp_path, name):
 
 
 @pytest.mark.parametrize("name", ["W16"])
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_resume_after_launch_stop(golden2, tmp_path, name):
     _w16(golden2, tmp_path)
 
