@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T09:44:02Z",
+  "generated": "2026-10-06T10:58:05Z",
   "audit": [
     {
       "actor": null,
@@ -98682,6 +98682,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-06T09:44:01Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M48DT3W999PJDQG8SVWZHHVY",
+      "shortname": "join-ledger-p3",
+      "datetime": "2026-10-06T10:58:05Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of main into integrate/e2e4-18",
+      "summary": "Primary hook ledger lines (9 .agents/log files, register union) merged before the P3 push; docs-only recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Bring the primary's register lines into the batch head",
+      "done_when": "conductor-join exit 0; gates green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-06T10:58:04Z",
+      "duration_seconds": 1.0
     }
   ],
   "changes": [
@@ -100566,6 +100593,69 @@ window.AUDIT_DATA = {
       "kind": "blocked",
       "ref": "al-01M473MWF0NFBY6FZNAFKZHJ4Y",
       "session": "x-j1c-e1e4"
+    },
+    {
+      "id": "mail-01M48A1Q956XSFQXKVJR6BNK10",
+      "ts": "2026-10-06T09:52:20Z",
+      "from": "x-k1a-e1e4",
+      "to": "coord-opus-e1e4",
+      "kind": "blocked",
+      "ref": "K1 planned context split at 103440; skeleton guard 200 passed/78.08s; aa8c3883 5be6ca49 f3d4e666; seam req-01M489RF7YZQE1XE6D3BX77DCX. Authorized sequential Sonnet follow-on now takes K2 in this tree.",
+      "session": "x-k1a-e1e4"
+    },
+    {
+      "id": "mail-01M48A1QE3KX79HGHY09ZQA4E8",
+      "ts": "2026-10-06T09:52:20Z",
+      "from": "x-k1a-e1e4",
+      "to": "leader-e1e4",
+      "kind": "blocked",
+      "ref": "X-K1a K1 delivered, context split before K2 at 103440. Sonnet follow-on in same tree; base/skeleton guard 200 passed each; seam req-01M489RF7YZQE1XE6D3BX77DCX remains for K1c config composition.",
+      "session": "x-k1a-e1e4"
+    },
+    {
+      "id": "mail-01M48B3EZ0S3XYXGV4P5TMEZR8",
+      "ts": "2026-10-06T10:10:45Z",
+      "from": "x-k1a-e1e4",
+      "to": "leader-e1e4",
+      "kind": "blocked",
+      "ref": "X-K1a final guard 200 passed, runtime 351 passed/69 xfailed; CLI mutation run waiting on suite lock held by your integrate-e2e4-18 pytest pid 22144. Observed 2026-10-06T10:10:45.7100765Z. No mutation verdict yet; original dispatch deadline 10:39:37Z. Please keep lock wait in join evidence.",
+      "session": "x-k1a-e1e4"
+    },
+    {
+      "id": "mail-01M48BAYD2WFBXQP57886BJK97",
+      "ts": "2026-10-06T10:14:51Z",
+      "from": "coord-opus-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M48BAYBZHKZK2SN2S5YNYZD9",
+      "session": "coord-opus-e1e4"
+    },
+    {
+      "id": "mail-01M48BXK7ZFWP5E6FEYY7J3DQH",
+      "ts": "2026-10-06T10:25:02Z",
+      "from": "x-k1a-e1e4",
+      "to": "coord-opus-e1e4",
+      "kind": "done",
+      "ref": null,
+      "session": "x-k1a-e1e4"
+    },
+    {
+      "id": "mail-01M48BXKAH28HS8CFHAFCEJ007",
+      "ts": "2026-10-06T10:25:02Z",
+      "from": "x-k1a-e1e4",
+      "to": "leader-e1e4",
+      "kind": "done",
+      "ref": null,
+      "session": "x-k1a-e1e4"
+    },
+    {
+      "id": "mail-01M48CAAHVR0Z4H8PF4NFPXZ3N",
+      "ts": "2026-10-06T10:31:59Z",
+      "from": "owner-fable",
+      "to": "coord-opus-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M48BAYBZHKZK2SN2S5YNYZD9",
+      "session": "owner-fable"
     }
   ]
 };
