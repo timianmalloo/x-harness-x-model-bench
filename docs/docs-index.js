@@ -2374,7 +2374,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "36fd72c62bf3df7ee0c8644f2f5f0dc073c754f6037bdf42f6533949a8d48a47"
+      "sourceSha256": "20ee5a2c20af06aa594e19aab9b9df8d469e37ccaefea7dd5a32241e96369e6e"
     },
     {
       "id": "design-eval-power-verdicts",
@@ -4538,6 +4538,96 @@ window.DOCS_INDEX = {
       "sourceSha256": "125896173add1eb8322cd2645d4ef5440f5c0f32675b39dfc9dffa0eb76b41c8"
     },
     {
+      "id": "coordinator-log-c45",
+      "path": "docs/coordination/coordinator-log/c45.md",
+      "title": "Coordinator #45 hand-back (2026-10-06): the five X-K1c contradictions classified, the strict-xfail narrowing rule, three seam rulings, the K1c finishing turn and X-K1d compiled",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-06",
+      "reviewSuggested": [],
+      "summary": "Coordinator #45 worked on build/eval-x-k1c (db67039d). All five contradictions the K6 worker reported are fixture defects against W1-K, none a design question; a sixth cause (resume_run silently discards the plan its caller passes) is a code defect, and it makes test_resume_heartbeats_the_lock vacuous. It ruled the strict-xfail narrowing rule, accepted both K1c seams (the plan reader, the stem order), ruled segment.abandoned's TABLE writer to \"ledger\" with a checked append, compiled the K1c finishing turn (Claude Code Sonnet) and X-K1d (Codex), filed one decision request to the Owner (the five classifier mutants against W1-K :199), and registered FIXT-C, INJ-A, ORD-A and MARK-B.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c43",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-k1",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-resume",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "plan-eval-x-k1c",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "65f42908b3ea62836a0e9d0a9e3437bf183f17c7af30edececb4a7ede1ec9c42"
+    },
+    {
+      "id": "coordinator-log-c46",
+      "path": "docs/coordination/coordinator-log/c46.md",
+      "title": "Coordinator #46 hand-back (2026-10-06): T-SWEEP-1 against resume.py ruled a sanctioned ninth archive reader (item 0)",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-06",
+      "reviewSuggested": [],
+      "summary": "Coordinator #46 worked on coord/eval-c46-k1d (base c427a71c, the X-K1c integration merge). Item 0, its own hand-back: the K1c join's recount failed T-SWEEP-1 on resume.py. Ruled (a): resume.py is a sanctioned ninth archive reader, because W1-K requires every read it makes and each read names turn folders from a row or from archive.snapshot_folder. W1-J section 7 gains the row as an erratum; the Leader adds resume.py to READERS and sets the count to 9 at the join. A second QUOTE-A instance, wider than the first; its upgrade trigger fired. Items 1-6 follow on the Leader's resume.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c45",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-resume",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "bd6135243d783182d6ffeb9130053c327109deb4240eef85806be6e8831e354a"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4564,7 +4654,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "6c559a98eb56c85890713c59e312313a30514e174342ec6361e6842fb51bff4c"
+      "sourceSha256": "2787c828527ad9e9689cd4d02def3430850dd84bf1da190222a406b2edf14275"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -5162,6 +5252,40 @@ window.DOCS_INDEX = {
         }
       ],
       "sourceSha256": "59c4d90d70c17d051694b491c23ead9e33d5946cf6c842260d39c28111b71b75"
+    },
+    {
+      "id": "plan-eval-x-k1c",
+      "path": "docs/plans/eval-x-k1c.md",
+      "title": "X-K1c: archive recovery and resume refusals",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-20",
+      "reviewSuggested": [],
+      "summary": "Dispatch x-k1c-e1e4 implements W1-K K5, admitting K6 only under the native context split rule. All changes stay in the assigned worktree and the Leader owns independent review and integration.",
+      "tags": [
+        "resume",
+        "execution-plan"
+      ],
+      "links": [
+        {
+          "to": "design-eval-resume",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-k1",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "Execution graph",
+          "mermaid": "graph TD\n B --> AR[A-red] --> AG[A-green]\n B --> RR[R-red] --> RG[R-green]\n B --> SR[S-red] --> SG[S-green]\n AG --> C\n RG --> C\n SG --> C\n C -->|admitted| K6\n C -->|split| G\n K6 --> G --> J"
+        }
+      ],
+      "sourceSha256": "dea52505a23a09591be87e66b2af6bb89773109da066f4d56c16824bbf38c5fe"
     },
     {
       "id": "proof-phase2",
@@ -9640,6 +9764,14 @@ window.DOCS_INDEX = {
       "artifactId": "plan-eval-x-k1b"
     },
     {
+      "id": "surface-plans-eval-x-k1c",
+      "path": "docs/plans/eval-x-k1c.html",
+      "title": "Eval X K1C",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-k1c"
+    },
+    {
       "id": "surface-case-study",
       "path": "docs/case-study.html",
       "title": "From Specification to Implementation: An AI-Forward Case Study",
@@ -9686,5 +9818,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "b5ed8142cf579aa899b09e1a28b7e59617809fd4d52ee810222348516655b639"
+  "graphSha256": "4731c7e06de04148530de50d1963efd1362d4e12c667c38c93a68d8bae95bfd7"
 };
