@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T19:11:28Z",
+  "generated": "2026-10-06T20:39:41Z",
   "audit": [
     {
       "actor": null,
@@ -115816,6 +115816,36 @@ window.AUDIT_DATA = {
       "git": {
         "sha": "ad873f57ea1ff829b8224ba05ac56107aefa87f6",
         "short": "ad873f57e",
+        "branch": "coord/eval-c47-fixe",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M49F323ZJESVTV1H6BB9PMDK",
+      "shortname": "c47-join-x-fixe-errata",
+      "datetime": "2026-10-06T20:39:41Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Leader resume: W0/W1-E errata for the X-FIXE join (CR47-7 timeouts, CR47-1 not-comparable everywhere, CR47-2/3 evidence fields); rule on the unreachable variant no-strategy-section item at a7ac63b6",
+      "summary": "Errata: eval-seam-contracts.md:101 (expected.<role>.timeouts), :206 (evidence per shape, lift, rework), :608 (HB-RDY-011 row); eval-discriminate.md:194 ((1') lifted value, not-comparable item), :245 (8.3 every task). HTML views refreshed. CR47-10: the variant no-strategy-section item (discriminate.py:247-248) is not dead; it is the only refusal when a variant cell has no property_check_pass row (comparable_cells skips it, run_scores sets no pointer); keep it and pin it with a direct _variant_record unit test plus one mutant, owner the Leader as a test-only join-x-fixe hunk, else X-CV's compile. Gates derive 0, validate 0 (problems 0), verify-ruling-citations 0. Tokens: not recorded.",
+      "kind": "skill",
+      "skill": "compile",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/coordination/coordinator-log/c47.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "X-FIXE join errata and the variant item ruling",
+      "done_when": "errata in W0 and W1-E with HTML, CR47-10 in c47.md, three gates read, commit, session end",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-06T20:35:51Z",
+      "duration_seconds": 230.0,
+      "git": {
+        "sha": "260cd204d19c6a8249d74544ec432ffab306d366",
+        "short": "260cd204d",
         "branch": "coord/eval-c47-fixe",
         "pushed": null
       }
