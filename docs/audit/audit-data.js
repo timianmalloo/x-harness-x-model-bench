@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T16:17:21Z",
+  "generated": "2026-10-06T16:38:41Z",
   "audit": [
     {
       "actor": null,
@@ -109320,6 +109320,28 @@ window.AUDIT_DATA = {
         "branch": "build/eval-x-te9",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M4919SDY9V1KTNCG6E1GZYNJ",
+      "shortname": "x-te9-part2",
+      "datetime": "2026-10-06T16:38:41Z",
+      "session": "x-te9-e1e4",
+      "prompt": "X-TE9 part 2 (K2 and closing items), compile al-01M48WS58RSYV2QVZFFG88ATPZ",
+      "summary": "green ca774147 (K2 green 5aa73a71). Red 85974a58 (AttributeError: no attribute pass_rule_problems, 3 tests). Model claude-sonnet-5-5. Tokens: context 101124 at close, output 7411 (transcript usage). Context at K2 start about 68k (Leader override, ceiling 180k). Gates exit 0: base8 203 passed, named six files 309 passed 1 xfailed, ruff clean, mutate_check cli.json every mutation killed (T-E9 validate drops the readiness.problems call killed), docs-graph validate exit 0. Markers removed in part 1.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "X-TE9 part 2: K2 readiness.pass_rule_problems, final gates, plan record",
+      "done_when": "K2 green, R-104 gates read, plan record committed",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-06T16:18:31Z",
+      "duration_seconds": 1210.0
     }
   ],
   "changes": [
