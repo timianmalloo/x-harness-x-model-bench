@@ -682,9 +682,11 @@ def verify(run_dir: Path) -> list[Finding]:
     integrity failure; a warning is not."""
     out: list[Finding] = []
     done = completed_passes(run_dir)
+    reports: dict[tuple[str, str], ledger.SegmentReport] = {}
     for fact in FACTS:
         for path in segment_paths(run_dir, fact):
             report = ledger.verify_segment(path)
+            reports[fact, path.stem] = report
             if report.error:
                 out.append(Finding("HB-LED-002", "error", f"{fact}/{path.name}: {report.detail}"))
             elif path.stem.startswith(GRADE_PREFIX) and path.stem not in done:
@@ -695,6 +697,21 @@ def verify(run_dir: Path) -> list[Finding]:
     if any(f.level == "error" for f in out):
         return out
     out += _sealed_record(run_dir)
+    if any(f.level == "error" for f in out):
+        return out
+    try:
+        events = rows(run_dir, "events")
+    except BenchError as exc:
+        return [*out, Finding(exc.code, "error", exc.message)]
+    for row in events:
+        sid = row.get("segment_id")
+        if row["kind"] != "segment.abandoned" or not isinstance(sid, str) or not sid.startswith(ENGINE_PREFIX):
+            continue
+        fact = row.get("fact")
+        report = reports.get((fact, sid))
+        if (report is None or report.error or report.sealed
+                or report.lines != row.get("line_count") or report.head_hash != row.get("head_hash")):
+            out.append(Finding("HB-LED-002", "error", f"{fact}/{sid}: abandoned engine segment does not match its unsealed head and line_count"))
     if any(f.level == "error" for f in out):
         return out
     try:
