@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Eval X Rs</title><style>
+:root { color-scheme: light dark; --bg:#f7f5ef; --panel:#fff; --text:#20201d;
+  --muted:#66645f; --line:#d9d5ca; --accent:#3157a4; --code:#f0eee7; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#171816; --panel:#20221f; --text:#f2f1eb; --muted:#b8b6ae;
+    --line:#3d403a; --accent:#8fb0ff; --code:#292c27; }
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text);
+  font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { width:min(920px,calc(100% - 32px)); margin:32px auto; padding:40px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+h1,h2,h3,h4,h5,h6 { line-height:1.2; margin:1.5em 0 .55em; }
+h1 { margin-top:0; font-size:2.2rem; } h2 { border-bottom:1px solid var(--line); padding-bottom:.3em; }
+a { color:var(--accent); } code { background:var(--code); padding:.12em .35em; border-radius:4px; }
+pre { overflow:auto; padding:16px; background:var(--code); border-radius:8px; }
+pre code { padding:0; } blockquote { margin:1em 0; padding:.2em 1em; color:var(--muted);
+  border-left:4px solid var(--line); }
+table { width:100%; border-collapse:collapse; margin:1em 0; display:block; overflow:auto; }
+th,td { padding:.55em .75em; border:1px solid var(--line); text-align:left; vertical-align:top; }
+th { background:var(--code); } hr { border:0; border-top:1px solid var(--line); }
+.source { color:var(--muted); font-size:.9rem; margin-bottom:2rem; }
+@media (max-width:640px) { main { width:100%; margin:0; padding:24px 18px; border:0; border-radius:0; } }
+</style></head><body><main><div class="source">Rendered from eval-x-rs.md</div><h1>X-RS execution plan (K2-K5)</h1>
+<p>Goal: RS1 and RS2 are <code>ready</code>, each with a committed discrimination record. Done when each record reproduces <code>expected</code> (reference 1, naive 0) through the engine and readiness accepts it with no HB-RDY-003, HB-RDY-010 or HB-RDY-011 item. Not in scope: <code>src/</code>, <code>bench_check.py</code>, <code>grade/property.py</code>, the design docs, ADR-0018, other tasks. Tier T2; fan-out cap zero. Parts 4, 5, 6 and 7 of the session <code>x-rs-e1e4</code>; parts 5 and 6 stopped before this record.</p>
+<p>Closing audit entries: part 4 <code>al-01M492A0RG3PRGBX7DR29E73VD</code>, part 5 <code>al-01M493KYHFD935SBA0KNPMRCY9</code>, part 6 <code>al-01M499BDK9D1CHZJ179JX8WTV9</code>, part 7 (this part) in the audit log under <code>x-rs-e1e4</code>.</p>
+<h2>Per-task result</h2>
+<table><thead><tr><th>Task</th><th>State</th><th>Record</th><th>Declared = measured</th></tr></thead><tbody><tr><td>RS1</td><td>ready (<code>b466281c</code>)</td><td><code>bench/discrimination/RS1/4abce7b6c4b932d6-b7d0b01779496991-win32.json</code></td><td>reference: property_check_pass 1, fault_suite_pass 1.0000, idempotency_violations 0; naive: 0, 0.4286, 0, timeouts f-hang, f-recover, f-slow-first</td></tr><tr><td>RS2</td><td>ready (<code>eed3bed1</code>)</td><td><code>bench/discrimination/RS2/ce78c3a1eb92fd5e-af46dc82a3f6bf4f-win32.json</code></td><td>reference: 1, 1.0000, 0; naive: 0, 0.5000, 1, timeouts g-slow-first, g-hang</td></tr></tbody></table>
+<p>Both trials ran <code>uv run bench discriminate &lt;ID&gt; --runs C:\t\rs-runs --cells-root C:\t\rs-cells</code>, exit 0, <code>readiness_failures</code> empty. RS1&#x27;s second trial (credentials unset) printed <code>confirmed</code>: byte-equal to the first record.</p>
+<h2>The RS2 measure (CR47-8)</h2>
+<p><code>idempotency_violations</code> counts deliveries: one request the collector applied that applied at least one record already applied counts 1, summed over the case&#x27;s requests (<code>check.py:71</code>, <code>:203</code>). Red <code>3a818e7f</code> (naive 2 under the old per-record count), green <code>651f87a0</code>. RS1 keeps its per-call sum of <code>max(0, effects - 1)</code> (<code>tasks/RS1/oracle/check/check.py:177</code>); for a client that sends one request per logical call it is the same quantity. Measured: reference 0, alt 0, naive 1, <code>batchidattempt</code> 5 (was 10), <code>requeuetail</code> 1, other variants 0.</p>
+<h2>Declared naive timeouts (CR47-7)</h2>
+<p>The naive&#x27;s <code>urlopen</code> has no timeout by design. Observed on the real path (the trial and <code>tests/test_*_task.py</code>, outcome <code>timeout</code>, clause <code>time</code>): RS1 f-hang, f-recover, f-slow-first; RS2 g-slow-first, g-hang. Each is declared in <code>task.yaml</code> as <code>expected.naive.timeouts</code> with a provenance comment; none on the reference.</p>
+<h2>Variant tables, measured on the real path through the engine</h2>
+<p>RS1 (the engine record&#x27;s <code>flips</code>, equal to <code>tests/test_rs1_task.py</code>&#x27;s measured rows):</p>
+<table><thead><tr><th>Variant</th><th>Flipped cases</th><th>idempotency_violations</th></tr></thead><tbody><tr><td>noretry</td><td>f-5xx-burst (effect)</td><td>0</td></tr><tr><td>notimeout</td><td>f-slow-first, f-hang, f-recover (time)</td><td>0</td></tr><tr><td>attempt3s</td><td>f-hang, f-recover (time)</td><td>0</td></tr><tr><td>retry5</td><td>f-5xx-persistent, f-hang, f-recover (requests)</td><td>0</td></tr><tr><td>nokey</td><td>f-slow-first, f-lost-response (effect)</td><td>2</td></tr><tr><td>retry4xx</td><td>f-4xx (requests)</td><td>0</td></tr><tr><td>cacheerror</td><td>f-recover (result)</td><td>0</td></tr></tbody></table>
+<p>RS2 (the engine record; the cell is the clause that decides):</p>
+<table><thead><tr><th>Variant</th><th>Flipped cases</th><th>idempotency_violations</th></tr></thead><tbody><tr><td>noretry</td><td>g-5xx-burst (effect)</td><td>0</td></tr><tr><td>notimeout</td><td>g-slow-first, g-hang (time)</td><td>0</td></tr><tr><td>retry5</td><td>g-5xx-persistent, g-hang, g-lost-then-grow, g-ordering (requests)</td><td>0</td></tr><tr><td>batchidattempt</td><td>g-slow-first, g-lost-response, g-lost-then-grow (effect)</td><td>5</td></tr><tr><td>clearearly</td><td>g-5xx-persistent, g-lost-then-grow, g-ordering (result)</td><td>0</td></tr><tr><td>requeuetail</td><td>g-lost-then-grow, g-ordering (result)</td><td>1</td></tr><tr><td>retry4xx</td><td>g-4xx (requests)</td><td>0</td></tr><tr><td>growid</td><td>g-lost-then-grow (result)</td><td>0</td></tr></tbody></table>
+<p>Every case of both tasks is flipped by at least one variant.</p>
+<h2>Reference duration_ms per case (three runs, the real check)</h2>
+<table><thead><tr><th>Task</th><th>Case: run 0 / 1 / 2 (ms)</th></tr></thead><tbody><tr><td>RS1</td><td>f-5xx-burst 57/56/61, f-5xx-persistent 52/37/56, f-slow-first 1012/1011/1017, f-hang 2924/2918/2923, f-lost-response 43/13/40, f-4xx 12/36/14, f-recover 2946/2945/2945</td></tr><tr><td>RS2</td><td>g-5xx-burst 252/236/236, g-5xx-persistent 182/192/177, g-slow-first 1126/1129/1118, g-hang 3044/3036/3051, g-lost-response 142/143/151, g-4xx 136/145/131, g-lost-then-grow 179/180/196, g-ordering 183/199/196</td></tr></tbody></table>
+<p>Bounds: RS2 <code>g-lost-then-grow</code> <code>bound_ms</code> 1000 (slowest 196 ms x 1.25 = 245; the alt measured 304 ms). The <code>bound_ms: 4500</code> of the slow and hang cases (RS1 f-slow-first, f-hang, f-recover; RS2 g-slow-first, g-hang) are at least 47 percent above the reference&#x27;s slowest run (RS1 f-recover 2946, RS2 g-hang 3051), so none changed (W1-L 9.1 upgrade trigger).</p>
+<h2>Check authoring rules and the lines that meet them</h2>
+<table><thead><tr><th>Rule</th><th>RS1 <code>check.py</code></th><th>RS2 <code>check.py</code></th></tr></thead><tbody><tr><td>1. every socket from <code>bench_check.listen()</code></td><td>:162, :165</td><td>:183, :186</td></tr><tr><td>2. <code>passed</code> from the fake&#x27;s counters</td><td>:71, :78, :136-:154</td><td>:84-:93, :153-:180</td></tr><tr><td>3. serve thread joined inside the case</td><td>:128-:131, :176</td><td>:145-:148, :202</td></tr><tr><td>4. untrusted bytes bounded, malformed counted with no effect</td><td>:89, :93, :32</td><td>:106, :110, :39</td></tr></tbody></table>
+<p>Each task&#x27;s <code>oracle/evidence.md</code> states the four rules in full.</p>
+<h2>CR47-9: anchors and variants moved by the reference freeze (Ruling 111)</h2>
+<p>S-1..S-5 (<code>tasks/RS2/tests/test_shipper_hidden.py</code>) are byte-identical to <code>cb7ba428</code> (<code>git diff --exit-code cb7ba428 --</code> the file, exit 0; the same for <code>tasks/RS1/tests</code>). The frozen reference moved the text three wrong-apps edit, so their <code>old</code> anchor changed (commit <code>3bad8cda</code>, from <code>c44c11e5</code>); each still turns exactly its one hidden test red (<code>test_each_wrong_app_turns_exactly_its_reds_red</code> passed in the final gate).</p>
+<table><thead><tr><th>Wrong app</th><th>Old anchor</th><th>New anchor</th></tr></thead><tbody><tr><td>wa-keep</td><td><code>del self._buffer[:len(records)]</code> line</td><td><code>self._pending = None</code> then <code>return sent</code></td></tr><tr><td>wa-sendempty</td><td><code>if not self._buffer:</code> then <code>return 0</code></td><td><code>if not self._buffer:</code> then <code>break</code> in the flush loop</td></tr><tr><td>wa-reverse</td><td><code>records = list(self._buffer)</code></td><td><code>self._pending = (uuid.uuid4().hex, self._buffer[:])</code></td></tr></tbody></table>
+<p><code>requeuetail</code> was redefined for the freeze: it no longer adds a <code>_held</code> list; it puts the newer records first and the pending records after, under a new batch id, so it flips g-lost-then-grow and g-ordering (was g-ordering alone).</p>
+<h2>Finding and validation (not fixed here)</h2>
+<ul><li>Working-copy line endings. Eight RS1 and RS2 files were CRLF in the working tree although the index holds LF. The</li></ul>
+<p>engine&#x27;s <code>_variant_overlay</code> (<code>discriminate.py:142</code>) applies <code>bytes.replace</code> with an LF <code>old</code>, so six RS2 variants silently changed nothing and read as HB-RDY-003 in the first trial. The files were rewritten as LF (no git diff, and <code>tree_hash</code> reads CRLF as LF, so no record key moves); the trial was re-run and the first record deleted before commit. <code>_variant_overlay</code> should fail when <code>old</code> is absent from the bytes. This is for <code>src/</code>, so it is a seam request.</p>
+<ul><li><code>uv run bench validate</code> on the final tree prints one line, <code>ok: bom, metrics, example matrix and every task folder are valid</code>: no line names RS1 or RS2, and no HB-RDY-002 appears.</li></ul></main></body></html>
