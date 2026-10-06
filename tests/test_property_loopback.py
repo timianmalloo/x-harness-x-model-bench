@@ -238,3 +238,27 @@ def test_loopback_with_neither_shape_is_refused_as_not_exactly_one():
 def test_loopback_shape_a_stays_not_built():
     (item, detail, code), = _readiness_items({"interface": "loopback", "deliverable": {"start": ["s"], "config": "c.json"}})
     assert code == "HB-RDY-005" and "not built" in detail
+
+
+# --- K3 (b): the four property.json pointers and property_evidence reading them ---------------------------------------------
+
+def test_property_json_names_the_four_evidence_pointers_relative_to_the_run_dir(tmp_path):
+    inp, _ = run(tmp_path, [fault()])
+    check = json.loads((inp.out_dir / "property.json").read_text(encoding="utf-8"))["check"]
+    base = (inp.out_dir / "check").relative_to(inp.run_dir).as_posix()
+    assert {k: check[k] for k in ("deliverable", "cases", "hosts", "clauses")} == {
+        "deliverable": f"{base}/check.stdout", "cases": f"{base}/check.stdout", "hosts": f"{base}/hosts.jsonl", "clauses": None}
+
+
+def test_property_evidence_reads_what_the_pointers_name_and_fails_closed_on_an_absent_one(tmp_path):
+    from harness_bench import readiness
+
+    inp, _ = run(tmp_path, [fault()])
+    pointer = (inp.out_dir / "property.json").relative_to(inp.run_dir).as_posix()
+    got = readiness.property_evidence(inp.run_dir, pointer)
+    assert got["cases"] == {"f-5xx": "passed"} and got["hosts_ready"] == 1 and got["clauses"] is None
+    doc = json.loads((inp.out_dir / "property.json").read_text(encoding="utf-8"))
+    del doc["check"]["hosts"]
+    (inp.out_dir / "property.json").write_text(json.dumps(doc), encoding="utf-8")
+    with pytest.raises(ValueError, match="check.hosts"):
+        readiness.property_evidence(inp.run_dir, pointer)
