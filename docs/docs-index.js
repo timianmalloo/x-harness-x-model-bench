@@ -4391,6 +4391,55 @@ window.DOCS_INDEX = {
       "sourceSha256": "90520727a534cd524048d7ea743896d9da892b34ec89adff7d37c22646d03630"
     },
     {
+      "id": "coordinator-log-c45",
+      "path": "docs/coordination/coordinator-log/c45.md",
+      "title": "Coordinator #45 hand-back (2026-10-06): the five X-K1c contradictions classified, the strict-xfail narrowing rule, three seam rulings, the K1c finishing turn and X-K1d compiled",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-06",
+      "reviewSuggested": [],
+      "summary": "Coordinator #45 worked on build/eval-x-k1c (db67039d). All five contradictions the K6 worker reported are fixture defects against W1-K, none a design question; a sixth cause (resume_run silently discards the plan its caller passes) is a code defect, and it makes test_resume_heartbeats_the_lock vacuous. It ruled the strict-xfail narrowing rule, accepted both K1c seams (the plan reader, the stem order), ruled segment.abandoned's TABLE writer to \"ledger\" with a checked append, compiled the K1c finishing turn (Claude Code Sonnet) and X-K1d (Codex), filed one decision request to the Owner (the five classifier mutants against W1-K :199), and registered FIXT-C, INJ-A, ORD-A and MARK-B.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c43",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-k1",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-resume",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "plan-eval-x-k1c",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "65f42908b3ea62836a0e9d0a9e3437bf183f17c7af30edececb4a7ede1ec9c42"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4417,7 +4466,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "04958dff43ce027a869309fe436a6a5e91bcedcbc2c9370a71ba68f916de5845"
+      "sourceSha256": "be7c6fdbee8100d0943437d64c4d3662f8e44c35c39f88bb9452849a5c98059e"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -9546,5 +9595,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "b5ad1bfb725ffb790bb028f06c02fb151e947ff5d2896136e1a6eb1d1ef0825c"
+  "graphSha256": "1b6c946d8df2cf20eec8680ea6a4b7a34b17c4d2a84447bfe2079bb2f9c7d43b"
 };
