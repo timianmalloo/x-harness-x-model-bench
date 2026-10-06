@@ -3646,7 +3646,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "a4358621c550c308c63a8a6a6af58a6c34dd8b473851bee33bdcf425a2545b5d"
+      "sourceSha256": "ee9465d29dce4bb1c9063ab12e13bbc378d6fd94d2b89f1009febc3bf99689b1"
     },
     {
       "id": "audit-log",
@@ -5360,6 +5360,32 @@ window.DOCS_INDEX = {
         }
       ],
       "sourceSha256": "dea52505a23a09591be87e66b2af6bb89773109da066f4d56c16824bbf38c5fe"
+    },
+    {
+      "id": "plan-eval-x-k1d",
+      "path": "docs/plans/eval-x-k1d.md",
+      "title": "X-K1d: exit-evidence table and plan record",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-20",
+      "reviewSuggested": [],
+      "summary": "X-K1 (resume engine) exit evidence across K1a to K1d: acceptance items, mutants, simplifications, R1-R3, dispatches.",
+      "tags": [
+        "evaluation",
+        "coordination",
+        "execution-graph",
+        "resume"
+      ],
+      "links": [
+        {
+          "to": "brief-eval-x-j1",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "3aa40180019cc1cd2c6745e2ffde54e63fa1c13ff9dd88abd69ec8ea20315d48"
     },
     {
       "id": "plan-eval-x-lb1",
@@ -9885,6 +9911,14 @@ window.DOCS_INDEX = {
       "artifactId": "plan-eval-x-k1c"
     },
     {
+      "id": "surface-plans-eval-x-k1d",
+      "path": "docs/plans/eval-x-k1d.html",
+      "title": "Eval X K1D",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-k1d"
+    },
+    {
       "id": "surface-plans-eval-x-lb1",
       "path": "docs/plans/eval-x-lb1.html",
       "title": "Eval X Lb1",
@@ -9939,5 +9973,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "f5f6c7323c98e162f248ab0938ca26b801d5713e262c92c8e568f303593a8c25"
+  "graphSha256": "edfc83a897851d2f7fafaac06ec1b3ed5e292b64eb31c35a9a6aedc230d1e07d"
 };
