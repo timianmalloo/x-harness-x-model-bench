@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T17:43:12Z",
+  "generated": "2026-10-06T18:16:46Z",
   "audit": [
     {
       "actor": null,
@@ -109336,6 +109336,35 @@ window.AUDIT_DATA = {
       "git": {
         "sha": "6c56cae42b0ff4c5427a3648fbcb7320041f95cc",
         "short": "6c56cae42",
+        "branch": "build/eval-x-lb1",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M496XCB1A2JXB5E19SAE6ZY1",
+      "shortname": "x-lb1-p3",
+      "datetime": "2026-10-06T18:16:46Z",
+      "session": "x-lb1-e1e4",
+      "prompt": "X-LB1 part 3: close the four Security & Identity conditions",
+      "summary": "Closed 4 conditions: SO_EXCLUSIVEADDRUSE read by test + mutation; outcome-set selector refusal tests + mutation; fault fixture reads fake counters (lazy client fails); {fake_url} args only + mutation. Gates: mutate_check bench_check/property all killed, 216 tests pass, ruff and docs-graph validate clean.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "claude-sonnet-5-5",
+      "artifacts": [
+        "docs/plans/eval-x-lb1.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Close the four Security conditions on X-LB1",
+      "done_when": "four fixes each in its own commit, mutate_check kills all, gates green",
+      "tier": "T1",
+      "started_at": "2026-10-06T17:49:41Z",
+      "duration_seconds": 1625.0,
+      "git": {
+        "sha": "d4f07ad8c07c365403d32a43b027050a589e63d0",
+        "short": "d4f07ad8c",
         "branch": "build/eval-x-lb1",
         "pushed": null
       }
