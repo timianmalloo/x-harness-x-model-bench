@@ -15,4 +15,6 @@ Configurations:
 - `run_lifecycle.liveness.cfg`: liveness at one cell (two turns).
 - `run_lifecycle.turns.cfg`: two-turn cells (ADR-0015 section 7): the turn invariants at 2 cells, 1 crash.
 
+Resume (W1-K, `docs/design/eval-resume.md`): `Resume` is unguarded and `ReconcileRecord` under `stopApplied` records `stopped`; the invariant is `NoLaunchAfterStop` (`NoResumeAfterStop` is retired, D-K10). The mapping rows are in `docs/design/run-lifecycle-model.md`.
+
 Run `python tools/check_models.py` (`--quick` for small bounds only, `--deep` to add 2 crashes). The script fetches the pinned `tla2tools.jar` into `.tools/` and checks its sha256. It needs Java 11 or later.

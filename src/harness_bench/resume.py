@@ -5,7 +5,6 @@ each crashed cell, the pid check and the engine loop. The stop predicate, classi
 ledger rows only. Nothing here imports a grade module: `cfg.verify` is injected by the composition root.
 """
 
-import logging
 import shutil
 import time
 from dataclasses import dataclass
@@ -15,7 +14,7 @@ from harness_bench import archive, atomic, engine, host, ledger, lifecycle, oslo
 from harness_bench import plan as plan_module
 from harness_bench.errors import BenchError, Cause
 
-log = logging.getLogger("harness_bench.resume")
+log = engine.log  # the run-log handler owns both engine and resume events
 DEFAULT_PID_WAIT_S = 30  # D-K2: the bounded wait for a recorded pid that is still alive
 PHASES = {"C2": "mid-turn", "C3": "between-turns", "C4": "between-turns", "C5": "turn-complete", "C6": "mid-turn"}
 CAUSES = {"HB-CELL-117": Cause.archive, "HB-CELL-118": Cause.coordinator_crash,
@@ -24,6 +23,7 @@ CAUSES = {"HB-CELL-117": Cause.archive, "HB-CELL-118": Cause.coordinator_crash,
 
 def resume_run(run_dir: Path, root: Path, plan: dict, cfg):
     """W1-K 3.1 steps 1–3; refusal order precedes all writes and first-run checks."""
+    started = time.perf_counter()
     confirmed = plan_module.load_confirmed(run_dir)
     passed_hash, confirmed_hash = plan_module.plan_hash(plan), plan_module.plan_hash(confirmed)
     if passed_hash != confirmed_hash:  # the confirmed plan is the one authority; a caller's edit is never silently dropped
@@ -60,16 +60,23 @@ def resume_run(run_dir: Path, root: Path, plan: dict, cfg):
             raise BenchError("HB-LED-005", f"archive folder {missing[0][1]} does not exist")
         stopped = stop_recorded(rows)
         if not has_work(plan, rows):  # step 4: no segment and no row
-            return _report(engine.RunSummary(3 if stopped else 0), [], stopped, [])
+            actions = classify(plan, rows, stopped)
+            log.info("resume.started", extra={"run_id": plan["run_id"], "segment_id": None, "dead_segments": None,
+                                               "cells_total": len(plan["cells"]), "has_work": False})
+            _log_classified(actions)
+            return _report(engine.RunSummary(3 if stopped else 0), [], stopped, [], started=started,
+                           skipped=sum(a.rule == "C0" for a in actions))
         usage = _fact_rows(run_dir, "turn_usage")
         state = _Resume(run_dir, plan, cfg, lock, {"events": rows, "archive_files": files, "turn_usage": usage}, stopped)
         summary = state.eng.resume(lock, engine.next_ordinal(run_dir), state.boot)
         mine = _fact_rows(run_dir, "events")
         mine = mine[max(i for i, r in enumerate(mine) if r["kind"] == "run.resumed"):]  # this invocation's own rows
-        return _report(summary, mine, stopped or bool(state.eng.run_stopped), state.eng.deferred)
+        return _report(summary, mine, stopped or bool(state.eng.run_stopped), state.eng.deferred, started=started,
+                       skipped=state.skipped)
 
 
-def _report(summary: engine.RunSummary, rows: list[dict], stopped: bool, deferred: list[str]) -> engine.RunSummary:
+def _report(summary: engine.RunSummary, rows: list[dict], stopped: bool, deferred: list[str], *, started: float,
+            skipped: int) -> engine.RunSummary:
     """The one closing line of a resume: three exits, three different lines (D-K13, R-101). `rows` are the rows
     this invocation wrote, so an idempotent re-run reports 0."""
     if deferred:
@@ -80,7 +87,15 @@ def _report(summary: engine.RunSummary, rows: list[dict], stopped: bool, deferre
         print(f"run is stopped: {n} cells recorded stopped, {m} archived, graded, 0 launched")
     elif summary.exit_code == 0:
         print("run is complete")
+    log.info("resume.done", extra={"skipped": skipped,
+                                  "launched": sum(r["kind"] == "cell.launch_intent" for r in rows),
+                                  "reconciled": sum(r["kind"] == "cell.outcome" and "resume" in r for r in rows),
+                                  "duration_ms": max(0, round((time.perf_counter() - started) * 1000))})
     return summary
+
+
+def _log_classified(actions: list["Action"]) -> None:
+    log.info("resume.classified", extra={"counts": {f"C{i}": sum(a.rule == f"C{i}" for a in actions) for i in range(8)}})
 
 
 def _fact_rows(run_dir: Path, fact: str) -> list[dict]:
@@ -203,6 +218,7 @@ class _Resume:
         self.run_dir, self.plan, self.cfg, self.lock, self.rows, self.stopped = run_dir, plan, cfg, lock, rows, stopped
         self.eng = engine.Engine(plan, cfg)
         self.pid_wait = plan["parameters"].get("pid_wait_s", DEFAULT_PID_WAIT_S)
+        self.skipped = 0
         self.dead = [(fact, path.stem, report) for fact in engine.FACTS
                      for path in sorted((run_dir / fact).glob("engine-*.jsonl"), key=lambda p: p.stem)
                      if not (report := ledger.verify_segment(path)).sealed]
@@ -210,6 +226,9 @@ class _Resume:
     def boot(self) -> list[dict]:
         eng, rows = self.eng, self.rows["events"]
         segment = eng.writers["events"].segment_id
+        log.info("resume.started", extra={"run_id": self.plan["run_id"], "segment_id": segment,
+                                           "dead_segments": len(self.dead), "cells_total": len(self.plan["cells"]),
+                                           "has_work": True})
         if not any(r["kind"] == "run.started" for r in rows):  # D-K6: started by the resume
             eng.append_row({"kind": "run.started", "run_id": self.plan["run_id"], "plan_hash": self.plan["plan_hash"],
                             "trace_id": self.plan["trace_id"]})
@@ -225,7 +244,8 @@ class _Resume:
         sweep_archives(self.run_dir, self.lock)
         eng.restore(self.rows)
         actions = classify(self.plan, rows, self.stopped)
-        log.info("resume classified", extra={"detail": ",".join(f"{a.cell_id}={a.rule}" for a in actions)})
+        _log_classified(actions)
+        self.skipped = sum(a.rule == "C0" for a in actions)
         if self.stopped:
             self._finish_the_stop(rows)
         by_cell: dict[str, list[dict]] = {}
@@ -234,7 +254,19 @@ class _Resume:
                 by_cell.setdefault(row["cell_id"], []).append(row)
         pending = []
         for action, cell in zip(actions, self.plan["cells"], strict=True):
-            pending += self._act(action, cell, by_cell.get(cell["cell_id"], []), segment)
+            started = time.perf_counter()
+            cell_rows = by_cell.get(cell["cell_id"], [])
+            launched = self._act(action, cell, cell_rows, segment)
+            pending += launched
+            turn = max((r.get("turn", 1) for r in cell_rows if r["kind"] == "cell.prompt_sent"), default=1)
+            outcome = eng.outcomes.get(action.cell_id, {})
+            reconciled = outcome.get("resume", {}).get("segment_id") == segment
+            operation = ("deferred" if action.cell_id in eng.deferred else "launch" if launched
+                         else outcome["outcome"] if reconciled else "archive" if action.rule == "C1" else "skip")
+            log.info("resume.cell", extra={"cell_id": action.cell_id, "rule": action.rule, "action": operation,
+                                            "code": outcome.get("code") if reconciled else action.code,
+                                            "phase": PHASES.get(action.rule), "turn": turn,
+                                            "duration_ms": max(0, round((time.perf_counter() - started) * 1000))})
         return pending
 
     def _finish_the_stop(self, rows: list[dict]) -> None:
@@ -273,11 +305,16 @@ class _Resume:
         if rule == "C4" and not self._redo_snapshot(cell, turn):
             outcome, code = "failed", "HB-CELL-117"
         cause = CAUSES.get(code) if outcome == "failed" else None
+        # simplify: a resume-written outcome goes through Engine.append_row, which skips Engine._after_append (no
+        # infra_streak, no circuit breaker, no _raise_for); ceiling: resume writes one outcome per cell and never launches.
+        # Upgrade trigger: a resume that launches cells, or a circuit breaker meant to count reconciled failures.
         self.eng.append_row({
             "kind": "cell.outcome", "cell_id": cid, "outcome": outcome, "cause": cause.name if cause else None,
             "code": cause.code if cause else None, "host_mem_available": host.available_memory(),
             "resume": {"segment_id": segment, "turn": turn, "phase": PHASES[rule], "rule": rule}})
-        log.info("resume cell", extra={"cell_id": cid, "detail": f"{rule} {outcome} {code} {PHASES[rule]}"})
+        # simplify: the scripted-user log (scripted-user.jsonl) is not closed for a reconciled cell, unlike Engine's
+        # archive_after_outcome; ceiling: the log is archived as it stands with the cell folder. Upgrade trigger: a
+        # grader or view that requires a closed scripted-user log on a resumed cell.
         self._archive(cell)
         return []
 
@@ -290,7 +327,7 @@ class _Resume:
         while host.process_alive(*live):
             if time.monotonic() >= deadline:
                 self.eng.deferred.append(cid)
-                log.info("resume cell deferred", extra={"cell_id": cid, "detail": f"pid={live[0]}"})
+                log.info("resume.cell_deferred", extra={"cell_id": cid, "pid": live[0]})
                 return True
             time.sleep(0.2)
         return False
@@ -305,6 +342,9 @@ class _Resume:
                    and archive.snapshot_of(r) == tag]
         for _ in range(3):
             try:
+                # simplify: an already-published turn folder is adopted by file scan only (_folder_rows), not re-verified against
+                # its recorded hash; ceiling: a folder published by this engine's own atomic publish. Upgrade trigger: a published
+                # folder found with rows that disagree with its snapshot_hash in a real run.
                 if folder.is_dir():
                     rows = [{**r, "archive_attempt": 1, "snapshot": tag} for r in _folder_rows(folder)]
                     digest, total, ms = archive.archive_hash(rows), sum(r["size"] for r in rows), None

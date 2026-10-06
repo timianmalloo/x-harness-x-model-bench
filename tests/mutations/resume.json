@@ -1,0 +1,230 @@
+[
+ {
+  "name": "M-SKIPARCH",
+  "file": "src/harness_bench/resume.py",
+  "find": "if rule == \"C1\":\n            self._archive(cell)",
+  "replace": "if rule == \"C1\":\n            pass",
+  "tests": [
+   "tests/test_resume.py::test_window[W9_archive_tmp]",
+   "tests/test_resume.py::test_window[W10a_rows_none]"
+  ]
+ },
+ {
+  "name": "M-NODISCARD",
+  "file": "src/harness_bench/resume.py",
+  "find": "shutil.rmtree(folder, onexc=atomic.make_writable)",
+  "replace": "pass",
+  "tests": [
+   "tests/test_resume.py::test_window[W2_launched_not_prompted]"
+  ]
+ },
+ {
+  "name": "M-NOREDO",
+  "file": "src/harness_bench/resume.py",
+  "find": "if rule == \"C4\" and not self._redo_snapshot(cell, turn):",
+  "replace": "if rule == \"C4\":",
+  "tests": [
+   "tests/test_resume.py::test_window[W4b_snapshot_event_absent_under_stop]",
+   "tests/test_resume.py::test_window[W4c_redo_fails]"
+  ]
+ },
+ {
+  "name": "M-APPENDALL",
+  "file": "src/harness_bench/archive.py",
+  "find": "return [r for r in rows if key(r) not in seen]",
+  "replace": "return rows",
+  "tests": [
+   "tests/test_resume.py::test_window[W5b_rows_partial]",
+   "tests/test_resume.py::test_window[W10b_rows_partial]"
+  ]
+ },
+ {
+  "name": "M-WRITEOLD",
+  "file": "src/harness_bench/engine.py",
+  "find": "return {fact: ledger.SegmentWriter.create(run_dir / fact, segment) for fact in FACTS}",
+  "replace": "return {fact: ledger.SegmentWriter.reopen(next((run_dir / fact).glob(\"engine-*.jsonl\"))) for fact in FACTS}",
+  "tests": [
+   "tests/test_resume.py::test_abandoned_marker_pins_head",
+   "tests/test_resume.py::test_resume_of_a_resume[W13]",
+   "tests/test_resume.py::test_the_resume_opens_new_segments_and_never_the_dead_one"
+  ]
+ },
+ {
+  "name": "M-ORDER",
+  "file": "src/harness_bench/resume.py",
+  "find": "if cfg.identity_check is not None:",
+  "replace": "if cfg.identity_check is not None and not any(f.level == \"error\" for f in cfg.verify(run_dir)):",
+  "tests": [
+   "tests/test_resume.py::test_refusal_order"
+  ]
+ },
+ {
+  "name": "M-ORDINALCOUNT",
+  "file": "src/harness_bench/engine.py",
+  "find": "return max((int(m.group(2) or 0) for m in found), default=-1) + 1",
+  "replace": "return len(found) + 1",
+  "tests": [
+   "tests/test_resume.py::test_resume_of_a_resume[W13b_stray_segment]"
+  ]
+ },
+ {
+  "name": "M-STOPONLYRUNSTOPPED",
+  "file": "src/harness_bench/resume.py",
+  "find": "for row in rows:\n        kind = row.get(\"kind\")",
+  "replace": "for row in (r for r in rows if r.get(\"kind\") == \"run.stopped\"):\n        kind = row.get(\"kind\")",
+  "tests": [
+   "tests/test_resume.py::test_resume_finishes_the_stop[control_applied]",
+   "tests/test_resume.py::test_resume_finishes_the_stop[decision_resolved]"
+  ]
+ },
+ {
+  "name": "M-LAUNCHSTOPPEDISSTOP",
+  "file": "src/harness_bench/resume.py",
+  "find": "if kind == \"run.stopped\":",
+  "replace": "if kind in {\"run.stopped\", \"run.launch_stopped\"}:",
+  "tests": [
+   "tests/test_resume.py::test_launch_stopped_is_not_a_stop"
+  ]
+ },
+ {
+  "name": "M-STOPCRASHREC",
+  "file": "src/harness_bench/resume.py",
+  "find": "return (rule, \"stopped\", None) if stopped else (rule, \"failed\", code)",
+  "replace": "return (rule, \"failed\", code)",
+  "tests": [
+   "tests/test_resume.py::test_resume_finishes_the_stop[run_stopped]"
+  ]
+ },
+ {
+  "name": "M-STOPLAUNCHES",
+  "file": "src/harness_bench/resume.py",
+  "find": "if rule == \"C6\" and not self.stopped:",
+  "replace": "if rule == \"C6\":",
+  "tests": [
+   "tests/test_resume.py::test_resume_finishes_the_stop[run_stopped]"
+  ]
+ },
+ {
+  "name": "M-STOPC7",
+  "file": "src/harness_bench/resume.py",
+  "find": "return [] if self.stopped else [cell]",
+  "replace": "return [cell]",
+  "tests": [
+   "tests/test_resume.py::test_resume_finishes_the_stop[run_stopped]"
+  ]
+ },
+ {
+  "name": "M-STOPNOGRADE",
+  "file": "src/harness_bench/engine.py",
+  "find": "if ended_whole and self.cfg.grade is not None:",
+  "replace": "if ended_whole and self.cfg.grade is not None and not self.run_stopped:",
+  "tests": [
+   "tests/test_resume.py::test_resume_finishes_the_stop[run_stopped]"
+  ]
+ },
+ {
+  "name": "M-DOUBLECOMPLETED",
+  "file": "src/harness_bench/resume.py",
+  "find": "if not has_work(plan, rows):",
+  "replace": "if False:",
+  "tests": [
+   "tests/test_resume.py::test_finish_the_stop_is_idempotent"
+  ]
+ },
+ {
+  "name": "M-NOPENDINGSTOP",
+  "file": "src/harness_bench/resume.py",
+  "find": "(a.rule == \"C7\" and not stopped)",
+  "replace": "(a.rule == \"C7\")",
+  "tests": [
+   "tests/test_resume.py::test_finished_stop_with_unlaunched_cell_is_a_noop"
+  ]
+ },
+ {
+  "name": "M-ANYCOMPLETED",
+  "file": "src/harness_bench/lifecycle.py",
+  "find": "if row[\"kind\"] == \"run.resumed\":\n            return False",
+  "replace": "if row[\"kind\"] == \"run.resumed\":\n            continue",
+  "tests": [
+   "tests/test_resume.py::test_resume_after_launch_stop[W16]"
+  ]
+ },
+ {
+  "name": "M-PIDREUSE",
+  "file": "src/harness_bench/host.py",
+  "find": "        finally:\n            _k32.CloseHandle(handle)\n        return creation_time(pid) == created",
+  "replace": "        finally:\n            _k32.CloseHandle(handle)\n        return True",
+  "tests": [
+   "tests/test_resume.py::test_recycled_pid_is_gone"
+  ]
+ },
+ {
+  "name": "M-PIDKILL",
+  "file": "src/harness_bench/host.py",
+  "find": "        finally:\n            _k32.CloseHandle(handle)\n        return creation_time(pid) == created",
+  "replace": "        finally:\n            _k32.CloseHandle(handle)\n        import os\n        os.kill(pid, 9)\n        return False",
+  "tests": [
+   "tests/test_resume.py::test_recycled_pid_is_gone",
+   "tests/test_resume.py::test_pid_alive_defers_and_writes_no_completed"
+  ]
+ },
+ {
+  "name": "M-NOBEAT",
+  "file": "src/harness_bench/engine.py",
+  "find": "booting = _beating(lock, self.cfg.loop_interval)",
+  "replace": "booting = _beating(lock, 3600)",
+  "tests": [
+   "tests/test_resume.py::test_resume_heartbeats_the_lock"
+  ]
+ },
+ {
+  "name": "C2/C3",
+  "file": "src/harness_bench/resume.py",
+  "find": "rule, code = \"C2\", \"HB-CELL-118\"",
+  "replace": "rule, code = \"C3\", \"HB-CELL-119\"",
+  "tests": [
+   "tests/test_resume.py::test_every_ledger_prefix_matches_the_adr_table",
+   "tests/test_resume.py::test_every_two_cell_ledger_prefix_matches_the_adr_table"
+  ]
+ },
+ {
+  "name": "C3/C5",
+  "file": "src/harness_bench/resume.py",
+  "find": "(\"C3\", \"HB-CELL-119\") if last in snapped",
+  "replace": "(\"C5\", \"HB-CELL-118\") if last in snapped",
+  "tests": [
+   "tests/test_resume.py::test_every_ledger_prefix_matches_the_adr_table",
+   "tests/test_resume.py::test_every_two_cell_ledger_prefix_matches_the_adr_table"
+  ]
+ },
+ {
+  "name": "C5/completed",
+  "file": "src/harness_bench/resume.py",
+  "find": "rule, code = \"C5\", \"HB-CELL-118\"",
+  "replace": "return \"C0\", None, None",
+  "tests": [
+   "tests/test_resume.py::test_every_ledger_prefix_matches_the_adr_table",
+   "tests/test_resume.py::test_every_two_cell_ledger_prefix_matches_the_adr_table"
+  ]
+ },
+ {
+  "name": "C6/C2",
+  "file": "src/harness_bench/resume.py",
+  "find": "return \"C6\", (\"stopped\" if stopped else None), None",
+  "replace": "return \"C2\", (\"stopped\" if stopped else \"failed\"), (None if stopped else \"HB-CELL-118\")",
+  "tests": [
+   "tests/test_resume.py::test_every_ledger_prefix_matches_the_adr_table",
+   "tests/test_resume.py::test_every_two_cell_ledger_prefix_matches_the_adr_table"
+  ]
+ },
+ {
+  "name": "C2/continued turn",
+  "file": "src/harness_bench/resume.py",
+  "find": "crashed = any(k not in ended for k in sent)",
+  "replace": "crashed = 1 not in ended",
+  "tests": [
+   "tests/test_resume.py::test_every_ledger_prefix_matches_the_adr_table",
+   "tests/test_resume.py::test_every_two_cell_ledger_prefix_matches_the_adr_table"
+  ]
+ }
+]

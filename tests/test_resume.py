@@ -247,6 +247,11 @@ def _tmp_left(run_dir):
     return [p for p in (run_dir / "archive").rglob("*") if atomic.is_temp_name(p.name)]
 
 
+def _segment_hashes(run_dir):
+    return {(f.parent.name, f.name): hashlib.sha256(f.read_bytes()).hexdigest()
+            for f in sorted(run_dir.glob("*/*.jsonl")) if f.parent.name in engine.FACTS}
+
+
 def _tree_hash(run_dir):
     digest = hashlib.sha256()
     for path in sorted(p for p in run_dir.rglob("*") if p.is_file() and p.name != ".lock"):
@@ -453,6 +458,27 @@ def test_cli_run_resumes(tmp_path, name):
     assert _kinds(rows, "cell.outcome", cell_id=t2.cell)[-1]["resume"]["phase"] == "between-turns"
     assert len(_kinds(rows, "cell.archived", cell_id=t2.cell)) == 1
     assert len(_kinds(rows, "cell.launch_intent", cell_id=t2.cell)) == 1, "C3 never relaunches"
+    run_log = [json.loads(line) for line in (t2.run_dir / "engine.log").read_text(encoding="utf-8").splitlines()]
+    for event, fields in {
+        "resume.started": {"run_id", "segment_id", "dead_segments", "cells_total", "has_work"},
+        "resume.classified": {"counts"},
+        "resume.done": {"skipped", "launched", "reconciled", "duration_ms"},
+        "resume.cell": {"cell_id", "rule", "action", "code", "phase", "turn", "duration_ms"},
+    }.items():
+        records = [r for r in run_log if r.get("event") == event]
+        assert len(records) == 1, f"real CLI run log must hold one {event}: {records}"
+        assert fields <= records[0].keys(), f"missing {event} fields: {fields - records[0].keys()}"
+    started = next(r for r in run_log if r.get("event") == "resume.started")
+    assert started["run_id"] == plan.load_confirmed(t2.run_dir)["run_id"]
+    assert started["has_work"] is True and started["cells_total"] == 1 and started["dead_segments"] >= 1
+    classified = next(r for r in run_log if r.get("event") == "resume.classified")
+    assert classified["counts"] == {f"C{i}": int(i == 3) for i in range(8)}
+    cell = next(r for r in run_log if r.get("event") == "resume.cell")
+    assert (cell["cell_id"], cell["rule"], cell["action"], cell["code"], cell["phase"], cell["turn"]) == (
+        t2.cell, "C3", "failed", "HB-CELL-119", "between-turns", 1)
+    done = next(r for r in run_log if r.get("event") == "resume.done")
+    assert (done["skipped"], done["launched"], done["reconciled"]) == (0, 0, 1)
+    assert done["duration_ms"] >= cell["duration_ms"] >= 0
 
 
 # ---------------------------------------------------------------- windows (T1, T2 for W2/W11)
@@ -555,11 +581,17 @@ STOP_WINDOWS = ["control_applied", "decision_resolved", "run_stopped", "control_
 
 
 @pytest.mark.parametrize("window", STOP_WINDOWS)
-def test_resume_finishes_the_stop(golden5, tmp_path, window, capsys):
+def test_resume_finishes_the_stop(golden5, tmp_path, window, capsys, caplog):
     states = ("C2", "C4", "C5", "C6", "C7") if window.endswith("c4") else ("C2", "C3", "C5", "C6", "C7")
     env = _stop_ledger(golden5, tmp_path, window.removesuffix("_c4"), states)
     intents_before = len(_kinds(_rows(env.run_dir), "cell.launch_intent"))
+    caplog.set_level(20)
     assert _resume(env).exit_code == 3
+    # CR47-5 (M-STOPC7): the stopped engine refuses to launch whatever boot() returns, so the wrong decision shows
+    # only in the resume.cell record: the C7 cell is skipped, and resume.done reports nothing launched.
+    c7_cell = [r for r in caplog.records if r.getMessage() == "resume.cell" and r.cell_id == golden5.cells[4]]
+    assert [(r.rule, r.action) for r in c7_cell] == [("C7", "skip")]
+    assert [r.launched for r in caplog.records if r.getMessage() == "resume.done"] == [0]
     rows, post = _rows(env.run_dir), _post(env)
     c7 = golden5.cells[4]
     for cid in golden5.cells[:4]:
@@ -639,6 +671,9 @@ def _w13_w14(golden1, tmp_path, name, i):
     assert _outcome_map(env) == want
     abandoned = [(r["fact"], r["segment_id"]) for r in _kinds(_rows(env.run_dir), "segment.abandoned")]
     assert len(abandoned) == len(set(abandoned)), "a segment already named is never named twice"
+    if name == "W13":  # CR47-5 (M-WRITEOLD): exactly one marker per (fact, dead segment) across all segments
+        dead = {(fact, p.stem) for fact in engine.FACTS for p in views.segment_paths(env.run_dir, fact)[:-1]}
+        assert dead and sorted(abandoned) == sorted(dead), (abandoned, dead)
 
 
 def _w13b(golden1, tmp_path, monkeypatch):
@@ -844,8 +879,9 @@ def test_recycled_pid_is_gone(golden1, tmp_path):
         proc.wait()
 
 
-def test_pid_alive_defers_and_writes_no_completed(golden1, tmp_path, capsys):
+def test_pid_alive_defers_and_writes_no_completed(golden1, tmp_path, capsys, caplog):
     env, proc = _with_live_pid(golden1, tmp_path)
+    caplog.set_level(20)
     try:
         assert _resume(env).exit_code == 3
         post = _post(env)
@@ -853,6 +889,9 @@ def test_pid_alive_defers_and_writes_no_completed(golden1, tmp_path, capsys):
         assert _need(resume, "has_work")(env.plan, _rows(env.run_dir)) is True
         assert _kinds(post, "resume.cell_deferred") or "run is not finished" in capsys.readouterr().out
         assert proc.poll() is None, "the check never terminates the foreign process"
+        deferred = [r for r in caplog.records if r.getMessage() == "resume.cell_deferred"]
+        assert len(deferred) == 1, "a deferred cell must emit its normal-path event"
+        assert (deferred[0].cell_id, deferred[0].pid) == (env.plan["cells"][0]["cell_id"], proc.pid)
     finally:
         proc.kill()
         proc.wait()
@@ -956,11 +995,31 @@ def test_sweep_archives_cleans_root_and_each_cell(golden1, tmp_path):
 
 def test_abandoned_marker_pins_head(golden1, tmp_path):
     env = _prefix(golden1, tmp_path, 6)
+    before = _segment_hashes(env.run_dir)
     assert _resume(env).exit_code == 0
+    after = _segment_hashes(env.run_dir)
+    assert {k: after[k] for k in before} == before, "CR47-5 (M-WRITEOLD): a dead segment's bytes never change"
     dead = next((env.run_dir / "events").glob(f"{golden1.stems['events']}.jsonl"))
     lines = dead.read_bytes().splitlines(keepends=True)
     dead.write_bytes(b"".join(lines[:-1]))
     assert any(f.code == "HB-LED-002" for f in views.verify(env.run_dir)), "a cut dead segment must fail verify"
+
+
+def test_the_resume_opens_new_segments_and_never_the_dead_one(tmp_path):
+    """CR47-5 (M-WRITEOLD), without the golden fixture (a mutant that reopens the dead file breaks the fixture itself, an
+    ERROR no named test can FAIL): the factory creates -r<NNN> beside the dead segment and leaves its bytes alone."""
+    first = engine.open_engine_segments(tmp_path, 0)
+    for fact, writer in first.items():
+        writer.append({"kind": "x", "fact": fact})
+        writer.close()
+    dead = {p: hashlib.sha256(p.read_bytes()).hexdigest() for fact in engine.FACTS for p in (tmp_path / fact).glob("*.jsonl")}
+    second = engine.open_engine_segments(tmp_path, engine.next_ordinal(tmp_path))
+    for writer in second.values():
+        writer.close()
+    assert {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in dead} == dead, "a dead segment's bytes never change"
+    for fact in engine.FACTS:
+        stems = [p.stem for p in views.segment_paths(tmp_path, fact)]
+        assert len(stems) == 2 and stems[1] == f"{stems[0]}-r001", stems
 
 
 def test_abandoned_set_equals_unsealed_engine_facts(golden1, tmp_path):

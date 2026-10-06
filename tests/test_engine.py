@@ -25,7 +25,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from harness_bench import engine, host, ledger, lifecycle, oslock, plan
+from harness_bench import engine, host, identity, ledger, lifecycle, oslock, plan
 from harness_bench.errors import BenchError
 from harness_bench.telemetry import claude_code
 
@@ -254,11 +254,12 @@ def test_other_stop_rows_are_unchanged(base, monkeypatch):  # T-32, existing sto
     calls = []
     monkeypatch.setattr(engine, "_free_bytes", lambda path: 0)
     summary, events, _ = _run(base, _plan(n_cells=1), FakeLauncher({}),
-                               identity_check=lambda: calls.append(1), loop_interval=0.01)
+                               identity_check=lambda: (calls.append(1), identity.CheckResult([], False))[1],
+                               loop_interval=0.01)
     stops = [e for e in events if e["kind"] == "run.launch_stopped"]
 
     assert summary.exit_code == 3
-    assert len(stops) == 1 and calls == []
+    assert len(stops) == 1 and calls == [1]  # identity check runs once and clears, then the disk stop
     assert _identity_payload(stops[0]) == {"kind": "run.launch_stopped", "code": "HB-RUN-004", "reason": "free space below the floor"}
 
 
@@ -1340,6 +1341,87 @@ def test_disk_floor_stops_launching_before_any_cell(base):
     assert any(e["kind"] == "run.launch_stopped" and e["code"] == "HB-RUN-004" for e in events)
     assert not any(e["kind"] == "cell.launch_intent" for e in events)
     assert summary.exit_code == 3  # run incomplete
+
+
+def test_disk_query_failure_is_not_recorded_and_launching_continues(base, monkeypatch, caplog):
+    p = _plan(n_cells=4, parallelism=4)
+    cfg = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
+                             launchers={"fake": FakeLauncher({})}, build_workspace=_build_workspace, grade=None)
+
+    def failed_query(path):
+        raise OSError(errno.EIO, "query failed")
+
+    monkeypatch.setattr(shutil, "disk_usage", failed_query)
+    caplog.set_level(logging.INFO, logger="harness_bench.engine")
+    error = None
+    try:
+        summary = engine.Engine(p, cfg).run()
+    except OSError as exc:
+        error = exc
+    assert error is None, f"a disk query must not abort the engine: {error}"
+    assert summary.exit_code == 0
+    intents = [e for e in _events(cfg.run_dir) if e["kind"] == "cell.launch_intent"]
+    assert len(intents) == 4 and all("free_bytes" in e and e["free_bytes"] is None for e in intents)
+    failures = [r for r in caplog.records if r.getMessage() == "disk.query_failed"]
+    assert len(failures) == 8
+    for role in ("cells_root", "run_dir"):
+        records = [r for r in failures if r.path_role == role]
+        assert [r.errno for r in records] == [errno.EIO] * 4
+        assert [r.levelno for r in records] == [logging.INFO, logging.INFO, logging.WARNING, logging.INFO]
+
+
+def test_launch_intent_records_free_bytes(base, monkeypatch):
+    real = shutil.disk_usage
+    (base / "cells").mkdir()
+    monkeypatch.setattr(shutil, "disk_usage", lambda path: real(path)._replace(
+        free=4096 if path == base / "cells" else 8192))
+    _, events, _ = _run(base, _plan(n_cells=1), FakeLauncher({}))
+    intents = [e for e in events if e["kind"] == "cell.launch_intent"]
+    assert [e.get("free_bytes") for e in intents] == [4096]
+
+
+def test_disk_low_stops_launching_before_the_intent(base, monkeypatch):
+    real = shutil.disk_usage
+    free = 4096
+    monkeypatch.setattr(shutil, "disk_usage", lambda path: real(path)._replace(free=free))
+
+    def identity_check():
+        nonlocal free
+        free = 0  # the tick's earlier measurement is stale at the launch boundary
+        return type("Check", (), {"diff": [], "rechecked": False})()
+
+    summary, events, _ = _run(base, _plan(n_cells=1), FakeLauncher({}), identity_check=identity_check)
+    stop = next((e for e in events if e["kind"] == "run.launch_stopped"), None)
+    assert stop is not None and stop["code"] == "HB-RUN-004"
+    assert not any(e["kind"] == "cell.launch_intent" for e in events)
+    assert summary.exit_code == 3
+
+
+@pytest.mark.parametrize("failed_role", ["cells_root", "run_dir"])
+def test_one_path_failing_still_applies_floor_to_the_other(base, monkeypatch, failed_role):
+    p = _plan(n_cells=1)
+    (base / "cells").mkdir()
+    cfg = engine.EngineConfig(run_dir=base / "runs" / p["run_id"], cells_root=base / "cells",
+                             launchers={"fake": FakeLauncher({})}, build_workspace=_build_workspace, grade=None)
+    real = shutil.disk_usage
+
+    def query(path):
+        role = "cells_root" if path == cfg.cells_root else "run_dir"
+        if role == failed_role:
+            raise OSError(errno.EIO, "query failed")
+        return real(path)._replace(free=0)
+
+    monkeypatch.setattr(shutil, "disk_usage", query)
+    error = None
+    try:
+        summary = engine.Engine(p, cfg).run()
+    except OSError as exc:
+        error = exc
+    assert error is None, f"the other path's floor must still apply: {error}"
+    events = _events(cfg.run_dir)
+    assert [e["code"] for e in events if e["kind"] == "run.launch_stopped"] == ["HB-RUN-004"]
+    assert not any(e["kind"] == "cell.launch_intent" for e in events)
+    assert summary.exit_code == 3
 
 
 def test_an_append_failure_means_the_prompt_is_never_sent(base, monkeypatch):  # T-ENG-ack
