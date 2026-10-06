@@ -194,6 +194,36 @@ def test_t_eng_5_suspend_during_turn_two_keeps_snapshot(tmp_path):
     assert next(iter(summary.outcomes.values()))["cause"] == "host_suspended"
 
 
+def test_t_eng_5_one_detector_history_spans_the_run(tmp_path, monkeypatch):
+    """M-RESET: the detector built at run start keeps its history across every sample, including turn 2."""
+    made, ticks = [], []
+    suspended = threading.Event()
+    release = tmp_path / "release"
+
+    class HistoryDetector:
+        def __init__(self, gap):
+            made.append(self)
+
+        def slept(self):
+            # Only the run-start instance carries the gap history; a re-created one has none.
+            if suspended.is_set():
+                ticks.append(1)
+                if len(ticks) == 100:  # a lost history never fires: release turn 2 so the assertion below is reached
+                    release.write_text("go", encoding="utf-8")
+            return suspended.is_set() and self is made[0]
+
+    def after_prompt_two(e, r, clock):
+        if r["kind"] == "cell.prompt_sent" and r.get("turn") == 2:
+            suspended.set()
+
+    monkeypatch.setattr(engine.host, "SleepDetector", HistoryDetector)
+    summary, events, _, _, _ = run_cell(
+        tmp_path, [{"files": {"a.txt": "1"}}, {"files": {"a.txt": "2"}, "wait_for": str(release), "wait_limit": 60}],
+        on_row=after_prompt_two)
+    assert row(events, "cell.turn_snapshot_archived", 1), "snapshot must precede the suspend gap"
+    assert next(iter(summary.outcomes.values()))["cause"] == "host_suspended"
+
+
 def test_t_eng_6_only_end_turn_continues(tmp_path):
     _, events, _, _, _ = run_cell(tmp_path, [{"stop_reason": "max_tokens"}, {"stop_reason": "end_turn"}])
     assert not row(events, "cell.prompt_sent", 2), "max_tokens must not send turn 2"
@@ -213,6 +243,36 @@ def test_t_eng_7_budget_cancel_during_copy_never_sends_next(tmp_path, monkeypatc
     assert not row(events, "cell.turn_snapshot_archived")
     assert not list((cfg.run_dir / "archive").glob("*/turn-1"))
     assert not list((cfg.run_dir / "archive").glob("*/*.tmp-*"))
+    assert next(iter(summary.outcomes.values()))["outcome"] == "timed_out"
+
+
+def test_t_eng_7_kill_ends_a_retry_wait_without_sleeping(tmp_path, monkeypatch):
+    """M-SLEEP: the real _snapshot_turn backoff waits on the cancel event; it never calls time.sleep."""
+    box, calls, waits = {}, [], []
+    real_sleep = engine.time.sleep
+
+    def remember(e, r, clock):
+        if r["kind"] == "attempt.process_started":
+            box["engine"] = e
+
+    def locked(*args, **kwargs):
+        calls.append(1)
+        e = box["engine"]
+        e._kill(next(iter(e.active.values())), "timeout")  # the kill lands before the first backoff wait
+        raise PermissionError("exclusive source handle")
+
+    def spy(delay):
+        if sys._getframe(1).f_code.co_name == "_snapshot_turn":
+            waits.append(delay)  # no real delay: a mutant is observed, not waited for
+            return None
+        return real_sleep(delay)
+
+    monkeypatch.setattr(archive, "snapshot_cell", locked)
+    monkeypatch.setattr(engine.time, "sleep", spy)
+    summary, events, _, _, _ = run_cell(tmp_path, on_row=remember)
+    assert waits == [], f"the retry wait must be cancel-aware, not time.sleep: {waits}"
+    assert len(calls) == 1, "a kill during the backoff ends the retries"
+    assert not row(events, "cell.prompt_sent", 2)
     assert next(iter(summary.outcomes.values()))["outcome"] == "timed_out"
 
 
@@ -278,11 +338,26 @@ def test_t_drv_1_one_handshake_for_two_prompts(tmp_path):
         cp.close()
 
 
+class _CountingStdin:
+    """The real stdin, with every close counted."""
+
+    def __init__(self, real):
+        self.real, self.closes = real, 0
+
+    def close(self):
+        self.closes += 1
+        self.real.close()
+
+    def __getattr__(self, name):
+        return getattr(self.real, name)
+
+
 def test_t_drv_2_close_is_idempotent_and_closed_send_has_cause(tmp_path):
     cp = _spawn(tmp_path)
     try:
         session = driver.open_session(cp, tmp_path, None, 10)
         assert session is not None
+        counted = cp.proc.stdin = _CountingStdin(cp.proc.stdin)
         error = None
         try:
             session.close()
@@ -290,6 +365,7 @@ def test_t_drv_2_close_is_idempotent_and_closed_send_has_cause(tmp_path):
         except ValueError as exc:
             error = exc
         assert error is None, "Session.close must close stdin exactly once"
+        assert counted.closes == 1, "the second close must not reach the stream"
         assert driver.send_turn(session, "unsent", lambda sid: None, 1) is None
         assert session.result.cause is not None
     finally:
@@ -457,10 +533,21 @@ def test_t_snap_6_locked_source_exhausts_bounded_retry(tmp_path, monkeypatch):
         calls.append(1)
         raise PermissionError("exclusive source handle")
 
-    monkeypatch.setattr(archive, "snapshot_cell", locked)
-    summary, events, _, _, _ = run_cell(tmp_path)
+    def remember(e, r, clock):
+        if r["kind"] == "attempt.process_started":
+            box["engine"] = e
+
+    def locked_with_sentinel(*args, **kwargs):
+        if len(calls) >= 3:  # a fourth attempt is the fault: end the run so the count below is reachable
+            e = box["engine"]
+            e._kill(next(iter(e.active.values())), "timeout")
+        return locked(*args, **kwargs)
+
+    box = {}
+    monkeypatch.setattr(archive, "snapshot_cell", locked_with_sentinel)
+    summary, events, _, _, _ = run_cell(tmp_path, on_row=remember)
+    assert len(calls) == 3, "exactly three attempts, then stop"
     assert next(iter(summary.outcomes.values()))["code"] == "HB-CELL-117"
-    assert len(calls) == 3
     assert not row(events, "cell.prompt_sent", 2)
 
 
@@ -754,3 +841,19 @@ def test_k2_a_handshake_time_update_is_counted_but_not_timed(tmp_path):  # drive
     session = _open_over(procs.spawn([sys.executable, str(REPLAY)], cwd=str(tmp_path), env=env), tmp_path)
     assert session is not None
     assert session.result.updates == 1 and session.result.last_update_seconds is None
+
+
+@pytest.mark.parametrize("name", ["c44dd2b-no-heads", "heads"])
+def test_m_legacy_rows_without_a_snapshot_key_are_final_in_the_full_reader(tmp_path, name):
+    from test_verify import _golden
+
+    run_dir, _ = _golden(tmp_path, name)
+    files = views.rows(run_dir, "archive_files")
+    assert files and all("snapshot" not in r and archive.snapshot_of(r) == "final" for r in files)
+    archived = [e for e in views.rows(run_dir, "events") if e["kind"] == "cell.archived"]
+    assert archived
+    for e in archived:
+        final = [r for r in files if r["cell_id"] == e["cell_id"] and r["archive_attempt"] == e["archive_attempt"]
+                 and archive.snapshot_of(r) == "final"]
+        assert final and archive.archive_hash(final) == e["archive_hash"]
+    assert [f for f in views.verify(run_dir) if f.level == "error"] == []

@@ -662,7 +662,8 @@
   "find": "                    if sleep.slept():\n",
   "replace": "                    if host.SleepDetector(self.params[\"suspend_gap\"]).slept():\n",
   "tests": [
-   "tests/test_multiturn.py::test_t_eng_5_suspend_during_turn_two_keeps_snapshot"
+   "tests/test_multiturn.py::test_t_eng_5_suspend_during_turn_two_keeps_snapshot",
+   "tests/test_multiturn.py::test_t_eng_5_one_detector_history_spans_the_run"
   ]
  },
  {
@@ -689,7 +690,8 @@
   "find": "a.cancel.wait(delay)",
   "replace": "(time.sleep(delay) or False)",
   "tests": [
-   "tests/test_multiturn.py::test_t_eng_7_budget_cancel_during_copy_never_sends_next"
+   "tests/test_multiturn.py::test_t_eng_7_budget_cancel_during_copy_never_sends_next",
+   "tests/test_multiturn.py::test_t_eng_7_kill_ends_a_retry_wait_without_sleeping"
   ]
  },
  {
@@ -888,7 +890,8 @@
   "find": "return row.get(\"snapshot\", \"final\")",
   "replace": "return row.get(\"snapshot\")",
   "tests": [
-   "tests/test_verify.py::test_a_golden_ledger_keeps_its_hashes_and_row_counts"
+   "tests/test_verify.py::test_a_golden_ledger_keeps_its_hashes_and_row_counts",
+   "tests/test_multiturn.py::test_m_legacy_rows_without_a_snapshot_key_are_final_in_the_full_reader"
   ]
  },
  {
