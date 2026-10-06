@@ -68,6 +68,10 @@ def test_every_engine_row_of_the_table_is_written_by_the_engine():
     assert lifecycle.ENGINE_TRANSITIONS == written, sorted(lifecycle.ENGINE_TRANSITIONS ^ written)
 
 
+def test_the_dead_segment_marker_is_a_ledger_row():
+    assert lifecycle.TABLE["segment.abandoned"].writer == "ledger"  # W0 R6.12b: the resume names it through check_writer
+
+
 def test_each_writer_may_write_its_own_rows_and_only_those():
     for kind, t in lifecycle.TABLE.items():
         lifecycle.check_writer(kind, t.writer)

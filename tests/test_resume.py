@@ -35,6 +35,7 @@ from harness_bench import (
     host,
     identity,
     ledger,
+    lifecycle,
     oslock,
     plan,
     resume,
@@ -952,6 +953,18 @@ def test_abandoned_set_equals_unsealed_engine_facts(golden1, tmp_path):
     env = _prefix(golden1, tmp_path, 12)
     assert _resume(env).exit_code == 0
     assert {r["fact"] for r in _kinds(_rows(env.run_dir), "segment.abandoned")} == set(engine.FACTS)
+
+
+def test_the_resume_names_each_dead_segment_through_check_writer(golden1, tmp_path, monkeypatch):
+    """W0 R6.12b: no events append skips lifecycle.check_writer; the marker is a ledger row."""
+    env = _prefix(golden1, tmp_path, 12)
+    calls = []
+    real = lifecycle.check_writer
+    monkeypatch.setattr(lifecycle, "check_writer", lambda kind, writer: (calls.append((kind, writer)), real(kind, writer))[1])
+    assert _resume(env).exit_code == 0
+    markers = _kinds(_rows(env.run_dir), "segment.abandoned")
+    assert len(markers) == len(engine.FACTS)
+    assert calls.count(("segment.abandoned", "ledger")) == len(markers), calls
 
 
 # ---------------------------------------------------------------- one definition of "completed" and of "work left"
