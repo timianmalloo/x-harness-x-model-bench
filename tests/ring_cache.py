@@ -13,7 +13,7 @@ import hashlib
 import tempfile
 from pathlib import Path
 
-from harness_bench import workspace
+from harness_bench import gitsafe, workspace
 
 
 def ring_root(name: str) -> Path:
@@ -30,6 +30,33 @@ def content_version(task_dir: Path) -> str:
     return "c" + digest.hexdigest()
 
 
+def _damaged(base: Path) -> bool:
+    """True when a tracked file differs from or is missing against the base's own HEAD; an erroring check counts as damaged."""
+    try:
+        done = gitsafe.git(["status", "--porcelain", "--untracked-files=no"], cwd=base, timeout=60, check=False)
+        return done.timed_out or done.returncode != 0 or bool(done.stdout.strip())
+    except OSError:  # fail closed: a check that cannot run is not a pass
+        return True
+
+
+def _repair(base: Path) -> bool:
+    """`task_source` built the base as one commit of the tree, so checking out HEAD restores it exactly."""
+    try:
+        gitsafe.git(["checkout", "-q", "--", "."], cwd=base, timeout=60, check=False)
+    except OSError:
+        return False
+    return not _damaged(base)
+
+
 def cached_base(task_dir: Path, name: str) -> Path:
+    """The cached base tree, verified against its own HEAD (CACHE-B: a shared cache is not trusted unchecked)."""
     root = ring_root(name)
-    return workspace.task_source(task_dir, content_version(task_dir), root / "sources", root / "upstream")
+    version = content_version(task_dir)
+    base = workspace.task_source(task_dir, version, root / "sources", root / "upstream")
+    if not _damaged(base) or _repair(base):
+        return base
+    for n in range(1, 4):  # repair failed: rebuild into a fresh sibling root, never touch the damaged one
+        fresh = workspace.task_source(task_dir, version, root / f"sources-r{n}", root / "upstream")
+        if not _damaged(fresh):
+            return fresh
+    raise RuntimeError(f"no undamaged base for {task_dir.name} under {root}")
