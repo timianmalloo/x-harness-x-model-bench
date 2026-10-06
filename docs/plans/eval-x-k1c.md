@@ -102,3 +102,18 @@ coordination-worker audit entry and named-path commit messages.
 
 Independent-review residual: the worker does not self-clear the Leader's join
 veto. The dispatch explicitly reserves that review for the Leader after hand-back.
+
+## Finishing turn
+
+Coordinator #45 rulings F1-F10, applied by session x-k1c-e1e4 in two parts (claude-sonnet-5-5).
+Part 1 (F1-F6): the strict-xfail narrowing and five fixture corrections. Part 2 (F7-F10):
+F7 resume_run refuses a passed plan whose plan_hash differs from the confirmed plan (red 1b8d12ea,
+fix 3bb4406e); tests set plan parameters only through the stored-plan helper `_set_params`.
+F8 test_spend_total_survives_resume rebuilt on golden5 (last K1c marker removed).
+F9 segment.abandoned is a ledger row and the resume names it through lifecycle.check_writer
+(red 2cf57765, fix 63b4ce42). F10 segment-order control test (green on arrival; b2cd87f2 holds the code).
+Controls run from uncommitted TMP mutation files: M-NOBEAT (lock heartbeat dropped around the resume boot)
+survived at pid_wait_s 1 = lock_staleness 1, so the heartbeat test now waits 3 s; it then killed the mutant.
+Named untested simplifications carried to K1d: resume._redo_snapshot adopts a published folder by file scan only;
+resume outcomes skip Engine._after_append; Engine.restore restores spend from turn_usage rows only; scripted-user
+logs are not closed for reconciled cells; cli.py:300-304 returns before engine.configure_logging.
