@@ -72,3 +72,132 @@ def test_the_listener_is_exclusive_on_its_port():
                 other.bind(s.getsockname())
         finally:
             other.close()
+
+
+# ---- K2: the shape (b) path through the grader -------------------------------------------------------------------
+
+import json  # noqa: E402
+from decimal import Decimal  # noqa: E402
+from pathlib import Path  # noqa: E402
+
+from harness_bench.grade import CellInput  # noqa: E402
+from harness_bench.grade import property as prop  # noqa: E402
+
+FIX = Path(__file__).resolve().parent / "fixtures" / "property"
+METRICS = {"property_check_pass": {}, "fault_suite_pass": {}, "idempotency_violations": {}}
+CLIENT = {"module": "fault_client", "attr": "fetch", "kind": "callable"}
+
+
+def fault(case_id="f-5xx", schedule=(503, 200), call="fetch", **kw) -> dict:
+    return {"id": case_id, "kind": "fault", "schedule": list(schedule),
+            "frame": {"args": ["{fake_url}/pay"], "kwargs": {}}} | ({"call": call} if call != "fetch" else {}) | kw
+
+
+def run(tmp_path, cases, *, app=CLIENT, files=("fault_client.py",), bounds=4000, interface="loopback", extra=None):
+    task = tmp_path / "task"
+    (task / "oracle" / "check").mkdir(parents=True)
+    (task / "tests").mkdir()
+    (task / "tests" / "test_hidden.py").write_text(
+        "import unittest\nclass T(unittest.TestCase):\n    def test_x(self):\n        self.assertTrue(True)\n", encoding="utf-8")
+    (task / "oracle" / "check" / "check.py").write_bytes((FIX / "fault_check.py").read_bytes())
+    spec = {"schema": "bench-check-cases/1", "entry": "check.py", "interface": interface,
+            "bounds_ms": {"in-process": 2000, "loopback": bounds}, "app": app, "toolchain": ["python"], "env": [],
+            "cases": cases} | (extra or {})
+    (task / "oracle" / "check" / "cases.yaml").write_text(json.dumps(spec), encoding="utf-8")
+    run_dir = tmp_path / "run"
+    ws = run_dir / "archive" / "ws"
+    ws.mkdir(parents=True)
+    for name in files:
+        (ws / name).write_bytes((FIX / name).read_bytes())
+    out = run_dir / "grading" / "g" / "c" / "property"
+    out.mkdir(parents=True)
+    t = {"property": {"name": "resilience"},
+         "oracle": {"runner": "unittest", "command": ["{python}", "-m", "unittest", "discover", "-s", ".", "-p", "test_*.py"]}}
+    inp = CellInput(run_dir=run_dir, root=tmp_path, plan={"parameters": {"grading_step_timeout": 60}},
+                    cell={"cell_id": "c", "task": "RS1", "task_version": "tv"}, task=t, task_dir=task,
+                    archive=run_dir / "archive", out_dir=out, events=(), record_reason=None, model_calls=(), tool_calls=(),
+                    turn_usage=(), metrics=METRICS, allow_model_calls=False, extraction=None, prices=None,
+                    work_root=tmp_path / "work")
+    return inp, prop.grade_cell(inp)
+
+
+def result(inp) -> dict:
+    return json.loads((inp.out_dir / "check" / "check.stdout").read_text(encoding="utf-8"))
+
+
+def seen(inp, case_id) -> dict:
+    return json.loads((inp.out_dir / "check" / f"fault-{case_id}.json").read_text(encoding="utf-8"))
+
+
+def vals(scores) -> dict:
+    return {k: (v.value, v.reason) for k, v in scores.items()}
+
+
+def test_resilience_is_a_strategy_and_the_keys_match_property_names():
+    from harness_bench import config
+    assert list(prop.STRATEGIES) == list(config.PROPERTY_NAMES)
+
+
+def test_a_503_then_200_fake_passes_end_to_end_with_the_measured_span_and_request_count(tmp_path):
+    inp, s = run(tmp_path, [fault()])
+    assert vals(s) == {"property_check_pass": (1, None), "fault_suite_pass": (Decimal("1.0000"), None),
+                       "idempotency_violations": (0, None)}
+    doc = result(inp)
+    assert [c["outcome"] for c in doc["cases"]] == ["passed"]
+    assert 300 <= doc["cases"][0]["duration_ms"] < 3000  # the client's retry pause is inside the span
+    assert seen(inp, "f-5xx")["requests"] == 2  # one 503, one 200, never a re-run
+
+
+def test_fake_url_is_substituted_per_case_with_that_cases_own_port(tmp_path):
+    inp, s = run(tmp_path, [fault("a-1"), fault("a-2")])
+    assert vals(s)["fault_suite_pass"] == (Decimal("1.0000"), None)
+    assert seen(inp, "a-1")["requests"] == seen(inp, "a-2")["requests"] == 2  # each fake saw only its own client
+
+
+def test_duration_ms_excludes_host_start(tmp_path):
+    inp, _ = run(tmp_path, [fault(schedule=(200,))], app=CLIENT | {"module": "slow_client"},
+                 files=("fault_client.py", "slow_client.py"))
+    start_ms = json.loads((inp.out_dir / "check" / "hosts.jsonl").read_text(encoding="utf-8").splitlines()[0])["start_ms"]
+    dur = result(inp)["cases"][0]["duration_ms"]
+    assert start_ms >= 1000 and dur < 700
+
+
+def test_a_hang_is_a_measured_timeout_never_a_rerun_and_the_effective_bound_is_the_lower(tmp_path):
+    app = CLIENT | {"attr": "hang"}
+    inp, s = run(tmp_path, [fault(schedule=(200,), bound_ms=60000)], app=app, bounds=700)  # loopback bound is the lower
+    doc = result(inp)
+    assert [c["outcome"] for c in doc["cases"]] == ["timeout"]
+    assert doc["cases"][0]["duration_ms"] < 2500
+    assert vals(s)["property_check_pass"] == (0, None) and vals(s)["fault_suite_pass"][0] == Decimal("0.0000")
+    assert seen(inp, "f-5xx")["requests"] == 0
+
+
+def test_a_case_bound_below_the_interface_bound_wins(tmp_path):
+    inp, _ = run(tmp_path, [fault(schedule=(200,), bound_ms=600)], app=CLIENT | {"attr": "hang"}, bounds=60000)
+    assert [c["outcome"] for c in result(inp)["cases"]] == ["timeout"]
+    assert result(inp)["cases"][0]["duration_ms"] < 3000
+
+
+def test_one_failed_case_fails_the_primary_and_scores_the_share(tmp_path):
+    inp, s = run(tmp_path, [fault("ok-1"), fault("bad-1", schedule=(500,))])
+    assert vals(s)["property_check_pass"] == (0, None)
+    assert vals(s)["fault_suite_pass"] == (Decimal("0.5000"), None)
+    assert [c["outcome"] for c in result(inp)["cases"]] == ["passed", "failed"]
+
+
+def test_idempotency_violations_is_the_measure_the_check_reports(tmp_path):
+    _, s = run(tmp_path, [fault("dup-1", schedule=(200,), call="twice")], app=CLIENT | {"attr": "twice"})
+    assert vals(s)["idempotency_violations"] == (1, None)
+
+
+@pytest.mark.parametrize("extra", [
+    {"deliverable": {"start": "serve.py", "config": "c.json"}},  # shape (a): the deliverable listens, not built
+])
+def test_shape_a_and_a_probe_case_on_loopback_are_not_built(tmp_path, extra):
+    _, s = run(tmp_path, [fault()], extra=extra)
+    assert set(vals(s).values()) == {(None, "not built")}
+
+
+def test_a_probe_case_on_loopback_is_not_built(tmp_path):
+    _, s = run(tmp_path, [fault() | {"kind": "probe"}])
+    assert set(vals(s).values()) == {(None, "not built")}
