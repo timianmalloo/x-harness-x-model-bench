@@ -1,0 +1,21 @@
+schema: bench-check-cases/1
+entry: check.py
+interface: loopback
+bounds_ms: {in-process: 2000, loopback: 5000}
+fault_contract: {timeout_ms: 3000, tolerance_ms: 500, max_retries: 2}   # the prompt's numbers; the same literal as task.yaml property.fault_contract
+app:
+  module: "prometheus_client.ledger"
+  attr: post_event
+  kind: callable                                  # shape (b): the check's fake listens, the deliverable is a client (W0 rev 5, SR-L2)
+call: {args: ["{fake_url}", "jobs", 3], kwargs: {}}   # `{fake_url}` is replaced per case by http://127.0.0.1:<port> of that case's fake
+deliverable: {}
+toolchain: [python]
+env: []
+cases:                                            # schedule: what the fake does to request 1, 2, ...; `rest` is what it does after the list (ok | last)
+  - {id: f-5xx-burst,       kind: fault, schedule: [s503, s503], rest: ok,   expect: succeed}
+  - {id: f-5xx-persistent,  kind: fault, schedule: [s503],       rest: last, expect: fail}
+  - {id: f-slow-first,      kind: fault, schedule: [slow],       rest: ok,   expect: either, bound_ms: 4500}
+  - {id: f-hang,            kind: fault, schedule: [hang],       rest: last, expect: either, bound_ms: 4500}
+  - {id: f-lost-response,   kind: fault, schedule: [lost],       rest: ok,   expect: either}
+  - {id: f-4xx,             kind: fault, schedule: [s400],       rest: last, expect: fail, final: true}
+  - {id: f-recover,         kind: fault, schedule: [hang],       rest: last, expect: either, bound_ms: 4500, then: {schedule: [], rest: ok}}
