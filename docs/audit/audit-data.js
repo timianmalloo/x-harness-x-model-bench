@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T16:06:35Z",
+  "generated": "2026-10-06T16:17:21Z",
   "audit": [
     {
       "actor": null,
@@ -109292,6 +109292,34 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-06T16:06:34Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M4902Q2X0SC4XVS29SM75F9X",
+      "shortname": "x-te9-k1",
+      "datetime": "2026-10-06T16:17:21Z",
+      "session": "x-te9-e1e4",
+      "prompt": "X-TE9 brief c44",
+      "summary": "start 2026-10-06T16:07:39Z. Outcome: K1 green bf7a2d23 (red 1a4fa6dc); K2 and final gates not run (context 95.6k at K1, over the 90k stop). Served model claude-sonnet-5-5. Markers removed: test_uf_e1_validate_names_the_missing_record, test_validate_of_a_ready_task_with_no_record_fails, test_validate_passes_a_campaign_baseline_through. Repo readiness x-lines after K1 in this tree: 8. Tokens: transcript usage last 95.6k context (cumulative not recorded). Context samples: before K1 not recorded, after K1 95.6k.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "X-TE9 K1: bench validate prints readiness.problems, --campaign",
+      "done_when": "K1 green; K2 handed back",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-06T16:07:39Z",
+      "duration_seconds": 582.0,
+      "git": {
+        "sha": "bf7a2d235b4cccbd5b4cf31e5a4f2541ff9956cf",
+        "short": "bf7a2d235",
+        "branch": "build/eval-x-te9",
+        "pushed": null
+      }
     }
   ],
   "changes": [
