@@ -617,3 +617,14 @@ def test_a_check_less_variant_declaring_a_clause_where_property_json_has_no_stra
     with pytest.raises(BenchError) as exc:
         trial(base, root)
     assert exc.value.code == "HB-RDY-011" and "variant vnone" in exc.value.message and "SR-E3" not in exc.value.message
+
+
+def test_a_check_less_trial_fails_on_a_hidden_test_disagreement(base, monkeypatch):
+    """SHAPE-A row 4 (R-90 condition 3): the double-run item runs for a check-less task too, not only a check-based one."""
+    root = new_root(base)
+    real = readiness.comparable_cells
+    monkeypatch.setattr(readiness, "comparable_cells", lambda run_dir, gid: ([sorted(readiness._rows(run_dir, gid))[0]], real(run_dir, gid)[1]))
+    with pytest.raises(BenchError) as err:
+        trial(base, root)
+    assert err.value.code == "HB-RDY-011"
+    assert "hidden tests disagree with pass_at_1 in" in str(err.value)
