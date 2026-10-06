@@ -7,7 +7,7 @@ owner: "@timianmalloo"
 tags: [resume, execution-plan]
 links:
   - { to: design-eval-resume, rel: relates-to }
-  - { to: kb-graph-and-loop-engineering, rel: depends-on }
+  - { to: brief-eval-x-k1, rel: depends-on }
 review-by: "2026-10-20"
 summary: "Dispatch x-k1c-e1e4 implements W1-K K5, admitting K6 only under the native context split rule. All changes stay in the assigned worktree and the Leader owns independent review and integration."
 ---
@@ -61,6 +61,12 @@ The naive serial graph has the same 11 nodes, width 1, and span 11. No rigor flo
 is removed: base guard, red observations, pairing mutant, refusal hash, final
 guards, named suites, mutation files, graph validation, audit and join review.
 The context checkpoint prevents admitting an item that cannot finish in the turn.
+
+Grounding graph finding: this consuming repository does not index
+`kb-graph-and-loop-engineering`. The normative standard is available at
+`.claude/knowledge/execution-graph-optimization.md`; the plan links to the actual
+dispatch brief instead of introducing a dangling knowledge id. Its traversal is
+plan -> brief-eval-x-k1 -> design-eval-seam-contracts and plan -> design-eval-resume.
 
 ## Surfaces and invariants
 
