@@ -201,10 +201,22 @@ def _evidence_items(run_dir: Path, grading_id: str, labels: dict[str, str], poin
     return found, items
 
 
+def _property_clauses(run_dir: Path, pointer: str | None, prop: str) -> dict | None:
+    """The clause a check-less property grader recorded: `strategy.<prop>.clause` in the cell's `property.json` (SR-E3 2),
+    as {"property_check_pass": clause} (empty when the grader decided on none); None when the file or the section is
+    unreadable."""
+    try:
+        section = json.loads((run_dir / pointer).read_text(encoding="utf-8"))["strategy"][prop]
+    except (OSError, ValueError, KeyError, TypeError):  # TypeError: no pointer, or a section that is not an object
+        return None
+    clause = section.get("clause") if isinstance(section, dict) else None
+    return {"property_check_pass": clause} if isinstance(clause, str) and clause else {}
+
+
 def _variant_record(name: str, entry: dict, role: str, scores: dict, found: dict, check_based: bool, ref_scores: dict,
-                    narrowed: set[str], scales: dict) -> tuple[dict, list[str]]:
-    """One variant's record entry (observed flips, declared clause text where the check's clause is the declared one) and
-    any HB-RDY-011 item (a declared clause the check's evidence cannot confirm fails closed)."""
+                    narrowed: set[str], scales: dict, run_dir: Path, pointers: dict[str, str], prop: str) -> tuple[dict, list[str]]:
+    """One variant's record entry (observed flips, declared clause text where the deciding clause is the declared one) and
+    any HB-RDY-011 item (a declared clause the check's evidence or the grader's `property.json` cannot confirm fails closed)."""
     rec: dict = {"scores": scores[role]}
     items: list[str] = []
     if check_based:
@@ -215,16 +227,15 @@ def _variant_record(name: str, entry: dict, role: str, scores: dict, found: dict
         observed = ev["clauses"]
         if entry["clauses"] and observed is None:
             items.append(f"variant {name}: clauses are declared but the check wrote no clauses.json (the pointer does not resolve)")
-            observed = {}
-        rec["clauses"] = {c: (entry["clauses"][c] if (observed or {}).get(c) == entry["clauses"][c] else UNDECLARED)
-                          for c in rec["flips"] if c in entry["clauses"]}
     else:
         rec["flips"] = sorted(m for m in narrowed if readiness.normal(scores[role].get(m, {"na": "not recorded"}), scales.get(m))
                               != readiness.normal(ref_scores.get(m, {"na": "not recorded"}), scales.get(m)))
         rec["hidden_tests_pass"] = int(scores[role].get("pass_at_1") == 1)
-        rec["clauses"] = {}
-        if entry["clauses"]:
-            items.append(f"variant {name}: a check-less variant declares clauses and this base records none (SR-E3 2)")
+        observed = _property_clauses(run_dir, pointers.get(role), prop)
+        if entry["clauses"] and observed is None:
+            items.append(f"variant {name}: clauses are declared but property.json has no strategy.{prop} section (the pointer does not resolve)")
+    rec["clauses"] = {c: (entry["clauses"][c] if (observed or {}).get(c) == entry["clauses"][c] else UNDECLARED)
+                      for c in rec["flips"] if c in entry["clauses"]}
     return rec, items
 
 
@@ -362,6 +373,13 @@ def _run_and_record(root: Path, task_id: str, task: dict, run_dir: Path, p: dict
     expected = task.get("expected") or {}
     items = _untrustworthy(scores, expected)
     check_based = readiness.is_check_based(task)
+    if not check_based:
+        # assume: grade/rework.py discards the pointer `write_section` returns, so a rework score row carries no evidence
+        # and `pointers` holds no entry; the file is at its fixed place `grading/<grading id>/<cell>/property/property.json`
+        # (grade/runner.py:346,369). Confirm: a rework row with `evidence`. Breaks if false: the path moves and a variant
+        # that declares clauses is HB-RDY-011 (fail closed). Seam request: rework.py returns the pointer (as diffstats.py:194).
+        for c in p["cells"]:
+            pointers.setdefault(combo_role[c["combo"]], f"grading/{grading_id}/{c['cell_id']}/property/property.json")
     found: dict = {}
     if check_based:
         labels = {c["cell_id"]: c["label"] for c in p["cells"]}
@@ -377,7 +395,8 @@ def _run_and_record(root: Path, task_id: str, task: dict, run_dir: Path, p: dict
         table = readiness.scales(root)
         body["variants"] = {}
         for name, entry in declared.items():
-            rec, more = _variant_record(name, entry, f"variant:{name}", scores, found, check_based, scores["reference"], narrowed, table)
+            rec, more = _variant_record(name, entry, f"variant:{name}", scores, found, check_based, scores["reference"], narrowed, table,
+                                      run_dir, pointers, task["property"]["name"])
             body["variants"][name] = rec
             items += more
     if items:
