@@ -287,13 +287,6 @@
     "tests": ["tests/test_config.py::test_catalog_refuses_invalid_property_and_secondary_graders"]
   },
   {
-    "name": "A1b board hides several packs",
-    "file": "src/harness_bench/board.py",
-    "find": "base_rev = (plan_pack(base.plan or {}) or {}).get(\"revision\")",
-    "replace": "base_rev = None",
-    "tests": ["tests/test_views.py::test_board_comparison_reads_zero_or_one_arm_pack"]
-  },
-  {
     "name": "A1b G1 ignores pack attributes",
     "file": "tests/test_arms_guard.py",
     "find": "or (isinstance(n, ast.Attribute) and n.attr == \"pack\")",

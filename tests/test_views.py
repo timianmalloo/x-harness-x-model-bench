@@ -90,16 +90,20 @@ def test_ranking_header_states_zero_one_or_several_packs(packs, expected):
     assert json.loads(summaries._header_facts(view))["pack_revision"] == expected
 
 
-def test_plan_level_board_reader_refuses_several_packs(root, tmp_path):
+def test_board_compare_reads_the_pack_revision_per_arm(root, tmp_path):
     from dataclasses import replace
 
+    cat = composites.load_catalog(root)
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     view = views.load(run_dir)
     view.grading_id = "graded"
     view.plan["arms"] = {"incumbent": {"pack": {"revision": 6}}, "candidate": {"pack": {"revision": 7}}}
-    with pytest.raises(BenchError) as error:
-        board.compare(view, replace(view, run_id="r2"), composites.load_catalog(root))
-    assert error.value.code == "HB-PLN-005"
+    two = board.compare(view, replace(view, run_id="r2"), cat)
+    assert two.same_pack_revision is None  # two pack-bearing arms at different revisions: no one revision to name
+    view.plan["arms"] = {"incumbent": {"pack": {"revision": 7}}, "candidate": {"pack": {"revision": 7}}}
+    assert board.compare(view, replace(view, run_id="r2"), cat).same_pack_revision == 7
+    other = replace(view, run_id="r3", plan={**view.plan, "arms": {"incumbent": {"pack": {"revision": 7}}, "candidate": {"pack": {"revision": 8}}}})
+    assert board.compare(view, other, cat).same_pack_revision is None  # the candidate arm's revision moved
 
 
 def test_population_caveat_reads_version_two_cell_arms():

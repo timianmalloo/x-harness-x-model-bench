@@ -79,15 +79,15 @@
   {
     "name": "F-1: pack effect area branch dropped",
     "file": "src/harness_bench/board.py",
-    "find": "                    if c.arm == \"off\" and c.validity == \"valid\":\n                        score = c.scores.get(m)\n                        if (score is None or score.value is None) and m != \"pass_at_1\":\n                            all_scores = _composite_inputs(c.scores, cat, view.catalog_version)\n                            score, _ = compute_area(all_scores, m, cat)",
-    "replace": "                    if c.arm == \"off\" and c.validity == \"valid\":\n                        score = c.scores.get(m)\n                        if False:\n                            all_scores = _composite_inputs(c.scores, cat, view.catalog_version)\n                            score, _ = compute_area(all_scores, m, cat)",
+    "find": "                    if c.arm == ref and c.validity == \"valid\":\n                        score = c.scores.get(m)\n                        if (score is None or score.value is None) and m != \"pass_at_1\":\n                            all_scores = _composite_inputs(c.scores, cat, view.catalog_version)\n                            score, _ = compute_area(all_scores, m, cat)",
+    "replace": "                    if c.arm == ref and c.validity == \"valid\":\n                        score = c.scores.get(m)\n                        if False:\n                            all_scores = _composite_inputs(c.scores, cat, view.catalog_version)\n                            score, _ = compute_area(all_scores, m, cat)",
     "tests": ["tests/test_board.py::test_pack_effect_area_delta_is_computed_with_anchors"]
   },
   {
     "name": "one-arm area reason diverges from design text",
     "file": "src/harness_bench/board.py",
-    "find": "                    reason = f\"not computed (no {m} score in pack=off)\"",
-    "replace": "                    reason = f\"not computed (no score in pack=off)\"",
+    "find": "                    reason = f\"not computed (no {m} score in pack={ref})\"",
+    "replace": "                    reason = f\"not computed (no score in pack={ref})\"",
     "tests": ["tests/test_board.py::test_pack_effect_area_one_arm_negative_reason"]
   },
   {

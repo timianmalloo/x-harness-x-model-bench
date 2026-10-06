@@ -25,7 +25,7 @@ PACK_READERS_ALLOWED: dict[str, int] = {
     "workspace.py": 2,  # Directory operands, not cell readers.
 }
 ARM_LITERALS_ALLOWED: dict[str, int] = {
-    "board.py": 12, "config.py": 3, "plan.py": 2, "report/html.py": 7,
+    "config.py": 3, "plan.py": 2, "report/html.py": 7,
     "report/pack_improvement.py": 7, "report/summaries.py": 2,
 }
 JS_ARM_LITERALS_ALLOWED: dict[str, int] = {"report.js": 2}

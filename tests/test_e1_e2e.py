@@ -512,7 +512,7 @@ def test_two_arm_plan_renders_every_legacy_reader(walk):
         assert section in walk.html, section
     assert "This run has one pack setting; no effect to show." not in walk.html + report.ran.out
     assert "pack ai-forward revision 7" in walk.html
-    assert "Pack effect for these arms is not computed; the legacy reader needs on and off." in report.ran.out
+    assert "Pack effect for these arms is not computed" not in walk.html + report.ran.out  # E3: the pair (off, candidate) is computed
 
 
 @pytest.mark.xfail(strict=True, reason="the pack-effect section says `This run has pack candidate only.` for a run with arms off and candidate; X-A3's reader migration (finding of item 7)")
