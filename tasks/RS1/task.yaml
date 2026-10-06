@@ -2,7 +2,7 @@ schema: bench-task/1
 id: RS1
 scenario: 5                 # W0 decision: property tasks are scenario 5 (docs/design/eval-seam-contracts.md section 1)
 title: "Resilience task 1: bounded timeouts, retries and idempotency under a loopback fault fake (W1-L)"
-status: draft               # authored in K2; ready needs X-LB1's loopback check (readiness refuses a loopback task until HB-RDY-005 is built) and a discrimination record
+status: draft               # ready blocked: the engine refuses a naive timeout (HB-RDY-011), seam request filed in part 6
 language: python
 source:
   kind: authored

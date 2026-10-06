@@ -3,8 +3,7 @@
 One-time authoring proofs, not a push ring: the base is built through the engine's own `workspace.task_source` (a cached
 upstream clone), the hidden tests run through the real `correctness.grade` (W1-L assume A3: a loopback socket in the
 grading copy), and `check.py` runs through the real `property.run_check` and the real `bench_check` probe host with a
-stand-in listener (`tests/fixtures/rs1/standin_listen.py`) until X-LB1's `bench_check.listen` joins. The stand-in and the
-`parse` below are deleted by the ready K-item, which grades through `grade_cell` instead.
+real `bench_check.listen` (X-LB1) and the real `property.parse_result` with `FAULT_OUTCOMES`.
 
 The variants reader below applies W0 section 2's rules locally (X-E's `read_variants` is not in `src/`).
 """
@@ -28,7 +27,6 @@ from harness_bench.grade import property as prop
 
 ROOT = Path(__file__).resolve().parents[1]
 TASK = ROOT / "tasks" / "RS1"
-STANDIN = ROOT / "tests" / "fixtures" / "rs1" / "standin_listen.py"
 FILE = "prometheus_client/ledger.py"
 HIDDEN = frozenset({
     "test_returns_the_new_event_id_as_an_int", "test_posts_name_and_value_as_json_to_v1_events",
@@ -143,7 +141,7 @@ def hidden_run(base: Path, files: dict[str, str]):
             frozenset(k for k, v in seen.items() if v == "ERROR"))
 
 
-# ---- the check through the real run_check and probe host, with the stand-in listener --------------------------------
+# ---- the check through the real run_check and probe host, with the real listener --------------------------------
 
 def check_run(base: Path, name: str, files: dict[str, str]) -> dict:
     """{'outcomes': {case: outcome}, 'ms': {case: duration_ms}, 'clauses': {case: clause}, 'measures': {...}, 'calls': {...}}."""
@@ -154,7 +152,7 @@ def check_run(base: Path, name: str, files: dict[str, str]) -> dict:
     shutil.copytree(tree_with(base, files), deliverable)
     check_dir = run / "check"
     shutil.copytree(TASK / "oracle" / "check", check_dir, ignore=shutil.ignore_patterns("__pycache__"))
-    (check_dir / "bench_check.py").write_bytes(prop.BENCH_CHECK.read_bytes() + b"\n\n" + STANDIN.read_bytes())
+    (check_dir / "bench_check.py").write_bytes(prop.BENCH_CHECK.read_bytes())
     spec = config.load_yaml(TASK / "oracle" / "check" / "cases.yaml")
     (check_dir / "cases.json").write_text(json.dumps(spec, sort_keys=True), encoding="utf-8")
     evidence = run / "evidence"
@@ -162,7 +160,9 @@ def check_run(base: Path, name: str, files: dict[str, str]) -> dict:
     argv = [sys._base_executable, "-S", "check/check.py", "--deliverable", str(deliverable.resolve()),
             "--cases", "check/cases.json", "--seed", "1", "--evidence", str(evidence.resolve())]
     evidence.mkdir()
-    got = prop.run_check(argv, run, _env.grading_env([]), 90.0, run / "stderr.txt", parse)
+    got = prop.run_check(argv, run, _env.grading_env([]), 90.0, run / "stderr.txt",
+                        lambda line: prop.parse_result(line, [str(c["id"]) for c in spec["cases"]], prop._FAULT_MEASURES,
+                                                       {"idempotency_violations": None}, prop.FAULT_OUTCOMES))
     stderr = (run / "stderr.txt").read_text(encoding="utf-8", errors="replace")
     assert got.document is not None, (got.invalid, got.exit_code, stderr[-800:])
     doc = got.document
@@ -172,17 +172,6 @@ def check_run(base: Path, name: str, files: dict[str, str]) -> dict:
            "calls": json.loads((evidence / "rs1-calls.json").read_text(encoding="utf-8"))}
     _checks[name] = out
     return out
-
-
-def parse(line: bytes) -> dict:
-    """The check's one line. The real `parse_result` refuses `passed`/`failed` until X-LB1 widens PROBE_OUTCOMES."""
-    try:
-        doc = json.loads(line)
-    except ValueError as exc:
-        raise ValueError("result line is not JSON") from exc
-    if not isinstance(doc, dict) or doc.get("schema") != "bench-check-result/1":
-        raise ValueError("not a check result")
-    return doc
 
 
 def flipped(got: dict) -> dict[str, str]:

@@ -15,6 +15,7 @@ import time
 
 import bench_check as bc
 
+MAX_BODY = 65536                                # a request body is read to this size at most
 SLOW_S = 6.0                                    # the delay of a `slow` reply: past every bound of the case
 
 
@@ -27,6 +28,10 @@ class Fake:
 
     def arm(self, schedule, rest):
         self.schedule, self.rest, self.seen = list(schedule), rest, 0
+
+    def malformed(self):
+        self.requests.append({"n": len(self.requests) + 1, "key": None, "action": "malformed"})
+        return {"status": 400, "json": {"error": "malformed"}}
 
     def action(self):
         n = self.seen - 1                       # `handle` counts the request before it asks, so the first request is index 0
@@ -81,9 +86,15 @@ def serve(fake, sock):
     stop = threading.Event()
 
     class Handler(http.server.BaseHTTPRequestHandler):
+        timeout = 10                             # every socket read of a request is bounded in time
+
         def do_POST(self):
-            body = self.rfile.read(int(self.headers.get("Content-Length") or 0))
-            reply = fake.handle("POST", self.path, {k.lower(): v for k, v in self.headers.items()}, body)
+            length = self.headers.get("Content-Length") or "0"
+            if not length.isdigit() or int(length) > MAX_BODY:
+                reply = fake.malformed()         # counted as a request, no effect, never read past the cap
+            else:
+                body = self.rfile.read(int(length))
+                reply = fake.handle("POST", self.path, {k.lower(): v for k, v in self.headers.items()}, body)
             if reply.get("drop"):
                 self.close_connection = True
                 return
@@ -117,6 +128,7 @@ def serve(fake, sock):
     def close():
         stop.set()
         server.shutdown()                        # the socket itself is closed by `listen`'s context manager
+        thread.join(5)                           # the serve thread ends inside the case, before the next case starts
 
     return close
 

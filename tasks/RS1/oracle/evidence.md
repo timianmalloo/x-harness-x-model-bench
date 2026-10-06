@@ -1,6 +1,6 @@
 # RS1 oracle evidence
 
-Status of RS1: `stub` (K1 design statement only; the draft follows in K2).
+Status of RS1: `draft` (K4, part 6): the check runs on X-LB1's `bench_check.listen()` and the real `parse_result`; the ready trial stopped at HB-RDY-011 (naive times out on f-hang, f-recover and f-slow-first, which no `expected` or `flips` can declare for naive).
 
 ## Isolation of the hidden tests and the cases (W1-L Erratum 1, R2-5)
 
@@ -30,9 +30,9 @@ naive client 2.02 s, and a dropped connection raises `LedgerError` in 0.01 s, so
 After the fix naive passes `f-4xx`, `f-5xx-persistent`, `f-lost-response` (3 of 7), and fails `f-5xx-burst` (effect),
 `f-hang`, `f-recover` and `f-slow-first` (time: 5156 ms against the 3500 ms limit, the host's 5 s bound).
 
-## Variant run (measured, stand-in listener, real probe host, Windows 11, Python 3.12)
+## Variant run (measured on the real path: `bench_check.listen()`, real probe host, real `parse_result` with `FAULT_OUTCOMES`; K4, part 6; Windows 11, Python 3.12)
 
-Every variant passes all six hidden tests (real `correctness.grade`) and flips exactly the predicted cases on the predicted clause.
+Every variant passes all six hidden tests (real `correctness.grade`) and flips exactly the predicted cases on the predicted clause. The part-4 stand-in table and the part-6 real-path table are identical (7 of 7 as predicted; `tests/test_rs1_task.py` asserts each row).
 
 | Variant | Flipped (measured) | Clause (measured) | K1 prediction | Match |
 |---|---|---|---|---|
@@ -50,3 +50,10 @@ reference, naive and alt.
 Reference `duration_ms` per case (one run, includes probe-host start): f-4xx 516, f-5xx-burst 562, f-5xx-persistent 547,
 f-lost-response 531, f-slow-first 1516, f-hang 2984, f-recover 3438 (two calls). The longest is under the 5000 ms loopback bound.
 These are single-run values, not a distribution.
+
+## Check authoring rules (ADR-0018 section 3, B7; Security & Identity review of X-LB1)
+
+1. Every socket comes from `bench_check.listen()`: `check.py:162` opens it, `check.py:165` hands it to `bc.probe_host`, and the check opens no other socket (`serve` at :105-:134 wraps that socket, `server.socket = sock`).
+2. A fault case's `passed` comes from the fake's own counters: `Call.requests` and `Call.effects` are differences of `len(fake.requests)` and `len(fake.events)` (:71, :78), and `clause_of` (:136-:154) judges on them; `value` is only compared with `fake.events`.
+3. The serve thread is joined inside every case: `close()` (:128-:131) sets the stop event, calls `server.shutdown()` and `thread.join(5)`, and `run_probe` calls it in `finally` (:176) before the next case starts.
+4. Untrusted request bytes are bounded: handler `timeout = 10` bounds every read in time (:89); the body is read only when `Content-Length` is all digits and at most `MAX_BODY` = 65536 (:93); anything else is `fake.malformed()` (:32), a counted request with no effect. Request content is never parsed beyond headers; the body is not evaluated.
