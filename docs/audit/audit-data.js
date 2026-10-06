@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T09:44:02Z",
+  "generated": "2026-10-06T10:05:39Z",
   "audit": [
     {
       "actor": null,
@@ -98682,6 +98682,29 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-06T09:44:01Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M48AT3QMVZ1QVF4VTP3R14B4",
+      "shortname": "x-rdy",
+      "datetime": "2026-10-06T10:05:39Z",
+      "session": "x-rdy-e1e4",
+      "prompt": "X-RDY compiled prompt al-01M488YJKYGCVAV64HE1HCV96R",
+      "summary": "Model claude-sonnet-5-5; 2026-10-06T09:45Z to ~10:30Z; tokens not recorded; context samples not recorded. K1 GLD-A lines aebae3f8, stand-ins deleted 988149d0 + 511dd97d. S2 flipped 10e7baf6 (record eadf2d35538e6514-72d373f612bdb44b-win32.json). NG1/NG2 draft: HB-RDY-003 on the property_check_pass-flipping variant (hidden_tests_pass 0 vs rule 1); reference/naive reproduce. SM1 SM2 RW1 RW2 draft: HB-RDY-011 check-less variants declare clauses, discriminate records none (src/discriminate.py:226). No src edits.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "tasks/S2/task.yaml"
+      ],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "X-RDY: flip NG1 NG2 SM1 SM2 S2 RW1 RW2 to ready with discrimination records",
+      "done_when": "each task reproduces its expected or stays draft with measured numbers",
+      "tier": "T2",
+      "started_at": "2026-10-06T09:45:04Z",
+      "duration_seconds": 1235.0
     }
   ],
   "changes": [
