@@ -8,7 +8,7 @@ owner: x-j1d-e1e4
 tags: [evaluation, coordination]
 links:
   - { to: design-eval-multi-turn, rel: relates-to }
-  - { to: kb-graph-and-loop-engineering, rel: depends-on }
+  - { to: design-eval-seam-contracts, rel: depends-on }
 review-by: 2026-11-05
 ---
 
@@ -19,6 +19,10 @@ turn-keyed lifecycle conformance, and frozen plan turns in the assigned worktree
 The binding compiled dispatch is `al-01M474MM5JDCKN02JD02WHYRFT`.
 Base: `2c4e2204`, the integration head after the J1c join. Verified: the required
 ancestor, continuation markers, driver spy and W0 revision are present.
+The skill's referenced `docs/knowledge/graph-and-loop-engineering/` and graph id
+`kb-graph-and-loop-engineering` are absent in this checkout (file and id scans).
+The execution standard is read from `.claude/knowledge/execution-graph-optimization.md`;
+the plan links to the installed binding contracts rather than a missing graph node.
 
 | Node | Goal and inputs | Exit oracle | Tier / Capability | Dependency |
 | --- | --- | --- | --- | --- |
