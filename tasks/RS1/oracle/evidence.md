@@ -1,6 +1,6 @@
 # RS1 oracle evidence
 
-Status of RS1: `draft` (K4, part 6): the check runs on X-LB1's `bench_check.listen()` and the real `parse_result`; the ready trial stopped at HB-RDY-011 (naive times out on f-hang, f-recover and f-slow-first, which no `expected` or `flips` can declare for naive).
+Status of RS1: `ready` (K4, part 7): the check runs on X-LB1's `bench_check.listen()` and the real `parse_result`; the trial `bench discriminate RS1` reproduced the expected values (reference 1, naive 0), and the naive's three timeouts (f-hang, f-recover, f-slow-first) are declared in `task.yaml` as `expected.naive.timeouts` (CR47-7).
 
 ## Isolation of the hidden tests and the cases (W1-L Erratum 1, R2-5)
 
@@ -43,6 +43,8 @@ Every variant passes all six hidden tests (real `correctness.grade`) and flips e
 | nokey | f-lost-response, f-slow-first | effect | same | yes |
 | retry4xx | f-4xx | requests | same | yes |
 | cacheerror | f-recover | result | f-recover, result | yes |
+
+`idempotency_violations` here is the per-call sum of `max(0, effects - 1)` (`check.py:177`); for a client that sends one request per logical call it is the same quantity as RS2's count of deliveries that re-applied a record.
 
 `idempotency_violations`: 0 for every variant except `nokey` (2: one duplicate effect in each of its two flipped cases), and 0 for
 reference, naive and alt.

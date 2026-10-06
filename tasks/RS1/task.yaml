@@ -2,7 +2,7 @@ schema: bench-task/1
 id: RS1
 scenario: 5                 # W0 decision: property tasks are scenario 5 (docs/design/eval-seam-contracts.md section 1)
 title: "Resilience task 1: bounded timeouts, retries and idempotency under a loopback fault fake (W1-L)"
-status: draft               # ready blocked: the engine refuses a naive timeout (HB-RDY-011), seam request filed in part 6
+status: ready               # K4 (part 7): ready after a discrimination trial reproduced the expected values; the record is bench/discrimination/RS1
 language: python
 source:
   kind: authored
@@ -41,3 +41,4 @@ expected:
     property_check_pass: 0                       # the naive passes the 6 hidden tests and 3 of 7 cases, so the conjunction is 0
     fault_suite_pass: "0.4286"                   # 3 of 7 (f-5xx-persistent, f-lost-response, f-4xx); the K2 stand-in run's measured value is in oracle/evidence.md
     idempotency_violations: 0                    # the naive never retries, so no call has two effects
+    timeouts: [f-hang, f-recover, f-slow-first]  # CR47-7: the naive's urlopen has no timeout by design; these three cases time out on every run (trial on base 92c9d393 and tests/test_rs1_task.py, outcome timeout, clause time); never declared on the reference
