@@ -1,0 +1,119 @@
+[
+  {
+    "name": "product lines counted raw: blank, comment and docstring lines inflate size",
+    "file": "src/harness_bench/grade/diffstats.py",
+    "find": "        new_lines = _changes.product_lines(final / rel_path) if status != \"deleted\" else []",
+    "replace": "        new_lines = (final / rel_path).read_text(encoding=\"utf-8\").splitlines() if status != \"deleted\" else []",
+    "tests": [
+      "tests/test_grade_diffstats.py::test_sm_product_lines_ignore_blank_comment_docstring"
+    ]
+  },
+  {
+    "name": "drop clause (b): the outside-radius scope clause is never decided (launderlines passes)",
+    "file": "src/harness_bench/grade/diffstats.py",
+    "find": "        elif \"outside_radius_lines\" in ceilings and outside > int(ceilings[\"outside_radius_lines\"]):",
+    "replace": "        elif False:",
+    "tests": [
+      "tests/test_grade_diffstats.py::test_sm_each_metric_and_clause_has_a_flipping_variant"
+    ]
+  },
+  {
+    "name": "drop clause (a): classes counted in the radius only (launderclass passes)",
+    "file": "src/harness_bench/grade/diffstats.py",
+    "find": "    final_classes, final_imports = _scan(final_files, base_paths)",
+    "replace": "    final_classes, final_imports = _scan({k: v for k, v in final_files.items() if _changes.in_radius(k, list(radius))}, base_paths)",
+    "tests": [
+      "tests/test_grade_diffstats.py::test_sm_each_metric_and_clause_has_a_flipping_variant"
+    ]
+  },
+  {
+    "name": "size ceiling is strict: the boundary value 3.0000 fails",
+    "file": "src/harness_bench/grade/diffstats.py",
+    "find": "size_vs_ref > Decimal(str(ceilings[\"size_vs_reference\"]))",
+    "replace": "size_vs_ref >= Decimal(str(ceilings[\"size_vs_reference\"]))",
+    "tests": [
+      "tests/test_grade_diffstats.py::test_sm_ceiling_boundary_pairs"
+    ]
+  },
+  {
+    "name": "scope ceiling is strict: the boundary value 4 fails",
+    "file": "src/harness_bench/grade/diffstats.py",
+    "find": "outside > int(ceilings[\"outside_radius_lines\"])",
+    "replace": "outside >= int(ceilings[\"outside_radius_lines\"])",
+    "tests": [
+      "tests/test_grade_diffstats.py::test_sm_ceiling_boundary_pairs"
+    ]
+  },
+  {
+    "name": "abstractions ceiling is strict: a count equal to the ceiling fails",
+    "file": "src/harness_bench/grade/diffstats.py",
+    "find": "new_abstractions > int(ceilings[\"new_abstractions\"])",
+    "replace": "new_abstractions >= int(ceilings[\"new_abstractions\"])",
+    "tests": [
+      "tests/test_grade_diffstats.py::test_sm_ceiling_boundary_pairs"
+    ]
+  },
+  {
+    "name": "a base class is a second abstraction: P(Protocol) counts 2",
+    "file": "src/harness_bench/grade/diffstats.py",
+    "find": "                out.add(prefix + child.name)",
+    "replace": "                out.update([prefix + child.name, *(ast.unparse(b) for b in child.bases)])",
+    "tests": [
+      "tests/test_grade_diffstats.py::test_sm_abstractions_counts_classdef_once"
+    ]
+  },
+  {
+    "name": "a line is counted twice: inside also feeds the outside partition total",
+    "file": "src/harness_bench/grade/diffstats.py",
+    "find": "            outside += n\n",
+    "replace": "            outside += n\n        inside += n\n",
+    "tests": [
+      "tests/test_grade_diffstats.py::test_sm_radius_partition_counts_each_line_once"
+    ]
+  },
+  {
+    "name": "radius swapped: in-radius lines count as outside",
+    "file": "src/harness_bench/grade/diffstats.py",
+    "find": "        if _changes.in_radius(rel_path, list(radius)):",
+    "replace": "        if not _changes.in_radius(rel_path, list(radius)):",
+    "tests": [
+      "tests/test_grade_diffstats.py::test_sm_radius_partition_counts_each_line_once"
+    ]
+  },
+  {
+    "name": "frozen reference size never compared with the function output",
+    "file": "src/harness_bench/readiness.py",
+    "find": "    if frozen != computed:",
+    "replace": "    if False:",
+    "tests": [
+      "tests/test_grade_diffstats.py::test_sm_frozen_reference_size_equals_function_output"
+    ]
+  },
+  {
+    "name": "an unbuildable base is a silent pass",
+    "file": "src/harness_bench/readiness.py",
+    "find": "        add(\"property.size_reference_lines\", f\"value not checked: base tree cannot be built ({exc})\", \"HB-RDY-009\")",
+    "replace": "        pass",
+    "tests": [
+      "tests/test_grade_diffstats.py::test_sm_frozen_reference_size_equals_function_output"
+    ]
+  },
+  {
+    "name": "STRATEGIES line removed: simplicity reads NA not built",
+    "file": "src/harness_bench/grade/property.py",
+    "find": ", \"simplicity\": diffstats.grade}",
+    "replace": "}",
+    "tests": [
+      "tests/test_grade_diffstats.py::test_diffstats_grade_cell_uses_registered_strategy"
+    ]
+  },
+  {
+    "name": "grade drops the hidden-tests clause: failing tests still pass",
+    "file": "src/harness_bench/grade/diffstats.py",
+    "find": "    if hidden.value == 0:\n        deciding_clause = \"tests\"\n        pass_score = Score(0, None)",
+    "replace": "    if False:\n        deciding_clause = \"tests\"\n        pass_score = Score(0, None)",
+    "tests": [
+      "tests/test_grade_diffstats.py::test_diffstats_grade_failing_hidden_tests_score_zero"
+    ]
+  }
+]
