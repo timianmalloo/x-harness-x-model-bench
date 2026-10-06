@@ -151,6 +151,15 @@ def test_a_503_then_200_fake_passes_end_to_end_with_the_measured_span_and_reques
     assert seen(inp, "f-5xx")["requests"] == 2  # one 503, one 200, never a re-run
 
 
+def test_fake_url_is_substituted_into_string_args_only_never_kwargs(tmp_path):
+    """W0 R6-17(c), ADR-0018 s3: `{fake_url}` is substituted into string `args` only; a kwargs value passes through."""
+    case = fault(schedule=(200,)) | {"frame": {"args": ["{fake_url}/pay"], "kwargs": {"tag": "{fake_url}"}}}
+    inp, s = run(tmp_path, [case], app=CLIENT | {"module": "kwargs_client", "attr": "kw"},
+                 files=("fault_client.py", "kwargs_client.py"))
+    assert [c["outcome"] for c in result(inp)["cases"]] == ["passed"]  # `ok` only if kwargs carried the literal text
+    assert vals(s)["property_check_pass"] == (1, None)
+
+
 def test_a_client_that_never_calls_the_fake_scores_failed_whatever_it_returns(tmp_path):
     """The pass rule reads the fake's counters, not only the deliverable's answer (a fixture X-RS copies)."""
     inp, s = run(tmp_path, [fault()], app=CLIENT | {"module": "lazy_client"}, files=("lazy_client.py",))
