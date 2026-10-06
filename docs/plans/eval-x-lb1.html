@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Eval X Lb1</title><style>
+:root { color-scheme: light dark; --bg:#f7f5ef; --panel:#fff; --text:#20201d;
+  --muted:#66645f; --line:#d9d5ca; --accent:#3157a4; --code:#f0eee7; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#171816; --panel:#20221f; --text:#f2f1eb; --muted:#b8b6ae;
+    --line:#3d403a; --accent:#8fb0ff; --code:#292c27; }
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text);
+  font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { width:min(920px,calc(100% - 32px)); margin:32px auto; padding:40px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+h1,h2,h3,h4,h5,h6 { line-height:1.2; margin:1.5em 0 .55em; }
+h1 { margin-top:0; font-size:2.2rem; } h2 { border-bottom:1px solid var(--line); padding-bottom:.3em; }
+a { color:var(--accent); } code { background:var(--code); padding:.12em .35em; border-radius:4px; }
+pre { overflow:auto; padding:16px; background:var(--code); border-radius:8px; }
+pre code { padding:0; } blockquote { margin:1em 0; padding:.2em 1em; color:var(--muted);
+  border-left:4px solid var(--line); }
+table { width:100%; border-collapse:collapse; margin:1em 0; display:block; overflow:auto; }
+th,td { padding:.55em .75em; border:1px solid var(--line); text-align:left; vertical-align:top; }
+th { background:var(--code); } hr { border:0; border-top:1px solid var(--line); }
+.source { color:var(--muted); font-size:.9rem; margin-bottom:2rem; }
+@media (max-width:640px) { main { width:100%; margin:0; padding:24px 18px; border:0; border-radius:0; } }
+</style></head><body><main><div class="source">Rendered from eval-x-lb1.md</div><h1>X-LB1 execution plan</h1>
+<p>Goal: build the loopback fake on <code>build/eval-x-lb1</code>: <code>bench_check.listen()</code>, the shape (b) grading path with the resilience strategy, readiness&#x27;s exactly-one-shape rule and the four <code>property.json</code> evidence pointers. Done when each behavior has a red and a green commit and the R-104 worker gates are read. Not in scope: <code>discriminate.py</code>, the check-less helpers, every task folder, the gate ring and the stamps. Tier T2; fan-out cap zero. The plan gives two sessions; part 1 delivered K1 and K2, part 2 delivered K3, K4 and the closing items.</p>
+<h2>Surface and domain constraints</h2>
+<p>Bounded context: the property grader. The check owns the fake; the deliverable is a client. Surface list: <code>bench_check.listen()</code> (one function owns the whole socket lifecycle) -&gt; the check&#x27;s <code>{fake_url}</code> substitution and fault span -&gt; <code>grade/property.py</code> (<code>_load_cases</code>, <code>STRATEGIES</code>, the <code>check.*</code> pointers) -&gt; <code>property.json</code> -&gt; <code>readiness.property_evidence</code> -&gt; <code>readiness._case_failures</code> (the shape rule) -&gt; fixture and mutation files.</p>
+<h2>Bounded graph</h2>
+<table><thead><tr><th>Node</th><th>Goal</th><th>Exit / oracle</th><th>Dependencies</th></tr></thead><tbody><tr><td>K1</td><td>the listener on 127.0.0.1 with HB-CHK-005</td><td>red then green; two parallel listeners get distinct ports</td><td>base guards</td></tr><tr><td>K2</td><td>shape (b) path, resilience, <code>{fake_url}</code>, fault span</td><td>red then green; 503 then 200 end to end</td><td>K1</td></tr><tr><td>K3a</td><td>exactly one of shape (a) or (b), HB-RDY-005</td><td>red then green; both/neither refused, (a) not built</td><td>K2</td></tr><tr><td>K3b</td><td>four pointers written; <code>property_evidence</code> reads them, <code>assume:</code> deleted</td><td>red then green; absent pointer fails closed</td><td>K2</td></tr><tr><td>K4</td><td>RS-shaped fixture through <code>bench discriminate</code></td><td>record written with no discriminate change</td><td>K3</td></tr><tr><td>G</td><td>mutants, ruff, docs-graph, R-104 gates</td><td>each exit read</td><td>K3, K4</td></tr></tbody></table>
+<pre><code class="language-mermaid">graph LR
+ K1 --&gt; K2
+ K2 --&gt; K3a
+ K2 --&gt; K3b
+ K3a --&gt; K4
+ K3b --&gt; K4
+ K4 --&gt; G</code></pre>
+<p>K3a and K3b are independent in the data; width stays one by dispatch. The loop variant is the finite K-item list; the context and time caps are circuit breakers, not proof.</p>
+<p>Pointer design: <code>check.deliverable</code> and <code>check.cases</code> name <code>check/check.stdout</code>, which carries both; <code>check.hosts</code> names <code>hosts.jsonl</code>; <code>check.clauses</code> names <code>clauses.json</code> or is null when the check wrote none. Every pointer is relative to the run directory. Only <code>check.clauses</code> may be null on read.</p></main></body></html>
