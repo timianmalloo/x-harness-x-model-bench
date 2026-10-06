@@ -218,6 +218,7 @@ class _Resume:
         named = {(r["fact"], r["segment_id"]) for r in rows if r["kind"] == "segment.abandoned"}
         for fact, sid, report in self.dead:
             if (fact, sid) not in named:  # fenced, never appended to: the marker pins the head (D-K8)
+                lifecycle.check_writer("segment.abandoned", "ledger")  # W0 R6.12b: no events append skips the table
                 eng.writers["events"].append(ledger.stamp({
                     "kind": "segment.abandoned", "code": "HB-LED-004", "fact": fact, "segment_id": sid,
                     "line_count": report.lines, "head_hash": report.head_hash, "error": "engine died"}))

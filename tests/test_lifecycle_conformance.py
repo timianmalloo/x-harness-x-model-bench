@@ -62,7 +62,7 @@ def test_the_engine_consults_the_table_and_writes_only_its_own_rows(tmp_path):  
 def test_every_engine_row_of_the_table_is_written_by_the_engine():
     # a table cannot show that a row is still written, only the writer's source can: a literal scan, no AST
     written = set(re.findall(r'"kind": "([a-z_]+\.[a-z_.]+)"', ENGINE_SOURCE + RESUME_SOURCE))  # events kinds are dotted; turn_usage is not
-    # the resume fences a dead segment with the ledger's own marker, whose table writer is the grading pass (HB-LED-004)
+    # the resume fences a dead segment with the ledger's own marker, whose table writer is "ledger" (HB-LED-004), not an engine transition
     written.discard("segment.abandoned")
     assert lifecycle.TABLE["run.resumed"].writer == "engine"
     assert lifecycle.ENGINE_TRANSITIONS == written, sorted(lifecycle.ENGINE_TRANSITIONS ^ written)
