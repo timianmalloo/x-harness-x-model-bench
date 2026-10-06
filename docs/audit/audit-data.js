@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T15:24:40Z",
+  "generated": "2026-10-06T16:05:58Z",
   "audit": [
     {
       "actor": null,
@@ -105618,6 +105618,33 @@ window.AUDIT_DATA = {
         "branch": "build/eval-x-fixv",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M48ZDVK7JVHQ1K6RJDC2R03C",
+      "shortname": "join-x-rdy-2",
+      "datetime": "2026-10-06T16:05:57Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of the resolved merge into integrate/e2e4-18",
+      "summary": "X-RDY part 2 (Sonnet claude-sonnet-5-5): SM1, SM2, NG1, NG2, RW1, RW2 ready with discrimination records (all eight property tasks ready; S2 and RW1 re-runs reproduced the records). First recount red on test_config::test_repo_inputs_are_valid (git-ignored __pycache__ under tasks/NG*/workspace/vendor read as vendored); X-FIXV (Sonnet) eee7ea67: the vendoring check skips only an ignored untracked cache folder, fails closed; red 2be1fb58 re-run by the Leader (1 assertion failure) recount_seconds=2295 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join X-RDY part 2 and X-FIXV into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-06T15:27:41Z",
+      "duration_seconds": 2296.0
     }
   ],
   "changes": [
