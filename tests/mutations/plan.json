@@ -181,15 +181,6 @@
     ]
   },
   {
-    "name": "single pack reader returns first of two",
-    "file": "src/harness_bench/plan.py",
-    "find": "if len(packs) > 1:",
-    "replace": "if False:",
-    "tests": [
-      "tests/test_plan.py::test_plan_packs_and_arm_pack_read_zero_one_two_and_legacy_packs"
-    ]
-  },
-  {
     "name": "reader bypasses shared kind helper",
     "file": "src/harness_bench/plan.py",
     "find": "kind = kind_of({\"kind\": kind})",

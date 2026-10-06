@@ -173,13 +173,6 @@ def plan_packs(plan: dict) -> dict[str, dict]:
     return {"on": pack} if pack is not None else {}
 
 
-def plan_pack(plan: dict) -> dict | None:
-    packs = plan_packs(plan)
-    if len(packs) > 1:
-        raise BenchError("HB-PLN-005", f"single-pack reader received several packs: {', '.join(packs)}")
-    return next(iter(packs.values()), None)
-
-
 def arm_pack(plan: dict, arm: str) -> dict | None:
     declared = set(plan["arms"]) if "arms" in plan else set(config.PACKS)
     if arm not in declared:

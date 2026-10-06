@@ -85,7 +85,6 @@ def test_plan_packs_and_arm_pack_read_zero_one_two_and_legacy_packs():
     second = {**pack, "commit": "d" * 40}
     legacy = {"schema": "bench-plan/1", "pack": pack, "cells": [{"pack": "off"}, {"pack": "on"}]}
     assert plan.plan_packs(legacy) == {"on": pack}
-    assert plan.plan_pack(legacy) == pack
     assert plan.arm_pack(legacy, "on") == pack
     assert plan.arm_pack(legacy, "off") is None
     assert plan.plan_comparisons(legacy) == [("off", "on")]
@@ -97,13 +96,6 @@ def test_plan_packs_and_arm_pack_read_zero_one_two_and_legacy_packs():
         assert plan.plan_packs(body) == {a: p for a, p in packs.items() if p is not None}
         assert plan.arm_pack(body, "off") is None
         assert plan.plan_comparisons(body) == [("off", "candidate")]
-        if len(packs) < 3:
-            assert plan.plan_pack(body) == packs.get("candidate")
-        else:
-            with pytest.raises(BenchError) as error:
-                plan.plan_pack(body)
-            assert error.value.code == "HB-PLN-005"
-            assert "candidate" in error.value.message and "incumbent" in error.value.message
         with pytest.raises(BenchError, match="HB-USR-002"):
             plan.arm_pack(body, "missing")
     with pytest.raises(BenchError, match="HB-USR-002"):

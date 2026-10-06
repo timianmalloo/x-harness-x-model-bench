@@ -61,9 +61,10 @@ def test_every_e1_error_row_is_registered_with_w0_meaning():
     text = (ROOT / "docs/design/eval-seam-contracts.md").read_text(encoding="utf-8")
     rows = [(parts[1].strip(), parts[2].strip()) for line in text.splitlines()
             if line.startswith("| HB-") and "E1" in line and "reserved, no E1 code path" not in line
+            and not line.startswith("| HB-PLN-005 |")  # retired by X-A3 (E3): plan_pack and its code are deleted.
             for parts in [line.split("|")]]
     expected = {"HB-LED-007", "HB-IDN-001", "HB-IDN-002", "HB-PWR-001", "HB-GRD-007"}
-    expected |= {f"HB-PLN-{n:03d}" for n in (1, 2, 4, 5)}
+    expected |= {f"HB-PLN-{n:03d}" for n in (1, 2, 4)}
     expected |= {f"HB-CHK-{n:03d}" for n in range(1, 5)}
     expected |= {f"HB-RDY-{n:03d}" for n in range(1, 12) if n != 9}
     expected |= {f"HB-CMP-{n:03d}" for n in range(1, 11)}
