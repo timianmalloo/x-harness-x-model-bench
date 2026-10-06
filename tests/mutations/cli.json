@@ -44,8 +44,8 @@
  {
   "name": "a started run re-run",
   "file": "src/harness_bench/cli.py",
-  "find": "    if (run_dir / \"events\").exists():\n",
-  "replace": "    if False:\n",
+  "find": "    resuming = (run_dir / \"events\").exists()\n",
+  "replace": "    resuming = False\n",
   "tests": ["tests/test_cli.py::test_run_refuses_a_run_that_already_started"]
  },
  {
