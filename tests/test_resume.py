@@ -214,6 +214,14 @@ def _prefix(g, dest, i, **kw):
     return _materialize(g, dest, g.rows[:i], **kw)
 
 
+def _set_params(env, **params):
+    """The only way a test sets a plan parameter: the stored plan is the authority (W1-K 3.1 step 1), so the edit is
+    written through to run_dir/plan.json with a recomputed plan_hash and env.plan follows it."""
+    env.plan["parameters"].update(params)
+    env.plan["plan_hash"] = plan.plan_hash(env.plan)
+    (env.run_dir / "plan.json").write_text(json.dumps(env.plan, indent=2), encoding="utf-8")
+
+
 def _resume(env):
     return _need(resume, "resume_run")(env.run_dir, env.root, env.plan, env.cfg)
 
@@ -782,7 +790,7 @@ def _with_live_pid(golden1, tmp_path, created_shift=0, **params):
     rows = [dict(r) for r in golden1.rows[:6]]
     rows[3] = {**rows[3], "pid": proc.pid, "created_at": created + created_shift}
     env = _materialize(golden1, tmp_path, rows)
-    env.plan["parameters"].update({"pid_wait_s": 1, **params})
+    _set_params(env, pid_wait_s=1, **params)
     return env, proc
 
 
@@ -1091,7 +1099,7 @@ def test_resume_requires_verify_callback(golden1, tmp_path):
 def test_resume_refuses_a_plan_that_differs_from_the_confirmed_one(golden1, tmp_path):
     """W1-K 3.1 step 1: the confirmed plan is the one authority; an edited in-memory plan is refused, not ignored."""
     env = _prefix(golden1, tmp_path, 6)
-    env.plan["parameters"]["pid_wait_s"] = 1
+    env.plan["parameters"]["pid_wait_s"] = 1  # an in-memory edit only: the one thing _set_params exists to avoid
     before = _tree_hash(env.run_dir)
     with pytest.raises(ValueError, match="plan.json"):
         _resume(env)

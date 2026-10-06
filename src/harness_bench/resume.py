@@ -24,7 +24,12 @@ CAUSES = {"HB-CELL-117": Cause.archive, "HB-CELL-118": Cause.coordinator_crash,
 
 def resume_run(run_dir: Path, root: Path, plan: dict, cfg):
     """W1-K 3.1 steps 1–3; refusal order precedes all writes and first-run checks."""
-    plan = plan_module.load_confirmed(run_dir)
+    confirmed = plan_module.load_confirmed(run_dir)
+    passed_hash, confirmed_hash = plan_module.plan_hash(plan), plan_module.plan_hash(confirmed)
+    if passed_hash != confirmed_hash:  # the confirmed plan is the one authority; a caller's edit is never silently dropped
+        raise ValueError(f"the plan passed to resume_run differs from {run_dir / 'plan.json'}: "
+                         f"passed {passed_hash}, confirmed {confirmed_hash}")
+    plan = confirmed
     if cfg is None or cfg.verify is None:
         raise ValueError("resume_run requires EngineConfig.verify")
     lock_path = run_dir / ".lock"
