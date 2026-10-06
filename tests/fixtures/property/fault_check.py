@@ -2,7 +2,8 @@
 
 Each case carries `schedule` (the status of the Nth request, the last one repeating) and `frame` (the client call, whose
 args use `{fake_url}`). The fake counts requests and effects (one per 200) and the check writes both to
-`<evidence>/fault-<case>.json`. The case passes iff the call returned `ok`; `idempotency_violations` is
+`<evidence>/fault-<case>.json`. The case passes iff the call returned `ok` AND the fake saw every request up to its first
+200 and applied at least one effect (a deliverable's answer alone is never trusted); `idempotency_violations` is
 sum(max(0, effects - 1)).
 """
 
@@ -52,7 +53,11 @@ def check(ctx):
                     host.close()
             time.sleep(case.get("settle_ms", 0) / 1000)  # check-side work after the call: outside a fault case's span
             resp = seen["resp"]
-            return "passed" if resp and resp.get("ok") and resp.get("value") == "ok" else "failed"
+            first_200 = case["schedule"].index(200) + 1 if 200 in case["schedule"] else None
+            answered = bool(resp and resp.get("ok") and resp.get("value") == "ok")
+            # the fake's counters decide too: the client made every request up to the first 200, and one effect landed
+            reached = first_200 is not None and seen["requests"] >= first_200 and seen["effects"] >= 1
+            return "passed" if answered and reached else "failed"
 
         outcomes.append(bc.run_case(case, fault))
         violations += max(0, seen["effects"] - 1)
