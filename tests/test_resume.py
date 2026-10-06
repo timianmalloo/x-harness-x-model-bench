@@ -585,15 +585,11 @@ def test_finish_the_stop_is_idempotent(golden5, tmp_path, capsys):  # W12e
     assert "run is stopped: 0 cells recorded stopped" in capsys.readouterr().out
 
 
-@pytest.mark.xfail(strict=True, reason="K1c: the resume engine (W1-K K5/K6) turns this window green")
 def test_finished_stop_with_unlaunched_cell_is_a_noop(golden5, tmp_path):  # W12f
-    rows = [golden5.rows[0]] + [r for cid in golden5.cells[:2] for r in _of(golden5.rows, cid)[:12]]
-    rows += _stop_rows("run_stopped", golden5.plan["run_id"])
-    rows += [ledger.stamp({"kind": "run.resumed", "run_id": golden5.plan["run_id"], "plan_hash": golden5.plan["plan_hash"],
-                           "segment_id": "x", "trace_id": golden5.plan["trace_id"]}),
-             ledger.stamp({"kind": "run.completed", "run_id": golden5.plan["run_id"], "segment_heads": {}, "cells_ended": 2,
-                           "grading": {"passes": 1}})]
-    env = _materialize(golden5, tmp_path, rows)
+    # The end state is built with the real writers: the first resume finishes the stop (run.resumed .. sealed run.completed).
+    env = _stop_ledger(golden5, tmp_path, "run_stopped", states=("C0", "C0", "C7", "C7", "C7"))
+    assert _resume(env).exit_code == 3
+    assert _kinds(_post(env), "run.completed"), "the first resume finishes the stop"
     before = _tree_hash(env.run_dir)
     assert _resume(env).exit_code == 3
     assert _tree_hash(env.run_dir) == before, "a finished stop with a C7 cell writes nothing"
