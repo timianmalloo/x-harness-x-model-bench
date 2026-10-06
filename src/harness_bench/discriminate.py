@@ -139,7 +139,7 @@ def _variant_overlay(task_dir: Path, name: str, entry: dict, dest: Path) -> Path
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(edit["new"].encode())
         else:
-            target.write_bytes(target.read_bytes().replace(edit["old"].encode(), edit["new"].encode(), 1))
+            target.write_bytes(readiness.apply_edit(task_dir.name, name, edit, target.read_bytes(), edit["file"]).encode())
     return dest
 
 

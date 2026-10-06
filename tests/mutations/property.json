@@ -199,5 +199,23 @@
   "tests": [
    "tests/test_discriminate.py::test_a_check_less_variant_with_no_primary_row_pointer_is_refused_by_its_declared_clause"
   ]
+ },
+ {
+  "name": "the absent-anchor refusal removed from the one edit applier: an edit that matches nothing writes the reference back unchanged (APPLY-A, CR47-15)",
+  "file": "src/harness_bench/readiness.py",
+  "find": "if not edit[\"old\"] or text.count(edit[\"old\"]) != 1:",
+  "replace": "if False:",
+  "tests": [
+   "tests/test_discriminate.py::test_the_variant_applier_refuses_an_edit_whose_old_is_absent_naming_the_variant"
+  ]
+ },
+ {
+  "name": "the CRLF-to-LF normalisation removed from the one edit applier: a multi-line anchor misses a CRLF file (APPLY-A, CR47-15)",
+  "file": "src/harness_bench/readiness.py",
+  "find": "text = raw.decode(\"utf-8\").replace(\"\r\n\", \"\n\")",
+  "replace": "text = raw.decode(\"utf-8\")",
+  "tests": [
+   "tests/test_discriminate.py::test_a_variant_edit_applies_to_a_crlf_reference_file_and_its_declared_flip_is_observed"
+  ]
  }
 ]
