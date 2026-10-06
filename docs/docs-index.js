@@ -5015,6 +5015,45 @@ window.DOCS_INDEX = {
       "sourceSha256": "592a38b4c2653264c54e06f840e331d21627d2624dff11d7a45dc78928d2a7bf"
     },
     {
+      "id": "plan-eval-x-k1b",
+      "path": "docs/plans/eval-x-k1b.md",
+      "title": "X-K1b: resume lifecycle and row classifiers",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "K3 lifecycle, segment projections and abandoned-head verification, followed by K4 only if measured context admits it.",
+      "tags": [
+        "evaluation",
+        "resume",
+        "execution-plan"
+      ],
+      "links": [
+        {
+          "to": "brief-eval-x-k1",
+          "rel": "implements"
+        },
+        {
+          "to": "design-eval-resume",
+          "rel": "depends-on"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "Bounded graph",
+          "mermaid": "graph LR\n A --> P\n A --> L\n A --> V\n V --> H\n L --> C\n H --> C\n C -->|context admits| R\n C -->|split| G\n R --> G\n P --> G\n G --> J"
+        }
+      ],
+      "sourceSha256": "59c4d90d70c17d051694b491c23ead9e33d5946cf6c842260d39c28111b71b75"
+    },
+    {
       "id": "proof-phase2",
       "path": "docs/proof/phase2.md",
       "title": "Proof Pack - phase 2 (wave-by-wave joins)",
@@ -9456,6 +9495,14 @@ window.DOCS_INDEX = {
       "artifactId": "plan-eval-x-k1a"
     },
     {
+      "id": "surface-plans-eval-x-k1b",
+      "path": "docs/plans/eval-x-k1b.html",
+      "title": "Eval X K1B",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-k1b"
+    },
+    {
       "id": "surface-case-study",
       "path": "docs/case-study.html",
       "title": "From Specification to Implementation: An AI-Forward Case Study",
@@ -9502,5 +9549,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "32ae47c1398c90b2332dbce73375f01490b57d95b9c9f76519b0840f1ab488c0"
+  "graphSha256": "b640b8a8c580f92c6f96f8454a5ce15998d73635268b135048aca49d313b4dfe"
 };
