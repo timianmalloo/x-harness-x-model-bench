@@ -27,6 +27,7 @@ summary: >-
 
 **Status counts:** controlled 13 · partially-controlled 7 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`. CAUSE-A is `observed` (2026-09-30).
 **Recurrence since last review:**
+- 2026-10-06 (Leader, found by X-RETIER): one candidate registered, TMPENV-A (a test assumes where `tmp_path` is; under PATH-B's short TMP it is outside the profile and the test fails); fixed in `tests/test_workspace.py`.
 - 2026-10-06 (Leader, join of `coord/eval-c44-p4b`): one candidate registered, VERB-A (a record labels a restatement as the operator's verbatim words); fixed in the plan and `c44.md` at the join.
 - 2026-10-06 (Coordinator #44, `docs/coordination/coordinator-log/c44.md`): one candidate registered, SPIKE-B (an operator-run spike's measuring step depends on a host property it never reads, so on that host it measures nothing instead of naming the property). Two instances, both in `tools/spikes/s_lb_loopback.py`: the positive control cannot fire on a host with `NotifyOnListen` False (S-LB is INCONCLUSIVE; the operator accepted it for this host), and the operator prompt's `input()` crashes under Git Bash, where `isatty()` is true but stdin is EOF. OPER-A gains its resolution for S-J4: the operator waived it for now.
 - 2026-10-06 (Coordinator #43, `docs/coordination/coordinator-log/c43.md`): no new class. Three instances:
@@ -1303,3 +1304,10 @@ summary: >-
 - **Instance 1 (2026-10-06):** Coordinator #44 recorded the operator's five decisions of about 07:45 as "verbatim" in `docs/coordination/coordination-e2e4.md` and `coordinator-log/c44.md`. The operator's words were short answers to the Leader's numbered questions ("1: I can do that now", "2: release", "3: waive it for now", "4: yes", "5: yes", and "Accept for this host" after the spike). Contributing cause (Inferred): the Leader's brief to #44 passed the decisions as summaries, not as the operator's words.
 - **Sweep:** other "verbatim" labels in the plan and coordinator logs not checked beyond c44; the next coordinator compile checks its own.
 - **Control (register entry only, rung 5):** a Leader brief that carries an operator decision quotes the operator's words in a block marked as such, and a seat may label as verbatim only text copied from that block. Upgrade trigger: a second instance makes it a line in the coordinator compile template.
+
+### TMPENV-A: a test assumes where `tmp_path` lives, so it fails when TMP moves (candidate)
+
+- **Shape:** a test builds its subject under `tmp_path` and relies on a property of that location (here: being under the user profile). The run's own environment rule moves TMP (PATH-B: short `C:\t\...` paths), so the test fails for every worker that follows the rule and passes at the per-join recount, which runs with the default TMP.
+- **Instance 1 (2026-10-06, X-RETIER):** `tests/test_workspace.py::test_a_cells_root_under_the_user_profile_is_refused` "DID NOT RAISE" under `TMP=C:\t\rt`; reproduced by the Leader under `TMP=C:\t\wsx` (1 failed), green after the fix (35 passed).
+- **Sweep:** `Path.home()` in `tests/*.py` - no other test ties `tmp_path` to the profile.
+- **Control (rung 2, the test itself):** the test now builds its root under `Path.home()`, independent of TMP. Upgrade trigger: a second instance adds a ring run under a short TMP.
