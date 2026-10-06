@@ -5419,6 +5419,31 @@ window.DOCS_INDEX = {
       "sourceSha256": "3b773f882e6785193cba426f9f35e9e90405fe421ef4cbbef3d82fbb05163613"
     },
     {
+      "id": "plan-eval-x-rs",
+      "path": "docs/plans/eval-x-rs.md",
+      "title": "X-RS: the two resilience property tasks, RS1 and RS2",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-20",
+      "reviewSuggested": [],
+      "summary": "RS1 (prometheus_client) and RS2 (structlog) ready, with discrimination records, declared naive timeouts, the RS2 delivery-count measure and the variant tables measured on the real path.",
+      "tags": [
+        "evaluation",
+        "property",
+        "execution-plan"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "e6b5e4a6d4871b96b2b87e2efca85836d249939f4e1bc05004044b68da38911a"
+    },
+    {
       "id": "proof-phase2",
       "path": "docs/proof/phase2.md",
       "title": "Proof Pack - phase 2 (wave-by-wave joins)",
@@ -9927,6 +9952,14 @@ window.DOCS_INDEX = {
       "artifactId": "plan-eval-x-lb1"
     },
     {
+      "id": "surface-plans-eval-x-rs",
+      "path": "docs/plans/eval-x-rs.html",
+      "title": "Eval X Rs",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-rs"
+    },
+    {
       "id": "surface-case-study",
       "path": "docs/case-study.html",
       "title": "From Specification to Implementation: An AI-Forward Case Study",
@@ -9973,5 +10006,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "503570659cdbdb606a23a6e2e2dbf0e1c19795fb8fa9c8ef5d9b907513d357b3"
+  "graphSha256": "713aca699f2432b8dd5ab46d40cddd074effe3f879cc9c2bbcf2c7dcb798e4e0"
 };
