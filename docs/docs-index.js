@@ -4564,7 +4564,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "0066862f936be06585974f2ef0ff2f7a5f22fe867eb6ac761d1f2252d6b17767"
+      "sourceSha256": "6c559a98eb56c85890713c59e312313a30514e174342ec6361e6842fb51bff4c"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -6740,6 +6740,33 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "2b35fece6b5117acf6c8651d17c4ba3e1b9e21b5859ebbdc0c913c266c09df8d"
+    },
+    {
+      "id": "runbook-test-tiers",
+      "path": "docs/runbooks/test-tiers.md",
+      "title": "Runbook: the test tiers and the stamped tier",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-12-31",
+      "reviewSuggested": [],
+      "summary": "Which tests run when: per join, per batch, when the stamped inputs moved, and once a day. The `stamped` marker, its own stamp, the exact commands, and the control that keeps a stamped test honest.",
+      "tags": [
+        "runbook",
+        "testing",
+        "ci",
+        "gate-stamp",
+        "stamped"
+      ],
+      "links": [
+        {
+          "to": "note-20260927-ci-opt-proposal",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "42410303ebdb094c4090760622791aef2aa94a4ce1d97dd137a44d9ac7ca0938"
     },
     {
       "id": "brief-eval-env-a",
@@ -9659,5 +9686,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "62c7fe04449a21d2e3954bb5375099d60b1cb7469388431ea5d16a479953076b"
+  "graphSha256": "b5ed8142cf579aa899b09e1a28b7e59617809fd4d52ee810222348516655b639"
 };
