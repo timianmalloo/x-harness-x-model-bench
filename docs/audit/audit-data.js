@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T22:01:30Z",
+  "generated": "2026-10-06T22:34:00Z",
   "audit": [
     {
       "actor": null,
@@ -113705,6 +113705,25 @@ window.AUDIT_DATA = {
       "tier": "T2",
       "started_at": "2026-10-06T19:14:19Z",
       "duration_seconds": 10031.0
+    },
+    {
+      "id": "al-01M49NMC4C1PMZ5PT1AFW415EX",
+      "shortname": "x-k1d3-close",
+      "datetime": "2026-10-06T22:34:00Z",
+      "session": "x-k1d3-e1e4",
+      "prompt": "X-K1d part 3: R1-R3, exit-evidence table, final gates",
+      "summary": "{\"outcome\": \"green ec579c78\", \"served_model\": \"claude-sonnet-5-5\", \"base\": \"f5c63273\", \"dispatch_start\": \"2026-10-06T22:11:57Z\", \"red_on_arrival\": {\"R1\": \"3181d0ac: test_other_stop_rows_are_unchanged, assert len(stops)==1 and calls == [] -> [1] == []\", \"R2\": \"baseline test_every_mutation_find_text_occurs_exactly_once_in_its_target_file failed (cli.json 0 occurrences)\"}, \"commits\": {\"R1\": \"c6118acf\", \"R2\": \"dfa5f614\", \"R3\": \"75b1c264\", \"plan\": \"cc0c7c9c\", \"derive\": \"ec579c78\"}, \"mutation\": {\"cli\": \"15 killed, 15 s\", \"engine\": \"109 killed, 311 s\", \"stop\": \"74 killed, 240 s\", \"resume\": \"24 killed, 43 s\"}, \"gates\": {\"r104_8_files_base\": \"202 passed, 1 failed (on arrival, R2)\", \"r104_8_files_final\": \"203 passed\", \"r104_11_files\": \"693 passed, 0 failed, 0 XPASS\", \"ruff\": \"exit 0\", \"docs_graph_validate\": \"exit 0, problems [], 16 review-suggested warnings\"}, \"tokens\": \"not recorded\", \"context_samples\": \"not recorded\", \"parts_1_2_entries\": [\"al-01M498VHY7JRTYHZW3WGZEC2E7\", \"al-01M49KRWAYB2V6BQ4EN3594R9P\"]}",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "tier": "T2",
+      "started_at": "2026-10-06T22:11:57Z",
+      "duration_seconds": 1323.0
     }
   ],
   "changes": [
