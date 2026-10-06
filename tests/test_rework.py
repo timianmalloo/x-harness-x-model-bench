@@ -242,6 +242,36 @@ def test_rework_task_without_turns_stays_not_built(tmp_path: Path):
     assert {k: (s.value, s.reason) for k, s in scores.items()} == dict.fromkeys(inp.metrics, (None, "not built"))
 
 
+def test_every_na_reason_rework_grade_emits_on_a_turns_task_is_in_na_reasons(tmp_path: Path):
+    """K1 control for the two literals in discriminate.NA_REASONS: a turns task whose turn 2 is not reached and whose
+    turn-1 snapshot is absent emits both reasons, and a record holding them must not be HB-RDY-011."""
+    cid = "c1"
+    inp = CellInput(
+        run_dir=tmp_path / "run",
+        root=tmp_path,
+        plan={"parameters": {"grading_step_timeout": 30.0}, "tasks": {"RW1": {"turns": [{"n": 2, "prompt": "turn2"}]}}},
+        cell={"cell_id": cid, "task": "RW1"},
+        task={"property": {"name": "rework"}},
+        task_dir=tmp_path / "tasks" / "RW1",
+        archive=tmp_path / "run" / "archive" / cid / "attempt-1",
+        out_dir=tmp_path / "run" / "grading" / cid / "rework",
+        events=({"kind": "cell.turn_ended", "cell_id": cid, "turn": 1, "next": "stop"},),
+        record_reason=None,
+        model_calls=(),
+        tool_calls=(),
+        turn_usage=(),
+        metrics={"rework_ratio": {}, "property_check_pass": {}, "turn1_tests_pass": {}},
+        allow_model_calls=False,
+        extraction=None,
+        prices=None,
+        work_root=tmp_path / "work",
+    )
+    inp.out_dir.mkdir(parents=True, exist_ok=True)
+    reasons = {s.reason for s in rework.grade(inp, GradeContext(30.0)).values() if s.reason}
+    assert reasons == {"turn 2 not reached", "turn 1 snapshot not archived"}
+    assert reasons <= discriminate.NA_REASONS
+
+
 @pytest.mark.xfail(strict=True, reason="J2c: multi-turn discrimination through engine waits on X-J1d")
 def test_multi_turn_discrimination_through_engine():
     assert False, "J2c: engine multi-turn discrimination not yet connected"
