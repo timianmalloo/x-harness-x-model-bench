@@ -135,5 +135,15 @@
   "tests": [
    "tests/test_property_loopback.py::test_property_evidence_reads_what_the_pointers_name_and_fails_closed_on_an_absent_one"
   ]
+ },
+ {
+  "name": "LB1 the outcome-set selector accepts both sets: a fault check may emit blocked, a probe check may emit passed",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "FAULT_OUTCOMES if fault else PROBE_OUTCOMES))",
+  "replace": "PROBE_OUTCOMES | FAULT_OUTCOMES))",
+  "tests": [
+   "tests/test_property_grade_cell.py::test_each_check_kind_refuses_the_other_kinds_outcome[True-honest]",
+   "tests/test_property_grade_cell.py::test_each_check_kind_refuses_the_other_kinds_outcome[False-passed]"
+  ]
  }
 ]

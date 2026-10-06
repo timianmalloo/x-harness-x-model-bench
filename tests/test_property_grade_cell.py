@@ -18,7 +18,7 @@ FIX = Path(__file__).resolve().parent / "fixtures" / "property"
 METRICS = {"property_check_pass": {}, "exploit_probes_blocked": {}}
 
 
-def make_task(tmp_path: Path, mode: str, *, tests_ok: bool = True) -> Path:
+def make_task(tmp_path: Path, mode: str, *, tests_ok: bool = True, fault: bool = False) -> Path:
     task = tmp_path / "task"
     (task / "oracle" / "check").mkdir(parents=True)
     (task / "tests").mkdir()
@@ -26,20 +26,22 @@ def make_task(tmp_path: Path, mode: str, *, tests_ok: bool = True) -> Path:
         f"import unittest\nclass T(unittest.TestCase):\n    def test_x(self):\n        self.assertTrue({tests_ok})\n", encoding="utf-8")
     (task / "oracle" / "check" / "check.py").write_bytes((FIX / "stub_check.py").read_bytes())
     (task / "oracle" / "check" / "mode.txt").write_text(mode, encoding="utf-8")
+    shape = "interface: loopback\nbounds_ms: {loopback: 2000}\n" if fault else "interface: in-process\nbounds_ms: {in-process: 2000}\n"
+    kind = "fault" if fault else "probe"
     (task / "oracle" / "check" / "cases.yaml").write_text(
-        "schema: bench-check-cases/1\nentry: check.py\ninterface: in-process\nbounds_ms: {in-process: 2000}\n"
+        f"schema: bench-check-cases/1\nentry: check.py\n{shape}"
         "app: {module: m, attr: a, kind: callable}\ntoolchain: [python]\nenv: []\n"
-        "cases:\n  - {id: inj-1, kind: probe}\n  - {id: inj-2, kind: probe}\n", encoding="utf-8")
+        f"cases:\n  - {{id: inj-1, kind: {kind}}}\n  - {{id: inj-2, kind: {kind}}}\n", encoding="utf-8")
     return task
 
 
-def make_input(tmp_path: Path, task_dir: Path, *, timeout: int = 60) -> CellInput:
+def make_input(tmp_path: Path, task_dir: Path, *, timeout: int = 60, prop_name: str = "security") -> CellInput:
     run_dir = tmp_path / "run"
     (run_dir / "archive" / "ws").mkdir(parents=True)
     (run_dir / "archive" / "ws" / "app.py").write_text("x = 1\n", encoding="utf-8")
     out = run_dir / "grading" / "g" / "c" / "property"
     out.mkdir(parents=True)
-    task = {"property": {"name": "security"},
+    task = {"property": {"name": prop_name},
             "oracle": {"runner": "unittest", "command": ["{python}", "-m", "unittest", "discover", "-s", ".", "-p", "test_*.py"]}}
     return CellInput(run_dir=run_dir, root=tmp_path, plan={"parameters": {"grading_step_timeout": timeout}},
                      cell={"cell_id": "c", "task": "S1", "task_version": "tv"}, task=task, task_dir=task_dir,
@@ -95,6 +97,15 @@ def test_na_rows_through_the_real_handshake(tmp_path, mode, row, reason):
     inp, s = grade(tmp_path, mode)
     assert evidence(inp)["row"] == row
     assert vals(s)["property_check_pass"] == (None, reason)
+
+
+@pytest.mark.parametrize(("fault", "mode"), [(True, "honest"), (False, "passed")])
+def test_each_check_kind_refuses_the_other_kinds_outcome(tmp_path, fault, mode):
+    """A fault check emitting `blocked`, or a probe check emitting `passed`, is an invalid line (row 5), never a score."""
+    inp = make_input(tmp_path, make_task(tmp_path, mode, fault=fault), prop_name="resilience" if fault else "security")
+    s = prop.grade_cell(inp)
+    assert evidence(inp)["row"] == 5
+    assert vals(s)["property_check_pass"] == (None, "check output invalid")
 
 
 def test_did_not_build_is_measured_zero(tmp_path):
