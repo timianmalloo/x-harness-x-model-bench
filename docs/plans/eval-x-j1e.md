@@ -8,7 +8,6 @@ tags: [evaluation, multi-turn, mutations, coordination]
 links:
   - { to: brief-eval-x-j1, rel: implements }
   - { to: design-eval-multi-turn, rel: depends-on }
-  - { to: kb-graph-and-loop-engineering, rel: depends-on }
 review-by: "2026-10-17"
 summary: "43 engine rows and two driver rows landed; engine 105 killed/3 survived/1 timeout, driver 6 killed/1 survived. Planned hand-back after K2 at 128178 context tokens. S-J4 and final worker gates remain open."
 ---
@@ -29,7 +28,7 @@ Surface list: W1-J section-11 requirement -> existing source behavior -> engine.
 
 The solution ladder selects reuse of the existing JSON catalogs, named tests, runner, renderer and graph writer. There is no new dependency. Adversarial Test Architect lens: a kill is execution evidence, while an unrun or surviving row stays open. Simplifier lens: retain existing M-FOLLOW instead of copying it. SRE lens: do not guess counts, waits or token usage. Security/DS review remains the already gated W1-J design plus independent Leader/Coordinator join; this turn changes no production behavior.
 
-Graph grounding path: this plan -> kb-graph-and-loop-engineering -> execution-graph-optimization standard via the installed optimize-graph skill. Prior J1c audit al-01M477JD6YKJ4BX23YDG01RFGJ records engine mutation proof but driver/archive proof blocked by the suite lock. That evidence supports separate owned sets and explicit partial-result handling; it does not provide a duration model.
+Flagged grounding gap: the installed skill names kb-graph-and-loop-engineering and docs/knowledge/graph-and-loop-engineering/, but neither exists in this consuming checkout. No graph traversal is claimed. Grounding used the local execution-graph-optimization standard and the existing brief/design links. Scoped deviation: the skill's missing dependency target is omitted rather than creating an unowned knowledge artifact. Index derivation detected the broken target during creation; the new artifact was corrected before hand-back. Prior J1c audit al-01M477JD6YKJ4BX23YDG01RFGJ records engine mutation proof but driver/archive proof blocked by the suite lock. That evidence supports separate owned sets and explicit partial-result handling; it does not provide a duration model.
 
 ## Execution graph
 
