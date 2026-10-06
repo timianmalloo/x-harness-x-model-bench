@@ -3,9 +3,7 @@
 One parametrised module over the two ids. The base is built through the engine's own `workspace.task_source` (a cached
 upstream clone); a test skips when the upstream is unreachable unless `HB_REQUIRE_RW_BASE=1`.
 
-Numbers come from the STAND-IN measure in `tests/fixtures/property_tasks/rework_standin.py` (X-J2's `_changes` functions and
-`grade/rework.py` have not joined). They are Inferred (FIXT-A). The `ready` follow-on replaces the stand-in with the real
-functions and the real multi-turn discrimination path (W0 rev 6.6 R6.6c, X-J2b); this file never imports a missing function.
+Numbers come from the real measure (`grade/rework.py` over `grade/_changes.py`; the stand-in is deleted, HASH-A).
 
 Directory layout of a solution (assume: W0 section 2 "per-turn overlays"; confirm: X-J2b's overlay builder; breaks if false:
 the final tree differs): the turn-1 snapshot is base + `turn-1/`; the final tree is base + `turn-1/` + `turn-2/`, a file in
@@ -18,6 +16,7 @@ import ast
 import difflib
 import functools
 import importlib.util
+import inspect
 import os
 import re
 import shutil
@@ -31,11 +30,11 @@ from pathlib import Path
 import pytest
 import ring_cache
 
+import harness_bench.grade.property  # noqa: F401  (src: grade.rework imports grade.property first; a direct rework import is circular)
 from harness_bench import config, workspace
-from harness_bench.grade import correctness
+from harness_bench.grade import _changes, correctness, rework
 
 ROOT = Path(__file__).resolve().parents[1]
-STANDIN_PATH = ROOT / "tests" / "fixtures" / "property_tasks" / "rework_standin.py"
 SEEDED = ROOT / "tests" / "fixtures" / "property_tasks" / "rw1_seeded_disagreement.json"
 VARIANT_NAME = re.compile(r"^[a-z0-9]{1,16}$")
 IDS = ("RW1", "RW2")
@@ -75,7 +74,6 @@ def load_path(path: Path, name: str):
     return module
 
 
-standin = load_path(STANDIN_PATH, "rw_standin")
 _WORK = Path(tempfile.mkdtemp(prefix="rw-ring-"))
 
 
@@ -221,14 +219,14 @@ class Observed:
 
 
 def observe(tid: str, base: Path, overlays: dict[int, dict[str, str]]) -> Observed:
-    """W1-L 6.1 through the stand-in: turn 1's file on the snapshot, both files on the final tree, then the ratio."""
+    """W1-L 6.1 through the real measure: turn 1's file on the snapshot, both files on the final tree, then the ratio."""
     snap_tree = build(base, overlays, (1,))
     final_tree = build(base, overlays, (1, 2))
     snapshot = run_hidden(tid, snap_tree, (1,))
     final = run_hidden(tid, final_tree, (1, 2))
     base_py, snap_py, final_py = (read_tree(t) for t in (base, snap_tree, final_tree))
-    t1, changed = standin.measure(base_py, snap_py, final_py, task_yaml(tid)["blast_radius"])
-    ratio = standin.ratio(t1, changed)
+    t1, changed = rework.measure(base_py, snap_py, final_py, task_yaml(tid)["blast_radius"])
+    ratio = rework.ratio(t1, changed)
     turn2_ok = final.ran > 0 and not any(i.startswith("T2") for i in final.failed | final.errored)
     turn1_ok = final.ran > 0 and not any(i.startswith("T1") for i in final.failed | final.errored)
     clause = "tests" if not turn2_ok else "turn1" if not turn1_ok else "ratio" if ratio is None or ratio > CEILING else None
@@ -324,24 +322,24 @@ def classification(tid: str) -> tuple[set[str], set[str]]:
 @pytest.mark.parametrize("tid", IDS)
 def test_base_test_layout_is_classified_as_data(tid, bases):
     """The expected classification of this base's paths is written in oracle/evidence.md. This test checks the data against
-    the stand-in rule over the built base; the follow-on asserts the same data through `_changes.is_test_path`."""
+    `_changes.is_test_path` over the built base; the follow-on asserts the same data through `_changes.is_test_path`."""
     tests, products = classification(tid)
     assert SPEC[tid]["test_file"] in tests and SPEC[tid]["product"] in products
     base_paths = frozenset(read_tree(bases[tid]))
     assert tests | products == base_paths and not tests & products, sorted(base_paths ^ (tests | products))
     for path in tests:
-        assert standin.is_test_path(path, base_paths), path
+        assert _changes.is_test_path(path, base_paths), path
     for path in products:
-        assert not standin.is_test_path(path, base_paths), path
+        assert not _changes.is_test_path(path, base_paths), path
 
 
 def test_is_test_path_stand_in_pairs():
     base = frozenset({"pkg/tests.py", "pkg/tests/helper.py", "pkg/mod.py"})
-    assert standin.is_test_path("pkg/tests.py", base)
-    assert standin.is_test_path("pkg/tests/helper.py", base)        # in the base, under a tests directory
-    assert not standin.is_test_path("pkg/tests/_first.py", base)    # new, under a tests directory, no test basename
-    assert not standin.is_test_path("pkg/mod.py", base)
-    assert standin.is_test_path("pkg/test_x.py", base) and standin.is_test_path("conftest.py", base)
+    assert _changes.is_test_path("pkg/tests.py", base)
+    assert _changes.is_test_path("pkg/tests/helper.py", base)        # in the base, under a tests directory
+    assert not _changes.is_test_path("pkg/tests/_first.py", base)    # new, under a tests directory, no test basename
+    assert not _changes.is_test_path("pkg/mod.py", base)
+    assert _changes.is_test_path("pkg/test_x.py", base) and _changes.is_test_path("conftest.py", base)
 
 
 def test_stand_in_ratio_counts_replaced_and_deleted_not_added():
@@ -350,10 +348,10 @@ def test_stand_in_ratio_counts_replaced_and_deleted_not_added():
     base = {"m.py": ""}
     snapshot = {"m.py": "\n".join(old) + "\n"}
     final = {"m.py": "\n".join(new) + "\n"}
-    t1, changed = standin.measure(base, snapshot, final, ["*.py"])
+    t1, changed = rework.measure(base, snapshot, final, ["*.py"])
     assert (t1, changed) == (6, 3)
-    assert standin.ratio(t1, changed) == Decimal("0.5000")
-    assert standin.ratio(0, 0) is None
+    assert rework.ratio(t1, changed) == Decimal("0.5000")
+    assert rework.ratio(0, 0) is None
 
 
 # ---- the hidden tests, the stub and the wrong apps -------------------------------------------------------------------
@@ -490,7 +488,7 @@ def variant_cases():
 
 @pytest.mark.parametrize(("tid", "name"), variant_cases())
 def test_each_variant_flips_exactly_its_set(tid, name, bases):
-    """Observed through the stand-in measure and the real hidden tests. `flips` lists the metric ids whose observed value
+    """Observed through the real measure measure and the real hidden tests. `flips` lists the metric ids whose observed value
     differs from the reference's; `clauses` names the deciding clause of a flipped `property_check_pass`."""
     spec = variant(tid, name)
     reference = reference_observed(tid, str(bases[tid]))
@@ -553,7 +551,7 @@ def test_expected_ratio_equals_the_recorded_count_and_the_stand_in(tid, role, ba
 
 @pytest.mark.parametrize("tid", IDS)
 def test_ceiling_separates_reference_and_naive(tid, bases):
-    """EV-4 through the stand-in; the engine shows it in the follow-on. The naive passes every test and loses on the ratio."""
+    """EV-4 through the real measure; the engine shows it in the follow-on. The naive passes every test and loses on the ratio."""
     reference = reference_observed(tid, str(bases[tid]))
     naive = observe(tid, bases[tid], solution(tid, "naive"))
     assert (reference.property_check_pass, reference.clause) == (1, None)
@@ -609,7 +607,7 @@ def test_rw1_seeded_disagreement_fixture_disagrees_with_expected_on_one_named_me
     assert seeded["cites"] == ["T-E11", "T-E12"]
 
 
-def test_difflib_is_the_only_diff_engine_the_stand_in_uses():
-    """The stand-in names its algorithm (W1-L 5.1: SequenceMatcher, autojunk off); a drift from it would change every count."""
-    source = STANDIN_PATH.read_text(encoding="utf-8")
+def test_difflib_is_the_only_diff_engine_the_measure_uses():
+    """The real `_changes.line_delta` names its algorithm (W1-L 5.1: SequenceMatcher, autojunk off); a drift would change every count."""
+    source = inspect.getsource(_changes.line_delta)
     assert "autojunk=False" in source and difflib.SequenceMatcher is not None

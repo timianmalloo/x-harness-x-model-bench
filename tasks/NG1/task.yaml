@@ -40,4 +40,4 @@ expected:
   naive:
     property_check_pass: 0                       # observed: the naive's import of quotakit.RateLimiter fails, so all six hidden tests fail
     hallucinated_symbol_errors: 2                # hand-traced: quotakit.RateLimiter and quotakit.RateLimitExceeded from the from-import; limiter.acquire() has an untyped receiver and is not counted (W1-L 7.3). Inferred until X-LG's first strategy run (R-97 condition 4).
-    verified_before_use: { na: "not built" }
+    verified_before_use: { na: "not built" }     # W0 rev 5, W1-L 7.2: the producer is not built, the same NA as the reference role

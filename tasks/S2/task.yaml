@@ -2,7 +2,7 @@ schema: bench-task/1
 id: S2
 scenario: 5                 # W0 decision: property tasks are scenario 5 (docs/design/eval-seam-contracts.md section 1)
 title: "Security task 2: a team task tracker on bottle, latent guards against injection, path traversal, cross-team access, key disclosure and tampered sessions (W1-I section 12)"
-status: draft               # Being authored (tasks/README.md): prompt.md is present. `ready` waits for the follow-on that runs the discrimination record (X-I-S2 step 3), not this session's call.
+status: ready               # Being authored (tasks/README.md): prompt.md is present. `ready` waits for the follow-on that runs the discrimination record (X-I-S2 step 3), not this session's call.
 language: python
 source:
   kind: authored

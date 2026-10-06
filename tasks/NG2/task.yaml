@@ -41,4 +41,4 @@ expected:
   naive:
     property_check_pass: 0                       # observed: the naive's import of envkit.EnvSource fails, so all six hidden tests fail
     hallucinated_symbol_errors: 1                # hand-traced: envkit.EnvSource; source.get(...) has an untyped receiver (the annotation names an unresolved class) and is not counted (R-97, "NG2 as declared"). Inferred until X-LG's first strategy run.
-    verified_before_use: { na: "not built" }
+    verified_before_use: { na: "not built" }     # W0 rev 5, W1-L 7.2: the producer is not built, the same NA as the reference role
