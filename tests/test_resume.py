@@ -247,6 +247,11 @@ def _tmp_left(run_dir):
     return [p for p in (run_dir / "archive").rglob("*") if atomic.is_temp_name(p.name)]
 
 
+def _segment_hashes(run_dir):
+    return {(f.parent.name, f.name): hashlib.sha256(f.read_bytes()).hexdigest()
+            for f in sorted(run_dir.glob("*/*.jsonl")) if f.parent.name in engine.FACTS}
+
+
 def _tree_hash(run_dir):
     digest = hashlib.sha256()
     for path in sorted(p for p in run_dir.rglob("*") if p.is_file() and p.name != ".lock"):
@@ -576,11 +581,17 @@ STOP_WINDOWS = ["control_applied", "decision_resolved", "run_stopped", "control_
 
 
 @pytest.mark.parametrize("window", STOP_WINDOWS)
-def test_resume_finishes_the_stop(golden5, tmp_path, window, capsys):
+def test_resume_finishes_the_stop(golden5, tmp_path, window, capsys, caplog):
     states = ("C2", "C4", "C5", "C6", "C7") if window.endswith("c4") else ("C2", "C3", "C5", "C6", "C7")
     env = _stop_ledger(golden5, tmp_path, window.removesuffix("_c4"), states)
     intents_before = len(_kinds(_rows(env.run_dir), "cell.launch_intent"))
+    caplog.set_level(20)
     assert _resume(env).exit_code == 3
+    # CR47-5 (M-STOPC7): the stopped engine refuses to launch whatever boot() returns, so the wrong decision shows
+    # only in the resume.cell record: the C7 cell is skipped, and resume.done reports nothing launched.
+    c7_cell = [r for r in caplog.records if r.getMessage() == "resume.cell" and r.cell_id == golden5.cells[4]]
+    assert [(r.rule, r.action) for r in c7_cell] == [("C7", "skip")]
+    assert [r.launched for r in caplog.records if r.getMessage() == "resume.done"] == [0]
     rows, post = _rows(env.run_dir), _post(env)
     c7 = golden5.cells[4]
     for cid in golden5.cells[:4]:
@@ -660,6 +671,9 @@ def _w13_w14(golden1, tmp_path, name, i):
     assert _outcome_map(env) == want
     abandoned = [(r["fact"], r["segment_id"]) for r in _kinds(_rows(env.run_dir), "segment.abandoned")]
     assert len(abandoned) == len(set(abandoned)), "a segment already named is never named twice"
+    if name == "W13":  # CR47-5 (M-WRITEOLD): exactly one marker per (fact, dead segment) across all segments
+        dead = {(fact, p.stem) for fact in engine.FACTS for p in views.segment_paths(env.run_dir, fact)[:-1]}
+        assert dead and sorted(abandoned) == sorted(dead), (abandoned, dead)
 
 
 def _w13b(golden1, tmp_path, monkeypatch):
@@ -981,11 +995,31 @@ def test_sweep_archives_cleans_root_and_each_cell(golden1, tmp_path):
 
 def test_abandoned_marker_pins_head(golden1, tmp_path):
     env = _prefix(golden1, tmp_path, 6)
+    before = _segment_hashes(env.run_dir)
     assert _resume(env).exit_code == 0
+    after = _segment_hashes(env.run_dir)
+    assert {k: after[k] for k in before} == before, "CR47-5 (M-WRITEOLD): a dead segment's bytes never change"
     dead = next((env.run_dir / "events").glob(f"{golden1.stems['events']}.jsonl"))
     lines = dead.read_bytes().splitlines(keepends=True)
     dead.write_bytes(b"".join(lines[:-1]))
     assert any(f.code == "HB-LED-002" for f in views.verify(env.run_dir)), "a cut dead segment must fail verify"
+
+
+def test_the_resume_opens_new_segments_and_never_the_dead_one(tmp_path):
+    """CR47-5 (M-WRITEOLD), without the golden fixture (a mutant that reopens the dead file breaks the fixture itself, an
+    ERROR no named test can FAIL): the factory creates -r<NNN> beside the dead segment and leaves its bytes alone."""
+    first = engine.open_engine_segments(tmp_path, 0)
+    for fact, writer in first.items():
+        writer.append({"kind": "x", "fact": fact})
+        writer.close()
+    dead = {p: hashlib.sha256(p.read_bytes()).hexdigest() for fact in engine.FACTS for p in (tmp_path / fact).glob("*.jsonl")}
+    second = engine.open_engine_segments(tmp_path, engine.next_ordinal(tmp_path))
+    for writer in second.values():
+        writer.close()
+    assert {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in dead} == dead, "a dead segment's bytes never change"
+    for fact in engine.FACTS:
+        stems = [p.stem for p in views.segment_paths(tmp_path, fact)]
+        assert len(stems) == 2 and stems[1] == f"{stems[0]}-r001", stems
 
 
 def test_abandoned_set_equals_unsealed_engine_facts(golden1, tmp_path):

@@ -45,7 +45,8 @@
   "replace": "return {fact: ledger.SegmentWriter.reopen(next((run_dir / fact).glob(\"engine-*.jsonl\"))) for fact in FACTS}",
   "tests": [
    "tests/test_resume.py::test_abandoned_marker_pins_head",
-   "tests/test_resume.py::test_resume_of_a_resume[W13]"
+   "tests/test_resume.py::test_resume_of_a_resume[W13]",
+   "tests/test_resume.py::test_the_resume_opens_new_segments_and_never_the_dead_one"
   ]
  },
  {
