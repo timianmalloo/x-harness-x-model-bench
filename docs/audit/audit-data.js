@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T14:30:38Z",
+  "generated": "2026-10-06T16:45:02Z",
   "audit": [
     {
       "actor": null,
@@ -105589,6 +105589,34 @@ window.AUDIT_DATA = {
       "tier": "T2",
       "started_at": "2026-10-06T14:15:33Z",
       "duration_seconds": 905.0
+    },
+    {
+      "id": "al-01M491NDD9623540HRM9F9M8EF",
+      "shortname": "x-retier",
+      "datetime": "2026-10-06T16:45:02Z",
+      "session": "x-retier-e1e4",
+      "prompt": "X-RETIER: re-tier D1 and verdicts coverage tests into a stamp-gated tier; -n 4 per-join recount",
+      "summary": "Added @pytest.mark.stamped (21 slow D1/verdicts tests), a separate stamped digest/stamp (gate digest + verdicts/stats/power/errors; gate ring not retriggered), --check-stamped/--renew-stamped, import-allowlist control, runbook docs/runbooks/test-tiers.md, join.json recount -n 4. Finding: addopts already excludes slow so per-join recount never ran stamped tests; -m in join.json is forbidden by test_join_contract.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "stamped marker + own stamp + control + runbook + join.json -n 4",
+      "done_when": "gates green, timings measured",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-06T15:10:09Z",
+      "duration_seconds": 5693.0,
+      "git": {
+        "sha": "74433ac464743a48d990b1973c01f81ccee7c141",
+        "short": "74433ac46",
+        "branch": "build/eval-x-retier",
+        "pushed": null
+      }
     }
   ],
   "changes": [
