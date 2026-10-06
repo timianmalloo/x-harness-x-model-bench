@@ -9262,6 +9262,13 @@ window.DOCS_INDEX = {
       "artifactId": "plan-eval-x-j1e"
     },
     {
+      "id": "surface-plans-eval-x-k1a",
+      "path": "docs/plans/eval-x-k1a.html",
+      "title": "Eval X K1A",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact."
+    },
+    {
       "id": "surface-case-study",
       "path": "docs/case-study.html",
       "title": "From Specification to Implementation: An AI-Forward Case Study",
