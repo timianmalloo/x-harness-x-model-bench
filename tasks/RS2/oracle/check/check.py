@@ -31,6 +31,7 @@ class Fake:
     def __init__(self):
         self.batches, self.applied, self.effects, self.requests, self.schedule, self.rest = {}, [], 0, [], [], "ok"
         self.seen = 0
+        self.dup_deliveries = 0                 # deliveries that applied a record already applied (idempotency_violations)
 
     def arm(self, schedule, rest):
         self.schedule, self.rest, self.seen = list(schedule), rest, 0
@@ -66,6 +67,8 @@ class Fake:
             accepted = self.batches[batch_id]
         else:
             accepted = len(records)
+            if any(r in self.applied for r in records):
+                self.dup_deliveries += 1        # one delivery counts once, however many of its records repeat
             self.applied.extend(records)
             self.effects += 1
             if batch_id is not None:
@@ -197,7 +200,7 @@ def run_probe(ctx, case, evidence, violations):
             if host is not None:
                 host.close()
             close()
-    violations.append(len(fake.applied) - len(set(fake.names())))   # a record the collector applied more than once
+    violations.append(fake.dup_deliveries)      # deliveries that re-applied a record (CR47-8); a replayed batch id applies nothing
     evidence[case["id"]] = {"clause": clause, "batch_ids": [r["batch_id"] for r in fake.requests],
                             "calls": [{"ms": c.ms, "requests": c.requests, "effects": c.effects, "ok": c.ok} for c in calls]}
     return "passed" if clause is None else "failed"

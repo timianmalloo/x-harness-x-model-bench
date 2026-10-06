@@ -281,10 +281,10 @@ def test_each_variant_passes_the_hidden_tests_and_flips_exactly_its_cases_and_cl
         assert flipped(got) == PREDICTED[name], (name, got["outcomes"], got["clauses"], got["calls"])
 
 
-def test_every_case_has_a_flipping_variant_and_batchidattempt_counts_two_violations(base):
+def test_every_case_has_a_flipping_variant_and_batchidattempt_counts_five_duplicate_deliveries(base):
     assert {c for flips in PREDICTED.values() for c in flips} == set(CASES)
     assert check_run(base, "batchidattempt", apply_edits(overlay("reference"), read_literal(TASK / "oracle" / "variants.py", "VARIANTS")["batchidattempt"]))[
-        "measures"] == {"idempotency_violations": 10}
+        "measures"] == {"idempotency_violations": 5}   # was 10 per record (part 6); CR47-8 counts deliveries
 
 
 def test_a_delivery_that_reapplies_records_counts_one_not_one_per_record(base):
