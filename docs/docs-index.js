@@ -3642,7 +3642,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "c2ee1c2cb82c0eb2c1986915d883410898b43527715dae9d0a2e61d8c6a36977"
+      "sourceSha256": "a4358621c550c308c63a8a6a6af58a6c34dd8b473851bee33bdcf425a2545b5d"
     },
     {
       "id": "audit-log",
@@ -4667,6 +4667,40 @@ window.DOCS_INDEX = {
         }
       ],
       "sourceSha256": "6b80966a85b0a4a931d0151980cf387be0b978c66c2ba4770b70209731d6a592"
+    },
+    {
+      "id": "plan-eval-x-j1d",
+      "path": "docs/plans/eval-x-j1d.md",
+      "title": "X-J1d readers and conformance dispatch",
+      "type": "doc",
+      "status": "active",
+      "owner": "x-j1d-e1e4",
+      "phase": "",
+      "reviewBy": "2026-11-05",
+      "reviewSuggested": [],
+      "summary": "J1d readers and conformance execution graph with red-first proof and native context checkpoints.",
+      "tags": [
+        "evaluation",
+        "coordination"
+      ],
+      "links": [
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "X-J1d execution graph",
+          "mermaid": "flowchart LR\n B --> K1 --> G\n B --> K2 --> G\n B --> K3 --> S --> K4 --> G --> H\n S --> H"
+        }
+      ],
+      "sourceSha256": "00e5cc89fc4c70ca4d4730cb89722da04ebcc8d5eadf9b907c389f535174a2a7"
     },
     {
       "id": "proof-phase2",
@@ -9006,6 +9040,14 @@ window.DOCS_INDEX = {
       "description": "Inspect a rendered design or design-language preview."
     },
     {
+      "id": "surface-design-run-lifecycle-model",
+      "path": "docs/design/run-lifecycle-model.html",
+      "title": "Run Lifecycle Model",
+      "kind": "design-preview",
+      "description": "Inspect a rendered design or design-language preview.",
+      "artifactId": "design-run-lifecycle-model"
+    },
+    {
       "id": "surface-proposals-benchmark-state-and-target",
       "path": "docs/proposals/benchmark-state-and-target.html",
       "title": "Benchmark: state and target",
@@ -9070,6 +9112,14 @@ window.DOCS_INDEX = {
       "artifactId": "plan-eval-x-j1c"
     },
     {
+      "id": "surface-plans-eval-x-j1d",
+      "path": "docs/plans/eval-x-j1d.html",
+      "title": "Eval X J1D",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-j1d"
+    },
+    {
       "id": "surface-case-study",
       "path": "docs/case-study.html",
       "title": "From Specification to Implementation: An AI-Forward Case Study",
@@ -9116,5 +9166,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "0cf7730359adfdc123b866f3a544f645cc832564754a8be1e0d9d9a1431fd4df"
+  "graphSha256": "0bdaa366e81b8748e199cecf793c8076d0f64ef24ce0e85755c898552b02445d"
 };

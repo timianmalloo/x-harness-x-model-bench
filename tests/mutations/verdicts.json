@@ -54,6 +54,5 @@
   {"name": "NA primary guard counts every exclusion", "file": "src/harness_bench/verdicts.py", "find": "if is_na:", "replace": "if True:", "tests": ["tests/test_verdicts.py::test_one_blocked_cell_shows_excluded_1"]},
   {"name": "excluded cells dropped", "file": "src/harness_bench/verdicts.py", "find": "excluded.append((cell.cell_id, reason))", "replace": "pass", "tests": ["tests/test_verdicts.py::test_one_blocked_cell_shows_excluded_1", "tests/test_verdicts.py::test_check_tampered_is_listed_not_dropped"]},
   {"name": "second cell for a half allowed", "file": "src/harness_bench/verdicts.py", "find": "if key in ids:", "replace": "if False:", "tests": ["tests/test_verdicts.py::test_collect_refuses_a_second_cell_for_the_same_half"]},
-  {"name": "legacy pack label refused", "file": "src/harness_bench/verdicts.py", "find": "(?:arm|pack)-", "replace": "arm-", "tests": ["tests/test_verdicts.py::test_collect_reads_task_and_rep_from_either_label_form[pack]"]},
   {"name": "non-binary collect guard deleted", "file": "src/harness_bench/verdicts.py", "find": "if primary.value not in (0, 1):", "replace": "if False:", "tests": ["tests/test_verdicts.py::test_collect_refuses_a_non_binary_primary"]}
 ]

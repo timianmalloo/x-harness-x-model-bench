@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Eval X J1D</title><style>
+:root { color-scheme: light dark; --bg:#f7f5ef; --panel:#fff; --text:#20201d;
+  --muted:#66645f; --line:#d9d5ca; --accent:#3157a4; --code:#f0eee7; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#171816; --panel:#20221f; --text:#f2f1eb; --muted:#b8b6ae;
+    --line:#3d403a; --accent:#8fb0ff; --code:#292c27; }
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text);
+  font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { width:min(920px,calc(100% - 32px)); margin:32px auto; padding:40px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+h1,h2,h3,h4,h5,h6 { line-height:1.2; margin:1.5em 0 .55em; }
+h1 { margin-top:0; font-size:2.2rem; } h2 { border-bottom:1px solid var(--line); padding-bottom:.3em; }
+a { color:var(--accent); } code { background:var(--code); padding:.12em .35em; border-radius:4px; }
+pre { overflow:auto; padding:16px; background:var(--code); border-radius:8px; }
+pre code { padding:0; } blockquote { margin:1em 0; padding:.2em 1em; color:var(--muted);
+  border-left:4px solid var(--line); }
+table { width:100%; border-collapse:collapse; margin:1em 0; display:block; overflow:auto; }
+th,td { padding:.55em .75em; border:1px solid var(--line); text-align:left; vertical-align:top; }
+th { background:var(--code); } hr { border:0; border-top:1px solid var(--line); }
+.source { color:var(--muted); font-size:.9rem; margin-bottom:2rem; }
+@media (max-width:640px) { main { width:100%; margin:0; padding:24px 18px; border:0; border-radius:0; } }
+</style></head><body><main><div class="source">Rendered from eval-x-j1d.md</div><h1>X-J1d execution graph</h1>
+<p>Goal: deliver snapshot-aware readers, explicit task and repetition identity, turn-keyed lifecycle conformance, and frozen plan turns in the assigned worktree. The binding compiled dispatch is <code>al-01M474MM5JDCKN02JD02WHYRFT</code>. Base: <code>2c4e2204</code>, the integration head after the J1c join. Verified: the required ancestor, continuation markers, driver spy and W0 revision are present. The skill&#x27;s referenced <code>docs/knowledge/graph-and-loop-engineering/</code> and graph id <code>kb-graph-and-loop-engineering</code> are absent in this checkout (file and id scans). The execution standard is read from <code>.claude/knowledge/execution-graph-optimization.md</code>; the plan links to the installed binding contracts rather than a missing graph node.</p>
+<table><thead><tr><th>Node</th><th>Goal and inputs</th><th>Exit oracle</th><th>Tier / Capability</th><th>Dependency</th></tr></thead><tbody><tr><td>B</td><td>Validate base and record all J1d red assertions</td><td>Required base checks and 200 guard tests pass; runxfail evidence retained</td><td>T0 / Deterministic mechanics</td><td>none</td></tr><tr><td>K1</td><td>Read committed snapshots using landed archive contracts</td><td>T-VER tests and real RT-1/RT-2 controls pass</td><td>T2 / Reasoning</td><td>B, data</td></tr><tr><td>K2</td><td>Project task and repetition from plan cells</td><td>Label/fields agree; every constructor swept</td><td>T2 / Reasoning</td><td>B, data</td></tr><tr><td>K3</td><td>Extend landed TABLE entries and replay by turn</td><td>T-LIF rules, GOOD, SEEDED, engine replay pass</td><td>T2 / Reasoning</td><td>B, data</td></tr><tr><td>S</td><td>Measure context at lifecycle commit</td><td>K4 allowed only at &lt;=110k; otherwise named hand-back</td><td>T0 / Deterministic mechanics</td><td>K3, decision</td></tr><tr><td>K4</td><td>Freeze LF-normalized prompts with checked hashes</td><td>T-PLAN and T-WIRE pass</td><td>T2 / Reasoning</td><td>S, decision</td></tr><tr><td>G</td><td>Run R-104 named tests, five mutation files, lint and graph validation</td><td>Exit status and result state inspected per command</td><td>T0 / Deterministic mechanics</td><td>K1, K2, K3, K4, data</td></tr><tr><td>H</td><td>Record native model, usage, checkpoints and owner evidence</td><td>Audit entry and named-path commits available</td><td>T0 / Deterministic mechanics</td><td>G or S, data</td></tr></tbody></table>
+<pre><code class="language-mermaid">flowchart LR
+ B --&gt; K1 --&gt; G
+ B --&gt; K2 --&gt; G
+ B --&gt; K3 --&gt; S --&gt; K4 --&gt; G --&gt; H
+ S --&gt; H</code></pre>
+<p>All verification and audit nodes are immovable floors. Execution width is one, as authorized. K1 and K2 share views.py; separate named-path commits preserve review boundaries. The surface list is archive facts and events → views keys and verification → CellView → verdicts; turn events → TABLE/replay → mapping rows; task prompts → frozen plan → confirmed reader → CLI engine wiring. The existing domain grain is one archive file per cell, archive attempt, snapshot and path, and one event per cell, kind and turn. No second archive identity or hash producer is introduced.</p>
+<p>Before/after: eight nodes, width one, no removed floors. Work and span in seconds are not recorded: no comparable measurement supports an estimate. Serial execution makes the scheduled span equal to work. Optimization groups red-base evidence and keeps each green commit&#x27;s focused proof local. The Simplifier and Test Architect lenses require existing helper reuse and assertion-based red evidence; independent clearance remains the Leader&#x27;s join gate.</p>
+<p>Budget: 3,300 seconds, within X-J1&#x27;s 320-call allocation. Each verification loop has remaining named failures as its decreasing variant, zero as floor, passing assertions as exit, and the dispatch deadline as circuit breaker. No retry on transport failure. Context is sampled from the session&#x27;s native last token_count before K-items, gates and long reads. No K-item above 120k; hand back after K3 unless &lt;=110k; no new edit or gate at 170k. Unreadable context is not recorded and requires the K3 hand-back. Open gates remain explicitly open.</p>
+<p>Planned versus actual evidence is recorded in the closing audit entry, including wall-clock, native usage, K-item context samples, rework and open items. This plan is create-only under the dispatch; Markdown is canonical and HTML is its view.</p></main></body></html>

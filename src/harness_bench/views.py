@@ -55,7 +55,7 @@ KEYS = {  # ADR-0006 as amended: the key of one row of each fact
     "model_calls": ("run_id", "extraction_id", "principal", "native_session_id", "native_ordinal", "model"),
     "tool_calls": ("run_id", "extraction_id", "cell_id", "native_session_id", "native_ordinal"),
     "turn_usage": ("run_id", "cell_id", "attempt", "model"),
-    "archive_files": ("run_id", "cell_id", "archive_attempt", "path"),
+    "archive_files": ("run_id", "cell_id", "archive_attempt", "snapshot", "path"),
     "scores": ("run_id", "grading_id", "cell_id", "metric_id"),
     "verdict_uses": ("run_id", "grading_id", "cell_id", "item_id", "judge_or_matcher"),  # Amendment 3
 }
@@ -109,6 +109,8 @@ class Measure:
 @dataclass
 class CellView:
     cell_id: str
+    task: str
+    rep: int | None
     label: str
     combo: str
     pack: str
@@ -157,7 +159,8 @@ def _refuse_duplicates(facts: dict[str, list[dict]]) -> None:
     for fact, key in KEYS.items():
         keys: set[tuple] = set()
         for r in facts[fact]:
-            k = tuple(r.get(f) for f in key)
+            k = tuple(archive.snapshot_of(r) if fact == "archive_files" and f == "snapshot" else r.get(f)
+                      for f in key)
             if k in keys:
                 raise BenchError("HB-LED-003", f"duplicate {fact} key {dict(zip(key, k, strict=True))}")
             keys.add(k)
@@ -529,7 +532,7 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
                                         executed)
     cause = Cause[outcome["cause"]] if outcome and outcome.get("cause") else None
     return CellView(
-        cell_id=cid, label=cell.get("label", cid), combo=cell["combo"], pack=cell_arm(cell), harness=cell["harness"], model=cell["model"],
+        cell_id=cid, task=cell["task"], rep=cell["rep"], label=cell.get("label", cid), combo=cell["combo"], pack=cell_arm(cell), harness=cell["harness"], model=cell["model"],
         outcome=state, cause=cause.label if cause else None,
         code=cause.code if cause else None, validity=validity, validity_code=validity_code,
         wall_ms=wall, model_ms=model, tool_ms=tool, idle_ms=idle,
@@ -689,7 +692,8 @@ def verify(run_dir: Path) -> list[Finding]:
         if e["kind"] != "cell.archived":
             continue
         cid, attempt = e["cell_id"], e["archive_attempt"]
-        cell_rows = [r for r in files if r["cell_id"] == cid and r["archive_attempt"] == attempt]
+        cell_rows = [r for r in files if r["cell_id"] == cid and r["archive_attempt"] == attempt
+                     and archive.snapshot_of(r) == "final"]
         if archive.archive_hash(cell_rows) != e["archive_hash"]:
             out.append(Finding("HB-LED-005", "error", f"{cid}: archive_hash does not match its archive_files rows"))
             continue
@@ -698,4 +702,17 @@ def verify(run_dir: Path) -> list[Finding]:
             archive.verify(folder, cell_rows)
         except BenchError as exc:
             out.append(Finding("HB-LED-005", "error", f"{cid}: {exc.message}"))
+    for e in rows(run_dir, "events"):
+        if e["kind"] != "cell.turn_snapshot_archived":
+            continue
+        cid, turn = e["cell_id"], e["turn"]
+        snapshot_rows = [r for r in files if r["cell_id"] == cid and archive.snapshot_of(r) == f"turn-{turn}"]
+        if (not snapshot_rows or archive.archive_hash(snapshot_rows) != e["snapshot_hash"]
+                or len(snapshot_rows) != e["files"] or sum(r["size"] for r in snapshot_rows) != e["bytes"]):
+            out.append(Finding("HB-LED-008", "error", f"{cid}: turn-{turn} snapshot rows do not match its event"))
+            continue
+        try:
+            archive.verify(archive.snapshot_folder(run_dir, cid, turn), snapshot_rows)
+        except BenchError as exc:
+            out.append(Finding("HB-LED-008", "error", f"{cid}: turn-{turn}: {exc.message}"))
     return out

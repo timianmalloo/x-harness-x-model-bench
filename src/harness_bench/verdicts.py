@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import hashlib
 import math
-import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from decimal import ROUND_HALF_EVEN, Context, Decimal, localcontext
@@ -139,16 +138,8 @@ def statement_for(label: VerdictLabel, treat: str, ref: str, ratio: Ratio | None
 # ---------------------------------------------------------------- collect
 
 def _task_rep(cell, arm: str) -> tuple[str, int]:
-    """(task, rep) from the cell's label: `<task>.<combo>.arm-<arm>.r<rep>`, or the legacy `pack-` form.
-
-    assume: CellView carries no task or rep field, so the label is the only source. Confirm: the tests build
-    labels with plan.Cell.label, and seam request req-01M45371QP0AMN0BGPSEYS1BN0 asks for the fields.
-    Breaks if false: HB-USR-002 on an unparseable label, never a wrong pair.
-    """
-    found = re.fullmatch(rf"(?P<task>.+)\.{re.escape(cell.combo)}\.(?:arm|pack)-{re.escape(arm)}\.r(?P<rep>\d+)", cell.label)
-    if found is None:
-        raise BenchError("HB-USR-002", f"cell {cell.cell_id}: label {cell.label!r} names no task and repetition")
-    return found["task"], int(found["rep"])
+    """Compatibility accessor for gate readers; identity is projected from the plan."""
+    return cell.task, cell.rep
 
 
 def _reason(cell, admitted: bool) -> tuple[str, bool] | None:
@@ -182,7 +173,7 @@ def collect(cells: Sequence, spec: VerdictSpec) -> tuple[list[Pair], list[tuple[
         arm = plan.cell_arm(vars(cell))
         if arm not in (ref, treat):
             continue
-        task, rep = _task_rep(cell, arm)
+        task, rep = cell.task, cell.rep
         key = (task, rep, arm)
         if key in ids:
             raise BenchError("HB-USR-002", f"cells {ids[key]} and {cell.cell_id} are both {task} rep {rep} arm {arm}")

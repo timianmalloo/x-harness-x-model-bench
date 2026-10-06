@@ -40,6 +40,10 @@ NO_ARCHIVE_WHILE_LIVE = "NoArchiveWhileLive: archive after the outcome, with no 
 ARCHIVED_CELLS_GET_GRADED = "ArchivedCellsGetGraded"
 GRADED_ONCE_PER_PASS = "GradedOncePerPass"
 ARCHIVE_KINDS = ("cell.archived", "cell.archive_failed")
+PROMPT_ONCE_PER_TURN = "PromptOncePerTurn"
+SNAPSHOT_BEFORE_NEXT_TURN = "SnapshotBeforeNextTurn"
+CRASHED_TURN_PREDICATE = "CrashedTurnPredicate"
+TURN_KINDS = ("cell.prompt_sent", "cell.turn_ended", "cell.turn_snapshot_archived")
 
 
 @dataclass(frozen=True)
@@ -50,6 +54,7 @@ class Transition:
     after_rule: str = ""  # ... else this guard is named
     not_after: tuple[str, ...] = ()  # this cell's transitions it may not follow ...
     not_after_rule: str = ""  # ... else this guard is named
+    turn_keyed: bool = False
 
 
 TABLE: dict[str, Transition] = {
@@ -65,11 +70,12 @@ TABLE: dict[str, Transition] = {
                                    after=("attempt.process_started", "attempt.session_opened"),
                                    after_rule="PersistPromptSent needs StartCell and an open session",
                                    not_after=("attempt.process_ended", "cell.outcome"),
-                                   not_after_rule="NoPromptAfterOutcome: no prompt once the process ended or the outcome is in"),
+                                   not_after_rule="NoPromptAfterOutcome: no prompt once the process ended or the outcome is in",
+                                   turn_keyed=True),
     "cell.turn_ended": Transition("TurnEnd", "engine", after=("cell.prompt_sent",),
-                                  after_rule="turn_ended follows its prompt_sent"),
+                                  after_rule="turn_ended follows its prompt_sent", turn_keyed=True),
     "cell.turn_snapshot_archived": Transition("SnapRecord", "engine", after=("cell.turn_ended",),
-                                              after_rule="SnapshotAfterTurnEnd"),
+                                              after_rule="SnapshotAfterTurnEnd", turn_keyed=True),
     "attempt.process_ended": Transition("CellExits / CellDies (confirmed)", "engine", after=("attempt.process_started",),
                                         after_rule="process_ended after process_started"),
     "cell.outcome": Transition("RecordExit / StartFails", "engine"),
@@ -95,6 +101,7 @@ ENGINE_TRANSITIONS = frozenset(k for k, t in TABLE.items() if t.writer == "engin
 RULES = (UNMAPPED, WRITE_INTENT_ONCE, NO_LAUNCH_AFTER_STOP, CONTROL_APPLIED_ONCE, RUN_STOPPED_ONCE,
          NO_DECISION_AFTER_STOP, DECISION_RESOLVED_ONCE, RESOLVED_AFTER_OPENED, NO_LAUNCH_WHILE_DECISION_OPEN,
          FOLLOWS_INTENT, AT_MOST_ONCE, PARALLELISM_BOUND,
+         PROMPT_ONCE_PER_TURN, SNAPSHOT_BEFORE_NEXT_TURN, CRASHED_TURN_PREDICATE,
          NO_OUTCOME_WHILE_RUNNING, NO_ARCHIVE_WHILE_LIVE, ARCHIVED_CELLS_GET_GRADED, GRADED_ONCE_PER_PASS,
          *sorted({r for t in TABLE.values() for r in (t.after_rule, t.not_after_rule) if r}))
 
@@ -116,7 +123,7 @@ def check_writer(kind: str | None, writer: str) -> None:
 
 
 def replay(events: list[dict], parallelism: int, scores: list[dict] = ()) -> None:
-    seen: dict[str, list[str]] = defaultdict(list)
+    seen: dict[str, list[str | tuple[str, int]]] = defaultdict(list)
     running: set[str] = set()
     stopped = False
     run_stopped = False
@@ -172,12 +179,25 @@ def replay(events: list[dict], parallelism: int, scores: list[dict] = ()) -> Non
                 fail(cell, NO_LAUNCH_WHILE_DECISION_OPEN, kind)
         elif "cell.launch_intent" not in done and not skip:  # the intent is the only first transition but a skip
             fail(cell, FOLLOWS_INTENT, kind)
-        if kind in done:  # a second intent has already failed above
-            fail(cell, AT_MOST_ONCE, kind)
-        if any(k not in done for k in t.after):
+        turn = e.get("turn", 1)
+        key = (kind, turn) if t.turn_keyed else kind
+        if key in done:  # a second intent has already failed above
+            fail(cell, PROMPT_ONCE_PER_TURN if kind == "cell.prompt_sent" else AT_MOST_ONCE, kind)
+        if any(((k, turn) if t.turn_keyed and k in TURN_KINDS else k) not in done for k in t.after):
             fail(cell, t.after_rule, kind)
         if any(k in done for k in t.not_after):
             fail(cell, t.not_after_rule, kind)
+        if kind == "cell.prompt_sent" and turn > 1 and ("cell.turn_snapshot_archived", turn - 1) not in done:
+            fail(cell, SNAPSHOT_BEFORE_NEXT_TURN, kind)
+        if kind == "cell.turn_snapshot_archived" and ("cell.prompt_sent", turn + 1) in done:
+            fail(cell, t.after_rule, kind)
+        if kind == "cell.outcome" and e.get("code") in {"HB-CELL-118", "HB-CELL-119"}:
+            prompts = {n for k, n in (r for r in done if isinstance(r, tuple)) if k == "cell.prompt_sent"}
+            ended = {n for k, n in (r for r in done if isinstance(r, tuple)) if k == "cell.turn_ended"}
+            snapshots = {n for k, n in (r for r in done if isinstance(r, tuple)) if k == "cell.turn_snapshot_archived"}
+            waiting = prompts <= ended and any(n in snapshots and n + 1 not in prompts for n in ended)
+            if (e["code"] == "HB-CELL-119") != waiting:
+                fail(cell, CRASHED_TURN_PREDICATE, kind)
         if kind == "attempt.process_started":
             running.add(cell)
             if len(running) > parallelism:
@@ -188,7 +208,7 @@ def replay(events: list[dict], parallelism: int, scores: list[dict] = ()) -> Non
             fail(cell, NO_OUTCOME_WHILE_RUNNING, kind)
         if kind in ARCHIVE_KINDS and cell in running:
             fail(cell, NO_ARCHIVE_WHILE_LIVE, kind)
-        done.append(kind)
+        done.append(key)
     graded: set[tuple[str, str, str]] = set()
     for sc in scores:
         key = (sc["grading_id"], sc["cell_id"], sc["metric_id"])

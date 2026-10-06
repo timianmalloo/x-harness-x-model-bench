@@ -341,7 +341,7 @@
  {
   "name": "replay: second prompt allowed",
   "file": "src/harness_bench/lifecycle.py",
-  "find": "        if kind in done:  #",
+  "find": "        if key in done:  #",
   "replace": "        if False:  #",
   "tests": [
    "tests/test_lifecycle_conformance.py"
@@ -368,7 +368,7 @@
  {
   "name": "replay: order prerequisites ignored",
   "file": "src/harness_bench/lifecycle.py",
-  "find": "        if any(k not in done for k in t.after):\n",
+  "find": "        if any(((k, turn) if t.turn_keyed and k in TURN_KINDS else k) not in done for k in t.after):\n",
   "replace": "        if False:\n",
   "tests": [
    "tests/test_lifecycle_conformance.py"

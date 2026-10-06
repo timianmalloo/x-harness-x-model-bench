@@ -38,7 +38,7 @@ def test_ws_itself_is_never_treated_as_a_sibling_worktree_even_with_a_gitdir_mar
 def _cell(cid, task, combo, pack, rep, passed, tokens, validity="valid"):
     na = views.Measure(None, "not graded")
     return views.CellView(
-        cell_id=cid, label=f"{task}.{combo}.pack-{pack}.r{rep}", combo=combo, pack=pack, harness="claude-code",
+        cell_id=cid, task=task, rep=rep, label=f"{task}.{combo}.pack-{pack}.r{rep}", combo=combo, pack=pack, harness="claude-code",
         model="claude-sonnet-5", outcome="completed", cause=None, code=None, validity=validity, validity_code=None,
         wall_ms=na, model_ms=na, tool_ms=na, idle_ms=na,
         tokens={"claude-sonnet-5": {"uncached_input": tokens, "cache_read": 0, "cache_write": 0, "output": 0}},

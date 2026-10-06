@@ -60,7 +60,7 @@ def _cell(cell_id: str, task: str, *, score: Decimal | None = Decimal("0.8095"),
     if score is not None or reason is not None:
         scores["mutation_score"] = views.Measure(score, reason)
     return views.CellView(
-        cell_id=cell_id, label=f"{task}.c.pack-off.{cell_id}", combo="c", pack="off", harness="copilot",
+        cell_id=cell_id, task=task, rep=None, label=f"{task}.c.pack-off.{cell_id}", combo="c", pack="off", harness="copilot",
         model="gpt-6-sol", outcome="completed", cause=None, code=None, validity="valid", validity_code=None,
         wall_ms=na, model_ms=na, tool_ms=na, idle_ms=na, tokens=None, tokens_reason="not graded",
         scores=scores, evidence={"mutation_score": evidence} if evidence else {})

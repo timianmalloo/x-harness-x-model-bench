@@ -22,6 +22,10 @@ GOOD = [
     {"kind": "attempt.process_started", "cell_id": "a"},
     {"kind": "attempt.session_opened", "cell_id": "a"},
     {"kind": "cell.prompt_sent", "cell_id": "a"},
+    {"kind": "cell.turn_ended", "cell_id": "a", "turn": 1, "stop_reason": "end_turn", "next": "snapshot"},
+    {"kind": "cell.turn_snapshot_archived", "cell_id": "a", "turn": 1},
+    {"kind": "cell.prompt_sent", "cell_id": "a", "turn": 2},
+    {"kind": "cell.turn_ended", "cell_id": "a", "turn": 2, "stop_reason": "end_turn", "next": "final"},
     {"kind": "attempt.process_ended", "cell_id": "a"},
     {"kind": "cell.outcome", "cell_id": "a"},
     {"kind": "cell.archived", "cell_id": "a"},
@@ -83,8 +87,14 @@ SEEDED = {  # name -> (events, scores, the rule the replay must name)
     "an unmapped transition": (GOOD[:3] + [{"kind": "cell.relaunched", "cell_id": "a"}], [], "unmapped transition"),
     "prompt_sent before process_started (WriteIntent/StartCell order)":
         (_swap("attempt.process_started", "cell.prompt_sent"), [], "StartCell"),
-    "a second prompt (AtMostOnePrompt)":
-        (GOOD[:6] + [{"kind": "cell.prompt_sent", "cell_id": "a"}] + GOOD[6:], [], "AtMostOnePrompt"),
+    "a second prompt (PromptOncePerTurn)":
+        (GOOD[:6] + [{"kind": "cell.prompt_sent", "cell_id": "a"}] + GOOD[10:], [], "PromptOncePerTurn"),
+    "a second process start (at most once)":
+        (GOOD[:4] + [GOOD[3]], [], lifecycle.AT_MOST_ONCE),
+    "a next prompt with no snapshot (SnapshotBeforeNextTurn)":
+        (GOOD[:7] + [GOOD[8]], [], "SnapshotBeforeNextTurn"),
+    "a mid-turn crash classified between turns (CrashedTurnPredicate)":
+        (GOOD[:6] + [GOOD[10], {**GOOD[11], "code": "HB-CELL-119"}], [], "CrashedTurnPredicate"),
     "outcome before the process is confirmed gone (NoOutcomeWhileRunning)":
         (_swap("attempt.process_ended", "cell.outcome"), [], "NoOutcomeWhileRunning"),
     "archived before the outcome (NoArchiveWhileLive)": (_swap("cell.outcome", "cell.archived"), [], "NoArchiveWhileLive"),
@@ -96,7 +106,7 @@ SEEDED = {  # name -> (events, scores, the rule the replay must name)
     "a turn end with no prompt": (_cell("cell.launch_intent", "cell.turn_ended"), [], "turn_ended follows its prompt_sent"),
     "a snapshot with no turn end": (_cell("cell.launch_intent", "cell.turn_snapshot_archived"), [], "SnapshotAfterTurnEnd"),
     "prompt after the outcome (NoPromptAfterOutcome)":
-        (GOOD[:4] + [GOOD[4], GOOD[6], GOOD[7], {"kind": "cell.prompt_sent", "cell_id": "a"}], [], "NoPromptAfterOutcome"),
+        (GOOD[:4] + [GOOD[4], GOOD[10], GOOD[11], {"kind": "cell.prompt_sent", "cell_id": "a"}], [], "NoPromptAfterOutcome"),
     "launch after a stop (NoLaunchAfterStop)": ([GOOD[0], {"kind": "run.launch_stopped"}, GOOD[1]], [], "NoLaunchAfterStop"),
     "launch after a run stop (NoLaunchAfterStop)":
         ([GOOD[0], {"kind": "run.stopped", "code": "HB-RUN-006"}, GOOD[1]], [], "NoLaunchAfterStop"),
@@ -115,10 +125,10 @@ SEEDED = {  # name -> (events, scores, the rule the replay must name)
         ([GOOD[0]] + [{"kind": k, "cell_id": c} for c in ("a", "b") for k in ("cell.launch_intent", "attempt.process_started")],
          [], "ParallelismBound"),
     "a score for a cell not archived when its pass started (ArchivedCellsGetGraded)":
-        (GOOD[:8] + [{"kind": "grading.started", "grading_id": "g"}] + GOOD[8:],
+        (GOOD[:12] + [{"kind": "grading.started", "grading_id": "g"}] + GOOD[12:],
          [{"grading_id": "g", "cell_id": "a", "metric_id": "pass_at_1"}], "ArchivedCellsGetGraded"),
     "a cell scored twice in one pass (GradedOncePerPass)":
-        (GOOD[:10] + [{"kind": "grading.started", "grading_id": "g"}],
+        (GOOD[:14] + [{"kind": "grading.started", "grading_id": "g"}],
          [{"grading_id": "g", "cell_id": "a", "metric_id": "pass_at_1"}] * 2, "GradedOncePerPass"),
 }
 
