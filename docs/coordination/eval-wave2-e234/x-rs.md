@@ -15,6 +15,8 @@ summary: "X-RS authors tasks/RS1 and tasks/RS2 to W1-L section 9 (provisional on
 # X-RS: resilience tasks RS1, RS2
 
 > **WAITS** on SP-LB's operator run (`docs/notes/spike-s-lb-loopback.md`: not run). W1-L §9 is provisional on it; start only when its result has passed and merged. Until X-LB lands, develop `check.py` against a stand-in listener (W1-L §4 seam 3).
+>
+> **Unblocked (Coordinator #44, 2026-10-06):** the operator accepted SP-LB for this host ("B-2 / SP-LB closed: accepted for this host"; ADR-0018 Amendment 2). Authoring may start once `coord/eval-c44-p4b` is merged; the `ready` flips still wait for X-LB1's join. Compile `al-01M48WS6GT9JB35Z2K8XBQ8DFP` (session `x-rs-e1e4`, skill `new-bench-task`).
 
 **Harness** Claude Code sub-agent · `model: sonnet` (served `claude-sonnet-5-5`, R-91) · **session** `x-rs-e1e4` · **branch** `build/eval-x-rs` · **budget** 200 calls · 200k · 3 h per task · **skill** `/new-bench-task`.
 

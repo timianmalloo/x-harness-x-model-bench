@@ -27,6 +27,7 @@ summary: >-
 
 **Status counts:** controlled 13 · partially-controlled 7 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`. CAUSE-A is `observed` (2026-09-30).
 **Recurrence since last review:**
+- 2026-10-06 (Coordinator #44, `docs/coordination/coordinator-log/c44.md`): one candidate registered, SPIKE-B (an operator-run spike's measuring step depends on a host property it never reads, so on that host it measures nothing instead of naming the property). Two instances, both in `tools/spikes/s_lb_loopback.py`: the positive control cannot fire on a host with `NotifyOnListen` False (S-LB is INCONCLUSIVE; the operator accepted it for this host), and the operator prompt's `input()` crashes under Git Bash, where `isatty()` is true but stdin is EOF. OPER-A gains its resolution for S-J4: the operator waived it for now.
 - 2026-10-06 (Coordinator #43, `docs/coordination/coordinator-log/c43.md`): no new class. Three instances:
   - FLAKE-A: the K1a join recount failed once on `test_discriminate.py::test_a_leaked_temp_is_swept_before_the_write_and_never_by_a_reader` (HB-RDY-011) while a Codex worker loaded the host. It passed 3 of 3 alone. This node has now failed twice in this campaign. The load-repro tool is still owed.
   - GUARD-A (the design-side shape): W1-K places three grade-class reads in run-class `resume.py`. `views.completed` moved to `lifecycle.completed` (K1b). `views.verify` is injected through `EngineConfig` (the K1c compile). `resume.history` over `views.segment_rows` has no builder.
@@ -1168,6 +1169,8 @@ summary: >-
 - **Why it survives:** each "not run" is honest (GATE-A shape 2 is met), so the item never shows as a failure. The decision is the operator's, and no decision request carries it.
 - **Instances:**
   - `2026-10-06` (Coordinator #39): X-J1e did not run S-J4 (W1-J section 12; `793713d0`), because it needs the adapter builds on PATH, credentials and spend. The read point it would confirm, the first `session/update` of turn 1, stays an `assume:` in W1-J section 4.4. The operator's decision is pending.
+    - **Resolved by decision (2026-10-06 about 07:45, the operator in person; recorded by Coordinator #44):** "S-J4 is waived for now (adapter builds, credentials and spend)." W1-J section 12's S-J4 row says so. The waiver closes the decision, not the `assume:`: section 4.4's read point stays unconfirmed, and a wrong read point still breaks what section 4.4 names. The control worked as proposed: the item reached an operator-decision table (c39) and was decided there.
+  - `2026-10-06` (Coordinator #44): the same shape, decided on the spot. Spike S-LB (B-2) needed the operator at the screen; the operator ran it and accepted the INCONCLUSIVE result for this host (SPIKE-B; ADR-0018 Amendment 2).
 - **Control (proposed):** an item that is "not run" for lack of operator resources goes into the next hand-back's operator-decision table. The table names what the item confirms, what breaks if the `assume:` is false, and the cost to run it. W1-J section 12 now says "not run" with the reason (Coordinator #39). Rung: the coordinator log. Upgrade trigger: a second such item, or S-J4 still open when X-CV dispatches.
 - **Status:** `candidate`
 
@@ -1248,6 +1251,20 @@ summary: >-
   2. **The class (proposed):** an AST test requiring that every `write_section(...)` result is bound to a name and passed as `evidence=` in the same function. Owner: the next plan revision (test infrastructure; no worker owns it).
   - Rung: test (the instance) once turn 2 joins.
   - Upgrade trigger: a new check-less helper (X-LG's next strategies) or a second instance. Then the AST test lands.
+- **Status:** `candidate`
+
+### SPIKE-B: an operator-run spike's measuring step depends on a host property it never reads, so on that host it measures nothing instead of naming the property (candidate)
+- **Signature:** a spike that needs the operator present has a measuring step (a positive control, an operator prompt) that works only if the host has some property. The script never reads that property. On a host without it, the step yields nothing: the control cannot fire, or the prompt cannot read an answer. The verdict is then INCONCLUSIVE or a crash, and the operator's session is spent learning why, by hand.
+- **Why it survives:** the script is checked offline (the S-LB note's "checked offline (no socket)") and the bind and prompt paths are first exercised on the operator's run. The property looks universal on the author's machine: a firewall that is on "will show a dialog", and a stdin that is a tty "can be read".
+- **Instances:**
+  - `2026-10-06` (Coordinator #44, from the operator's run of S-LB, 07:44-07:59; result files read):
+    1. **The positive control cannot fire.** The S-LB pass rule needs the `0.0.0.0` control to show a dialog or add a rule (`docs/notes/spike-s-lb-loopback.md`). On this host `Get-NetFirewallProfile` shows `NotifyOnListen` False on Domain, Private and Public, so Windows never shows the listen dialog, and the control did not fire on two runs (`exchange_ok` true, `new_rules` `[]`). The verdict was `INCONCLUSIVE control did not fire`. The operator read the setting by hand and accepted the result for this host (ADR-0018 Amendment 2). The script does not read `NotifyOnListen`.
+    2. **The operator prompt crashes under Git Bash.** `tools/spikes/s_lb_loopback.py:110-111` calls `input()` when `sys.stdin.isatty()` is true. Under Git Bash `isatty()` is true but stdin is at EOF, so `input()` raises and the run ends before it writes its file. The operator's answers went in as `--dialog no`. Owner: the script's author session `splb-loopback-e1e4` (`73993060`); the fix is the Leader's to assign.
+- **Sweep (Coordinator #44, by grep over `tools/spikes/`):** only `s_lb_loopback.py` calls `input(` (`git grep -n "input(" -- tools/spikes` hits `:111` only). I did not sweep `tools/` outside `spikes/` or other operator prompts.
+- **Control (proposed):**
+  1. The spike reads the host property before it measures and writes it into each result file (here: each profile's `Enabled` and `NotifyOnListen`). On a host where the control cannot fire, `--mode report` says "the control cannot fire on this host: NotifyOnListen False", not a bare INCONCLUSIVE.
+  2. An operator prompt treats `EOFError` as "not recorded" (`dialog_seen: null`, so the verdict stays INCONCLUSIVE) and names the `--dialog` flag in the message. It never crashes before writing its file.
+  - Rung: register entry and the note's finding. Upgrade trigger: the next host that re-runs S-LB, or a second operator spike. Then both fixes land with a test that feeds the prompt an EOF stdin.
 - **Status:** `candidate`
 
 ---
