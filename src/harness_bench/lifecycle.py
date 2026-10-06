@@ -59,6 +59,7 @@ class Transition:
 
 TABLE: dict[str, Transition] = {
     "run.started": Transition("(run start: Init)", "engine"),
+    "run.resumed": Transition("Resume", "engine"),
     "cell.launch_intent": Transition("WriteIntent", "engine"),
     "cell.workspace_built": Transition("(internal progress)", "engine",
                                        not_after=("attempt.process_started",), not_after_rule="workspace before process"),
@@ -110,6 +111,16 @@ class ConformanceError(ValueError):
     pass
 
 
+def completed(events: list[dict]) -> bool:
+    """D-K5, the one definition: complete iff a completion row follows the last resume row (or no resume row exists)."""
+    for row in reversed(events):
+        if row["kind"] == "run.completed":
+            return True
+        if row["kind"] == "run.resumed":
+            return False
+    return False
+
+
 def is_cell_start(row: dict) -> bool:
     """The first prompt starts the cell clock; legacy rows have turn 1."""
     return row.get("turn", 1) == 1
@@ -126,7 +137,9 @@ def replay(events: list[dict], parallelism: int, scores: list[dict] = ()) -> Non
     seen: dict[str, list[str | tuple[str, int]]] = defaultdict(list)
     running: set[str] = set()
     stopped = False
+    stop_applied = False
     run_stopped = False
+    intents: dict[str, int] = defaultdict(int)
     applied_controls: set[str] = set()
     opened: set[str] = set()
     resolved: set[str] = set()
@@ -142,16 +155,20 @@ def replay(events: list[dict], parallelism: int, scores: list[dict] = ()) -> Non
             raise ConformanceError(f"{UNMAPPED} {kind!r} (not in the lifecycle table)")
         if kind == "run.launch_stopped":
             stopped = True
+        if kind == "run.resumed":
+            stopped = stop_applied  # a launch stop can clear; an actual stop cannot (D-K4/D-K10)
         if kind == "control.applied":
             uid = e["uuid"]
             if uid in applied_controls:
                 raise ConformanceError(f"{CONTROL_APPLIED_ONCE}: {uid}")
             applied_controls.add(uid)
+            if e.get("control") == "stop" and e.get("effect") == "applied":
+                stopped = stop_applied = True
         if kind == "run.stopped":
             if run_stopped:
                 raise ConformanceError(RUN_STOPPED_ONCE)
             run_stopped = True
-            stopped = True
+            stopped = stop_applied = True
         if kind == "decision.opened":
             if run_stopped:
                 raise ConformanceError(f"{NO_DECISION_AFTER_STOP}: {e['decision_id']}")
@@ -163,6 +180,8 @@ def replay(events: list[dict], parallelism: int, scores: list[dict] = ()) -> Non
             if did not in opened:
                 raise ConformanceError(f"{RESOLVED_AFTER_OPENED}: {did}")
             resolved.add(did)
+            if e.get("option") == "stop":
+                stopped = stop_applied = True
         if kind == "grading.started":
             archived_at_start[e["grading_id"]] = {c for c, d in seen.items() if "cell.archived" in d}
         cell = e.get("cell_id")
@@ -171,10 +190,16 @@ def replay(events: list[dict], parallelism: int, scores: list[dict] = ()) -> Non
         done = seen[cell]
         skip = kind == "cell.outcome" and e.get("outcome") == SKIPPED and not done  # never launched (design 8.3)
         if kind == "cell.launch_intent":
-            if done:
-                fail(cell, WRITE_INTENT_ONCE, kind)
             if stopped:
                 fail(cell, NO_LAUNCH_AFTER_STOP, kind)
+            if done:
+                if (intents[cell] != 1 or "cell.outcome" in done
+                        or any(isinstance(k, tuple) and k[0] == "cell.prompt_sent" for k in done)):
+                    fail(cell, WRITE_INTENT_ONCE, kind)
+                # R2: the old process is confirmed gone before a never-prompted cell is relaunched.
+                done.clear()
+                running.discard(cell)
+            intents[cell] += 1
             if opened - resolved:
                 fail(cell, NO_LAUNCH_WHILE_DECISION_OPEN, kind)
         elif "cell.launch_intent" not in done and not skip:  # the intent is the only first transition but a skip
@@ -204,6 +229,11 @@ def replay(events: list[dict], parallelism: int, scores: list[dict] = ()) -> Non
                 raise ConformanceError(f"{PARALLELISM_BOUND}: {len(running)} cells running > {parallelism}")
         if kind == "attempt.process_ended":
             running.discard(cell)
+        if kind == "cell.outcome" and isinstance(e.get("resume"), dict):
+            reconciliation = e["resume"]
+            if (reconciliation.get("segment_id") and isinstance(reconciliation.get("turn"), int)
+                    and reconciliation.get("phase") in {"mid-turn", "between-turns", "turn-complete"}):
+                running.discard(cell)  # resume records only after confirming the old process gone (D-K2)
         if kind == "cell.outcome" and cell in running:
             fail(cell, NO_OUTCOME_WHILE_RUNNING, kind)
         if kind in ARCHIVE_KINDS and cell in running:
