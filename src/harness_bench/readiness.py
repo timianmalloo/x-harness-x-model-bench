@@ -283,8 +283,20 @@ def _case_failures(spec: Mapping, add) -> None:
             safe_relpath(str(rel))
         except OverlayError as exc:
             add("cases.yaml app.paths", f"{rel!r} is not a relative path inside the deliverable ({exc})")
-    if spec.get("interface") != "in-process":
-        add("cases.yaml interface", f"{spec.get('interface')!r} is not built in E1 (loopback arrives in E4)")
+    interface = spec.get("interface")
+    if interface == "loopback":  # W0 s3: exactly one of shape (a) (start + config, no app) or shape (b) (an app, no start)
+        deliverable = spec.get("deliverable") or {}
+        shape_a = bool(deliverable.get("start") and deliverable.get("config")) and not spec.get("app")
+        shape_b = bool(spec.get("app")) and not deliverable.get("start")
+        if shape_a == shape_b:
+            add("cases.yaml interface", "loopback declares exactly one of shape (a) (deliverable.start and deliverable.config, no app) or shape (b) (an app, no deliverable.start)")
+        elif shape_a:
+            add("cases.yaml interface", "loopback shape (a) (the deliverable listens) is not built")
+        elif (spec.get("app") or {}).get("kind") != "callable":
+            add("cases.yaml app.kind", f"{(spec.get('app') or {}).get('kind')!r} is not callable (loopback shape (b))")
+        return
+    if interface != "in-process":
+        add("cases.yaml interface", f"{interface!r} is neither in-process nor loopback")
     if (spec.get("app") or {}).get("kind") not in APP_KINDS:
         add("cases.yaml app.kind", f"{(spec.get('app') or {}).get('kind')!r} is not callable or wsgi")
 
