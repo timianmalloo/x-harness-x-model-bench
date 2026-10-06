@@ -1,63 +1,46 @@
-"""Stand-in for `bench_check.listen` (W1-L section 4, seam 3) until X-LB1's real listener joins. Test fixture, never src/.
+"""Stand-in for X-LB1's `bench_check.listen` and `probe_host(case, sock)` until that work joins. Test fixture, never src/.
 
-`tests/test_rs1_task.py` appends this file's text to a copy of the real `grade/bench_check.py`, so RS1's `check.py` finds
-`bc.listen` in its own check copy. The real listener binds the literal 127.0.0.1 with SO_EXCLUSIVEADDRUSE and asserts
-`getsockname` (HB-CHK-005); this one binds `("127.0.0.1", 0)` and nothing more.
+`tests/test_rs1_task.py` appends this file's text to a copy of the real `grade/bench_check.py`, so RS1's `check.py` sees the
+interface X-LB1 built: `listen()` is a no-argument context manager yielding a bound `127.0.0.1:0` socket, and
+`probe_host(case, sock)` substitutes `{fake_url}` (http://127.0.0.1:<port>) in the frame's args and kwargs. The check owns
+the fake and accepts on the socket. K4 deletes this file and the append; `check.py` does not change.
 
-  assume: the real `listen` takes one handler and returns an object with `.url` and `.close()`, and `handle(method, path,
-          headers, body)` returns a dict: {"status", "json", "delay"?} | {"hang": True} | {"drop": True}.
-  confirm: X-LB1's merged `listen` (the ready K-item reads its signature and deletes this file).
-  breaks if false: check.py raises at `bc.listen(...)`, exit 5, and the RS1 test fails loudly.
+  assume: X-LB1's `listen()` and `probe_host(case, sock)` behave as the coordinator's seam answer says (not read in code).
+  confirm: the merged `bench_check.py` (K4 reads its signatures).
+  breaks if false: check.py raises at `bc.listen()` or `bc.probe_host(case, sock)`, exit 5, and the RS1 test fails loudly.
 """
 
+import contextlib as _contextlib
+import socket as _socket
 
-def listen(handle):
-    import http.server
-    import json
-    import threading
+_real_probe_host = probe_host   # noqa: F821 - defined above in the real bench_check text this file is appended to
 
-    stop = threading.Event()
 
-    class Handler(http.server.BaseHTTPRequestHandler):
-        def do_POST(self):
-            size = int(self.headers.get("Content-Length") or 0)
-            body = self.rfile.read(size)
-            headers = {k.lower(): v for k, v in self.headers.items()}
-            reply = handle("POST", self.path, headers, body)
-            if reply.get("drop"):
-                self.close_connection = True
-                return
-            if reply.get("hang"):
-                stop.wait(60)
-                return
-            if reply.get("delay"):
-                stop.wait(reply["delay"])
-            data = json.dumps(reply["json"]).encode()
-            self.send_response(reply["status"])
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(data)))
-            self.end_headers()
-            try:
-                self.wfile.write(data)
-            except OSError:
-                pass
+@_contextlib.contextmanager
+def listen():
+    sock = _socket.socket(_socket.AF_INET, _socket.SOCK_STREAM)
+    try:
+        sock.bind(("127.0.0.1", 0))
+        sock.listen(16)
+        yield sock
+    finally:
+        sock.close()
 
-        def log_message(self, *args):
-            pass
 
-    class Server(http.server.ThreadingHTTPServer):
-        allow_reuse_address = False
-        daemon_threads = True
+def _fill(value, url):
+    if isinstance(value, str):
+        return value.replace("{fake_url}", url)
+    if isinstance(value, list):
+        return [_fill(v, url) for v in value]
+    if isinstance(value, dict):
+        return {k: _fill(v, url) for k, v in value.items()}
+    return value
 
-    server = Server(("127.0.0.1", 0), Handler)
-    threading.Thread(target=server.serve_forever, daemon=True).start()
 
-    class Listener:
-        url = "http://127.0.0.1:%d" % server.server_address[1]
-
-        def close(self):
-            stop.set()
-            server.shutdown()
-            server.server_close()
-
-    return Listener()
+def probe_host(case, sock=None):
+    host = _real_probe_host(case)
+    if sock is not None:
+        url = f"http://127.0.0.1:{sock.getsockname()[1]}"
+        request = host.request
+        host.request = lambda frame: request(_fill(frame, url))
+    return host

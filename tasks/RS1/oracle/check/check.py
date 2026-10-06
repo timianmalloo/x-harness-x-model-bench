@@ -1,7 +1,7 @@
 """RS1 hidden check (W1-L 9.1, 9.2): seven fault cases against a check-owned ledger fake. Stdlib and bench_check only.
 
-The check never imports the deliverable. Each case starts one probe host and one fake on `bench_check.listen`, calls
-`post_event` through the host with the fake's URL, and decides every outcome itself from the raw response and the fake's
+The check never imports the deliverable. Each case starts one probe host and one fake on the socket `bench_check.listen()` yields, calls
+`post_event` through the host (which fills in the fake's URL), and decides every outcome itself from the raw response and the fake's
 counters. A case passes iff every clause holds; the clause that decides is the first to fail, in this order:
 time, requests, effect, result. Evidence is counts and key values, never a body.
 
@@ -29,7 +29,7 @@ class Fake:
         self.schedule, self.rest, self.seen = list(schedule), rest, 0
 
     def action(self):
-        n = self.seen
+        n = self.seen - 1                       # `handle` counts the request before it asks, so the first request is index 0
         if n < len(self.schedule):
             return self.schedule[n]
         return self.schedule[-1] if self.rest == "last" and self.schedule else "ok"
@@ -73,14 +73,52 @@ class Call:
         self.requests, self.effects = len(fake.requests) - r0, len(fake.events) - e0
 
 
-def fill(value, url):
-    if isinstance(value, str):
-        return value.replace("{fake_url}", url)
-    if isinstance(value, list):
-        return [fill(v, url) for v in value]
-    if isinstance(value, dict):
-        return {k: fill(v, url) for k, v in value.items()}
-    return value
+def serve(fake, sock):
+    """Accept on the bound socket and answer per the fake. Returns (stop, thread). Stdlib only; the fake decides every reply."""
+    import http.server
+    import threading
+
+    stop = threading.Event()
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def do_POST(self):
+            body = self.rfile.read(int(self.headers.get("Content-Length") or 0))
+            reply = fake.handle("POST", self.path, {k.lower(): v for k, v in self.headers.items()}, body)
+            if reply.get("drop"):
+                self.close_connection = True
+                return
+            if reply.get("hang"):
+                stop.wait(60)
+                return
+            if reply.get("delay"):
+                stop.wait(reply["delay"])
+            data = json.dumps(reply["json"]).encode()
+            self.send_response(reply["status"])
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            try:
+                self.wfile.write(data)
+            except OSError:
+                pass
+
+        def log_message(self, *args):
+            pass
+
+    class Server(http.server.ThreadingHTTPServer):
+        daemon_threads = True
+
+    server = Server(sock.getsockname(), Handler, bind_and_activate=False)
+    server.socket.close()
+    server.socket = sock                         # the listener's socket, already bound and listening
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+
+    def close():
+        stop.set()
+        server.shutdown()                        # the socket itself is closed by `listen`'s context manager
+
+    return close
 
 
 def clause_of(case, calls, fake, contract):
@@ -108,21 +146,22 @@ def clause_of(case, calls, fake, contract):
 
 def run_probe(ctx, case, evidence, violations):
     fake = Fake()
-    listener = bc.listen(fake.handle)
     host, calls = None, []
-    try:
-        host = bc.probe_host(case)
-        frame = fill(ctx.doc["call"], listener.url)
-        fake.arm(case["schedule"], case["rest"])
-        calls.append(Call(host, fake, frame))
-        if case.get("then") and not (calls[0].broken or calls[0].timed_out):
-            fake.arm(case["then"]["schedule"], case["then"]["rest"])   # the fault clears
+    with bc.listen() as sock:
+        close = serve(fake, sock)
+        try:
+            host = bc.probe_host(case, sock)
+            frame = ctx.doc["call"]                  # `{fake_url}` is substituted by the host
+            fake.arm(case["schedule"], case["rest"])
             calls.append(Call(host, fake, frame))
-        clause = clause_of(case, calls, fake, ctx.doc["fault_contract"])
-    finally:
-        if host is not None:
-            host.close()
-        listener.close()
+            if case.get("then") and not (calls[0].broken or calls[0].timed_out):
+                fake.arm(case["then"]["schedule"], case["then"]["rest"])   # the fault clears
+                calls.append(Call(host, fake, frame))
+            clause = clause_of(case, calls, fake, ctx.doc["fault_contract"])
+        finally:
+            if host is not None:
+                host.close()
+            close()
     violations.append(sum(max(0, c.effects - 1) for c in calls))
     evidence[case["id"]] = {"clause": clause, "keys": [r["key"] for r in fake.requests],
                             "calls": [{"ms": c.ms, "requests": c.requests, "effects": c.effects, "ok": c.ok} for c in calls]}
