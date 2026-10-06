@@ -151,6 +151,14 @@ def test_a_503_then_200_fake_passes_end_to_end_with_the_measured_span_and_reques
     assert seen(inp, "f-5xx")["requests"] == 2  # one 503, one 200, never a re-run
 
 
+def test_a_client_that_never_calls_the_fake_scores_failed_whatever_it_returns(tmp_path):
+    """The pass rule reads the fake's counters, not only the deliverable's answer (a fixture X-RS copies)."""
+    inp, s = run(tmp_path, [fault()], app=CLIENT | {"module": "lazy_client"}, files=("lazy_client.py",))
+    assert (seen(inp, "f-5xx")["requests"], seen(inp, "f-5xx")["effects"]) == (0, 0)
+    assert [c["outcome"] for c in result(inp)["cases"]] == ["failed"]
+    assert vals(s)["property_check_pass"] == (0, None)
+
+
 def test_fake_url_is_substituted_per_case_with_that_cases_own_port(tmp_path):
     inp, s = run(tmp_path, [fault("a-1"), fault("a-2")])
     assert vals(s)["fault_suite_pass"] == (Decimal("1.0000"), None)
