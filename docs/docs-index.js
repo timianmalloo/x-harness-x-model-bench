@@ -4677,6 +4677,39 @@ window.DOCS_INDEX = {
       "sourceSha256": "1f0229bc775fabc69428fd8a3e5789376c5afc97ae5ba7fd28af86deea4c5f53"
     },
     {
+      "id": "coordinator-log-c48",
+      "path": "docs/coordination/coordinator-log/c48.md",
+      "title": "Coordinator #48 hand-back (2026-10-06): the three -n 4 recount reds named by mechanism; X-FLAKE compiled; -n 4 stays",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-06",
+      "reviewSuggested": [],
+      "summary": "Coordinator #48 worked on coord/eval-c48-flake (base 5b45d1e2). The recount's WinError 32 is a code defect: make_writable re-calls once with no backoff, and the check's own working directory is still held when the final rmdir runs (measured, WIN-A delete shape). The four e2e walk reds are TIME-B: the walk registered with S1 not admitted, so a graded pilot value changed under load (Inferred from the assertion text). The one real-time bound on that path is the probe-host start bound, so DR-48-1 is drafted for the Owner. The false survivor is a load-caused setup ERROR, which CR47-14's verdict reads as \"survived\" (Inferred). X-FLAKE is compiled (Claude Code Sonnet, x-flake-e1e4). -n 4 stays; a --dist loadscope measurement is proposed for the operator.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c47",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "209d9dd7e2d2502472952c0fcf848a320493eeaa265120daeb36c966f8822d51"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4703,7 +4736,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b438679fa3f71969b1c7bab65c5c16e5e4aa68969b11dd68c65abca40ab5b4db"
+      "sourceSha256": "43c61070dde157fe547818f78efaa581d273f44a61bd9a880da189e008e5f370"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -9973,5 +10006,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "503570659cdbdb606a23a6e2e2dbf0e1c19795fb8fa9c8ef5d9b907513d357b3"
+  "graphSha256": "283b4ef7ab74825b8ca5c1f2e04820024ac2dddc423e760cead15f1887edff98"
 };
