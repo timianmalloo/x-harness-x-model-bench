@@ -190,5 +190,14 @@
   "tests": [
    "tests/test_discriminate.py::test_a_declared_case_timeout_on_the_naive_role_is_not_an_item"
   ]
+ },
+ {
+  "name": "the check-less variant clause item removed: a variant cell with no primary-row pointer no longer refuses the trial (CR47-10)",
+  "file": "src/harness_bench/discriminate.py",
+  "find": "items.append(f\"variant {name}: clauses are declared but property.json has no strategy.{prop} section (the pointer does not resolve)\")",
+  "replace": "pass",
+  "tests": [
+   "tests/test_discriminate.py::test_a_check_less_variant_with_no_primary_row_pointer_is_refused_by_its_declared_clause"
+  ]
  }
 ]

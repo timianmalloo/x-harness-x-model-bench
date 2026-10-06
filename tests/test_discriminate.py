@@ -651,3 +651,14 @@ def test_a_check_less_trial_with_a_flaky_final_tree_fails_on_a_hidden_test_disag
     assert err.value.code == "HB-RDY-011"
     assert "hidden tests disagree with pass_at_1 in" in str(err.value)
 
+
+
+def test_a_check_less_variant_with_no_primary_row_pointer_is_refused_by_its_declared_clause(tmp_path):
+    # CR47-10: the one path comparable_cells leaves open - a variant cell with no property_check_pass row, so no evidence
+    # pointer - is refused only by this item; without it the trial would write a record on evidence that does not exist
+    entry = {"clauses": {"property_check_pass": "the declared clause"}}
+    rec, items = discriminate._variant_record("v1", entry, "v1", {"v1": {}}, {}, False, {}, set(), {}, tmp_path, {},
+                                              "rework")
+    assert items == [("variant v1: clauses are declared but property.json has no strategy.rework section "
+                      "(the pointer does not resolve)")]
+    assert rec["clauses"] == {}
