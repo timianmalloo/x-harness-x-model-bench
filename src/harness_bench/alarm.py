@@ -12,7 +12,7 @@ from datetime import datetime
 from pathlib import Path
 
 from harness_bench import oslock, status, views
-from harness_bench.plan import DEFAULT_PARAMETERS, load_confirmed
+from harness_bench.plan import DEFAULT_PARAMETERS
 from harness_bench.resume import has_work
 
 
@@ -36,7 +36,7 @@ def check(
 ) -> AlarmResult | None:
     """HB-ALM-001 when work is left and the engine is not alive; HB-ALM-002 when it is alive and silent past `after_s`; else None."""
     status.require_known(run_dir)
-    plan = load_confirmed(run_dir)
+    plan = views.load(run_dir, any_kind=True).plan  # views owns the stored-plan read (test_discriminate's reader table)
     rows = [row for sid, segment in views.segment_rows(run_dir, "events") if sid.startswith(views.ENGINE_PREFIX) for row in segment]
     if not has_work(plan, rows):
         return None
