@@ -9562,6 +9562,41 @@ window.DOCS_INDEX = {
       "sourceSha256": "2102aa6dd5fdb3137bf1340f0de21ef73c568387caff286c7eb2946330da92a6"
     },
     {
+      "id": "proof-eval-campaign-convergence",
+      "path": "docs/proof/eval-campaign-convergence.md",
+      "title": "Proof: eval campaign convergence (X-CV)",
+      "type": "proof-pack",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Eval wave 2 · convergence",
+      "reviewBy": "2026-12-22",
+      "reviewSuggested": [],
+      "summary": "What X-CV proved before the ten final discrimination records: the ADR-0021 section 4 table is covered node by node, TLC --quick passes with every ADR-0015 section 7 invariant and NoLaunchAfterStop, the SM1 record mismatch has a measured cause, and the records table is waiting for the Leader.",
+      "tags": [
+        "proof",
+        "convergence",
+        "resume",
+        "tlc",
+        "discrimination"
+      ],
+      "links": [
+        {
+          "to": "design-eval-resume",
+          "rel": "relates-to"
+        },
+        {
+          "to": "brief-eval-x-cv",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "eeb37c28a123adc4f3040ec0e6b24c3530d58ac216b2dfad1fedcc53903857f6"
+    },
+    {
       "id": "proof-findings-t5",
       "path": "docs/proof/findings-T5.md",
       "title": "T5 findings: N5 spike (Codex host skill discovery)",
@@ -10018,6 +10053,14 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-enterprise-production-portfolio"
     },
     {
+      "id": "surface-proof-eval-campaign-convergence",
+      "path": "docs/proof/eval-campaign-convergence.html",
+      "title": "Eval Campaign Convergence",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "proof-eval-campaign-convergence"
+    },
+    {
       "id": "surface-plans-eval-x-crlf",
       "path": "docs/plans/eval-x-crlf.html",
       "title": "Eval X Crlf",
@@ -10176,5 +10219,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "159bc1c8d860eb3682e419fd51111c3323f5eb07830ea9e1d858c8e6b13a24fe"
+  "graphSha256": "f3346015bba370f36ae966e3bcf2a0322d2c46640f2d06988b0cb8d456a51a3a"
 };
