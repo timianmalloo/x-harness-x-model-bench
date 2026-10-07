@@ -376,3 +376,17 @@ def test_parse_refuses_a_malformed_cell_causes_ev18(root, tmp_path):
                    {**data, "cell_causes": {"b": "build changed"}}, {k: v for k, v in data.items() if k != "cell_causes"}):
         with pytest.raises(ValueError):
             status.parse(json.dumps(broken))
+
+
+def test_last_progress_ignores_segment_name_order(root, tmp_path):  # W1-K 6.1; M-NAMESORT
+    """`grade-...` sorts after every `engine-...`, so a name-sorted newest segment reads the stale old pass."""
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    newer, older = "2026-09-23T11:30:00.000Z", "2026-09-23T09:00:00.000Z"
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
+        ev.append({"kind": "run.resumed", "run_id": "r1", "segment_id": "engine-2", "recorded_at": newer})
+    with ledger.SegmentWriter.create(run_dir / "events", "grade-1") as gr:
+        gr.append({"kind": "grading.started", "recorded_at": older})
+        gr.seal()
+    last_progress_at = getattr(status, "last_progress_at", None)
+    assert last_progress_at is not None, "status.last_progress_at is not implemented yet (W1-K K3)"
+    assert last_progress_at(run_dir) == newer

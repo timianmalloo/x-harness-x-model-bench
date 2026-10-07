@@ -1459,3 +1459,30 @@ def test_a_regrade_gives_a_byte_identical_canonical_export(root, tmp_path):
     second = views.export(views.load(run_dir))
     assert first == second
     assert b"grade-" not in first  # the pass's identity is not part of the result
+
+
+def test_resume_history_per_segment(tmp_path):  # W1-K 2, R6.14a: derived per engine segment, never stored
+    run_dir = tmp_path / "runs" / "r1"
+    run_dir.mkdir(parents=True)
+
+    def seg(name, rows):
+        with ledger.SegmentWriter.create(run_dir / "events", name) as w:
+            for r in rows:
+                w.append(r)
+
+    done = lambda cid: [{"kind": "cell.outcome", "cell_id": cid, "outcome": "completed"},
+                        {"kind": "cell.archived", "cell_id": cid, "archive_attempt": 1}]
+    seg("engine-1", [{"kind": "run.started", "run_id": "r1"}, {"kind": "cell.launch_intent", "cell_id": "a"}, *done("a")])
+    reconciled = {"kind": "cell.outcome", "cell_id": "b", "outcome": "failed", "code": "HB-CELL-118",
+                  "resume": {"segment_id": "engine-1-r001", "turn": 1, "phase": "mid-turn", "rule": "C2"}}
+    seg("engine-1-r001", [{"kind": "run.resumed", "run_id": "r1", "segment_id": "engine-1-r001",
+                           "recorded_at": "2026-09-23T10:00:00.000Z"},
+                          reconciled, {"kind": "cell.archived", "cell_id": "b", "archive_attempt": 1}])
+    seg("engine-1-r002", [{"kind": "run.resumed", "run_id": "r1", "segment_id": "engine-1-r002",
+                           "recorded_at": "2026-09-23T11:00:00.000Z"},  # c relaunched and completes: launched, not reconciled
+                          {"kind": "cell.launch_intent", "cell_id": "c"}, *done("c")])
+    history = views.resume_history(run_dir)
+    assert history == [
+        views.ResumeRecord(1, "2026-09-23T10:00:00.000Z", "engine-1-r001", 1, 0, (("b", "HB-CELL-118", 1, "mid-turn"),)),
+        views.ResumeRecord(2, "2026-09-23T11:00:00.000Z", "engine-1-r002", 2, 1, ()),
+    ]
