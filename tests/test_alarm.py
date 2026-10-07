@@ -177,13 +177,10 @@ def test_real_status_command_feeds_the_real_alarm_task(env, tmp_path):  # INT-A 
     bench = tmp_path / "bin" / "bench.cmd"
     bench.parent.mkdir()
     bench.write_text(f'@echo off\r\n"{sys.executable}" -c "import sys; from harness_bench.cli import main; sys.exit(main(sys.argv[1:]))" '
-                     f'--runs "{runs}" %* 2>"%~dp0err.txt"\r\n', encoding="ascii")
-    # Seam finding for X-K2a (reported, not edited here): tools/alarm-task.ps1 runs `bench ... 2>$null` under
-    # $ErrorActionPreference = 'Stop', and powershell.exe 5.1 turns the real command's stderr line (HB-ALM-00x: ...) into a
-    # NativeCommandError (exit 1, "check-error"). The stub never wrote stderr. The wrapper redirects stderr itself so this test can run.
+                     f'--runs "{runs}" %*\r\n', encoding="ascii")  # stderr passes through, as in the scheduled task
     real = subprocess.run([str(bench), "status", env.name, "--alarm-after", "600", "--json"], capture_output=True, text=True, timeout=120,
                           check=False)
-    printed = (bench.parent / "err.txt").read_text(encoding="ascii").split(":", 1)[0]
+    printed = real.stderr.split(":", 1)[0]
     assert (real.returncode, printed) == (6, "HB-ALM-001")
     sent = tmp_path / "sent.txt"
     (tmp_path / "rest.ps1").write_text('function Invoke-RestMethod { param($Uri, $Method, $Body) Add-Content -Path $env:HB_TEST_SENT -Value "$Uri|$Body" }\n',
