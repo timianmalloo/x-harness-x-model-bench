@@ -5040,6 +5040,31 @@ window.DOCS_INDEX = {
       "sourceSha256": "d35a8989cbc5eb2f8456f152825f7a70d3f79266c6567e2e24727038af97beb7"
     },
     {
+      "id": "plan-eval-x-crlf",
+      "path": "docs/plans/eval-x-crlf.md",
+      "title": "X-CRLF: one applying-edit definition, and RS2's requeue5xx",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-20",
+      "reviewSuggested": [],
+      "summary": "C1: readiness and the discriminate applier share one edit definition (CRLF read as LF, `old` once, else HB-RDY-005). C2: RS2 gains requeue5xx, measured to flip g-ordering alone; RS2's record replaced.",
+      "tags": [
+        "evaluation",
+        "property",
+        "execution-plan"
+      ],
+      "links": [
+        {
+          "to": "plan-eval-x-rs",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "75584da98ed901cdb6a54a76a0300ecf5071f4ec5be48c73e5af9ed73167083a"
+    },
+    {
       "id": "plan-eval-x-fixe",
       "path": "docs/plans/eval-x-fixe.md",
       "title": "X-FIXE: the double-run guard on the check-less shape",
@@ -9864,6 +9889,14 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-enterprise-production-portfolio"
     },
     {
+      "id": "surface-plans-eval-x-crlf",
+      "path": "docs/plans/eval-x-crlf.html",
+      "title": "Eval X Crlf",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-crlf"
+    },
+    {
       "id": "surface-plans-eval-x-fixe",
       "path": "docs/plans/eval-x-fixe.html",
       "title": "Eval X Fixe",
@@ -10006,5 +10039,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "34f59dea69e2689e818f386ea179de1daf33e771fe83d5f24f2933cf786477d9"
+  "graphSha256": "a040180454ebc485057ff782948e7451e8eaf9f2b3b987795f96e3e80d5848e3"
 };
