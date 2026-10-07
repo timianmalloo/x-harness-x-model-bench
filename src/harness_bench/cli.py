@@ -49,6 +49,7 @@ from harness_bench.report import campaign_section, cli_table, html, summaries
 from harness_bench.report import credentials as report_credentials
 
 OK, INVALID, INCOMPLETE, NOT_BUILT, INTEGRITY = 0, 1, 3, 4, 5
+ALARM = 6
 _LEGACY_PACK = next(a for a in config.PACKS if a != config.ARM_OFF)  # a bench-matrix/1 file's one pack arm (W1-A 3.9's `on`), read from config
 
 
@@ -313,6 +314,11 @@ def cmd_run(args) -> int:
 
 def cmd_status(args) -> int:
     run_dir = _run_dir(args)
+    if getattr(args, "alarm_after", None) is not None:
+        from harness_bench import alarm
+
+        alarm.check(run_dir, args.alarm_after)
+        return OK
     s = status.build(run_dir)
     if not args.json and (kind := plan.kind_of(plan.load_confirmed(run_dir))) != "measurement":
         print(f"kind: {kind}")  # a label, not a refusal; bench-status/1 has no kind field
@@ -588,6 +594,8 @@ def build_parser() -> argparse.ArgumentParser:
                                  "(HB-SUM-001); the ReplayBackend only until R8 wires the live gateway")
         if name == "status":
             sp.add_argument("--json", action="store_true", help="bench-status/1 on stdout")
+            sp.add_argument("--alarm-after", type=int, default=None, metavar="SECONDS",
+                            help="exit with code 6 if progress is stalled or engine is down")
         if name == "grade":
             sp.add_argument("--allow-model-calls", action="store_true",
                             help="call the judges on a verdict-store miss; refused while any run is live (HB-GRD-005); "

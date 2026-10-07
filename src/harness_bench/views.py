@@ -35,6 +35,7 @@ from dataclasses import dataclass, field, fields
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
+from typing import NamedTuple
 
 from harness_bench import archive, ledger, lifecycle, profiles
 from harness_bench.errors import BenchError, Cause
@@ -96,6 +97,20 @@ def segment_rows(run_dir: Path, fact: str) -> list[tuple[str, list[dict]]]:
             raise BenchError("HB-LED-002", f"{fact}/{path.name}: no known writer for this segment")
         out.append((sid, ledger.read_segment(path)))
     return out
+
+
+class ResumeRecord(NamedTuple):
+    n: int
+    at: str
+    segment_id: str
+    skipped: int
+    launched: int
+    reconciled: tuple[tuple[str, str, int, str], ...]
+
+
+def resume_history(run_dir: Path) -> list[ResumeRecord]:
+    """Derived resume records per engine resume segment (W1-K §2, R6.14a)."""
+    return []
 
 
 def rows(run_dir: Path, fact: str) -> list[dict]:
