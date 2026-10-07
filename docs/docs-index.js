@@ -2654,7 +2654,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "1aeb1d0be996dc01e6da9effcb052a5bbb6d382b47b121a597de9e88faf8f7b4"
+      "sourceSha256": "efbbeca53a2e887832d16709b4f4df5096a38e47b5f2bc602dfe862bb6cf2114"
     },
     {
       "id": "design-eval-seam-contracts",
@@ -2758,7 +2758,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3c888a2706e66c9b0988da05b109717cc369106d4077d1c767fd81ff9d6a9377"
+      "sourceSha256": "ba38ea3052787fec9a2ddd977d88103d1825d66d7e4e9e8cec84d682ec416ffe"
     },
     {
       "id": "design-eval-security-tasks",
@@ -4743,6 +4743,43 @@ window.DOCS_INDEX = {
       "sourceSha256": "c7e3ea360376f0e9dbc4e5e4d83d9eb6c9dfaef0c68fed06a7940f3ab5d9a876"
     },
     {
+      "id": "coordinator-log-c50",
+      "path": "docs/coordination/coordinator-log/c50.md",
+      "title": "Coordinator #50 hand-back (2026-10-06): X-K2b recompiled with resume.history placed in views.py; X-CV compiled after Ruling 113; X-TE9 joins before the records",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-06",
+      "reviewSuggested": [],
+      "summary": "Coordinator #50 worked on coord/eval-c50-cv (base fab51fe1). X-K2b is recompiled for Agy gemini-3.8-flash-high with new identities. W0 rev 6.14 R6.14a places W1-K's unbuilt resume.history in views.py as views.resume_history, because resume.py is class run. X-CV is compiled for Claude Code Sonnet; its stop check is join-x-k2b plus join-r113. X-TE9 needs no rebase turn, and it joins after X-K2b and before the Leader's records (R6.14b), not after them. The Leader's record commands are listed in order. One candidate class: RECID-A.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c49",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "3e0cd3cb5ed0be87276281fe7b3d3e83f604c3495a79727367034648a158637c"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4769,7 +4806,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "6e4fa5f71a0dfdc36a3e9d7de18310748423dffaa79275e1ec00789386d823aa"
+      "sourceSha256": "4ae0bf45ae8d2c6c2096a406f6abada3abba63629374a4f05f8947d6f5ad188f"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -7540,7 +7577,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5abec8c5bb5d8e175361745f4f0bcda768537a44ea1a9909accf49b57ba574a0"
+      "sourceSha256": "ff004d5b9887b9a9a00b121fdea14b594cdd7b6f5014b435102e7e176b5b2eb8"
     },
     {
       "id": "brief-eval-x-d",
@@ -8049,7 +8086,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "dfd3cbaaf27064a49afd7ee8e124117598b5ffb390f1639b87ba42dcc5f9aad8"
+      "sourceSha256": "a195f8f2cb3399fb18e58054a57ed0eeaee66d4f1dd8abab04f83d757c47d215"
     },
     {
       "id": "brief-eval-x-lb",
@@ -8305,7 +8342,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "377f2fe7160ca28da5d4ae86dc48aa19e61bc01e5b7a0ae9730fce600e2f23bc"
+      "sourceSha256": "a0e398231efe09c5aaff5da7f7712891e42fd67d95082552327443d6605e6c46"
     },
     {
       "id": "coordination-eval-brief-rv-ds",
@@ -10105,5 +10142,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "84d71688ae3b6c090f4526e9c125fa18ca76588a85697e0f02b885335a4bd809"
+  "graphSha256": "0f894ae4d598040a8bf3c47b9e195547b0ba5b9525eada3007331b3bfb25eec2"
 };
