@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-07T00:44:10Z",
+  "generated": "2026-10-07T00:44:15Z",
   "audit": [
     {
       "actor": null,
@@ -119374,6 +119374,33 @@ window.AUDIT_DATA = {
         "acceptance_met": true
       },
       "started_at": "2026-10-07T00:44:09Z",
+      "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M49X2VZPK435NMHBEQW9J8AV",
+      "shortname": "join-r113",
+      "datetime": "2026-10-07T00:44:15Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of owner/ruling-r113 into integrate/e2e4-18",
+      "summary": "Owner (Fable claude-fable-5-1) Ruling 113 526534e6 on req-01M49WPHC2PGAWZSV73D0D6H25: (a) granted, bounded - X-START withdrawn; R-112 dormant, re-open on any start-bound end for a reference deliverable on a gate host; condition 3: the compiling Coordinator reads records' hosts.jsonl for start-bound ends at X-CV's join and every record-accepting join; R-112 design errata deferred; RF-12 assume + TIME-B instance records and a new class at the X-CV join; (b) refused, (c) refused as a pre-condition; X-CV proceeds now. recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join Ruling 113",
+      "done_when": "conductor-join exit 0 (docs-only)",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-07T00:44:14Z",
       "duration_seconds": 1.0
     }
   ],
