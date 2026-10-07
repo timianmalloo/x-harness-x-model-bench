@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-07T05:24:06Z",
+  "generated": "2026-10-07T05:38:42Z",
   "audit": [
     {
       "actor": null,
@@ -121022,12 +121022,125 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M4A4FFKCN07MGPC0Y8TFN1TD",
-      "shortname": "join-x-cv",
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
       "datetime": "2026-10-07T02:53:28Z",
-      "session": "leader-e1e4",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "duration_seconds": 743.0,
+      "fan_out": 0,
+      "goal": "Join X-CV into integrate/e2e4-18",
+      "id": "al-01M4A4FFKCN07MGPC0Y8TFN1TD",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "the join of build/eval-x-cv into integrate/e2e4-18",
+      "session": "leader-e1e4",
+      "shortname": "join-x-cv",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "execute-with-coordination",
+      "started_at": "2026-10-07T02:41:05Z",
       "summary": "X-CV (Sonnet claude-sonnet-5-5, x-cv-e1e4): W1 1a36774b S2 open-items section (operator decision 5); W2 30ee6cbf tests/test_resume_table.py (19 rows, 23 nodes, red shown on a mutated doc copy); W3 TLC --quick pass (34/34 seeded rejected); W4 SM1: record taken from the working tree before 666ded0c's commit, likely an ignored cache file inside tasks/SM1 (Inferred); W5 f9570f1b proof note with the ten-row records table for the Leader; no src diff. recount_seconds=741 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/coordination/coordinator-log/c52.md",
+        "docs/coordination/run-report-e2e4.md",
+        "docs/coordination/coordination-e2e4.md",
+        "docs/lessons/defect-classes.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-07T03:48:22Z",
+      "done_when": "doctor requests ok; three gates exit 0; commit made; coord session end",
+      "duration_seconds": 1089.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "coord/eval-c52-closeout",
+        "pushed": null,
+        "sha": "b365654bb8db51ffd98a90abed1efd2693be5765",
+        "short": "b365654bb"
+      },
+      "goal": "Record outcomes for the 7 expired requests, register RUN-B, draft the E2-E4 run report from measured sources, gates, commit",
+      "id": "al-01M4A7M0QPGAZAJ9Q3V0JGPEYG",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Coordinator #52 close-out: resolve the 7 expired requests from the record, RUN-B register entry, E2-E4 run report draft (plan Stage 7 + run-report-e2e4), gates, commit, session end",
+      "session": "coord-opus-e1e4",
+      "shortname": "c52-closeout",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "execute-with-coordination",
+      "started_at": "2026-10-07T03:30:13Z",
+      "summary": "Coordinator #52 (claude-opus-5-5) on coord/eval-c52-closeout (base b365654b): 7 expired requests resolved from the record with citations (6 fallback/grant taken as built: 46CZP b92d74e6, 46M71 bb177a2e, 46VNY 33e827a9, 47837 0c788935, 48F9E and 48FCF 5b9230bd; 48SKQ t1regress fallback held, declaration never settled, record silent); coord doctor requests ok - 116, 0 open. DEV-A registered (un-noted RUN-B leader-check retry in coord-runner.py, ef29a01b CONFLICT, retired upstream rev 99) + RUN-B control-status line. Plan coordination-e2e4.md Stage 7 planned-vs-actual section (+html regenerated) and run-report-e2e4.md/.html drafts from measured sources (A/J/N/C): 35.8 h plan-join to last join vs 15-20 h Inferred; 3 of 19 external turns complete with no follow-on; 34 requests all resolved; recount 25.0-38.2 min single-process (27 joins) vs 9.4-16.2 min at -n 4 (11 joins); 41 classes; R-107..113. Gates: derive 0, validate 0, citations 113/113.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-07T05:24:05Z",
+      "done_when": "conductor-join exit 0 (docs-only)",
+      "duration_seconds": 0.0,
+      "fan_out": 0,
+      "goal": "Join the X-CV-join errata and the close-out",
+      "id": "al-01M4AD3978FYAWVAXH1TDE7BHQ",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "the join of coord/eval-c52-closeout into integrate/e2e4-18",
+      "session": "leader-e1e4",
+      "shortname": "join-c51-c52",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "execute-with-coordination",
+      "started_at": "2026-10-07T05:24:05Z",
+      "summary": "Coordinator #51 b365654b: R-113 condition 3 recorded (0 start-bound ends in 517 host starts, max 264 ms), RF-12 erratum (eval-property-grader.md:733), TIME-B dormant, DIAG-A. Coordinator #52 5ef4a79b: 7 expired requests resolved from the record (doctor requests ok, 116 terminal), DEV-A (RUN-B undocumented deviation), the plan's Stage 7 planned-vs-actual section and docs/coordination/run-report-e2e4.md (reviewed by the Leader). recount_seconds=0 (docs_only=True).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-07T03:25:06Z",
+      "done_when": "pack-apply applied, conflicts reconciled, gates read, two commits on the branch, report handed back",
+      "duration_seconds": 532.0,
+      "fan_out": 0,
+      "goal": "Installed pack at revision 99 with the Grok transport deviation retired, on coord/pack-update-e2e4",
+      "id": "al-01M4A69D01GX2PHP4BK701DAA7",
+      "kind": "command",
+      "outcome": "success",
+      "prompt": "X-PACK phase 2 (Lane F): run /updatepack from ai-forward rev 99 7ea5dea in coord/pack-update-e2e4; retire docs/notes/deviation-coord-transport-grok-session-new.md; no change to src/ tasks/ bench/ uv.lock tests/ unless the action table names a pack-managed test path.",
+      "session": "lanef-e1e4",
+      "shortname": "updatepack-r99",
+      "skill": "updatepack",
+      "started_at": "2026-10-07T03:16:14Z",
+      "summary": "97 -> 99; 426 UNCHANGED, 15 UPDATE, 3 MERGE, 3 SKIP, 3 BASELINE, 2 CONFLICT; coord_transport.py and coord-runner.py reconciled to rev-99 text (both deviations upstream); Grok session/new deviation note retired; no hard-limit path touched",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "id": "al-01M4ADY0VMPZN1TNVTVJC2QT7V",
+      "shortname": "join-x-pack-2",
+      "datetime": "2026-10-07T05:38:42Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of coord/pack-update-e2e4 into integrate/e2e4-18",
+      "summary": "X-PACK phase 2 (Opus, lanef-e1e4) 34a1de99: pack rev 97 -> 99 (2026.10.05.2) from ai-forward 7ea5dea; pack-apply 426 unchanged, 15 update, 3 merge, 3 skip, 3 baseline, 2 conflict (coord_transport.py Grok session/new and coord-runner.py RUN-B, both taken from rev 99 which carries the fixes); deviation note retired (status resolved + tag); guard list 210 x2, transport 4, ruff 0, validate 0. Leader: identity-path diff (src tests tasks bench uv.lock) 0 files, so the ten records stay valid; the doctor request FAIL was pre-existing and is closed by Coordinator #52. recount_seconds=871 (docs_only=False).",
       "kind": "skill",
       "skill": "execute-with-coordination",
       "tool": null,
@@ -121036,7 +121149,7 @@ window.AUDIT_DATA = {
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Join X-CV into integrate/e2e4-18",
+      "goal": "Join the pack update",
       "done_when": "conductor-join exit 0 with the default ring green",
       "tier": "T1",
       "fan_out": 0,
@@ -121045,73 +121158,8 @@ window.AUDIT_DATA = {
         "verification_executed": true,
         "acceptance_met": true
       },
-      "started_at": "2026-10-07T02:41:05Z",
-      "duration_seconds": 743.0
-    },
-    {
-      "id": "al-01M4A7M0QPGAZAJ9Q3V0JGPEYG",
-      "shortname": "c52-closeout",
-      "datetime": "2026-10-07T03:48:22Z",
-      "session": "coord-opus-e1e4",
-      "prompt": "Coordinator #52 close-out: resolve the 7 expired requests from the record, RUN-B register entry, E2-E4 run report draft (plan Stage 7 + run-report-e2e4), gates, commit, session end",
-      "summary": "Coordinator #52 (claude-opus-5-5) on coord/eval-c52-closeout (base b365654b): 7 expired requests resolved from the record with citations (6 fallback/grant taken as built: 46CZP b92d74e6, 46M71 bb177a2e, 46VNY 33e827a9, 47837 0c788935, 48F9E and 48FCF 5b9230bd; 48SKQ t1regress fallback held, declaration never settled, record silent); coord doctor requests ok - 116, 0 open. DEV-A registered (un-noted RUN-B leader-check retry in coord-runner.py, ef29a01b CONFLICT, retired upstream rev 99) + RUN-B control-status line. Plan coordination-e2e4.md Stage 7 planned-vs-actual section (+html regenerated) and run-report-e2e4.md/.html drafts from measured sources (A/J/N/C): 35.8 h plan-join to last join vs 15-20 h Inferred; 3 of 19 external turns complete with no follow-on; 34 requests all resolved; recount 25.0-38.2 min single-process (27 joins) vs 9.4-16.2 min at -n 4 (11 joins); 41 classes; R-107..113. Gates: derive 0, validate 0, citations 113/113.",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
-      "actor": null,
-      "artifacts": [
-        "docs/coordination/coordinator-log/c52.md",
-        "docs/coordination/run-report-e2e4.md",
-        "docs/coordination/coordination-e2e4.md",
-        "docs/lessons/defect-classes.md"
-      ],
-      "tags": [],
-      "outcome": "success",
-      "compiled": false,
-      "goal": "Record outcomes for the 7 expired requests, register RUN-B, draft the E2-E4 run report from measured sources, gates, commit",
-      "done_when": "doctor requests ok; three gates exit 0; commit made; coord session end",
-      "tier": "T1",
-      "fan_out": 0,
-      "signals": {
-        "verification_path": true,
-        "verification_executed": true,
-        "acceptance_met": true
-      },
-      "started_at": "2026-10-07T03:30:13Z",
-      "duration_seconds": 1089.0,
-      "git": {
-        "sha": "b365654bb8db51ffd98a90abed1efd2693be5765",
-        "short": "b365654bb",
-        "branch": "coord/eval-c52-closeout",
-        "pushed": null
-      }
-    },
-    {
-      "id": "al-01M4AD3978FYAWVAXH1TDE7BHQ",
-      "shortname": "join-c51-c52",
-      "datetime": "2026-10-07T05:24:05Z",
-      "session": "leader-e1e4",
-      "prompt": "the join of coord/eval-c52-closeout into integrate/e2e4-18",
-      "summary": "Coordinator #51 b365654b: R-113 condition 3 recorded (0 start-bound ends in 517 host starts, max 264 ms), RF-12 erratum (eval-property-grader.md:733), TIME-B dormant, DIAG-A. Coordinator #52 5ef4a79b: 7 expired requests resolved from the record (doctor requests ok, 116 terminal), DEV-A (RUN-B undocumented deviation), the plan's Stage 7 planned-vs-actual section and docs/coordination/run-report-e2e4.md (reviewed by the Leader). recount_seconds=0 (docs_only=True).",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
-      "actor": null,
-      "artifacts": [],
-      "tags": [],
-      "outcome": "success",
-      "compiled": false,
-      "goal": "Join the X-CV-join errata and the close-out",
-      "done_when": "conductor-join exit 0 (docs-only)",
-      "tier": "T1",
-      "fan_out": 0,
-      "signals": {
-        "verification_path": true,
-        "verification_executed": true,
-        "acceptance_met": true
-      },
-      "started_at": "2026-10-07T05:24:05Z",
-      "duration_seconds": 0.0
+      "started_at": "2026-10-07T05:24:09Z",
+      "duration_seconds": 873.0
     }
   ],
   "changes": [

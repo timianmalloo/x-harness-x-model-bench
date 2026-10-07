@@ -1382,18 +1382,19 @@ window.DOCS_INDEX = {
       "path": "docs/notes/deviation-coord-transport-grok-session-new.md",
       "title": "Repo-local deviation - coord_transport accepts Grok watcher acks during session/new",
       "type": "decision-note",
-      "status": "accepted",
+      "status": "resolved",
       "owner": "@timianmalloo",
       "phase": "",
       "reviewBy": "2027-04-03",
       "reviewSuggested": [],
-      "summary": "docs/ai-forward-pack/scripts/coord_transport.py is patched locally so Grok's own skills/workflows watcher acknowledgement is accepted while session/new is in flight. Upstream (ai-forward) needs the same hunk.",
+      "summary": "RETIRED 2026-10-06. The repo-local coord_transport.py hunk that accepted Grok's watcher acknowledgement during session/new is upstream in ai-forward revision 99 (7ea5dea, XPORT-A); /updatepack replaced the local copy with the pack text and no repo-local deviation remains in that file.",
       "tags": [
         "ai-forward-pack",
         "deviation",
         "grok",
         "acp",
-        "transport"
+        "transport",
+        "retired"
       ],
       "links": [
         {
@@ -1402,7 +1403,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "33a86b139ebe6a7a3a028f07e678b7b1ab264eda2fb5073361897fbea72f5bfc"
+      "sourceSha256": "4788140ebfb5c9ef5a8ede9e64c5150f3d96622e1de5910ce1b55eb0867e8043"
     },
     {
       "id": "note-20261003-spike-e1-handle-list",
@@ -10394,5 +10395,5 @@ window.DOCS_INDEX = {
       "artifactId": "run-report-e2e4"
     }
   ],
-  "graphSha256": "3a28a4fec178e519ad9f4512791bbfd39fb797469c7ba7d9c938ed0670930814"
+  "graphSha256": "f1d0e3bded04a9dcf2fbf9fc67156784d3319cae877831d8c0b0391f32659e31"
 };
