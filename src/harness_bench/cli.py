@@ -325,7 +325,8 @@ def cmd_status(args) -> int:
         if args.json:
             document = json.loads(status.to_json(status.build(run_dir)))
             document["alarm"] = None if result is None else {"code": result.code, "cause": result.cause,
-                                                             "last_progress_at": result.last_progress_at, "age_s": result.age_s}
+                                                             "last_progress_at": result.last_progress_at,
+                                                             "age_s": None if result.age_s is None else round(result.age_s)}
             print(json.dumps(document, sort_keys=True, separators=(",", ":"), ensure_ascii=True))
         return OK if result is None else ALARM
     s = status.build(run_dir)
