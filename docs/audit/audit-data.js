@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-07T02:53:28Z",
+  "generated": "2026-10-07T03:25:06Z",
   "audit": [
     {
       "actor": null,
@@ -121047,6 +121047,27 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-07T02:41:05Z",
       "duration_seconds": 743.0
+    },
+    {
+      "id": "al-01M4A69D01GX2PHP4BK701DAA7",
+      "shortname": "updatepack-r99",
+      "datetime": "2026-10-07T03:25:06Z",
+      "session": "lanef-e1e4",
+      "prompt": "X-PACK phase 2 (Lane F): run /updatepack from ai-forward rev 99 7ea5dea in coord/pack-update-e2e4; retire docs/notes/deviation-coord-transport-grok-session-new.md; no change to src/ tasks/ bench/ uv.lock tests/ unless the action table names a pack-managed test path.",
+      "summary": "97 -> 99; 426 UNCHANGED, 15 UPDATE, 3 MERGE, 3 SKIP, 3 BASELINE, 2 CONFLICT; coord_transport.py and coord-runner.py reconciled to rev-99 text (both deviations upstream); Grok session/new deviation note retired; no hard-limit path touched",
+      "kind": "command",
+      "skill": "updatepack",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "goal": "Installed pack at revision 99 with the Grok transport deviation retired, on coord/pack-update-e2e4",
+      "done_when": "pack-apply applied, conflicts reconciled, gates read, two commits on the branch, report handed back",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-07T03:16:14Z",
+      "duration_seconds": 532.0
     }
   ],
   "changes": [

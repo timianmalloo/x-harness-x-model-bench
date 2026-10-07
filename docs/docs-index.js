@@ -1382,18 +1382,19 @@ window.DOCS_INDEX = {
       "path": "docs/notes/deviation-coord-transport-grok-session-new.md",
       "title": "Repo-local deviation - coord_transport accepts Grok watcher acks during session/new",
       "type": "decision-note",
-      "status": "accepted",
+      "status": "resolved",
       "owner": "@timianmalloo",
       "phase": "",
       "reviewBy": "2027-04-03",
       "reviewSuggested": [],
-      "summary": "docs/ai-forward-pack/scripts/coord_transport.py is patched locally so Grok's own skills/workflows watcher acknowledgement is accepted while session/new is in flight. Upstream (ai-forward) needs the same hunk.",
+      "summary": "RETIRED 2026-10-06. The repo-local coord_transport.py hunk that accepted Grok's watcher acknowledgement during session/new is upstream in ai-forward revision 99 (7ea5dea, XPORT-A); /updatepack replaced the local copy with the pack text and no repo-local deviation remains in that file.",
       "tags": [
         "ai-forward-pack",
         "deviation",
         "grok",
         "acp",
-        "transport"
+        "transport",
+        "retired"
       ],
       "links": [
         {
@@ -1402,7 +1403,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "33a86b139ebe6a7a3a028f07e678b7b1ab264eda2fb5073361897fbea72f5bfc"
+      "sourceSha256": "4788140ebfb5c9ef5a8ede9e64c5150f3d96622e1de5910ce1b55eb0867e8043"
     },
     {
       "id": "note-20261003-spike-e1-handle-list",
@@ -9619,7 +9620,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "eeb37c28a123adc4f3040ec0e6b24c3530d58ac216b2dfad1fedcc53903857f6"
+      "sourceSha256": "7ae6294090038f78fee5d3615bdcbe5df81de1aa0aee6adeb5ed4dd5462c458f"
     },
     {
       "id": "proof-findings-t5",
@@ -10252,5 +10253,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "cbbcf618e3537f4d09343cb169413ce6ac0c18cfcbbd8be839fc1722d743843c"
+  "graphSha256": "f4c51ecb891665c09613755335bf1398f086fc9527a05c3173a34782feab6863"
 };
