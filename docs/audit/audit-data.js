@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-07T02:06:50Z",
+  "generated": "2026-10-07T02:41:01Z",
   "audit": [
     {
       "actor": null,
@@ -120969,6 +120969,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-07T01:51:04Z",
       "duration_seconds": 946.0
+    },
+    {
+      "id": "al-01M4A3RP4TS51CXWE5Z1ZRJB4P",
+      "shortname": "join-x-alarmfix",
+      "datetime": "2026-10-07T02:41:01Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of the resolved merge into integrate/e2e4-18",
+      "summary": "X-ALARMFIX (Sonnet, Leader inline brief): red dc516720 (replayed by the Leader: assert 1 == 6 under powershell.exe 5.1), green ee1b0e11; X-K2b's workaround removed; no src change. First recount red on an order-dependent test (MPATCH-A: monkeypatch.delitem reordered property.STRATEGIES) -> Leader test fix (filtered copy), reproduced and green in one process. recount_seconds=775 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join X-ALARMFIX",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-07T02:28:05Z",
+      "duration_seconds": 776.0
     }
   ],
   "changes": [
