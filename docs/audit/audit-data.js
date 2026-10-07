@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-07T00:52:15Z",
+  "generated": "2026-10-07T01:03:34Z",
   "audit": [
     {
       "actor": null,
@@ -120786,6 +120786,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-07T00:52:14Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M49Y688BSFH6STVC5WPWZSGM",
+      "shortname": "coordination-worker-x-k2b",
+      "datetime": "2026-10-07T01:03:34Z",
+      "session": "x-k2b2-e1e4",
+      "prompt": "You are session x-k2b2-e1e4 on branch build/eval-x-k2b in the tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-k2b, harness Agy, model gemini-3.8-flash-high, run w2-k2b2-e1e4, dispatched by the Leader, compiled by Coordinator #50 (docs/coordination/coordinator-log/c50.md), deadline 3,300 s, one turn, within X-K2's 140 calls and a 150k context. Build X-K2b, the alarm and liveness code, following docs/coordination/eval-wave2-e234/x-k2.md (owned paths, acceptance items 1, 2 and 4, and the Coordinator #39 section \"K2b scope as compiled\"), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md, W1-K rev 1.2 (docs/design/eval-resume.md sections 6.1, 6.2, 8 and 13's alarm tests and mutants) and W0 rev 6.14 (docs/design/eval-seam-contracts.md section 9's alarm.py row, section 12 R6.9b, section 13 the alarm-task row's interface paragraph, the X-K2b row with R6.13d and R6.13e, the views.py row, and the Revision 6.14 change table's R6.14a and R6.14b), all binding.",
+      "summary": "{\n  \"dispatch_start\": \"2026-10-07T00:52:48Z\",\n  \"dispatch_end\": \"2026-10-07T01:03:30Z\",\n  \"outcome\": \"red-only\",\n  \"code_tip\": \"8b2eef4b68ebc88248139b8d0e499527275503d6\",\n  \"served_model\": \"gemini-3.8-flash-high\",\n  \"tokens\": {\n    \"floor\": 39611,\n    \"current\": 159037,\n    \"input_tokens\": 4410,\n    \"cache_read_tokens\": 154627,\n    \"output_tokens\": 394\n  },\n  \"floor\": 39611,\n  \"context_samples\": {\n    \"step_1_grounding\": 39611,\n    \"step_3_prompt\": 43243,\n    \"before_baseline_gate\": 72841,\n    \"after_baseline_gate_before_k1\": 88792,\n    \"after_k1_commit\": 159037,\n    \"k2_admission\": \"denied: context 159037 exceeds floor + 60k (99611) and 125k/140k ceiling\"\n  },\n  \"delivered\": \"K1 skeleton committed in 8b2eef4b: src/harness_bench/alarm.py with check returning None, cli.py with ALARM = 6 beside exit constants and --alarm-after flag returning 0, identity.py with alarm.py retired from PLANNED, views.py with ResumeRecord type and resume_history skeleton\",\n  \"open_items\": [\n    \"K2 red tests in tests/test_alarm.py, tests/test_status.py, and tests/test_views.py::test_resume_history_per_segment\",\n    \"K3 green implementation of alarm.check, status.last_progress_at, views.resume_history, status.py docstring update to D-K5, and cli.py outputs\",\n    \"K4 mutations in tests/mutations/alarm.json, cli.json, status.json, and cross-owner alarm-task test in tests/test_alarm.py\",\n    \"Final gates (R-104: pytest, mutate_check, ruff, docs-graph validate)\"\n  ],\n  \"gates_run\": {\n    \"baseline_pytest\": \"pass (210 passed in 101.20s)\",\n    \"pre_commit_hook\": \"pass (4 staged path(s) checked - all free or mine)\",\n    \"identity_and_readers\": \"pass (50 passed in 2.26s; READERS=9; RUN_IMPORTS_GRADE_ALLOWED unchanged)\",\n    \"ruff\": \"pass (All checks passed!)\"\n  },\n  \"hand_back_reason\": \"Planned split per CEIL-A floor-based split rule: context sample at K1 boundary is 159,037 tokens, exceeding floor + 60k (99,611 tokens) and the 125k/140k ceiling.\"\n}",
+      "kind": "manual",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "goal": "You are session x-k2b2-e1e4 on branch build/eval-x-k2b in the tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-k2b, harness Agy, model gemini-3.8-flash-high, run w2-k2b2-e1e4, dispatched by the Leader, compiled by Coordinator #50 (docs/coordination/coordinator-log/c50.md), deadline 3,300 s, one turn, within X-K2's 140 calls and a 150k context. Build X-K2b, the alarm and liveness code, following docs/coordination/eval-wave2-e234/x-k2.md (owned paths, acceptance items 1, 2 and 4, and the Coordinator #39 section \"K2b scope as compiled\"), docs/coordination/eval-wave2-e1/README.md sections 1-4, docs/coordination/eval-wave2-e234/README.md, W1-K rev 1.2 (docs/design/eval-resume.md sections 6.1, 6.2, 8 and 13's alarm tests and mutants) and W0 rev 6.14 (docs/design/eval-seam-contracts.md section 9's alarm.py row, section 12 R6.9b, section 13 the alarm-task row's interface paragraph, the X-K2b row with R6.13d and R6.13e, the views.py row, and the Revision 6.14 change table's R6.14a and R6.14b), all binding.",
+      "done_when": "Base checks verified, baseline gates green, K1 skeleton committed, K2 red tests committed, K3 green implementations committed, K4 mutants committed, final gates pass, closing audit entry recorded. Hand-back point governed by CEIL-A split rule.",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-07T00:52:59Z",
+      "duration_seconds": 635.0,
+      "git": {
+        "sha": "8b2eef4b68ebc88248139b8d0e499527275503d6",
+        "short": "8b2eef4b6",
+        "branch": "build/eval-x-k2b",
+        "pushed": null
+      }
     }
   ],
   "changes": [
