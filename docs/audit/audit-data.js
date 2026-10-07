@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-07T01:32:35Z",
+  "generated": "2026-10-07T01:49:56Z",
   "audit": [
     {
       "actor": null,
@@ -120865,6 +120865,33 @@ window.AUDIT_DATA = {
         "branch": "build/eval-x-k2b",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M4A0V4GGV21KPQQGZ5K07WV1",
+      "shortname": "join-x-k2b",
+      "datetime": "2026-10-07T01:49:56Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of build/eval-x-k2b into integrate/e2e4-18",
+      "summary": "X-K2b: part 1 Agy gemini-3.8-flash-high (served id recorded; K1 skeleton 8b2eef4b, split at context), part 2 Sonnet x-k2b3-e1e4 (K2 red 319a525c), part 3 Sonnet x-k2b4-e1e4 (K3 views 8886654f, status 2a19dd5f, alarm f5c74c16/03e3afce, cli d6f6a0ee/7a2df873; K4 alarm.json 8 mutants killed 1d71a235; plan record 5aff607c); planned Agy, ran Sonnet for parts 2-3 (RUN-IDENTITY); gates 210 + 355 passed; alarm/status/cli/views mutate every mutation killed. Leader: K2 red replayed (13 failed, assertions). Finding: tools/alarm-task.ps1 (X-K2a) exits 1 not 6 on the real stderr line under PowerShell 5.1 (NativeCommandError) - fix owed before E5. recount_seconds=972 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join X-K2b into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-07T01:33:42Z",
+      "duration_seconds": 974.0
     }
   ],
   "changes": [
