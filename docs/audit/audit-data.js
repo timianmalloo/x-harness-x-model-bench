@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-07T01:09:51Z",
+  "generated": "2026-10-07T01:32:35Z",
   "audit": [
     {
       "actor": null,
@@ -120837,6 +120837,31 @@ window.AUDIT_DATA = {
       "git": {
         "sha": "319a525c0ebb7719eb9baac8efadb0e9edca6a27",
         "short": "319a525c0",
+        "branch": "build/eval-x-k2b",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M49ZVBR8H1WMJV6C9GQMX2KH",
+      "shortname": "x-k2b-part3",
+      "datetime": "2026-10-07T01:32:34Z",
+      "session": "x-k2b4-e1e4",
+      "prompt": "X-K2b part 3: K3 green code, K4 mutants and native test, final R-104 gates, plan record (compiled prompt-k2b.md, compile al-01M49X64P0ZCJFQCJVP1NA5SAE)",
+      "summary": "X-K2b part 3 green 03a8e59b (K3 8886654f 2a19dd5f f5c74c16 03e3afce d6f6a0ee 7a2df873; K4 1d71a235; plan 5aff607c). Planned Agy gemini-3.8-flash-high; ran Claude Code Sonnet (part 3), claude-sonnet-5-5; reason: RUN-IDENTITY (IDN-A) after the Agy part 1 split. Gates: arch-set 210 passed, worker set 355 passed, mutate_check alarm/status/cli/views all killed, ruff clean, docs-graph validate 0. Seam findings: alarm-task.ps1 stderr under Stop; skill field fallback. Tokens: not recorded.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "tier": "T1",
+      "started_at": "2026-10-07T01:10:50Z",
+      "duration_seconds": 1304.0,
+      "git": {
+        "sha": "03a8e59b8beb264c90fb9d3cd1562b9f14c44f26",
+        "short": "03a8e59b8",
         "branch": "build/eval-x-k2b",
         "pushed": null
       }
