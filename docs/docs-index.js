@@ -1974,7 +1974,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5c18ea6a2d2a815a61caba07a9318b44c6790a152913b6c286a9ef08b60bd4db"
+      "sourceSha256": "8e751136c12ed037e0b2a62342acb01290f6075689db960dde99f361df020c98"
     },
     {
       "id": "design-eval-arms",
@@ -2527,7 +2527,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3447cd7b555398d32db4806ce87a9c20aacdf772e26073dcbbe41f33804ef815"
+      "sourceSha256": "ab8dc76dd99ef21c6ea1d2e1151b46cdb97b03ce58f5649c52c6a8a9829a1c94"
     },
     {
       "id": "design-eval-property-tasks",
@@ -4780,6 +4780,92 @@ window.DOCS_INDEX = {
       "sourceSha256": "3e0cd3cb5ed0be87276281fe7b3d3e83f604c3495a79727367034648a158637c"
     },
     {
+      "id": "coordinator-log-c51",
+      "path": "docs/coordination/coordinator-log/c51.md",
+      "title": "Coordinator #51 hand-back (2026-10-07): X-CV join duties under Ruling 113 - 0 start-bound ends in 517 starts, the ten records accepted as final, RF-12 and TIME-B errata, DIAG-A registered",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-07",
+      "reviewSuggested": [],
+      "summary": "Coordinator #51 did the X-CV join duties that Ruling 113 and c50 assign to the compiling Coordinator, on coord/eval-c51-cvjoin (base b4e19e28). Condition 3: 60 hosts.jsonl files, 517 host starts, all ready, 0 start-bound ends, maximum start_ms 264 over every role; all ten records are accepted as final. Condition 4: an erratum beside W1-F RF-12 with the measured numbers (the assume stays open) and TIME-B's 2026-10-06 instance marked dormant by R-113. Condition 5: the new candidate class DIAG-A. RECID-A diff exit 0.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "join"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c50",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-property-grader",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "relates-to"
+        },
+        {
+          "to": "proof-eval-campaign-convergence",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "bc9a3542e1e25e06b9942f03a898723b07c4faa73d2ab3d02d9d4d2c8b397be3"
+    },
+    {
+      "id": "coordinator-log-c52",
+      "path": "docs/coordination/coordinator-log/c52.md",
+      "title": "Coordinator #52 hand-back (2026-10-07): E2-E4 close-out - 7 expired requests resolved from the record, DEV-A (the RUN-B runner deviation), the run report draft",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-07",
+      "reviewSuggested": [],
+      "summary": "Coordinator #52 on coord/eval-c52-closeout (base b365654b). It resolved the seven requests that coord doctor failed as COORD-REQUEST-SILENT-EXPIRY, each with the outcome and citation the record shows; one (t1regress) records that the declaration was never settled. Doctor now reads requests ok (116, 0 open). It registered DEV-A for the un-noted RUN-B leader-check retry in coord-runner.py, retired upstream at rev 99, with a control-status line in RUN-B. It appended the Stage 7 planned-vs-actual section to the plan and wrote run-report-e2e4.md, both drafts for the Leader.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "close-out"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c51",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "run-report-e2e4",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "6fec595a3e9731b28df12c2031a6a3120b710b2a6d845846f67efbcd57736900"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4806,7 +4892,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9d61a9b9b763b00a6fa3fe5a14eb671fafc966b330176f14d89c0de5deccfe60"
+      "sourceSha256": "b97c7471391bc4651c4eaf11c4fd502faef96038b412c1d41df535c72bd2dab6"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -7165,6 +7251,54 @@ window.DOCS_INDEX = {
       "sourceSha256": "6870ca4c300824c59bed200083ce50b9dde2b55b55a5d4ef12ca8afed49eef89"
     },
     {
+      "id": "run-report-e2e4",
+      "path": "docs/coordination/run-report-e2e4.md",
+      "title": "Run report - Evaluation Campaign E2-E4 (Leader epoch 18), draft for the Leader's review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-21",
+      "reviewSuggested": [],
+      "summary": "The E2-E4 run from measured sources only (the audit log, the join entries, the Leader's run notes, the Coordinator logs). Every track joined; the ten final records are ready; P1-P4 are pushed and P5 is pending. Measured: 35.8 h from the plan's join to the last join, against 15-20 h Inferred; 3 of 19 external turns ended with no follow-on; 34 requests, all resolved; Rulings 107-113; 41 defect classes registered. The per-join recount fell from 25.0-38.2 min single-process to 9.4-16.2 min at -n 4, with FLAKE-A and MPATCH-A reds. Open: P5, Ruling 112 dormant, the walk flake's cause, the --dist loadscope proposal, the t1regress declaration, macOS.",
+      "tags": [
+        "coordination",
+        "run-report",
+        "evaluation-campaign",
+        "e2",
+        "e3",
+        "e4"
+      ],
+      "links": [
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c52",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "relates-to"
+        },
+        {
+          "to": "proof-eval-campaign-convergence",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "e6daf39f9981eb7799994fdf3745a7aeff7b54c4d668228774e99bff2bbc88e7"
+    },
+    {
       "id": "runbook-resume-and-alarm",
       "path": "docs/runbooks/resume-and-alarm.md",
       "title": "Runbook: resume a crashed run and wire the alarm channel",
@@ -8393,7 +8527,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "a0e398231efe09c5aaff5da7f7712891e42fd67d95082552327443d6605e6c46"
+      "sourceSha256": "9b4ceb82ce0ab74ed31e0070aca7b0077ebf48d7a8b42a999ce72571bb8974e5"
     },
     {
       "id": "coordination-eval-brief-rv-ds",
@@ -9619,7 +9753,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "eeb37c28a123adc4f3040ec0e6b24c3530d58ac216b2dfad1fedcc53903857f6"
+      "sourceSha256": "7ae6294090038f78fee5d3615bdcbe5df81de1aa0aee6adeb5ed4dd5462c458f"
     },
     {
       "id": "proof-findings-t5",
@@ -10250,7 +10384,15 @@ window.DOCS_INDEX = {
       "kind": "knowledge-tool",
       "description": "Open an interactive knowledge artifact.",
       "artifactId": "proposal-pack-onoff-analysis"
+    },
+    {
+      "id": "surface-coordination-run-report-e2e4",
+      "path": "docs/coordination/run-report-e2e4.html",
+      "title": "Run Report E2E4",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "run-report-e2e4"
     }
   ],
-  "graphSha256": "cbbcf618e3537f4d09343cb169413ce6ac0c18cfcbbd8be839fc1722d743843c"
+  "graphSha256": "3a28a4fec178e519ad9f4512791bbfd39fb797469c7ba7d9c938ed0670930814"
 };
