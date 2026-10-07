@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-07T16:03:03Z",
+  "generated": "2026-10-07T16:49:23Z",
   "audit": [
     {
       "actor": null,
@@ -121212,6 +121212,33 @@ window.AUDIT_DATA = {
       "fan_out": 6,
       "started_at": "2026-10-04T23:57:59Z",
       "duration_seconds": 230704.0
+    },
+    {
+      "id": "al-01M4BMA2MJ1CDB7CMDBZNSKHPS",
+      "shortname": "join-c53",
+      "datetime": "2026-10-07T16:49:23Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of coord/eval-c53-t1regress into main",
+      "summary": "Coordinator #53 4b2ea2f9: operator decision 2026-10-07 recorded verbatim ('A': t1regress accepted as declared; no code change, no re-record; RW1 and RW2 stay ready); Ruling 109 condition 4 erratum (rulings.md:1979); W1-L erratum (eval-property-tasks.md:210); run report open items updated. Leader: readiness_failures [] for both RW records (measured). recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Record the operator's t1regress decision",
+      "done_when": "conductor-join exit 0 (docs-only)",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-07T16:49:22Z",
+      "duration_seconds": 1.0
     }
   ],
   "changes": [
