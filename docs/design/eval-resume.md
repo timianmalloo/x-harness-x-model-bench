@@ -103,6 +103,8 @@ ADR-0021 fixes the behaviour. This design decides what the ADR left open and cor
 
 **Derived, never stored** (derive-don't-store, DM): `resumed n times` (count of `run.resumed`), each resume's time and segment id, `cells skipped / launched / reconciled` per resume, `last_progress_at`, the pending set, `completed`. One reader computes them: `resume.history(run_dir) -> list[ResumeRecord]` over **per-segment** rows (a new `views.segment_rows(run_dir, fact) -> list[tuple[str, list[dict]]]`; `views.rows` flattens and loses the segment). `ResumeRecord = (n, at, segment_id, skipped, launched, reconciled: tuple[(cell_id, code, turn, phase)])`; `skipped` = cells terminal and archived in earlier segments; `launched` = `cell.launch_intent` rows in this segment; `reconciled` = `cell.outcome` rows in this segment carrying `resume`. A cell that this resume *completes* normally after relaunch is `launched`, not `reconciled`.
 
+> **Erratum (2026-10-06, Coordinator #50; W0 rev 6.14 R6.14a):** the reader's placement. `resume.py` is class `run` and may not import `views.py` (class `grade`; `identity.RUN_IMPORTS_GRADE_ALLOWED`), so the one reader is `views.resume_history(run_dir) -> list[ResumeRecord]`, with `ResumeRecord` in `views.py`, built by X-K2b. The definition above is unchanged. Read `resume.history` in this design and in section 8's service row as that name.
+
 **Why not a counter or a status row?** Two definitions of one quantity is a defect signature (DM); the segment list is already the truth.
 
 ## 3. The resume protocol

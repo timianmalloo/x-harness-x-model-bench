@@ -46,5 +46,13 @@ Where this brief or the plan's row disagrees with W1-K rev 1.2 (the gated design
 
 **The X-TE9 edge is relaxed by W0 rev 6.13 (R6.13d).** K2b no longer waits on X-TE9's join. The two `cli.py` hunks are disjoint functions, so the later one rebases.
 
+## Recompiled (Coordinator #50, 2026-10-06)
+
+- **Compile `al-01M49X64P0ZCJFQCJVP1NA5SAE`** (raw `al-01M49X63TK7YKC6FBXYM91ZRNS`). Agy `gemini-3.8-flash-high` (`claude-code` template, as #39 and #43). Session `x-k2b2-e1e4`, run `w2-k2b2-e1e4`, branch `build/eval-x-k2b`. Both ids are new and checked free. `x-k2.contract.json` points at them. c43's compile `al-01M48P1TDE2VZ8VZHQMMJ21RYZ` is superseded.
+- **`resume.history` is placed by W0 rev 6.14 R6.14a.** K2b builds `views.resume_history` and `ResumeRecord` in `views.py`, with W1-K section 2's definition unchanged. `resume.py` is class `run`, so it may not import `views.py`. K2b gains `tests/test_views.py` (its test) and `tests/mutations/views.json` in its gate.
+- **The `status.py:4-5` docstring** is corrected to D-K5 in K2b's `status.py` commit.
+- **X-TE9 joins after K2b** (R6.14b). K2b edits no `cmd_validate` line.
+- **The split rule is floor-based** (CEIL-A). Agy's floor is unmeasured, so the worker records its first reading.
+
 ## Exit
 E1 README §3 join gate per dispatch; served model from Agy's `cli.log`. Report per E1 README §4.

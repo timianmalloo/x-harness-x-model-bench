@@ -26,5 +26,12 @@ summary: "X-CV runs after every E2-E4 item has joined and the 0.7 freeze is comm
 3. **All ten discrimination records** (S1, S2, RS1, RS2, RW1, RW2, NG1, NG2, SM1, SM2) at the final engine identity: synthetic cells, no model spend; `bench validate` reports all ten `ready`. A record whose `identity_hash` is not the final one is a failure, not a warning.
 4. The proof note gives planned against actual per track (GO19), measured from the audit log's `duration_seconds` and the joins' committer times.
 
+## Compiled (Coordinator #50, 2026-10-06)
+
+- **Compile `al-01M49X6KEJRBXZ8PPK5817ARAR`** (raw `al-01M49X6JKH4N22ZZNADZM8T5RN`). Claude Code Sonnet, session `x-cv-e1e4`, 7,200 s, T2. Stop check: `join-x-k2b` and `join-r113` are both in the log (Ruling 113 withdrew X-START).
+- **Folded in:** S2's open-items section in `tasks/S2/oracle/evidence.md` comes first, before S2's record (operator decision 5). The scope of `tests/test_resume_table.py`: W1-K section 4 already maps every row to a node, so the file checks the mapping and adds tests only for rows that have no node. TLC `--quick`, with the full-bound runs cited. SM1's mismatch gets a bounded read. The proof note has a ten-row records table.
+- **The records are not in this turn.** The Leader takes them after X-K2b, X-TE9 (R6.14b) and this branch join. The commands, in order, are in `docs/coordination/coordinator-log/c50.md`.
+- **Join gate (Ruling 113 condition 3):** the compiling Coordinator reads each record's `hosts.jsonl` for `end: "start bound"`. A reference hit means that record is not accepted as final. The X-CV join commit also carries Ruling 113 condition 4's two errata and condition 5's class.
+
 ## Exit
 E1 README §3 join gate; the Leader pushes, CI green on Windows and macOS, `docs-graph derive`, then `coord worktree cleanup` (reports only). Report per E1 README §4.
