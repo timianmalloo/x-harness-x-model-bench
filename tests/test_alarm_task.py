@@ -47,9 +47,10 @@ class Harness:
         (tmp_path / "rest_ok.ps1").write_text(REST_OK, encoding="ascii")
         (tmp_path / "rest_throw.ps1").write_text(REST_THROW, encoding="ascii")
 
-    def run(self, exit_code, payload=None, *, at=T0, rest="ok", topic=TOPIC, base_url=None):
+    def run(self, exit_code, payload=None, *, at=T0, rest="ok", topic=TOPIC, base_url=None, stderr=None):
         (self.tmp / "out.json").write_text(json.dumps(payload) if payload is not None else "", encoding="ascii")
-        (self.tmp / "bench.cmd").write_text(f'@echo off\r\ntype "%~dp0out.json"\r\nexit /b {exit_code}\r\n', encoding="ascii")
+        err_line = f"echo {stderr} 1>&2\r\n" if stderr else ""  # the real command prints HB-ALM-00x: <cause> on stderr
+        (self.tmp / "bench.cmd").write_text(f'@echo off\r\n{err_line}type "%~dp0out.json"\r\nexit /b {exit_code}\r\n', encoding="ascii")
         env = {k: v for k, v in os.environ.items() if not k.startswith("HB_ALARM_")}
         env["HB_TEST_SENT"] = str(self.sent)
         if topic is not None:
@@ -178,3 +179,10 @@ def test_a_failed_push_keeps_the_edge_so_the_next_run_retries(h):
 def test_optional_base_url_replaces_the_default_host(h):
     h.run(6, _alarm_object(), base_url="https://ntfy.example.test")
     assert h.sent_lines()[0].startswith(f"https://ntfy.example.test/{TOPIC}|")
+
+
+def test_real_stderr_line_on_exit_6_is_still_an_alarm(h):
+    """The real `bench status --alarm-after` prints HB-ALM-001: <cause> on stderr and exits 6; 5.1 must not turn that into check-error."""
+    result = h.run(6, _alarm_object(), stderr="HB-ALM-001: no progress for 2h")
+    assert result.returncode == 6
+    assert h.sent_lines() == [f"https://ntfy.sh/{TOPIC}|run r1 HB-ALM-001 no progress for 2h: age 7300s"]
