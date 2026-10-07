@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-07T00:12:52Z",
+  "generated": "2026-10-07T00:29:04Z",
   "audit": [
     {
       "actor": null,
@@ -119254,12 +119254,60 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M49V9D5Y425DM5MZ1ZRRA38K",
-      "shortname": "join-c49",
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
       "datetime": "2026-10-07T00:12:52Z",
-      "session": "leader-e1e4",
+      "done_when": "conductor-join exit 0 (docs-only)",
+      "duration_seconds": 1.0,
+      "fan_out": 0,
+      "goal": "Join Coordinator #49",
+      "id": "al-01M49V9D5Y425DM5MZ1ZRRA38K",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "the join of coord/eval-c49-start into integrate/e2e4-18",
+      "session": "leader-e1e4",
+      "shortname": "join-c49",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "execute-with-coordination",
+      "started_at": "2026-10-07T00:12:51Z",
       "summary": "Coordinator #49 4ac96218: X-START al-01M49TDBQGSCP4VDSGX5V3Y64P (Sonnet, x-start-e1e4; spike S0 then B1-B4); HB-CHK-006 (HB-CHK-005 is X-LB1's listener code) - dated ID-A erratum beside Ruling 112; LOAD-A already taken (second ID-A instance); 10 errata owed at X-START's join recount_seconds=0 (docs_only=True).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": "claude-sonnet-5-5",
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-07T00:12:21Z",
+      "done_when": "C1 and C2 green, mutants killed, RS2 record replaced, plan record",
+      "duration_seconds": 2138.0,
+      "goal": "X-CRLF: C1 one applying-edit definition (CR47-15), C2 RS2 requeue5xx (CR47-16)",
+      "id": "al-01M49V8F9CEVQQG6CJKZ8MJJJ5",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "X-CRLF dispatch (compile al-01M49PW88DCZ6WVZE8N3XX5VQ8, CR47-15, CR47-16)",
+      "session": "x-crlf-e1e4",
+      "shortname": "x-crlf",
+      "skill": "implement",
+      "started_at": "2026-10-06T23:36:43Z",
+      "summary": "Outcome green 9bd7b685 (head). Served model claude-sonnet-5-5. Dispatch start 2026-10-06T23:36Z. Red SHAs 2288ba97 (C1), c035072b (C2). Green 6d7d8363 (+70e4a4a2 mutant escape fix), fffd9bac. Mutants added 2, all killed. requeue5xx measured flips [g-ordering] on result. RS2 trial written edf7186d09faaf04-af0bbc1e3f354b8e; RS1 trial differs from committed record in identity_hash only, not committed. Tokens: not recorded. Context samples: not recorded. Gates: base 207 passed; final A 209 passed; final B 226 passed 3 xfailed 0 XPASS; mutate_check every mutation killed; ruff clean; bench validate ok; docs-graph validate 0 problems.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "id": "al-01M49W72D0E2YYYC0H9TEXJS68",
+      "shortname": "join-x-crlf",
+      "datetime": "2026-10-07T00:29:04Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of build/eval-x-crlf into integrate/e2e4-18",
+      "summary": "X-CRLF (Sonnet claude-sonnet-5-5, x-crlf-e1e4): C1 red 2288ba97 / green 6d7d8363 (readiness.apply_edit used by readiness.variants and discriminate._variant_overlay; +70e4a4a2 mutant find escape), two property.json mutants killed; C2 red c035072b / green fffd9bac (requeue5xx flips g-ordering alone on result, as traced; RS2 record edf7186d09faaf04-af0bbc1e3f354b8e replaces ce78c3a1...); gates 209 + 226 passed; bench validate clean. RS1 record identity_hash moved with src (only field) - left for X-CV's re-records. Leader: C1 red replayed (2 failed). recount_seconds=907 (docs_only=False).",
       "kind": "skill",
       "skill": "execute-with-coordination",
       "tool": null,
@@ -119268,8 +119316,8 @@ window.AUDIT_DATA = {
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Join Coordinator #49",
-      "done_when": "conductor-join exit 0 (docs-only)",
+      "goal": "Join X-CRLF into integrate/e2e4-18",
+      "done_when": "conductor-join exit 0 with the default ring green",
       "tier": "T1",
       "fan_out": 0,
       "signals": {
@@ -119277,8 +119325,8 @@ window.AUDIT_DATA = {
         "verification_executed": true,
         "acceptance_met": true
       },
-      "started_at": "2026-10-07T00:12:51Z",
-      "duration_seconds": 1.0
+      "started_at": "2026-10-07T00:13:56Z",
+      "duration_seconds": 908.0
     }
   ],
   "changes": [
