@@ -7,15 +7,20 @@ alarming test fails on its own assertion (`exit == 6`), never on argparse or an 
 
 import json
 import os
+import shutil
+import subprocess
+import sys
 import time
+from datetime import datetime
 from pathlib import Path
 
 import pytest
 from archived_runs import make_root, make_run
 
-from harness_bench import alarm, cli, ledger, oslock
+from harness_bench import alarm, cli, ledger, oslock, status
 
 AFTER = 600
+TASK = Path(__file__).resolve().parents[1] / "tools" / "alarm-task.ps1"
 
 
 def _at(age_s: float) -> str:
@@ -138,6 +143,15 @@ def test_unreadable_progress_fails_closed(env, capsys):  # make_run's rows carry
     assert "not recorded" in err
 
 
+def test_gap_equal_to_the_threshold_is_silent(env):  # M-GE: "exceeds after_s" is strict, on an injected clock (W1-K 6.2)
+    _events(env, _cell_rows("a", "cell.prompt_sent", age_s=5))
+    last = datetime.fromisoformat(status.last_progress_at(env)).timestamp()
+    with oslock.RunLock.acquire(env / ".lock", "HB-RUN-003"):
+        assert alarm.check(env, AFTER, now=last + AFTER) is None
+        late = alarm.check(env, AFTER, now=last + AFTER + 1)
+    assert late is not None and late.code == "HB-ALM-002"
+
+
 def test_json_form_carries_the_alarm_object(env, capsys):
     _events(env, _cell_rows("a", "cell.prompt_sent"))
     with oslock.RunLock.acquire(env / ".lock", "HB-RUN-003"):
@@ -153,3 +167,30 @@ def test_alarm_has_no_pending_logic_of_its_own():  # M-ALARMPENDING: the work de
     assert "from harness_bench.resume import has_work" in source and "has_work(" in source
     for private in ("cell.outcome", "cell.archived", "cell.launch_intent", "stop_recorded", "run.stopped", "classify"):
         assert private not in source, f"alarm.py carries its own pending logic ({private})"
+
+
+@pytest.mark.native
+@pytest.mark.skipif(shutil.which("powershell.exe") is None, reason="powershell.exe 5.1 not found")
+def test_real_status_command_feeds_the_real_alarm_task(env, tmp_path):  # INT-A control (W0 13, alarm-task row): K2a's stub cannot drift
+    _events(env, _cell_rows("a", "cell.prompt_sent", age_s=5))  # ADR-0021 7 fixture: work left, no engine holds the lock
+    runs = env.parent
+    bench = tmp_path / "bin" / "bench.cmd"
+    bench.parent.mkdir()
+    bench.write_text(f'@echo off\r\n"{sys.executable}" -c "import sys; from harness_bench.cli import main; sys.exit(main(sys.argv[1:]))" '
+                     f'--runs "{runs}" %* 2>"%~dp0err.txt"\r\n', encoding="ascii")
+    # Seam finding for X-K2a (reported, not edited here): tools/alarm-task.ps1 runs `bench ... 2>$null` under
+    # $ErrorActionPreference = 'Stop', and powershell.exe 5.1 turns the real command's stderr line (HB-ALM-00x: ...) into a
+    # NativeCommandError (exit 1, "check-error"). The stub never wrote stderr. The wrapper redirects stderr itself so this test can run.
+    real = subprocess.run([str(bench), "status", env.name, "--alarm-after", "600", "--json"], capture_output=True, text=True, timeout=120,
+                          check=False)
+    printed = (bench.parent / "err.txt").read_text(encoding="ascii").split(":", 1)[0]
+    assert (real.returncode, printed) == (6, "HB-ALM-001")
+    sent = tmp_path / "sent.txt"
+    (tmp_path / "rest.ps1").write_text('function Invoke-RestMethod { param($Uri, $Method, $Body) Add-Content -Path $env:HB_TEST_SENT -Value "$Uri|$Body" }\n',
+                                       encoding="ascii")
+    task_env = {k: v for k, v in os.environ.items() if not k.startswith("HB_ALARM_")} | {"HB_TEST_SENT": str(sent), "HB_ALARM_NTFY_TOPIC": "tpc-fake-0001"}
+    task = subprocess.run(["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(TASK), "-RunId", env.name, "-AlarmAfter", "600",
+                           "-DryRun", "-Bench", str(bench), "-RunsRoot", str(runs), "-RestStub", str(tmp_path / "rest.ps1")],
+                          capture_output=True, text=True, timeout=120, env=task_env, check=False)
+    assert task.returncode == 6
+    assert f"run {env.name} {printed} " in sent.read_text(encoding="ascii")  # the payload's code is the one the command printed

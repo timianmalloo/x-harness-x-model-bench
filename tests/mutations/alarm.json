@@ -1,0 +1,58 @@
+[
+ {
+  "name": "M-HEARTBEATONLY: a free lock with work left is not an alarm (only a stale heartbeat is)",
+  "file": "src/harness_bench/alarm.py",
+  "find": "    if not oslock.is_held(lock):\n",
+  "replace": "    if False and not oslock.is_held(lock):\n",
+  "tests": ["tests/test_alarm.py::test_free_lock_with_work_exits_6_alm_001"]
+ },
+ {
+  "name": "M-GE: the gap alarms at exactly the threshold",
+  "file": "src/harness_bench/alarm.py",
+  "find": "    if gap > after_s:\n",
+  "replace": "    if gap >= after_s:\n",
+  "tests": ["tests/test_alarm.py::test_gap_equal_to_the_threshold_is_silent"]
+ },
+ {
+  "name": "M-UNITS: the gap is read in minutes against a threshold in seconds",
+  "file": "src/harness_bench/alarm.py",
+  "find": "max(0.0, now - _epoch(last))",
+  "replace": "max(0.0, now - _epoch(last)) / 60",
+  "tests": ["tests/test_alarm.py::test_stale_progress_exits_6_with_alm_002"]
+ },
+ {
+  "name": "M-ZEROISOK: a progress time that is not recorded reads as no alarm",
+  "file": "src/harness_bench/alarm.py",
+  "find": "    if gap is None:\n        return AlarmResult(",
+  "replace": "    if gap is None:\n        return None\n        return AlarmResult(",
+  "tests": ["tests/test_alarm.py::test_unreadable_progress_fails_closed"]
+ },
+ {
+  "name": "M-PENDINGONLY: work left alarms ALM-002 whatever the gap",
+  "file": "src/harness_bench/alarm.py",
+  "find": "    if gap > after_s:\n",
+  "replace": "    if True:\n",
+  "tests": ["tests/test_alarm.py::test_pending_zero_does_not_raise_alm_002"]
+ },
+ {
+  "name": "M-ALARMPENDING: alarm.py carries its own definition of pending instead of has_work",
+  "file": "src/harness_bench/alarm.py",
+  "find": "    if not has_work(plan, rows):\n",
+  "replace": "    if not any(r[\"kind\"] == \"cell.outcome\" for r in rows):\n",
+  "tests": ["tests/test_alarm.py::test_alarm_has_no_pending_logic_of_its_own"]
+ },
+ {
+  "name": "M-NAMESORT: last_progress_at reads the last segment by file name, not the newest row",
+  "file": "src/harness_bench/status.py",
+  "find": "    return max((value for value in found if value), default=None)\n",
+  "replace": "    return found[-1] if found else None\n",
+  "tests": ["tests/test_status.py::test_last_progress_ignores_segment_name_order"]
+ },
+ {
+  "name": "M-STOPEXEMPT: a run with a stop row in its ledger is exempt from the alarm",
+  "file": "src/harness_bench/alarm.py",
+  "find": "    if not has_work(plan, rows):\n",
+  "replace": "    if not has_work(plan, rows) or any(r[\"kind\"] in (\"run.stopped\", \"control.applied\", \"decision.resolved\") for r in rows):\n",
+  "tests": ["tests/test_alarm.py::test_mid_stop_crash_alarms"]
+ }
+]
