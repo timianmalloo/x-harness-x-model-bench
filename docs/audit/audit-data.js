@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-07T02:41:01Z",
+  "generated": "2026-10-07T02:53:28Z",
   "audit": [
     {
       "actor": null,
@@ -120944,39 +120944,90 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M4A1T36YSDAEYWRR04G67CCZ",
-      "shortname": "join-x-te9",
-      "datetime": "2026-10-07T02:06:50Z",
-      "session": "leader-e1e4",
-      "prompt": "the join of build/eval-x-te9 into integrate/e2e4-18",
-      "summary": "X-TE9 (Sonnet claude-sonnet-5-5, 2 parts): K1 red 1a4fa6dc / green bf7a2d23 (cmd_validate prints readiness.problems; --campaign baseline; only x lines fail), 3 T-E9 markers off, cli.json mutant killed; K2 red 85974a58 (weak: AttributeError, function absent) / green 5aa73a71 (pass_rule_problems + G2 branch); gates 203 + 309 passed; plan record. Joined after K2b and before X-CV's records per W0 R6.14b (RECID-A: a src change after the records would stale all ten). merge-tree onto be134319 clean. recount_seconds=944 (docs_only=False).",
-      "kind": "skill",
-      "skill": "execute-with-coordination",
-      "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [],
-      "outcome": "success",
       "compiled": false,
-      "goal": "Join X-TE9 into integrate/e2e4-18",
+      "datetime": "2026-10-07T02:06:50Z",
       "done_when": "conductor-join exit 0 with the default ring green",
-      "tier": "T1",
+      "duration_seconds": 946.0,
       "fan_out": 0,
+      "goal": "Join X-TE9 into integrate/e2e4-18",
+      "id": "al-01M4A1T36YSDAEYWRR04G67CCZ",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "the join of build/eval-x-te9 into integrate/e2e4-18",
+      "session": "leader-e1e4",
+      "shortname": "join-x-te9",
       "signals": {
-        "verification_path": true,
+        "acceptance_met": true,
         "verification_executed": true,
-        "acceptance_met": true
+        "verification_path": true
       },
+      "skill": "execute-with-coordination",
       "started_at": "2026-10-07T01:51:04Z",
-      "duration_seconds": 946.0
+      "summary": "X-TE9 (Sonnet claude-sonnet-5-5, 2 parts): K1 red 1a4fa6dc / green bf7a2d23 (cmd_validate prints readiness.problems; --campaign baseline; only x lines fail), 3 T-E9 markers off, cli.json mutant killed; K2 red 85974a58 (weak: AttributeError, function absent) / green 5aa73a71 (pass_rule_problems + G2 branch); gates 203 + 309 passed; plan record. Joined after K2b and before X-CV's records per W0 R6.14b (RECID-A: a src change after the records would stale all ten). merge-tree onto be134319 clean. recount_seconds=944 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
     },
     {
-      "id": "al-01M4A3RP4TS51CXWE5Z1ZRJB4P",
-      "shortname": "join-x-alarmfix",
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
       "datetime": "2026-10-07T02:41:01Z",
-      "session": "leader-e1e4",
+      "done_when": "conductor-join exit 0 with the default ring green",
+      "duration_seconds": 776.0,
+      "fan_out": 0,
+      "goal": "Join X-ALARMFIX",
+      "id": "al-01M4A3RP4TS51CXWE5Z1ZRJB4P",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "the join of the resolved merge into integrate/e2e4-18",
+      "session": "leader-e1e4",
+      "shortname": "join-x-alarmfix",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "execute-with-coordination",
+      "started_at": "2026-10-07T02:28:05Z",
       "summary": "X-ALARMFIX (Sonnet, Leader inline brief): red dc516720 (replayed by the Leader: assert 1 == 6 under powershell.exe 5.1), green ee1b0e11; X-K2b's workaround removed; no src change. First recount red on an order-dependent test (MPATCH-A: monkeypatch.delitem reordered property.STRATEGIES) -> Leader test fix (filtered copy), reproduced and green in one process. recount_seconds=775 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/proof/eval-campaign-convergence.md",
+        "tests/test_resume_table.py"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-07T02:14:15Z",
+      "done_when": "gates green, records table left for the Leader",
+      "duration_seconds": 1383.0,
+      "goal": "X-CV convergence: W1 S2 open items, W2 resume table test, W3 TLC quick, W4 SM1 finding, W5 proof note",
+      "id": "al-01M4A27P3CHNN228QS2JECHAY6",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "X-CV convergence turn (compile al-01M49X6KEJRBXZ8PPK5817ARAR)",
+      "session": "x-cv-e1e4",
+      "shortname": "x-cv-close",
+      "skill": "implement",
+      "started_at": "2026-10-07T01:51:12Z",
+      "summary": "X-CV (Claude Code Sonnet, served claude-sonnet-5-5), start 2026-10-07T01:51Z. Outcome green ffe9f123. W1 1a36774b; W2 red-first and green 30ee6cbf (23 table nodes run: 23 passed; test file 2 passed); W3 TLC --quick exit 0 all model checks passed, 34/34 seeded variants rejected, 4/4 witnesses; W4 no commit of tasks/SM1 hashes to db5fedd4, cause Inferred as ignored cache folder in the record's tree; W5 f9570f1b, index ffe9f123. Tokens: not recorded. Context samples: not recorded.",
+      "tags": [],
+      "tier": "T2",
+      "tool": null
+    },
+    {
+      "id": "al-01M4A4FFKCN07MGPC0Y8TFN1TD",
+      "shortname": "join-x-cv",
+      "datetime": "2026-10-07T02:53:28Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of build/eval-x-cv into integrate/e2e4-18",
+      "summary": "X-CV (Sonnet claude-sonnet-5-5, x-cv-e1e4): W1 1a36774b S2 open-items section (operator decision 5); W2 30ee6cbf tests/test_resume_table.py (19 rows, 23 nodes, red shown on a mutated doc copy); W3 TLC --quick pass (34/34 seeded rejected); W4 SM1: record taken from the working tree before 666ded0c's commit, likely an ignored cache file inside tasks/SM1 (Inferred); W5 f9570f1b proof note with the ten-row records table for the Leader; no src diff. recount_seconds=741 (docs_only=False).",
       "kind": "skill",
       "skill": "execute-with-coordination",
       "tool": null,
@@ -120985,7 +121036,7 @@ window.AUDIT_DATA = {
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Join X-ALARMFIX",
+      "goal": "Join X-CV into integrate/e2e4-18",
       "done_when": "conductor-join exit 0 with the default ring green",
       "tier": "T1",
       "fan_out": 0,
@@ -120994,8 +121045,8 @@ window.AUDIT_DATA = {
         "verification_executed": true,
         "acceptance_met": true
       },
-      "started_at": "2026-10-07T02:28:05Z",
-      "duration_seconds": 776.0
+      "started_at": "2026-10-07T02:41:05Z",
+      "duration_seconds": 743.0
     }
   ],
   "changes": [
