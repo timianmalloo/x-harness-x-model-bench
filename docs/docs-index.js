@@ -5598,6 +5598,31 @@ window.DOCS_INDEX = {
       "sourceSha256": "e6b5e4a6d4871b96b2b87e2efca85836d249939f4e1bc05004044b68da38911a"
     },
     {
+      "id": "plan-eval-x-te9",
+      "path": "docs/plans/eval-x-te9.md",
+      "title": "X-TE9: strict bench validate and pass_rule_problems",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-20",
+      "reviewSuggested": [],
+      "summary": "X-TE9 execution record: K1 cmd_validate prints readiness.problems, K2 readiness.pass_rule_problems.",
+      "tags": [
+        "evaluation",
+        "coordination",
+        "execution-graph"
+      ],
+      "links": [
+        {
+          "to": "design-eval-seam-contracts",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b81a21924c03712da251ea54d4ba305543f3278025a3ce804dc66681e8fd0794"
+    },
+    {
       "id": "proof-phase2",
       "path": "docs/proof/phase2.md",
       "title": "Proof Pack - phase 2 (wave-by-wave joins)",
@@ -10130,6 +10155,14 @@ window.DOCS_INDEX = {
       "artifactId": "plan-eval-x-rs"
     },
     {
+      "id": "surface-plans-eval-x-te9",
+      "path": "docs/plans/eval-x-te9.html",
+      "title": "Eval X Te9",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-te9"
+    },
+    {
       "id": "surface-case-study",
       "path": "docs/case-study.html",
       "title": "From Specification to Implementation: An AI-Forward Case Study",
@@ -10176,5 +10209,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "159bc1c8d860eb3682e419fd51111c3323f5eb07830ea9e1d858c8e6b13a24fe"
+  "graphSha256": "902bfce320aa75a766f643901b1a66eabb2b53761911b7d8a002ffab354ccdec"
 };
