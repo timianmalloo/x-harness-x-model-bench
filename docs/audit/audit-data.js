@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-07T05:38:42Z",
+  "generated": "2026-10-07T05:40:15Z",
   "audit": [
     {
       "actor": null,
@@ -121160,6 +121160,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-07T05:24:09Z",
       "duration_seconds": 873.0
+    },
+    {
+      "id": "al-01M4AE0WBXKB9RBFCT1QYTZZ2Z",
+      "shortname": "join-ledger-p5",
+      "datetime": "2026-10-07T05:40:15Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of 6e9ab85b into integrate/e2e4-18",
+      "summary": "the primary's .agents/log ledger lines for the E2-E4 run since P4, merged docs-only before the P5 push recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Carry the primary's ledger lines into the P5 push",
+      "done_when": "conductor-join exit 0 (docs-only)",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-07T05:40:14Z",
+      "duration_seconds": 1.0
     }
   ],
   "changes": [
@@ -123142,6 +123169,42 @@ window.AUDIT_DATA = {
       "to": "coord-opus-e1e4",
       "kind": "ruling",
       "ref": "req-01M4966TTSM5ADZ41AFE6SX8S9",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M49SHCFBJPC0XDRVHJ408PVJ",
+      "ts": "2026-10-06T23:42:16Z",
+      "from": "leader-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M49SHCF1T7JQZGD55RFG9BSY",
+      "session": "leader-e1e4"
+    },
+    {
+      "id": "mail-01M49SZCYDMTY6WAYP7E3XM2A0",
+      "ts": "2026-10-06T23:49:55Z",
+      "from": "owner-fable",
+      "to": "leader-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M49SHCF1T7JQZGD55RFG9BSY",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M49WPHCD4K4KZS1DSYWBZEQF",
+      "ts": "2026-10-07T00:37:31Z",
+      "from": "leader-e1e4",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M49WPHC2PGAWZSV73D0D6H25",
+      "session": "leader-e1e4"
+    },
+    {
+      "id": "mail-01M49X07JCKR03AJ6P8QHHABGR",
+      "ts": "2026-10-07T00:42:48Z",
+      "from": "owner-fable",
+      "to": "leader-e1e4",
+      "kind": "ruling",
+      "ref": "req-01M49WPHC2PGAWZSV73D0D6H25",
       "session": "owner-fable"
     }
   ]
