@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-07T00:29:04Z",
+  "generated": "2026-10-07T00:36:42Z",
   "audit": [
     {
       "actor": null,
@@ -119327,6 +119327,27 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-07T00:13:56Z",
       "duration_seconds": 908.0
+    },
+    {
+      "id": "al-01M49WN1ZMTX2XXXT2WXNTMPGG",
+      "shortname": "x-start-spike-finding",
+      "datetime": "2026-10-07T00:36:42Z",
+      "session": "x-start-e1e4",
+      "prompt": "X-START compiled prompt al-01M49TDBQGSCP4VDSGX5V3Y64P (Ruling 112, spike then build)",
+      "summary": "X-START finding (no src/ edit): Ruling 112 condition 2 spike, neither signal discriminates. Model claude-sonnet-5-5. Host 24 logical CPUs, Windows. Load: 3 sequential `uv run pytest -q -p no:cacheprovider -n 4 tests/test_engine.py` (launcher PID killed by PID). Bound 2000 ms, case = one probe on a fixture callable through the real grade_cell/bench_check/probe host; idle fraction = GetSystemTimes over the \"check\" _Span.\n(ii) idle fraction over the check span, floor/none: (a) idle ref N=5 idle 0.879-0.955, start_ms 49-70; (b) -n 4 ref N=8 idle 0.707-0.934, start_ms 52-90 (no natural miss of 2000 ms); (b-forced) bound 45 ms: idle host N=5 idle 0.843-0.949, loaded N=6 idle 0.876-0.946, i.e. loaded readings sit inside the idle-host range; (c) idle sleeping hang N=5 idle 0.925-0.986, did not start 0; (d) idle spinning hang (24 threads) N=6 idle 0.843-0.923 start 2001-2011 did not start 0; (d') extra adversarial spin of 24 child processes N=4 idle 0.28-0.62. No floor: (b) max 0.934 and (b-forced) are above (d) min 0.85, and (d') falls to 0.28 so a deliverable could force NA.\n(i) host part Popen to pre-import line (wrapper imports real bench_check then writes the line): (a) N=6 57-71 ms; (b) N=8 54-125 ms; (c) N=6 54-117 ms (a no-load hang reading of 117); (d) N=6 57-62 ms. Overlap, and by construction (c)/(d) equal (a).\nOutcome: finding, no commit, no src/ edit. A new DR with the numbers; (A)'s larger constant is the interim.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "blocked",
+      "compiled": false,
+      "goal": "X-START: build Ruling 112 after a signal spike",
+      "done_when": "spike decides signal; build B1-B4",
+      "tier": "T1",
+      "started_at": "2026-10-07T00:29:46Z",
+      "duration_seconds": 416.0
     }
   ],
   "changes": [
