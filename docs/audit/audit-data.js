@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-07T02:53:28Z",
+  "generated": "2026-10-07T03:48:23Z",
   "audit": [
     {
       "actor": null,
@@ -121047,6 +121047,44 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-07T02:41:05Z",
       "duration_seconds": 743.0
+    },
+    {
+      "id": "al-01M4A7M0QPGAZAJ9Q3V0JGPEYG",
+      "shortname": "c52-closeout",
+      "datetime": "2026-10-07T03:48:22Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "Coordinator #52 close-out: resolve the 7 expired requests from the record, RUN-B register entry, E2-E4 run report draft (plan Stage 7 + run-report-e2e4), gates, commit, session end",
+      "summary": "Coordinator #52 (claude-opus-5-5) on coord/eval-c52-closeout (base b365654b): 7 expired requests resolved from the record with citations (6 fallback/grant taken as built: 46CZP b92d74e6, 46M71 bb177a2e, 46VNY 33e827a9, 47837 0c788935, 48F9E and 48FCF 5b9230bd; 48SKQ t1regress fallback held, declaration never settled, record silent); coord doctor requests ok - 116, 0 open. DEV-A registered (un-noted RUN-B leader-check retry in coord-runner.py, ef29a01b CONFLICT, retired upstream rev 99) + RUN-B control-status line. Plan coordination-e2e4.md Stage 7 planned-vs-actual section (+html regenerated) and run-report-e2e4.md/.html drafts from measured sources (A/J/N/C): 35.8 h plan-join to last join vs 15-20 h Inferred; 3 of 19 external turns complete with no follow-on; 34 requests all resolved; recount 25.0-38.2 min single-process (27 joins) vs 9.4-16.2 min at -n 4 (11 joins); 41 classes; R-107..113. Gates: derive 0, validate 0, citations 113/113.",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/coordination/coordinator-log/c52.md",
+        "docs/coordination/run-report-e2e4.md",
+        "docs/coordination/coordination-e2e4.md",
+        "docs/lessons/defect-classes.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Record outcomes for the 7 expired requests, register RUN-B, draft the E2-E4 run report from measured sources, gates, commit",
+      "done_when": "doctor requests ok; three gates exit 0; commit made; coord session end",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-07T03:30:13Z",
+      "duration_seconds": 1089.0,
+      "git": {
+        "sha": "b365654bb8db51ffd98a90abed1efd2693be5765",
+        "short": "b365654bb",
+        "branch": "coord/eval-c52-closeout",
+        "pushed": null
+      }
     }
   ],
   "changes": [

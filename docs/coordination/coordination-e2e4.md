@@ -369,3 +369,92 @@ The operator's words, answering the Leader's five numbered questions: "1: I can 
 | **Completed** | layer read back in this tree (`coord doctor`, `pack-doctor`); every dependency checked against `main` at `839d0f4a` (contracts' compile ids, task statuses, `identity.PLANNED`, `STRATEGIES`, `errors.py` rows, the gate-stamp inputs, the E1 E2E strict-xfail legs, the ai-forward clone's state); this plan; twelve register entries in `docs/lessons/defect-classes.md` (six new candidates, six instances of existing classes); `docs/coordination/coordinator-log/c29.md` |
 | **Remaining** | the Leader's review and merge; C-W0; the T0 compiles; every track; B-2, B-3 and the T-E9 release (operator) |
 | **Best next action** | The Leader merges this plan, creates `integrate/e2e4-18`, and spawns Coordinator #30 for the T0 compiles and #31 for C-W0 in parallel; then `/execute-with-coordination` dispatches row 6 |
+
+## Planned vs actual (Stage 7; draft for the Leader's review, Coordinator #52, 2026-10-07)
+
+**Status: draft.** The Leader has not reviewed this section yet. The narrative, the defect classes, the rulings, the pushes and the open items are in `docs/coordination/run-report-e2e4.md`. This section holds the per-track record (GO19).
+
+**Sources, and nothing else.** Every figure names one of these sources, or says "not recorded":
+
+- **A**: an entry in `docs/audit/audit-log.jsonl` (`duration_seconds`, `main_calls` and `main_budget`, the summary).
+- **J**: a join entry. `recount_seconds` comes from its summary. It measures only the **final, green** recount. A red recount that stopped a join is not in it.
+- **N**: the Leader's run notes (`e2e4-run-notes.md`, the session scratchpad), cited by the clock label on the line. Those labels do not map to one time zone. For example, the notes say "07:05" for this session, and its measured start is `2026-10-07T03:30:13Z`. So no wall-clock figure here is computed from N.
+- **C**: a Coordinator log, `docs/coordination/coordinator-log/c<n>.md`.
+
+**Tokens and tool calls are not recorded for any track**, except two Codex entries that carry `main_calls`: J1a used 80 of 320 calls and J1c used 48 of 320 (A). "Budget vs spend" below is therefore the planned budget against measured durations and dispatch counts only.
+
+### Per track
+
+| track | planned (harness · budget, calls · context · dispatches · wall) | ran (harness, served model, measured duration, source) | why it differed | seams raised | join (J: `recount_seconds`) |
+| --- | --- | --- | --- | --- | --- |
+| X-J1 | Codex `gpt-6.1-sol` · 320 · 200k · 5 · 5 h | **J1a** Codex: 2,960 s partial (N "09:03"); 2,909 s (A `al-01M46CW502B980SYE42F926D2J`). Then a Sonnet follow-on for the driver survivors and the regression fix `bb177a2e` (N "11:20"). **J1b** Codex: 1,666 s partial (N "11:34"; A 1,387 s). Sonnet continuation: 4,597 s (A `al-01M46V64D5P5C4NASE5EJRCYET`). **J1c** Codex: 1,364 s partial at its context ceiling, input 230k > 200k (N "15:42"; A 1,301 s). Sonnet continuation: 2,544 s (A `al-01M477JD6YKJ4BX23YDG01RFGJ`). **J1d** Codex: 905 s, planned hand-back at 107k (N "20:12"; A 839 s). Sonnet follow-on: not recorded in A. **J1e** Codex: 1,344 s, red-only at the planned K2 split, 128k (N "01:13"; A 1,231 s). Sonnet continuation: not recorded in A | RUN-IDENTITY at J1a's prepare: two failed attempts, then a new identity `x-j1a2` (N "08:13"; IDN-A). LOCK-A starved J1a's mutation runs. CANON-A blocked J1b. CEIL-A ended J1c. J1d and J1e were context splits by plan | 12 (J1a 4, J1b 4, J1c 3, J1d 1) | J1a 1,543 · J1b 1,785 · J1c 1,772 · J1d 1,684 · J1e 1,775 |
+| X-K1 | Codex · 280 · 200k · 4 · 4.5 h | **K1a** Codex: hit its 3,300 s deadline (N "03:40"). Its split entry is 432 s (A). Then **FALLBACK-A**: the worker launched Claude Code Sonnet sessions itself. That session's entry is 1,453 s (A `al-01M48BX33FYWMMN111SXWTNBN7`), and the Leader did not dispatch it. A Sonnet lint fix followed (N "04:05"). **K1b** Codex: 2,158 s, planned split (N "04:56"; A 2,104 s). Sonnet K4 follow-on: 2,286 s (A). **K1c** Codex: 1,931 s, planned split after K5 (N "07:01"; A 1,877 s). Sonnet: K6 4,283 s, finishing 1,044 s, finishing-2 3,737 s (A). A second finishing-2 entry of 3,760 s overlaps the 3,737 s one. **K1d** Codex part 1: 1,384 s, split at 151,818 (N "15:40"; A 1,335 s). For part 2 the runner refused RUN-IDENTITY, so it ran on Sonnet: 10,031 s (A). That is the entry's wall clock, and its waits are not separated. Part 3 on Sonnet (`x-k1d3`): 1,323 s (A) | the planned splits; FALLBACK-A; RUN-IDENTITY (IDN-A) moved K1d parts 2-3 to Sonnet; the context ceiling and per-run identity moved K1c's K6 to Sonnet (N "07:01") | 8 (K1a 3, K1b 2, K1c 2, K1d 1) | K1a 1,813 · K1b 1,899 · K1c 563 (`-n 4`, third recount) · K1d 669 |
+| X-K2 | K2a Grok · 40 · 100k · 1 · 0.7 h; K2b Agy · 110 · 150k · 1 · 1.5 h | **K2a**: Grok failed in ACP `initialize` (XPORT-A), and the same-id retry was refused RUN-STARTED. A Sonnet fallback ran in the same tree (N "10:07"); its duration is not recorded in A. **K2b** Agy part 1: 707 s, served `gemini-3.8-flash-high` (N "02:35"; A 635 s), split after K1. Part 2 on Sonnet: 242 s. Part 3 on Sonnet: 1,304 s (A) | K2a: XPORT-A in the `initialize` phase. K2b: CEIL-A's floor rule (159,037 > the Agy floor 39,611 + 60k), then RUN-IDENTITY moved parts 2-3 to Sonnet | 0 | K2a 1,682 · K2b 972 |
+| X-A3 | Agy · 240 · 200k · 3 · 3.5 h | **A3a** Agy: `deadline_exceeded` at 3,300 s. Sonnet green follow-on `cc2d0916` (N "09:09", "09:3x"). **A3b** Agy: deadline at 3,300 s after its green. Sonnet follow-on `36ad63ae` (N "12:01", "12:50"). **A3c** ran on Claude Code Sonnet: 1,220 s and 894 s partials (A). Its second continuation is not recorded in A | the plan's Agy revisit trigger fired (two Agy turns red-only); Ruling 108 moved A3c to Sonnet | 1 (A3c) | A3a 1,501 · A3b 1,844 · A3c 1,750 |
+| X-G3 | Grok · 80 · 120k · ≤3 · 1.2 h | Attempt 1 was served `grok-4.6` (SERVE-A) and stopped. Attempt 2 (r2): Grok, 1,974 s, served `grok-4.7-build`, ready (N "10:36", "11:12") | SERVE-A: the runner never set the model for Grok (C34) | 0 | 2,065 (with the 0.7 freeze) |
+| X-J2 | J2b Agy, red-only on the engine leg by plan · 110 · 180k · 1 · 1 h; J2c Sonnet · 60 · 150k · 1 · 1 h | **J2b** Agy: deadline at 3,300 s, red-only (N "12:42"). Sonnet follow-on `37c54fd8`, and the join fix `0c788935` (QUOTE-A). **J2c** Sonnet: 769 s (A `al-01M483VB33VM4MAGJ88DW5F7QH`) | the planned red-only end, as designed; QUOTE-A at the join | 1 (J2b) | J2b 1,736 · J2c 1,858 |
+| X-LG | Agy · 180 · 180k · 3 · 3 h | **LGa** Agy: 1,479 s, green (N "08:39"). **LGb** Agy: 2,037 s, green (N "10:41"). **LGc** Agy: cancelled at 1,298 s by a false RUN-LEADER (N "14:03"). Sonnet follow-on `ef959513` | RUN-B, the runner's leader-check bound under host load | 0 | LGa 1,552 · LGb 1,795 · LGc 1,676 |
+| X-I5 | Sonnet · 60 · 150k · 1 · 1 h | Sonnet. Duration not recorded in A. It was resumed once to flip S1 in the right order (N "08:58") | the S1 record was taken on draft first, so the key order was wrong | 1 | X-I5 1,591 · S1 ready 1,640 |
+| X-I-S2 | Sonnet · 150 · 200k · 1 · 3 h | Sonnet. Duration not recorded in A | - | 1 | 1,883 |
+| X-RDY | Sonnet · 200 · 200k · 1 (+1) · 3 h | Part 1: 1,235 s (A `al-01M48AT3QMVZ1QVF4VTP3R14B4`), blocked by the SHAPE-A conflicts. Follow-on K1: 796 s. Follow-on K2/K3: 905 s (A) | SHAPE-A (X-FIXD and Ruling 109 first) | 1 (the `t1regress` finding) | part 1 1,759 · part 2 2,295 (includes the X-FIXV stop; N "08:10", "09:06") |
+| X-INTF | Sonnet · 80 · 150k · 1 · 1.5 h | Sonnet. Duration not recorded in A | - | 1 | 1,771 |
+| X-TE9 | Sonnet · 40, amended to 60 · 100k · 1 · 0.7 h | Part 1: 582 s, split at 95,651 > 60k. Part 2: 1,210 s (A) | CEIL-A: the compile's threshold sat below the measured floor (N "09:50") | 0 | 944 |
+| X-CV | Sonnet · 120 · 180k · 1 · 2 h + machine time | Sonnet: 1,383 s (A `al-01M4A27P3CHNN228QS2JECHAY6`). The Leader then took the ten records | - | 0 | 741 |
+| X-PACK | Opus · 250 · 350k · 1 session (two trees) · 4 h | Opus in three dispatches: phase 1, phase 1b and phase 2 (N "08:13", "17:02", "06:30"). Durations not recorded in A. Phase 2 is `ef29a01b` + `34a1de99` | phase 1b added the SERVE-A, XPORT-A `initialize` and RUN-B fixes; ai-forward rev 99 `7ea5dea` | 0 | phase 2 joins in P5 (pending) |
+| X-LB1 | Sonnet · 160 · 180k · 2 · 2.5 h | Three parts: 1,816 s, 3,846 s and 1,625 s, 7,287 s in all (A). A Security & Identity review (Opus) returned PASS-WITH-CONDITIONS (N "13:20") | the review's three Majors became part 3 | 0 | 616 |
+| X-RS | Sonnet · 200 · 200k · 2 · 4 h | Seven parts: 221, 159, 900, 1,387, 1,324, 1,661 and 2,659 s, 8,311 s in all (A) | CEIL-A: the reading phase alone passed the 100k start threshold (N "09:20", "09:35"); IDEM-A; APPLY-A | 1 | 724 |
+
+**Tracks the plan did not have** (the plan budgeted 3 loop-back slots, N "08:20" and "04:15" name slots 2 and 3):
+
+| track | why | ran (measured, source) | join (J) |
+| --- | --- | --- | --- |
+| ring guard | CACHE-B | Sonnet, `86e6a949` (N "16:35"); duration not recorded in A | 1,741 |
+| X-FIXD (loop-back slot 2) | SHAPE-A instance 1, then Ruling 109 | t1: 1,643 s (A). t2: 1,957 s to its hand-back (N "06:45"), then a resume (A entry carries no duration) | 1,846 · 1,860 |
+| X-FIXV (slot 3) | the ignored `__pycache__` under the ready tasks' vendored code | 1,078 s (A) | inside part 2 of X-RDY (2,295) |
+| X-RETIER | operator decision: a stamped tier and `-n 4` | 5,693 s (A) | 1,967 (single-process; `-n 4` applied from the next join, N "12:25") |
+| X-FIXE | SHAPE-A row 4, EVID-A #2, CR47 | 1,112 s and 2,339 s (A); part 3 not recorded in A | 758 |
+| X-CRLF | APPLY-A | 2,138 s (A) | 907 |
+| X-FLAKE | the FLAKE-A reds under `-n 4` (c48) | 856 s (A) | 896 |
+| X-START | Ruling 112 | 416 s, blocked after spike S0 (A `al-01M49WN1ZMTX2XXXT2WXNTMPGG`); withdrawn by Ruling 113 | withdrawn (docs join) |
+| X-ALARMFIX | `tools/alarm-task.ps1` exits 1 under PowerShell 5.1 | Sonnet, `ee1b0e11` (N "04:05"); duration not recorded in A | 775 |
+| cache investigator, K1a lint fix | CACHE-B; ruff PLW1510 | Sonnet; durations not recorded in A | none / within K1a |
+
+### Externals against the plan (N, per turn)
+
+19 external turns ran: Codex 9 (J1a-e, K1a-d part 1), Agy 7 (A3a, A3b, J2b, LGa, LGb, LGc, K2b part 1) and Grok 3 (K2a, G3, G3 r2). **3 of 19 ended complete with no follow-on:** LGa, LGb and G3 r2. Five Codex turns (J1d, J1e, K1b, K1c, K1d part 1) and K2b part 1 ended at their compile's context-split rule; J1c ended at its ceiling (CEIL-A). Three Agy turns hit the 3,300 s deadline (A3a, A3b, J2b). LGc was cancelled by RUN-B. K1a hit its deadline and then broke its fan-out cap (FALLBACK-A). K2a and G3's first attempt failed qualification-shaped checks (XPORT-A, SERVE-A). Each was finished by a Claude Code Sonnet session in the same tree, except G3's first attempt, which was re-run on Grok (r2). **No track was lost to a harness failure.**
+
+### Seam requests
+
+**34 requests were raised this run** (`coord request list --status all`, counted from `2026-10-05T14:00Z`): 27 seams to the Coordinator and 7 decision requests to `owner-fable`, which became Rulings 107-113. **All 34 are resolved.** 7 of them were resolved late, by this session, from the record (`c52.md`), because they had passed their deadlines with no outcome written (`COORD-REQUEST-SILENT-EXPIRY`).
+
+### Boundary corrections (each recorded where named)
+
+- J1b gained one `lifecycle.TABLE` entry and one SEEDED case (c35, W0 R6.12b).
+- `turn_ms` became an int (Ruling 107).
+- K1c's `cli.py` hunk widened to `cmd_run`'s body, and `EngineConfig.verify` became injected (c43, accepted by the Leader).
+- `completed` moved to `lifecycle.completed` (K1b; the Leader accepted it).
+- `resume.py` became the ninth sanctioned archive reader (CR46-0, a W1-J erratum).
+- The rework pointer fix was folded into X-FIXD turn 2 (c42).
+- J1c moved from P2 to P3 (the Leader's plan change, N "15:15").
+- X-TE9's join moved to before the records (c50, W0 R6.14b).
+- A3c moved to Sonnet (Ruling 108).
+- X-START was withdrawn (Ruling 113).
+
+### Which parallelism justifications paid
+
+| justification (section *Why each track earns the multiplier*) | verdict | evidence |
+| --- | --- | --- |
+| One session cannot hold this | **paid** | Even single turns split: CEIL-A on J1c (230k), X-RS, X-TE9 and K2b. The plan said about 40 dispatches; the audit log holds 61 compiled worker prompts from line 700 on (A, `compile-You ...` entries; a prompt can be compiled more than once) |
+| Machine-time parallelism | **partly paid** | External turns did run beside the joins. But the suite lock serialised the joins and the worker gates: 27 single-process final recounts took 48,083 s (13.36 h) of lock time on their own (J), and worker mutation runs waited up to 34, 69 and 83 min (N "14:10", "23:03"; LOCK-A) |
+| Genuine independence | **held, with four cross-track seams found only at a join recount** | J1a × K2 (`test_acp_record`), J2b × J1a (T-SWEEP-1 `READERS`), LGc × J2b (MUT-E `find`), K1c × X-FIXD t2 (T-SWEEP-1 `resume.py`). Each cost one more recount (N "17:58" pattern line, "12:50") |
+| Federation, with a Sonnet fallback so a harness failure costs one re-dispatch | **held** | 16 of 19 external turns needed a follow-on. 15 of them were finished by Sonnet in the same tree; G3 was re-run on Grok. The cost was the extra dispatches, not the plan |
+
+### Plan-level figures
+
+| figure | planned | actual | source |
+| --- | --- | --- | --- |
+| wall clock, plan merge to the last join | 15-20 h (Inferred, *Critical path*) | **35.8 h**: `join-c-w0` started `2026-10-05T15:07:51Z`; `join-x-cv` started `2026-10-07T02:41:05Z` and ran 743 s | A |
+| gate rings | 2 (P2, P4) | 3 ring runs. P1+P2's first ring ran 79 min and refused to stamp (PROBE-A). The re-run passed with `HB_GATE_RUNS` pinned. P4's ring ran 84 min | N "21:33", "22:59", "17:40" |
+| pushes | 5 batches | P1 and P2 went in **one** push (`37ec0585..95130d8f`). P3 was `95130d8f..d6e9a87d`. P4 was `d6e9a87d..d96220c0`, pushed by the operator after two classifier denials. **P5 is pending** | N "00:23", "04:20", "01:00" |
+| loop-back slots | 3 | 9 unplanned tracks plus 2 small Sonnet helpers (table above) | A, N |
+| per-join recount | not planned | single-process: 27 joins, 1,501-2,295 s (25.0-38.2 min), median 1,772 s. `-n 4`: 11 joins, 563-972 s (9.4-16.2 min), median 758 s | J |

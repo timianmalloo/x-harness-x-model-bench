@@ -4825,6 +4825,47 @@ window.DOCS_INDEX = {
       "sourceSha256": "bc9a3542e1e25e06b9942f03a898723b07c4faa73d2ab3d02d9d4d2c8b397be3"
     },
     {
+      "id": "coordinator-log-c52",
+      "path": "docs/coordination/coordinator-log/c52.md",
+      "title": "Coordinator #52 hand-back (2026-10-07): E2-E4 close-out - 7 expired requests resolved from the record, DEV-A (the RUN-B runner deviation), the run report draft",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-07",
+      "reviewSuggested": [],
+      "summary": "Coordinator #52 on coord/eval-c52-closeout (base b365654b). It resolved the seven requests that coord doctor failed as COORD-REQUEST-SILENT-EXPIRY, each with the outcome and citation the record shows; one (t1regress) records that the declaration was never settled. Doctor now reads requests ok (116, 0 open). It registered DEV-A for the un-noted RUN-B leader-check retry in coord-runner.py, retired upstream at rev 99, with a control-status line in RUN-B. It appended the Stage 7 planned-vs-actual section to the plan and wrote run-report-e2e4.md, both drafts for the Leader.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "close-out"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c51",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "run-report-e2e4",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "6fec595a3e9731b28df12c2031a6a3120b710b2a6d845846f67efbcd57736900"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4851,7 +4892,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "0e15ba508aa6fb4a781bda83d7a27587e2d303fd736945426a0ac7ec4c724068"
+      "sourceSha256": "b97c7471391bc4651c4eaf11c4fd502faef96038b412c1d41df535c72bd2dab6"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -7210,6 +7251,54 @@ window.DOCS_INDEX = {
       "sourceSha256": "6870ca4c300824c59bed200083ce50b9dde2b55b55a5d4ef12ca8afed49eef89"
     },
     {
+      "id": "run-report-e2e4",
+      "path": "docs/coordination/run-report-e2e4.md",
+      "title": "Run report - Evaluation Campaign E2-E4 (Leader epoch 18), draft for the Leader's review",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-21",
+      "reviewSuggested": [],
+      "summary": "The E2-E4 run from measured sources only (the audit log, the join entries, the Leader's run notes, the Coordinator logs). Every track joined; the ten final records are ready; P1-P4 are pushed and P5 is pending. Measured: 35.8 h from the plan's join to the last join, against 15-20 h Inferred; 3 of 19 external turns ended with no follow-on; 34 requests, all resolved; Rulings 107-113; 41 defect classes registered. The per-join recount fell from 25.0-38.2 min single-process to 9.4-16.2 min at -n 4, with FLAKE-A and MPATCH-A reds. Open: P5, Ruling 112 dormant, the walk flake's cause, the --dist loadscope proposal, the t1regress declaration, macOS.",
+      "tags": [
+        "coordination",
+        "run-report",
+        "evaluation-campaign",
+        "e2",
+        "e3",
+        "e4"
+      ],
+      "links": [
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c52",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "relates-to"
+        },
+        {
+          "to": "proof-eval-campaign-convergence",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "e6daf39f9981eb7799994fdf3745a7aeff7b54c4d668228774e99bff2bbc88e7"
+    },
+    {
       "id": "runbook-resume-and-alarm",
       "path": "docs/runbooks/resume-and-alarm.md",
       "title": "Runbook: resume a crashed run and wire the alarm channel",
@@ -8438,7 +8527,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "a0e398231efe09c5aaff5da7f7712891e42fd67d95082552327443d6605e6c46"
+      "sourceSha256": "9b4ceb82ce0ab74ed31e0070aca7b0077ebf48d7a8b42a999ce72571bb8974e5"
     },
     {
       "id": "coordination-eval-brief-rv-ds",
@@ -10295,7 +10384,15 @@ window.DOCS_INDEX = {
       "kind": "knowledge-tool",
       "description": "Open an interactive knowledge artifact.",
       "artifactId": "proposal-pack-onoff-analysis"
+    },
+    {
+      "id": "surface-coordination-run-report-e2e4",
+      "path": "docs/coordination/run-report-e2e4.html",
+      "title": "Run Report E2E4",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "run-report-e2e4"
     }
   ],
-  "graphSha256": "5d4657ec28c40e2358f7478a04f68862a49738284a221b18f7ed2b61457fe59a"
+  "graphSha256": "3a28a4fec178e519ad9f4512791bbfd39fb797469c7ba7d9c938ed0670930814"
 };
