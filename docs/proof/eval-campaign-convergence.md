@@ -83,16 +83,16 @@ The Leader's command list is in `docs/coordination/coordinator-log/c50.md`.
 
 | task | record file | identity_hash | bench validate line | start-bound ends (count) | maximum reference start_ms |
 | --- | --- | --- | --- | --- | --- |
-| S1 | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records |
-| S2 | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records |
-| RS1 | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records |
-| RS2 | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records |
-| RW1 | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records |
-| RW2 | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records |
-| NG1 | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records |
-| NG2 | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records |
-| SM1 | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records |
-| SM2 | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records | pending: the Leader's records |
+| S1 | `bench/discrimination/S1/30cdf43968b6e999-444235884b81a7c7-win32.json` | `444235884b81a7c7fc4cfc559143242c9cec896460283bf75e30a4093b3fc93d` | ready (no x line) | 0 | 143 (max over all roles; reference <= 143) |
+| S2 | `bench/discrimination/S2/ab84b1375a6b0922-9cb097b4aa072e31-win32.json` | `9cb097b4aa072e31f7f826958d2f3c845ae8e3b14eff01c702ad18b982b5abfe` | ready (no x line) | 0 | 174 (max over all roles; reference <= 174) |
+| RS1 | `bench/discrimination/RS1/4abce7b6c4b932d6-3edd673be028b824-win32.json` | `3edd673be028b824ad240b790778f0da6074367fe9b15cb432c415b242e089d0` | ready (no x line) | 0 | 264 (max over all roles; reference <= 264) |
+| RS2 | `bench/discrimination/RS2/edf7186d09faaf04-18158f3457b78917-win32.json` | `18158f3457b78917e12c808b645c40a8b2ac23b1ece2bad6315ed27903023e5f` | ready (no x line) | 0 | 70 (max over all roles; reference <= 70) |
+| RW1 | `bench/discrimination/RW1/28248f1d02727b2e-ba75ba31b8cc25a5-win32.json` | `ba75ba31b8cc25a5f7c9f6bc3baf0a17663773b9ed08c44c2decb5d34b127036` | ready (no x line) | n/a: check-less (no probe host) | n/a: check-less (no probe host) |
+| RW2 | `bench/discrimination/RW2/39cdfa73835e7afd-8b794f2f0c062962-win32.json` | `8b794f2f0c062962d90602d6f259dd61fee768ae9a8dbd3b2c565723d1ccaccc` | ready (no x line) | n/a: check-less (no probe host) | n/a: check-less (no probe host) |
+| NG1 | `bench/discrimination/NG1/4328ddd5e4fec830-8fd5b460b88c8cee-win32.json` | `8fd5b460b88c8cee8f9c56eb429c6e61a3c43f9b08c88db0d17fbea6e6607eeb` | ready (no x line) | n/a: check-less (no probe host) | n/a: check-less (no probe host) |
+| NG2 | `bench/discrimination/NG2/d5b303803766e4ec-8c033573cb6f3c40-win32.json` | `8c033573cb6f3c409534c718424942e81ab1572c732f3f6e80ed94e1d9ef3695` | ready (no x line) | n/a: check-less (no probe host) | n/a: check-less (no probe host) |
+| SM1 | `bench/discrimination/SM1/50596a4576f52e23-735ef497db054172-win32.json` | `735ef497db054172b72658a9612f524f48a6308671f32b65a496625bc09b7a1b` | ready (no x line); note: reconciled: no (no link) | n/a: check-less (no probe host) | n/a: check-less (no probe host) |
+| SM2 | `bench/discrimination/SM2/4880cbae6f2ef0a5-10a40833411f6981-win32.json` | `10a40833411f698176278ce74c18c829189d4180edce8d1befdc998bb7d6597e` | ready (no x line); note: reconciled: no (no link) | n/a: check-less (no probe host) | n/a: check-less (no probe host) |
 
 Ruling 113 condition 3, operative sentences: "At X-CV's join and at every later join that accepts a property record as final, the compiling Coordinator reads the ten records' `hosts.jsonl` (or the record evidence that points to it, `property.py:529`) for `end: "start bound"` and writes the count and the maximum reference `start_ms` in the join log. Zero hits: the records are accepted and the margin is recorded as a number. Any reference hit: that record is **not** accepted as final".
 
