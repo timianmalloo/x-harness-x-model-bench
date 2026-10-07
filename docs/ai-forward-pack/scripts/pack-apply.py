@@ -25,7 +25,9 @@ What it does, per artifact family (pack-owned names only - repo-local files are 
                  INSTALL,context-budget.json}; .github/hooks/ai-forward.json; .claude/settings.json
                  (hooks merged, showThinkingSummaries set); .grok/hooks/ai-forward.json;
                  .grok/rules/grok-surface.md (path map only — not knowledge docs); .gitignore lines;
-                 docs/index.html only if absent; docs/docs-index.js NEVER (V10)
+                 docs/index.html and docs/docs-index.js NEVER created or overwritten by
+                 install — a content-creating skill instantiates the Explorer shell, as its
+                 last action, once it has real content to show (V10; AL0.2, PK-03)
   front doors -> AGENTS.md: the managed block replaced wholesale between markers (appended if absent).
                  CLAUDE.md: converted to `@AGENTS.md` + the addendum block (CTX-B); the old file is
                  backed up under docs/ai-forward-pack/retired/, and every paragraph that is NOT in
@@ -645,7 +647,8 @@ class Applier(object):
             self.place("bundle", f, os.path.join(dp, f), read(os.path.join(self.pack, f)))
         hooks = os.path.join(self.pack, "adapters", "hooks")
         for f in ("reread-guard.py", "session-start.py", "mail-doorbell.py", "heartbeat.py", "coord_identity.py",
-                  "owner-review-gate.py", "run-hook.sh", "copilot.ai-forward-hooks.json", "README.md"):
+                  "owner-review-gate.py", "git-identity-guard.py", "run-hook.sh", "copilot.ai-forward-hooks.json",
+                  "README.md"):
             self.place("hooks", "adapters/hooks/" + f, os.path.join(dp, "hooks", f), read(os.path.join(hooks, f)))
         self.place("hooks", "adapters/hooks/copilot.ai-forward-hooks.json",
                    os.path.join(self.target, ".github", "hooks", "ai-forward.json"), read(os.path.join(hooks, "copilot.ai-forward-hooks.json")))
@@ -695,13 +698,22 @@ class Applier(object):
         self._gitignore()
         self._gitattributes()
         self._editorconfig()
+        # docs/index.html is the SAME signal docs-graph.py's `_opted_into_docs_explorer`
+        # reads as "this repo wants the Docs Explorer" before `derive` will write
+        # docs/docs-index.js (AL0.2/V10). Instantiating it here, at bare install, would
+        # satisfy that signal for every repo the installer ever touches -- with zero
+        # content under docs/ -- so the next bare `derive` (every shipped skill calls it
+        # bare) would seed docs-index.js unasked (PK-03, measured in grid-4: the shell
+        # present pre-task, docs-index.js added outside the task's declared scope). The
+        # shell is instantiated only by a content-creating skill, as ITS last action
+        # (V10 step 3), once it has real content to show -- never by install.
         explorer = os.path.join(self.target, "docs", "index.html")
-        if not os.path.isfile(explorer):
-            tpl = read(os.path.join(self.pack, "templates", "docs-explorer.template.html")) or ""
-            self._write(explorer, tpl.replace("__PROJECT__", self._project_name()))
-            self.row("bundle", "docs/index.html", "ADD", "ok", "Docs Explorer instantiated (one-time)")
-        else:
+        if os.path.isfile(explorer):
             self.row("bundle", "docs/index.html", "SKIP", "ok", "exists - never overwritten")
+        else:
+            self.row("bundle", "docs/index.html", "SKIP", "ok",
+                     "never created by install - a content-creating skill instantiates it "
+                     "once it has real content to show (V10)")
         self.row("bundle", "docs/docs-index.js", "SKIP", "ok", "never created or overwritten (V10)")
 
     def _settings(self, snippet_text):
