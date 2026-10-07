@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-07T03:48:23Z",
+  "generated": "2026-10-07T05:24:06Z",
   "audit": [
     {
       "actor": null,
@@ -121085,6 +121085,33 @@ window.AUDIT_DATA = {
         "branch": "coord/eval-c52-closeout",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M4AD3978FYAWVAXH1TDE7BHQ",
+      "shortname": "join-c51-c52",
+      "datetime": "2026-10-07T05:24:05Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of coord/eval-c52-closeout into integrate/e2e4-18",
+      "summary": "Coordinator #51 b365654b: R-113 condition 3 recorded (0 start-bound ends in 517 host starts, max 264 ms), RF-12 erratum (eval-property-grader.md:733), TIME-B dormant, DIAG-A. Coordinator #52 5ef4a79b: 7 expired requests resolved from the record (doctor requests ok, 116 terminal), DEV-A (RUN-B undocumented deviation), the plan's Stage 7 planned-vs-actual section and docs/coordination/run-report-e2e4.md (reviewed by the Leader). recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join the X-CV-join errata and the close-out",
+      "done_when": "conductor-join exit 0 (docs-only)",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-07T05:24:05Z",
+      "duration_seconds": 0.0
     }
   ],
   "changes": [
