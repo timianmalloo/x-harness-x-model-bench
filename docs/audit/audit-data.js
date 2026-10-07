@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T23:36:09Z",
+  "generated": "2026-10-07T00:12:21Z",
   "audit": [
     {
       "actor": null,
@@ -117734,6 +117734,27 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-06T23:36:09Z",
       "duration_seconds": 0.0
+    },
+    {
+      "id": "al-01M49V8F9CEVQQG6CJKZ8MJJJ5",
+      "shortname": "x-crlf",
+      "datetime": "2026-10-07T00:12:21Z",
+      "session": "x-crlf-e1e4",
+      "prompt": "X-CRLF dispatch (compile al-01M49PW88DCZ6WVZE8N3XX5VQ8, CR47-15, CR47-16)",
+      "summary": "Outcome green 9bd7b685 (head). Served model claude-sonnet-5-5. Dispatch start 2026-10-06T23:36Z. Red SHAs 2288ba97 (C1), c035072b (C2). Green 6d7d8363 (+70e4a4a2 mutant escape fix), fffd9bac. Mutants added 2, all killed. requeue5xx measured flips [g-ordering] on result. RS2 trial written edf7186d09faaf04-af0bbc1e3f354b8e; RS1 trial differs from committed record in identity_hash only, not committed. Tokens: not recorded. Context samples: not recorded. Gates: base 207 passed; final A 209 passed; final B 226 passed 3 xfailed 0 XPASS; mutate_check every mutation killed; ruff clean; bench validate ok; docs-graph validate 0 problems.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "claude-sonnet-5-5",
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "X-CRLF: C1 one applying-edit definition (CR47-15), C2 RS2 requeue5xx (CR47-16)",
+      "done_when": "C1 and C2 green, mutants killed, RS2 record replaced, plan record",
+      "tier": "T1",
+      "started_at": "2026-10-06T23:36:43Z",
+      "duration_seconds": 2138.0
     }
   ],
   "changes": [
