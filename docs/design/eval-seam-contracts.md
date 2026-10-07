@@ -671,7 +671,7 @@ This is the authoritative copy (the plan's table is its planning record). Anothe
 | `errors.py` | X-D | X-J1 | X-K1 | X-LG |
 | `identity.py` | X-D | X-J1 | X-K1 | X-LG |
 | `archive.py` | X-B2 | X-J1 | — | — |
-| `views.py` | X-A1 | X-J1 | rev 6.8 (req-01M41XGYS25EXAHKPZV5EE1QT2): **X-K1**: `segment_rows`, `load`'s `completed` rule (D-K5) and the `verify` abandoned-head rule (W1-K §2, §3.6, §8). **X-A3**: the `CellView.pack` rename only (`CellView`, `_cell_view`; its brief). Disjoint hunks; neither edits the other's functions. Both take the file from X-J1 at its join (this section's hand-over rule); whichever joins later rebases on the earlier. Each adds its own tests to `tests/test_views.py` and `tests/mutations/views.json` | — |
+| `views.py` | X-A1 | X-J1 | rev 6.8 (req-01M41XGYS25EXAHKPZV5EE1QT2): **X-K1**: `segment_rows`, `load`'s `completed` rule (D-K5) and the `verify` abandoned-head rule (W1-K §2, §3.6, §8). **X-A3**: the `CellView.pack` rename only (`CellView`, `_cell_view`; its brief). Disjoint hunks; neither edits the other's functions. Both take the file from X-J1 at its join (this section's hand-over rule); whichever joins later rebases on the earlier. Each adds its own tests to `tests/test_views.py` and `tests/mutations/views.json`. Rev 6.14 (R6.14a): **X-K2b**: `resume_history` and `ResumeRecord` only (W1-K §2's single reader, placed here because `resume.py` is class `run`), after X-K1 and X-A3 joined; its tests in `tests/test_views.py` | — |
 | `ledger.py` | X-C | X-J1 | — | — |
 | `plan.py` | X-A1 | X-J1 (`turns` only) | X-A3 | — |
 | `grade/runner.py` | X-F, except lines 108-112 (`catalog_hash` → an import; X-D's first commit, rev 3) and line 60's `plan` import (drops `tree_hash`; rev 6.4) and the after-grading `verify` hook hunk (X-C, after X-F joins; rev 4, SR-C2 e) and (rev 6.11, R6.11e) the HB-GRD-007 `acquire_then_probe` line (X-C2, landed at `:235`; was X-F's) | X-J2 (J2b: `graded_snapshots` through `archive.snapshot_folder`) | — | X-LG (only a hunk W1-L names; disjoint from J2b's, the later one rebases) |
@@ -1099,6 +1099,25 @@ Coordinator hand-back session #39, base `1a837a5d` (`integrate/e2e4-18` after X-
 | X-K1 (K1a..K1d) | §11 R6.13e (the `errors.py` rows); §12 R6.13b, R6.13c |
 | X-K2b | §13 R6.13d (no X-TE9 wait), R6.13e (HB-ALM-003 and the report header are E5) |
 | X-TE9 | §13 R6.13d (if K2b joined first, TE9 rebases on K2b's `cli.py` hunks) |
+
+## Revision 6.14 change table (id → section)
+
+Coordinator hand-back session #50, base `fab51fe1` (the integration head after `join-x-crlf`; X-K1d joined at `58c32a7d`). **Refused:** none. **Decision request:** none (R6.14a changes who builds a W1-K name and the module it lives in, not what it guarantees). Each row arbitrates a seam or a join order.
+
+| id | from | change | section |
+| --- | --- | --- | --- |
+| R6.14a | Coordinator #43's finding (`c43.md` section 2), checked at `fab51fe1` | W1-K section 2's single reader of resume history, `resume.history(run_dir) -> list[ResumeRecord]`, was never built: X-K1 joined without it (`git grep -n "def history\|ResumeRecord" -- src` exits 1). It cannot live in `resume.py`: that file is class `run` (`identity.py:100`), its reader is `views.segment_rows` in `views.py`, class `grade` (`identity.py:61`), and `test_identity.py::test_real_tree_edges_equal_the_allowlist` pins `RUN_IMPORTS_GRADE_ALLOWED` to the three `config.py` pairs. **Placement:** `views.resume_history(run_dir) -> list[ResumeRecord]` and the `ResumeRecord` type, in `views.py` beside `segment_rows`, with W1-K section 2's definition unchanged (one reader; derived, never stored; `ResumeRecord = (n, at, segment_id, skipped, launched, reconciled)`). **Builder:** X-K2b, one hunk in `views.py` (X-K1's hunk owner has joined), plus its tests in `tests/test_views.py`. `views.py` is already a sanctioned archive reader (T-SWEEP-1 `READERS`), so the reader set stays nine | 13 |
+| R6.14b | Coordinator #50, measured | X-TE9 joins **after X-K2b and before the Leader's final ten records**, not after them. `identity._readers` hashes every `src/harness_bench` file (`identity.py:213-215`), and TE9 edits `cli.py` and `readiness.py`, so a TE9 join after the records would make all ten stale again. `bench validate` reports readiness only with TE9's `cmd_validate` (today's prints `config.validate_repo` alone, `cli.py:181-186`), so X-CV's "all ten ready" needs TE9 joined first. The push batch carries both, so no red push results | 13 |
+
+**The file's hash changes with this revision.** Only X-K2b's compile (Coordinator #50) names rev 6.14.
+
+### Who re-reads what (rev 6.14)
+
+| track | re-read |
+| --- | --- |
+| X-K2b | §13 R6.14a (build `views.resume_history` and `ResumeRecord`; the `views.py` row) |
+| X-TE9 | §13 R6.14b (join point) |
+| X-CV | §13 R6.14b (the records follow TE9's join) |
 
 ## Review disposition
 
