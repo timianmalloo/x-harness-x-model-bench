@@ -1974,7 +1974,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5c18ea6a2d2a815a61caba07a9318b44c6790a152913b6c286a9ef08b60bd4db"
+      "sourceSha256": "8e751136c12ed037e0b2a62342acb01290f6075689db960dde99f361df020c98"
     },
     {
       "id": "design-eval-arms",
@@ -2527,7 +2527,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3447cd7b555398d32db4806ce87a9c20aacdf772e26073dcbbe41f33804ef815"
+      "sourceSha256": "ab8dc76dd99ef21c6ea1d2e1151b46cdb97b03ce58f5649c52c6a8a9829a1c94"
     },
     {
       "id": "design-eval-property-tasks",
@@ -4780,6 +4780,51 @@ window.DOCS_INDEX = {
       "sourceSha256": "3e0cd3cb5ed0be87276281fe7b3d3e83f604c3495a79727367034648a158637c"
     },
     {
+      "id": "coordinator-log-c51",
+      "path": "docs/coordination/coordinator-log/c51.md",
+      "title": "Coordinator #51 hand-back (2026-10-07): X-CV join duties under Ruling 113 - 0 start-bound ends in 517 starts, the ten records accepted as final, RF-12 and TIME-B errata, DIAG-A registered",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-07",
+      "reviewSuggested": [],
+      "summary": "Coordinator #51 did the X-CV join duties that Ruling 113 and c50 assign to the compiling Coordinator, on coord/eval-c51-cvjoin (base b4e19e28). Condition 3: 60 hosts.jsonl files, 517 host starts, all ready, 0 start-bound ends, maximum start_ms 264 over every role; all ten records are accepted as final. Condition 4: an erratum beside W1-F RF-12 with the measured numbers (the assume stays open) and TIME-B's 2026-10-06 instance marked dormant by R-113. Condition 5: the new candidate class DIAG-A. RECID-A diff exit 0.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "join"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c50",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-property-grader",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "relates-to"
+        },
+        {
+          "to": "proof-eval-campaign-convergence",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "bc9a3542e1e25e06b9942f03a898723b07c4faa73d2ab3d02d9d4d2c8b397be3"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4806,7 +4851,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9d61a9b9b763b00a6fa3fe5a14eb671fafc966b330176f14d89c0de5deccfe60"
+      "sourceSha256": "0e15ba508aa6fb4a781bda83d7a27587e2d303fd736945426a0ac7ec4c724068"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -9619,7 +9664,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "eeb37c28a123adc4f3040ec0e6b24c3530d58ac216b2dfad1fedcc53903857f6"
+      "sourceSha256": "7ae6294090038f78fee5d3615bdcbe5df81de1aa0aee6adeb5ed4dd5462c458f"
     },
     {
       "id": "proof-findings-t5",
@@ -10252,5 +10297,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "cbbcf618e3537f4d09343cb169413ce6ac0c18cfcbbd8be839fc1722d743843c"
+  "graphSha256": "5d4657ec28c40e2358f7478a04f68862a49738284a221b18f7ed2b61457fe59a"
 };
