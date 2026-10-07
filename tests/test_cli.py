@@ -95,6 +95,7 @@ def test_plan_flags_and_confirmation_name_the_timeout_and_token_cap(monkeypatch,
     assert received["parameters"] == {"decision_timeout": 300, "spend_cap_tokens": 900}
     assert "decision timeout: 5 min" in output
     assert "spend cap: 900 tokens, checked when each cell ends" in output
+    assert "--alarm-after 2700 " in output  # W1-K 6.2: max(budget_seconds, grading step 900 s) + 1800, the default grading step
 
 
 def test_plan_flags_refuse_non_positive_values(root):
