@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-07T01:03:34Z",
+  "generated": "2026-10-07T01:09:51Z",
   "audit": [
     {
       "actor": null,
@@ -120810,6 +120810,33 @@ window.AUDIT_DATA = {
       "git": {
         "sha": "8b2eef4b68ebc88248139b8d0e499527275503d6",
         "short": "8b2eef4b6",
+        "branch": "build/eval-x-k2b",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M49YHR30SHM8JQYV6ZSGG9SZ",
+      "shortname": "x-k2b-part2-k2",
+      "datetime": "2026-10-07T01:09:51Z",
+      "session": "x-k2b3-e1e4",
+      "prompt": "X-K2b part 2 (K2-K4 and final gates), compiled prompt prompt-k2b.md, dispatched by leader-e1e4",
+      "summary": "K2 red tests committed at 319a525c (tests/test_alarm.py, test_status.py::test_last_progress_ignores_segment_name_order, test_views.py::test_resume_history_per_segment). Handed back before K3: context reading ~133k used (floor ~48k after the brief; 125k cap exceeded), so no K-item may start (CEIL-A rule 1). K3, K4 and final gates not run. planned Agy gemini-3.8-flash-high; ran Claude Code Sonnet (claude-sonnet-5-5); reason: part 1 split at its context boundary and a second runner attempt needs a new identity and a recompile (RUN-IDENTITY, IDN-A). Tokens: not recorded beyond the context readings; floor ~48k, after K2 ~133k.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "X-K2b part 2: K2-K4 and final gates",
+      "done_when": "K2 red commit; K3, K4, gates open (split by context rule)",
+      "tier": "T1",
+      "started_at": "2026-10-07T01:05:49Z",
+      "duration_seconds": 242.0,
+      "git": {
+        "sha": "319a525c0ebb7719eb9baac8efadb0e9edca6a27",
+        "short": "319a525c0",
         "branch": "build/eval-x-k2b",
         "pushed": null
       }
