@@ -229,3 +229,5 @@
 {"action": "resolve", "agent": "coord-opus-e1e4", "at": 1791344275.1334796, "id": "req-01M48FCFZKGEKHWP3A12JM4B8X", "kind": "request", "outcome": "resolution", "path": "-", "seq": 229, "session": "coord-opus-e1e4", "type": "request", "wi": "WI-0"}
 {"action": "resolve", "agent": "coord-opus-e1e4", "at": 1791344275.2135315, "id": "req-01M48SKQB1C5ABDR2PHAR5HMVC", "kind": "request", "outcome": "resolution", "path": "-", "seq": 230, "session": "coord-opus-e1e4", "type": "request", "wi": "WI-0"}
 {"agent": "coord-opus-e1e4", "at": 1791344946.5197432, "kind": "session-end", "path": "-", "seq": 231, "session": "coord-opus-e1e4", "wi": "WI-0", "worktree": "x-harness-x-model-bench-coord-eval-c52-closeout"}
+{"agent": "leader-e1e4", "at": 1791391137.0563226, "kind": "session-start", "path": "-", "seq": 232, "session": "coord-opus-e1e4", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-coord-eval-c53-t1regress"}
+{"agent": "coord-opus-e1e4", "at": 1791391366.025526, "kind": "session-end", "path": "-", "seq": 233, "session": "coord-opus-e1e4", "wi": "WI-0", "worktree": "x-harness-x-model-bench-coord-eval-c53-t1regress"}
