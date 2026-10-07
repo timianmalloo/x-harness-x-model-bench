@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-06T23:51:18Z",
+  "generated": "2026-10-06T23:57:33Z",
   "audit": [
     {
       "actor": null,
@@ -118291,6 +118291,920 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-06T23:51:17Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M49TDAQM9G1BCTB9FSFR6QDQ",
+      "shortname": "You are session x-start-e1e4 on branch build/eval-x-start in the tree C:…",
+      "datetime": "2026-10-06T23:57:32Z",
+      "session": "prompt-compile",
+      "prompt": "You are session x-start-e1e4 on branch build/eval-x-start in the tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-start, harness Claude Code, model sonnet (served claude-sonnet-5-5), dispatched by the Leader, one turn, 3,600 s, within 120 calls and 200k context, T1, red first. This is X-START: build Ruling 112 (docs/notes/rulings.md, the heading \"Ruling 112\", Owner seat, req-01M49SHCF1T7JQZGD55RFG9BSY) as it states it, a spike first that measures the two candidate load signals, then the build the numbers support, compiled by Coordinator #49 (docs/coordination/coordinator-log/c49.md). Read Ruling 112 in full first, by line range (rulings.md from the line \"### Ruling 112\" to the line \"- request: req-01M49SHCF1T7JQZGD55RFG9BSY\"); every quote below is binding as written.\n\nRuling 112's grant, quoted: \"(B) granted, bounded - a missed start bound is `did not start` (a measured 0) when the host is shown not loaded at the start, and NA `host loaded at start` (HB-CHK-005, infrastructure, re-run next pass; the `host suspended` HB-CHK-004 shape, `property.py:152`) when a same-host, same-moment reading shows load; the reading is measured by a spike before it is chosen (system idle fraction the default, a pre-import host line the alternative); the bound's value stays `bounds_ms[interface]`, no new task field (trigger named)\".\n\nCode erratum (ID-A, Coordinator #49, 2026-10-06, recorded beside Ruling 112 in rulings.md): HB-CHK-005 is already registered (src/harness_bench/errors.py:62, \"a check listener is not bound to 127.0.0.1 (W0 R6-17; ADR-0018 s3)\"). Wherever Ruling 112 says HB-CHK-005 for the new NA, you use HB-CHK-006 (git grep -n \"HB-CHK-006\" found nothing at the integration head). You never change, reuse or renumber HB-CHK-005.\n\nBase: the Leader made your tree from the integration head (it holds join-r112, Ruling 112's commit). Stop and report, before any edit, if git log --oneline -1 --grep=join-r112 prints nothing, if git status --short prints anything, or if coord session start for x-start-e1e4 is refused.\n\nRuling 112 condition 2, quoted: \"The signal is measured before it is chosen (Spike Protocol, IO1). The turn runs a spike first and builds what the numbers support. Two candidates: (i) the host's own cost as the calibration: the probe host writes one pre-import line before it imports any deliverable code (unforgeable: no deliverable code has run), splitting `start_ms` into the interpreter-plus-host part and the deliverable's import part, so an inflated host part shows load; this changes the protocol's first-line rule and SP-F3's forgery fixture, which is why it is the second choice. (ii) a system CPU idle fraction over the check's span (`GetSystemTimes` on Windows, `/proc/stat` or `host_statistics` elsewhere), sampled where `SleepDetector` samples, no protocol change: the default. The spike records, on an idle host and under `-n 4`, the reading and the S1 reference's `start_ms`, and proves the two mutants' discrimination on measured data: an idle-host hanging import must read `did not start` 0 (the positive control), a loaded correct reference that misses must read NA. A floor constant for the reading is set from the spike's numbers and carries them in its comment. If neither signal discriminates on the measured data, that is a finding and a new DR with the numbers; (A)'s larger constant is then the interim and this ruling does not land.\"\n\nS0, the spike (before any src/ edit; scratch only, never committed; a script in your scratch folder, then a run). Measure signal (ii) first. The load is a concurrent uv run pytest -q -p no:cacheprovider -n 4 run of a named test file you choose and record, started by you and stopped by its PID only. Record at least N=5 readings per condition, each with its idle fraction and the S1 reference's start_ms: (a) idle host, S1 reference; (b) under -n 4, S1 reference; (c) idle host, a hanging import that sleeps; (d) idle host, a hanging import that busy-spins one thread per logical CPU. Condition (d) is part of the positive control, because (ii) over the check's span also counts the deliverable's own CPU: (ii) discriminates only if a floor exists that every (c) and (d) reading stays on the not-loaded side of and every (b) reading crosses. If no (b) run misses the 2,000 ms bound naturally, force a miss in the spike only with a smaller bound, and record that you did. If (ii) does not discriminate, measure (i) the same way (the pre-import line's host part under (a), (b), (c), (d)). If neither discriminates, stop with a finding: the numbers in your closing entry and your final message, no src/ edit, and the Leader routes the new DR. You do not invent a third signal; a third candidate is a finding to coord-opus-e1e4.\n\nRuling 112 condition 1, the build, quoted from its second sentence: \"It edits `src/harness_bench/host.py` (the load reading, a sibling of `SleepDetector`, sampled at span start and end like `unbiased_seconds`, on both gate platforms, \"not recorded\" on any failed query, never a zeroed guess, `host.py:9-13`'s rule), `src/harness_bench/grade/property.py` (the reading joins `spans.*`; `Facts` gains it; the classifier returns `Classification(1, \"HB-CHK-005\", \"host loaded at start\")` only for a `hosts.jsonl` line with `end: \"start bound\"` while the reading shows load; every other `did not start` end - `exit`, `not ready line`, a raised import or factory - stays a measured 0), `src/harness_bench/errors.py` (`HB-CHK-005`: \"start bound missed under host load: NOT_RECORDED, re-run next pass\"), `src/harness_bench/discriminate.py` (`UNTRUSTED_NA` gains the text), and `tests/mutations/` (two mutants on `property.py`: \"every start miss is NA\", which differs from the rule only on the idle-host hang, and \"no start miss is NA\", which differs only on the loaded miss). `bench_check.py` is edited only if the spike in condition 2 selects signal (i). The classifier stays a pure function of `Facts`, so its tests are clock-free (TIME-B safe). The reading has one real-host test asserting shape, range and the \"not recorded\" path on an idle host; the discrimination under load is the spike's measured record (condition 2), not a continuous test (tests-earn-their-place: a one-time proof stays out of the ring).\" Read HB-CHK-005 there as HB-CHK-006 (the erratum above).\n\nB1, the reading (host.py, tests/test_host.py). One host function for the signal the spike chose, returning None on any failed query; the Windows path is measured on this host; the macOS path is built and its parse tested on a recorded fixture, and its live run is recorded \"not run on this host\". Red first through a stub that returns None, then the real-host test (shape, range, and the None path through a failed query you force) reds, then the implementation; never red by ImportError, AttributeError, NameError, KeyError or a TypeError from a missing name (RED-C). The floor constant sits beside the reading's reader with the spike's numbers in its comment.\n\nB2, the classifier (property.py, tests/test_property_grader.py). The property side reads the check's evidence hosts.jsonl (evid / \"hosts.jsonl\", the file property.json already points at) for a line with end \"start bound\"; the Facts fields land first in their own commit with defaults that keep every current row, the existing grader tests green; then the red tests through _classify; then the branch. The new branch sits immediately before row 6, so rows 1 to 5 keep their precedence, and returns Classification(1, \"HB-CHK-006\", \"host loaded at start\"). A reading that is not recorded is not \"shows load\": a start-bound miss with a not-recorded reading stays row 6, a measured 0, and the reading's absence is visible in spans.* (condition 1's \"only ... while the reading shows load\"). The red cases: a start-bound miss with load is NA HB-CHK-006; a start-bound miss on a host shown not loaded is row 6, 0; an exit, a not ready line and a raised import with load each stay row 6, 0; a start-bound miss with a not-recorded reading stays row 6, 0. Extend the existing independent first-match reference test (test_classify_matches_the_independent_first_match_reference_on_every_flag_combination) and the precedence parametrize at test_property_grader.py:304 with the new row; extend tests/test_discriminate.py:369's parametrize with \"host loaded at start\".\n\nB3, the codes. errors.py gains \"HB-CHK-006\": \"start bound missed under host load: NOT_RECORDED, re-run next pass\" beside HB-CHK-004; discriminate.py UNTRUSTED_NA gains \"host loaded at start\". If the spike selected (i), bench_check.py writes the pre-import line and tests/test_property_forgery_fixture.py follows the changed first-line rule, red first; otherwise neither file is touched.\n\nB4, the two mutants, in tests/mutations/property.json: \"R-112: every start miss is NA\" and \"R-112: no start miss is NA\", each with a find unique in property.py and each naming only the node ids that kill it. Run uv run python tools/mutate_check.py on tests/mutations/property.json once, never --touched; a survivor is a finding with its reason, never a deleted mutant or a reworded find (MUT-E).\n\nThe boundary with X-FLAKE (session x-flake-e1e4, build/eval-x-flake, running in parallel from the same head): X-FLAKE owns src/harness_bench/atomic.py, tests/test_atomic.py, tests/mutations/atomic.json, tests/test_e1_e2e.py, tools/mutate_check.py and tests/test_mutate_check.py; you own src/harness_bench/host.py, src/harness_bench/grade/property.py, src/harness_bench/errors.py, src/harness_bench/discriminate.py, tests/test_host.py, tests/test_property_grader.py, tests/test_discriminate.py, tests/mutations/property.json, and only under signal (i) src/harness_bench/grade/bench_check.py and tests/test_property_forgery_fixture.py. You read and run X-FLAKE's files, you never edit them. X-FLAKE joins first; X-START joins second, after X-FLAKE's join and before X-CV (Ruling 112 condition 3), and the Leader brings build/eval-x-start onto the head that holds join-x-flake and re-runs your gate there. A line you need in a file outside your list is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green.\n\nThe context split rule (CEIL-A, measured): start no item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first item: 53,951 to 72,513, so the floor is 73k; expected work per item 60k (the largest measured item); start no item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each item and each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-start-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never the whole of property.py, bench_check.py, test_property_grader.py or rulings.md; send gate and test output to a file and read only its summary lines. (1) The order is S0, B1, B2, B3, B4, the final gates; your hand-back point is the first item boundary above 133k; (2) at 170k start no new edit or gate, write the closing audit entry and hand back with the open items named; (3) if the figure cannot be read, record \"not recorded\" and hand back after S0. A hand-back by this rule is a planned split, not a failure.\n\nMarkers: you add no simplify: or assume: marker unless an item needs one, and then with its trigger. Every new or changed test records its red (red first where behaviour changes; RED-C: never ImportError, AttributeError, NameError or KeyError); a test already green on arrival is recorded \"green on arrival\", never faked red. The classifier tests read no clock and sleep nothing (tests/test_timing_hygiene.py stays green).\n\nAfter every commit that touches src/ or tests/mutations/, run uv run pytest -q tests/test_mutate_check.py and uv run pytest -q tests/test_atomic_sites.py, each on its own line with its exit read (MUT-E's control).\n\nScratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\xstart-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH). Kill only PIDs you started, never a process by name or pattern.\n\nNever launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other). At your hand-back point, stop and report.\n\nGate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit (its failures recorded as on arrival) and on the final commit; uv run pytest -q tests/test_host.py tests/test_property_grader.py tests/test_property_grade_cell.py tests/test_property_real_host.py tests/test_property_forgery_fixture.py tests/test_property_loopback.py tests/test_security_tasks.py tests/test_cli_discriminate.py on the final commit, read as 0 failed and 0 XPASS; uv run pytest -q tests/test_e1_e2e.py on the final commit on an idle host, 0 failed; uv run python tools/mutate_check.py with tests/mutations/property.json and tests/mutations/discriminate.json, one run each, never --touched, every mutant killed or a recorded reason per survivor (a named test that ERRORs in setup counts as not killed: CR47-14); uv run ruff check src tests tools.\n\nSuite lock: named-file runs do not take the suite lock, mutate_check does; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.\n\nCommit named paths only, with plain git commit and AGENT_SESSION=x-start-e1e4 inline on every commit and coord call. Never pass --no-verify, -n or -c core.hooksPath (HOOK-A); a commit whose output lacks the pre-commit hook's line (N staged path(s) checked) is undone and redone. No history rewrite: never rebase, amend, squash or autosquash a commit, your own unpushed ones included; a fix is a new commit (CR47-6). The one exception is HOOK-A's redo of the commit just made, before any later commit.\n\nRuling 112 condition 7, quoted: \"Measure, don't model (IO1): X-START's closing entry records the spike's numbers (idle and `-n 4`: the reading, the S1 reference's `start_ms`, the floor chosen), the turn's wall-clock, and the mutant kills with the killing node ids.\" Your closing audit entry, written through audit-log.py, carries those, plus the (c) and (d) readings, the signal chosen and why, the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split, finding or served-model-failed), the red SHAs per item, the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), your context sample at each item, and each mutation file's result with its wall-clock. Report your served model id on the first line of your final message.\n\nNot yours: atomic.py, test_atomic.py, tests/mutations/atomic.json, test_e1_e2e.py, tools/mutate_check.py and test_mutate_check.py (X-FLAKE's); the per-case bound at bench_check.py:327 and property.py's hidden-test bound (Ruling 112 condition 6's sweep, the Coordinator's findings); a per-task start_bound_ms (condition 5, deferred with its trigger); tasks/ and every cases.yaml.\n\nNot yours: the design docs, ADR-0018, docs/notes/rulings.md and docs/lessons/defect-classes.md (condition 4: the compiling Coordinator writes the errata in X-START's join commit; the worker edits no design doc); docs/coordination/join.json; the whole suite and mutate_check --touched (the Leader's); never create, enter or leave a worktree yourself (the Leader makes yours).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M49TDBQGSCP4VDSGX5V3Y64P",
+      "shortname": "compile-You are session x-start-e1e4 on branch build/eval-x-start in the tree C:…",
+      "datetime": "2026-10-06T23:57:33Z",
+      "session": "coord-opus-e1e4",
+      "prompt": "python docs/ai-forward-pack/scripts/audit-log.py start --session coord-opus-e1e4 --skill compile\nGoal state\nGoal: You are session x-start-e1e4 on branch build/eval-x-start in the tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-start, harness Claude Code, model sonnet (served claude-sonnet-5-5), dispatched by the Leader, one turn, 3,600 s, within 120 calls and 200k context, T1, red first. This is X-START: build Ruling 112 (docs/notes/rulings.md, the heading \"Ruling 112\", Owner seat, req-01M49SHCF1T7JQZGD55RFG9BSY) as it states it, a spike first that measures the two candidate load signals, then the build the numbers support, compiled by Coordinator #49 (docs/coordination/coordinator-log/c49.md). Read Ruling 112 in full first, by line range (rulings.md from the line \"### Ruling 112\" to the line \"- request: req-01M49SHCF1T7JQZGD55RFG9BSY\"); every quote below is binding as written.\nDone when: Ruling 112's grant, quoted: \"(B) granted, bounded - a missed start bound is `did not start` (a measured 0) when the host is shown not loaded at the start, and NA `host loaded at start` (HB-CHK-005, infrastructure, re-run next pass; the `host suspended` HB-CHK-004 shape, `property.py:152`) when a same-host, same-moment reading shows load; the reading is measured by a spike before it is chosen (system idle fraction the default, a pre-import host line the alternative); the bound's value stays `bounds_ms[interface]`, no new task field (trigger named)\".; Code erratum (ID-A, Coordinator #49, 2026-10-06, recorded beside Ruling 112 in rulings.md): HB-CHK-005 is already registered (src/harness_bench/errors.py:62, \"a check listener is not bound to 127.0.0.1 (W0 R6-17; ADR-0018 s3)\"). Wherever Ruling 112 says HB-CHK-005 for the new NA, you use HB-CHK-006 (git grep -n \"HB-CHK-006\" found nothing at the integration head). You never change, reuse or renumber HB-CHK-005.; Base: the Leader made your tree from the integration head (it holds join-r112, Ruling 112's commit). Stop and report, before any edit, if git log --oneline -1 --grep=join-r112 prints nothing, if git status --short prints anything, or if coord session start for x-start-e1e4 is refused.; Ruling 112 condition 2, quoted: \"The signal is measured before it is chosen (Spike Protocol, IO1). The turn runs a spike first and builds what the numbers support. Two candidates: (i) the host's own cost as the calibration: the probe host writes one pre-import line before it imports any deliverable code (unforgeable: no deliverable code has run), splitting `start_ms` into the interpreter-plus-host part and the deliverable's import part, so an inflated host part shows load; this changes the protocol's first-line rule and SP-F3's forgery fixture, which is why it is the second choice. (ii) a system CPU idle fraction over the check's span (`GetSystemTimes` on Windows, `/proc/stat` or `host_statistics` elsewhere), sampled where `SleepDetector` samples, no protocol change: the default. The spike records, on an idle host and under `-n 4`, the reading and the S1 reference's `start_ms`, and proves the two mutants' discrimination on measured data: an idle-host hanging import must read `did not start` 0 (the positive control), a loaded correct reference that misses must read NA. A floor constant for the reading is set from the spike's numbers and carries them in its comment. If neither signal discriminates on the measured data, that is a finding and a new DR with the numbers; (A)'s larger constant is then the interim and this ruling does not land.\"; S0, the spike (before any src/ edit; scratch only, never committed; a script in your scratch folder, then a run). Measure signal (ii) first. The load is a concurrent uv run pytest -q -p no:cacheprovider -n 4 run of a named test file you choose and record, started by you and stopped by its PID only. Record at least N=5 readings per condition, each with its idle fraction and the S1 reference's start_ms: (a) idle host, S1 reference; (b) under -n 4, S1 reference; (c) idle host, a hanging import that sleeps; (d) idle host, a hanging import that busy-spins one thread per logical CPU. Condition (d) is part of the positive control, because (ii) over the check's span also counts the deliverable's own CPU: (ii) discriminates only if a floor exists that every (c) and (d) reading stays on the not-loaded side of and every (b) reading crosses. If no (b) run misses the 2,000 ms bound naturally, force a miss in the spike only with a smaller bound, and record that you did. If (ii) does not discriminate, measure (i) the same way (the pre-import line's host part under (a), (b), (c), (d)). If neither discriminates, stop with a finding: the numbers in your closing entry and your final message, no src/ edit, and the Leader routes the new DR. You do not invent a third signal; a third candidate is a finding to coord-opus-e1e4.; Ruling 112 condition 1, the build, quoted from its second sentence: \"It edits `src/harness_bench/host.py` (the load reading, a sibling of `SleepDetector`, sampled at span start and end like `unbiased_seconds`, on both gate platforms, \"not recorded\" on any failed query, never a zeroed guess, `host.py:9-13`'s rule), `src/harness_bench/grade/property.py` (the reading joins `spans.*`; `Facts` gains it; the classifier returns `Classification(1, \"HB-CHK-005\", \"host loaded at start\")` only for a `hosts.jsonl` line with `end: \"start bound\"` while the reading shows load; every other `did not start` end - `exit`, `not ready line`, a raised import or factory - stays a measured 0), `src/harness_bench/errors.py` (`HB-CHK-005`: \"start bound missed under host load: NOT_RECORDED, re-run next pass\"), `src/harness_bench/discriminate.py` (`UNTRUSTED_NA` gains the text), and `tests/mutations/` (two mutants on `property.py`: \"every start miss is NA\", which differs from the rule only on the idle-host hang, and \"no start miss is NA\", which differs only on the loaded miss). `bench_check.py` is edited only if the spike in condition 2 selects signal (i). The classifier stays a pure function of `Facts`, so its tests are clock-free (TIME-B safe). The reading has one real-host test asserting shape, range and the \"not recorded\" path on an idle host; the discrimination under load is the spike's measured record (condition 2), not a continuous test (tests-earn-their-place: a one-time proof stays out of the ring).\" Read HB-CHK-005 there as HB-CHK-006 (the erratum above).; B1, the reading (host.py, tests/test_host.py). One host function for the signal the spike chose, returning None on any failed query; the Windows path is measured on this host; the macOS path is built and its parse tested on a recorded fixture, and its live run is recorded \"not run on this host\". Red first through a stub that returns None, then the real-host test (shape, range, and the None path through a failed query you force) reds, then the implementation; never red by ImportError, AttributeError, NameError, KeyError or a TypeError from a missing name (RED-C). The floor constant sits beside the reading's reader with the spike's numbers in its comment.; B2, the classifier (property.py, tests/test_property_grader.py). The property side reads the check's evidence hosts.jsonl (evid / \"hosts.jsonl\", the file property.json already points at) for a line with end \"start bound\"; the Facts fields land first in their own commit with defaults that keep every current row, the existing grader tests green; then the red tests through _classify; then the branch. The new branch sits immediately before row 6, so rows 1 to 5 keep their precedence, and returns Classification(1, \"HB-CHK-006\", \"host loaded at start\"). A reading that is not recorded is not \"shows load\": a start-bound miss with a not-recorded reading stays row 6, a measured 0, and the reading's absence is visible in spans.* (condition 1's \"only ... while the reading shows load\"). The red cases: a start-bound miss with load is NA HB-CHK-006; a start-bound miss on a host shown not loaded is row 6, 0; an exit, a not ready line and a raised import with load each stay row 6, 0; a start-bound miss with a not-recorded reading stays row 6, 0. Extend the existing independent first-match reference test (test_classify_matches_the_independent_first_match_reference_on_every_flag_combination) and the precedence parametrize at test_property_grader.py:304 with the new row; extend tests/test_discriminate.py:369's parametrize with \"host loaded at start\".; B3, the codes. errors.py gains \"HB-CHK-006\": \"start bound missed under host load: NOT_RECORDED, re-run next pass\" beside HB-CHK-004; discriminate.py UNTRUSTED_NA gains \"host loaded at start\". If the spike selected (i), bench_check.py writes the pre-import line and tests/test_property_forgery_fixture.py follows the changed first-line rule, red first; otherwise neither file is touched.; B4, the two mutants, in tests/mutations/property.json: \"R-112: every start miss is NA\" and \"R-112: no start miss is NA\", each with a find unique in property.py and each naming only the node ids that kill it. Run uv run python tools/mutate_check.py on tests/mutations/property.json once, never --touched; a survivor is a finding with its reason, never a deleted mutant or a reworded find (MUT-E).; The boundary with X-FLAKE (session x-flake-e1e4, build/eval-x-flake, running in parallel from the same head): X-FLAKE owns src/harness_bench/atomic.py, tests/test_atomic.py, tests/mutations/atomic.json, tests/test_e1_e2e.py, tools/mutate_check.py and tests/test_mutate_check.py; you own src/harness_bench/host.py, src/harness_bench/grade/property.py, src/harness_bench/errors.py, src/harness_bench/discriminate.py, tests/test_host.py, tests/test_property_grader.py, tests/test_discriminate.py, tests/mutations/property.json, and only under signal (i) src/harness_bench/grade/bench_check.py and tests/test_property_forgery_fixture.py. You read and run X-FLAKE's files, you never edit them. X-FLAKE joins first; X-START joins second, after X-FLAKE's join and before X-CV (Ruling 112 condition 3), and the Leader brings build/eval-x-start onto the head that holds join-x-flake and re-runs your gate there. A line you need in a file outside your list is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green.; The context split rule (CEIL-A, measured): start no item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first item: 53,951 to 72,513, so the floor is 73k; expected work per item 60k (the largest measured item); start no item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each item and each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-start-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never the whole of property.py, bench_check.py, test_property_grader.py or rulings.md; send gate and test output to a file and read only its summary lines. (1) The order is S0, B1, B2, B3, B4, the final gates; your hand-back point is the first item boundary above 133k; (2) at 170k start no new edit or gate, write the closing audit entry and hand back with the open items named; (3) if the figure cannot be read, record \"not recorded\" and hand back after S0. A hand-back by this rule is a planned split, not a failure.; Markers: you add no simplify: or assume: marker unless an item needs one, and then with its trigger. Every new or changed test records its red (red first where behaviour changes; RED-C: never ImportError, AttributeError, NameError or KeyError); a test already green on arrival is recorded \"green on arrival\", never faked red. The classifier tests read no clock and sleep nothing (tests/test_timing_hygiene.py stays green).; After every commit that touches src/ or tests/mutations/, run uv run pytest -q tests/test_mutate_check.py and uv run pytest -q tests/test_atomic_sites.py, each on its own line with its exit read (MUT-E's control).; Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\xstart-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH). Kill only PIDs you started, never a process by name or pattern.; Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other). At your hand-back point, stop and report.; Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit (its failures recorded as on arrival) and on the final commit; uv run pytest -q tests/test_host.py tests/test_property_grader.py tests/test_property_grade_cell.py tests/test_property_real_host.py tests/test_property_forgery_fixture.py tests/test_property_loopback.py tests/test_security_tasks.py tests/test_cli_discriminate.py on the final commit, read as 0 failed and 0 XPASS; uv run pytest -q tests/test_e1_e2e.py on the final commit on an idle host, 0 failed; uv run python tools/mutate_check.py with tests/mutations/property.json and tests/mutations/discriminate.json, one run each, never --touched, every mutant killed or a recorded reason per survivor (a named test that ERRORs in setup counts as not killed: CR47-14); uv run ruff check src tests tools.; Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.; Commit named paths only, with plain git commit and AGENT_SESSION=x-start-e1e4 inline on every commit and coord call. Never pass --no-verify, -n or -c core.hooksPath (HOOK-A); a commit whose output lacks the pre-commit hook's line (N staged path(s) checked) is undone and redone. No history rewrite: never rebase, amend, squash or autosquash a commit, your own unpushed ones included; a fix is a new commit (CR47-6). The one exception is HOOK-A's redo of the commit just made, before any later commit.; Ruling 112 condition 7, quoted: \"Measure, don't model (IO1): X-START's closing entry records the spike's numbers (idle and `-n 4`: the reading, the S1 reference's `start_ms`, the floor chosen), the turn's wall-clock, and the mutant kills with the killing node ids.\" Your closing audit entry, written through audit-log.py, carries those, plus the (c) and (d) readings, the signal chosen and why, the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split, finding or served-model-failed), the red SHAs per item, the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), your context sample at each item, and each mutation file's result with its wall-clock. Report your served model id on the first line of your final message.\nNot in scope: atomic.py, test_atomic.py, tests/mutations/atomic.json, test_e1_e2e.py, tools/mutate_check.py and test_mutate_check.py (X-FLAKE's); the per-case bound at bench_check.py:327 and property.py's hidden-test bound (Ruling 112 condition 6's sweep, the Coordinator's findings); a per-task start_bound_ms (condition 5, deferred with its trigger); tasks/ and every cases.yaml.; the design docs, ADR-0018, docs/notes/rulings.md and docs/lessons/defect-classes.md (condition 4: the compiling Coordinator writes the errata in X-START's join commit; the worker edits no design doc); docs/coordination/join.json; the whole suite and mutate_check --touched (the Leader's); never create, enter or leave a worktree yourself (the Leader makes yours).\nTier: T1\nFan-out cap: 0\nContext ceiling: 200k tokens; split rule (CEIL-A): start no item above floor 73k + 60k = 133k; hand-back point at the first item boundary above 133k; hard stop at 170k; unreadable means hand back after S0\nMain-line budget: within 120 calls; 3,600 s this turn\nTrace\n| clause | trace |\n|---|---|\n| done_when: Ruling 112's grant, quoted: \"(B) granted, bounded - a missed start bound is `did not start` (a measured 0) when the host is shown not loaded at the start, and NA `host loaded at start` (HB-CHK-005, infrastructure, re-run next pass; the `host suspended` HB-CHK-004 shape, `property.py:152`) when a same-host, same-moment reading shows load; the reading is measured by a spike before it is chosen (system idle fraction the default, a pre-import host line the alternative); the bound's value stays `bounds_ms[interface]`, no new task field (trigger named)\". | phrase: Ruling 112's grant, quoted: \"(B) granted, bounded - a missed start bound is `did not start |\n| done_when: Code erratum (ID-A, Coordinator #49, 2026-10-06, recorded beside Ruling 112 in rulings.md): HB-CHK-005 is already registered (src/harness_bench/errors.py:62, \"a check listener is not bound to 127.0.0.1 (W0 R6-17; ADR-0018 s3)\"). Wherever Ruling 112 says HB-CHK-005 for the new NA, you use HB-CHK-006 (git grep -n \"HB-CHK-006\" found nothing at the integration head). You never change, reuse or renumber HB-CHK-005. | phrase: Code erratum (ID-A, Coordinator #49, 2026-10-06, recorded beside Ruling 112 in rulings.md) |\n| done_when: Base: the Leader made your tree from the integration head (it holds join-r112, Ruling 112's commit). Stop and report, before any edit, if git log --oneline -1 --grep=join-r112 prints nothing, if git status --short prints anything, or if coord session start for x-start-e1e4 is refused. | phrase: Base: the Leader made your tree from the integration head (it holds join-r112, Ruling 112' |\n| done_when: Ruling 112 condition 2, quoted: \"The signal is measured before it is chosen (Spike Protocol, IO1). The turn runs a spike first and builds what the numbers support. Two candidates: (i) the host's own cost as the calibration: the probe host writes one pre-import line before it imports any deliverable code (unforgeable: no deliverable code has run), splitting `start_ms` into the interpreter-plus-host part and the deliverable's import part, so an inflated host part shows load; this changes the protocol's first-line rule and SP-F3's forgery fixture, which is why it is the second choice. (ii) a system CPU idle fraction over the check's span (`GetSystemTimes` on Windows, `/proc/stat` or `host_statistics` elsewhere), sampled where `SleepDetector` samples, no protocol change: the default. The spike records, on an idle host and under `-n 4`, the reading and the S1 reference's `start_ms`, and proves the two mutants' discrimination on measured data: an idle-host hanging import must read `did not start` 0 (the positive control), a loaded correct reference that misses must read NA. A floor constant for the reading is set from the spike's numbers and carries them in its comment. If neither signal discriminates on the measured data, that is a finding and a new DR with the numbers; (A)'s larger constant is then the interim and this ruling does not land.\" | phrase: Ruling 112 condition 2, quoted: \"The signal is measured before it is chosen (Spike Protoco |\n| done_when: S0, the spike (before any src/ edit; scratch only, never committed; a script in your scratch folder, then a run). Measure signal (ii) first. The load is a concurrent uv run pytest -q -p no:cacheprovider -n 4 run of a named test file you choose and record, started by you and stopped by its PID only. Record at least N=5 readings per condition, each with its idle fraction and the S1 reference's start_ms: (a) idle host, S1 reference; (b) under -n 4, S1 reference; (c) idle host, a hanging import that sleeps; (d) idle host, a hanging import that busy-spins one thread per logical CPU. Condition (d) is part of the positive control, because (ii) over the check's span also counts the deliverable's own CPU: (ii) discriminates only if a floor exists that every (c) and (d) reading stays on the not-loaded side of and every (b) reading crosses. If no (b) run misses the 2,000 ms bound naturally, force a miss in the spike only with a smaller bound, and record that you did. If (ii) does not discriminate, measure (i) the same way (the pre-import line's host part under (a), (b), (c), (d)). If neither discriminates, stop with a finding: the numbers in your closing entry and your final message, no src/ edit, and the Leader routes the new DR. You do not invent a third signal; a third candidate is a finding to coord-opus-e1e4. | phrase: S0, the spike (before any src/ edit; scratch only, never committed; a script in your scrat |\n| done_when: Ruling 112 condition 1, the build, quoted from its second sentence: \"It edits `src/harness_bench/host.py` (the load reading, a sibling of `SleepDetector`, sampled at span start and end like `unbiased_seconds`, on both gate platforms, \"not recorded\" on any failed query, never a zeroed guess, `host.py:9-13`'s rule), `src/harness_bench/grade/property.py` (the reading joins `spans.*`; `Facts` gains it; the classifier returns `Classification(1, \"HB-CHK-005\", \"host loaded at start\")` only for a `hosts.jsonl` line with `end: \"start bound\"` while the reading shows load; every other `did not start` end - `exit`, `not ready line`, a raised import or factory - stays a measured 0), `src/harness_bench/errors.py` (`HB-CHK-005`: \"start bound missed under host load: NOT_RECORDED, re-run next pass\"), `src/harness_bench/discriminate.py` (`UNTRUSTED_NA` gains the text), and `tests/mutations/` (two mutants on `property.py`: \"every start miss is NA\", which differs from the rule only on the idle-host hang, and \"no start miss is NA\", which differs only on the loaded miss). `bench_check.py` is edited only if the spike in condition 2 selects signal (i). The classifier stays a pure function of `Facts`, so its tests are clock-free (TIME-B safe). The reading has one real-host test asserting shape, range and the \"not recorded\" path on an idle host; the discrimination under load is the spike's measured record (condition 2), not a continuous test (tests-earn-their-place: a one-time proof stays out of the ring).\" Read HB-CHK-005 there as HB-CHK-006 (the erratum above). | phrase: Ruling 112 condition 1, the build, quoted from its second sentence: \"It edits `src/harness |\n| done_when: B1, the reading (host.py, tests/test_host.py). One host function for the signal the spike chose, returning None on any failed query; the Windows path is measured on this host; the macOS path is built and its parse tested on a recorded fixture, and its live run is recorded \"not run on this host\". Red first through a stub that returns None, then the real-host test (shape, range, and the None path through a failed query you force) reds, then the implementation; never red by ImportError, AttributeError, NameError, KeyError or a TypeError from a missing name (RED-C). The floor constant sits beside the reading's reader with the spike's numbers in its comment. | phrase: B1, the reading (host.py, tests/test_host.py). One host function for the signal the spike  |\n| done_when: B2, the classifier (property.py, tests/test_property_grader.py). The property side reads the check's evidence hosts.jsonl (evid / \"hosts.jsonl\", the file property.json already points at) for a line with end \"start bound\"; the Facts fields land first in their own commit with defaults that keep every current row, the existing grader tests green; then the red tests through _classify; then the branch. The new branch sits immediately before row 6, so rows 1 to 5 keep their precedence, and returns Classification(1, \"HB-CHK-006\", \"host loaded at start\"). A reading that is not recorded is not \"shows load\": a start-bound miss with a not-recorded reading stays row 6, a measured 0, and the reading's absence is visible in spans.* (condition 1's \"only ... while the reading shows load\"). The red cases: a start-bound miss with load is NA HB-CHK-006; a start-bound miss on a host shown not loaded is row 6, 0; an exit, a not ready line and a raised import with load each stay row 6, 0; a start-bound miss with a not-recorded reading stays row 6, 0. Extend the existing independent first-match reference test (test_classify_matches_the_independent_first_match_reference_on_every_flag_combination) and the precedence parametrize at test_property_grader.py:304 with the new row; extend tests/test_discriminate.py:369's parametrize with \"host loaded at start\". | phrase: B2, the classifier (property.py, tests/test_property_grader.py). The property side reads t |\n| done_when: B3, the codes. errors.py gains \"HB-CHK-006\": \"start bound missed under host load: NOT_RECORDED, re-run next pass\" beside HB-CHK-004; discriminate.py UNTRUSTED_NA gains \"host loaded at start\". If the spike selected (i), bench_check.py writes the pre-import line and tests/test_property_forgery_fixture.py follows the changed first-line rule, red first; otherwise neither file is touched. | phrase: B3, the codes. errors.py gains \"HB-CHK-006\": \"start bound missed under host load: NOT_RECO |\n| done_when: B4, the two mutants, in tests/mutations/property.json: \"R-112: every start miss is NA\" and \"R-112: no start miss is NA\", each with a find unique in property.py and each naming only the node ids that kill it. Run uv run python tools/mutate_check.py on tests/mutations/property.json once, never --touched; a survivor is a finding with its reason, never a deleted mutant or a reworded find (MUT-E). | phrase: B4, the two mutants, in tests/mutations/property.json: \"R-112: every start miss is NA\" and |\n| done_when: The boundary with X-FLAKE (session x-flake-e1e4, build/eval-x-flake, running in parallel from the same head): X-FLAKE owns src/harness_bench/atomic.py, tests/test_atomic.py, tests/mutations/atomic.json, tests/test_e1_e2e.py, tools/mutate_check.py and tests/test_mutate_check.py; you own src/harness_bench/host.py, src/harness_bench/grade/property.py, src/harness_bench/errors.py, src/harness_bench/discriminate.py, tests/test_host.py, tests/test_property_grader.py, tests/test_discriminate.py, tests/mutations/property.json, and only under signal (i) src/harness_bench/grade/bench_check.py and tests/test_property_forgery_fixture.py. You read and run X-FLAKE's files, you never edit them. X-FLAKE joins first; X-START joins second, after X-FLAKE's join and before X-CV (Ruling 112 condition 3), and the Leader brings build/eval-x-start onto the head that holds join-x-flake and re-runs your gate there. A line you need in a file outside your list is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green. | phrase: The boundary with X-FLAKE (session x-flake-e1e4, build/eval-x-flake, running in parallel f |\n| done_when: The context split rule (CEIL-A, measured): start no item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first item: 53,951 to 72,513, so the floor is 73k; expected work per item 60k (the largest measured item); start no item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each item and each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-start-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never the whole of property.py, bench_check.py, test_property_grader.py or rulings.md; send gate and test output to a file and read only its summary lines. (1) The order is S0, B1, B2, B3, B4, the final gates; your hand-back point is the first item boundary above 133k; (2) at 170k start no new edit or gate, write the closing audit entry and hand back with the open items named; (3) if the figure cannot be read, record \"not recorded\" and hand back after S0. A hand-back by this rule is a planned split, not a failure. | phrase: The context split rule (CEIL-A, measured): start no item above floor + the item's expected |\n| done_when: Markers: you add no simplify: or assume: marker unless an item needs one, and then with its trigger. Every new or changed test records its red (red first where behaviour changes; RED-C: never ImportError, AttributeError, NameError or KeyError); a test already green on arrival is recorded \"green on arrival\", never faked red. The classifier tests read no clock and sleep nothing (tests/test_timing_hygiene.py stays green). | phrase: Markers: you add no simplify: or assume: marker unless an item needs one, and then with it |\n| done_when: After every commit that touches src/ or tests/mutations/, run uv run pytest -q tests/test_mutate_check.py and uv run pytest -q tests/test_atomic_sites.py, each on its own line with its exit read (MUT-E's control). | phrase: After every commit that touches src/ or tests/mutations/, run uv run pytest -q tests/test_ |\n| done_when: Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\xstart-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH). Kill only PIDs you started, never a process by name or pattern. | phrase: Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\xs |\n| done_when: Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other). At your hand-back point, stop and report. | phrase: Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, gro |\n| done_when: Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit (its failures recorded as on arrival) and on the final commit; uv run pytest -q tests/test_host.py tests/test_property_grader.py tests/test_property_grade_cell.py tests/test_property_real_host.py tests/test_property_forgery_fixture.py tests/test_property_loopback.py tests/test_security_tasks.py tests/test_cli_discriminate.py on the final commit, read as 0 failed and 0 XPASS; uv run pytest -q tests/test_e1_e2e.py on the final commit on an idle host, 0 failed; uv run python tools/mutate_check.py with tests/mutations/property.json and tests/mutations/discriminate.json, one run each, never --touched, every mutant killed or a recorded reason per survivor (a named test that ERRORs in setup counts as not killed: CR47-14); uv run ruff check src tests tools. | phrase: Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run  |\n| done_when: Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed. | phrase: Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that wai |\n| done_when: Commit named paths only, with plain git commit and AGENT_SESSION=x-start-e1e4 inline on every commit and coord call. Never pass --no-verify, -n or -c core.hooksPath (HOOK-A); a commit whose output lacks the pre-commit hook's line (N staged path(s) checked) is undone and redone. No history rewrite: never rebase, amend, squash or autosquash a commit, your own unpushed ones included; a fix is a new commit (CR47-6). The one exception is HOOK-A's redo of the commit just made, before any later commit. | phrase: Commit named paths only, with plain git commit and AGENT_SESSION=x-start-e1e4 inline on ev |\n| done_when: Ruling 112 condition 7, quoted: \"Measure, don't model (IO1): X-START's closing entry records the spike's numbers (idle and `-n 4`: the reading, the S1 reference's `start_ms`, the floor chosen), the turn's wall-clock, and the mutant kills with the killing node ids.\" Your closing audit entry, written through audit-log.py, carries those, plus the (c) and (d) readings, the signal chosen and why, the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split, finding or served-model-failed), the red SHAs per item, the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), your context sample at each item, and each mutation file's result with its wall-clock. Report your served model id on the first line of your final message. | phrase: Ruling 112 condition 7, quoted: \"Measure, don't model (IO1): X-START's closing entry recor |\n| not_in_scope: atomic.py, test_atomic.py, tests/mutations/atomic.json, test_e1_e2e.py, tools/mutate_check.py and test_mutate_check.py (X-FLAKE's); the per-case bound at bench_check.py:327 and property.py's hidden-test bound (Ruling 112 condition 6's sweep, the Coordinator's findings); a per-task start_bound_ms (condition 5, deferred with its trigger); tasks/ and every cases.yaml. | phrase: atomic.py, test_atomic.py, tests/mutations/atomic.json, test_e1_e2e.py, tools/mutate_check |\n| not_in_scope: the design docs, ADR-0018, docs/notes/rulings.md and docs/lessons/defect-classes.md (condition 4: the compiling Coordinator writes the errata in X-START's join commit; the worker edits no design doc); docs/coordination/join.json; the whole suite and mutate_check --touched (the Leader's); never create, enter or leave a worktree yourself (the Leader makes yours). | phrase: the design docs, ADR-0018, docs/notes/rulings.md and docs/lessons/defect-classes.md (condi |\nReferences\n- did not start: unresolved (not found)\n- host loaded at start: unresolved (not found)\n- host suspended: unresolved (not found)\n- property.py:152: unresolved (not found)\n- bounds_ms[interface: unresolved (not found)\n- start_ms: unresolved (not found)\n- GetSystemTimes: unresolved (not found)\n- /proc/stat: unresolved (outside repo)\n- host_statistics: unresolved (not found)\n- SleepDetector: unresolved (not found)\n- -n 4: unresolved (not found)\n- src/harness_bench/host.py: src/harness_bench/host.py sha256 73b6e5dbdce50cf94025459b8aee4a0bcb607e35369a636f0cf1a47444f56073\n- unbiased_seconds: unresolved (not found)\n- host.py:9-13: unresolved (not found)\n- src/harness_bench/grade/property.py: src/harness_bench/grade/property.py sha256 30edce6029136eac8eaff8b96ae291835e9d81bb0bceded2a81a4c08bb497631\n- spans.*: unresolved (not found)\n- Facts: unresolved (not found)\n- Classification(1, \"HB-CHK-005\", \"host loaded at start: unresolved (not found)\n- hosts.jsonl: unresolved (not found)\n- end: \"start bound: unresolved (not found)\n- exit: unresolved (not found; nearest: .git)\n- not ready line: unresolved (not found)\n- src/harness_bench/errors.py: src/harness_bench/errors.py sha256 3509e74d4610df7afeec7c15d66d32cf4549aeff001e9b1b430711771ca82e8e\n- HB-CHK-005: unresolved (not found)\n- src/harness_bench/discriminate.py: src/harness_bench/discriminate.py sha256 af87a0eaea671a097a8edb2fd87605ceaced92a5a82b936166c962bd9d9b7329\n- UNTRUSTED_NA: unresolved (not found)\n- tests/mutations/: unresolved (not found)\n- property.py: src/harness_bench/grade/property.py sha256 30edce6029136eac8eaff8b96ae291835e9d81bb0bceded2a81a4c08bb497631\n- bench_check.py: src/harness_bench/grade/bench_check.py sha256 810d2f729a14c3f8cbb1a11a7cc43cdcb0dc4838e09341434c14b22ea5f41c3e\n- build/eval-x-start: unresolved (not found)\n- docs/notes/rulings.md: docs/notes/rulings.md sha256 f015189b011efd1dc78ba5342d08ec42ab8b8112baa0be8dfdf538bff85a5a86\n- docs/coordination/coordinator-log/c49.md: unresolved (not found)\n- rulings.md: docs/notes/rulings.md sha256 f015189b011efd1dc78ba5342d08ec42ab8b8112baa0be8dfdf538bff85a5a86\n- src/harness_bench/errors.py:62: unresolved (not found)\n- src/: unresolved (not found)\n- host.py: src/harness_bench/host.py sha256 73b6e5dbdce50cf94025459b8aee4a0bcb607e35369a636f0cf1a47444f56073\n- tests/test_host.py: tests/test_host.py sha256 2373a3009d4cc364f3e05b80a04e38e0b2d512e4780647845bb0484348a34789\n- tests/test_property_grader.py: tests/test_property_grader.py sha256 0eee0101a304334f7384e96286abd88ce58b2429b91d80922bdf835ae1aca2a8\n- /: unresolved (outside repo)\n- property.json: tests/mutations/property.json sha256 aa9aea981a6978b12b115f098c578e61f1623cfa30a56c12e09c7e500a5eeec7\n- tests/test_discriminate.py:369's: unresolved (not found)\n- errors.py: src/harness_bench/errors.py sha256 3509e74d4610df7afeec7c15d66d32cf4549aeff001e9b1b430711771ca82e8e\n- discriminate.py: src/harness_bench/discriminate.py sha256 af87a0eaea671a097a8edb2fd87605ceaced92a5a82b936166c962bd9d9b7329\n- tests/test_property_forgery_fixture.py: tests/test_property_forgery_fixture.py sha256 5d16f5e533275cbfc2f9dab3f26c8528973fa47a92e8bdf1acbe76204b50b2b8\n- tests/mutations/property.json: tests/mutations/property.json sha256 aa9aea981a6978b12b115f098c578e61f1623cfa30a56c12e09c7e500a5eeec7\n- tools/mutate_check.py: tools/mutate_check.py sha256 bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d\n- build/eval-x-flake: unresolved (not found)\n- src/harness_bench/atomic.py: src/harness_bench/atomic.py sha256 d158db29ef50ee5013f1e775363cb8db4c0fd4815bbc4df5bd07d3a88d30e317\n- tests/test_atomic.py: tests/test_atomic.py sha256 c2a47bfedb391bfaee6bd644f5b7bacd50f377b8c8e1d22a94c92e693ccf8c53\n- tests/mutations/atomic.json: tests/mutations/atomic.json sha256 c231c40d35e69f5183f53dff09960270ce4fadf0bee4ad005cd4f1e8dc66cd48\n- tests/test_e1_e2e.py: tests/test_e1_e2e.py sha256 4e88541c3ec799b46b64b78c21ec9d8a9671dd8f15f3bca51e21e07a73bd1942\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 5888b52e93c3504a6a19d6d447de3fd34fcd58ac5a552507c71e3d1f2e92f239\n- src/harness_bench/grade/bench_check.py: src/harness_bench/grade/bench_check.py sha256 810d2f729a14c3f8cbb1a11a7cc43cdcb0dc4838e09341434c14b22ea5f41c3e\n- test_property_grader.py: tests/test_property_grader.py sha256 0eee0101a304334f7384e96286abd88ce58b2429b91d80922bdf835ae1aca2a8\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 f6717458ec2670a1be81a7839657dfa77e4dbb2e4515e532b5daefd5d3a8a784\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 25c45e56139c8e3a2d70d353e4b83c0386590e754c342c2ee0e1a88338ff8b73\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_property_grade_cell.py: tests/test_property_grade_cell.py sha256 79fa9873d6008b5594b8034af7274a61cb8397b85eb2e228155080150ce5484e\n- tests/test_property_real_host.py: tests/test_property_real_host.py sha256 25d721a506461d561b67cdb55e9df7f5dd2c946e00ea8fc80f3271ce2f19fe6a\n- tests/test_property_loopback.py: tests/test_property_loopback.py sha256 493c680c9e1bc5a4ca650d6206cded3312f841ceaa8bc427843a3e4dc938facd\n- tests/test_security_tasks.py: tests/test_security_tasks.py sha256 8908c59f8f71ba3bf6d8e0e8d2c712bb085fbba58ef8241c53a203429b5f7679\n- tests/test_cli_discriminate.py: tests/test_cli_discriminate.py sha256 3efbf73dbcf75566ed229905d1ba46ddf92443438616df7d277b3f2c65f18428\n- tests/mutations/discriminate.json: tests/mutations/discriminate.json sha256 fc18c63acfd6926fb2ca6c6055dc05a2c47e6934ff71a816bda75a4b8532e692\n- audit-log.py: docs/ai-forward-pack/scripts/audit-log.py sha256 d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4\n- atomic.py: src/harness_bench/atomic.py sha256 d158db29ef50ee5013f1e775363cb8db4c0fd4815bbc4df5bd07d3a88d30e317\n- test_atomic.py: tests/test_atomic.py sha256 c2a47bfedb391bfaee6bd644f5b7bacd50f377b8c8e1d22a94c92e693ccf8c53\n- test_e1_e2e.py: tests/test_e1_e2e.py sha256 4e88541c3ec799b46b64b78c21ec9d8a9671dd8f15f3bca51e21e07a73bd1942\n- test_mutate_check.py: tests/test_mutate_check.py sha256 8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60\n- tasks/: unresolved (not found)\n- cases.yaml: unresolved (ambiguous: 4 matches)\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 6ef0305bf3508cae70f5a980505f574d71b0b2ef79a8dca649fc453e76b6ce5d\n- docs/coordination/join.json: docs/coordination/join.json sha256 a9dcde8f3303f217880a3965488308e7611dfaca8f44c208887ec0e53abd1b31\nAssumptions\n- #1 belief: a start-bound miss whose load reading is not recorded stays row 6, a measured 0: Ruling 112 condition 1 returns the NA 'only ... while the reading shows load', and a missing reading does not show load · confirm: B2's red case 'a start-bound miss with a not-recorded reading stays row 6, 0' against condition 1's text; the Coordinator records the third state for W1-F 5.5's erratum at the join · breaks: if the Owner reads the grant's 'shown not loaded' as required for the 0, a not-recorded miss would be NA; the worker builds condition 1's text and the Coordinator raises it, the worker never decides it · consequential: false\n- #2 belief: signal (ii) over the check's span counts the deliverable's own CPU, so a busy-spinning hang is part of condition 2's positive control 'an idle-host hanging import must read did not start 0' · confirm: S0 condition (d)'s readings against the floor · breaks: if (d) crosses every usable floor, (ii) does not discriminate and the spike moves to (i), as condition 2 already orders · consequential: false\n- #3 belief: the macOS branch of the reading cannot be run live on this Windows host · confirm: the worker records 'not run on this host' with a fixture-parse test · breaks: nothing on Windows; a macOS failed query returns None, which leaves today's measured 0 (never a silent NA) · consequential: false\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0\nper_branch_exit: S0 then B1-B4 commits on build/eval-x-start, then the gate; or a finding after S0 with no src/ edit; or a hand-back by the split rule with the open items named\njoin_rule: X-FLAKE joins first; the Leader brings build/eval-x-start onto the head holding join-x-flake, re-runs the R-104 worker gate and B1/B2's reds at their red SHAs there, confirms the src/ hunks are the named files only, every property.json mutant killed, and records the spike's numbers; grade/ changes move the engine identity, so the gate ring runs; it joins before X-CV (condition 3); the Coordinator writes condition 4's errata and condition 6's LOAD-A and sweep in the join commit\ncontainment: tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-start on build/eval-x-start from the integration head holding join-r112, session x-start-e1e4 (new identity, checked free); src/harness_bench/host.py, src/harness_bench/grade/property.py, src/harness_bench/errors.py (one HB-CHK-006 line), src/harness_bench/discriminate.py (UNTRUSTED_NA only), tests/test_host.py, tests/test_property_grader.py, tests/test_discriminate.py, tests/mutations/property.json; only under signal (i) src/harness_bench/grade/bench_check.py and tests/test_property_forgery_fixture.py; disjoint from X-FLAKE's six files\ntermination: one turn\ndeadline: 3,600 s\nfallback: the Leader's decision after hand-back; the worker launches, spawns or messages nothing (FALLBACK-A); if neither signal discriminates, Ruling 112 condition 2 holds: a finding, a new DR with the numbers, (A)'s constant the interim\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M49TDAQM9G1BCTB9FSFR6QDQ\nraw sha256: 6fa1ca3f4936196032be428883632bf37de204f2cc1f1b12bab2bcd43574f032\ncompiler model: claude-opus-5-5\nengine seconds: 0.023\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M49TDAQM9G1BCTB9FSFR6QDQ for claude-code v1: 22 clauses, 3 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [
+          {
+            "id": "#1",
+            "belief": "a start-bound miss whose load reading is not recorded stays row 6, a measured 0: Ruling 112 condition 1 returns the NA 'only ... while the reading shows load', and a missing reading does not show load",
+            "confirm": "B2's red case 'a start-bound miss with a not-recorded reading stays row 6, 0' against condition 1's text; the Coordinator records the third state for W1-F 5.5's erratum at the join",
+            "breaks": "if the Owner reads the grant's 'shown not loaded' as required for the 0, a not-recorded miss would be NA; the worker builds condition 1's text and the Coordinator raises it, the worker never decides it",
+            "consequential": false
+          },
+          {
+            "id": "#2",
+            "belief": "signal (ii) over the check's span counts the deliverable's own CPU, so a busy-spinning hang is part of condition 2's positive control 'an idle-host hanging import must read did not start 0'",
+            "confirm": "S0 condition (d)'s readings against the floor",
+            "breaks": "if (d) crosses every usable floor, (ii) does not discriminate and the spike moves to (i), as condition 2 already orders",
+            "consequential": false
+          },
+          {
+            "id": "#3",
+            "belief": "the macOS branch of the reading cannot be run live on this Windows host",
+            "confirm": "the worker records 'not run on this host' with a fixture-parse test",
+            "breaks": "nothing on Windows; a macOS failed query returns None, which leaves today's measured 0 (never a silent NA)",
+            "consequential": false
+          }
+        ],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "Ruling 112's grant, quoted: \"(B) granted, bounded - a missed start bound is `did not start` (a measured 0) when the host is shown not loaded at the start, and NA `host loaded at start` (HB-CHK-005, infrastructure, re-run next pass; the `host suspended` HB-CHK-004 shape, `property.py:152`) when a same-host, same-moment reading shows load; the reading is measured by a spike before it is chosen (system idle fraction the default, a pre-import host line the alternative); the bound's value stays `bounds_ms[interface]`, no new task field (trigger named)\".",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Ruling 112's grant, quoted: \"(B) granted, bounded - a missed start bound is `did not start"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Code erratum (ID-A, Coordinator #49, 2026-10-06, recorded beside Ruling 112 in rulings.md): HB-CHK-005 is already registered (src/harness_bench/errors.py:62, \"a check listener is not bound to 127.0.0.1 (W0 R6-17; ADR-0018 s3)\"). Wherever Ruling 112 says HB-CHK-005 for the new NA, you use HB-CHK-006 (git grep -n \"HB-CHK-006\" found nothing at the integration head). You never change, reuse or renumber HB-CHK-005.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Code erratum (ID-A, Coordinator #49, 2026-10-06, recorded beside Ruling 112 in rulings.md)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Base: the Leader made your tree from the integration head (it holds join-r112, Ruling 112's commit). Stop and report, before any edit, if git log --oneline -1 --grep=join-r112 prints nothing, if git status --short prints anything, or if coord session start for x-start-e1e4 is refused.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Base: the Leader made your tree from the integration head (it holds join-r112, Ruling 112'"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Ruling 112 condition 2, quoted: \"The signal is measured before it is chosen (Spike Protocol, IO1). The turn runs a spike first and builds what the numbers support. Two candidates: (i) the host's own cost as the calibration: the probe host writes one pre-import line before it imports any deliverable code (unforgeable: no deliverable code has run), splitting `start_ms` into the interpreter-plus-host part and the deliverable's import part, so an inflated host part shows load; this changes the protocol's first-line rule and SP-F3's forgery fixture, which is why it is the second choice. (ii) a system CPU idle fraction over the check's span (`GetSystemTimes` on Windows, `/proc/stat` or `host_statistics` elsewhere), sampled where `SleepDetector` samples, no protocol change: the default. The spike records, on an idle host and under `-n 4`, the reading and the S1 reference's `start_ms`, and proves the two mutants' discrimination on measured data: an idle-host hanging import must read `did not start` 0 (the positive control), a loaded correct reference that misses must read NA. A floor constant for the reading is set from the spike's numbers and carries them in its comment. If neither signal discriminates on the measured data, that is a finding and a new DR with the numbers; (A)'s larger constant is then the interim and this ruling does not land.\"",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Ruling 112 condition 2, quoted: \"The signal is measured before it is chosen (Spike Protoco"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "S0, the spike (before any src/ edit; scratch only, never committed; a script in your scratch folder, then a run). Measure signal (ii) first. The load is a concurrent uv run pytest -q -p no:cacheprovider -n 4 run of a named test file you choose and record, started by you and stopped by its PID only. Record at least N=5 readings per condition, each with its idle fraction and the S1 reference's start_ms: (a) idle host, S1 reference; (b) under -n 4, S1 reference; (c) idle host, a hanging import that sleeps; (d) idle host, a hanging import that busy-spins one thread per logical CPU. Condition (d) is part of the positive control, because (ii) over the check's span also counts the deliverable's own CPU: (ii) discriminates only if a floor exists that every (c) and (d) reading stays on the not-loaded side of and every (b) reading crosses. If no (b) run misses the 2,000 ms bound naturally, force a miss in the spike only with a smaller bound, and record that you did. If (ii) does not discriminate, measure (i) the same way (the pre-import line's host part under (a), (b), (c), (d)). If neither discriminates, stop with a finding: the numbers in your closing entry and your final message, no src/ edit, and the Leader routes the new DR. You do not invent a third signal; a third candidate is a finding to coord-opus-e1e4.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "S0, the spike (before any src/ edit; scratch only, never committed; a script in your scrat"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Ruling 112 condition 1, the build, quoted from its second sentence: \"It edits `src/harness_bench/host.py` (the load reading, a sibling of `SleepDetector`, sampled at span start and end like `unbiased_seconds`, on both gate platforms, \"not recorded\" on any failed query, never a zeroed guess, `host.py:9-13`'s rule), `src/harness_bench/grade/property.py` (the reading joins `spans.*`; `Facts` gains it; the classifier returns `Classification(1, \"HB-CHK-005\", \"host loaded at start\")` only for a `hosts.jsonl` line with `end: \"start bound\"` while the reading shows load; every other `did not start` end - `exit`, `not ready line`, a raised import or factory - stays a measured 0), `src/harness_bench/errors.py` (`HB-CHK-005`: \"start bound missed under host load: NOT_RECORDED, re-run next pass\"), `src/harness_bench/discriminate.py` (`UNTRUSTED_NA` gains the text), and `tests/mutations/` (two mutants on `property.py`: \"every start miss is NA\", which differs from the rule only on the idle-host hang, and \"no start miss is NA\", which differs only on the loaded miss). `bench_check.py` is edited only if the spike in condition 2 selects signal (i). The classifier stays a pure function of `Facts`, so its tests are clock-free (TIME-B safe). The reading has one real-host test asserting shape, range and the \"not recorded\" path on an idle host; the discrimination under load is the spike's measured record (condition 2), not a continuous test (tests-earn-their-place: a one-time proof stays out of the ring).\" Read HB-CHK-005 there as HB-CHK-006 (the erratum above).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Ruling 112 condition 1, the build, quoted from its second sentence: \"It edits `src/harness"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "B1, the reading (host.py, tests/test_host.py). One host function for the signal the spike chose, returning None on any failed query; the Windows path is measured on this host; the macOS path is built and its parse tested on a recorded fixture, and its live run is recorded \"not run on this host\". Red first through a stub that returns None, then the real-host test (shape, range, and the None path through a failed query you force) reds, then the implementation; never red by ImportError, AttributeError, NameError, KeyError or a TypeError from a missing name (RED-C). The floor constant sits beside the reading's reader with the spike's numbers in its comment.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "B1, the reading (host.py, tests/test_host.py). One host function for the signal the spike "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "B2, the classifier (property.py, tests/test_property_grader.py). The property side reads the check's evidence hosts.jsonl (evid / \"hosts.jsonl\", the file property.json already points at) for a line with end \"start bound\"; the Facts fields land first in their own commit with defaults that keep every current row, the existing grader tests green; then the red tests through _classify; then the branch. The new branch sits immediately before row 6, so rows 1 to 5 keep their precedence, and returns Classification(1, \"HB-CHK-006\", \"host loaded at start\"). A reading that is not recorded is not \"shows load\": a start-bound miss with a not-recorded reading stays row 6, a measured 0, and the reading's absence is visible in spans.* (condition 1's \"only ... while the reading shows load\"). The red cases: a start-bound miss with load is NA HB-CHK-006; a start-bound miss on a host shown not loaded is row 6, 0; an exit, a not ready line and a raised import with load each stay row 6, 0; a start-bound miss with a not-recorded reading stays row 6, 0. Extend the existing independent first-match reference test (test_classify_matches_the_independent_first_match_reference_on_every_flag_combination) and the precedence parametrize at test_property_grader.py:304 with the new row; extend tests/test_discriminate.py:369's parametrize with \"host loaded at start\".",
+            "trace": {
+              "kind": "phrase",
+              "ref": "B2, the classifier (property.py, tests/test_property_grader.py). The property side reads t"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "B3, the codes. errors.py gains \"HB-CHK-006\": \"start bound missed under host load: NOT_RECORDED, re-run next pass\" beside HB-CHK-004; discriminate.py UNTRUSTED_NA gains \"host loaded at start\". If the spike selected (i), bench_check.py writes the pre-import line and tests/test_property_forgery_fixture.py follows the changed first-line rule, red first; otherwise neither file is touched.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "B3, the codes. errors.py gains \"HB-CHK-006\": \"start bound missed under host load: NOT_RECO"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "B4, the two mutants, in tests/mutations/property.json: \"R-112: every start miss is NA\" and \"R-112: no start miss is NA\", each with a find unique in property.py and each naming only the node ids that kill it. Run uv run python tools/mutate_check.py on tests/mutations/property.json once, never --touched; a survivor is a finding with its reason, never a deleted mutant or a reworded find (MUT-E).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "B4, the two mutants, in tests/mutations/property.json: \"R-112: every start miss is NA\" and"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The boundary with X-FLAKE (session x-flake-e1e4, build/eval-x-flake, running in parallel from the same head): X-FLAKE owns src/harness_bench/atomic.py, tests/test_atomic.py, tests/mutations/atomic.json, tests/test_e1_e2e.py, tools/mutate_check.py and tests/test_mutate_check.py; you own src/harness_bench/host.py, src/harness_bench/grade/property.py, src/harness_bench/errors.py, src/harness_bench/discriminate.py, tests/test_host.py, tests/test_property_grader.py, tests/test_discriminate.py, tests/mutations/property.json, and only under signal (i) src/harness_bench/grade/bench_check.py and tests/test_property_forgery_fixture.py. You read and run X-FLAKE's files, you never edit them. X-FLAKE joins first; X-START joins second, after X-FLAKE's join and before X-CV (Ruling 112 condition 3), and the Leader brings build/eval-x-start onto the head that holds join-x-flake and re-runs your gate there. A line you need in a file outside your list is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The boundary with X-FLAKE (session x-flake-e1e4, build/eval-x-flake, running in parallel f"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The context split rule (CEIL-A, measured): start no item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first item: 53,951 to 72,513, so the floor is 73k; expected work per item 60k (the largest measured item); start no item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each item and each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-start-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never the whole of property.py, bench_check.py, test_property_grader.py or rulings.md; send gate and test output to a file and read only its summary lines. (1) The order is S0, B1, B2, B3, B4, the final gates; your hand-back point is the first item boundary above 133k; (2) at 170k start no new edit or gate, write the closing audit entry and hand back with the open items named; (3) if the figure cannot be read, record \"not recorded\" and hand back after S0. A hand-back by this rule is a planned split, not a failure.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The context split rule (CEIL-A, measured): start no item above floor + the item's expected"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Markers: you add no simplify: or assume: marker unless an item needs one, and then with its trigger. Every new or changed test records its red (red first where behaviour changes; RED-C: never ImportError, AttributeError, NameError or KeyError); a test already green on arrival is recorded \"green on arrival\", never faked red. The classifier tests read no clock and sleep nothing (tests/test_timing_hygiene.py stays green).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Markers: you add no simplify: or assume: marker unless an item needs one, and then with it"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "After every commit that touches src/ or tests/mutations/, run uv run pytest -q tests/test_mutate_check.py and uv run pytest -q tests/test_atomic_sites.py, each on its own line with its exit read (MUT-E's control).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "After every commit that touches src/ or tests/mutations/, run uv run pytest -q tests/test_"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\xstart-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH). Kill only PIDs you started, never a process by name or pattern.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\xs"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other). At your hand-back point, stop and report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, gro"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit (its failures recorded as on arrival) and on the final commit; uv run pytest -q tests/test_host.py tests/test_property_grader.py tests/test_property_grade_cell.py tests/test_property_real_host.py tests/test_property_forgery_fixture.py tests/test_property_loopback.py tests/test_security_tasks.py tests/test_cli_discriminate.py on the final commit, read as 0 failed and 0 XPASS; uv run pytest -q tests/test_e1_e2e.py on the final commit on an idle host, 0 failed; uv run python tools/mutate_check.py with tests/mutations/property.json and tests/mutations/discriminate.json, one run each, never --touched, every mutant killed or a recorded reason per survivor (a named test that ERRORs in setup counts as not killed: CR47-14); uv run ruff check src tests tools.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that wai"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit named paths only, with plain git commit and AGENT_SESSION=x-start-e1e4 inline on every commit and coord call. Never pass --no-verify, -n or -c core.hooksPath (HOOK-A); a commit whose output lacks the pre-commit hook's line (N staged path(s) checked) is undone and redone. No history rewrite: never rebase, amend, squash or autosquash a commit, your own unpushed ones included; a fix is a new commit (CR47-6). The one exception is HOOK-A's redo of the commit just made, before any later commit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit named paths only, with plain git commit and AGENT_SESSION=x-start-e1e4 inline on ev"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Ruling 112 condition 7, quoted: \"Measure, don't model (IO1): X-START's closing entry records the spike's numbers (idle and `-n 4`: the reading, the S1 reference's `start_ms`, the floor chosen), the turn's wall-clock, and the mutant kills with the killing node ids.\" Your closing audit entry, written through audit-log.py, carries those, plus the (c) and (d) readings, the signal chosen and why, the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split, finding or served-model-failed), the red SHAs per item, the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), your context sample at each item, and each mutation file's result with its wall-clock. Report your served model id on the first line of your final message.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Ruling 112 condition 7, quoted: \"Measure, don't model (IO1): X-START's closing entry recor"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "atomic.py, test_atomic.py, tests/mutations/atomic.json, test_e1_e2e.py, tools/mutate_check.py and test_mutate_check.py (X-FLAKE's); the per-case bound at bench_check.py:327 and property.py's hidden-test bound (Ruling 112 condition 6's sweep, the Coordinator's findings); a per-task start_bound_ms (condition 5, deferred with its trigger); tasks/ and every cases.yaml.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "atomic.py, test_atomic.py, tests/mutations/atomic.json, test_e1_e2e.py, tools/mutate_check"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the design docs, ADR-0018, docs/notes/rulings.md and docs/lessons/defect-classes.md (condition 4: the compiling Coordinator writes the errata in X-START's join commit; the worker edits no design doc); docs/coordination/join.json; the whole suite and mutate_check --touched (the Leader's); never create, enter or leave a worktree yourself (the Leader makes yours).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the design docs, ADR-0018, docs/notes/rulings.md and docs/lessons/defect-classes.md (condi"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-start on build/eval-x-start from the integration head holding join-r112, session x-start-e1e4 (new identity, checked free); src/harness_bench/host.py, src/harness_bench/grade/property.py, src/harness_bench/errors.py (one HB-CHK-006 line), src/harness_bench/discriminate.py (UNTRUSTED_NA only), tests/test_host.py, tests/test_property_grader.py, tests/test_discriminate.py, tests/mutations/property.json; only under signal (i) src/harness_bench/grade/bench_check.py and tests/test_property_forgery_fixture.py; disjoint from X-FLAKE's six files",
+          "deadline": "3,600 s",
+          "fallback": "the Leader's decision after hand-back; the worker launches, spawns or messages nothing (FALLBACK-A); if neither signal discriminates, Ruling 112 condition 2 holds: a finding, a new DR with the numbers, (A)'s constant the interim",
+          "join_rule": "X-FLAKE joins first; the Leader brings build/eval-x-start onto the head holding join-x-flake, re-runs the R-104 worker gate and B1/B2's reds at their red SHAs there, confirms the src/ hunks are the named files only, every property.json mutant killed, and records the spike's numbers; grade/ changes move the engine identity, so the gate ring runs; it joins before X-CV (condition 3); the Coordinator writes condition 4's errata and condition 6's LOAD-A and sweep in the join commit",
+          "per_branch_exit": "S0 then B1-B4 commits on build/eval-x-start, then the gate; or a finding after S0 with no src/ edit; or a hand-back by the split rule with the open items named",
+          "termination": "one turn",
+          "transient_retry": "0",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "200k tokens; split rule (CEIL-A): start no item above floor 73k + 60k = 133k; hand-back point at the first item boundary above 133k; hard stop at 170k; unreadable means hand back after S0",
+          "done_when": [
+            "Ruling 112's grant, quoted: \"(B) granted, bounded - a missed start bound is `did not start` (a measured 0) when the host is shown not loaded at the start, and NA `host loaded at start` (HB-CHK-005, infrastructure, re-run next pass; the `host suspended` HB-CHK-004 shape, `property.py:152`) when a same-host, same-moment reading shows load; the reading is measured by a spike before it is chosen (system idle fraction the default, a pre-import host line the alternative); the bound's value stays `bounds_ms[interface]`, no new task field (trigger named)\".",
+            "Code erratum (ID-A, Coordinator #49, 2026-10-06, recorded beside Ruling 112 in rulings.md): HB-CHK-005 is already registered (src/harness_bench/errors.py:62, \"a check listener is not bound to 127.0.0.1 (W0 R6-17; ADR-0018 s3)\"). Wherever Ruling 112 says HB-CHK-005 for the new NA, you use HB-CHK-006 (git grep -n \"HB-CHK-006\" found nothing at the integration head). You never change, reuse or renumber HB-CHK-005.",
+            "Base: the Leader made your tree from the integration head (it holds join-r112, Ruling 112's commit). Stop and report, before any edit, if git log --oneline -1 --grep=join-r112 prints nothing, if git status --short prints anything, or if coord session start for x-start-e1e4 is refused.",
+            "Ruling 112 condition 2, quoted: \"The signal is measured before it is chosen (Spike Protocol, IO1). The turn runs a spike first and builds what the numbers support. Two candidates: (i) the host's own cost as the calibration: the probe host writes one pre-import line before it imports any deliverable code (unforgeable: no deliverable code has run), splitting `start_ms` into the interpreter-plus-host part and the deliverable's import part, so an inflated host part shows load; this changes the protocol's first-line rule and SP-F3's forgery fixture, which is why it is the second choice. (ii) a system CPU idle fraction over the check's span (`GetSystemTimes` on Windows, `/proc/stat` or `host_statistics` elsewhere), sampled where `SleepDetector` samples, no protocol change: the default. The spike records, on an idle host and under `-n 4`, the reading and the S1 reference's `start_ms`, and proves the two mutants' discrimination on measured data: an idle-host hanging import must read `did not start` 0 (the positive control), a loaded correct reference that misses must read NA. A floor constant for the reading is set from the spike's numbers and carries them in its comment. If neither signal discriminates on the measured data, that is a finding and a new DR with the numbers; (A)'s larger constant is then the interim and this ruling does not land.\"",
+            "S0, the spike (before any src/ edit; scratch only, never committed; a script in your scratch folder, then a run). Measure signal (ii) first. The load is a concurrent uv run pytest -q -p no:cacheprovider -n 4 run of a named test file you choose and record, started by you and stopped by its PID only. Record at least N=5 readings per condition, each with its idle fraction and the S1 reference's start_ms: (a) idle host, S1 reference; (b) under -n 4, S1 reference; (c) idle host, a hanging import that sleeps; (d) idle host, a hanging import that busy-spins one thread per logical CPU. Condition (d) is part of the positive control, because (ii) over the check's span also counts the deliverable's own CPU: (ii) discriminates only if a floor exists that every (c) and (d) reading stays on the not-loaded side of and every (b) reading crosses. If no (b) run misses the 2,000 ms bound naturally, force a miss in the spike only with a smaller bound, and record that you did. If (ii) does not discriminate, measure (i) the same way (the pre-import line's host part under (a), (b), (c), (d)). If neither discriminates, stop with a finding: the numbers in your closing entry and your final message, no src/ edit, and the Leader routes the new DR. You do not invent a third signal; a third candidate is a finding to coord-opus-e1e4.",
+            "Ruling 112 condition 1, the build, quoted from its second sentence: \"It edits `src/harness_bench/host.py` (the load reading, a sibling of `SleepDetector`, sampled at span start and end like `unbiased_seconds`, on both gate platforms, \"not recorded\" on any failed query, never a zeroed guess, `host.py:9-13`'s rule), `src/harness_bench/grade/property.py` (the reading joins `spans.*`; `Facts` gains it; the classifier returns `Classification(1, \"HB-CHK-005\", \"host loaded at start\")` only for a `hosts.jsonl` line with `end: \"start bound\"` while the reading shows load; every other `did not start` end - `exit`, `not ready line`, a raised import or factory - stays a measured 0), `src/harness_bench/errors.py` (`HB-CHK-005`: \"start bound missed under host load: NOT_RECORDED, re-run next pass\"), `src/harness_bench/discriminate.py` (`UNTRUSTED_NA` gains the text), and `tests/mutations/` (two mutants on `property.py`: \"every start miss is NA\", which differs from the rule only on the idle-host hang, and \"no start miss is NA\", which differs only on the loaded miss). `bench_check.py` is edited only if the spike in condition 2 selects signal (i). The classifier stays a pure function of `Facts`, so its tests are clock-free (TIME-B safe). The reading has one real-host test asserting shape, range and the \"not recorded\" path on an idle host; the discrimination under load is the spike's measured record (condition 2), not a continuous test (tests-earn-their-place: a one-time proof stays out of the ring).\" Read HB-CHK-005 there as HB-CHK-006 (the erratum above).",
+            "B1, the reading (host.py, tests/test_host.py). One host function for the signal the spike chose, returning None on any failed query; the Windows path is measured on this host; the macOS path is built and its parse tested on a recorded fixture, and its live run is recorded \"not run on this host\". Red first through a stub that returns None, then the real-host test (shape, range, and the None path through a failed query you force) reds, then the implementation; never red by ImportError, AttributeError, NameError, KeyError or a TypeError from a missing name (RED-C). The floor constant sits beside the reading's reader with the spike's numbers in its comment.",
+            "B2, the classifier (property.py, tests/test_property_grader.py). The property side reads the check's evidence hosts.jsonl (evid / \"hosts.jsonl\", the file property.json already points at) for a line with end \"start bound\"; the Facts fields land first in their own commit with defaults that keep every current row, the existing grader tests green; then the red tests through _classify; then the branch. The new branch sits immediately before row 6, so rows 1 to 5 keep their precedence, and returns Classification(1, \"HB-CHK-006\", \"host loaded at start\"). A reading that is not recorded is not \"shows load\": a start-bound miss with a not-recorded reading stays row 6, a measured 0, and the reading's absence is visible in spans.* (condition 1's \"only ... while the reading shows load\"). The red cases: a start-bound miss with load is NA HB-CHK-006; a start-bound miss on a host shown not loaded is row 6, 0; an exit, a not ready line and a raised import with load each stay row 6, 0; a start-bound miss with a not-recorded reading stays row 6, 0. Extend the existing independent first-match reference test (test_classify_matches_the_independent_first_match_reference_on_every_flag_combination) and the precedence parametrize at test_property_grader.py:304 with the new row; extend tests/test_discriminate.py:369's parametrize with \"host loaded at start\".",
+            "B3, the codes. errors.py gains \"HB-CHK-006\": \"start bound missed under host load: NOT_RECORDED, re-run next pass\" beside HB-CHK-004; discriminate.py UNTRUSTED_NA gains \"host loaded at start\". If the spike selected (i), bench_check.py writes the pre-import line and tests/test_property_forgery_fixture.py follows the changed first-line rule, red first; otherwise neither file is touched.",
+            "B4, the two mutants, in tests/mutations/property.json: \"R-112: every start miss is NA\" and \"R-112: no start miss is NA\", each with a find unique in property.py and each naming only the node ids that kill it. Run uv run python tools/mutate_check.py on tests/mutations/property.json once, never --touched; a survivor is a finding with its reason, never a deleted mutant or a reworded find (MUT-E).",
+            "The boundary with X-FLAKE (session x-flake-e1e4, build/eval-x-flake, running in parallel from the same head): X-FLAKE owns src/harness_bench/atomic.py, tests/test_atomic.py, tests/mutations/atomic.json, tests/test_e1_e2e.py, tools/mutate_check.py and tests/test_mutate_check.py; you own src/harness_bench/host.py, src/harness_bench/grade/property.py, src/harness_bench/errors.py, src/harness_bench/discriminate.py, tests/test_host.py, tests/test_property_grader.py, tests/test_discriminate.py, tests/mutations/property.json, and only under signal (i) src/harness_bench/grade/bench_check.py and tests/test_property_forgery_fixture.py. You read and run X-FLAKE's files, you never edit them. X-FLAKE joins first; X-START joins second, after X-FLAKE's join and before X-CV (Ruling 112 condition 3), and the Leader brings build/eval-x-start onto the head that holds join-x-flake and re-runs your gate there. A line you need in a file outside your list is a seam request to coord-opus-e1e4, filed with coord request add and a fallback that reaches green.",
+            "The context split rule (CEIL-A, measured): start no item above floor + the item's expected work, where floor is the harness's measured first reading. Claude Code Sonnet floor, measured on fresh sessions before the first item: 53,951 to 72,513, so the floor is 73k; expected work per item 60k (the largest measured item); start no item above 133k; the ceiling 200k is at least floor + the largest item. Sample your context before each item and each gate command from your own transcript (the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains x-start-e1e4; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens). Read only line ranges, never the whole of property.py, bench_check.py, test_property_grader.py or rulings.md; send gate and test output to a file and read only its summary lines. (1) The order is S0, B1, B2, B3, B4, the final gates; your hand-back point is the first item boundary above 133k; (2) at 170k start no new edit or gate, write the closing audit entry and hand back with the open items named; (3) if the figure cannot be read, record \"not recorded\" and hand back after S0. A hand-back by this rule is a planned split, not a failure.",
+            "Markers: you add no simplify: or assume: marker unless an item needs one, and then with its trigger. Every new or changed test records its red (red first where behaviour changes; RED-C: never ImportError, AttributeError, NameError or KeyError); a test already green on arrival is recorded \"green on arrival\", never faked red. The classifier tests read no clock and sleep nothing (tests/test_timing_hygiene.py stays green).",
+            "After every commit that touches src/ or tests/mutations/, run uv run pytest -q tests/test_mutate_check.py and uv run pytest -q tests/test_atomic_sites.py, each on its own line with its exit read (MUT-E's control).",
+            "Scratch and temp: set TMP and TEMP to a short fresh folder you create (for example C:\\t\\xstart-1) and set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs for every pytest or mutate_check run; never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B); keep every scratch path short, because a long path breaks git on Windows (MAX_PATH). Kill only PIDs you started, never a process by name or pattern.",
+            "Never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other). At your hand-back point, stop and report.",
+            "Gate (R-104; each command on its own line, exit status read, never behind a pipe): uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py on the base before the first edit (its failures recorded as on arrival) and on the final commit; uv run pytest -q tests/test_host.py tests/test_property_grader.py tests/test_property_grade_cell.py tests/test_property_real_host.py tests/test_property_forgery_fixture.py tests/test_property_loopback.py tests/test_security_tasks.py tests/test_cli_discriminate.py on the final commit, read as 0 failed and 0 XPASS; uv run pytest -q tests/test_e1_e2e.py on the final commit on an idle host, 0 failed; uv run python tools/mutate_check.py with tests/mutations/property.json and tests/mutations/discriminate.json, one run each, never --touched, every mutant killed or a recorded reason per survivor (a named test that ERRORs in setup counts as not killed: CR47-14); uv run ruff check src tests tools.",
+            "Suite lock: named-file runs do not take the suite lock, mutate_check does; a gate that waited on the suite lock is reported with the measured wait, and a gate not run because the lock was held is reported \"not run: suite lock held\", never as passed.",
+            "Commit named paths only, with plain git commit and AGENT_SESSION=x-start-e1e4 inline on every commit and coord call. Never pass --no-verify, -n or -c core.hooksPath (HOOK-A); a commit whose output lacks the pre-commit hook's line (N staged path(s) checked) is undone and redone. No history rewrite: never rebase, amend, squash or autosquash a commit, your own unpushed ones included; a fix is a new commit (CR47-6). The one exception is HOOK-A's redo of the commit just made, before any later commit.",
+            "Ruling 112 condition 7, quoted: \"Measure, don't model (IO1): X-START's closing entry records the spike's numbers (idle and `-n 4`: the reading, the S1 reference's `start_ms`, the floor chosen), the turn's wall-clock, and the mutant kills with the killing node ids.\" Your closing audit entry, written through audit-log.py, carries those, plus the (c) and (d) readings, the signal chosen and why, the dispatch start and end wall-clock, the outcome (green <sha>, red-only, deadline, split, finding or served-model-failed), the red SHAs per item, the served model id as read, tokens from your transcript's usage or else literally \"not recorded\" (Ruling 108, condition 4), your context sample at each item, and each mutation file's result with its wall-clock. Report your served model id on the first line of your final message."
+          ],
+          "fan_out_cap": "0",
+          "goal": "You are session x-start-e1e4 on branch build/eval-x-start in the tree C:\\Projects\\x-harness-x-model-bench-build-eval-x-start, harness Claude Code, model sonnet (served claude-sonnet-5-5), dispatched by the Leader, one turn, 3,600 s, within 120 calls and 200k context, T1, red first. This is X-START: build Ruling 112 (docs/notes/rulings.md, the heading \"Ruling 112\", Owner seat, req-01M49SHCF1T7JQZGD55RFG9BSY) as it states it, a spike first that measures the two candidate load signals, then the build the numbers support, compiled by Coordinator #49 (docs/coordination/coordinator-log/c49.md). Read Ruling 112 in full first, by line range (rulings.md from the line \"### Ruling 112\" to the line \"- request: req-01M49SHCF1T7JQZGD55RFG9BSY\"); every quote below is binding as written.",
+          "main_line_budget": "within 120 calls; 3,600 s this turn",
+          "not_in_scope": [
+            "atomic.py, test_atomic.py, tests/mutations/atomic.json, test_e1_e2e.py, tools/mutate_check.py and test_mutate_check.py (X-FLAKE's); the per-case bound at bench_check.py:327 and property.py's hidden-test bound (Ruling 112 condition 6's sweep, the Coordinator's findings); a per-task start_bound_ms (condition 5, deferred with its trigger); tasks/ and every cases.yaml.",
+            "the design docs, ADR-0018, docs/notes/rulings.md and docs/lessons/defect-classes.md (condition 4: the compiling Coordinator writes the errata in X-START's join commit; the worker edits no design doc); docs/coordination/join.json; the whole suite and mutate_check --touched (the Leader's); never create, enter or leave a worktree yourself (the Leader makes yours)."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5",
+          "engine_seconds": 0.023,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M49TDAQM9G1BCTB9FSFR6QDQ",
+        "raw_sha256": "6fa1ca3f4936196032be428883632bf37de204f2cc1f1b12bab2bcd43574f032",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "did not start"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "host loaded at start"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "host suspended"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "property.py:152"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bounds_ms[interface"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "start_ms"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "GetSystemTimes"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/proc/stat"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "host_statistics"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "SleepDetector"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-n 4"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/host.py",
+            "reason": null,
+            "sha256": "73b6e5dbdce50cf94025459b8aee4a0bcb607e35369a636f0cf1a47444f56073",
+            "status": "resolved",
+            "token": "src/harness_bench/host.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "unbiased_seconds"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "host.py:9-13"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/property.py",
+            "reason": null,
+            "sha256": "30edce6029136eac8eaff8b96ae291835e9d81bb0bceded2a81a4c08bb497631",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/property.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "spans.*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Facts"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Classification(1, \"HB-CHK-005\", \"host loaded at start"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "hosts.jsonl"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "end: \"start bound"
+          },
+          {
+            "nearest": ".git",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "exit"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "not ready line"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "3509e74d4610df7afeec7c15d66d32cf4549aeff001e9b1b430711771ca82e8e",
+            "status": "resolved",
+            "token": "src/harness_bench/errors.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB-CHK-005"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/discriminate.py",
+            "reason": null,
+            "sha256": "af87a0eaea671a097a8edb2fd87605ceaced92a5a82b936166c962bd9d9b7329",
+            "status": "resolved",
+            "token": "src/harness_bench/discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "UNTRUSTED_NA"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/property.py",
+            "reason": null,
+            "sha256": "30edce6029136eac8eaff8b96ae291835e9d81bb0bceded2a81a4c08bb497631",
+            "status": "resolved",
+            "token": "property.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/bench_check.py",
+            "reason": null,
+            "sha256": "810d2f729a14c3f8cbb1a11a7cc43cdcb0dc4838e09341434c14b22ea5f41c3e",
+            "status": "resolved",
+            "token": "bench_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-start"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/rulings.md",
+            "reason": null,
+            "sha256": "f015189b011efd1dc78ba5342d08ec42ab8b8112baa0be8dfdf538bff85a5a86",
+            "status": "resolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/coordination/coordinator-log/c49.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/rulings.md",
+            "reason": null,
+            "sha256": "f015189b011efd1dc78ba5342d08ec42ab8b8112baa0be8dfdf538bff85a5a86",
+            "status": "resolved",
+            "token": "rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/errors.py:62"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/host.py",
+            "reason": null,
+            "sha256": "73b6e5dbdce50cf94025459b8aee4a0bcb607e35369a636f0cf1a47444f56073",
+            "status": "resolved",
+            "token": "host.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_host.py",
+            "reason": null,
+            "sha256": "2373a3009d4cc364f3e05b80a04e38e0b2d512e4780647845bb0484348a34789",
+            "status": "resolved",
+            "token": "tests/test_host.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_property_grader.py",
+            "reason": null,
+            "sha256": "0eee0101a304334f7384e96286abd88ce58b2429b91d80922bdf835ae1aca2a8",
+            "status": "resolved",
+            "token": "tests/test_property_grader.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/property.json",
+            "reason": null,
+            "sha256": "aa9aea981a6978b12b115f098c578e61f1623cfa30a56c12e09c7e500a5eeec7",
+            "status": "resolved",
+            "token": "property.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_discriminate.py:369's"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "3509e74d4610df7afeec7c15d66d32cf4549aeff001e9b1b430711771ca82e8e",
+            "status": "resolved",
+            "token": "errors.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/discriminate.py",
+            "reason": null,
+            "sha256": "af87a0eaea671a097a8edb2fd87605ceaced92a5a82b936166c962bd9d9b7329",
+            "status": "resolved",
+            "token": "discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_property_forgery_fixture.py",
+            "reason": null,
+            "sha256": "5d16f5e533275cbfc2f9dab3f26c8528973fa47a92e8bdf1acbe76204b50b2b8",
+            "status": "resolved",
+            "token": "tests/test_property_forgery_fixture.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/property.json",
+            "reason": null,
+            "sha256": "aa9aea981a6978b12b115f098c578e61f1623cfa30a56c12e09c7e500a5eeec7",
+            "status": "resolved",
+            "token": "tests/mutations/property.json"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "bf02daafb786d9c8c07d5ec7c239dac2ef44ce804e8dec4422d2808ca2073f4d",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/eval-x-flake"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/atomic.py",
+            "reason": null,
+            "sha256": "d158db29ef50ee5013f1e775363cb8db4c0fd4815bbc4df5bd07d3a88d30e317",
+            "status": "resolved",
+            "token": "src/harness_bench/atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_atomic.py",
+            "reason": null,
+            "sha256": "c2a47bfedb391bfaee6bd644f5b7bacd50f377b8c8e1d22a94c92e693ccf8c53",
+            "status": "resolved",
+            "token": "tests/test_atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/atomic.json",
+            "reason": null,
+            "sha256": "c231c40d35e69f5183f53dff09960270ce4fadf0bee4ad005cd4f1e8dc66cd48",
+            "status": "resolved",
+            "token": "tests/mutations/atomic.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_e1_e2e.py",
+            "reason": null,
+            "sha256": "4e88541c3ec799b46b64b78c21ec9d8a9671dd8f15f3bca51e21e07a73bd1942",
+            "status": "resolved",
+            "token": "tests/test_e1_e2e.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_discriminate.py",
+            "reason": null,
+            "sha256": "5888b52e93c3504a6a19d6d447de3fd34fcd58ac5a552507c71e3d1f2e92f239",
+            "status": "resolved",
+            "token": "tests/test_discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/bench_check.py",
+            "reason": null,
+            "sha256": "810d2f729a14c3f8cbb1a11a7cc43cdcb0dc4838e09341434c14b22ea5f41c3e",
+            "status": "resolved",
+            "token": "src/harness_bench/grade/bench_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_property_grader.py",
+            "reason": null,
+            "sha256": "0eee0101a304334f7384e96286abd88ce58b2429b91d80922bdf835ae1aca2a8",
+            "status": "resolved",
+            "token": "test_property_grader.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_timing_hygiene.py",
+            "reason": null,
+            "sha256": "fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6",
+            "status": "resolved",
+            "token": "tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_atomic_sites.py",
+            "reason": null,
+            "sha256": "143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90",
+            "status": "resolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_identity.py",
+            "reason": null,
+            "sha256": "f6717458ec2670a1be81a7839657dfa77e4dbb2e4515e532b5daefd5d3a8a784",
+            "status": "resolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_arms_guard.py",
+            "reason": null,
+            "sha256": "25c45e56139c8e3a2d70d353e4b83c0386590e754c342c2ee0e1a88338ff8b73",
+            "status": "resolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_skills_in_sync.py",
+            "reason": null,
+            "sha256": "572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d",
+            "status": "resolved",
+            "token": "tests/test_skills_in_sync.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_property_grade_cell.py",
+            "reason": null,
+            "sha256": "79fa9873d6008b5594b8034af7274a61cb8397b85eb2e228155080150ce5484e",
+            "status": "resolved",
+            "token": "tests/test_property_grade_cell.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_property_real_host.py",
+            "reason": null,
+            "sha256": "25d721a506461d561b67cdb55e9df7f5dd2c946e00ea8fc80f3271ce2f19fe6a",
+            "status": "resolved",
+            "token": "tests/test_property_real_host.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_property_loopback.py",
+            "reason": null,
+            "sha256": "493c680c9e1bc5a4ca650d6206cded3312f841ceaa8bc427843a3e4dc938facd",
+            "status": "resolved",
+            "token": "tests/test_property_loopback.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_security_tasks.py",
+            "reason": null,
+            "sha256": "8908c59f8f71ba3bf6d8e0e8d2c712bb085fbba58ef8241c53a203429b5f7679",
+            "status": "resolved",
+            "token": "tests/test_security_tasks.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_cli_discriminate.py",
+            "reason": null,
+            "sha256": "3efbf73dbcf75566ed229905d1ba46ddf92443438616df7d277b3f2c65f18428",
+            "status": "resolved",
+            "token": "tests/test_cli_discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/discriminate.json",
+            "reason": null,
+            "sha256": "fc18c63acfd6926fb2ca6c6055dc05a2c47e6934ff71a816bda75a4b8532e692",
+            "status": "resolved",
+            "token": "tests/mutations/discriminate.json"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/audit-log.py",
+            "reason": null,
+            "sha256": "d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4",
+            "status": "resolved",
+            "token": "audit-log.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/atomic.py",
+            "reason": null,
+            "sha256": "d158db29ef50ee5013f1e775363cb8db4c0fd4815bbc4df5bd07d3a88d30e317",
+            "status": "resolved",
+            "token": "atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_atomic.py",
+            "reason": null,
+            "sha256": "c2a47bfedb391bfaee6bd644f5b7bacd50f377b8c8e1d22a94c92e693ccf8c53",
+            "status": "resolved",
+            "token": "test_atomic.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_e1_e2e.py",
+            "reason": null,
+            "sha256": "4e88541c3ec799b46b64b78c21ec9d8a9671dd8f15f3bca51e21e07a73bd1942",
+            "status": "resolved",
+            "token": "test_e1_e2e.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "8b7ef112b58eeceb104e6fcf6d5baa136c36fd179bd0dd4d5361da8e37c89b60",
+            "status": "resolved",
+            "token": "test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 4 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cases.yaml"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "6ef0305bf3508cae70f5a980505f574d71b0b2ef79a8dca649fc453e76b6ce5d",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/join.json",
+            "reason": null,
+            "sha256": "a9dcde8f3303f217880a3965488308e7611dfaca8f44c208887ec0e53abd1b31",
+            "status": "resolved",
+            "token": "docs/coordination/join.json"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
     }
   ],
   "changes": [

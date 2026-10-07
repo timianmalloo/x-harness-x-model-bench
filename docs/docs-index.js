@@ -1974,7 +1974,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f015189b011efd1dc78ba5342d08ec42ab8b8112baa0be8dfdf538bff85a5a86"
+      "sourceSha256": "b1a6873d15e74fbd23e408a44a13b60279261625f5e3725d84f42272bb08400d"
     },
     {
       "id": "design-eval-arms",
@@ -4710,6 +4710,39 @@ window.DOCS_INDEX = {
       "sourceSha256": "209d9dd7e2d2502472952c0fcf848a320493eeaa265120daeb36c966f8822d51"
     },
     {
+      "id": "coordinator-log-c49",
+      "path": "docs/coordination/coordinator-log/c49.md",
+      "title": "Coordinator #49 hand-back (2026-10-06): X-START compiled for Ruling 112 with HB-CHK-006; the ID-A erratum; errata owed at the join",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-06",
+      "reviewSuggested": [],
+      "summary": "Coordinator #49 worked on coord/eval-c49-start (base e9e18e64, which holds Ruling 112 and join-x-rs). X-START is compiled in compiled mode for Ruling 112 (Claude Code Sonnet, x-start-e1e4, build/eval-x-start): a spike over signal (ii) then (i) with a busy-spin positive control, then host.py, property.py, errors.py, discriminate.py and two property.json mutants. Ruling 112's HB-CHK-005 is already X-LB1's code, so the compile uses HB-CHK-006 and a dated ID-A erratum sits beside the ruling. Ruling 112's LOAD-A name is also taken (a second ID-A instance). The errata Ruling 112 assigns to the join are listed, not written.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c48",
+          "rel": "relates-to"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "c7e3ea360376f0e9dbc4e5e4d83d9eb6c9dfaef0c68fed06a7940f3ab5d9a876"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4736,7 +4769,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "6ef0305bf3508cae70f5a980505f574d71b0b2ef79a8dca649fc453e76b6ce5d"
+      "sourceSha256": "6e4fa5f71a0dfdc36a3e9d7de18310748423dffaa79275e1ec00789386d823aa"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -10039,5 +10072,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "0bc21da668245b2dbf716e659092e65aa9f074bc969be4e90763c4d3ad072132"
+  "graphSha256": "71a484193f623f201592ea2c5c0806c2f1435fe498da817d45cf09021576220c"
 };
