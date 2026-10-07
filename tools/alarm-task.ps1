@@ -39,8 +39,12 @@ New-Item -ItemType Directory -Force -Path $runDir | Out-Null
 $edgePath = Join-Path $runDir '.alarm_edge'
 $logPath = Join-Path $runDir 'alarm-delivery.log'
 
+# Stderr (the HB-ALM-00x line the real command prints on exit 6) must not become a terminating NativeCommandError in 5.1:
+# 'Continue' for this one native call only; the exit code is read right after, and every other statement stays 'Stop'.
+$ErrorActionPreference = 'Continue'
 $out = & $Bench status $RunId --alarm-after $AlarmAfter --json 2>$null
 $exit = $LASTEXITCODE
+$ErrorActionPreference = 'Stop'
 
 $state = $null
 if (Test-Path $edgePath) { $state = Get-Content -Raw -Path $edgePath | ConvertFrom-Json }
