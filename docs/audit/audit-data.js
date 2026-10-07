@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-07T01:49:56Z",
+  "generated": "2026-10-07T02:14:15Z",
   "audit": [
     {
       "actor": null,
@@ -120892,6 +120892,30 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-07T01:33:42Z",
       "duration_seconds": 974.0
+    },
+    {
+      "id": "al-01M4A27P3CHNN228QS2JECHAY6",
+      "shortname": "x-cv-close",
+      "datetime": "2026-10-07T02:14:15Z",
+      "session": "x-cv-e1e4",
+      "prompt": "X-CV convergence turn (compile al-01M49X6KEJRBXZ8PPK5817ARAR)",
+      "summary": "X-CV (Claude Code Sonnet, served claude-sonnet-5-5), start 2026-10-07T01:51Z. Outcome green ffe9f123. W1 1a36774b; W2 red-first and green 30ee6cbf (23 table nodes run: 23 passed; test file 2 passed); W3 TLC --quick exit 0 all model checks passed, 34/34 seeded variants rejected, 4/4 witnesses; W4 no commit of tasks/SM1 hashes to db5fedd4, cause Inferred as ignored cache folder in the record's tree; W5 f9570f1b, index ffe9f123. Tokens: not recorded. Context samples: not recorded.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/proof/eval-campaign-convergence.md",
+        "tests/test_resume_table.py"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "X-CV convergence: W1 S2 open items, W2 resume table test, W3 TLC quick, W4 SM1 finding, W5 proof note",
+      "done_when": "gates green, records table left for the Leader",
+      "tier": "T2",
+      "started_at": "2026-10-07T01:51:12Z",
+      "duration_seconds": 1383.0
     }
   ],
   "changes": [
