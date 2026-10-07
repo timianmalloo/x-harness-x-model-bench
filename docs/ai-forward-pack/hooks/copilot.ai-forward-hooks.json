@@ -30,6 +30,12 @@
         "bash": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh mail-doorbell.py --host copilot --event preToolUse",
         "powershell": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh mail-doorbell.py --host copilot --event preToolUse",
         "timeoutSec": 10
+      },
+      {
+        "type": "command",
+        "bash": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh git-identity-guard.py --host copilot",
+        "powershell": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh git-identity-guard.py --host copilot",
+        "timeoutSec": 10
       }
     ],
     "postToolUse": [

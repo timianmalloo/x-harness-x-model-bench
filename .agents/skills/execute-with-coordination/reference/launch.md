@@ -103,6 +103,11 @@ and cwd, overriding the initiating harness's identity.
 }
 ```
 
+**Dispatch base.** Every worker tree starts at the invoking checkout's HEAD unless the contract
+names `"base"`: a branch, tag or commit, resolved once at `prepare` and pinned in the manifest as a
+sha (`RUN-BASE` when it does not resolve). Name the integration head here instead of moving the
+primary to it, so a dirty primary never freezes dispatch (BASE-A).
+
 ## Runtime controls
 
 `runtime.unattended` must be explicitly true to admit these controls. Omit `runtime`

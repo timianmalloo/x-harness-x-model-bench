@@ -25,7 +25,8 @@ identity (`AGENT_SESSION`, `AGENT_HOST=copilot`), qualify native hooks, and do n
 historical plugin proof or Codex-only operational roots. Read the installed
 `execute-with-coordination/reference/copilot.md` for the exact profile and evidence limits.
 
-The `coord-run/1` contract has run_id, owner, parallelism (1–4), workers (1–8). Each worker
+The `coord-run/1` contract has run_id, owner, parallelism (1–4), workers (1–8), and an optional
+base (a branch, tag or commit; default the invoking HEAD; BASE-A). Each worker
 has a new session/branch, harness, transport (acp or agy), argv array, prompts (finished
 compilation audit IDs), deadline_seconds, output_limit, fallback, required_capabilities,
 binding_files and evidence (bounded relative files and/or a new descendant commit).

@@ -20,7 +20,9 @@ opt-out marker because it names the shapes; the marker is `machine-path-ok`):
   <drive>:\\Users\\   <drive>:/Users/   /Users/<name>   /home/<name>   /opt/homebrew/   machine-path-ok
   \\.pyenv/           AppData\\Local     AppData/Local                                machine-path-ok
 A line may opt out with the marker `machine-path-ok` when the path is a fixture and the
-test says why (the exemption is visible in the diff; the pattern is not silently widened).
+test says why (the exemption is visible in the diff; the pattern is not silently widened). A
+byte-exact captured record opts out per FILE with the git attribute: `<pattern> machine-path-ok`
+in .gitattributes (a line marker would change the bytes its readers hash).
 
 USAGE
   python3 verify-no-machine-paths.py               scan the tracked surfaces of this repo
@@ -52,10 +54,13 @@ for _stream in (sys.stdout, sys.stderr):
 SURFACES = ("pack/", "tools/", "tests/", "web/", ".claude/", ".github/", ".grok/", ".agents/")
 ROOT_FILES = (".gitattributes", ".gitignore", ".editorconfig", "package.json", "AGENTS.md",
               "CLAUDE.md", "global.json")
+# A `/Users/` or `/home/` segment after a glob or dot segment (`cells/*/home/x`, `./home`) is a
+# RELATIVE path, not a home directory (HYG-VERIFY, a consuming repo's scrubber glob), so `*`, `?`
+# and `.` join the word characters that cannot precede an absolute home path.
 PATTERNS = [
     re.compile(r"[A-Za-z]:[\\/]Users[\\/]"),
-    re.compile(r"(^|[^A-Za-z0-9_])/Users/[A-Za-z]"),
-    re.compile(r"(^|[^A-Za-z0-9_])/home/[a-z]"),
+    re.compile(r"(^|[^A-Za-z0-9_*?.])/Users/[A-Za-z]"),
+    re.compile(r"(^|[^A-Za-z0-9_*?.])/home/[a-z]"),
     re.compile(r"/opt/homebrew/"),   # machine-path-ok: the pattern itself
     re.compile(r"\.pyenv[\\/]"),
     re.compile(r"AppData[\\/]Local"),
@@ -85,13 +90,36 @@ def in_scope(rel: str) -> bool:
     return False
 
 
+def exempt_files(root: str, rels: list[str]) -> set[str] | None:
+    """Files whose git attribute `machine-path-ok` is SET (`<pattern> machine-path-ok` in
+    .gitattributes). A byte-exact captured record (a recorded native session, a hashed golden)
+    cannot carry a line marker without changing the bytes its readers pin, so it opts out per
+    file - visibly, in a tracked file - instead of the gate being widened. None = git failed."""
+    if not rels:
+        return set()
+    try:
+        proc = subprocess.run(["git", "-C", root, "check-attr", "-z", "--stdin", OPT_OUT],
+                              input=("\0".join(rels) + "\0").encode("utf-8"),
+                              capture_output=True, timeout=60, check=False)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if proc.returncode != 0:
+        return None
+    fields = proc.stdout.decode("utf-8", "replace").split("\0")
+    return {fields[i] for i in range(0, len(fields) - 2, 3) if fields[i + 2] == "set"}
+
+
 def scan(root: str) -> tuple[list[str], int]:
     files = tracked_files(root)
     if files is None:
         return ["NOT CHECKED: git ls-files failed under {0}".format(root)], -1
+    candidates = [rel for rel in files if in_scope(rel)]
+    exempt = exempt_files(root, candidates)
+    if exempt is None:
+        return ["NOT CHECKED: git check-attr failed under {0}".format(root)], -1
     hits, scanned = [], 0
-    for rel in files:
-        if not in_scope(rel):
+    for rel in candidates:
+        if rel in exempt:
             continue
         path = os.path.join(root, rel)
         try:
@@ -152,8 +180,11 @@ def main(argv=None) -> int:
         for hit in hits:
             print("  " + hit)
         print("fix: carry the portable token (`python3`, `~`, a repo-relative path) and resolve it at")
-        print("     run time; for the registry run `coord classify init --force`. A test fixture may")
-        print("     opt out with `machine-path-ok` on the line, with the reason beside it.")
+        print("     run time; for the registry run `coord classify init --force`. The token is what a")
+        print("     tracked file spells; on Windows you RUN it as `python` or `py -3` (`python3` there is")
+        print("     the Store alias). A test fixture may opt out with `machine-path-ok` on the line, with")
+        print("     the reason beside it; a byte-exact captured record opts out per file with")
+        print("     `<pattern> machine-path-ok` in .gitattributes.")
         return 1
     print("clean - {0} tracked machine-readable files carry no machine-specific path".format(scanned))
     return 0
