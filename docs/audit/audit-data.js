@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-07T00:36:42Z",
+  "generated": "2026-10-07T00:44:10Z",
   "audit": [
     {
       "actor": null,
@@ -119348,6 +119348,33 @@ window.AUDIT_DATA = {
       "tier": "T1",
       "started_at": "2026-10-07T00:29:46Z",
       "duration_seconds": 416.0
+    },
+    {
+      "id": "al-01M49X2QAA4G5TYJT768579356",
+      "shortname": "join-x-start-withdrawn",
+      "datetime": "2026-10-07T00:44:10Z",
+      "session": "leader-e1e4",
+      "prompt": "the join of build/eval-x-start into integrate/e2e4-18",
+      "summary": "X-START (Sonnet, x-start-e1e4) spike S0: neither load signal discriminates; S1 start 52-90 ms under -n 4 vs 2000 ms bound; closing entry al-01M49WN1ZMTX2XXXT2WXNTMPGG (commit 4227546c, audit only, no src). Withdrawn as a build turn by Ruling 113 condition 1. recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join X-START's closing entry",
+      "done_when": "conductor-join exit 0 (docs-only)",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-07T00:44:09Z",
+      "duration_seconds": 1.0
     }
   ],
   "changes": [
