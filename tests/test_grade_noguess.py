@@ -265,8 +265,10 @@ def test_noguess_grade_cell_uses_registered_strategy(tmp_path: Path, monkeypatch
     assert scores["hallucinated_symbol_errors"].value == 2
     assert scores["hallucinated_symbol_errors"].reason is None
 
-    # When removed: grade_cell returns NA 'not built'
-    monkeypatch.delitem(property_grader.STRATEGIES, "no-guessing")
+    # When removed: grade_cell returns NA 'not built'. A filtered copy, never delitem: monkeypatch re-inserts a deleted
+    # key at the end, which reorders STRATEGIES for every later test on the worker (MPATCH-A)
+    monkeypatch.setattr(property_grader, "STRATEGIES",
+                        {k: v for k, v in property_grader.STRATEGIES.items() if k != "no-guessing"})
     scores_removed = property_grader.grade_cell(inp)
     for s in scores_removed.values():
         assert s.value is None

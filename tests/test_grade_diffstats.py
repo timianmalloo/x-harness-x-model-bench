@@ -461,8 +461,10 @@ def test_diffstats_grade_cell_uses_registered_strategy(tmp_path: Path, monkeypat
     assert "property_check_pass" in scores
     assert scores["property_check_pass"].reason is None
 
-    # When removed: grade_cell returns NA 'not built'
-    monkeypatch.delitem(property_grader.STRATEGIES, "simplicity")
+    # When removed: grade_cell returns NA 'not built'. A filtered copy, never delitem: monkeypatch re-inserts a deleted
+    # key at the end, which reorders STRATEGIES for every later test on the worker (MPATCH-A)
+    monkeypatch.setattr(property_grader, "STRATEGIES",
+                        {k: v for k, v in property_grader.STRATEGIES.items() if k != "simplicity"})
     scores_removed = property_grader.grade_cell(inp)
     for s in scores_removed.values():
         assert s.value is None
