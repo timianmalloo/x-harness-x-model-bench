@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Eval X K2B</title><style>
+:root { color-scheme: light dark; --bg:#f7f5ef; --panel:#fff; --text:#20201d;
+  --muted:#66645f; --line:#d9d5ca; --accent:#3157a4; --code:#f0eee7; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#171816; --panel:#20221f; --text:#f2f1eb; --muted:#b8b6ae;
+    --line:#3d403a; --accent:#8fb0ff; --code:#292c27; }
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text);
+  font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { width:min(920px,calc(100% - 32px)); margin:32px auto; padding:40px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+h1,h2,h3,h4,h5,h6 { line-height:1.2; margin:1.5em 0 .55em; }
+h1 { margin-top:0; font-size:2.2rem; } h2 { border-bottom:1px solid var(--line); padding-bottom:.3em; }
+a { color:var(--accent); } code { background:var(--code); padding:.12em .35em; border-radius:4px; }
+pre { overflow:auto; padding:16px; background:var(--code); border-radius:8px; }
+pre code { padding:0; } blockquote { margin:1em 0; padding:.2em 1em; color:var(--muted);
+  border-left:4px solid var(--line); }
+table { width:100%; border-collapse:collapse; margin:1em 0; display:block; overflow:auto; }
+th,td { padding:.55em .75em; border:1px solid var(--line); text-align:left; vertical-align:top; }
+th { background:var(--code); } hr { border:0; border-top:1px solid var(--line); }
+.source { color:var(--muted); font-size:.9rem; margin-bottom:2rem; }
+@media (max-width:640px) { main { width:100%; margin:0; padding:24px 18px; border:0; border-radius:0; } }
+</style></head><body><main><div class="source">Rendered from eval-x-k2b.md</div><h1>X-K2b: alarm and liveness plan record (T1)</h1>
+<p>Branch <code>build/eval-x-k2b</code>. Three sessions built it: part 1 (K1 skeleton <code>8b2eef4b</code>), part 2 (K2 red tests <code>319a525c</code>), part 3 (this record: K3, K4, gates; session <code>x-k2b4-e1e4</code>, Claude Code Sonnet; planned Agy gemini-3.8-flash-high, reason RUN-IDENTITY after the Agy part 1 split). Sources: W1-K <code>docs/design/eval-resume.md</code> sections 2, 6.1, 6.2, 8, 13; W0 rev 6.14 R6.14a, R6.14b.</p>
+<h2>1. Commits</h2>
+<table><thead><tr><th>Item</th><th>Commit</th><th>What</th></tr></thead><tbody><tr><td>K3 views</td><td><code>8886654f</code></td><td><code>views.resume_history</code> and <code>ResumeRecord</code>, derived per engine segment that holds <code>run.resumed</code></td></tr><tr><td>K3 status</td><td><code>2a19dd5f</code></td><td><code>status.last_progress_at</code>, <code>bench-status/2</code> (<code>parse</code> reads <code>/1</code> and <code>/2</code>), <code>resumes</code>, <code>never_launched</code>, docstring fixed to D-K5; seam fallback: the start-benchmark skill names the three new fields (3 copies)</td></tr><tr><td>K3 alarm</td><td><code>f5c74c16</code>, <code>03e3afce</code></td><td><code>alarm.check</code> (HB-ALM-001, HB-ALM-002; <code>resume.has_work</code> imported); the plan is read through <code>views.load</code> (reader table)</td></tr><tr><td>K3 cli</td><td><code>d6f6a0ee</code>, <code>7a2df873</code></td><td><code>--alarm-after</code> exits 6 with <code>HB-ALM-00x: &lt;cause&gt;</code> on stderr, <code>--json</code> adds <code>alarm</code>, <code>bench plan</code> prints the one <code>--alarm-after</code> number</td></tr><tr><td>K4</td><td><code>1d71a235</code></td><td><code>tests/mutations/alarm.json</code> (8 mutants), <code>test_gap_equal_to_the_threshold_is_silent</code>, the native real-command to alarm-task test</td></tr></tbody></table>
+<p>Order note: status landed before alarm because <code>alarm.check</code> calls <code>status.last_progress_at</code>.</p>
+<h2>2. Mutants (alarm.json)</h2>
+<table><thead><tr><th>Mutant</th><th>Killed by</th></tr></thead><tbody><tr><td>M-HEARTBEATONLY</td><td><code>test_free_lock_with_work_exits_6_alm_001</code></td></tr><tr><td>M-GE</td><td><code>test_gap_equal_to_the_threshold_is_silent</code></td></tr><tr><td>M-UNITS</td><td><code>test_stale_progress_exits_6_with_alm_002</code></td></tr><tr><td>M-ZEROISOK</td><td><code>test_unreadable_progress_fails_closed</code></td></tr><tr><td>M-PENDINGONLY</td><td><code>test_pending_zero_does_not_raise_alm_002</code></td></tr><tr><td>M-ALARMPENDING</td><td><code>test_alarm_has_no_pending_logic_of_its_own</code></td></tr><tr><td>M-NAMESORT (status.py)</td><td><code>test_last_progress_ignores_segment_name_order</code></td></tr><tr><td>M-STOPEXEMPT</td><td><code>test_mid_stop_crash_alarms</code></td></tr></tbody></table>
+<h2>3. Findings</h2>
+<ul><li><strong>Seam, X-K2a (`tools/alarm-task.ps1`).</strong> The script runs <code>bench status ... --json 2&gt;$null</code> under <code>$ErrorActionPreference = &#x27;Stop&#x27;</code>. In powershell.exe 5.1 a native command&#x27;s stderr line becomes a <code>NativeCommandError</code>, so the real command&#x27;s <code>HB-ALM-00x:</code> line makes the script exit 1 (&quot;check-error&quot;) instead of 6. The K2a stub never writes stderr, so its tests could not see it. The K4 native test redirects stderr inside its <code>bench.cmd</code> wrapper as the fallback. Fix for the owner: set <code>$ErrorActionPreference = &#x27;Continue&#x27;</code> around the call (or redirect inside a <code>cmd /c</code>).</li><li><strong>Seam, start-benchmark skill.</strong> <code>test_the_skill_names_every_status_field</code> forces the new status fields into the skill; the three copies are edited as a fallback (precedent <code>33e827a9</code>); drop at join if the skill owner lands it.</li><li><strong>Not built:</strong> the last row kind in the ALM-002 message (W1-K 6.2 lists it); the message carries the gap, the threshold and the last progress time.</li></ul></main></body></html>

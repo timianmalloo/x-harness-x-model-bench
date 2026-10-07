@@ -1,15 +1,16 @@
 """`bench status <run_id> [--json]` (US-20; design: Exposed contracts, CLI states; ADR-0011 C4).
 
 - Liveness comes from the run lock: `alive` (held, heartbeat within the plan's `lock_staleness`),
-  `stalled` (held, heartbeat stale), `not running` (free). Completion: `complete` once `run.completed` is
-  recorded, `in progress` while the lock is held, otherwise `incomplete`.
+  `stalled` (held, heartbeat stale), `not running` (free). Completion: `complete` iff a `run.completed` row
+  follows the last `run.resumed` row (or there is none; D-K5, `views.load`'s `completed`), `in progress` while the
+  lock is held, otherwise `incomplete`.
 - A running cell is one with `attempt.process_started` and no `attempt.process_ended`. Its budget
   clock starts at `cell.prompt_sent` (matching the engine's own kill check), so a cell still
   handshaking shows `elapsed_s` 0 and is never `killing`. One past its budget is being killed (the
   engine kills at the budget and records the end only once the kill is confirmed), shown as
   `killing (unconfirmed, <s> s)`.
-- `bench-status/1` is a strict type: `parse` rejects unknown or missing fields, wrong types, unknown
-  enum values and malformed ids. It carries enums, ids, counts and times only: no text from a cell.
+- `bench-status/2` is a strict type (`parse` also reads `/1`, whose new fields read as null, empty and 0): it rejects
+  unknown or missing fields, wrong types, unknown enum values and malformed ids. It carries enums, ids, counts and times only: no text from a cell.
 - `decisions` lists every decision request (design 4.6): its enums and ids, its state derived from the ledger, and
   `default_in_s`, the display-only time to its default (the engine's deadline is on its own clock).
 """
@@ -28,7 +29,8 @@ from harness_bench.errors import BenchError, Cause
 from harness_bench.lifecycle import DECISION_KINDS, DECISION_STATES, is_cell_start
 from harness_bench.plan import DEFAULT_PARAMETERS
 
-SCHEMA = "bench-status/1"
+SCHEMA = "bench-status/2"
+SCHEMAS = ("bench-status/1", SCHEMA)
 LIVENESS = ("alive", "stalled", "not running")
 COMPLETION = ("complete", "in progress", "incomplete")
 OUTCOMES = ("completed", "timed_out", "stopped", "skipped (decision)", "failed", "no outcome", "not started")
@@ -45,6 +47,7 @@ PHASE = ("starting", "running", "stopping", "stopped")
 CAUSE_CODE = re.compile(r"HB-CELL-[0-9]{3}")
 STOP_CODE = re.compile(r"HB-[A-Z]+-[0-9]{3}")
 TIME = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z")
+TIME_MS = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z")  # ledger.stamp's shape
 DECISION_ID = re.compile(r"D[1-9][0-9]*")
 SUBJECT = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,79}")  # a harness, a combo id or a run id: never free text (B2)
 
@@ -71,6 +74,13 @@ class RunningCell:
 
 
 @dataclass(frozen=True)
+class Resumed:
+    n: int
+    at: str
+    segment_id: str
+
+
+@dataclass(frozen=True)
 class Status:
     schema: str
     run_id: str
@@ -92,8 +102,12 @@ class Status:
     stop_diff: tuple[str, ...]  # that row's diff: at most 5 components, then one count line (HB-IDN-001 only)
     phase: str  # starting | running | stopping | stopped (ruling R-3; design 4.6)
     graded: bool
+    last_progress_at: str | None  # W1-K 6.1: the newest recorded_at over every events segment; null = not recorded
+    resumes: list[Resumed]  # W1-K 2: derived per resume segment by views.resume_history
+    never_launched: int  # cells with no cell.launch_intent row, derived (W1-K 6.2)
 
 
+NEW_IN_V2 = ("last_progress_at", "resumes", "never_launched")
 STOP_DIFF_SHOWN = 5  # components listed; any more become one count line
 
 
@@ -114,6 +128,39 @@ def require_known(run_dir: Path) -> None:
 
 def _when(recorded_at: str) -> datetime:
     return datetime.fromisoformat(recorded_at)
+
+
+TAIL_BYTES = 65536
+
+
+def _tail_recorded_at(path: Path) -> str | None:
+    """`recorded_at` of the last complete row of a segment that has one (a torn last line is skipped); no chain check."""
+    with path.open("rb") as handle:
+        size = handle.seek(0, 2)
+        handle.seek(max(0, size - TAIL_BYTES))
+        lines = handle.read().split(b"\n")
+    if size > TAIL_BYTES:
+        lines = lines[1:]  # the first line of a mid-file chunk is partial
+    for line in reversed(lines):
+        try:
+            value = json.loads(line).get("recorded_at")
+        except (ValueError, AttributeError):
+            continue
+        if isinstance(value, str) and TIME_MS.fullmatch(value):
+            return value
+    return None
+
+
+def last_progress_at(run_dir: Path) -> str | None:
+    """W1-K 6.1: the maximum `recorded_at` over the tail of each events segment (engine and grading, sealed or not),
+    never chosen by file name. None when no segment yields one (unreadable: the alarm fails closed)."""
+    found = []
+    for path in views.segment_paths(run_dir, "events"):
+        try:
+            found.append(_tail_recorded_at(path))
+        except OSError:
+            continue
+    return max((value for value in found if value), default=None)
 
 
 def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = None) -> Status:
@@ -176,7 +223,9 @@ def build(run_dir: Path, now: datetime | None = None, lock_age: float | None = N
     timeout = view.plan.get("parameters", {}).get("decision_timeout", DEFAULT_PARAMETERS["decision_timeout"])
     return Status(SCHEMA, view.run_id, now.strftime("%Y-%m-%dT%H:%M:%SZ"), liveness, completion, age, len(view.cells), ended_count,
                   outcomes, last_update_ms, validity, causes, cell_causes, running, _decisions(events, timeout, now), stop_code, stop_reason, stop_diff, phase,
-                  view.grading_id is not None)
+                  view.grading_id is not None, last_progress_at(run_dir),
+                  [Resumed(r.n, r.at, r.segment_id) for r in views.resume_history(run_dir)],
+                  len({c["cell_id"] for c in view.plan["cells"]} - {e["cell_id"] for e in events if e["kind"] == "cell.launch_intent"}))
 
 
 def _decisions(events: list[dict], timeout: int, now: datetime) -> list[Decision]:
@@ -212,6 +261,10 @@ def text(s: Status) -> str:
     if s.stop_code is not None and s.phase not in ("stopping", "stopped"):
         lines.append(f"Launching stopped ({s.stop_code}): {s.stop_reason or 'no reason recorded'}.")
         lines.extend(f"  {item}" for item in s.stop_diff)
+    if s.phase == "stopped":
+        lines.append(f"Stopped, {s.never_launched} cells never launched.")
+    if s.resumes:
+        lines.append(f"Resumed {len(s.resumes)} times: " + ", ".join(f"{r.at} ({r.segment_id})" for r in s.resumes) + ".")
     for d in s.decisions:  # UXA-7: the subject, the cause and the action
         if d.state == "open":
             lines.append(f"Decision {d.decision_id} · {d.decision_kind.replace('_', ' ')} · {d.subject} · {d.cause_code} · "
@@ -239,7 +292,7 @@ def to_json(s: Status) -> str:
 
 def _require(ok: bool, what: str) -> None:
     if not ok:
-        raise ValueError(f"bench-status/1: {what}")
+        raise ValueError(f"bench-status: {what}")
 
 
 def _int(value, what: str, nullable: bool = False) -> None:
@@ -262,10 +315,13 @@ def _exact(data, cls) -> None:
 
 
 def parse(document: str) -> Status:
-    """A `bench-status/1` document, validated strictly (ValueError on any deviation)."""
+    """A `bench-status/1` or `/2` document, validated strictly (ValueError on any deviation); /1 reads the new fields as empty."""
     data = json.loads(document)
+    _require(isinstance(data, dict) and data.get("schema") in SCHEMAS, f"schema must be one of {SCHEMAS}")
+    if data["schema"] == SCHEMAS[0]:
+        _require(not set(NEW_IN_V2) & set(data), "bench-status/1 carries no /2 field")
+        data = {**data, "last_progress_at": None, "resumes": [], "never_launched": 0}
     _exact(data, Status)
-    _require(data["schema"] == SCHEMA, f"schema must be {SCHEMA}")
     _require(isinstance(data["run_id"], str) and bool(re.fullmatch(RUN_ID, data["run_id"])), "run_id is malformed")
     _require(isinstance(data["checked_at"], str) and bool(TIME.fullmatch(data["checked_at"])), "checked_at must be UTC ISO time")
     _require(data["liveness"] in LIVENESS, "liveness is not a known value")
@@ -306,6 +362,17 @@ def parse(document: str) -> Status:
              and all(isinstance(item, str) for item in data["stop_diff"]), "stop_diff must be at most 6 strings")
     _require(data["phase"] in PHASE, "phase is not a known value")
     _require(isinstance(data["graded"], bool), "graded must be a boolean")
+    _require(data["last_progress_at"] is None or (isinstance(data["last_progress_at"], str) and bool(TIME_MS.fullmatch(data["last_progress_at"]))),
+             "last_progress_at must be UTC ISO time or null")
+    _int(data["never_launched"], "never_launched")
+    _require(isinstance(data["resumes"], list), "resumes must be a list")
+    resumes = []
+    for r in data["resumes"]:
+        _exact(r, Resumed)
+        _int(r["n"], "resumes.n")
+        _require(isinstance(r["at"], str) and bool(TIME_MS.fullmatch(r["at"])), "resumes.at must be UTC ISO time")
+        _require(isinstance(r["segment_id"], str) and bool(re.fullmatch(r"engine-[A-Za-z0-9-]{1,40}", r["segment_id"])), "resumes.segment_id is malformed")
+        resumes.append(Resumed(**r))
     _require(isinstance(data["running"], list), "running must be a list")
     running = []
     for r in data["running"]:
@@ -316,4 +383,4 @@ def parse(document: str) -> Status:
         _int(r["budget_s"], "running.budget_s")
         _require(isinstance(r["killing"], bool), "running.killing must be a boolean")
         running.append(RunningCell(**r))
-    return Status(**{**data, "running": running, "decisions": decisions, "stop_diff": tuple(data["stop_diff"])})
+    return Status(**{**data, "running": running, "decisions": decisions, "stop_diff": tuple(data["stop_diff"]), "resumes": resumes})

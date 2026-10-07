@@ -116,9 +116,7 @@ CLASSES: Mapping[str, Literal["run", "grade"]] = {
 }
 
 # Explicitly retired on landing; stale() prevents a landed key lingering here.
-PLANNED: frozenset[str] = frozenset({
-    "alarm.py",
-})
+PLANNED: frozenset[str] = frozenset()
 
 # R-94 condition 3: exactly three validate-time edges, not cell-path imports.
 RUN_IMPORTS_GRADE_ALLOWED: Mapping[tuple[str, str], str] = {

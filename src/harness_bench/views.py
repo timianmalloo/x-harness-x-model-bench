@@ -35,6 +35,7 @@ from dataclasses import dataclass, field, fields
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
+from typing import NamedTuple
 
 from harness_bench import archive, ledger, lifecycle, profiles
 from harness_bench.errors import BenchError, Cause
@@ -96,6 +97,32 @@ def segment_rows(run_dir: Path, fact: str) -> list[tuple[str, list[dict]]]:
             raise BenchError("HB-LED-002", f"{fact}/{path.name}: no known writer for this segment")
         out.append((sid, ledger.read_segment(path)))
     return out
+
+
+class ResumeRecord(NamedTuple):
+    n: int
+    at: str
+    segment_id: str
+    skipped: int
+    launched: int
+    reconciled: tuple[tuple[str, str, int, str], ...]
+
+
+def resume_history(run_dir: Path) -> list[ResumeRecord]:
+    """Derived resume records per engine resume segment (W1-K §2, R6.14a): never stored, one reader over per-segment rows."""
+    records: list[ResumeRecord] = []
+    archived: set[str] = set()  # cells archived in an earlier engine segment
+    for sid, segment in segment_rows(run_dir, "events"):
+        if not sid.startswith(ENGINE_PREFIX):
+            continue
+        resumed = next((r for r in segment if r["kind"] == "run.resumed"), None)
+        if resumed is not None:
+            reconciled = tuple((r["cell_id"], r.get("code"), r["resume"]["turn"], r["resume"]["phase"])
+                               for r in segment if r["kind"] == "cell.outcome" and isinstance(r.get("resume"), dict))
+            records.append(ResumeRecord(len(records) + 1, resumed.get("recorded_at"), resumed.get("segment_id", sid), len(archived),
+                                        sum(1 for r in segment if r["kind"] == "cell.launch_intent"), reconciled))
+        archived |= {r["cell_id"] for r in segment if r["kind"] == "cell.archived"}
+    return records
 
 
 def rows(run_dir: Path, fact: str) -> list[dict]:

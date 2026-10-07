@@ -180,6 +180,16 @@ def test_status_shows_stopped_with_counts(root, tmp_path):  # R10-3 (UXA-10; des
     assert (s.outcomes["stopped"], s.outcomes["not started"], s.outcomes["completed"]) == (1, 1, 1)
     assert status.parse(status.to_json(s)) == s
     assert status.text(s).splitlines()[0] == "Run r1: stopped (HB-RUN-006). 1 stopped, 1 never started, 1 ended before the stop."
+    assert s.never_launched == 1 and "Stopped, 1 cells never launched." in status.text(s).splitlines()  # W1-K 6.2: derived
+
+
+def test_status_names_each_resume_with_its_time_and_segment(root, tmp_path):  # W1-K 2, 6.2
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-2-r001") as ev:
+        ev.append({"kind": "run.resumed", "run_id": "r1", "segment_id": "engine-2-r001", "recorded_at": "2026-09-23T10:00:00.000Z"})
+    s = status.build(run_dir, now=NOW)
+    assert s.resumes == [status.Resumed(1, "2026-09-23T10:00:00.000Z", "engine-2-r001")]
+    assert "Resumed 1 times: 2026-09-23T10:00:00.000Z (engine-2-r001)." in status.text(s).splitlines()
 
 
 def test_status_shows_stopping_while_a_launched_cell_has_no_outcome(root, tmp_path):  # R10-3 (design 4.6)
@@ -212,12 +222,22 @@ def test_the_skill_names_every_status_field():  # SK-1, R-3 condition 3
         assert not missing, (skill, sorted(missing))
 
 
+def test_parse_accepts_bench_status_1_with_the_new_fields_empty(root, tmp_path):  # W1-K 6.1: /1 reads them as null, empty, 0
+    data = json.loads(status.to_json(status.build(_live_run(root, tmp_path), now=NOW)))
+    old = {k: v for k, v in data.items() if k not in status.NEW_IN_V2} | {"schema": "bench-status/1"}
+    parsed = status.parse(json.dumps(old))
+    assert (parsed.last_progress_at, parsed.resumes, parsed.never_launched) == (None, [], 0)
+    with pytest.raises(ValueError):
+        status.parse(json.dumps({**old, "never_launched": 0}))
+
+
 def test_the_json_form_round_trips_and_is_strict(root, tmp_path):
     s = status.build(_live_run(root, tmp_path), now=NOW)
     doc = status.to_json(s)
     assert status.parse(doc) == s
     data = json.loads(doc)
-    for broken in ({**data, "extra": 1}, {k: v for k, v in data.items() if k != "graded"}, {**data, "schema": "bench-status/2"},
+    for broken in ({**data, "extra": 1}, {k: v for k, v in data.items() if k != "graded"}, {**data, "schema": "bench-status/3"}, {**data, "last_progress_at": "yesterday"},
+                   {**data, "resumes": [{"n": 1}]},
                    {**data, "liveness": "sleeping"}, {**data, "cells_ended": -1}, {**data, "graded": 1},
                    {**data, "outcomes": {**data["outcomes"], "exploded": 1}},
                    {**data, "running": [{**data["running"][0], "cell_id": "not a cell id"}]},
@@ -244,7 +264,10 @@ _statuses = st.builds(
     stop_reason=st.none() | st.from_regex(r"[a-z ]{1,40}", fullmatch=True),
     stop_diff=st.lists(st.from_regex(r"tasks/[A-Z][0-9] (added|removed|changed)", fullmatch=True), max_size=6).map(tuple),
     phase=st.sampled_from(status.PHASE),
-    graded=st.booleans())
+    graded=st.booleans(), last_progress_at=st.none() | st.just("2026-09-23T11:30:00.000Z"),
+    resumes=st.lists(st.builds(status.Resumed, n=st.integers(1, 9), at=st.just("2026-09-23T11:30:00.000Z"),
+                               segment_id=st.just("engine-1-r001")), max_size=3),
+    never_launched=st.integers(0, 600))
 
 
 @given(_statuses)
@@ -376,3 +399,17 @@ def test_parse_refuses_a_malformed_cell_causes_ev18(root, tmp_path):
                    {**data, "cell_causes": {"b": "build changed"}}, {k: v for k, v in data.items() if k != "cell_causes"}):
         with pytest.raises(ValueError):
             status.parse(json.dumps(broken))
+
+
+def test_last_progress_ignores_segment_name_order(root, tmp_path):  # W1-K 6.1; M-NAMESORT
+    """`grade-...` sorts after every `engine-...`, so a name-sorted newest segment reads the stale old pass."""
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    newer, older = "2026-09-23T11:30:00.000Z", "2026-09-23T09:00:00.000Z"
+    with ledger.SegmentWriter.create(run_dir / "events", "engine-2") as ev:
+        ev.append({"kind": "run.resumed", "run_id": "r1", "segment_id": "engine-2", "recorded_at": newer})
+    with ledger.SegmentWriter.create(run_dir / "events", "grade-1") as gr:
+        gr.append({"kind": "grading.started", "recorded_at": older})
+        gr.seal()
+    last_progress_at = getattr(status, "last_progress_at", None)
+    assert last_progress_at is not None, "status.last_progress_at is not implemented yet (W1-K K3)"
+    assert last_progress_at(run_dir) == newer

@@ -5516,6 +5516,32 @@ window.DOCS_INDEX = {
       "sourceSha256": "3aa40180019cc1cd2c6745e2ffde54e63fa1c13ff9dd88abd69ec8ea20315d48"
     },
     {
+      "id": "plan-eval-x-k2b",
+      "path": "docs/plans/eval-x-k2b.md",
+      "title": "X-K2b: alarm and liveness plan record",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-20",
+      "reviewSuggested": [],
+      "summary": "X-K2b (alarm check, last_progress_at, resume history, bench-status/2) across K1 to K4: commits, mutants, findings.",
+      "tags": [
+        "evaluation",
+        "coordination",
+        "execution-graph",
+        "resume"
+      ],
+      "links": [
+        {
+          "to": "brief-eval-x-j1",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "ffa19ea3d2b4f67ad40092ec49dd9c0836c575daa30ff730cebeb9b2fcd16e4e"
+    },
+    {
       "id": "plan-eval-x-lb1",
       "path": "docs/plans/eval-x-lb1.md",
       "title": "X-LB1: the loopback fake, shape (b) path and readiness pointers",
@@ -10080,6 +10106,14 @@ window.DOCS_INDEX = {
       "artifactId": "plan-eval-x-k1d"
     },
     {
+      "id": "surface-plans-eval-x-k2b",
+      "path": "docs/plans/eval-x-k2b.html",
+      "title": "Eval X K2B",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-eval-x-k2b"
+    },
+    {
       "id": "surface-plans-eval-x-lb1",
       "path": "docs/plans/eval-x-lb1.html",
       "title": "Eval X Lb1",
@@ -10142,5 +10176,5 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-pack-onoff-analysis"
     }
   ],
-  "graphSha256": "0f894ae4d598040a8bf3c47b9e195547b0ba5b9525eada3007331b3bfb25eec2"
+  "graphSha256": "159bc1c8d860eb3682e419fd51111c3323f5eb07830ea9e1d858c8e6b13a24fe"
 };
