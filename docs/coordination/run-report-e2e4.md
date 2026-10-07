@@ -1,8 +1,8 @@
 ---
 id: run-report-e2e4
-title: "Run report - Evaluation Campaign E2-E4 (Leader epoch 18), draft for the Leader's review"
+title: "Run report - Evaluation Campaign E2-E4 (Leader epoch 18)"
 type: doc
-status: draft
+status: accepted
 owner: "@timianmalloo"
 tags: [coordination, run-report, evaluation-campaign, e2, e3, e4]
 links:
@@ -16,17 +16,17 @@ links:
 review-by: "2026-10-21"
 summary: >-
   The E2-E4 run from measured sources only (the audit log, the join entries, the Leader's run notes, the Coordinator
-  logs). Every track joined; the ten final records are ready; P1-P4 are pushed and P5 is pending. Measured: 35.8 h from
+  logs). Every track joined; the ten final records are ready; P1-P5 are pushed. Measured: 35.8 h from
   the plan's join to the last join, against 15-20 h Inferred; 3 of 19 external turns ended with no follow-on; 34 requests,
   all resolved; Rulings 107-113; 41 defect classes registered. The per-join recount fell from 25.0-38.2 min
-  single-process to 9.4-16.2 min at -n 4, with FLAKE-A and MPATCH-A reds. Open: P5, Ruling 112 dormant, the walk flake's
-  cause, the --dist loadscope proposal, macOS. The t1regress declaration was settled by the operator on 2026-10-07
-  (accept as declared; c53).
+  single-process to 9.4-16.2 min at -n 4, with FLAKE-A and MPATCH-A reds. Open: Ruling 112 dormant, the walk flake's
+  cause, macOS. P5 is pushed (eb11b21b). The t1regress declaration was settled by the operator on 2026-10-07
+  (accept as declared; c53), and --dist loadscope was adopted the same day (772 s vs 864 s, one run each).
 ---
 
 # Run report: E2-E4 (Leader `leader-e1e4`, epoch 18)
 
-**Status: draft for the Leader's review** (Coordinator #52, 2026-10-07). The per-track planned-vs-actual table is in the plan, `docs/coordination/coordination-e2e4.md`, section *Planned vs actual (Stage 7)*. It is not repeated here.
+**Status: accepted** (drafted by Coordinator #52, reviewed and accepted by the Leader, 2026-10-07). The per-track planned-vs-actual table is in the plan, `docs/coordination/coordination-e2e4.md`, section *Planned vs actual (Stage 7)*. It is not repeated here.
 
 **Sources.** Every figure names its source, or says "not recorded". No figure is an estimate.
 
@@ -72,7 +72,8 @@ Served ids, as read back: Codex `gpt-6.1-sol` (from the Codex rollout record; `c
 | P1 + P2 (one push) | `37ec0585..95130d8f` | "00:23" | the gate ring ran twice: the first run (79 min) refused to stamp (PROBE-A); the re-run passed with `HB_GATE_RUNS` pinned, stamp `f5f5c7a7` |
 | P3 | `95130d8f..d6e9a87d` | "04:20" | no ring |
 | P4 | `d6e9a87d..d96220c0` | "01:00" | ring 84 min, stamp `a362a326`; the push was **denied twice by the auto-mode classifier** and then pushed by the operator with a `!` command |
-| P5 | pending | - | the batch started on `b4e19e28` (N "05:55"); X-PACK phase 2, c51, c52 and the ledger join after it |
+| P5 | `d96220c0..eb11b21b` | "09:30" | ring 82 min, stamp `77cbe6b3`; stamped tier renewed; rings 4,203 passed; `mutate --touched` left only the host-limited `atomic.json` baseline (M14b, M27); machine-path hits identical to P4; X-PACK phase 2, c51+c52 and the ledger joined after the batch; pushed by the operator with a `!` command |
+| close-out | `eb11b21b..cabf3f87` | 2026-10-07 | the closing audit entry, the ledger lines and Coordinator #53 (the operator's t1regress decision); docs and ledger only; pushed by the operator |
 
 ## The recount timing change (`-n 4`)
 
@@ -174,10 +175,10 @@ One line each, in register order. The register is `docs/lessons/defect-classes.m
 
 ## Open items carried forward
 
-1. **P5**: the batch, the push, then X-PACK phase 2, c51, c52 and the ledger. This report is a draft until then.
+1. **P5 is pushed** (`eb11b21b`, 2026-10-07), and the close-out after it (`cabf3f87`). The 70 finished worktrees were removed on the operator's instruction (`coord worktree cleanup --remove`: removed 70, failed 0).
 2. **Ruling 112 is dormant.** The trigger to re-open it is a reference start-bound end on a gate host (R-113). The watcher is R-113 condition 3; its read at the X-CV join was 0 of 517 (c51).
 3. **The walk flake's cause is open** (TIME-B's 2026-10-06 instance is dormant by R-113; DIAG-A). X-FLAKE F2's assertion diagnostic records the next instance.
-4. **The `--dist loadscope` proposal** (c48) is waiting for the operator.
+4. **`--dist loadscope` (c48): adopted by the operator on 2026-10-07** ("adopt"). Measured once each on `3f910369`, back to back: `--dist load` 864 s, `--dist loadscope` 772 s, both 4,197 passed. One run each, so not a distribution; whether it also cuts the FLAKE-A reds is Inferred (c48), to be read from the next joins' recounts. `docs/coordination/join.json`'s recount now carries `--dist loadscope`.
 5. **The alarm-task fix has landed:** X-ALARMFIX `ee1b0e11`, joined in `join-x-alarmfix` (J 775).
 6. **macOS is deferred** by the operator (the plan's Not in scope).
 7. Also open in the register: the FLAKE-A load-repro tool; CACHE-B's sweeper (unidentified); R-109's optional per-variant `reds` key; S-J4 (waived by the operator, OPER-A); the DEV-A sweep after P5.

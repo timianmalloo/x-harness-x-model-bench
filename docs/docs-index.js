@@ -7296,14 +7296,14 @@ window.DOCS_INDEX = {
     {
       "id": "run-report-e2e4",
       "path": "docs/coordination/run-report-e2e4.md",
-      "title": "Run report - Evaluation Campaign E2-E4 (Leader epoch 18), draft for the Leader's review",
+      "title": "Run report - Evaluation Campaign E2-E4 (Leader epoch 18)",
       "type": "doc",
-      "status": "draft",
+      "status": "accepted",
       "owner": "@timianmalloo",
       "phase": "",
       "reviewBy": "2026-10-21",
       "reviewSuggested": [],
-      "summary": "The E2-E4 run from measured sources only (the audit log, the join entries, the Leader's run notes, the Coordinator logs). Every track joined; the ten final records are ready; P1-P4 are pushed and P5 is pending. Measured: 35.8 h from the plan's join to the last join, against 15-20 h Inferred; 3 of 19 external turns ended with no follow-on; 34 requests, all resolved; Rulings 107-113; 41 defect classes registered. The per-join recount fell from 25.0-38.2 min single-process to 9.4-16.2 min at -n 4, with FLAKE-A and MPATCH-A reds. Open: P5, Ruling 112 dormant, the walk flake's cause, the --dist loadscope proposal, macOS. The t1regress declaration was settled by the operator on 2026-10-07 (accept as declared; c53).",
+      "summary": "The E2-E4 run from measured sources only (the audit log, the join entries, the Leader's run notes, the Coordinator logs). Every track joined; the ten final records are ready; P1-P5 are pushed. Measured: 35.8 h from the plan's join to the last join, against 15-20 h Inferred; 3 of 19 external turns ended with no follow-on; 34 requests, all resolved; Rulings 107-113; 41 defect classes registered. The per-join recount fell from 25.0-38.2 min single-process to 9.4-16.2 min at -n 4, with FLAKE-A and MPATCH-A reds. Open: Ruling 112 dormant, the walk flake's cause, macOS. P5 is pushed (eb11b21b). The t1regress declaration was settled by the operator on 2026-10-07 (accept as declared; c53), and --dist loadscope was adopted the same day (772 s vs 864 s, one run each).",
       "tags": [
         "coordination",
         "run-report",
@@ -7343,7 +7343,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "254dcfc2fef0417a511cb01c1f090eaca6f925c7446379e7d1ea7be806544c11"
+      "sourceSha256": "9800558ad99e36ae2fb88db8c5a969d0fd76980b74fa5160c3ca270b6743b43d"
     },
     {
       "id": "runbook-resume-and-alarm",
@@ -10441,5 +10441,5 @@ window.DOCS_INDEX = {
       "artifactId": "run-report-e2e4"
     }
   ],
-  "graphSha256": "824e211fdb27133045e1179e73506fec147f96bcf3992ec5109db67ac6ffda16"
+  "graphSha256": "9e21ef8e172b362711919d963393b04f3b222afef9f4c59df2c0ea391f280d69"
 };
