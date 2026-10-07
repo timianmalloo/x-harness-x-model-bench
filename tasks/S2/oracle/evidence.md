@@ -125,3 +125,11 @@ One-time run, outside the ring: `uv run python tools/mutate_check.py <16 mutants
 
 - `tamper-1 no-cookie control removed`: no committed fixture is an app that answers a cookieless `GET /tasks` with 200 yet passes the seed controls. The control stays; it is untested.
 - `authz bob-get control removed`: the only fixture meant to reach it (`pa-ids`) is stopped earlier by the `alice-get` control in `seed`. The control stays; it is untested.
+
+## Open items at ship (operator decision 5, 2026-10-06)
+
+S2 ships with three open items. They are stated above and are not changed by this section.
+
+1. The A6 different-author clause is not met. See the authorship paragraph in "Variants, authorship and the mutation run": "The "one shape per class by a different author or model" clause is NOT met."
+2. The cookieless-401 control is untested. See the survivor `tamper-1 no-cookie control removed` in the one-time mutation run.
+3. The bob-get control is untested. See the survivor `authz bob-get control removed` in the one-time mutation run.
