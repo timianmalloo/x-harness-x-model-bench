@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-07T05:40:15Z",
+  "generated": "2026-10-07T16:03:03Z",
   "audit": [
     {
       "actor": null,
@@ -121187,6 +121187,31 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-07T05:40:14Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M4BHN84A0SP7NS18CXM2QM9J",
+      "shortname": "coordinate-e2e4",
+      "datetime": "2026-10-07T16:03:03Z",
+      "session": "leader-e1e4",
+      "prompt": "docs/coordination/coordination-e2e4.md — run as Leader leader-e1e4 (epoch 18, lease live). Coordinator seat coord-opus-e1e4 (Opus, hand-back sessions); Owner owner-fable (Fable). Updates to the operator: one table per update (task, what it does, status, harness, model) covering done, running and planned work; report only when done or blocked on the operator.",
+      "summary": "E2-E4 run complete: every plan track joined (X-START withdrawn by Ruling 113; 9 unplanned fix tracks), the ten final discrimination records committed (bench validate exit 0, all ten ready; Ruling 113 condition 3: 0 start-bound ends in 517 host starts), pack at ai-forward rev 99. Pushed P1+P2 95130d8f, P3 d6e9a87d, P4 d96220c0, P5 eb11b21b (P4 and P5 pushed by the operator). Rulings 107-113; Coordinators #29-#52; 34 requests all resolved; 41 defect classes registered. Planned vs actual per track: the plan's Stage 7 section and docs/coordination/run-report-e2e4.md (measured: 35.8 h wall from the plan join to the last join; recount 25.0-38.2 min single-process vs 9.4-16.2 min at -n 4; 19 external turns, 3 with no follow-on). Worktree cleanup: 70 trees safe to remove (report only, removal opt-in); build-eval-x-rs kept (line-ending-only changes, 0 content diff). Open: Ruling 112 dormant, the walk flake's cause, --dist loadscope proposal, RW t1regress declaration, macOS deferred.",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/coordination/coordination-e2e4.md",
+        "docs/coordination/run-report-e2e4.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Run the E2-E4 coordination plan to completion: every track joined, the final records ready, all batches pushed",
+      "done_when": "all plan tracks joined or withdrawn by ruling; bench validate exit 0 with all ten ready; P5 pushed; cleanup reported",
+      "tier": "T2",
+      "fan_out": 6,
+      "started_at": "2026-10-04T23:57:59Z",
+      "duration_seconds": 230704.0
     }
   ],
   "changes": [
