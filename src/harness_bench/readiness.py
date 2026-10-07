@@ -591,6 +591,21 @@ def reconcile(root: Path, task_id: str, runs: Path, *, baseline: Mapping | None 
     return ("reconciled: yes", []) if not failures else ("", failures)
 
 
+def pass_rule_problems(root: Path, task_id: str) -> list[Failure]:
+    """HB-RDY-005 per metric id of `formal.pass_rule.all_of` that the formal grader does not record for this task (the set
+    `formal.pass_at_1` checks in its order 2: `runner.applicable`'s `formal` set); [] for a task with no pass rule (W1-G 4.3, FM1)."""
+    task = config.load_yaml(root / "tasks" / task_id / "task.yaml")
+    rule = (task.get("formal") or {}).get("pass_rule")
+    names = rule.get("all_of") if isinstance(rule, dict) else None
+    if not names:
+        return []
+    catalog = config.load_yaml(root / "bench" / "metrics.yaml")
+    prop_name = (task.get("property") or {}).get("name") if isinstance(task.get("property"), dict) else None
+    recorded = runner.applicable(catalog, list(task.get("graders") or []), prop_name).get("formal", {})
+    return [Failure("HB-RDY-005", "formal.pass_rule.all_of", f"{m!r} is not a metric the formal grader records for this task")
+            for m in names if m not in recorded]
+
+
 log = logging.getLogger("harness_bench.readiness")
 
 
@@ -600,17 +615,20 @@ def problems(root: Path, *, baseline: Mapping | None = None, runs: Path | None =
     skipped; a `draft` gets its contract items; a `ready` task gets the contract, the record and the reconciliation."""
     runs = runs or root / "runs"
     tasks = {}
+    rule_only: dict[str, Mapping] = {}
     for path in sorted((root / "tasks").glob("*/task.yaml")):
         task = config.load_yaml(path)
         if isinstance(task.get("property"), dict):
             tasks[path.parent.name] = task
+        elif task.get("status") != "stub" and (task.get("formal") or {}).get("pass_rule"):
+            rule_only[path.parent.name] = task  # no property block: the pass-rule branch only, never a record or contract check
     pairs = pair_failures(tasks)
     lines: list[str] = []
     reconciled = ""
     for tid, task in tasks.items():
         if task.get("status") == "stub":
             continue
-        failures = contract_failures(root, tid) + pairs.get(tid, [])
+        failures = contract_failures(root, tid) + pairs.get(tid, []) + pass_rule_problems(root, tid)
         folder = record_dir(root, tid)
         if folder.is_dir():
             lines += [f"note: {tid}: skipped temp {p.name} (the writer's sweep removes it)" for p in sorted(folder.iterdir()) if atomic.is_temp_name(p.name)]
@@ -623,6 +641,8 @@ def problems(root: Path, *, baseline: Mapping | None = None, runs: Path | None =
                     lines.append(f"note: {tid}: {line}")
                     reconciled = line.split(": ", 1)[1].split(" ")[0]
         lines += [f"x {f.code} {tid}: {f.item}: {f.detail}" for f in failures]
+    for tid in rule_only:
+        lines += [f"x {f.code} {tid}: {f.item}: {f.detail}" for f in pass_rule_problems(root, tid)]
     log.info("readiness.validated", extra={"detail": f"reconciled={reconciled or 'null'} tasks={len(tasks)}"})
     return lines
 

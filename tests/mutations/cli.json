@@ -107,5 +107,15 @@
   "tests": [
    "tests/test_cli_campaign.py::test_conclude_probes_the_attached_runs_lock_in_the_runs_folder_given_by_runs_f3"
   ]
+ },
+ {
+  "name": "T-E9 validate drops the readiness.problems call",
+  "file": "src/harness_bench/cli.py",
+  "find": "    lines += readiness.problems(root, baseline=baseline)\n",
+  "replace": "",
+  "tests": [
+   "tests/test_e1_e2e.py::test_validate_of_a_ready_task_with_no_record_fails",
+   "tests/test_cli.py::test_validate_prints_a_note_line_and_a_note_alone_exits_ok"
+  ]
  }
 ]

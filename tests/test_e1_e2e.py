@@ -373,24 +373,22 @@ def ready_no_record(tmp_path):
     root = lean_repo(tmp_path)
     task = root / "tasks" / "S1" / "task.yaml"
     task.write_text(task.read_text(encoding="utf-8").replace("status: draft", "status: ready", 1), encoding="utf-8")
+    shutil.rmtree(root / "bench" / "discrimination" / "S1")  # the lean copy of `bench/` carries the committed record; this fixture is the task without one
     commit_all(root, "S1 ready, no record")
     return root
 
 
-@pytest.mark.xfail(strict=True, reason="T-E9 (a) held for the operator: readiness.problems not in cmd_validate")
 def test_uf_e1_validate_names_the_missing_record(ready_no_record):
     assert any(line.startswith("x HB-RDY-001 S1:") for line in readiness.problems(ready_no_record))  # the API names it; the CLI does not
     ran = run_cli("--root", str(ready_no_record), "validate")
     assert "x HB-RDY-001 S1:" in ran.out, ran.out
 
 
-@pytest.mark.xfail(strict=True, reason="T-E9 (a) held for the operator")
 def test_validate_of_a_ready_task_with_no_record_fails(ready_no_record):
     ran = run_cli("--root", str(ready_no_record), "validate")
     assert ran.rc != 0 and "HB-RDY-001" in ran.out, ran
 
 
-@pytest.mark.xfail(strict=True, reason="T-E9 (b) held for the operator")
 def test_validate_passes_a_campaign_baseline_through(ready_no_record):
     ran = run_cli("--root", str(ready_no_record), "validate", "--campaign", CID)
     assert "unrecognized arguments" not in ran.err, ran.err
