@@ -662,3 +662,28 @@ def test_a_check_less_variant_with_no_primary_row_pointer_is_refused_by_its_decl
     assert items == [("variant v1: clauses are declared but property.json has no strategy.rework section "
                       "(the pointer does not resolve)")]
     assert rec["clauses"] == {}
+
+
+def test_a_variant_edit_applies_to_a_crlf_reference_file_and_its_declared_flip_is_observed(base):
+    """APPLY-A (CR47-15): the reference file is CRLF; readiness reads it as LF and accepts the edit, so the applier must too."""
+    anchor = "def handle(payload):\n    return '<p>' + " + mt.ESCAPE  # two lines: only a multi-line anchor misses a CRLF file
+    edit = {"file": "src/app.py", "old": anchor, "new": anchor.replace(mt.ESCAPE, mt.edit_for("p-2")["new"])}
+    root = new_root(base, "disc_p", variants=mt.variants_text({"m9": {**VARIANT_FLIPS["m9"], "edits": [edit]}}))
+    target = root / "tasks" / "DISC-P" / "oracle" / "solutions" / "reference" / "src" / "app.py"
+    target.write_bytes(target.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+    assert b"\r\n" in target.read_bytes()
+    result = trial(base, root, "DISC-P")
+    assert result.outcome == "written"
+    body = record_of(result)
+    assert body["variants"]["m9"]["flips"] == ["p-2"]
+    assert body["readiness_failures"] == []
+
+
+def test_the_variant_applier_refuses_an_edit_whose_old_is_absent_naming_the_variant(base):
+    """APPLY-A (CR47-15): an edit that matches nothing is HB-RDY-005, never the reference written back unchanged."""
+    root = new_root(base, "disc_p")
+    entry = {"edits": [{"file": "src/app.py", "old": "no such anchor", "new": "x"}]}
+    with pytest.raises(BenchError) as raised:
+        discriminate._variant_overlay(root / "tasks" / "DISC-P", "m9", entry, base / "overlay")
+    assert raised.value.code == "HB-RDY-005"
+    assert "m9" in str(raised.value) and "src/app.py" in str(raised.value)

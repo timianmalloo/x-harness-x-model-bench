@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Eval X Crlf</title><style>
+:root { color-scheme: light dark; --bg:#f7f5ef; --panel:#fff; --text:#20201d;
+  --muted:#66645f; --line:#d9d5ca; --accent:#3157a4; --code:#f0eee7; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#171816; --panel:#20221f; --text:#f2f1eb; --muted:#b8b6ae;
+    --line:#3d403a; --accent:#8fb0ff; --code:#292c27; }
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text);
+  font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { width:min(920px,calc(100% - 32px)); margin:32px auto; padding:40px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+h1,h2,h3,h4,h5,h6 { line-height:1.2; margin:1.5em 0 .55em; }
+h1 { margin-top:0; font-size:2.2rem; } h2 { border-bottom:1px solid var(--line); padding-bottom:.3em; }
+a { color:var(--accent); } code { background:var(--code); padding:.12em .35em; border-radius:4px; }
+pre { overflow:auto; padding:16px; background:var(--code); border-radius:8px; }
+pre code { padding:0; } blockquote { margin:1em 0; padding:.2em 1em; color:var(--muted);
+  border-left:4px solid var(--line); }
+table { width:100%; border-collapse:collapse; margin:1em 0; display:block; overflow:auto; }
+th,td { padding:.55em .75em; border:1px solid var(--line); text-align:left; vertical-align:top; }
+th { background:var(--code); } hr { border:0; border-top:1px solid var(--line); }
+.source { color:var(--muted); font-size:.9rem; margin-bottom:2rem; }
+@media (max-width:640px) { main { width:100%; margin:0; padding:24px 18px; border:0; border-radius:0; } }
+</style></head><body><main><div class="source">Rendered from eval-x-crlf.md</div><h1>X-CRLF (session x-crlf-e1e4, rulings CR47-15 and CR47-16)</h1>
+<h2>C1: one definition of &quot;the edit applies&quot; (APPLY-A)</h2>
+<p>Shape: one helper, <code>readiness.apply_edit(task_id, name, edit, raw, where)</code>. It decodes the file, reads CRLF as LF, requires <code>old</code> exactly once, and raises HB-RDY-005 naming the variant and the file. It returns the replaced text. <code>readiness.variants</code> calls it as its check. <code>discriminate._variant_overlay</code> calls it and writes the returned text, never the unchanged bytes.</p>
+<ul><li>Red <code>2288ba97</code>. <code>test_a_variant_edit_applies_to_a_crlf_reference_file_and_its_declared_flip_is_observed</code>: <code>assert [] == [&#x27;p-2&#x27;]</code>. <code>test_the_variant_applier_refuses_an_edit_whose_old_is_absent_naming_the_variant</code>: <code>DID NOT RAISE BenchError</code>. The CRLF test uses a two-line anchor, because a one-line anchor matches a CRLF file under a byte replace (a first draft with a one-line anchor was green on arrival and was replaced).</li><li>Green <code>6d7d8363</code>; <code>70e4a4a2</code> fixes the escape in one mutant&#x27;s <code>find</code> (found by the MUT-E control, <code>test_every_mutation_find_text_occurs_exactly_once_in_its_target_file</code>).</li><li>Mutants added to <code>tests/mutations/property.json</code>: the absent-anchor refusal removed, killed by the refusal test; the CRLF normalisation removed, killed by the CRLF test. Result: every mutation killed.</li></ul>
+<h3>Applier sweep</h3>
+<ul><li><code>src/harness_bench/discriminate.py:142</code> (was <code>read_bytes().replace(edit[&quot;old&quot;]...)</code>): fixed here; it now normalises and refuses.</li><li><code>tools/mutate_check.py:454</code> (<code>text.replace(m[&quot;find&quot;], ...)</code>): already normalises CRLF at line 449 and skips, counted as a survivor, when the find is absent.</li><li><code>src/harness_bench/grade/drift.py:59</code>, <code>grade/runner.py:104</code>, <code>plan.py:121,301,306,312</code>, <code>telemetry/normalize.py:88</code>, <code>tools/gate_stamp.py:77,94,100,122</code>: normalise CRLF to LF for hashing or line reading; none is an edit applier, so none needs a refusal.</li></ul>
+<h2>C2: RS2 <code>requeue5xx</code> (CR47-16)</h2>
+<p>After a flush that failed on HTTP 5xx, the pending batch is re-queued behind the newer records. After a lost response the order is kept (three edits: a <code>_requeue</code> flag set in <code>_send</code>&#x27;s except branch from <code>isinstance(exc, HTTPError)</code>, and the re-queue at the top of the flush loop).</p>
+<ul><li>Red <code>c035072b</code>: <code>AssertionError: R2-1 names: no v-, no hyphen</code>, extra item <code>&#x27;requeue5xx&#x27;</code> (the <code>PREDICTED</code> row exists before the variant).</li><li>Green <code>fffd9bac</code>, with the variant, <code>evidence.md</code>&#x27;s table, and the record.</li><li>Measured flips: <code>requeue5xx</code> flips <code>[&#x27;g-ordering&#x27;]</code> alone, on clause <code>result</code>, as traced; all five hidden tests stay green. <code>tests/test_rs2_task.py</code>: 11 passed.</li><li>RS2&#x27;s new record: <code>bench/discrimination/RS2/edf7186d09faaf04-af0bbc1e3f354b8e-win32.json</code> (replaces <code>ce78c3a1eb92fd5e-af46dc82a3f6bf4f</code>); <code>readiness_failures</code> is empty.</li></ul>
+<h2>RS1</h2>
+<p><code>bench discriminate RS1</code> wrote a record that differs from the committed one in <code>identity_hash</code> only (<code>b7d0b017...</code> to <code>cbe12181...</code>); every other field is equal. Inferred (not opened): the <code>src/</code> change moved the identity hash. The record is not byte-equal. The new RS1 file was not committed; the RS1 record is unchanged in this branch. The Leader or the Coordinator rules whether to replace it.</p></main></body></html>

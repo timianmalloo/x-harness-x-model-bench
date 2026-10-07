@@ -756,6 +756,15 @@ def _bad(task_id: str, why: str) -> BenchError:
     return BenchError("HB-RDY-005", f"{task_id}: oracle/variants.py {why}")
 
 
+def apply_edit(task_id: str, name: str, edit: dict, raw: bytes, where: str) -> str:
+    """The one definition of "a variant edit applies" (DM7, APPLY-A): the file's text with CRLF read as LF, `old` exactly once,
+    else HB-RDY-005 naming the variant and the file. Returns the replaced text; the applier writes it, never the unchanged bytes."""
+    text = raw.decode("utf-8").replace("\r\n", "\n")
+    if not edit["old"] or text.count(edit["old"]) != 1:
+        raise _bad(task_id, f"variant {name} edit does not apply (`old` must occur exactly once in {where})")
+    return text.replace(edit["old"], edit["new"], 1)
+
+
 def variants(root: Path, task_id: str) -> dict[str, dict]:
     """The task's declared defect variants `{name: {flips, clauses, edits}}`, read as data: one top-level `VARIANTS`
     assignment through `ast.literal_eval`; the file is never imported or executed. HB-RDY-005 on any defect: over 64 KiB,
@@ -821,6 +830,4 @@ def _check_variant(root: Path, task_id: str, name, entry) -> None:
             if target.is_file():
                 raise _bad(task_id, f"variant {name} create edit cannot replace file already in reference overlay ({rel.as_posix()})")
         else:
-            text = target.read_text(encoding="utf-8") if target.is_file() else ""
-            if not edit["old"] or text.count(edit["old"]) != 1:
-                raise _bad(task_id, f"variant {name} edit does not apply (`old` must occur exactly once in reference/{rel.as_posix()})")
+            apply_edit(task_id, name, edit, target.read_bytes() if target.is_file() else b"", f"reference/{rel.as_posix()}")
