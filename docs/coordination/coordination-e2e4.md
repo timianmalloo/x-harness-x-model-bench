@@ -345,6 +345,12 @@ The operator's words, answering the Leader's five numbered questions: "1: I can 
 
 **Consequences for the tracks (Coordinator #44):** X-TE9, X-LB1 and X-RS are compiled (`c44.md`). X-TE9's `assume:` is **false** (its row). X-RS's authoring needs only decision 1; its `ready` flips still need X-LB1 joined.
 
+### Operator decisions, 2026-10-07 (answered to the Leader; recorded by Coordinator #53)
+
+The operator's word: "A". The Leader's question: "RW t1regress: is the variant valid as declared?" The option (A) it answered, verbatim: "Accept as declared. `t1regress` is a legitimate turn-1-regression variant, and failing correctness comes with the design, since turn-1 tests are in the final suite. A Coordinator corrects Ruling 109's wording in an erratum and adds a line to the W1-L variant table. No code change, no re-record; RW1 and RW2 stay ready."
+
+- **Restatement (Coordinator #53, not a quote):** the `t1regress` declaration (flips `[property_check_pass]`, clause `{property_check_pass: turn1}`) stands. It settles `req-01M48SKQB1C5ABDR2PHAR5HMVC` (closed by Coordinator #52 as "fallback held, but the declaration was never settled") and the contradiction in `c41.md:56`. Errata: Ruling 109 (`docs/notes/rulings.md`, beside the ruling) and W1-L section 6.2 (`docs/design/eval-property-tasks.md`). RW1 and RW2 stay ready.
+
 ### Lane F: the ai-forward upstream (X-PACK)
 
 - **Tree.** From `C:\projects\ai-forward`: `python docs/ai-forward-pack/scripts/coord-core.py worktree new --branch fix/xh-e2e4-upstream --session lanef-e1e4 --base main` (`origin/main` = `4a22f12` at Coordinator #29's read). The clone's primary carries ten untracked or modified paths of other sessions (`git status --short`, read here) and five other worktrees, so **nothing is edited, staged or checked out in `C:\projects\ai-forward` itself**. *assume:* the ai-forward copy of `coord-core.py` (`docs/ai-forward-pack/scripts/coord-core.py`, present) supports `worktree new` as this repo's does. **Confirm:** its output prints the tree path. **If false:** `git -C C:\projects\ai-forward worktree add ..\ai-forward-fix-xh-e2e4-upstream -b fix/xh-e2e4-upstream origin/main`.

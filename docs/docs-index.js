@@ -1975,7 +1975,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8e751136c12ed037e0b2a62342acb01290f6075689db960dde99f361df020c98"
+      "sourceSha256": "a4dfec300601b49d3c3be353037fa87b2f470a5ff5953608d273e2be47ad3d07"
     },
     {
       "id": "design-eval-arms",
@@ -2594,7 +2594,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3d27015ca89333efe66f1f9c0b6107adbba025e611fc38138914509cc9a37659"
+      "sourceSha256": "b57ae857a5cdf6c4b0dc071d7d5863d2b6fc1db014f6e7bbd6a1ebdaa11c582c"
     },
     {
       "id": "design-eval-resume",
@@ -4865,6 +4865,48 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "6fec595a3e9731b28df12c2031a6a3120b710b2a6d845846f67efbcd57736900"
+    },
+    {
+      "id": "coordinator-log-c53",
+      "path": "docs/coordination/coordinator-log/c53.md",
+      "title": "Coordinator #53 hand-back (2026-10-07): the operator's t1regress decision, the Ruling 109 and W1-L errata",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-07",
+      "reviewSuggested": [],
+      "summary": "Coordinator #53 on coord/eval-c53-t1regress (base 3f910369). It recorded the operator's \"A\" on the Leader's question \"RW t1regress: is the variant valid as declared?\", filed the Ruling 109 condition 4 erratum beside the ruling and a one-line W1-L section 6.2 erratum, and removed the t1regress declaration from the run report's open items. No code change, no re-record; RW1 and RW2 stay ready.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "close-out",
+        "errata"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c52",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "run-report-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "9d837584e42555ed32e1c08c0a9763c72fb9c17e09fd0755b58029d5c3c0b13a"
     },
     {
       "id": "defect-classes",
@@ -7261,7 +7303,7 @@ window.DOCS_INDEX = {
       "phase": "",
       "reviewBy": "2026-10-21",
       "reviewSuggested": [],
-      "summary": "The E2-E4 run from measured sources only (the audit log, the join entries, the Leader's run notes, the Coordinator logs). Every track joined; the ten final records are ready; P1-P4 are pushed and P5 is pending. Measured: 35.8 h from the plan's join to the last join, against 15-20 h Inferred; 3 of 19 external turns ended with no follow-on; 34 requests, all resolved; Rulings 107-113; 41 defect classes registered. The per-join recount fell from 25.0-38.2 min single-process to 9.4-16.2 min at -n 4, with FLAKE-A and MPATCH-A reds. Open: P5, Ruling 112 dormant, the walk flake's cause, the --dist loadscope proposal, the t1regress declaration, macOS.",
+      "summary": "The E2-E4 run from measured sources only (the audit log, the join entries, the Leader's run notes, the Coordinator logs). Every track joined; the ten final records are ready; P1-P4 are pushed and P5 is pending. Measured: 35.8 h from the plan's join to the last join, against 15-20 h Inferred; 3 of 19 external turns ended with no follow-on; 34 requests, all resolved; Rulings 107-113; 41 defect classes registered. The per-join recount fell from 25.0-38.2 min single-process to 9.4-16.2 min at -n 4, with FLAKE-A and MPATCH-A reds. Open: P5, Ruling 112 dormant, the walk flake's cause, the --dist loadscope proposal, macOS. The t1regress declaration was settled by the operator on 2026-10-07 (accept as declared; c53).",
       "tags": [
         "coordination",
         "run-report",
@@ -7284,6 +7326,10 @@ window.DOCS_INDEX = {
           "rel": "relates-to"
         },
         {
+          "to": "coordinator-log-c53",
+          "rel": "relates-to"
+        },
+        {
           "to": "defect-classes",
           "rel": "relates-to"
         },
@@ -7297,7 +7343,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "e6daf39f9981eb7799994fdf3745a7aeff7b54c4d668228774e99bff2bbc88e7"
+      "sourceSha256": "254dcfc2fef0417a511cb01c1f090eaca6f925c7446379e7d1ea7be806544c11"
     },
     {
       "id": "runbook-resume-and-alarm",
@@ -8528,7 +8574,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9b4ceb82ce0ab74ed31e0070aca7b0077ebf48d7a8b42a999ce72571bb8974e5"
+      "sourceSha256": "d906a833e81ef311fdb560f37ed6162db4a101509376b248d850cf45e3b3ca83"
     },
     {
       "id": "coordination-eval-brief-rv-ds",
@@ -10395,5 +10441,5 @@ window.DOCS_INDEX = {
       "artifactId": "run-report-e2e4"
     }
   ],
-  "graphSha256": "f1d0e3bded04a9dcf2fbf9fc67156784d3319cae877831d8c0b0391f32659e31"
+  "graphSha256": "824e211fdb27133045e1179e73506fec147f96bcf3992ec5109db67ac6ffda16"
 };

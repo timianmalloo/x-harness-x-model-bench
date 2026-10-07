@@ -207,6 +207,7 @@ ceilings: { rework_ratio: "0.3000" }
 
   The naive scores 0 because its ratio exceeds the ceiling, not because a test fails.
 - **Variants flipping each branch:** `v-ratio-high` (table inlined into `format_dollars`, so turn 2 rewrites the body): flips the ratio clause only. `v-t1-regress` (turn 2 breaks T1-3): flips the turn-1-still-passes clause. `v-t2-short` (turn 2 not implemented, final = snapshot): flips the turn-2 clause. `v-duplicate`: fails T2-5. `v-dead-delegate` (`format_dollars` calls `format_money`, discards the result and returns its old body): fails T2-5 (sentinel). `v-pad-turn1` (turn 1 plus 20 dead lines in `format_dollars`): passes, ratio below the reference's (R-W1).
+  - *Erratum (Coordinator #53, 2026-10-07; operator decision "A", Ruling 109 erratum; applies to RW1 and RW2):* `t1regress` fails the final hidden suite by construction (turn-1 tests are in it: `pass_at_1` 0, `hidden_tests_pass` 0, `turn1_tests_pass` 1, clause `turn1`, measured in both final records), so it is evidence of the turn-1 clause, not of signal beyond correctness; `ratiohigh` (clause `ratio`) and `padturn1` carry that, each with `pass_at_1` 1.
 
 ### 6.3 RW2: schedule, job failure handling
 

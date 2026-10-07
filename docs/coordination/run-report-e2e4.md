@@ -9,6 +9,7 @@ links:
   - { to: coordination-e2e4, rel: relates-to }
   - { to: coordinator-log, rel: relates-to }
   - { to: coordinator-log-c52, rel: relates-to }
+  - { to: coordinator-log-c53, rel: relates-to }
   - { to: defect-classes, rel: relates-to }
   - { to: rulings-register, rel: relates-to }
   - { to: proof-eval-campaign-convergence, rel: relates-to }
@@ -19,7 +20,8 @@ summary: >-
   the plan's join to the last join, against 15-20 h Inferred; 3 of 19 external turns ended with no follow-on; 34 requests,
   all resolved; Rulings 107-113; 41 defect classes registered. The per-join recount fell from 25.0-38.2 min
   single-process to 9.4-16.2 min at -n 4, with FLAKE-A and MPATCH-A reds. Open: P5, Ruling 112 dormant, the walk flake's
-  cause, the --dist loadscope proposal, the t1regress declaration, macOS.
+  cause, the --dist loadscope proposal, macOS. The t1regress declaration was settled by the operator on 2026-10-07
+  (accept as declared; c53).
 ---
 
 # Run report: E2-E4 (Leader `leader-e1e4`, epoch 18)
@@ -178,5 +180,6 @@ One line each, in register order. The register is `docs/lessons/defect-classes.m
 4. **The `--dist loadscope` proposal** (c48) is waiting for the operator.
 5. **The alarm-task fix has landed:** X-ALARMFIX `ee1b0e11`, joined in `join-x-alarmfix` (J 775).
 6. **macOS is deferred** by the operator (the plan's Not in scope).
-7. **The `t1regress` declaration** (RW1, RW2) was never settled. The final records still show `hidden_tests_pass` 0 with clause `turn1` and readiness passing. See request `req-01M48SKQB1C5ABDR2PHAR5HMVC`'s resolution and c41 section 3.
-8. Also open in the register: the FLAKE-A load-repro tool; CACHE-B's sweeper (unidentified); R-109's optional per-variant `reds` key; S-J4 (waived by the operator, OPER-A); the DEV-A sweep after P5.
+7. Also open in the register: the FLAKE-A load-repro tool; CACHE-B's sweeper (unidentified); R-109's optional per-variant `reds` key; S-J4 (waived by the operator, OPER-A); the DEV-A sweep after P5.
+
+**2026-10-07 (Coordinator #53): the `t1regress` declaration (RW1, RW2) is settled and leaves this list.** The operator answered "A" (accept as declared) to the Leader's question "RW t1regress: is the variant valid as declared?". The final records show `t1regress` `hidden_tests_pass` 0, `pass_at_1` 0, `turn1_tests_pass` 1, clause `turn1`, as declared. Errata: Ruling 109 condition 4 (`docs/notes/rulings.md`) and W1-L section 6.2 (`docs/design/eval-property-tasks.md`). No code change, no re-record; RW1 and RW2 stay ready. The decision is in the plan's *Operator decisions, 2026-10-07* and `c53.md`.
