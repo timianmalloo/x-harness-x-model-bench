@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T18:09:55Z",
+  "generated": "2026-10-08T18:14:36Z",
   "audit": [
     {
       "actor": null,
@@ -153103,6 +153103,33 @@ window.AUDIT_DATA = {
         "branch": "coord/fin-c57-compile",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M4EBJV10T3FDZ8D4G60WFBZW",
+      "shortname": "join-c57-compile",
+      "datetime": "2026-10-08T18:14:36Z",
+      "session": "leader-fin",
+      "prompt": "the join of coord/fin-c57-compile into integrate/finish-19",
+      "summary": "Coordinator #57 3a9b7785: X-WIN t2 al-01M4EAF341QJMZCYDZWC65MXJP, X-HYG t2 al-01M4EB1BEBGKYJW8VXN8GC6VQ6, X-REDS al-01M4EB1DQV716YHG39RY18HKYQ, X-FLAKE t2 al-01M4EB2Q28SNJQSKJA3JT1V6E3, X-EVU t2 al-01M4EB4XS8EYYS6NYSVJ88Y43W (turn 2 = new branch based on turn-1 branch; RUN-BRANCH); Grok floor 88k from updates.jsonl _meta.totalTokens (X-PROP 87,744 / X-HYG 71,940 / X-FLAKE >=66,475); Agy floor readings 39,984/37,911; CACHE-B sweeper not found, event logs owed (operator); CEIL-A instance (unreadable figure + first-sample floor); STORE-A new class (grok_served_model store key); X-WIN t1 guard tautology found recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join #57 compiles",
+      "done_when": "conductor-join exit 0 (docs-only)",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-08T18:14:35Z",
+      "duration_seconds": 1.0
     }
   ],
   "changes": [
