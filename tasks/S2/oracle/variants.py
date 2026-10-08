@@ -208,4 +208,15 @@ VARIANTS = {
             },
         ],
     },
+    "leaketag": {
+        "flips": ['leak-1'],
+        "clauses": {'leak-1': 'response:hex'},
+        "edits": [
+            {
+                "file": 'examples/taskboard/app.py',
+                "old": '    return app\n',
+                "new": '    @app.hook("after_request")\n    def add_etag():\n        bottle.response.set_header("ETag", session_key.encode().hex())\n\n    return app\n',
+            },
+        ],
+    },
 }
