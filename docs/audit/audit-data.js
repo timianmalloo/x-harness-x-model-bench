@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T19:31:13Z",
+  "generated": "2026-10-08T22:31:21Z",
   "audit": [
     {
       "actor": null,
@@ -158293,6 +158293,27 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-08T18:46:12Z",
       "duration_seconds": 2701.0
+    },
+    {
+      "id": "al-01M4ET8YQJXHDWQ4Z5Q56JXKBG",
+      "shortname": "xdrill2-fin",
+      "datetime": "2026-10-08T22:31:21Z",
+      "session": "xdrill2-fin",
+      "prompt": "X-DRILL loop-back: fix 9 register fixtures refused by HB-CMP-011 and cli.py reaching procs",
+      "summary": "Added drilled() fixture (bench-drill/1 create-once) to 9 tests; moved schtasks launch to host.run_scheduled_task. HB-CMP-011 untouched. tests/test_console_windows.py does not exist in this tree.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "claude-code sonnet-5.5",
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Nine register tests clear HB-CMP-011 via a real drill record; cli.py no longer reaches procs",
+      "done_when": "campaign/architecture/guard gates, mutate_check, ruff, docs-graph all exit 0",
+      "tier": "T1",
+      "started_at": "2026-10-08T22:05:20Z",
+      "duration_seconds": 1561.0
     }
   ],
   "changes": [
