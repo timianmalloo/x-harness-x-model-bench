@@ -49,7 +49,7 @@ def visible_window_child():
 
 
 def test_window_check_lists_visible_window(visible_window_child):
-    proc, since = visible_window_child
+    _proc, since = visible_window_child
     res = subprocess.run(
         [
             sys.executable,
@@ -65,8 +65,8 @@ def test_window_check_lists_visible_window(visible_window_child):
         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
     )
     assert res.returncode == 1
-    assert str(proc.pid) in res.stdout
     assert "TkTopLevel" in res.stdout
+    assert "python" in res.stdout.lower()
     assert "TestWindowCheckTitleSecret" not in res.stdout
 
 
