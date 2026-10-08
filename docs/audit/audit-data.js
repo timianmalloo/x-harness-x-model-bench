@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T17:36:10Z",
+  "generated": "2026-10-08T18:02:52Z",
   "audit": [
     {
       "actor": null,
@@ -146318,6 +146318,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-08T17:36:09Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M4EAXC0EYYE82EG1HGDFZ264",
+      "shortname": "xevu-fin-t1",
+      "datetime": "2026-10-08T18:02:52Z",
+      "session": "xevu-fin",
+      "prompt": "X-EVU, turn 1 of 2: map each of E5's report validations (EV-16, EV-18, EV-19, EVU-1 to EVU-8) to the test that proves it, then add a red-first test for each one that has none, and run axe for EVU-5 in light and dark.",
+      "summary": "﻿X-EVU turn 1 hand-back. Outcome: green 7cdab8d3 (clean integration head; no missing report tests identified, all 11 validations mapped to existing tests).\nServed model: gemini-3.8-flash-high (Gemini 3.8 Flash (High), read from cli.log).\nDispatch wall-clock: 2026-10-08T17:48:01Z to 2026-10-08T18:03:00Z.\nFloor tokens: 37,911; E1 sample: 50,164; Gate sample: 182,961.\nEVU-5 run (Playwright axe WCAG 2.2 AA light & dark):\n- tests/test_report_browser.py::test_evu_5_axe_light_and_dark[light] PASSED\n- tests/test_report_browser.py::test_evu_5_axe_light_and_dark[dark] PASSED (2 passed in 5.77s).\nGates:\n- Guard list (test_architecture, test_identity, test_atomic_sites, test_arms_guard, test_discriminate, test_mutate_check, test_skills_in_sync, test_timing_hygiene): exit 0 (210 passed in 131.88s)\n- Report tests (test_campaign_section, test_report, test_report_builder, test_archive_readers): exit 0 (173 passed in 161.00s)\n- EVU-5 axe run (test_report_browser.py -k evu_5 -m browser): exit 0 (2 passed in 5.77s)\n- mutate_check (campaign_section.json): exit 0 (every mutation killed)\n- ruff check (src tests tools): exit 0 (All checks passed!)\n- docs-graph validate: exit 0 (16 review suggestions, exit 0)\nCoverage map: EV-16, EV-18, EV-19, EVU-1..EVU-8 all mapped to existing comprehensive test nodes.\nChild processes launched: audit-log start, coord session start, pytest browser evu_5, task-126 (part order probe), task-133 (guard list), task-141 (report tests), task-145 (mutate_check), ruff check, docs-graph validate.",
+      "kind": "manual",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "goal": "map each of E5's report validations (EV-16, EV-18, EV-19, EVU-1 to EVU-8) to the test that proves it, then add a red-first test for each one that has none, and run axe for EVU-5 in light and dark",
+      "done_when": "a coverage map of the E5 row's validations to named tests: EV-16, EV-18, EV-19, EVU-1..8; each missing one red first, then green; axe (EVU-5) run, not skipped, in light and dark",
+      "tier": "T2",
+      "fan_out": 0,
+      "started_at": "2026-10-08T17:48:01Z",
+      "duration_seconds": 891.0,
+      "git": {
+        "sha": "7cdab8d38a6409d9ad3d3d3a39930b12819f8d7f",
+        "short": "7cdab8d38",
+        "branch": "build/fin-x-evu",
+        "pushed": null
+      }
     }
   ],
   "changes": [
