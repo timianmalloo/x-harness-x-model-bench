@@ -568,6 +568,15 @@ Measured on the real path by X-RS (tip `dc35f4c3`, plan record `docs/plans/eval-
 - **Finding: RV-TA W1-L 5(f) no longer holds.** Section 9.3's "`g-ordering` is flipped on its own by `v-requeue-tail` (RV-TA 5e/5f)" is false after the freeze: every variant that flips `g-ordering` (`retry5`, `clearearly`, `requeuetail`) also flips `g-lost-then-grow`, so no variant tells the two apart. The guarantee is restored, not waived (CR47-15, `docs/coordination/coordinator-log/c47.md`): one variant, `requeue5xx`, re-queues the pending batch behind newer records only after a flush that failed on 5xx and keeps the order after a lost response, so it flips `g-ordering` alone on `result` (hand-traced, Inferred; the fix turn measures it), before X-CV's re-records.
 - **IDEM-A's RS1 sweep (R-111 c5):** RS1's reference binds its `Idempotency-Key` to one call's frozen `body` bytes, built once before the retry loop (`tasks/RS1/oracle/solutions/reference/prometheus_client/ledger.py:26-35` at `dc35f4c3`); there is no buffer or container to grow, and no RS1 case grows a payload between attempts. Not the shape; no case added.
 
+### Erratum 5 (X-PACKOFF, 2026-10-08; Ruling 116)
+
+Amends section 2's paragraph that begins "`workspace_from: source` and the overlay (`tasks/<ID>/workspace/`) follow E5 and S1." Red `9094a0a5`, green `7e40400a`.
+
+- **The base tree (`workspace.task_source`).** For every `workspace_from: source` task the base tree is the pinned upstream tree minus every path in `INSTRUCTION_FILES` and every `*.instructions.md` under `INSTRUCTION_DIRS` (`workspace.py:27-28`, the one list), then the overlay. There is no per-task knob.
+- **The control (HB-PRE-009).** After the overlay and before `git add`, the same walk refuses a base tree, of any task, that still carries one of those paths. It fires on every base build in every harness: the plan probe, every cell, every discrimination record.
+- **HB-PRE-008 is unchanged.** `plan.py:462` stays the live Copilot measurement that the removal worked.
+- **Measured.** `bench plan` on both E5 files exits 0 with 0 instruction files for every `off` cell; the `on` count is 21 for all ten tasks, and the eight tasks other than NG1 and S2 equal their pre-fix count of 21. At the base the pilot refused with `HB-PRE-008: Copilot pack-off NG1 loaded 1 instruction files`. `git ls-files` of the built NG1 base (46 files) and S2 base (220 files) shows 0 instruction-file paths.
+
 ## 17. Conformance, residuals and "Done when" met
 
 - **Assume A1.** The behaviours of sections 6-9 hold on CPython 3.14.6. *Confirm:* the first discrimination run on the pinned interpreter. *Breaks if false:* readiness fails (HB-RDY-003).
