@@ -76,7 +76,7 @@ def _sha(data: bytes) -> str:
 def _metrics_dirty(root: Path) -> bool:
     """True when bench/metrics.yaml is uncommitted in `root` (no repo counts as dirty: the bytes are unpinned)."""
     done = subprocess.run(["git", "status", "--porcelain", "--", METRICS], cwd=root, capture_output=True, text=True,
-                          encoding="utf-8", check=False)
+                          encoding="utf-8", check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     return done.returncode != 0 or done.stdout.strip() != ""
 
 

@@ -185,7 +185,12 @@ def record(out: Path, argv: list[str]) -> int:
 
         recording = Recording(write)
         recording.header(argv, os.getcwd())
-        child = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE)  # stderr: inherited
+        child = subprocess.Popen(
+            argv,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )  # stderr: inherited
         stdin, stdout = sys.stdin.buffer, sys.stdout.buffer
 
         def to_agent(data: bytes) -> None:
