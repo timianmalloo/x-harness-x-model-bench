@@ -231,6 +231,7 @@ class CheckRun:
     acked: bool
     document: dict | None  # the validated document, or None
     invalid: str | None  # why the line failed `validate`, or None
+    unconfirmed_kill: bool = False  # terminate_and_confirm returned False; the tree was left alive
 
 
 class _Stdout(threading.Thread):
@@ -291,6 +292,7 @@ def run_check(argv: list[str], cwd: Path, env: dict[str, str], bound: float, std
     acked = bound_fired = False
     exit_code: int | None = None
     exit_ft: int | None = None
+    kill_confirmed = True  # close unless the kill itself reports the tree still alive
     with stderr_path.open("wb") as err:
         cp = procs.spawn(argv, cwd, env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=err, console=False)
         reader = _Stdout(cp)
@@ -327,10 +329,11 @@ def run_check(argv: list[str], cwd: Path, env: dict[str, str], bound: float, std
                     exit_ft = cp.exit_time()
                 except OSError:
                     exit_ft = None
-            cp.terminate_and_confirm(procs._KILL_GRACE)
+            kill_confirmed = cp.terminate_and_confirm(procs._KILL_GRACE)
             reader.join(procs._KILL_GRACE)
         finally:
-            cp.close()
+            if kill_confirmed:  # False: the tree is still alive; close would end it on the way out
+                cp.close()
     stored, total = reader.snapshot()
     has_line, line, documents, trailing = _split(stored, total)
     if has_line and document is None and invalid is None:
@@ -341,7 +344,7 @@ def run_check(argv: list[str], cwd: Path, env: dict[str, str], bound: float, std
     before = reader.first_ft is not None and not bound_fired and (exit_ft is None or exit_ft <= reader.first_ft)
     view = "query failed" if reader.view is None else "alone" if reader.view == frozenset({cp.pid}) else "not alone"
     return CheckRun(stored, has_line, documents, trailing, view == "alone", view, before, exit_code, bound_fired, acked,
-                    document, invalid)
+                    document, invalid, not kill_confirmed)
 
 
 # --- grade_cell (design 5.2) ----------------------------------------------------------------------------------------
