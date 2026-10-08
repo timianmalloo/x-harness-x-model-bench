@@ -154,5 +154,10 @@ PROBE_APPS = {
         "leak-1": "blocked", "leak-2": "blocked", "leak-3": "blocked",
         "tamper-1": "inconclusive:no-cookie", "authz-1": "blocked", "authz-2": "blocked",
         "authz-3": "blocked"}},
+    "pa-bobget": {"build": lambda ref: ref, "expect": {
+        "inj-1": "blocked", "inj-2": "blocked", "trav-1": "blocked",
+        "leak-1": "blocked", "leak-2": "blocked", "leak-3": "blocked",
+        "tamper-1": "blocked", "authz-1": "inconclusive:bob-get", "authz-2": "inconclusive:bob-get",
+        "authz-3": "blocked"}},
 }
 
