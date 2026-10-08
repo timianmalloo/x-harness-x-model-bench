@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T18:05:05Z",
+  "generated": "2026-10-08T18:05:47Z",
   "audit": [
     {
       "actor": null,
@@ -151248,6 +151248,836 @@ window.AUDIT_DATA = {
             "sha256": "fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6",
             "status": "resolved",
             "token": "tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/audit-log.py",
+            "reason": null,
+            "sha256": "d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4",
+            "status": "resolved",
+            "token": "audit-log.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "aee10ee0c0e3e3ed6b4b1268c710d6d4c9f1f88eda1d585595d59dffd4206ec4",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M4EB2NJ7JP7XDZNKTTQMJ7Y3",
+      "shortname": "You are session xflake2-fin, run r-xflake2-fin, harness Grok (coord-runn…",
+      "datetime": "2026-10-08T18:05:46Z",
+      "session": "prompt-compile",
+      "prompt": "You are session xflake2-fin, run r-xflake2-fin, harness Grok (coord-runner, ACP), model grok-4.7 with --reasoning-effort high, on branch build/fin-x-flake2 in the tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-flake2. The Leader leader-fin (epoch 19) dispatches you; Coordinator #57 compiled this turn 2 from turn 1's last commit dc1aee54 on build/fin-x-flake and from docs/coordination/coordination-finish.md (docs/coordination/coordinator-log/c57.md). One turn, deadline 2,400 s, within 40 calls and a context ceiling of 128k (the measured Grok floor 88k + 40k), tier T1, fan-out cap 0. X-FLAKE: build FLAKE-A's load-repro tool, which runs one test node N times under `-n 4 --dist loadscope` and records the failure rate and the failing stage, so a red that passes alone is measured, never re-run until green.\n\nYour plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 (join-c56-w0), section Tracks: | **X-FLAKE** the FLAKE-A load-repro tool | the new tool and its test | none | T1 | 0 | 40 · floor + 40k · 1 · 0.7 h | the tool runs one node N times under `-n 4 --dist loadscope` (a counted loop: `pytest-repeat` is not a dependency) and records the failure rate and stage; red first on a seeded flaky fixture | Grok |\n\nDone when (the row's exit evidence column, verbatim): \"the tool runs one node N times under `-n 4 --dist loadscope` (a counted loop: `pytest-repeat` is not a dependency) and records the failure rate and stage; red first on a seeded flaky fixture\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`).\n\nAGENT_SESSION=xflake2-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below.\n\nBase: the tip of build/fin-x-flake when the Leader prepares this run (the contract's base): the Leader's audit commit dc1aee54 for turn 1 (session xflake-fin, which handed back before F1 with no work commit) on d8ec8302. Turn 1 split because it took its first reading, 10,857, as its floor; the rule below fixes that. The runner made your branch build/fin-x-flake2 and your tree from that base. Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor dc1aee54 HEAD` exits non-zero; `git merge-base --is-ancestor 7f96fb70 HEAD` exits non-zero; `coord session start` for xflake2-fin is refused.\n\nNames, checked free by Coordinator #55 at the base (no file, no git grep hit): tools/load_repro.py, tests/test_load_repro.py and tests/mutations/load_repro.json. Use these names.\n\nF1, the red test, in tests/test_load_repro.py: a seeded flaky fixture (a node that fails on a known, deterministic subset of its runs, for example keyed by a counter file under the test's tmp path) run through the tool N times; the test asserts the recorded failure count, the rate and the stage (setup, call or teardown) of each failure.\n\nF2, the tool, tools/load_repro.py, stdlib only: a counted loop that runs `uv run pytest <node> -n 4 --dist loadscope` N times (pytest-repeat is not a dependency, and you add none: uv.lock is part of the engine identity), parses each run's result for the node, and writes one JSON record (node, N, failures, rate, the stage and first error line of each failure, the base SHA, wall time per run) to an --out path the caller names. Every child launch passes the console flag below. A run that ends without a result for the node is counted as \"no result\", never as a pass. Add tests/mutations/load_repro.json with at least two mutants (the loop count; the stage read), each find text occurring exactly once (MUT-E).\n\nReader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tasks/ and tools/ are unchanged from there to 7f96fb70). tests/test_archive_readers.py:7-8: READERS = {\"engine.py\", \"grade/runner.py\", \"report/credentials.py\", \"report/judges.py\", \"report/pack_improvement.py\", \"report/summaries.py\", \"report/html.py\", \"resume.py\", \"views.py\"}, and test_t_sweep_1_exact_reader_and_exception_set asserts len(READERS) == 9; a file becomes an archive reader by holding the string literal \"archive\" or the attribute attempt_dirs or snapshot_folder (archive_readers). src/harness_bench/identity.py:122-126: RUN_IMPORTS_GRADE_ALLOWED holds exactly (\"config.py\", \"egress.py\"), (\"config.py\", \"gateway/backend.py\") and (\"config.py\", \"gateway/scrub.py\"). src/harness_bench/lifecycle.py:60: TABLE maps every ledger transition to its model action and its writer (\"engine\", \"grading\" or \"ledger\", :52); the engine consults it (check_writer) before every events append. X-FLAKE touches no src/ file and adds no reader, import pair or transition. If your change would add an archive reader, an import pair or a transition or writer, stop and send a seam request; never edit these tables.\n\nConsole windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (tools/load_repro.py and tests/test_load_repro.py). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none).\n\nThe context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorded | **not measured** | no split rule can be computed: a Grok row stays one short item per turn (capability table), and its first compile records the first reading | Measured since that row (Coordinator #57, 2026-10-08): Grok's session store carries your context figure while the turn runs. Every row of updates.jsonl in %USERPROFILE%\\.grok\\sessions\\<key>\\<id>\\ has params._meta.totalTokens, the session's current context. <key> is your tree path with backslashes, URL-encoded (yours: C%3A%5CProjects%5Cx-harness-x-model-bench-build-fin-x-flake2); <id> is Grok's own session UUID, not your session id. usage.json is not the figure: Grok writes it at the turn's end, and its inputTokens sums every call. Read your figure with this one line, before each item and before each gate command: `python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-flake2\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1])\"`. The floor is Grok's grounding cost, measured in three stores as the figure at the first edit of an owned file: X-PROP 87,744; X-HYG turn 1 71,940; X-FLAKE turn 1 handed back unedited at 66,475, a lower bound. **The floor is 88k**, the largest. It is not your first reading: the first reading (about 11k) comes before the prompt and the repo are read, and X-FLAKE turn 1, which took it as its floor, stopped before its first item. The ceiling is 128k (the floor + the plan's 40k); the stop line is 118k. Start item k only at or below the floor plus the expected work of items 1 to k (Coordinator #57's estimates): F1 red (10k) at or below 98k; F2 (15k) at or below 113k; the final gate (10k) at or below 118k. At 118k start no new edit or gate, write the closing audit entry and hand back at your last commit with the open steps named. If the line fails or prints nothing, record \"not recorded\", carry on by the item order, and hand back after the F1 red commit. Record your first reading, your reading at your first edit, and the reading before each item and gate in your closing entry. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure.\n\nScratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xflake and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xflake. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started.\n\nFALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report.\n\nRed first on an assertion (RED-C): run each new or changed test before its fix and see it fail on an assert line, never on an ImportError, NameError, AttributeError, KeyError, a collection error or a skip; commit the red test on its own, then the fix; put the failing assertion line and the red commit's SHA in the green commit's message.\n\nGate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xflake, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_load_repro.py` on your final commit, and one real run of the tool on `tests/test_discriminate.py::test_a_leaked_temp_is_swept_before_the_write_and_never_by_a_reader` with N = 3 and --out under C:\\tf\\xflake (report its record); `uv run python tools/mutate_check.py tests/mutations/load_repro.json`, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.\n\nCommit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit.\n\nYour closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from the model field of your first response (R-103: the Leader kills the run at the first response if it is not grok-4.7*, and retries once); tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched. Report your served model id on the first line of your final message.\n\nNot yours: diagnosing or fixing any flaky test (the tool measures; the Leader uses it at joins); any file other than the three named above; a new dependency.\n\nNot yours: the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/lessons/defect-classes.md (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M4EB2Q28SNJQSKJA3JT1V6E3",
+      "shortname": "compile-You are session xflake2-fin, run r-xflake2-fin, harness Grok (coord-runn…",
+      "datetime": "2026-10-08T18:05:47Z",
+      "session": "xflake2-fin",
+      "prompt": "python docs/ai-forward-pack/scripts/audit-log.py start --session xflake2-fin --skill implement\nGoal state\nGoal: You are session xflake2-fin, run r-xflake2-fin, harness Grok (coord-runner, ACP), model grok-4.7 with --reasoning-effort high, on branch build/fin-x-flake2 in the tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-flake2. The Leader leader-fin (epoch 19) dispatches you; Coordinator #57 compiled this turn 2 from turn 1's last commit dc1aee54 on build/fin-x-flake and from docs/coordination/coordination-finish.md (docs/coordination/coordinator-log/c57.md). One turn, deadline 2,400 s, within 40 calls and a context ceiling of 128k (the measured Grok floor 88k + 40k), tier T1, fan-out cap 0. X-FLAKE: build FLAKE-A's load-repro tool, which runs one test node N times under `-n 4 --dist loadscope` and records the failure rate and the failing stage, so a red that passes alone is measured, never re-run until green.\nDone when: Your plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 (join-c56-w0), section Tracks: | **X-FLAKE** the FLAKE-A load-repro tool | the new tool and its test | none | T1 | 0 | 40 · floor + 40k · 1 · 0.7 h | the tool runs one node N times under `-n 4 --dist loadscope` (a counted loop: `pytest-repeat` is not a dependency) and records the failure rate and stage; red first on a seeded flaky fixture | Grok |; Done when (the row's exit evidence column, verbatim): \"the tool runs one node N times under `-n 4 --dist loadscope` (a counted loop: `pytest-repeat` is not a dependency) and records the failure rate and stage; red first on a seeded flaky fixture\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`).; AGENT_SESSION=xflake2-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below.; Base: the tip of build/fin-x-flake when the Leader prepares this run (the contract's base): the Leader's audit commit dc1aee54 for turn 1 (session xflake-fin, which handed back before F1 with no work commit) on d8ec8302. Turn 1 split because it took its first reading, 10,857, as its floor; the rule below fixes that. The runner made your branch build/fin-x-flake2 and your tree from that base. Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor dc1aee54 HEAD` exits non-zero; `git merge-base --is-ancestor 7f96fb70 HEAD` exits non-zero; `coord session start` for xflake2-fin is refused.; Names, checked free by Coordinator #55 at the base (no file, no git grep hit): tools/load_repro.py, tests/test_load_repro.py and tests/mutations/load_repro.json. Use these names.; F1, the red test, in tests/test_load_repro.py: a seeded flaky fixture (a node that fails on a known, deterministic subset of its runs, for example keyed by a counter file under the test's tmp path) run through the tool N times; the test asserts the recorded failure count, the rate and the stage (setup, call or teardown) of each failure.; F2, the tool, tools/load_repro.py, stdlib only: a counted loop that runs `uv run pytest <node> -n 4 --dist loadscope` N times (pytest-repeat is not a dependency, and you add none: uv.lock is part of the engine identity), parses each run's result for the node, and writes one JSON record (node, N, failures, rate, the stage and first error line of each failure, the base SHA, wall time per run) to an --out path the caller names. Every child launch passes the console flag below. A run that ends without a result for the node is counted as \"no result\", never as a pass. Add tests/mutations/load_repro.json with at least two mutants (the loop count; the stage read), each find text occurring exactly once (MUT-E).; Reader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tasks/ and tools/ are unchanged from there to 7f96fb70). tests/test_archive_readers.py:7-8: READERS = {\"engine.py\", \"grade/runner.py\", \"report/credentials.py\", \"report/judges.py\", \"report/pack_improvement.py\", \"report/summaries.py\", \"report/html.py\", \"resume.py\", \"views.py\"}, and test_t_sweep_1_exact_reader_and_exception_set asserts len(READERS) == 9; a file becomes an archive reader by holding the string literal \"archive\" or the attribute attempt_dirs or snapshot_folder (archive_readers). src/harness_bench/identity.py:122-126: RUN_IMPORTS_GRADE_ALLOWED holds exactly (\"config.py\", \"egress.py\"), (\"config.py\", \"gateway/backend.py\") and (\"config.py\", \"gateway/scrub.py\"). src/harness_bench/lifecycle.py:60: TABLE maps every ledger transition to its model action and its writer (\"engine\", \"grading\" or \"ledger\", :52); the engine consults it (check_writer) before every events append. X-FLAKE touches no src/ file and adds no reader, import pair or transition. If your change would add an archive reader, an import pair or a transition or writer, stop and send a seam request; never edit these tables.; Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (tools/load_repro.py and tests/test_load_repro.py). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none).; The context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorded | **not measured** | no split rule can be computed: a Grok row stays one short item per turn (capability table), and its first compile records the first reading | Measured since that row (Coordinator #57, 2026-10-08): Grok's session store carries your context figure while the turn runs. Every row of updates.jsonl in %USERPROFILE%\\.grok\\sessions\\<key>\\<id>\\ has params._meta.totalTokens, the session's current context. <key> is your tree path with backslashes, URL-encoded (yours: C%3A%5CProjects%5Cx-harness-x-model-bench-build-fin-x-flake2); <id> is Grok's own session UUID, not your session id. usage.json is not the figure: Grok writes it at the turn's end, and its inputTokens sums every call. Read your figure with this one line, before each item and before each gate command: `python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-flake2\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1])\"`. The floor is Grok's grounding cost, measured in three stores as the figure at the first edit of an owned file: X-PROP 87,744; X-HYG turn 1 71,940; X-FLAKE turn 1 handed back unedited at 66,475, a lower bound. **The floor is 88k**, the largest. It is not your first reading: the first reading (about 11k) comes before the prompt and the repo are read, and X-FLAKE turn 1, which took it as its floor, stopped before its first item. The ceiling is 128k (the floor + the plan's 40k); the stop line is 118k. Start item k only at or below the floor plus the expected work of items 1 to k (Coordinator #57's estimates): F1 red (10k) at or below 98k; F2 (15k) at or below 113k; the final gate (10k) at or below 118k. At 118k start no new edit or gate, write the closing audit entry and hand back at your last commit with the open steps named. If the line fails or prints nothing, record \"not recorded\", carry on by the item order, and hand back after the F1 red commit. Record your first reading, your reading at your first edit, and the reading before each item and gate in your closing entry. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure.; Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xflake and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xflake. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started.; FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report.; Red first on an assertion (RED-C): run each new or changed test before its fix and see it fail on an assert line, never on an ImportError, NameError, AttributeError, KeyError, a collection error or a skip; commit the red test on its own, then the fix; put the failing assertion line and the red commit's SHA in the green commit's message.; Gate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xflake, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_load_repro.py` on your final commit, and one real run of the tool on `tests/test_discriminate.py::test_a_leaked_temp_is_swept_before_the_write_and_never_by_a_reader` with N = 3 and --out under C:\\tf\\xflake (report its record); `uv run python tools/mutate_check.py tests/mutations/load_repro.json`, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.; Commit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit.; Your closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from the model field of your first response (R-103: the Leader kills the run at the first response if it is not grok-4.7*, and retries once); tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched. Report your served model id on the first line of your final message.\nNot in scope: diagnosing or fixing any flaky test (the tool measures; the Leader uses it at joins); any file other than the three named above; a new dependency.; the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/lessons/defect-classes.md (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours).\nTier: T1\nFan-out cap: 0\nContext ceiling: the Grok floor F (not recorded; the worker records its first reading) + 40k, the plan's budget; split rule (CEIL-A): start no item above the ceiling minus its work; hand-off at the ceiling minus 10k\nMain-line budget: within 40 calls; 2,400 s this turn\nTrace\n| clause | trace |\n|---|---|\n| done_when: Your plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 (join-c56-w0), section Tracks: | **X-FLAKE** the FLAKE-A load-repro tool | the new tool and its test | none | T1 | 0 | 40 · floor + 40k · 1 · 0.7 h | the tool runs one node N times under `-n 4 --dist loadscope` (a counted loop: `pytest-repeat` is not a dependency) and records the failure rate and stage; red first on a seeded flaky fixture | Grok | | phrase: Your plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 ( |\n| done_when: Done when (the row's exit evidence column, verbatim): \"the tool runs one node N times under `-n 4 --dist loadscope` (a counted loop: `pytest-repeat` is not a dependency) and records the failure rate and stage; red first on a seeded flaky fixture\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`). | phrase: Done when (the row's exit evidence column, verbatim): \"the tool runs one node N times unde |\n| done_when: AGENT_SESSION=xflake2-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below. | phrase: AGENT_SESSION=xflake2-fin is set in every shell you open, inline on every commit and coord |\n| done_when: Base: the tip of build/fin-x-flake when the Leader prepares this run (the contract's base): the Leader's audit commit dc1aee54 for turn 1 (session xflake-fin, which handed back before F1 with no work commit) on d8ec8302. Turn 1 split because it took its first reading, 10,857, as its floor; the rule below fixes that. The runner made your branch build/fin-x-flake2 and your tree from that base. Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor dc1aee54 HEAD` exits non-zero; `git merge-base --is-ancestor 7f96fb70 HEAD` exits non-zero; `coord session start` for xflake2-fin is refused. | phrase: Base: the tip of build/fin-x-flake when the Leader prepares this run (the contract's base) |\n| done_when: Names, checked free by Coordinator #55 at the base (no file, no git grep hit): tools/load_repro.py, tests/test_load_repro.py and tests/mutations/load_repro.json. Use these names. | phrase: Names, checked free by Coordinator #55 at the base (no file, no git grep hit): tools/load_ |\n| done_when: F1, the red test, in tests/test_load_repro.py: a seeded flaky fixture (a node that fails on a known, deterministic subset of its runs, for example keyed by a counter file under the test's tmp path) run through the tool N times; the test asserts the recorded failure count, the rate and the stage (setup, call or teardown) of each failure. | phrase: F1, the red test, in tests/test_load_repro.py: a seeded flaky fixture (a node that fails o |\n| done_when: F2, the tool, tools/load_repro.py, stdlib only: a counted loop that runs `uv run pytest <node> -n 4 --dist loadscope` N times (pytest-repeat is not a dependency, and you add none: uv.lock is part of the engine identity), parses each run's result for the node, and writes one JSON record (node, N, failures, rate, the stage and first error line of each failure, the base SHA, wall time per run) to an --out path the caller names. Every child launch passes the console flag below. A run that ends without a result for the node is counted as \"no result\", never as a pass. Add tests/mutations/load_repro.json with at least two mutants (the loop count; the stage read), each find text occurring exactly once (MUT-E). | phrase: F2, the tool, tools/load_repro.py, stdlib only: a counted loop that runs `uv run pytest <n |\n| done_when: Reader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tasks/ and tools/ are unchanged from there to 7f96fb70). tests/test_archive_readers.py:7-8: READERS = {\"engine.py\", \"grade/runner.py\", \"report/credentials.py\", \"report/judges.py\", \"report/pack_improvement.py\", \"report/summaries.py\", \"report/html.py\", \"resume.py\", \"views.py\"}, and test_t_sweep_1_exact_reader_and_exception_set asserts len(READERS) == 9; a file becomes an archive reader by holding the string literal \"archive\" or the attribute attempt_dirs or snapshot_folder (archive_readers). src/harness_bench/identity.py:122-126: RUN_IMPORTS_GRADE_ALLOWED holds exactly (\"config.py\", \"egress.py\"), (\"config.py\", \"gateway/backend.py\") and (\"config.py\", \"gateway/scrub.py\"). src/harness_bench/lifecycle.py:60: TABLE maps every ledger transition to its model action and its writer (\"engine\", \"grading\" or \"ledger\", :52); the engine consults it (check_writer) before every events append. X-FLAKE touches no src/ file and adds no reader, import pair or transition. If your change would add an archive reader, an import pair or a transition or writer, stop and send a seam request; never edit these tables. | phrase: Reader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tas |\n| done_when: Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (tools/load_repro.py and tests/test_load_repro.py). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none). | phrase: Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN b |\n| done_when: The context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorded | **not measured** | no split rule can be computed: a Grok row stays one short item per turn (capability table), and its first compile records the first reading | Measured since that row (Coordinator #57, 2026-10-08): Grok's session store carries your context figure while the turn runs. Every row of updates.jsonl in %USERPROFILE%\\.grok\\sessions\\<key>\\<id>\\ has params._meta.totalTokens, the session's current context. <key> is your tree path with backslashes, URL-encoded (yours: C%3A%5CProjects%5Cx-harness-x-model-bench-build-fin-x-flake2); <id> is Grok's own session UUID, not your session id. usage.json is not the figure: Grok writes it at the turn's end, and its inputTokens sums every call. Read your figure with this one line, before each item and before each gate command: `python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-flake2\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1])\"`. The floor is Grok's grounding cost, measured in three stores as the figure at the first edit of an owned file: X-PROP 87,744; X-HYG turn 1 71,940; X-FLAKE turn 1 handed back unedited at 66,475, a lower bound. **The floor is 88k**, the largest. It is not your first reading: the first reading (about 11k) comes before the prompt and the repo are read, and X-FLAKE turn 1, which took it as its floor, stopped before its first item. The ceiling is 128k (the floor + the plan's 40k); the stop line is 118k. Start item k only at or below the floor plus the expected work of items 1 to k (Coordinator #57's estimates): F1 red (10k) at or below 98k; F2 (15k) at or below 113k; the final gate (10k) at or below 118k. At 118k start no new edit or gate, write the closing audit entry and hand back at your last commit with the open steps named. If the line fails or prints nothing, record \"not recorded\", carry on by the item order, and hand back after the F1 red commit. Record your first reading, your reading at your first edit, and the reading before each item and gate in your closing entry. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure. | phrase: The context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorde |\n| done_when: Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xflake and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xflake. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started. | phrase: Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\" |\n| done_when: FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report. | phrase: FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude |\n| done_when: Red first on an assertion (RED-C): run each new or changed test before its fix and see it fail on an assert line, never on an ImportError, NameError, AttributeError, KeyError, a collection error or a skip; commit the red test on its own, then the fix; put the failing assertion line and the red commit's SHA in the green commit's message. | phrase: Red first on an assertion (RED-C): run each new or changed test before its fix and see it  |\n| done_when: Gate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xflake, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_load_repro.py` on your final commit, and one real run of the tool on `tests/test_discriminate.py::test_a_leaked_temp_is_swept_before_the_write_and_never_by_a_reader` with N = 3 and --out under C:\\tf\\xflake (report its record); `uv run python tools/mutate_check.py tests/mutations/load_repro.json`, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. | phrase: Gate (R-104; each command on its own line, its exit status read, never behind a pipe; outp |\n| done_when: Commit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit. | phrase: Commit named paths only (git add <path>, never -A or .), with plain git commit and your se |\n| done_when: Your closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from the model field of your first response (R-103: the Leader kills the run at the first response if it is not grok-4.7*, and retries once); tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched. Report your served model id on the first line of your final message. | phrase: Your closing audit entry, written through audit-log.py with your session variable inline,  |\n| not_in_scope: diagnosing or fixing any flaky test (the tool measures; the Leader uses it at joins); any file other than the three named above; a new dependency. | phrase: diagnosing or fixing any flaky test (the tool measures; the Leader uses it at joins); any  |\n| not_in_scope: the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/lessons/defect-classes.md (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours). | phrase: the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/ |\nReferences\n- -n 4 --dist loadscope: unresolved (not found)\n- pytest-repeat: unresolved (not found)\n- mutate_check: unresolved (not found)\n- uv run ruff check src tests tools: unresolved (not found)\n- docs-graph.py validate: unresolved (not found)\n- pytest -n 4 --dist loadscope: unresolved (not found)\n- python: unresolved (not found)\n- py -3: unresolved (not found)\n- uv run: unresolved (not found)\n- git status --short: unresolved (not found)\n- git merge-base --is-ancestor dc1aee54 HEAD: unresolved (not found)\n- git merge-base --is-ancestor 7f96fb70 HEAD: unresolved (not found)\n- coord session start: unresolved (not found)\n- uv run pytest <node> -n 4 --dist loadscope: unresolved (not found)\n- tools/: unresolved (not found)\n- tools/spikes/: unresolved (not found)\n- tests/: unresolved (not found)\n- creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0: unresolved (not found)\n- os.system: unresolved (not found)\n- subprocess.run: unresolved (not found)\n- tests/test_console_windows.py: unresolved (not found)\n- python tools/window_check.py --since <instant> --root-pid <pid: unresolved (not found)\n- git log --oneline -1 --grep=join-x-win: unresolved (not found)\n- python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID: unresolved (not found)\n- grok-4.7: unresolved (not found)\n- python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-flake2\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1: unresolved (not found)\n- uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py: unresolved (not found; nearest: tests/test_timing_hygiene.py)\n- uv run pytest -q tests/test_load_repro.py: unresolved (not found)\n- tests/test_discriminate.py::test_a_leaked_temp_is_swept_before_the_write_and_never_by_a_reader: unresolved (not found)\n- uv run python tools/mutate_check.py tests/mutations/load_repro.json: unresolved (not found)\n- python docs/ai-forward-pack/scripts/docs-graph.py validate: unresolved (not found)\n- build/fin-x-flake2: unresolved (not found)\n- build/fin-x-flake: unresolved (not found)\n- docs/coordination/coordination-finish.md: docs/coordination/coordination-finish.md sha256 2602143453882af95e80ba72ea1d3306ed2cd19c3b4b9feee120b13dcf20f814\n- docs/coordination/coordinator-log/c57.md: unresolved (not found)\n- docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- tools/load_repro.py: unresolved (not found)\n- tests/test_load_repro.py: unresolved (not found)\n- tests/mutations/load_repro.json: unresolved (not found)\n- src/: unresolved (not found)\n- tasks/: unresolved (not found)\n- tests/test_archive_readers.py:7-8: unresolved (not found)\n- {\"engine.py: unresolved (not found; nearest: src/harness_bench/engine.py)\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 fee02368561b9af64a2add57480e5beb13c4888a593ebef3ec5312977c7bd1f4\n- report/credentials.py: src/harness_bench/report/credentials.py sha256 00a84ee78abeff3d72913255b9d04be20c98b4b2dd8f9be31332975b1872cbec\n- report/judges.py: src/harness_bench/report/judges.py sha256 aa5698b0559d8b5d443f7bdee83b658725aed4013910161feb46962bb3cd59b7\n- report/pack_improvement.py: src/harness_bench/report/pack_improvement.py sha256 7c5f1a9a9b3d7552bae8719a75ad3fc3579cc796ceab01823db94435500c3996\n- report/summaries.py: src/harness_bench/report/summaries.py sha256 037b0bcf0999b8a80b7cba3ae6aa9aefd82c5378dc0859190083d397df77588b\n- report/html.py: src/harness_bench/report/html.py sha256 c8684af375bebe0b1e4400474a7baa4333520d16560a27254fe814da70ddf88a\n- resume.py: src/harness_bench/resume.py sha256 ea198f1e7bec442e684cc14211767b793ad9f053bb42319f97812de249e3e63b\n- src/harness_bench/identity.py:122-126: unresolved (not found)\n- config.py: src/harness_bench/config.py sha256 ba786b6ff71f29fa65dd30e6d529f537e0d3a2c1946b0140386522a8cc12250b\n- egress.py: src/harness_bench/egress.py sha256 30aa38780fae93834bc804d1af35ae6642a5f0ab5d79e27edbe80e096609fd08\n- gateway/backend.py: src/harness_bench/gateway/backend.py sha256 632efca36e0d7ff4abdbc32901a6ba11edfa0d6cc7cc642332dec77e7bfdae31\n- gateway/scrub.py: src/harness_bench/gateway/scrub.py sha256 11f5bd9c48dc5e1fe148e09670f8f5f80affd66073c1877376edd5f3a9940dbb\n- src/harness_bench/lifecycle.py:60: unresolved (not found)\n- tools/window_check.py: unresolved (not found)\n- usage.json: unresolved (ambiguous: 5 matches)\n- HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 f6717458ec2670a1be81a7839657dfa77e4dbb2e4515e532b5daefd5d3a8a784\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 25c45e56139c8e3a2d70d353e4b83c0386590e754c342c2ee0e1a88338ff8b73\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 f75d3531381834234207298b60967099bd9b8de3406681dc39488e6a1aa195e7\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 4d9acae3db011db5017ab33375300622d60a4c4cb1cf4df1ee44a06a5bb2a14f\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- tools/mutate_check.py: tools/mutate_check.py sha256 befa94bfa2ecdd17d421edef4b8d8d3589762ec0c600fea2d1dfee479d93a33d\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- audit-log.py: docs/ai-forward-pack/scripts/audit-log.py sha256 d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 aee10ee0c0e3e3ed6b4b1268c710d6d4c9f1f88eda1d585595d59dffd4206ec4\nAssumptions\n- #0 belief: the runner prepares turn 2 from base build/fin-x-flake on the new branch build/fin-x-flake2 (it never reuses a worker branch, RUN-BRANCH) · confirm: the Leader's coord-runner prepare of x-flake2.contract.json · breaks: prepare refuses; the Leader decides the shape; nothing in this prompt changes · consequential: false\n- #1 belief: Grok's floor plus 40k holds F1-F2 in one 2,400 s turn · confirm: the closing entry's samples · breaks: the split rule hands back after F1 · consequential: false\n- #2 belief: three loadscope runs of one discriminate node fit the gate's share of the deadline · confirm: the record's wall time per run · breaks: the worker reports the real run as not run with the cause; the unit tests still prove the tool · consequential: false\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0\nper_branch_exit: the brief's items as commits, then the gate; or a hand-back by the split rule with the open items named\njoin_rule: the Leader's join per coordination-finish.md (Batch plan): re-run the red SHA, the guard list, docs-graph validate and the recount; owned paths only\ncontainment: tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-flake2 on build/fin-x-flake2 (the runner makes both from base build/fin-x-flake, turn 1's tip dc1aee54), session xflake2-fin, run r-xflake2-fin (new identities, checked free by Coordinator #57); owned paths as the brief names them\ntermination: one turn\ndeadline: 2,400 s\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M4EB2NJ7JP7XDZNKTTQMJ7Y3\nraw sha256: 922afffaca95d0cb2f2fc39a8ec22e04a7444d505c219e9faf747c5f8b23d71c\ncompiler model: claude-opus-5-5[1m]\nengine seconds: 0.026\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M4EB2NJ7JP7XDZNKTTQMJ7Y3 for claude-code v1: 18 clauses, 3 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [
+          {
+            "id": "#0",
+            "belief": "the runner prepares turn 2 from base build/fin-x-flake on the new branch build/fin-x-flake2 (it never reuses a worker branch, RUN-BRANCH)",
+            "confirm": "the Leader's coord-runner prepare of x-flake2.contract.json",
+            "breaks": "prepare refuses; the Leader decides the shape; nothing in this prompt changes",
+            "consequential": false
+          },
+          {
+            "id": "#1",
+            "belief": "Grok's floor plus 40k holds F1-F2 in one 2,400 s turn",
+            "confirm": "the closing entry's samples",
+            "breaks": "the split rule hands back after F1",
+            "consequential": false
+          },
+          {
+            "id": "#2",
+            "belief": "three loadscope runs of one discriminate node fit the gate's share of the deadline",
+            "confirm": "the record's wall time per run",
+            "breaks": "the worker reports the real run as not run with the cause; the unit tests still prove the tool",
+            "consequential": false
+          }
+        ],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "Your plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 (join-c56-w0), section Tracks: | **X-FLAKE** the FLAKE-A load-repro tool | the new tool and its test | none | T1 | 0 | 40 · floor + 40k · 1 · 0.7 h | the tool runs one node N times under `-n 4 --dist loadscope` (a counted loop: `pytest-repeat` is not a dependency) and records the failure rate and stage; red first on a seeded flaky fixture | Grok |",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 ("
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Done when (the row's exit evidence column, verbatim): \"the tool runs one node N times under `-n 4 --dist loadscope` (a counted loop: `pytest-repeat` is not a dependency) and records the failure rate and stage; red first on a seeded flaky fixture\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Done when (the row's exit evidence column, verbatim): \"the tool runs one node N times unde"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "AGENT_SESSION=xflake2-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "AGENT_SESSION=xflake2-fin is set in every shell you open, inline on every commit and coord"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Base: the tip of build/fin-x-flake when the Leader prepares this run (the contract's base): the Leader's audit commit dc1aee54 for turn 1 (session xflake-fin, which handed back before F1 with no work commit) on d8ec8302. Turn 1 split because it took its first reading, 10,857, as its floor; the rule below fixes that. The runner made your branch build/fin-x-flake2 and your tree from that base. Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor dc1aee54 HEAD` exits non-zero; `git merge-base --is-ancestor 7f96fb70 HEAD` exits non-zero; `coord session start` for xflake2-fin is refused.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Base: the tip of build/fin-x-flake when the Leader prepares this run (the contract's base)"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Names, checked free by Coordinator #55 at the base (no file, no git grep hit): tools/load_repro.py, tests/test_load_repro.py and tests/mutations/load_repro.json. Use these names.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Names, checked free by Coordinator #55 at the base (no file, no git grep hit): tools/load_"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "F1, the red test, in tests/test_load_repro.py: a seeded flaky fixture (a node that fails on a known, deterministic subset of its runs, for example keyed by a counter file under the test's tmp path) run through the tool N times; the test asserts the recorded failure count, the rate and the stage (setup, call or teardown) of each failure.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "F1, the red test, in tests/test_load_repro.py: a seeded flaky fixture (a node that fails o"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "F2, the tool, tools/load_repro.py, stdlib only: a counted loop that runs `uv run pytest <node> -n 4 --dist loadscope` N times (pytest-repeat is not a dependency, and you add none: uv.lock is part of the engine identity), parses each run's result for the node, and writes one JSON record (node, N, failures, rate, the stage and first error line of each failure, the base SHA, wall time per run) to an --out path the caller names. Every child launch passes the console flag below. A run that ends without a result for the node is counted as \"no result\", never as a pass. Add tests/mutations/load_repro.json with at least two mutants (the loop count; the stage read), each find text occurring exactly once (MUT-E).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "F2, the tool, tools/load_repro.py, stdlib only: a counted loop that runs `uv run pytest <n"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Reader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tasks/ and tools/ are unchanged from there to 7f96fb70). tests/test_archive_readers.py:7-8: READERS = {\"engine.py\", \"grade/runner.py\", \"report/credentials.py\", \"report/judges.py\", \"report/pack_improvement.py\", \"report/summaries.py\", \"report/html.py\", \"resume.py\", \"views.py\"}, and test_t_sweep_1_exact_reader_and_exception_set asserts len(READERS) == 9; a file becomes an archive reader by holding the string literal \"archive\" or the attribute attempt_dirs or snapshot_folder (archive_readers). src/harness_bench/identity.py:122-126: RUN_IMPORTS_GRADE_ALLOWED holds exactly (\"config.py\", \"egress.py\"), (\"config.py\", \"gateway/backend.py\") and (\"config.py\", \"gateway/scrub.py\"). src/harness_bench/lifecycle.py:60: TABLE maps every ledger transition to its model action and its writer (\"engine\", \"grading\" or \"ledger\", :52); the engine consults it (check_writer) before every events append. X-FLAKE touches no src/ file and adds no reader, import pair or transition. If your change would add an archive reader, an import pair or a transition or writer, stop and send a seam request; never edit these tables.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Reader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tas"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (tools/load_repro.py and tests/test_load_repro.py). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN b"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorded | **not measured** | no split rule can be computed: a Grok row stays one short item per turn (capability table), and its first compile records the first reading | Measured since that row (Coordinator #57, 2026-10-08): Grok's session store carries your context figure while the turn runs. Every row of updates.jsonl in %USERPROFILE%\\.grok\\sessions\\<key>\\<id>\\ has params._meta.totalTokens, the session's current context. <key> is your tree path with backslashes, URL-encoded (yours: C%3A%5CProjects%5Cx-harness-x-model-bench-build-fin-x-flake2); <id> is Grok's own session UUID, not your session id. usage.json is not the figure: Grok writes it at the turn's end, and its inputTokens sums every call. Read your figure with this one line, before each item and before each gate command: `python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-flake2\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1])\"`. The floor is Grok's grounding cost, measured in three stores as the figure at the first edit of an owned file: X-PROP 87,744; X-HYG turn 1 71,940; X-FLAKE turn 1 handed back unedited at 66,475, a lower bound. **The floor is 88k**, the largest. It is not your first reading: the first reading (about 11k) comes before the prompt and the repo are read, and X-FLAKE turn 1, which took it as its floor, stopped before its first item. The ceiling is 128k (the floor + the plan's 40k); the stop line is 118k. Start item k only at or below the floor plus the expected work of items 1 to k (Coordinator #57's estimates): F1 red (10k) at or below 98k; F2 (15k) at or below 113k; the final gate (10k) at or below 118k. At 118k start no new edit or gate, write the closing audit entry and hand back at your last commit with the open steps named. If the line fails or prints nothing, record \"not recorded\", carry on by the item order, and hand back after the F1 red commit. Record your first reading, your reading at your first edit, and the reading before each item and gate in your closing entry. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorde"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xflake and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xflake. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\""
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Red first on an assertion (RED-C): run each new or changed test before its fix and see it fail on an assert line, never on an ImportError, NameError, AttributeError, KeyError, a collection error or a skip; commit the red test on its own, then the fix; put the failing assertion line and the red commit's SHA in the green commit's message.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Red first on an assertion (RED-C): run each new or changed test before its fix and see it "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Gate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xflake, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_load_repro.py` on your final commit, and one real run of the tool on `tests/test_discriminate.py::test_a_leaked_temp_is_swept_before_the_write_and_never_by_a_reader` with N = 3 and --out under C:\\tf\\xflake (report its record); `uv run python tools/mutate_check.py tests/mutations/load_repro.json`, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Gate (R-104; each command on its own line, its exit status read, never behind a pipe; outp"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit named paths only (git add <path>, never -A or .), with plain git commit and your se"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from the model field of your first response (R-103: the Leader kills the run at the first response if it is not grok-4.7*, and retries once); tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched. Report your served model id on the first line of your final message.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your closing audit entry, written through audit-log.py with your session variable inline, "
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "diagnosing or fixing any flaky test (the tool measures; the Leader uses it at joins); any file other than the three named above; a new dependency.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "diagnosing or fixing any flaky test (the tool measures; the Leader uses it at joins); any "
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/lessons/defect-classes.md (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-flake2 on build/fin-x-flake2 (the runner makes both from base build/fin-x-flake, turn 1's tip dc1aee54), session xflake2-fin, run r-xflake2-fin (new identities, checked free by Coordinator #57); owned paths as the brief names them",
+          "deadline": "2,400 s",
+          "fallback": null,
+          "join_rule": "the Leader's join per coordination-finish.md (Batch plan): re-run the red SHA, the guard list, docs-graph validate and the recount; owned paths only",
+          "per_branch_exit": "the brief's items as commits, then the gate; or a hand-back by the split rule with the open items named",
+          "termination": "one turn",
+          "transient_retry": "0",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "the Grok floor F (not recorded; the worker records its first reading) + 40k, the plan's budget; split rule (CEIL-A): start no item above the ceiling minus its work; hand-off at the ceiling minus 10k",
+          "done_when": [
+            "Your plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 (join-c56-w0), section Tracks: | **X-FLAKE** the FLAKE-A load-repro tool | the new tool and its test | none | T1 | 0 | 40 · floor + 40k · 1 · 0.7 h | the tool runs one node N times under `-n 4 --dist loadscope` (a counted loop: `pytest-repeat` is not a dependency) and records the failure rate and stage; red first on a seeded flaky fixture | Grok |",
+            "Done when (the row's exit evidence column, verbatim): \"the tool runs one node N times under `-n 4 --dist loadscope` (a counted loop: `pytest-repeat` is not a dependency) and records the failure rate and stage; red first on a seeded flaky fixture\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`).",
+            "AGENT_SESSION=xflake2-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below.",
+            "Base: the tip of build/fin-x-flake when the Leader prepares this run (the contract's base): the Leader's audit commit dc1aee54 for turn 1 (session xflake-fin, which handed back before F1 with no work commit) on d8ec8302. Turn 1 split because it took its first reading, 10,857, as its floor; the rule below fixes that. The runner made your branch build/fin-x-flake2 and your tree from that base. Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor dc1aee54 HEAD` exits non-zero; `git merge-base --is-ancestor 7f96fb70 HEAD` exits non-zero; `coord session start` for xflake2-fin is refused.",
+            "Names, checked free by Coordinator #55 at the base (no file, no git grep hit): tools/load_repro.py, tests/test_load_repro.py and tests/mutations/load_repro.json. Use these names.",
+            "F1, the red test, in tests/test_load_repro.py: a seeded flaky fixture (a node that fails on a known, deterministic subset of its runs, for example keyed by a counter file under the test's tmp path) run through the tool N times; the test asserts the recorded failure count, the rate and the stage (setup, call or teardown) of each failure.",
+            "F2, the tool, tools/load_repro.py, stdlib only: a counted loop that runs `uv run pytest <node> -n 4 --dist loadscope` N times (pytest-repeat is not a dependency, and you add none: uv.lock is part of the engine identity), parses each run's result for the node, and writes one JSON record (node, N, failures, rate, the stage and first error line of each failure, the base SHA, wall time per run) to an --out path the caller names. Every child launch passes the console flag below. A run that ends without a result for the node is counted as \"no result\", never as a pass. Add tests/mutations/load_repro.json with at least two mutants (the loop count; the stage read), each find text occurring exactly once (MUT-E).",
+            "Reader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tasks/ and tools/ are unchanged from there to 7f96fb70). tests/test_archive_readers.py:7-8: READERS = {\"engine.py\", \"grade/runner.py\", \"report/credentials.py\", \"report/judges.py\", \"report/pack_improvement.py\", \"report/summaries.py\", \"report/html.py\", \"resume.py\", \"views.py\"}, and test_t_sweep_1_exact_reader_and_exception_set asserts len(READERS) == 9; a file becomes an archive reader by holding the string literal \"archive\" or the attribute attempt_dirs or snapshot_folder (archive_readers). src/harness_bench/identity.py:122-126: RUN_IMPORTS_GRADE_ALLOWED holds exactly (\"config.py\", \"egress.py\"), (\"config.py\", \"gateway/backend.py\") and (\"config.py\", \"gateway/scrub.py\"). src/harness_bench/lifecycle.py:60: TABLE maps every ledger transition to its model action and its writer (\"engine\", \"grading\" or \"ledger\", :52); the engine consults it (check_writer) before every events append. X-FLAKE touches no src/ file and adds no reader, import pair or transition. If your change would add an archive reader, an import pair or a transition or writer, stop and send a seam request; never edit these tables.",
+            "Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (tools/load_repro.py and tests/test_load_repro.py). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none).",
+            "The context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorded | **not measured** | no split rule can be computed: a Grok row stays one short item per turn (capability table), and its first compile records the first reading | Measured since that row (Coordinator #57, 2026-10-08): Grok's session store carries your context figure while the turn runs. Every row of updates.jsonl in %USERPROFILE%\\.grok\\sessions\\<key>\\<id>\\ has params._meta.totalTokens, the session's current context. <key> is your tree path with backslashes, URL-encoded (yours: C%3A%5CProjects%5Cx-harness-x-model-bench-build-fin-x-flake2); <id> is Grok's own session UUID, not your session id. usage.json is not the figure: Grok writes it at the turn's end, and its inputTokens sums every call. Read your figure with this one line, before each item and before each gate command: `python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-flake2\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1])\"`. The floor is Grok's grounding cost, measured in three stores as the figure at the first edit of an owned file: X-PROP 87,744; X-HYG turn 1 71,940; X-FLAKE turn 1 handed back unedited at 66,475, a lower bound. **The floor is 88k**, the largest. It is not your first reading: the first reading (about 11k) comes before the prompt and the repo are read, and X-FLAKE turn 1, which took it as its floor, stopped before its first item. The ceiling is 128k (the floor + the plan's 40k); the stop line is 118k. Start item k only at or below the floor plus the expected work of items 1 to k (Coordinator #57's estimates): F1 red (10k) at or below 98k; F2 (15k) at or below 113k; the final gate (10k) at or below 118k. At 118k start no new edit or gate, write the closing audit entry and hand back at your last commit with the open steps named. If the line fails or prints nothing, record \"not recorded\", carry on by the item order, and hand back after the F1 red commit. Record your first reading, your reading at your first edit, and the reading before each item and gate in your closing entry. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure.",
+            "Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xflake and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xflake. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started.",
+            "FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report.",
+            "Red first on an assertion (RED-C): run each new or changed test before its fix and see it fail on an assert line, never on an ImportError, NameError, AttributeError, KeyError, a collection error or a skip; commit the red test on its own, then the fix; put the failing assertion line and the red commit's SHA in the green commit's message.",
+            "Gate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xflake, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_load_repro.py` on your final commit, and one real run of the tool on `tests/test_discriminate.py::test_a_leaked_temp_is_swept_before_the_write_and_never_by_a_reader` with N = 3 and --out under C:\\tf\\xflake (report its record); `uv run python tools/mutate_check.py tests/mutations/load_repro.json`, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.",
+            "Commit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit.",
+            "Your closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from the model field of your first response (R-103: the Leader kills the run at the first response if it is not grok-4.7*, and retries once); tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched. Report your served model id on the first line of your final message."
+          ],
+          "fan_out_cap": "0",
+          "goal": "You are session xflake2-fin, run r-xflake2-fin, harness Grok (coord-runner, ACP), model grok-4.7 with --reasoning-effort high, on branch build/fin-x-flake2 in the tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-flake2. The Leader leader-fin (epoch 19) dispatches you; Coordinator #57 compiled this turn 2 from turn 1's last commit dc1aee54 on build/fin-x-flake and from docs/coordination/coordination-finish.md (docs/coordination/coordinator-log/c57.md). One turn, deadline 2,400 s, within 40 calls and a context ceiling of 128k (the measured Grok floor 88k + 40k), tier T1, fan-out cap 0. X-FLAKE: build FLAKE-A's load-repro tool, which runs one test node N times under `-n 4 --dist loadscope` and records the failure rate and the failing stage, so a red that passes alone is measured, never re-run until green.",
+          "main_line_budget": "within 40 calls; 2,400 s this turn",
+          "not_in_scope": [
+            "diagnosing or fixing any flaky test (the tool measures; the Leader uses it at joins); any file other than the three named above; a new dependency.",
+            "the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/lessons/defect-classes.md (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours)."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5[1m]",
+          "engine_seconds": 0.026,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M4EB2NJ7JP7XDZNKTTQMJ7Y3",
+        "raw_sha256": "922afffaca95d0cb2f2fc39a8ec22e04a7444d505c219e9faf747c5f8b23d71c",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-n 4 --dist loadscope"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pytest-repeat"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "mutate_check"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run ruff check src tests tools"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs-graph.py validate"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pytest -n 4 --dist loadscope"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "py -3"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git status --short"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git merge-base --is-ancestor dc1aee54 HEAD"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git merge-base --is-ancestor 7f96fb70 HEAD"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord session start"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest <node> -n 4 --dist loadscope"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/spikes/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "os.system"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "subprocess.run"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_console_windows.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/window_check.py --since <instant> --root-pid <pid"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git log --oneline -1 --grep=join-x-win"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-flake2\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1"
+          },
+          {
+            "nearest": "tests/test_timing_hygiene.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q tests/test_load_repro.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_discriminate.py::test_a_leaked_temp_is_swept_before_the_write_and_never_by_a_reader"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run python tools/mutate_check.py tests/mutations/load_repro.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python docs/ai-forward-pack/scripts/docs-graph.py validate"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/fin-x-flake2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/fin-x-flake"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish.md",
+            "reason": null,
+            "sha256": "2602143453882af95e80ba72ea1d3306ed2cd19c3b4b9feee120b13dcf20f814",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-finish.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/coordination/coordinator-log/c57.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/load_repro.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_load_repro.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/load_repro.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_archive_readers.py:7-8"
+          },
+          {
+            "nearest": "src/harness_bench/engine.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "{\"engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "fee02368561b9af64a2add57480e5beb13c4888a593ebef3ec5312977c7bd1f4",
+            "status": "resolved",
+            "token": "grade/runner.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/credentials.py",
+            "reason": null,
+            "sha256": "00a84ee78abeff3d72913255b9d04be20c98b4b2dd8f9be31332975b1872cbec",
+            "status": "resolved",
+            "token": "report/credentials.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/judges.py",
+            "reason": null,
+            "sha256": "aa5698b0559d8b5d443f7bdee83b658725aed4013910161feb46962bb3cd59b7",
+            "status": "resolved",
+            "token": "report/judges.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/pack_improvement.py",
+            "reason": null,
+            "sha256": "7c5f1a9a9b3d7552bae8719a75ad3fc3579cc796ceab01823db94435500c3996",
+            "status": "resolved",
+            "token": "report/pack_improvement.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/summaries.py",
+            "reason": null,
+            "sha256": "037b0bcf0999b8a80b7cba3ae6aa9aefd82c5378dc0859190083d397df77588b",
+            "status": "resolved",
+            "token": "report/summaries.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/html.py",
+            "reason": null,
+            "sha256": "c8684af375bebe0b1e4400474a7baa4333520d16560a27254fe814da70ddf88a",
+            "status": "resolved",
+            "token": "report/html.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/resume.py",
+            "reason": null,
+            "sha256": "ea198f1e7bec442e684cc14211767b793ad9f053bb42319f97812de249e3e63b",
+            "status": "resolved",
+            "token": "resume.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/identity.py:122-126"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "ba786b6ff71f29fa65dd30e6d529f537e0d3a2c1946b0140386522a8cc12250b",
+            "status": "resolved",
+            "token": "config.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/egress.py",
+            "reason": null,
+            "sha256": "30aa38780fae93834bc804d1af35ae6642a5f0ab5d79e27edbe80e096609fd08",
+            "status": "resolved",
+            "token": "egress.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/gateway/backend.py",
+            "reason": null,
+            "sha256": "632efca36e0d7ff4abdbc32901a6ba11edfa0d6cc7cc642332dec77e7bfdae31",
+            "status": "resolved",
+            "token": "gateway/backend.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/gateway/scrub.py",
+            "reason": null,
+            "sha256": "11f5bd9c48dc5e1fe148e09670f8f5f80affd66073c1877376edd5f3a9940dbb",
+            "status": "resolved",
+            "token": "gateway/scrub.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/lifecycle.py:60"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/window_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 5 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "usage.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_identity.py",
+            "reason": null,
+            "sha256": "f6717458ec2670a1be81a7839657dfa77e4dbb2e4515e532b5daefd5d3a8a784",
+            "status": "resolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_atomic_sites.py",
+            "reason": null,
+            "sha256": "143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90",
+            "status": "resolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_arms_guard.py",
+            "reason": null,
+            "sha256": "25c45e56139c8e3a2d70d353e4b83c0386590e754c342c2ee0e1a88338ff8b73",
+            "status": "resolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_discriminate.py",
+            "reason": null,
+            "sha256": "f75d3531381834234207298b60967099bd9b8de3406681dc39488e6a1aa195e7",
+            "status": "resolved",
+            "token": "tests/test_discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "4d9acae3db011db5017ab33375300622d60a4c4cb1cf4df1ee44a06a5bb2a14f",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_skills_in_sync.py",
+            "reason": null,
+            "sha256": "572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d",
+            "status": "resolved",
+            "token": "tests/test_skills_in_sync.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_timing_hygiene.py",
+            "reason": null,
+            "sha256": "fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6",
+            "status": "resolved",
+            "token": "tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "befa94bfa2ecdd17d421edef4b8d8d3589762ec0c600fea2d1dfee479d93a33d",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
           },
           {
             "nearest": null,
