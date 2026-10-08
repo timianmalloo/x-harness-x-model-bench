@@ -138,6 +138,7 @@
   },
   {
     "name": "M27: existing-file read drops O_NOFOLLOW",
+    "host": "symlink right",
     "file": "src/harness_bench/atomic.py",
     "find": "    flags = os.O_RDONLY | O_BINARY | getattr(os, \"O_NOFOLLOW\", 0)\n",
     "replace": "    flags = os.O_RDONLY | O_BINARY\n",
@@ -232,6 +233,7 @@
   },
   {
     "name": "M14b: _POSIX is always False",
+    "host": "posix",
     "file": "src/harness_bench/atomic.py",
     "find": "_POSIX = os.name == \"posix\"",
     "replace": "_POSIX = False",

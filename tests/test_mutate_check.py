@@ -783,3 +783,94 @@ def test_a_run_where_every_mutant_errors_says_the_environment_is_suspected(tmp_p
     out = capsys.readouterr().out
     assert rc != 0
     assert "all mutants errored: environment suspected" in out
+
+
+def _host_spec(tmp_path, *, name, host, replace="X = 1"):
+    """One mutant of m.py. The same text survives; `host` is the condition under test."""
+    (tmp_path / "m.py").write_bytes(b"X = 1\n")
+    (tmp_path / "test_m.py").write_bytes(b"import m\n\n\ndef test_x():\n    assert m.X == 1\n")
+    entry = {
+        "name": name,
+        "file": "m.py",
+        "find": "X = 1",
+        "replace": replace,
+        "tests": ["test_m.py::test_x"],
+        "host": host,
+    }
+    spec = tmp_path / "spec.json"
+    spec.write_text(json.dumps([entry]), encoding="utf-8")
+    return spec
+
+
+def test_a_posix_host_condition_is_host_limited_when_os_name_is_not_posix(
+        tmp_path, monkeypatch, capsys):
+    """posix is os.name on this host. The mutant's name is not consulted, and it is not run."""
+    spec = _host_spec(tmp_path, name="noop", host="posix")
+    monkeypatch.setattr(mutate_check, "ROOT", tmp_path)
+    monkeypatch.setattr(mutate_check.os, "name", "nt")
+    rc = mutate_check.main([str(spec)])
+    out = capsys.readouterr().out
+    assert "host-limited noop: os.name is nt" in out
+    assert rc == 0, out
+    assert "1 host-limited" in out
+    assert "not killed" not in out
+    assert "every mutation killed" not in out
+    assert (tmp_path / "m.py").read_bytes() == b"X = 1\n"
+
+
+def test_a_symlink_right_condition_is_host_limited_when_the_probe_fails_with_winerror_1314(
+        tmp_path, monkeypatch, capsys):
+    """The right is a symlink probe under C:\\tf\\xhyg. WinError 1314 means this host lacks it."""
+    spec = _host_spec(tmp_path, name="follow", host="symlink right")
+    monkeypatch.setattr(mutate_check, "ROOT", tmp_path)
+    probed = []
+
+    def refuse(src, dst, *args, **kwargs):
+        probed.append(str(dst))
+        err = OSError("A required privilege is not held by the client")
+        err.winerror = 1314
+        raise err
+
+    monkeypatch.setattr(mutate_check.os, "symlink", refuse)
+    rc = mutate_check.main([str(spec)])
+    out = capsys.readouterr().out
+    assert "host-limited follow: winerror 1314, no symlink right" in out
+    assert rc == 0, out
+    assert "1 host-limited" in out
+    assert "not killed" not in out
+    assert probed
+    assert any(path.startswith(("C:\\tf\\xhyg", "C:/tf/xhyg")) for path in probed), probed
+
+
+def test_a_host_limited_mutant_does_not_excuse_another_mutant_that_survives(
+        tmp_path, monkeypatch, capsys):
+    """host-limited is not a kill and does not fail the exit. A survivor still does."""
+    (tmp_path / "m.py").write_bytes(b"X = 1\n")
+    (tmp_path / "test_m.py").write_bytes(b"import m\n\n\ndef test_x():\n    assert m.X == 1\n")
+    spec = tmp_path / "spec.json"
+    spec.write_text(json.dumps([
+        {
+            "name": "needs posix",
+            "file": "m.py",
+            "find": "X = 1",
+            "replace": "X = 1",
+            "tests": ["test_m.py::test_x"],
+            "host": "posix",
+        },
+        {
+            "name": "still survives",
+            "file": "m.py",
+            "find": "X = 1",
+            "replace": "X = 1",
+            "tests": ["test_m.py::test_x"],
+        },
+    ]), encoding="utf-8")
+    monkeypatch.setattr(mutate_check, "ROOT", tmp_path)
+    monkeypatch.setattr(mutate_check.os, "name", "nt")
+    rc = mutate_check.main([str(spec)])
+    out = capsys.readouterr().out
+    assert "host-limited needs posix: os.name is nt" in out
+    assert rc == 1, out
+    assert "1 host-limited" in out
+    assert "1 not killed" in out
+    assert "survived" in out

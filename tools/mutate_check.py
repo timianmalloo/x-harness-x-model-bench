@@ -5,7 +5,10 @@ on error. A mutation is **killed** only when pytest exits 1 and one of its named
 meaning any test in it) is among the failures. A failure of some other test, a collection error, or a timeout is
 not evidence that this guard is tested, so it is reported as survived, error or timeout. A named test that was
 skipped or deselected did not run: that is "not run" (never a kill, never an error), counted as not killed,
-with pytest's reason line. Exit 0 only if every mutation is killed.
+with pytest's reason line. An entry may name a "host" condition ("posix"; "symlink right"). The condition is
+detected on this host, never from the entry's name: posix is os.name, and the symlink right is a symlink probe
+under C:\\tf\\xhyg3. A mutant whose condition this host lacks is host-limited (not run, not a kill, printed with
+its reason and a count). It does not make the exit non-zero on its own. Exit 0 when every other mutation is killed.
 
 No bytecode is ever written from a mutant (TOOL-A): pytest runs with PYTHONDONTWRITEBYTECODE=1. Otherwise a same-size
 mutant restored within its own mtime second stays what `import` loads (the .pyc's mtime and size still match), so later
@@ -349,11 +352,20 @@ def _suite_lock(what: str):
 
 
 def _report(survivors: int) -> int:
-    """Print the run summary. A run whose every mutant errored is an environment failure, not a table of verdicts."""
+    """Print the run summary. A run whose every mutant errored is an environment failure, not a table of verdicts.
+
+    A host-limited mutant is not a survivor: it is counted on its own line and does not fail the exit.
+    """
     if _OUTCOMES and set(_OUTCOMES) == {"error"}:
         print("all mutants errored: environment suspected", flush=True)
         return 1
-    print(f"{survivors} not killed" if survivors else "every mutation killed", flush=True)
+    limited = len(_HOST_LIMITED)
+    if limited:
+        print(f"{limited} host-limited", flush=True)
+    if survivors:
+        print(f"{survivors} not killed", flush=True)
+    elif not limited:
+        print("every mutation killed", flush=True)
     return 1 if survivors else 0
 
 
@@ -446,12 +458,49 @@ def _changed_paths(base: str) -> list[str]:
 
 
 _OUTCOMES: list[str] = []
+_HOST_LIMITED: list[str] = []
+
+
+def _lacks_symlink_right() -> str | None:
+    """None when this host can create a symlink. The 1314 reason when the probe is refused.
+
+    The probe destination is under C:\\tf\\xhyg3. The condition is this call, not the mutant's name.
+    """
+    probe_dir = r"C:\tf\xhyg3"
+    os.makedirs(probe_dir, exist_ok=True)
+    dst = probe_dir + r"\symlink-right-probe"
+    src = probe_dir + r"\symlink-right-target"
+    if os.path.lexists(dst):
+        os.unlink(dst)
+    try:
+        os.symlink(src, dst)
+    except OSError as exc:
+        if getattr(exc, "winerror", None) == 1314:
+            return "winerror 1314, no symlink right"
+        raise
+    os.unlink(dst)
+    return None
+
+
+def _host_limit_reason(mutant: dict) -> str | None:
+    """Why this host cannot run `mutant`, or None when there is no host condition or the host meets it."""
+    condition = mutant.get("host")
+    if condition == "posix" and os.name != "posix":
+        return f"os.name is {os.name}"
+    if condition == "symlink right":
+        return _lacks_symlink_right()
+    return None
 
 
 def _run_set(spec: list[dict]) -> int:
     """Run one mutation set. Returns how many mutants were not killed. Caller checked the sidecar."""
     survivors = 0
     for m in spec:
+        reason = _host_limit_reason(m)
+        if reason is not None:
+            print(f"host-limited {m['name']}: {reason}", flush=True)
+            _HOST_LIMITED.append(m["name"])
+            continue
         path = ROOT / m["file"]
         original = path.read_bytes()
         text = original.decode("utf-8").replace("\r\n", "\n")
@@ -513,6 +562,7 @@ def _cmd_touched(base: str, list_only: bool) -> int:
         return 0
     survivors = 0
     _OUTCOMES.clear()
+    _HOST_LIMITED.clear()
     for rel in selected:
         survivors += _run_set(json.loads((ROOT / rel).read_text(encoding="utf-8")))
     return _report(survivors)
@@ -541,6 +591,7 @@ def main(argv: list[str]) -> int:
             return _cmd_touched(argv[1], list_only=False)
     spec = json.loads(Path(argv[0]).read_text(encoding="utf-8"))
     _OUTCOMES.clear()
+    _HOST_LIMITED.clear()
     with _suite_lock(argv[0]):
         return _report(_run_set(spec))
 
