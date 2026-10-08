@@ -1,12 +1,13 @@
 {
   "schema": "coord-run/1",
-  "run_id": "r-xreds-fin",
+  "run_id": "r-xhyg2-fin",
   "owner": "leader-fin",
+  "base": "build/fin-x-hyg",
   "parallelism": 1,
   "workers": [
     {
-      "session": "xreds-fin",
-      "branch": "build/fin-x-reds",
+      "session": "xhyg2-fin",
+      "branch": "build/fin-x-hyg2",
       "harness": "grok",
       "transport": "acp",
       "argv": [
@@ -23,7 +24,7 @@
         "AGENTS.md",
         ".grok/hooks/ai-forward.json"
       ],
-      "deadline_seconds": 1800,
+      "deadline_seconds": 2400,
       "output_limit": 4194304,
       "evidence": [
         {
@@ -37,9 +38,9 @@
         "permissions": "observed-only"
       },
       "prompts": [
-        "al-01M4EB1DQV716YHG39RY18HKYQ"
+        "al-01M4EB1BEBGKYJW8VXN8GC6VQ6"
       ],
-      "fallback": "Leader-held (FALLBACK-A): coordination-finish.md, Track assignment detail, names what follows a failed or split turn; the worker launches, spawns or messages nothing. R-103: the Leader reads the first response's served model (tools/grok_served_model.py --first --wait 120); not grok-4.7* means kill and retry once. Run with XAI_API_KEY unset, and read the fingerprint in that same environment (FPR-A)."
+      "fallback": "Leader-held (FALLBACK-A): coordination-finish.md, Track assignment detail, names what follows a failed or split turn; the worker launches, spawns or messages nothing. R-103: the Leader reads the first response's served model (tools/grok_served_model.py --first --wait 120); not grok-4.7* means kill and retry once. Run with XAI_API_KEY unset, and read the fingerprint in that same environment (FPR-A). X-HYG turn 2 (Coordinator #57): base build/fin-x-hyg (turn 1's tip), new branch, because the runner never reuses a worker branch (RUN-BRANCH)."
     }
   ]
 }
