@@ -147,7 +147,7 @@ def _instruction_paths(tree: Path) -> list[Path]:
     """Every agent instruction file in a tree: a path in INSTRUCTION_FILES, or a *.instructions.md under INSTRUCTION_DIRS."""
     found = [tree / rel for rel in INSTRUCTION_FILES if (tree / rel).is_file()]
     for rel in INSTRUCTION_DIRS:
-        found += sorted(p for p in (tree / rel).rglob("*.instructions.md") if p.is_file())
+        found += sorted(p for p in (tree / rel).rglob("*") if p.is_file() and p.name.endswith(".instructions.md"))
     return found
 
 
