@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T19:45:06Z",
+  "generated": "2026-10-08T19:45:35Z",
   "audit": [
     {
       "actor": null,
@@ -159368,6 +159368,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-08T19:19:40Z",
       "duration_seconds": 1526.0
+    },
+    {
+      "id": "al-01M4EGSE9FTQ7W3RE358F0X4FD",
+      "shortname": "join-r116",
+      "datetime": "2026-10-08T19:45:35Z",
+      "session": "leader-fin",
+      "prompt": "the join of owner/ruling-r116 into integrate/finish-19",
+      "summary": "Owner 1b61aedd: R-116 DR-PACKOFF (A) granted bounded - X-PACKOFF (Sonnet, P3): workspace.task_source removes INSTRUCTION_FILES / INSTRUCTION_DIRS *.instructions.md from the extracted upstream tree, a new HB-PRE code refuses a base tree still carrying one (every harness); two red tests; X-E5M re-plans after; E5 pilot 60, grid 1,644 unchanged; (B) fallback only if X-PACKOFF misses P3; (C) refused recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join Ruling 116",
+      "done_when": "conductor-join exit 0 (docs-only), citations 116 OK",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-08T19:45:34Z",
+      "duration_seconds": 1.0
     }
   ],
   "changes": [
