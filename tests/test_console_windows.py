@@ -60,10 +60,7 @@ def _scan_offenders(root: Path = ROOT) -> list[str]:
             if "__pycache__" in p.parts:
                 continue
             rel = p.relative_to(root).as_posix()
-            try:
-                tree = ast.parse(p.read_text(encoding="utf-8"), filename=str(p))
-            except Exception:
-                continue
+            tree = ast.parse(p.read_text(encoding="utf-8"), filename=str(p))
             names = _aliases(tree)
             for node in ast.walk(tree):
                 if isinstance(node, ast.Call):
