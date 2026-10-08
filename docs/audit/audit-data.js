@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T17:36:10Z",
+  "generated": "2026-10-08T18:09:12Z",
   "audit": [
     {
       "actor": null,
@@ -146318,6 +146318,39 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-08T17:36:09Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M4EB8YSFK4KAXG7RC9K0AM3T",
+      "shortname": "xs2-fin-turn1-split",
+      "datetime": "2026-10-08T18:09:12Z",
+      "session": "xs2-fin",
+      "prompt": "X-S2, turn 1 of 2: close S2's open items. Author one new defect variant per class as a different model (A6), and add the two fixtures that kill the two surviving controls.",
+      "summary": "Session xs2-fin, run r-xs2-fin, harness Agy, model gemini-3.8-flash-high (read from Agy cli.log). Dispatch start: 2026-10-08T17:47:46Z, end: 2026-10-08T18:09:10Z. Outcome: split (green 61230516, turn 1 hand-back per split rule after V5 commit; tokens not recorded).\nRed SHAs:\n- ecbe2072: injfmt (assert name in variants at tests/test_security_s2.py:472)\n- 23169837: travpath (assert name in variants at tests/test_security_s2.py:472)\n- 5ba297e1: tamptok (assert name in variants at tests/test_security_s2.py:472)\n- 3b0f0e65: authzidor (assert name in variants at tests/test_security_s2.py:472)\n- ddd207ea: leaketag (assert name in variants at tests/test_security_s2.py:472)\nGreen commits:\n- d9e2400c: injfmt (flips inj-1 with clause A0,A1,A2,A3)\n- d24c13ed: travpath (flips trav-1 with clause T0,T1,T2,T4)\n- 3eb2863e: tamptok (flips tamper-1 with clause name-team)\n- bcd5bfde: authzidor (flips authz-1 with clause status-body)\n- 61230516: leaketag (flips leak-1 with clause response:hex)\nGate lines and exits:\n- uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py: exit 0 (first: 210 passed in 138.14s; final: 210 passed in 112.85s)\n- uv run pytest -q tests/test_security_s2.py: exit 0 (80 passed in 153.20s)\n- uv run pytest -q tests/test_security_tasks.py: exit 0 (60 passed in 110.96s)\n- uv run ruff check src tests tools: exit 0 (All checks passed!)\n- python docs/ai-forward-pack/scripts/docs-graph.py validate: exit 0 (valid)\nServed model id: gemini-3.8-flash-high (Gemini 3.8 Flash High)\nTokens: not recorded (floor: not recorded, sample at each item: not recorded; cli.log has no token usage events)\nChild processes launched:\n- python docs/ai-forward-pack/scripts/audit-log.py start\n- git status, git merge-base, git log, git rev-parse, git branch\n- python docs/ai-forward-pack/scripts/coord-core.py session start/end\n- uv run pytest (smoke test, guard list first, red tests v1-v5, green tests v1-v5, test_security_s2, test_security_tasks, guard list final)\n- uv run python C:\\tf\\xs2\\test_variant.py\n- uv run ruff check src tests tools\n- python docs/ai-forward-pack/scripts/docs-graph.py validate\nOpen items handed back for turn 2:\n- F1: app answering cookieless GET /tasks with 200 and passing seed controls (kills tamper-1 no-cookie control removed)\n- F2: app reaching bob-get control by passing alice-get in seed (kills authz bob-get control removed)\n- Mutation run: one-time run outside ring with mutation file under C:\\tf\\xs2 for the two survivors\n- E: evidence.md dated section 'Open items closed (X-S2, 2026-10-08)'",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "X-S2, turn 1 of 2: close S2's open items. Author one new defect variant per class as a different model (A6), and add the two fixtures that kill the two surviving controls.",
+      "done_when": "A6: one variant shape per class by a non-Sonnet author (5 classes), each flipped to its own probe; hand-back after V5 commit per context split rule when tokens not recorded",
+      "tier": "T2",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-08T17:47:46Z",
+      "duration_seconds": 1286.0,
+      "git": {
+        "sha": "61230516519e5cc8152d615c38aa0b2d874de84e",
+        "short": "612305165",
+        "branch": "build/fin-x-s2",
+        "pushed": null
+      }
     }
   ],
   "changes": [
