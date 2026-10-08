@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T17:44:48Z",
+  "generated": "2026-10-08T18:20:54Z",
   "audit": [
     {
       "actor": null,
@@ -146350,6 +146350,28 @@ window.AUDIT_DATA = {
         "branch": "build/fin-x-win",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M4EBYCDNSMNZMXRRJMTFS4X5",
+      "shortname": "xwin2-fin-turn2-split",
+      "datetime": "2026-10-08T18:20:50Z",
+      "session": "xwin2-fin",
+      "prompt": "X-WIN turn 2 of 2: finish what turn 1 left. Fix the guard's one defect, build the windows check red then green, sweep every launch so the guard turns green, and run the windows check at hand-back.",
+      "summary": "X-WIN turn 2 dispatch:\n- Dispatch window: 2026-10-08T18:15:46Z to 2026-10-08T18:20:50Z\n- Outcome: split at commit be5bcde9 (W1b landed defect fix red-first; W2 and W3 deferred by CEIL-A split rule)\n- Red SHAs: 17259cee (turn 1 W1 red), 1910ca2d (turn 1 W1 ruff fix red); W1b red-first assertion 'assert set(ALLOWLIST) <= OWNER_FILES' verified failing on line 104 with 7th entry before commit be5bcde9\n- Gates and exits:\n  * uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py: exit 0 (210 passed in 125.31s)\n  * uv run ruff check src tests tools: exit 0\n  * python docs/ai-forward-pack/scripts/docs-graph.py validate: exit 0\n  * uv run pytest -q tests/test_console_windows.py -k test_allowlist_is_subset_and_justified: exit 0 (1 passed, 2 deselected in 0.15s)\n- Served model id: gemini-3.8-flash-high (read from cli.log)\n- Tokens: floor 41,153; pre-W1b sample 104,591; post-W1b/pre-W2 sample 116,485 (114,041 cache + 2,444 input). Exceeds W2 threshold 75k and ceiling 110k -> planned hand-back at item boundary W1b.\n- Mutation files: none moved in this turn.\n- Child processes launched: pwsh commands for audit-log.py, git status/merge-base, coord session start, pytest standard guard list, ruff check, docs-graph.py validate, pytest console windows allowlist test, git add/commit.\n- Visible windows opened: none.\n- Open items named: W2 (tools/window_check.py and tests/test_window_check.py), W3 (launch sweep batches a, b, c, d).",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled_from": "al-01M4EAF163YJ7EFDJ6WPFS8R53",
+      "goal": "Execute X-WIN turn 2 on branch build/fin-x-win2",
+      "done_when": "W1b defect fixed red first, windows check built red then green, sweep completed, windows check at hand-back",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-08T18:15:46Z",
+      "duration_seconds": 304.0
     }
   ],
   "changes": [
