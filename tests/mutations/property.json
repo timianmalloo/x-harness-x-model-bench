@@ -217,5 +217,14 @@
   "tests": [
    "tests/test_discriminate.py::test_a_variant_edit_applies_to_a_crlf_reference_file_and_its_declared_flip_is_observed"
   ]
+ },
+ {
+  "name": "the kill result is discarded: an unconfirmed kill is cleaned up as if the tree were gone",
+  "file": "src/harness_bench/grade/property.py",
+  "find": "            kill_confirmed = cp.terminate_and_confirm(procs._KILL_GRACE)",
+  "replace": "            cp.terminate_and_confirm(procs._KILL_GRACE)\n            kill_confirmed = True",
+  "tests": [
+   "tests/test_property_grader.py::test_an_unconfirmed_kill_is_recorded_and_the_live_tree_is_not_cleaned_up"
+  ]
  }
 ]
