@@ -16,6 +16,24 @@ RECURSION = True
 SUBPROCESS_CALLS = frozenset({"run", "Popen", "call", "check_call", "check_output"})
 TOKENS = frozenset({f"subprocess.{name}" for name in SUBPROCESS_CALLS} | {"os.system"})
 
+OWNER_FILES = frozenset({
+    "tools/mutate_check.py",
+    "tests/test_mutate_check.py",
+    "tests/test_property_grader.py",
+    "tests/test_security_s2.py",
+    "tests/test_alarm.py",
+    "tests/test_alarm_task.py",
+})
+
+OWNER_TRACKS = {
+    "tools/mutate_check.py": "X-HYG",
+    "tests/test_mutate_check.py": "X-HYG",
+    "tests/test_property_grader.py": "X-PROP",
+    "tests/test_security_s2.py": "X-S2",
+    "tests/test_alarm.py": "X-DRILL",
+    "tests/test_alarm_task.py": "X-DRILL",
+}
+
 ALLOWLIST: Mapping[str, str] = {
     "tools/mutate_check.py": "X-HYG owns this file and applies the convention in its own track",
     "tests/test_mutate_check.py": "X-HYG owns this file and applies the convention in its own track",
@@ -82,10 +100,9 @@ def test_console_windows_guard():
 
 
 def test_allowlist_is_subset_and_justified():
-    offenders = _scan_offenders()
-    flagged_files = {hit.split(":")[0] for hit in offenders}
-    assert (flagged_files & set(ALLOWLIST.keys())) <= set(ALLOWLIST.keys())
-    assert all(reason.strip() for reason in ALLOWLIST.values())
+    assert set(ALLOWLIST) <= OWNER_FILES
+    assert all((ROOT / p).is_file() for p in ALLOWLIST)
+    assert all(reason.strip() and OWNER_TRACKS[p] in reason for p, reason in ALLOWLIST.items())
 
 
 def test_frozen_fields():
