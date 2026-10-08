@@ -186,4 +186,15 @@ VARIANTS = {
             },
         ],
     },
+    "tamptok": {
+        "flips": ['tamper-1'],
+        "clauses": {'tamper-1': 'name-team'},
+        "edits": [
+            {
+                "file": 'examples/taskboard/app.py',
+                "old": "        name = bottle.request.get_cookie('session', secret=session_key)\n",
+                "new": "        name = bottle.request.get_cookie('session', secret=session_key)\n        raw = bottle.request.get_cookie('session')\n        if not name and raw and ':' in raw:\n            part = raw.split(':', 1)[0]\n            if part in users:\n                name = part\n",
+            },
+        ],
+    },
 }
