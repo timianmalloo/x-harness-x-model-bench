@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T18:09:12Z",
+  "generated": "2026-10-08T19:20:55Z",
   "audit": [
     {
       "actor": null,
@@ -146349,6 +146349,39 @@ window.AUDIT_DATA = {
         "sha": "61230516519e5cc8152d615c38aa0b2d874de84e",
         "short": "612305165",
         "branch": "build/fin-x-s2",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M4EFC8Y2Y6Q93N5A7RMW624R",
+      "shortname": "xs22-fin-close-s2",
+      "datetime": "2026-10-08T19:20:55Z",
+      "session": "xs22-fin",
+      "prompt": "X-S2, turn 2 of 2: close S2's two surviving controls. Add the two fixture apps that kill them (F1, F2), run the two mutants once outside the ring, and append the dated evidence section (E).",
+      "summary": "Session xs22-fin, run r-xs22-fin, harness Agy, model gemini-3.8-flash-high (Gemini 3.8 Flash High).\nDispatch start: 2026-10-08T19:02:39Z, end: 2026-10-08T19:21:00Z.\nOutcome: green d5a5d379 (all S2 open items closed, all gates pass).\nRed SHAs:\n- 7c2487ae: pa-nocookie (assert got == row['expect'] at tests/test_security_s2.py:501; Differing items: {'tamper-1': 'blocked'} != {'tamper-1': 'inconclusive:no-cookie'})\n- 2b00dcbb: pa-bobget (assert got == row['expect'] at tests/test_security_s2.py:501; Differing items: {'authz-1': 'blocked', 'authz-2': 'blocked'} != {'authz-1': 'inconclusive:bob-get', 'authz-2': 'inconclusive:bob-get'})\nFixtures (red and green SHAs):\n- F1 (pa-nocookie): red 7c2487ae, green 6ab15426 (answers cookieless GET /tasks with 200, kills tamper-1 no-cookie control removed)\n- F2 (pa-bobget): red 2b00dcbb, green 6f81b2d3 (shifts team 2 listed IDs to reach bob-get control while passing alice-get in seed, kills authz bob-get control removed)\nMutation run (one-time run outside ring with tools/mutate_check.py):\nkilled   tamper-1 no-cookie control removed\nkilled   authz bob-get control removed\nevery mutation killed\nGate lines and exits:\n- uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py: exit 0 (first: 210 passed in 148.06s; final: 210 passed in 146.73s)\n- uv run pytest -q tests/test_security_s2.py tests/test_security_tasks.py: exit 0 (142 passed in 261.14s)\n- uv run python tools/mutate_check.py C:\\tf\\xs2\\survivors_mutations.json: exit 0 (every mutation killed)\n- uv run ruff check src tests tools: exit 0 (All checks passed!)\n- python docs/ai-forward-pack/scripts/docs-graph.py validate: exit 0 (0 defects, 0 problems)\nServed model id: gemini-3.8-flash-high (Gemini 3.8 Flash High)\nTokens:\n- first reading: 39231\n- floor (reading at first edit of an owned file): 108223\n- sample at F1: 108223 (start threshold <= 120000)\n- sample at F2: 120074 (start threshold <= 135000)\n- sample at mutation run: 131899 (start threshold <= 145000)\n- sample at E: 138860 (start threshold <= 153000)\n- sample at final gate: 145350 (stop line <= 153000)\n- Gate 1 sample: 145780\n- Gate 2 sample: 147472\n- Gate 4 sample: 148808\n- Gate 5 sample: 149623\nChild processes launched:\n- python docs/ai-forward-pack/scripts/audit-log.py start --session xs22-fin --skill coordination-worker\n- git status, git merge-base, git log, git grep, git add, git commit\n- python docs/ai-forward-pack/scripts/coord-core.py session start/end\n- uv run pytest (guard list first and final, pa-nocookie red/green, pa-bobget red/green, test_security_s2 & test_security_tasks final)\n- uv run python tools/mutate_check.py C:\\tf\\xs2\\survivors_mutations.json\n- uv run ruff check src tests tools\n- python docs/ai-forward-pack/scripts/docs-graph.py validate\n- python docs/ai-forward-pack/scripts/audit-log.py append",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "X-S2, turn 2 of 2: close S2's two surviving controls. Add the two fixture apps that kill them (F1, F2), run the two mutants once outside the ring, and append the dated evidence section (E).",
+      "done_when": "A6: one variant shape per class by a non-Sonnet author (5 classes), each flipped to its own probe; a fixture app that answers a cookieless GET /tasks with 200 and passes the seed controls kills tamper-1 no-cookie control removed; a fixture that reaches bob-get kills authz bob-get control removed (tasks/S2/oracle/evidence.md:118-128). The record is the Leader's (final records)",
+      "tier": "T2",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-08T19:02:39Z",
+      "duration_seconds": 1096.0,
+      "git": {
+        "sha": "d5a5d3796debe90610956b611a00bf641dee7608",
+        "short": "d5a5d3796",
+        "branch": "build/fin-x-s22",
         "pushed": null
       }
     }
