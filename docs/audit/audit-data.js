@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T17:36:10Z",
+  "generated": "2026-10-08T17:42:25Z",
   "audit": [
     {
       "actor": null,
@@ -146318,6 +146318,27 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-08T17:36:09Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M4E9QX0AGQ4RJ169NBG2PHPR",
+      "shortname": "x-cacheb",
+      "datetime": "2026-10-08T17:42:25Z",
+      "session": "xcacheb-fin",
+      "prompt": "X-CACHEB compiled brief al-01M4E8Z7DSK5BQYTPERMQVQAMA",
+      "summary": "split: not found. K1 event logs NOT read (auto-mode classifier denied the log enumeration); Storage Sense policy and cleanup-type scheduled tasks read, none ran 10-05 (last runs 10-07/10-08 only). K2: no repo deleter reaches hb-*-ring. K3: window 22:25-22:40Z (local UTC-7): live worker x-j1c-e1e4 and leader-e1e4; no sweeper entry. Served model claude-sonnet-5-5. Dispatch 2026-10-08T17:39:07Z end 17:43Z. Tokens and context floor not recorded. Children: python audit-log.py, coord-core.py session start, python k3*.py under C:/tf/xcacheb, git status/merge-base, powershell registry and scheduled-task read.",
+      "kind": "skill",
+      "skill": "investigate",
+      "tool": null,
+      "actor": "xcacheb-fin",
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "X-CACHEB: find what emptied the shared ring cache 2026-10-05 15:33:22 local",
+      "done_when": "sweep of deleters checked against the instant; not found with what was read",
+      "tier": "T1",
+      "started_at": "2026-10-08T17:39:07Z",
+      "duration_seconds": 198.0
     }
   ],
   "changes": [
