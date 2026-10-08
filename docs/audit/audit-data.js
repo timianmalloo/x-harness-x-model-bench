@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T20:48:54Z",
+  "generated": "2026-10-08T20:52:36Z",
   "audit": [
     {
       "actor": null,
@@ -163460,6 +163460,33 @@ window.AUDIT_DATA = {
       },
       "mode": "compiled",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M4EMM5E47PADDJW568WD1YM3",
+      "shortname": "c61-compile-handback",
+      "datetime": "2026-10-08T20:52:36Z",
+      "session": "coord-opus-fin",
+      "prompt": "Coordinator #61: compile X-SJ4 (spike S-J4), PACKOFF-A Control and Status lines, plan notes (P2 ring deferral, X-PACKOFF budget finding, X-E5M re-plan evidence, P0 brief defect); no dispatch",
+      "summary": "Coordinator #61 (coord-opus-fin, branch coord/fin-c61-compile, base e06bdd83 join-x-win), hand-back; no dispatch, push or merge.\n- Compile: X-SJ4 (spike S-J4; Claude Code Agent tool, sonnet; xsj4-fin; build/fin-x-sj4): raw al-01M4EMD9SJ7ADP4JD2JN2N4G6C, compiled al-01M4EMDBYB1CGBBWDDDWZV1SW3; check_compile exit 0 (compiled, dispatchable, check_schema None, verify_document []). Superseded al-01M4EMC8V2PXFCRZHD0M4R8MXX (FALLBACK-A text forbade the spike's own adapter launches).\n- Brief: D0 dry check first (pinned builds via tools.resolve on the primary's .tools\\harness read only; node/npm; CLIs informational; HB_CLAUDE_OAUTH_TOKEN, COPILOT_GITHUB_TOKEN, GH_TOKEN, GITHUB_TOKEN set/unset; ~/.claude/.credentials.json, ~/.codex/auth.json present/absent; never values), one operator message via the hand-back; S1 script, S2 three runs, N1 note; tokens only.\n- Render counts: python3 0; one start line; AGENT_SESSION 3x xsj4-fin; fallback tokens 0; USD 0; --no-model 0.\n- Register: PACKOFF-A Control/Status :1547-1548 (9094a0a5, 7e40400a, 89e51450, 052b826c; partially-controlled, joins P3); TEST-E instance :953.\n- Plan: :155 X-E5M re-plan evidence; :189 X-PACKOFF 71/60 calls (GO9) and P0 brief defect; :192 X-SJ4 compiled; :223 and :347 P2 ring deferred past P3. HTML re-rendered.\n- Gates: derive exit 0 (291), validate exit 0, verify-ruling-citations exit 0 (116/116).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "docs/coordination/coordinator-log/c61.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "X-SJ4 compiled with a dry check first; PACKOFF-A SHAs; plan notes recorded",
+      "done_when": "check_compile exit 0; register and plan committed; derive, validate, verify-ruling-citations exit 0; tree clean",
+      "tier": "T1",
+      "main_calls": 45,
+      "main_budget": 45,
+      "main_over_budget": false,
+      "fan_out": 0,
+      "started_at": "2026-10-08T20:42:01Z",
+      "duration_seconds": 635.0
     }
   ],
   "changes": [

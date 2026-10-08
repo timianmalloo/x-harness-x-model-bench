@@ -5116,6 +5116,43 @@ window.DOCS_INDEX = {
       "sourceSha256": "8ec1e20732fbc1a1949e2df015433cb7c3dc77450ab94421eac364ac571caf00"
     },
     {
+      "id": "coordinator-log-c61",
+      "path": "docs/coordination/coordinator-log/c61.md",
+      "title": "Coordinator #61 hand-back (2026-10-08): X-SJ4 compiled, PACKOFF-A's SHAs, plan notes, a TEST-E instance",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-08",
+      "reviewSuggested": [],
+      "summary": "Coordinator #61 on coord/fin-c61-compile (base e06bdd83, join-x-win) for Leader leader-fin, epoch 19. One compiled brief, replayed through check_compile: X-SJ4 (spike S-J4; Claude Code Agent tool, sonnet, xsj4-fin), whose first item is a dry check of builds, node, npm and credential names that hands back with one operator message if anything is missing. PACKOFF-A's Control and Status lines carry X-PACKOFF's SHAs. Plan notes: the P2 gate ring deferred past P3, X-PACKOFF's budget finding, X-E5M's re-plan evidence. A TEST-E instance for X-PACKOFF's P0 command. No dispatch, no push.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c60",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-finish",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "17a6c923ec2849475fb3ec4a6470f6f14a82c19658dfde1f828a08a6089e7f10"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -5142,7 +5179,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "a7a76da8291dbe549e9d9c0de865ed486b8bb90170f4098c96d772b4acad0bf5"
+      "sourceSha256": "4eeb29dc3d338d1db2727688622890d0717d6ce06448830502b5000ddbcab7c0"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -9601,7 +9638,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "0437ec26a2882041c4e4710253df38e5fe5c8ac880e9793d506232b62bd202e8"
+      "sourceSha256": "8d50ba2cce95d9bf4dde873998a38159f010d4dcafc4cf27667d377c2c0a51ee"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -10748,5 +10785,5 @@ window.DOCS_INDEX = {
       "artifactId": "run-report-e2e4"
     }
   ],
-  "graphSha256": "5381765b19fe1d9932431e5eb5f5ed97d476e9fd46f04cfbde767aa154a152c8"
+  "graphSha256": "0afd272f1724457ea92fafe0310e0caffe9d923cac0f6ec4d81c35e9d626ea35"
 };
