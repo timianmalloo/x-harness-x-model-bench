@@ -57,7 +57,7 @@ def test_the_plain_table_is_ascii_with_textual_na_and_invalid_marks(root, tmp_pa
                       outcomes={"c": {"outcome": "failed", "cause": "provider", "code": "HB-CELL-108"}})
     out, code = cli_table.render(view, plain=True)
     assert code == 0 and out.isascii()
-    assert "NA (1 of 1 valid cells have no cost: no price list entry for gpt-6-sol)" in out
+    assert "$" not in out and "USD" not in out  # tokens are the cost axis (R-115)
     assert "interval not computed (n < 2)" in out
     assert "X1.broken.pack-off.r1: invalid (infrastructure) HB-CELL-108" in out
     good = next(line for line in out.splitlines() if " good " in line)
@@ -121,8 +121,8 @@ def test_text_and_focus_contrast_meet_wcag_aa(page):  # T-UI-contrast
 
 
 def test_not_recorded_never_renders_as_zero(page):  # T-UI-NA
-    assert "NA (1 of 1 valid cells have no cost: no price list entry for gpt-6-sol)" in page
-    assert "$0" not in page and "NA (the native record gives no model-call start time)" in page
+    assert "cost_usd: not computed; tokens are the cost axis (R-115)" in page  # the NA-cost count, worded by R-115
+    assert "$" not in page and "NA (the native record gives no model-call start time)" in page
 
 
 def test_numeric_cells_are_tabular_right_aligned_and_carry_units(page):  # T-UI-numerics
@@ -1592,9 +1592,8 @@ def test_empty_run_draws_no_axes(root, tmp_path):
     assert "<svg" not in ar_sec
 
 
-def test_cost_frontier_all_cost_na_renders_sentence_and_no_axes():
-    """Design s6 row 5: all cost NA (smoke-1): the cost panel shows 'Cost not recorded for any combo:
-    no price list entry for <models>.' with no axes; the other two panels still draw."""
+def test_cost_frontier_all_cost_na_draws_tokens_and_wall_panels_only():
+    """R-115: all cost NA (smoke-1): no cost panel and no price sentence; the tokens and wall panels still draw."""
     view = _state_view("valid", None)
     frontier_rows = [
         board.FrontierRow(
@@ -1641,12 +1640,8 @@ def test_cost_frontier_all_cost_na_renders_sentence_and_no_axes():
     assert cf_match is not None, "cost-frontier section must be present"
     cf_sec = cf_match.group(0)
 
-    assert "Cost not recorded for any combo: no price list entry for gpt-6-sol." in cf_sec
-    # The cost figure must have no svg axes, while tokens and wall figures do have svg
-    cost_fig = re.search(r'<figure[^>]*>.*?Cost not recorded.*?</figure>', cf_sec, re.DOTALL)
-    assert cost_fig is not None
-    assert "<svg" not in cost_fig.group(0)
-    assert "<svg" in cf_sec  # other panels still draw
+    assert "price" not in cf_sec and "USD" not in cf_sec and "Cost not recorded" not in cf_sec  # no cost panel (R-115)
+    assert "pass@1 vs tokens per solved task" in cf_sec and "<svg" in cf_sec  # the tokens and wall panels draw
 
 
 def test_areas_radar_na_axis_drawn_hollow_with_na_tick():

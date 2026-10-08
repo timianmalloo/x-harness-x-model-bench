@@ -352,7 +352,7 @@ class CheckResult:
 
 def _decimals_for(measure: str) -> int:
     """The report's own displayed precision (phase4-statistics `:375`, design section 8): rates 2 decimals,
-    composites/area deltas 1 decimal, tokens integer, USD 2 decimals."""
+    composites/area deltas 1 decimal, tokens integer, any other cost measure 2 decimals."""
     if measure == "pass_at_1":
         return 2
     if "cost" in measure:
