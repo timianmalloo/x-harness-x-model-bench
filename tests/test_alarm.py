@@ -22,6 +22,72 @@ from harness_bench import alarm, cli, ledger, oslock, status
 AFTER = 600
 TASK = Path(__file__).resolve().parents[1] / "tools" / "alarm-task.ps1"
 
+DRILL_ID = "drill-0123abcd"
+DRILL_TASK = "HarnessBenchAlarmDrill"
+SEEDED = "2026-10-08T01:00:00Z"
+PUSHED = "2026-10-08T01:00:01Z"
+ACKED = "2026-10-08T01:00:02Z"
+
+
+def drill_cli(root, runs, *args):
+    try:
+        return cli.main(["--root", str(root), "--runs", str(runs), "drill", *args])
+    except SystemExit as exc:
+        return int(exc.code or 0)
+
+
+@pytest.fixture
+def seeded_drill(tmp_path, monkeypatch):
+    root = tmp_path / "root"
+    run = tmp_path / "runs" / DRILL_ID
+    run.mkdir(parents=True)
+    (run / "plan.json").write_text("{}", encoding="utf-8")
+    seed = {"run_id": DRILL_ID, "seeded_at": SEEDED, "task": DRILL_TASK, "bench_commit": "a" * 40}
+    (run / "drill-seed.json").write_text(json.dumps(seed), encoding="utf-8")
+    (run / "alarm-delivery.log").write_text(f"{PUSHED} exit=6 push ok code=HB-ALM-001 task={DRILL_TASK}\n", encoding="ascii")
+    monkeypatch.setattr(cli, "_drill_now", lambda: ACKED, raising=False)
+    return root, run
+
+
+@pytest.mark.parametrize("missing", ["seeded run", "seed metadata", "push ok", "alarm code", "scheduled task"])
+def test_drill_ack_missing_evidence_refuses_hb_usr_002(seeded_drill, capsys, missing):
+    root, run = seeded_drill
+    if missing == "seeded run":
+        (run / "plan.json").unlink()
+    elif missing == "seed metadata":
+        (run / "drill-seed.json").unlink()
+    else:
+        code = "check-error" if missing == "alarm code" else "HB-ALM-001"
+        task = "OtherTask" if missing == "scheduled task" else DRILL_TASK
+        stamp = SEEDED if missing == "push ok" else PUSHED
+        (run / "alarm-delivery.log").write_text(f"{stamp} exit=6 push ok code={code} task={task}\n", encoding="ascii")
+
+    rc = drill_cli(root, run.parent, "ack", "--run-id", DRILL_ID)
+
+    assert rc == 1 and "HB-USR-002" in capsys.readouterr().err
+    assert not (root / "bench" / "drills").exists()
+
+
+def test_drill_ack_writes_canonical_create_once_attestation(seeded_drill, capsys):
+    root, run = seeded_drill
+    # An older successful push is not evidence; use the first valid push after seeding.
+    (run / "alarm-delivery.log").write_text(
+        f"{SEEDED} exit=6 push ok code=HB-ALM-001 task={DRILL_TASK}\n"
+        f"{PUSHED} exit=6 push ok code=HB-ALM-002 task={DRILL_TASK}\n"
+        f"{ACKED} exit=6 push ok code=HB-ALM-001 task={DRILL_TASK}\n", encoding="ascii")
+
+    assert drill_cli(root, run.parent, "ack", "--run-id", DRILL_ID, "--toast", "not-seen") == 0
+
+    path = root / "bench" / "drills" / f"{DRILL_ID}.json"
+    record = json.loads(path.read_bytes())
+    assert record == {"schema": "bench-drill/1", "run_id": DRILL_ID, "code": "HB-ALM-002", "task": DRILL_TASK,
+                      "seeded_at": SEEDED, "pushed_at": PUSHED, "acknowledged_at": ACKED, "toast": "not-seen", "bench_commit": "a" * 40}
+    assert path.read_bytes() == ledger.canonical(record)
+    before = path.read_bytes()
+    assert drill_cli(root, run.parent, "ack", "--run-id", DRILL_ID, "--toast", "not-seen") == 0
+    assert drill_cli(root, run.parent, "ack", "--run-id", DRILL_ID, "--toast", "seen") == 5
+    assert "HB-LED-007" in capsys.readouterr().err and path.read_bytes() == before
+
 
 def _at(age_s: float) -> str:
     """A `recorded_at` string `age_s` seconds before now, in ledger.stamp's shape."""
