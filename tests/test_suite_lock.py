@@ -133,7 +133,7 @@ def test_pytest_with_workers_waits_for_the_lock_end_to_end(tmp_path):
         [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-n", "1",
          "tests/test_suite_lock.py::test_the_default_lock_is_outside_every_worktree"],
         cwd=ROOT, env=child_env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8",
-        errors="replace")
+        errors="replace", creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     lines: queue.Queue[str | None] = queue.Queue()
 
     def pump():

@@ -30,7 +30,7 @@ def test_lock_is_released_when_the_holder_dies(tmp_path):
     src = str(oslock.__file__).rsplit("harness_bench", 1)[0]
     code = (f"import sys,time;sys.path.insert(0,{src!r});from harness_bench import oslock;"
             f"l=oslock.RunLock.acquire(__import__('pathlib').Path({str(path)!r}));print('held',flush=True);time.sleep(600)")
-    holder = subprocess.Popen([sys.executable, "-c", code], stdout=subprocess.PIPE, text=True)
+    holder = subprocess.Popen([sys.executable, "-c", code], stdout=subprocess.PIPE, text=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     assert holder.stdout.readline().strip() == "held"
     assert oslock.is_held(path)
     holder.kill()

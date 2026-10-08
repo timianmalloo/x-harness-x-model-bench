@@ -67,7 +67,7 @@ def test_engine_crash_kills_every_descendant(tmp_path):
     src = str(procs.__file__).rsplit("harness_bench", 1)[0]
     script = tmp_path / "owner.py"
     script.write_text(OWNER.format(src=src, tree=TREE), encoding="utf-8")
-    owner = subprocess.Popen([sys.executable, str(script)], stdout=subprocess.PIPE, text=True)
+    owner = subprocess.Popen([sys.executable, str(script)], stdout=subprocess.PIPE, text=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     pids = json.loads(owner.stdout.readline())
     assert all(_alive(p) for p in pids)
     owner.kill()  # a hard kill, no cleanup: the watchdog, not the owner, must reap the tree

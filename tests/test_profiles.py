@@ -111,7 +111,7 @@ def test_the_copilot_hook_canary_writes_its_marker(copilot_canary_module, tmp_pa
     assert not copilot_canary_module._copilot_shown("", set(), dot)["hook"]
     (hook,) = json.loads((dot / "hooks" / "us13-canary.json").read_text(encoding="utf-8"))["hooks"]["sessionStart"]
     shell = shutil.which("pwsh") or shutil.which("powershell")
-    subprocess.run([shell, "-NoProfile", "-NonInteractive", "-Command", hook["powershell"]], check=True, timeout=60, cwd=tmp_path)
+    subprocess.run([shell, "-NoProfile", "-NonInteractive", "-Command", hook["powershell"]], check=True, timeout=60, cwd=tmp_path, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     assert copilot_canary_module._copilot_shown("", set(), dot)["hook"]
 
 

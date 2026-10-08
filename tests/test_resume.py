@@ -397,7 +397,7 @@ def _t2_kill_and_resume(base, *, behaviour, target):
             "--tools-dir", str(_fake_tree(base / "tools")), "run", p["run_id"]]
     env1, _ = _t2_child_env(base, p, behaviour, target)
     first = subprocess.Popen([sys.executable, str(boot), *args], env=env1, stdout=subprocess.PIPE,
-                             stderr=(base / "first.err").open("w"), text=True)
+                             stderr=(base / "first.err").open("w"), text=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     reached, seen = threading.Event(), []
 
     def read():
@@ -416,14 +416,14 @@ def _t2_kill_and_resume(base, *, behaviour, target):
     finally:
         if first.poll() is None:
             if sys.platform == "win32":  # this Popen's own tree only: the fake agent is its grandchild
-                subprocess.run(["taskkill", "/F", "/T", "/PID", str(first.pid)], capture_output=True, check=False)
+                subprocess.run(["taskkill", "/F", "/T", "/PID", str(first.pid)], capture_output=True, check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
             else:
                 first.kill()
         first.wait(timeout=30)
         reader.join(timeout=30)
     env2, log = _t2_child_env(base, p, {}, None)
     second = subprocess.run([sys.executable, str(boot), *args], env=env2, capture_output=True, text=True, timeout=180,
-                            check=False)
+                            check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     return SimpleNamespace(plan=p, run_dir=run_dir, cell=p["cells"][0]["cell_id"], log=log, second=second,
                            cells_root=base / "cells")
 
@@ -828,7 +828,7 @@ def test_stop_code_read_from_decision_kind(golden5, tmp_path):
 
 def _sleeper():
     proc = subprocess.Popen([sys.executable, "-c", "import time; print('up', flush=True); time.sleep(60)"],
-                            stdout=subprocess.PIPE, text=True)
+                            stdout=subprocess.PIPE, text=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     assert proc.stdout.readline().strip() == "up"  # the child announces itself: no timed wait
     return proc, host.creation_time(proc.pid)
 

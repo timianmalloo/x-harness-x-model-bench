@@ -167,7 +167,7 @@ def test_import_time_forgery_cannot_reach_result(tmp_path, kind):
 def test_factory_forger_fixture_forges_when_not_redirected():
     """Positive control for the factory test: with plain stdout the three forged lines are real output."""
     out = subprocess.run([sys.executable, "-c", "import forge_factory as f; f.create_app()"], cwd=FIX, capture_output=True,
-                         check=True).stdout.decode()
+                         check=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.decode()
     assert out.count("bench-check-result/1") == 3
 
 

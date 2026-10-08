@@ -198,7 +198,7 @@ def run_hidden(tid: str, tree: Path, turns: tuple[int, ...]) -> Hidden:
         shutil.copytree(task_dir(tid) / "tests" / f"turn{turn}", work / f"turn{turn}")
     argv = [sys._base_executable if a == "{python}" else a for a in task_yaml(tid)["oracle"]["command"]]
     env = {k: v for k, v in os.environ.items() if k in ("PATH", "SYSTEMROOT", "TEMP", "TMP")}
-    proc = subprocess.run(argv, cwd=work, capture_output=True, text=True, timeout=300, check=False, env={**env, "PYTHONUTF8": "1", "PYTHONDONTWRITEBYTECODE": "1"})
+    proc = subprocess.run(argv, cwd=work, capture_output=True, text=True, timeout=300, check=False, env={**env, "PYTHONUTF8": "1", "PYTHONDONTWRITEBYTECODE": "1"}, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     out = proc.stdout + proc.stderr
     ran = re.search(r"^Ran (\d+) tests? in ", out, re.MULTILINE)
     return Hidden(proc.returncode, int(ran.group(1)) if ran else 0,
@@ -294,7 +294,7 @@ def test_provenance(tid, bases):
     assert data["source"]["commit"] == spec["pin"] and data["source"]["repo"] == spec["repo"]
     clone = workspace.upstream_tree(spec["repo"], spec["pin"], ring_cache.ring_root("rw") / "upstream")
     upstream = subprocess.run(["git", "rev-parse", f"{spec['pin']}^{{tree}}"], cwd=clone, capture_output=True, text=True,
-                              check=True).stdout.strip()
+                              check=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.strip()
     recorded = re.search(r"^- pin tree: `([0-9a-f]{40})`", evidence(tid), re.MULTILINE)
     assert recorded and upstream == spec["tree"]
     text = (folder / "LICENSE").read_text(encoding="utf-8").replace("\r\n", "\n")
