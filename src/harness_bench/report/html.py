@@ -368,16 +368,10 @@ def _header(view: views.RunView, tags: dict[str, str], modes: dict[str, str] | N
             html_builder.el("dd", None, judges_text),
         ])
 
-    # Spend
-    costs = [c.scores.get("cost_usd") for c in view.cells if "cost_usd" in c.scores]
-    if not costs or not view.cells:
-        runs_spend = "not recorded"
-    elif any(m.value is None for m in costs):
-        reason = next((m.reason for m in costs if m.value is None and m.reason), "not recorded")
-        runs_spend = f"NA ({reason})"
-    else:
-        total_cost = sum(Decimal(str(m.value)) for m in costs)
-        runs_spend = f"${total_cost:.6f}"
+    # Spend: tokens are the cost axis (R-115); the total is the cells' token counts (tokens_by_type)
+    cell_totals = [c.tokens for c in view.cells if c.tokens]
+    runs_spend = (f"{sum(sum(b.values()) for t in cell_totals for b in t.values()):,} tok"
+                  if cell_totals else "not recorded")
 
     # judges.NO_CALL ("no call in this pass"): the existing judging-facts wording for an absent call
     # (judges.py:40, :179), never an invented "0 calls" when judging did not run at all (judges.facts
@@ -498,7 +492,7 @@ def _validity(view: views.RunView, campaign_line: html_builder.Html | None = Non
     ) if has_disagree_source else None
 
     classes = [
-        ("NA costs", na_costs),
+        *([(COST_NOT_COMPUTED, na_costs)] if na_costs else []),
         ("invalid", invalid),
         ("not applicable", not_applicable),
         ("timed out", timed_out),
@@ -564,14 +558,16 @@ def _validity(view: views.RunView, campaign_line: html_builder.Html | None = Non
 # card, built on `html_builder.el` (escape by construction) rather than the `_e()`-in-f-string pattern
 # `_table()` still uses for the sections R5 owns (pack effect, comparison, unchanged this slice).
 
+COST_NOT_COMPUTED = "cost_usd: not computed; tokens are the cost axis (R-115)"
+
 _UNIT = {"pass_at_1": "pass rate, 0-1", "gated": "correctness-gated composite, 0-100",
-        "partial_credit": "partial credit, 0-1", "cost_usd": "USD", "mutation_score": "mutation score, 0-1",
-        "pass_hat_k": "pass^k rate, 0-1", "cost_of_pass": "USD per passing cell",
+        "partial_credit": "partial credit, 0-1", "mutation_score": "mutation score, 0-1",
+        "pass_hat_k": "pass^k rate, 0-1",
         "tokens_per_solved": "tokens per solved task, integer", "wall_ms": "wall clock, seconds",
         "tokens": "tokens, integer", "tool_ms": "tool time, milliseconds", "model_ms": "model time, milliseconds",
         "idle_ms": "idle time, milliseconds"}
 _METRIC_LABEL = {"pass_at_1": "pass@1", "gated": "gated", "partial_credit": "partial credit",
-                 "cost_usd": "cost", "mutation_score": "mutation_score"}
+                 "mutation_score": "mutation_score"}
 
 
 def _popover(value_text: str, unit: str, catalog_version: str | None, evidence_content, cell_id: str | None) -> str:
@@ -780,7 +776,7 @@ def _leaderboard(view: views.RunView, board_obj: board.Board) -> str:
     # are dimensions, not measures).
     headers = [("Rank", False, None), ("Combo", False, None), ("Pack", False, None), ("Gated", True, "gated"),
                ("Gated 95%", False, None), ("pass@1", True, "pass_at_1"), ("pass@1 95%", False, None),
-               ("pass^k", True, "pass_hat_k"), ("Cost per pass", True, "cost_of_pass"),
+               ("pass^k", True, "pass_hat_k"),
                ("Tokens per solved", True, "tokens_per_solved"), ("Wall per cell", True, "wall_ms"),
                ("Valid cells", True, "n_valid")]
     head_cells = []
@@ -808,7 +804,6 @@ def _leaderboard(view: views.RunView, board_obj: board.Board) -> str:
             html_builder.trusted(g_td), html_builder.trusted(g_iv_td),
             html_builder.trusted(p1_td), html_builder.trusted(p1_iv_td),
             html_builder.trusted(_lb_measure_ev_cell(r.pass_hat_k, "pass_hat_k", report.rate, view.catalog_version, r.combo, r.pack, "pass_hat_k")),
-            html_builder.trusted(_lb_measure_ev_cell(r.cost_of_pass, "cost_of_pass", report.usd, view.catalog_version, r.combo, r.pack, "cost_of_pass")),
             html_builder.trusted(_lb_measure_ev_cell(tokens_per_solved, "tokens_per_solved", report.tokens, view.catalog_version, r.combo, r.pack, "tokens_per_solved")),
             html_builder.trusted(_lb_measure_ev_cell(r.wall_ms, "wall_ms", report.seconds, view.catalog_version, r.combo, r.pack, "wall_ms")),
             html_builder.el("td", {"class": "num", "data-sort": "n_valid", "data-sort-value": str(r.n_valid)}, f"{r.n_valid}/{r.n_cells} cells"),
@@ -1312,37 +1307,13 @@ def _cost_frontier(view: views.RunView, board_obj: board.Board, combo_ix: dict[s
             html_builder.el("p", {"class": "st"}, "No completed cells to plot."),
         )
 
-    # 1. Cost panel
-    all_cost_na = all(r.cost_per_task.value is None for r in board_obj.frontier)
-    if all_cost_na:
-        models: set[str] = set()
-        for r in board_obj.frontier:
-            if r.cost_per_task.reason:
-                found = re.findall(r"no price list entry for ([a-zA-Z0-9_\-\.]+)", r.cost_per_task.reason)
-                models.update(found)
-        if models:
-            cost_sentence = f"Cost not recorded for any combo: no price list entry for {', '.join(sorted(models))}."
-        else:
-            reasons = [r.cost_per_task.reason for r in board_obj.frontier if r.cost_per_task.reason]
-            cost_sentence = f"Cost not recorded for any combo: {reasons[0] if reasons else 'not recorded'}."
-        cost_fig = html_builder.el(
-            "figure", None,
-            html_builder.el("p", {"class": "na"}, cost_sentence),
-            html_builder.el("figcaption", None, "pass@1 vs cost per task (no axes drawn)"),
-        )
-    else:
-        def get_cost(r: board.FrontierRow) -> tuple[float | None, str | None, str]:
-            v = float(r.cost_per_task.value) if r.cost_per_task.value is not None else None
-            return v, str(r.cost_per_task.value) if r.cost_per_task.value is not None else None, "cost"
-        cost_fig = _cost_frontier_panel("pass@1 vs cost per task (USD)", "cost per task", board_obj.frontier, get_cost, combo_ix)
-
-    # 2. Tokens panel
+    # 1. Tokens panel (tokens are the cost axis, R-115)
     def get_tokens(r: board.FrontierRow) -> tuple[float | None, str | None, str]:
         v = float(r.tokens_per_solved.value) if r.tokens_per_solved.value is not None else None
         return v, str(r.tokens_per_solved.value) if r.tokens_per_solved.value is not None else None, "tokens"
     tokens_fig = _cost_frontier_panel("pass@1 vs tokens per solved task", "tokens per solved", board_obj.frontier, get_tokens, combo_ix)
 
-    # 3. Wall panel
+    # 2. Wall panel
     def get_wall(r: board.FrontierRow) -> tuple[float | None, str | None, str]:
         if r.wall_per_task.value is not None:
             s_val = float(r.wall_per_task.value) / 1000.0
@@ -1350,11 +1321,11 @@ def _cost_frontier(view: views.RunView, board_obj: board.Board, combo_ix: dict[s
         return None, None, "wall"
     wall_fig = _cost_frontier_panel("pass@1 vs wall per task (s)", "wall per task", board_obj.frontier, get_wall, combo_ix)
 
-    charts_div = html_builder.el("div", {"class": "charts"}, cost_fig, tokens_fig, wall_fig)
+    charts_div = html_builder.el("div", {"class": "charts"}, tokens_fig, wall_fig)
 
     # Table alternative
     headers = [("Combo", False), ("Pack", False), ("pass@1", True), ("95% interval", False),
-               ("Tokens per solved", True), ("Cost per task (USD)", True), ("Wall per task (s)", True)]
+               ("Tokens per solved", True), ("Wall per task (s)", True)]
     head_tr = html_builder.el("tr", None, *(
         html_builder.el("th", {"scope": "col", "class": "num"} if is_num else {"scope": "col"}, h)
         for h, is_num in headers
@@ -1387,12 +1358,6 @@ def _cost_frontier(view: views.RunView, board_obj: board.Board, combo_ix: dict[s
         # Tokens
         if r.tokens_per_solved.value is not None:
             cells.append(html_builder.el("td", {"class": "num", "data-value": str(r.tokens_per_solved.value)}, report.tokens(r.tokens_per_solved)))
-        else:
-            cells.append(html_builder.el("td", {"class": "num na"}, "NA"))
-
-        # Cost
-        if r.cost_per_task.value is not None:
-            cells.append(html_builder.el("td", {"class": "num", "data-value": str(r.cost_per_task.value)}, report.usd(r.cost_per_task)))
         else:
             cells.append(html_builder.el("td", {"class": "num na"}, "NA"))
 
@@ -1867,12 +1832,12 @@ def _cell_card(c: views.CellView, archive_present: bool, catalog_version: str | 
     dl = html_builder.el("dl", {"class": "cell-fields"}, *dl_children)
 
     score_items = []
-    for metric in ("pass_at_1", "partial_credit", "cost_usd", "mutation_score"):
+    for metric in ("pass_at_1", "partial_credit", "mutation_score"):
         measure = c.scores.get(metric)
         if measure is None:
             continue
         na = measure.value is None
-        text = report.usd(measure) if metric == "cost_usd" else report.rate(measure)
+        text = report.rate(measure)
         evidence = _evidence_content(c, metric, archive_present)
         score_items.append(html_builder.el(
             "li", None, html_builder.el("span", {"class": "small"}, f"{_METRIC_LABEL.get(metric, metric)}: "),
@@ -1941,7 +1906,7 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str], run_
     mutation = report.d1_mutation_values(root, run_dir, view) if show_mutation else {}
     headers = [("Cell", False), ("Outcome", False), ("Validity", False), ("pass@1", True), ("Partial credit", True),
                *((("mutation_score", False),) if show_mutation else ()), ("Tokens", True),
-               ("Wall", True), ("Tool time", True), ("Model time", True), ("Idle", True), ("Cost", True), ("Context window", False),
+               ("Wall", True), ("Tool time", True), ("Model time", True), ("Idle", True), ("Context window", False),
                ("Warnings", False), ("Evidence", False), ("Cell card", False)]
     head_row = html_builder.el("tr", None, *(
         html_builder.el("th", {"scope": "col", "class": "num"} if num else {"scope": "col"}, h) for h, num in headers))
@@ -1953,7 +1918,6 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str], run_
             c.label + (f" · {COORDINATION_BANNER}" if c.scenario == 6 else ""), c.harness), c.harness)
         p1_m = c.scores.get("pass_at_1", na)
         pc_m = c.scores.get("partial_credit", na)
-        cost_m = c.scores.get("cost_usd", na)
         row_cells = [
             html_builder.el("td", None, label_text),
             html_builder.el("td", None, c.outcome + (f" ({c.cause}, {c.code})" if c.code else "")),
@@ -1969,7 +1933,6 @@ def _runs(view: views.RunView, archive_present: bool, tags: dict[str, str], run_
             _runs_ev_td(report.millis(c.tool_ms), c.tool_ms.value is None, "tool_ms", c, archive_present, catalog_version),
             _runs_ev_td(report.millis(c.model_ms), c.model_ms.value is None, "model_ms", c, archive_present, catalog_version),
             _runs_ev_td(report.millis(c.idle_ms), c.idle_ms.value is None, "idle_ms", c, archive_present, catalog_version),
-            _runs_ev_td(report.usd(cost_m), cost_m.value is None, "cost_usd", c, archive_present, catalog_version),
             html_builder.el("td", None, report.context_window(c.harness, tags.get(c.cell_id))),
             html_builder.el("td", None, ", ".join(w.code for w in c.warnings) or "none"),
             html_builder.el("td", None, _evidence_content(c, "pass_at_1", archive_present)),

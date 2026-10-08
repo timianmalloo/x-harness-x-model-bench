@@ -72,7 +72,6 @@ def render(
         ("Gated 95%", False),
         ("Tokens/cell", True),
         ("Wall/cell", True),
-        ("Cost/cell", True),
     ):
         table.add_column(name, justify="right" if right else "left", no_wrap=True, overflow="fold")
 
@@ -100,7 +99,6 @@ def render(
             gated_iv,
             report.tokens(r.tokens),
             report.seconds(r.wall_ms),
-            report.usd(r.cost_usd),
         )
 
     buf = io.StringIO()

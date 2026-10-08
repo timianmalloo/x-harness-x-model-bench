@@ -69,10 +69,6 @@ def millis(m: Measure) -> str:
     return na(m) if m.value is None else f"{round(Decimal(m.value)):,} ms"
 
 
-def usd(m: Measure) -> str:
-    return na(m) if m.value is None else f"${Decimal(m.value):.6f}"
-
-
 def cell_tokens(totals: dict[str, dict[str, int]] | None, reason: str | None) -> str:
     if not totals:
         return f"NA ({reason})"
