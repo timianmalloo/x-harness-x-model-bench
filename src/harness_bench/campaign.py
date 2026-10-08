@@ -32,6 +32,7 @@ import time
 from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
+from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 
@@ -1589,6 +1590,27 @@ def _check_statement(state: CampaignState, statement: dict) -> None:
             raise BenchError("HB-CMP-008", f'arm "{arm}" source is a local path. Use the remote URL or omit source.')
 
 
+DRILL_KEYS = frozenset({"schema", "run_id", "code", "task", "seeded_at", "pushed_at", "acknowledged_at", "toast", "bench_commit"})
+
+
+def valid_drill(record: object) -> bool:
+    """One immutable host-channel attestation; no secret or host fields are admitted."""
+    if not isinstance(record, dict) or set(record) != DRILL_KEYS or any(not isinstance(v, str) for v in record.values()):
+        return False
+    if (record["schema"] != "bench-drill/1" or not re.fullmatch(r"drill-[0-9a-f]{8}", record["run_id"])
+            or record["code"] not in ("HB-ALM-001", "HB-ALM-002") or not record["task"].strip()
+            or record["toast"] not in ("seen", "not-seen", "not-run") or not re.fullmatch(r"[0-9a-f]{40}", record["bench_commit"])):
+        return False
+    times = [record[key] for key in ("seeded_at", "pushed_at", "acknowledged_at")]
+    try:
+        if any(not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", t) for t in times):
+            return False
+        seeded, pushed, acknowledged = [datetime.fromisoformat(t) for t in times]
+    except ValueError:
+        return False
+    return seeded < pushed <= acknowledged
+
+
 def acknowledged_drill(root: Path) -> dict | None:
     """The host's drill is shared by campaigns; readers never create its folder."""
     for path in sorted((root / "bench" / "drills").glob("*.json")):
@@ -1596,7 +1618,7 @@ def acknowledged_drill(root: Path) -> dict | None:
             record = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, ValueError):
             continue
-        if isinstance(record, dict) and record.get("schema") == "bench-drill/1":
+        if valid_drill(record):
             return record
     return None
 
