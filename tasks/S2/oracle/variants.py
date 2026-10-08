@@ -164,4 +164,15 @@ VARIANTS = {
             {"file": 'examples/taskboard/app.py', "old": "        name = bottle.request.get_cookie('session', secret=session_key)\n", "new": "        name = bottle.request.get_cookie('session', secret=session_key) or bottle.request.get_cookie('session')\n"},
         ],
     },
+    "injfmt": {
+        "flips": ['inj-1'],
+        "clauses": {'inj-1': 'A0,A1,A2,A3'},
+        "edits": [
+            {
+                "file": 'examples/taskboard/app.py',
+                "old": '        like = \'%\' + q.replace(\'\\\\\', \'\\\\\\\\\').replace(\'%\', \'\\\\%\').replace(\'_\', \'\\\\_\') + \'%\'\n        rows = db.execute("SELECT id, title FROM tasks WHERE team = ? AND title LIKE ? ESCAPE \'\\\\\' ORDER BY id LIMIT ?",\n                          (team, like, -1 if limit is None else min(int(limit), 2 ** 62))).fetchall()\n',
+                "new": '        query = f"SELECT id, title FROM tasks WHERE team = {team} AND title LIKE \'%{q}%\' ORDER BY id"\n        if limit is not None:\n            query += f" LIMIT {int(limit)}"\n        try:\n            rows = db.execute(query).fetchall()\n        except sqlite3.OperationalError:\n            rows = []\n',
+            },
+        ],
+    },
 }
