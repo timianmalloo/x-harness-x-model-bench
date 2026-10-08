@@ -11,7 +11,6 @@ import argparse
 import json
 import os
 import re
-import subprocess
 import sys
 import uuid
 from collections import Counter
@@ -39,6 +38,7 @@ from harness_bench import (
     plan,
     power,
     preflight,
+    procs,
     profiles,
     readiness,
     stats,
@@ -130,11 +130,10 @@ def _drill_run_id() -> str:
 def _trigger_drill(task: str) -> None:
     """Start an already configured scheduled task; tests replace this boundary."""
     try:
-        result = subprocess.run(["schtasks.exe", "/run", "/tn", task], capture_output=True, timeout=30,
-                                check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
-    except (OSError, subprocess.TimeoutExpired):
+        result = procs.run(["schtasks.exe", "/run", "/tn", task], cwd=os.getcwd(), env=dict(os.environ), timeout=30)
+    except (OSError, procs.SpawnError):
         raise _drill_missing("scheduled task trigger") from None
-    if result.returncode != 0:
+    if result.timed_out or result.returncode != 0:
         raise _drill_missing("scheduled task trigger")
 
 
@@ -150,10 +149,10 @@ def cmd_drill_start(args) -> int:
     run_dir = Path(args.runs) / run_id
     # A pending cell and a free lock are ADR-0021 section 7's dead-engine fixture.
     # The engine writer owns run.started; no launcher, workspace or model is invoked.
-    cell = plan.Cell("DRILL", "0" * 64, 1, "drill", "drill", "drill", "off", 1, 60)
+    cell = plan.Cell("DRILL", "0" * 64, 1, "drill", "drill", "drill", config.ARM_OFF, 1, 60)
     body = {"schema": plan.SCHEMA, "kind": "measurement", "run_id": run_id, "trace_id": uuid.uuid4().hex,
             "parameters": dict(plan.DEFAULT_PARAMETERS), "tasks": {"DRILL": {"scenario": 1}}, "builds": {},
-            "profiles": {"drill": {"usage_source": "acp_turn"}}, "arms": {"off": {"pack": None}},
+            "profiles": {"drill": {"usage_source": "acp_turn"}}, "arms": {config.ARM_OFF: {}},
             "cells": [{"cell_id": cell.id, "label": cell.label, **asdict(cell)}]}
     body["plan_hash"] = plan.plan_hash(body)
     plan.confirm(run_dir, body)
@@ -829,9 +828,9 @@ def _commit(value: str) -> str:
     return campaign.validate_commit(value)
 
 
-COMMANDS = {"validate": cmd_validate, "plan": cmd_plan, "run": cmd_run, "status": cmd_status, "stop": cmd_stop, "answer": cmd_answer, "grade": cmd_grade,
+COMMANDS = {"drill": cmd_drill, "validate": cmd_validate, "plan": cmd_plan, "run": cmd_run, "status": cmd_status, "stop": cmd_stop, "answer": cmd_answer, "grade": cmd_grade,
             "report": cmd_report, "verify": cmd_verify, "teardown": cmd_teardown, "tools": cmd_tools, "campaign": cmd_campaign,
-            "discriminate": cmd_discriminate, "drill": cmd_drill}
+            "discriminate": cmd_discriminate}
 
 
 def main(argv: list[str] | None = None) -> int:
