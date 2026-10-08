@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T18:54:37Z",
+  "generated": "2026-10-08T19:30:12Z",
   "audit": [
     {
       "actor": null,
@@ -159307,6 +159307,28 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-08T18:54:36Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M4EFX8Z0D49GSFZSCBW3QSN7",
+      "shortname": "x-e5m",
+      "datetime": "2026-10-08T19:30:12Z",
+      "session": "xe5m-fin",
+      "prompt": "X-E5M brief al-01M4ECKSKST5BCV53YQ5XP4MME",
+      "summary": "served claude-sonnet-5-5; outcome split: files committed e641027b (guard 210 passed exit 0, ruff exit 0, docs-graph validate exit 0); bench plan on the full 10-task files REFUSES with HB-PRE-008 (Copilot pack-off loads repo instructions: NG1 cachetools .github/copilot-instructions.md, S2 bottle AGENTS.md). Proof variants under C:/tf/xe5m: 8 tasks 48 cells built, balance bound 1/20; 10 tasks no copilot 40 cells built; grid 8 tasks 1296 cells built. No red SHA. Tokens and floor not recorded. Children: uv run bench plan x7 (plan runs the pinned copilot instruction list itself), uv run pytest, uv run ruff, docs-graph.py, gh api x2; PIDs not captured. join-x-win not on base.",
+      "kind": "skill",
+      "skill": "investigate",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "X-E5M: E5 pilot ring and grid files, proven with bench plan",
+      "done_when": "bench plan builds both; 60 pilot cells; balance under 5 percent; pins",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-08T19:19:34Z",
+      "duration_seconds": 638.0
     }
   ],
   "changes": [
