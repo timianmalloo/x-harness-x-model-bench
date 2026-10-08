@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T19:51:28Z",
+  "generated": "2026-10-08T19:55:19Z",
   "audit": [
     {
       "actor": null,
@@ -160666,6 +160666,30 @@ window.AUDIT_DATA = {
       },
       "mode": "compiled",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M4EHB82PPSP3C66S1TXQM3R5",
+      "shortname": "c60-compile-handback",
+      "datetime": "2026-10-08T19:55:18Z",
+      "session": "coord-opus-fin",
+      "prompt": "Coordinator #60: compile X-PACKOFF (Ruling 116), plan rows, register PACKOFF-A and a MUT-E instance; no dispatch",
+      "summary": "Coordinator #60 (coord-opus-fin, branch coord/fin-c60-compile, base 1b61aedd owner/ruling-r116), hand-back; no dispatch, push or merge.\n- Compile: X-PACKOFF per Ruling 116 (Claude Code Agent tool, sonnet; session xpackoff-fin; base the integration head with join-r116 -> build/fin-x-packoff; no runner contract): raw al-01M4EH43X7GVJFKXRXB6138M0Z, compiled al-01M4EH46K4KDVC0NZ1A3Z8VPY1. check_compile exit 0: mode compiled, dispatchable, check_schema None, verify_document [].\n- Named: HB-PRE-009 (errors.py holds 002/003/005/007/008; 004/006 retired phase-1 codes; no hit elsewhere); the W1 design erratum is W1-L Erratum 5 in docs/design/eval-property-tasks.md (after :556, amending :171) with its HTML view.\n- Plan evidence recipe: X-E5M's two files copied from build/fin-x-e5m under C:\\tf\\xpackoff\\e5 (never committed); the read-only .tools junction; global options before plan.\n- Render counts: python3 0; one start line naming xpackoff-fin; AGENT_SESSION= 3x xpackoff-fin; fallback tokens 0; USD 0; --no-model 0.\n- Thresholds: floor 73k; P0 83k, R1 93k, G1 108k, P1 118k, E1 123k, gate 123k; ceiling 133k; stop line 123k.\n- Plan (coordination-finish.md + html): :155 X-E5M re-run erratum; :156 X-PACKOFF track row; :181 X-WIN turn 4 on Sonnet (Leader deviation); :189 X-PACKOFF assignment row; :224 P3; :380 DR-PACKOFF ruled.\n- Register: :30 recurrence; :834 MUT-E instance (X-NOPRICE duplicate find; upgrade proposed: mutate_check errors on a find not exactly once); :1537-1548 PACKOFF-A (new; X-E5M's authoring finding as one line).\n- Gates: docs-graph derive exit 0 (290 entries); validate exit 0 (16 review-suggested warnings); verify-ruling-citations exit 0 (116 of 116).\n- Commits: d36a6105 (compile), aaaab51f (plan), 08b836bc (register), then the closing commit with c60.md.",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "docs/coordination/coordinator-log/c60.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "X-PACKOFF compiled exactly as Ruling 116 defines it; plan and register updated",
+      "done_when": "check_compile exit 0; plan rows and register entries committed; derive, validate, verify-ruling-citations exit 0; tree clean",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-08T19:42:37Z",
+      "duration_seconds": 761.0
     }
   ],
   "changes": [

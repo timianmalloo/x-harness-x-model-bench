@@ -1975,7 +1975,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "603f8138e4354b59a4dd6ceb7b6261baa24c46a349d41654763afbad88c88639"
+      "sourceSha256": "d9ba4bbe7d9d00f464a5388aefd6e11c9a19d1d6280522574e66fce99f894d6b"
     },
     {
       "id": "design-eval-arms",
@@ -5083,6 +5083,39 @@ window.DOCS_INDEX = {
       "sourceSha256": "af1c9f776ee2e9846f961083d47589a7202922239ec14fb051d4b7762c27c689"
     },
     {
+      "id": "coordinator-log-c60",
+      "path": "docs/coordination/coordinator-log/c60.md",
+      "title": "Coordinator #60 hand-back (2026-10-08): X-PACKOFF compiled (Ruling 116), PACKOFF-A, a MUT-E instance",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-08",
+      "reviewSuggested": [],
+      "summary": "Coordinator #60 on coord/fin-c60-compile (base 1b61aedd, owner/ruling-r116) for Leader leader-fin, epoch 19. One compiled brief, replayed through check_compile: X-PACKOFF (Claude Code Agent tool, sonnet, xpackoff-fin), exactly as Ruling 116 defines it, with HB-PRE-009 and W1-L Erratum 5 named. Plan rows for X-PACKOFF, the X-E5M re-run erratum, DR-PACKOFF ruled and X-WIN turn 4 on Sonnet. Register: PACKOFF-A and a MUT-E instance. No dispatch, no push.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c59",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "8ec1e20732fbc1a1949e2df015433cb7c3dc77450ab94421eac364ac571caf00"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -5109,7 +5142,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b1e053d5515320f985c611a973fd1a5796693d94b5ad0c1606f5bdd1bc8aace5"
+      "sourceSha256": "a7a76da8291dbe549e9d9c0de865ed486b8bb90170f4098c96d772b4acad0bf5"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -9568,7 +9601,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "885b339dc6a7db5e4699e8dc6877a4bad1eed4c3e11549dff0db156c535e07d6"
+      "sourceSha256": "0437ec26a2882041c4e4710253df38e5fe5c8ac880e9793d506232b62bd202e8"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -10715,5 +10748,5 @@ window.DOCS_INDEX = {
       "artifactId": "run-report-e2e4"
     }
   ],
-  "graphSha256": "7f7b9399c3f2a94fcd2b50c0e0605a648c89379efe68683b574ef6704ae4095f"
+  "graphSha256": "5381765b19fe1d9932431e5eb5f5ed97d476e9fd46f04cfbde767aa154a152c8"
 };
