@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T18:20:54Z",
+  "generated": "2026-10-08T19:16:21Z",
   "audit": [
     {
       "actor": null,
@@ -146372,6 +146372,34 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-08T18:15:46Z",
       "duration_seconds": 304.0
+    },
+    {
+      "id": "al-01M4EF3XEH8DQXRNH4TNZ107MR",
+      "shortname": "xwin3-fin-turn3-split",
+      "datetime": "2026-10-08T19:16:21Z",
+      "session": "xwin3-fin",
+      "prompt": "X-WIN turn 3 of 2: build the windows check red then green (W2), sweep every launch so the guard turns green (W3, batches a-d), and run the final gates with the windows check at hand-back.",
+      "summary": "X-WIN turn 3 dispatch:\n- Dispatch window: 2026-10-08T18:45:19Z to 2026-10-08T19:16:30Z\n- Outcome: split at commit 200e7085 (W2 landed red-first then green; W3a, W3b, W3c landed; W3d deferred by CEIL-A split rule stop line)\n- Red SHAs: f5e0587e (turn 3 W2 red test, failing on 'assert res.returncode == 1' line 67 and 'assert res.returncode == 0' line 95), plus turn 1 red SHAs 17259cee, 1910ca2d\n- Gates and exits:\n  * uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py: exit 0 (210 passed in 138.19s)\n  * uv run ruff check src tests tools: exit 0 (All checks passed)\n  * python docs/ai-forward-pack/scripts/docs-graph.py validate: exit 0 (0 defects)\n  * uv run pytest tests/test_window_check.py: exit 0 (3 passed in 0.81s)\n  * uv run pytest -q (Batch c test files): exit 0 (492 passed, 6 skipped in 719.34s)\n- Served model id: gemini-3.8-flash-high (read from cli.log / cli-20261008_114510.log)\n- Tokens: floor 41,282; pre-edit grounding 97,568 (93,646 cached + 3,922 input); pre-W2 97,568; post-W2 red 108,838 (105,829 cached + 3,009 input); post-W2/pre-W3a 124,690 (122,072 cached + 2,618 input); post-W3a/pre-W3b 140,955 (138,278 cached + 2,677 input); post-W3b/pre-W3c 171,855 (166,545 cached + 5,310 input); post-W3c 218,121 (215,078 cached + 3,043 input). Exceeds 195k stop line -> planned hand-back at item boundary W3c (commit 200e7085).\n- Mutation files: no mutation file of yours moves in this turn.\n- Child processes launched: pwsh commands for audit-log.py, git status/merge-base, coord session start, pytest standard guard list, ruff check, docs-graph.py validate, pytest test_window_check.py, git add/commit (f5e0587e, a89850f0, adb5f319, 771b3970, 200e7085), pytest Batch c tests, window_check.py at hand-back.\n- Windows check at hand-back: python tools/window_check.py --since 2026-10-08T18:45:19Z --root-pid 38012 exited 0 with empty output (no visible windows open). Passed PID 38012 read from (Get-CimInstance Win32_Process -Filter \"ProcessId=$PID\").ParentProcessId (agy process).\n- Open items named: W3d (sweep remaining 29 launches in 16 test files tests/test_*.py from n to z), final gate and hand-back with tests/test_console_windows.py.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled_from": "al-01M4EC6KS4DY7N9ACHJ5C6K9Z0",
+      "goal": "Execute X-WIN turn 3 on branch build/fin-x-win3",
+      "done_when": "windows check built red then green, launch sweep batches completed, final gates green and windows check at hand-back",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-08T18:45:19Z",
+      "duration_seconds": 1862.0,
+      "git": {
+        "sha": "200e7085ec43c7baeb12cb15fccaedc1d33b8b82",
+        "short": "200e7085e",
+        "branch": "build/fin-x-win3",
+        "pushed": null
+      }
     }
   ],
   "changes": [
