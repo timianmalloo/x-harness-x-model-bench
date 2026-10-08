@@ -19,7 +19,7 @@ PACK_READERS_ALLOWED: dict[str, int] = {
     "plan.py": 12,  # Authoritative version adapter and frozen identity recipe.
     "report/cli_table.py": 7,  # Row-dataclass `.pack` field and export key; Leader decision, W1-G F7 (legacy goldens byte-identical).
     "report/context_growth.py": 1,  # Row-dataclass `.pack` field and export key; Leader decision, W1-G F7 (legacy goldens byte-identical).
-    "report/html.py": 35,  # X-H2: the header reads plan_packs (three `.get("pack")` reads removed; decrease only). Row-dataclass `.pack` field and export key; Leader decision, W1-G F7 (legacy goldens byte-identical).
+    "report/html.py": 34,  # X-NOPRICE: one more `pack` read left with the deleted cost-frontier USD panel (35 -> 34). X-H2: the header reads plan_packs (three `.get("pack")` reads removed; decrease only). Row-dataclass `.pack` field and export key; Leader decision, W1-G F7 (legacy goldens byte-identical).
     "report/summaries.py": 3,  # Row-dataclass `.pack` field and export key; Leader decision, W1-G F7 (legacy goldens byte-identical).
     "workspace.py": 2,  # Directory operands, not cell readers.
 }
