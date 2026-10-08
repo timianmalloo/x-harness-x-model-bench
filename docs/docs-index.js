@@ -9631,6 +9631,31 @@ window.DOCS_INDEX = {
       "sourceSha256": "b65007497b4bc047e0bd76b590acbf1fb40ac4fd7ed46805de21d675cfe2c40d"
     },
     {
+      "id": "x-evu-coverage",
+      "path": "docs/coordination/eval-wave2-e234/x-evu-coverage.md",
+      "title": "Coverage Map: E5 Enterprise Evaluation Report Validations",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Coverage map of E5's report validations (EV-16, EV-18, EV-19, EVU-1..8) to named test nodes with proving assertions and run results.",
+      "tags": [],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "coordination-eval-campaign",
+          "rel": "implements"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "80f669ae5d323ea891234643d0a1ddeec9385301b747ff7c7f75bddde4f49808"
+    },
+    {
       "id": "privacy-review",
       "path": "docs/security/privacy-review.md",
       "title": "Privacy Review",
@@ -10657,5 +10682,5 @@ window.DOCS_INDEX = {
       "artifactId": "run-report-e2e4"
     }
   ],
-  "graphSha256": "faa41b22c0df0480a7238beb709f994feee3aa2c6d1c2f5413a5320900be157c"
+  "graphSha256": "cb227ad9a093dde3ed156f03328ad2057477c44d9353700e1ebff6eef8c1e127"
 };
