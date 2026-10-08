@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T15:00:52Z",
+  "generated": "2026-10-08T15:02:22Z",
   "audit": [
     {
       "actor": null,
@@ -121263,6 +121263,33 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-08T14:39:26Z",
       "duration_seconds": 1286.0
+    },
+    {
+      "id": "al-01M4E0JV11GMQX3D6Y448Z57PF",
+      "shortname": "join-fin-plan",
+      "datetime": "2026-10-08T15:02:21Z",
+      "session": "leader-fin",
+      "prompt": "the join of coord/fin-c54-plan into integrate/finish-19",
+      "summary": "Coordinator #54 0089dbef: docs/coordination/coordination-finish.md/.html - 11 tracks (F-PACK, X-PROP, X-HYG, X-WIN, X-S2, X-EVU, X-DRILL, X-FLAKE, X-CACHEB, X-E5M; gated X-REDS, X-SJ4), batches P1-P5 with one gate ring before E5, serial spine through the final records, convergence, drill, S-J4 and E5 (operator stops A and B); E5 sized from runs/grid-4; 12 struck or merged; PRIM-A instance registered recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join the finish plan",
+      "done_when": "conductor-join exit 0 (docs-only)",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-08T15:02:19Z",
+      "duration_seconds": 2.0
     }
   ],
   "changes": [
