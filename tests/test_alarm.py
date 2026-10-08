@@ -89,6 +89,31 @@ def test_drill_ack_writes_canonical_create_once_attestation(seeded_drill, capsys
     assert "HB-LED-007" in capsys.readouterr().err and path.read_bytes() == before
 
 
+def test_drill_start_seeds_alarmable_run_triggers_task_and_hides_id(tmp_path, monkeypatch, capsys):
+    root = tmp_path / "root"
+    runs = tmp_path / "runs"
+    calls = []
+    monkeypatch.setattr(cli, "_drill_now", lambda: SEEDED)
+    monkeypatch.setattr(cli, "_drill_run_id", lambda: DRILL_ID, raising=False)
+    monkeypatch.setattr(cli, "_trigger_drill", lambda task: calls.append(task), raising=False)
+    monkeypatch.setattr(cli.gitsafe, "git", lambda *a, **k: type("Head", (), {"stdout": "a" * 40})())
+
+    rc = drill_cli(root, runs, "start", "--task", DRILL_TASK)
+
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert DRILL_ID not in out and "phone" in out and "ack" in out
+    assert calls == [DRILL_TASK]
+    run = runs / DRILL_ID
+    seed = json.loads((run / "drill-seed.json").read_bytes())
+    assert seed == {"run_id": DRILL_ID, "seeded_at": SEEDED, "task": DRILL_TASK, "bench_commit": "a" * 40}
+    assert not (root / "bench" / "drills").exists()
+    assert cli.main(["--runs", str(runs), "status", DRILL_ID, "--alarm-after", "60", "--json"]) == 6
+    output = capsys.readouterr()
+    assert json.loads(output.out)["alarm"]["code"] == "HB-ALM-001"
+    assert "HB-ALM-001" in output.err
+
+
 def _at(age_s: float) -> str:
     """A `recorded_at` string `age_s` seconds before now, in ledger.stamp's shape."""
     when = time.time() - age_s
