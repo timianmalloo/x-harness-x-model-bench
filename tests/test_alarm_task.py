@@ -104,6 +104,19 @@ def test_wrapper_passes_runs_root_to_status(h):
     assert "--runs" in argv and str(h.runs) in argv
 
 
+def test_drill_same_second_as_seed_defers_push_without_inventing_time(h):
+    run_id = "drill-0123abcd"
+    h.run_dir = h.runs / run_id
+    h.run_dir.mkdir(parents=True)
+    seed = {"run_id": run_id, "seeded_at": T0.strftime("%Y-%m-%dT%H:%M:%SZ"), "task": "HarnessBenchAlarmDrill", "bench_commit": "a" * 40}
+    (h.run_dir / "drill-seed.json").write_text(json.dumps(seed), encoding="ascii")
+
+    result = h.run(6, _alarm_object(), at=T0, drill=True)
+
+    assert result.returncode == 2 and h.sent_lines() == []
+    assert h.delivery_log() == ""
+
+
 def test_push_failure_does_not_print_topic(h):
     """The stub throws with the URL (and so the topic) in its message; the catch writes fixed text only."""
     result = h.run(6, _alarm_object(), rest="throw")
