@@ -100,7 +100,10 @@ def run(harness: str, tools_dir: Path, out_dir: Path) -> dict:
         extractions = _read_records(launcher, home, result.session_id)
         usage = [u for t in result.turns for u in normalize.turn_usage({"_meta": (t.usage or {}).get("meta")})]
         tokens = _spend(launcher.usage_source, extractions, usage)
+        if launcher.usage_source == "native_record" and not sum(len(ex.model_calls) for ex in extractions):
+            tokens = None  # the record names no model call: a sum of nothing is "not recorded", never a 0
         out["tokens"] = "not recorded" if tokens is None else tokens
+        out["acp_usage"] = result.usage  # the adapter's own per-turn report, verbatim, or null
         readable = bool(extractions) and not any(normalize.record_unreadable(ex) for ex in extractions)
         if readable:
             out["tool_call_seen"] = any(ex.tool_calls for ex in extractions)
