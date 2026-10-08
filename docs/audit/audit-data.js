@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T15:02:22Z",
+  "generated": "2026-10-08T17:18:58Z",
   "audit": [
     {
       "actor": null,
@@ -121290,6 +121290,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-08T15:02:19Z",
       "duration_seconds": 2.0
+    },
+    {
+      "id": "al-01M4E8CZA2C8N4P297RPFSDP1Y",
+      "shortname": "join-r114",
+      "datetime": "2026-10-08T17:18:58Z",
+      "session": "leader-fin",
+      "prompt": "the join of owner/ruling-r114 into integrate/finish-19",
+      "summary": "Owner (Fable claude-fable-5-1) Ruling 114 dcc07faa on req-01M4E7WZPKYTPRYTXXP8Y5FYE4 (DR-REDS): (B) granted, bounded - no reds key, no src/grade/design change before E5; X-REDS becomes a tests-only track (seven RW variants' turn-2 hidden-test failures pinned per test in tests/test_rework_tasks.py, NG's pattern; P3, Grok, no ring, no re-record); R-109 condition 5 narrowed and owed post-E5 with SHAPE-A row 3; (A), (C) refused recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join Ruling 114",
+      "done_when": "conductor-join exit 0 (docs-only)",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-08T17:18:57Z",
+      "duration_seconds": 1.0
     }
   ],
   "changes": [
