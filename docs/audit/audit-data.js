@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T18:44:42Z",
+  "generated": "2026-10-08T19:00:52Z",
   "audit": [
     {
       "actor": null,
@@ -158271,6 +158271,38 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-08T18:44:41Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M4EE7HX4TYWAWWYGXEZ4C9D3",
+      "shortname": "xgsm-fin-store-key",
+      "datetime": "2026-10-08T19:00:52Z",
+      "session": "xgsm-fin",
+      "prompt": "X-GSM worker xgsm-fin: red-first the observed Grok store key, then match it by normcase(normpath(unquote(name))) and summary.json. Split at the 108k stop line after the final guard.",
+      "summary": "Session xgsm-fin, run r-xgsm-fin, branch build/fin-x-gsm. Outcome: split. Last commit 0d9d18ff190462df918ed4302a22fbcda76c0447. Hand-back by the context stop line (108k), not a test failure.\n\nDispatch start: 2026-10-08T18:45:42Z. End wall-clock: the append datetime of this entry.\n\nServed model id (model_id of the first assistant row in this session's chat_history.jsonl): grok-4.7-build.\nTokens from the harness's reported usage: not recorded.\n\nFloor and context samples (params._meta.totalTokens):\n- first reading: 35827\n- declared floor for the split rule: 88000\n- at the first edit (G1): 75332\n- before the first-commit guard: 80656\n- before G2: 85688\n- before G3: 97435\n- before G4 and the final gate: 100158\n- before the final guard: 104812\n- before the own-tests gate: 110138 (stop; no further gate started)\n\nRed SHA: b49d6a51427895d17dcc87ab31d22d644cb170ce\nFailing assertion: assert newest.returncode == 0, newest.stdout + newest.stderr\n(tests/test_grok_served_model.py, AssertionError, returncode 2, stderr \"need <session dir>, or --tree and --session\")\nFix SHA: 24a606dbb2131a7e923fe62d1a425a7b6aa22d76\nMutant SHA: 0d9d18ff190462df918ed4302a22fbcda76c0447\n\nGates:\n- first commit, uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py --basetemp C:\\tf\\xgsm\\guard1-base : exit 0 (210 passed). PID 9072.\n- G2, uv run pytest -q tests/test_grok_served_model.py --basetemp C:\\tf\\xgsm\\g2-base : exit 0 (25 passed). PID 31756. This was before the fix commit, on the same tree that was committed.\n- G3, uv run python tools/mutate_check.py tests/mutations/grok_served_model.json : exit 0, every mutation killed (M1-M5, M5 is the forward-slash key). PID 40928. Run before the mutant commit, on the same file that was committed.\n- G4, uv run python tools/grok_served_model.py --tree C:/Projects/x-harness-x-model-bench-build-fin-x-prop : exit 0. PID 2068.\n  Line: chat_history.jsonl responses: grok-4.7-build x67\n- final commit guard, same guard list, --basetemp C:\\tf\\xgsm\\guard2-base : exit 0 (210 passed). PID 43712.\n- final uv run pytest -q tests/test_grok_served_model.py : not started (context 110138).\n- final uv run python tools/mutate_check.py tests/mutations/grok_served_model.json : not started.\n- uv run ruff check src tests tools : not started.\n- python docs/ai-forward-pack/scripts/docs-graph.py validate : not started.\n\nG4 full stdout:\nchat_history.jsonl responses: grok-4.7-build x67\nusage.json models: grok-4.7-build\nsummary.json current_model_id: grok-4.7\nOK: every response served grok-4.7*\n\nOpen steps: the four gates named above as not started, on commit 0d9d18ff. No further edit is open. X-WIN has not joined (git log --oneline -1 --grep=join-x-win printed no line), so the windows check was not run.\n\nChild processes (Start-Process -NoNewWindow; command line and PID):\n- uv run pytest -q tests/test_grok_served_model.py::test_observed_layout_is_found_by_tree --basetemp C:\\tf\\xgsm\\g1-red-base : PID 37540, exit 1 (assertion)\n- uv run pytest -q <guard list> --basetemp C:\\tf\\xgsm\\guard1-base : PID 9072, exit 0\n- uv run pytest -q tests/test_grok_served_model.py --basetemp C:\\tf\\xgsm\\g2-base : PID 31756, exit 0\n- uv run python tools/mutate_check.py tests/mutations/grok_served_model.json : PID 40928, exit 0\n- uv run python tools/grok_served_model.py --tree C:/Projects/x-harness-x-model-bench-build-fin-x-prop : PID 2068, exit 0\n- uv run pytest -q <guard list> --basetemp C:\\tf\\xgsm\\guard2-base : PID 43712, exit 0\ncoord session start, coord claim, git add/commit, and the context python -c lines ran in the session shells. Their PIDs were not captured. One early shell PID was 34332. No process was killed.\n\nSTORE-A, as text for the Coordinator (not committed here): the reader now matches the store key by os.path.normcase(os.path.normpath(unquote(name))) and chooses the session from summary.json. A folder with no summary.json is skipped. The G1 fixture has a summary for both sessions, so that path was not the one the test asserted.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": "grok",
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "X-GSM: make tools/grok_served_model.py find a Grok session by the store's own layout (the backslash key and Grok's session UUID).",
+      "done_when": "red: a fixture store built from the observed layout (the backslash key `C%3A%5C...`, a folder named by Grok's session UUID, its `summary.json` `info.cwd`) is not found by `--tree <path>` today; green: `--tree` finds the newest session for that tree, `--session` optional or matched against the session's `summary.json`; one mutant (the old forward-slash key) killed; the fixed tool reads the real X-PROP store",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_executed": true,
+        "acceptance_met": false
+      },
+      "started_at": "2026-10-08T18:45:42Z",
+      "duration_seconds": 910.0,
+      "git": {
+        "sha": "0d9d18ff190462df918ed4302a22fbcda76c0447",
+        "short": "0d9d18ff1",
+        "branch": "build/fin-x-gsm",
+        "pushed": null
+      }
     }
   ],
   "changes": [
