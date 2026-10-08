@@ -171,7 +171,8 @@ def make_link(link: Path, target: Path) -> None:
     """A junction on Windows (no privilege needed), a symlink elsewhere; a platform that cannot skips the test."""
     link.parent.mkdir(parents=True, exist_ok=True)
     if sys.platform == "win32":
-        done = subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(target)], capture_output=True, text=True, check=False)
+        done = subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(target)], capture_output=True, text=True, check=False,
+                              creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         if done.returncode != 0:
             pytest.skip(f"mklink /J refused: {done.stdout}{done.stderr}")
     else:
@@ -185,7 +186,8 @@ HOLDER = ("import sys;from pathlib import Path;from harness_bench import oslock;
 @contextmanager
 def held_by_another_process(path: Path):
     """A second OS process holds `path`'s lock until the block ends (the real cross-process semantics)."""
-    holder = subprocess.Popen([sys.executable, "-c", HOLDER, str(path)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+    holder = subprocess.Popen([sys.executable, "-c", HOLDER, str(path)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True,
+                              creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     try:
         assert holder.stdout.readline().strip() == "held"
         yield

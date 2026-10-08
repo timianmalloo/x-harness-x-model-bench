@@ -19,7 +19,8 @@ SID = "00000000-0000-4000-8000-000000000001"
 
 
 def _run(*args: str) -> subprocess.CompletedProcess:
-    return subprocess.run([sys.executable, str(TOOL), *args], capture_output=True, text=True, timeout=30, check=False)
+    return subprocess.run([sys.executable, str(TOOL), *args], capture_output=True, text=True, timeout=30, check=False,
+                          creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
 
 def _case(name: str) -> str:

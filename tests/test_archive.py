@@ -102,7 +102,8 @@ def test_links_are_recorded_never_followed(tmp_path):
     (outside / "secret.txt").write_text("do not copy", encoding="utf-8")
     link = cell / "ws" / "escape"
     if sys.platform == "win32":
-        made = subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(outside)], capture_output=True, check=False)
+        made = subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(outside)], capture_output=True, check=False,
+                              creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         if made.returncode != 0:
             pytest.skip("cannot create a junction here")
     else:
@@ -163,7 +164,8 @@ def test_a_kill_mid_copy_leaves_no_final_folder_and_the_redo_succeeds(tmp_path):
         "archive.archive_cell(cell_dir, dest_root, attempt=1, exclude_names=set())\n",
         encoding="utf-8",
     )
-    proc = subprocess.run([sys.executable, str(script), str(cell), str(dest_root)], check=False)
+    proc = subprocess.run([sys.executable, str(script), str(cell), str(dest_root)], check=False,
+                          creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     assert proc.returncode == 3
     assert not final.exists()
     stale = atomic.stale_temps(dest_root)
@@ -207,7 +209,8 @@ def test_verify_rejects_an_extra_file_and_a_missing_file(tmp_path, scenario):
     (outside / "link_target.txt").write_text("outside", encoding="utf-8")
     link = cell / "ws" / "escape"
     if sys.platform == "win32":
-        subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(outside)], capture_output=True, check=False)
+        subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(outside)], capture_output=True, check=False,
+                       creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     else:
         os.symlink(outside, link, target_is_directory=True)
 
