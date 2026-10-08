@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T18:51:12Z",
+  "generated": "2026-10-08T18:53:53Z",
   "audit": [
     {
       "actor": null,
@@ -159163,6 +159163,42 @@ window.AUDIT_DATA = {
       },
       "mode": "compiled",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M4EDTRPEFRTJHJYPT5DX5NEZ",
+      "shortname": "c59-compile-handback",
+      "datetime": "2026-10-08T18:53:53Z",
+      "session": "coord-opus-fin",
+      "prompt": "Coordinator #59: compile X-HYG turn 3 (xhyg3-fin), plan note, LOGTEAR-A instance; no dispatch",
+      "summary": "Coordinator #59 (coord-opus-fin, branch coord/fin-c59-compile, base 5a42a574), hand-back; no dispatch, push or merge.\n- Compile: X-HYG turn 3 (Grok grok-4.7 high; session xhyg3-fin, run r-xhyg3-fin; base build/fin-x-hyg2 at b1ab5246 -> build/fin-x-hyg3): raw al-01M4EDNSNSWX1XW6P0D3KRX4NT, compiled al-01M4EDNVDTVJGF3BBA9657D833. check_compile replayed at the end: exit 0, mode compiled, dispatchable, check_schema None, verify_document [].\n- Render counts: python3 0; one start line naming xhyg3-fin; AGENT_SESSION= 3x xhyg3-fin; fallback tokens 0; USD 0; --no-model 0.\n- Contract docs/coordination/eval-wave2-e234/x-hyg3.contract.json (from x-hyg2; run_id, base, session, branch, prompts, fallback moved). Runner dry check: dispatch_base b1ab5246; validate refused RUN-OWNER (the Coordinator is not the owner).\n- Thresholds: floor 88k; fix 98k; atomic.json 103k; gate 118k; ceiling 128k; stop line 118k.\n- Plan: X-HYG assignment-row note (turn 2 red committed by the Leader after LOGTEAR-A, e30f3e44). Register: LOGTEAR-A's X-HYG instance line.\n- Gates: docs-graph derive exit 0 (288 entries); validate exit 0 (16 review-suggested warnings); verify-ruling-citations exit 0 (115 of 115).\n- Commits: 1261ee22 (compile), 8d54c28f (contract, plan, register), then the closing commit with c59.md.",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/coordination/coordinator-log/c59.md",
+        "docs/coordination/eval-wave2-e234/x-hyg3.contract.json"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Compile and register X-HYG turn 3, passing check_compile, with its contract, the plan note and the LOGTEAR-A instance",
+      "done_when": "the id passes check_compile; contract written; gates pass; c59.md and closing entry written; tree clean",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-08T18:47:35Z",
+      "duration_seconds": 378.0,
+      "git": {
+        "sha": "8d54c28f0a75ab5841d67c87a216882116e1c0e5",
+        "short": "8d54c28f0",
+        "branch": "coord/fin-c59-compile",
+        "pushed": null
+      }
     }
   ],
   "changes": [

@@ -5050,6 +5050,39 @@ window.DOCS_INDEX = {
       "sourceSha256": "99214536410ce7be88876fe44fade38855fdf9c16ea83ad08a26ebb74238ffa5"
     },
     {
+      "id": "coordinator-log-c59",
+      "path": "docs/coordination/coordinator-log/c59.md",
+      "title": "Coordinator #59 hand-back (2026-10-08): X-HYG turn 3 compiled, LOGTEAR-A's X-HYG instance",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-08",
+      "reviewSuggested": [],
+      "summary": "Coordinator #59 on coord/fin-c59-compile (base 5a42a574) for Leader leader-fin, epoch 19. One compiled brief, replayed through check_compile: X-HYG turn 3 (Grok, xhyg3-fin, base build/fin-x-hyg2 at b1ab5246). The X-HYG assignment row gains a note on the turn 2 red the Leader committed after LOGTEAR-A, and LOGTEAR-A gains its X-HYG instance. No dispatch, no push.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c58",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "af1c9f776ee2e9846f961083d47589a7202922239ec14fb051d4b7762c27c689"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -5076,7 +5109,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5698a2175448d9e0bf7252254fbcc2b61d3102d7b814e1ddc44cd025fb05829b"
+      "sourceSha256": "b1e053d5515320f985c611a973fd1a5796693d94b5ad0c1606f5bdd1bc8aace5"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -9535,7 +9568,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "e69bde5b0de1501a10fed2deb6491f5a32799501a92922cf17441aac51e4543e"
+      "sourceSha256": "885b339dc6a7db5e4699e8dc6877a4bad1eed4c3e11549dff0db156c535e07d6"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -10657,5 +10690,5 @@ window.DOCS_INDEX = {
       "artifactId": "run-report-e2e4"
     }
   ],
-  "graphSha256": "faa41b22c0df0480a7238beb709f994feee3aa2c6d1c2f5413a5320900be157c"
+  "graphSha256": "4c63b944538a351ead64b044a762216bbd9d3a2c99bc9dec1b9e80660c5bcf5f"
 };
