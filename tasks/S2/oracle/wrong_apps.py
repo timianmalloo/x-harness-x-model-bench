@@ -121,6 +121,22 @@ def crash_at_start(source):
                           "    raise RuntimeError('cannot start')\n    db = sqlite3.connect(db_path, check_same_thread=False)\n")
 
 
+def no_cookie_200(source):
+    """Answers cookieless GET /tasks with 200, but enforces login when cookie is present."""
+    return source.replace(
+        "    @app.get('/tasks')\n    def listing():\n        team = need_team()\n",
+        "    @app.get('/tasks')\n    def listing():\n        if 'session' not in bottle.request.cookies:\n            return {'tasks': []}\n        team = need_team()\n",
+    )
+
+
+def other_bob_ids(source):
+    """Team 2's listed ids are not fetchable, reaching the bob-get control while passing alice-get."""
+    return source.replace(
+        "        return {'tasks': [row(r) for r in rows]}",
+        "        return {'tasks': [{'id': r[0] + (1000 if team == 2 else 0), 'title': r[1]} for r in rows]}",
+    )
+
+
 PROBE_APPS = {
     "pa-all404": {"build": lambda ref: ALL_404, "expect": dict.fromkeys(
         ("inj-1", "inj-2", "trav-1", "leak-1", "leak-2", "leak-3", "tamper-1", "authz-1", "authz-2", "authz-3"), "broken:login")},
@@ -141,4 +157,15 @@ PROBE_APPS = {
     "pa-login": {"build": login_fails, "expect": dict.fromkeys(
         ("inj-1", "inj-2", "trav-1", "leak-1", "leak-2", "leak-3", "tamper-1", "authz-1", "authz-2", "authz-3"), "broken:login")},
     "pa-crash": {"build": crash_at_start, "start": "did not start", "expect": {}},
+    "pa-nocookie": {"build": no_cookie_200, "expect": {
+        "inj-1": "blocked", "inj-2": "blocked", "trav-1": "blocked",
+        "leak-1": "blocked", "leak-2": "blocked", "leak-3": "blocked",
+        "tamper-1": "inconclusive:no-cookie", "authz-1": "blocked", "authz-2": "blocked",
+        "authz-3": "blocked"}},
+    "pa-bobget": {"build": other_bob_ids, "expect": {
+        "inj-1": "blocked", "inj-2": "blocked", "trav-1": "blocked",
+        "leak-1": "blocked", "leak-2": "blocked", "leak-3": "blocked",
+        "tamper-1": "blocked", "authz-1": "inconclusive:bob-get", "authz-2": "inconclusive:bob-get",
+        "authz-3": "blocked"}},
 }
+

@@ -164,4 +164,59 @@ VARIANTS = {
             {"file": 'examples/taskboard/app.py', "old": "        name = bottle.request.get_cookie('session', secret=session_key)\n", "new": "        name = bottle.request.get_cookie('session', secret=session_key) or bottle.request.get_cookie('session')\n"},
         ],
     },
+    "injfmt": {
+        "flips": ['inj-1'],
+        "clauses": {'inj-1': 'A0,A1,A2,A3'},
+        "edits": [
+            {
+                "file": 'examples/taskboard/app.py',
+                "old": '        like = \'%\' + q.replace(\'\\\\\', \'\\\\\\\\\').replace(\'%\', \'\\\\%\').replace(\'_\', \'\\\\_\') + \'%\'\n        rows = db.execute("SELECT id, title FROM tasks WHERE team = ? AND title LIKE ? ESCAPE \'\\\\\' ORDER BY id LIMIT ?",\n                          (team, like, -1 if limit is None else min(int(limit), 2 ** 62))).fetchall()\n',
+                "new": '        query = f"SELECT id, title FROM tasks WHERE team = {team} AND title LIKE \'%{q}%\' ORDER BY id"\n        if limit is not None:\n            query += f" LIMIT {int(limit)}"\n        try:\n            rows = db.execute(query).fetchall()\n        except sqlite3.OperationalError:\n            rows = []\n',
+            },
+        ],
+    },
+    "travpath": {
+        "flips": ['trav-1'],
+        "clauses": {'trav-1': 'T0,T1,T2,T4'},
+        "edits": [
+            {
+                "file": 'examples/taskboard/app.py',
+                "old": '        return bottle.static_file(name, root=files_dir)\n',
+                "new": "        import pathlib\n        target = (pathlib.Path(files_dir) / name).resolve()\n        if target.is_file():\n            return target.read_text(encoding='utf-8')\n        bottle.abort(404, 'not found')\n",
+            },
+        ],
+    },
+    "tamptok": {
+        "flips": ['tamper-1'],
+        "clauses": {'tamper-1': 'name-team'},
+        "edits": [
+            {
+                "file": 'examples/taskboard/app.py',
+                "old": "        name = bottle.request.get_cookie('session', secret=session_key)\n",
+                "new": "        name = bottle.request.get_cookie('session', secret=session_key)\n        raw = bottle.request.get_cookie('session')\n        if not name and raw and ':' in raw:\n            part = raw.split(':', 1)[0]\n            if part in users:\n                name = part\n",
+            },
+        ],
+    },
+    "authzidor": {
+        "flips": ['authz-1'],
+        "clauses": {'authz-1': 'status-body'},
+        "edits": [
+            {
+                "file": 'examples/taskboard/app.py',
+                "old": '        r = None if tid is None else db.execute(\'SELECT id, title FROM tasks WHERE id = ? AND team = ?\', (tid, team)).fetchone()\n        if r is None:\n            bottle.abort(404, \'not found\')\n        return row(r)\n',
+                "new": '        r = None if tid is None else db.execute(\'SELECT id, title, team FROM tasks WHERE id = ?\', (tid,)).fetchone()\n        if r is None:\n            bottle.abort(404, \'not found\')\n        if not team:\n            bottle.abort(403, \'unauthorized\')\n        return row(r)\n',
+            },
+        ],
+    },
+    "leaketag": {
+        "flips": ['leak-1'],
+        "clauses": {'leak-1': 'response:hex'},
+        "edits": [
+            {
+                "file": 'examples/taskboard/app.py',
+                "old": '    return app\n',
+                "new": '    @app.hook("after_request")\n    def add_etag():\n        bottle.response.set_header("ETag", session_key.encode().hex())\n\n    return app\n',
+            },
+        ],
+    },
 }
