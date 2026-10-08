@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T19:45:35Z",
+  "generated": "2026-10-08T22:33:33Z",
   "audit": [
     {
       "actor": null,
@@ -159395,6 +159395,33 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-08T19:45:34Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M4ETD00QMQD6QXBZF0K9HKDX",
+      "shortname": "packoff2-pin-tests",
+      "datetime": "2026-10-08T22:33:33Z",
+      "session": "xpackoff2-fin",
+      "prompt": "X-PACKOFF loop-back: fix S2 and NG1 pin-tree tests for Ruling 116",
+      "summary": "S2 and NG1 pin-tree tests now exclude the instruction files the engine removes (derived from workspace.INSTRUCTION_*), and assert the removed set; S1, simplicity and NG2 siblings clean.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Fix two stale pin-tree tests",
+      "done_when": "both green, gates pass",
+      "tier": "T1",
+      "started_at": "2026-10-08T22:22:13Z",
+      "duration_seconds": 680.0,
+      "git": {
+        "sha": "a94b46bbe00330493b85e1805378f05f090e0a3c",
+        "short": "a94b46bbe",
+        "branch": "build/fin-x-packoff2",
+        "pushed": null
+      }
     }
   ],
   "changes": [
