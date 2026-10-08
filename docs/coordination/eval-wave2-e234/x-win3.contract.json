@@ -1,0 +1,49 @@
+{
+  "schema": "coord-run/1",
+  "run_id": "r-xwin3-fin",
+  "owner": "leader-fin",
+  "base": "build/fin-x-win2",
+  "parallelism": 1,
+  "workers": [
+    {
+      "session": "xwin3-fin",
+      "branch": "build/fin-x-win3",
+      "harness": "agy",
+      "transport": "agy",
+      "argv": [
+        "agy",
+        "--model",
+        "gemini-3.8-flash-high",
+        "--add-dir",
+        "{worktree}",
+        "--mode",
+        "accept-edits",
+        "--input-format",
+        "stream-json",
+        "--output-format",
+        "stream-json"
+      ],
+      "binding_files": [
+        "AGENTS.md",
+        ".agents/hooks.json"
+      ],
+      "deadline_seconds": 3300,
+      "output_limit": 4194304,
+      "evidence": [
+        {
+          "kind": "commit"
+        }
+      ],
+      "required_capabilities": {
+        "worktree_isolation": "observed-only",
+        "instructions": "observed-only",
+        "hooks": "observed-only",
+        "permissions": "observed-only"
+      },
+      "prompts": [
+        "al-01M4EC6NNFRHYPZGXEAZJVNGKB"
+      ],
+      "fallback": "Leader-held (FALLBACK-A): coordination-finish.md, Track assignment detail, names what follows a failed or split turn; the worker launches, spawns or messages nothing. X-WIN turn 3 (Coordinator #58; added by the Leader after turn 2's split on the Agy floor): base build/fin-x-win2 (turn 2's tip e6f5dba4), new branch, because the runner never reuses a worker branch (RUN-BRANCH)."
+    }
+  ]
+}

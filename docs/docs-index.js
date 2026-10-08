@@ -5017,6 +5017,39 @@ window.DOCS_INDEX = {
       "sourceSha256": "f340c1a2d9a7d99daaba65e785f5b5d7e0a1469d9257b66097c5f03909c75f2f"
     },
     {
+      "id": "coordinator-log-c58",
+      "path": "docs/coordination/coordinator-log/c58.md",
+      "title": "Coordinator #58 hand-back (2026-10-08): five compiles, the corrected Agy floor, X-GSM, LOGTEAR-A",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-08",
+      "reviewSuggested": [],
+      "summary": "Coordinator #58 on coord/fin-c58-compile (base 82691dbf) for Leader leader-fin, epoch 19. Five compiled briefs, each replayed through check_compile: X-WIN turn 3 (added by the Leader), X-S2 turn 2, X-GSM (new; STORE-A's owner), X-DRILL (Codex, no model pin) and X-E5M (Sonnet). The Agy floor moves to 105k (the Leader's CEIL-A correction). LOGTEAR-A registered: a torn row in the Leader's ledger refused every commit repo-wide. No dispatch, no push.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c57",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "99214536410ce7be88876fe44fade38855fdf9c16ea83ad08a26ebb74238ffa5"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -5043,7 +5076,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "674cffea219fa3b4d6d03c220752d53a2048d95f02de5f2f30477dc37915c785"
+      "sourceSha256": "5698a2175448d9e0bf7252254fbcc2b61d3102d7b814e1ddc44cd025fb05829b"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -9502,7 +9535,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d593c08e1c248ea480506518c6f50e9d40a1bed419007de24aded7aad9372b1c"
+      "sourceSha256": "e69bde5b0de1501a10fed2deb6491f5a32799501a92922cf17441aac51e4543e"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -10624,5 +10657,5 @@ window.DOCS_INDEX = {
       "artifactId": "run-report-e2e4"
     }
   ],
-  "graphSha256": "381fc76930084cc6158822c3276b235f83be4215c355a1506bdcd57e3da15052"
+  "graphSha256": "faa41b22c0df0480a7238beb709f994feee3aa2c6d1c2f5413a5320900be157c"
 };
