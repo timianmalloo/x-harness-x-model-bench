@@ -5,6 +5,7 @@ Every fixture is a hand-built ledger over the shared archived-run builder's plan
 alarming test fails on its own assertion (`exit == 6`), never on argparse or an import.
 """
 
+import ast
 import json
 import os
 import shutil
@@ -112,6 +113,16 @@ def test_drill_start_seeds_alarmable_run_triggers_task_and_hides_id(tmp_path, mo
     output = capsys.readouterr()
     assert json.loads(output.out)["alarm"]["code"] == "HB-ALM-001"
     assert "HB-ALM-001" in output.err
+
+
+def test_owned_alarm_process_launches_hide_console_windows():
+    files = [Path(__file__), Path(__file__).with_name("test_alarm_task.py")]
+    for path in files:
+        calls = [n for n in ast.walk(ast.parse(path.read_text(encoding="utf-8")))
+                 if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                 and isinstance(n.func.value, ast.Name) and n.func.value.id == "subprocess" and n.func.attr in ("run", "Popen")]
+        assert calls
+        assert all(any(k.arg == "creationflags" for k in call.keywords) for call in calls), path.name
 
 
 def _at(age_s: float) -> str:

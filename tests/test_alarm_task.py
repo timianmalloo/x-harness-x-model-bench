@@ -47,10 +47,10 @@ class Harness:
         (tmp_path / "rest_ok.ps1").write_text(REST_OK, encoding="ascii")
         (tmp_path / "rest_throw.ps1").write_text(REST_THROW, encoding="ascii")
 
-    def run(self, exit_code, payload=None, *, at=T0, rest="ok", topic=TOPIC, base_url=None, stderr=None):
+    def run(self, exit_code, payload=None, *, at=T0, rest="ok", topic=TOPIC, base_url=None, stderr=None, drill=False):
         (self.tmp / "out.json").write_text(json.dumps(payload) if payload is not None else "", encoding="ascii")
         err_line = f"echo {stderr} 1>&2\r\n" if stderr else ""  # the real command prints HB-ALM-00x: <cause> on stderr
-        (self.tmp / "bench.cmd").write_text(f'@echo off\r\n{err_line}type "%~dp0out.json"\r\nexit /b {exit_code}\r\n', encoding="ascii")
+        (self.tmp / "bench.cmd").write_text(f'@echo off\r\necho %* > "%~dp0args.txt"\r\n{err_line}type "%~dp0out.json"\r\nexit /b {exit_code}\r\n', encoding="ascii")
         env = {k: v for k, v in os.environ.items() if not k.startswith("HB_ALARM_")}
         env["HB_TEST_SENT"] = str(self.sent)
         if topic is not None:
@@ -59,10 +59,11 @@ class Harness:
             env["HB_ALARM_NTFY_URL"] = base_url
         argv = [
             POWERSHELL, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(SCRIPT),
-            "-RunId", "r1", "-AlarmAfter", "7200", "-DryRun",
+            "-AlarmAfter", "7200", "-DryRun",
             "-Bench", str(self.tmp / "bench.cmd"), "-RunsRoot", str(self.runs),
             "-Now", at.strftime("%Y-%m-%dT%H:%M:%SZ"),
         ]
+        argv += ["-Drill", "-TaskName", "HarnessBenchAlarmDrill", "-Toast"] if drill else ["-RunId", "r1"]
         if rest is not None:
             argv += ["-RestStub", str(self.tmp / f"rest_{rest}.ps1")]
         return subprocess.run(argv, capture_output=True, text=True, timeout=60, env=env, check=False)
@@ -78,6 +79,29 @@ class Harness:
 @pytest.fixture
 def h(tmp_path):
     return Harness(tmp_path)
+
+
+def test_drill_wrapper_selects_seed_records_code_task_and_optional_toast(h):
+    run_id = "drill-0123abcd"
+    h.run_dir = h.runs / run_id
+    h.run_dir.mkdir(parents=True)
+    seed = {"run_id": run_id, "seeded_at": T0.strftime("%Y-%m-%dT%H:%M:%SZ"), "task": "HarnessBenchAlarmDrill", "bench_commit": "a" * 40}
+    (h.run_dir / "drill-seed.json").write_text(json.dumps(seed), encoding="ascii")
+    (h.tmp / "rest_ok.ps1").write_text(REST_OK + 'function Show-DrillToast { Add-Content -Path $env:HB_TEST_SENT -Value "toast" }\n', encoding="ascii")
+
+    result = h.run(6, _alarm_object(), at=T0 + timedelta(seconds=1), drill=True)
+
+    assert result.returncode == 6
+    assert h.sent_lines() == [f"https://ntfy.sh/{TOPIC}|run {run_id} HB-ALM-001 no progress for 2h: age 7300s", "toast"]
+    assert h.delivery_log() == "2026-10-06T01:00:01Z exit=6 push ok code=HB-ALM-001 task=HarnessBenchAlarmDrill\n"
+    assert TOPIC not in result.stdout + result.stderr + h.delivery_log()
+
+
+def test_wrapper_passes_runs_root_to_status(h):
+    result = h.run(6, _alarm_object())
+    assert result.returncode == 6
+    argv = (h.tmp / "args.txt").read_text(encoding="ascii")
+    assert "--runs" in argv and str(h.runs) in argv
 
 
 def test_push_failure_does_not_print_topic(h):
