@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T17:42:25Z",
+  "generated": "2026-10-08T17:48:23Z",
   "audit": [
     {
       "actor": null,
@@ -146339,6 +146339,33 @@ window.AUDIT_DATA = {
       "tier": "T1",
       "started_at": "2026-10-08T17:39:07Z",
       "duration_seconds": 198.0
+    },
+    {
+      "id": "al-01M4EA2VAZ01TZN90ED2DG8X1N",
+      "shortname": "join-x-cacheb",
+      "datetime": "2026-10-08T17:48:23Z",
+      "session": "leader-fin",
+      "prompt": "the join of build/fin-x-cacheb into integrate/finish-19",
+      "summary": "xcacheb-fin c735ba0c: K2 repo deleters none reach hb-*-ring or select zero-byte files; K3 logs 22:25-22:40Z only leader-e1e4 + x-j1c-e1e4, no deletion; K1 Storage Sense on (temp cleanup), cleanup tasks last-run 10-07/10-08 only; event logs NOT READ (classifier denied) -> not recorded; sweeper unidentified; register text for the Coordinator recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join X-CACHEB",
+      "done_when": "conductor-join exit 0 (docs-only)",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-08T17:48:22Z",
+      "duration_seconds": 1.0
     }
   ],
   "changes": [
