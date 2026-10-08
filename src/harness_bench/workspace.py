@@ -143,6 +143,14 @@ def _extract_upstream_tree(clone: Path, commit: str, dest: Path) -> None:
         tar_path.unlink(missing_ok=True)
 
 
+def _instruction_paths(tree: Path) -> list[Path]:
+    """Every agent instruction file in a tree: a path in INSTRUCTION_FILES, or a *.instructions.md under INSTRUCTION_DIRS."""
+    found = [tree / rel for rel in INSTRUCTION_FILES if (tree / rel).is_file()]
+    for rel in INSTRUCTION_DIRS:
+        found += sorted(p for p in (tree / rel).rglob("*.instructions.md") if p.is_file())
+    return found
+
+
 def task_source(task_dir: Path, version: str, sources_root: Path, upstream_root: Path | None = None) -> Path:
     """The bench-owned repository of one task version's base tree (created once, then reused).
 
@@ -165,8 +173,15 @@ def task_source(task_dir: Path, version: str, sources_root: Path, upstream_root:
                                                 "cache root")
             clone = upstream_tree(source["repo"], source["commit"], upstream_root)
             _extract_upstream_tree(clone, source["commit"], tmp)
+            # X-PACKOFF: an upstream pin's agent instruction files never reach a base tree (pack-off is instruction-free).
+            for found in _instruction_paths(tmp):
+                found.unlink()
         # Bytecode a test wrote into the task folder is not part of the version hash (plan.py) and never part of a base tree.
         shutil.copytree(task_dir / "workspace", tmp, dirs_exist_ok=True, ignore=shutil.ignore_patterns("__pycache__"))
+        left = _instruction_paths(tmp)
+        if left:
+            raise BenchError("HB-PRE-009", f"{task_dir.name}: base tree carries an agent instruction file: "
+                                           f"{left[0].relative_to(tmp).as_posix()}")
         gitsafe.git(["init", "-q", "-b", "main"], cwd=tmp, timeout=GIT_TIMEOUT)
         gitsafe.git(["add", "-A"], cwd=tmp, timeout=GIT_TIMEOUT)
         gitsafe.git(["commit", "-q", "-m", f"{task_dir.name} base ({version[:12]})"], cwd=tmp, timeout=GIT_TIMEOUT, identity=True)

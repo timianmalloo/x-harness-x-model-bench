@@ -87,6 +87,7 @@ RUN_CODES: dict[str, str] = {
     "HB-PRE-005": "long paths not enabled (Windows LongPathsEnabled, git core.longpaths)",
     "HB-PRE-007": "a planned harness build is missing from the tools folder, or its hash differs",
     "HB-PRE-008": "Copilot instruction list failed or pack-off loaded repository instructions",
+    "HB-PRE-009": "a task base tree still carries an agent instruction file (a path in INSTRUCTION_FILES or a *.instructions.md under INSTRUCTION_DIRS) after the upstream removal",
     "HB-RUN-001": "ledger append failed: launching stopped, run incomplete",
     "HB-RUN-002": "a kill unconfirmed after 5 minutes (retries continue; the slot stays held)",
     "HB-RUN-003": "teardown refused: the run's lock is held by a live engine",
