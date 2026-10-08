@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T18:34:50Z",
+  "generated": "2026-10-08T18:44:42Z",
   "audit": [
     {
       "actor": null,
@@ -158244,6 +158244,33 @@ window.AUDIT_DATA = {
         "branch": "coord/fin-c58-compile",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M4ED9YPYDS6W6R0WPF3C6MMG",
+      "shortname": "join-c58-compile",
+      "datetime": "2026-10-08T18:44:42Z",
+      "session": "leader-fin",
+      "prompt": "the join of coord/fin-c58-compile into integrate/finish-19",
+      "summary": "Coordinator #58 a88009b0: X-WIN t3 al-01M4EC6NNFRHYPZGXEAZJVNGKB, X-S2 t2 al-01M4ECARM14BDEPZ2AQNX38DM9, X-GSM al-01M4ECD7Q32RRCFH3Q8Y645PA3 (new track, STORE-A owner, P2), X-DRILL al-01M4ECG1A3TYH6A2S812JMMKWQ (Codex, no pin), X-E5M al-01M4ECKSKST5BCV53YQ5XP4MME (2-arm, 60 pilot cells re-derived from EV-14); Agy floor 105k (Inferred, X-WIN t2 grounding); LOGTEAR-A registered (torn row in one session log blocks every commit) recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join #58 compiles",
+      "done_when": "conductor-join exit 0 (docs-only)",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-08T18:44:41Z",
+      "duration_seconds": 1.0
     }
   ],
   "changes": [
