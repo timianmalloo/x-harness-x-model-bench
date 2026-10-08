@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T19:05:41Z",
+  "generated": "2026-10-08T19:20:31Z",
   "audit": [
     {
       "actor": null,
@@ -158374,6 +158374,34 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-08T18:52:47Z",
       "duration_seconds": 774.0
+    },
+    {
+      "id": "al-01M4EFBHP8MZR294XKVXJ5MFD3",
+      "shortname": "xnoprice2-fin",
+      "datetime": "2026-10-08T19:20:31Z",
+      "session": "xnoprice2-fin",
+      "prompt": "X-NOPRICE continuation: MUT-E mutants, summaries docstring, N3 errata, final gates",
+      "summary": "Removed dead all-cost-NA mutant, retargeted header-fact mutant, fixed _decimals_for docstring, errata EN8/US-23 + html + derive, arms_guard html.py pin 35->34. Gates green.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Close X-NOPRICE: mutants killed, errata EN8/US-23, final gates green",
+      "done_when": "mutate_check report+summaries all killed; gates exit 0; join gate 0; tree clean",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-08T19:07:00Z",
+      "duration_seconds": 811.0,
+      "git": {
+        "sha": "5713c11ba356be149e73f05a79e4697ecd32f969",
+        "short": "5713c11ba",
+        "branch": "build/fin-x-noprice",
+        "pushed": null
+      }
     }
   ],
   "changes": [
