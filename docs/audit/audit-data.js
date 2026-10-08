@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T18:02:11Z",
+  "generated": "2026-10-08T18:26:53Z",
   "audit": [
     {
       "actor": null,
@@ -146398,6 +146398,45 @@ window.AUDIT_DATA = {
         "sha": "d8ec83029ad5dd7c39aff22f958d04c9e8ac68d6",
         "short": "d8ec83029",
         "branch": "build/fin-x-flake",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M4EC9AWGYATSBMXAM0P0E70W",
+      "shortname": "xflake2-fin split before F1",
+      "datetime": "2026-10-08T18:26:53Z",
+      "session": "xflake2-fin",
+      "prompt": "Session xflake2-fin, run r-xflake2-fin, build the FLAKE-A load-repro tool on build/fin-x-flake2. Planned split before F1: context before the item was 106062, above the 98k start line.",
+      "summary": "outcome: split\ndispatch start: 2026-10-08T18:15:58Z\ndispatch end: 2026-10-08T18:26:53Z\nHEAD: dc1aee544d3ae99e0f3a8543b34042214d19d4cd (build/fin-x-flake2). No work commit this turn.\nred SHAs: none\ngates: none run\nserved model id: grok-4.7-build (model_id of the first assistant row in chat_history.jsonl; the model field is absent on that row)\ntokens: not recorded (usage.json absent at hand-back)\nfloor (first context reading): 36103\ncontext samples: first reading 36103; after preflight 82891; before F1 106062 (above the 98k F1 start line, F1 not started); at hand-back 115141 (below the 118k stop line). No first-edit reading: no owned file was edited. The rule floor used for the start lines is 88000.\nsession start: python docs/ai-forward-pack/scripts/coord-core.py session start exited 4, COORD-NOT-CHECKED-RECORD: leader-fin.jsonl:2122: Expecting value. Not an occupancy refusal (that is exit 3). The session was not registered. Line 2122 of the primary ledger is the fragment in\"}. Seam request req-01M4EC5KWS1KE8SGQ5CYDDP2KZ sent to coord-opus-fin. No commit was attempted, so the pre-commit line was not observed.\njoin-x-win: git log --oneline -1 --grep=join-x-win printed no line. windows check not run.\nopen steps: F1 red tests/test_load_repro.py (assertion on failure count, rate, and stage of a seeded flaky node) and its commit, then the guard list on that commit; F2 tools/load_repro.py and tests/mutations/load_repro.json, green commit citing the failing assertion line and the red SHA; final guard list; uv run pytest -q tests/test_load_repro.py; one real tool run N=3 of tests/test_discriminate.py::test_a_leaked_temp_is_swept_before_the_write_and_never_by_a_reader with --out under C:\\tf\\xflake; uv run python tools/mutate_check.py tests/mutations/load_repro.json; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.\nchild processes launched (pid and command):\npid=43620 cmd=['C:\\\\Users\\\\malla\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe', 'C:\\\\Projects\\\\x-harness-x-model-bench-build-fin-x-flake2\\\\docs\\\\ai-forward-pack\\\\scripts\\\\coord-core.py', 'request', 'add', '--to', 'coord-opus-fin', '--deadline', '900', '--fallback', 'xflake2-fin hands back naming leader-fin.jsonl line 2122 and does not edit the ledger', 'leader-fin.jsonl line 2122 is the fragment in\"} and is not a JSON object, so coord session start for xflake2-fin exits 4 COORD-NOT-CHECKED-RECORD (session not registered). The pre-commit floor reads the same record. Repair that one line; the objects at seq 2121 and seq 2123 are intact.']\npid=33976 cmd=['uv', 'run', 'pytest', 'C:/tf/xflake/spike/test_spike.py::test_flake', '-n', '4', '--dist', 'loadscope', '--junitxml=C:/tf/xflake/spike/junit.xml', '-p', 'no:cacheprovider', '--basetemp', 'C:\\\\tf\\\\xflake\\\\spike-basetemp', '-q']\n\nShell launches whose pids were not captured: audit-log.py start; the preflight git and context commands; coord session start.\ngit status --short before this append (exit 0): ''\ndefect class (text only, not committed): a torn line in the session ledger (leader-fin.jsonl line 2122 is the fragment in\"}, between intact seq 2121 and seq 2123) makes read_events fail closed, so session start and the pre-commit floor return NOT CHECKED for every session.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [
+        "x-flake",
+        "split"
+      ],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "X-FLAKE: the FLAKE-A load-repro tool, one counted loop of one node N times under -n 4 --dist loadscope, recording failure rate and stage.",
+      "done_when": "the tool runs one node N times under `-n 4 --dist loadscope` (a counted loop: `pytest-repeat` is not a dependency) and records the failure rate and stage; red first on a seeded flaky fixture",
+      "tier": "T1",
+      "main_calls": 45,
+      "main_budget": 40,
+      "main_over_budget": true,
+      "fan_out": 0,
+      "signals": {
+        "verification_path": false,
+        "verification_executed": false,
+        "acceptance_met": false
+      },
+      "started_at": "2026-10-08T18:15:58Z",
+      "duration_seconds": 655.0,
+      "git": {
+        "sha": "dc1aee544d3ae99e0f3a8543b34042214d19d4cd",
+        "short": "dc1aee544",
+        "branch": "build/fin-x-flake2",
         "pushed": null
       }
     }
