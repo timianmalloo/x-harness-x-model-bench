@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T22:47:09Z",
+  "generated": "2026-10-08T23:06:31Z",
   "audit": [
     {
       "actor": null,
@@ -161373,12 +161373,66 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M4EV5X4FD4AQS4M8N7XG6AVB",
-      "shortname": "join-x-drill",
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
       "datetime": "2026-10-08T22:47:09Z",
-      "session": "leader-fin",
+      "done_when": "conductor-join exit 0 with the recount green",
+      "duration_seconds": 907.0,
+      "fan_out": 0,
+      "goal": "Join X-DRILL",
+      "id": "al-01M4EV5X4FD4AQS4M8N7XG6AVB",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "the join of build/fin-x-drill2 into integrate/finish-19",
+      "session": "leader-fin",
+      "shortname": "join-x-drill",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "execute-with-coordination",
+      "started_at": "2026-10-08T22:32:02Z",
       "summary": "X-DRILL (Codex, D1-D6, merged c79f6e63 whose recount was red: 9 register fixtures refused by HB-CMP-011, cli.py:133 reached procs outside the allowlist) + loop-back xdrill2-fin a0d710ca: host.run_scheduled_task carries the launch (cli no longer imports procs); drilled(root) fixture writes a valid acknowledged bench-drill/1 record via atomic.create_once in the 9 tests; HB-CMP-011 and MULTI_NIGHT_HOURS unchanged. Worker: 324 passed, guard 210, campaign.json all killed incl M-DRILL, ruff 0 recount_seconds=905 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-08T22:33:33Z",
+      "done_when": "both green, gates pass",
+      "duration_seconds": 680.0,
+      "git": {
+        "branch": "build/fin-x-packoff2",
+        "pushed": null,
+        "sha": "a94b46bbe00330493b85e1805378f05f090e0a3c",
+        "short": "a94b46bbe"
+      },
+      "goal": "Fix two stale pin-tree tests",
+      "id": "al-01M4ETD00QMQD6QXBZF0K9HKDX",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "X-PACKOFF loop-back: fix S2 and NG1 pin-tree tests for Ruling 116",
+      "session": "xpackoff2-fin",
+      "shortname": "packoff2-pin-tests",
+      "skill": "implement",
+      "started_at": "2026-10-08T22:22:13Z",
+      "summary": "S2 and NG1 pin-tree tests now exclude the instruction files the engine removes (derived from workspace.INSTRUCTION_*), and assert the removed set; S1, simplicity and NG2 siblings clean.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "id": "al-01M4EW9C0N0KBMEAS7RD1D7XNY",
+      "shortname": "join-x-packoff",
+      "datetime": "2026-10-08T23:06:31Z",
+      "session": "leader-fin",
+      "prompt": "the join of the resolved merge into integrate/finish-19",
+      "summary": "X-PACKOFF red 9094a0a5 / green 7e40400a / W1-L Erratum 5 89e51450 / 052b826c; Leader full-suite pre-check on its branch: 2 failed (S2 and NG1 pin-tree tests expected the removed files) -> loop-back xpackoff2-fin a94b46bb: expected sets exclude the engine's INSTRUCTION_FILES/DIRS and assert the exact removed set (S2 AGENTS.md, NG1 .github/copilot-instructions.md); sibling sweep clean (S1, SM). Worker 289 + guard 210 passed, ruff 0. Finding: the tests inline the engine's matching (drift risk) Conflicts with X-WIN (CREATE_NO_WINDOW) and X-S2 in test_ng_tasks.py / test_security_s2.py resolved by the Leader (keep HEAD call line + the loop-back lines; 152 passed). recount_seconds=910 (docs_only=False).",
       "kind": "skill",
       "skill": "execute-with-coordination",
       "tool": null,
@@ -161387,8 +161441,8 @@ window.AUDIT_DATA = {
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Join X-DRILL",
-      "done_when": "conductor-join exit 0 with the recount green",
+      "goal": "Join join-x-packoff",
+      "done_when": "conductor-join exit 0",
       "tier": "T1",
       "fan_out": 0,
       "signals": {
@@ -161396,8 +161450,8 @@ window.AUDIT_DATA = {
         "verification_executed": true,
         "acceptance_met": true
       },
-      "started_at": "2026-10-08T22:32:02Z",
-      "duration_seconds": 907.0
+      "started_at": "2026-10-08T22:51:20Z",
+      "duration_seconds": 911.0
     }
   ],
   "changes": [
