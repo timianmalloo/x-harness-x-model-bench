@@ -121,7 +121,7 @@ def test_tree_and_session_resolve_the_url_encoded_folder(tmp_path):
     assert r.returncode == 0, r.stderr
 
 
-@pytest.mark.parametrize("args", [[], ["--tree", "x"]])
+@pytest.mark.parametrize("args", [[], ["--tree", "x", "--root", "no-such-grok-sessions-root"]])
 def test_bad_invocation_exits_2(args):
     assert _run(*args).returncode == 2
 
