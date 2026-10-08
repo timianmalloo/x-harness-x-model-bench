@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T17:48:23Z",
+  "generated": "2026-10-08T18:02:11Z",
   "audit": [
     {
       "actor": null,
@@ -146366,6 +146366,40 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-08T17:48:22Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M4EAW33SWTW7HG2K0050T86Y",
+      "shortname": "xflake-fin-split",
+      "datetime": "2026-10-08T18:01:48Z",
+      "session": "xflake-fin",
+      "prompt": "X-FLAKE load-repro CEIL-A split before any product edit",
+      "summary": "outcome: split\nsession: xflake-fin\nserved model id (model_id field): grok-4.7-build\ndispatch start (wall-clock UTC): 2026-10-08T17:56:36Z\ndispatch end (wall-clock UTC): entry datetime (written immediately after this file)\nfloor F (first ACP totalTokens, updates.jsonl line 2, first response, before the first step): 10857\nbudget: F+40k = 50857\nstop line: F+30k = 40857\nsamples (ACP totalTokens, in order): 10857, 36402, 36425, 37399, 37528, 38831, 38872, 39741, 40232, 41035, 45947, 48427, 48830, 52141, 52567, 56736, 57009, 58867, 59879, 66475\nsample before F1: 66475 (F1 not started). Crossing of the stop line: 41035.\ntokens: ACP totalTokens series above (harness-reported). Latest successful sample 66475.\nbase: branch build/fin-x-flake HEAD d8ec83029ad5dd7c39aff22f958d04c9e8ac68d6. git status --short empty (exit 0) before and after session start. git merge-base --is-ancestor 7f96fb70 HEAD exit 0. coord session start accepted (PID 7756, exit 0): session xflake-fin registered. git log --oneline -1 --grep=join-x-win printed no line, so the windows check was not run.\nred SHAs: none\ncommits: none\ngates: none run\nopen steps: F1 tests/test_load_repro.py (seeded flaky fixture, assert failure count, rate, and stage; red on an assertion; commit alone; guard list on that commit). F2 tools/load_repro.py and tests/mutations/load_repro.json (counted loop of uv run pytest <node> -n 4 --dist loadscope, JSON record, two mutants). Final gate: guard list again; uv run pytest -q tests/test_load_repro.py; one real tool run N=3 on tests/test_discriminate.py::test_a_leaked_temp_is_swept_before_the_write_and_never_by_a_reader with --out under C:\\tf\\xflake; uv run python tools/mutate_check.py tests/mutations/load_repro.json; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.\nchild processes:\n1. python docs/ai-forward-pack/scripts/audit-log.py start --session xflake-fin --skill coordination-worker — shell PID 16216; python child PID not captured; exit 0\n2. git status --short; git rev-parse --abbrev-ref HEAD; git rev-parse HEAD; git merge-base --is-ancestor 7f96fb70 HEAD; git log --oneline -1 --grep=join-x-win — PID not captured; exit 0\n3. python -c totalTokens extract — PID not captured; exit 0\n4. python docs/ai-forward-pack/scripts/coord-core.py session start — PID 7756; exit 0\n5. python -c latest totalTokens — PID not captured; exit 1 (SyntaxError, no sample)\n6. python docs/ai-forward-pack/scripts/coord-core.py session end — PID 44896; exit 0\nproduct files edited: none\ndispatch end wall-clock UTC: 2026-10-08T18:01:48Z",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled_from": "al-01M4E8YXZE137AWAC95B0Q2BG8",
+      "done_when": "the tool runs one node N times under `-n 4 --dist loadscope` (a counted loop: `pytest-repeat` is not a dependency) and records the failure rate and stage; red first on a seeded flaky fixture",
+      "tier": "T1",
+      "main_calls": 28,
+      "main_budget": 40,
+      "main_over_budget": false,
+      "fan_out": 0,
+      "signals": {
+        "verification_executed": false,
+        "acceptance_met": false
+      },
+      "started_at": "2026-10-08T17:56:36Z",
+      "duration_seconds": 312.0,
+      "git": {
+        "sha": "d8ec83029ad5dd7c39aff22f958d04c9e8ac68d6",
+        "short": "d8ec83029",
+        "branch": "build/fin-x-flake",
+        "pushed": null
+      }
     }
   ],
   "changes": [
