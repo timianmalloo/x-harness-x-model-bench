@@ -81,6 +81,7 @@ RUN_CODES: dict[str, str] = {
     "HB-CMP-007": "defect fix refused (ADR-0017 §4: class absent, before-hash mismatch, or an unnamed component)",
     "HB-CMP-008": "registration refused (pilot gate, pilot coverage, or an MDE not accepted)",
     "HB-CMP-009": "pre-registration frozen: a grid run is attached (rev 2)",
+    "HB-CMP-011": "registration refused: a multi-night grid has no acknowledged alarm drill recorded (ADR-0021 section 7)",
     "HB-CMP-010": "campaign run refused: the run is not attached, or its plan's `prereg_hash` is not the registered one (rev 2, RV-DS 1). Rev 4: also `attach` refused on a prereg-hash mismatch or a drifted tree, a pilot plan with no matching `ring_run.attached`, and a `plan_hash` mismatch. Rev 6 (R6-6): a plan whose `kind` is not `measurement`, or with a `synthetic` combo",
     "HB-PRE-002": "an agent instruction file (CLAUDE.md, .claude/CLAUDE.md, AGENTS.md, GEMINI.md, .github/copilot-instructions.md, .github/instructions/**/*.instructions.md) in or above the cells root",
     "HB-PRE-003": "free disk below 20 GB, or below the projected need",

@@ -22,8 +22,8 @@ Source: `docs/design/eval-resume.md` section 6.3 and ADR-0021 section 7. This ru
 `tools/alarm-task.ps1` (X-K2a). The check it calls is `bench status <run_id> --alarm-after <seconds>`, which
 ADR-0021 section 7 words as: "`bench status <run_id> --alarm-after <seconds>` exits non-zero, naming the cause,
 when the heartbeat is stale **or** `now - last_progress_at` exceeds the threshold while cells are pending."
-**That command lands with X-K2b, not with this script.** Until it lands the script runs but `bench` rejects the
-flag, and every check reads as `check-error` (exit code other than 0 or 6).
+The wrapper forwards its `-RunsRoot` to the status command's `--runs`; the ledger check and delivery log
+therefore use the same run folder.
 
 ## 1. What the wrapper does
 
@@ -83,7 +83,59 @@ Per run, both files live in `runs/<run_id>/` (git-ignored with `runs/`):
 A failed POST writes the fixed text `push failed: <exception type>` and nothing from the exception: in 5.1 a
 failed `Invoke-RestMethod` carries the full URI, so the message is never printed.
 
-## 5. Limits
+## 5. Prove the scheduled channel before registration (Leader and operator)
+
+This is the Leader's and operator's step after X-DRILL joins, before registration. Workers run only fake
+transport tests. A final power analysis above `MULTI_NIGHT_HOURS = 4` hours needs an acknowledged drill;
+at or below four hours registration needs no drill. The maximum `PowerResult.hours` across the latest
+final analysis's properties decides this. The preview reports the recorded drill, or warns of HB-CMP-011.
+
+1. The Leader and operator configure an existing Task Scheduler task named `HarnessBenchAlarmDrill`
+   (or another name passed to `start --task`). Use the settings from section 3. Its action is:
+
+   ```
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File <repo>\tools\alarm-task.ps1 -Drill -TaskName HarnessBenchAlarmDrill -RunsRoot <runs> -Bench <bench executable> -AlarmAfter 60 -Toast
+   ```
+
+   Use absolute paths and quote paths containing spaces. The task and both CLI commands must use the
+   same runs root. `-Toast` is an optional local echo; remove it if unavailable. The phone push is required.
+   Do not put the ntfy topic in the action, command arguments, logs or committed files.
+
+2. The Leader runs `bench --root <repo> --runs <runs> drill start`. This freezes a pending dead-engine
+   fixture, records its seed metadata under the runs root, and triggers the already configured task.
+   No model or workspace is launched. The command prints acknowledgement instructions and hides the
+   random `drill-<8 hex>` run id. The wrapper selects the newest seed matching its configured task name.
+
+3. The operator reads the phone push away from the terminal. It contains the run id, HB-ALM code, cause
+   and age. The Leader must not supply the hidden id from disk as a substitute for phone receipt.
+
+4. The operator attests receipt by typing the phone's id:
+
+   ```
+   bench --root <repo> --runs <runs> drill ack --run-id <phone run id> --toast seen
+   ```
+
+   Use `not-seen` if the toast was requested but unseen, or `not-run` (the default) if omitted. None is
+   a pass condition. Missing seeded run, successful push after seeding, HB-ALM code, or matching scheduled
+   task evidence refuses with HB-USR-002 naming the missing item. The first `push ok` log line after the
+   seed supplies `pushed_at` and its code/task. Optional toast failure does not block acknowledgement.
+
+5. The Leader reviews and commits `bench/drills/<run_id>.json` in plan batch P4. One immutable
+   `bench-drill/1` record proves the host's channel for all campaigns. Its fields are `schema`, `run_id`,
+   `code`, `task`, `seeded_at`, `pushed_at`, `acknowledged_at`, `toast`, and `bench_commit`; every value is
+   a string. Times are UTC to the second and must satisfy `seeded_at < pushed_at <= acknowledged_at`.
+   No topic, URL, machine path, hostname or username belongs in it. The writer uses canonical bytes and
+   create-once publication: a later acknowledgement with different bytes refuses with HB-LED-007.
+   Registration reads the record without creating anything; no ledger kind or transition is added.
+
+For drill checks, `alarm-delivery.log` appends `code=<HB-ALM code> task=<task name>` to the normal delivery
+line. A task name in this log is evidence of the configured scheduled path; acknowledgement remains the
+operator's attestation. A successful fake transport test is not a real drill and creates no committed record.
+The wrapper waits at most one second on the real clock if triggered in the seed's second. If the clock
+has moved back or an injected clock is not later, it refuses before pushing; retry the scheduled task
+after the clock passes the seed. It never invents a later delivery timestamp.
+
+## 6. Limits
 
 - A sleeping or powered-off host sends nothing; `WakeToRun` helps only if the machine may wake.
 - A host sleep can make the engine kill cells as `host_suspended`, and `HB-ALM-002` can fire on wake before the
@@ -91,3 +143,5 @@ failed `Invoke-RestMethod` carries the full URI, so the message is never printed
 - The script is tested with a stub `bench` and a stub `Invoke-RestMethod` under `-DryRun` (Windows only,
   `tests/test_alarm_task.py`). X-K2b adds the test that feeds the real `bench status --alarm-after --json` output
   to this script.
+- HB-ALM-003, `.alarm_check` and `ALARM_INTERVAL_S` remain reserved and unbuilt. There is no alarm for
+  the alarm in this revision; E5's run report must name that residual.

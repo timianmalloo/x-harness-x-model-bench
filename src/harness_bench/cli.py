@@ -10,9 +10,11 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import uuid
 from collections import Counter
+from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -21,6 +23,7 @@ from rich.table import Table
 
 from harness_bench import (
     archive,
+    atomic,
     board,
     campaign,
     composites,
@@ -30,10 +33,12 @@ from harness_bench import (
     engine,
     gitsafe,
     identity,
+    ledger,
     oslock,
     plan,
     power,
     preflight,
+    procs,
     profiles,
     readiness,
     stats,
@@ -51,6 +56,120 @@ from harness_bench.report import credentials as report_credentials
 OK, INVALID, INCOMPLETE, NOT_BUILT, INTEGRITY = 0, 1, 3, 4, 5
 ALARM = 6
 _LEGACY_PACK = next(a for a in config.PACKS if a != config.ARM_OFF)  # a bench-matrix/1 file's one pack arm (W1-A 3.9's `on`), read from config
+
+
+def _drill_now() -> str:
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _drill_id(value: str) -> str:
+    if not re.fullmatch(r"drill-[0-9a-f]{8}", value):
+        raise BenchError("HB-USR-002", "drill run id must be drill-<8 lowercase hex> from the phone push")
+    return value
+
+
+def _drill_missing(item: str) -> BenchError:
+    return BenchError("HB-USR-002", f"missing or invalid {item}; run the scheduled drill with the operator before acknowledging")
+
+
+def cmd_drill_ack(args) -> int:
+    run_id = _drill_id(args.run_id)
+    run_dir = Path(args.runs) / run_id
+    if not (run_dir / "plan.json").is_file():
+        raise _drill_missing("seeded run")
+    try:
+        seed = json.loads((run_dir / "drill-seed.json").read_text(encoding="utf-8"))
+        keys = {"run_id", "seeded_at", "task", "bench_commit"}
+        if not isinstance(seed, dict) or set(seed) != keys or any(not isinstance(v, str) for v in seed.values()) or seed["run_id"] != run_id:
+            raise ValueError("seed fields")
+        seeded = datetime.fromisoformat(seed["seeded_at"])
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", seed["seeded_at"]):
+            raise ValueError("seed time")
+    except (OSError, ValueError):
+        raise _drill_missing("seed metadata") from None
+    try:
+        lines = (run_dir / "alarm-delivery.log").read_text(encoding="utf-8").splitlines()
+    except OSError:
+        raise _drill_missing("push ok after seeded_at") from None
+    delivery = None
+    for line in lines:
+        match = re.fullmatch(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z) exit=\d+ push ok(?: code=(\S+))?(?: task=(.+))?", line)
+        if match is not None:
+            try:
+                pushed = datetime.fromisoformat(match[1])
+            except ValueError:
+                continue
+            if pushed > seeded:
+                delivery = match
+                break
+    if delivery is None:
+        raise _drill_missing("push ok after seeded_at")
+    if delivery[2] not in ("HB-ALM-001", "HB-ALM-002"):
+        raise _drill_missing("alarm code (HB-ALM-001 or HB-ALM-002)")
+    if delivery[3] != seed["task"] or not seed["task"].strip():
+        raise _drill_missing("scheduled task")
+    record = {"schema": "bench-drill/1", **seed, "code": delivery[2], "pushed_at": delivery[1],
+              "acknowledged_at": _drill_now(), "toast": args.toast}
+    if not campaign.valid_drill(record):
+        raise _drill_missing("seed metadata or acknowledgement time")
+    folder = Path(args.root) / "bench" / "drills"
+    folder.mkdir(parents=True, exist_ok=True)
+    atomic.create_once(folder / f"{run_id}.json", ledger.canonical(record))
+    print(f"drill: {run_id} acknowledged {record['acknowledged_at']}")
+    return OK
+
+
+def cmd_drill(args) -> int:
+    return cmd_drill_ack(args) if args.drill_command == "ack" else cmd_drill_start(args)
+
+
+def _drill_run_id() -> str:
+    return f"drill-{uuid.uuid4().hex[:8]}"
+
+
+def _trigger_drill(task: str) -> None:
+    """Start an already configured scheduled task; tests replace this boundary."""
+    try:
+        result = procs.run(["schtasks.exe", "/run", "/tn", task], cwd=os.getcwd(), env=dict(os.environ), timeout=30)
+    except (OSError, procs.SpawnError):
+        raise _drill_missing("scheduled task trigger") from None
+    if result.timed_out or result.returncode != 0:
+        raise _drill_missing("scheduled task trigger")
+
+
+def cmd_drill_start(args) -> int:
+    if not args.task.strip() or any(c in args.task for c in "\r\n"):
+        raise _drill_missing("scheduled task name")
+    root = Path(args.root)
+    head = gitsafe.git(["rev-parse", "HEAD"], root, 30, identity=True).stdout.strip()
+    if not re.fullmatch(r"[0-9a-f]{40}", head):
+        raise _drill_missing("bench commit")
+    run_id = _drill_id(_drill_run_id())
+    seeded = _drill_now()
+    run_dir = Path(args.runs) / run_id
+    # A pending cell and a free lock are ADR-0021 section 7's dead-engine fixture.
+    # The engine writer owns run.started; no launcher, workspace or model is invoked.
+    cell = plan.Cell("DRILL", "0" * 64, 1, "drill", "drill", "drill", config.ARM_OFF, 1, 60)
+    body = {"schema": plan.SCHEMA, "kind": "measurement", "run_id": run_id, "trace_id": uuid.uuid4().hex,
+            "parameters": dict(plan.DEFAULT_PARAMETERS), "tasks": {"DRILL": {"scenario": 1}}, "builds": {},
+            "profiles": {"drill": {"usage_source": "acp_turn"}}, "arms": {config.ARM_OFF: {}},
+            "cells": [{"cell_id": cell.id, "label": cell.label, **asdict(cell)}]}
+    body["plan_hash"] = plan.plan_hash(body)
+    plan.confirm(run_dir, body)
+    cfg = engine.EngineConfig(run_dir, Path(args.cells_root), {}, None, None)
+    fixture = engine.Engine(body, cfg)
+    with oslock.RunLock.acquire(run_dir / ".lock", "HB-RUN-005"):
+        fixture.writers = engine.open_engine_segments(run_dir, 0)
+        try:
+            fixture.append_row({"kind": "run.started", "run_id": run_id, "plan_hash": body["plan_hash"], "trace_id": body["trace_id"]})
+        finally:
+            for writer in fixture.writers.values():
+                writer.close()
+    seed = {"run_id": run_id, "seeded_at": seeded, "task": args.task, "bench_commit": head}
+    atomic.create_once(run_dir / "drill-seed.json", ledger.canonical(seed))
+    _trigger_drill(args.task)
+    print("Scheduled drill triggered. Read the run id on your phone, then acknowledge with bench drill ack --run-id <phone run id>.")
+    return OK
 
 
 def _exit_for(code: str) -> int:
@@ -587,6 +706,13 @@ def build_parser() -> argparse.ArgumentParser:
                    help="where cells' working copies live; no agent instruction file may sit above it (HB-PRE-002)")
     p.add_argument("--tools-dir", default=str(root / ".tools" / "harness"), help="pinned harness builds (bench tools install)")
     sub = p.add_subparsers(dest="command", required=True)
+    drill = sub.add_parser("drill", help="prove the scheduled phone alarm with the operator")
+    drill_sub = drill.add_subparsers(dest="drill_command", required=True)
+    start = drill_sub.add_parser("start", help="seed a dead-engine run and trigger its configured scheduled task")
+    start.add_argument("--task", default="HarnessBenchAlarmDrill", help="existing task configured for alarm-task.ps1 -Drill")
+    ack = drill_sub.add_parser("ack", help="attest receipt of the run id shown on the phone")
+    ack.add_argument("--run-id", required=True, type=_drill_id)
+    ack.add_argument("--toast", choices=("seen", "not-seen", "not-run"), default="not-run")
     va = sub.add_parser("validate", help="check bench/*.yaml and every tasks/<ID>/ against the contract")
     va.add_argument("--campaign", type=_campaign_id, help="check the ready records against this campaign's effective identity")
     pl = sub.add_parser("plan", help="expand a matrix into a plan; --confirm freezes it")
@@ -702,7 +828,7 @@ def _commit(value: str) -> str:
     return campaign.validate_commit(value)
 
 
-COMMANDS = {"validate": cmd_validate, "plan": cmd_plan, "run": cmd_run, "status": cmd_status, "stop": cmd_stop, "answer": cmd_answer, "grade": cmd_grade,
+COMMANDS = {"drill": cmd_drill, "validate": cmd_validate, "plan": cmd_plan, "run": cmd_run, "status": cmd_status, "stop": cmd_stop, "answer": cmd_answer, "grade": cmd_grade,
             "report": cmd_report, "verify": cmd_verify, "teardown": cmd_teardown, "tools": cmd_tools, "campaign": cmd_campaign,
             "discriminate": cmd_discriminate}
 

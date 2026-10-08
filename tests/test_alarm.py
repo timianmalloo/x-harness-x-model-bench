@@ -5,6 +5,7 @@ Every fixture is a hand-built ledger over the shared archived-run builder's plan
 alarming test fails on its own assertion (`exit == 6`), never on argparse or an import.
 """
 
+import ast
 import json
 import os
 import shutil
@@ -21,6 +22,107 @@ from harness_bench import alarm, cli, ledger, oslock, status
 
 AFTER = 600
 TASK = Path(__file__).resolve().parents[1] / "tools" / "alarm-task.ps1"
+
+DRILL_ID = "drill-0123abcd"
+DRILL_TASK = "HarnessBenchAlarmDrill"
+SEEDED = "2026-10-08T01:00:00Z"
+PUSHED = "2026-10-08T01:00:01Z"
+ACKED = "2026-10-08T01:00:02Z"
+
+
+def drill_cli(root, runs, *args):
+    try:
+        return cli.main(["--root", str(root), "--runs", str(runs), "drill", *args])
+    except SystemExit as exc:
+        return int(exc.code or 0)
+
+
+@pytest.fixture
+def seeded_drill(tmp_path, monkeypatch):
+    root = tmp_path / "root"
+    run = tmp_path / "runs" / DRILL_ID
+    run.mkdir(parents=True)
+    (run / "plan.json").write_text("{}", encoding="utf-8")
+    seed = {"run_id": DRILL_ID, "seeded_at": SEEDED, "task": DRILL_TASK, "bench_commit": "a" * 40}
+    (run / "drill-seed.json").write_text(json.dumps(seed), encoding="utf-8")
+    (run / "alarm-delivery.log").write_text(f"{PUSHED} exit=6 push ok code=HB-ALM-001 task={DRILL_TASK}\n", encoding="ascii")
+    monkeypatch.setattr(cli, "_drill_now", lambda: ACKED, raising=False)
+    return root, run
+
+
+@pytest.mark.parametrize("missing", ["seeded run", "seed metadata", "push ok", "alarm code", "scheduled task"])
+def test_drill_ack_missing_evidence_refuses_hb_usr_002(seeded_drill, capsys, missing):
+    root, run = seeded_drill
+    if missing == "seeded run":
+        (run / "plan.json").unlink()
+    elif missing == "seed metadata":
+        (run / "drill-seed.json").unlink()
+    else:
+        code = "check-error" if missing == "alarm code" else "HB-ALM-001"
+        task = "OtherTask" if missing == "scheduled task" else DRILL_TASK
+        stamp = SEEDED if missing == "push ok" else PUSHED
+        (run / "alarm-delivery.log").write_text(f"{stamp} exit=6 push ok code={code} task={task}\n", encoding="ascii")
+
+    rc = drill_cli(root, run.parent, "ack", "--run-id", DRILL_ID)
+
+    assert rc == 1 and "HB-USR-002" in capsys.readouterr().err
+    assert not (root / "bench" / "drills").exists()
+
+
+def test_drill_ack_writes_canonical_create_once_attestation(seeded_drill, capsys):
+    root, run = seeded_drill
+    # An older successful push is not evidence; use the first valid push after seeding.
+    (run / "alarm-delivery.log").write_text(
+        f"{SEEDED} exit=6 push ok code=HB-ALM-001 task={DRILL_TASK}\n"
+        f"{PUSHED} exit=6 push ok code=HB-ALM-002 task={DRILL_TASK}\n"
+        f"{ACKED} exit=6 push ok code=HB-ALM-001 task={DRILL_TASK}\n", encoding="ascii")
+
+    assert drill_cli(root, run.parent, "ack", "--run-id", DRILL_ID, "--toast", "not-seen") == 0
+
+    path = root / "bench" / "drills" / f"{DRILL_ID}.json"
+    record = json.loads(path.read_bytes())
+    assert record == {"schema": "bench-drill/1", "run_id": DRILL_ID, "code": "HB-ALM-002", "task": DRILL_TASK,
+                      "seeded_at": SEEDED, "pushed_at": PUSHED, "acknowledged_at": ACKED, "toast": "not-seen", "bench_commit": "a" * 40}
+    assert path.read_bytes() == ledger.canonical(record)
+    before = path.read_bytes()
+    assert drill_cli(root, run.parent, "ack", "--run-id", DRILL_ID, "--toast", "not-seen") == 0
+    assert drill_cli(root, run.parent, "ack", "--run-id", DRILL_ID, "--toast", "seen") == 5
+    assert "HB-LED-007" in capsys.readouterr().err and path.read_bytes() == before
+
+
+def test_drill_start_seeds_alarmable_run_triggers_task_and_hides_id(tmp_path, monkeypatch, capsys):
+    root = tmp_path / "root"
+    runs = tmp_path / "runs"
+    calls = []
+    monkeypatch.setattr(cli, "_drill_now", lambda: SEEDED)
+    monkeypatch.setattr(cli, "_drill_run_id", lambda: DRILL_ID, raising=False)
+    monkeypatch.setattr(cli, "_trigger_drill", lambda task: calls.append(task), raising=False)
+    monkeypatch.setattr(cli.gitsafe, "git", lambda *a, **k: type("Head", (), {"stdout": "a" * 40})())
+
+    rc = drill_cli(root, runs, "start", "--task", DRILL_TASK)
+
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert DRILL_ID not in out and "phone" in out and "ack" in out
+    assert calls == [DRILL_TASK]
+    run = runs / DRILL_ID
+    seed = json.loads((run / "drill-seed.json").read_bytes())
+    assert seed == {"run_id": DRILL_ID, "seeded_at": SEEDED, "task": DRILL_TASK, "bench_commit": "a" * 40}
+    assert not (root / "bench" / "drills").exists()
+    assert cli.main(["--runs", str(runs), "status", DRILL_ID, "--alarm-after", "60", "--json"]) == 6
+    output = capsys.readouterr()
+    assert json.loads(output.out)["alarm"]["code"] == "HB-ALM-001"
+    assert "HB-ALM-001" in output.err
+
+
+def test_owned_alarm_process_launches_hide_console_windows():
+    files = [Path(__file__), Path(__file__).with_name("test_alarm_task.py")]
+    for path in files:
+        calls = [n for n in ast.walk(ast.parse(path.read_text(encoding="utf-8")))
+                 if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                 and isinstance(n.func.value, ast.Name) and n.func.value.id == "subprocess" and n.func.attr in ("run", "Popen")]
+        assert calls
+        assert all(any(k.arg == "creationflags" for k in call.keywords) for call in calls), path.name
 
 
 def _at(age_s: float) -> str:
@@ -179,7 +281,7 @@ def test_real_status_command_feeds_the_real_alarm_task(env, tmp_path):  # INT-A 
     bench.write_text(f'@echo off\r\n"{sys.executable}" -c "import sys; from harness_bench.cli import main; sys.exit(main(sys.argv[1:]))" '
                      f'--runs "{runs}" %*\r\n', encoding="ascii")  # stderr passes through, as in the scheduled task
     real = subprocess.run([str(bench), "status", env.name, "--alarm-after", "600", "--json"], capture_output=True, text=True, timeout=120,
-                          check=False)
+                          check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     printed = real.stderr.split(":", 1)[0]
     assert (real.returncode, printed) == (6, "HB-ALM-001")
     sent = tmp_path / "sent.txt"
@@ -188,6 +290,6 @@ def test_real_status_command_feeds_the_real_alarm_task(env, tmp_path):  # INT-A 
     task_env = {k: v for k, v in os.environ.items() if not k.startswith("HB_ALARM_")} | {"HB_TEST_SENT": str(sent), "HB_ALARM_NTFY_TOPIC": "tpc-fake-0001"}
     task = subprocess.run(["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(TASK), "-RunId", env.name, "-AlarmAfter", "600",
                            "-DryRun", "-Bench", str(bench), "-RunsRoot", str(runs), "-RestStub", str(tmp_path / "rest.ps1")],
-                          capture_output=True, text=True, timeout=120, env=task_env, check=False)
+                          capture_output=True, text=True, timeout=120, env=task_env, check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     assert task.returncode == 6
     assert f"run {env.name} {printed} " in sent.read_text(encoding="ascii")  # the payload's code is the one the command printed
