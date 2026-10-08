@@ -10203,7 +10203,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TD\n  O([Open report]) --> H[Header + campaign block: question, arms, pre-registration hash, baseline, fixes, MDE]\n  O -->|run in no campaign| NC([No verdict section; harness-bench report as before])\n  H -->|run ineligible| IN([Verdict section states reason and differing items; no verdicts])\n  H --> T[Verdict table: property x harness, per comparison]\n  T -->|better or worse| E1[Effect, interval, MDE mark, token ratio]\n  T -->|no difference >= MDE| E2([Interval inside the MDE band; reader can rule out effects of MDE size])\n  T -->|inconclusive| E3([Reason: underpowered or not recorded, with counts; reader sees what more data would need])\n  E1 -->|dominance rule met| D([A dominates B: keep A for this harness])\n  E1 -->|better but costlier| C([better at xN tokens: reader weighs value against cost])\n  T -->|activate a verdict| RUNS[Runs filtered to its pairs] --> UF3([Harness-bench UF-3: cell card])\n  T -->|activate excluded n| XL[Excluded cells: id, arm, cause] --> UF3\n  O -->|pack section read directly| PK([Pack section: header and every intention verdict labelled exploratory; link to section 3])\n  UF3 -->|archive absent| NA([Archive not in this copy + path])\n  H -->|analysis not pre-registered| EX([Labelled exploratory wherever shown; not a verdict])"
         }
       ],
-      "sourceSha256": "dc44b25711edc3125b255de5df1e911a90cda089f18f7b433b26037d467392d1"
+      "sourceSha256": "3aac0f48f6bb821d5d0118995496abd4b0810071d5f6c2dfcfb1ded704b26163"
     },
     {
       "id": "spec-harness-bench",
@@ -10275,7 +10275,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TD\n  A([P2 runs /new-bench-task ID]) --> S[stub: task.yaml from template]\n  S --> D[draft: prompt.md, workspace base]\n  D --> O[oracle: hidden tests / rubric / clarifications / seeded bug]\n  O --> V{bench validate}\n  V -->|contract broken| E[Folder, rule, fix] --> O\n  V -->|scenario 1, no clarifications| E\n  V -->|scenario 7, no seeded bug or no toolchain pin| E\n  V -->|ok| DIS{Discrimination check: reference passes, naive or seeded fails}\n  DIS -->|does not discriminate| E2[Oracle too weak or too strict: shown with both results] --> O\n  DIS -->|discriminates| R([status: ready])"
         }
       ],
-      "sourceSha256": "9d009f9d990506096fc9b3358ad05b5c2b70c8f8804b52fdb96958ba2d35e321"
+      "sourceSha256": "1da04b0fb82099ecc15ab77da1d33daeaf377f70c5c02ee7b8dda684265ae08e"
     },
     {
       "id": "threat-model",
@@ -10682,5 +10682,5 @@ window.DOCS_INDEX = {
       "artifactId": "run-report-e2e4"
     }
   ],
-  "graphSha256": "cb227ad9a093dde3ed156f03328ad2057477c44d9353700e1ebff6eef8c1e127"
+  "graphSha256": "f64aeaadf3bd1a143f8fdaa4cf0ed61ab62a82fa00d5ce61f8f0cd38cf40c13d"
 };

@@ -110,7 +110,7 @@ If this works end to end for the five properties, the benchmark answers the ques
 - **EN5** Privacy, compliance, operability and drift families (portfolio families I, J, L, P), and control variants. Each is a later family.
 - **EN6** Building the slimmed pack (approach E). It is built upstream and enters as a pack revision (harness-bench NG10).
 - **EN7** Parallel grading and other engine speed-ups during a campaign. An engine change lands before the engine baseline or not at all (EV-16). Grading time is measured (NFR) so a later change can be judged.
-- **EN8** A USD figure without a sourced, dated price (harness-bench NG8). Today `bench/prices.yaml` has no entries, and `cost_usd` was NA in 276 of 276 grid-4 cells. [Verified] Tokens are the cost axis until a price exists (DR-E3).
+- **EN8** A USD figure without a sourced, dated price (harness-bench NG8). Today `bench/prices.yaml` has no entries, and `cost_usd` was NA in 276 of 276 grid-4 cells. [Verified] Tokens are the cost axis until a price exists (DR-E3). Erratum 2026-10-08 (Ruling 115): tokens are the cost axis, always (R-115); a USD figure is never rendered; the price list is retired after E5.
 - **EN9** Re-scoring grids 1-4 under the new catalog. Historical scores keep their catalog version (US-4).
 - **EN10** Generalising a verdict beyond its sampled tasks. With two tasks per property, a verdict covers two independent codebases and is stated as such: "on <task a> and <task b>". The report shows each task's own effect beside the pooled one. A verdict that holds on both tasks generalises beyond one task. It still does not reach "this property in every codebase" (R-E1).
 
