@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T15:02:22Z",
+  "generated": "2026-10-08T17:21:23Z",
   "audit": [
     {
       "actor": null,
@@ -121290,6 +121290,39 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-08T15:02:19Z",
       "duration_seconds": 2.0
+    },
+    {
+      "id": "al-01M4E8HCY117BYYJN3DCXNZQPZ",
+      "shortname": "c56-c-w0",
+      "datetime": "2026-10-08T17:21:23Z",
+      "session": "coord-opus-fin",
+      "prompt": "Coordinator #56 (coord-opus-fin), Leader leader-fin epoch 19: C-W0, the plan's serial-spine item 2 - items 1-7 (console convention, drill record, DR-REDS, floors table, scratch root, operator decisions 2026-10-07/08 verbatim, PRIM-A control), with Leader additions: E5 pins, 3 grid slots, S-J4 go-ahead, drop-price track, Ruling 114's plan edits and note beside Ruling 109.",
+      "summary": "W0 rev 6.15 (R6.15a console convention, guard tests/test_console_windows.py, check tools/window_check.py; R6.15b drill record bench/drills/<run_id>.json bench-drill/1, bench drill start/ack, MULTI_NIGHT_HOURS=4, HB-CMP-011). Plan: C-W0 section (floors, scratch root, PRIM-A to F-PACK item 5, X-NOPRICE gated on DR-NOPRICE req-01M4E8C3H82CNVNTQXEG1VSEP7), operator decisions verbatim, errata (2 arms, 3 slots, pins, X-SJ4, R-114 X-REDS re-point). DR-REDS req-01M4E7WZPKYTPRYTXXP8Y5FYE4 ruled R-114 (B). Gates: derive 0, validate 0, citations 1 on the branch (R-114 lives on integrate/finish-19), 0 on the merge preview.",
+      "kind": "skill",
+      "skill": "compile",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/design/eval-seam-contracts.md",
+        "docs/coordination/coordination-finish.md",
+        "docs/notes/rulings.md",
+        "docs/lessons/defect-classes.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "C-W0: the W0 amendments every compile reads, and the Leader's additions",
+      "done_when": "each item written with file:line; DR-REDS id; new HB code ID-A checked; three gates run with exits read; named-path commits; coord session end",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-08T17:13:59Z",
+      "duration_seconds": 444.0,
+      "git": {
+        "sha": "94e97f4e9d8934849616a21ecf3af7f7f544e378",
+        "short": "94e97f4e9",
+        "branch": "coord/fin-c56-w0",
+        "pushed": null
+      }
     }
   ],
   "changes": [
