@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T17:57:58Z",
+  "generated": "2026-10-08T18:25:09Z",
   "audit": [
     {
       "actor": null,
@@ -146353,6 +146353,35 @@ window.AUDIT_DATA = {
         "branch": "build/fin-x-hyg",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M4EC65NZ2MCC6G4FW2P2C7B5",
+      "shortname": "xhyg2-fin H2 hand-back",
+      "datetime": "2026-10-08T18:25:09Z",
+      "session": "xhyg2-fin",
+      "prompt": "X-HYG turn 2: host-limited mutants",
+      "summary": "Session xhyg2-fin, run r-xhyg2-fin, branch build/fin-x-hyg2. Served model grok-4.7. Dispatch start 2026-10-08T18:15:12Z, end 2026-10-08T18:24:30Z. Outcome: split. No commit this turn. Last commit d858ec42b93510e35d323eb97e11a2717ed8ac52. Red SHA: none.\n\nThe red test is staged and uncommitted: tests/test_mutate_check.py, +91. git commit exit 1. The pre-commit output has no line \"N staged path(s) checked\". It printed NOT CHECKED tests/test_mutate_check.py because the record could not be read: leader-fin.jsonl:2122: Expecting value. That line is the four-character fragment in\"} in C:\\Projects\\x-harness-x-model-bench\\.agents\\log\\leader-fin.jsonl, between valid runner rows. It was still there at hand-back (2334 lines). HOOK-A: no further commit.\n\nRed observation, exit 1, three AssertionError failures, 3 failed in 4.95s, output C:\\tf\\xhyg\\h2-red.txt. tests/test_mutate_check.py:813 assert \"host-limited noop: os.name is nt\" in out, actual survived noop / 1 not killed. tests/test_mutate_check.py:837 assert \"host-limited follow: winerror 1314, no symlink right\" in out, actual survived follow / 1 not killed. tests/test_mutate_check.py:872 assert \"host-limited needs posix: os.name is nt\" in out, actual survived needs posix / survived still survives / 2 not killed.\n\nGates not run. verify-no-machine-paths not run. run-verify-gates not run. mutate_check not run. ruff not run. docs-graph validate not run. Windows check not run: git log --oneline -1 --grep=join-x-win printed no line.\n\nTokens: not recorded.\n\nContext. First reading 34896. Plan floor 88000, ceiling 128000, stop line 118000. Reading before the H2 red item and at the first edit: 89184, under 98000, so the red item started. Reading at hand-back: 123552, over 118000. The fix, the atomic.json host condition, and the final gate were not started.\n\nOpen steps. 1. Land the red commit of tests/test_mutate_check.py once leader-fin.jsonl line 2122 parses. The failing assertion lines are the three above. 2. Fix tools/mutate_check.py: an optional host condition (posix; symlink right), detected on the host (os.name; a symlink probe under C:\\tf\\xhyg that fails with winerror 1314), reported host-limited with that reason, never counted as killed, printed in the summary with its count, and not an exit failure on its own. 3. Set that condition on M14b (posix) and M27 (symlink right) in tests/mutations/atomic.json. 4. Final gate: the guard list, tests/test_mutate_check.py, verify-no-machine-paths.py exit 0, run-verify-gates.py 9 of 9, mutate_check on tests/mutations/mutate_check.json then tests/mutations/atomic.json (M14b and M27 host-limited), ruff check src tests tools, docs-graph.py validate.\n\nPreconditions before any edit passed: git status --short empty, 2a8f4d84 and 7f96fb70 are ancestors of HEAD, coord session start registered xhyg2-fin. H1 was not redone. join-x-win is absent, so child processes are listed instead of the windows check.\n\nChild processes. Shell at the start command: PID 37744. uv PID 7112, command: uv run pytest -q tests/test_mutate_check.py::test_a_posix_host_condition_is_host_limited_when_os_name_is_not_posix tests/test_mutate_check.py::test_a_symlink_right_condition_is_host_limited_when_the_probe_fails_with_winerror_1314 tests/test_mutate_check.py::test_a_host_limited_mutant_does_not_excuse_another_mutant_that_survives --basetemp C:\\tf\\xhyg\\pytest-h2-red. Descendants: 28136 and 32092 (no command line captured); 36012 pytest.exe -q those three tests --basetemp C:\\tf\\xhyg\\pytest-h2-red; 32236 .venv\\Scripts\\python.exe pytest.exe -q those three tests; 43680 uv cpython-3.14 python.exe pytest.exe -q those three tests; 22116 (no command line captured); 31336 and 11688 and 39964 and 32740 .venv\\Scripts\\python.exe -m pytest -q --color=no -rfEs -m \"\" -p no:cacheprovider test_m.py::test_x; 38324 and 31008 and 34996 and 21164 cpython-3.14 python.exe -m pytest -q --color=no -rfEs -m \"\" -p no:cacheprovider test_m.py::test_x.\n\nDefect class, reported as text and not committed: a torn append in the coordination log. leader-fin.jsonl line 2122 is the fragment in\"} (JSON Expecting value). The rows on either side are whole. read_events fails the corpus, and the pre-commit hook answers NOT CHECKED for every staged path, so a worker cannot commit.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "tests/test_mutate_check.py"
+      ],
+      "tags": [
+        "x-hyg",
+        "split"
+      ],
+      "outcome": "blocked",
+      "compiled": false,
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_executed": true,
+        "acceptance_met": false
+      },
+      "started_at": "2026-10-08T18:15:12Z",
+      "duration_seconds": 597.0
     }
   ],
   "changes": [
