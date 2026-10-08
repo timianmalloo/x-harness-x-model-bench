@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T20:09:18Z",
+  "generated": "2026-10-08T20:24:56Z",
   "audit": [
     {
       "actor": null,
@@ -160872,12 +160872,71 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M4EJ4VDJ2P1ATRJ9TK7P74J8",
-      "shortname": "join-c60-compile",
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
       "datetime": "2026-10-08T20:09:18Z",
-      "session": "leader-fin",
+      "done_when": "conductor-join exit 0 (docs-only)",
+      "duration_seconds": 2.0,
+      "fan_out": 0,
+      "goal": "Join #60",
+      "id": "al-01M4EJ4VDJ2P1ATRJ9TK7P74J8",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "the join of coord/fin-c60-compile into integrate/finish-19",
+      "session": "leader-fin",
+      "shortname": "join-c60-compile",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "execute-with-coordination",
+      "started_at": "2026-10-08T20:09:16Z",
       "summary": "Coordinator #60 b64c2e2e: X-PACKOFF al-01M4EH46K4KDVC0NZ1A3Z8VPY1 (Sonnet, R-116; HB-PRE-009; W1-L Erratum 5); PACKOFF-A registered (control HB-PRE-009 + two tests); MUT-E instance (find text matched by new code first; upgrade: mutate_check errors on a non-unique find); plan: X-PACKOFF rows, X-E5M re-plan erratum, X-WIN t4 Sonnet deviation, DR-PACKOFF ruled recount_seconds=0 (docs_only=True).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-08T19:00:52Z",
+      "done_when": "red: a fixture store built from the observed layout (the backslash key `C%3A%5C...`, a folder named by Grok's session UUID, its `summary.json` `info.cwd`) is not found by `--tree <path>` today; green: `--tree` finds the newest session for that tree, `--session` optional or matched against the session's `summary.json`; one mutant (the old forward-slash key) killed; the fixed tool reads the real X-PROP store",
+      "duration_seconds": 910.0,
+      "fan_out": 0,
+      "git": {
+        "branch": "build/fin-x-gsm",
+        "pushed": null,
+        "sha": "0d9d18ff190462df918ed4302a22fbcda76c0447",
+        "short": "0d9d18ff1"
+      },
+      "goal": "X-GSM: make tools/grok_served_model.py find a Grok session by the store's own layout (the backslash key and Grok's session UUID).",
+      "id": "al-01M4EE7HX4TYWAWWYGXEZ4C9D3",
+      "kind": "skill",
+      "outcome": "partial",
+      "prompt": "X-GSM worker xgsm-fin: red-first the observed Grok store key, then match it by normcase(normpath(unquote(name))) and summary.json. Split at the 108k stop line after the final guard.",
+      "session": "xgsm-fin",
+      "shortname": "xgsm-fin-store-key",
+      "signals": {
+        "acceptance_met": false,
+        "verification_executed": true
+      },
+      "skill": "coordination-worker",
+      "started_at": "2026-10-08T18:45:42Z",
+      "summary": "Session xgsm-fin, run r-xgsm-fin, branch build/fin-x-gsm. Outcome: split. Last commit 0d9d18ff190462df918ed4302a22fbcda76c0447. Hand-back by the context stop line (108k), not a test failure.\n\nDispatch start: 2026-10-08T18:45:42Z. End wall-clock: the append datetime of this entry.\n\nServed model id (model_id of the first assistant row in this session's chat_history.jsonl): grok-4.7-build.\nTokens from the harness's reported usage: not recorded.\n\nFloor and context samples (params._meta.totalTokens):\n- first reading: 35827\n- declared floor for the split rule: 88000\n- at the first edit (G1): 75332\n- before the first-commit guard: 80656\n- before G2: 85688\n- before G3: 97435\n- before G4 and the final gate: 100158\n- before the final guard: 104812\n- before the own-tests gate: 110138 (stop; no further gate started)\n\nRed SHA: b49d6a51427895d17dcc87ab31d22d644cb170ce\nFailing assertion: assert newest.returncode == 0, newest.stdout + newest.stderr\n(tests/test_grok_served_model.py, AssertionError, returncode 2, stderr \"need <session dir>, or --tree and --session\")\nFix SHA: 24a606dbb2131a7e923fe62d1a425a7b6aa22d76\nMutant SHA: 0d9d18ff190462df918ed4302a22fbcda76c0447\n\nGates:\n- first commit, uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py --basetemp C:\\tf\\xgsm\\guard1-base : exit 0 (210 passed). PID 9072.\n- G2, uv run pytest -q tests/test_grok_served_model.py --basetemp C:\\tf\\xgsm\\g2-base : exit 0 (25 passed). PID 31756. This was before the fix commit, on the same tree that was committed.\n- G3, uv run python tools/mutate_check.py tests/mutations/grok_served_model.json : exit 0, every mutation killed (M1-M5, M5 is the forward-slash key). PID 40928. Run before the mutant commit, on the same file that was committed.\n- G4, uv run python tools/grok_served_model.py --tree C:/Projects/x-harness-x-model-bench-build-fin-x-prop : exit 0. PID 2068.\n  Line: chat_history.jsonl responses: grok-4.7-build x67\n- final commit guard, same guard list, --basetemp C:\\tf\\xgsm\\guard2-base : exit 0 (210 passed). PID 43712.\n- final uv run pytest -q tests/test_grok_served_model.py : not started (context 110138).\n- final uv run python tools/mutate_check.py tests/mutations/grok_served_model.json : not started.\n- uv run ruff check src tests tools : not started.\n- python docs/ai-forward-pack/scripts/docs-graph.py validate : not started.\n\nG4 full stdout:\nchat_history.jsonl responses: grok-4.7-build x67\nusage.json models: grok-4.7-build\nsummary.json current_model_id: grok-4.7\nOK: every response served grok-4.7*\n\nOpen steps: the four gates named above as not started, on commit 0d9d18ff. No further edit is open. X-WIN has not joined (git log --oneline -1 --grep=join-x-win printed no line), so the windows check was not run.\n\nChild processes (Start-Process -NoNewWindow; command line and PID):\n- uv run pytest -q tests/test_grok_served_model.py::test_observed_layout_is_found_by_tree --basetemp C:\\tf\\xgsm\\g1-red-base : PID 37540, exit 1 (assertion)\n- uv run pytest -q <guard list> --basetemp C:\\tf\\xgsm\\guard1-base : PID 9072, exit 0\n- uv run pytest -q tests/test_grok_served_model.py --basetemp C:\\tf\\xgsm\\g2-base : PID 31756, exit 0\n- uv run python tools/mutate_check.py tests/mutations/grok_served_model.json : PID 40928, exit 0\n- uv run python tools/grok_served_model.py --tree C:/Projects/x-harness-x-model-bench-build-fin-x-prop : PID 2068, exit 0\n- uv run pytest -q <guard list> --basetemp C:\\tf\\xgsm\\guard2-base : PID 43712, exit 0\ncoord session start, coord claim, git add/commit, and the context python -c lines ran in the session shells. Their PIDs were not captured. One early shell PID was 34332. No process was killed.\n\nSTORE-A, as text for the Coordinator (not committed here): the reader now matches the store key by os.path.normcase(os.path.normpath(unquote(name))) and chooses the session from summary.json. A folder with no summary.json is skipped. The G1 fixture has a summary for both sessions, so that path was not the one the test asserted.",
+      "tags": [],
+      "tier": "T1",
+      "tool": "grok"
+    },
+    {
+      "id": "al-01M4EK1FDX4XRWC469T02A1G5Q",
+      "shortname": "join-x-gsm",
+      "datetime": "2026-10-08T20:24:55Z",
+      "session": "leader-fin",
+      "prompt": "the join of build/fin-x-gsm into integrate/finish-19",
+      "summary": "X-GSM 0d9d18ff (red b49d6a51): tools/grok_served_model.py keys the store on the observed backslash form and Grok's UUID session folder; STORE-A control (fixture from the observed layout) + forward-slash mutant. Leader: red 1 failed on assertion, 25 passed, M4/M5 killed, ruff 0, real X-PROP store read exit 0 grok-4.7-build recount_seconds=921 (docs_only=False).",
       "kind": "skill",
       "skill": "execute-with-coordination",
       "tool": null,
@@ -160886,8 +160945,8 @@ window.AUDIT_DATA = {
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Join #60",
-      "done_when": "conductor-join exit 0 (docs-only)",
+      "goal": "Join X-GSM",
+      "done_when": "conductor-join exit 0 with the recount green",
       "tier": "T1",
       "fan_out": 0,
       "signals": {
@@ -160895,8 +160954,8 @@ window.AUDIT_DATA = {
         "verification_executed": true,
         "acceptance_met": true
       },
-      "started_at": "2026-10-08T20:09:16Z",
-      "duration_seconds": 2.0
+      "started_at": "2026-10-08T20:09:33Z",
+      "duration_seconds": 922.0
     }
   ],
   "changes": [
