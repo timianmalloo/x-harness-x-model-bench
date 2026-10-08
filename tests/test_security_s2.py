@@ -156,7 +156,8 @@ def run_hidden(base: Path, source: str) -> Hidden:
     grading = _copy_base(base, _WORK / f"hidden-{next(_counter)}", source)
     shutil.copy(TASK / "tests" / "test_taskboard_hidden.py", grading)
     proc = subprocess.run([sys._base_executable, "-S", "-m", "unittest", "-v", "test_taskboard_hidden"], cwd=grading,
-                          capture_output=True, text=True, timeout=180, check=False)
+                          capture_output=True, text=True, timeout=180, check=False,
+                          creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     out = proc.stdout + proc.stderr
     return Hidden(frozenset(re.findall(r"^FAIL: (test_\w+)", out, re.MULTILINE)),
                   frozenset(re.findall(r"^ERROR: (test_\w+)", out, re.MULTILINE)), out)
@@ -372,14 +373,14 @@ def test_s2_pin_is_a_full_commit_with_matching_content_hashes(s2_base):
     upstream = ring_cache.ring_root("s2") / "upstream"
     clone = next(p for p in upstream.iterdir() if (p / ".git").is_dir())
     tree = subprocess.run(["git", "rev-parse", f"{source['commit']}^{{tree}}"], cwd=clone, capture_output=True, text=True,
-                          check=True).stdout.strip()
+                          check=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.strip()
     recorded = re.search(r"^- pin tree: `([0-9a-f]{40})`", (ORACLE / "evidence.md").read_text(encoding="utf-8"), re.MULTILINE).group(1)
     assert recorded == tree
     built = {name: hashlib.sha256((s2_base / name).read_bytes()).hexdigest() for name in ("bottle.py", "LICENSE")}
     assert pin_problems(source["commit"], built, source["sha256"], (TASK / "NOTICE.md").is_file(),
                         (TASK / "LICENSE").read_text(encoding="utf-8")) == []
     listed = set(subprocess.run(["git", "ls-tree", "-r", "--name-only", source["commit"]], cwd=clone, capture_output=True,
-                                text=True, check=True).stdout.split())
+                                text=True, check=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.split())
     present = {p.relative_to(s2_base).as_posix() for p in s2_base.rglob("*") if p.is_file() and ".git" not in p.relative_to(s2_base).parts}
     assert present - listed == {".gitkeep"} and listed - present == set()
 
@@ -460,13 +461,16 @@ def judge_variant(spec: dict, hidden: Hidden, checked: Checked) -> set[str]:
     return failed
 
 
-VARIANT_NAMES = list(literal_table(ORACLE / "variants.py", "VARIANTS")) if (ORACLE / "variants.py").is_file() else []
+NEW_VARIANTS = ["injfmt"]
+VARIANT_NAMES = (list(literal_table(ORACLE / "variants.py", "VARIANTS")) + [n for n in NEW_VARIANTS if n not in literal_table(ORACLE / "variants.py", "VARIANTS")]) if (ORACLE / "variants.py").is_file() else []
 
 
 @pytest.mark.parametrize("name", VARIANT_NAMES)
 def test_s2_each_defect_variant_flips_exactly_its_own_probe(s2_base, name):
     """A6: the reference passes all; each single defect fails exactly its own probe, with its deciding clause."""
-    spec = literal_table(ORACLE / "variants.py", "VARIANTS")[name]
+    variants = literal_table(ORACLE / "variants.py", "VARIANTS")
+    assert name in variants, f"{name} is not in VARIANTS"
+    spec = variants[name]
     source = with_edits(reference_source(), [(e["old"], e["new"]) for e in spec["edits"]])
     assert source != reference_source(), f"{name} carries no edit"
     assert judge_variant(spec, run_hidden(s2_base, source), run_check(s2_base, source)) == set(), run_check(s2_base, source).probes
