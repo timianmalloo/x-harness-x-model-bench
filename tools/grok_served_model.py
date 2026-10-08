@@ -1,7 +1,7 @@
 """Read the model Grok served for one dispatch from its session store (R-92 condition 1).
 
     python tools/grok_served_model.py <session dir>
-    python tools/grok_served_model.py --tree <worker tree path> --session <id> [--root <sessions root>]
+    python tools/grok_served_model.py --tree <worker tree path> [--session <id>] [--root <sessions root>]
 
 The served id is read from the `model_id` field of each `assistant` row in chat_history.jsonl, never from
 argv, a model list, the summary, or any text a worker read (a `git log` line naming grok-4.6 is not a served id).
@@ -27,12 +27,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import unquote
 
 POLL_SECONDS = 2
 PIN = "grok-4.7"
@@ -147,11 +148,71 @@ def first_check(session_dir: Path, pin: str, wait: float = 0) -> tuple[int, str]
     return 0, line
 
 
+def _same_path(left: str, right: str) -> bool:
+    """True when both spellings are one path after URL-decoding.
+
+    Grok names the store folder with the tree path's backslashes, URL-encoded.
+    ``--tree`` may use forward slashes. Both sides go through
+    ``os.path.normcase(os.path.normpath(unquote(name)))``.
+    """
+    return os.path.normcase(os.path.normpath(unquote(left))) == os.path.normcase(os.path.normpath(unquote(right)))
+
+
+def _summary(folder: Path) -> dict | None:
+    path = folder / "summary.json"
+    if not path.is_file():
+        return None
+    try:
+        return _json(path)
+    except NotRecorded:
+        return None
+
+
+def resolve_tree_session(root: Path, tree: str, session: str | None) -> Path | None:
+    """The session folder Grok keyed by its own path and its own id.
+
+    A ``--session`` that names a folder under that key is that folder. Any other
+    id, including none, is the newest session whose ``summary.json`` ``info.cwd``
+    is this tree (``updated_at``, UTC ISO-8601). A folder with no summary is skipped.
+    """
+    if not root.is_dir():
+        return None
+    key_dir = None
+    for child in root.iterdir():
+        if child.is_dir() and _same_path(child.name, tree):
+            key_dir = child
+            break
+    if key_dir is None:
+        return None
+    if session:
+        named = key_dir / session
+        if named.is_dir():
+            return named
+    best: Path | None = None
+    best_stamp = ""
+    for child in key_dir.iterdir():
+        if not child.is_dir():
+            continue
+        summary = _summary(child)
+        if summary is None:
+            continue
+        info = summary.get("info")
+        cwd = info.get("cwd") if isinstance(info, dict) else None
+        if not isinstance(cwd, str) or not _same_path(cwd, tree):
+            continue
+        stamp = summary.get("updated_at")
+        stamp_s = stamp if isinstance(stamp, str) else ""
+        if best is None or stamp_s > best_stamp:
+            best = child
+            best_stamp = stamp_s
+    return best
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("session_dir", nargs="?", type=Path)
     parser.add_argument("--tree", help="worker tree path, as grok recorded it")
-    parser.add_argument("--session", help="session id (with --tree)")
+    parser.add_argument("--session", help="session folder under the tree (optional; else the newest)")
     parser.add_argument("--root", type=Path, default=DEFAULT_ROOT, help="sessions root (default ~/.grok/sessions)")
     parser.add_argument("--pin", default=PIN, help=f"required id prefix (default {PIN})")
     parser.add_argument("--first", action="store_true")
@@ -162,10 +223,14 @@ def main(argv: list[str] | None = None) -> int:
         return 2 if exc.code else 0
     if args.session_dir is not None:
         directory = args.session_dir
-    elif args.tree and args.session:
-        directory = args.root / quote(args.tree, safe="") / args.session
+    elif args.tree:
+        found = resolve_tree_session(args.root, args.tree, args.session)
+        if found is None:
+            sys.stdout.write("not recorded: no session store for this tree\n")
+            return 2
+        directory = found
     else:
-        sys.stderr.write("need <session dir>, or --tree and --session\n")
+        sys.stderr.write("need <session dir>, or --tree\n")
         return 2
     if args.first:
         code, text = first_check(directory, args.pin, args.wait)
