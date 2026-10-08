@@ -175,4 +175,15 @@ VARIANTS = {
             },
         ],
     },
+    "travpath": {
+        "flips": ['trav-1'],
+        "clauses": {'trav-1': 'T0,T1,T2,T4'},
+        "edits": [
+            {
+                "file": 'examples/taskboard/app.py',
+                "old": '        return bottle.static_file(name, root=files_dir)\n',
+                "new": "        import pathlib\n        target = (pathlib.Path(files_dir) / name).resolve()\n        if target.is_file():\n            return target.read_text(encoding='utf-8')\n        bottle.abort(404, 'not found')\n",
+            },
+        ],
+    },
 }
