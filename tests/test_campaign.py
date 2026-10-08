@@ -105,6 +105,52 @@ def test_register_multi_night_preview_names_missing_drill_without_writing(tmp_pa
     assert snapshot(root) == before
 
 
+DRILL_RECORD = {
+    "schema": "bench-drill/1", "run_id": "drill-0123abcd", "code": "HB-ALM-001", "task": "HarnessBenchAlarmDrill",
+    "seeded_at": "2026-10-08T01:00:00Z", "pushed_at": "2026-10-08T01:00:01Z",
+    "acknowledged_at": "2026-10-08T01:00:02Z", "toast": "not-run", "bench_commit": "a" * 40,
+}
+DRILL_CASES = {
+    **{f"missing-{key}": {k: v for k, v in DRILL_RECORD.items() if k != key} for key in DRILL_RECORD},
+    **{f"not-string-{key}": {**DRILL_RECORD, key: 123} for key in DRILL_RECORD},
+    "schema": {**DRILL_RECORD, "schema": "bench-drill/2"},
+    "bad-id": {**DRILL_RECORD, "run_id": "../other"},
+    "check-error": {**DRILL_RECORD, "code": "check-error"},
+    "bad-toast": {**DRILL_RECORD, "toast": "probably"},
+    "bad-commit": {**DRILL_RECORD, "bench_commit": "a" * 39},
+    "bad-date": {**DRILL_RECORD, "pushed_at": "2026-02-30T01:00:01Z"},
+    "not-utc": {**DRILL_RECORD, "pushed_at": "2026-10-08T01:00:01+00:00"},
+    "seed-equals-push": {**DRILL_RECORD, "pushed_at": DRILL_RECORD["seeded_at"]},
+    "ack-before-push": {**DRILL_RECORD, "acknowledged_at": DRILL_RECORD["seeded_at"]},
+    "extra-secret": {**DRILL_RECORD, "topic": "fake-topic"},
+    "not-json": "{", "not-object": [],
+    "valid": DRILL_RECORD,
+    "ack-equals-push": {**DRILL_RECORD, "acknowledged_at": DRILL_RECORD["pushed_at"], "code": "HB-ALM-002", "toast": "not-seen"},
+}
+
+
+@pytest.mark.parametrize("case", list(DRILL_CASES))
+def test_register_drill_record_validity(tmp_path, capsys, stubs, case):
+    root = tree(tmp_path)
+    argv = drill_registration(root)
+    folder = root / "bench" / "drills"
+    folder.mkdir()
+    record = DRILL_CASES[case]
+    (folder / "drill-0123abcd.json").write_text(record if isinstance(record, str) else json.dumps(record), encoding="utf-8")
+    before = snapshot(cdir(root))
+    capsys.readouterr()
+
+    rc = bench(root, *argv)
+
+    if case in ("valid", "ack-equals-push"):
+        assert rc == 0
+        assert bench(root, *argv[:-2]) == 0
+        assert "drill: drill-0123abcd acknowledged" in capsys.readouterr().out
+    else:
+        assert rc == 1 and "HB-CMP-011" in err_of(capsys)
+        assert snapshot(cdir(root)) == before
+
+
 def findings_for(root, cid=CID):
     return [f for f in campaign.verify(root, cid) if f.level == "error"]
 
