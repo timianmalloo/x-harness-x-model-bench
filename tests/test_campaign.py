@@ -13,9 +13,9 @@ import re
 from pathlib import Path
 
 import pytest
+import test_campaign_register as drill_fixtures
 from test_campaign_register import ready as drill_ready
 from test_campaign_register import stmt as drill_statement
-from test_campaign_register import stubs  # noqa: F401 - fixture for the real pilot boundary
 from test_cli_campaign import (
     ARGV,
     CID,
@@ -57,6 +57,7 @@ from harness_bench import campaign, cli, identity, ledger, plan, status
 from harness_bench import power as power_model
 
 H64 = "0123456789abcdef" * 4
+stubs = drill_fixtures.stubs  # Re-export the pilot fixture without an imported-name shadow.
 
 
 def drill_registration(root, hours=5):
