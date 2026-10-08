@@ -1975,7 +1975,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "afc5a6c415ef3d5a0fb7a569b72954b2e92204cb8ff9adb12181d86ccde14ad9"
+      "sourceSha256": "cacd6f4a2c7dc157156c4ee16adc4636fe2e7d4a063f87f9ef814d7d18d7900b"
     },
     {
       "id": "design-eval-arms",
@@ -2667,7 +2667,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation: W0 (serial spine item 2), before Wave 1",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "Revision 6.13 (Coordinator #39: HB-PLN-005 retired by X-A3c; the copy_retries null erratum; J1c's snapshot TABLE entry; X-K2b no longer waits on X-TE9; HB-ALM-003 to E5; the G1 cli.py and workspace.py pins stay; rev-6.13 change table at the end). Revision 6.12 (Coordinator #35: `cell.turn_ended` carries the int `turn_ms`, not a float `turn_seconds`, because the canonical form has no floats; X-J1b writes the one `lifecycle.TABLE` entry for it; the discrimination record's `hosts_ready` is an int count; rev-6.12 change table at the end). Revision 6.11 (C-W0, Coordinator #31: R-106's launch-recheck key set in section 6, the R-106 c7 reader key-set sweep, the shared-value rule (keys and value types), the X-K2a script-only split, the section 13 rows of the E2-E4 plan and HB-GRD-007 to X-C; rev-6.11 change table and re-read list at the end). Revision 6 (R-98: the discrimination record body drops `run_id` and `grading_id`, ADR-0016 Amendment 1; and the conditions of the five W0 rev 4/5 delta reviews; rev-6 change table and re-read list at the end). Revision 5 (the W1-E and W1-L seam answers SR-E1, SR-E2, SR-L1..SR-L4, the W1-L review rulings and R-97; rev-5 change table and re-read list at the end; DR-E1, then open, is ruled by R-98 and applied in rev 6). Revision 4 (the batch-b seam answers and the RV-PAT, RV-SIM, RV-SEC and RV-DS cross-slice findings on W1-B, W1-C, W1-D and W1-H; rev-4 change table and the delta re-read list at the end; rev 3's table kept). The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
+      "summary": "Revision 6.15 (C-W0, Coordinator #56: the console-window convention for every child launch in tools/ and tests/, R6.15a; the alarm drill record bench-drill/1 at bench/drills/, the two bench drill commands and register's HB-CMP-011 refusal, R6.15b; rev-6.15 change table at the end). Revision 6.13 (Coordinator #39: HB-PLN-005 retired by X-A3c; the copy_retries null erratum; J1c's snapshot TABLE entry; X-K2b no longer waits on X-TE9; HB-ALM-003 to E5; the G1 cli.py and workspace.py pins stay; rev-6.13 change table at the end). Revision 6.12 (Coordinator #35: `cell.turn_ended` carries the int `turn_ms`, not a float `turn_seconds`, because the canonical form has no floats; X-J1b writes the one `lifecycle.TABLE` entry for it; the discrimination record's `hosts_ready` is an int count; rev-6.12 change table at the end). Revision 6.11 (C-W0, Coordinator #31: R-106's launch-recheck key set in section 6, the R-106 c7 reader key-set sweep, the shared-value rule (keys and value types), the X-K2a script-only split, the section 13 rows of the E2-E4 plan and HB-GRD-007 to X-C; rev-6.11 change table and re-read list at the end). Revision 6 (R-98: the discrimination record body drops `run_id` and `grading_id`, ADR-0016 Amendment 1; and the conditions of the five W0 rev 4/5 delta reviews; rev-6 change table and re-read list at the end). Revision 5 (the W1-E and W1-L seam answers SR-E1, SR-E2, SR-L1..SR-L4, the W1-L review rulings and R-97; rev-5 change table and re-read list at the end; DR-E1, then open, is ruled by R-98 and applied in rev 6). Revision 4 (the batch-b seam answers and the RV-PAT, RV-SIM, RV-SEC and RV-DS cross-slice findings on W1-B, W1-C, W1-D and W1-H; rev-4 change table and the delta re-read list at the end; rev 3's table kept). The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
       "tags": [
         "benchmark",
         "campaign",
@@ -2759,7 +2759,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ba38ea3052787fec9a2ddd977d88103d1825d66d7e4e9e8cec84d682ec416ffe"
+      "sourceSha256": "fb1d61c6b89ada2c7218aa3db4c92fdc109f4cb1486437b18f742d9214a4006b"
     },
     {
       "id": "design-eval-security-tasks",
@@ -4973,7 +4973,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3cb690bcf85d3ceb70fce35882f596cfb60af9c57f21a04b063a260302c62c84"
+      "sourceSha256": "0b48e5a55dd1c3d88f3f9b18fc96b4d3bc955bdd1b7b590d8693ef7dc940be62"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -9432,7 +9432,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d4d067561b3c59b5705e95174bf386684c9ebcc2382e5a0f88506eff72a12ea8"
+      "sourceSha256": "163636995f2b7654b4e3b1fb985f1d55fae8169a37328ba1b6979022c93089ff"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -10554,5 +10554,5 @@ window.DOCS_INDEX = {
       "artifactId": "run-report-e2e4"
     }
   ],
-  "graphSha256": "b9eda70059444172ce83feb4879449c6dcdd31bd0133c1ab6179a6682fba685c"
+  "graphSha256": "e260643bcaea8498d87858940794ddc190bd651828549bd7c058959f778d8748"
 };
