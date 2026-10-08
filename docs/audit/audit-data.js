@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T19:16:21Z",
+  "generated": "2026-10-08T19:30:08Z",
   "audit": [
     {
       "actor": null,
@@ -146398,6 +146398,33 @@ window.AUDIT_DATA = {
         "sha": "200e7085ec43c7baeb12cb15fccaedc1d33b8b82",
         "short": "200e7085e",
         "branch": "build/fin-x-win3",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M4EFX52KBDZV4PGTDD99JYYV",
+      "shortname": "xwin4-w3d",
+      "datetime": "2026-10-08T19:30:08Z",
+      "session": "xwin4-fin",
+      "prompt": "X-WIN turn 4: W3d sweep tests n-z, guard green",
+      "summary": "29 child launches in tests n-z now pass CREATE_NO_WINDOW; guard 29 violations -> green; 2 TIMING_ALLOWED entries for test_window_check stalls; no guard allowlist entries",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": "claude-sonnet-5-5",
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "tests n-z carry the R6.15a flag",
+      "done_when": "test_console_windows green",
+      "tier": "T1",
+      "started_at": "2026-10-08T19:18:11Z",
+      "duration_seconds": 717.0,
+      "git": {
+        "sha": "bd1d72bc5b7184dc29720caaa8e3584a7fa1de74",
+        "short": "bd1d72bc5",
+        "branch": "build/fin-x-win4",
         "pushed": null
       }
     }
