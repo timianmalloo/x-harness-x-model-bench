@@ -38,7 +38,7 @@ from test_cli_campaign import (
     write_plan,
 )
 
-from harness_bench import campaign, cli, gates, ledger, plan, power
+from harness_bench import atomic, campaign, cli, gates, ledger, plan, power
 
 ROOT = Path(__file__).resolve().parents[1]
 GID = "grade-20261004T101112-0a1b2c"
@@ -109,6 +109,18 @@ def ready(root: Path, upto: str) -> None:
              "powered": ["power", CID, "--inputs", str(power_file(root))], "admitted": ["admit", CID]}
     for name in STAGES[1 : STAGES.index(upto) + 1]:
         assert bench(root, "campaign", *steps[name]) == 0, name
+
+
+def drilled(root: Path) -> None:
+    """An acknowledged alarm drill under the root, written as `bench drill ack` writes it (create-once, bench-drill/1),
+    so an 8 h grid clears HB-CMP-011."""
+    record = {"schema": "bench-drill/1", "run_id": "drill-0123abcd", "code": "HB-ALM-001", "task": "HarnessBenchAlarmDrill",
+              "seeded_at": "2026-10-08T01:00:00Z", "pushed_at": "2026-10-08T01:00:01Z",
+              "acknowledged_at": "2026-10-08T01:00:02Z", "toast": "not-run", "bench_commit": "a" * 40}
+    assert campaign.valid_drill(record)
+    folder = root / "bench" / "drills"
+    folder.mkdir(parents=True, exist_ok=True)
+    assert atomic.create_once(folder / f"{record['run_id']}.json", ledger.canonical(record))
 
 
 def kinds_of(root: Path) -> list[str]:
@@ -258,6 +270,7 @@ def test_register_preview_writes_nothing_and_prints_level_rule_and_warning_c28(t
 
 def test_register_confirm_writes_file_then_row_c29(tmp_path, capsys, stubs):
     root = tree(tmp_path)
+    drilled(root)
     ready(root, "admitted")
     path, digest = stmt(root)
     before = snapshot(root)
@@ -331,6 +344,7 @@ def attach_row_plan(root, prereg_hash):
 
 def test_register_with_another_hash_before_attach_appends_and_latest_wins_c31(tmp_path, capsys, stubs):
     root = tree(tmp_path)
+    drilled(root)
     ready(root, "admitted")
     hashes = []
     for count in (3, 4):
@@ -343,6 +357,7 @@ def test_register_with_another_hash_before_attach_appends_and_latest_wins_c31(tm
 
 def test_register_is_refused_once_a_grid_is_attached_c35(tmp_path, capsys, stubs):
     root = tree(tmp_path)
+    drilled(root)
     ready(root, "admitted")
     path, digest = stmt(root)
     assert cmd(root, capsys, "register", CID, "--prereg", str(path), "--confirm", digest[:12])[0] == 0
@@ -355,6 +370,7 @@ def test_register_is_refused_once_a_grid_is_attached_c35(tmp_path, capsys, stubs
 
 def test_crash_between_file_and_row_recovers_for_register_c18(tmp_path, stubs, monkeypatch):
     root = tree(tmp_path)
+    drilled(root)
     ready(root, "admitted")
     path, digest = stmt(root)
     real, fired = campaign._append, []
@@ -376,6 +392,7 @@ def test_crash_between_file_and_row_recovers_for_register_c18(tmp_path, stubs, m
 
 def test_a_fix_in_registered_re_pilots_and_re_registers_c33(tmp_path, capsys, stubs):
     root = tree(tmp_path)
+    drilled(root)
     ready(root, "admitted")
     path, digest = stmt(root)
     confirm = ["register", CID, "--prereg", str(path), "--confirm", digest[:12]]
@@ -399,6 +416,7 @@ def test_a_fix_in_registered_re_pilots_and_re_registers_c33(tmp_path, capsys, st
 @pytest.mark.parametrize("sub", ["pilot attach", "pilot pass", "admit", "register"])
 def test_rerun_is_a_noop_c47(tmp_path, capsys, stubs, sub):
     root = tree(tmp_path)
+    drilled(root)
     ready(root, {"pilot attach": "plan", "pilot pass": "attached", "admit": "powered", "register": "admitted"}[sub])
     argv = {"pilot attach": ["pilot", "attach", CID, "P1"], "pilot pass": ["pilot", "pass", CID, "P1"], "admit": ["admit", CID]}.get(sub)
     if argv is None:
@@ -449,6 +467,7 @@ def two_statements(root, capsys):
 
 def test_register_then_attach_interleaving_i1(tmp_path, capsys, stubs, monkeypatch):
     root = tree(tmp_path)
+    drilled(root)
     _x, (y_path, y) = two_statements(root, capsys)
     errors = interleave(monkeypatch, lambda: campaign.register(root, CID, y_path, y[:12], wait_s=30),
                         lambda: campaign.attach(root, CID, "R2", wait_s=30), "registered")
@@ -458,6 +477,7 @@ def test_register_then_attach_interleaving_i1(tmp_path, capsys, stubs, monkeypat
 
 def test_attach_then_register_interleaving_i2(tmp_path, capsys, stubs, monkeypatch):
     root = tree(tmp_path)
+    drilled(root)
     x, (y_path, y) = two_statements(root, capsys)
     errors = interleave(monkeypatch, lambda: campaign.attach(root, CID, "R2", wait_s=30),
                         lambda: campaign.register(root, CID, y_path, y[:12], wait_s=30), "grid.attached")
@@ -516,6 +536,7 @@ def test_content_reads_one_file_and_refuses_an_unreadable_or_unparseable_one_wit
 
 def test_both_inline_readers_go_through_content_and_the_register_row_reads_the_statement_through_it(tmp_path, capsys, stubs, monkeypatch):
     root = tree(tmp_path)
+    drilled(root)
     ready(root, "admitted")
     path, digest = stmt(root)
     assert cmd(root, capsys, "register", CID, "--prereg", str(path), "--confirm", digest[:12])[0] == 0

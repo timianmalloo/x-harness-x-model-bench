@@ -32,13 +32,13 @@ from harness_bench import (
     egress,
     engine,
     gitsafe,
+    host,
     identity,
     ledger,
     oslock,
     plan,
     power,
     preflight,
-    procs,
     profiles,
     readiness,
     stats,
@@ -129,11 +129,7 @@ def _drill_run_id() -> str:
 
 def _trigger_drill(task: str) -> None:
     """Start an already configured scheduled task; tests replace this boundary."""
-    try:
-        result = procs.run(["schtasks.exe", "/run", "/tn", task], cwd=os.getcwd(), env=dict(os.environ), timeout=30)
-    except (OSError, procs.SpawnError):
-        raise _drill_missing("scheduled task trigger") from None
-    if result.timed_out or result.returncode != 0:
+    if not host.run_scheduled_task(task):
         raise _drill_missing("scheduled task trigger")
 
 
