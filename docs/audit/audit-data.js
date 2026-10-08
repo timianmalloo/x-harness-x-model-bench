@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T23:21:39Z",
+  "generated": "2026-10-08T23:38:41Z",
   "audit": [
     {
       "actor": null,
@@ -161476,12 +161476,61 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M4EX52PJWWYNG2K4S8CB46S1",
-      "shortname": "join-x-sj4",
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
       "datetime": "2026-10-08T23:21:39Z",
-      "session": "leader-fin",
+      "done_when": "conductor-join exit 0",
+      "duration_seconds": 902.0,
+      "fan_out": 0,
+      "goal": "Join join-x-sj4",
+      "id": "al-01M4EX52PJWWYNG2K4S8CB46S1",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "the join of build/fin-x-sj4 into integrate/finish-19",
+      "session": "leader-fin",
+      "shortname": "join-x-sj4",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "execute-with-coordination",
+      "started_at": "2026-10-08T23:06:37Z",
       "summary": "X-SJ4 5ac5857f/94d8239b/90bc70c0: tools/spikes/s_j4_baseline.py (engine launch path), docs/notes/spike-s-j4.md; A/B/C: Claude Code 4/6/4 (claude-opus-5-5 + haiku aux), Codex 4/4/4 (served not recorded), Copilot 2/2/2 (gpt-6.1-sol); W1-J 4.4 assume holds; tokens CC 21,447, Copilot 5,787, Codex not recorded. Leader spot-checked C:/tf/xsj4/*.json recount_seconds=901 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-08T19:30:12Z",
+      "done_when": "bench plan builds both; 60 pilot cells; balance under 5 percent; pins",
+      "duration_seconds": 638.0,
+      "fan_out": 0,
+      "goal": "X-E5M: E5 pilot ring and grid files, proven with bench plan",
+      "id": "al-01M4EFX8Z0D49GSFZSCBW3QSN7",
+      "kind": "skill",
+      "outcome": "partial",
+      "prompt": "X-E5M brief al-01M4ECKSKST5BCV53YQ5XP4MME",
+      "session": "xe5m-fin",
+      "shortname": "x-e5m",
+      "skill": "investigate",
+      "started_at": "2026-10-08T19:19:34Z",
+      "summary": "served claude-sonnet-5-5; outcome split: files committed e641027b (guard 210 passed exit 0, ruff exit 0, docs-graph validate exit 0); bench plan on the full 10-task files REFUSES with HB-PRE-008 (Copilot pack-off loads repo instructions: NG1 cachetools .github/copilot-instructions.md, S2 bottle AGENTS.md). Proof variants under C:/tf/xe5m: 8 tasks 48 cells built, balance bound 1/20; 10 tasks no copilot 40 cells built; grid 8 tasks 1296 cells built. No red SHA. Tokens and floor not recorded. Children: uv run bench plan x7 (plan runs the pinned copilot instruction list itself), uv run pytest, uv run ruff, docs-graph.py, gh api x2; PIDs not captured. join-x-win not on base.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "id": "al-01M4EY47WEGKV21J86HT52Z68V",
+      "shortname": "join-x-e5m",
+      "datetime": "2026-10-08T23:38:40Z",
+      "session": "leader-fin",
+      "prompt": "the join of build/fin-x-e5m into integrate/finish-19",
+      "summary": "X-E5M e641027b: bench/rings/e5-pilot.yaml (10 tasks x 2 arms x 3 combos x 1 = 60 cells; cc-opus claude-opus-5-5, codex-sol gpt-6.1-sol, copilot-sol gpt-6.1-sol) and bench/matrix.e5-grid.yaml (repetitions 27, assume: until EV-12 final power; 1,620 + 24 calibration = 1,644). First plan refused HB-PRE-008 (NG1, S2) -> R-116 / X-PACKOFF; Leader re-ran bench plan on both files on the joined head with the on binding: exit 0 recount_seconds=895 (docs_only=False).",
       "kind": "skill",
       "skill": "execute-with-coordination",
       "tool": null,
@@ -161490,7 +161539,7 @@ window.AUDIT_DATA = {
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Join join-x-sj4",
+      "goal": "Join join-x-e5m",
       "done_when": "conductor-join exit 0",
       "tier": "T1",
       "fan_out": 0,
@@ -161499,8 +161548,8 @@ window.AUDIT_DATA = {
         "verification_executed": true,
         "acceptance_met": true
       },
-      "started_at": "2026-10-08T23:06:37Z",
-      "duration_seconds": 902.0
+      "started_at": "2026-10-08T23:23:44Z",
+      "duration_seconds": 896.0
     }
   ],
   "changes": [
