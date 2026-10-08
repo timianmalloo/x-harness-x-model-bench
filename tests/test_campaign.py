@@ -13,6 +13,9 @@ import re
 from pathlib import Path
 
 import pytest
+from test_campaign_register import ready as drill_ready
+from test_campaign_register import stmt as drill_statement
+from test_campaign_register import stubs  # noqa: F401 - fixture for the real pilot boundary
 from test_cli_campaign import (
     ARGV,
     CID,
@@ -51,8 +54,34 @@ from test_cli_campaign import (
 from test_cli_campaign import append as append_row
 
 from harness_bench import campaign, cli, identity, ledger, plan, status
+from harness_bench import power as power_model
 
 H64 = "0123456789abcdef" * 4
+
+
+def drill_registration(root, hours=5):
+    """A real final analysis with an exact largest duration, after a real pilot pass."""
+    drill_ready(root, "admitted")
+    path = power_file(root)
+    inputs = json.loads(path.read_text(encoding="utf-8"))
+    results = power_model.analyse(campaign.decimal_view(inputs))
+    slots = max(result.cells for result in results.values())
+    path = power_file(root, "drill-power.json", slots=slots, mean_wall_per_cell_s=hours * 3600)
+    assert bench(root, "campaign", "power", CID, "--inputs", str(path)) == 0
+    statement, digest = drill_statement(root)
+    return ["campaign", "register", CID, "--prereg", str(statement), "--confirm", digest[:12]]
+
+
+def test_register_multi_night_without_drill_refuses_hb_cmp_011(tmp_path, capsys, stubs):
+    root = tree(tmp_path)
+    argv = drill_registration(root)
+    before = snapshot(cdir(root))
+    capsys.readouterr()
+
+    rc = bench(root, *argv)
+
+    assert rc == 1 and "HB-CMP-011" in err_of(capsys)
+    assert snapshot(cdir(root)) == before
 
 
 def findings_for(root, cid=CID):
