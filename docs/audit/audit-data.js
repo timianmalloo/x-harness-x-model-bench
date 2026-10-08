@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T17:34:39Z",
+  "generated": "2026-10-08T17:36:10Z",
   "audit": [
     {
       "actor": null,
@@ -146291,6 +146291,33 @@ window.AUDIT_DATA = {
         "branch": "coord/fin-c55-compile",
         "pushed": null
       }
+    },
+    {
+      "id": "al-01M4E9CF841P4SYECR0EX1V61Y",
+      "shortname": "join-c55-compile",
+      "datetime": "2026-10-08T17:36:10Z",
+      "session": "leader-fin",
+      "prompt": "the join of coord/fin-c55-compile into integrate/finish-19",
+      "summary": "Coordinator #55 1dc6f2fc/e4777019/588842bb: compiled X-PROP, X-HYG, X-FLAKE, X-REDS (Grok), X-WIN, X-S2, X-EVU t1 (Agy), X-CACHEB, F-PACK ph1 (5 items incl. PRIM-A), X-NOPRICE (Sonnet); coord-run/1 contracts in docs/coordination/eval-wave2-e234/; R-115 condition 4 (X-NOPRICE ungated, spine 8 ruled, ADR-0017/0019 dated notes); X-PRICERET + P6 after E5; X-EVU map erratum; c55.md log (19 superseded ids, never dispatch) recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join wave-1 compiles",
+      "done_when": "conductor-join exit 0 (docs-only)",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-08T17:36:09Z",
+      "duration_seconds": 1.0
     }
   ],
   "changes": [
