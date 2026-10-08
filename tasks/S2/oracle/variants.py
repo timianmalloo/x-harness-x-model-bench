@@ -197,4 +197,15 @@ VARIANTS = {
             },
         ],
     },
+    "authzidor": {
+        "flips": ['authz-1'],
+        "clauses": {'authz-1': 'status-body'},
+        "edits": [
+            {
+                "file": 'examples/taskboard/app.py',
+                "old": '        r = None if tid is None else db.execute(\'SELECT id, title FROM tasks WHERE id = ? AND team = ?\', (tid, team)).fetchone()\n        if r is None:\n            bottle.abort(404, \'not found\')\n        return row(r)\n',
+                "new": '        r = None if tid is None else db.execute(\'SELECT id, title, team FROM tasks WHERE id = ?\', (tid,)).fetchone()\n        if r is None:\n            bottle.abort(404, \'not found\')\n        if not team:\n            bottle.abort(403, \'unauthorized\')\n        return row(r)\n',
+            },
+        ],
+    },
 }
