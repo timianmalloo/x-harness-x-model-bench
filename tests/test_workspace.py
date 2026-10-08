@@ -277,6 +277,31 @@ def test_task_source_from_upstream_builds_the_pinned_tree_plus_the_overlay(base)
     assert _git(dest, "remote").strip() == ""
 
 
+def test_task_source_drops_the_upstream_agent_instruction_files(base):  # X-PACKOFF, Ruling 116
+    upstream = base / "upstream"
+    upstream.mkdir()
+    commit = _local_upstream_repo(upstream, {"a.txt": "A\n", "AGENTS.md": "upstream rules\n",
+                                             ".github/copilot-instructions.md": "upstream copilot\n"})
+    task_dir = base / "tasks" / "P5"
+    _source_task(task_dir, upstream, commit, {"README.md": "overlay\n"})
+
+    dest = workspace.task_source(task_dir, "v5", base / "sources", base / "upstream-cache")
+
+    assert _tree(dest) == {"a.txt": "A\n", "README.md": "overlay\n"}
+
+
+def test_task_source_refuses_a_base_tree_that_carries_an_instruction_file(base):  # X-PACKOFF, Ruling 116
+    upstream = base / "upstream"
+    upstream.mkdir()
+    commit = _local_upstream_repo(upstream, {"a.txt": "A\n"})
+    task_dir = base / "tasks" / "P6"
+    _source_task(task_dir, upstream, commit, {"AGENTS.md": "overlay rules\n"})
+
+    with pytest.raises(BenchError) as e:
+        workspace.task_source(task_dir, "v6", base / "sources", base / "upstream-cache")
+    assert e.value.code == "HB-PRE-009"
+
+
 def test_task_source_leaves_bytecode_a_test_wrote_into_the_task_workspace_out_of_the_base(base):  # NG pin-tree flake
     upstream = base / "upstream"
     upstream.mkdir()

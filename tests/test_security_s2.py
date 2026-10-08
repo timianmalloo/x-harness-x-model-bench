@@ -37,7 +37,7 @@ from test_security_tasks import (
     with_edits,
 )
 
-from harness_bench import config
+from harness_bench import config, workspace
 from harness_bench.grade import CellInput
 from harness_bench.grade import property as prop
 
@@ -381,6 +381,10 @@ def test_s2_pin_is_a_full_commit_with_matching_content_hashes(s2_base):
                         (TASK / "LICENSE").read_text(encoding="utf-8")) == []
     listed = set(subprocess.run(["git", "ls-tree", "-r", "--name-only", source["commit"]], cwd=clone, capture_output=True,
                                 text=True, check=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.split())
+    removed = {n for n in listed if n in workspace.INSTRUCTION_FILES or any(
+        n.startswith(d + "/") and n.endswith(".instructions.md") for d in workspace.INSTRUCTION_DIRS)}  # Ruling 116, the engine's own list
+    listed -= removed
+    assert removed == {"AGENTS.md"}
     present = {p.relative_to(s2_base).as_posix() for p in s2_base.rglob("*") if p.is_file() and ".git" not in p.relative_to(s2_base).parts}
     assert present - listed == {".gitkeep"} and listed - present == set()
 
