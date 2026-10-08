@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T18:25:09Z",
+  "generated": "2026-10-08T19:17:21Z",
   "audit": [
     {
       "actor": null,
@@ -146382,6 +146382,41 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-08T18:15:12Z",
       "duration_seconds": 597.0
+    },
+    {
+      "id": "al-01M4EF5QT3MBJKEMB41GY4V7WQ",
+      "shortname": "xhyg3-fin close",
+      "datetime": "2026-10-08T19:17:21Z",
+      "session": "xhyg3-fin",
+      "prompt": "X-HYG turn 3: host-limited mutants",
+      "summary": "Session xhyg3-fin, run r-xhyg3-fin, harness Grok (coord-runner, ACP), branch build/fin-x-hyg3. Served model grok-4.7. Dispatch start 2026-10-08T19:00:04Z. Gate commands finished 2026-10-08T19:15:26Z. End is this entry's datetime. Outcome: green 25751b1fb35faa65f941a8f7f188ea4d71c1133a.\n\nCommits this turn. 894740f1c958d516e18a7e43d6293ccb546a2c6a fix(x-hyg): report a host-limited mutant, never as a kill. 25751b1fb35faa65f941a8f7f188ea4d71c1133a fix(x-hyg): host condition on M14b (posix) and M27 (symlink right). Both commits printed \"1 staged path(s) checked\". Red SHA: e30f3e44 (landed before this turn). Re-run before the fix: uv run pytest -q tests/test_mutate_check.py exit 1, 3 failed on the assertions at tests/test_mutate_check.py:813, :837 and :872, 49 passed. After the fix the same file was 52 passed. The red assertions were not weakened. H1 (2a8f4d84) was not redone.\n\nPreconditions before any edit passed: git status --short empty, e30f3e44 and 7f96fb70 are ancestors of HEAD, coord session start registered xhyg3-fin. git log --oneline -1 --grep=join-x-win printed no line.\n\nTokens: not recorded.\n\nContext. First reading 36949. Plan floor 88000, ceiling 128000, stop line 118000. Before item 1: 51680. At the first edit: 79801 (under 98000). Before the first-commit guard: 89297. Before item 2 (atomic.json): 92668 (under 103000). Before item 3: 97272. Before the final guard command: 101825. Before the own pytest, verify-no-machine-paths, run-verify-gates, both mutate_check runs, ruff and docs-graph: 109160. Every start was under its line.\n\nGates. First-commit guard list, uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py, exit 0, 213 passed. Final-commit guard list, same command, exit 0, 213 passed. uv run pytest -q tests/test_mutate_check.py exit 0, 52 passed. python docs/ai-forward-pack/scripts/verify-no-machine-paths.py exit 0 (clean, 1175 tracked files). python docs/ai-forward-pack/scripts/run-verify-gates.py exit 0, 9 of 9 (OK - 9 gate(s) passed). uv run python tools/mutate_check.py tests/mutations/mutate_check.json exit 0, 5 killed, every mutation killed. uv run python tools/mutate_check.py tests/mutations/atomic.json exit 0, 30 killed, host-limited M27: existing-file read drops O_NOFOLLOW: winerror 1314, no symlink right, host-limited M14b: _POSIX is always False: os.name is nt, summary \"2 host-limited\". uv run ruff check src tests tools exit 0, all checks passed. python docs/ai-forward-pack/scripts/docs-graph.py validate exit 0, problems empty (stderr: 16 suggestions, the gate says they do not fail it).\n\nChild processes (command line and PID). Root shell at dispatch PID 43328. uv run pytest -q tests/test_mutate_check.py --basetemp C:\\tf\\xhyg3\\pytest-red PID 44180. uv run pytest -q tests/test_mutate_check.py --basetemp C:\\tf\\xhyg3\\pytest-fix PID 42600. uv run pytest -q the guard list --basetemp C:\\tf\\xhyg3\\pytest-guard1 PID 41932. uv run pytest -q the guard list --basetemp C:\\tf\\xhyg3\\pytest-guard2 PID 33920. uv run pytest -q tests/test_mutate_check.py --basetemp C:\\tf\\xhyg3\\pytest-own PID 23920. python docs/ai-forward-pack/scripts/verify-no-machine-paths.py PID 33540. python docs/ai-forward-pack/scripts/run-verify-gates.py PID 39692. uv run python tools/mutate_check.py tests/mutations/mutate_check.json PID 9048. uv run python tools/mutate_check.py tests/mutations/atomic.json PID 40536. uv run ruff check src tests tools PID 18924. python docs/ai-forward-pack/scripts/docs-graph.py validate PID 30572.\n\nDefect class, reported as text for the Coordinator: a mutant this host cannot execute was counted survived. M14b changes nothing on Windows because _POSIX is already False, and M27's named test needs a symlink right this host does not have (winerror 1314). The condition is detected on the host, from the entry's host field: posix is os.name, and the symlink right is a probe under C:\\tf\\xhyg3. Host-limited is not a kill and does not fail the exit on its own. No src file, archive reader, import pair or ledger transition was added.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": "grok",
+      "actor": "xhyg3-fin",
+      "artifacts": [],
+      "tags": [
+        "x-hyg",
+        "green"
+      ],
+      "outcome": "success",
+      "compiled": false,
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true,
+        "regression": false
+      },
+      "started_at": "2026-10-08T19:00:05Z",
+      "duration_seconds": 1036.0,
+      "git": {
+        "sha": "25751b1fb35faa65f941a8f7f188ea4d71c1133a",
+        "short": "25751b1fb",
+        "branch": "build/fin-x-hyg3",
+        "pushed": null
+      }
     }
   ],
   "changes": [
