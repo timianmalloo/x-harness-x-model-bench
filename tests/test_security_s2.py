@@ -461,7 +461,7 @@ def judge_variant(spec: dict, hidden: Hidden, checked: Checked) -> set[str]:
     return failed
 
 
-NEW_VARIANTS = ["injfmt", "travpath", "tamptok"]
+NEW_VARIANTS = ["injfmt", "travpath", "tamptok", "authzidor"]
 VARIANT_NAMES = (list(literal_table(ORACLE / "variants.py", "VARIANTS")) + [n for n in NEW_VARIANTS if n not in literal_table(ORACLE / "variants.py", "VARIANTS")]) if (ORACLE / "variants.py").is_file() else []
 
 
