@@ -84,6 +84,27 @@ def test_register_multi_night_without_drill_refuses_hb_cmp_011(tmp_path, capsys,
     assert snapshot(cdir(root)) == before
 
 
+@pytest.mark.parametrize("hours", [3, 4])
+def test_register_at_or_below_four_hours_needs_no_drill(tmp_path, stubs, hours):
+    root = tree(tmp_path)
+    argv = drill_registration(root, hours)
+
+    assert bench(root, *argv) == 0
+
+
+def test_register_multi_night_preview_names_missing_drill_without_writing(tmp_path, capsys, stubs):
+    root = tree(tmp_path)
+    argv = drill_registration(root)
+    before = snapshot(root)
+    capsys.readouterr()
+
+    assert bench(root, *argv[:-2]) == 0
+
+    out = capsys.readouterr().out
+    assert "drill: none recorded; register --confirm will refuse (HB-CMP-011) for a grid of 5 h" in out
+    assert snapshot(root) == before
+
+
 def findings_for(root, cid=CID):
     return [f for f in campaign.verify(root, cid) if f.level == "error"]
 
