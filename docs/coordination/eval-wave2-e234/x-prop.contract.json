@@ -1,0 +1,45 @@
+{
+  "schema": "coord-run/1",
+  "run_id": "r-xprop-fin",
+  "owner": "leader-fin",
+  "parallelism": 1,
+  "workers": [
+    {
+      "session": "xprop-fin",
+      "branch": "build/fin-x-prop",
+      "harness": "grok",
+      "transport": "acp",
+      "argv": [
+        "grok",
+        "agent",
+        "--no-leader",
+        "-m",
+        "grok-4.7",
+        "--reasoning-effort",
+        "high",
+        "stdio"
+      ],
+      "binding_files": [
+        "AGENTS.md",
+        ".grok/hooks/ai-forward.json"
+      ],
+      "deadline_seconds": 2400,
+      "output_limit": 4194304,
+      "evidence": [
+        {
+          "kind": "commit"
+        }
+      ],
+      "required_capabilities": {
+        "worktree_isolation": "observed-only",
+        "instructions": "observed-only",
+        "hooks": "observed-only",
+        "permissions": "observed-only"
+      },
+      "prompts": [
+        "al-01M4E8YV9HBT76XQW73AY8ST8E"
+      ],
+      "fallback": "Leader-held (FALLBACK-A): coordination-finish.md, Track assignment detail, names what follows a failed or split turn; the worker launches, spawns or messages nothing. R-103: the Leader reads the first response's served model (tools/grok_served_model.py --first --wait 120); not grok-4.7* means kill and retry once. Run with XAI_API_KEY unset, and read the fingerprint in that same environment (FPR-A)."
+    }
+  ]
+}
