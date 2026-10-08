@@ -445,3 +445,52 @@ def test_run_child_starts_the_child_through_the_grading_env_allowlist(tmp_path, 
                           tmp_path, 30)
     names = set(done.stdout.split(","))
     assert (done.returncode, "PATH" in names, names & {"HB_CLAUDE_OAUTH_TOKEN", "GH_TOKEN"}) == (0, True, set())
+
+
+class _Streams:
+    def read1(self, _n: int) -> bytes:
+        return b""
+
+    def write(self, data: bytes) -> int:
+        return len(data)
+
+    def flush(self) -> None:
+        return None
+
+    def close(self) -> None:
+        return None
+
+
+class _Proc:
+    def __init__(self, pipe: _Streams) -> None:
+        self.stdin = pipe
+        self.stdout = pipe
+        self.stderr = None
+
+
+class _LiveTree:
+    """A check process whose terminate_and_confirm returns False: the tree is still alive."""
+
+    def __init__(self) -> None:
+        self.pid = 424242
+        self.proc = _Proc(_Streams())
+        self.cleaned_while_alive = False
+
+    def wait(self, timeout: float) -> int:
+        return 0
+
+    def exit_time(self) -> int:
+        return 0
+
+    def terminate_and_confirm(self, timeout: float) -> bool:
+        return False
+
+    def close(self) -> None:
+        self.cleaned_while_alive = True
+
+
+def test_an_unconfirmed_kill_is_recorded_and_the_live_tree_is_not_cleaned_up(tmp_path, monkeypatch):
+    tree = _LiveTree()
+    monkeypatch.setattr(prop.procs, "spawn", lambda *args, **kwargs: tree)
+    result = prop.run_check(["check"], tmp_path, {}, 30.0, tmp_path / "stderr.txt", lambda line: {})
+    assert (tree.cleaned_while_alive, getattr(result, "unconfirmed_kill", False)) == (False, True)
