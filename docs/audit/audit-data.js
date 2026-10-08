@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T17:36:10Z",
+  "generated": "2026-10-08T17:44:48Z",
   "audit": [
     {
       "actor": null,
@@ -146318,6 +146318,38 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-08T17:36:09Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M4E9W8MX3K2VXVM3Q737KXJR",
+      "shortname": "xwin-fin-turn1-split",
+      "datetime": "2026-10-08T17:44:48Z",
+      "session": "xwin-fin",
+      "prompt": "X-WIN turn 1 of 2: every child process launched by tools, spikes and test helpers suppresses console windows, a guard test makes that a gate, and a windows-check tool lists the visible windows a session created.",
+      "summary": "X-WIN turn 1 dispatch:\n- Dispatch window: 2026-10-08T17:37:13Z to 2026-10-08T17:44:00Z\n- Outcome: split at commit 1910ca2d (W1 landed red on assertion; W2 and W3 deferred to turn 2 by CEIL-A split rule)\n- Red SHAs: 17259cee (W1 red), 1910ca2d (W1 ruff lint fix red)\n- Gates and exits:\n  * uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py: exit 0 (210 passed in 113.28s)\n  * uv run pytest -q tests/test_console_windows.py: exit 1 (AssertionError on line 78, 48 files flagged, 6 allowlisted, 42 unallowlisted)\n  * uv run ruff check src tests tools: exit 0\n  * python docs/ai-forward-pack/scripts/docs-graph.py validate: exit 0\n- Served model id: gemini-3.8-flash-high (read from cli.log / cli-20261008_103657.log)\n- Tokens: floor 39,984; sample before W1 44,918; sample before W2 119,080 (114,211 cache + 4,869 input). Exceeds W2 start threshold 90k and turn ceiling 110k -> planned hand-back at item boundary W1.\n- Mutation files: none moved in turn 1.\n- Child processes launched: pwsh commands for audit-log.py, git status/merge-base, coord session start, test_scan.py, pytest guards, pytest console windows, ruff check, docs-graph.py validate, git add/commit.\n- Visible windows opened: none.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled_from": "al-01M4E8YZWHJX1SQWEH6BY3YXEJ",
+      "goal": "Execute X-WIN turn 1 on branch build/fin-x-win",
+      "done_when": "tests/test_console_windows.py red on today tree",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true
+      },
+      "started_at": "2026-10-08T17:37:13Z",
+      "duration_seconds": 455.0,
+      "git": {
+        "sha": "1910ca2de28b18735c362dd0266cdeb9338e9452",
+        "short": "1910ca2de",
+        "branch": "build/fin-x-win",
+        "pushed": null
+      }
     }
   ],
   "changes": [
