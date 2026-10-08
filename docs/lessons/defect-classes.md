@@ -1146,8 +1146,15 @@ summary: >-
 - **Why it survives:** the cache is outside every tree, so no git status shows the damage, and CACHE-A's control (the key is content plus builder source) checks the key, not the files under it. A temp cleaner, a worker's own cleanup or a sweep script all look like plausible owners, and none of them logs.
 - **Instances:**
   - `2026-10-05 15:33:22` (local; reported by the Leader, not re-observed by me): every zero-byte file under the shared `%TEMP%\hb-*-ring\sources` was deleted. Seven pin tests went red on every tree. The sweeper is **unidentified**.
-- **Sweep:** owed: every process that can delete under `%TEMP%` on this host during a campaign (worker cleanups, `CLN-*` scripts, Windows Storage Sense), checked against the 15:33:22 instant.
-- **Control:** the ring guard `86e6a949` ("cached_base verifies the base against its own HEAD and repairs by checkout") makes a damaged cache self-healing, so the symptom cannot recur silently; it does not find the sweeper. Coordinator #38's standing compile clause tells every worker to set `TMP`/`TEMP` to its own short fresh folder and never to touch `%TEMP%\hb-*-ring`. Rung: test helper plus compiled prompt. Upgrade trigger: a second deletion, or the sweeper identified; then the owner's code is fixed and a test pins it.
+  - **X-CACHEB's investigation** (Sonnet, session `xcacheb-fin`, 2026-10-08 17:39-17:43Z; audit entry `al-01M4E9QX0AGQ4RJ169NBG2PHPR`, outcome `partial`; registered by Coordinator #57): **the sweeper was not found.**
+    - **K2 (repo code):** no deleter in the repo reaches `%TEMP%\hb-*-ring`, and none selects zero-byte files.
+    - **K3 (coordination logs, 22:25-22:40Z, local UTC-7):** only `leader-e1e4` and the live worker `x-j1c-e1e4` were active. No entry records a deletion.
+    - **K1 (host):** Storage Sense temp cleanup is on. The cleanup tasks' last-run times show 10-07 and 10-08 only, and a last-run time overwrites the earlier ones, so they neither show nor exclude a run on 10-05.
+    - **Not recorded:** the Windows event logs. The harness classifier denied X-CACHEB's read, so this half stays "not recorded" until the operator decides on the read.
+    - **The lead:** only zero-byte files were deleted. A cleaner that selects empty files fits; a whole-folder temp sweep does not.
+    - **Confidence:** Inferred that no repo code is the sweeper (K2, a read of the repo's deleters). Unknown otherwise.
+- **Sweep:** K2 and K3 are done (above). **Owed:** the event-log read, which is an operator decision: StorageSettings, Task Scheduler Operational, and Application and System, for 2026-10-05 15:30-15:40 local.
+- **Control:** the ring guard `86e6a949` ("cached_base verifies the base against its own HEAD and repairs by checkout") makes a damaged cache self-healing, so the symptom cannot recur silently; it does not find the sweeper. Coordinator #38's standing compile clause tells every worker to set `TMP`/`TEMP` to its own short fresh folder and never to touch `%TEMP%\hb-*-ring`. Rung: test helper plus compiled prompt. Upgrade trigger: a second deletion, or the sweeper identified; then the owner's code is fixed and a test pins it. Unchanged after X-CACHEB (Coordinator #57): on a second deletion, capture the deleting process with procmon or a file-system audit on the ring folder before anything else.
 - **Status:** `candidate` (the repair is built and the cause is unknown; it moves to `partially-controlled` at the next register review)
 
 ### PATH-B: a long scratch path breaks git on Windows (candidate)
