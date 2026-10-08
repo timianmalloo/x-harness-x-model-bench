@@ -791,7 +791,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f31526502ab5ba0794656bd4da87ed0bf827e936e35bdbfccf6df9bf0c8a98a9"
+      "sourceSha256": "c8cdd8afaaeab91380183b1c015a1007313c01c684cd61b113d51f1627ebb381"
     },
     {
       "id": "adr-0018-hidden-check-harness",
@@ -870,7 +870,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "80559667245cbe4eddbed9f889418a73d9c12d30d393916cfbe06b24f4c08944"
+      "sourceSha256": "db681eef9bf06ff8ec7fe47910474a875de3ea0aa26b846f522f1c441b6dff67"
     },
     {
       "id": "adr-0020-power-and-verdicts-stdlib",
@@ -4945,6 +4945,43 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "91052e81468c631026babf407af4907fb3eae3c350eff02649f25999fc715add"
+    },
+    {
+      "id": "coordinator-log-c55",
+      "path": "docs/coordination/coordinator-log/c55.md",
+      "title": "Coordinator #55 hand-back (2026-10-08): the wave-1 compiles (ten tracks), the runner contracts, Ruling 115's plan and ADR edits",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-08",
+      "reviewSuggested": [],
+      "summary": "Coordinator #55 on coord/fin-c55-compile for Leader leader-fin, epoch 19. Ten briefs compiled in compiled mode against the plan at 7f96fb70 (C-W0) and Rulings 114 and 115, each replayed through check_compile; seven coord-run/1 contracts for the Grok and Agy tracks; Ruling 115 condition 4's plan edits, the X-PRICERET row and the dated notes beside ADR-0017 and ADR-0019. No dispatch, no push.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c54",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-finish",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "c527723efbdda187feff7fdd4bdd3a3fcbcc441f352accf976a204ae92a240d1"
     },
     {
       "id": "defect-classes",
@@ -9432,7 +9469,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "163636995f2b7654b4e3b1fb985f1d55fae8169a37328ba1b6979022c93089ff"
+      "sourceSha256": "2602143453882af95e80ba72ea1d3306ed2cd19c3b4b9feee120b13dcf20f814"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -10554,5 +10591,5 @@ window.DOCS_INDEX = {
       "artifactId": "run-report-e2e4"
     }
   ],
-  "graphSha256": "572ef3aaced0ffc6107f24e4bc39f0cef6df928807ea66c550c1d0875e5cbcdc"
+  "graphSha256": "02e4bf8f377eae2eb801ead5a9b05d9d060105c28eb96ecbca40db07b8d3253a"
 };

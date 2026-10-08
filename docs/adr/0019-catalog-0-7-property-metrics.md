@@ -63,3 +63,7 @@ Recorded by the Coordinator (`coord-opus-e1e4`) with W0 rev 3. W1-G's gate is op
 ## Evidence
 
 - `bench/metrics.yaml:11, 45-51`; `bench/catalog-freeze.yaml`; `report/pack_improvement.py:1173-1175` [Verified, read 2026-10-03].
+
+## Note, 2026-10-08 (Ruling 115; written by Coordinator #55)
+
+R-115: the USD rendering is retired at X-NOPRICE; the `prices` identity component (0017) and `cost_usd`/`cost_of_pass` in catalog 0.7 (0019) stand until the post-E5 retirement, condition 5. Nothing this ADR guarantees changes before E5; the post-E5 track X-PRICERET amends it.
