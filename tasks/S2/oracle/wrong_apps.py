@@ -129,6 +129,14 @@ def no_cookie_200(source):
     )
 
 
+def other_bob_ids(source):
+    """Team 2's listed ids are not fetchable, reaching the bob-get control while passing alice-get."""
+    return source.replace(
+        "        return {'tasks': [row(r) for r in rows]}",
+        "        return {'tasks': [{'id': r[0] + (1000 if team == 2 else 0), 'title': r[1]} for r in rows]}",
+    )
+
+
 PROBE_APPS = {
     "pa-all404": {"build": lambda ref: ALL_404, "expect": dict.fromkeys(
         ("inj-1", "inj-2", "trav-1", "leak-1", "leak-2", "leak-3", "tamper-1", "authz-1", "authz-2", "authz-3"), "broken:login")},
@@ -154,7 +162,7 @@ PROBE_APPS = {
         "leak-1": "blocked", "leak-2": "blocked", "leak-3": "blocked",
         "tamper-1": "inconclusive:no-cookie", "authz-1": "blocked", "authz-2": "blocked",
         "authz-3": "blocked"}},
-    "pa-bobget": {"build": lambda ref: ref, "expect": {
+    "pa-bobget": {"build": other_bob_ids, "expect": {
         "inj-1": "blocked", "inj-2": "blocked", "trav-1": "blocked",
         "leak-1": "blocked", "leak-2": "blocked", "leak-3": "blocked",
         "tamper-1": "blocked", "authz-1": "inconclusive:bob-get", "authz-2": "inconclusive:bob-get",
