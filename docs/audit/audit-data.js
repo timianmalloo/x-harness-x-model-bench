@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T20:08:54Z",
+  "generated": "2026-10-08T20:09:18Z",
   "audit": [
     {
       "actor": null,
@@ -159496,12 +159496,1388 @@ window.AUDIT_DATA = {
       "tool": "grok"
     },
     {
-      "id": "al-01M4EJ44017P1BCP99GHJSMYG0",
-      "shortname": "join-x-hyg",
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
       "datetime": "2026-10-08T20:08:54Z",
-      "session": "leader-fin",
+      "done_when": "conductor-join exit 0 with the recount green",
+      "duration_seconds": 1384.0,
+      "fan_out": 0,
+      "goal": "Join X-HYG",
+      "id": "al-01M4EJ44017P1BCP99GHJSMYG0",
+      "kind": "skill",
+      "outcome": "success",
       "prompt": "the join of build/fin-x-hyg3 into integrate/finish-19",
+      "session": "leader-fin",
+      "shortname": "join-x-hyg",
+      "signals": {
+        "acceptance_met": true,
+        "verification_executed": true,
+        "verification_path": true
+      },
+      "skill": "execute-with-coordination",
+      "started_at": "2026-10-08T19:45:50Z",
       "summary": "X-HYG t1 2a8f4d84 (.gitattributes machine-path-ok, verify-no-machine-paths 0); t2 red e30f3e44 (committed by the Leader after LOGTEAR-A); t3 894740f1/25751b1f mutate_check host condition (posix, symlink right) + atomic.json M14b/M27. Leader: test_mutate_check 52 passed, atomic M14b/M27 host-limited others killed, mutate_check.json all killed, vnmp 0, ruff 0 recount_seconds=1382 (docs_only=False).",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "datetime": "2026-10-08T19:51:25Z",
+      "id": "al-01M4EH43X7GVJFKXRXB6138M0Z",
+      "kind": "prompt",
+      "outcome": "success",
+      "prompt": "You are session xpackoff-fin, harness Claude Code (Agent tool sub-agent), model sonnet (served claude-sonnet-5-5), on branch build/fin-x-packoff in the tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-packoff. The Leader leader-fin (epoch 19) dispatches you; Coordinator #60 compiled this from Ruling 116 (docs/notes/rulings.md:2140-2160; docs/coordination/coordinator-log/c60.md). One turn, deadline 3,600 s, within 60 calls and a context ceiling of 133k, tier T1, fan-out cap 0. X-PACKOFF: every task base tree drops the upstream agent-instruction files, and a fail-closed base-tree check refuses a base tree that still carries one, with the new code HB-PRE-009, on every base build in every harness. Today NG1 (cachetools, .github/copilot-instructions.md) and S2 (bottle, AGENTS.md) ship an instruction file into both arms, so pack-off is not instruction-free and the exposure differs by harness.\n\nYour ruling, quoted verbatim from docs/notes/rulings.md at 1b61aedd (owner/ruling-r116), Ruling 116 — DR-PACKOFF, (A) granted, bounded (`:2146`): Owned paths (X-PACKOFF): `src/harness_bench/workspace.py` (`task_source` only), `src/harness_bench/errors.py` (one new code), `tests/test_workspace.py`, `docs/lessons/defect-classes.md` (the class), and the W1 design erratum the Coordinator names for `task_source`. No `tasks/` change, no `plan.py` change: HB-PRE-008 stays as it is, the live measurement that the removal worked for Copilot. The removal: after `_extract_upstream_tree` and before the overlay `copytree`, delete from the extracted upstream tree every path in `INSTRUCTION_FILES` and every `*.instructions.md` under `INSTRUCTION_DIRS` (`workspace.py:27-28`, the one list; no second list is written). The control: after the overlay and before `git add`, the same walk refuses a base tree that still carries one (the next free HB-PRE code in `errors.py`; 004 and 006 are gaps, so 009 unless reserved), so it fires on every base build in every harness (the plan probe, every cell, every discrimination record) and never only on Copilot. Red first: two tests beside `test_task_source_from_upstream_builds_the_pinned_tree_plus_the_overlay` (`tests/test_workspace.py:266`): a fake upstream carrying `AGENTS.md` and `.github/copilot-instructions.md` builds a base with neither (red today); a `workspace/` overlay carrying one is refused with the new code (red today). Both green, then the whole `tests/test_workspace.py` and `tests/test_plan.py` green. And its conditions 1-3 and 5 (`:2156`; condition 4 is the Leader's): 1. The removal is unconditional for every `workspace_from: source` task; no per-task knob (YAGNI; no task today wants an upstream instruction file as part of its meaning, verified by grep). 2. The class is registered as a class, not an instance: an upstream pin carries an agent-instruction file into every arm's base tree, so pack-off is not instruction-free and the exposure differs by harness; the register has no such class today (only HB-PRE-002's ancestor case, ADR-0013:58); ID by reading the register (ID-A); control: the new HB-PRE code plus the two tests. 3. Widening `INSTRUCTION_FILES` beyond its six names is out of this track's scope unless a cited harness source names the file. 5. `readiness.contract_failures`'s `assume:` on `workspace_from: source` trees (`readiness.py:386-388`) is not changed by this ruling.\n\nDone when (Ruling 116's exit evidence, `:2152`, verbatim): \"Exit evidence at the join: the two test names red then green (output quoted); `bench plan` on both E5 files exit 0 with `instruction_lists` count 0 for every `off` cell and the `on` counts unchanged; `git ls-files` of the built NG1 and S2 base trees showing no `AGENTS.md`, `CLAUDE.md`, `.claude/CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md` or `.github/instructions/*.instructions.md`; the register entry; the closing audit entry with duration.\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`).\n\nAGENT_SESSION=xpackoff-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below.\n\nBase: the integration head the Leader names at dispatch, which holds 1b61aedd (owner/ruling-r116, joined as join-r116). Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor 1b61aedd HEAD` exits non-zero; `git grep -n HB-PRE-009 -- src tests` prints a line (the code is taken); `git ls-files tasks` lists a file named CLAUDE.md, AGENTS.md, GEMINI.md, copilot-instructions.md or *.instructions.md (Coordinator #60 found none at 1b61aedd; the check refuses every base build, so a committed overlay file would break that task); `coord session start` for xpackoff-fin is refused.\n\nNamed by Coordinator #60, as the ruling asks (ID-A). The code: **HB-PRE-009**. `src/harness_bench/errors.py:85-89` holds HB-PRE-002, 003, 005, 007 and 008; 004 and 006 are phase-1 codes retired by design (docs/design/phase1-walking-skeleton.md:460, :492) and are not reused; HB-PRE-009 has no hit in `git grep` outside the audit log, and the register names none. Add one row to errors.py's table in HB-PRE-008's shape; its meaning text says a task base tree still carries an agent instruction file (a path in INSTRUCTION_FILES or a *.instructions.md under INSTRUCTION_DIRS) after the upstream removal. Once committed, that meaning text is never edited (ERRATA-A). The W1 design erratum for `task_source`: docs/design/eval-property-tasks.md (Design W1-L), a new section `### Erratum 5 (X-PACKOFF, 2026-10-08; Ruling 116)` after Erratum 4 (`:556`) and before `## 17.`. It amends section 2's paragraph at `:171`, which begins \"`workspace_from: source` and the overlay (`tasks/<ID>/workspace/`) follow E5 and S1.\": for every `workspace_from: source` task the base tree is the pinned upstream tree minus every path in INSTRUCTION_FILES and every *.instructions.md under INSTRUCTION_DIRS (`workspace.py:27-28`), then the overlay; HB-PRE-009 refuses a base tree, of any task, that still carries one; HB-PRE-008 (`plan.py:462`) stays the live Copilot measurement. Cite your red and green SHAs in it. Then re-render its HTML view: `python docs/ai-forward-pack/scripts/render-markdown.py docs/design/eval-property-tasks.md` (V19). The register class is PACKOFF-A in docs/lessons/defect-classes.md, already registered by Coordinator #60 with your build as its control; you edit only PACKOFF-A's Control and Status lines, to add your red and green SHAs.\n\nScratch for the plan evidence, all under C:\\tf\\xpackoff, never committed. The two E5 files are X-E5M's and are not on your base: copy them with `git show build/fin-x-e5m:bench/rings/e5-pilot.yaml` and `git show build/fin-x-e5m:bench/matrix.e5-grid.yaml`, each redirected to a file under C:\\tf\\xpackoff\\e5\\, and never add them to your branch. `bench plan` needs the pinned harness builds: make the junction X-E5M used, read only, with `cmd /c mklink /J C:\\tf\\xpackoff\\.tools\\harness C:\\Projects\\x-harness-x-model-bench\\.tools\\harness`. Never write, delete or clean through it (no rm -r, no rmdir /s on it or its parent); leave it in place at hand-back. Every plan run is `uv run bench --tools-dir C:\\tf\\xpackoff\\.tools\\harness --cells-root C:\\tf\\xpackoff\\cells --runs C:\\tf\\xpackoff\\runs plan --matrix <file> --json`, its output redirected to a file under C:\\tf\\xpackoff and its exit read on its own line. The global options --tools-dir, --cells-root and --runs come before `plan` (`cli.py:584-588`).\n\nItems, in order. P0 (before any edit, at the base): run plan on the pilot copy; expect a non-zero exit with HB-PRE-008 naming NG1 or S2 (X-E5M's measured refusal, closing entry al-01M4EFX8Z0D49GSFZSCBW3QSN7). If it exits 0, stop and report: the ruling's premise does not hold on your base. Then make a third copy of the pilot with NG1 and S2 removed from its task list and run plan on it: its `on` cells' instruction counts are the baseline for the eight other tasks. R1 (red; your first commit): the two tests the ruling names, beside test_task_source_from_upstream_builds_the_pinned_tree_plus_the_overlay (`tests/test_workspace.py:266`), built with that file's own helpers (`_local_upstream_repo`, `_source_task`, `_tree`): (a) test_task_source_drops_the_upstream_agent_instruction_files, a fake upstream carrying AGENTS.md and .github/copilot-instructions.md beside one ordinary file builds a base with neither, asserted on `_tree(dest)`; (b) test_task_source_refuses_a_base_tree_that_carries_an_instruction_file, a workspace/ overlay carrying AGENTS.md is refused with BenchError code HB-PRE-009. Each is red on an assertion (RED-C): (a) on the tree equality, (b) on pytest.raises's DID NOT RAISE or on an assert of the code. A red by ImportError, KeyError or a collection error is not a red. Run only the two node ids, output to a file, and quote both failures in your report. Commit the two tests alone. G1 (green): the HB-PRE-009 row in errors.py; in workspace.py, in `task_source` only: after `_extract_upstream_tree` and before the overlay `copytree`, delete from the extracted tree every path in INSTRUCTION_FILES and every *.instructions.md under INSTRUCTION_DIRS; after the overlay and before `git add`, the same walk (one helper over the same two tuples, no second list) refuses a tree that still carries one with HB-PRE-009, naming the path. Then the two tests green; then the whole tests/test_workspace.py and tests/test_plan.py green; then `uv run python tools/mutate_check.py tests/mutations/workspace_source.json` and `uv run python tools/mutate_check.py tests/mutations/workspace.json` (the two sets that target workspace.py; you edit neither and add no mutant, since the ruling owns no mutation file), every mutant killed. Commit. P1 (the evidence, on your green commit): plan on the pilot copy and on the grid copy, each exit 0; from each JSON, every `off` cell's instruction count is 0, and the `on` counts of the eight other tasks equal P0's; report NG1's and S2's `on` counts as measured (they have no pre-fix figure). Then a script under C:\\tf\\xpackoff, run with `uv run python`, calls `workspace.task_source` for tasks/NG1 and tasks/S2 with the sources and upstream roots under C:\\tf\\xpackoff (the same call `plan.py:451` makes), and `git -C <base> ls-files` of each shows no AGENTS.md, CLAUDE.md, .claude/CLAUDE.md, GEMINI.md, .github/copilot-instructions.md or .github/instructions/*.instructions.md; paste both listings' matching-line counts. E1: Erratum 5, its HTML view, and PACKOFF-A's two lines, as named above. Commit.\n\nQUOTE-A: the atomic-site table sanctions this function's write, quoted from docs/design/eval-atomic-publish.md:447: | `workspace.task_source` · `shutil.copytree` (`:183`) | copies into the `tmp` build that `_land` then publishes; the publish is `_land` | The removal and the check act on `tmp` before `_land` publishes it, so add no publish primitive (os.rename, os.replace, os.link, shutil.move, Path.rename, Path.replace); tests/test_atomic_sites.py is in your guard list.\n\nConsole windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (src/harness_bench/workspace.py and tests/test_workspace.py; you add none unless a test helper needs one; any script you run lives under C:\\tf\\xpackoff). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none).\n\nThe context split rule, quoted from the plan's C-W0 item 4: The split rule for every compile: **start no item above floor + the item's expected work; the hand-back point is the first item boundary above that; the ceiling is at least floor + the largest item.** Your harness's row: | Claude Code · `claude-sonnet-5-5` | X-RS parts 2-5: 67,948, 68,721, 53,951, 120,392 (part 5 read model files first); X-LB1 about 66k; X-K1c part 2 72,513; X-TE9 about 68k | **73k** | `docs/coordination/coordinator-log/c46.md:94`; `run-report-e2e4.md:61` (about 68k for Sonnet) | Read here, with the item's expected work counted from the turn's start: start item k only at or below the floor plus the expected work of items 1 to k, so a turn that reads more than planned hands back early. Floor 73k; start thresholds: P0 (10k) at or below 83k; R1 (10k) at or below 93k; G1 (15k) at or below 108k; P1 (10k) at or below 118k; E1 (5k) at or below 123k; the final gate (10k) at or below 123k (133k capped at the stop line). Record your own first reading before the first item. The ceiling is 133k (the ruling's Sonnet seat, floor + 60k); at 123k start no new edit or gate, write the closing audit entry and hand back at your last commit with the open items named. Your hand-back point is the first item boundary above its threshold, or the end of your items. If the figure cannot be read, record \"not recorded\" and hand back after G1. Sample your context from your own transcript: the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains your session id; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens, before each item and before each gate command. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure.\n\nScratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xpackoff and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xpackoff. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started.\n\nFALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report.\n\nGate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xpackoff, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_workspace.py tests/test_plan.py` and the two mutate_check runs on your final commit; P1's two plan runs on your green commit or later; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.\n\nCommit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit.\n\nYour closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from your own transcript's message.model; tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched; the two red failures quoted; P0's refusal line; P1's exit and off/on instruction counts for each file; the two base-tree listing counts. Report your served model id on the first line of your final message.\n\nNot yours: every file but src/harness_bench/workspace.py (`task_source` and one helper it calls), src/harness_bench/errors.py (the HB-PRE-009 row), tests/test_workspace.py, docs/design/eval-property-tasks.md (Erratum 5 only) with its .html view, and PACKOFF-A's Control and Status lines in docs/lessons/defect-classes.md; src/harness_bench/plan.py and HB-PRE-008 (unchanged by the ruling); every file under tasks/; INSTRUCTION_FILES' six names (condition 3); bench/rings/e5-pilot.yaml and bench/matrix.e5-grid.yaml (X-E5M's; copies only, never committed); every tests/mutations/*.json; any run of a cell.\n\nNot yours: the whole suite, mutate_check --touched, every join, push and record (the Leader's); every other register entry (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours).",
+      "session": "prompt-compile",
+      "shortname": "You are session xpackoff-fin, harness Claude Code (Agent tool sub-agent)…",
+      "skill": null,
+      "summary": "raw prompt logged for compilation",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": {
+        "assumptions": [
+          {
+            "belief": "NG1's and S2's pack-on instruction counts have no pre-fix figure, because the pre-fix plan stops at HB-PRE-008; the eight other tasks' on counts from a copy without NG1 and S2 are the baseline",
+            "breaks": "if the pre-fix plan prints NG1's and S2's on counts before refusing, the worker uses those instead",
+            "confirm": "P0's two plan outputs",
+            "consequential": false,
+            "id": "#1"
+          },
+          {
+            "belief": "build/fin-x-e5m at c6b9d227 (e641027b plus the Leader's audit commit) holds X-E5M's final two files",
+            "breaks": "the evidence is re-taken on the new files; X-E5M's own re-run after this join is the erratum's step",
+            "confirm": "git log -1 build/fin-x-e5m at dispatch",
+            "consequential": false,
+            "id": "#2"
+          },
+          {
+            "belief": "the junction to the primary's .tools\\harness is read only in use, as it was for X-E5M",
+            "breaks": "a write through it lands in the primary; the brief forbids any write or delete through it",
+            "confirm": "the primary's git status unchanged after the turn (PRIM-A)",
+            "consequential": false,
+            "id": "#3"
+          }
+        ],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "Your ruling, quoted verbatim from docs/notes/rulings.md at 1b61aedd (owner/ruling-r116), Ruling 116 — DR-PACKOFF, (A) granted, bounded (`:2146`): Owned paths (X-PACKOFF): `src/harness_bench/workspace.py` (`task_source` only), `src/harness_bench/errors.py` (one new code), `tests/test_workspace.py`, `docs/lessons/defect-classes.md` (the class), and the W1 design erratum the Coordinator names for `task_source`. No `tasks/` change, no `plan.py` change: HB-PRE-008 stays as it is, the live measurement that the removal worked for Copilot. The removal: after `_extract_upstream_tree` and before the overlay `copytree`, delete from the extracted upstream tree every path in `INSTRUCTION_FILES` and every `*.instructions.md` under `INSTRUCTION_DIRS` (`workspace.py:27-28`, the one list; no second list is written). The control: after the overlay and before `git add`, the same walk refuses a base tree that still carries one (the next free HB-PRE code in `errors.py`; 004 and 006 are gaps, so 009 unless reserved), so it fires on every base build in every harness (the plan probe, every cell, every discrimination record) and never only on Copilot. Red first: two tests beside `test_task_source_from_upstream_builds_the_pinned_tree_plus_the_overlay` (`tests/test_workspace.py:266`): a fake upstream carrying `AGENTS.md` and `.github/copilot-instructions.md` builds a base with neither (red today); a `workspace/` overlay carrying one is refused with the new code (red today). Both green, then the whole `tests/test_workspace.py` and `tests/test_plan.py` green. And its conditions 1-3 and 5 (`:2156`; condition 4 is the Leader's): 1. The removal is unconditional for every `workspace_from: source` task; no per-task knob (YAGNI; no task today wants an upstream instruction file as part of its meaning, verified by grep). 2. The class is registered as a class, not an instance: an upstream pin carries an agent-instruction file into every arm's base tree, so pack-off is not instruction-free and the exposure differs by harness; the register has no such class today (only HB-PRE-002's ancestor case, ADR-0013:58); ID by reading the register (ID-A); control: the new HB-PRE code plus the two tests. 3. Widening `INSTRUCTION_FILES` beyond its six names is out of this track's scope unless a cited harness source names the file. 5. `readiness.contract_failures`'s `assume:` on `workspace_from: source` trees (`readiness.py:386-388`) is not changed by this ruling.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your ruling, quoted verbatim from docs/notes/rulings.md at 1b61aedd (owner/ruling-r116), R"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Done when (Ruling 116's exit evidence, `:2152`, verbatim): \"Exit evidence at the join: the two test names red then green (output quoted); `bench plan` on both E5 files exit 0 with `instruction_lists` count 0 for every `off` cell and the `on` counts unchanged; `git ls-files` of the built NG1 and S2 base trees showing no `AGENTS.md`, `CLAUDE.md`, `.claude/CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md` or `.github/instructions/*.instructions.md`; the register entry; the closing audit entry with duration.\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Done when (Ruling 116's exit evidence, `:2152`, verbatim): \"Exit evidence at the join: the"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "AGENT_SESSION=xpackoff-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "AGENT_SESSION=xpackoff-fin is set in every shell you open, inline on every commit and coor"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Base: the integration head the Leader names at dispatch, which holds 1b61aedd (owner/ruling-r116, joined as join-r116). Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor 1b61aedd HEAD` exits non-zero; `git grep -n HB-PRE-009 -- src tests` prints a line (the code is taken); `git ls-files tasks` lists a file named CLAUDE.md, AGENTS.md, GEMINI.md, copilot-instructions.md or *.instructions.md (Coordinator #60 found none at 1b61aedd; the check refuses every base build, so a committed overlay file would break that task); `coord session start` for xpackoff-fin is refused.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Base: the integration head the Leader names at dispatch, which holds 1b61aedd (owner/rulin"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Named by Coordinator #60, as the ruling asks (ID-A). The code: **HB-PRE-009**. `src/harness_bench/errors.py:85-89` holds HB-PRE-002, 003, 005, 007 and 008; 004 and 006 are phase-1 codes retired by design (docs/design/phase1-walking-skeleton.md:460, :492) and are not reused; HB-PRE-009 has no hit in `git grep` outside the audit log, and the register names none. Add one row to errors.py's table in HB-PRE-008's shape; its meaning text says a task base tree still carries an agent instruction file (a path in INSTRUCTION_FILES or a *.instructions.md under INSTRUCTION_DIRS) after the upstream removal. Once committed, that meaning text is never edited (ERRATA-A). The W1 design erratum for `task_source`: docs/design/eval-property-tasks.md (Design W1-L), a new section `### Erratum 5 (X-PACKOFF, 2026-10-08; Ruling 116)` after Erratum 4 (`:556`) and before `## 17.`. It amends section 2's paragraph at `:171`, which begins \"`workspace_from: source` and the overlay (`tasks/<ID>/workspace/`) follow E5 and S1.\": for every `workspace_from: source` task the base tree is the pinned upstream tree minus every path in INSTRUCTION_FILES and every *.instructions.md under INSTRUCTION_DIRS (`workspace.py:27-28`), then the overlay; HB-PRE-009 refuses a base tree, of any task, that still carries one; HB-PRE-008 (`plan.py:462`) stays the live Copilot measurement. Cite your red and green SHAs in it. Then re-render its HTML view: `python docs/ai-forward-pack/scripts/render-markdown.py docs/design/eval-property-tasks.md` (V19). The register class is PACKOFF-A in docs/lessons/defect-classes.md, already registered by Coordinator #60 with your build as its control; you edit only PACKOFF-A's Control and Status lines, to add your red and green SHAs.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Named by Coordinator #60, as the ruling asks (ID-A). The code: **HB-PRE-009**. `src/harnes"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Scratch for the plan evidence, all under C:\\tf\\xpackoff, never committed. The two E5 files are X-E5M's and are not on your base: copy them with `git show build/fin-x-e5m:bench/rings/e5-pilot.yaml` and `git show build/fin-x-e5m:bench/matrix.e5-grid.yaml`, each redirected to a file under C:\\tf\\xpackoff\\e5\\, and never add them to your branch. `bench plan` needs the pinned harness builds: make the junction X-E5M used, read only, with `cmd /c mklink /J C:\\tf\\xpackoff\\.tools\\harness C:\\Projects\\x-harness-x-model-bench\\.tools\\harness`. Never write, delete or clean through it (no rm -r, no rmdir /s on it or its parent); leave it in place at hand-back. Every plan run is `uv run bench --tools-dir C:\\tf\\xpackoff\\.tools\\harness --cells-root C:\\tf\\xpackoff\\cells --runs C:\\tf\\xpackoff\\runs plan --matrix <file> --json`, its output redirected to a file under C:\\tf\\xpackoff and its exit read on its own line. The global options --tools-dir, --cells-root and --runs come before `plan` (`cli.py:584-588`).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Scratch for the plan evidence, all under C:\\tf\\xpackoff, never committed. The two E5 files"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Items, in order. P0 (before any edit, at the base): run plan on the pilot copy; expect a non-zero exit with HB-PRE-008 naming NG1 or S2 (X-E5M's measured refusal, closing entry al-01M4EFX8Z0D49GSFZSCBW3QSN7). If it exits 0, stop and report: the ruling's premise does not hold on your base. Then make a third copy of the pilot with NG1 and S2 removed from its task list and run plan on it: its `on` cells' instruction counts are the baseline for the eight other tasks. R1 (red; your first commit): the two tests the ruling names, beside test_task_source_from_upstream_builds_the_pinned_tree_plus_the_overlay (`tests/test_workspace.py:266`), built with that file's own helpers (`_local_upstream_repo`, `_source_task`, `_tree`): (a) test_task_source_drops_the_upstream_agent_instruction_files, a fake upstream carrying AGENTS.md and .github/copilot-instructions.md beside one ordinary file builds a base with neither, asserted on `_tree(dest)`; (b) test_task_source_refuses_a_base_tree_that_carries_an_instruction_file, a workspace/ overlay carrying AGENTS.md is refused with BenchError code HB-PRE-009. Each is red on an assertion (RED-C): (a) on the tree equality, (b) on pytest.raises's DID NOT RAISE or on an assert of the code. A red by ImportError, KeyError or a collection error is not a red. Run only the two node ids, output to a file, and quote both failures in your report. Commit the two tests alone. G1 (green): the HB-PRE-009 row in errors.py; in workspace.py, in `task_source` only: after `_extract_upstream_tree` and before the overlay `copytree`, delete from the extracted tree every path in INSTRUCTION_FILES and every *.instructions.md under INSTRUCTION_DIRS; after the overlay and before `git add`, the same walk (one helper over the same two tuples, no second list) refuses a tree that still carries one with HB-PRE-009, naming the path. Then the two tests green; then the whole tests/test_workspace.py and tests/test_plan.py green; then `uv run python tools/mutate_check.py tests/mutations/workspace_source.json` and `uv run python tools/mutate_check.py tests/mutations/workspace.json` (the two sets that target workspace.py; you edit neither and add no mutant, since the ruling owns no mutation file), every mutant killed. Commit. P1 (the evidence, on your green commit): plan on the pilot copy and on the grid copy, each exit 0; from each JSON, every `off` cell's instruction count is 0, and the `on` counts of the eight other tasks equal P0's; report NG1's and S2's `on` counts as measured (they have no pre-fix figure). Then a script under C:\\tf\\xpackoff, run with `uv run python`, calls `workspace.task_source` for tasks/NG1 and tasks/S2 with the sources and upstream roots under C:\\tf\\xpackoff (the same call `plan.py:451` makes), and `git -C <base> ls-files` of each shows no AGENTS.md, CLAUDE.md, .claude/CLAUDE.md, GEMINI.md, .github/copilot-instructions.md or .github/instructions/*.instructions.md; paste both listings' matching-line counts. E1: Erratum 5, its HTML view, and PACKOFF-A's two lines, as named above. Commit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Items, in order. P0 (before any edit, at the base): run plan on the pilot copy; expect a n"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "QUOTE-A: the atomic-site table sanctions this function's write, quoted from docs/design/eval-atomic-publish.md:447: | `workspace.task_source` · `shutil.copytree` (`:183`) | copies into the `tmp` build that `_land` then publishes; the publish is `_land` | The removal and the check act on `tmp` before `_land` publishes it, so add no publish primitive (os.rename, os.replace, os.link, shutil.move, Path.rename, Path.replace); tests/test_atomic_sites.py is in your guard list.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "QUOTE-A: the atomic-site table sanctions this function's write, quoted from docs/design/ev"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (src/harness_bench/workspace.py and tests/test_workspace.py; you add none unless a test helper needs one; any script you run lives under C:\\tf\\xpackoff). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN b"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The context split rule, quoted from the plan's C-W0 item 4: The split rule for every compile: **start no item above floor + the item's expected work; the hand-back point is the first item boundary above that; the ceiling is at least floor + the largest item.** Your harness's row: | Claude Code · `claude-sonnet-5-5` | X-RS parts 2-5: 67,948, 68,721, 53,951, 120,392 (part 5 read model files first); X-LB1 about 66k; X-K1c part 2 72,513; X-TE9 about 68k | **73k** | `docs/coordination/coordinator-log/c46.md:94`; `run-report-e2e4.md:61` (about 68k for Sonnet) | Read here, with the item's expected work counted from the turn's start: start item k only at or below the floor plus the expected work of items 1 to k, so a turn that reads more than planned hands back early. Floor 73k; start thresholds: P0 (10k) at or below 83k; R1 (10k) at or below 93k; G1 (15k) at or below 108k; P1 (10k) at or below 118k; E1 (5k) at or below 123k; the final gate (10k) at or below 123k (133k capped at the stop line). Record your own first reading before the first item. The ceiling is 133k (the ruling's Sonnet seat, floor + 60k); at 123k start no new edit or gate, write the closing audit entry and hand back at your last commit with the open items named. Your hand-back point is the first item boundary above its threshold, or the end of your items. If the figure cannot be read, record \"not recorded\" and hand back after G1. Sample your context from your own transcript: the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains your session id; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens, before each item and before each gate command. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The context split rule, quoted from the plan's C-W0 item 4: The split rule for every compi"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xpackoff and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xpackoff. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\""
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Gate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xpackoff, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_workspace.py tests/test_plan.py` and the two mutate_check runs on your final commit; P1's two plan runs on your green commit or later; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Gate (R-104; each command on its own line, its exit status read, never behind a pipe; outp"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit named paths only (git add <path>, never -A or .), with plain git commit and your se"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from your own transcript's message.model; tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched; the two red failures quoted; P0's refusal line; P1's exit and off/on instruction counts for each file; the two base-tree listing counts. Report your served model id on the first line of your final message.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your closing audit entry, written through audit-log.py with your session variable inline, "
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "every file but src/harness_bench/workspace.py (`task_source` and one helper it calls), src/harness_bench/errors.py (the HB-PRE-009 row), tests/test_workspace.py, docs/design/eval-property-tasks.md (Erratum 5 only) with its .html view, and PACKOFF-A's Control and Status lines in docs/lessons/defect-classes.md; src/harness_bench/plan.py and HB-PRE-008 (unchanged by the ruling); every file under tasks/; INSTRUCTION_FILES' six names (condition 3); bench/rings/e5-pilot.yaml and bench/matrix.e5-grid.yaml (X-E5M's; copies only, never committed); every tests/mutations/*.json; any run of a cell.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "every file but src/harness_bench/workspace.py (`task_source` and one helper it calls), src"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the whole suite, mutate_check --touched, every join, push and record (the Leader's); every other register entry (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the whole suite, mutate_check --touched, every join, push and record (the Leader's); every"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-packoff on build/fin-x-packoff, session xpackoff-fin (new identity, checked free by Coordinator #60); owned paths per Ruling 116: workspace.py (task_source), errors.py (HB-PRE-009), tests/test_workspace.py, W1-L Erratum 5 and its HTML view, PACKOFF-A's Control and Status lines",
+          "deadline": "3,600 s",
+          "fallback": null,
+          "join_rule": "the Leader's join per coordination-finish.md (Batch plan), in P3 before X-E5M's plan evidence is final: re-run the red SHA, the guard list, docs-graph validate and the recount; owned paths only",
+          "per_branch_exit": "the brief's items as commits, then the gate; or a hand-back by the split rule with the open items named",
+          "termination": "one turn",
+          "transient_retry": "0",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "133k = floor 73k + 60k work; split rule (CEIL-A): start no item above floor + the work of items 1 to k; hand-off at 123k",
+          "done_when": [
+            "Your ruling, quoted verbatim from docs/notes/rulings.md at 1b61aedd (owner/ruling-r116), Ruling 116 — DR-PACKOFF, (A) granted, bounded (`:2146`): Owned paths (X-PACKOFF): `src/harness_bench/workspace.py` (`task_source` only), `src/harness_bench/errors.py` (one new code), `tests/test_workspace.py`, `docs/lessons/defect-classes.md` (the class), and the W1 design erratum the Coordinator names for `task_source`. No `tasks/` change, no `plan.py` change: HB-PRE-008 stays as it is, the live measurement that the removal worked for Copilot. The removal: after `_extract_upstream_tree` and before the overlay `copytree`, delete from the extracted upstream tree every path in `INSTRUCTION_FILES` and every `*.instructions.md` under `INSTRUCTION_DIRS` (`workspace.py:27-28`, the one list; no second list is written). The control: after the overlay and before `git add`, the same walk refuses a base tree that still carries one (the next free HB-PRE code in `errors.py`; 004 and 006 are gaps, so 009 unless reserved), so it fires on every base build in every harness (the plan probe, every cell, every discrimination record) and never only on Copilot. Red first: two tests beside `test_task_source_from_upstream_builds_the_pinned_tree_plus_the_overlay` (`tests/test_workspace.py:266`): a fake upstream carrying `AGENTS.md` and `.github/copilot-instructions.md` builds a base with neither (red today); a `workspace/` overlay carrying one is refused with the new code (red today). Both green, then the whole `tests/test_workspace.py` and `tests/test_plan.py` green. And its conditions 1-3 and 5 (`:2156`; condition 4 is the Leader's): 1. The removal is unconditional for every `workspace_from: source` task; no per-task knob (YAGNI; no task today wants an upstream instruction file as part of its meaning, verified by grep). 2. The class is registered as a class, not an instance: an upstream pin carries an agent-instruction file into every arm's base tree, so pack-off is not instruction-free and the exposure differs by harness; the register has no such class today (only HB-PRE-002's ancestor case, ADR-0013:58); ID by reading the register (ID-A); control: the new HB-PRE code plus the two tests. 3. Widening `INSTRUCTION_FILES` beyond its six names is out of this track's scope unless a cited harness source names the file. 5. `readiness.contract_failures`'s `assume:` on `workspace_from: source` trees (`readiness.py:386-388`) is not changed by this ruling.",
+            "Done when (Ruling 116's exit evidence, `:2152`, verbatim): \"Exit evidence at the join: the two test names red then green (output quoted); `bench plan` on both E5 files exit 0 with `instruction_lists` count 0 for every `off` cell and the `on` counts unchanged; `git ls-files` of the built NG1 and S2 base trees showing no `AGENTS.md`, `CLAUDE.md`, `.claude/CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md` or `.github/instructions/*.instructions.md`; the register entry; the closing audit entry with duration.\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`).",
+            "AGENT_SESSION=xpackoff-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below.",
+            "Base: the integration head the Leader names at dispatch, which holds 1b61aedd (owner/ruling-r116, joined as join-r116). Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor 1b61aedd HEAD` exits non-zero; `git grep -n HB-PRE-009 -- src tests` prints a line (the code is taken); `git ls-files tasks` lists a file named CLAUDE.md, AGENTS.md, GEMINI.md, copilot-instructions.md or *.instructions.md (Coordinator #60 found none at 1b61aedd; the check refuses every base build, so a committed overlay file would break that task); `coord session start` for xpackoff-fin is refused.",
+            "Named by Coordinator #60, as the ruling asks (ID-A). The code: **HB-PRE-009**. `src/harness_bench/errors.py:85-89` holds HB-PRE-002, 003, 005, 007 and 008; 004 and 006 are phase-1 codes retired by design (docs/design/phase1-walking-skeleton.md:460, :492) and are not reused; HB-PRE-009 has no hit in `git grep` outside the audit log, and the register names none. Add one row to errors.py's table in HB-PRE-008's shape; its meaning text says a task base tree still carries an agent instruction file (a path in INSTRUCTION_FILES or a *.instructions.md under INSTRUCTION_DIRS) after the upstream removal. Once committed, that meaning text is never edited (ERRATA-A). The W1 design erratum for `task_source`: docs/design/eval-property-tasks.md (Design W1-L), a new section `### Erratum 5 (X-PACKOFF, 2026-10-08; Ruling 116)` after Erratum 4 (`:556`) and before `## 17.`. It amends section 2's paragraph at `:171`, which begins \"`workspace_from: source` and the overlay (`tasks/<ID>/workspace/`) follow E5 and S1.\": for every `workspace_from: source` task the base tree is the pinned upstream tree minus every path in INSTRUCTION_FILES and every *.instructions.md under INSTRUCTION_DIRS (`workspace.py:27-28`), then the overlay; HB-PRE-009 refuses a base tree, of any task, that still carries one; HB-PRE-008 (`plan.py:462`) stays the live Copilot measurement. Cite your red and green SHAs in it. Then re-render its HTML view: `python docs/ai-forward-pack/scripts/render-markdown.py docs/design/eval-property-tasks.md` (V19). The register class is PACKOFF-A in docs/lessons/defect-classes.md, already registered by Coordinator #60 with your build as its control; you edit only PACKOFF-A's Control and Status lines, to add your red and green SHAs.",
+            "Scratch for the plan evidence, all under C:\\tf\\xpackoff, never committed. The two E5 files are X-E5M's and are not on your base: copy them with `git show build/fin-x-e5m:bench/rings/e5-pilot.yaml` and `git show build/fin-x-e5m:bench/matrix.e5-grid.yaml`, each redirected to a file under C:\\tf\\xpackoff\\e5\\, and never add them to your branch. `bench plan` needs the pinned harness builds: make the junction X-E5M used, read only, with `cmd /c mklink /J C:\\tf\\xpackoff\\.tools\\harness C:\\Projects\\x-harness-x-model-bench\\.tools\\harness`. Never write, delete or clean through it (no rm -r, no rmdir /s on it or its parent); leave it in place at hand-back. Every plan run is `uv run bench --tools-dir C:\\tf\\xpackoff\\.tools\\harness --cells-root C:\\tf\\xpackoff\\cells --runs C:\\tf\\xpackoff\\runs plan --matrix <file> --json`, its output redirected to a file under C:\\tf\\xpackoff and its exit read on its own line. The global options --tools-dir, --cells-root and --runs come before `plan` (`cli.py:584-588`).",
+            "Items, in order. P0 (before any edit, at the base): run plan on the pilot copy; expect a non-zero exit with HB-PRE-008 naming NG1 or S2 (X-E5M's measured refusal, closing entry al-01M4EFX8Z0D49GSFZSCBW3QSN7). If it exits 0, stop and report: the ruling's premise does not hold on your base. Then make a third copy of the pilot with NG1 and S2 removed from its task list and run plan on it: its `on` cells' instruction counts are the baseline for the eight other tasks. R1 (red; your first commit): the two tests the ruling names, beside test_task_source_from_upstream_builds_the_pinned_tree_plus_the_overlay (`tests/test_workspace.py:266`), built with that file's own helpers (`_local_upstream_repo`, `_source_task`, `_tree`): (a) test_task_source_drops_the_upstream_agent_instruction_files, a fake upstream carrying AGENTS.md and .github/copilot-instructions.md beside one ordinary file builds a base with neither, asserted on `_tree(dest)`; (b) test_task_source_refuses_a_base_tree_that_carries_an_instruction_file, a workspace/ overlay carrying AGENTS.md is refused with BenchError code HB-PRE-009. Each is red on an assertion (RED-C): (a) on the tree equality, (b) on pytest.raises's DID NOT RAISE or on an assert of the code. A red by ImportError, KeyError or a collection error is not a red. Run only the two node ids, output to a file, and quote both failures in your report. Commit the two tests alone. G1 (green): the HB-PRE-009 row in errors.py; in workspace.py, in `task_source` only: after `_extract_upstream_tree` and before the overlay `copytree`, delete from the extracted tree every path in INSTRUCTION_FILES and every *.instructions.md under INSTRUCTION_DIRS; after the overlay and before `git add`, the same walk (one helper over the same two tuples, no second list) refuses a tree that still carries one with HB-PRE-009, naming the path. Then the two tests green; then the whole tests/test_workspace.py and tests/test_plan.py green; then `uv run python tools/mutate_check.py tests/mutations/workspace_source.json` and `uv run python tools/mutate_check.py tests/mutations/workspace.json` (the two sets that target workspace.py; you edit neither and add no mutant, since the ruling owns no mutation file), every mutant killed. Commit. P1 (the evidence, on your green commit): plan on the pilot copy and on the grid copy, each exit 0; from each JSON, every `off` cell's instruction count is 0, and the `on` counts of the eight other tasks equal P0's; report NG1's and S2's `on` counts as measured (they have no pre-fix figure). Then a script under C:\\tf\\xpackoff, run with `uv run python`, calls `workspace.task_source` for tasks/NG1 and tasks/S2 with the sources and upstream roots under C:\\tf\\xpackoff (the same call `plan.py:451` makes), and `git -C <base> ls-files` of each shows no AGENTS.md, CLAUDE.md, .claude/CLAUDE.md, GEMINI.md, .github/copilot-instructions.md or .github/instructions/*.instructions.md; paste both listings' matching-line counts. E1: Erratum 5, its HTML view, and PACKOFF-A's two lines, as named above. Commit.",
+            "QUOTE-A: the atomic-site table sanctions this function's write, quoted from docs/design/eval-atomic-publish.md:447: | `workspace.task_source` · `shutil.copytree` (`:183`) | copies into the `tmp` build that `_land` then publishes; the publish is `_land` | The removal and the check act on `tmp` before `_land` publishes it, so add no publish primitive (os.rename, os.replace, os.link, shutil.move, Path.rename, Path.replace); tests/test_atomic_sites.py is in your guard list.",
+            "Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (src/harness_bench/workspace.py and tests/test_workspace.py; you add none unless a test helper needs one; any script you run lives under C:\\tf\\xpackoff). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none).",
+            "The context split rule, quoted from the plan's C-W0 item 4: The split rule for every compile: **start no item above floor + the item's expected work; the hand-back point is the first item boundary above that; the ceiling is at least floor + the largest item.** Your harness's row: | Claude Code · `claude-sonnet-5-5` | X-RS parts 2-5: 67,948, 68,721, 53,951, 120,392 (part 5 read model files first); X-LB1 about 66k; X-K1c part 2 72,513; X-TE9 about 68k | **73k** | `docs/coordination/coordinator-log/c46.md:94`; `run-report-e2e4.md:61` (about 68k for Sonnet) | Read here, with the item's expected work counted from the turn's start: start item k only at or below the floor plus the expected work of items 1 to k, so a turn that reads more than planned hands back early. Floor 73k; start thresholds: P0 (10k) at or below 83k; R1 (10k) at or below 93k; G1 (15k) at or below 108k; P1 (10k) at or below 118k; E1 (5k) at or below 123k; the final gate (10k) at or below 123k (133k capped at the stop line). Record your own first reading before the first item. The ceiling is 133k (the ruling's Sonnet seat, floor + 60k); at 123k start no new edit or gate, write the closing audit entry and hand back at your last commit with the open items named. Your hand-back point is the first item boundary above its threshold, or the end of your items. If the figure cannot be read, record \"not recorded\" and hand back after G1. Sample your context from your own transcript: the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains your session id; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens, before each item and before each gate command. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure.",
+            "Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xpackoff and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xpackoff. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started.",
+            "FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report.",
+            "Gate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xpackoff, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_workspace.py tests/test_plan.py` and the two mutate_check runs on your final commit; P1's two plan runs on your green commit or later; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.",
+            "Commit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit.",
+            "Your closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from your own transcript's message.model; tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched; the two red failures quoted; P0's refusal line; P1's exit and off/on instruction counts for each file; the two base-tree listing counts. Report your served model id on the first line of your final message."
+          ],
+          "fan_out_cap": "0",
+          "goal": "You are session xpackoff-fin, harness Claude Code (Agent tool sub-agent), model sonnet (served claude-sonnet-5-5), on branch build/fin-x-packoff in the tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-packoff. The Leader leader-fin (epoch 19) dispatches you; Coordinator #60 compiled this from Ruling 116 (docs/notes/rulings.md:2140-2160; docs/coordination/coordinator-log/c60.md). One turn, deadline 3,600 s, within 60 calls and a context ceiling of 133k, tier T1, fan-out cap 0. X-PACKOFF: every task base tree drops the upstream agent-instruction files, and a fail-closed base-tree check refuses a base tree that still carries one, with the new code HB-PRE-009, on every base build in every harness. Today NG1 (cachetools, .github/copilot-instructions.md) and S2 (bottle, AGENTS.md) ship an instruction file into both arms, so pack-off is not instruction-free and the exposure differs by harness.",
+          "main_line_budget": "within 60 calls; 3,600 s this turn",
+          "not_in_scope": [
+            "every file but src/harness_bench/workspace.py (`task_source` and one helper it calls), src/harness_bench/errors.py (the HB-PRE-009 row), tests/test_workspace.py, docs/design/eval-property-tasks.md (Erratum 5 only) with its .html view, and PACKOFF-A's Control and Status lines in docs/lessons/defect-classes.md; src/harness_bench/plan.py and HB-PRE-008 (unchanged by the ruling); every file under tasks/; INSTRUCTION_FILES' six names (condition 3); bench/rings/e5-pilot.yaml and bench/matrix.e5-grid.yaml (X-E5M's; copies only, never committed); every tests/mutations/*.json; any run of a cell.",
+            "the whole suite, mutate_check --touched, every join, push and record (the Leader's); every other register entry (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours)."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5[1m]",
+          "engine_seconds": 0.03,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M4EH43X7GVJFKXRXB6138M0Z",
+        "raw_sha256": "4de9a6765932d5dff079f13fd17b0132c406ec1e58dd3ccbeb13fc83c3ae6b4e",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":2146"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/workspace.py",
+            "reason": null,
+            "sha256": "575f0f33714e99bd36b3305e194cb928e29f8bcac7e87606cd8f4e5c465f0648",
+            "status": "resolved",
+            "token": "src/harness_bench/workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "task_source"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "3509e74d4610df7afeec7c15d66d32cf4549aeff001e9b1b430711771ca82e8e",
+            "status": "resolved",
+            "token": "src/harness_bench/errors.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_workspace.py",
+            "reason": null,
+            "sha256": "af8233cb18e91fd32679bbfac34a372c72839684deace2476a5bcc90b972ce25",
+            "status": "resolved",
+            "token": "tests/test_workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "b1e053d5515320f985c611a973fd1a5796693d94b5ad0c1606f5bdd1bc8aace5",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "9b94a7f295b3c03eed4b91640872a649aa23468b0fef2c92652920e52abb7e4f",
+            "status": "resolved",
+            "token": "plan.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_extract_upstream_tree"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "copytree"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "INSTRUCTION_FILES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "*.instructions.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "INSTRUCTION_DIRS"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "workspace.py:27-28"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git add"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "3509e74d4610df7afeec7c15d66d32cf4549aeff001e9b1b430711771ca82e8e",
+            "status": "resolved",
+            "token": "errors.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_task_source_from_upstream_builds_the_pinned_tree_plus_the_overlay"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_workspace.py:266"
+          },
+          {
+            "nearest": null,
+            "path": "AGENTS.md",
+            "reason": null,
+            "sha256": "e436ec2bf8627963a5eb15e61261ae74e2cbc00f783a3641ac7b12369edc74d0",
+            "status": "resolved",
+            "token": "AGENTS.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".github/copilot-instructions.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "workspace/"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_plan.py",
+            "reason": null,
+            "sha256": "a25767edc79f19dfc358388c4d21d5e7eeb741aa84cb7581d2ba027720b06306",
+            "status": "resolved",
+            "token": "tests/test_plan.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":2156"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "workspace_from: source"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "readiness.contract_failures"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "assume"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "readiness.py:386-388"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":2152"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench plan"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "instruction_lists"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "off"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "on"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git ls-files"
+          },
+          {
+            "nearest": null,
+            "path": "CLAUDE.md",
+            "reason": null,
+            "sha256": "dab890b2e50c4858bba54be530ec69f57f63ce9faf3e95a9791dc571611740f7",
+            "status": "resolved",
+            "token": "CLAUDE.md"
+          },
+          {
+            "nearest": "CLAUDE.md",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".claude/CLAUDE.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "GEMINI.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".github/instructions/*.instructions.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "mutate_check"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run ruff check src tests tools"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs-graph.py validate"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pytest -n 4 --dist loadscope"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "py -3"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git status --short"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git merge-base --is-ancestor 1b61aedd HEAD"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git grep -n HB-PRE-009 -- src tests"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git ls-files tasks"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord session start"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/errors.py:85-89"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git grep"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "### Erratum 5 (X-PACKOFF, 2026-10-08; Ruling 116"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":556"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "## 17"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":171"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/<ID>/workspace/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan.py:462"
+          },
+          {
+            "nearest": "docs/design/eval-property-tasks.md",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python docs/ai-forward-pack/scripts/render-markdown.py docs/design/eval-property-tasks.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git show build/fin-x-e5m:bench/rings/e5-pilot.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git show build/fin-x-e5m:bench/matrix.e5-grid.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cmd /c mklink /J C:\\tf\\xpackoff\\.tools\\harness C:\\Projects\\x-harness-x-model-bench\\.tools\\harness"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run bench --tools-dir C:\\tf\\xpackoff\\.tools\\harness --cells-root C:\\tf\\xpackoff\\cells --runs C:\\tf\\xpackoff\\runs plan --matrix <file> --json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cli.py:584-588"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_local_upstream_repo"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_source_task"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_tree"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_tree(dest"
+          },
+          {
+            "nearest": "tests/mutations/workspace_source.json",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run python tools/mutate_check.py tests/mutations/workspace_source.json"
+          },
+          {
+            "nearest": "tests/mutations/workspace.json",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run python tools/mutate_check.py tests/mutations/workspace.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "workspace.task_source"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "plan.py:451"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git -C <base> ls-files"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "shutil.copytree"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":183"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tmp"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_land"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/spikes/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "os.system"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "subprocess.run"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_console_windows.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/window_check.py --since <instant> --root-pid <pid"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git log --oneline -1 --grep=join-x-win"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "claude-sonnet-5-5"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/coordination/coordinator-log/c46.md:94"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "run-report-e2e4.md:61"
+          },
+          {
+            "nearest": "tests/test_timing_hygiene.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": "tests/test_plan.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q tests/test_workspace.py tests/test_plan.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python docs/ai-forward-pack/scripts/docs-graph.py validate"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/fin-x-packoff"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/notes/rulings.md:2140-2160"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/coordination/coordinator-log/c60.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/rulings.md",
+            "reason": null,
+            "sha256": "d9ba4bbe7d9d00f464a5388aefd6e11c9a19d1d6280522574e66fce99f894d6b",
+            "status": "resolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "owner/ruling-r116"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "copilot-instructions.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/design/phase1-walking-skeleton.md:460"
+          },
+          {
+            "nearest": null,
+            "path": "docs/design/eval-property-tasks.md",
+            "reason": null,
+            "sha256": "b57ae857a5cdf6c4b0dc071d7d5863d2b6fc1db014f6e7bbd6a1ebdaa11c582c",
+            "status": "resolved",
+            "token": "docs/design/eval-property-tasks.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/render-markdown.py",
+            "reason": null,
+            "sha256": "1033f9bada4fc31320e4fe8590600e59b0597c40b47d43ffec44fda85c1a71d8",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/render-markdown.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/fin-x-e5m:bench/rings/e5-pilot.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/fin-x-e5m:bench/matrix.e5-grid.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/c"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/J"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/s"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/workspace.py",
+            "reason": null,
+            "sha256": "575f0f33714e99bd36b3305e194cb928e29f8bcac7e87606cd8f4e5c465f0648",
+            "status": "resolved",
+            "token": "workspace.py"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "befa94bfa2ecdd17d421edef4b8d8d3589762ec0c600fea2d1dfee479d93a33d",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/workspace_source.json",
+            "reason": null,
+            "sha256": "b7f85f58770fe59553848824fb3070a60f0609d6ffd30bdb10be01e58b03bc4f",
+            "status": "resolved",
+            "token": "tests/mutations/workspace_source.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/workspace.json",
+            "reason": null,
+            "sha256": "83074bfc1831b0cade2da5c82f69fc4d62b1a7de06303e31d3ef78958815fe91",
+            "status": "resolved",
+            "token": "tests/mutations/workspace.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/NG1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/S2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/design/eval-atomic-publish.md:447"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_atomic_sites.py",
+            "reason": null,
+            "sha256": "143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90",
+            "status": "resolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/window_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_identity.py",
+            "reason": null,
+            "sha256": "f6717458ec2670a1be81a7839657dfa77e4dbb2e4515e532b5daefd5d3a8a784",
+            "status": "resolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_arms_guard.py",
+            "reason": null,
+            "sha256": "25c45e56139c8e3a2d70d353e4b83c0386590e754c342c2ee0e1a88338ff8b73",
+            "status": "resolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_discriminate.py",
+            "reason": null,
+            "sha256": "f75d3531381834234207298b60967099bd9b8de3406681dc39488e6a1aa195e7",
+            "status": "resolved",
+            "token": "tests/test_discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "4d9acae3db011db5017ab33375300622d60a4c4cb1cf4df1ee44a06a5bb2a14f",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_skills_in_sync.py",
+            "reason": null,
+            "sha256": "572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d",
+            "status": "resolved",
+            "token": "tests/test_skills_in_sync.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_timing_hygiene.py",
+            "reason": null,
+            "sha256": "fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6",
+            "status": "resolved",
+            "token": "tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/audit-log.py",
+            "reason": null,
+            "sha256": "d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4",
+            "status": "resolved",
+            "token": "audit-log.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "off/on"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".html"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/plan.py",
+            "reason": null,
+            "sha256": "9b94a7f295b3c03eed4b91640872a649aa23468b0fef2c92652920e52abb7e4f",
+            "status": "resolved",
+            "token": "src/harness_bench/plan.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/rings/e5-pilot.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/matrix.e5-grid.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/*.json"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "datetime": "2026-10-08T19:51:28Z",
+      "dispatchable": true,
+      "id": "al-01M4EH46K4KDVC0NZ1A3Z8VPY1",
+      "kind": "compilation",
+      "mode": "compiled",
+      "outcome": "success",
+      "prompt": "python docs/ai-forward-pack/scripts/audit-log.py start --session xpackoff-fin --skill implement\nGoal state\nGoal: You are session xpackoff-fin, harness Claude Code (Agent tool sub-agent), model sonnet (served claude-sonnet-5-5), on branch build/fin-x-packoff in the tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-packoff. The Leader leader-fin (epoch 19) dispatches you; Coordinator #60 compiled this from Ruling 116 (docs/notes/rulings.md:2140-2160; docs/coordination/coordinator-log/c60.md). One turn, deadline 3,600 s, within 60 calls and a context ceiling of 133k, tier T1, fan-out cap 0. X-PACKOFF: every task base tree drops the upstream agent-instruction files, and a fail-closed base-tree check refuses a base tree that still carries one, with the new code HB-PRE-009, on every base build in every harness. Today NG1 (cachetools, .github/copilot-instructions.md) and S2 (bottle, AGENTS.md) ship an instruction file into both arms, so pack-off is not instruction-free and the exposure differs by harness.\nDone when: Your ruling, quoted verbatim from docs/notes/rulings.md at 1b61aedd (owner/ruling-r116), Ruling 116 — DR-PACKOFF, (A) granted, bounded (`:2146`): Owned paths (X-PACKOFF): `src/harness_bench/workspace.py` (`task_source` only), `src/harness_bench/errors.py` (one new code), `tests/test_workspace.py`, `docs/lessons/defect-classes.md` (the class), and the W1 design erratum the Coordinator names for `task_source`. No `tasks/` change, no `plan.py` change: HB-PRE-008 stays as it is, the live measurement that the removal worked for Copilot. The removal: after `_extract_upstream_tree` and before the overlay `copytree`, delete from the extracted upstream tree every path in `INSTRUCTION_FILES` and every `*.instructions.md` under `INSTRUCTION_DIRS` (`workspace.py:27-28`, the one list; no second list is written). The control: after the overlay and before `git add`, the same walk refuses a base tree that still carries one (the next free HB-PRE code in `errors.py`; 004 and 006 are gaps, so 009 unless reserved), so it fires on every base build in every harness (the plan probe, every cell, every discrimination record) and never only on Copilot. Red first: two tests beside `test_task_source_from_upstream_builds_the_pinned_tree_plus_the_overlay` (`tests/test_workspace.py:266`): a fake upstream carrying `AGENTS.md` and `.github/copilot-instructions.md` builds a base with neither (red today); a `workspace/` overlay carrying one is refused with the new code (red today). Both green, then the whole `tests/test_workspace.py` and `tests/test_plan.py` green. And its conditions 1-3 and 5 (`:2156`; condition 4 is the Leader's): 1. The removal is unconditional for every `workspace_from: source` task; no per-task knob (YAGNI; no task today wants an upstream instruction file as part of its meaning, verified by grep). 2. The class is registered as a class, not an instance: an upstream pin carries an agent-instruction file into every arm's base tree, so pack-off is not instruction-free and the exposure differs by harness; the register has no such class today (only HB-PRE-002's ancestor case, ADR-0013:58); ID by reading the register (ID-A); control: the new HB-PRE code plus the two tests. 3. Widening `INSTRUCTION_FILES` beyond its six names is out of this track's scope unless a cited harness source names the file. 5. `readiness.contract_failures`'s `assume:` on `workspace_from: source` trees (`readiness.py:386-388`) is not changed by this ruling.; Done when (Ruling 116's exit evidence, `:2152`, verbatim): \"Exit evidence at the join: the two test names red then green (output quoted); `bench plan` on both E5 files exit 0 with `instruction_lists` count 0 for every `off` cell and the `on` counts unchanged; `git ls-files` of the built NG1 and S2 base trees showing no `AGENTS.md`, `CLAUDE.md`, `.claude/CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md` or `.github/instructions/*.instructions.md`; the register entry; the closing audit entry with duration.\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`).; AGENT_SESSION=xpackoff-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below.; Base: the integration head the Leader names at dispatch, which holds 1b61aedd (owner/ruling-r116, joined as join-r116). Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor 1b61aedd HEAD` exits non-zero; `git grep -n HB-PRE-009 -- src tests` prints a line (the code is taken); `git ls-files tasks` lists a file named CLAUDE.md, AGENTS.md, GEMINI.md, copilot-instructions.md or *.instructions.md (Coordinator #60 found none at 1b61aedd; the check refuses every base build, so a committed overlay file would break that task); `coord session start` for xpackoff-fin is refused.; Named by Coordinator #60, as the ruling asks (ID-A). The code: **HB-PRE-009**. `src/harness_bench/errors.py:85-89` holds HB-PRE-002, 003, 005, 007 and 008; 004 and 006 are phase-1 codes retired by design (docs/design/phase1-walking-skeleton.md:460, :492) and are not reused; HB-PRE-009 has no hit in `git grep` outside the audit log, and the register names none. Add one row to errors.py's table in HB-PRE-008's shape; its meaning text says a task base tree still carries an agent instruction file (a path in INSTRUCTION_FILES or a *.instructions.md under INSTRUCTION_DIRS) after the upstream removal. Once committed, that meaning text is never edited (ERRATA-A). The W1 design erratum for `task_source`: docs/design/eval-property-tasks.md (Design W1-L), a new section `### Erratum 5 (X-PACKOFF, 2026-10-08; Ruling 116)` after Erratum 4 (`:556`) and before `## 17.`. It amends section 2's paragraph at `:171`, which begins \"`workspace_from: source` and the overlay (`tasks/<ID>/workspace/`) follow E5 and S1.\": for every `workspace_from: source` task the base tree is the pinned upstream tree minus every path in INSTRUCTION_FILES and every *.instructions.md under INSTRUCTION_DIRS (`workspace.py:27-28`), then the overlay; HB-PRE-009 refuses a base tree, of any task, that still carries one; HB-PRE-008 (`plan.py:462`) stays the live Copilot measurement. Cite your red and green SHAs in it. Then re-render its HTML view: `python docs/ai-forward-pack/scripts/render-markdown.py docs/design/eval-property-tasks.md` (V19). The register class is PACKOFF-A in docs/lessons/defect-classes.md, already registered by Coordinator #60 with your build as its control; you edit only PACKOFF-A's Control and Status lines, to add your red and green SHAs.; Scratch for the plan evidence, all under C:\\tf\\xpackoff, never committed. The two E5 files are X-E5M's and are not on your base: copy them with `git show build/fin-x-e5m:bench/rings/e5-pilot.yaml` and `git show build/fin-x-e5m:bench/matrix.e5-grid.yaml`, each redirected to a file under C:\\tf\\xpackoff\\e5\\, and never add them to your branch. `bench plan` needs the pinned harness builds: make the junction X-E5M used, read only, with `cmd /c mklink /J C:\\tf\\xpackoff\\.tools\\harness C:\\Projects\\x-harness-x-model-bench\\.tools\\harness`. Never write, delete or clean through it (no rm -r, no rmdir /s on it or its parent); leave it in place at hand-back. Every plan run is `uv run bench --tools-dir C:\\tf\\xpackoff\\.tools\\harness --cells-root C:\\tf\\xpackoff\\cells --runs C:\\tf\\xpackoff\\runs plan --matrix <file> --json`, its output redirected to a file under C:\\tf\\xpackoff and its exit read on its own line. The global options --tools-dir, --cells-root and --runs come before `plan` (`cli.py:584-588`).; Items, in order. P0 (before any edit, at the base): run plan on the pilot copy; expect a non-zero exit with HB-PRE-008 naming NG1 or S2 (X-E5M's measured refusal, closing entry al-01M4EFX8Z0D49GSFZSCBW3QSN7). If it exits 0, stop and report: the ruling's premise does not hold on your base. Then make a third copy of the pilot with NG1 and S2 removed from its task list and run plan on it: its `on` cells' instruction counts are the baseline for the eight other tasks. R1 (red; your first commit): the two tests the ruling names, beside test_task_source_from_upstream_builds_the_pinned_tree_plus_the_overlay (`tests/test_workspace.py:266`), built with that file's own helpers (`_local_upstream_repo`, `_source_task`, `_tree`): (a) test_task_source_drops_the_upstream_agent_instruction_files, a fake upstream carrying AGENTS.md and .github/copilot-instructions.md beside one ordinary file builds a base with neither, asserted on `_tree(dest)`; (b) test_task_source_refuses_a_base_tree_that_carries_an_instruction_file, a workspace/ overlay carrying AGENTS.md is refused with BenchError code HB-PRE-009. Each is red on an assertion (RED-C): (a) on the tree equality, (b) on pytest.raises's DID NOT RAISE or on an assert of the code. A red by ImportError, KeyError or a collection error is not a red. Run only the two node ids, output to a file, and quote both failures in your report. Commit the two tests alone. G1 (green): the HB-PRE-009 row in errors.py; in workspace.py, in `task_source` only: after `_extract_upstream_tree` and before the overlay `copytree`, delete from the extracted tree every path in INSTRUCTION_FILES and every *.instructions.md under INSTRUCTION_DIRS; after the overlay and before `git add`, the same walk (one helper over the same two tuples, no second list) refuses a tree that still carries one with HB-PRE-009, naming the path. Then the two tests green; then the whole tests/test_workspace.py and tests/test_plan.py green; then `uv run python tools/mutate_check.py tests/mutations/workspace_source.json` and `uv run python tools/mutate_check.py tests/mutations/workspace.json` (the two sets that target workspace.py; you edit neither and add no mutant, since the ruling owns no mutation file), every mutant killed. Commit. P1 (the evidence, on your green commit): plan on the pilot copy and on the grid copy, each exit 0; from each JSON, every `off` cell's instruction count is 0, and the `on` counts of the eight other tasks equal P0's; report NG1's and S2's `on` counts as measured (they have no pre-fix figure). Then a script under C:\\tf\\xpackoff, run with `uv run python`, calls `workspace.task_source` for tasks/NG1 and tasks/S2 with the sources and upstream roots under C:\\tf\\xpackoff (the same call `plan.py:451` makes), and `git -C <base> ls-files` of each shows no AGENTS.md, CLAUDE.md, .claude/CLAUDE.md, GEMINI.md, .github/copilot-instructions.md or .github/instructions/*.instructions.md; paste both listings' matching-line counts. E1: Erratum 5, its HTML view, and PACKOFF-A's two lines, as named above. Commit.; QUOTE-A: the atomic-site table sanctions this function's write, quoted from docs/design/eval-atomic-publish.md:447: | `workspace.task_source` · `shutil.copytree` (`:183`) | copies into the `tmp` build that `_land` then publishes; the publish is `_land` | The removal and the check act on `tmp` before `_land` publishes it, so add no publish primitive (os.rename, os.replace, os.link, shutil.move, Path.rename, Path.replace); tests/test_atomic_sites.py is in your guard list.; Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (src/harness_bench/workspace.py and tests/test_workspace.py; you add none unless a test helper needs one; any script you run lives under C:\\tf\\xpackoff). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none).; The context split rule, quoted from the plan's C-W0 item 4: The split rule for every compile: **start no item above floor + the item's expected work; the hand-back point is the first item boundary above that; the ceiling is at least floor + the largest item.** Your harness's row: | Claude Code · `claude-sonnet-5-5` | X-RS parts 2-5: 67,948, 68,721, 53,951, 120,392 (part 5 read model files first); X-LB1 about 66k; X-K1c part 2 72,513; X-TE9 about 68k | **73k** | `docs/coordination/coordinator-log/c46.md:94`; `run-report-e2e4.md:61` (about 68k for Sonnet) | Read here, with the item's expected work counted from the turn's start: start item k only at or below the floor plus the expected work of items 1 to k, so a turn that reads more than planned hands back early. Floor 73k; start thresholds: P0 (10k) at or below 83k; R1 (10k) at or below 93k; G1 (15k) at or below 108k; P1 (10k) at or below 118k; E1 (5k) at or below 123k; the final gate (10k) at or below 123k (133k capped at the stop line). Record your own first reading before the first item. The ceiling is 133k (the ruling's Sonnet seat, floor + 60k); at 123k start no new edit or gate, write the closing audit entry and hand back at your last commit with the open items named. Your hand-back point is the first item boundary above its threshold, or the end of your items. If the figure cannot be read, record \"not recorded\" and hand back after G1. Sample your context from your own transcript: the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains your session id; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens, before each item and before each gate command. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure.; Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xpackoff and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xpackoff. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started.; FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report.; Gate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xpackoff, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_workspace.py tests/test_plan.py` and the two mutate_check runs on your final commit; P1's two plan runs on your green commit or later; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.; Commit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit.; Your closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from your own transcript's message.model; tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched; the two red failures quoted; P0's refusal line; P1's exit and off/on instruction counts for each file; the two base-tree listing counts. Report your served model id on the first line of your final message.\nNot in scope: every file but src/harness_bench/workspace.py (`task_source` and one helper it calls), src/harness_bench/errors.py (the HB-PRE-009 row), tests/test_workspace.py, docs/design/eval-property-tasks.md (Erratum 5 only) with its .html view, and PACKOFF-A's Control and Status lines in docs/lessons/defect-classes.md; src/harness_bench/plan.py and HB-PRE-008 (unchanged by the ruling); every file under tasks/; INSTRUCTION_FILES' six names (condition 3); bench/rings/e5-pilot.yaml and bench/matrix.e5-grid.yaml (X-E5M's; copies only, never committed); every tests/mutations/*.json; any run of a cell.; the whole suite, mutate_check --touched, every join, push and record (the Leader's); every other register entry (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours).\nTier: T1\nFan-out cap: 0\nContext ceiling: 133k = floor 73k + 60k work; split rule (CEIL-A): start no item above floor + the work of items 1 to k; hand-off at 123k\nMain-line budget: within 60 calls; 3,600 s this turn\nTrace\n| clause | trace |\n|---|---|\n| done_when: Your ruling, quoted verbatim from docs/notes/rulings.md at 1b61aedd (owner/ruling-r116), Ruling 116 — DR-PACKOFF, (A) granted, bounded (`:2146`): Owned paths (X-PACKOFF): `src/harness_bench/workspace.py` (`task_source` only), `src/harness_bench/errors.py` (one new code), `tests/test_workspace.py`, `docs/lessons/defect-classes.md` (the class), and the W1 design erratum the Coordinator names for `task_source`. No `tasks/` change, no `plan.py` change: HB-PRE-008 stays as it is, the live measurement that the removal worked for Copilot. The removal: after `_extract_upstream_tree` and before the overlay `copytree`, delete from the extracted upstream tree every path in `INSTRUCTION_FILES` and every `*.instructions.md` under `INSTRUCTION_DIRS` (`workspace.py:27-28`, the one list; no second list is written). The control: after the overlay and before `git add`, the same walk refuses a base tree that still carries one (the next free HB-PRE code in `errors.py`; 004 and 006 are gaps, so 009 unless reserved), so it fires on every base build in every harness (the plan probe, every cell, every discrimination record) and never only on Copilot. Red first: two tests beside `test_task_source_from_upstream_builds_the_pinned_tree_plus_the_overlay` (`tests/test_workspace.py:266`): a fake upstream carrying `AGENTS.md` and `.github/copilot-instructions.md` builds a base with neither (red today); a `workspace/` overlay carrying one is refused with the new code (red today). Both green, then the whole `tests/test_workspace.py` and `tests/test_plan.py` green. And its conditions 1-3 and 5 (`:2156`; condition 4 is the Leader's): 1. The removal is unconditional for every `workspace_from: source` task; no per-task knob (YAGNI; no task today wants an upstream instruction file as part of its meaning, verified by grep). 2. The class is registered as a class, not an instance: an upstream pin carries an agent-instruction file into every arm's base tree, so pack-off is not instruction-free and the exposure differs by harness; the register has no such class today (only HB-PRE-002's ancestor case, ADR-0013:58); ID by reading the register (ID-A); control: the new HB-PRE code plus the two tests. 3. Widening `INSTRUCTION_FILES` beyond its six names is out of this track's scope unless a cited harness source names the file. 5. `readiness.contract_failures`'s `assume:` on `workspace_from: source` trees (`readiness.py:386-388`) is not changed by this ruling. | phrase: Your ruling, quoted verbatim from docs/notes/rulings.md at 1b61aedd (owner/ruling-r116), R |\n| done_when: Done when (Ruling 116's exit evidence, `:2152`, verbatim): \"Exit evidence at the join: the two test names red then green (output quoted); `bench plan` on both E5 files exit 0 with `instruction_lists` count 0 for every `off` cell and the `on` counts unchanged; `git ls-files` of the built NG1 and S2 base trees showing no `AGENTS.md`, `CLAUDE.md`, `.claude/CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md` or `.github/instructions/*.instructions.md`; the register entry; the closing audit entry with duration.\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`). | phrase: Done when (Ruling 116's exit evidence, `:2152`, verbatim): \"Exit evidence at the join: the |\n| done_when: AGENT_SESSION=xpackoff-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below. | phrase: AGENT_SESSION=xpackoff-fin is set in every shell you open, inline on every commit and coor |\n| done_when: Base: the integration head the Leader names at dispatch, which holds 1b61aedd (owner/ruling-r116, joined as join-r116). Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor 1b61aedd HEAD` exits non-zero; `git grep -n HB-PRE-009 -- src tests` prints a line (the code is taken); `git ls-files tasks` lists a file named CLAUDE.md, AGENTS.md, GEMINI.md, copilot-instructions.md or *.instructions.md (Coordinator #60 found none at 1b61aedd; the check refuses every base build, so a committed overlay file would break that task); `coord session start` for xpackoff-fin is refused. | phrase: Base: the integration head the Leader names at dispatch, which holds 1b61aedd (owner/rulin |\n| done_when: Named by Coordinator #60, as the ruling asks (ID-A). The code: **HB-PRE-009**. `src/harness_bench/errors.py:85-89` holds HB-PRE-002, 003, 005, 007 and 008; 004 and 006 are phase-1 codes retired by design (docs/design/phase1-walking-skeleton.md:460, :492) and are not reused; HB-PRE-009 has no hit in `git grep` outside the audit log, and the register names none. Add one row to errors.py's table in HB-PRE-008's shape; its meaning text says a task base tree still carries an agent instruction file (a path in INSTRUCTION_FILES or a *.instructions.md under INSTRUCTION_DIRS) after the upstream removal. Once committed, that meaning text is never edited (ERRATA-A). The W1 design erratum for `task_source`: docs/design/eval-property-tasks.md (Design W1-L), a new section `### Erratum 5 (X-PACKOFF, 2026-10-08; Ruling 116)` after Erratum 4 (`:556`) and before `## 17.`. It amends section 2's paragraph at `:171`, which begins \"`workspace_from: source` and the overlay (`tasks/<ID>/workspace/`) follow E5 and S1.\": for every `workspace_from: source` task the base tree is the pinned upstream tree minus every path in INSTRUCTION_FILES and every *.instructions.md under INSTRUCTION_DIRS (`workspace.py:27-28`), then the overlay; HB-PRE-009 refuses a base tree, of any task, that still carries one; HB-PRE-008 (`plan.py:462`) stays the live Copilot measurement. Cite your red and green SHAs in it. Then re-render its HTML view: `python docs/ai-forward-pack/scripts/render-markdown.py docs/design/eval-property-tasks.md` (V19). The register class is PACKOFF-A in docs/lessons/defect-classes.md, already registered by Coordinator #60 with your build as its control; you edit only PACKOFF-A's Control and Status lines, to add your red and green SHAs. | phrase: Named by Coordinator #60, as the ruling asks (ID-A). The code: **HB-PRE-009**. `src/harnes |\n| done_when: Scratch for the plan evidence, all under C:\\tf\\xpackoff, never committed. The two E5 files are X-E5M's and are not on your base: copy them with `git show build/fin-x-e5m:bench/rings/e5-pilot.yaml` and `git show build/fin-x-e5m:bench/matrix.e5-grid.yaml`, each redirected to a file under C:\\tf\\xpackoff\\e5\\, and never add them to your branch. `bench plan` needs the pinned harness builds: make the junction X-E5M used, read only, with `cmd /c mklink /J C:\\tf\\xpackoff\\.tools\\harness C:\\Projects\\x-harness-x-model-bench\\.tools\\harness`. Never write, delete or clean through it (no rm -r, no rmdir /s on it or its parent); leave it in place at hand-back. Every plan run is `uv run bench --tools-dir C:\\tf\\xpackoff\\.tools\\harness --cells-root C:\\tf\\xpackoff\\cells --runs C:\\tf\\xpackoff\\runs plan --matrix <file> --json`, its output redirected to a file under C:\\tf\\xpackoff and its exit read on its own line. The global options --tools-dir, --cells-root and --runs come before `plan` (`cli.py:584-588`). | phrase: Scratch for the plan evidence, all under C:\\tf\\xpackoff, never committed. The two E5 files |\n| done_when: Items, in order. P0 (before any edit, at the base): run plan on the pilot copy; expect a non-zero exit with HB-PRE-008 naming NG1 or S2 (X-E5M's measured refusal, closing entry al-01M4EFX8Z0D49GSFZSCBW3QSN7). If it exits 0, stop and report: the ruling's premise does not hold on your base. Then make a third copy of the pilot with NG1 and S2 removed from its task list and run plan on it: its `on` cells' instruction counts are the baseline for the eight other tasks. R1 (red; your first commit): the two tests the ruling names, beside test_task_source_from_upstream_builds_the_pinned_tree_plus_the_overlay (`tests/test_workspace.py:266`), built with that file's own helpers (`_local_upstream_repo`, `_source_task`, `_tree`): (a) test_task_source_drops_the_upstream_agent_instruction_files, a fake upstream carrying AGENTS.md and .github/copilot-instructions.md beside one ordinary file builds a base with neither, asserted on `_tree(dest)`; (b) test_task_source_refuses_a_base_tree_that_carries_an_instruction_file, a workspace/ overlay carrying AGENTS.md is refused with BenchError code HB-PRE-009. Each is red on an assertion (RED-C): (a) on the tree equality, (b) on pytest.raises's DID NOT RAISE or on an assert of the code. A red by ImportError, KeyError or a collection error is not a red. Run only the two node ids, output to a file, and quote both failures in your report. Commit the two tests alone. G1 (green): the HB-PRE-009 row in errors.py; in workspace.py, in `task_source` only: after `_extract_upstream_tree` and before the overlay `copytree`, delete from the extracted tree every path in INSTRUCTION_FILES and every *.instructions.md under INSTRUCTION_DIRS; after the overlay and before `git add`, the same walk (one helper over the same two tuples, no second list) refuses a tree that still carries one with HB-PRE-009, naming the path. Then the two tests green; then the whole tests/test_workspace.py and tests/test_plan.py green; then `uv run python tools/mutate_check.py tests/mutations/workspace_source.json` and `uv run python tools/mutate_check.py tests/mutations/workspace.json` (the two sets that target workspace.py; you edit neither and add no mutant, since the ruling owns no mutation file), every mutant killed. Commit. P1 (the evidence, on your green commit): plan on the pilot copy and on the grid copy, each exit 0; from each JSON, every `off` cell's instruction count is 0, and the `on` counts of the eight other tasks equal P0's; report NG1's and S2's `on` counts as measured (they have no pre-fix figure). Then a script under C:\\tf\\xpackoff, run with `uv run python`, calls `workspace.task_source` for tasks/NG1 and tasks/S2 with the sources and upstream roots under C:\\tf\\xpackoff (the same call `plan.py:451` makes), and `git -C <base> ls-files` of each shows no AGENTS.md, CLAUDE.md, .claude/CLAUDE.md, GEMINI.md, .github/copilot-instructions.md or .github/instructions/*.instructions.md; paste both listings' matching-line counts. E1: Erratum 5, its HTML view, and PACKOFF-A's two lines, as named above. Commit. | phrase: Items, in order. P0 (before any edit, at the base): run plan on the pilot copy; expect a n |\n| done_when: QUOTE-A: the atomic-site table sanctions this function's write, quoted from docs/design/eval-atomic-publish.md:447: | `workspace.task_source` · `shutil.copytree` (`:183`) | copies into the `tmp` build that `_land` then publishes; the publish is `_land` | The removal and the check act on `tmp` before `_land` publishes it, so add no publish primitive (os.rename, os.replace, os.link, shutil.move, Path.rename, Path.replace); tests/test_atomic_sites.py is in your guard list. | phrase: QUOTE-A: the atomic-site table sanctions this function's write, quoted from docs/design/ev |\n| done_when: Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (src/harness_bench/workspace.py and tests/test_workspace.py; you add none unless a test helper needs one; any script you run lives under C:\\tf\\xpackoff). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none). | phrase: Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN b |\n| done_when: The context split rule, quoted from the plan's C-W0 item 4: The split rule for every compile: **start no item above floor + the item's expected work; the hand-back point is the first item boundary above that; the ceiling is at least floor + the largest item.** Your harness's row: | Claude Code · `claude-sonnet-5-5` | X-RS parts 2-5: 67,948, 68,721, 53,951, 120,392 (part 5 read model files first); X-LB1 about 66k; X-K1c part 2 72,513; X-TE9 about 68k | **73k** | `docs/coordination/coordinator-log/c46.md:94`; `run-report-e2e4.md:61` (about 68k for Sonnet) | Read here, with the item's expected work counted from the turn's start: start item k only at or below the floor plus the expected work of items 1 to k, so a turn that reads more than planned hands back early. Floor 73k; start thresholds: P0 (10k) at or below 83k; R1 (10k) at or below 93k; G1 (15k) at or below 108k; P1 (10k) at or below 118k; E1 (5k) at or below 123k; the final gate (10k) at or below 123k (133k capped at the stop line). Record your own first reading before the first item. The ceiling is 133k (the ruling's Sonnet seat, floor + 60k); at 123k start no new edit or gate, write the closing audit entry and hand back at your last commit with the open items named. Your hand-back point is the first item boundary above its threshold, or the end of your items. If the figure cannot be read, record \"not recorded\" and hand back after G1. Sample your context from your own transcript: the newest file under C:\\Users\\malla\\.claude\\projects\\C--Projects-x-harness-x-model-bench\\*\\subagents\\agent-*.jsonl that contains your session id; the last assistant message's usage, input_tokens plus cache_read_input_tokens plus cache_creation_input_tokens, before each item and before each gate command. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure. | phrase: The context split rule, quoted from the plan's C-W0 item 4: The split rule for every compi |\n| done_when: Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xpackoff and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xpackoff. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started. | phrase: Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\" |\n| done_when: FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report. | phrase: FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude |\n| done_when: Gate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xpackoff, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_workspace.py tests/test_plan.py` and the two mutate_check runs on your final commit; P1's two plan runs on your green commit or later; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. | phrase: Gate (R-104; each command on its own line, its exit status read, never behind a pipe; outp |\n| done_when: Commit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit. | phrase: Commit named paths only (git add <path>, never -A or .), with plain git commit and your se |\n| done_when: Your closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from your own transcript's message.model; tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched; the two red failures quoted; P0's refusal line; P1's exit and off/on instruction counts for each file; the two base-tree listing counts. Report your served model id on the first line of your final message. | phrase: Your closing audit entry, written through audit-log.py with your session variable inline,  |\n| not_in_scope: every file but src/harness_bench/workspace.py (`task_source` and one helper it calls), src/harness_bench/errors.py (the HB-PRE-009 row), tests/test_workspace.py, docs/design/eval-property-tasks.md (Erratum 5 only) with its .html view, and PACKOFF-A's Control and Status lines in docs/lessons/defect-classes.md; src/harness_bench/plan.py and HB-PRE-008 (unchanged by the ruling); every file under tasks/; INSTRUCTION_FILES' six names (condition 3); bench/rings/e5-pilot.yaml and bench/matrix.e5-grid.yaml (X-E5M's; copies only, never committed); every tests/mutations/*.json; any run of a cell. | phrase: every file but src/harness_bench/workspace.py (`task_source` and one helper it calls), src |\n| not_in_scope: the whole suite, mutate_check --touched, every join, push and record (the Leader's); every other register entry (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours). | phrase: the whole suite, mutate_check --touched, every join, push and record (the Leader's); every |\nReferences\n- :2146: unresolved (not found)\n- src/harness_bench/workspace.py: src/harness_bench/workspace.py sha256 575f0f33714e99bd36b3305e194cb928e29f8bcac7e87606cd8f4e5c465f0648\n- task_source: unresolved (not found)\n- src/harness_bench/errors.py: src/harness_bench/errors.py sha256 3509e74d4610df7afeec7c15d66d32cf4549aeff001e9b1b430711771ca82e8e\n- tests/test_workspace.py: tests/test_workspace.py sha256 af8233cb18e91fd32679bbfac34a372c72839684deace2476a5bcc90b972ce25\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 b1e053d5515320f985c611a973fd1a5796693d94b5ad0c1606f5bdd1bc8aace5\n- tasks/: unresolved (not found)\n- plan.py: src/harness_bench/plan.py sha256 9b94a7f295b3c03eed4b91640872a649aa23468b0fef2c92652920e52abb7e4f\n- _extract_upstream_tree: unresolved (not found)\n- copytree: unresolved (not found)\n- INSTRUCTION_FILES: unresolved (not found)\n- *.instructions.md: unresolved (not found)\n- INSTRUCTION_DIRS: unresolved (not found)\n- workspace.py:27-28: unresolved (not found)\n- git add: unresolved (not found)\n- errors.py: src/harness_bench/errors.py sha256 3509e74d4610df7afeec7c15d66d32cf4549aeff001e9b1b430711771ca82e8e\n- test_task_source_from_upstream_builds_the_pinned_tree_plus_the_overlay: unresolved (not found)\n- tests/test_workspace.py:266: unresolved (not found)\n- AGENTS.md: AGENTS.md sha256 e436ec2bf8627963a5eb15e61261ae74e2cbc00f783a3641ac7b12369edc74d0\n- .github/copilot-instructions.md: unresolved (not found)\n- workspace/: unresolved (not found)\n- tests/test_plan.py: tests/test_plan.py sha256 a25767edc79f19dfc358388c4d21d5e7eeb741aa84cb7581d2ba027720b06306\n- :2156: unresolved (not found)\n- workspace_from: source: unresolved (not found)\n- readiness.contract_failures: unresolved (not found)\n- assume: unresolved (not found)\n- readiness.py:386-388: unresolved (not found)\n- :2152: unresolved (not found)\n- bench plan: unresolved (not found)\n- instruction_lists: unresolved (not found)\n- off: unresolved (not found)\n- on: unresolved (not found)\n- git ls-files: unresolved (not found)\n- CLAUDE.md: CLAUDE.md sha256 dab890b2e50c4858bba54be530ec69f57f63ce9faf3e95a9791dc571611740f7\n- .claude/CLAUDE.md: unresolved (not found; nearest: CLAUDE.md)\n- GEMINI.md: unresolved (not found)\n- .github/instructions/*.instructions.md: unresolved (not found)\n- mutate_check: unresolved (not found)\n- uv run ruff check src tests tools: unresolved (not found)\n- docs-graph.py validate: unresolved (not found)\n- pytest -n 4 --dist loadscope: unresolved (not found)\n- python: unresolved (not found)\n- py -3: unresolved (not found)\n- uv run: unresolved (not found)\n- git status --short: unresolved (not found)\n- git merge-base --is-ancestor 1b61aedd HEAD: unresolved (not found)\n- git grep -n HB-PRE-009 -- src tests: unresolved (not found)\n- git ls-files tasks: unresolved (not found)\n- coord session start: unresolved (not found)\n- src/harness_bench/errors.py:85-89: unresolved (not found)\n- git grep: unresolved (not found)\n- ### Erratum 5 (X-PACKOFF, 2026-10-08; Ruling 116: unresolved (not found)\n- :556: unresolved (not found)\n- ## 17: unresolved (not found)\n- :171: unresolved (not found)\n- tasks/<ID>/workspace/: unresolved (not found)\n- plan.py:462: unresolved (not found)\n- python docs/ai-forward-pack/scripts/render-markdown.py docs/design/eval-property-tasks.md: unresolved (not found; nearest: docs/design/eval-property-tasks.md)\n- git show build/fin-x-e5m:bench/rings/e5-pilot.yaml: unresolved (not found)\n- git show build/fin-x-e5m:bench/matrix.e5-grid.yaml: unresolved (not found)\n- cmd /c mklink /J C:\\tf\\xpackoff\\.tools\\harness C:\\Projects\\x-harness-x-model-bench\\.tools\\harness: unresolved (not found)\n- uv run bench --tools-dir C:\\tf\\xpackoff\\.tools\\harness --cells-root C:\\tf\\xpackoff\\cells --runs C:\\tf\\xpackoff\\runs plan --matrix <file> --json: unresolved (not found)\n- plan: unresolved (not found)\n- cli.py:584-588: unresolved (not found)\n- _local_upstream_repo: unresolved (not found)\n- _source_task: unresolved (not found)\n- _tree: unresolved (not found)\n- _tree(dest: unresolved (not found)\n- uv run python tools/mutate_check.py tests/mutations/workspace_source.json: unresolved (not found; nearest: tests/mutations/workspace_source.json)\n- uv run python tools/mutate_check.py tests/mutations/workspace.json: unresolved (not found; nearest: tests/mutations/workspace.json)\n- uv run python: unresolved (not found)\n- workspace.task_source: unresolved (not found)\n- plan.py:451: unresolved (not found)\n- git -C <base> ls-files: unresolved (not found)\n- shutil.copytree: unresolved (not found)\n- :183: unresolved (not found)\n- tmp: unresolved (not found)\n- _land: unresolved (not found)\n- tools/: unresolved (not found)\n- tools/spikes/: unresolved (not found)\n- tests/: unresolved (not found)\n- creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0: unresolved (not found)\n- os.system: unresolved (not found)\n- subprocess.run: unresolved (not found)\n- tests/test_console_windows.py: unresolved (not found)\n- python tools/window_check.py --since <instant> --root-pid <pid: unresolved (not found)\n- git log --oneline -1 --grep=join-x-win: unresolved (not found)\n- python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID: unresolved (not found)\n- claude-sonnet-5-5: unresolved (not found)\n- docs/coordination/coordinator-log/c46.md:94: unresolved (not found)\n- run-report-e2e4.md:61: unresolved (not found)\n- uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py: unresolved (not found; nearest: tests/test_timing_hygiene.py)\n- uv run pytest -q tests/test_workspace.py tests/test_plan.py: unresolved (not found; nearest: tests/test_plan.py)\n- python docs/ai-forward-pack/scripts/docs-graph.py validate: unresolved (not found)\n- build/fin-x-packoff: unresolved (not found)\n- docs/notes/rulings.md:2140-2160: unresolved (not found)\n- docs/coordination/coordinator-log/c60.md: unresolved (not found)\n- docs/notes/rulings.md: docs/notes/rulings.md sha256 d9ba4bbe7d9d00f464a5388aefd6e11c9a19d1d6280522574e66fce99f894d6b\n- owner/ruling-r116: unresolved (not found)\n- docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- copilot-instructions.md: unresolved (not found)\n- docs/design/phase1-walking-skeleton.md:460: unresolved (not found)\n- docs/design/eval-property-tasks.md: docs/design/eval-property-tasks.md sha256 b57ae857a5cdf6c4b0dc071d7d5863d2b6fc1db014f6e7bbd6a1ebdaa11c582c\n- docs/ai-forward-pack/scripts/render-markdown.py: docs/ai-forward-pack/scripts/render-markdown.py sha256 1033f9bada4fc31320e4fe8590600e59b0597c40b47d43ffec44fda85c1a71d8\n- build/fin-x-e5m:bench/rings/e5-pilot.yaml: unresolved (not found)\n- build/fin-x-e5m:bench/matrix.e5-grid.yaml: unresolved (not found)\n- /c: unresolved (outside repo)\n- /J: unresolved (outside repo)\n- /s: unresolved (outside repo)\n- workspace.py: src/harness_bench/workspace.py sha256 575f0f33714e99bd36b3305e194cb928e29f8bcac7e87606cd8f4e5c465f0648\n- tools/mutate_check.py: tools/mutate_check.py sha256 befa94bfa2ecdd17d421edef4b8d8d3589762ec0c600fea2d1dfee479d93a33d\n- tests/mutations/workspace_source.json: tests/mutations/workspace_source.json sha256 b7f85f58770fe59553848824fb3070a60f0609d6ffd30bdb10be01e58b03bc4f\n- tests/mutations/workspace.json: tests/mutations/workspace.json sha256 83074bfc1831b0cade2da5c82f69fc4d62b1a7de06303e31d3ef78958815fe91\n- tasks/NG1: unresolved (not found)\n- tasks/S2: unresolved (not found)\n- docs/design/eval-atomic-publish.md:447: unresolved (not found)\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- tools/window_check.py: unresolved (not found)\n- HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 f6717458ec2670a1be81a7839657dfa77e4dbb2e4515e532b5daefd5d3a8a784\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 25c45e56139c8e3a2d70d353e4b83c0386590e754c342c2ee0e1a88338ff8b73\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 f75d3531381834234207298b60967099bd9b8de3406681dc39488e6a1aa195e7\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 4d9acae3db011db5017ab33375300622d60a4c4cb1cf4df1ee44a06a5bb2a14f\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- audit-log.py: docs/ai-forward-pack/scripts/audit-log.py sha256 d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4\n- off/on: unresolved (not found)\n- .html: unresolved (not found)\n- src/harness_bench/plan.py: src/harness_bench/plan.py sha256 9b94a7f295b3c03eed4b91640872a649aa23468b0fef2c92652920e52abb7e4f\n- bench/rings/e5-pilot.yaml: unresolved (not found)\n- bench/matrix.e5-grid.yaml: unresolved (not found)\n- tests/mutations/*.json: unresolved (not found)\nAssumptions\n- #1 belief: NG1's and S2's pack-on instruction counts have no pre-fix figure, because the pre-fix plan stops at HB-PRE-008; the eight other tasks' on counts from a copy without NG1 and S2 are the baseline · confirm: P0's two plan outputs · breaks: if the pre-fix plan prints NG1's and S2's on counts before refusing, the worker uses those instead · consequential: false\n- #2 belief: build/fin-x-e5m at c6b9d227 (e641027b plus the Leader's audit commit) holds X-E5M's final two files · confirm: git log -1 build/fin-x-e5m at dispatch · breaks: the evidence is re-taken on the new files; X-E5M's own re-run after this join is the erratum's step · consequential: false\n- #3 belief: the junction to the primary's .tools\\harness is read only in use, as it was for X-E5M · confirm: the primary's git status unchanged after the turn (PRIM-A) · breaks: a write through it lands in the primary; the brief forbids any write or delete through it · consequential: false\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0\nper_branch_exit: the brief's items as commits, then the gate; or a hand-back by the split rule with the open items named\njoin_rule: the Leader's join per coordination-finish.md (Batch plan), in P3 before X-E5M's plan evidence is final: re-run the red SHA, the guard list, docs-graph validate and the recount; owned paths only\ncontainment: tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-packoff on build/fin-x-packoff, session xpackoff-fin (new identity, checked free by Coordinator #60); owned paths per Ruling 116: workspace.py (task_source), errors.py (HB-PRE-009), tests/test_workspace.py, W1-L Erratum 5 and its HTML view, PACKOFF-A's Control and Status lines\ntermination: one turn\ndeadline: 3,600 s\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M4EH43X7GVJFKXRXB6138M0Z\nraw sha256: 4de9a6765932d5dff079f13fd17b0132c406ec1e58dd3ccbeb13fc83c3ae6b4e\ncompiler model: claude-opus-5-5[1m]\nengine seconds: 0.03\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "session": "xpackoff-fin",
+      "shortname": "compile-You are session xpackoff-fin, harness Claude Code (Agent tool sub-agent)…",
+      "skill": null,
+      "summary": "compiled al-01M4EH43X7GVJFKXRXB6138M0Z for claude-code v1: 17 clauses, 3 assumptions, 0 decision requests",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": "claude-opus-5-5",
+      "artifacts": [
+        "docs/coordination/coordinator-log/c60.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-08T19:55:18Z",
+      "done_when": "check_compile exit 0; plan rows and register entries committed; derive, validate, verify-ruling-citations exit 0; tree clean",
+      "duration_seconds": 761.0,
+      "fan_out": 0,
+      "goal": "X-PACKOFF compiled exactly as Ruling 116 defines it; plan and register updated",
+      "id": "al-01M4EHB82PPSP3C66S1TXQM3R5",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Coordinator #60: compile X-PACKOFF (Ruling 116), plan rows, register PACKOFF-A and a MUT-E instance; no dispatch",
+      "session": "coord-opus-fin",
+      "shortname": "c60-compile-handback",
+      "skill": "execute-with-coordination",
+      "started_at": "2026-10-08T19:42:37Z",
+      "summary": "Coordinator #60 (coord-opus-fin, branch coord/fin-c60-compile, base 1b61aedd owner/ruling-r116), hand-back; no dispatch, push or merge.\n- Compile: X-PACKOFF per Ruling 116 (Claude Code Agent tool, sonnet; session xpackoff-fin; base the integration head with join-r116 -> build/fin-x-packoff; no runner contract): raw al-01M4EH43X7GVJFKXRXB6138M0Z, compiled al-01M4EH46K4KDVC0NZ1A3Z8VPY1. check_compile exit 0: mode compiled, dispatchable, check_schema None, verify_document [].\n- Named: HB-PRE-009 (errors.py holds 002/003/005/007/008; 004/006 retired phase-1 codes; no hit elsewhere); the W1 design erratum is W1-L Erratum 5 in docs/design/eval-property-tasks.md (after :556, amending :171) with its HTML view.\n- Plan evidence recipe: X-E5M's two files copied from build/fin-x-e5m under C:\\tf\\xpackoff\\e5 (never committed); the read-only .tools junction; global options before plan.\n- Render counts: python3 0; one start line naming xpackoff-fin; AGENT_SESSION= 3x xpackoff-fin; fallback tokens 0; USD 0; --no-model 0.\n- Thresholds: floor 73k; P0 83k, R1 93k, G1 108k, P1 118k, E1 123k, gate 123k; ceiling 133k; stop line 123k.\n- Plan (coordination-finish.md + html): :155 X-E5M re-run erratum; :156 X-PACKOFF track row; :181 X-WIN turn 4 on Sonnet (Leader deviation); :189 X-PACKOFF assignment row; :224 P3; :380 DR-PACKOFF ruled.\n- Register: :30 recurrence; :834 MUT-E instance (X-NOPRICE duplicate find; upgrade proposed: mutate_check errors on a find not exactly once); :1537-1548 PACKOFF-A (new; X-E5M's authoring finding as one line).\n- Gates: docs-graph derive exit 0 (290 entries); validate exit 0 (16 review-suggested warnings); verify-ruling-citations exit 0 (116 of 116).\n- Commits: d36a6105 (compile), aaaab51f (plan), 08b836bc (register), then the closing commit with c60.md.",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "id": "al-01M4EJ4VDJ2P1ATRJ9TK7P74J8",
+      "shortname": "join-c60-compile",
+      "datetime": "2026-10-08T20:09:18Z",
+      "session": "leader-fin",
+      "prompt": "the join of coord/fin-c60-compile into integrate/finish-19",
+      "summary": "Coordinator #60 b64c2e2e: X-PACKOFF al-01M4EH46K4KDVC0NZ1A3Z8VPY1 (Sonnet, R-116; HB-PRE-009; W1-L Erratum 5); PACKOFF-A registered (control HB-PRE-009 + two tests); MUT-E instance (find text matched by new code first; upgrade: mutate_check errors on a non-unique find); plan: X-PACKOFF rows, X-E5M re-plan erratum, X-WIN t4 Sonnet deviation, DR-PACKOFF ruled recount_seconds=0 (docs_only=True).",
       "kind": "skill",
       "skill": "execute-with-coordination",
       "tool": null,
@@ -159510,8 +160886,8 @@ window.AUDIT_DATA = {
       "tags": [],
       "outcome": "success",
       "compiled": false,
-      "goal": "Join X-HYG",
-      "done_when": "conductor-join exit 0 with the recount green",
+      "goal": "Join #60",
+      "done_when": "conductor-join exit 0 (docs-only)",
       "tier": "T1",
       "fan_out": 0,
       "signals": {
@@ -159519,8 +160895,8 @@ window.AUDIT_DATA = {
         "verification_executed": true,
         "acceptance_met": true
       },
-      "started_at": "2026-10-08T19:45:50Z",
-      "duration_seconds": 1384.0
+      "started_at": "2026-10-08T20:09:16Z",
+      "duration_seconds": 2.0
     }
   ],
   "changes": [
