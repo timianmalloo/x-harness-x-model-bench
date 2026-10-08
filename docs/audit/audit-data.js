@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T18:51:56Z",
+  "generated": "2026-10-08T19:05:41Z",
   "audit": [
     {
       "actor": null,
@@ -158352,6 +158352,28 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-08T18:51:55Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M4EEGCJ5YQRS4M2HBQHRVX5A",
+      "shortname": "xnoprice-split",
+      "datetime": "2026-10-08T19:05:41Z",
+      "session": "xnoprice-fin",
+      "prompt": "X-NOPRICE brief prompt-xnoprice.md (al-01M4E9684VENAFN68ZBHPGW227)",
+      "summary": "X-NOPRICE split after N2 green. Dispatch 2026-10-08T18:52:47Z to ~19:25Z. Outcome: split (green d41583e4, open items named). Red SHA 6639f841 (assertions: '$' not in CLI text; '$' not in HTML visible text; prices entries==[] green already). Gates: guard list on first commit exit 0 (210 passed); report/own tests exit 0 (202 passed); ruff exit 0; join gate git diff --quiet 7f96fb70 exit 0. Served model claude-sonnet-5-5. Tokens: not recorded. Context: floor first reading 83,817 (after brief read and N0 grep); before N1 83.8k; before N2 98.6k; after N2 121.4k. Children launched: none; windows opened: none. Open: mutation find-text retarget (report.json, summaries.json) plus mutate_check each; N3 errata EN8/US-23 plus HTML views plus docs-graph derive; final guard list; docs-graph validate; tests/test_views.py price strings untouched.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "goal": "X-NOPRICE: tokens only cost axis on rendered surfaces",
+      "done_when": "no rendered surface shows USD; errata written; gates green",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-08T18:52:47Z",
+      "duration_seconds": 774.0
     }
   ],
   "changes": [
