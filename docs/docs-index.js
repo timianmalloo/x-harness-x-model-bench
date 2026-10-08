@@ -4984,6 +4984,39 @@ window.DOCS_INDEX = {
       "sourceSha256": "c527723efbdda187feff7fdd4bdd3a3fcbcc441f352accf976a204ae92a240d1"
     },
     {
+      "id": "coordinator-log-c57",
+      "path": "docs/coordination/coordinator-log/c57.md",
+      "title": "Coordinator #57 hand-back (2026-10-08): five turn-2 and recompiled briefs, the measured Grok floor, CACHE-B's result, STORE-A",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-08",
+      "reviewSuggested": [],
+      "summary": "Coordinator #57 on coord/fin-c57-compile (base d8ec8302) for Leader leader-fin, epoch 19. Five compiled briefs, each replayed through check_compile: X-WIN turn 2, X-HYG turn 2, X-REDS (recompiled), X-FLAKE turn 2 and X-EVU turn 2, with their coord-run/1 contracts. Grok's mid-turn context figure measured (updates.jsonl _meta.totalTokens) and its floor set at 88k from the grounding cost. CACHE-B gains X-CACHEB's partial result; STORE-A is opened for grok_served_model's store key. No dispatch, no push.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c55",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "f340c1a2d9a7d99daaba65e785f5b5d7e0a1469d9257b66097c5f03909c75f2f"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -5010,7 +5043,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "0b48e5a55dd1c3d88f3f9b18fc96b4d3bc955bdd1b7b590d8693ef7dc940be62"
+      "sourceSha256": "674cffea219fa3b4d6d03c220752d53a2048d95f02de5f2f30477dc37915c785"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -9469,7 +9502,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2602143453882af95e80ba72ea1d3306ed2cd19c3b4b9feee120b13dcf20f814"
+      "sourceSha256": "d593c08e1c248ea480506518c6f50e9d40a1bed419007de24aded7aad9372b1c"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -10591,5 +10624,5 @@ window.DOCS_INDEX = {
       "artifactId": "run-report-e2e4"
     }
   ],
-  "graphSha256": "02e4bf8f377eae2eb801ead5a9b05d9d060105c28eb96ecbca40db07b8d3253a"
+  "graphSha256": "381fc76930084cc6158822c3276b235f83be4215c355a1506bdcd57e3da15052"
 };

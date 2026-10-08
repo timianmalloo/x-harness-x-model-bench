@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T18:07:00Z",
+  "generated": "2026-10-08T18:09:55Z",
   "audit": [
     {
       "actor": null,
@@ -153069,6 +153069,40 @@ window.AUDIT_DATA = {
       },
       "mode": "compiled",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M4EBA8A0Q42JRJG952CKW9HN",
+      "shortname": "c57-compile",
+      "datetime": "2026-10-08T18:09:55Z",
+      "session": "coord-opus-fin",
+      "prompt": "Coordinator #57: X-WIN turn 2 compile, CACHE-B result, grok_served_model store-key defect, plan notes; then X-HYG t2, Grok context reading (1c), X-FLAKE t2, X-REDS recompile, X-EVU t2",
+      "summary": "Coordinator #57 (coord-opus-fin, branch coord/fin-c57-compile, base d8ec8302), hand-back; no dispatch, push or merge.\n- Compiles (check_compile clean on each; render: python3 0, one worker start line, AGENT_SESSION x3 worker only): X-WIN t2 al-01M4EAF341QJMZCYDZWC65MXJP; X-HYG t2 al-01M4EB1BEBGKYJW8VXN8GC6VQ6; X-REDS al-01M4EB1DQV716YHG39RY18HKYQ (supersedes al-01M4E8ZC99WGXMD5SRB1FPTAAH, al-01M4EAW09WABRP6JWB3KE6FNRN); X-FLAKE t2 al-01M4EB2Q28SNJQSKJA3JT1V6E3; X-EVU t2 al-01M4EB4XS8EYYS6NYSVJ88Y43W. Superseded: al-01M4EAVXN1F1CHNKB9KWRD8EK1.\n- Contracts: x-win2, x-hyg2, x-flake2, x-evu2 (base = turn 1 branch, new branch: coord-runner.py:436-438 RUN-BRANCH refuses an existing worker branch); x-reds prompts swap.\n- Grok context figure measured: updates.jsonl params._meta.totalTokens, live mid-turn; floor = grounding cost at first owned edit (X-PROP 87,744; X-HYG t1 71,940; X-FLAKE t1 >= 66,475) -> 88k, ceiling 128k, stop 118k. Plan :77, :240, :241 edited.\n- Register: CACHE-B X-CACHEB result (:1151-1158); CEIL-A two-half instance (:1129); STORE-A new (:1497-1521; grok_served_model.py:166 key verified wrong three ways); log line :30.\n- Plan: X-CACHEB partial (:153), Agy 1.3.0 qualified (:179), STORE-A seam (:305, proposed X-GSM).\n- Gates: docs-graph derive exit 0; validate exit 0 (16 review suggestions); verify-ruling-citations exit 0 (115/115).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/coordination/coordinator-log/c57.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Compile the turn-2 briefs and register the results, no dispatch",
+      "done_when": "every final id passes check_compile; register and plan committed; gates green; tree clean",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true
+      },
+      "started_at": "2026-10-08T17:49:19Z",
+      "duration_seconds": 1236.0,
+      "git": {
+        "sha": "977d07aa68eba1ae0b5a82fc994a8d4a347b0000",
+        "short": "977d07aa6",
+        "branch": "coord/fin-c57-compile",
+        "pushed": null
+      }
     }
   ],
   "changes": [
