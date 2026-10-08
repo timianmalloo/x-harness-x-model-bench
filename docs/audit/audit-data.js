@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T17:55:04Z",
+  "generated": "2026-10-08T18:02:08Z",
   "audit": [
     {
       "actor": null,
@@ -147438,6 +147438,1922 @@ window.AUDIT_DATA = {
             "path": "docs/lessons/defect-classes.md",
             "reason": null,
             "sha256": "0b48e5a55dd1c3d88f3f9b18fc96b4d3bc955bdd1b7b590d8693ef7dc940be62",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M4EAVVZ7C98M8ZTR3FR8WM4F",
+      "shortname": "You are session xhyg2-fin, run r-xhyg2-fin, harness Grok (coord-runner, …",
+      "datetime": "2026-10-08T18:02:03Z",
+      "session": "prompt-compile",
+      "prompt": "You are session xhyg2-fin, run r-xhyg2-fin, harness Grok (coord-runner, ACP), model grok-4.7 with --reasoning-effort high, on branch build/fin-x-hyg2 in the tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-hyg2. The Leader leader-fin (epoch 19) dispatches you; Coordinator #57 compiled this from turn 1's last commit d858ec42 on build/fin-x-hyg and from docs/coordination/coordination-finish.md (docs/coordination/coordinator-log/c57.md). One turn, deadline 2,400 s, within 50 calls and a context ceiling of the floor + 40k, tier T1, fan-out cap 0. X-HYG, turn 2: H1 is done; make tools/mutate_check.py report a mutant this host cannot kill as host-limited, not survived.\n\nYour plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 (join-c56-w0), section Tracks: | **X-HYG** machine paths and host-limited mutants | `.gitattributes`, `tools/mutate_check.py`, `tests/test_mutate_check.py`, `tests/mutations/atomic.json` | none | T1 | 0 | 50 · floor + 40k · 1 · 0.7 h | `verify-no-machine-paths.py` exit 0 (today exit 1: 4 hits, all `tests/fixtures/ledger/*/run/archive/*/attempt-1/home/sessions/2026/09/rollout-*.jsonl:3`, byte-exact captured records, so the fix is the per-file `.gitattributes` `machine-path-ok` the gate's own text names); `run-verify-gates.py` 9 of 9; `mutate_check` reports M14b and (if the right is not granted) M27 as **host-limited**, not survived, red first | Grok |\n\nDone when (the row's exit evidence column, verbatim): \"`verify-no-machine-paths.py` exit 0 (today exit 1: 4 hits, all `tests/fixtures/ledger/*/run/archive/*/attempt-1/home/sessions/2026/09/rollout-*.jsonl:3`, byte-exact captured records, so the fix is the per-file `.gitattributes` `machine-path-ok` the gate's own text names); `run-verify-gates.py` 9 of 9; `mutate_check` reports M14b and (if the right is not granted) M27 as **host-limited**, not survived, red first\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`).\n\nAGENT_SESSION=xhyg2-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below.\n\nBase: the tip of build/fin-x-hyg when the Leader prepares this run (the contract's base): turn 1's H1 commit 2a8f4d84 and the Leader's audit commit d858ec42 for turn 1 (session xhyg-fin, split after H1). The runner made your branch build/fin-x-hyg2 and your tree from that base; turn 1's branch and tree are not yours. Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor 2a8f4d84 HEAD` exits non-zero; `git merge-base --is-ancestor 7f96fb70 HEAD` exits non-zero; `coord session start` for xhyg2-fin is refused.\n\nH1 is done: 2a8f4d84 gives the four captured rollout records a per-file machine-path-ok in .gitattributes. The Leader re-ran `python docs/ai-forward-pack/scripts/verify-no-machine-paths.py` on it: exit 0, \"clean - 1175 tracked machine-readable files\"; the guard list passed 210. Do not redo H1; the final gate re-runs the check. This turn's items, in order: H2 red first in tests/test_mutate_check.py; the fix in tools/mutate_check.py; the host condition on M14b and M27 in tests/mutations/atomic.json; the final gate.\n\nH2, host-limited mutants, red first in tests/test_mutate_check.py: today M14b (\"_POSIX is always False\", tests/mutations/atomic.json:234; note: \"killable on POSIX only ... Survives on a Windows host by design\") and M27 (\"existing-file read drops O_NOFOLLOW\", :140; note: \"not run on this host (winerror 1314, no symlink right)\") count as survived here. Give a mutation entry an optional host condition (posix; symlink right) and make mutate_check report \"host-limited\" with the reason when this host lacks it. The condition is detected on the host (os.name; a symlink probe under C:\\tf\\xhyg that fails with winerror 1314), never assumed from the entry's name. host-limited is never counted as killed, is printed in the summary with its count, and does not make the exit non-zero on its own; every other non-kill keeps today's exit. The operator answered the symlink question on 2026-10-08 (plan, Operator decisions, item 3): \"Report it as host-limited (Recommended)\"; the right stays off, so M27 reads host-limited here.\n\nReader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tasks/ and tools/ are unchanged from there to 7f96fb70). tests/test_archive_readers.py:7-8: READERS = {\"engine.py\", \"grade/runner.py\", \"report/credentials.py\", \"report/judges.py\", \"report/pack_improvement.py\", \"report/summaries.py\", \"report/html.py\", \"resume.py\", \"views.py\"}, and test_t_sweep_1_exact_reader_and_exception_set asserts len(READERS) == 9; a file becomes an archive reader by holding the string literal \"archive\" or the attribute attempt_dirs or snapshot_folder (archive_readers). src/harness_bench/identity.py:122-126: RUN_IMPORTS_GRADE_ALLOWED holds exactly (\"config.py\", \"egress.py\"), (\"config.py\", \"gateway/backend.py\") and (\"config.py\", \"gateway/scrub.py\"). src/harness_bench/lifecycle.py:60: TABLE maps every ledger transition to its model action and its writer (\"engine\", \"grading\" or \"ledger\", :52); the engine consults it (check_writer) before every events append. X-HYG touches no src/ file and adds no reader, import pair or transition. If your change would add an archive reader, an import pair or a transition or writer, stop and send a seam request; never edit these tables.\n\nConsole windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (tools/mutate_check.py and tests/test_mutate_check.py, which X-WIN leaves to you). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none).\n\nThe context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorded | **not measured** | no split rule can be computed: a Grok row stays one short item per turn (capability table), and its first compile records the first reading | Measured since that row (Coordinator #57, 2026-10-08): Grok's session store carries your context figure while the turn runs. Every row of updates.jsonl in %USERPROFILE%\\.grok\\sessions\\<key>\\<id>\\ has params._meta.totalTokens, the session's current context. <key> is your tree path with backslashes, URL-encoded (yours: C%3A%5CProjects%5Cx-harness-x-model-bench-build-fin-x-hyg2); <id> is Grok's own session UUID, not your session id. Measured: X-FLAKE's live store read 73,026 and then 77,172 mid-turn; X-HYG turn 1 read 11,862 at its first update, 34,870 at the next, 90,519 at its H1 commit and 108,404 at hand-back. usage.json is not the figure: Grok writes it at the turn's end, and its inputTokens sums every call. Read your figure with this one line, before each item and before each gate command: `python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-hyg2\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1])\"`. Your floor F is the first reading after you have read this prompt, before the first step. The plan's budget is F + 40k. Start item k only at or below F plus the expected work of items 1 to k (Coordinator #57's estimates): H2 red (10k) at or below F + 10k; the fix (10k) at or below F + 20k; the host condition in atomic.json (5k) at or below F + 25k; the final gate (10k) at or below F + 30k. If a sample reaches F + 30k, start no new edit or gate, write the closing audit entry and hand back at your last commit with the open steps named. If the line fails or prints nothing, record \"not recorded\" and hand back after the H2 red commit. Record each reading in your closing entry. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure.\n\nScratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xhyg and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xhyg. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started.\n\nFALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report.\n\nRed first on an assertion (RED-C): run each new or changed test before its fix and see it fail on an assert line, never on an ImportError, NameError, AttributeError, KeyError, a collection error or a skip; commit the red test on its own, then the fix; put the failing assertion line and the red commit's SHA in the green commit's message.\n\nGate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xhyg, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_mutate_check.py` on your final commit; `python docs/ai-forward-pack/scripts/verify-no-machine-paths.py` (exit 0); `python docs/ai-forward-pack/scripts/run-verify-gates.py` (report the n of 9 it prints); `uv run python tools/mutate_check.py tests/mutations/mutate_check.json`, then `uv run python tools/mutate_check.py tests/mutations/atomic.json` (M14b and M27 read host-limited), one per line, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.\n\nCommit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit.\n\nYour closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from the model field of your first response (R-103: the Leader kills the run at the first response if it is not grok-4.7*, and retries once); tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched. Report your served model id on the first line of your final message.\n\nNot yours: every file other than .gitattributes, tools/mutate_check.py, tests/test_mutate_check.py, tests/mutations/atomic.json and tests/mutations/mutate_check.json; the fixture records themselves; the operator's symlink setting.\n\nNot yours: the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/lessons/defect-classes.md (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M4EAVXN1F1CHNKB9KWRD8EK1",
+      "shortname": "compile-You are session xhyg2-fin, run r-xhyg2-fin, harness Grok (coord-runner, …",
+      "datetime": "2026-10-08T18:02:05Z",
+      "session": "xhyg2-fin",
+      "prompt": "python docs/ai-forward-pack/scripts/audit-log.py start --session xhyg2-fin --skill implement\nGoal state\nGoal: You are session xhyg2-fin, run r-xhyg2-fin, harness Grok (coord-runner, ACP), model grok-4.7 with --reasoning-effort high, on branch build/fin-x-hyg2 in the tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-hyg2. The Leader leader-fin (epoch 19) dispatches you; Coordinator #57 compiled this from turn 1's last commit d858ec42 on build/fin-x-hyg and from docs/coordination/coordination-finish.md (docs/coordination/coordinator-log/c57.md). One turn, deadline 2,400 s, within 50 calls and a context ceiling of the floor + 40k, tier T1, fan-out cap 0. X-HYG, turn 2: H1 is done; make tools/mutate_check.py report a mutant this host cannot kill as host-limited, not survived.\nDone when: Your plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 (join-c56-w0), section Tracks: | **X-HYG** machine paths and host-limited mutants | `.gitattributes`, `tools/mutate_check.py`, `tests/test_mutate_check.py`, `tests/mutations/atomic.json` | none | T1 | 0 | 50 · floor + 40k · 1 · 0.7 h | `verify-no-machine-paths.py` exit 0 (today exit 1: 4 hits, all `tests/fixtures/ledger/*/run/archive/*/attempt-1/home/sessions/2026/09/rollout-*.jsonl:3`, byte-exact captured records, so the fix is the per-file `.gitattributes` `machine-path-ok` the gate's own text names); `run-verify-gates.py` 9 of 9; `mutate_check` reports M14b and (if the right is not granted) M27 as **host-limited**, not survived, red first | Grok |; Done when (the row's exit evidence column, verbatim): \"`verify-no-machine-paths.py` exit 0 (today exit 1: 4 hits, all `tests/fixtures/ledger/*/run/archive/*/attempt-1/home/sessions/2026/09/rollout-*.jsonl:3`, byte-exact captured records, so the fix is the per-file `.gitattributes` `machine-path-ok` the gate's own text names); `run-verify-gates.py` 9 of 9; `mutate_check` reports M14b and (if the right is not granted) M27 as **host-limited**, not survived, red first\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`).; AGENT_SESSION=xhyg2-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below.; Base: the tip of build/fin-x-hyg when the Leader prepares this run (the contract's base): turn 1's H1 commit 2a8f4d84 and the Leader's audit commit d858ec42 for turn 1 (session xhyg-fin, split after H1). The runner made your branch build/fin-x-hyg2 and your tree from that base; turn 1's branch and tree are not yours. Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor 2a8f4d84 HEAD` exits non-zero; `git merge-base --is-ancestor 7f96fb70 HEAD` exits non-zero; `coord session start` for xhyg2-fin is refused.; H1 is done: 2a8f4d84 gives the four captured rollout records a per-file machine-path-ok in .gitattributes. The Leader re-ran `python docs/ai-forward-pack/scripts/verify-no-machine-paths.py` on it: exit 0, \"clean - 1175 tracked machine-readable files\"; the guard list passed 210. Do not redo H1; the final gate re-runs the check. This turn's items, in order: H2 red first in tests/test_mutate_check.py; the fix in tools/mutate_check.py; the host condition on M14b and M27 in tests/mutations/atomic.json; the final gate.; H2, host-limited mutants, red first in tests/test_mutate_check.py: today M14b (\"_POSIX is always False\", tests/mutations/atomic.json:234; note: \"killable on POSIX only ... Survives on a Windows host by design\") and M27 (\"existing-file read drops O_NOFOLLOW\", :140; note: \"not run on this host (winerror 1314, no symlink right)\") count as survived here. Give a mutation entry an optional host condition (posix; symlink right) and make mutate_check report \"host-limited\" with the reason when this host lacks it. The condition is detected on the host (os.name; a symlink probe under C:\\tf\\xhyg that fails with winerror 1314), never assumed from the entry's name. host-limited is never counted as killed, is printed in the summary with its count, and does not make the exit non-zero on its own; every other non-kill keeps today's exit. The operator answered the symlink question on 2026-10-08 (plan, Operator decisions, item 3): \"Report it as host-limited (Recommended)\"; the right stays off, so M27 reads host-limited here.; Reader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tasks/ and tools/ are unchanged from there to 7f96fb70). tests/test_archive_readers.py:7-8: READERS = {\"engine.py\", \"grade/runner.py\", \"report/credentials.py\", \"report/judges.py\", \"report/pack_improvement.py\", \"report/summaries.py\", \"report/html.py\", \"resume.py\", \"views.py\"}, and test_t_sweep_1_exact_reader_and_exception_set asserts len(READERS) == 9; a file becomes an archive reader by holding the string literal \"archive\" or the attribute attempt_dirs or snapshot_folder (archive_readers). src/harness_bench/identity.py:122-126: RUN_IMPORTS_GRADE_ALLOWED holds exactly (\"config.py\", \"egress.py\"), (\"config.py\", \"gateway/backend.py\") and (\"config.py\", \"gateway/scrub.py\"). src/harness_bench/lifecycle.py:60: TABLE maps every ledger transition to its model action and its writer (\"engine\", \"grading\" or \"ledger\", :52); the engine consults it (check_writer) before every events append. X-HYG touches no src/ file and adds no reader, import pair or transition. If your change would add an archive reader, an import pair or a transition or writer, stop and send a seam request; never edit these tables.; Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (tools/mutate_check.py and tests/test_mutate_check.py, which X-WIN leaves to you). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none).; The context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorded | **not measured** | no split rule can be computed: a Grok row stays one short item per turn (capability table), and its first compile records the first reading | Measured since that row (Coordinator #57, 2026-10-08): Grok's session store carries your context figure while the turn runs. Every row of updates.jsonl in %USERPROFILE%\\.grok\\sessions\\<key>\\<id>\\ has params._meta.totalTokens, the session's current context. <key> is your tree path with backslashes, URL-encoded (yours: C%3A%5CProjects%5Cx-harness-x-model-bench-build-fin-x-hyg2); <id> is Grok's own session UUID, not your session id. Measured: X-FLAKE's live store read 73,026 and then 77,172 mid-turn; X-HYG turn 1 read 11,862 at its first update, 34,870 at the next, 90,519 at its H1 commit and 108,404 at hand-back. usage.json is not the figure: Grok writes it at the turn's end, and its inputTokens sums every call. Read your figure with this one line, before each item and before each gate command: `python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-hyg2\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1])\"`. Your floor F is the first reading after you have read this prompt, before the first step. The plan's budget is F + 40k. Start item k only at or below F plus the expected work of items 1 to k (Coordinator #57's estimates): H2 red (10k) at or below F + 10k; the fix (10k) at or below F + 20k; the host condition in atomic.json (5k) at or below F + 25k; the final gate (10k) at or below F + 30k. If a sample reaches F + 30k, start no new edit or gate, write the closing audit entry and hand back at your last commit with the open steps named. If the line fails or prints nothing, record \"not recorded\" and hand back after the H2 red commit. Record each reading in your closing entry. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure.; Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xhyg and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xhyg. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started.; FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report.; Red first on an assertion (RED-C): run each new or changed test before its fix and see it fail on an assert line, never on an ImportError, NameError, AttributeError, KeyError, a collection error or a skip; commit the red test on its own, then the fix; put the failing assertion line and the red commit's SHA in the green commit's message.; Gate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xhyg, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_mutate_check.py` on your final commit; `python docs/ai-forward-pack/scripts/verify-no-machine-paths.py` (exit 0); `python docs/ai-forward-pack/scripts/run-verify-gates.py` (report the n of 9 it prints); `uv run python tools/mutate_check.py tests/mutations/mutate_check.json`, then `uv run python tools/mutate_check.py tests/mutations/atomic.json` (M14b and M27 read host-limited), one per line, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.; Commit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit.; Your closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from the model field of your first response (R-103: the Leader kills the run at the first response if it is not grok-4.7*, and retries once); tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched. Report your served model id on the first line of your final message.\nNot in scope: every file other than .gitattributes, tools/mutate_check.py, tests/test_mutate_check.py, tests/mutations/atomic.json and tests/mutations/mutate_check.json; the fixture records themselves; the operator's symlink setting.; the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/lessons/defect-classes.md (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours).\nTier: T1\nFan-out cap: 0\nContext ceiling: the Grok floor F (not recorded; the worker records its first reading) + 40k, the plan's budget; split rule (CEIL-A): start no item above the ceiling minus its work; hand-off at the ceiling minus 10k\nMain-line budget: within 50 calls; 2,400 s this turn\nTrace\n| clause | trace |\n|---|---|\n| done_when: Your plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 (join-c56-w0), section Tracks: | **X-HYG** machine paths and host-limited mutants | `.gitattributes`, `tools/mutate_check.py`, `tests/test_mutate_check.py`, `tests/mutations/atomic.json` | none | T1 | 0 | 50 · floor + 40k · 1 · 0.7 h | `verify-no-machine-paths.py` exit 0 (today exit 1: 4 hits, all `tests/fixtures/ledger/*/run/archive/*/attempt-1/home/sessions/2026/09/rollout-*.jsonl:3`, byte-exact captured records, so the fix is the per-file `.gitattributes` `machine-path-ok` the gate's own text names); `run-verify-gates.py` 9 of 9; `mutate_check` reports M14b and (if the right is not granted) M27 as **host-limited**, not survived, red first | Grok | | phrase: Your plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 ( |\n| done_when: Done when (the row's exit evidence column, verbatim): \"`verify-no-machine-paths.py` exit 0 (today exit 1: 4 hits, all `tests/fixtures/ledger/*/run/archive/*/attempt-1/home/sessions/2026/09/rollout-*.jsonl:3`, byte-exact captured records, so the fix is the per-file `.gitattributes` `machine-path-ok` the gate's own text names); `run-verify-gates.py` 9 of 9; `mutate_check` reports M14b and (if the right is not granted) M27 as **host-limited**, not survived, red first\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`). | phrase: Done when (the row's exit evidence column, verbatim): \"`verify-no-machine-paths.py` exit 0 |\n| done_when: AGENT_SESSION=xhyg2-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below. | phrase: AGENT_SESSION=xhyg2-fin is set in every shell you open, inline on every commit and coord c |\n| done_when: Base: the tip of build/fin-x-hyg when the Leader prepares this run (the contract's base): turn 1's H1 commit 2a8f4d84 and the Leader's audit commit d858ec42 for turn 1 (session xhyg-fin, split after H1). The runner made your branch build/fin-x-hyg2 and your tree from that base; turn 1's branch and tree are not yours. Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor 2a8f4d84 HEAD` exits non-zero; `git merge-base --is-ancestor 7f96fb70 HEAD` exits non-zero; `coord session start` for xhyg2-fin is refused. | phrase: Base: the tip of build/fin-x-hyg when the Leader prepares this run (the contract's base):  |\n| done_when: H1 is done: 2a8f4d84 gives the four captured rollout records a per-file machine-path-ok in .gitattributes. The Leader re-ran `python docs/ai-forward-pack/scripts/verify-no-machine-paths.py` on it: exit 0, \"clean - 1175 tracked machine-readable files\"; the guard list passed 210. Do not redo H1; the final gate re-runs the check. This turn's items, in order: H2 red first in tests/test_mutate_check.py; the fix in tools/mutate_check.py; the host condition on M14b and M27 in tests/mutations/atomic.json; the final gate. | phrase: H1 is done: 2a8f4d84 gives the four captured rollout records a per-file machine-path-ok in |\n| done_when: H2, host-limited mutants, red first in tests/test_mutate_check.py: today M14b (\"_POSIX is always False\", tests/mutations/atomic.json:234; note: \"killable on POSIX only ... Survives on a Windows host by design\") and M27 (\"existing-file read drops O_NOFOLLOW\", :140; note: \"not run on this host (winerror 1314, no symlink right)\") count as survived here. Give a mutation entry an optional host condition (posix; symlink right) and make mutate_check report \"host-limited\" with the reason when this host lacks it. The condition is detected on the host (os.name; a symlink probe under C:\\tf\\xhyg that fails with winerror 1314), never assumed from the entry's name. host-limited is never counted as killed, is printed in the summary with its count, and does not make the exit non-zero on its own; every other non-kill keeps today's exit. The operator answered the symlink question on 2026-10-08 (plan, Operator decisions, item 3): \"Report it as host-limited (Recommended)\"; the right stays off, so M27 reads host-limited here. | phrase: H2, host-limited mutants, red first in tests/test_mutate_check.py: today M14b (\"_POSIX is  |\n| done_when: Reader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tasks/ and tools/ are unchanged from there to 7f96fb70). tests/test_archive_readers.py:7-8: READERS = {\"engine.py\", \"grade/runner.py\", \"report/credentials.py\", \"report/judges.py\", \"report/pack_improvement.py\", \"report/summaries.py\", \"report/html.py\", \"resume.py\", \"views.py\"}, and test_t_sweep_1_exact_reader_and_exception_set asserts len(READERS) == 9; a file becomes an archive reader by holding the string literal \"archive\" or the attribute attempt_dirs or snapshot_folder (archive_readers). src/harness_bench/identity.py:122-126: RUN_IMPORTS_GRADE_ALLOWED holds exactly (\"config.py\", \"egress.py\"), (\"config.py\", \"gateway/backend.py\") and (\"config.py\", \"gateway/scrub.py\"). src/harness_bench/lifecycle.py:60: TABLE maps every ledger transition to its model action and its writer (\"engine\", \"grading\" or \"ledger\", :52); the engine consults it (check_writer) before every events append. X-HYG touches no src/ file and adds no reader, import pair or transition. If your change would add an archive reader, an import pair or a transition or writer, stop and send a seam request; never edit these tables. | phrase: Reader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tas |\n| done_when: Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (tools/mutate_check.py and tests/test_mutate_check.py, which X-WIN leaves to you). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none). | phrase: Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN b |\n| done_when: The context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorded | **not measured** | no split rule can be computed: a Grok row stays one short item per turn (capability table), and its first compile records the first reading | Measured since that row (Coordinator #57, 2026-10-08): Grok's session store carries your context figure while the turn runs. Every row of updates.jsonl in %USERPROFILE%\\.grok\\sessions\\<key>\\<id>\\ has params._meta.totalTokens, the session's current context. <key> is your tree path with backslashes, URL-encoded (yours: C%3A%5CProjects%5Cx-harness-x-model-bench-build-fin-x-hyg2); <id> is Grok's own session UUID, not your session id. Measured: X-FLAKE's live store read 73,026 and then 77,172 mid-turn; X-HYG turn 1 read 11,862 at its first update, 34,870 at the next, 90,519 at its H1 commit and 108,404 at hand-back. usage.json is not the figure: Grok writes it at the turn's end, and its inputTokens sums every call. Read your figure with this one line, before each item and before each gate command: `python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-hyg2\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1])\"`. Your floor F is the first reading after you have read this prompt, before the first step. The plan's budget is F + 40k. Start item k only at or below F plus the expected work of items 1 to k (Coordinator #57's estimates): H2 red (10k) at or below F + 10k; the fix (10k) at or below F + 20k; the host condition in atomic.json (5k) at or below F + 25k; the final gate (10k) at or below F + 30k. If a sample reaches F + 30k, start no new edit or gate, write the closing audit entry and hand back at your last commit with the open steps named. If the line fails or prints nothing, record \"not recorded\" and hand back after the H2 red commit. Record each reading in your closing entry. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure. | phrase: The context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorde |\n| done_when: Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xhyg and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xhyg. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started. | phrase: Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\" |\n| done_when: FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report. | phrase: FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude |\n| done_when: Red first on an assertion (RED-C): run each new or changed test before its fix and see it fail on an assert line, never on an ImportError, NameError, AttributeError, KeyError, a collection error or a skip; commit the red test on its own, then the fix; put the failing assertion line and the red commit's SHA in the green commit's message. | phrase: Red first on an assertion (RED-C): run each new or changed test before its fix and see it  |\n| done_when: Gate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xhyg, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_mutate_check.py` on your final commit; `python docs/ai-forward-pack/scripts/verify-no-machine-paths.py` (exit 0); `python docs/ai-forward-pack/scripts/run-verify-gates.py` (report the n of 9 it prints); `uv run python tools/mutate_check.py tests/mutations/mutate_check.json`, then `uv run python tools/mutate_check.py tests/mutations/atomic.json` (M14b and M27 read host-limited), one per line, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. | phrase: Gate (R-104; each command on its own line, its exit status read, never behind a pipe; outp |\n| done_when: Commit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit. | phrase: Commit named paths only (git add <path>, never -A or .), with plain git commit and your se |\n| done_when: Your closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from the model field of your first response (R-103: the Leader kills the run at the first response if it is not grok-4.7*, and retries once); tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched. Report your served model id on the first line of your final message. | phrase: Your closing audit entry, written through audit-log.py with your session variable inline,  |\n| not_in_scope: every file other than .gitattributes, tools/mutate_check.py, tests/test_mutate_check.py, tests/mutations/atomic.json and tests/mutations/mutate_check.json; the fixture records themselves; the operator's symlink setting. | phrase: every file other than .gitattributes, tools/mutate_check.py, tests/test_mutate_check.py, t |\n| not_in_scope: the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/lessons/defect-classes.md (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours). | phrase: the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/ |\nReferences\n- .gitattributes: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 befa94bfa2ecdd17d421edef4b8d8d3589762ec0c600fea2d1dfee479d93a33d\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 4d9acae3db011db5017ab33375300622d60a4c4cb1cf4df1ee44a06a5bb2a14f\n- tests/mutations/atomic.json: tests/mutations/atomic.json sha256 b947126db48d793cbd7aa451d027c5eb552ece7bbf3a80a550abc53eaf70851c\n- verify-no-machine-paths.py: docs/ai-forward-pack/scripts/verify-no-machine-paths.py sha256 ebbca8b16efaf582ab06ec8980bf23bf8c3ffad76801258244a5eb3c8da886c8\n- tests/fixtures/ledger/*/run/archive/*/attempt-1/home/sessions/2026/09/rollout-*.jsonl:3: unresolved (not found)\n- machine-path-ok: unresolved (not found)\n- run-verify-gates.py: docs/ai-forward-pack/scripts/run-verify-gates.py sha256 bb01616115d39077a1024b39f41901c183898ca8900f59625eb7f0f2491eec19\n- mutate_check: unresolved (not found)\n- uv run ruff check src tests tools: unresolved (not found)\n- docs-graph.py validate: unresolved (not found)\n- pytest -n 4 --dist loadscope: unresolved (not found)\n- python: unresolved (not found)\n- py -3: unresolved (not found)\n- uv run: unresolved (not found)\n- git status --short: unresolved (not found)\n- git merge-base --is-ancestor 2a8f4d84 HEAD: unresolved (not found)\n- git merge-base --is-ancestor 7f96fb70 HEAD: unresolved (not found)\n- coord session start: unresolved (not found)\n- python docs/ai-forward-pack/scripts/verify-no-machine-paths.py: unresolved (not found; nearest: docs/ai-forward-pack/scripts/verify-no-machine-paths.py)\n- tools/: unresolved (not found)\n- tools/spikes/: unresolved (not found)\n- tests/: unresolved (not found)\n- creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0: unresolved (not found)\n- os.system: unresolved (not found)\n- subprocess.run: unresolved (not found)\n- tests/test_console_windows.py: unresolved (not found)\n- python tools/window_check.py --since <instant> --root-pid <pid: unresolved (not found)\n- git log --oneline -1 --grep=join-x-win: unresolved (not found)\n- python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID: unresolved (not found)\n- grok-4.7: unresolved (not found)\n- python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-hyg2\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1: unresolved (not found)\n- uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py: unresolved (not found; nearest: tests/test_timing_hygiene.py)\n- uv run pytest -q tests/test_mutate_check.py: unresolved (not found; nearest: tests/test_mutate_check.py)\n- python docs/ai-forward-pack/scripts/run-verify-gates.py: unresolved (not found; nearest: docs/ai-forward-pack/scripts/run-verify-gates.py)\n- uv run python tools/mutate_check.py tests/mutations/mutate_check.json: unresolved (not found; nearest: tests/mutations/mutate_check.json)\n- uv run python tools/mutate_check.py tests/mutations/atomic.json: unresolved (not found; nearest: tests/mutations/atomic.json)\n- python docs/ai-forward-pack/scripts/docs-graph.py validate: unresolved (not found)\n- build/fin-x-hyg2: unresolved (not found)\n- build/fin-x-hyg: unresolved (not found)\n- docs/coordination/coordination-finish.md: docs/coordination/coordination-finish.md sha256 2602143453882af95e80ba72ea1d3306ed2cd19c3b4b9feee120b13dcf20f814\n- docs/coordination/coordinator-log/c57.md: unresolved (not found)\n- docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- docs/ai-forward-pack/scripts/verify-no-machine-paths.py: docs/ai-forward-pack/scripts/verify-no-machine-paths.py sha256 ebbca8b16efaf582ab06ec8980bf23bf8c3ffad76801258244a5eb3c8da886c8\n- tests/mutations/atomic.json:234: unresolved (not found)\n- src/: unresolved (not found)\n- tasks/: unresolved (not found)\n- tests/test_archive_readers.py:7-8: unresolved (not found)\n- {\"engine.py: unresolved (not found; nearest: src/harness_bench/engine.py)\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 fee02368561b9af64a2add57480e5beb13c4888a593ebef3ec5312977c7bd1f4\n- report/credentials.py: src/harness_bench/report/credentials.py sha256 00a84ee78abeff3d72913255b9d04be20c98b4b2dd8f9be31332975b1872cbec\n- report/judges.py: src/harness_bench/report/judges.py sha256 aa5698b0559d8b5d443f7bdee83b658725aed4013910161feb46962bb3cd59b7\n- report/pack_improvement.py: src/harness_bench/report/pack_improvement.py sha256 7c5f1a9a9b3d7552bae8719a75ad3fc3579cc796ceab01823db94435500c3996\n- report/summaries.py: src/harness_bench/report/summaries.py sha256 037b0bcf0999b8a80b7cba3ae6aa9aefd82c5378dc0859190083d397df77588b\n- report/html.py: src/harness_bench/report/html.py sha256 c8684af375bebe0b1e4400474a7baa4333520d16560a27254fe814da70ddf88a\n- resume.py: src/harness_bench/resume.py sha256 ea198f1e7bec442e684cc14211767b793ad9f053bb42319f97812de249e3e63b\n- src/harness_bench/identity.py:122-126: unresolved (not found)\n- config.py: src/harness_bench/config.py sha256 ba786b6ff71f29fa65dd30e6d529f537e0d3a2c1946b0140386522a8cc12250b\n- egress.py: src/harness_bench/egress.py sha256 30aa38780fae93834bc804d1af35ae6642a5f0ab5d79e27edbe80e096609fd08\n- gateway/backend.py: src/harness_bench/gateway/backend.py sha256 632efca36e0d7ff4abdbc32901a6ba11edfa0d6cc7cc642332dec77e7bfdae31\n- gateway/scrub.py: src/harness_bench/gateway/scrub.py sha256 11f5bd9c48dc5e1fe148e09670f8f5f80affd66073c1877376edd5f3a9940dbb\n- src/harness_bench/lifecycle.py:60: unresolved (not found)\n- tools/window_check.py: unresolved (not found)\n- usage.json: unresolved (ambiguous: 5 matches)\n- atomic.json: tests/mutations/atomic.json sha256 b947126db48d793cbd7aa451d027c5eb552ece7bbf3a80a550abc53eaf70851c\n- HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 f6717458ec2670a1be81a7839657dfa77e4dbb2e4515e532b5daefd5d3a8a784\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 25c45e56139c8e3a2d70d353e4b83c0386590e754c342c2ee0e1a88338ff8b73\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 f75d3531381834234207298b60967099bd9b8de3406681dc39488e6a1aa195e7\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- docs/ai-forward-pack/scripts/run-verify-gates.py: docs/ai-forward-pack/scripts/run-verify-gates.py sha256 bb01616115d39077a1024b39f41901c183898ca8900f59625eb7f0f2491eec19\n- tests/mutations/mutate_check.json: tests/mutations/mutate_check.json sha256 fa54db721fd9c334bd4d49a5fad7a0ec312fe6324a213435538da0f02f9f3208\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- audit-log.py: docs/ai-forward-pack/scripts/audit-log.py sha256 d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 1a000edba382d9cc43db045200f6f1bef0b38f0f9bf3d47cfefd5a46116d85de\nAssumptions\n- #0 belief: the runner prepares turn 2 from base build/fin-x-hyg on the new branch build/fin-x-hyg2; it cannot reuse turn 1's branch (coord-runner.py refuses an existing branch, RUN-BRANCH) · confirm: the Leader's coord-runner prepare of x-hyg2.contract.json · breaks: prepare refuses; the Leader decides the shape; nothing in this prompt changes · consequential: false\n- #1 belief: a host-limited outcome that does not by itself fail the exit is no weaker than today, because the condition is detected on the host and the kill is owed to a host that has it · confirm: the H2 tests and the summary line; the Leader's batch mutate_check with HB_REQUIRE_DOTNET=1 · breaks: if the Owner wants host-limited to fail the exit, one line of mutate_check changes; nothing else · consequential: false\n- #2 belief: Grok's floor plus 40k holds H1-H2 in one turn · confirm: the closing entry's samples · breaks: the split rule hands back after H1 · consequential: false\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0\nper_branch_exit: the brief's items as commits, then the gate; or a hand-back by the split rule with the open items named\njoin_rule: the Leader's join per coordination-finish.md (Batch plan): re-run the red SHA, the guard list, docs-graph validate and the recount; owned paths only\ncontainment: tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-hyg2 on build/fin-x-hyg2 (the runner makes both from base build/fin-x-hyg, turn 1's tip d858ec42), session xhyg2-fin, run r-xhyg2-fin (new identities, checked free by Coordinator #57); owned paths as the brief names them\ntermination: one turn\ndeadline: 2,400 s\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M4EAVVZ7C98M8ZTR3FR8WM4F\nraw sha256: e5d197f61b9aa84073a9f150f438049d63c523c8dd48685cf54563f7019a69a8\ncompiler model: claude-opus-5-5[1m]\nengine seconds: 0.027\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M4EAVVZ7C98M8ZTR3FR8WM4F for claude-code v1: 17 clauses, 3 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [
+          {
+            "id": "#0",
+            "belief": "the runner prepares turn 2 from base build/fin-x-hyg on the new branch build/fin-x-hyg2; it cannot reuse turn 1's branch (coord-runner.py refuses an existing branch, RUN-BRANCH)",
+            "confirm": "the Leader's coord-runner prepare of x-hyg2.contract.json",
+            "breaks": "prepare refuses; the Leader decides the shape; nothing in this prompt changes",
+            "consequential": false
+          },
+          {
+            "id": "#1",
+            "belief": "a host-limited outcome that does not by itself fail the exit is no weaker than today, because the condition is detected on the host and the kill is owed to a host that has it",
+            "confirm": "the H2 tests and the summary line; the Leader's batch mutate_check with HB_REQUIRE_DOTNET=1",
+            "breaks": "if the Owner wants host-limited to fail the exit, one line of mutate_check changes; nothing else",
+            "consequential": false
+          },
+          {
+            "id": "#2",
+            "belief": "Grok's floor plus 40k holds H1-H2 in one turn",
+            "confirm": "the closing entry's samples",
+            "breaks": "the split rule hands back after H1",
+            "consequential": false
+          }
+        ],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "Your plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 (join-c56-w0), section Tracks: | **X-HYG** machine paths and host-limited mutants | `.gitattributes`, `tools/mutate_check.py`, `tests/test_mutate_check.py`, `tests/mutations/atomic.json` | none | T1 | 0 | 50 · floor + 40k · 1 · 0.7 h | `verify-no-machine-paths.py` exit 0 (today exit 1: 4 hits, all `tests/fixtures/ledger/*/run/archive/*/attempt-1/home/sessions/2026/09/rollout-*.jsonl:3`, byte-exact captured records, so the fix is the per-file `.gitattributes` `machine-path-ok` the gate's own text names); `run-verify-gates.py` 9 of 9; `mutate_check` reports M14b and (if the right is not granted) M27 as **host-limited**, not survived, red first | Grok |",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 ("
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Done when (the row's exit evidence column, verbatim): \"`verify-no-machine-paths.py` exit 0 (today exit 1: 4 hits, all `tests/fixtures/ledger/*/run/archive/*/attempt-1/home/sessions/2026/09/rollout-*.jsonl:3`, byte-exact captured records, so the fix is the per-file `.gitattributes` `machine-path-ok` the gate's own text names); `run-verify-gates.py` 9 of 9; `mutate_check` reports M14b and (if the right is not granted) M27 as **host-limited**, not survived, red first\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Done when (the row's exit evidence column, verbatim): \"`verify-no-machine-paths.py` exit 0"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "AGENT_SESSION=xhyg2-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "AGENT_SESSION=xhyg2-fin is set in every shell you open, inline on every commit and coord c"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Base: the tip of build/fin-x-hyg when the Leader prepares this run (the contract's base): turn 1's H1 commit 2a8f4d84 and the Leader's audit commit d858ec42 for turn 1 (session xhyg-fin, split after H1). The runner made your branch build/fin-x-hyg2 and your tree from that base; turn 1's branch and tree are not yours. Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor 2a8f4d84 HEAD` exits non-zero; `git merge-base --is-ancestor 7f96fb70 HEAD` exits non-zero; `coord session start` for xhyg2-fin is refused.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Base: the tip of build/fin-x-hyg when the Leader prepares this run (the contract's base): "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "H1 is done: 2a8f4d84 gives the four captured rollout records a per-file machine-path-ok in .gitattributes. The Leader re-ran `python docs/ai-forward-pack/scripts/verify-no-machine-paths.py` on it: exit 0, \"clean - 1175 tracked machine-readable files\"; the guard list passed 210. Do not redo H1; the final gate re-runs the check. This turn's items, in order: H2 red first in tests/test_mutate_check.py; the fix in tools/mutate_check.py; the host condition on M14b and M27 in tests/mutations/atomic.json; the final gate.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "H1 is done: 2a8f4d84 gives the four captured rollout records a per-file machine-path-ok in"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "H2, host-limited mutants, red first in tests/test_mutate_check.py: today M14b (\"_POSIX is always False\", tests/mutations/atomic.json:234; note: \"killable on POSIX only ... Survives on a Windows host by design\") and M27 (\"existing-file read drops O_NOFOLLOW\", :140; note: \"not run on this host (winerror 1314, no symlink right)\") count as survived here. Give a mutation entry an optional host condition (posix; symlink right) and make mutate_check report \"host-limited\" with the reason when this host lacks it. The condition is detected on the host (os.name; a symlink probe under C:\\tf\\xhyg that fails with winerror 1314), never assumed from the entry's name. host-limited is never counted as killed, is printed in the summary with its count, and does not make the exit non-zero on its own; every other non-kill keeps today's exit. The operator answered the symlink question on 2026-10-08 (plan, Operator decisions, item 3): \"Report it as host-limited (Recommended)\"; the right stays off, so M27 reads host-limited here.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "H2, host-limited mutants, red first in tests/test_mutate_check.py: today M14b (\"_POSIX is "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Reader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tasks/ and tools/ are unchanged from there to 7f96fb70). tests/test_archive_readers.py:7-8: READERS = {\"engine.py\", \"grade/runner.py\", \"report/credentials.py\", \"report/judges.py\", \"report/pack_improvement.py\", \"report/summaries.py\", \"report/html.py\", \"resume.py\", \"views.py\"}, and test_t_sweep_1_exact_reader_and_exception_set asserts len(READERS) == 9; a file becomes an archive reader by holding the string literal \"archive\" or the attribute attempt_dirs or snapshot_folder (archive_readers). src/harness_bench/identity.py:122-126: RUN_IMPORTS_GRADE_ALLOWED holds exactly (\"config.py\", \"egress.py\"), (\"config.py\", \"gateway/backend.py\") and (\"config.py\", \"gateway/scrub.py\"). src/harness_bench/lifecycle.py:60: TABLE maps every ledger transition to its model action and its writer (\"engine\", \"grading\" or \"ledger\", :52); the engine consults it (check_writer) before every events append. X-HYG touches no src/ file and adds no reader, import pair or transition. If your change would add an archive reader, an import pair or a transition or writer, stop and send a seam request; never edit these tables.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Reader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tas"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (tools/mutate_check.py and tests/test_mutate_check.py, which X-WIN leaves to you). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN b"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorded | **not measured** | no split rule can be computed: a Grok row stays one short item per turn (capability table), and its first compile records the first reading | Measured since that row (Coordinator #57, 2026-10-08): Grok's session store carries your context figure while the turn runs. Every row of updates.jsonl in %USERPROFILE%\\.grok\\sessions\\<key>\\<id>\\ has params._meta.totalTokens, the session's current context. <key> is your tree path with backslashes, URL-encoded (yours: C%3A%5CProjects%5Cx-harness-x-model-bench-build-fin-x-hyg2); <id> is Grok's own session UUID, not your session id. Measured: X-FLAKE's live store read 73,026 and then 77,172 mid-turn; X-HYG turn 1 read 11,862 at its first update, 34,870 at the next, 90,519 at its H1 commit and 108,404 at hand-back. usage.json is not the figure: Grok writes it at the turn's end, and its inputTokens sums every call. Read your figure with this one line, before each item and before each gate command: `python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-hyg2\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1])\"`. Your floor F is the first reading after you have read this prompt, before the first step. The plan's budget is F + 40k. Start item k only at or below F plus the expected work of items 1 to k (Coordinator #57's estimates): H2 red (10k) at or below F + 10k; the fix (10k) at or below F + 20k; the host condition in atomic.json (5k) at or below F + 25k; the final gate (10k) at or below F + 30k. If a sample reaches F + 30k, start no new edit or gate, write the closing audit entry and hand back at your last commit with the open steps named. If the line fails or prints nothing, record \"not recorded\" and hand back after the H2 red commit. Record each reading in your closing entry. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorde"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xhyg and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xhyg. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\""
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Red first on an assertion (RED-C): run each new or changed test before its fix and see it fail on an assert line, never on an ImportError, NameError, AttributeError, KeyError, a collection error or a skip; commit the red test on its own, then the fix; put the failing assertion line and the red commit's SHA in the green commit's message.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Red first on an assertion (RED-C): run each new or changed test before its fix and see it "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Gate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xhyg, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_mutate_check.py` on your final commit; `python docs/ai-forward-pack/scripts/verify-no-machine-paths.py` (exit 0); `python docs/ai-forward-pack/scripts/run-verify-gates.py` (report the n of 9 it prints); `uv run python tools/mutate_check.py tests/mutations/mutate_check.json`, then `uv run python tools/mutate_check.py tests/mutations/atomic.json` (M14b and M27 read host-limited), one per line, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Gate (R-104; each command on its own line, its exit status read, never behind a pipe; outp"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit named paths only (git add <path>, never -A or .), with plain git commit and your se"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from the model field of your first response (R-103: the Leader kills the run at the first response if it is not grok-4.7*, and retries once); tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched. Report your served model id on the first line of your final message.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your closing audit entry, written through audit-log.py with your session variable inline, "
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "every file other than .gitattributes, tools/mutate_check.py, tests/test_mutate_check.py, tests/mutations/atomic.json and tests/mutations/mutate_check.json; the fixture records themselves; the operator's symlink setting.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "every file other than .gitattributes, tools/mutate_check.py, tests/test_mutate_check.py, t"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/lessons/defect-classes.md (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-hyg2 on build/fin-x-hyg2 (the runner makes both from base build/fin-x-hyg, turn 1's tip d858ec42), session xhyg2-fin, run r-xhyg2-fin (new identities, checked free by Coordinator #57); owned paths as the brief names them",
+          "deadline": "2,400 s",
+          "fallback": null,
+          "join_rule": "the Leader's join per coordination-finish.md (Batch plan): re-run the red SHA, the guard list, docs-graph validate and the recount; owned paths only",
+          "per_branch_exit": "the brief's items as commits, then the gate; or a hand-back by the split rule with the open items named",
+          "termination": "one turn",
+          "transient_retry": "0",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "the Grok floor F (not recorded; the worker records its first reading) + 40k, the plan's budget; split rule (CEIL-A): start no item above the ceiling minus its work; hand-off at the ceiling minus 10k",
+          "done_when": [
+            "Your plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 (join-c56-w0), section Tracks: | **X-HYG** machine paths and host-limited mutants | `.gitattributes`, `tools/mutate_check.py`, `tests/test_mutate_check.py`, `tests/mutations/atomic.json` | none | T1 | 0 | 50 · floor + 40k · 1 · 0.7 h | `verify-no-machine-paths.py` exit 0 (today exit 1: 4 hits, all `tests/fixtures/ledger/*/run/archive/*/attempt-1/home/sessions/2026/09/rollout-*.jsonl:3`, byte-exact captured records, so the fix is the per-file `.gitattributes` `machine-path-ok` the gate's own text names); `run-verify-gates.py` 9 of 9; `mutate_check` reports M14b and (if the right is not granted) M27 as **host-limited**, not survived, red first | Grok |",
+            "Done when (the row's exit evidence column, verbatim): \"`verify-no-machine-paths.py` exit 0 (today exit 1: 4 hits, all `tests/fixtures/ledger/*/run/archive/*/attempt-1/home/sessions/2026/09/rollout-*.jsonl:3`, byte-exact captured records, so the fix is the per-file `.gitattributes` `machine-path-ok` the gate's own text names); `run-verify-gates.py` 9 of 9; `mutate_check` reports M14b and (if the right is not granted) M27 as **host-limited**, not survived, red first\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`).",
+            "AGENT_SESSION=xhyg2-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below.",
+            "Base: the tip of build/fin-x-hyg when the Leader prepares this run (the contract's base): turn 1's H1 commit 2a8f4d84 and the Leader's audit commit d858ec42 for turn 1 (session xhyg-fin, split after H1). The runner made your branch build/fin-x-hyg2 and your tree from that base; turn 1's branch and tree are not yours. Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor 2a8f4d84 HEAD` exits non-zero; `git merge-base --is-ancestor 7f96fb70 HEAD` exits non-zero; `coord session start` for xhyg2-fin is refused.",
+            "H1 is done: 2a8f4d84 gives the four captured rollout records a per-file machine-path-ok in .gitattributes. The Leader re-ran `python docs/ai-forward-pack/scripts/verify-no-machine-paths.py` on it: exit 0, \"clean - 1175 tracked machine-readable files\"; the guard list passed 210. Do not redo H1; the final gate re-runs the check. This turn's items, in order: H2 red first in tests/test_mutate_check.py; the fix in tools/mutate_check.py; the host condition on M14b and M27 in tests/mutations/atomic.json; the final gate.",
+            "H2, host-limited mutants, red first in tests/test_mutate_check.py: today M14b (\"_POSIX is always False\", tests/mutations/atomic.json:234; note: \"killable on POSIX only ... Survives on a Windows host by design\") and M27 (\"existing-file read drops O_NOFOLLOW\", :140; note: \"not run on this host (winerror 1314, no symlink right)\") count as survived here. Give a mutation entry an optional host condition (posix; symlink right) and make mutate_check report \"host-limited\" with the reason when this host lacks it. The condition is detected on the host (os.name; a symlink probe under C:\\tf\\xhyg that fails with winerror 1314), never assumed from the entry's name. host-limited is never counted as killed, is printed in the summary with its count, and does not make the exit non-zero on its own; every other non-kill keeps today's exit. The operator answered the symlink question on 2026-10-08 (plan, Operator decisions, item 3): \"Report it as host-limited (Recommended)\"; the right stays off, so M27 reads host-limited here.",
+            "Reader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tasks/ and tools/ are unchanged from there to 7f96fb70). tests/test_archive_readers.py:7-8: READERS = {\"engine.py\", \"grade/runner.py\", \"report/credentials.py\", \"report/judges.py\", \"report/pack_improvement.py\", \"report/summaries.py\", \"report/html.py\", \"resume.py\", \"views.py\"}, and test_t_sweep_1_exact_reader_and_exception_set asserts len(READERS) == 9; a file becomes an archive reader by holding the string literal \"archive\" or the attribute attempt_dirs or snapshot_folder (archive_readers). src/harness_bench/identity.py:122-126: RUN_IMPORTS_GRADE_ALLOWED holds exactly (\"config.py\", \"egress.py\"), (\"config.py\", \"gateway/backend.py\") and (\"config.py\", \"gateway/scrub.py\"). src/harness_bench/lifecycle.py:60: TABLE maps every ledger transition to its model action and its writer (\"engine\", \"grading\" or \"ledger\", :52); the engine consults it (check_writer) before every events append. X-HYG touches no src/ file and adds no reader, import pair or transition. If your change would add an archive reader, an import pair or a transition or writer, stop and send a seam request; never edit these tables.",
+            "Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (tools/mutate_check.py and tests/test_mutate_check.py, which X-WIN leaves to you). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none).",
+            "The context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorded | **not measured** | no split rule can be computed: a Grok row stays one short item per turn (capability table), and its first compile records the first reading | Measured since that row (Coordinator #57, 2026-10-08): Grok's session store carries your context figure while the turn runs. Every row of updates.jsonl in %USERPROFILE%\\.grok\\sessions\\<key>\\<id>\\ has params._meta.totalTokens, the session's current context. <key> is your tree path with backslashes, URL-encoded (yours: C%3A%5CProjects%5Cx-harness-x-model-bench-build-fin-x-hyg2); <id> is Grok's own session UUID, not your session id. Measured: X-FLAKE's live store read 73,026 and then 77,172 mid-turn; X-HYG turn 1 read 11,862 at its first update, 34,870 at the next, 90,519 at its H1 commit and 108,404 at hand-back. usage.json is not the figure: Grok writes it at the turn's end, and its inputTokens sums every call. Read your figure with this one line, before each item and before each gate command: `python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-hyg2\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1])\"`. Your floor F is the first reading after you have read this prompt, before the first step. The plan's budget is F + 40k. Start item k only at or below F plus the expected work of items 1 to k (Coordinator #57's estimates): H2 red (10k) at or below F + 10k; the fix (10k) at or below F + 20k; the host condition in atomic.json (5k) at or below F + 25k; the final gate (10k) at or below F + 30k. If a sample reaches F + 30k, start no new edit or gate, write the closing audit entry and hand back at your last commit with the open steps named. If the line fails or prints nothing, record \"not recorded\" and hand back after the H2 red commit. Record each reading in your closing entry. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure.",
+            "Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xhyg and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xhyg. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started.",
+            "FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report.",
+            "Red first on an assertion (RED-C): run each new or changed test before its fix and see it fail on an assert line, never on an ImportError, NameError, AttributeError, KeyError, a collection error or a skip; commit the red test on its own, then the fix; put the failing assertion line and the red commit's SHA in the green commit's message.",
+            "Gate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xhyg, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_mutate_check.py` on your final commit; `python docs/ai-forward-pack/scripts/verify-no-machine-paths.py` (exit 0); `python docs/ai-forward-pack/scripts/run-verify-gates.py` (report the n of 9 it prints); `uv run python tools/mutate_check.py tests/mutations/mutate_check.json`, then `uv run python tools/mutate_check.py tests/mutations/atomic.json` (M14b and M27 read host-limited), one per line, never --touched; `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`.",
+            "Commit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit.",
+            "Your closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from the model field of your first response (R-103: the Leader kills the run at the first response if it is not grok-4.7*, and retries once); tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched. Report your served model id on the first line of your final message."
+          ],
+          "fan_out_cap": "0",
+          "goal": "You are session xhyg2-fin, run r-xhyg2-fin, harness Grok (coord-runner, ACP), model grok-4.7 with --reasoning-effort high, on branch build/fin-x-hyg2 in the tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-hyg2. The Leader leader-fin (epoch 19) dispatches you; Coordinator #57 compiled this from turn 1's last commit d858ec42 on build/fin-x-hyg and from docs/coordination/coordination-finish.md (docs/coordination/coordinator-log/c57.md). One turn, deadline 2,400 s, within 50 calls and a context ceiling of the floor + 40k, tier T1, fan-out cap 0. X-HYG, turn 2: H1 is done; make tools/mutate_check.py report a mutant this host cannot kill as host-limited, not survived.",
+          "main_line_budget": "within 50 calls; 2,400 s this turn",
+          "not_in_scope": [
+            "every file other than .gitattributes, tools/mutate_check.py, tests/test_mutate_check.py, tests/mutations/atomic.json and tests/mutations/mutate_check.json; the fixture records themselves; the operator's symlink setting.",
+            "the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/lessons/defect-classes.md (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours)."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5[1m]",
+          "engine_seconds": 0.027,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M4EAVVZ7C98M8ZTR3FR8WM4F",
+        "raw_sha256": "e5d197f61b9aa84073a9f150f438049d63c523c8dd48685cf54563f7019a69a8",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".gitattributes"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "befa94bfa2ecdd17d421edef4b8d8d3589762ec0c600fea2d1dfee479d93a33d",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "4d9acae3db011db5017ab33375300622d60a4c4cb1cf4df1ee44a06a5bb2a14f",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/atomic.json",
+            "reason": null,
+            "sha256": "b947126db48d793cbd7aa451d027c5eb552ece7bbf3a80a550abc53eaf70851c",
+            "status": "resolved",
+            "token": "tests/mutations/atomic.json"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/verify-no-machine-paths.py",
+            "reason": null,
+            "sha256": "ebbca8b16efaf582ab06ec8980bf23bf8c3ffad76801258244a5eb3c8da886c8",
+            "status": "resolved",
+            "token": "verify-no-machine-paths.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/ledger/*/run/archive/*/attempt-1/home/sessions/2026/09/rollout-*.jsonl:3"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "machine-path-ok"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/run-verify-gates.py",
+            "reason": null,
+            "sha256": "bb01616115d39077a1024b39f41901c183898ca8900f59625eb7f0f2491eec19",
+            "status": "resolved",
+            "token": "run-verify-gates.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "mutate_check"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run ruff check src tests tools"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs-graph.py validate"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pytest -n 4 --dist loadscope"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "py -3"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git status --short"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git merge-base --is-ancestor 2a8f4d84 HEAD"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git merge-base --is-ancestor 7f96fb70 HEAD"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord session start"
+          },
+          {
+            "nearest": "docs/ai-forward-pack/scripts/verify-no-machine-paths.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python docs/ai-forward-pack/scripts/verify-no-machine-paths.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/spikes/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "os.system"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "subprocess.run"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_console_windows.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/window_check.py --since <instant> --root-pid <pid"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git log --oneline -1 --grep=join-x-win"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-hyg2\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1"
+          },
+          {
+            "nearest": "tests/test_timing_hygiene.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": "tests/test_mutate_check.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q tests/test_mutate_check.py"
+          },
+          {
+            "nearest": "docs/ai-forward-pack/scripts/run-verify-gates.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python docs/ai-forward-pack/scripts/run-verify-gates.py"
+          },
+          {
+            "nearest": "tests/mutations/mutate_check.json",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run python tools/mutate_check.py tests/mutations/mutate_check.json"
+          },
+          {
+            "nearest": "tests/mutations/atomic.json",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run python tools/mutate_check.py tests/mutations/atomic.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python docs/ai-forward-pack/scripts/docs-graph.py validate"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/fin-x-hyg2"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/fin-x-hyg"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish.md",
+            "reason": null,
+            "sha256": "2602143453882af95e80ba72ea1d3306ed2cd19c3b4b9feee120b13dcf20f814",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-finish.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/coordination/coordinator-log/c57.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/verify-no-machine-paths.py",
+            "reason": null,
+            "sha256": "ebbca8b16efaf582ab06ec8980bf23bf8c3ffad76801258244a5eb3c8da886c8",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/verify-no-machine-paths.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/atomic.json:234"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_archive_readers.py:7-8"
+          },
+          {
+            "nearest": "src/harness_bench/engine.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "{\"engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "fee02368561b9af64a2add57480e5beb13c4888a593ebef3ec5312977c7bd1f4",
+            "status": "resolved",
+            "token": "grade/runner.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/credentials.py",
+            "reason": null,
+            "sha256": "00a84ee78abeff3d72913255b9d04be20c98b4b2dd8f9be31332975b1872cbec",
+            "status": "resolved",
+            "token": "report/credentials.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/judges.py",
+            "reason": null,
+            "sha256": "aa5698b0559d8b5d443f7bdee83b658725aed4013910161feb46962bb3cd59b7",
+            "status": "resolved",
+            "token": "report/judges.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/pack_improvement.py",
+            "reason": null,
+            "sha256": "7c5f1a9a9b3d7552bae8719a75ad3fc3579cc796ceab01823db94435500c3996",
+            "status": "resolved",
+            "token": "report/pack_improvement.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/summaries.py",
+            "reason": null,
+            "sha256": "037b0bcf0999b8a80b7cba3ae6aa9aefd82c5378dc0859190083d397df77588b",
+            "status": "resolved",
+            "token": "report/summaries.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/html.py",
+            "reason": null,
+            "sha256": "c8684af375bebe0b1e4400474a7baa4333520d16560a27254fe814da70ddf88a",
+            "status": "resolved",
+            "token": "report/html.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/resume.py",
+            "reason": null,
+            "sha256": "ea198f1e7bec442e684cc14211767b793ad9f053bb42319f97812de249e3e63b",
+            "status": "resolved",
+            "token": "resume.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/identity.py:122-126"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "ba786b6ff71f29fa65dd30e6d529f537e0d3a2c1946b0140386522a8cc12250b",
+            "status": "resolved",
+            "token": "config.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/egress.py",
+            "reason": null,
+            "sha256": "30aa38780fae93834bc804d1af35ae6642a5f0ab5d79e27edbe80e096609fd08",
+            "status": "resolved",
+            "token": "egress.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/gateway/backend.py",
+            "reason": null,
+            "sha256": "632efca36e0d7ff4abdbc32901a6ba11edfa0d6cc7cc642332dec77e7bfdae31",
+            "status": "resolved",
+            "token": "gateway/backend.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/gateway/scrub.py",
+            "reason": null,
+            "sha256": "11f5bd9c48dc5e1fe148e09670f8f5f80affd66073c1877376edd5f3a9940dbb",
+            "status": "resolved",
+            "token": "gateway/scrub.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/lifecycle.py:60"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/window_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 5 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "usage.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/atomic.json",
+            "reason": null,
+            "sha256": "b947126db48d793cbd7aa451d027c5eb552ece7bbf3a80a550abc53eaf70851c",
+            "status": "resolved",
+            "token": "atomic.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_identity.py",
+            "reason": null,
+            "sha256": "f6717458ec2670a1be81a7839657dfa77e4dbb2e4515e532b5daefd5d3a8a784",
+            "status": "resolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_atomic_sites.py",
+            "reason": null,
+            "sha256": "143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90",
+            "status": "resolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_arms_guard.py",
+            "reason": null,
+            "sha256": "25c45e56139c8e3a2d70d353e4b83c0386590e754c342c2ee0e1a88338ff8b73",
+            "status": "resolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_discriminate.py",
+            "reason": null,
+            "sha256": "f75d3531381834234207298b60967099bd9b8de3406681dc39488e6a1aa195e7",
+            "status": "resolved",
+            "token": "tests/test_discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_skills_in_sync.py",
+            "reason": null,
+            "sha256": "572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d",
+            "status": "resolved",
+            "token": "tests/test_skills_in_sync.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_timing_hygiene.py",
+            "reason": null,
+            "sha256": "fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6",
+            "status": "resolved",
+            "token": "tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/run-verify-gates.py",
+            "reason": null,
+            "sha256": "bb01616115d39077a1024b39f41901c183898ca8900f59625eb7f0f2491eec19",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/run-verify-gates.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/mutations/mutate_check.json",
+            "reason": null,
+            "sha256": "fa54db721fd9c334bd4d49a5fad7a0ec312fe6324a213435538da0f02f9f3208",
+            "status": "resolved",
+            "token": "tests/mutations/mutate_check.json"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/audit-log.py",
+            "reason": null,
+            "sha256": "d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4",
+            "status": "resolved",
+            "token": "audit-log.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "1a000edba382d9cc43db045200f6f1bef0b38f0f9bf3d47cfefd5a46116d85de",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M4EAVYKFK3NGGD1MXNVFPGXH",
+      "shortname": "You are session xreds-fin, run r-xreds-fin, harness Grok (coord-runner, …",
+      "datetime": "2026-10-08T18:02:06Z",
+      "session": "prompt-compile",
+      "prompt": "You are session xreds-fin, run r-xreds-fin, harness Grok (coord-runner, ACP), model grok-4.7 with --reasoning-effort high, on branch build/fin-x-reds in the tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-reds. The Leader leader-fin (epoch 19) dispatches you; Coordinator #55 compiled this, and Coordinator #57 recompiled its context rule, from docs/coordination/coordination-finish.md (docs/coordination/coordinator-log/c55.md). One turn, deadline 1,800 s, within 50 calls and a context ceiling of the floor + 40k, tier T1, fan-out cap 0. X-REDS, re-pointed by Ruling 114 to a tests-only track: pin, at the test ring, the exact per-test set each of the seven RW primary-flipping variants fails in its turn-2 hidden-test run, as NG already does. No src/, tasks/ or design edit under any outcome.\n\nYour plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 (join-c56-w0), section Tracks: | *gated* **X-REDS** Ruling 109's `reds` key | `src/harness_bench/discriminate.py` (`_variant_record`), `tests/test_discriminate.py` | **the DR-REDS ruling rules it in** | T1 | 0 | 50 · floor + 40k · 1 · 0.7 h | as the ruling states; a variant with `reds` refuses a record whose failing hidden tests differ | Grok **Erratum (Coordinator #56, 2026-10-08):** Ruling 114 (`owner-fable`, 2026-10-08T17:17:36Z, `owner/ruling-r114` `dcc07faa`) answered DR-REDS: **(B) granted, bounded**; X-REDS is **re-pointed, not struck**, to a `tests/`-only track. It owns `tests/test_rework_tasks.py` (and `tests/test_ng_tasks.py` only if the shape is shared by extraction) and adds one parametrized red-first test over the seven RW variants whose declared flips include `property_check_pass` with clause `tests` (RW1 `t2short`, `duplicate`, `deaddelegate`; RW2 `t2short`, `nohookorder`, `ignorereturn`, `duplicate`): the variant's turn-2 hidden-test run fails exactly the per-test set the test module's SPECS name (NG's pattern, `test_ng_tasks.py:694-705`), never in `variants.py`. Red first: a seeded edit that breaks every hidden test fails it. If anything outside `tests/` is needed, the worker stops with a finding (fail-safe to (B) plain). P3, Grok, cap 0.5 h, one retry, no ring, no re-record. The cells to the left are superseded; dispatchable now |\n\nDone when (the row's exit evidence column, verbatim): \"as the ruling states; a variant with `reds` refuses a record whose failing hidden tests differ\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`).\n\nAGENT_SESSION=xreds-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below.\n\nBase: the integration head the Leader names at dispatch, which holds 7f96fb70 (join-c56-w0: the finish plan and its C-W0 section). Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor 7f96fb70 HEAD` exits non-zero; `coord session start` for xreds-fin is refused. Also stop if `git merge-base --is-ancestor dcc07faa HEAD` exits non-zero, or `git grep -n \"^### Ruling 114\" -- docs/notes/rulings.md` prints nothing (Ruling 114 joined as join-r114 at dcc07faa).\n\nThe plan row above is superseded where Ruling 114 differs: it owned discriminate.py and a reds key, which the ruling refused. Ruling 114's operative conditions, quoted verbatim from docs/notes/rulings.md at dcc07faa: 1. **X-REDS is re-pointed, not struck: a `tests/`-only track.** Owned files: `tests/test_rework_tasks.py` (and `tests/test_ng_tasks.py` only if the shape is shared by extraction - optional). It adds one parametrized red-first test over `variant_cases()` whose declared flips include `property_check_pass` with clause `tests`: the variant's turn-2 hidden-test run fails **exactly** the per-test set the test's own SPECS name, as `test_ng_each_variant_moves_exactly_what_it_claims` does at `:703-705`, with the expected ids kept in the test module's SPECS (NG's pattern), **never** in `variants.py` (the W0 §2 schema is unchanged). Red first: a seeded edit that breaks every hidden test must fail it; the seven declared edits pass it. **Boundary, fail-safe:** if exposing the per-test failing set needs any change outside `tests/` (whether `observe` at `:494` or the `:426` helper exposes `failed` is **Inferred** from `:431`, not read by me - the worker checks it first), the worker stops and files a finding with `coord request add`; the track then closes as (B) plain and E5's run report names the seven. No `src/`, `tasks/` or design edit under any outcome. 2. **Batch and cost:** P3 (no stamp input moves, no ring, no re-record: `record_key` does not hash `tests/`); Grok as the row names; cap 0.5 h, one retry. The Coordinator edits the plan's X-REDS row `:155`, the artifact-class row `:113`, the seam row `:265` (\"the DR-REDS ruling: refused for the record; closed at the test ring, R-114\") and the gated count `:292`, in its next ledger commit; no design text changes.\n\nR0, the check first, before any edit: confirm the per-test failing set is reachable from tests/ alone. Read by Coordinator #55 at 0ea7cc9a in tests/test_rework_tasks.py: run_hidden (:193) is a test-module helper, and test_each_wrong_app_turns_exactly_its_reds_red (:426-431) already asserts `result.failed == frozenset(entry[\"reds\"])` on its result; observe (:221) and reference_observed (:237) are in the same file, and test_each_variant_flips_exactly_its_set (:489-502) reads metric-grain flips only. The table there is named SPEC (:44), not SPECS. If reaching the set needs any change outside tests/, stop and file the finding with `coord request add` to coord-opus-fin; the track then closes as (B) plain.\n\nR1, the red: one parametrized test in tests/test_rework_tasks.py over variant_cases() restricted to the variants whose declared flips include property_check_pass with clause tests: RW1 t2short, duplicate, deaddelegate and RW2 t2short, nohookorder, ignorereturn, duplicate (seven; the test asserts that count). For each, the turn-2 hidden-test run's failed set equals the ids the test module declares for that variant (NG's pattern, tests/test_ng_tasks.py:694-705 test_ng_each_variant_moves_exactly_what_it_claims), never in variants.py. Red first: a seeded edit that breaks every hidden test fails it on its assertion; commit that red evidence in the message, never the seeded edit. R2, the green: the seven declared edits pass it.\n\nReader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tasks/ and tools/ are unchanged from there to 7f96fb70). tests/test_archive_readers.py:7-8: READERS = {\"engine.py\", \"grade/runner.py\", \"report/credentials.py\", \"report/judges.py\", \"report/pack_improvement.py\", \"report/summaries.py\", \"report/html.py\", \"resume.py\", \"views.py\"}, and test_t_sweep_1_exact_reader_and_exception_set asserts len(READERS) == 9; a file becomes an archive reader by holding the string literal \"archive\" or the attribute attempt_dirs or snapshot_folder (archive_readers). src/harness_bench/identity.py:122-126: RUN_IMPORTS_GRADE_ALLOWED holds exactly (\"config.py\", \"egress.py\"), (\"config.py\", \"gateway/backend.py\") and (\"config.py\", \"gateway/scrub.py\"). src/harness_bench/lifecycle.py:60: TABLE maps every ledger transition to its model action and its writer (\"engine\", \"grading\" or \"ledger\", :52); the engine consults it (check_writer) before every events append. X-REDS edits tests/test_rework_tasks.py only and adds no reader, import pair or transition. If your change would add an archive reader, an import pair or a transition or writer, stop and send a seam request; never edit these tables.\n\nConsole windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (your new test only; the file's existing launch lines are X-WIN's sweep (P2), so leave them untouched; your test reuses the module's helpers and adds no launch). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none).\n\nThe context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorded | **not measured** | no split rule can be computed: a Grok row stays one short item per turn (capability table), and its first compile records the first reading | Measured since that row (Coordinator #57, 2026-10-08): Grok's session store carries your context figure while the turn runs. Every row of updates.jsonl in %USERPROFILE%\\.grok\\sessions\\<key>\\<id>\\ has params._meta.totalTokens, the session's current context. <key> is your tree path with backslashes, URL-encoded (yours: C%3A%5CProjects%5Cx-harness-x-model-bench-build-fin-x-reds); <id> is Grok's own session UUID, not your session id. Measured: X-FLAKE's live store read 73,026 and then 77,172 mid-turn; X-HYG turn 1 read 11,862 at its first update, 34,870 at the next, 90,519 at its H1 commit and 108,404 at hand-back. usage.json is not the figure: Grok writes it at the turn's end, and its inputTokens sums every call. Read your figure with this one line, before each item and before each gate command: `python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-reds\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1])\"`. Your floor F is the first reading after you have read this prompt, before the first step. The plan's budget is F + 40k. Start item k only at or below F plus the expected work of items 1 to k (Coordinator #57's estimates): R0 (5k) at or below F + 5k; R1 (10k) at or below F + 15k; R2 (10k) at or below F + 25k; the final gate (5k) at or below F + 30k. If a sample reaches F + 30k, start no new edit or gate, write the closing audit entry and hand back at your last commit with the open steps named. If the line fails or prints nothing, record \"not recorded\" and hand back after the R1 commit. Record each reading in your closing entry. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure.\n\nScratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xreds and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xreds. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started.\n\nFALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report.\n\nRed first on an assertion (RED-C): run each new or changed test before its fix and see it fail on an assert line, never on an ImportError, NameError, AttributeError, KeyError, a collection error or a skip; commit the red test on its own, then the fix; put the failing assertion line and the red commit's SHA in the green commit's message.\n\nGate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xreds, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_rework_tasks.py tests/test_ng_tasks.py` on your final commit; no mutation file of yours moves: the seeded edit is the red, and tests/ is not an engine input (say so in the report); `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. P3, no ring and no re-record (Ruling 114 condition 2).\n\nCommit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit.\n\nYour closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from the model field of your first response (R-103: the Leader kills the run at the first response if it is not grok-4.7*, and retries once); tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched. Report your served model id on the first line of your final message.\n\nNot yours: src/, tasks/ (variants.py included), design docs, discriminate.py and tests/test_discriminate.py (the old row's paths); the plan and the R-109 note (the Coordinator's, Ruling 114 conditions 2-3).\n\nNot yours: the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/lessons/defect-classes.md (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours).",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
+    },
+    {
+      "id": "al-01M4EAW09WABRP6JWB3KE6FNRN",
+      "shortname": "compile-You are session xreds-fin, run r-xreds-fin, harness Grok (coord-runner, …",
+      "datetime": "2026-10-08T18:02:08Z",
+      "session": "xreds-fin",
+      "prompt": "python docs/ai-forward-pack/scripts/audit-log.py start --session xreds-fin --skill implement\nGoal state\nGoal: You are session xreds-fin, run r-xreds-fin, harness Grok (coord-runner, ACP), model grok-4.7 with --reasoning-effort high, on branch build/fin-x-reds in the tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-reds. The Leader leader-fin (epoch 19) dispatches you; Coordinator #55 compiled this, and Coordinator #57 recompiled its context rule, from docs/coordination/coordination-finish.md (docs/coordination/coordinator-log/c55.md). One turn, deadline 1,800 s, within 50 calls and a context ceiling of the floor + 40k, tier T1, fan-out cap 0. X-REDS, re-pointed by Ruling 114 to a tests-only track: pin, at the test ring, the exact per-test set each of the seven RW primary-flipping variants fails in its turn-2 hidden-test run, as NG already does. No src/, tasks/ or design edit under any outcome.\nDone when: Your plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 (join-c56-w0), section Tracks: | *gated* **X-REDS** Ruling 109's `reds` key | `src/harness_bench/discriminate.py` (`_variant_record`), `tests/test_discriminate.py` | **the DR-REDS ruling rules it in** | T1 | 0 | 50 · floor + 40k · 1 · 0.7 h | as the ruling states; a variant with `reds` refuses a record whose failing hidden tests differ | Grok **Erratum (Coordinator #56, 2026-10-08):** Ruling 114 (`owner-fable`, 2026-10-08T17:17:36Z, `owner/ruling-r114` `dcc07faa`) answered DR-REDS: **(B) granted, bounded**; X-REDS is **re-pointed, not struck**, to a `tests/`-only track. It owns `tests/test_rework_tasks.py` (and `tests/test_ng_tasks.py` only if the shape is shared by extraction) and adds one parametrized red-first test over the seven RW variants whose declared flips include `property_check_pass` with clause `tests` (RW1 `t2short`, `duplicate`, `deaddelegate`; RW2 `t2short`, `nohookorder`, `ignorereturn`, `duplicate`): the variant's turn-2 hidden-test run fails exactly the per-test set the test module's SPECS name (NG's pattern, `test_ng_tasks.py:694-705`), never in `variants.py`. Red first: a seeded edit that breaks every hidden test fails it. If anything outside `tests/` is needed, the worker stops with a finding (fail-safe to (B) plain). P3, Grok, cap 0.5 h, one retry, no ring, no re-record. The cells to the left are superseded; dispatchable now |; Done when (the row's exit evidence column, verbatim): \"as the ruling states; a variant with `reds` refuses a record whose failing hidden tests differ\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`).; AGENT_SESSION=xreds-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below.; Base: the integration head the Leader names at dispatch, which holds 7f96fb70 (join-c56-w0: the finish plan and its C-W0 section). Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor 7f96fb70 HEAD` exits non-zero; `coord session start` for xreds-fin is refused. Also stop if `git merge-base --is-ancestor dcc07faa HEAD` exits non-zero, or `git grep -n \"^### Ruling 114\" -- docs/notes/rulings.md` prints nothing (Ruling 114 joined as join-r114 at dcc07faa).; The plan row above is superseded where Ruling 114 differs: it owned discriminate.py and a reds key, which the ruling refused. Ruling 114's operative conditions, quoted verbatim from docs/notes/rulings.md at dcc07faa: 1. **X-REDS is re-pointed, not struck: a `tests/`-only track.** Owned files: `tests/test_rework_tasks.py` (and `tests/test_ng_tasks.py` only if the shape is shared by extraction - optional). It adds one parametrized red-first test over `variant_cases()` whose declared flips include `property_check_pass` with clause `tests`: the variant's turn-2 hidden-test run fails **exactly** the per-test set the test's own SPECS name, as `test_ng_each_variant_moves_exactly_what_it_claims` does at `:703-705`, with the expected ids kept in the test module's SPECS (NG's pattern), **never** in `variants.py` (the W0 §2 schema is unchanged). Red first: a seeded edit that breaks every hidden test must fail it; the seven declared edits pass it. **Boundary, fail-safe:** if exposing the per-test failing set needs any change outside `tests/` (whether `observe` at `:494` or the `:426` helper exposes `failed` is **Inferred** from `:431`, not read by me - the worker checks it first), the worker stops and files a finding with `coord request add`; the track then closes as (B) plain and E5's run report names the seven. No `src/`, `tasks/` or design edit under any outcome. 2. **Batch and cost:** P3 (no stamp input moves, no ring, no re-record: `record_key` does not hash `tests/`); Grok as the row names; cap 0.5 h, one retry. The Coordinator edits the plan's X-REDS row `:155`, the artifact-class row `:113`, the seam row `:265` (\"the DR-REDS ruling: refused for the record; closed at the test ring, R-114\") and the gated count `:292`, in its next ledger commit; no design text changes.; R0, the check first, before any edit: confirm the per-test failing set is reachable from tests/ alone. Read by Coordinator #55 at 0ea7cc9a in tests/test_rework_tasks.py: run_hidden (:193) is a test-module helper, and test_each_wrong_app_turns_exactly_its_reds_red (:426-431) already asserts `result.failed == frozenset(entry[\"reds\"])` on its result; observe (:221) and reference_observed (:237) are in the same file, and test_each_variant_flips_exactly_its_set (:489-502) reads metric-grain flips only. The table there is named SPEC (:44), not SPECS. If reaching the set needs any change outside tests/, stop and file the finding with `coord request add` to coord-opus-fin; the track then closes as (B) plain.; R1, the red: one parametrized test in tests/test_rework_tasks.py over variant_cases() restricted to the variants whose declared flips include property_check_pass with clause tests: RW1 t2short, duplicate, deaddelegate and RW2 t2short, nohookorder, ignorereturn, duplicate (seven; the test asserts that count). For each, the turn-2 hidden-test run's failed set equals the ids the test module declares for that variant (NG's pattern, tests/test_ng_tasks.py:694-705 test_ng_each_variant_moves_exactly_what_it_claims), never in variants.py. Red first: a seeded edit that breaks every hidden test fails it on its assertion; commit that red evidence in the message, never the seeded edit. R2, the green: the seven declared edits pass it.; Reader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tasks/ and tools/ are unchanged from there to 7f96fb70). tests/test_archive_readers.py:7-8: READERS = {\"engine.py\", \"grade/runner.py\", \"report/credentials.py\", \"report/judges.py\", \"report/pack_improvement.py\", \"report/summaries.py\", \"report/html.py\", \"resume.py\", \"views.py\"}, and test_t_sweep_1_exact_reader_and_exception_set asserts len(READERS) == 9; a file becomes an archive reader by holding the string literal \"archive\" or the attribute attempt_dirs or snapshot_folder (archive_readers). src/harness_bench/identity.py:122-126: RUN_IMPORTS_GRADE_ALLOWED holds exactly (\"config.py\", \"egress.py\"), (\"config.py\", \"gateway/backend.py\") and (\"config.py\", \"gateway/scrub.py\"). src/harness_bench/lifecycle.py:60: TABLE maps every ledger transition to its model action and its writer (\"engine\", \"grading\" or \"ledger\", :52); the engine consults it (check_writer) before every events append. X-REDS edits tests/test_rework_tasks.py only and adds no reader, import pair or transition. If your change would add an archive reader, an import pair or a transition or writer, stop and send a seam request; never edit these tables.; Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (your new test only; the file's existing launch lines are X-WIN's sweep (P2), so leave them untouched; your test reuses the module's helpers and adds no launch). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none).; The context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorded | **not measured** | no split rule can be computed: a Grok row stays one short item per turn (capability table), and its first compile records the first reading | Measured since that row (Coordinator #57, 2026-10-08): Grok's session store carries your context figure while the turn runs. Every row of updates.jsonl in %USERPROFILE%\\.grok\\sessions\\<key>\\<id>\\ has params._meta.totalTokens, the session's current context. <key> is your tree path with backslashes, URL-encoded (yours: C%3A%5CProjects%5Cx-harness-x-model-bench-build-fin-x-reds); <id> is Grok's own session UUID, not your session id. Measured: X-FLAKE's live store read 73,026 and then 77,172 mid-turn; X-HYG turn 1 read 11,862 at its first update, 34,870 at the next, 90,519 at its H1 commit and 108,404 at hand-back. usage.json is not the figure: Grok writes it at the turn's end, and its inputTokens sums every call. Read your figure with this one line, before each item and before each gate command: `python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-reds\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1])\"`. Your floor F is the first reading after you have read this prompt, before the first step. The plan's budget is F + 40k. Start item k only at or below F plus the expected work of items 1 to k (Coordinator #57's estimates): R0 (5k) at or below F + 5k; R1 (10k) at or below F + 15k; R2 (10k) at or below F + 25k; the final gate (5k) at or below F + 30k. If a sample reaches F + 30k, start no new edit or gate, write the closing audit entry and hand back at your last commit with the open steps named. If the line fails or prints nothing, record \"not recorded\" and hand back after the R1 commit. Record each reading in your closing entry. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure.; Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xreds and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xreds. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started.; FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report.; Red first on an assertion (RED-C): run each new or changed test before its fix and see it fail on an assert line, never on an ImportError, NameError, AttributeError, KeyError, a collection error or a skip; commit the red test on its own, then the fix; put the failing assertion line and the red commit's SHA in the green commit's message.; Gate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xreds, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_rework_tasks.py tests/test_ng_tasks.py` on your final commit; no mutation file of yours moves: the seeded edit is the red, and tests/ is not an engine input (say so in the report); `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. P3, no ring and no re-record (Ruling 114 condition 2).; Commit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit.; Your closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from the model field of your first response (R-103: the Leader kills the run at the first response if it is not grok-4.7*, and retries once); tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched. Report your served model id on the first line of your final message.\nNot in scope: src/, tasks/ (variants.py included), design docs, discriminate.py and tests/test_discriminate.py (the old row's paths); the plan and the R-109 note (the Coordinator's, Ruling 114 conditions 2-3).; the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/lessons/defect-classes.md (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours).\nTier: T1\nFan-out cap: 0\nContext ceiling: the Grok floor F (not recorded; the worker records its first reading) + 40k, the plan's budget; split rule (CEIL-A): start no item above the ceiling minus its work; hand-off at the ceiling minus 10k\nMain-line budget: within 50 calls; 1,800 s this turn\nTrace\n| clause | trace |\n|---|---|\n| done_when: Your plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 (join-c56-w0), section Tracks: | *gated* **X-REDS** Ruling 109's `reds` key | `src/harness_bench/discriminate.py` (`_variant_record`), `tests/test_discriminate.py` | **the DR-REDS ruling rules it in** | T1 | 0 | 50 · floor + 40k · 1 · 0.7 h | as the ruling states; a variant with `reds` refuses a record whose failing hidden tests differ | Grok **Erratum (Coordinator #56, 2026-10-08):** Ruling 114 (`owner-fable`, 2026-10-08T17:17:36Z, `owner/ruling-r114` `dcc07faa`) answered DR-REDS: **(B) granted, bounded**; X-REDS is **re-pointed, not struck**, to a `tests/`-only track. It owns `tests/test_rework_tasks.py` (and `tests/test_ng_tasks.py` only if the shape is shared by extraction) and adds one parametrized red-first test over the seven RW variants whose declared flips include `property_check_pass` with clause `tests` (RW1 `t2short`, `duplicate`, `deaddelegate`; RW2 `t2short`, `nohookorder`, `ignorereturn`, `duplicate`): the variant's turn-2 hidden-test run fails exactly the per-test set the test module's SPECS name (NG's pattern, `test_ng_tasks.py:694-705`), never in `variants.py`. Red first: a seeded edit that breaks every hidden test fails it. If anything outside `tests/` is needed, the worker stops with a finding (fail-safe to (B) plain). P3, Grok, cap 0.5 h, one retry, no ring, no re-record. The cells to the left are superseded; dispatchable now | | phrase: Your plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 ( |\n| done_when: Done when (the row's exit evidence column, verbatim): \"as the ruling states; a variant with `reds` refuses a record whose failing hidden tests differ\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`). | phrase: Done when (the row's exit evidence column, verbatim): \"as the ruling states; a variant wit |\n| done_when: AGENT_SESSION=xreds-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below. | phrase: AGENT_SESSION=xreds-fin is set in every shell you open, inline on every commit and coord c |\n| done_when: Base: the integration head the Leader names at dispatch, which holds 7f96fb70 (join-c56-w0: the finish plan and its C-W0 section). Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor 7f96fb70 HEAD` exits non-zero; `coord session start` for xreds-fin is refused. Also stop if `git merge-base --is-ancestor dcc07faa HEAD` exits non-zero, or `git grep -n \"^### Ruling 114\" -- docs/notes/rulings.md` prints nothing (Ruling 114 joined as join-r114 at dcc07faa). | phrase: Base: the integration head the Leader names at dispatch, which holds 7f96fb70 (join-c56-w0 |\n| done_when: The plan row above is superseded where Ruling 114 differs: it owned discriminate.py and a reds key, which the ruling refused. Ruling 114's operative conditions, quoted verbatim from docs/notes/rulings.md at dcc07faa: 1. **X-REDS is re-pointed, not struck: a `tests/`-only track.** Owned files: `tests/test_rework_tasks.py` (and `tests/test_ng_tasks.py` only if the shape is shared by extraction - optional). It adds one parametrized red-first test over `variant_cases()` whose declared flips include `property_check_pass` with clause `tests`: the variant's turn-2 hidden-test run fails **exactly** the per-test set the test's own SPECS name, as `test_ng_each_variant_moves_exactly_what_it_claims` does at `:703-705`, with the expected ids kept in the test module's SPECS (NG's pattern), **never** in `variants.py` (the W0 §2 schema is unchanged). Red first: a seeded edit that breaks every hidden test must fail it; the seven declared edits pass it. **Boundary, fail-safe:** if exposing the per-test failing set needs any change outside `tests/` (whether `observe` at `:494` or the `:426` helper exposes `failed` is **Inferred** from `:431`, not read by me - the worker checks it first), the worker stops and files a finding with `coord request add`; the track then closes as (B) plain and E5's run report names the seven. No `src/`, `tasks/` or design edit under any outcome. 2. **Batch and cost:** P3 (no stamp input moves, no ring, no re-record: `record_key` does not hash `tests/`); Grok as the row names; cap 0.5 h, one retry. The Coordinator edits the plan's X-REDS row `:155`, the artifact-class row `:113`, the seam row `:265` (\"the DR-REDS ruling: refused for the record; closed at the test ring, R-114\") and the gated count `:292`, in its next ledger commit; no design text changes. | phrase: The plan row above is superseded where Ruling 114 differs: it owned discriminate.py and a  |\n| done_when: R0, the check first, before any edit: confirm the per-test failing set is reachable from tests/ alone. Read by Coordinator #55 at 0ea7cc9a in tests/test_rework_tasks.py: run_hidden (:193) is a test-module helper, and test_each_wrong_app_turns_exactly_its_reds_red (:426-431) already asserts `result.failed == frozenset(entry[\"reds\"])` on its result; observe (:221) and reference_observed (:237) are in the same file, and test_each_variant_flips_exactly_its_set (:489-502) reads metric-grain flips only. The table there is named SPEC (:44), not SPECS. If reaching the set needs any change outside tests/, stop and file the finding with `coord request add` to coord-opus-fin; the track then closes as (B) plain. | phrase: R0, the check first, before any edit: confirm the per-test failing set is reachable from t |\n| done_when: R1, the red: one parametrized test in tests/test_rework_tasks.py over variant_cases() restricted to the variants whose declared flips include property_check_pass with clause tests: RW1 t2short, duplicate, deaddelegate and RW2 t2short, nohookorder, ignorereturn, duplicate (seven; the test asserts that count). For each, the turn-2 hidden-test run's failed set equals the ids the test module declares for that variant (NG's pattern, tests/test_ng_tasks.py:694-705 test_ng_each_variant_moves_exactly_what_it_claims), never in variants.py. Red first: a seeded edit that breaks every hidden test fails it on its assertion; commit that red evidence in the message, never the seeded edit. R2, the green: the seven declared edits pass it. | phrase: R1, the red: one parametrized test in tests/test_rework_tasks.py over variant_cases() rest |\n| done_when: Reader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tasks/ and tools/ are unchanged from there to 7f96fb70). tests/test_archive_readers.py:7-8: READERS = {\"engine.py\", \"grade/runner.py\", \"report/credentials.py\", \"report/judges.py\", \"report/pack_improvement.py\", \"report/summaries.py\", \"report/html.py\", \"resume.py\", \"views.py\"}, and test_t_sweep_1_exact_reader_and_exception_set asserts len(READERS) == 9; a file becomes an archive reader by holding the string literal \"archive\" or the attribute attempt_dirs or snapshot_folder (archive_readers). src/harness_bench/identity.py:122-126: RUN_IMPORTS_GRADE_ALLOWED holds exactly (\"config.py\", \"egress.py\"), (\"config.py\", \"gateway/backend.py\") and (\"config.py\", \"gateway/scrub.py\"). src/harness_bench/lifecycle.py:60: TABLE maps every ledger transition to its model action and its writer (\"engine\", \"grading\" or \"ledger\", :52); the engine consults it (check_writer) before every events append. X-REDS edits tests/test_rework_tasks.py only and adds no reader, import pair or transition. If your change would add an archive reader, an import pair or a transition or writer, stop and send a seam request; never edit these tables. | phrase: Reader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tas |\n| done_when: Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (your new test only; the file's existing launch lines are X-WIN's sweep (P2), so leave them untouched; your test reuses the module's helpers and adds no launch). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none). | phrase: Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN b |\n| done_when: The context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorded | **not measured** | no split rule can be computed: a Grok row stays one short item per turn (capability table), and its first compile records the first reading | Measured since that row (Coordinator #57, 2026-10-08): Grok's session store carries your context figure while the turn runs. Every row of updates.jsonl in %USERPROFILE%\\.grok\\sessions\\<key>\\<id>\\ has params._meta.totalTokens, the session's current context. <key> is your tree path with backslashes, URL-encoded (yours: C%3A%5CProjects%5Cx-harness-x-model-bench-build-fin-x-reds); <id> is Grok's own session UUID, not your session id. Measured: X-FLAKE's live store read 73,026 and then 77,172 mid-turn; X-HYG turn 1 read 11,862 at its first update, 34,870 at the next, 90,519 at its H1 commit and 108,404 at hand-back. usage.json is not the figure: Grok writes it at the turn's end, and its inputTokens sums every call. Read your figure with this one line, before each item and before each gate command: `python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-reds\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1])\"`. Your floor F is the first reading after you have read this prompt, before the first step. The plan's budget is F + 40k. Start item k only at or below F plus the expected work of items 1 to k (Coordinator #57's estimates): R0 (5k) at or below F + 5k; R1 (10k) at or below F + 15k; R2 (10k) at or below F + 25k; the final gate (5k) at or below F + 30k. If a sample reaches F + 30k, start no new edit or gate, write the closing audit entry and hand back at your last commit with the open steps named. If the line fails or prints nothing, record \"not recorded\" and hand back after the R1 commit. Record each reading in your closing entry. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure. | phrase: The context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorde |\n| done_when: Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xreds and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xreds. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started. | phrase: Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\" |\n| done_when: FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report. | phrase: FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude |\n| done_when: Red first on an assertion (RED-C): run each new or changed test before its fix and see it fail on an assert line, never on an ImportError, NameError, AttributeError, KeyError, a collection error or a skip; commit the red test on its own, then the fix; put the failing assertion line and the red commit's SHA in the green commit's message. | phrase: Red first on an assertion (RED-C): run each new or changed test before its fix and see it  |\n| done_when: Gate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xreds, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_rework_tasks.py tests/test_ng_tasks.py` on your final commit; no mutation file of yours moves: the seeded edit is the red, and tests/ is not an engine input (say so in the report); `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. P3, no ring and no re-record (Ruling 114 condition 2). | phrase: Gate (R-104; each command on its own line, its exit status read, never behind a pipe; outp |\n| done_when: Commit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit. | phrase: Commit named paths only (git add <path>, never -A or .), with plain git commit and your se |\n| done_when: Your closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from the model field of your first response (R-103: the Leader kills the run at the first response if it is not grok-4.7*, and retries once); tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched. Report your served model id on the first line of your final message. | phrase: Your closing audit entry, written through audit-log.py with your session variable inline,  |\n| not_in_scope: src/, tasks/ (variants.py included), design docs, discriminate.py and tests/test_discriminate.py (the old row's paths); the plan and the R-109 note (the Coordinator's, Ruling 114 conditions 2-3). | phrase: src/, tasks/ (variants.py included), design docs, discriminate.py and tests/test_discrimin |\n| not_in_scope: the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/lessons/defect-classes.md (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours). | phrase: the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/ |\nReferences\n- reds: unresolved (not found)\n- src/harness_bench/discriminate.py: src/harness_bench/discriminate.py sha256 2cc54292144778350b72367838a227cefeddd75abdd576405e41f0d6b82a3d3f\n- _variant_record: unresolved (not found)\n- tests/test_discriminate.py: tests/test_discriminate.py sha256 f75d3531381834234207298b60967099bd9b8de3406681dc39488e6a1aa195e7\n- owner-fable: unresolved (not found)\n- owner/ruling-r114: unresolved (not found)\n- dcc07faa: unresolved (not found)\n- tests/: unresolved (not found)\n- tests/test_rework_tasks.py: tests/test_rework_tasks.py sha256 8ec48d042d10312372c41cf00459feb69f7c7a9a9d6f29ad9eb19b17a0e776b0\n- tests/test_ng_tasks.py: tests/test_ng_tasks.py sha256 99785d63375dfa75829d7dc2c7ccad4d12e5044de2644dcaf32573d1e5f8fb62\n- property_check_pass: unresolved (not found)\n- tests: unresolved (not found)\n- t2short: unresolved (not found)\n- duplicate: unresolved (not found)\n- deaddelegate: unresolved (not found)\n- nohookorder: unresolved (not found)\n- ignorereturn: unresolved (not found)\n- test_ng_tasks.py:694-705: unresolved (not found)\n- variants.py: unresolved (ambiguous: 10 matches)\n- mutate_check: unresolved (not found)\n- uv run ruff check src tests tools: unresolved (not found)\n- docs-graph.py validate: unresolved (not found)\n- pytest -n 4 --dist loadscope: unresolved (not found)\n- python: unresolved (not found)\n- py -3: unresolved (not found)\n- uv run: unresolved (not found)\n- git status --short: unresolved (not found)\n- git merge-base --is-ancestor 7f96fb70 HEAD: unresolved (not found)\n- coord session start: unresolved (not found)\n- git merge-base --is-ancestor dcc07faa HEAD: unresolved (not found)\n- git grep -n \"^### Ruling 114\" -- docs/notes/rulings.md: unresolved (not found; nearest: docs/notes/rulings.md)\n- variant_cases: unresolved (not found)\n- test_ng_each_variant_moves_exactly_what_it_claims: unresolved (not found)\n- :703-705: unresolved (not found)\n- observe: unresolved (not found)\n- :494: unresolved (not found)\n- :426: unresolved (not found)\n- failed: unresolved (not found)\n- :431: unresolved (not found)\n- coord request add: unresolved (not found)\n- src/: unresolved (not found)\n- tasks/: unresolved (not found)\n- record_key: unresolved (not found)\n- :155: unresolved (not found)\n- :113: unresolved (not found)\n- :265: unresolved (not found)\n- :292: unresolved (not found)\n- result.failed == frozenset(entry[\"reds: unresolved (not found)\n- tools/: unresolved (not found)\n- tools/spikes/: unresolved (not found)\n- creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0: unresolved (not found)\n- os.system: unresolved (not found)\n- subprocess.run: unresolved (not found)\n- tests/test_console_windows.py: unresolved (not found)\n- python tools/window_check.py --since <instant> --root-pid <pid: unresolved (not found)\n- git log --oneline -1 --grep=join-x-win: unresolved (not found)\n- python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID: unresolved (not found)\n- grok-4.7: unresolved (not found)\n- python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-reds\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1: unresolved (not found)\n- uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py: unresolved (not found; nearest: tests/test_timing_hygiene.py)\n- uv run pytest -q tests/test_rework_tasks.py tests/test_ng_tasks.py: unresolved (not found; nearest: tests/test_ng_tasks.py)\n- python docs/ai-forward-pack/scripts/docs-graph.py validate: unresolved (not found)\n- build/fin-x-reds: unresolved (not found)\n- docs/coordination/coordination-finish.md: docs/coordination/coordination-finish.md sha256 2602143453882af95e80ba72ea1d3306ed2cd19c3b4b9feee120b13dcf20f814\n- docs/coordination/coordinator-log/c55.md: docs/coordination/coordinator-log/c55.md sha256 c527723efbdda187feff7fdd4bdd3a3fcbcc441f352accf976a204ae92a240d1\n- tests/`-only: unresolved (not found)\n- docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- docs/notes/rulings.md: docs/notes/rulings.md sha256 603f8138e4354b59a4dd6ceb7b6261baa24c46a349d41654763afbad88c88639\n- discriminate.py: src/harness_bench/discriminate.py sha256 2cc54292144778350b72367838a227cefeddd75abdd576405e41f0d6b82a3d3f\n- tests/test_ng_tasks.py:694-705: unresolved (not found)\n- tests/test_archive_readers.py:7-8: unresolved (not found)\n- {\"engine.py: unresolved (not found; nearest: src/harness_bench/engine.py)\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 fee02368561b9af64a2add57480e5beb13c4888a593ebef3ec5312977c7bd1f4\n- report/credentials.py: src/harness_bench/report/credentials.py sha256 00a84ee78abeff3d72913255b9d04be20c98b4b2dd8f9be31332975b1872cbec\n- report/judges.py: src/harness_bench/report/judges.py sha256 aa5698b0559d8b5d443f7bdee83b658725aed4013910161feb46962bb3cd59b7\n- report/pack_improvement.py: src/harness_bench/report/pack_improvement.py sha256 7c5f1a9a9b3d7552bae8719a75ad3fc3579cc796ceab01823db94435500c3996\n- report/summaries.py: src/harness_bench/report/summaries.py sha256 037b0bcf0999b8a80b7cba3ae6aa9aefd82c5378dc0859190083d397df77588b\n- report/html.py: src/harness_bench/report/html.py sha256 c8684af375bebe0b1e4400474a7baa4333520d16560a27254fe814da70ddf88a\n- resume.py: src/harness_bench/resume.py sha256 ea198f1e7bec442e684cc14211767b793ad9f053bb42319f97812de249e3e63b\n- src/harness_bench/identity.py:122-126: unresolved (not found)\n- config.py: src/harness_bench/config.py sha256 ba786b6ff71f29fa65dd30e6d529f537e0d3a2c1946b0140386522a8cc12250b\n- egress.py: src/harness_bench/egress.py sha256 30aa38780fae93834bc804d1af35ae6642a5f0ab5d79e27edbe80e096609fd08\n- gateway/backend.py: src/harness_bench/gateway/backend.py sha256 632efca36e0d7ff4abdbc32901a6ba11edfa0d6cc7cc642332dec77e7bfdae31\n- gateway/scrub.py: src/harness_bench/gateway/scrub.py sha256 11f5bd9c48dc5e1fe148e09670f8f5f80affd66073c1877376edd5f3a9940dbb\n- src/harness_bench/lifecycle.py:60: unresolved (not found)\n- tools/window_check.py: unresolved (not found)\n- usage.json: unresolved (ambiguous: 5 matches)\n- HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95\n- tests/test_identity.py: tests/test_identity.py sha256 f6717458ec2670a1be81a7839657dfa77e4dbb2e4515e532b5daefd5d3a8a784\n- tests/test_atomic_sites.py: tests/test_atomic_sites.py sha256 143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90\n- tests/test_arms_guard.py: tests/test_arms_guard.py sha256 25c45e56139c8e3a2d70d353e4b83c0386590e754c342c2ee0e1a88338ff8b73\n- tests/test_mutate_check.py: tests/test_mutate_check.py sha256 4d9acae3db011db5017ab33375300622d60a4c4cb1cf4df1ee44a06a5bb2a14f\n- tests/test_skills_in_sync.py: tests/test_skills_in_sync.py sha256 572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d\n- tests/test_timing_hygiene.py: tests/test_timing_hygiene.py sha256 fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6\n- docs/ai-forward-pack/scripts/docs-graph.py: docs/ai-forward-pack/scripts/docs-graph.py sha256 345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793\n- audit-log.py: docs/ai-forward-pack/scripts/audit-log.py sha256 d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 1a000edba382d9cc43db045200f6f1bef0b38f0f9bf3d47cfefd5a46116d85de\nAssumptions\n- #1 belief: run_hidden's result exposes the per-test failed set for a variant's turn-2 build, as it does for the wrong apps at :429-431 · confirm: R0, the worker's first read · breaks: the boundary fires: a finding, the track closes as (B) plain, E5's run report names the seven (Ruling 114 condition 4) · consequential: false\n- #2 belief: Grok's floor plus 40k holds R0-R2 within the ruling's 0.5 h cap · confirm: the closing entry's samples · breaks: the split rule hands back after R1 · consequential: false\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: 0\nper_branch_exit: the brief's items as commits, then the gate; or a hand-back by the split rule with the open items named\njoin_rule: the Leader's join per coordination-finish.md (Batch plan): re-run the red SHA, the guard list, docs-graph validate and the recount; owned paths only\ncontainment: tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-reds on build/fin-x-reds, session xreds-fin, run r-xreds-fin (new identities, checked free by Coordinator #55); owned paths as the brief names them\ntermination: one turn\ndeadline: 1,800 s\nfallback: unset\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M4EAVYKFK3NGGD1MXNVFPGXH\nraw sha256: 4c1f502eea604775552cc4128d958e29ba2f3a5aa0a85973b6366e57b9a45c38\ncompiler model: claude-opus-5-5[1m]\nengine seconds: 0.026\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M4EAVYKFK3NGGD1MXNVFPGXH for claude-code v1: 18 clauses, 2 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [
+          {
+            "id": "#1",
+            "belief": "run_hidden's result exposes the per-test failed set for a variant's turn-2 build, as it does for the wrong apps at :429-431",
+            "confirm": "R0, the worker's first read",
+            "breaks": "the boundary fires: a finding, the track closes as (B) plain, E5's run report names the seven (Ruling 114 condition 4)",
+            "consequential": false
+          },
+          {
+            "id": "#2",
+            "belief": "Grok's floor plus 40k holds R0-R2 within the ruling's 0.5 h cap",
+            "confirm": "the closing entry's samples",
+            "breaks": "the split rule hands back after R1",
+            "consequential": false
+          }
+        ],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "Your plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 (join-c56-w0), section Tracks: | *gated* **X-REDS** Ruling 109's `reds` key | `src/harness_bench/discriminate.py` (`_variant_record`), `tests/test_discriminate.py` | **the DR-REDS ruling rules it in** | T1 | 0 | 50 · floor + 40k · 1 · 0.7 h | as the ruling states; a variant with `reds` refuses a record whose failing hidden tests differ | Grok **Erratum (Coordinator #56, 2026-10-08):** Ruling 114 (`owner-fable`, 2026-10-08T17:17:36Z, `owner/ruling-r114` `dcc07faa`) answered DR-REDS: **(B) granted, bounded**; X-REDS is **re-pointed, not struck**, to a `tests/`-only track. It owns `tests/test_rework_tasks.py` (and `tests/test_ng_tasks.py` only if the shape is shared by extraction) and adds one parametrized red-first test over the seven RW variants whose declared flips include `property_check_pass` with clause `tests` (RW1 `t2short`, `duplicate`, `deaddelegate`; RW2 `t2short`, `nohookorder`, `ignorereturn`, `duplicate`): the variant's turn-2 hidden-test run fails exactly the per-test set the test module's SPECS name (NG's pattern, `test_ng_tasks.py:694-705`), never in `variants.py`. Red first: a seeded edit that breaks every hidden test fails it. If anything outside `tests/` is needed, the worker stops with a finding (fail-safe to (B) plain). P3, Grok, cap 0.5 h, one retry, no ring, no re-record. The cells to the left are superseded; dispatchable now |",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 ("
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Done when (the row's exit evidence column, verbatim): \"as the ruling states; a variant with `reds` refuses a record whose failing hidden tests differ\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Done when (the row's exit evidence column, verbatim): \"as the ruling states; a variant wit"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "AGENT_SESSION=xreds-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "AGENT_SESSION=xreds-fin is set in every shell you open, inline on every commit and coord c"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Base: the integration head the Leader names at dispatch, which holds 7f96fb70 (join-c56-w0: the finish plan and its C-W0 section). Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor 7f96fb70 HEAD` exits non-zero; `coord session start` for xreds-fin is refused. Also stop if `git merge-base --is-ancestor dcc07faa HEAD` exits non-zero, or `git grep -n \"^### Ruling 114\" -- docs/notes/rulings.md` prints nothing (Ruling 114 joined as join-r114 at dcc07faa).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Base: the integration head the Leader names at dispatch, which holds 7f96fb70 (join-c56-w0"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The plan row above is superseded where Ruling 114 differs: it owned discriminate.py and a reds key, which the ruling refused. Ruling 114's operative conditions, quoted verbatim from docs/notes/rulings.md at dcc07faa: 1. **X-REDS is re-pointed, not struck: a `tests/`-only track.** Owned files: `tests/test_rework_tasks.py` (and `tests/test_ng_tasks.py` only if the shape is shared by extraction - optional). It adds one parametrized red-first test over `variant_cases()` whose declared flips include `property_check_pass` with clause `tests`: the variant's turn-2 hidden-test run fails **exactly** the per-test set the test's own SPECS name, as `test_ng_each_variant_moves_exactly_what_it_claims` does at `:703-705`, with the expected ids kept in the test module's SPECS (NG's pattern), **never** in `variants.py` (the W0 §2 schema is unchanged). Red first: a seeded edit that breaks every hidden test must fail it; the seven declared edits pass it. **Boundary, fail-safe:** if exposing the per-test failing set needs any change outside `tests/` (whether `observe` at `:494` or the `:426` helper exposes `failed` is **Inferred** from `:431`, not read by me - the worker checks it first), the worker stops and files a finding with `coord request add`; the track then closes as (B) plain and E5's run report names the seven. No `src/`, `tasks/` or design edit under any outcome. 2. **Batch and cost:** P3 (no stamp input moves, no ring, no re-record: `record_key` does not hash `tests/`); Grok as the row names; cap 0.5 h, one retry. The Coordinator edits the plan's X-REDS row `:155`, the artifact-class row `:113`, the seam row `:265` (\"the DR-REDS ruling: refused for the record; closed at the test ring, R-114\") and the gated count `:292`, in its next ledger commit; no design text changes.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The plan row above is superseded where Ruling 114 differs: it owned discriminate.py and a "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "R0, the check first, before any edit: confirm the per-test failing set is reachable from tests/ alone. Read by Coordinator #55 at 0ea7cc9a in tests/test_rework_tasks.py: run_hidden (:193) is a test-module helper, and test_each_wrong_app_turns_exactly_its_reds_red (:426-431) already asserts `result.failed == frozenset(entry[\"reds\"])` on its result; observe (:221) and reference_observed (:237) are in the same file, and test_each_variant_flips_exactly_its_set (:489-502) reads metric-grain flips only. The table there is named SPEC (:44), not SPECS. If reaching the set needs any change outside tests/, stop and file the finding with `coord request add` to coord-opus-fin; the track then closes as (B) plain.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "R0, the check first, before any edit: confirm the per-test failing set is reachable from t"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "R1, the red: one parametrized test in tests/test_rework_tasks.py over variant_cases() restricted to the variants whose declared flips include property_check_pass with clause tests: RW1 t2short, duplicate, deaddelegate and RW2 t2short, nohookorder, ignorereturn, duplicate (seven; the test asserts that count). For each, the turn-2 hidden-test run's failed set equals the ids the test module declares for that variant (NG's pattern, tests/test_ng_tasks.py:694-705 test_ng_each_variant_moves_exactly_what_it_claims), never in variants.py. Red first: a seeded edit that breaks every hidden test fails it on its assertion; commit that red evidence in the message, never the seeded edit. R2, the green: the seven declared edits pass it.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "R1, the red: one parametrized test in tests/test_rework_tasks.py over variant_cases() rest"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Reader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tasks/ and tools/ are unchanged from there to 7f96fb70). tests/test_archive_readers.py:7-8: READERS = {\"engine.py\", \"grade/runner.py\", \"report/credentials.py\", \"report/judges.py\", \"report/pack_improvement.py\", \"report/summaries.py\", \"report/html.py\", \"resume.py\", \"views.py\"}, and test_t_sweep_1_exact_reader_and_exception_set asserts len(READERS) == 9; a file becomes an archive reader by holding the string literal \"archive\" or the attribute attempt_dirs or snapshot_folder (archive_readers). src/harness_bench/identity.py:122-126: RUN_IMPORTS_GRADE_ALLOWED holds exactly (\"config.py\", \"egress.py\"), (\"config.py\", \"gateway/backend.py\") and (\"config.py\", \"gateway/scrub.py\"). src/harness_bench/lifecycle.py:60: TABLE maps every ledger transition to its model action and its writer (\"engine\", \"grading\" or \"ledger\", :52); the engine consults it (check_writer) before every events append. X-REDS edits tests/test_rework_tasks.py only and adds no reader, import pair or transition. If your change would add an archive reader, an import pair or a transition or writer, stop and send a seam request; never edit these tables.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Reader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tas"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (your new test only; the file's existing launch lines are X-WIN's sweep (P2), so leave them untouched; your test reuses the module's helpers and adds no launch). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN b"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "The context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorded | **not measured** | no split rule can be computed: a Grok row stays one short item per turn (capability table), and its first compile records the first reading | Measured since that row (Coordinator #57, 2026-10-08): Grok's session store carries your context figure while the turn runs. Every row of updates.jsonl in %USERPROFILE%\\.grok\\sessions\\<key>\\<id>\\ has params._meta.totalTokens, the session's current context. <key> is your tree path with backslashes, URL-encoded (yours: C%3A%5CProjects%5Cx-harness-x-model-bench-build-fin-x-reds); <id> is Grok's own session UUID, not your session id. Measured: X-FLAKE's live store read 73,026 and then 77,172 mid-turn; X-HYG turn 1 read 11,862 at its first update, 34,870 at the next, 90,519 at its H1 commit and 108,404 at hand-back. usage.json is not the figure: Grok writes it at the turn's end, and its inputTokens sums every call. Read your figure with this one line, before each item and before each gate command: `python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-reds\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1])\"`. Your floor F is the first reading after you have read this prompt, before the first step. The plan's budget is F + 40k. Start item k only at or below F plus the expected work of items 1 to k (Coordinator #57's estimates): R0 (5k) at or below F + 5k; R1 (10k) at or below F + 15k; R2 (10k) at or below F + 25k; the final gate (5k) at or below F + 30k. If a sample reaches F + 30k, start no new edit or gate, write the closing audit entry and hand back at your last commit with the open steps named. If the line fails or prints nothing, record \"not recorded\" and hand back after the R1 commit. Record each reading in your closing entry. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "The context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorde"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xreds and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xreds. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\""
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Red first on an assertion (RED-C): run each new or changed test before its fix and see it fail on an assert line, never on an ImportError, NameError, AttributeError, KeyError, a collection error or a skip; commit the red test on its own, then the fix; put the failing assertion line and the red commit's SHA in the green commit's message.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Red first on an assertion (RED-C): run each new or changed test before its fix and see it "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Gate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xreds, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_rework_tasks.py tests/test_ng_tasks.py` on your final commit; no mutation file of yours moves: the seeded edit is the red, and tests/ is not an engine input (say so in the report); `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. P3, no ring and no re-record (Ruling 114 condition 2).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Gate (R-104; each command on its own line, its exit status read, never behind a pipe; outp"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Commit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Commit named paths only (git add <path>, never -A or .), with plain git commit and your se"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "Your closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from the model field of your first response (R-103: the Leader kills the run at the first response if it is not grok-4.7*, and retries once); tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched. Report your served model id on the first line of your final message.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "Your closing audit entry, written through audit-log.py with your session variable inline, "
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "src/, tasks/ (variants.py included), design docs, discriminate.py and tests/test_discriminate.py (the old row's paths); the plan and the R-109 note (the Coordinator's, Ruling 114 conditions 2-3).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "src/, tasks/ (variants.py included), design docs, discriminate.py and tests/test_discrimin"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/lessons/defect-classes.md (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-reds on build/fin-x-reds, session xreds-fin, run r-xreds-fin (new identities, checked free by Coordinator #55); owned paths as the brief names them",
+          "deadline": "1,800 s",
+          "fallback": null,
+          "join_rule": "the Leader's join per coordination-finish.md (Batch plan): re-run the red SHA, the guard list, docs-graph validate and the recount; owned paths only",
+          "per_branch_exit": "the brief's items as commits, then the gate; or a hand-back by the split rule with the open items named",
+          "termination": "one turn",
+          "transient_retry": "0",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "the Grok floor F (not recorded; the worker records its first reading) + 40k, the plan's budget; split rule (CEIL-A): start no item above the ceiling minus its work; hand-off at the ceiling minus 10k",
+          "done_when": [
+            "Your plan row, quoted verbatim from docs/coordination/coordination-finish.md at 7f96fb70 (join-c56-w0), section Tracks: | *gated* **X-REDS** Ruling 109's `reds` key | `src/harness_bench/discriminate.py` (`_variant_record`), `tests/test_discriminate.py` | **the DR-REDS ruling rules it in** | T1 | 0 | 50 · floor + 40k · 1 · 0.7 h | as the ruling states; a variant with `reds` refuses a record whose failing hidden tests differ | Grok **Erratum (Coordinator #56, 2026-10-08):** Ruling 114 (`owner-fable`, 2026-10-08T17:17:36Z, `owner/ruling-r114` `dcc07faa`) answered DR-REDS: **(B) granted, bounded**; X-REDS is **re-pointed, not struck**, to a `tests/`-only track. It owns `tests/test_rework_tasks.py` (and `tests/test_ng_tasks.py` only if the shape is shared by extraction) and adds one parametrized red-first test over the seven RW variants whose declared flips include `property_check_pass` with clause `tests` (RW1 `t2short`, `duplicate`, `deaddelegate`; RW2 `t2short`, `nohookorder`, `ignorereturn`, `duplicate`): the variant's turn-2 hidden-test run fails exactly the per-test set the test module's SPECS name (NG's pattern, `test_ng_tasks.py:694-705`), never in `variants.py`. Red first: a seeded edit that breaks every hidden test fails it. If anything outside `tests/` is needed, the worker stops with a finding (fail-safe to (B) plain). P3, Grok, cap 0.5 h, one retry, no ring, no re-record. The cells to the left are superseded; dispatchable now |",
+            "Done when (the row's exit evidence column, verbatim): \"as the ruling states; a variant with `reds` refuses a record whose failing hidden tests differ\" The plan's common exit evidence, verbatim: **Common exit evidence (scope rule 5, R-104):** own tests red first on an **assertion**; the worker's own test files green; the guard list on the first and final commits; `mutate_check` on its own mutation file only; `uv run ruff check src tests tools`; `docs-graph.py validate`; the served id; the windows check at hand-back (from X-WIN's join on; before it, the worker lists the windows it opened). **The whole suite is the Leader's**, once per join (`pytest -n 4 --dist loadscope`).",
+            "AGENT_SESSION=xreds-fin is set in every shell you open, inline on every commit and coord call, and in your closing audit entry; it names only you. The start line above is your first command, before any read. The Python interpreter here is `python` (or `py -3`): the POSIX name is a Windows Store alias on this host and is not Python. Run pytest, ruff and the repo tools through `uv run` as written below.",
+            "Base: the integration head the Leader names at dispatch, which holds 7f96fb70 (join-c56-w0: the finish plan and its C-W0 section). Stop and report, before any edit, if any of these holds: `git status --short` prints anything; `git merge-base --is-ancestor 7f96fb70 HEAD` exits non-zero; `coord session start` for xreds-fin is refused. Also stop if `git merge-base --is-ancestor dcc07faa HEAD` exits non-zero, or `git grep -n \"^### Ruling 114\" -- docs/notes/rulings.md` prints nothing (Ruling 114 joined as join-r114 at dcc07faa).",
+            "The plan row above is superseded where Ruling 114 differs: it owned discriminate.py and a reds key, which the ruling refused. Ruling 114's operative conditions, quoted verbatim from docs/notes/rulings.md at dcc07faa: 1. **X-REDS is re-pointed, not struck: a `tests/`-only track.** Owned files: `tests/test_rework_tasks.py` (and `tests/test_ng_tasks.py` only if the shape is shared by extraction - optional). It adds one parametrized red-first test over `variant_cases()` whose declared flips include `property_check_pass` with clause `tests`: the variant's turn-2 hidden-test run fails **exactly** the per-test set the test's own SPECS name, as `test_ng_each_variant_moves_exactly_what_it_claims` does at `:703-705`, with the expected ids kept in the test module's SPECS (NG's pattern), **never** in `variants.py` (the W0 §2 schema is unchanged). Red first: a seeded edit that breaks every hidden test must fail it; the seven declared edits pass it. **Boundary, fail-safe:** if exposing the per-test failing set needs any change outside `tests/` (whether `observe` at `:494` or the `:426` helper exposes `failed` is **Inferred** from `:431`, not read by me - the worker checks it first), the worker stops and files a finding with `coord request add`; the track then closes as (B) plain and E5's run report names the seven. No `src/`, `tasks/` or design edit under any outcome. 2. **Batch and cost:** P3 (no stamp input moves, no ring, no re-record: `record_key` does not hash `tests/`); Grok as the row names; cap 0.5 h, one retry. The Coordinator edits the plan's X-REDS row `:155`, the artifact-class row `:113`, the seam row `:265` (\"the DR-REDS ruling: refused for the record; closed at the test ring, R-114\") and the gated count `:292`, in its next ledger commit; no design text changes.",
+            "R0, the check first, before any edit: confirm the per-test failing set is reachable from tests/ alone. Read by Coordinator #55 at 0ea7cc9a in tests/test_rework_tasks.py: run_hidden (:193) is a test-module helper, and test_each_wrong_app_turns_exactly_its_reds_red (:426-431) already asserts `result.failed == frozenset(entry[\"reds\"])` on its result; observe (:221) and reference_observed (:237) are in the same file, and test_each_variant_flips_exactly_its_set (:489-502) reads metric-grain flips only. The table there is named SPEC (:44), not SPECS. If reaching the set needs any change outside tests/, stop and file the finding with `coord request add` to coord-opus-fin; the track then closes as (B) plain.",
+            "R1, the red: one parametrized test in tests/test_rework_tasks.py over variant_cases() restricted to the variants whose declared flips include property_check_pass with clause tests: RW1 t2short, duplicate, deaddelegate and RW2 t2short, nohookorder, ignorereturn, duplicate (seven; the test asserts that count). For each, the turn-2 hidden-test run's failed set equals the ids the test module declares for that variant (NG's pattern, tests/test_ng_tasks.py:694-705 test_ng_each_variant_moves_exactly_what_it_claims), never in variants.py. Red first: a seeded edit that breaks every hidden test fails it on its assertion; commit that red evidence in the message, never the seeded edit. R2, the green: the seven declared edits pass it.",
+            "Reader and writer tables (QUOTE-A), read at 0ea7cc9a by Coordinator #55 (src/, tests/, tasks/ and tools/ are unchanged from there to 7f96fb70). tests/test_archive_readers.py:7-8: READERS = {\"engine.py\", \"grade/runner.py\", \"report/credentials.py\", \"report/judges.py\", \"report/pack_improvement.py\", \"report/summaries.py\", \"report/html.py\", \"resume.py\", \"views.py\"}, and test_t_sweep_1_exact_reader_and_exception_set asserts len(READERS) == 9; a file becomes an archive reader by holding the string literal \"archive\" or the attribute attempt_dirs or snapshot_folder (archive_readers). src/harness_bench/identity.py:122-126: RUN_IMPORTS_GRADE_ALLOWED holds exactly (\"config.py\", \"egress.py\"), (\"config.py\", \"gateway/backend.py\") and (\"config.py\", \"gateway/scrub.py\"). src/harness_bench/lifecycle.py:60: TABLE maps every ledger transition to its model action and its writer (\"engine\", \"grading\" or \"ledger\", :52); the engine consults it (check_writer) before every events append. X-REDS edits tests/test_rework_tasks.py only and adds no reader, import pair or transition. If your change would add an archive reader, an import pair or a transition or writer, stop and send a seam request; never edit these tables.",
+            "Console windows, quoted from the plan's C-W0 section: 1. **The console convention (X-WIN builds the guard and the check):** W0 rev 6.15 **R6.15a**. A child launch in `tools/`, `tools/spikes/` or `tests/` passes `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`; no shared helper; `os.system` becomes `subprocess.run`. Guard `tests/test_console_windows.py`; windows check `python tools/window_check.py --since <instant> --root-pid <pid>` at hand-back (exit 0 none, 1 listed, 2 check failed). Apply it to every child launch you add or touch in your own files (your new test only; the file's existing launch lines are X-WIN's sweep (P2), so leave them untouched; your test reuses the module's helpers and adds no launch). X-WIN has not joined at this compile, so list every child process you launch (its command line and PID) in your closing entry and your report. If `git log --oneline -1 --grep=join-x-win` on your base prints a line, also run the windows check at hand-back, `python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID>`, on its own line, and paste its output and exit (0 none, 1 listed, 2 check failed, which never reads as none).",
+            "The context rule (CEIL-A). C-W0's floors table, quoted: | Grok · `grok-4.7` | none recorded | **not measured** | no split rule can be computed: a Grok row stays one short item per turn (capability table), and its first compile records the first reading | Measured since that row (Coordinator #57, 2026-10-08): Grok's session store carries your context figure while the turn runs. Every row of updates.jsonl in %USERPROFILE%\\.grok\\sessions\\<key>\\<id>\\ has params._meta.totalTokens, the session's current context. <key> is your tree path with backslashes, URL-encoded (yours: C%3A%5CProjects%5Cx-harness-x-model-bench-build-fin-x-reds); <id> is Grok's own session UUID, not your session id. Measured: X-FLAKE's live store read 73,026 and then 77,172 mid-turn; X-HYG turn 1 read 11,862 at its first update, 34,870 at the next, 90,519 at its H1 commit and 108,404 at hand-back. usage.json is not the figure: Grok writes it at the turn's end, and its inputTokens sums every call. Read your figure with this one line, before each item and before each gate command: `python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-reds\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1])\"`. Your floor F is the first reading after you have read this prompt, before the first step. The plan's budget is F + 40k. Start item k only at or below F plus the expected work of items 1 to k (Coordinator #57's estimates): R0 (5k) at or below F + 5k; R1 (10k) at or below F + 15k; R2 (10k) at or below F + 25k; the final gate (5k) at or below F + 30k. If a sample reaches F + 30k, start no new edit or gate, write the closing audit entry and hand back at your last commit with the open steps named. If the line fails or prints nothing, record \"not recorded\" and hand back after the R1 commit. Record each reading in your closing entry. Read only line ranges, never a whole design, spec or log file; send test and gate output to a file and read only its summary lines. A hand-back by this rule is a planned split, not a failure.",
+            "Scratch and temp (C-W0 item 5; operator decision 2026-10-08: \"C:\\tf\\<track> (Recommended)\"): create C:\\tf\\xreds and set TMP and TEMP to it in every shell; every other root you pass (pytest --basetemp, any --runs or --cells-root, a fixture copy, a gate's output file) lives under C:\\tf\\xreds. Set HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs (archived gate runs, read only) for every pytest or mutate_check run. Never read, write or clean any %TEMP%\\hb-*-ring folder (the shared ring cache, CACHE-B). Unset XAI_API_KEY and GEMINI_API_KEY in every shell that runs a test. Never kill a process by name or pattern; kill only a PID you started.",
+            "FALLBACK-A: never launch, spawn or message another harness, CLI agent or sub-agent (claude, codex, grok, agy, copilot or any other), whatever happens. What follows your hand-back is the Leader's decision and is not part of this brief. At your hand-back point, stop and report.",
+            "Red first on an assertion (RED-C): run each new or changed test before its fix and see it fail on an assert line, never on an ImportError, NameError, AttributeError, KeyError, a collection error or a skip; commit the red test on its own, then the fix; put the failing assertion line and the red commit's SHA in the green commit's message.",
+            "Gate (R-104; each command on its own line, its exit status read, never behind a pipe; output to a file under C:\\tf\\xreds, then read its summary): the standard guard list, `uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py`, on your first commit and again on your final commit; `uv run pytest -q tests/test_rework_tasks.py tests/test_ng_tasks.py` on your final commit; no mutation file of yours moves: the seeded edit is the red, and tests/ is not an engine input (say so in the report); `uv run ruff check src tests tools`; `python docs/ai-forward-pack/scripts/docs-graph.py validate`. P3, no ring and no re-record (Ruling 114 condition 2).",
+            "Commit named paths only (git add <path>, never -A or .), with plain git commit and your session variable inline on every commit and coord call. HOOK-A: never pass --no-verify, -n or -c core.hooksPath; a commit whose output lacks the pre-commit hook's line \"N staged path(s) checked\" is a stop: make no further commit and report it. No rewrite of a commit once made: never amend, rebase, squash, autosquash or reset one, your own unpushed commits included; a fix is a new commit. A line in another owner's file is a seam request to coord-opus-fin (coord request), never an edit.",
+            "Your closing audit entry, written through audit-log.py with your session variable inline, carries: the dispatch start and end wall-clock; the outcome (green <sha>, red-only, deadline, split or served-model-failed); each red SHA; each gate line with its exit; the served model id as read from the model field of your first response (R-103: the Leader kills the run at the first response if it is not grok-4.7*, and retries once); tokens from the harness's reported usage, else literally \"not recorded\"; your floor (the first context reading) and the sample at each item; and every child process you launched. Report your served model id on the first line of your final message."
+          ],
+          "fan_out_cap": "0",
+          "goal": "You are session xreds-fin, run r-xreds-fin, harness Grok (coord-runner, ACP), model grok-4.7 with --reasoning-effort high, on branch build/fin-x-reds in the tree C:\\Projects\\x-harness-x-model-bench-build-fin-x-reds. The Leader leader-fin (epoch 19) dispatches you; Coordinator #55 compiled this, and Coordinator #57 recompiled its context rule, from docs/coordination/coordination-finish.md (docs/coordination/coordinator-log/c55.md). One turn, deadline 1,800 s, within 50 calls and a context ceiling of the floor + 40k, tier T1, fan-out cap 0. X-REDS, re-pointed by Ruling 114 to a tests-only track: pin, at the test ring, the exact per-test set each of the seven RW primary-flipping variants fails in its turn-2 hidden-test run, as NG already does. No src/, tasks/ or design edit under any outcome.",
+          "main_line_budget": "within 50 calls; 1,800 s this turn",
+          "not_in_scope": [
+            "src/, tasks/ (variants.py included), design docs, discriminate.py and tests/test_discriminate.py (the old row's paths); the plan and the R-109 note (the Coordinator's, Ruling 114 conditions 2-3).",
+            "the whole suite, mutate_check --touched, every join, push and record (the Leader's); docs/lessons/defect-classes.md (report a defect class as text; the Coordinator commits it); any path outside your owned paths; creating, entering or leaving a worktree (the Leader made yours)."
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5[1m]",
+          "engine_seconds": 0.026,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M4EAVYKFK3NGGD1MXNVFPGXH",
+        "raw_sha256": "4c1f502eea604775552cc4128d958e29ba2f3a5aa0a85973b6366e57b9a45c38",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "reds"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/discriminate.py",
+            "reason": null,
+            "sha256": "2cc54292144778350b72367838a227cefeddd75abdd576405e41f0d6b82a3d3f",
+            "status": "resolved",
+            "token": "src/harness_bench/discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_variant_record"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_discriminate.py",
+            "reason": null,
+            "sha256": "f75d3531381834234207298b60967099bd9b8de3406681dc39488e6a1aa195e7",
+            "status": "resolved",
+            "token": "tests/test_discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "owner-fable"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "owner/ruling-r114"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "dcc07faa"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_rework_tasks.py",
+            "reason": null,
+            "sha256": "8ec48d042d10312372c41cf00459feb69f7c7a9a9d6f29ad9eb19b17a0e776b0",
+            "status": "resolved",
+            "token": "tests/test_rework_tasks.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_ng_tasks.py",
+            "reason": null,
+            "sha256": "99785d63375dfa75829d7dc2c7ccad4d12e5044de2644dcaf32573d1e5f8fb62",
+            "status": "resolved",
+            "token": "tests/test_ng_tasks.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "property_check_pass"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "t2short"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "duplicate"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "deaddelegate"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "nohookorder"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ignorereturn"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_ng_tasks.py:694-705"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 10 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "variants.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "mutate_check"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run ruff check src tests tools"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs-graph.py validate"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "pytest -n 4 --dist loadscope"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "py -3"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git status --short"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git merge-base --is-ancestor 7f96fb70 HEAD"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord session start"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git merge-base --is-ancestor dcc07faa HEAD"
+          },
+          {
+            "nearest": "docs/notes/rulings.md",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git grep -n \"^### Ruling 114\" -- docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "variant_cases"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "test_ng_each_variant_moves_exactly_what_it_claims"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":703-705"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "observe"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":494"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":426"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "failed"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":431"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord request add"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tasks/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "record_key"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":155"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":113"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":265"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":292"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "result.failed == frozenset(entry[\"reds"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/spikes/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "os.system"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "subprocess.run"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_console_windows.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/window_check.py --since <instant> --root-pid <pid"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git log --oneline -1 --grep=join-x-win"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python tools/window_check.py --since <your dispatch start, ISO-8601 UTC> --root-pid <your root PID"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python -c \"import json,glob,os;f=max(glob.glob(os.path.expanduser(r'~\\.grok\\sessions\\*fin-x-reds\\*\\updates.jsonl')),key=os.path.getmtime);print([r['params']['_meta']['totalTokens'] for r in map(json.loads,open(f,encoding='utf-8')) if 'totalTokens' in r.get('params',{}).get('_meta',{})][-1"
+          },
+          {
+            "nearest": "tests/test_timing_hygiene.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": "tests/test_ng_tasks.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest -q tests/test_rework_tasks.py tests/test_ng_tasks.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python docs/ai-forward-pack/scripts/docs-graph.py validate"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/fin-x-reds"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordination-finish.md",
+            "reason": null,
+            "sha256": "2602143453882af95e80ba72ea1d3306ed2cd19c3b4b9feee120b13dcf20f814",
+            "status": "resolved",
+            "token": "docs/coordination/coordination-finish.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/coordination/coordinator-log/c55.md",
+            "reason": null,
+            "sha256": "c527723efbdda187feff7fdd4bdd3a3fcbcc441f352accf976a204ae92a240d1",
+            "status": "resolved",
+            "token": "docs/coordination/coordinator-log/c55.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/`-only"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/rulings.md",
+            "reason": null,
+            "sha256": "603f8138e4354b59a4dd6ceb7b6261baa24c46a349d41654763afbad88c88639",
+            "status": "resolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/discriminate.py",
+            "reason": null,
+            "sha256": "2cc54292144778350b72367838a227cefeddd75abdd576405e41f0d6b82a3d3f",
+            "status": "resolved",
+            "token": "discriminate.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_ng_tasks.py:694-705"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_archive_readers.py:7-8"
+          },
+          {
+            "nearest": "src/harness_bench/engine.py",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "{\"engine.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "fee02368561b9af64a2add57480e5beb13c4888a593ebef3ec5312977c7bd1f4",
+            "status": "resolved",
+            "token": "grade/runner.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/credentials.py",
+            "reason": null,
+            "sha256": "00a84ee78abeff3d72913255b9d04be20c98b4b2dd8f9be31332975b1872cbec",
+            "status": "resolved",
+            "token": "report/credentials.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/judges.py",
+            "reason": null,
+            "sha256": "aa5698b0559d8b5d443f7bdee83b658725aed4013910161feb46962bb3cd59b7",
+            "status": "resolved",
+            "token": "report/judges.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/pack_improvement.py",
+            "reason": null,
+            "sha256": "7c5f1a9a9b3d7552bae8719a75ad3fc3579cc796ceab01823db94435500c3996",
+            "status": "resolved",
+            "token": "report/pack_improvement.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/summaries.py",
+            "reason": null,
+            "sha256": "037b0bcf0999b8a80b7cba3ae6aa9aefd82c5378dc0859190083d397df77588b",
+            "status": "resolved",
+            "token": "report/summaries.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/report/html.py",
+            "reason": null,
+            "sha256": "c8684af375bebe0b1e4400474a7baa4333520d16560a27254fe814da70ddf88a",
+            "status": "resolved",
+            "token": "report/html.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/resume.py",
+            "reason": null,
+            "sha256": "ea198f1e7bec442e684cc14211767b793ad9f053bb42319f97812de249e3e63b",
+            "status": "resolved",
+            "token": "resume.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/identity.py:122-126"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/config.py",
+            "reason": null,
+            "sha256": "ba786b6ff71f29fa65dd30e6d529f537e0d3a2c1946b0140386522a8cc12250b",
+            "status": "resolved",
+            "token": "config.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/egress.py",
+            "reason": null,
+            "sha256": "30aa38780fae93834bc804d1af35ae6642a5f0ab5d79e27edbe80e096609fd08",
+            "status": "resolved",
+            "token": "egress.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/gateway/backend.py",
+            "reason": null,
+            "sha256": "632efca36e0d7ff4abdbc32901a6ba11edfa0d6cc7cc642332dec77e7bfdae31",
+            "status": "resolved",
+            "token": "gateway/backend.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/gateway/scrub.py",
+            "reason": null,
+            "sha256": "11f5bd9c48dc5e1fe148e09670f8f5f80affd66073c1877376edd5f3a9940dbb",
+            "status": "resolved",
+            "token": "gateway/scrub.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "src/harness_bench/lifecycle.py:60"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/window_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 5 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "usage.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HB_GATE_RUNS=C:/Projects/x-harness-x-model-bench/runs"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "d8201c12953747abc8166b65d2036a0c8bd6bdfbed2bc5b1e00176d24bb34b95",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_identity.py",
+            "reason": null,
+            "sha256": "f6717458ec2670a1be81a7839657dfa77e4dbb2e4515e532b5daefd5d3a8a784",
+            "status": "resolved",
+            "token": "tests/test_identity.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_atomic_sites.py",
+            "reason": null,
+            "sha256": "143ed5408c662a476386536d8a0f7fb0a1a240f6640b165de20ea5f6cbea0f90",
+            "status": "resolved",
+            "token": "tests/test_atomic_sites.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_arms_guard.py",
+            "reason": null,
+            "sha256": "25c45e56139c8e3a2d70d353e4b83c0386590e754c342c2ee0e1a88338ff8b73",
+            "status": "resolved",
+            "token": "tests/test_arms_guard.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_mutate_check.py",
+            "reason": null,
+            "sha256": "4d9acae3db011db5017ab33375300622d60a4c4cb1cf4df1ee44a06a5bb2a14f",
+            "status": "resolved",
+            "token": "tests/test_mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_skills_in_sync.py",
+            "reason": null,
+            "sha256": "572cb7929db1cbe1fab07ceed2a957871726f687232634656cc61c6f670b5f1d",
+            "status": "resolved",
+            "token": "tests/test_skills_in_sync.py"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_timing_hygiene.py",
+            "reason": null,
+            "sha256": "fc9304ebb956ff30e9929f8d492b8ee66db9ec704e6d2d3b6cc254ca6ad735c6",
+            "status": "resolved",
+            "token": "tests/test_timing_hygiene.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/docs-graph.py",
+            "reason": null,
+            "sha256": "345f90263ee1732624b473e91f3b76c14286bbec615b975bff1dd61ec6716793",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/docs-graph.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/audit-log.py",
+            "reason": null,
+            "sha256": "d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4",
+            "status": "resolved",
+            "token": "audit-log.py"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "1a000edba382d9cc43db045200f6f1bef0b38f0f9bf3d47cfefd5a46116d85de",
             "status": "resolved",
             "token": "docs/lessons/defect-classes.md"
           }
