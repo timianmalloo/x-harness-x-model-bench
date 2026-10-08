@@ -11,10 +11,12 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 import uuid
 from collections import Counter
 from datetime import UTC, datetime
+from dataclasses import asdict
 from pathlib import Path
 
 from rich.console import Console
@@ -118,7 +120,57 @@ def cmd_drill_ack(args) -> int:
 
 
 def cmd_drill(args) -> int:
-    return cmd_drill_ack(args)
+    return cmd_drill_ack(args) if args.drill_command == "ack" else cmd_drill_start(args)
+
+
+def _drill_run_id() -> str:
+    return f"drill-{uuid.uuid4().hex[:8]}"
+
+
+def _trigger_drill(task: str) -> None:
+    """Start an already configured scheduled task; tests replace this boundary."""
+    try:
+        result = subprocess.run(["schtasks.exe", "/run", "/tn", task], capture_output=True, timeout=30,
+                                check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    except (OSError, subprocess.TimeoutExpired):
+        raise _drill_missing("scheduled task trigger") from None
+    if result.returncode != 0:
+        raise _drill_missing("scheduled task trigger")
+
+
+def cmd_drill_start(args) -> int:
+    if not args.task.strip() or any(c in args.task for c in "\r\n"):
+        raise _drill_missing("scheduled task name")
+    root = Path(args.root)
+    head = gitsafe.git(["rev-parse", "HEAD"], root, 30, identity=True).stdout.strip()
+    if not re.fullmatch(r"[0-9a-f]{40}", head):
+        raise _drill_missing("bench commit")
+    run_id = _drill_id(_drill_run_id())
+    seeded = _drill_now()
+    run_dir = Path(args.runs) / run_id
+    # A pending cell and a free lock are ADR-0021 section 7's dead-engine fixture.
+    # The engine writer owns run.started; no launcher, workspace or model is invoked.
+    cell = plan.Cell("DRILL", "0" * 64, 1, "drill", "drill", "drill", "off", 1, 60)
+    body = {"schema": plan.SCHEMA, "kind": "measurement", "run_id": run_id, "trace_id": uuid.uuid4().hex,
+            "parameters": dict(plan.DEFAULT_PARAMETERS), "tasks": {"DRILL": {"scenario": 1}}, "builds": {},
+            "profiles": {"drill": {"usage_source": "acp_turn"}}, "arms": {"off": {"pack": None}},
+            "cells": [{"cell_id": cell.id, "label": cell.label, **asdict(cell)}]}
+    body["plan_hash"] = plan.plan_hash(body)
+    plan.confirm(run_dir, body)
+    cfg = engine.EngineConfig(run_dir, Path(args.cells_root), {}, None, None)
+    fixture = engine.Engine(body, cfg)
+    with oslock.RunLock.acquire(run_dir / ".lock", "HB-RUN-005"):
+        fixture.writers = engine.open_engine_segments(run_dir, 0)
+        try:
+            fixture.append_row({"kind": "run.started", "run_id": run_id, "plan_hash": body["plan_hash"], "trace_id": body["trace_id"]})
+        finally:
+            for writer in fixture.writers.values():
+                writer.close()
+    seed = {"run_id": run_id, "seeded_at": seeded, "task": args.task, "bench_commit": head}
+    atomic.create_once(run_dir / "drill-seed.json", ledger.canonical(seed))
+    _trigger_drill(args.task)
+    print("Scheduled drill triggered. Read the run id on your phone, then acknowledge with bench drill ack --run-id <phone run id>.")
+    return OK
 
 
 def _exit_for(code: str) -> int:
@@ -657,6 +709,8 @@ def build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="command", required=True)
     drill = sub.add_parser("drill", help="prove the scheduled phone alarm with the operator")
     drill_sub = drill.add_subparsers(dest="drill_command", required=True)
+    start = drill_sub.add_parser("start", help="seed a dead-engine run and trigger its configured scheduled task")
+    start.add_argument("--task", default="HarnessBenchAlarmDrill", help="existing task configured for alarm-task.ps1 -Drill")
     ack = drill_sub.add_parser("ack", help="attest receipt of the run id shown on the phone")
     ack.add_argument("--run-id", required=True, type=_drill_id)
     ack.add_argument("--toast", choices=("seen", "not-seen", "not-run"), default="not-run")
