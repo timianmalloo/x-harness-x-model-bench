@@ -5,21 +5,34 @@
 # and the delivery log. The topic is a bearer secret: it is never printed, logged or put in the payload.
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory = $true)][string]$RunId,
+    [string]$RunId = '',
     [Parameter(Mandatory = $true)][int]$AlarmAfter,
     [string]$Bench = 'bench',
     [string]$RunsRoot = 'runs',
     [string]$Now = '',
     [switch]$DryRun,
-    [string]$RestStub = ''
+    [string]$RestStub = '',
+    [switch]$Drill,
+    [string]$TaskName = '',
+    [switch]$Toast
 )
 
 $ErrorActionPreference = 'Stop'
 $ResendAfterS = 3600
 
+function Show-DrillToast {
+    [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+    [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
+    $xml = New-Object Windows.Data.Xml.Dom.XmlDocument
+    $xml.LoadXml('<toast><visual><binding template="ToastGeneric"><text>Harness benchmark alarm drill</text><text>Check your phone and acknowledge the run id there.</text></binding></visual></toast>')
+    $notification = [Windows.UI.Notifications.ToastNotification]::new($xml)
+    [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('Microsoft.Windows.PowerShell').Show($notification)
+}
+
 if ($DryRun) {
     # The network is unreachable by construction under -DryRun: a local function shadows the cmdlet.
     function Invoke-RestMethod { param($Uri, $Method, $Body) }
+    function Show-DrillToast { }
     if ($RestStub) { . $RestStub }
 }
 
@@ -34,6 +47,35 @@ $base = if ($env:HB_ALARM_NTFY_URL) { $env:HB_ALARM_NTFY_URL.TrimEnd('/') } else
 $clock = if ($Now) { [datetime]::Parse($Now, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::RoundtripKind).ToUniversalTime() } else { (Get-Date).ToUniversalTime() }
 $stamp = $clock.ToString('yyyy-MM-ddTHH:mm:ssZ')
 
+if ($Drill) {
+    if (-not $TaskName.Trim() -or $TaskName -match "[\r\n]") {
+        [Console]::Error.WriteLine('drill task name is missing or invalid')
+        exit 2
+    }
+    # The existing task is configured once for this runs root. Select the newest seed for its task.
+    # No run id is printed by start; it reaches the operator inside the push only.
+    $seeds = @()
+    if (Test-Path -LiteralPath $RunsRoot) {
+        foreach ($folder in (Get-ChildItem -LiteralPath $RunsRoot -Directory -Filter 'drill-*')) {
+            try {
+                $seed = Get-Content -LiteralPath (Join-Path $folder.FullName 'drill-seed.json') -Raw | ConvertFrom-Json
+                if ($seed.run_id -eq $folder.Name -and $seed.run_id -match '^drill-[0-9a-f]{8}$' -and $seed.task -eq $TaskName) {
+                    $seeds += $seed
+                }
+            } catch { } # An incomplete seed is not an alarm target.
+        }
+    }
+    if ($seeds.Count -eq 0) {
+        [Console]::Error.WriteLine('no seeded drill for this scheduled task and runs root')
+        exit 2
+    }
+    $RunId = ($seeds | Sort-Object seeded_at, run_id | Select-Object -Last 1).run_id
+}
+if (-not $RunId) {
+    [Console]::Error.WriteLine('run id is required outside drill mode')
+    exit 2
+}
+
 $runDir = Join-Path $RunsRoot $RunId
 New-Item -ItemType Directory -Force -Path $runDir | Out-Null
 $edgePath = Join-Path $runDir '.alarm_edge'
@@ -42,7 +84,7 @@ $logPath = Join-Path $runDir 'alarm-delivery.log'
 # Stderr (the HB-ALM-00x line the real command prints on exit 6) must not become a terminating NativeCommandError in 5.1:
 # 'Continue' for this one native call only; the exit code is read right after, and every other statement stays 'Stop'.
 $ErrorActionPreference = 'Continue'
-$out = & $Bench status $RunId --alarm-after $AlarmAfter --json 2>$null
+$out = & $Bench --runs $RunsRoot status $RunId --alarm-after $AlarmAfter --json 2>$null
 $exit = $LASTEXITCODE
 $ErrorActionPreference = 'Stop'
 
@@ -92,5 +134,9 @@ if ($body) {
         Write-Output $result
     }
 }
-Add-Content -Path $logPath -Value "$stamp exit=$exit $result" -Encoding Ascii
+if ($Drill -and $Toast -and $body -and $result -eq 'push ok') {
+    try { Show-DrillToast } catch { Write-Output 'optional drill toast unavailable' }
+}
+$evidence = if ($Drill -and $code) { " code=$code task=$TaskName" } else { '' }
+Add-Content -Path $logPath -Value "$stamp exit=$exit $result$evidence" -Encoding Ascii
 exit $exit

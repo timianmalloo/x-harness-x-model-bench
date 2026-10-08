@@ -66,7 +66,7 @@ class Harness:
         argv += ["-Drill", "-TaskName", "HarnessBenchAlarmDrill", "-Toast"] if drill else ["-RunId", "r1"]
         if rest is not None:
             argv += ["-RestStub", str(self.tmp / f"rest_{rest}.ps1")]
-        return subprocess.run(argv, capture_output=True, text=True, timeout=60, env=env, check=False)
+        return subprocess.run(argv, capture_output=True, text=True, timeout=60, env=env, check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
     def sent_lines(self):
         return self.sent.read_text(encoding="ascii").splitlines() if self.sent.exists() else []

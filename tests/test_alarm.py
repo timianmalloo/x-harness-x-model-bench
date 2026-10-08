@@ -281,7 +281,7 @@ def test_real_status_command_feeds_the_real_alarm_task(env, tmp_path):  # INT-A 
     bench.write_text(f'@echo off\r\n"{sys.executable}" -c "import sys; from harness_bench.cli import main; sys.exit(main(sys.argv[1:]))" '
                      f'--runs "{runs}" %*\r\n', encoding="ascii")  # stderr passes through, as in the scheduled task
     real = subprocess.run([str(bench), "status", env.name, "--alarm-after", "600", "--json"], capture_output=True, text=True, timeout=120,
-                          check=False)
+                          check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     printed = real.stderr.split(":", 1)[0]
     assert (real.returncode, printed) == (6, "HB-ALM-001")
     sent = tmp_path / "sent.txt"
@@ -290,6 +290,6 @@ def test_real_status_command_feeds_the_real_alarm_task(env, tmp_path):  # INT-A 
     task_env = {k: v for k, v in os.environ.items() if not k.startswith("HB_ALARM_")} | {"HB_TEST_SENT": str(sent), "HB_ALARM_NTFY_TOPIC": "tpc-fake-0001"}
     task = subprocess.run(["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(TASK), "-RunId", env.name, "-AlarmAfter", "600",
                            "-DryRun", "-Bench", str(bench), "-RunsRoot", str(runs), "-RestStub", str(tmp_path / "rest.ps1")],
-                          capture_output=True, text=True, timeout=120, env=task_env, check=False)
+                          capture_output=True, text=True, timeout=120, env=task_env, check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     assert task.returncode == 6
     assert f"run {env.name} {printed} " in sent.read_text(encoding="ascii")  # the payload's code is the one the command printed
