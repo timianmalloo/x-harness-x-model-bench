@@ -160,7 +160,8 @@ def lenient_json(path: Path) -> dict:
 def forbidden(capture: Path | None, extra: list[str]) -> set[str]:
     values = {os.environ.get(k, "") for k in ("USERNAME", "USERPROFILE", "COMPUTERNAME")} | set(extra)
     for key in ("user.name", "user.email"):
-        r = subprocess.run(["git", "config", key], capture_output=True, text=True, check=False)
+        r = subprocess.run(["git", "config", key], capture_output=True, text=True, check=False,
+                           creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         values.add(r.stdout.strip())
         values.update(r.stdout.strip().split())  # each part of a full name
     configs = [*(capture.glob("cells/*/home/config.json") if capture else []),  # machine-path-ok: relative glob, not a machine path

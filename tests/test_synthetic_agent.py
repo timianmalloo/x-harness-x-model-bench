@@ -32,7 +32,7 @@ def junction(link: Path, target: Path) -> None:
 def drive(cwd: Path, overlay: Path) -> subprocess.CompletedProcess:
     env = _env.grading_env() | {"HB_SYNTH_OVERLAY": str(overlay)}
     return subprocess.run([sys.executable, str(AGENT)], input="".join(json.dumps(m) + "\n" for m in HANDSHAKE).encode(),
-                          capture_output=True, cwd=cwd, env=env, timeout=60, check=False)
+                          capture_output=True, cwd=cwd, env=env, timeout=60, check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
 
 def tree(base: Path, files: dict[str, str]) -> Path:

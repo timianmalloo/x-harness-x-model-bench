@@ -43,7 +43,8 @@ def _can_symlink(tmp_path: Path) -> bool:
 
 def _junction_or_dirlink(link: Path, target: Path) -> None:
     if os.name == "nt":
-        subprocess.check_call(["cmd", "/c", "mklink", "/J", str(link), str(target)])
+        subprocess.check_call(["cmd", "/c", "mklink", "/J", str(link), str(target)],
+                              creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         return
     link.symlink_to(target, target_is_directory=True)
 
@@ -95,7 +96,8 @@ def test_a_kill_between_write_and_link_leaves_no_final_file(tmp_path):
         "atomic.create_once(Path(sys.argv[1]), b'payload')\n",
         encoding="utf-8",
     )
-    proc = subprocess.run([sys.executable, str(script), str(path)], check=False)
+    proc = subprocess.run([sys.executable, str(script), str(path)], check=False,
+                          creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     assert proc.returncode == 3
     assert not path.exists()
     stale = atomic.stale_temps(tmp_path)
@@ -398,7 +400,8 @@ def test_sweep_temps_refuses_a_released_lock_while_another_process_holds_the_fil
         f"l=oslock.RunLock.acquire(__import__('pathlib').Path({str(lock_path)!r}));"
         f"print('held',flush=True);time.sleep(600)"
     )
-    holder = subprocess.Popen([sys.executable, "-c", code], stdout=subprocess.PIPE, text=True)
+    holder = subprocess.Popen([sys.executable, "-c", code], stdout=subprocess.PIPE, text=True,
+                              creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     try:
         assert holder.stdout.readline().strip() == "held"
         with pytest.raises(ValueError, match="writer lock"):
@@ -857,7 +860,8 @@ def test_a_kill_during_fill_or_before_the_rename_leaves_no_final_name(tmp_path, 
     final = tmp_path / "out"
     script = tmp_path / "kill_pub.py"
     script.write_text(_KILL_PUBLISH, encoding="utf-8")
-    proc = subprocess.run([sys.executable, str(script), mode, str(final)], check=False)
+    proc = subprocess.run([sys.executable, str(script), mode, str(final)], check=False,
+                          creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     assert proc.returncode == 3
     assert not final.exists()
     temps = [p for p in atomic.stale_temps(tmp_path) if p.name.startswith("out.tmp-")]
@@ -882,7 +886,8 @@ def test_make_writable_waits_out_a_cwd_holder_so_rmtree_removes_the_tree(tmp_pat
     tree = tmp_path / "check-run"
     (tree / "check").mkdir(parents=True)
     (tree / "check" / "x.py").write_text("x = 1\n", encoding="utf-8")
-    child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"], cwd=tree)
+    child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"], cwd=tree,
+                             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     real_sleep = time.sleep
     calls: list[float] = []
 

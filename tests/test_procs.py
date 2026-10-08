@@ -20,7 +20,7 @@ TREE = ("import subprocess,sys,time;"
 
 
 def _alive(pid: int) -> bool:
-    out = subprocess.run(["tasklist", "/FI", f"PID eq {pid}", "/NH"], capture_output=True, text=True, check=False).stdout
+    out = subprocess.run(["tasklist", "/FI", f"PID eq {pid}", "/NH"], capture_output=True, text=True, check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
     return str(pid) in out
 
 
@@ -60,10 +60,10 @@ def test_engine_crash_kills_every_descendant(tmp_path):
     src = str(procs.__file__).rsplit("harness_bench", 1)[0]
     script = tmp_path / "owner.py"
     script.write_text(OWNER.format(src=src, tree=TREE), encoding="utf-8")
-    owner = subprocess.Popen([sys.executable, str(script)], stdout=subprocess.PIPE, text=True)
+    owner = subprocess.Popen([sys.executable, str(script)], stdout=subprocess.PIPE, text=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     pids = json.loads(owner.stdout.readline())
     assert all(_alive(p) for p in pids)
-    subprocess.run(["taskkill", "/F", "/PID", str(owner.pid)], capture_output=True, check=False)  # hard kill, no cleanup
+    subprocess.run(["taskkill", "/F", "/PID", str(owner.pid)], capture_output=True, check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))  # hard kill, no cleanup
     deadline = time.monotonic() + 10
     while any(_alive(p) for p in pids) and time.monotonic() < deadline:
         time.sleep(0.2)
@@ -116,7 +116,7 @@ def test_a_timed_out_wait_after_a_failed_assignment_still_closes_the_job(monkeyp
                 job.close()
         for pid in pids:
             if _alive(pid):
-                subprocess.run(["taskkill", "/F", "/PID", str(pid)], capture_output=True, check=False)
+                subprocess.run(["taskkill", "/F", "/PID", str(pid)], capture_output=True, check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
 
 def test_failed_assignment_leaves_no_process_and_raises_spawn(monkeypatch):

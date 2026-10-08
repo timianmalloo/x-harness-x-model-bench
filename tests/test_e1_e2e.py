@@ -117,7 +117,8 @@ class S1Repo:
         task.write_text(text.replace("status: ready", "status: draft", 1), encoding="utf-8")
         shutil.rmtree(self.root / "bench" / "discrimination" / "S1", ignore_errors=True)  # the copy's own record is the one under test
         self.draft_version = subprocess.run([sys.executable, "-c", "import sys;from pathlib import Path;from harness_bench import plan;print(plan.task_version_hash(Path(sys.argv[1])))",
-                                             str(self.root / "tasks" / "S1")], capture_output=True, text=True, check=True).stdout.strip()
+                                             str(self.root / "tasks" / "S1")], capture_output=True, text=True, check=True,
+                                             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.strip()
         self.draft_lines = readiness.problems(self.root)
         text = task.read_text(encoding="utf-8")
         assert "status: draft" in text
@@ -340,7 +341,8 @@ def test_uf_e1_front_half(s1):
     assert s1.disc.rc == 0 and re.fullmatch(r"discriminate S1: written .+-win32\.json\n", s1.disc.out), s1.disc
     assert len(s1.records) == 1
     assert [line for line in s1.after_lines if "HB-RDY-001" in line] == []
-    tracked = subprocess.run(["git", "ls-files", "bench/discrimination/S1"], cwd=s1.root, capture_output=True, text=True, check=True).stdout.split()
+    tracked = subprocess.run(["git", "ls-files", "bench/discrimination/S1"], cwd=s1.root, capture_output=True, text=True, check=True,
+                             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.split()
     assert tracked == [f"bench/discrimination/S1/{s1.records[0].name}"]
     assert [line for line in s1.after_lines if line.startswith("x ")] == ["x HB-RDY-007 S1: security: the security property has one task; the pair rule needs two"]
 

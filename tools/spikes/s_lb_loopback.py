@@ -41,7 +41,8 @@ def firewall_snapshot():
     """Step 3: rules as {Name: row}; None when PowerShell cannot read them (never a guessed empty set)."""
     try:
         done = subprocess.run(["powershell", "-NoProfile", "-Command", SNAPSHOT_PS],
-                              capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120, check=False)
+                              capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120, check=False,
+                              creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         if done.returncode != 0 or not done.stdout.strip():
             return None
         rows = json.loads(done.stdout)
@@ -100,11 +101,13 @@ def run_mode(mode, out_dir, settle, dialog):
     before = firewall_snapshot()
     env = dict(os.environ, PYTHONHOME=sys.base_prefix)
     server = subprocess.Popen([exe, os.path.abspath(__file__), "--child-server", host, str(settle)],
-                              stdout=subprocess.PIPE, text=True, encoding="utf-8", errors="replace", env=env)
+                              stdout=subprocess.PIPE, text=True, encoding="utf-8", errors="replace", env=env,
+                              creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     try:
         port = int(server.stdout.readline())
         client = subprocess.run([sys.executable, os.path.abspath(__file__), "--child-client", "127.0.0.1", str(port)],
-                                capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30, check=False)
+                                capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30, check=False,
+                                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         result["exchange_ok"] = client.returncode == 0 and client.stdout == "PING"
         time.sleep(settle)
         if dialog == "ask" and sys.stdin.isatty():

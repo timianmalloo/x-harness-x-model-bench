@@ -36,7 +36,7 @@ def test_d1_workspace_matches_pinned_git_archive_byte_for_byte() -> None:
     archive = subprocess.run(
         ["git", "-C", str(SOURCE), "archive", "--format=zip", source["commit"], "--", *paths, *exclusions],
         check=True,
-        capture_output=True,
+        capture_output=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)
     ).stdout
     with zipfile.ZipFile(io.BytesIO(archive)) as zipped:
         expected = {name: zipped.read(name) for name in zipped.namelist() if not name.endswith("/")}

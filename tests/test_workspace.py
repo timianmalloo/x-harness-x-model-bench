@@ -86,7 +86,7 @@ def test_workspace_builder_installs_each_arms_own_pack_and_exact_manifest(base, 
 
 
 def _git(cwd, *args):
-    return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, check=False).stdout
+    return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
 
 
 def _local_pack_repo(path):  # mirrors tests/test_cli.py::_pack_repo; no dependency on ../ai-forward

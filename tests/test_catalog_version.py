@@ -177,7 +177,7 @@ def us4_problems(root: Path, golden: Path, freeze: dict, base: dict, export: Cal
 
 def _git(*args: str) -> str | None:
     done = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", timeout=60,
-                          check=False)
+                          check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     return done.stdout if done.returncode == 0 else None
 
 
@@ -656,7 +656,8 @@ def _root06(tmp: Path) -> Path:
     """git archive of the 0.6 freeze commit. An unreachable commit fails; it never skips."""
     done = subprocess.run(
         ["git", "archive", FREEZE_06_COMMIT, "bench/metrics.yaml", "bench/rubrics"],
-        cwd=ROOT, capture_output=True, timeout=60, check=False)
+        cwd=ROOT, capture_output=True, timeout=60, check=False,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     assert done.returncode == 0, (
         f"0.6 freeze commit {FREEZE_06_COMMIT} is not reachable (git archive failed; "
         f"a shallow checkout fails here and never skips): {done.stderr.decode('utf-8', errors='replace')}")

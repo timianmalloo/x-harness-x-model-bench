@@ -34,7 +34,8 @@ USAGE = {"kind": "turn_usage", "run_id": "r1", "attempt": 1, "model": "gpt-6-sol
 
 
 def _git(*args: str) -> str:
-    return subprocess.run(["git", *args], cwd=TESTS.parent, capture_output=True, text=True, check=True).stdout.strip()
+    return subprocess.run(["git", *args], cwd=TESTS.parent, capture_output=True, text=True, check=True,
+                          creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.strip()
 
 
 def expected(run_dir: Path) -> dict:

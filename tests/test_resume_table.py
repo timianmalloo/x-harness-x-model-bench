@@ -71,7 +71,7 @@ def _collect(*extra: str) -> set[str]:
         cwd=ROOT,
         capture_output=True,
         text=True,
-        check=False,
+        check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)
     ).stdout
     return {line.strip() for line in out.splitlines() if "::" in line}
 

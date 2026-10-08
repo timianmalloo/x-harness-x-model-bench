@@ -377,11 +377,11 @@ def upstream_clone(tid: str) -> Path:
 @pytest.mark.parametrize("tid", IDS)
 def test_pin_tree_hash_and_engine_built_base(tid, bases):
     clone, pin = upstream_clone(tid), DEFINITIONS[tid]["pin"]
-    tree = subprocess.run(["git", "rev-parse", f"{pin}^{{tree}}"], cwd=clone, capture_output=True, text=True, check=True).stdout.strip()
+    tree = subprocess.run(["git", "rev-parse", f"{pin}^{{tree}}"], cwd=clone, capture_output=True, text=True, check=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.strip()
     evidence = (task_dir(tid) / "oracle" / "evidence.md").read_text(encoding="utf-8")
     assert re.search(r"^- pin tree: `([0-9a-f]{40})`", evidence, re.MULTILINE).group(1) == tree
     assert f"tree is {tree}" in (task_dir(tid) / "task.yaml").read_text(encoding="utf-8")
-    listed = set(subprocess.run(["git", "ls-tree", "-r", "--name-only", pin], cwd=clone, capture_output=True, text=True, check=True).stdout.split())
+    listed = set(subprocess.run(["git", "ls-tree", "-r", "--name-only", pin], cwd=clone, capture_output=True, text=True, check=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.split())
     built = {p.relative_to(bases[tid]).as_posix() for p in bases[tid].rglob("*") if p.is_file() and ".git" not in p.relative_to(bases[tid]).parts}
     assert built - listed == {".gitkeep"} and listed - built == set()
 

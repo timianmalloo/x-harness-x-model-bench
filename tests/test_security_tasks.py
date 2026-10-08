@@ -182,7 +182,7 @@ def run_hidden(base: Path, source: str) -> Hidden:
     grading = _copy_base(base, _WORK / f"hidden-{next(_counter)}", source)
     shutil.copy(TASK / "tests" / "test_notes_hidden.py", grading)
     proc = subprocess.run([sys._base_executable, "-S", "-m", "unittest", "-v", "test_notes_hidden"], cwd=grading,
-                          capture_output=True, text=True, timeout=180, check=False)
+                          capture_output=True, text=True, timeout=180, check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     out = proc.stdout + proc.stderr
     return Hidden(proc.returncode, frozenset(re.findall(r"^FAIL: (test_\w+)", out, re.MULTILINE)),
                   frozenset(re.findall(r"^ERROR: (test_\w+)", out, re.MULTILINE)), out)
@@ -354,11 +354,11 @@ def test_s1_pin_is_a_full_commit(s1_base):
     upstream = ring_cache.ring_root("s1") / "upstream"
     clone = next(p for p in upstream.iterdir() if (p / ".git").is_dir())
     tree = subprocess.run(["git", "rev-parse", f"{commit}^{{tree}}"], cwd=clone, capture_output=True, text=True,
-                          check=True).stdout.strip()
+                          check=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.strip()
     assert pin_problems(commit, recorded_tree(), tree, (TASK / "NOTICE.md").is_file(),
                         (TASK / "LICENSE").read_text(encoding="utf-8")) == []
     listed = set(subprocess.run(["git", "ls-tree", "-r", "--name-only", commit], cwd=clone, capture_output=True, text=True,
-                                check=True).stdout.split())
+                                check=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.split())
     built = {p.relative_to(s1_base).as_posix() for p in s1_base.rglob("*") if p.is_file() and ".git" not in p.relative_to(s1_base).parts}
     assert built - listed == {".gitkeep"}
     assert listed - built == set()

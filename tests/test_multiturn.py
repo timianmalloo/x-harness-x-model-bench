@@ -584,7 +584,8 @@ def test_t_snap_7_link_is_a_row_never_a_copy(tmp_path):
     (sentinel / "secret.txt").write_text("outside", encoding="utf-8")
     link_path = cell / "ws/link"
     if sys.platform == "win32":
-        made = subprocess.run(["cmd", "/c", "mklink", "/J", str(link_path), str(sentinel)], capture_output=True, check=False)
+        made = subprocess.run(["cmd", "/c", "mklink", "/J", str(link_path), str(sentinel)], capture_output=True, check=False,
+                              creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         assert made.returncode == 0, made.stderr
     else:
         os.symlink(sentinel, link_path, target_is_directory=True)
