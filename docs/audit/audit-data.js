@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T17:36:10Z",
+  "generated": "2026-10-08T17:54:06Z",
   "audit": [
     {
       "actor": null,
@@ -146318,6 +146318,40 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-08T17:36:09Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M4EAD9M0AFN1TBVQQNMQ62TQ",
+      "shortname": "xprop-fin unconfirmed kill",
+      "datetime": "2026-10-08T17:54:06Z",
+      "session": "xprop-fin",
+      "prompt": "X-PROP xprop-fin: read terminate_and_confirm in grade/property.py and record an unconfirmed kill instead of closing a live tree.",
+      "summary": "outcome: split (context figure not recorded; hand-back after the P2 commit, CEIL-A). Last commit 0a1f2c3f23d9faa8ec9f71088c7fc555c921dd44.\n\nDispatch start: 2026-10-08T17:39:37Z. Dispatch end: the datetime of this entry.\nServed model id: grok-4.7 (session identity; no separate ACP model field was exposed on the first response).\nTokens: not recorded.\nFloor F: not recorded (sampled before the first step; this session exposed no ACP usage or context figure).\nSamples: before P1, before the red run, before the first guard, before P2, before the green run, before ruff, before mutate_check: not recorded.\n\nRed SHA: b33badc66832f81543d12f5c43d0c8df9169c5fb\nFailing assertion (tests/test_property_grader.py:496): assert (tree.cleaned_while_alive, getattr(result, \"unconfirmed_kill\", False)) == (False, True)\nObserved red value: (True, False) == (False, True). The first red run (PID 31768) failed on AttributeError and was not committed; the fake was corrected and the second run failed on that assertion.\n\nGreen SHA: 0a1f2c3f23d9faa8ec9f71088c7fc555c921dd44\nCheckRun.unconfirmed_kill records a False return from terminate_and_confirm. False skips close() so a live tree is not closed. No classification row was added. No existing mutation find was moved. New mutant find occurs once: \"            kill_confirmed = cp.terminate_and_confirm(procs._KILL_GRACE)\".\n\nGates:\n- uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py --basetemp C:\\tf\\xprop\\basetemp-guard1 — PID 33884 — exit 0 — 210 passed. On the red commit.\n- uv run ruff check src tests tools — PID 36104 — exit 0 — All checks passed. On the working tree that the green commit then recorded. Not re-run after the commit.\n- uv run python tools/mutate_check.py tests/mutations/property.json — PID 43060 — exit 0 — every mutation killed (25, including the new one). Same timing as ruff.\n- uv run pytest -q tests/test_property_grader.py tests/test_archive_readers.py — not run (open). The single new test passed: PID 13036 — exit 0 — 1 passed.\n- python docs/ai-forward-pack/scripts/docs-graph.py validate — not run (open).\n- guard list on the final commit — not run (open).\n- windows check — not run. git log --oneline -1 --grep=join-x-win printed no line.\n\nP3 sweep of terminate_and_confirm in src/ (calls only):\n- src/harness_bench/grade/property.py:332 — result is read (kill_confirmed = ...). At the base this was line 330 and the result was discarded. Coordinator #55's measurement of the base is confirmed.\n- src/harness_bench/engine.py:1080 — result is read. return _job_query(lambda: cp.terminate_and_confirm(timeout=timeout), False). A failed query becomes False. Coordinator #55 confirmed.\n- src/harness_bench/procs.py:529 — result is discarded. The next line that waits, procs.py:534, says an unconfirmed kill reports no exit status and closing the job ends the tree. Coordinator #55 confirmed. Not edited. A fix there would be a seam request to coord-opus-fin.\nDefinition, not a call: src/harness_bench/procs.py:95 returns bool.\n\nQUOTE-A: no archive reader, no import pair, no ledger transition. grade/property.py stays class grade.\n\nDefect class (text only; not committed): a discarded kill confirmation. The caller ignores the bool from terminate_and_confirm and runs cleanup that assumes the process tree has already exited.\n\nChildren launched (command, PID, exit). CreateNoWindow. No child launch was added in tests/test_property_grader.py; the new test uses a fake.\n- python docs/ai-forward-pack/scripts/audit-log.py start --session xprop-fin --skill coordination-worker — PID not recorded — exit 0\n- git status / merge-base / log — PID not recorded — ancestor exit 0, status empty\n- python docs/ai-forward-pack/scripts/coord-core.py session start — PID not recorded — exit 0\n- python docs/ai-forward-pack/scripts/coord-core.py claim (three paths) — PID not recorded — exit 0\n- uv run pytest -q tests/test_property_grader.py::test_an_unconfirmed_kill_is_recorded_and_the_live_tree_is_not_cleaned_up --basetemp C:\\tf\\xprop\\basetemp-red — PID 31768 — exit 1 (AttributeError, not committed)\n- uv run pytest -q tests/test_property_grader.py::test_an_unconfirmed_kill_is_recorded_and_the_live_tree_is_not_cleaned_up --basetemp C:\\tf\\xprop\\basetemp-red2 — PID 41208 — exit 1 (assertion)\n- uv run pytest -q <guard list> --basetemp C:\\tf\\xprop\\basetemp-guard1 — PID 33884 — exit 0\n- uv run pytest -q tests/test_property_grader.py::test_an_unconfirmed_kill_is_recorded_and_the_live_tree_is_not_cleaned_up --basetemp C:\\tf\\xprop\\basetemp-green — PID 13036 — exit 0\n- python -c find-count — PID not recorded — exit 0 (FIND_COUNT 1)\n- uv run ruff check src tests tools — PID 36104 — exit 0\n- uv run python tools/mutate_check.py tests/mutations/property.json — PID 43060 — exit 0\n\nOpen: the second guard list, the own-test file pair, and docs-graph validate.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "src/harness_bench/grade/property.py",
+        "tests/test_property_grader.py",
+        "tests/mutations/property.json"
+      ],
+      "tags": [],
+      "outcome": "partial",
+      "compiled": false,
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_executed": true,
+        "acceptance_met": false
+      },
+      "started_at": "2026-10-08T17:39:37Z",
+      "duration_seconds": 869.0,
+      "git": {
+        "sha": "0a1f2c3f23d9faa8ec9f71088c7fc555c921dd44",
+        "short": "0a1f2c3f2",
+        "branch": "build/fin-x-prop",
+        "pushed": null
+      }
     }
   ],
   "changes": [
