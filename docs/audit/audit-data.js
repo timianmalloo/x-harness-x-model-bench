@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T17:22:21Z",
+  "generated": "2026-10-08T17:29:40Z",
   "audit": [
     {
       "actor": null,
@@ -121376,6 +121376,33 @@ window.AUDIT_DATA = {
         "acceptance_met": true
       },
       "started_at": "2026-10-08T17:22:20Z",
+      "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M4E90J2BC3GQ7MDCKJ6E0YAX",
+      "shortname": "join-r115",
+      "datetime": "2026-10-08T17:29:40Z",
+      "session": "leader-fin",
+      "prompt": "the join of owner/ruling-r115 into integrate/finish-19",
+      "summary": "Owner ec001aab: R-115 DR-NOPRICE (B) granted bounded - X-NOPRICE (P3, after X-EVU, Sonnet) replaces every USD column/label/panel in report/** and cli_table with 0.7 token measures, deletes report.usd, two red-first controls (no $/USD in a render from a valued fixture; prices.yaml entries == []), join gate: prices/metrics/identity/plan/campaign/grade untouched; catalog 0.7 + prices identity stand until E5 concludes; full retirement (catalog 0.8, ADR-0017/0019) a named post-E5 track; (A) before E5 and (C) refused recount_seconds=0 (docs_only=True).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Join Ruling 115",
+      "done_when": "conductor-join exit 0 (docs-only), citations 115 OK",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-08T17:29:39Z",
       "duration_seconds": 1.0
     }
   ],
