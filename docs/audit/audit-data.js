@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T17:36:10Z",
+  "generated": "2026-10-08T17:57:58Z",
   "audit": [
     {
       "actor": null,
@@ -146318,6 +146318,41 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-08T17:36:09Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M4EAMCHAZ4W98Y5P3JHJX8E6",
+      "shortname": "xhyg-fin-h1",
+      "datetime": "2026-10-08T17:57:58Z",
+      "session": "xhyg-fin",
+      "prompt": "X-HYG session xhyg-fin, run r-xhyg-fin. H1: per-file .gitattributes machine-path-ok for the four captured rollout records so verify-no-machine-paths.py exits 0. CEIL-A hand-back after the H1 commit because the context figure cannot be read.",
+      "summary": "outcome: split\ndispatch start: 2026-10-08T17:48:06Z\ndispatch end: 2026-10-08T17:57:58Z\nserved model id: grok-4.7\ntokens: not recorded\nfloor F: not recorded\ncontext samples: before the first step, before the H1 edit, before the H1 gate, and before the guard list — each not recorded. The ACP usage of the latest response and the session status do not expose a token figure in this session. CEIL-A: figure cannot be read, so hand back after the H1 commit. This is a planned split, not a failure.\n\nH1 commit: 2a8f4d847aab5b5ef51ff4db39d2f06d3db26e80\nred SHAs: none (H1 changes no test)\n\nGates:\n- python docs/ai-forward-pack/scripts/verify-no-machine-paths.py on the base: exit 1. Four hits, all line 3 of tests/fixtures/ledger/c44dd2b-no-heads/run/archive/a/attempt-1/home/sessions/2026/09/rollout-2026-09-23-sess-a.jsonl, tests/fixtures/ledger/c44dd2b-no-heads/run/archive/b/attempt-1/home/sessions/2026/09/rollout-2026-09-23-sess-b.jsonl, tests/fixtures/ledger/heads/run/archive/a/attempt-1/home/sessions/2026/09/rollout-2026-09-23-sess-a.jsonl, tests/fixtures/ledger/heads/run/archive/b/attempt-1/home/sessions/2026/09/rollout-2026-09-23-sess-b.jsonl.\n- python docs/ai-forward-pack/scripts/verify-no-machine-paths.py after the per-file machine-path-ok lines (the tree committed as 2a8f4d84): exit 0. Summary: clean - 1175 tracked machine-readable files carry no machine-specific path.\n- git diff --name-only: .gitattributes only. git diff --name-only -- tests/fixtures: empty. No fixture byte changed.\n- pre-commit: 1 staged path(s) checked - all free or mine. Commit exit 0.\n- uv run pytest -q tests/test_architecture.py tests/test_identity.py tests/test_atomic_sites.py tests/test_arms_guard.py tests/test_discriminate.py tests/test_mutate_check.py tests/test_skills_in_sync.py tests/test_timing_hygiene.py --basetemp C:\\tf\\xhyg\\pytest-guard on the first commit: exit 0. Summary: 210 passed in 140.43s.\n\nOpen (not started): H2 host-limited mutants, red first in tests/test_mutate_check.py, then the fix in tools/mutate_check.py and the host condition on the M14b and M27 entries in tests/mutations/atomic.json (tests/mutations/mutate_check.json only if that file's own mutants need the same condition). Final gate not run: the guard list again on the final commit; uv run pytest -q tests/test_mutate_check.py; python docs/ai-forward-pack/scripts/run-verify-gates.py; uv run python tools/mutate_check.py tests/mutations/mutate_check.json; uv run python tools/mutate_check.py tests/mutations/atomic.json; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate.\n\njoin-x-win: git log --oneline -1 --grep=join-x-win printed no line, so the windows check was not run. Child processes launched are listed below.\n\nChildren:\n- python docs/ai-forward-pack/scripts/audit-log.py start --session xhyg-fin --skill coordination-worker — PID not captured (shell 36020), exit 0\n- git status --short; git merge-base --is-ancestor 7f96fb70 HEAD; git log --oneline -1 --grep=join-x-win — PIDs not captured, exits 0; status empty; ancestor holds; join-x-win printed nothing\n- python docs/ai-forward-pack/scripts/coord-core.py session start — PID 40096, exit 0\n- python docs/ai-forward-pack/scripts/verify-no-machine-paths.py — PID 36592, exit 1\n- python docs/ai-forward-pack/scripts/coord-core.py claim --wi X-HYG --path .gitattributes --ttl 900 — PID 38976, exit 0\n- python docs/ai-forward-pack/scripts/verify-no-machine-paths.py — PID 39980, exit 0\n- git add -- .gitattributes — PID not captured, exit 0\n- git commit -F C:\\tf\\xhyg\\commit-h1.txt — PID 4212, exit 0\n- uv run pytest -q (the eight-file guard list) --basetemp C:\\tf\\xhyg\\pytest-guard — PID 22844, exit 0. The python child under uv was not captured separately.\n\nNo src/ file was edited. No archive reader, import pair, or ledger transition was added.\nNo new defect class. The four hits are the case the gate's own text already names.\nrelease: python docs/ai-forward-pack/scripts/coord-core.py release --wi X-HYG --path .gitattributes — PID 24864, exit 0",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "partial",
+      "compiled_from": "al-01M4E8YVY29TFVP87Y5HE6HYSH",
+      "goal": "Make the machine-path gate pass with the per-file opt-out its own text names, and make tools/mutate_check.py report a mutant this host cannot kill as host-limited, not survived.",
+      "done_when": "verify-no-machine-paths.py exit 0 (today exit 1: 4 hits, all tests/fixtures/ledger/*/run/archive/*/attempt-1/home/sessions/2026/09/rollout-*.jsonl:3, byte-exact captured records, so the fix is the per-file .gitattributes machine-path-ok the gate's own text names); run-verify-gates.py 9 of 9; mutate_check reports M14b and (if the right is not granted) M27 as host-limited, not survived, red first",
+      "tier": "T1",
+      "main_calls": 54,
+      "main_budget": 50,
+      "main_over_budget": true,
+      "fan_out": 0,
+      "signals": {
+        "verification_executed": true,
+        "acceptance_met": false
+      },
+      "started_at": "2026-10-08T17:48:06Z",
+      "duration_seconds": 592.0,
+      "git": {
+        "sha": "2a8f4d847aab5b5ef51ff4db39d2f06d3db26e80",
+        "short": "2a8f4d847",
+        "branch": "build/fin-x-hyg",
+        "pushed": null
+      }
     }
   ],
   "changes": [
