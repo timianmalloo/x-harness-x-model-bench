@@ -69,7 +69,23 @@ if ($Drill) {
         [Console]::Error.WriteLine('no seeded drill for this scheduled task and runs root')
         exit 2
     }
-    $RunId = ($seeds | Sort-Object seeded_at, run_id | Select-Object -Last 1).run_id
+    $selected = $seeds | Sort-Object seeded_at, run_id | Select-Object -Last 1
+    $RunId = $selected.run_id
+    # UTC records have second precision: an immediate push must land in a later measured second.
+    # One bounded wait on the real clock; an injected clock or a clock that moved back fails closed.
+    if ($stamp -le $selected.seeded_at) {
+        if (-not $Now) {
+            $seedTime = [datetime]::Parse($selected.seeded_at, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::RoundtripKind).ToUniversalTime()
+            $waitMs = [Math]::Min(1000, [Math]::Max(1, [Math]::Ceiling(($seedTime.AddSeconds(1) - $clock).TotalMilliseconds)))
+            Start-Sleep -Milliseconds $waitMs
+            $clock = (Get-Date).ToUniversalTime()
+            $stamp = $clock.ToString('yyyy-MM-ddTHH:mm:ssZ')
+        }
+        if ($stamp -le $selected.seeded_at) {
+            [Console]::Error.WriteLine('drill delivery must be after the seed time; retry the scheduled task')
+            exit 2
+        }
+    }
 }
 if (-not $RunId) {
     [Console]::Error.WriteLine('run id is required outside drill mode')

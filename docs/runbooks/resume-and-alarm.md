@@ -131,6 +131,9 @@ final analysis's properties decides this. The preview reports the recorded drill
 For drill checks, `alarm-delivery.log` appends `code=<HB-ALM code> task=<task name>` to the normal delivery
 line. A task name in this log is evidence of the configured scheduled path; acknowledgement remains the
 operator's attestation. A successful fake transport test is not a real drill and creates no committed record.
+The wrapper waits at most one second on the real clock if triggered in the seed's second. If the clock
+has moved back or an injected clock is not later, it refuses before pushing; retry the scheduled task
+after the clock passes the seed. It never invents a later delivery timestamp.
 
 ## 6. Limits
 

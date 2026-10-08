@@ -15,8 +15,8 @@ import subprocess
 import sys
 import uuid
 from collections import Counter
-from datetime import UTC, datetime
 from dataclasses import asdict
+from datetime import UTC, datetime
 from pathlib import Path
 
 from rich.console import Console
