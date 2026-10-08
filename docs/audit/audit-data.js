@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T18:02:52Z",
+  "generated": "2026-10-08T18:48:35Z",
   "audit": [
     {
       "actor": null,
@@ -146343,6 +146343,33 @@ window.AUDIT_DATA = {
         "sha": "7cdab8d38a6409d9ad3d3d3a39930b12819f8d7f",
         "short": "7cdab8d38",
         "branch": "build/fin-x-evu",
+        "pushed": null
+      }
+    },
+    {
+      "id": "al-01M4EDH26WAWXD7N47SAGF90RP",
+      "shortname": "xevu2-fin-t2",
+      "datetime": "2026-10-08T18:48:35Z",
+      "session": "xevu2-fin",
+      "prompt": "X-EVU, turn 2 of 2: commit the coverage map turn 1 did not write, docs/coordination/eval-wave2-e234/x-evu-coverage.md, one row per validation (EV-16, EV-18, EV-19, EVU-1 to EVU-8) with its spec line, its collected test nodes, the assertion that proves it and the run result; then a red-first test for each validation the map shows with no asserting node.",
+      "summary": "X-EVU turn 2 hand-back. Outcome: green f2969901.\nServed model: gemini-3.8-flash-high (Gemini 3.8 Flash (High), read from cli.log).\nDispatch wall-clock: 2026-10-08T18:15:33Z to 2026-10-08T18:50:00Z.\nFloor tokens: 39,654; M1 sample: 52,180; M2 map creation sample: 125,022; Gate sample: 132,150; Tokens: input 2,737, cache 122,285.\nCoverage map: docs/coordination/eval-wave2-e234/x-evu-coverage.md committed at f2969901; all 11 validations (EV-16, EV-18, EV-19, EVU-1..8) mapped to test nodes with proving assertions and passing results.\nRed SHAs: none (no missing report tests; all 11 validations mapped to existing tests with proving assertions). Gap red/green SHAs: none.\nEVU-5 run (Playwright axe WCAG 2.2 AA light & dark):\n- tests/test_report_browser.py::test_evu_5_axe_light_and_dark[light] PASSED\n- tests/test_report_browser.py::test_evu_5_axe_light_and_dark[dark] PASSED (2 passed in 4.65s).\nGates:\n- Guard list (first commit): exit 0 (210 passed in 107.19s)\n- Report tests (test_campaign_section, test_report, test_report_builder, test_archive_readers): exit 0 (173 passed in 140.44s)\n- EVU-5 axe run (test_report_browser.py -k evu_5 -m browser): exit 0 (2 passed in 4.65s)\n- mutate_check (campaign_section.json): exit 0 (every mutation killed)\n- ruff check (src tests tools): exit 0 (All checks passed!)\n- docs-graph validate: exit 0 (0 defects, 16 review suggestions, exit 0)\n- Guard list (final commit): exit 0 (210 passed in 122.95s)\nChild processes launched:\n- python docs/ai-forward-pack/scripts/audit-log.py start --session xevu2-fin --skill coordination-worker\n- git status --short\n- git merge-base --is-ancestor 13fa002c HEAD\n- git merge-base --is-ancestor 7f96fb70 HEAD\n- python docs/ai-forward-pack/scripts/coord-core.py session start\n- git log --oneline -1 --grep=join-x-win\n- uv run pytest --collect-only -q -m \"\" tests/test_campaign_section.py tests/test_report.py tests/test_report_builder.py tests/test_report_browser.py tests/test_archive_readers.py\n- uv run pytest -q tests/test_campaign_section.py (task-108)\n- uv run pytest -q --durations=10 tests/test_campaign_section.py (task-120)\n- uv run pytest -q ... > C:\\tf\\xevu\\map-run.txt; uv run pytest -q -m browser tests/test_report_browser.py -k evu_5 >> C:\\tf\\xevu\\map-run.txt (task-126)\n- python docs/ai-forward-pack/scripts/docs-graph.py derive\n- python docs/ai-forward-pack/scripts/docs-graph.py validate\n- python docs/ai-forward-pack/scripts/coord-core.py check docs/coordination/eval-wave2-e234/x-evu-coverage.md\n- python docs/ai-forward-pack/scripts/coord-core.py check docs/docs-index.js\n- uv run pytest -q tests/test_architecture.py ... (task-208)\n- git add docs/coordination/eval-wave2-e234/x-evu-coverage.md docs/docs-index.js; git commit -m \"docs(eval): commit x-evu-coverage map of E5 report validations\"\n- uv run pytest -q tests/test_campaign_section.py tests/test_report.py tests/test_report_builder.py tests/test_archive_readers.py (task-220)\n- uv run pytest -v tests/test_report_browser.py -k evu_5 -m browser\n- uv run python tools/mutate_check.py tests/mutations/campaign_section.json (task-232)\n- uv run ruff check src tests tools\n- python docs/ai-forward-pack/scripts/docs-graph.py validate\n- uv run pytest -q tests/test_architecture.py ... (task-248)",
+      "kind": "manual",
+      "skill": "coordination-worker",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "goal": "commit the coverage map docs/coordination/eval-wave2-e234/x-evu-coverage.md for E5 report validations (EV-16, EV-18, EV-19, EVU-1 to EVU-8)",
+      "done_when": "a coverage map of the E5 row's validations to named tests: EV-16, EV-18, EV-19, EVU-1..8; each missing one red first, then green; axe (EVU-5) run, not skipped, in light and dark",
+      "tier": "T2",
+      "fan_out": 0,
+      "started_at": "2026-10-08T18:15:33Z",
+      "duration_seconds": 1982.0,
+      "git": {
+        "sha": "f29699012936c114815f7186ee98b63f010515e6",
+        "short": "f29699012",
+        "branch": "build/fin-x-evu2",
         "pushed": null
       }
     }
