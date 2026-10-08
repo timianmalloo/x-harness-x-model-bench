@@ -4909,6 +4909,44 @@ window.DOCS_INDEX = {
       "sourceSha256": "9d837584e42555ed32e1c08c0a9763c72fb9c17e09fd0755b58029d5c3c0b13a"
     },
     {
+      "id": "coordinator-log-c54",
+      "path": "docs/coordination/coordinator-log/c54.md",
+      "title": "Coordinator #54 hand-back (2026-10-08): the finish plan (backlog, pack upstream, E5 preconditions, E5)",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-08",
+      "reviewSuggested": [],
+      "summary": "Coordinator #54 on coord/fin-c54-plan (base f544deb2) for Leader leader-fin, epoch 19. It wrote docs/coordination/coordination-finish.md and its html view from repo evidence: 11 tracks, four batches with one gate ring before E5, the final-head spine, and E5 sized from grid-4's measured rates. No dispatch, merge or push.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "plan",
+        "e5"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c53",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-finish",
+          "rel": "relates-to"
+        },
+        {
+          "to": "run-report-e2e4",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "91052e81468c631026babf407af4907fb3eae3c350eff02649f25999fc715add"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4935,7 +4973,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b97c7471391bc4651c4eaf11c4fd502faef96038b412c1d41df535c72bd2dab6"
+      "sourceSha256": "3cb690bcf85d3ceb70fce35882f596cfb60af9c57f21a04b063a260302c62c84"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -9330,6 +9368,73 @@ window.DOCS_INDEX = {
       "sourceSha256": "e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701"
     },
     {
+      "id": "coordination-finish",
+      "path": "docs/coordination/coordination-finish.md",
+      "title": "Coordination plan - finish: the post-E4 backlog, the pack upstream, E5's preconditions and E5",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: backlog close-out, pack revision 100, E5 preconditions, E5 (the first real campaign); Leader epoch 19",
+      "reviewBy": "2026-10-22",
+      "reviewSuggested": [],
+      "summary": "Coordinator #54's plan at main f544deb2. 11 tracks (9 dispatchable, 2 gated) across Codex, Agy, Grok and Claude Code Sonnet; four push batches with one gate ring (X-PROP, grade/property.py); a serial spine that ends every src/ join, then re-runs the ten records and the convergence check on the final head, then runs E5 as a Leader lane with two operator stops (pilot spend, then grid spend and nights). E5 sized from grid-4's measured cell and grading rates: 846-5,256 cells, 24-147 h of run, 1.1-6.7 billion tokens (Inferred from measured rates). Twelve candidates struck or merged. Pre-grid critical path Inferred at 12 h, 21-29 h at E2-E4's measured overrun.",
+      "tags": [
+        "coordination",
+        "worktrees",
+        "parallelism",
+        "evaluation-campaign",
+        "e5"
+      ],
+      "links": [
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0021-plan-level-resume-and-liveness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "run-report-e2e4",
+          "rel": "depends-on"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "proof-eval-campaign-convergence",
+          "rel": "relates-to"
+        },
+        {
+          "to": "runbook-resume-and-alarm",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c54",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "d4d067561b3c59b5705e95174bf386684c9ebcc2382e5a0f88506eff72a12ea8"
+    },
+    {
       "id": "coordination-finish-harness-bench",
       "path": "docs/coordination/coordination-finish-harness-bench.md",
       "title": "Coordination plan - finish harness-bench (phases 2-5, the 31 outstanding to-dos)",
@@ -10243,6 +10348,14 @@ window.DOCS_INDEX = {
       "artifactId": "coordination-eval-campaign"
     },
     {
+      "id": "surface-coordination-coordination-finish",
+      "path": "docs/coordination/coordination-finish.html",
+      "title": "Coordination Finish",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "coordination-finish"
+    },
+    {
       "id": "surface-coordination-coordination-phase1-finish",
       "path": "docs/coordination/coordination-phase1-finish.html",
       "title": "Coordination plan - finish harness-bench phase 1 (pre-merge findings, N5, mutation bar, E2E)",
@@ -10441,5 +10554,5 @@ window.DOCS_INDEX = {
       "artifactId": "run-report-e2e4"
     }
   ],
-  "graphSha256": "9e21ef8e172b362711919d963393b04f3b222afef9f4c59df2c0ea391f280d69"
+  "graphSha256": "1d683def06a5f37e65fc9f5305cba17a9ae9f8dd77585b5ae769c2284542e391"
 };
