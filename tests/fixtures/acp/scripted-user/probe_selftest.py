@@ -37,7 +37,8 @@ def talk(messages: list, env_log: str | None, arg_log: str | None) -> list[dict]
         env[probe_turn.LOG_ENV] = env_log
     argv = [sys.executable, str(probe_turn.SERVER), "--reply", "R-TEXT"] + (["--log", arg_log] if arg_log else [])
     lines = b"".join((m if isinstance(m, bytes) else json.dumps(m).encode()) + b"\n" for m in messages)
-    out = subprocess.run(argv, input=lines, capture_output=True, env=env, timeout=30, check=True).stdout
+    out = subprocess.run(argv, input=lines, capture_output=True, env=env, timeout=30, check=True,
+                         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
     return [json.loads(line) for line in out.decode("utf-8").splitlines() if line.strip()]
 
 
@@ -81,7 +82,8 @@ def test_http_server(tmp: Path) -> None:
 
     log = tmp / "http.jsonl"
     proc = subprocess.Popen([sys.executable, str(probe_turn.SERVER), "--http", "0", "--log", str(log), "--reply", "H-TEXT"],
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     try:
         port = json.loads(proc.stdout.readline())["port"]
         url = f"http://127.0.0.1:{port}/mcp"
@@ -207,7 +209,8 @@ def test_emit_on_a_legacy_console() -> None:
     """OUT-A: printing the summary must not fail on a cp1252 console (a Windows pipe's default encoding)."""
     env = {**os.environ, "PYTHONIOENCODING": "cp1252"}
     code = "import probe_turn; probe_turn.emit({'agent_text_tail': '\\u2212 \\U0001f534'})"
-    run = subprocess.run([sys.executable, "-c", code], cwd=str(HERE), env=env, capture_output=True, timeout=30, check=False)
+    run = subprocess.run([sys.executable, "-c", code], cwd=str(HERE), env=env, capture_output=True, timeout=30, check=False,
+                         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     check(run.returncode == 0, "emit: a non-ASCII summary prints on a cp1252 console (exit 0)")
     check(b"\\u2212" in run.stdout, "emit: the text survives as a JSON escape")
 

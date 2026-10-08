@@ -17,5 +17,6 @@ def slow(payload):
 
 
 def spawn_grandchild(payload):
-    subprocess.run([sys.executable, "-c", f"import sys; sys.stdout.write({TOKEN!r}); sys.stdout.flush()"], check=False)
+    subprocess.run([sys.executable, "-c", f"import sys; sys.stdout.write({TOKEN!r}); sys.stdout.flush()"], check=False,
+                   creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     return "safe"

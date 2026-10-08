@@ -41,6 +41,7 @@ def gate_runs_root() -> Path:
             text=True,
             timeout=30,
             check=False,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
         )
     except (OSError, subprocess.TimeoutExpired):
         return ROOT / "runs"

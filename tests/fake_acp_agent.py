@@ -171,7 +171,11 @@ def main() -> int:
                 if MODE == "stubborn":
                     import subprocess
 
-                    child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"], stdout=OUT)
+                    child = subprocess.Popen(
+                        [sys.executable, "-c", "import time; time.sleep(60)"],
+                        stdout=OUT,
+                        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+                    )
                     Path(os.getcwd(), ".fake-stubborn-child.pid").write_text(str(child.pid), encoding="utf-8")
                 cancel = json.loads(sys.stdin.buffer.readline())
                 Path(os.getcwd(), ".fake-cancel.json").write_text(json.dumps(cancel), encoding="utf-8")
