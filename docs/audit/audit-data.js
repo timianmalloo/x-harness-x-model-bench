@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T20:40:03Z",
+  "generated": "2026-10-08T21:03:55Z",
   "audit": [
     {
       "actor": null,
@@ -161092,6 +161092,28 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-08T20:25:26Z",
       "duration_seconds": 877.0
+    },
+    {
+      "id": "al-01M4EN8VPND8J06B5K63ZR49EE",
+      "shortname": "x-sj4",
+      "datetime": "2026-10-08T21:03:55Z",
+      "session": "xsj4-fin",
+      "prompt": "X-SJ4 compiled brief al-01M4EMDBYB1CGBBWDDDWZV1SW3: run spike S-J4",
+      "summary": "X-SJ4 closing entry. Served model claude-sonnet-5-5. Dispatch start 2026-10-08T20:53:57Z, end about 21:20Z. Outcome green 90bc70c0. Red SHAs: none (this row owns no tests). Commits: 5ac5857f (spike script), 94d8239b (script fix: tokens not recorded when the record has no model call), 90bc70c0 (note). Gates: guard list+console_windows on first (before commit 1, 216 passed, exit 0) and final commit (216 passed, exit 0); ruff check src tests tools exit 0; docs-graph validate exit 1 = one index-drift item (the new note not yet in docs-index, the join's derived view), 0 problems; window_check --since 2026-10-08T20:53:57Z --root-pid 44612 exit 0. Context: floor not recorded, samples not recorded. Tokens of this session: not recorded. D0: present: builds (claude-code 2.1.282/adapter 0.81.2, codex 0.156.0/1.12.0, copilot 1.0.89-1), node, npm, claude, codex, copilot on PATH, HB_CLAUDE_OAUTH_TOKEN set, ~/.claude/.credentials.json, ~/.codex/auth.json; unset: COPILOT_GITHUB_TOKEN, GH_TOKEN, GITHUB_TOKEN; absent: none; copilot login checked at launch (worked). Counts A/B/C (served id; tokens): claude-code 4/6/4 (claude-opus-5-5 + claude-haiku-4-5-20251001; 21447), codex 4/4/4 (not recorded; not recorded), copilot 2/2/2 (gpt-6.1-sol; 5787). Codex ran twice (script fix). Children launched (via procs.spawn from the spike, node adapters / copilot.exe, all job-owned and ended by exit): claude root pid 35040, codex 39744 and 34724, copilot 29796; plus uv/python runs of d0.py and the script. Operator message: none.",
+      "kind": "skill",
+      "skill": "investigate",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Run spike S-J4 on three ACP adapters",
+      "done_when": "three job.active counts per adapter, script and note committed, verdict on 4.4 assume",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-08T20:53:57Z",
+      "duration_seconds": 598.0
     }
   ],
   "changes": [
