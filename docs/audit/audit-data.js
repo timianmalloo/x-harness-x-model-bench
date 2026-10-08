@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-08T18:44:42Z",
+  "generated": "2026-10-08T18:58:31Z",
   "audit": [
     {
       "actor": null,
@@ -158271,6 +158271,45 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-08T18:44:41Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M4EE383A9BGY63C9X09R01KY",
+      "shortname": "xreds-fin",
+      "datetime": "2026-10-08T18:58:31Z",
+      "session": "xreds-fin",
+      "prompt": "X-REDS (Ruling 114): one parametrized red-first test in tests/test_rework_tasks.py over the seven RW variants whose property_check_pass clause is tests.",
+      "summary": "End 2026-10-08T18:58:31Z. Served model grok-4.7 (summary.json current_model_id). Dispatch start 2026-10-08T18:46:46Z. Outcome: split. Commit 8b73440a3f121d5984a590dedce4d50e333a42a7 (test pin). No separate red SHA: the seeded edit was not committed. Red evidence, in that commit's message: pytest exit 1, 7 failed in 2.19s, on assert result.errored == errored, result.output (tests/test_rework_tasks.py:665 at the red run; RW1-t2short and RW2-t2short) and assert result.failed == failed, result.output (:666; RW1 deaddelegate, RW1 duplicate, RW2 duplicate, RW2 ignorereturn, RW2 nohookorder). Hook line: 1 staged path(s) checked - all free or mine.\n\nR0: the per-test set is reachable from tests/ alone. run_hidden returns Hidden.failed and Hidden.errored. No finding. No coord request.\n\nSPECS in tests/test_rework_tasks.py (failed, errored), final-tree run of both hidden files, same ids as a turn-2-only run: RW1 deaddelegate (T2-5, empty); RW1 duplicate (T2-5, empty); RW1 t2short (T2-5, T2-1 T2-2 T2-3 T2-4); RW2 duplicate (T2-1 T2-2 T2-3 T2-4 T2-6, empty); RW2 ignorereturn (T2-6, empty); RW2 nohookorder (T2-1, empty); RW2 t2short (T2-3 T2-4, T2-1 T2-2 T2-5 T2-6). Count asserted == 7.\n\nContext samples (totalTokens): store earliest 13670; first one-liner before R0 39511; before R1 92482; at first edit 112355; after the red run 129761 (stop: above 118k, above the 113k R2 line, above the 128k ceiling); closing sample 150736 at 2026-10-08T18:58:31Z. Plan floor used for the start lines: 88000. Tokens from harness usage: not recorded (no usage.json).\n\nGates not started (split): guard list on 8b73440a; guard list again on a final commit; uv run pytest -q tests/test_rework_tasks.py tests/test_ng_tasks.py; uv run ruff check src tests tools; python docs/ai-forward-pack/scripts/docs-graph.py validate. R2 not started: the seven declared edits were not re-run under pytest after the seed was removed. No mutation file: the seeded edit was the red and was not committed; tests/ is not an engine input. No ring, no re-record. join-x-win is absent on this base, so window_check was not run.\n\nChildren (command, PID). Discovery python 39432 (failed attempt 36172). Red pytest 12820 under shell 38560. Shell 10416 at scratch setup. Logged descendants: git clone humanfriendly 11692; git rev-parse 12156; git archive 36188; git init 29952; git add 43480; git commit 32264; git status 10168; git clone schedule 35640; git rev-parse 12780; git archive 5292; git init 42308; git add 33360; git commit 39800; git status 6652; unittest test_money 43276 11988 9480 35496 16112 21856 30140 6604 35712; unittest test_failure 37964 44188 1116 17804 41472 32776 24336 26628 39372 400 7796 40176; git status 44248 27272. CREATE_NO_WINDOW was set on those logged children by the scratch plugin. coord session start and the pin commit's git/python PIDs were not captured.",
+      "kind": "skill",
+      "skill": "coordination-worker",
+      "tool": "grok",
+      "actor": "xreds-fin",
+      "artifacts": [
+        "tests/test_rework_tasks.py"
+      ],
+      "tags": [
+        "X-REDS",
+        "split",
+        "R-114"
+      ],
+      "outcome": "partial",
+      "compiled_from": "al-01M4EB1C2B3ERKGB2GFRXJHWR9",
+      "goal": "Pin, at the test ring, the exact per-test set each of the seven RW primary-flipping variants fails in its turn-2 hidden-test run. tests/ only.",
+      "done_when": "as the ruling states; a variant with reds refuses a record whose failing hidden tests differ",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": false
+      },
+      "started_at": "2026-10-08T18:46:46Z",
+      "duration_seconds": 705.0,
+      "git": {
+        "sha": "8b73440a3f121d5984a590dedce4d50e333a42a7",
+        "short": "8b73440a3",
+        "branch": "build/fin-x-reds",
+        "pushed": null
+      }
     }
   ],
   "changes": [
