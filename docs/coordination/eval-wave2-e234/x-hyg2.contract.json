@@ -38,7 +38,7 @@
         "permissions": "observed-only"
       },
       "prompts": [
-        "al-01M4EAVXN1F1CHNKB9KWRD8EK1"
+        "al-01M4EB1BEBGKYJW8VXN8GC6VQ6"
       ],
       "fallback": "Leader-held (FALLBACK-A): coordination-finish.md, Track assignment detail, names what follows a failed or split turn; the worker launches, spawns or messages nothing. R-103: the Leader reads the first response's served model (tools/grok_served_model.py --first --wait 120); not grok-4.7* means kill and retry once. Run with XAI_API_KEY unset, and read the fingerprint in that same environment (FPR-A). X-HYG turn 2 (Coordinator #57): base build/fin-x-hyg (turn 1's tip), new branch, because the runner never reuses a worker branch (RUN-BRANCH)."
     }
