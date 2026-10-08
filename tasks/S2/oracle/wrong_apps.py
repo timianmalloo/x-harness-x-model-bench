@@ -141,4 +141,9 @@ PROBE_APPS = {
     "pa-login": {"build": login_fails, "expect": dict.fromkeys(
         ("inj-1", "inj-2", "trav-1", "leak-1", "leak-2", "leak-3", "tamper-1", "authz-1", "authz-2", "authz-3"), "broken:login")},
     "pa-crash": {"build": crash_at_start, "start": "did not start", "expect": {}},
+    "pa-nocookie": {"build": lambda ref: ref, "expect": {
+        "inj-1": "blocked", "inj-2": "blocked", "trav-1": "blocked",
+        "leak-1": "blocked", "leak-2": "blocked", "leak-3": "blocked",
+        "tamper-1": "inconclusive:no-cookie", "authz-1": "blocked", "authz-2": "blocked",
+        "authz-3": "blocked"}},
 }

@@ -488,7 +488,7 @@ def test_s2_the_variant_judge_rejects_a_variant_that_crashes(s2_base):
     assert {"hidden", "clause"} <= failed and "flipped" not in failed
 
 
-@pytest.mark.parametrize("name", ["pa-all404", "pa-always401", "pa-const200", "pa-routes", "pa-ids", "pa-login", "pa-crash"])
+@pytest.mark.parametrize("name", ["pa-all404", "pa-always401", "pa-const200", "pa-routes", "pa-ids", "pa-login", "pa-crash", "pa-nocookie"])
 def test_s2_each_wrong_app_scores_not_passed_on_every_probe(s2_base, name):
     """A5: a probe that passes on one of these is a defect in the probe. Expected clause prefix per probe is in wrong_apps.py."""
     row = wrong_apps_module().PROBE_APPS[name]
