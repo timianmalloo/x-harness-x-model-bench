@@ -1641,6 +1641,34 @@ window.DOCS_INDEX = {
       "sourceSha256": "8861e94c8fb2f1b6e57c4c2f6cac5a1601fa2dea2a9af5addf7b3dfdee52f3b1"
     },
     {
+      "id": "note-20261008-spike-s-j4",
+      "path": "docs/notes/spike-s-j4.md",
+      "title": "Spike S-J4 - is the first session/update after the adapter's lazy helper spawns?",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-12-24",
+      "reviewSuggested": [],
+      "summary": "Verified on all three harnesses (Windows host; macOS unverified): the Job Object process count at the first session/update of turn 1 (B) is at least the count at the end of a no-tool turn 1 (C), so the W1-J section 4.4 assume: holds on Claude Code, Codex and Copilot. Counts A/B/C: Claude Code 4/6/4, Codex 4/4/4, Copilot 2/2/2.",
+      "tags": [
+        "spike",
+        "acp",
+        "multi-turn",
+        "job-object",
+        "baseline",
+        "S-J4"
+      ],
+      "links": [
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "c2c2dbee39dbd1860f0b0638409c3fbcd18eb02a9bcdc2bd8d066b0bdd9307c3"
+    },
+    {
       "id": "note-catalog-0.5-anchors",
       "path": "docs/notes/catalog-0.5-anchors.md",
       "title": "Catalog 0.5.dev normalisation anchors and weight corrections (R-78 condition 1, R-79)",
@@ -10748,5 +10776,5 @@ window.DOCS_INDEX = {
       "artifactId": "run-report-e2e4"
     }
   ],
-  "graphSha256": "66682af0d3cc1d3bc1cf66d3ac66a82aded34299b3596150c34473ce9488f21f"
+  "graphSha256": "63a4b2d347f69637ac37dbdc2d3cccfc8f0845f516bd1798511cdb4522a9dcd8"
 };
