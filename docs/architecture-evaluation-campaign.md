@@ -30,6 +30,7 @@ summary: >-
 ---
 
 # Architecture amendment: the Evaluation Campaign
+**Erratum (L-DOCS, 2026-10-09; ADR-0022, ADR-0023):** The campaign design in this amendment (the campaign ledger, power-analysis inputs, pre-registration record, eligibility and dominance) is retired for the lean benchmark question. The lean benchmark is two 60-cell batch runs of one lean ring, pooled at report time (ADR-0022), and is summarised over `verdicts.collect` with `stats.paired_delta` intervals (ADR-0023). The lean shape's ring tag is `lean` (ADR-0022).
 
 - **Status:** Revised after architect council rounds 1 and 2 (2026-10-03). Distributed Systems PASS; Security & Identity PASS (S2 re-checked and cleared, round 3); SRE and the other lenses PASS WITH CONDITIONS; see [Gate record](#gate-record).
 - **Tier:** T2 (the driving spec's cost-of-error tier: a wrong verdict misdirects pack changes on every harness).

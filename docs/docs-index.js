@@ -1107,7 +1107,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart LR\n  E1[E1 walking skeleton] --> E2[E2 multi-turn]\n  E1 --> E3[E3 three arms, rings, resume]\n  E1 --> E4[E4 remaining checks]\n  SLB[spike S-LB] --> E4\n  E2 --> J{converge: ADR-0021 §4 table + TLC}\n  E3 --> J\n  E4 --> J\n  J --> E5[E5 first campaign]"
         }
       ],
-      "sourceSha256": "a96c1e13df2e84d970d8a6f5708c878907047e21d83763576d0c31441f09d38a"
+      "sourceSha256": "e922cb8eb21ec99ae2c23eab923ad3dc816bc65ace0b5ac0ba566c254e558b01"
     },
     {
       "id": "arch-harness-bench",
@@ -1205,6 +1205,45 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "bd03b4a10dd1e1ac2342fc00f3b94e4bcaad9cc2f6862e61e2e8771045eeba71"
+    },
+    {
+      "id": "lean-preregistration",
+      "path": "docs/notes/lean-preregistration.md",
+      "title": "Lean benchmark pre-registration (LB-2)",
+      "type": "decision-note",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Lean benchmark (operator 2026-10-09)",
+      "reviewBy": "2026-12-31",
+      "reviewSuggested": [],
+      "summary": "The lean benchmark's pre-registration (spec LB-2), committed before batch 1's first cell: the question, the primary metric property_check_pass, pack-off vs pack-on, the pair, the exclusion rule, and the design MDEs 0.31 per harness and 0.19 pooled.",
+      "tags": [
+        "benchmark",
+        "lean-benchmark",
+        "pre-registration",
+        "statistics",
+        "mde"
+      ],
+      "links": [
+        {
+          "to": "spec-lean-pack-benchmark",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0022-lean-benchmark-two-batch-runs",
+          "rel": "relates-to"
+        },
+        {
+          "to": "adr-0023-lean-summary-over-verdicts",
+          "rel": "relates-to"
+        },
+        {
+          "to": "plan-strategy-lean-benchmark",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "9bc23003d14b20ba569349852c6e7cd5029872f87c7eb9f9210a8a733ea2c35a"
     },
     {
       "id": "mutation-record-phase1",
@@ -9828,7 +9867,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "8d50ba2cce95d9bf4dde873998a38159f010d4dcafc4cf27667d377c2c0a51ee"
+      "sourceSha256": "6e3d4e424b1053095e7d126dba5c8950b06f5bef25bfd980ed43ed986db4ccea"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -9998,7 +10037,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f4348a7accaf7cecee4809d58141a6b2e8ae32596eb5f6464dc3d8364f9eebd7"
+      "sourceSha256": "000e7755104bc4ce9eac3f9a8b9ca6b793b04c6efcacf7af1a25c9a0625feae1"
     },
     {
       "id": "x-evu-coverage",
@@ -10573,7 +10612,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TD\n  O([Open report]) --> H[Header + campaign block: question, arms, pre-registration hash, baseline, fixes, MDE]\n  O -->|run in no campaign| NC([No verdict section; harness-bench report as before])\n  H -->|run ineligible| IN([Verdict section states reason and differing items; no verdicts])\n  H --> T[Verdict table: property x harness, per comparison]\n  T -->|better or worse| E1[Effect, interval, MDE mark, token ratio]\n  T -->|no difference >= MDE| E2([Interval inside the MDE band; reader can rule out effects of MDE size])\n  T -->|inconclusive| E3([Reason: underpowered or not recorded, with counts; reader sees what more data would need])\n  E1 -->|dominance rule met| D([A dominates B: keep A for this harness])\n  E1 -->|better but costlier| C([better at xN tokens: reader weighs value against cost])\n  T -->|activate a verdict| RUNS[Runs filtered to its pairs] --> UF3([Harness-bench UF-3: cell card])\n  T -->|activate excluded n| XL[Excluded cells: id, arm, cause] --> UF3\n  O -->|pack section read directly| PK([Pack section: header and every intention verdict labelled exploratory; link to section 3])\n  UF3 -->|archive absent| NA([Archive not in this copy + path])\n  H -->|analysis not pre-registered| EX([Labelled exploratory wherever shown; not a verdict])"
         }
       ],
-      "sourceSha256": "3aac0f48f6bb821d5d0118995496abd4b0810071d5f6c2dfcfb1ded704b26163"
+      "sourceSha256": "3391dc034d296ac5ccf0f05872170d3e4a67d5b8192aa01c36f93a598183b28c"
     },
     {
       "id": "spec-harness-bench",
@@ -10692,7 +10731,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TD\n  A[P1 opens report.html] --> B{Lean shape?}\n  B -- no --> Z[Existing report, unchanged]\n  B -- yes --> C[Lean summary header: question, pre-registered yes/no, batches 2 of 2]\n  C --> D[Per-harness table]\n  D --> E{Interval contains 0?}\n  E -- yes --> F[Row says no detectable effect at MDE 0.31]\n  E -- no --> G[Row states direction and size]\n  F --> H[Token ratio beside it]\n  G --> H\n  H --> I{Pairs recorded = 20?}\n  I -- no --> J[Row shows k of 20, excluded cells with causes]\n  I -- yes --> K[Pooled row]\n  J --> K\n  K --> L{Harnesses disagree?}\n  L -- yes --> M[Note: read the per-harness rows]\n  L -- no --> N[Optional: expand per-property table]\n  M --> N\n  N --> O[Limits note: clustering caveat, checkpoint numbers]\n  C --> P{Only batch 1 graded?}\n  P -- yes --> Q[Header says 1 of 2 batches; rows show 10 pairs and MDE 0.42]\n  Q --> D"
         }
       ],
-      "sourceSha256": "35740b906d2b6a3187cf1a46799109af98cb5106945c7f936b5bbe36d8110e7d"
+      "sourceSha256": "afe2355220c202b4e1d8085a595b8fabddc15f023de179efa523512a31170a4a"
     },
     {
       "id": "threat-model",
@@ -10869,6 +10908,14 @@ window.DOCS_INDEX = {
       "artifactId": "design-run-lifecycle-model"
     },
     {
+      "id": "surface-architecture-evaluation-campaign",
+      "path": "docs/architecture-evaluation-campaign.html",
+      "title": "Architecture Evaluation Campaign",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "arch-evaluation-campaign"
+    },
+    {
       "id": "surface-proposals-benchmark-state-and-target",
       "path": "docs/proposals/benchmark-state-and-target.html",
       "title": "Benchmark: state and target",
@@ -10915,6 +10962,14 @@ window.DOCS_INDEX = {
       "kind": "knowledge-tool",
       "description": "Open an interactive knowledge artifact.",
       "artifactId": "coordination-phase1-finish"
+    },
+    {
+      "id": "surface-specs-enterprise-evaluation",
+      "path": "docs/specs/enterprise-evaluation.html",
+      "title": "Enterprise Evaluation",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "spec-enterprise-evaluation"
     },
     {
       "id": "surface-proposals-enterprise-production-portfolio",
@@ -11106,6 +11161,14 @@ window.DOCS_INDEX = {
       "artifactId": "spec-lean-pack-benchmark"
     },
     {
+      "id": "surface-notes-lean-preregistration",
+      "path": "docs/notes/lean-preregistration.html",
+      "title": "Lean Preregistration",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "lean-preregistration"
+    },
+    {
       "id": "surface-coordination-eval-wave2-e1-overnight-2026-10-05",
       "path": "docs/coordination/eval-wave2-e1/overnight-2026-10-05.html",
       "title": "Overnight 2026 10 05",
@@ -11138,5 +11201,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "9903afb072214374a94a0eaceaec398ef72f5af043727116fafd3d4c6d3e7538"
+  "graphSha256": "08d5e3e1038247748c3000a9e09866640f7a5664d1c89e0d2f8e44cee1cef6c9"
 };

@@ -117,6 +117,7 @@ from one confirmed plan identity, so no drift between plans can pose as a pack e
 ### User stories & acceptance criteria
 
 **LB-1. As P1, I want one plan of 120 cells, so that the run's size is fixed before any cell starts.**
+**Erratum (L-DOCS, 2026-10-09; ADR-0022, Spec drift):** LB-1 is superseded for the plan shape. Under ADR-0022, two `bench plan` calls each list 60 cells, from one lean ring and one arm binding, not one plan of 120 cells. The 120-cell counts in the Then bullets below are the superseded figures.
 - **Given** the lean matrix (10 tasks from `bench/rings/e5-pilot.yaml`'s subset, arms `off` and `on`, combos
   `cc-opus` `claude-opus-5-5`, `codex-sol` `gpt-6.1-sol`, `copilot-sol` `gpt-6.1-sol`, 2 repetitions)
   **When** `bench plan` runs with `--arm on=<pack source>@<40-hex commit>`
@@ -217,6 +218,8 @@ verdicts.**
 | Security / privacy | no new egress; tokens and credentials are handled as today | unchanged surfaces |
 | Portability | the report stays a self-contained HTML file | as the harness-bench spec |
 | Compatibility | a run without the lean shape (not 2 arms) renders no lean summary and keeps its report golden byte-identical | a golden test |
+
+**Erratum (L-DOCS, 2026-10-09; ADR-0022, Spec drift):** The lean shape is the ring tag `lean`, not "2 arms". A run without the `lean` ring tag renders no lean summary and keeps its report golden byte-identical.
 
 ### Boundary set
 

@@ -28,6 +28,8 @@ summary: >-
   merged. Pre-grid critical path Inferred at 12 h, 21-29 h at E2-E4's measured overrun.
 ---
 
+**Erratum (L-DOCS, 2026-10-09; ADR-0022, ADR-0023):** E5 and its two operator stops (pilot spend, grid spend and nights) are not run. The lean benchmark is two 60-cell batch runs of one lean ring (ADR-0022), summarised by ADR-0023.
+
 # Coordination plan: finish (backlog, pack upstream, E5 preconditions, E5)
 
 **Goal** (the operator-approved scope prompt, "run the propmpt now", 2026-10-08). E5 complete end to end (baseline at frozen 0.7, records reproduced, full pilot ring, admission, final power, pre-registration, the multi-night 3-arm grid with resume, verdicts with dominance and eligibility, a defect fix with re-grade), every backlog item below closed, pushed to `origin/main`, and a closing run report. **Done when:** every track below has joined `main` through a pushed batch with its gates green or at a baseline measured before the batch; ai-forward carries the pack items and this repo carries them through `/updatepack`; the ten records and the convergence check are re-run on the final head; the drill acknowledgement is recorded; E5's campaign is concluded with its verdicts; the run report (md + html) is committed and pushed. **Not in scope:** macOS (deferred by the operator); B-3, the E1 demo walk (punted by the operator); GitHub Actions; force pushes or history rewrites; GitHub Copilot as a worker. **Tier:** T2. **Fan-out cap:** 6 concurrent workers, at most 2 per external harness; the Leader, Coordinator and Owner seats do not count. **Objective, lexicographic:** completeness and rigor, then token cost, then speed.
@@ -265,11 +267,14 @@ Serial spine item 2. Every compile of this plan reads this section. Items 1 and 
 | 9. The run report, then `coord worktree cleanup` (report, then `--remove` with the operator's go) | last | Coordinator; Leader |
 | Loop-back | a red at a join that needs a `src/` fix reopens a small fix track under that file's owner, with a red SHA; **two loop-back slots** budgeted (about 100 calls each) | Coordinator |
 
+**Erratum (L-DOCS, 2026-10-09; ADR-0022, ADR-0023):** Spine 8 (E5, in order) and its operator stops A and B are superseded. The lean benchmark runs as two 60-cell batch runs of one lean ring (ADR-0022), not as a grid with pilot and registration steps. Spine 13 below is superseded in the same way.
+
 ### Critical path (Inferred)
 
 C-W0 and the T0 compiles (1 h) → X-DRILL (1.1-2.2 h) or X-S2/X-EVU's second turns (to T0 + 3.3 h) → P3 joins (about 5 × 15 min) → final records and convergence (about 1 h) → P4 (whole suite 13 min) ≈ **T0 + 6.5 h** to the final head. Then S-J4 and the E5 steps to the grid start: baseline and prior power (0.4 h) → pilot ring (90 cells × 1.68 min wall = 2.5 h) → pilot grading (90 × 1.16 min = 1.7 h) → admission and final power (0.5 h) → registration (0.3 h) ≈ **T0 + 12 h**, plus the operator's two stops. E2-E4 ran 1.8-2.4 times its Inferred path, so **21-29 h** is the honest figure; the grid's first night is Inferred at **2026-10-09 evening**. This is a model built from E2-E4 and grid-4 durations, not a measurement of these tracks. **Erratum (Coordinator #56, C-W0, 2026-10-08):** with 2 arms the pilot ring is 60 cells × 1.68 min = 1.7 h at 2 slots, its grading 60 × 1.16 min = 1.2 h, so the grid start is about **T0 + 10.6 h** (19-25 h at E2-E4's overrun). Inferred, as above.
 
 ## E5 sizing (sources named; Inferred where marked)
+**Erratum (L-DOCS, 2026-10-09; ADR-0022):** The E5 sizing below does not size the lean benchmark. The lean size is fixed by ADR-0022 (two 60-cell batch runs). It stays as the measured record of grid-4.
 
 **Measured inputs (grid-4, `runs/grid-4`, read here by `measure_grid.py` in the session scratchpad):** 276 cells, 3 combos (`cc-opus` `claude-opus-5-5`, `codex-sol` `gpt-6-sol`, `copilot-sol` `gpt-6-sol`), `budget_seconds` 900. Cell phase `2026-10-02T20:30:57Z` to the last `cell.outcome` `2026-10-03T04:14:19Z` = **7.72 h**; 15.62 cell-hours, so effective concurrency 2.0 and **1.68 min of wall per cell**. Grading `04:14:22Z` to `09:35:32Z` = **5.35 h**, **1.16 min per cell**. Median cell 1.5-2.4 min, p90 4.8-6.4 min, max 30.2 min. *Erratum to the spec's figure:* the spec says "a grid takes about 5 h to run" (`docs/specs/enterprise-evaluation.md:31`); the measured cell phase is 7.72 h, and `run.completed` follows grading (13.08 h from `run.started`). Grid-3: 276 cells, 15.59 cell-hours; its 23.26 h grading span holds two passes.
 
@@ -351,6 +356,8 @@ At a 10-hour night (Inferred) DR-E5's design is about **4 nights** of run, then 
 | 12 | **P4**: final records, convergence re-run, push | about 1.5 h | the final head |
 | 13 | **E5** (spine 8), with operator stops A and B | see E5 sizing | the goal |
 | 14 | P5; the run report (md + html); `coord worktree cleanup` (report, then `--remove` on the operator's go); the scratch root listed for deletion | 2 h | Done when |
+
+**Erratum (L-DOCS, 2026-10-09; ADR-0022, ADR-0023):** Superseded. The lean benchmark has no E5 operator stops. Its two batch runs and summary are ADR-0022 and ADR-0023.
 
 **Execution stop rules (scope prompt):** the health check trips twice; host instability (record evidence first); `main` cannot be made green within one bisect round; or an operator-only blocker gates every remaining track. One status table per update (task, what it does, status, harness and model); report only when done or blocked on the operator.
 
