@@ -5,7 +5,7 @@ earliest recorded instant), and a missing reading is None ("not recorded"), neve
 """
 
 import dataclasses
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 
@@ -128,10 +128,10 @@ def _lift(combo: str, task: str, arm: str, batch: int):
 
 def _cell(combo: str, task: str, arm: str, value, **kw) -> views.CellView:
     harness, model = next((h, m) for c, h, m in COMBOS if c == combo)
-    fields = {"outcome": "completed", "cause": None, "validity": "valid", "tokens": TOKENS} | kw
+    fields = {"outcome": "completed", "cause": None, "validity": "valid", "tokens": TOKENS, "code": None} | kw
     return views.CellView(
         cell_id=f"{combo}-{task}-{arm}", task=task, rep=1, label=f"{task}.{combo}.{arm}.r1", combo=combo, arm=arm,
-        harness=harness, model=model, outcome=fields["outcome"], cause=fields["cause"], code=None,
+        harness=harness, model=model, outcome=fields["outcome"], cause=fields["cause"], code=fields["code"],
         validity=fields["validity"], validity_code=None, wall_ms=views.Measure(1000), model_ms=views.Measure(None, "x"),
         tool_ms=views.Measure(None, "x"), idle_ms=views.Measure(None, "x"), tokens=fields["tokens"], tokens_reason=None,
         scores={verdicts.PRIMARY: views.Measure(value, None if value is not None else "no summary")})
@@ -330,3 +330,150 @@ def test_property_rows_are_family_major_over_harnesses():
     assert [(r.family, r.harness) for r in rows][:4] == [("S", "claude_code"), ("S", "codex"),
                                                           ("RS", "claude_code"), ("RS", "codex")]
     assert len(rows) == 10
+
+
+# ------------------------------------------------------------------ A5: token ratio, checkpoints, pre-registration
+
+
+def _priced(batch, cell):
+    """Tokens that differ by task: pack-off 100 + 10 i, pack-on 100 + 30 i (i = the task's index)."""
+    i = TASKS.index(cell.task)
+    return dataclasses.replace(cell, tokens={"m": {"output": 100 + (30 if cell.arm == TREAT else 10) * i}})
+
+
+def _token_obs(batches: list, combo: str, arm: str, keep=lambda b, task: True, task=lambda c: c.task) -> list:
+    return [stats.Obs(task(c), index, Decimal(views.sum_tokens(c.tokens)))
+            for index, b in enumerate(batches, 1) for c in b.view.cells
+            if c.combo == combo and c.arm == arm and keep(index, c.task)]
+
+
+def test_the_token_ratio_is_paired_ratio_over_token_complete_pairs():
+    batches = _batches(change=_priced)
+    row = _build(batches, None).rows[0]
+    expected = stats.paired_ratio(_token_obs(batches, "cc", REF), _token_obs(batches, "cc", TREAT), (REF, TREAT),
+                                  stats.Params(), "lean|cc|tokens")
+    assert row.token_ratio == expected and row.ratio_excluded == 0
+    assert row.token_ratio.point == Decimal(sum(100 + 30 * i for i in range(10))) / Decimal(sum(100 + 10 * i for i in range(10)))
+    assert row.token_ratio.lo < row.token_ratio.hi
+
+
+def test_pairs_without_tokens_or_with_zero_pack_off_tokens_are_excluded_and_counted():
+    def change(batch, cell):
+        cell = _priced(batch, cell)
+        if batch == 1 and cell.task == "S2" and cell.arm == TREAT:
+            return dataclasses.replace(cell, tokens=None)  # not recorded: never 0
+        if batch == 2 and cell.task == "RW1" and cell.arm == REF:
+            return dataclasses.replace(cell, tokens={"m": {"output": 0}})
+        return cell
+
+    batches = _batches(change=change)
+    row = _build(batches, None).rows[0]
+    lost = {(1, "S2"), (2, "RW1")}
+    keep = lambda b, task: (b, task) not in lost
+    expected = stats.paired_ratio(_token_obs(batches, "cc", REF, keep), _token_obs(batches, "cc", TREAT, keep),
+                                  (REF, TREAT), stats.Params(), "lean|cc|tokens")
+    assert (row.pairs, row.ratio_excluded) == (20, 2)
+    assert row.token_ratio == expected
+
+
+def test_no_token_complete_pair_reads_not_recorded():
+    row = _build(_batches(change=lambda b, c: dataclasses.replace(c, tokens=None)), None).rows[0]
+    assert (row.token_ratio, row.ratio_excluded) == (None, 20)
+
+
+def test_the_pooled_token_ratio_and_its_nonzero_width_at_one_pair_per_task():  # REUSE-A's control
+    batches = _batches(1, combos=ALL, change=_priced)
+    pooled = _build(batches, None).pooled
+    key = lambda c: f"{c.combo}/{c.task}"
+    ref = [o for combo in ALL for o in _token_obs(batches, combo, REF, task=key)]
+    treat = [o for combo in ALL for o in _token_obs(batches, combo, TREAT, task=key)]
+    assert pooled.token_ratio == stats.paired_ratio(ref, treat, (REF, TREAT), stats.Params(), "lean|pooled|tokens")
+    assert pooled.token_ratio.lo < pooled.token_ratio.hi
+    one = _build(batches, None).rows[0]
+    assert one.pairs == 10 and one.token_ratio.lo < one.token_ratio.hi
+
+
+def test_a_checkpoint_reports_measured_minutes_and_tokens_per_cell():
+    def change(batch, cell):
+        cell = _priced(batch, cell)
+        if cell.task in ("S1", "S2", "RS1") and cell.arm == TREAT or cell.cell_id == f"cc-RS2-{TREAT}":
+            return dataclasses.replace(cell, outcome="failed", cause="failed (provider)", code="HB-CELL-108")
+        if cell.cell_id == f"cc-RW1-{TREAT}":
+            return dataclasses.replace(cell, outcome="failed", cause="blocked (auth)", code="HB-CELL-202")
+        if cell.cell_id == f"cc-NG1-{TREAT}":
+            return dataclasses.replace(cell, outcome="timed_out", cause="timed_out", code="HB-CELL-301")  # the agent's
+        return cell
+
+    first, second = _batches(change=change)
+    first = dataclasses.replace(first, run_wall_ns=20 * 90 * 10**9, grading_ns=10 * 60 * 10**9, cells_graded=20)
+    checkpoint = _build([first, second], None).checkpoint
+    assert [c.run_id for c in checkpoint] == ["r1", "r2"]
+    one = checkpoint[0]
+    assert (one.cells, one.run_min_per_cell, one.grade_min_per_cell) == (20, Decimal("1.5"), Decimal("0.5"))
+    assert dict(one.tokens_per_cell) == {("cc", REF): Decimal(145), ("cc", TREAT): Decimal(235)}
+    assert dict(one.infra_failures) == {"cc": (5, 20, ("blocked (auth)", "failed (provider)"))}
+    k, n, _ = one.infra_failures["cc"]
+    assert Decimal(k) / n > Decimal("0.2")  # LB-3: over 20% is named, with its causes
+    # LB-3's projections are computable from the fields alone: batch 2's run time and its tokens.
+    assert one.run_min_per_cell * len(second.view.plan["cells"]) / 60 == Decimal("0.5")  # hours
+    assert sum(one.tokens_per_cell.values()) * 10 == Decimal(3800)
+
+
+def _single(checkpoint: tuple) -> tuple:
+    assert len(checkpoint) == 1, f"one batch gives one checkpoint, got {checkpoint!r}"
+    return checkpoint
+
+
+def test_a_checkpoint_value_not_recorded_is_none_never_zero():
+    batch = dataclasses.replace(_batches(1)[0], run_wall_ns=None, grading_ns=600, cells_graded=0)
+    (one,) = _single(_build([batch], None).checkpoint)
+    assert (one.run_min_per_cell, one.grade_min_per_cell) == (None, None)
+    (no_tokens,) = _single(_build(_batches(1, change=lambda b, c: dataclasses.replace(c, tokens=None)), None).checkpoint)
+    assert dict(no_tokens.tokens_per_cell) == {("cc", REF): None, ("cc", TREAT): None}
+    assert dict(no_tokens.infra_failures) == {"cc": (0, 20, ())}
+
+
+T = datetime(2026, 10, 10, 9, 0, tzinfo=UTC)
+SHA = "ab" * 32
+
+
+def _timed(started_1: datetime | None, started_2: datetime | None = None) -> list:
+    first, second = _batches()
+    return [dataclasses.replace(first, first_cell_started_at=started_1),
+            dataclasses.replace(second, first_cell_started_at=started_2)]
+
+
+def test_a_pre_registration_committed_before_batch_ones_first_cell_counts_and_seeds_the_rows():
+    batches = _timed(T, T - timedelta(days=1))  # batch 2's start is not the one compared
+    summary = _build(batches, lean.Prereg(SHA, T - timedelta(seconds=1)))
+    assert summary.prereg_status == f"pre-registered ({SHA[:12]})"
+    seeded = stats.Params(seed=verdicts.seed_for(SHA, "lean", "cc", (REF, TREAT)))
+    expected, _ = stats.paired_delta(_obs(batches, "cc", REF), _obs(batches, "cc", TREAT), (REF, TREAT), seeded, "lean|cc")
+    row = summary.rows[0]
+    assert (row.effect, row.lo, row.hi) == (expected.point, expected.lo, expected.hi)
+    pooled_seed = verdicts.seed_for(SHA, "lean", "pooled", (REF, TREAT))
+    key = lambda c: f"{c.combo}/{c.task}"
+    pooled, _ = stats.paired_delta(_obs(batches, "cc", REF, key), _obs(batches, "cc", TREAT, key), (REF, TREAT),
+                                   stats.Params(seed=pooled_seed), "lean|pooled")
+    assert (summary.pooled.lo, summary.pooled.hi) == (pooled.lo, pooled.hi)
+
+
+@pytest.mark.parametrize("committed", [T, T + timedelta(seconds=1)])
+def test_a_pre_registration_committed_at_or_after_batch_ones_first_cell_is_not_pre_registered(committed):
+    status = _build(_timed(T, T + timedelta(days=1)), lean.Prereg(SHA, committed)).prereg_status
+    assert status.startswith("Not pre-registered: committed ")
+    assert "after batch 1's first cell started" in status
+
+
+@pytest.mark.parametrize(("prereg", "started", "reason"), [
+    (None, T, "Not pre-registered: no pre-registration supplied"),
+    (lean.Prereg(SHA, None), T, "Not pre-registered: the pre-registration is not committed"),
+    (lean.Prereg(SHA, T - timedelta(days=1)), None, "Not pre-registered: batch 1's first cell start is not recorded"),
+])
+def test_a_missing_side_of_the_timing_is_not_pre_registered(prereg, started, reason):
+    summary = _build(_timed(started), prereg)
+    assert summary.prereg_status == reason
+    if prereg is None:  # stats' default seed
+        expected, _ = stats.paired_delta(_obs(_timed(started), "cc", REF), _obs(_timed(started), "cc", TREAT),
+                                         (REF, TREAT), stats.Params(), "lean|cc")
+        assert (summary.rows[0].lo, summary.rows[0].hi) == (expected.lo, expected.hi)
