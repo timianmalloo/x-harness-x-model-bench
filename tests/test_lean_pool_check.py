@@ -27,7 +27,9 @@ def _plan(run_id: str) -> dict:
             "ring": {"tag": "lean", "hash": "ring-hash"}, "matrix": {"combos": [dict(COMBO)]},
             "arms": {config.ARM_OFF: {"pack": None}, ARM_ON: {"pack": {"revision": 99, "commit": "e1f8ad5e"}}},
             "builds": {"claude-code": {"version": "2.1"}}, "profiles": {"claude-code": {"profile_hash": "p1"}},
-            "instruction_lists": {f"S1/{ARM_ON}": ["AGENTS.md"]}, "parameters": {"parallelism": 2},
+            "instruction_lists": [{"task": "S1", "task_version": "v1", "arm": ARM_ON, "build_sha256": "b1", "count": 1,
+                                   "instructions": ["AGENTS.md"]}],  # plan._probe_instructions' rows, sorted by task, arm
+            "parameters": {"parallelism": 2},
             "envelope_seconds": 1200, "cells": cells}
 
 
@@ -92,7 +94,10 @@ def test_rule_equal_cells_as_a_set_keyed_by_cell_id_on_task_combo_arm_and_model(
 ])
 def test_rule_equal_arms_builds_profiles_and_instruction_lists(key, sub):
     pool, view = _pair()
-    view.plan[key][sub] = {"changed": True}
+    if key == "instruction_lists":
+        view.plan[key][0]["count"] = 2
+    else:
+        view.plan[key][sub] = {"changed": True}
     exc = _refusal(pool, view)
     assert exc.code == "HB-STA-002"
     assert f"{key} differ: {sub}" in exc.message
