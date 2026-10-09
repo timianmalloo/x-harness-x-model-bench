@@ -5391,6 +5391,44 @@ window.DOCS_INDEX = {
       "sourceSha256": "075a5a09b5a83698a270050bb8fa41ab243a64ee6c0d3ac9a36cac2e5abf3e33"
     },
     {
+      "id": "coordinator-log-c65",
+      "path": "docs/coordination/coordinator-log/c65.md",
+      "title": "Coordinator #65 hand-back (2026-10-09): the L-SUM-C brief compiled, dispatchable, on Opus by Leader decision",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-09",
+      "reviewSuggested": [],
+      "summary": "Coordinator #65 on coord/lean-c65 (base 1d50774b) for Leader lean-leader-1, epoch 20. One brief, L-SUM-C, compiled in compiled mode by Coordinator #62's method and replayed through check_compile: dispatchable. Target is a Claude Code Agent-tool Opus sub-agent (a Leader decision, recorded as a plan deviation). TEST-E: on 1d50774b, `bench report --help` shows no `--pool` or `--prereg`, and `bench report b2 --pool b1` exits 2 (unrecognized arguments). No dispatch, merge or push.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile",
+        "lean-benchmark"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c62",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-lean",
+          "rel": "relates-to"
+        },
+        {
+          "to": "arch-lean-benchmark",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "4a95663605b753064b586c8de1b1b342e3cc5b3ef645d93cdb5f8cbbc057f379"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -10970,6 +11008,14 @@ window.DOCS_INDEX = {
       "artifactId": "coordinator-log-c62"
     },
     {
+      "id": "surface-coordination-coordinator-log-c65",
+      "path": "docs/coordination/coordinator-log/c65.html",
+      "title": "C65",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "coordinator-log-c65"
+    },
+    {
       "id": "surface-coordination-coordination-e2e4",
       "path": "docs/coordination/coordination-e2e4.html",
       "title": "Coordination E2E4",
@@ -11247,5 +11293,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "ea2378dc27be078566f3147d33a80574d3d13a835f1995199b5a98a9fd7fa2b6"
+  "graphSha256": "c4189261e663cb2ff62f467a93b657712466af28e10e3003c1db6859db3ba9a9"
 };
