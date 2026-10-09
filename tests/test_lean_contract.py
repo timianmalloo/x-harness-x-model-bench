@@ -110,6 +110,8 @@ def test_build_has_the_contract_signature():
     assert signature.return_annotation == "LeanSummary"
 
 
-def test_build_is_l_sum_as_to_write():
-    with pytest.raises(NotImplementedError, match="^L-SUM-A$"):
+def test_build_refuses_zero_batches():  # the contract's "one or two batches" (ruling on req-01M4H8P68QVZP4RQ33P9M1RFGF)
+    from harness_bench.errors import BenchError
+
+    with pytest.raises(BenchError, match="one or two batches"):
         _lean().build((), None)
