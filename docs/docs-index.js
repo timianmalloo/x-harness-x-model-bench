@@ -6024,6 +6024,35 @@ window.DOCS_INDEX = {
       "sourceSha256": "b81a21924c03712da251ea54d4ba305543f3278025a3ce804dc66681e8fd0794"
     },
     {
+      "id": "prompt-lean-benchmark",
+      "path": "docs/coordination/lean-benchmark-prompt.md",
+      "title": "Execution prompt - the lean pack benchmark (define-architecture, prepare and execute with coordination)",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-23",
+      "reviewSuggested": [],
+      "summary": "The operator's prompt for a fresh session: from the committed lean spec, run /define-architecture, /prepare-for-coordination and /execute-with-coordination, then run the 120-cell benchmark and report. Owner Fable; Leader and Coordinators Opus; Opus and Haiku sub-agents; Grok and Agy for distributed coding.",
+      "tags": [
+        "prompt",
+        "coordination",
+        "lean-benchmark"
+      ],
+      "links": [
+        {
+          "to": "spec-lean-pack-benchmark",
+          "rel": "implements"
+        },
+        {
+          "to": "plan-strategy-lean-benchmark",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "45f88a6c9bcfd9e8e3f848653a3674a0bc814916d60eb81669fbae86f5aff29f"
+    },
+    {
       "id": "proof-phase2",
       "path": "docs/proof/phase2.md",
       "title": "Proof Pack - phase 2 (wave-by-wave joins)",
@@ -10875,6 +10904,14 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     },
     {
+      "id": "surface-coordination-lean-benchmark-prompt",
+      "path": "docs/coordination/lean-benchmark-prompt.html",
+      "title": "Lean Benchmark Prompt",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "prompt-lean-benchmark"
+    },
+    {
       "id": "surface-proposals-lean-pack-benchmark",
       "path": "docs/proposals/lean-pack-benchmark.html",
       "title": "Lean Pack Benchmark",
@@ -10922,5 +10959,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "1ef54d1393e4c4bfc0ea0305071800af6d0357ee2a3834a8be019f5d74d8fd9e"
+  "graphSha256": "dfe4f4c9c4b3c958d2934847cbaa4714399ebcf189828011c72be38208e5e3c4"
 };
