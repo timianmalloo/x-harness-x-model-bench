@@ -38,7 +38,7 @@ ARM_OFF = "off"
 ARM_ID = re.compile(r"[a-z][a-z0-9-]{0,15}")
 PROPERTY_NAMES = ("security", "resilience", "rework", "no-guessing", "simplicity")
 CHECK_PROPERTIES = frozenset({"security", "resilience"})
-RING_TAGS = ("pilot", "pack-regression", "comparison")
+RING_TAGS = ("pilot", "pack-regression", "comparison", "lean")
 PACK_COMMIT = re.compile(r"[0-9a-f]{40}")
 METRIC_SOURCES = ("D", "J", "H", "P")
 # A cell budget is 1-60 minutes: every BOM task fits, so a larger one is an input error until a task needs it.
