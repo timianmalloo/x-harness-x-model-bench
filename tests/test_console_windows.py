@@ -23,6 +23,7 @@ OWNER_FILES = frozenset({
     "tests/test_security_s2.py",
     "tests/test_alarm.py",
     "tests/test_alarm_task.py",
+    "tests/fixtures/property/misc_apps.py",
 })
 
 OWNER_TRACKS = {
@@ -32,6 +33,7 @@ OWNER_TRACKS = {
     "tests/test_security_s2.py": "X-S2",
     "tests/test_alarm.py": "X-DRILL",
     "tests/test_alarm_task.py": "X-DRILL",
+    "tests/fixtures/property/misc_apps.py": "L-FIX-RF11",
 }
 
 ALLOWLIST: Mapping[str, str] = {
@@ -41,6 +43,10 @@ ALLOWLIST: Mapping[str, str] = {
     "tests/test_security_s2.py": "X-S2 owns this file and applies the convention in its own track",
     "tests/test_alarm.py": "X-DRILL owns this file and applies the convention in its own track",
     "tests/test_alarm_task.py": "X-DRILL owns this file and applies the convention in its own track",
+    "tests/fixtures/property/misc_apps.py": (
+        "L-FIX-RF11: RF-11's grandchild must take its host's console and stdio, so CREATE_NO_WINDOW would let an "
+        "attached host pass; STARTUPINFO SW_HIDE hides the console a detached host's grandchild gets"
+    ),
 }
 
 
