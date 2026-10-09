@@ -10448,6 +10448,53 @@ window.DOCS_INDEX = {
       "sourceSha256": "1da04b0fb82099ecc15ab77da1d33daeaf377f70c5c02ee7b8dda684265ae08e"
     },
     {
+      "id": "spec-lean-pack-benchmark",
+      "path": "docs/specs/lean-pack-benchmark.md",
+      "title": "Spec: Lean pack benchmark, pack-on vs pack-off per harness in about 2 h of run and 2 h of grading",
+      "type": "spec",
+      "status": "in-review",
+      "owner": "@timianmalloo",
+      "phase": "Lean benchmark (replaces E5's campaign for the pack-on/off question; operator 2026-10-09)",
+      "reviewBy": "2027-04-09",
+      "reviewSuggested": [],
+      "summary": "One question, one paired run: with the AI-Forward pack on versus off, does each harness (Claude Code claude-opus-5-5, Codex gpt-6.1-sol, Copilot gpt-6.1-sol) do better on the ten property tasks, and at what token cost? 120 cells (10 tasks x 2 arms x 3 harnesses x 2 repetitions) in two batches of 60, about 2 h of run and 2 h of grading. The primary metric is property_check_pass, paired by task, repetition and harness. The report adds a lean summary built from the existing paired two-stage bootstrap. This supersedes E5's campaign design for this question; the tasks, metrics, arms and rulings stay.",
+      "tags": [
+        "benchmark",
+        "spec",
+        "lean",
+        "pack-effect",
+        "property-tasks",
+        "paired",
+        "tokens"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "refines"
+        },
+        {
+          "to": "plan-strategy-lean-benchmark",
+          "rel": "implements"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "User flows",
+          "mermaid": "flowchart TD\n  A[P1 opens report.html] --> B{Lean shape?}\n  B -- no --> Z[Existing report, unchanged]\n  B -- yes --> C[Lean summary header: question, pre-registered yes/no, batches 2 of 2]\n  C --> D[Per-harness table]\n  D --> E{Interval contains 0?}\n  E -- yes --> F[Row says no detectable effect at MDE 0.31]\n  E -- no --> G[Row states direction and size]\n  F --> H[Token ratio beside it]\n  G --> H\n  H --> I{Pairs recorded = 20?}\n  I -- no --> J[Row shows k of 20, excluded cells with causes]\n  I -- yes --> K[Pooled row]\n  J --> K\n  K --> L{Harnesses disagree?}\n  L -- yes --> M[Note: read the per-harness rows]\n  L -- no --> N[Optional: expand per-property table]\n  M --> N\n  N --> O[Limits note: clustering caveat, checkpoint numbers]\n  C --> P{Only batch 1 graded?}\n  P -- yes --> Q[Header says 1 of 2 batches; rows show 10 pairs and MDE 0.42]\n  Q --> D"
+        }
+      ],
+      "sourceSha256": "35740b906d2b6a3187cf1a46799109af98cb5106945c7f936b5bbe36d8110e7d"
+    },
+    {
       "id": "threat-model",
       "path": "docs/security/threat-model.md",
       "title": "Threat Model",
@@ -10835,6 +10882,14 @@ window.DOCS_INDEX = {
       "description": "Open an interactive knowledge artifact."
     },
     {
+      "id": "surface-specs-lean-pack-benchmark",
+      "path": "docs/specs/lean-pack-benchmark.html",
+      "title": "Lean Pack Benchmark",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "spec-lean-pack-benchmark"
+    },
+    {
       "id": "surface-coordination-eval-wave2-e1-overnight-2026-10-05",
       "path": "docs/coordination/eval-wave2-e1/overnight-2026-10-05.html",
       "title": "Overnight 2026 10 05",
@@ -10867,5 +10922,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "7dbccdd980d5a17997e3bc94d8ed0ba9001211149af8e59ffb9bf99351967a0f"
+  "graphSha256": "1ef54d1393e4c4bfc0ea0305071800af6d0357ee2a3834a8be019f5d74d8fd9e"
 };
