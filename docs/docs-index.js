@@ -953,6 +953,86 @@ window.DOCS_INDEX = {
       "sourceSha256": "f06b88f66be36e7963c5792c5332d51e90a468390f05f35ab74f767ddc98d0dc"
     },
     {
+      "id": "adr-0022-lean-benchmark-two-batch-runs",
+      "path": "docs/adr/0022-lean-benchmark-two-batch-runs.md",
+      "title": "ADR-0022: The lean benchmark is two 60-cell runs of one lean ring, pooled at report time",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Lean benchmark (operator 2026-10-09)",
+      "reviewBy": "2027-04-09",
+      "reviewSuggested": [],
+      "summary": "The 120 cells run as two confirmed runs of one new ring, bench/rings/lean.yaml (the pilot ring's 60 cells with ring tag lean). Batch 1 runs and grades, the checkpoint reads it, then batch 2 runs. The report pools the two by `bench report <batch-2> --pool <batch-1>`, refusing unless both plans share one plan identity. One plan with repetitions 2 was rejected: its launch order interleaves repetitions and `bench run` grades only at the end, so the checkpoint could not be a real stop. The readiness records are not refreshed.",
+      "tags": [
+        "benchmark",
+        "lean-benchmark",
+        "ring",
+        "batch",
+        "checkpoint",
+        "plan-identity"
+      ],
+      "links": [
+        {
+          "to": "arch-lean-benchmark",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-lean-pack-benchmark",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0017-engine-identity-and-freeze",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "1839135cdc1ff2f17a5d8713bac3fd44be33643deb51858d4295272ce8c56ba5"
+    },
+    {
+      "id": "adr-0023-lean-summary-over-verdicts",
+      "path": "docs/adr/0023-lean-summary-over-verdicts.md",
+      "title": "ADR-0023: The lean summary pairs with verdicts.collect and intervals with stats.paired_delta, plus a two-stage paired_ratio",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Lean benchmark (operator 2026-10-09)",
+      "reviewBy": "2027-04-09",
+      "reviewSuggested": [],
+      "summary": "A new pure module, harness_bench/lean.py, builds the lean summary from one or two batch RunViews. It pairs and excludes with the existing verdicts.collect, and takes the effect interval from stats.paired_delta, the two-stage bootstrap (task, then repetition) the spec names. The token ratio uses one new sibling, stats.paired_ratio, with paired_delta's exact draw scheme. verdicts.verdict was rejected at the gate: its stratified interval has zero width at one pair per task. The pack-effect measures list is not changed, so no existing report golden moves.",
+      "tags": [
+        "benchmark",
+        "lean-benchmark",
+        "statistics",
+        "derived-view",
+        "report",
+        "token-ratio"
+      ],
+      "links": [
+        {
+          "to": "arch-lean-benchmark",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-lean-pack-benchmark",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0020-power-and-verdicts-stdlib",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "9de30204b2a5cad0f9c4cdcc00cc4dba2aeaf5a26d6f2f096a10546e4cd22595"
+    },
+    {
       "id": "arch-evaluation-campaign",
       "path": "docs/architecture-evaluation-campaign.md",
       "title": "Architecture amendment: the Evaluation Campaign (arms, multi-turn cells, campaigns, hidden checks)",
@@ -1072,6 +1152,59 @@ window.DOCS_INDEX = {
         }
       ],
       "sourceSha256": "5f0ef36e8cc9165d0f471d371ed98aa8973c0d80ea0714b9bdd9f13ea9da3065"
+    },
+    {
+      "id": "arch-lean-benchmark",
+      "path": "docs/architecture-lean-benchmark.md",
+      "title": "Architecture amendment: the lean pack benchmark (two batch runs of one lean ring, and a lean summary over verdicts)",
+      "type": "architecture",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Lean benchmark (operator 2026-10-09)",
+      "reviewBy": "2027-04-09",
+      "reviewSuggested": [],
+      "summary": "The smallest architecture that answers the lean spec. Two confirmed 60-cell runs of a new ring (bench/rings/lean.yaml, tag lean) are the two batches, so the checkpoint is a real stop. A new pure module, lean.py, pairs with the existing verdicts.collect, takes intervals from stats.paired_delta and one new two-stage sibling, stats.paired_ratio, and derives MDEs from power.mde_for. A new report section renders it, and `bench report --pool` pools the two batches under board.compare's preconditions plus lean rules. The pack effect, verdicts and catalog 0.7 do not change, and no stored quantity is added.",
+      "tags": [
+        "benchmark",
+        "architecture",
+        "lean-benchmark",
+        "ring",
+        "batch",
+        "derived-view",
+        "report"
+      ],
+      "links": [
+        {
+          "to": "arch-harness-bench",
+          "rel": "refines"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "relates-to"
+        },
+        {
+          "to": "spec-lean-pack-benchmark",
+          "rel": "implements"
+        },
+        {
+          "to": "plan-strategy-lean-benchmark",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0022-lean-benchmark-two-batch-runs",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0023-lean-summary-over-verdicts",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0020-power-and-verdicts-stdlib",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "01e7e003b6f0b3d0342d791d86a4134a0a4dfb6e2b9ea23b6c3a4f15b15ed642"
     },
     {
       "id": "mutation-record-phase1",
@@ -5207,7 +5340,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "4eeb29dc3d338d1db2727688622890d0717d6ce06448830502b5000ddbcab7c0"
+      "sourceSha256": "70186f9dfc616dbd1462b12f8677775f866b6f68a2ca55f265b3824bf623da0d"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -6050,7 +6183,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "45f88a6c9bcfd9e8e3f848653a3674a0bc814916d60eb81669fbae86f5aff29f"
+      "sourceSha256": "e09fc8d9d2edfd1dd52283eccd11bef6fd698c17cbe5a35c74c5fcd7b761b8e5"
     },
     {
       "id": "proof-phase2",
@@ -10959,5 +11092,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "dfe4f4c9c4b3c958d2934847cbaa4714399ebcf189828011c72be38208e5e3c4"
+  "graphSha256": "0238a212782520bc817607ddb0b25b2c76b19c379e59f4ece994ae5861dbcf29"
 };

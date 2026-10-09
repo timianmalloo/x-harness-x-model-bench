@@ -1547,3 +1547,29 @@ summary: >-
 - **Sweep:** `git ls-files tasks` lists no instruction-file name (Coordinator #60, at `1b61aedd`), and the ruling's grep found no oracle or hidden test that reads one (`docs/notes/rulings.md:2148`). The upstream trees of the other `workspace_from: source` tasks were not listed here; the check names any at its first base build.
 - **Control (Ruling 116; X-PACKOFF builds it, compiled `al-01M4EH46K4KDVC0NZ1A3Z8VPY1`):** `task_source` removes every `INSTRUCTION_FILES` path and every `*.instructions.md` under `INSTRUCTION_DIRS` from the extracted upstream tree, and a fail-closed base-tree check refuses a tree that still carries one with **HB-PRE-009**. Two red-first tests beside `tests/test_workspace.py:266`. Rung: code and test. The control is HB-PRE-009 plus `test_task_source_drops_the_upstream_agent_instruction_files` and `test_task_source_refuses_a_base_tree_that_carries_an_instruction_file` (`tests/test_workspace.py`). Red `9094a0a5`, green `7e40400a`; W1-L Erratum 5 `89e51450` (`docs/design/eval-property-tasks.md`). Follow-up `052b826c`: the new instruction walk duplicated the HB-PRE-002 mutant's find text, so the walk was repaired and the mutation file was not edited (MUT-E's shape). Recorded by Coordinator #61.
 - **Status:** `partially-controlled` (built by X-PACKOFF on `build/fin-x-packoff`; joins in P3; `controlled` at the join)
+
+## Leader entries (2026-10-09, lean benchmark `/define-architecture`; `docs/architecture-lean-benchmark.md`)
+
+### REUSE-A: a design reuses an existing statistic for a new input shape without probing it at that shape's boundary (candidate; Leader-caused)
+- **Signature:** a design picks an existing function because its contract reads right (the right metric, pairing and
+  output fields), and moves it to an input shape its first users never fed it: a different sample size per stratum,
+  a different number of strata, or a different level. At the new boundary the function returns a well-formed but
+  degenerate result, such as a zero-width interval or a constant. The design states the reuse as "the spec's intent
+  holds" without a run.
+- **Why it survives:** reuse is the Solution-Selection Ladder's preferred rung, so it reads as the careful choice. The
+  function's own tests pass, because they cover its original shape. A degenerate interval is still a valid
+  `(lo, hi)`, so nothing fails; it renders as false certainty.
+- **Instances:**
+  - `2026-10-09` (the Leader's first draft of ADR-0023): `verdicts.verdict` was chosen for the lean summary's effect and
+    token-ratio intervals. Its bootstrap holds tasks fixed and resamples within each, so at one pair per task (one
+    lean batch) both intervals have zero width. The adversary council's probe, re-run by the author: effect [0.4, 0.4]
+    and ratio [2, 2], where `stats.paired_delta` gives [0.1, 0.7] on the same data. Caught at the gate, before any code.
+- **Sweep:** the other reuse claims in the same architecture: `power.mde_for` (probed: 10/20/30/60 pairs reproduce the
+  spec), `verdicts.collect` (pairing only, no statistic), `stats.paired_delta` (probed above at 1 repetition), and
+  `stats.no_detectable_effect` (a pure comparison; no boundary).
+- **Control (proposed; rung: test):** L-SUMMARY's red-first tests include a lean interval and a lean ratio at one pair per
+  task with differing tasks, each asserting a nonzero width (`docs/architecture-lean-benchmark.md`, *Contracts*,
+  `stats.paired_ratio`). The class-level upgrade trigger is a second instance: then `/define-architecture`'s gate
+  prompt gains "probe every reused statistic at the design's smallest sample per stratum", as a Definition-of-Done
+  item.
+- **Status:** `candidate`
