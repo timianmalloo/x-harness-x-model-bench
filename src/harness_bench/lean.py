@@ -24,6 +24,7 @@ class BatchInput:
     run_wall_ns: int | None  # from the extracted wall-clock helper
     grading_ns: int | None  # current pass, from grading.started/completed mono_ns
     cells_graded: int | None
+    first_cell_started_at: datetime | None  # the batch's earliest attempt.process_started; None = not recorded
 
 
 @dataclass(frozen=True)

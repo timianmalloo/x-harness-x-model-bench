@@ -21,6 +21,7 @@ FIELDS = {
         ("run_wall_ns", "int | None"),
         ("grading_ns", "int | None"),
         ("cells_graded", "int | None"),
+        ("first_cell_started_at", "datetime | None"),  # additive: Leader ruling on req-01M4H8D2JGF50ZP7F1Z65GR8B9
     ),
     "Prereg": (
         ("sha256", "str"),
