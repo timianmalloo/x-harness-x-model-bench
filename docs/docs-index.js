@@ -5417,7 +5417,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "70186f9dfc616dbd1462b12f8677775f866b6f68a2ca55f265b3824bf623da0d"
+      "sourceSha256": "09e0acc565134101b9f60c704131d64517fafd1923d66df4043f8b7fa26c3b3b"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -9977,7 +9977,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "19b55c58193ac0d50852b8b49416e07fb5f04622903a9b83815942111ad8fecb"
+      "sourceSha256": "c2be58c7456bf177d7caf5ff252652772027305dbfeb33043f9d89480c090f80"
     },
     {
       "id": "coordination-phase1-finish",
@@ -10769,7 +10769,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TD\n  A[P1 opens report.html] --> B{Lean shape?}\n  B -- no --> Z[Existing report, unchanged]\n  B -- yes --> C[Lean summary header: question, pre-registered yes/no, batches 2 of 2]\n  C --> D[Per-harness table]\n  D --> E{Interval contains 0?}\n  E -- yes --> F[Row says no detectable effect at MDE 0.31]\n  E -- no --> G[Row states direction and size]\n  F --> H[Token ratio beside it]\n  G --> H\n  H --> I{Pairs recorded = 20?}\n  I -- no --> J[Row shows k of 20, excluded cells with causes]\n  I -- yes --> K[Pooled row]\n  J --> K\n  K --> L{Harnesses disagree?}\n  L -- yes --> M[Note: read the per-harness rows]\n  L -- no --> N[Optional: expand per-property table]\n  M --> N\n  N --> O[Limits note: clustering caveat, checkpoint numbers]\n  C --> P{Only batch 1 graded?}\n  P -- yes --> Q[Header says 1 of 2 batches; rows show 10 pairs and MDE 0.42]\n  Q --> D"
         }
       ],
-      "sourceSha256": "046db64ddddbc5e26cadda714438239bbb0aec85eb5ac4e5d6651af18924039b"
+      "sourceSha256": "6513a452fa04e856f1e8bcc2c17843ca7545965f290ee697e6a4c6ab1f56b0f8"
     },
     {
       "id": "threat-model",
@@ -11247,5 +11247,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "e6acd4785b5eba14c833244ab6543c8ca4863c63e4589f0baa9bd08640329fef"
+  "graphSha256": "ea2378dc27be078566f3147d33a80574d3d13a835f1995199b5a98a9fd7fa2b6"
 };
