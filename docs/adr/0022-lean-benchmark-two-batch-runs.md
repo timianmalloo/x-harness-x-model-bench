@@ -48,8 +48,10 @@ Read on 2026-10-09 at `307ec787`:
 - Cell folders are `cells_root/<run_id>/<cell_id>` (`engine.py:727`). The judge verdict store is keyed by
   request, schema, model and invocation hashes, not by cell id (`gateway/store.py:3`, `:30`). Two runs with equal
   `cell_id`s do not collide. [Verified]
-- `config.RING_TAGS = ("pilot", "pack-regression", "comparison")` (`config.py:41`); a ring tag outside it is
-  refused by `bench validate` (`config.py:170-171`). [Verified]
+- `config.RING_TAGS = ("pilot", "pack-regression", "comparison")` (`config.py:41`). A ring tag outside it is
+  refused by `config.validate_matrix` (`config.py:170-171`), which `bench plan` calls (`cli.py:330-347`).
+  **Amended at the coordination gate, 2026-10-09:** the first text said `bench validate`. `bench validate` checks
+  only `matrix.example.yaml` (`config.py:497`), then readiness. [Verified]
 
 ## Decision
 
@@ -62,8 +64,10 @@ Read on 2026-10-09 at `307ec787`:
 3. **Pooling is explicit:** `bench report <batch-2> --pool <batch-1>`. In the pooled view, the `--pool` run's
    cells are repetition 1 and the reported run's cells are repetition 2. Pooling uses **one** comparability
    function: `board.compare`'s preconditions (`board.py:726-795`: graded, ring hash, combos, BOM, catalog, task
-   versions, platform) are extracted into a function that `compare` keeps calling, with the same messages. The
-   pooling check adds three lean rules to it, and refuses with HB-STA-002, naming each difference:
+   versions, platform) are extracted into a function that `compare` keeps calling, with the same messages and codes.
+   So a ring-hash difference still fails fast with **HB-PLN-003** (`board.py:729-733`), and every other difference
+   collects into **HB-STA-002** (amended at the coordination gate, 2026-10-09). The pooling check adds three lean
+   rules to it, naming each difference:
    - both plans carry ring tag `lean`;
    - both plans have equal `cells` **as a set keyed by `cell_id`**, compared on task, combo, arm and model. The
      stored list is in launch order, which depends on `launch_seed`, and that differs per plan
@@ -81,9 +85,18 @@ Read on 2026-10-09 at `307ec787`:
    the batches. The run report records, at each batch start, that commit and
    `identity.identity_hash(identity.manifest(...))` (ADR-0017's content-addressed identity). Unequal values are a
    stop, not a footnote.
-6. **Readiness records (strategy §3 e):** not refreshed. `plan.py` and `run` do not import `readiness` (strategy
-   §2, read by grep). Before batch 1 the Leader runs `bench validate` and one `bench discriminate` trial each for
-   NG1 and S2, whose base trees changed under Ruling 116. A failed trial stops the run and goes to the operator.
+6. **Readiness records (strategy §3 e):** the eight unaffected records are not refreshed. `plan.py` and the engine
+   do not import `readiness`. `cli.py` reads it in `bench validate` (`:308`) and for the report's expected-NA and
+   hidden-test disagreement checks (`:582-583`). **Amended at the coordination gate, 2026-10-09:**
+   - A record's identity hashes every `src/harness_bench` file (`identity.py:211-213`), so every join makes every
+     record stale. On `954b9e9d`, `bench validate` already exits 1, with 9 × HB-RDY-002 and 1 × HB-RDY-001 (S2).
+   - So on the **gated head** (after the batch gate, before batch 1) the Leader runs one `bench discriminate` trial
+     each for NG1 and S2, whose base trees changed under Ruling 116. No judge call is made.
+   - The trials write create-once records under `bench/discrimination/<task>/`. The Leader commits them. They are
+     data that the engine identity does not hash, so the gated engine is unchanged.
+   - **Pass:** each trial discriminates, and `bench validate` then lists HB-RDY-002 only, for the eight unrefreshed
+     tasks, and no other problem line.
+   - A failed trial stops the run and goes to the operator.
 
 ## Consequences
 

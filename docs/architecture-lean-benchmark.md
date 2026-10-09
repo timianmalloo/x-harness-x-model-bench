@@ -149,7 +149,15 @@ BatchCheckpoint
   run_min_per_cell: Decimal | None; grade_min_per_cell: Decimal | None   # None = "not recorded", never 0
   tokens_per_cell: Mapping[(combo, arm), Decimal | None]
   infra_failures: Mapping[combo, (int, int, tuple[str, ...])]          # (k, n, causes); > 20% is named (LB-3)
+ESTIMATE                             # module constant: LB-3's Inferred estimates, shown beside the measured values
+  run_min_per_cell = 1.12; grade_min_per_cell = 1.16; tokens_per_cell = 1_060_000
 ```
+
+**Identity classes (gate amendment, 2026-10-09).** `test_identity.py:103-106` requires every `src/harness_bench`
+file in `identity.CLASSES`. `lean.py` is classed `"grade"`, as `verdicts.py` is (`identity.py:103`), by
+L-CONTRACT. `report/lean_section.py` is classed `"grade"`, as `report/pack_improvement.py` is (`:94`), by
+L-SUM-B1. **Arm ids** come from `plan.comparisons` and `config.ARM_OFF`, never new `"on"`/`"off"` or `"pack"`
+literals (`tests/test_arms_guard.py:26`, `:96-97`).
 
 **`bench report <run> [--pool <run>] [--prereg <path>]`:**
 - a non-lean run with `--pool` is refused;

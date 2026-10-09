@@ -990,7 +990,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "1839135cdc1ff2f17a5d8713bac3fd44be33643deb51858d4295272ce8c56ba5"
+      "sourceSha256": "9d561e1ae5190fe73ea5b6c3769e92e325543c3bac7eb8d07cf5db654c7c3731"
     },
     {
       "id": "adr-0023-lean-summary-over-verdicts",
@@ -1030,7 +1030,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9de30204b2a5cad0f9c4cdcc00cc4dba2aeaf5a26d6f2f096a10546e4cd22595"
+      "sourceSha256": "3617c2a865f8737a25549b8271cecae24c07e232d60f952eb24fab22b80c6972"
     },
     {
       "id": "arch-evaluation-campaign",
@@ -1204,7 +1204,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "01e7e003b6f0b3d0342d791d86a4134a0a4dfb6e2b9ea23b6c3a4f15b15ed642"
+      "sourceSha256": "bd03b4a10dd1e1ac2342fc00f3b94e4bcaad9cc2f6862e61e2e8771045eeba71"
     },
     {
       "id": "mutation-record-phase1",
@@ -9865,6 +9865,44 @@ window.DOCS_INDEX = {
       "sourceSha256": "a65f5281ebb860ff8e60ef204880b97f5869747d3ff91460400da058b05982a1"
     },
     {
+      "id": "coordination-lean",
+      "path": "docs/coordination/coordination-lean.md",
+      "title": "Coordination plan - the lean pack benchmark (build, join, run, report)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-23",
+      "reviewSuggested": [],
+      "summary": "Nine tracks in two dispatch waves (six at the cap), plus a Leader-held serial spine of carry-over joins, the batch gate, readiness on the gated head and the two-batch run. The work splits at the LeanSummary contract, which is fixed in code first. Every derived and register artifact needs no coordination, and every authored file has one owner at a time. Five tracks were struck. The plan was revised after an adversary gate (one veto, cleared by change).",
+      "tags": [
+        "coordination",
+        "worktrees",
+        "parallelism",
+        "lean-benchmark"
+      ],
+      "links": [
+        {
+          "to": "arch-lean-benchmark",
+          "rel": "implements"
+        },
+        {
+          "to": "spec-lean-pack-benchmark",
+          "rel": "implements"
+        },
+        {
+          "to": "prompt-lean-benchmark",
+          "rel": "depends-on"
+        },
+        {
+          "to": "coordination-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "19b55c58193ac0d50852b8b49416e07fb5f04622903a9b83815942111ad8fecb"
+    },
+    {
       "id": "coordination-phase1-finish",
       "path": "docs/coordination/coordination-phase1-finish.md",
       "title": "Coordination plan - finish harness-bench phase 1 (pre-merge findings, N5, mutation bar, E2E)",
@@ -10863,6 +10901,14 @@ window.DOCS_INDEX = {
       "artifactId": "coordination-finish"
     },
     {
+      "id": "surface-coordination-coordination-lean",
+      "path": "docs/coordination/coordination-lean.html",
+      "title": "Coordination Lean",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "coordination-lean"
+    },
+    {
       "id": "surface-coordination-coordination-phase1-finish",
       "path": "docs/coordination/coordination-phase1-finish.html",
       "title": "Coordination plan - finish harness-bench phase 1 (pre-merge findings, N5, mutation bar, E2E)",
@@ -11092,5 +11138,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "0238a212782520bc817607ddb0b25b2c76b19c379e59f4ece994ae5861dbcf29"
+  "graphSha256": "9903afb072214374a94a0eaceaec398ef72f5af043727116fafd3d4c6d3e7538"
 };

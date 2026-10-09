@@ -92,8 +92,10 @@ The strategy expected the smallest change to be adding `property_check_pass` to 
    - the CLI resolves `--prereg PATH` to the file's sha256 and its commit time (`git log -1 --format=%cI`; None if
      uncommitted);
    - `lean.build` compares that time with batch 1's first cell start, read from the view;
-   - the seed is `verdicts.seed_for(prereg_sha256, "lean", <combo or "pooled">, ("off", "on"))`. With no
-     pre-registration, the seed is `stats`' default and the header reads `Not pre-registered: <reason>`.
+   - the seed is `verdicts.seed_for(prereg_sha256, "lean", <combo or "pooled">, <the plan's one comparison>)`.
+     The arm ids are read from `plan.comparisons`, never typed in as literals (`tests/test_arms_guard.py`; amended at
+     the coordination gate, 2026-10-09). With no pre-registration, the seed is `stats`' default and the header reads
+     `Not pre-registered: <reason>`.
 9. **Rendering: a new `report/lean_section.py` at the campaign section's slot** (after validity, before the
    leaderboard; `report/html.py:2259-2266`), on a lean-shaped run (ADR-0022 §4). The header carries:
    - the question and the pre-registration status;
