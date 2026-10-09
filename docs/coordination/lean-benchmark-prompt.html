@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lean Benchmark Prompt</title><style>
+:root { color-scheme: light dark; --bg:#f7f5ef; --panel:#fff; --text:#20201d;
+  --muted:#66645f; --line:#d9d5ca; --accent:#3157a4; --code:#f0eee7; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#171816; --panel:#20221f; --text:#f2f1eb; --muted:#b8b6ae;
+    --line:#3d403a; --accent:#8fb0ff; --code:#292c27; }
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text);
+  font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { width:min(920px,calc(100% - 32px)); margin:32px auto; padding:40px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+h1,h2,h3,h4,h5,h6 { line-height:1.2; margin:1.5em 0 .55em; }
+h1 { margin-top:0; font-size:2.2rem; } h2 { border-bottom:1px solid var(--line); padding-bottom:.3em; }
+a { color:var(--accent); } code { background:var(--code); padding:.12em .35em; border-radius:4px; }
+pre { overflow:auto; padding:16px; background:var(--code); border-radius:8px; }
+pre code { padding:0; } blockquote { margin:1em 0; padding:.2em 1em; color:var(--muted);
+  border-left:4px solid var(--line); }
+table { width:100%; border-collapse:collapse; margin:1em 0; display:block; overflow:auto; }
+th,td { padding:.55em .75em; border:1px solid var(--line); text-align:left; vertical-align:top; }
+th { background:var(--code); } hr { border:0; border-top:1px solid var(--line); }
+.source { color:var(--muted); font-size:.9rem; margin-bottom:2rem; }
+@media (max-width:640px) { main { width:100%; margin:0; padding:24px 18px; border:0; border-radius:0; } }
+</style></head><body><main><div class="source">Rendered from lean-benchmark-prompt.md</div><h1>Execution prompt: the lean pack benchmark</h1>
+<p>Paste everything below the line into a fresh Claude Code session started in <code>C:\Projects\x-harness-x-model-bench</code>.</p>
+<hr>
+<p>Take the lean pack benchmark from its committed spec to a reported result. The four steps run in this session, in order; each starts only when the one before it has committed and its gate has passed:</p>
+<ol><li><code>/define-architecture</code>;</li><li><code>/prepare-for-coordination</code>;</li><li><code>/execute-with-coordination</code>, as Leader;</li><li>the benchmark run itself (two batches) and its report.</li></ol>
+<p>The operator wants this done fast and small. The project spent weeks on a design that grew to four nights; the lean design exists to stop that. Prefer reuse over new code, fewer tracks over more, and stop as soon as the result is proven. The objective is lexicographic: completeness and rigor first, token cost second, speed third.</p>
+<p><strong>Sources of record</strong> (read them first; the repo wins over this prompt):</p>
+<ul><li>the spec, <code>docs/specs/lean-pack-benchmark.md</code> (the contract);</li><li>the strategy, <code>docs/plans/strategy-lean-benchmark.md</code> (where the repo stood on 2026-10-09, the gaps, and the</li></ul>
+<p>lessons in its section 5);</p>
+<ul><li>the operator-accepted proposal, <code>docs/proposals/lean-pack-benchmark.html</code> (revision 2, &quot;perfect&quot;, 2026-10-09);</li><li><code>docs/notes/rulings.md</code> (Rulings 115 and 116 bind);</li><li><code>docs/lessons/defect-classes.md</code>;</li><li>the run report and the coordination plan of the finish run (<code>docs/coordination/coordination-finish.md</code>).</li></ul>
+<p><strong>Start-state check, before anything else (stop and report if it fails):</strong></p>
+<ul><li><code>origin/main</code> contains the spec, the strategy and this prompt, and the finish run&#x27;s P2 and P3 joins (`git log</li></ul>
+<p>origin/main --oneline | grep -E &quot;join-x-packoff|join-x-e5m&quot;`).</p>
+<ul><li>Run <code>coord doctor</code> and <code>pack-doctor.py</code>, and read their states back.</li><li>The finish run&#x27;s carry-over items are each landed or explicitly closed: X-ALARMCWD (the alarm wrapper runs from the</li></ul>
+<p>repo), X-FLAKE turn 3, F-PACK phase 1 pushed to ai-forward, and the scheduled task <code>HarnessBenchAlarmDrill</code> deleted (operator&#x27;s go). Any item that is not done becomes a track or an operator action in the plan. It is never silently dropped.</p>
+<p><strong>Goal:</strong> a lean benchmark run and reported, exactly as the spec defines it:</p>
+<ul><li>10 property tasks × 2 arms (pack-off, pack-on) × 3 harnesses × 2 repetitions = 120 cells, in two batches of 60, with</li></ul>
+<p>the checkpoint (spec LB-3) between them;</p>
+<ul><li>the primary metric <code>property_check_pass</code>, paired by task × repetition × harness through the existing</li></ul>
+<p><code>stats.paired_delta</code>;</p>
+<ul><li>the report&#x27;s lean summary: per-harness rows (MDE 0.31), a pooled row (MDE 0.19), per-property exploratory rows, and</li></ul>
+<p>token ratios;</p>
+<ul><li>a one-paragraph pre-registration committed before batch 1;</li><li>a closing run report (md + html) under <code>docs/coordination/</code>, committed and pushed.</li></ul>
+<p>Targets: about 2 h of run and about 2 h of grading (Inferred; the checkpoint measures them). The token budget is about 127M (Inferred).</p>
+<p><strong>Benchmark cells pin their models.</strong> These are the operator&#x27;s standing principle (&quot;Codex and GHCP should always be latest Sol, Claude Code should always be latest Opus&quot;):</p>
+<ul><li><code>cc-opus</code>: Claude Code <code>claude-opus-5-5</code>;</li><li><code>codex-sol</code>: Codex <code>gpt-6.1-sol</code>;</li><li><code>copilot-sol</code>: GitHub Copilot <code>gpt-6.1-sol</code>.</li></ul>
+<p>Re-check &quot;latest&quot; at the start. If a newer Opus or Sol id is served, ask the operator before changing a pin.</p>
+<p><strong>Seats</strong> (operator, 2026-10-09):</p>
+<ul><li><strong>Owner:</strong> Claude Code, Fable (<code>claude-fable-5-1</code>), session <code>owner-fable</code>. Rules every decision request into</li></ul>
+<p><code>docs/notes/rulings.md</code>.</p>
+<ul><li><strong>Leader:</strong> Claude Code, Opus (<code>claude-opus-5-5</code>), the next lease epoch (<code>coord leader pin</code>; renew it in a loop).</li><li>Merges only in a dedicated integration tree, and batches joins.</li><li>Pushes with exactly <code>git -C C:/Projects/x-harness-x-model-bench push origin &lt;gated sha&gt;:main</code>, never forced, and</li></ul>
+<p>reads origin back after.</p>
+<ul><li>Fast-forwards the primary after each push.</li><li><strong>Coordinators:</strong> Claude Code, Opus (<code>claude-opus-5-5</code>), hand-back sessions. They compile every brief (compiled</li></ul>
+<p>mode, replayed through the runner&#x27;s check before dispatch) and own the errata and the register.</p>
+<ul><li><strong>Claude sub-agents</strong> (the Agent tool, always with an explicit <code>model</code>):</li><li>Opus for work that needs judgement: the lean summary&#x27;s code review, any loop-back fix, the run report&#x27;s analysis.</li><li>Haiku (<code>claude-haiku-4-5-20251001</code>) for mechanical work: docs errata, cleanup reports, read-only sweeps, the</li></ul>
+<p>pre-registration&#x27;s formatting check.</p>
+<ul><li><strong>Distributed coding, through `coord-runner`, served id read back for every dispatch:</strong></li><li><strong>Grok</strong> <code>grok-4.7</code>, effort high. R-103: read the first response&#x27;s served model with `tools/grok_served_model.py</li></ul>
+<p>--tree<code>; not </code>grok-4.7*` means kill and retry once. Run with XAI_API_KEY unset.</p>
+<ul><li><strong>Agy</strong> <code>gemini-3.8-flash-high</code>.</li><li>Spread the coding tracks across both in parallel.</li><li><strong>Not workers in this run:</strong> Codex, Sonnet, and GitHub Copilot (a benchmark subject only, never a worker).</li></ul>
+<p><strong>Work to divide</strong> (the strategy&#x27;s gaps; verify each against the repo; the Simplifier strikes anything the spec does not need):</p>
+<ul><li><strong>L-MATRIX.</strong> The lean matrix file or files, from <code>bench/rings/e5-pilot.yaml</code>&#x27;s subset, arms and pinned combos, with</li></ul>
+<p>2 repetitions. Proof:</p>
+<ul><li><code>bench plan ... --arm on=&lt;pack source&gt;@&lt;40-hex commit&gt;</code> exits 0 with exactly 120 cells (60 per batch);</li><li>every pack-off cell lists 0 instruction files;</li><li>every cell carries its model pin.</li></ul>
+<p>Bind the pack-on arm to the pack revision the operator names. The finish run planned against <code>C:/Projects/ai-forward@4a22f12c4cbc9cd403627995109ccfdc1c6fa9c6</code>; ask if the revision should move to the F-PACK head.</p>
+<ul><li><strong>L-SUMMARY.</strong> The lean summary per spec LB-4 to LB-7 and Part B/C. The expected smallest change: add</li></ul>
+<p><code>property_check_pass</code> to the pack effect&#x27;s measures (<code>board.py:588</code>, <code>:825</code> build <code>[&quot;pass_at_1&quot;, *cat.areas]</code>), plus the report section. Red first, with mutants. A non-lean run&#x27;s report golden stays byte-identical. No second interval engine, and no new metric (catalog 0.7 stays frozen).</p>
+<ul><li><strong>L-DOCS.</strong> Dated errata beside the text that retire E5&#x27;s campaign design for this question, in</li></ul>
+<p><code>docs/specs/enterprise-evaluation.md</code>, <code>docs/coordination/coordination-finish.md</code> (spine 8, <em>E5 sizing</em>, the operator stops) and <code>docs/architecture-evaluation-campaign.md</code>, following the spec&#x27;s supersession table. Plus the pre-registration paragraph (spec LB-2), committed before batch 1. Haiku can draft; a Coordinator commits.</p>
+<ul><li><strong>Architecture decisions</strong> for <code>/define-architecture</code> to settle, each with a recommendation in the strategy&#x27;s §3:</li><li>one run with 2 repetitions, or two 1-repetition runs pooled;</li><li>where the summary lives;</li><li>whether to refresh the readiness records. The recommendation is <code>bench validate</code> plus one discrimination trial</li></ul>
+<p>each for NG1 and S2, whose base trees changed under Ruling 116.</p>
+<p><strong>Rules the plan must encode</strong> (measured lessons, strategy §5):</p>
+<ol><li><strong>Floors (CEIL-A)</strong> are the grounding cost at the first edit of an owned file, never the turn&#x27;s first reading:</li></ol>
+<ul><li>Grok 88k, read from the latest <code>params._meta.totalTokens</code> in the worker&#x27;s own <code>updates.jsonl</code>;</li><li>Agy about 105k (Inferred, one case);</li><li>Opus and Haiku: measure the first compile&#x27;s reading and record it.</li></ul>
+<p>Thresholds are absolute: the floor plus the planned work.</p>
+<ol><li><strong>Before every `src/` or `tests/` join,</strong> the Leader runs the full suite on the worker&#x27;s branch (`uv run pytest -q</li></ol>
+<p>-p no:cacheprovider -n 4 --dist loadscope<code>) to catch neighbours that a worker&#x27;s own files miss. Then the join recount runs. A red that passes alone gets one </code>conductor-join --continue<code> retry (it needs </code>--title`); a second red is real, and goes to a loop-back fix track (Opus).</p>
+<ol><li><strong>The worker gate (R-104):</strong></li></ol>
+<ul><li>the worker&#x27;s own tests are red first, on an assertion;</li><li>the guard list runs on the first and the final commit;</li><li><code>mutate_check</code> runs on the worker&#x27;s own mutation files;</li><li>ruff and <code>docs-graph validate</code> pass;</li><li>the console flag (<code>creationflags=getattr(subprocess, &quot;CREATE_NO_WINDOW&quot;, 0)</code>) is on every launch it adds;</li><li>the windows check runs at hand-back.</li></ul>
+<p>Never use --no-verify, -n or a hooks override, and never rewrite a commit.</p>
+<ol><li><strong>Never edit a log.</strong> A torn row (LOGTEAR-A) or a classifier denial stops that action and goes to the operator.</li></ol>
+<p>Never route around a denial.</p>
+<ol><li><strong>Every brief&#x27;s proof command is run once by its author before dispatch (TEST-E).</strong> For the matrix, that means</li></ol>
+<p><code>bench plan</code> with the <code>--arm on=</code> binding and without <code>--json</code>, so the instruction probe is reached.</p>
+<ol><li><strong>Seats never write the primary.</strong> Every continuation run gets a new session id, checked free (IDN-A). A new</li></ol>
+<p>runner turn uses a new branch based on the old one (RUN-BRANCH).</p>
+<ol><li><strong>Caps:</strong> 6 concurrent workers, at most 2 per external harness. Run the health check at every dispatch and join.</li></ol>
+<p>Kill only PIDs the session started; close only windows the session created. Scratch lives under <code>C:\tf\&lt;track&gt;</code>.</p>
+<ol><li><strong>Tokens are the only cost axis.</strong> Never write USD (Ruling 115).</li></ol>
+<p><strong>The run</strong> (Leader, after the tracks join and the batch gate is green; the gate ring runs only if a stamp input moved):</p>
+<ol><li>Push.</li><li>Commit the pre-registration.</li><li>Ask the operator once to approve about 127M tokens (Inferred).</li><li>Batch 1: 60 cells. Then the checkpoint (spec LB-3): measured minutes per cell for run and grading, and tokens per</li></ol>
+<p>cell per harness and arm, each against the estimate. Batch 2 waits for the operator only if the checkpoint&#x27;s thresholds trip.</p>
+<ol><li>Batch 2: 60 cells. Grade batch 1 while batch 2 runs, if the architecture allows it.</li><li>Grade, then report.</li><li>Write the run report: the result, both MDEs and the clustering caveat (the true per-harness MDE lies between 0.31</li></ol>
+<p>and 0.42), the checkpoint numbers, tokens per harness and arm, the engine identity, the pack revision, and the pre-registration status.</p>
+<p><strong>Plan output, per track:</strong> owner; harness and model, with the reason; authored paths; depends-on; tier; budget (calls, tokens, wall); exit evidence; fallback; termination condition; join batch. Also the serial spine, the critical path (Inferred durations, labelled), the struck tracks, and the operator actions with their timing (the pack-on revision, the token approval, the drill-task deletion if still open, and worktree cleanup).</p>
+<p><strong>Execution reporting:</strong> one status table per update (task, what it does, status, harness and model). Report only when done or blocked on the operator.</p>
+<p><strong>Stop rules:</strong></p>
+<ul><li>the health check trips twice;</li><li>the host becomes unstable (record evidence first);</li><li><code>main</code> cannot be made green within one bisect round;</li><li>an operator-only blocker gates every remaining track.</li></ul>
+<p>Close with <code>coord worktree cleanup</code> (report first, then <code>--remove</code> on the operator&#x27;s go), the closing audit entries, and the scratch roots listed for deletion.</p>
+<p><strong>Not in scope:</strong></p>
+<ul><li>campaigns, power analyses, multi-night grids, the alarm and its drill, calibration cells, and the convergence</li></ul>
+<p>re-run (spec non-goals);</p>
+<ul><li>arm Y;</li><li>new metrics or a catalog change;</li><li>USD;</li><li>macOS;</li><li>GitHub Actions;</li><li>force pushes or history rewrites;</li><li>Codex, Sonnet or GitHub Copilot as workers.</li></ul></main></body></html>
