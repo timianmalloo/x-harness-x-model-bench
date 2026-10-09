@@ -101,6 +101,7 @@ CLASSES: Mapping[str, Literal["run", "grade"]] = {
     "campaign.py": "grade",
     "power.py": "grade",
     "verdicts.py": "grade",
+    "lean.py": "grade",
     "gates.py": "grade",
     "discriminate.py": "grade",
     "readiness.py": "grade",

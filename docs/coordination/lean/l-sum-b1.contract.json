@@ -1,0 +1,48 @@
+{
+  "schema": "coord-run/1",
+  "run_id": "r-lsumb1-lean",
+  "owner": "lean-leader-1",
+  "parallelism": 1,
+  "workers": [
+    {
+      "session": "lsumb1-lean",
+      "branch": "build/lean-l-sum-b1",
+      "harness": "agy",
+      "transport": "agy",
+      "argv": [
+        "agy",
+        "--model",
+        "gemini-3.8-flash-high",
+        "--add-dir",
+        "{worktree}",
+        "--mode",
+        "accept-edits",
+        "--input-format",
+        "stream-json",
+        "--output-format",
+        "stream-json"
+      ],
+      "binding_files": [
+        "AGENTS.md",
+        ".agents/hooks.json"
+      ],
+      "deadline_seconds": 3300,
+      "output_limit": 4194304,
+      "evidence": [
+        {
+          "kind": "commit"
+        }
+      ],
+      "required_capabilities": {
+        "worktree_isolation": "observed-only",
+        "instructions": "observed-only",
+        "hooks": "observed-only",
+        "permissions": "observed-only"
+      },
+      "prompts": [
+        "al-01M4H21Y4P2ZHS4AZZEDCXKHEN"
+      ],
+      "fallback": "Leader-held (FALLBACK-A): coordination-lean.md, Track assignment detail, names what follows a failed or split turn; the worker launches, spawns or messages nothing."
+    }
+  ]
+}
