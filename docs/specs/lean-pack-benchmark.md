@@ -405,6 +405,11 @@ N/A: the section presents measurements; no AI acts through it.
 | ADR-0021 §7 multi-night drill (HB-CMP-011) | **not triggered** (no registration, under 4 h); the requirement was dropped by the operator on 2026-10-09 |
 | Rulings 115 (tokens only) and 116 (pack-off instruction-free) | **kept** |
 
+**Erratum (Coordinator #64, 2026-10-09; ADR-0022 §1):** In the EV-14 row, batch 1 does not run
+`bench/rings/e5-pilot.yaml`. Both batches run the new ring `bench/rings/lean.yaml`: e5-pilot's content with
+`ring: {tag: lean}`, 60 cells per plan. `bench/rings/e5-pilot.yaml` is unchanged. Found by Coordinator #63 in the
+L-DOCS review.
+
 ## Flagged risks & residual unknowns
 
 | risk / unknown | label | response |

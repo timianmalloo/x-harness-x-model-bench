@@ -259,6 +259,69 @@ S4**, because `stats.py` is a stamped-tier input (`tools/gate_stamp.py:34`), and
 | **Remaining** | `/execute-with-coordination` steps 1-13 |
 | **Best next action** | step 1 (S0), with Coordinator #1 on L-CONTRACT |
 
+## Errata (Coordinator #64, 2026-10-09)
+
+*Applied by Coordinator #64 (Claude Code, `claude-opus-5-5`, session `c64-lean`) on `coord/lean-c64` at `47721f98`,
+from the Leader's owed-docs list for J1. The rows above are not rewritten. Each erratum names the text it corrects and
+its source. Register entries for the same run are in `docs/lessons/defect-classes.md`, *Coordinator #64 entries*.*
+
+1. **Coordinator #62's nine proposals** (source: `docs/coordination/coordinator-log/c62.md`, *Errata proposals* and
+   *TEST-E observations*, measured at `7ad2d5ff` + `c878d32d`):
+   - **L-MATRIX's red 1 and plan proof** (Tracks row): `bench plan bench/rings/lean.yaml` exits 2 (`unrecognized
+     arguments`). The form is `bench plan --matrix bench/rings/lean.yaml --arm on=...`, with `--tools-dir`, `--runs`
+     and `--cells-root` before `plan`. Red 1 is `lean.yaml` committed with tag `lean` before the `RING_TAGS` entry.
+   - **"every `off` cell with 0 instruction files"** (the same row): `bench plan` prints no per-cell instruction
+     counts. They are read from a `--confirm`ed plan.json's `instruction_lists`, in the worker's scratch.
+   - **L-FIX-TEXTIO's guard citation** (Tracks row, gate record): the stdio guard is `pack-doctor.py:25-30`, not
+     `:24-29`.
+   - **L-FIX-TEXTIO's "each script still runs (`--help` or a dry run)"**: `tools/spikes/s_j4_baseline.py` has no
+     argument parser, and running it launches three ACP adapters with model calls. It is checked with
+     `python -m py_compile`; the other two scripts with `--help`.
+   - **L-CONTRACT's session and branch** (detail row): it ran as `c62-lean` on `coord/lean-c62`, not `c1-lean` on
+     `coord/lean-c1-contract`. It joined by merge `bd9beb8f` (join entry `al-01M4HA3KXEEDQRB1DB5W2F6EQR`).
+   - **`campaign.json`'s mutant count** (S4, the critical path, *Struck tracks*, the gate record): **191** at
+     `7ad2d5ff` (the JSON list's length), not 176.
+   - **The Agent-tool rows' sessions** (detail rows): `lfixtextio-lean`, `lfixrf11-lean` and `ldocs-lean`.
+   - **A contract field change** (Seams, row 1; L-SUM-A's row): an additive field also moves
+     `tests/test_lean_contract.py`'s pin, which is L-CONTRACT's file. L-SUM-A updates that pin under the
+     Coordinator's ruling only.
+   - **L-DOCS's "the HTML view of each"** (Tracks row): `docs/specs/enterprise-evaluation.md` and
+     `docs/architecture-evaluation-campaign.md` had no view. L-DOCS created both, plus the new
+     `docs/notes/lean-preregistration.html` (merge `415bc4cc`, checked by `git show --stat`).
+2. **The Agent-tool tracks' trees** (detail rows L-FIX-TEXTIO, L-FIX-RF11, L-DOCS; Order step 5): they ran in
+   Leader-made coord trees on named branches (`build/lean-fix-textio`, `build/lean-fix-rf11`, `build/lean-docs`), not
+   in the Agent tool's `isolation: worktree`. Source: the Leader's owed-docs list, item 2; the three branches exist
+   (`git branch --list '*lean*'`).
+3. **L-FIX-RF11's guard list** (a brief error in Coordinator #62's compile): it named `tests/test_lean_contract.py`,
+   which is absent at the track's base `7ad2d5ff` (`git cat-file -e 7ad2d5ff:tests/test_lean_contract.py` exit 128,
+   run by Coordinator #64). Source: the L-FIX-RF11 hand-back (`build/lean-fix-rf11`, `ffca855d`).
+4. **L-FIX-TEXTIO's red** (Tracks row; *Layer state* row `run-verify-gates.py`): the red was **5**
+   `verify-portable-text-io` sites **plus 2** `verify-subprocess-utf8` sites (`tools/load_repro.py:56`, `:66`). The
+   second gate failed only once S1 joined `load_repro.py`, so "9 of 9" was unreachable from the stated red. Fixed by
+   `77d43d78`. Source: the L-FIX-TEXTIO hand-back. The class is in the register (RED-ONE-GATE-A).
+5. **Measured floors** (*Common to every row*: "Grok 88k, Agy about 105k"): this run measured, at the first edit,
+   for briefs of about 75 kB: **Grok 117k** (L-MATRIX turn 1: 102,821 before M1, 116,990 at the first edit; split
+   before M1, `8d75b5a3`), **Agy 166k** (L-SUM-B1 turn 1: 166,041 at the first edit, 191,659 after B0 `7d134d4a`;
+   split after B0, `e62dc830`), **Opus Coordinator 137k** (c62.md: 137,174), **Haiku about 99k** and **Opus worker
+   about 109k** (the Leader's measurements). A floor scales with the brief's size, so a fixed per-harness floor is
+   wrong. Both splits took the plan's fallback (Opus sub-agent: `lmatrix2-lean` on `build/lean-l-matrix2`,
+   `lsumb12-lean` on `build/lean-l-sum-b1-2`). Source: the Leader's owed-docs list, items 10-11; CEIL-A.
+6. **Planned vs actual: J1's pre-check** (rule 2; Order step 6, "each returning track after its full-suite
+   pre-check"): the Leader replaced the per-branch pre-checks with **one** full suite on a combined candidate (the J0
+   head plus every returned branch, a superset of each branch), then one recount per join. A Leader deviation.
+   Source: the Leader's owed-docs list, item 14; the J1 batch `batch/lean-j1` (`432c48df`), merged as `4c826f58` on
+   `integrate/lean-20`.
+7. **L-SUM-C's contract from L-MATRIX** (L-SUM-C's row: "it calls L-MATRIX's pooling check"):
+   `board.pool_check(pool: RunView, view: RunView) -> tuple[str, ...]`, where `pool` is batch 1. It raises
+   HB-PLN-003 (ring hash) or HB-STA-002 (every other precondition, named), and returns the shown-not-refused
+   differences (`parameters`, `envelope_seconds`). `board.check_comparable(base, view, extra=())` is `compare`'s
+   extracted precondition. Both signatures read at `build/lean-l-matrix2` (`board.py:729`, `:812`). Source: L-MATRIX
+   turn 2's closing entry `al-01M4H974B08QX8SH1PY4AKC8WN` (`b2a9d39f`).
+8. **Planned vs actual: L-SUM-B1's B4** (Common exit evidence: "red first, on an assertion"): B4 had no red; B1-B3
+   already satisfied it. B5's mutants falsified it instead (`tests/mutations/lean_section.json`, 25 mutants, every one
+   killed, `1d033470`). A RED-C deviation, accepted by the Leader. Source: L-SUM-B1 turn 2's closing entry
+   `al-01M4H991Q8TMFW2GHYG2ZGPP04` (`e9234a4b`).
+
 ## Gate record
 
 *Adversary gate, 2026-10-09: an Opus sub-agent with the Simplifier, Test Architect and Tech Lead lenses, reading the
