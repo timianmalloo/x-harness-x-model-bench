@@ -9,7 +9,7 @@ per-task ratios would put (A, A) at 10.
 
 from decimal import Context, Decimal, localcontext
 
-import harness_bench.stats as stats
+from harness_bench import stats
 from harness_bench.stats import Interval, Obs, Params
 
 # Shared A, B. C is reference-only, D is treatment-only. Point 20/12, tails 1 and 5.
