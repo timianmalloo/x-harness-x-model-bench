@@ -315,6 +315,8 @@ Each criterion is written so that a test can fail it. "The engine" means the har
 
 #### Epic EC — Enough power
 
+**Erratum (L-DOCS, 2026-10-09; ADR-0022):** Epic EC is superseded for the lean question. There is no campaign power analysis and no campaign pre-registration record. The design MDEs are stated in the lean spec (0.31 per harness, 0.19 pooled), and the pre-registration is one paragraph (LB-2, `docs/notes/lean-preregistration.md`).
+
 **EV-12 — As P1, I want a power analysis before any comparison grid, so that I know which effect the grid can detect and what it costs.**
 - **Given** variance inputs (source run ids, the cell population with its exclusions, per-arm rates or means, the paired discordance or SD, and the rep-to-rep spread) **When** the power analysis runs **Then** for each property's primary metric it outputs: α, power, MDE, pairing unit, multiplicity correction, the required pairs per harness and per comparison, and the implied cells, hours (from the measured mean wall per cell of the named source runs) and tokens.
 - **Given** the same recorded inputs and seed **When** the analysis runs twice **Then** the outputs are identical.
@@ -345,10 +347,14 @@ Each criterion is written so that a test can fail it. "The engine" means the har
 - **Given** a failed pilot gate **When** P1 tries to register the campaign **Then** registration is refused until a later pilot ring at the same baseline (plus recorded fixes) passes.
 - **Given** a pilot ring **When** it ends **Then** its run and grade durations are recorded and shown with the plan's bound.
 
+**Erratum (L-DOCS, 2026-10-09; ADR-0022):** For the lean question, EV-14's pilot ring is kept as batch 1: its 60 cells run from `bench/rings/lean.yaml`, which is `bench/rings/e5-pilot.yaml`'s content with ring tag `lean` (ADR-0022 §1). `e5-pilot.yaml` itself stays the campaign's pilot ring, unchanged. There is no admission step and no pilot gate.
+
 **EV-15 — As P4, I want a pack-regression ring, so that I learn within a working day whether a pack change broke a property.**
 - **Given** a committed `pack-regression` ring template (fixed tasks, harnesses, arm roles = pack-off, incumbent and candidate, and repetitions) **When** it runs for a candidate pack revision **Then** run plus grading completes within 8 hours, measured and recorded. A plan whose bound exceeds 8 hours is shown as over budget before confirmation.
 - **Given** the ring's result **When** reported **Then** each property shows `regression signal` (the candidate's interval against the incumbent lies entirely in the bad direction) or `no regression detected at <ring MDE>`, with the ring MDE taken from the power analysis. It is never shown as a campaign verdict.
 - **Given** a change to the ring template's tasks, harnesses, arm roles or repetitions **When** saved **Then** its content hash changes, and a comparison of results from two different ring hashes is refused, naming the differences (as US-52 refuses on a BOM difference).
+
+**Erratum (L-DOCS, 2026-10-09; ADR-0022):** The pack-regression ring is out for the lean benchmark, and the campaign lifecycle is out. The lean benchmark is two 60-cell batch runs of one lean ring (ADR-0022).
 
 **EV-16 — As P1, I want the engine frozen during a campaign, so that every arm and every run is measured by the same instrument.**
 - **Order (DR-T3, decided 2026-10-03):** author the property tasks → catalog 0.7 → the post-turn spike (EV-4) → record the engine baseline → reproduce discrimination records at the baseline (EV-7) → pilot ring → comparison grid. In `draft`, changes to tasks, catalog and engine are free and are not defect fixes.
@@ -357,6 +363,8 @@ Each criterion is written so that a test can fail it. "The engine" means the har
 - **Given** a recorded defect fix that can move any score of an eligible run **When** it is admitted **Then** every campaign run is re-graded under the fixed engine before any verdict is shown, and each verdict names the fixes it was computed under.
 - **Given** a recorded defect fix **When** it is admitted **Then** it names its defect class in `docs/lessons/defect-classes.md` and the commit. A fix without a class is refused.
 
+**Erratum (L-DOCS, 2026-10-09; ADR-0022):** The campaign lifecycle is out. One engine identity per lean benchmark is kept, as the aggregate's invariant.
+
 #### Epic EE — Compare and decide
 
 **EV-17 — As P1, I want pack-off, pack revision X and pack revision Y in one comparison grid, so that drift between runs cannot pose as a pack effect.** (DR-E1, decided 2026-10-03.)
@@ -364,6 +372,8 @@ Each criterion is written so that a test can fail it. "The engine" means the har
 - **Given** an existing two-setting matrix (`packs: [on, off]`, one pack) **When** planned under the amended model **Then** it yields the same cell list as before, as a two-arm run. Grid-4's matrix re-planned gives the same (task, combo, arm, repetition) set as its frozen `plan.json`, with `on`/`off` read as the two arms.
 - **Given** the plan **When** it is frozen **Then** the launch order is a seeded permutation recorded with its seed. The mean launch position of each arm differs from the run's mean position by less than 5% of the cell count.
 - **Given** a cell from any arm **When** its workspace is compared with the same task's pack-off workspace **Then** they differ only in the paths and managed blocks of that arm's pack revision manifest (US-9, per arm).
+
+**Erratum (L-DOCS, 2026-10-09; ADR-0022):** EV-17 is kept in intent for the lean question: both 60-cell batches come from one lean ring and one arm binding, and pooling refuses two plans that differ in cells, arms, builds or profiles, so one plan identity covers both (ADR-0022 §2-3). Arm Y is out (operator, 2026-10-08): the lean benchmark has two arms, `off` and `on` (pack revision X).
 
 **EV-18 — As P1, I want a verdict per property, harness and comparison, so that I can decide per harness without reading raw tables.**
 - **Given** an eligible comparison grid **When** verdicts are computed **Then** for each (property, harness, comparison ∈ {X vs off, X vs Y, Y vs off}) the effect on the primary metric is estimated paired by (task, harness, repetition), with the pre-registered interval method and corrected level. The verdict is:
@@ -381,6 +391,8 @@ Each criterion is written so that a test can fail it. "The engine" means the har
 - **Given** the same results and seed **When** recomputed **Then** every interval is identical (US-36's reproducibility).
 - **Given** a calibration task, an excluded task, an invalid cell, or a cell lost during the grid (`blocked`, `failed`, `timed_out` with no primary metric, `stopped`) **When** verdicts are computed **Then** it does not contribute. The verdict shows the excluded count, and each excluded cell is listed with its id and reason, one activation away. The same list appears in the run's completion summary and the validity banner (US-43). A fixture with one blocked cell shows `excluded 1` and that cell's id and cause in all three places.
 
+**Erratum (L-DOCS, 2026-10-09; ADR-0023):** For the lean question, EV-18 is superseded by the lean spec's LB-4 (per harness), LB-5 (pooled) and LB-6 (per property, exploratory). The lean summary pairs with `verdicts.collect` and takes its intervals from `stats.paired_delta`, which draws tasks first and then repetitions within each task; `verdicts.verdict` and its task-stratified interval are not called (ADR-0023 §2-3). No verdict word appears in the lean summary (ADR-0023 §5).
+
 **EV-19 — As P1, I want value shown beside cost, so that "better per unit of cost" is a stated rule and not a reading of two tables.**
 - **Given** a verdict **When** shown **Then** it carries the token ratio of the two arms (Σ tokens over the same pairs) with a 95% bootstrap interval, and the wall-clock ratio. USD appears only under US-23's sourced-price rule (EN8, DR-E3).
 - **Given** arms A and B for a (property, harness) **When** A's verdict against B is `better` or `no difference ≥ MDE` and the upper bound of A's token-ratio interval is below 1 **Then** the report states `A dominates B`. No other rule produces that word.
@@ -388,10 +400,14 @@ Each criterion is written so that a test can fail it. "The engine" means the har
 - **Given** a reference case of paired token sums with a known ratio **When** the ratio interval is computed **Then** simulated coverage over 1,000 datasets, drawn from a generator seeded with a recorded seed, is between 93% and 97%. **Given** a hand-computed table of (verdict, ratio interval) rows **When** the dominance rule is applied **Then** each row yields its tabulated statement, including the boundary row where the ratio's upper bound equals 1 (not `dominates`).
 - *Why `dominates` is kept (Simplifier finding 8b):* it is the only pre-registered answer to "per unit of cost". It decides the proposal's success criterion that the slimmed pack is "no worse on value at materially lower cost". Reading two side-by-side intervals leaves that decision to the reader after seeing the data.
 
+**Erratum (L-DOCS, 2026-10-09; ADR-0023):** For the lean question, value beside cost is kept (lean spec LB-7: a token ratio of totals with its interval, from `stats.paired_ratio`, ADR-0023 §4). Dominance is out: no `dominates` appears in the lean summary (ADR-0023 §5).
+
 **EV-20 — As P3, I want the report to say which campaign a grid belongs to and whether its verdicts are eligible, so that I never read an exploratory or drifted result as a verdict.**
 - **Given** a comparison-grid report **When** opened **Then** a campaign header names: the question, the arms with pack revisions, the pre-registration hash, the engine baseline, the recorded defect fixes, the MDE per property and the power-analysis id.
 - **Given** an ineligible run (engine drift, a pre-registration mismatch, or a failed or missing pilot) **When** reported **Then** no property verdict is shown. The section states the reason and the differing items.
 - **Given** a run that belongs to no campaign **When** reported **Then** the property-verdict section is absent, and the report is otherwise unchanged from the harness-bench report.
+
+**Erratum (L-DOCS, 2026-10-09; ADR-0022):** For the lean question, campaign eligibility is out, since a lean run never enters campaign state (ADR-0022 §3a). The pre-registration status is shown instead (LB-2).
 
 ### Non-functional requirements (ISO/IEC 25010)
 
