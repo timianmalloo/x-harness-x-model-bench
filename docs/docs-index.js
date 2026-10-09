@@ -5314,6 +5314,44 @@ window.DOCS_INDEX = {
       "sourceSha256": "17a6c923ec2849475fb3ec4a6470f6f14a82c19658dfde1f828a08a6089e7f10"
     },
     {
+      "id": "coordinator-log-c62",
+      "path": "docs/coordination/coordinator-log/c62.md",
+      "title": "Coordinator #62 hand-back (2026-10-09): L-CONTRACT red and green, six wave-1 lean briefs compiled, three launch contracts",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-09",
+      "reviewSuggested": [],
+      "summary": "Coordinator #62 on coord/lean-c62 (base 7ad2d5ff) for Leader lean-leader-1, epoch 20. L-CONTRACT: lean.py's frozen dataclasses, ESTIMATE and build signature, classed grade, pinned by tests/test_lean_contract.py (red 0979b336 on an assertion, green c878d32d). Six wave-1 briefs compiled and replayed through check_compile, all dispatchable; three runner contracts under docs/coordination/lean/. TEST-E found the plan's `bench plan bench/rings/lean.yaml` form refused by argparse (the flag is --matrix) and confirmed RF-11's survivor and the text-io gate's 3 sites. No dispatch, no merge, no push.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile",
+        "lean-benchmark"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c61",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-lean",
+          "rel": "relates-to"
+        },
+        {
+          "to": "arch-lean-benchmark",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "075a5a09b5a83698a270050bb8fa41ab243a64ee6c0d3ac9a36cac2e5abf3e33"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -10877,6 +10915,14 @@ window.DOCS_INDEX = {
       "artifactId": "proposal-benchmark-state-and-target"
     },
     {
+      "id": "surface-coordination-coordinator-log-c62",
+      "path": "docs/coordination/coordinator-log/c62.html",
+      "title": "C62",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "coordinator-log-c62"
+    },
+    {
       "id": "surface-coordination-coordination-e2e4",
       "path": "docs/coordination/coordination-e2e4.html",
       "title": "Coordination E2E4",
@@ -11138,5 +11184,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "3c128af164234b9499df201f26e0bfac8fe33b7f7a81deecfbce0f9481bff2ae"
+  "graphSha256": "bb5f4d02cf149938e31a996e13bee7dcfa47399d51bbf3729031493120b61b00"
 };
