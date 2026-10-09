@@ -9,6 +9,7 @@ seams*. `build` is L-SUM-A's to write; the renderer (L-SUM-B1) reads `LeanSummar
 from __future__ import annotations
 
 import dataclasses
+import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
@@ -176,6 +177,36 @@ def _row(combo: str, harness: str, model: str, pairs: Sequence[verdicts.Pair], e
                    statement=_statement(effect), token_ratio=None, ratio_excluded=0)
 
 
+def _family(task: str) -> str:
+    """A lean task's property family: its leading letters (S1 -> S, RS2 -> RS; the ring's S, RS, RW, NG, SM)."""
+    found = re.match(r"[A-Za-z]+", task)
+    return found.group(0) if found else task
+
+
+def _direction(off: int, on: int) -> Literal["up", "down", "same"]:
+    return "up" if on > off else "down" if on < off else "same"
+
+
+def _properties(batches: Sequence[BatchInput], collected: Sequence[tuple[str, str, Sequence[verdicts.Pair]]]
+                ) -> tuple[PropertyRow, ...]:
+    """LB-6: per family (plan order) and harness (combo plan order), passes over recorded pairs in each arm."""
+    families = list(dict.fromkeys(_family(cell["task"]) for batch in batches for cell in batch.view.plan["cells"]))
+    out = []
+    for family in families:
+        for _, harness, pairs in collected:
+            mine = [p for p in pairs if _family(p.task) == family]
+            off, on = int(sum(p.ref for p in mine)), int(sum(p.treat for p in mine))
+            out.append(PropertyRow(family=family, harness=harness, off=(off, len(mine)), on=(on, len(mine)),
+                                   direction=_direction(off, on)))
+    return tuple(out)
+
+
+def _disagree(rows: Sequence[LeanRow]) -> bool:
+    """LB-5: one harness interval wholly above 0 and another wholly below it."""
+    return (any(r.lo is not None and r.lo > 0 for r in rows)
+            and any(r.hi is not None and r.hi < 0 for r in rows))
+
+
 def build(batches: Sequence[BatchInput], prereg: Prereg | None) -> LeanSummary:
     """One or two batches, in batch order, to the lean summary. Pure; raises `BenchError` on a non-lean view."""
     comparison = _checked(batches)
@@ -183,15 +214,19 @@ def build(batches: Sequence[BatchInput], prereg: Prereg | None) -> LeanSummary:
     cells = _relabelled(batches)
     tasks = tuple(sorted({cell["task"] for batch in batches for cell in batch.view.plan["cells"]}))
     seed = stats.DEFAULT_SEED
-    rows = []
+    rows, collected, pooled_pairs, pooled_excluded = [], [], [], []
     for combo, harness, model in _combos(batches):
         spec = verdicts.VerdictSpec(prop=verdicts.PRIMARY, harness=harness, comparison=comparison, tasks=tasks,
                                     mde=Decimal(0), method=stats.METHOD, alpha_per_test=_ALPHA, level_rule="not used",
                                     min_pairs=1, seed=seed, resamples=stats.MIN_RESAMPLES, required_pairs=None)
         pairs, excluded, _ = verdicts.collect([c for c in cells if c.combo == combo], spec)
         rows.append(_row(combo, harness, model, pairs, excluded, _planned(batches, combo, ref), comparison, seed))
-    pooled = _row("pooled", "pooled", "pooled", (), (), _planned(batches, None, ref), comparison, seed)
+        collected.append((combo, harness, pairs))
+        pooled_pairs += [dataclasses.replace(p, task=f"{combo}/{p.task}") for p in pairs]
+        pooled_excluded += excluded
+    pooled = _row("pooled", "pooled", "pooled", pooled_pairs, sorted(pooled_excluded), _planned(batches, None, ref),
+                  comparison, seed)
     return LeanSummary(batches=len(batches), run_ids=tuple(b.view.run_id for b in batches),
                        plan_hashes=tuple(str(b.view.plan["plan_hash"]) for b in batches),
                        prereg_status="Not pre-registered: no pre-registration supplied", rows=tuple(rows), pooled=pooled,
-                       disagree=False, properties=(), checkpoint=())
+                       disagree=_disagree(rows), properties=_properties(batches, collected), checkpoint=())
