@@ -1,0 +1,2 @@
+{"agent": "leader-fin", "at": 1791492803.422297, "kind": "session-start", "path": "-", "seq": 1, "session": "xsj4-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-sj4"}
+{"agent": "xsj4-fin", "at": 1791492847.1210911, "kind": "session-start", "path": "-", "seq": 2, "session": "xsj4-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-sj4"}

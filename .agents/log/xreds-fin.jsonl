@@ -1,0 +1,3 @@
+{"agent": "xreds-fin", "at": 1791485141.7634792, "kind": "session-start", "path": "-", "seq": 1, "session": "xreds-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-reds"}
+{"agent": "xreds-fin", "at": 1791485259.3825583, "kind": "session-start", "path": "-", "seq": 2, "session": "xreds-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-reds"}
+{"agent": "xreds-fin", "at": 1791485425.4068172, "kind": "claim", "path": "tests/test_rework_tasks.py", "seq": 3, "session": "xreds-fin", "ttl": 300.0, "wi": "X-REDS"}

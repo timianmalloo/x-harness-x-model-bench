@@ -1,0 +1,2 @@
+{"agent": "xflake2-fin", "at": 1791483309.931351, "kind": "session-start", "path": "-", "seq": 1, "session": "xflake2-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-flake2"}
+{"action": "add", "agent": "xflake2-fin", "at": 1791483891.608625, "deadline_at": 1791484791.608625, "id": "req-01M4EC5KWS1KE8SGQ5CYDDP2KZ", "kind": "request", "path": "-", "seq": 2, "session": "xflake2-fin", "to": "coord-opus-fin", "type": "request", "wi": "WI-0"}

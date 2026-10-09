@@ -1,0 +1,3 @@
+{"agent": "leader-fin", "at": 1791498103.6631675, "kind": "session-start", "path": "-", "seq": 1, "session": "xpackoff2-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-packoff2"}
+{"agent": "xpackoff2-fin", "at": 1791498133.2362742, "kind": "session-start", "path": "-", "seq": 2, "session": "xpackoff2-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-packoff2"}
+{"agent": "xpackoff2-fin", "at": 1791498819.8653135, "kind": "session-end", "path": "-", "seq": 3, "session": "xpackoff2-fin", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-packoff2"}

@@ -1,0 +1,2 @@
+{"agent": "xnoprice2-fin", "at": 1791486430.6024663, "kind": "session-start", "path": "-", "seq": 1, "session": "xnoprice2-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-noprice"}
+{"agent": "xnoprice2-fin", "at": 1791487239.1466174, "kind": "session-end", "path": "-", "seq": 2, "session": "xnoprice2-fin", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-noprice"}

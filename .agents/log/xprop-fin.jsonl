@@ -1,0 +1,6 @@
+{"agent": "xprop-fin", "at": 1791481136.18596, "kind": "session-start", "path": "-", "seq": 1, "session": "xprop-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-prop"}
+{"agent": "xprop-fin", "at": 1791481227.1677878, "kind": "session-start", "path": "-", "seq": 2, "session": "xprop-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-prop"}
+{"agent": "xprop-fin", "at": 1791481528.0515053, "kind": "claim", "path": "tests/test_property_grader.py", "seq": 3, "session": "xprop-fin", "ttl": 900.0, "wi": "r-xprop-fin"}
+{"agent": "xprop-fin", "at": 1791481528.3635564, "kind": "claim", "path": "src/harness_bench/grade/property.py", "seq": 4, "session": "xprop-fin", "ttl": 900.0, "wi": "r-xprop-fin"}
+{"agent": "xprop-fin", "at": 1791481528.6951807, "kind": "claim", "path": "tests/mutations/property.json", "seq": 5, "session": "xprop-fin", "ttl": 900.0, "wi": "r-xprop-fin"}
+{"agent": "xprop-fin", "at": 1791482057.1495597, "kind": "session-end", "path": "-", "seq": 6, "session": "xprop-fin", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-prop"}

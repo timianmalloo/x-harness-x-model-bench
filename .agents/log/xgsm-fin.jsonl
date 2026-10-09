@@ -1,0 +1,6 @@
+{"agent": "xgsm-fin", "at": 1791485125.7387352, "kind": "session-start", "path": "-", "seq": 1, "session": "xgsm-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-gsm"}
+{"agent": "xgsm-fin", "at": 1791485190.9132748, "kind": "session-start", "path": "-", "seq": 2, "session": "xgsm-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-gsm"}
+{"agent": "xgsm-fin", "at": 1791485401.6018703, "kind": "claim", "path": "tests/test_grok_served_model.py", "seq": 3, "session": "xgsm-fin", "ttl": 900.0, "wi": "X-GSM"}
+{"agent": "xgsm-fin", "at": 1791485709.112482, "kind": "claim", "path": "tools/grok_served_model.py", "seq": 4, "session": "xgsm-fin", "ttl": 900.0, "wi": "X-GSM"}
+{"agent": "xgsm-fin", "at": 1791485709.472569, "kind": "claim", "path": "tests/test_grok_served_model.py", "seq": 5, "session": "xgsm-fin", "ttl": 900.0, "wi": "X-GSM"}
+{"agent": "xgsm-fin", "at": 1791485762.4620395, "kind": "claim", "path": "tests/mutations/grok_served_model.json", "seq": 6, "session": "xgsm-fin", "ttl": 900.0, "wi": "X-GSM"}

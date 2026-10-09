@@ -1,0 +1,2 @@
+{"agent": "leader-fin", "at": 1791481036.9787607, "kind": "session-start", "path": "-", "seq": 1, "session": "fpack-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-fix-xh-finish-upstream"}
+{"agent": "fpack-fin", "at": 1791481077.7384217, "kind": "session-end", "path": "-", "seq": 2, "session": "fpack-fin", "wi": "WI-0", "worktree": "x-harness-x-model-bench"}

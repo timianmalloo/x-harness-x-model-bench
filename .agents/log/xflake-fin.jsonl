@@ -1,0 +1,3 @@
+{"agent": "xflake-fin", "at": 1791482120.284244, "kind": "session-start", "path": "-", "seq": 1, "session": "xflake-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-flake"}
+{"agent": "xflake-fin", "at": 1791482458.4522786, "kind": "session-start", "path": "-", "seq": 2, "session": "xflake-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-flake"}
+{"agent": "xflake-fin", "at": 1791482508.6125274, "kind": "session-end", "path": "-", "seq": 3, "session": "xflake-fin", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-flake"}

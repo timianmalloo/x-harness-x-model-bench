@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-07T16:49:23Z",
+  "generated": "2026-10-08T23:38:47Z",
   "audit": [
     {
       "actor": null,
@@ -121239,6 +121239,21 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-07T16:49:22Z",
       "duration_seconds": 1.0
+    },
+    {
+      "id": "al-01M4DZ2HWKP1W1A8GK4BDE2KTW",
+      "shortname": "run the propmpt now (operator, 2026-10-08): plan then execute everything…",
+      "datetime": "2026-10-08T14:35:59Z",
+      "session": "prompt-log",
+      "prompt": "run the propmpt now (operator, 2026-10-08): plan then execute everything to a workable benchmark - finish-coordination-prompt.md (post-E4 backlog, pack upstream, E5 preconditions, E5)",
+      "summary": "prompt logged for reuse",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success"
     }
   ],
   "changes": [
@@ -123257,6 +123272,69 @@ window.AUDIT_DATA = {
       "to": "leader-e1e4",
       "kind": "ruling",
       "ref": "req-01M49WPHC2PGAWZSV73D0D6H25",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M4E7WZPWK9HG6ZEVB49YDPBV",
+      "ts": "2026-10-08T17:10:14Z",
+      "from": "coord-opus-fin",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M4E7WZPKYTPRYTXXP8Y5FYE4",
+      "session": "coord-opus-fin"
+    },
+    {
+      "id": "mail-01M4E8AF9KHRYK4457ZSA4D9V2",
+      "ts": "2026-10-08T17:17:36Z",
+      "from": "owner-fable",
+      "to": "coord-opus-fin",
+      "kind": "ruling",
+      "ref": "req-01M4E7WZPKYTPRYTXXP8Y5FYE4",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M4E8C3HGVN1A85CWCMYQ6G26",
+      "ts": "2026-10-08T17:18:29Z",
+      "from": "coord-opus-fin",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M4E8C3H82CNVNTQXEG1VSEP7",
+      "session": "coord-opus-fin"
+    },
+    {
+      "id": "mail-01M4E8WTGGDW3TZ6JFRBG0NMFH",
+      "ts": "2026-10-08T17:27:37Z",
+      "from": "owner-fable",
+      "to": "coord-opus-fin",
+      "kind": "ruling",
+      "ref": "req-01M4E8C3H82CNVNTQXEG1VSEP7",
+      "session": "owner-fable"
+    },
+    {
+      "id": "mail-01M4EC9SE6B2EA6V85VWCE122Y",
+      "ts": "2026-10-08T18:27:08Z",
+      "from": "coord-opus-fin",
+      "to": "leader-fin",
+      "kind": "blocked",
+      "ref": ".agents/log/leader-fin.jsonl:2122",
+      "session": "coord-opus-fin"
+    },
+    {
+      "id": "mail-01M4EFYTERK6T3E75XG70TJM2W",
+      "ts": "2026-10-08T19:31:03Z",
+      "from": "leader-fin",
+      "to": "owner-fable",
+      "kind": "decision-request",
+      "ref": "req-01M4EFYTEFR6881YCP3TGZQPBM",
+      "session": "leader-fin"
+    },
+    {
+      "id": "mail-01M4EG82RMBY874JW6YTVQPGDT",
+      "ts": "2026-10-08T19:36:06Z",
+      "from": "owner-fable",
+      "to": "leader-fin",
+      "kind": "ruling",
+      "ref": "req-01M4EFYTEFR6881YCP3TGZQPBM",
       "session": "owner-fable"
     }
   ]

@@ -1,0 +1,3 @@
+{"agent": "leader-fin", "at": 1791497090.5801332, "kind": "session-start", "path": "-", "seq": 1, "session": "xdrill2-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-drill2"}
+{"agent": "xdrill2-fin", "at": 1791497120.6260834, "kind": "session-start", "path": "-", "seq": 2, "session": "xdrill2-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-drill2"}
+{"agent": "xdrill2-fin", "at": 1791498693.4280548, "kind": "session-end", "path": "-", "seq": 3, "session": "xdrill2-fin", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-drill2"}

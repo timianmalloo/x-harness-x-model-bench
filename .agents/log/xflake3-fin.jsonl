@@ -1,0 +1,2 @@
+{"agent": "leader-fin", "at": 1791559098.8445745, "kind": "session-start", "path": "-", "seq": 1, "session": "xflake3-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-flake3"}
+{"agent": "xflake3-fin", "at": 1791559120.3563552, "kind": "session-start", "path": "-", "seq": 2, "session": "xflake3-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-flake3"}

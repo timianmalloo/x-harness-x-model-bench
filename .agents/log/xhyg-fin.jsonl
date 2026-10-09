@@ -1,0 +1,4 @@
+{"agent": "xhyg-fin", "at": 1791481644.3322449, "kind": "session-start", "path": "-", "seq": 1, "session": "xhyg-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-hyg"}
+{"agent": "xhyg-fin", "at": 1791481740.8386738, "kind": "session-start", "path": "-", "seq": 2, "session": "xhyg-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-hyg"}
+{"agent": "xhyg-fin", "at": 1791481890.9614367, "kind": "claim", "path": ".gitattributes", "seq": 3, "session": "xhyg-fin", "ttl": 900.0, "wi": "X-HYG"}
+{"agent": "xhyg-fin", "at": 1791482278.3213885, "kind": "release", "path": ".gitattributes", "seq": 4, "session": "xhyg-fin", "wi": "X-HYG"}

@@ -1,0 +1,2 @@
+{"agent": "leader-fin", "at": 1791481035.086137, "kind": "session-start", "path": "-", "seq": 1, "session": "xcacheb-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-cacheb"}
+{"agent": "xcacheb-fin", "at": 1791481182.020104, "kind": "session-start", "path": "-", "seq": 2, "session": "xcacheb-fin", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-fin-x-cacheb"}
