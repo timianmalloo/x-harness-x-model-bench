@@ -115,8 +115,8 @@ def test_header_carries_the_question_prereg_batches_both_run_ids_and_hashes_and_
     assert "Does the pack help each harness?" in text
     assert PREREG in text
     assert "Batches: 2 of 2" in text
-    for value in (RUN_1, RUN_2, HASH_1, HASH_2):
-        assert value in text
+    assert f'<dd data-field="run-ids">{RUN_1}, {RUN_2}</dd>' in doc
+    assert f'<dd data-field="plan-hashes">{HASH_1}, {HASH_2}</dd>' in doc
     assert f"Sections below cover batch {RUN_2} only" in text
 
 
