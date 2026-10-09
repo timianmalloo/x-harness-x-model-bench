@@ -19,9 +19,9 @@ COUNTER = {counter!r}
 
 def _bump():
     with open(COUNTER, "a", encoding="utf-8") as fh:
-        fh.write("x\n")
+        fh.write("x")
     with open(COUNTER, encoding="utf-8") as fh:
-        return len(fh.read().splitlines())
+        return len(fh.read())
 
 
 @pytest.fixture

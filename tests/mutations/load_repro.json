@@ -1,0 +1,23 @@
+[
+ {
+  "name": "M-LOOPCOUNT: the loop runs one fewer time than asked",
+  "file": "tools/load_repro.py",
+  "find": "    for run in range(1, runs + 1):\n",
+  "replace": "    for run in range(1, runs):\n",
+  "tests": ["tests/test_load_repro.py::test_the_seeded_flaky_node_is_measured_with_each_failures_stage"]
+ },
+ {
+  "name": "M-STAGE: every failure is read as a call failure",
+  "file": "tools/load_repro.py",
+  "find": "    stage = match.group(1) or \"call\"\n",
+  "replace": "    stage = \"call\"\n",
+  "tests": ["tests/test_load_repro.py::test_the_seeded_flaky_node_is_measured_with_each_failures_stage"]
+ },
+ {
+  "name": "M-NORESULT: a run with no result for the node counts as a pass",
+  "file": "tools/load_repro.py",
+  "find": "        if failed is False:\n",
+  "replace": "        if not failed:\n",
+  "tests": ["tests/test_load_repro.py::test_a_run_with_no_result_for_the_node_is_a_failure_never_a_pass"]
+ }
+]
