@@ -7,6 +7,7 @@ import re
 from decimal import Decimal as D
 from pathlib import Path
 
+import pytest
 from archived_runs import make_root
 from test_report import _arms_view
 
@@ -321,3 +322,77 @@ def test_the_bars_and_the_mde_band_are_at_least_3_to_1_against_the_panel_in_both
     for theme in themes:
         for token in tokens:
             assert _contrast(theme[token], theme["panel"]) >= 3, token
+
+
+# ---------------------------------------------------------------- B4: accessibility (LBI-1 to LBI-3, LBU-1 at 1280x800)
+
+AXE = Path(__file__).parent / "vendor" / "axe-core" / "axe.min.js"
+
+
+def _full_summary():
+    """The largest fixture: every row state (complete, partial, zero pairs), the disagreement note and every property."""
+    zero = _row("grok", None, None, None, "not recorded (0 pairs)", pairs=0, excluded=((f"{RUN_1}/cell-01", "auth"),))
+    return _pooled_summary(rows=_pooled_summary().rows + (zero,), properties=_props(), disagree=True)
+
+
+def test_every_effect_mark_carries_its_interval_and_mde_and_every_ratio_mark_its_interval():
+    """LBI-3: `data-interval-lo`, `data-interval-hi` and `data-mde` on each effect mark; lo and hi on each ratio mark."""
+    doc = _render(_full_summary())
+    effects = re.findall(r'<svg [^>]*data-mark="effect"[^>]*>', doc)
+    ratios = re.findall(r'<svg [^>]*data-mark="token-ratio"[^>]*>', doc)
+    assert len(effects) == 4 and len(ratios) == 4  # three harness rows with an interval, and the pooled row
+    for mark in effects:
+        assert all(f"{a}=" in mark for a in ("data-interval-lo", "data-interval-hi", "data-mde")), mark
+    for mark in ratios:
+        assert all(f"{a}=" in mark for a in ("data-interval-lo", "data-interval-hi")), mark
+    assert re.search(r'data-mark="effect" data-interval-lo="0.05" data-interval-hi="0.45"', doc)
+
+
+@pytest.fixture
+def lean_page(tmp_path):
+    sync_playwright = pytest.importorskip("playwright.sync_api").sync_playwright
+    path = tmp_path / "lean.html"
+    path.write_text(_page(tmp_path, _full_summary())[0], encoding="utf-8")
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={"width": 1280, "height": 800})
+        page.goto(path.as_uri())
+        yield page
+        browser.close()
+
+
+@pytest.mark.browser
+@pytest.mark.parametrize("scheme", ["light", "dark"])
+def test_lbi_1_axe_reports_0_violations_for_the_lean_summary_in_light_and_dark(lean_page, scheme):
+    """LBI-1: axe-core (WCAG 2.2 AA), every disclosure expanded so the per-property table is checked too."""
+    lean_page.emulate_media(color_scheme=scheme)
+    lean_page.evaluate("document.querySelectorAll('#lean-summary details').forEach(d => { d.open = true; })")
+    lean_page.evaluate(AXE.read_text(encoding="utf-8"))
+    found = lean_page.evaluate(
+        "axe.run(document.querySelector('#lean-summary'),"
+        " {runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']}).then(r =>"
+        " ({violations: r.violations.map(v => v.id + ': ' + v.nodes.length), passes: r.passes.length}))")
+    assert found["passes"] > 0, "axe ran no rule on the section"
+    assert found["violations"] == []
+
+
+@pytest.mark.browser
+def test_lbi_2_every_statement_reads_with_colour_and_glyphs_removed(lean_page):
+    """LBI-2: drop every svg mark, every aria-hidden glyph and every colour; each row's statement is still its text."""
+    lean_page.evaluate("document.querySelectorAll('#lean-summary svg, #lean-summary [aria-hidden=true]')"
+                       ".forEach(e => e.remove());"
+                       "document.querySelectorAll('#lean-summary *').forEach(e => { e.style.color = 'initial'; })")
+    read = lean_page.eval_on_selector_all(
+        "#lean-summary table[data-table=per-harness] tbody tr",
+        "rows => rows.map(r => [r.dataset.harness, r.querySelector('[data-part=statement]').innerText])")
+    assert read == [["claude-code", "pack-on higher by 0.25"], ["codex", "no detectable effect"],
+                    ["copilot", "pack-on lower by 0.30"], ["grok", "not recorded (0 pairs)"],
+                    ["pooled", "pack-on higher by 0.12"]]
+
+
+@pytest.mark.browser
+def test_lbu_1_the_first_per_harness_row_is_visible_after_the_jump_link_at_1280x800(lean_page):
+    """LBU-1: no scroll past the header is needed to reach the per-harness table."""
+    lean_page.click("nav a[href='#lean-summary']")
+    box = lean_page.locator("#lean-summary table[data-table=per-harness] tbody tr").first.bounding_box()
+    assert box is not None and 0 <= box["y"] and box["y"] + box["height"] <= 800
