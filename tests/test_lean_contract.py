@@ -57,7 +57,7 @@ FIELDS = {
         ("harness", "str"),
         ("off", "tuple[int, int]"),
         ("on", "tuple[int, int]"),
-        ("direction", 'Literal["up", "down", "same"]'),
+        ("direction", "Literal['up', 'down', 'same']"),  # the postponed annotation is stored unparsed (PEP 563)
     ),
     "BatchCheckpoint": (
         ("run_id", "str"),
