@@ -1,0 +1,212 @@
+[
+ {
+  "name": "the batch index not written into rep (two batches collide in collect)",
+  "file": "src/harness_bench/lean.py",
+  "find": "dataclasses.replace(cell, rep=index, cell_id=",
+  "replace": "dataclasses.replace(cell, cell_id=",
+  "tests": ["tests/test_lean.py::test_a_row_is_stats_paired_delta_on_the_same_obs"]
+ },
+ {
+  "name": "an excluded cell no longer names its batch",
+  "file": "src/harness_bench/lean.py",
+  "find": "cell_id=f\"{batch.view.run_id}/{cell.cell_id}\")",
+  "replace": "cell_id=cell.cell_id)",
+  "tests": ["tests/test_lean.py::test_a_short_harness_shows_k_of_20_and_the_excluded_cells_with_causes"]
+ },
+ {
+  "name": "the statement's direction inverted",
+  "file": "src/harness_bench/lean.py",
+  "find": "if interval.lo > 0 else",
+  "replace": "if interval.lo < 0 else",
+  "tests": ["tests/test_lean.py::test_a_row_is_stats_paired_delta_on_the_same_obs"]
+ },
+ {
+  "name": "a null interval stated as an effect",
+  "file": "src/harness_bench/lean.py",
+  "find": "        return \"no detectable effect\"\n",
+  "replace": "        return \"pack-on higher by 0\"\n",
+  "tests": ["tests/test_lean.py::test_a_lower_and_a_null_effect_read_by_the_one_definition"]
+ },
+ {
+  "name": "0 pairs no longer read as not recorded (0 pairs)",
+  "file": "src/harness_bench/lean.py",
+  "find": "    if interval.n == 0:\n",
+  "replace": "    if interval.n == -1:\n",
+  "tests": ["tests/test_lean.py::test_zero_pairs_reads_not_recorded_never_zero"]
+ },
+ {
+  "name": "the MDE not quantized to 2 dp",
+  "file": "src/harness_bench/lean.py",
+  "find": "_sizer))).quantize(_CENT)",
+  "replace": "_sizer)))",
+  "tests": ["tests/test_lean.py::test_the_per_harness_mde_is_derived_from_the_planned_pairs"]
+ },
+ {
+  "name": "planned pairs count both arms",
+  "file": "src/harness_bench/lean.py",
+  "find": " and plan.cell_arm(cell) == ref)",
+  "replace": ")",
+  "tests": ["tests/test_lean.py::test_a_row_is_stats_paired_delta_on_the_same_obs"]
+ },
+ {
+  "name": "a non-lean ring tag accepted",
+  "file": "src/harness_bench/lean.py",
+  "find": "        if tag != RING_TAG:\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_lean.py::test_a_view_whose_ring_is_not_lean_is_refused"]
+ },
+ {
+  "name": "three batches accepted",
+  "file": "src/harness_bench/lean.py",
+  "find": "if not 1 <= len(batches) <= 2:",
+  "replace": "if not 1 <= len(batches) <= 3:",
+  "tests": ["tests/test_lean.py::test_three_batches_are_refused"]
+ },
+ {
+  "name": "the pooled task key loses its combo",
+  "file": "src/harness_bench/lean.py",
+  "find": "task=f\"{combo}/{p.task}\")",
+  "replace": "task=p.task)",
+  "tests": ["tests/test_lean.py::test_the_pooled_row_is_paired_delta_over_every_harness_with_combo_task_keys"]
+ },
+ {
+  "name": "disagree on one side only",
+  "file": "src/harness_bench/lean.py",
+  "find": "            and any(r.hi is not None and r.hi < 0 for r in rows))",
+  "replace": "            or any(r.hi is not None and r.hi < 0 for r in rows))",
+  "tests": ["tests/test_lean.py::test_harnesses_disagree_only_when_two_intervals_lie_wholly_on_opposite_sides_of_zero"]
+ },
+ {
+  "name": "an equal property count read as up",
+  "file": "src/harness_bench/lean.py",
+  "find": "\"up\" if on > off else",
+  "replace": "\"up\" if on >= off else",
+  "tests": ["tests/test_lean.py::test_property_rows_count_passes_over_recorded_pairs_per_family_and_harness"]
+ },
+ {
+  "name": "a property's recorded count read over every family",
+  "file": "src/harness_bench/lean.py",
+  "find": "off=(off, len(mine))",
+  "replace": "off=(off, len(pairs))",
+  "tests": ["tests/test_lean.py::test_property_rows_count_passes_over_recorded_pairs_per_family_and_harness"]
+ },
+ {
+  "name": "a pair with 0 pack-off tokens kept in the ratio",
+  "file": "src/harness_bench/lean.py",
+  "find": " and p.ref_tokens != 0]",
+  "replace": "]",
+  "tests": ["tests/test_lean.py::test_pairs_without_tokens_or_with_zero_pack_off_tokens_are_excluded_and_counted"]
+ },
+ {
+  "name": "the token ratio shares the effect's stream",
+  "file": "src/harness_bench/lean.py",
+  "find": "comparison, params, f\"{key}|tokens\")",
+  "replace": "comparison, params, key)",
+  "tests": ["tests/test_lean.py::test_the_token_ratio_is_paired_ratio_over_token_complete_pairs"]
+ },
+ {
+  "name": "ratio exclusions not counted",
+  "file": "src/harness_bench/lean.py",
+  "find": "ratio_excluded=len(pairs) - len(complete))",
+  "replace": "ratio_excluded=0)",
+  "tests": ["tests/test_lean.py::test_pairs_without_tokens_or_with_zero_pack_off_tokens_are_excluded_and_counted"]
+ },
+ {
+  "name": "a commit at batch 1's first cell start counted as before it",
+  "file": "src/harness_bench/lean.py",
+  "find": "if prereg.committed_at < started:",
+  "replace": "if prereg.committed_at <= started:",
+  "tests": ["tests/test_lean.py::test_a_pre_registration_committed_at_or_after_batch_ones_first_cell_is_not_pre_registered"]
+ },
+ {
+  "name": "the pre-registration does not seed the rows",
+  "file": "src/harness_bench/lean.py",
+  "find": "else verdicts.seed_for(prereg.sha256, RING_TAG, name, comparison)",
+  "replace": "else stats.DEFAULT_SEED",
+  "tests": ["tests/test_lean.py::test_a_pre_registration_committed_before_batch_ones_first_cell_counts_and_seeds_the_rows"]
+ },
+ {
+  "name": "the last batch's first cell compared instead of batch 1's",
+  "file": "src/harness_bench/lean.py",
+  "find": "_prereg_status(prereg, batches[0].first_cell_started_at)",
+  "replace": "_prereg_status(prereg, batches[-1].first_cell_started_at)",
+  "tests": ["tests/test_lean.py::test_a_pre_registration_committed_before_batch_ones_first_cell_counts_and_seeds_the_rows"]
+ },
+ {
+  "name": "0 cells graded divides instead of reading not recorded",
+  "file": "src/harness_bench/lean.py",
+  "find": "    if total_ns is None or not cells:\n",
+  "replace": "    if total_ns is None:\n",
+  "tests": ["tests/test_lean.py::test_a_checkpoint_value_not_recorded_is_none_never_zero"]
+ },
+ {
+  "name": "minutes read as seconds",
+  "file": "src/harness_bench/lean.py",
+  "find": "_NS_PER_MIN = Decimal(60 * 10**9)",
+  "replace": "_NS_PER_MIN = Decimal(10**9)",
+  "tests": ["tests/test_lean.py::test_a_checkpoint_reports_measured_minutes_and_tokens_per_cell"]
+ },
+ {
+  "name": "an auth failure not counted as infrastructure",
+  "file": "src/harness_bench/lean.py",
+  "find": "cause.attribution != \"agent\"",
+  "replace": "cause.attribution == \"infrastructure\"",
+  "tests": ["tests/test_lean.py::test_a_checkpoint_reports_measured_minutes_and_tokens_per_cell"]
+ },
+ {
+  "name": "tokens per cell summed, not averaged",
+  "file": "src/harness_bench/lean.py",
+  "find": "Decimal(sum(recorded)) / Decimal(len(recorded)) if recorded",
+  "replace": "Decimal(sum(recorded)) if recorded",
+  "tests": ["tests/test_lean.py::test_a_checkpoint_reports_measured_minutes_and_tokens_per_cell"]
+ },
+ {
+  "name": "the run wall clock reads run.completed alone",
+  "file": "src/harness_bench/views.py",
+  "find": "    return ended[\"mono_ns\"] - started[\"mono_ns\"]\n",
+  "replace": "    return ended[\"mono_ns\"]\n",
+  "tests": ["tests/test_lean.py::test_run_wall_ns_is_run_completed_minus_run_started_mono_ns"]
+ },
+ {
+  "name": "the run wall clock needs only one reading",
+  "file": "src/harness_bench/views.py",
+  "find": "    if started is None or ended is None:\n",
+  "replace": "    if started is None and ended is None:\n",
+  "tests": ["tests/test_lean.py::test_run_wall_ns_is_not_recorded_without_either_reading"]
+ },
+ {
+  "name": "the grading duration reads grading.completed alone",
+  "file": "src/harness_bench/views.py",
+  "find": "span = ended[\"mono_ns\"] - started[\"mono_ns\"] if",
+  "replace": "span = ended[\"mono_ns\"] if",
+  "tests": ["tests/test_lean.py::test_grading_duration_reads_the_current_pass_only"]
+ },
+ {
+  "name": "the grading duration reads the first completed pass, not the current one",
+  "file": "src/harness_bench/views.py",
+  "find": "    gid, _ = _current_pass(events, catalog_version)\n",
+  "replace": "    gid = next((e[\"grading_id\"] for e in events if e[\"kind\"] == \"grading.completed\"), None)\n",
+  "tests": ["tests/test_lean.py::test_grading_duration_reads_the_current_pass_only"]
+ },
+ {
+  "name": "cells_graded dropped",
+  "file": "src/harness_bench/views.py",
+  "find": "return span, cells if isinstance(cells, int) else None",
+  "replace": "return span, None",
+  "tests": ["tests/test_lean.py::test_grading_duration_reads_the_current_pass_only"]
+ },
+ {
+  "name": "the latest process start read as the first",
+  "file": "src/harness_bench/views.py",
+  "find": "    return min(starts)\n",
+  "replace": "    return max(starts)\n",
+  "tests": ["tests/test_lean.py::test_first_cell_started_at_is_the_earliest_process_start"]
+ },
+ {
+  "name": "a start with no instant skipped instead of not recorded",
+  "file": "src/harness_bench/views.py",
+  "find": "    if not starts or any(at is None or at.tzinfo is None for at in starts):\n",
+  "replace": "    starts = [at for at in starts if at is not None]\n    if not starts:\n",
+  "tests": ["tests/test_lean.py::test_first_cell_started_at_is_not_recorded_when_any_start_lacks_its_instant"]
+ }
+]

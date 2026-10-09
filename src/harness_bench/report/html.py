@@ -195,20 +195,12 @@ def _context_window_fact(cells: list[views.CellView], tags: dict[str, str]) -> s
 
 
 def _run_wall_clock(run_dir: Path | None) -> str:
-    """R2 (design section 6 row 1): the run's own wall clock, not a sum over cells that ran in parallel.
-    `run.started` and `run.completed` (engine.py:382, :425) are each stamped with `mono_ns` (ledger.py:70 -- every
-    event row, monotonic); the run's wall clock is their difference, valid because both are written by the one
-    engine process a run_dir ever has (a second `Engine.run()` on the same run_dir refuses at HB-USR-002,
-    engine.py:373, so the two mono_ns values are never compared across processes). Missing either event, or a
-    ledger from before mono_ns was stamped, reads not recorded -- never a plausible number (IO)."""
-    if run_dir is None:
-        return "not recorded"
-    events = views.rows(run_dir, "events")
-    started = next((e for e in events if e.get("kind") == "run.started" and "mono_ns" in e), None)
-    completed = next((e for e in events if e.get("kind") == "run.completed" and "mono_ns" in e), None)
-    if started is None or completed is None:
-        return "not recorded"
-    return f"{(completed['mono_ns'] - started['mono_ns']) / 1_000_000_000:.1f} s"
+    """R2 (design section 6 row 1): the run's own wall clock, not a sum over cells that ran in parallel. The number
+    is `views.run_wall_ns` (the run's end minus its start `mono_ns`, both from the one engine process a run_dir ever
+    has), the one definition the lean summary also reads (ADR-0023 decision 7); this only formats it. A reading it
+    cannot make, or no run_dir, reads not recorded -- never a plausible number (IO)."""
+    wall_ns = None if run_dir is None else views.run_wall_ns(run_dir)
+    return "not recorded" if wall_ns is None else f"{wall_ns / 1_000_000_000:.1f} s"
 
 
 def _permission_modes(run_dir: Path | None) -> dict[str, str]:

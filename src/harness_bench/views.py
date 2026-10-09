@@ -316,6 +316,43 @@ def sum_tokens(tokens: dict[str, dict[str, int]] | None) -> int | None:
     return sum(sum(bucket.values()) for bucket in tokens.values())
 
 
+def run_wall_ns(run_dir: Path) -> int | None:
+    """The run's own wall clock: `run.completed` minus `run.started` `mono_ns` (both from the one engine process a
+    run_dir ever has). The one numeric definition `report/html.py`'s `_run_wall_clock` formats (ADR-0023 decision 7).
+    None when either reading is missing, never 0."""
+    events = rows(run_dir, "events")
+    started = next((e for e in events if e.get("kind") == "run.started" and "mono_ns" in e), None)
+    ended = next((e for e in events if e.get("kind") == "run.completed" and "mono_ns" in e), None)
+    if started is None or ended is None:
+        return None
+    return ended["mono_ns"] - started["mono_ns"]
+
+
+def grading_duration(run_dir: Path, catalog_version: str | None = None) -> tuple[int | None, int | None]:
+    """(`grading.completed` minus `grading.started` `mono_ns`, `cells_graded`) of the current pass (ADR-0023 decision
+    7). Both events come from one runner process (`grade/runner.py`), and `ledger.stamp` puts `mono_ns` on each. Each
+    part is None when not recorded, never 0."""
+    events = rows(run_dir, "events")
+    gid, _ = _current_pass(events, catalog_version)
+    if gid is None:
+        return None, None
+    started = next((e for e in events if e["kind"] == "grading.started" and e.get("grading_id") == gid), {})
+    ended = next(e for e in events if e["kind"] == "grading.completed" and e.get("grading_id") == gid)
+    cells = ended.get("cells_graded")
+    span = ended["mono_ns"] - started["mono_ns"] if "mono_ns" in started and "mono_ns" in ended else None
+    return span, cells if isinstance(cells, int) else None
+
+
+def first_cell_started_at(run_dir: Path) -> datetime | None:
+    """The run's earliest `attempt.process_started` instant (`recorded_at`, UTC), for the lean pre-registration check
+    (LB-2; the Leader's ruling on req-01M4H8D2JGF50ZP7F1Z65GR8B9). None when no cell started, or when any start's
+    instant is missing or has no zone: the earliest is then not known, and a plausible later one would be wrong."""
+    starts = [_ts(e.get("recorded_at")) for e in rows(run_dir, "events") if e["kind"] == "attempt.process_started"]
+    if not starts or any(at is None or at.tzinfo is None for at in starts):
+        return None
+    return min(starts)
+
+
 def judge_calls(uses: list[dict]) -> dict[tuple[str, str | None], int]:
     """Judge calls per (outcome, code), over `verdict_uses` rows (ADR-0006 Amendment 3). A row is one rubric item,
     not one call: one call yields a row per item. So a call is one distinct (grading_id, cell_id, metric_id,

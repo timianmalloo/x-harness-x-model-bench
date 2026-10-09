@@ -1,4 +1,4 @@
-"""Two-stage percentile bootstrap, paired differences, pass@k and ranking.
+"""Two-stage percentile bootstrap, paired differences and ratios, pass@k and ranking.
 
 Pure calculation: the standard library and `harness_bench.errors` only. No I/O, no catalog, no views.
 Values stay `Decimal`. One keyed `random.Random` stream per quantity; only `random()` is drawn.
@@ -218,6 +218,72 @@ def paired_delta(
     """95% paired interval of treat − ref, plus tasks present in one arm only."""
     with localcontext(_CONTEXT):
         return _paired_delta(ref, treat, labels, params, key)
+
+
+def _paired_ratio(
+    ref: Sequence[Obs],
+    treat: Sequence[Obs],
+    labels: tuple[str, str],
+    params: Params,
+    key: str,
+) -> Interval:
+    """Σ treat / Σ ref over the drawn values. The point is the ratio of totals.
+
+    Streams and draw order match `_paired_delta`: one shared task, then A's
+    repetitions, then B's. Tasks in one arm only are not in the ratio.
+    """
+    ref_tasks, ref_values = _by_task(ref)
+    treat_tasks, treat_values = _by_task(treat)
+    shared = tuple(sorted(set(ref_tasks) & set(treat_tasks)))
+    n = len(shared)
+    if n == 0:
+        return Interval(None, None, None, 0, "not computed (no valid cell with a value)")
+    ref_total = Decimal(0)
+    treat_total = Decimal(0)
+    for task in shared:
+        ref_total += sum(ref_values[task], Decimal(0))
+        treat_total += sum(treat_values[task], Decimal(0))
+    point = treat_total / ref_total
+    if n < 2:
+        missing = Interval(point, None, None, n, "interval not computed (n < 2)")
+        return missing
+    label_a, label_b = labels
+    left, right = sorted((label_a, label_b))
+    base = f"{key}|{left}|{right}"
+    rng_t = rng(params.seed, f"{base}|tasks")
+    rng_a = rng(params.seed, f"{base}|arm|{label_a}")
+    rng_b = rng(params.seed, f"{base}|arm|{label_b}")
+    resamples = params.resamples
+    statistics: list[Decimal] = []
+    for _ in range(resamples):
+        drawn_ref = Decimal(0)
+        drawn_treat = Decimal(0)
+        for _task_draw in range(n):
+            task = shared[_draw(rng_t, n)]
+            pool_a = ref_values[task]
+            pool_b = treat_values[task]
+            width_a = len(pool_a)
+            width_b = len(pool_b)
+            # Draw order: one shared task, then A's repetitions, then B's.
+            for _rep in range(width_a):
+                drawn_ref += pool_a[_draw(rng_a, width_a)]
+            for _rep in range(width_b):
+                drawn_treat += pool_b[_draw(rng_b, width_b)]
+        statistics.append(drawn_treat / drawn_ref)
+    lo, hi = _percentile(statistics, resamples)
+    return Interval(point, lo, hi, n, None)
+
+
+def paired_ratio(
+    ref: Sequence[Obs],
+    treat: Sequence[Obs],
+    labels: tuple[str, str],
+    params: Params,
+    key: str,
+) -> Interval:
+    """95% paired interval of Σ treat / Σ ref. The point is the ratio of totals."""
+    with localcontext(_CONTEXT):
+        return _paired_ratio(ref, treat, labels, params, key)
 
 
 def no_detectable_effect(iv: Interval) -> bool | None:

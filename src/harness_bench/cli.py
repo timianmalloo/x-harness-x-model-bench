@@ -8,6 +8,7 @@ and hands them to the engine. Errors go to stderr as `<code>: <message>`. Exit c
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -34,6 +35,7 @@ from harness_bench import (
     gitsafe,
     host,
     identity,
+    lean,
     ledger,
     oslock,
     plan,
@@ -583,6 +585,42 @@ def _campaign_input(root: Path, run_dir: Path, view) -> campaign_section.Campaig
         read_disagreements=lambda: readiness.hidden_test_disagreements(run_dir, view.grading_id))
 
 
+def _prereg(path_text: str | None) -> lean.Prereg | None:
+    """ADR-0023 decision 8: `--prereg PATH` is the file's sha256 and its last commit time (`git log -1 --format=%cI`),
+    None when git prints nothing (the file is not committed). No `--prereg` is no pre-registration."""
+    if path_text is None:
+        return None
+    path = Path(path_text).resolve()
+    if not path.is_file():
+        raise BenchError("HB-USR-002", f"--prereg {path_text}: no such file")
+    logged = gitsafe.git(["log", "-1", "--format=%cI", "--", path.name], path.parent, 60, check=False)
+    when = "" if logged.timed_out else (logged.stdout or "").strip()
+    return lean.Prereg(hashlib.sha256(path.read_bytes()).hexdigest(), datetime.fromisoformat(when) if when else None)
+
+
+def _lean_summary(args, run_dir: Path, view: views.RunView) -> lean.LeanSummary | None:
+    """ADR-0022 sections 3-4: a run whose plan carries the lean ring tag renders the lean summary, alone as batch 1 of 2
+    or with `--pool <batch-1>` as 2 of 2 after `board.pool_check`, whose shown differences are printed, one line each.
+    Any other run never builds the summary, and `--pool` on it is refused."""
+    pool_id = getattr(args, "pool", None)
+    tag = ((view.plan or {}).get("ring") or {}).get("tag")
+    if tag != lean.RING_TAG:
+        if pool_id is not None:
+            raise BenchError("HB-USR-002", f"bench report --pool pools {lean.RING_TAG} batches only; run {view.run_id} "
+                                           f"has ring tag {tag}")
+        return None
+    batches = [(run_dir, view)]
+    if pool_id is not None:
+        pool_dir = Path(args.runs) / pool_id
+        status.require_known(pool_dir)
+        pool_view = views.load(pool_dir)
+        for shown in board.pool_check(pool_view, view):
+            print(shown)
+        batches.insert(0, (pool_dir, pool_view))  # batch order: the --pool run is batch 1
+    return lean.build([lean.BatchInput(v, views.run_wall_ns(d), *views.grading_duration(d), views.first_cell_started_at(d))
+                       for d, v in batches], _prereg(getattr(args, "prereg", None)))
+
+
 def cmd_report(args) -> int:
     run_dir = _run_dir(args)
     root = Path(args.root)
@@ -629,6 +667,7 @@ def cmd_report(args) -> int:
         status.require_known(base_run_dir)
         base_view = views.load(base_run_dir)
         comp_obj = board.compare(base=base_view, view=view, cat=cat, params=params)
+    lean_obj = _lean_summary(args, run_dir, view)
 
     if getattr(args, "summaries", False):
         if board_obj is None:
@@ -644,7 +683,7 @@ def cmd_report(args) -> int:
     text, code = cli_table.render(view, plain=_plain(), run_dir=run_dir, root=root, board_obj=board_obj, params=params, comparison_obj=comp_obj)
     if code == OK:
         # html.write's credential scan must run before a label reaches the terminal (residual 5).
-        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator(), board_obj=board_obj, params=params, comparison_obj=comp_obj, canaries=egress.CANARIES, campaign_obj=campaign_obj)
+        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator(), board_obj=board_obj, params=params, lean_obj=lean_obj, comparison_obj=comp_obj, canaries=egress.CANARIES, campaign_obj=campaign_obj)
         print(text, end="")
         print(f"report: {report_path}")
     else:
@@ -733,6 +772,10 @@ def build_parser() -> argparse.ArgumentParser:
             sp.add_argument("--seed", type=int, default=None, help="bootstrap seed (default: 20260927)")
             sp.add_argument("--resamples", type=int, default=None, help="bootstrap resamples (minimum: 2000)")
             sp.add_argument("--baseline", default=None, help="baseline run id for comparison")
+            sp.add_argument("--pool", default=None, metavar="RUN_ID",
+                            help="a lean run's batch 1, pooled with this run as batch 2 (ADR-0022 section 3)")
+            sp.add_argument("--prereg", default=None, metavar="PATH",
+                            help="the lean pre-registration file: its sha256 and commit time (ADR-0023 decision 8)")
             sp.add_argument("--summaries", action="store_true",
                             help="generate the AI summaries (US-42); refused while any run is live "
                                  "(HB-SUM-001); the ReplayBackend only until R8 wires the live gateway")
