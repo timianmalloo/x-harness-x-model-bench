@@ -162,7 +162,7 @@ Smallest correct path (the Solution-Selection Ladder): reuse first, and build on
 - **Leader and Coordinators:** Claude Code, Opus (`claude-opus-5-5`).
 - **Claude sub-agents:** Opus for code that needs judgement (L-SUMMARY review, any loop-back); Haiku
   (`claude-haiku-4-5-20251001`) for mechanical work (docs errata, cleanup reports, read-only sweeps).
-  - **Erratum (L-DOCS, 2026-10-09; not an ADR, the lean plan Pins in docs/coordination/coordination-lean.md):** the Haiku pin is latest, `claude-haiku-5-5` (2026-10-09), in place of `claude-haiku-4-5-20251001` above.
+  - **Erratum (L-DOCS, 2026-10-09; the operator's instruction of 2026-10-09, recorded in `docs/coordination/lean-benchmark-prompt.md`, *Claude sub-agents*; no ADR governs a model pin):** Haiku is pinned to latest, `claude-haiku-5-5` on 2026-10-09 (re-checked at each run's start), in place of `claude-haiku-4-5-20251001` above. The lean plan's *Pins* (`docs/coordination/coordination-lean.md`) carry the same id.
 - **Distributed coding:** Grok (`grok-4.7`, effort high) and Agy (`gemini-3.8-flash-high`) through `coord-runner`.
   Codex and Copilot are not workers in this run; Copilot is a benchmark subject only.
 

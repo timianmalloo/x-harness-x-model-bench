@@ -1107,7 +1107,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart LR\n  E1[E1 walking skeleton] --> E2[E2 multi-turn]\n  E1 --> E3[E3 three arms, rings, resume]\n  E1 --> E4[E4 remaining checks]\n  SLB[spike S-LB] --> E4\n  E2 --> J{converge: ADR-0021 §4 table + TLC}\n  E3 --> J\n  E4 --> J\n  J --> E5[E5 first campaign]"
         }
       ],
-      "sourceSha256": "e922cb8eb21ec99ae2c23eab923ad3dc816bc65ace0b5ac0ba566c254e558b01"
+      "sourceSha256": "d8a01b0f465dc35ad893de52abc4b06ec1838bae079e6b4f0cfe5adccbfd7d1b"
     },
     {
       "id": "arch-harness-bench",
@@ -1243,7 +1243,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "9bc23003d14b20ba569349852c6e7cd5029872f87c7eb9f9210a8a733ea2c35a"
+      "sourceSha256": "af36296ebcb019711788e97641e4f3dfa84421999e7f2a49580686b1a43e8a4a"
     },
     {
       "id": "mutation-record-phase1",
@@ -9867,7 +9867,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "6e3d4e424b1053095e7d126dba5c8950b06f5bef25bfd980ed43ed986db4ccea"
+      "sourceSha256": "c78bb73bd9e4fa6a64f61708a77d6713b1d0277fac74288c9d839a8198f315f9"
     },
     {
       "id": "coordination-finish-harness-bench",
@@ -10037,7 +10037,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "000e7755104bc4ce9eac3f9a8b9ca6b793b04c6efcacf7af1a25c9a0625feae1"
+      "sourceSha256": "8fe7e583657feceff08940b6eebee0c10106db9cecde346730675da9bb1a73e9"
     },
     {
       "id": "x-evu-coverage",
@@ -10612,7 +10612,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TD\n  O([Open report]) --> H[Header + campaign block: question, arms, pre-registration hash, baseline, fixes, MDE]\n  O -->|run in no campaign| NC([No verdict section; harness-bench report as before])\n  H -->|run ineligible| IN([Verdict section states reason and differing items; no verdicts])\n  H --> T[Verdict table: property x harness, per comparison]\n  T -->|better or worse| E1[Effect, interval, MDE mark, token ratio]\n  T -->|no difference >= MDE| E2([Interval inside the MDE band; reader can rule out effects of MDE size])\n  T -->|inconclusive| E3([Reason: underpowered or not recorded, with counts; reader sees what more data would need])\n  E1 -->|dominance rule met| D([A dominates B: keep A for this harness])\n  E1 -->|better but costlier| C([better at xN tokens: reader weighs value against cost])\n  T -->|activate a verdict| RUNS[Runs filtered to its pairs] --> UF3([Harness-bench UF-3: cell card])\n  T -->|activate excluded n| XL[Excluded cells: id, arm, cause] --> UF3\n  O -->|pack section read directly| PK([Pack section: header and every intention verdict labelled exploratory; link to section 3])\n  UF3 -->|archive absent| NA([Archive not in this copy + path])\n  H -->|analysis not pre-registered| EX([Labelled exploratory wherever shown; not a verdict])"
         }
       ],
-      "sourceSha256": "3391dc034d296ac5ccf0f05872170d3e4a67d5b8192aa01c36f93a598183b28c"
+      "sourceSha256": "00fdbfe0828224e994a6da29ff53eb6c8a618b77a814d0be4fb80d5381ddef78"
     },
     {
       "id": "spec-harness-bench",
@@ -10731,7 +10731,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TD\n  A[P1 opens report.html] --> B{Lean shape?}\n  B -- no --> Z[Existing report, unchanged]\n  B -- yes --> C[Lean summary header: question, pre-registered yes/no, batches 2 of 2]\n  C --> D[Per-harness table]\n  D --> E{Interval contains 0?}\n  E -- yes --> F[Row says no detectable effect at MDE 0.31]\n  E -- no --> G[Row states direction and size]\n  F --> H[Token ratio beside it]\n  G --> H\n  H --> I{Pairs recorded = 20?}\n  I -- no --> J[Row shows k of 20, excluded cells with causes]\n  I -- yes --> K[Pooled row]\n  J --> K\n  K --> L{Harnesses disagree?}\n  L -- yes --> M[Note: read the per-harness rows]\n  L -- no --> N[Optional: expand per-property table]\n  M --> N\n  N --> O[Limits note: clustering caveat, checkpoint numbers]\n  C --> P{Only batch 1 graded?}\n  P -- yes --> Q[Header says 1 of 2 batches; rows show 10 pairs and MDE 0.42]\n  Q --> D"
         }
       ],
-      "sourceSha256": "afe2355220c202b4e1d8085a595b8fabddc15f023de179efa523512a31170a4a"
+      "sourceSha256": "046db64ddddbc5e26cadda714438239bbb0aec85eb5ac4e5d6651af18924039b"
     },
     {
       "id": "threat-model",
@@ -11201,5 +11201,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "08d5e3e1038247748c3000a9e09866640f7a5664d1c89e0d2f8e44cee1cef6c9"
+  "graphSha256": "7aaa5209470f395fc1ef268dd35db743230a4f325c75cf46be5bc183556c47ab"
 };

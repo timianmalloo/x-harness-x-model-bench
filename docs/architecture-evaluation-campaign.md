@@ -30,7 +30,8 @@ summary: >-
 ---
 
 # Architecture amendment: the Evaluation Campaign
-**Erratum (L-DOCS, 2026-10-09; ADR-0022, ADR-0023):** The campaign design in this amendment (the campaign ledger, power-analysis inputs, pre-registration record, eligibility and dominance) is retired for the lean benchmark question. The lean benchmark is two 60-cell batch runs of one lean ring, pooled at report time (ADR-0022), and is summarised over `verdicts.collect` with `stats.paired_delta` intervals (ADR-0023). The lean shape's ring tag is `lean` (ADR-0022).
+
+**Erratum (L-DOCS, 2026-10-09; ADR-0022, ADR-0023):** For the pack-on/off question, this amendment's campaign design is superseded, following the lean spec's *Supersession* table: the power analysis and the campaign pre-registration record (a one-paragraph pre-registration, `docs/notes/lean-preregistration.md`, replaces them), the pack-regression ring, the campaign lifecycle and ledger, eligibility, arm Y and dominance are out. Kept: the property tasks and catalog 0.7, arms `off` and `on` (X), the pilot ring's 60 cells as batch 1, one engine identity per lean benchmark (ADR-0022 §5), and one plan identity across both batches. The lean benchmark is two 60-cell batch runs of one lean ring, ring tag `lean`, pooled at report time, and a lean run never enters campaign state (ADR-0022). Its summary pairs with `verdicts.collect` and takes its intervals from `stats.paired_delta` (ADR-0023). This amendment is not otherwise changed.
 
 - **Status:** Revised after architect council rounds 1 and 2 (2026-10-03). Distributed Systems PASS; Security & Identity PASS (S2 re-checked and cleared, round 3); SRE and the other lenses PASS WITH CONDITIONS; see [Gate record](#gate-record).
 - **Tier:** T2 (the driving spec's cost-of-error tier: a wrong verdict misdirects pack changes on every harness).

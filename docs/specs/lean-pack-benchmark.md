@@ -117,7 +117,8 @@ from one confirmed plan identity, so no drift between plans can pose as a pack e
 ### User stories & acceptance criteria
 
 **LB-1. As P1, I want one plan of 120 cells, so that the run's size is fixed before any cell starts.**
-**Erratum (L-DOCS, 2026-10-09; ADR-0022, Spec drift):** LB-1 is superseded for the plan shape. Under ADR-0022, two `bench plan` calls each list 60 cells, from one lean ring and one arm binding, not one plan of 120 cells. The 120-cell counts in the Then bullets below are the superseded figures.
+
+**Erratum (L-DOCS, 2026-10-09; ADR-0022, *Spec drift*):** LB-1's one plan is superseded for the plan shape. Under ADR-0022, two `bench plan` calls on one lean ring, `bench/rings/lean.yaml` (`repetitions: 1`), with one arm binding, each list 60 cells: 10 per harness per arm. The size is still fixed before any cell starts: the two batches together are the 120 cells below (60 per batch, which the pooled view labels repetitions 1 and 2; 20 per harness per arm). The concrete-model-id and 0-instruction-file bullets hold for each plan.
 - **Given** the lean matrix (10 tasks from `bench/rings/e5-pilot.yaml`'s subset, arms `off` and `on`, combos
   `cc-opus` `claude-opus-5-5`, `codex-sol` `gpt-6.1-sol`, `copilot-sol` `gpt-6.1-sol`, 2 repetitions)
   **When** `bench plan` runs with `--arm on=<pack source>@<40-hex commit>`
@@ -219,7 +220,7 @@ verdicts.**
 | Portability | the report stays a self-contained HTML file | as the harness-bench spec |
 | Compatibility | a run without the lean shape (not 2 arms) renders no lean summary and keeps its report golden byte-identical | a golden test |
 
-**Erratum (L-DOCS, 2026-10-09; ADR-0022, Spec drift):** The lean shape is the ring tag `lean`, not "2 arms". A run without the `lean` ring tag renders no lean summary and keeps its report golden byte-identical.
+**Erratum (L-DOCS, 2026-10-09; ADR-0022 §4, *Spec drift*):** In the Compatibility row, the lean shape is the ring tag `lean`, not "2 arms". A run without the `lean` ring tag renders no lean summary and keeps its report golden byte-identical.
 
 ### Boundary set
 
