@@ -22,7 +22,7 @@ from harness_bench.composites import area as compute_area
 from harness_bench.composites import gated as compute_gated
 from harness_bench.composites import normalise as compute_normalise
 from harness_bench.errors import BenchError
-from harness_bench.plan import arm_pack, plan_comparisons, ring_diff
+from harness_bench.plan import arm_pack, cell_arm, plan_comparisons, ring_diff
 from harness_bench.stats import (
     CONTAMINATION_PRONE,
     DEFAULT_SEED,
@@ -796,6 +796,50 @@ def check_comparable(base: RunView, view: RunView, extra: Sequence[str] = ()) ->
     diffs.extend(extra)
     if diffs:
         raise BenchError("HB-STA-002", "; ".join(diffs))
+
+
+# ADR-0022 section 3: the plan records two pooled batches must share, beyond compare's preconditions.
+LEAN_POOL_RECORDS = ("arms", "builds", "profiles", "instruction_lists")
+
+
+def _by_name(record: Any) -> dict[str, Any]:
+    """A plan record by name: a mapping by its keys, an instruction-list row (plan._probe_instructions) by task/arm."""
+    if isinstance(record, Mapping):
+        return {str(k): v for k, v in record.items()}
+    return {f"{row.get('task')}/{row.get('arm')}": row for row in record or ()}
+
+
+def pool_check(pool: RunView, view: RunView) -> tuple[str, ...]:
+    """ADR-0022 section 3: may `view` (batch 2) be pooled with `pool` (batch 1)? `check_comparable` plus three lean
+    rules, every difference named in its one HB-STA-002; a ring-hash difference still fails fast with HB-PLN-003.
+    Returns the differences shown, never refused: `parameters` (including `parallelism`) and `envelope_seconds`.
+    `run_id`, `created_at`, `trace_id`, `launch_seed` and `plan_hash` are ignored."""
+    a, b = pool.plan or {}, view.plan or {}
+    lean: list[str] = []
+    for run in (pool, view):
+        tag = ((run.plan or {}).get("ring") or {}).get("tag")
+        if tag != "lean":
+            lean.append(f"run {run.run_id} has ring tag {tag}, not lean")
+    # Cells as a set keyed by cell_id: the stored list is in launch order, which follows the per-plan launch_seed.
+    cells_a, cells_b = ({cid: (c.get("task"), c.get("combo"), cell_arm(c), c.get("model")) for cid, c in _cells_by_id(p).items()}
+                        for p in (a, b))
+    cell_parts = [f"{label}: {', '.join(sorted(ids))}" for label, ids in (
+        ("only in A", cells_a.keys() - cells_b.keys()), ("only in B", cells_b.keys() - cells_a.keys()),
+        ("changed", {cid for cid in cells_a.keys() & cells_b.keys() if cells_a[cid] != cells_b[cid]})) if ids]
+    if cell_parts:
+        lean.append(f"cells differ: {'; '.join(cell_parts)}")
+    for record in LEAN_POOL_RECORDS:
+        if a.get(record) != b.get(record):
+            x, y = _by_name(a.get(record)), _by_name(b.get(record))
+            names = sorted(k for k in x.keys() | y.keys() if x.get(k) != y.get(k))
+            lean.append(f"{record} differ: {', '.join(names) or 'entry order'}")
+    check_comparable(pool, view, lean)
+    shown = []
+    if a.get("parameters") != b.get("parameters"):
+        shown.append(f"parameters differ: A {a.get('parameters')}, B {b.get('parameters')}")
+    if a.get("envelope_seconds") != b.get("envelope_seconds"):
+        shown.append(f"envelope_seconds differs: A {a.get('envelope_seconds')}, B {b.get('envelope_seconds')}")
+    return tuple(shown)
 
 
 def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = None) -> Comparison:
