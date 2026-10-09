@@ -116,8 +116,8 @@ def test_first_cell_started_at_is_not_recorded_when_any_start_lacks_its_instant(
 # ------------------------------------------------------------------ A3: lean.build's per-harness rows
 
 REF, TREAT = config.ARM_OFF, "on"  # the plan's one comparison; lean.build reads it from plan.comparisons
-TASKS = tuple(f"T{i:02d}" for i in range(1, 11))  # the lean ring's ten tasks
-COMBOS = (("cc", "claude_code", "claude-opus-5-5"), ("cx", "codex", "gpt-6.1-sol"))
+TASKS = ("S1", "S2", "RS1", "RS2", "RW1", "RW2", "NG1", "NG2", "SM1", "SM2")  # the lean ring's ten tasks
+COMBOS = (("cc", "claude_code", "claude-opus-5-5"), ("cx", "codex", "gpt-6.1-sol"), ("cp", "copilot", "gpt-6.1-sol"))
 TOKENS = {"m": {"output": 100}}
 
 
@@ -208,19 +208,19 @@ def test_a_lower_and_a_null_effect_read_by_the_one_definition():
 
 def test_a_short_harness_shows_k_of_20_and_the_excluded_cells_with_causes():
     def change(batch, cell):
-        if batch == 2 and cell.task == "T03" and cell.arm == TREAT:
+        if batch == 2 and cell.task == "RS1" and cell.arm == TREAT:
             return dataclasses.replace(cell, outcome="failed", cause="rate limit")
-        if batch == 1 and cell.task == "T07" and cell.arm == REF:
+        if batch == 1 and cell.task == "NG1" and cell.arm == REF:
             return dataclasses.replace(cell, scores={verdicts.PRIMARY: views.Measure(None, "no summary")})
         return cell
 
     row = _build(_batches(change=change), None).rows[0]
     assert (row.pairs, row.planned_pairs) == (18, 20)
     assert row.excluded == (
-        (f"r1/cc-T07-{REF}", "no summary"),
-        (f"r1/cc-T07-{TREAT}", f"pair partner not recorded (r1/cc-T07-{REF})"),
-        (f"r2/cc-T03-{REF}", f"pair partner not recorded (r2/cc-T03-{TREAT})"),
-        (f"r2/cc-T03-{TREAT}", "failed (rate limit)"),
+        (f"r1/cc-NG1-{REF}", "no summary"),
+        (f"r1/cc-NG1-{TREAT}", f"pair partner not recorded (r1/cc-NG1-{REF})"),
+        (f"r2/cc-RS1-{REF}", f"pair partner not recorded (r2/cc-RS1-{TREAT})"),
+        (f"r2/cc-RS1-{TREAT}", "failed (rate limit)"),
     )
 
 
@@ -259,3 +259,74 @@ def test_three_batches_are_refused():
 
 def test_build_is_pure():
     assert repr(_build(_batches(), None)) == repr(_build(_batches(), None))
+
+
+# ------------------------------------------------------------------ A4: the pooled row, disagree, PropertyRows
+
+ALL = ("cc", "cx", "cp")
+
+
+def test_the_pooled_row_is_paired_delta_over_every_harness_with_combo_task_keys():
+    batches = _batches(combos=ALL)
+    pooled = _build(batches, None).pooled
+    key = lambda c: f"{c.combo}/{c.task}"
+    ref = [o for combo in ALL for o in _obs(batches, combo, REF, key)]
+    treat = [o for combo in ALL for o in _obs(batches, combo, TREAT, key)]
+    expected, _ = stats.paired_delta(ref, treat, (REF, TREAT), stats.Params(), "lean|pooled")
+    assert expected.n == 30
+    assert (pooled.effect, pooled.lo, pooled.hi) == (expected.point, expected.lo, expected.hi)
+    assert (pooled.combo, pooled.pairs, pooled.planned_pairs, pooled.mde) == ("pooled", 60, 60, Decimal("0.19"))
+    assert pooled.statement == "pack-on higher by 0.60"
+
+
+def test_the_pooled_mde_at_one_batch_and_its_excluded_cells():
+    def change(batch, cell):
+        return dataclasses.replace(cell, outcome="failed", cause="auth") if cell.cell_id == f"cx-S1-{TREAT}" else cell
+
+    pooled = _build(_batches(1, combos=ALL, change=change), None).pooled
+    assert (pooled.pairs, pooled.planned_pairs, pooled.mde) == (29, 30, Decimal("0.26"))
+    assert pooled.excluded == ((f"r1/cx-S1-{REF}", f"pair partner not recorded (r1/cx-S1-{TREAT})"),
+                               (f"r1/cx-S1-{TREAT}", "failed (auth)"))
+
+
+def test_harnesses_disagree_only_when_two_intervals_lie_wholly_on_opposite_sides_of_zero():
+    def split(combo, task, arm, batch):  # cc up, cx down, cp null
+        passed = arm == TREAT if combo == "cc" else arm == REF if combo == "cx" else False
+        return 1 if passed and task in TASKS[:6] else 0
+
+    summary = _build(_batches(combos=ALL, value=split), None)
+    assert [r.lo > 0 for r in summary.rows] == [True, False, False] and summary.rows[1].hi < 0
+    assert summary.disagree is True
+    same_side = _build(_batches(combos=ALL), None)
+    assert same_side.disagree is False
+    one_side = _build(_batches(combos=ALL, value=lambda combo, task, arm, b: split(combo, task, arm, b)
+                               if combo != "cx" else 0), None)
+    assert one_side.disagree is False
+
+
+def test_property_rows_count_passes_over_recorded_pairs_per_family_and_harness():
+    def value(combo, task, arm, batch):
+        if task.startswith("NG"):
+            return 1 if arm == REF else 0  # down
+        if task.startswith("SM"):
+            return 1  # same, both pass
+        return _lift(combo, task, arm, batch)  # S, RS, RW up
+
+    def change(batch, cell):  # one RW pair lost: its family reads 3 recorded
+        return dataclasses.replace(cell, outcome="failed", cause="auth") if batch == 2 and cell.cell_id == f"cc-RW2-{REF}" else cell
+
+    rows = _build(_batches(value=value, change=change), None).properties
+    assert [(r.family, r.harness, r.off, r.on, r.direction) for r in rows] == [
+        ("S", "claude_code", (0, 4), (4, 4), "up"),
+        ("RS", "claude_code", (0, 4), (4, 4), "up"),
+        ("RW", "claude_code", (0, 3), (3, 3), "up"),
+        ("NG", "claude_code", (4, 4), (0, 4), "down"),
+        ("SM", "claude_code", (4, 4), (4, 4), "same"),
+    ]
+
+
+def test_property_rows_are_family_major_over_harnesses():
+    rows = _build(_batches(combos=("cc", "cx")), None).properties
+    assert [(r.family, r.harness) for r in rows][:4] == [("S", "claude_code"), ("S", "codex"),
+                                                          ("RS", "claude_code"), ("RS", "codex")]
+    assert len(rows) == 10
