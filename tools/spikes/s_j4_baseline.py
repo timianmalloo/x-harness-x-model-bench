@@ -26,6 +26,13 @@ from harness_bench import driver, procs, profiles, tools  # noqa: E402
 from harness_bench.engine import _job_query, _read_records, _spend  # noqa: E402
 from harness_bench.telemetry import normalize  # noqa: E402
 
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except (ValueError, OSError):
+            pass
+
 PINS = {"claude-code": "claude-opus-5-5", "codex": "gpt-6.1-sol", "copilot": "gpt-6.1-sol"}
 PROMPT = "Reply with the single word OK. Do not use any tool."
 HANDSHAKE_TIMEOUT = 60.0
@@ -134,7 +141,7 @@ def main(argv: list[str]) -> int:
         out = {"harness": harness, "outcome": f"not run: {code}: {str(exc)[:300]}", "A": None, "B": None, "C": None,
                "tokens": "not recorded"}
     out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / f"{harness}.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
+    (out_dir / f"{harness}.json").write_text(json.dumps(out, indent=2), encoding="utf-8", newline="\n")
     print(json.dumps(out, indent=2))
     return 0
 

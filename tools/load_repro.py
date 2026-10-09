@@ -15,6 +15,13 @@ import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except (ValueError, OSError):
+            pass
+
 DEFAULT_PREFIX = ["uv", "run", "pytest", "-n", "4", "--dist", "loadscope"]
 HEADER = re.compile(r"^_{2,} (?:ERROR at (setup|teardown) of )?\S+ _{2,}$", re.MULTILINE)
 NO_RESULT = "no result"
@@ -71,7 +78,7 @@ def run_repro(node: str, runs: int, out, prefix=None, cwd=None) -> dict:
         "node": node, "n": runs, "failures": len(failure_list), "rate": len(failure_list) / runs,
         "failure_list": failure_list, "wall_s": walls, "base_sha": _base_sha(cwd),
     }
-    Path(out).write_text(json.dumps(record, indent=2), encoding="utf-8")
+    Path(out).write_text(json.dumps(record, indent=2), encoding="utf-8", newline="\n")
     return record
 
 

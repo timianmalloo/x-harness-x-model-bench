@@ -17,6 +17,13 @@ import sys
 from collections import defaultdict, deque
 from datetime import UTC, datetime
 
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except (ValueError, OSError):
+            pass
+
 if sys.platform == "win32":
     import ctypes
     from ctypes import wintypes
