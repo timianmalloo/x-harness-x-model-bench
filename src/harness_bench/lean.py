@@ -13,11 +13,11 @@ import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
-from decimal import Decimal
+from decimal import ROUND_HALF_EVEN, Context, Decimal, localcontext
 from typing import Literal
 
-from harness_bench import plan, power, stats, verdicts
-from harness_bench.errors import BenchError
+from harness_bench import plan, power, stats, verdicts, views
+from harness_bench.errors import BenchError, Cause
 from harness_bench.stats import Interval
 from harness_bench.views import CellView, RunView
 
@@ -100,6 +100,62 @@ ESTIMATE = Estimate(run_min_per_cell=Decimal("1.12"), grade_min_per_cell=Decimal
 RING_TAG = "lean"
 _CENT = Decimal("0.01")
 _ALPHA = Decimal("0.05")  # the lean summary reports 95% intervals (stats.METHOD)
+_CONTEXT = Context(prec=28, rounding=ROUND_HALF_EVEN)  # fixed, so an ambient context cannot move a checkpoint value
+_NS_PER_MIN = Decimal(60 * 10**9)
+
+
+def _seed(prereg: Prereg | None, name: str, comparison: tuple[str, str]) -> int:
+    """ADR-0023 decision 8: seeded from the pre-registration's sha256 per combo or "pooled"; stats' default without one."""
+    return stats.DEFAULT_SEED if prereg is None else verdicts.seed_for(prereg.sha256, RING_TAG, name, comparison)
+
+
+def _prereg_status(prereg: Prereg | None, started: datetime | None) -> str:
+    """LB-2: pre-registered only when the commit is earlier than batch 1's first cell start."""
+    if prereg is None:
+        return "Not pre-registered: no pre-registration supplied"
+    if prereg.committed_at is None:
+        return "Not pre-registered: the pre-registration is not committed"
+    if started is None:
+        return "Not pre-registered: batch 1's first cell start is not recorded"
+    if prereg.committed_at < started:
+        return f"pre-registered ({prereg.sha256[:12]})"
+    return (f"Not pre-registered: committed {prereg.committed_at.isoformat()}, at or after batch 1's first cell started "
+            f"{started.isoformat()}")
+
+
+def _per_cell(total_ns: int | None, cells: int | None) -> Decimal | None:
+    """Minutes per cell; None ("not recorded") when either part is, never 0."""
+    if total_ns is None or not cells:
+        return None
+    with localcontext(_CONTEXT):
+        return Decimal(total_ns) / _NS_PER_MIN / Decimal(cells)
+
+
+def _infrastructure(cell: CellView) -> bool:
+    """LB-3: a cell that did not complete for a cause that is not the agent's (auth, rate limit, provider, crash).
+    assume: LB-3's "infrastructure cause (auth, rate limit)" is every `Cause` whose attribution is not `agent`, since
+    auth is attributed to the harness. Confirm: the Coordinator's reading of LB-3. Breaks if false: k counts auth."""
+    cause = next((c for c in Cause if c.code == cell.code), None)
+    return cell.outcome != "completed" and cause is not None and cause.attribution != "agent"
+
+
+def _checkpoint(batch: BatchInput, combos: Sequence[tuple[str, str, str]], comparison: tuple[str, str]) -> BatchCheckpoint:
+    """LB-3's measured numbers for one batch, each from one definition (ADR-0023 decision 7)."""
+    cells = batch.view.cells
+    tokens: dict[tuple[str, str], Decimal | None] = {}
+    failures: dict[str, tuple[int, int, tuple[str, ...]]] = {}
+    for combo, _, _ in combos:
+        mine = [c for c in cells if c.combo == combo]
+        for arm in comparison:
+            recorded = [t for c in mine if c.arm == arm and (t := views.sum_tokens(c.tokens)) is not None]
+            with localcontext(_CONTEXT):
+                tokens[combo, arm] = Decimal(sum(recorded)) / Decimal(len(recorded)) if recorded else None
+        failed = [c for c in mine if _infrastructure(c)]
+        failures[combo] = (len(failed), len(mine), tuple(sorted({c.cause or str(c.code) for c in failed})))
+    return BatchCheckpoint(run_id=batch.view.run_id, cells=len(cells),
+                           run_min_per_cell=_per_cell(batch.run_wall_ns, len(cells)),
+                           grade_min_per_cell=_per_cell(batch.grading_ns, batch.cells_graded),
+                           tokens_per_cell=tokens, infra_failures=failures)
 
 
 def _sizer(delta: float) -> float:
@@ -169,12 +225,18 @@ def _statement(interval: Interval) -> str:
 
 def _row(combo: str, harness: str, model: str, pairs: Sequence[verdicts.Pair], excluded: Sequence[tuple[str, str]],
          planned: int, comparison: tuple[str, str], seed: int) -> LeanRow:
+    key, params = f"{RING_TAG}|{combo}", stats.Params(seed=seed)
     ref = [stats.Obs(p.task, p.rep, p.ref) for p in pairs]
     treat = [stats.Obs(p.task, p.rep, p.treat) for p in pairs]
-    effect, _ = stats.paired_delta(ref, treat, comparison, stats.Params(seed=seed), f"{RING_TAG}|{combo}")
+    effect, _ = stats.paired_delta(ref, treat, comparison, params, key)
+    # LB-7: only token-complete pairs; one with tokens not recorded, or 0 pack-off tokens, is excluded and counted.
+    complete = [p for p in pairs if p.ref_tokens is not None and p.treat_tokens is not None and p.ref_tokens != 0]
+    ratio = stats.paired_ratio([stats.Obs(p.task, p.rep, Decimal(p.ref_tokens)) for p in complete],
+                               [stats.Obs(p.task, p.rep, Decimal(p.treat_tokens)) for p in complete],
+                               comparison, params, f"{key}|tokens") if complete else None  # its own stream per quantity
     return LeanRow(combo=combo, harness=harness, model=model, effect=effect.point, lo=effect.lo, hi=effect.hi,
                    mde=_mde(planned), pairs=len(pairs), planned_pairs=planned, excluded=tuple(excluded),
-                   statement=_statement(effect), token_ratio=None, ratio_excluded=0)
+                   statement=_statement(effect), token_ratio=ratio, ratio_excluded=len(pairs) - len(complete))
 
 
 def _family(task: str) -> str:
@@ -213,9 +275,10 @@ def build(batches: Sequence[BatchInput], prereg: Prereg | None) -> LeanSummary:
     ref, _ = comparison
     cells = _relabelled(batches)
     tasks = tuple(sorted({cell["task"] for batch in batches for cell in batch.view.plan["cells"]}))
-    seed = stats.DEFAULT_SEED
+    combos = _combos(batches)
     rows, collected, pooled_pairs, pooled_excluded = [], [], [], []
-    for combo, harness, model in _combos(batches):
+    for combo, harness, model in combos:
+        seed = _seed(prereg, combo, comparison)
         spec = verdicts.VerdictSpec(prop=verdicts.PRIMARY, harness=harness, comparison=comparison, tasks=tasks,
                                     mde=Decimal(0), method=stats.METHOD, alpha_per_test=_ALPHA, level_rule="not used",
                                     min_pairs=1, seed=seed, resamples=stats.MIN_RESAMPLES, required_pairs=None)
@@ -225,8 +288,9 @@ def build(batches: Sequence[BatchInput], prereg: Prereg | None) -> LeanSummary:
         pooled_pairs += [dataclasses.replace(p, task=f"{combo}/{p.task}") for p in pairs]
         pooled_excluded += excluded
     pooled = _row("pooled", "pooled", "pooled", pooled_pairs, sorted(pooled_excluded), _planned(batches, None, ref),
-                  comparison, seed)
+                  comparison, _seed(prereg, "pooled", comparison))
     return LeanSummary(batches=len(batches), run_ids=tuple(b.view.run_id for b in batches),
                        plan_hashes=tuple(str(b.view.plan["plan_hash"]) for b in batches),
-                       prereg_status="Not pre-registered: no pre-registration supplied", rows=tuple(rows), pooled=pooled,
-                       disagree=_disagree(rows), properties=_properties(batches, collected), checkpoint=())
+                       prereg_status=_prereg_status(prereg, batches[0].first_cell_started_at), rows=tuple(rows),
+                       pooled=pooled, disagree=_disagree(rows), properties=_properties(batches, collected),
+                       checkpoint=tuple(_checkpoint(b, combos, comparison) for b in batches))
