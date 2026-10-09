@@ -46,6 +46,31 @@ proven. The objective is lexicographic: completeness and rigor first, token cost
   repo), X-FLAKE turn 3, F-PACK phase 1 pushed to ai-forward, and the scheduled task `HarnessBenchAlarmDrill` deleted
   (operator's go). Any item that is not done becomes a track or an operator action in the plan. It is never silently
   dropped.
+- **State at handover (2026-10-09, read by the finish Leader):**
+  - The drill task is deleted (the operator ran it: "deleted").
+  - **X-ALARMCWD** is verified and not joined. It is on branch `build/fin-x-alarmcwd` at `8a87de4d`: red with the old
+    script (`assert 1 == 6`), green 20/20.
+  - **X-FLAKE turn 3** is green and not joined. It is on branch `build/fin-x-flake3` at `e79489ba`: red `a6c42456`,
+    then green `39fce843`, `tools/load_repro.py`, all 3 mutants killed, the guard list 218 passed, and a real N=3 run
+    with 0 of 3 failed.
+  - Join both (each needs the full-suite pre-check, then the join recount).
+  - F-PACK phase 1 (ai-forward `fix/xh-finish-upstream` at `e1f8ad5`) is not pushed yet.
+- **Two regressions on `main` c7e0a8c8,** found by the finish batch gate after the push (operator: "push and merge
+  now"). Fix both before the run. Each is a small track, red first.
+  - `run-verify-gates` is 1 of 9 failed: `verify-portable-text-io.py` flags `tools/window_check.py:1` (prints from a
+    `__main__` entry with no stdio reconfigure guard), `tools/spikes/s_j4_baseline.py:1` (the same), and
+    `tools/spikes/s_j4_baseline.py:137` (`write_text` without `newline="\n"`). The fix is the gate's own text: the
+    stdio guard from `pack-doctor.py` at the top of each printing script, and `newline="\n"` on the write. Exit
+    evidence: `run-verify-gates.py` 9 of 9.
+  - `mutate_check --touched f544deb2` reports one survivor: `tests/mutations/bench_check.json` RF-11, "the host is not
+    detached, so a grandchild with default stdio shares the check's console channel"
+    (`src/harness_bench/grade/bench_check.py`, `creationflags=DETACHED_PROCESS`). Its killing test is
+    `tests/test_property_real_host.py::test_grandchild_stdio_is_not_captured_and_the_protocol_survives`. X-WIN's W3d
+    sweep (`3787028c`) added `CREATE_NO_WINDOW` to launches in that file. Inferred, not verified: the flag removed the
+    console the test needs in order to tell a detached host from an attached one. Diagnose first. The likely fix is a
+    reasoned allowlist entry for that launch in `tests/test_console_windows.py`, or a test that still distinguishes the
+    two. Never weaken RF-11. Exit evidence: RF-11 killed, and the console guard green.
+  - M14b and M27 now report `host-limited` (X-HYG), which is the expected baseline, not a survivor.
 
 **Goal:** a lean benchmark run and reported, exactly as the spec defines it:
 - 10 property tasks × 2 arms (pack-off, pack-on) × 3 harnesses × 2 repetitions = 120 cells, in two batches of 60, with
