@@ -1166,10 +1166,10 @@ _STATES = frozenset({"draft", "baselined", "piloted", "registered", "measuring",
 def plan_block(root: Path, campaign_id: str, matrix: dict) -> dict:
     """The `campaign` block of `bench plan --campaign` (W1-C section 5): the chain's effective run side, never a stamp of the working tree.
     A pilot-ring matrix is `prereg_hash: null` and needs `baselined` or `piloted`; any other needs `registered` or `measuring` and takes
-    the latest `registered` row's hash. A `pack-regression` ring is not a campaign ring. Lock-free."""
+    the latest `registered` row's hash. A `pack-regression` or `lean` ring is not a campaign ring (ADR-0022 section 3a). Lock-free."""
     ring = (matrix.get("ring") or {}).get("tag")
-    if ring == "pack-regression":
-        raise BenchError("HB-CMP-010", "ring pack-regression is not a campaign ring. Plan it without --campaign.")
+    if ring in ("pack-regression", "lean"):
+        raise BenchError("HB-CMP-010", f"ring {ring} is not a campaign ring. Plan it without --campaign.")
     state = read(root, campaign_id)
     pilot = ring == "pilot"
     if state.state not in (("baselined", "piloted") if pilot else ("registered", "measuring")):
