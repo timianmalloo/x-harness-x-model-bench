@@ -1,5 +1,6 @@
 """Tests for the lean summary report section (ADR-0023, spec Part B & Part C)."""
 
+import dataclasses
 import importlib
 import re
 from decimal import Decimal as D
@@ -65,10 +66,10 @@ def _pooled_summary(**over):
     )
     pooled = _row("pooled", "0.12", "0.01", "0.23", "pack-on higher by 0.12", mde="0.19", pairs=57, planned=60,
                   ratio=_iv("2.0", "1.7", "2.4", 30))
-    fields = dict(batches=2, run_ids=(RUN_1, RUN_2), plan_hashes=(HASH_1, HASH_2), prereg_status=PREREG, rows=rows,
-                  pooled=pooled, disagree=False, properties=(), checkpoint=(_checkpoint(RUN_1), _checkpoint(RUN_2)))
-    fields.update(over)
-    return lean.LeanSummary(**fields)
+    summary = lean.LeanSummary(batches=2, run_ids=(RUN_1, RUN_2), plan_hashes=(HASH_1, HASH_2), prereg_status=PREREG,
+                               rows=rows, pooled=pooled, disagree=False, properties=(),
+                               checkpoint=(_checkpoint(RUN_1), _checkpoint(RUN_2)))
+    return dataclasses.replace(summary, **over)
 
 
 def _one_batch_summary():
