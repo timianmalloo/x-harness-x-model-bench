@@ -9762,6 +9762,45 @@ window.DOCS_INDEX = {
       "sourceSha256": "b65007497b4bc047e0bd76b590acbf1fb40ac4fd7ed46805de21d675cfe2c40d"
     },
     {
+      "id": "plan-strategy-lean-benchmark",
+      "path": "docs/plans/strategy-lean-benchmark.md",
+      "title": "Strategy - from E5's campaign to the lean pack benchmark",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-23",
+      "reviewSuggested": [],
+      "summary": "Where the repo stands on 2026-10-09 and the path to the operator-accepted lean design: 10 tasks x 2 arms x 3 harnesses x 2 repetitions = 120 cells, about 2 h of run and 2 h of grading, reusing plan/run/grade/report and adding only a paired property_check_pass summary.",
+      "tags": [
+        "strategy",
+        "evaluation",
+        "lean-benchmark",
+        "e5",
+        "pack-effect"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-finish",
+          "rel": "relates-to"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "f4348a7accaf7cecee4809d58141a6b2e8ae32596eb5f6464dc3d8364f9eebd7"
+    },
+    {
       "id": "x-evu-coverage",
       "path": "docs/coordination/eval-wave2-e234/x-evu-coverage.md",
       "title": "Coverage Map: E5 Enterprise Evaluation Report Validations",
@@ -10789,6 +10828,13 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     },
     {
+      "id": "surface-proposals-lean-pack-benchmark",
+      "path": "docs/proposals/lean-pack-benchmark.html",
+      "title": "Lean Pack Benchmark",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact."
+    },
+    {
       "id": "surface-coordination-eval-wave2-e1-overnight-2026-10-05",
       "path": "docs/coordination/eval-wave2-e1/overnight-2026-10-05.html",
       "title": "Overnight 2026 10 05",
@@ -10811,7 +10857,15 @@ window.DOCS_INDEX = {
       "kind": "knowledge-tool",
       "description": "Open an interactive knowledge artifact.",
       "artifactId": "run-report-e2e4"
+    },
+    {
+      "id": "surface-plans-strategy-lean-benchmark",
+      "path": "docs/plans/strategy-lean-benchmark.html",
+      "title": "Strategy Lean Benchmark",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "92e920452ace7e01b12783cd585844d7524d81bf44a57bff97a5b3553d36fb69"
+  "graphSha256": "7dbccdd980d5a17997e3bc94d8ed0ba9001211149af8e59ffb9bf99351967a0f"
 };
