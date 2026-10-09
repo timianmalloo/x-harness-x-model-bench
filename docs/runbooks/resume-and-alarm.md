@@ -63,7 +63,20 @@ window:
 schtasks /Create /TN "bench-alarm-<run_id>" /SC DAILY /ST <window-start> /RI 15 /DU <window-length HH:MM> /TR "powershell.exe -NoProfile -ExecutionPolicy Bypass -File <repo>\tools\alarm-task.ps1 -RunId <run_id> -AlarmAfter <s>"
 ```
 
-Then set these task flags (task XML or the Settings tab), from design section 6.3 (SRE 4): start when
+The wrapper runs `bench` from the repo root, derived from its own path, whatever the task's working directory
+is (loop-back fix after the real drill: Task Scheduler starts in `C:\Windows\System32`, where `bench` cannot
+find `bench/bom.yaml`, and the push read `check-error` instead of `HB-ALM-001`; `test_wrapper_runs_bench_from_the_repo_whatever_the_callers_cwd`
+guards it). As belt and braces, also set the task's working directory to the repo. `schtasks /TR` is limited
+to 261 characters and has no working-directory field, so the recommended form is `Register-ScheduledTask`:
+
+```
+$action = New-ScheduledTaskAction -Execute 'powershell.exe' -WorkingDirectory '<repo>' -Argument '-NoProfile -ExecutionPolicy Bypass -File <repo>\tools\alarm-task.ps1 -RunId <run_id> -AlarmAfter <s>'
+$trigger = New-ScheduledTaskTrigger -Daily -At <window-start>
+Register-ScheduledTask -TaskName 'bench-alarm-<run_id>' -Action $action -Trigger $trigger
+```
+
+Set the 15-minute repetition and the window length on the trigger or in the task XML, then set these task
+flags (task XML or the Settings tab), from design section 6.3 (SRE 4): start when
 available (`StartWhenAvailable`); do not stop on battery and do not require AC (`DisallowStartIfOnBatteries`
 and `StopIfGoingOnBatteries` off); `WakeToRun` on; run only when the user is logged on; `ExecutionTimeLimit` 5
 minutes; `MultipleInstances IgnoreNew`. Whether the machine may wake is the operator's decision.
@@ -96,6 +109,10 @@ final analysis's properties decides this. The preview reports the recorded drill
    ```
    powershell.exe -NoProfile -ExecutionPolicy Bypass -File <repo>\tools\alarm-task.ps1 -Drill -TaskName HarnessBenchAlarmDrill -RunsRoot <runs> -Bench <bench executable> -AlarmAfter 60 -Toast
    ```
+
+   Set the task's working directory to `<repo>` (`New-ScheduledTaskAction -WorkingDirectory`, section 3);
+   the wrapper also runs `bench` from the repo root itself, so a task left at `C:\Windows\System32` still
+   pushes the real `HB-ALM-001` (the defect the first real drill found).
 
    Use absolute paths and quote paths containing spaces. The task and both CLI commands must use the
    same runs root. `-Toast` is an optional local echo; remove it if unavailable. The phone push is required.

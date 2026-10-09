@@ -100,8 +100,15 @@ $logPath = Join-Path $runDir 'alarm-delivery.log'
 # Stderr (the HB-ALM-00x line the real command prints on exit 6) must not become a terminating NativeCommandError in 5.1:
 # 'Continue' for this one native call only; the exit code is read right after, and every other statement stays 'Stop'.
 $ErrorActionPreference = 'Continue'
-$out = & $Bench --runs $RunsRoot status $RunId --alarm-after $AlarmAfter --json 2>$null
-$exit = $LASTEXITCODE
+# bench finds the repo from its cwd and Task Scheduler starts in C:\Windows\System32: run it from the repo root,
+# derived from this script's own path, so the result never depends on the caller's cwd.
+Push-Location -LiteralPath (Split-Path -Parent $PSScriptRoot)
+try {
+    $out = & $Bench --runs $RunsRoot status $RunId --alarm-after $AlarmAfter --json 2>$null
+    $exit = $LASTEXITCODE
+} finally {
+    Pop-Location
+}
 $ErrorActionPreference = 'Stop'
 
 $state = $null

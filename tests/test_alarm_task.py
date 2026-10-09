@@ -47,10 +47,11 @@ class Harness:
         (tmp_path / "rest_ok.ps1").write_text(REST_OK, encoding="ascii")
         (tmp_path / "rest_throw.ps1").write_text(REST_THROW, encoding="ascii")
 
-    def run(self, exit_code, payload=None, *, at=T0, rest="ok", topic=TOPIC, base_url=None, stderr=None, drill=False):
+    def run(self, exit_code, payload=None, *, at=T0, rest="ok", topic=TOPIC, base_url=None, stderr=None, drill=False, cwd=None, needs_repo=False):
         (self.tmp / "out.json").write_text(json.dumps(payload) if payload is not None else "", encoding="ascii")
         err_line = f"echo {stderr} 1>&2\r\n" if stderr else ""  # the real command prints HB-ALM-00x: <cause> on stderr
-        (self.tmp / "bench.cmd").write_text(f'@echo off\r\necho %* > "%~dp0args.txt"\r\n{err_line}type "%~dp0out.json"\r\nexit /b {exit_code}\r\n', encoding="ascii")
+        guard = 'if not exist "bench\\bom.yaml" exit /b 1\r\n' if needs_repo else ""  # the real bench finds the repo from the cwd
+        (self.tmp / "bench.cmd").write_text(f'@echo off\r\n{guard}echo %* > "%~dp0args.txt"\r\n{err_line}type "%~dp0out.json"\r\nexit /b {exit_code}\r\n', encoding="ascii")
         env = {k: v for k, v in os.environ.items() if not k.startswith("HB_ALARM_")}
         env["HB_TEST_SENT"] = str(self.sent)
         if topic is not None:
@@ -66,7 +67,7 @@ class Harness:
         argv += ["-Drill", "-TaskName", "HarnessBenchAlarmDrill", "-Toast"] if drill else ["-RunId", "r1"]
         if rest is not None:
             argv += ["-RestStub", str(self.tmp / f"rest_{rest}.ps1")]
-        return subprocess.run(argv, capture_output=True, text=True, timeout=60, env=env, check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        return subprocess.run(argv, capture_output=True, text=True, timeout=60, env=env, check=False, cwd=cwd, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
     def sent_lines(self):
         return self.sent.read_text(encoding="ascii").splitlines() if self.sent.exists() else []
@@ -95,6 +96,15 @@ def test_drill_wrapper_selects_seed_records_code_task_and_optional_toast(h):
     assert h.sent_lines() == [f"https://ntfy.sh/{TOPIC}|run {run_id} HB-ALM-001 no progress for 2h: age 7300s", "toast"]
     assert h.delivery_log() == "2026-10-06T01:00:01Z exit=6 push ok code=HB-ALM-001 task=HarnessBenchAlarmDrill\n"
     assert TOPIC not in result.stdout + result.stderr + h.delivery_log()
+
+
+def test_wrapper_runs_bench_from_the_repo_whatever_the_callers_cwd(h):
+    elsewhere = h.tmp / "elsewhere"  # Task Scheduler starts tasks in C:\Windows\System32, outside the repo
+    elsewhere.mkdir()
+    result = h.run(6, _alarm_object(), cwd=elsewhere, needs_repo=True)
+    assert result.returncode == 6
+    assert h.sent_lines() == [f"https://ntfy.sh/{TOPIC}|run r1 HB-ALM-001 no progress for 2h: age 7300s"]
+    assert "code=check-error" not in h.delivery_log()
 
 
 def test_wrapper_passes_runs_root_to_status(h):
