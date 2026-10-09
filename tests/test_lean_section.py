@@ -2,6 +2,7 @@
 
 import dataclasses
 import importlib
+import inspect
 import re
 from decimal import Decimal as D
 from pathlib import Path
@@ -285,6 +286,26 @@ def _contrast(a, b):
         return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
     hi, lo = sorted((lum(a), lum(b)), reverse=True)
     return (hi + 0.05) / (lo + 0.05)
+
+
+def _page(tmp_path, summary):
+    """report.html of the golden's non-lean fixture run, with `summary` passed to `html.write` (L-SUM-C passes the built
+    one at J2)."""
+    assert "lean_obj" in inspect.signature(html.write).parameters, "html.write takes no lean_obj"
+    root = make_root(tmp_path)
+    view = _arms_view(root, tmp_path, {"off": None, "on": {"revision": 95, "commit": "a" * 40}})
+    return html.write(tmp_path / "runs" / "r1", view, lean_obj=summary).read_text(encoding="utf-8"), view
+
+
+def test_the_section_renders_at_the_campaign_slot_after_validity_and_before_the_leaderboard(tmp_path):
+    """ADR-0023 point 9 (B3): the campaign section's slot, its jump link, its style, and the reported batch's id."""
+    doc, view = _page(tmp_path, _pooled_summary())
+    ids = re.findall(r'<section id="([^"]+)"', doc)
+    assert ids[ids.index("validity") + 1] == "lean-summary"
+    assert ids[ids.index("lean-summary") + 1] == "leaderboard"
+    assert '<a href="#lean-summary">Lean summary</a>' in doc
+    assert _section().STYLE in doc
+    assert f"Sections below cover batch {view.run_id} only" in doc
 
 
 def test_the_bars_and_the_mde_band_are_at_least_3_to_1_against_the_panel_in_both_themes():
