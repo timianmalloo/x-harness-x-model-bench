@@ -27,6 +27,7 @@ from harness_bench import (
     composites,
     config,
     egress,
+    lean,
     lifecycle,
     profiles,
     report,
@@ -41,6 +42,7 @@ from harness_bench.report import (
     context_growth,
     html_builder,
     judges,
+    lean_section,
     model,
 )
 from harness_bench.report import pack_improvement as pack_improvement_mod
@@ -2218,9 +2220,11 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
            operator: egress.Operator | None = None, board_obj: board.Board | None = None,
            params: stats.Params | None = None, comparison_obj: board.Comparison | str | None = None,
            context_growth_obj: context_growth.ContextGrowthResult | None = None,
-           campaign_obj: campaign_section.CampaignInput | None = None) -> str:
+           campaign_obj: campaign_section.CampaignInput | None = None, lean_obj: lean.LeanSummary | None = None) -> str:
     """The page; `root` (the bench root) adds the judge block for a pass that looked up judge verdicts, and
-    `operator` (read at run time, never committed) lets it name the classes each judge CLI added."""
+    `operator` (read at run time, never committed) lets it name the classes each judge CLI added. `lean_obj` (a lean
+    run's summary, built by the caller) adds the lean summary section at the campaign section's slot (ADR-0023 point 9);
+    without it the page is byte-identical to a non-lean run's (LBU-5)."""
     tags = _context_window_tags(run_dir)  # R-32: read from events, not from views.py (ruling R-32 condition 3)
     judging = judges.facts(root, run_dir, view, operator)
 
@@ -2262,6 +2266,7 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
                               campaign_block=built.header_block if built else None)),
         model.Section("validity", "Validity", _validity(view, built.validity_line if built else None)),
         *([built.section] if built else []),
+        *([lean_section.build(lean_obj, view.run_id)] if lean_obj is not None else []),
         model.Section("leaderboard", "Leaderboard", _leaderboard(view, board_obj)),
         model.Section("pack-effect", "Pack effect", _pack_effect(board_obj, combo_ix)),
         model.Section("cost-frontier", "Cost frontier", cost_frontier_sec),
@@ -2282,8 +2287,8 @@ def render(view: views.RunView, archive_present: bool, run_dir: Path | None = No
     # R4: the one hashed inline script (design section 5) plus the sticky control bar it drives.
     script_text = SCRIPT_PATH.read_text(encoding="utf-8")
     bar = _control_bar(board_obj, combo_ix)
-    return model.page(model.ReportModel(run_id=view.run_id, sections=tuple(sections)), style=STYLE + _arm_css(sorted({c.arm for c in view.cells})),
-                      script=script_text, bar=bar)
+    style = STYLE + _arm_css(sorted({c.arm for c in view.cells})) + (lean_section.STYLE if lean_obj is not None else "")
+    return model.page(model.ReportModel(run_id=view.run_id, sections=tuple(sections)), style=style, script=script_text, bar=bar)
 
 
 def scan(text: str, credential_values: set[str] = frozenset()) -> int:
@@ -2327,7 +2332,8 @@ def _egress_row(record: dict) -> str:
 def write(run_dir: Path, view: views.RunView, credential_values: set[str] = frozenset(), root: Path | None = None,
           operator: egress.Operator | None = None, board_obj: board.Board | None = None,
           params: stats.Params | None = None, comparison_obj: board.Comparison | str | None = None,
-          canaries: Sequence[str] = (), campaign_obj: campaign_section.CampaignInput | None = None) -> Path:
+          canaries: Sequence[str] = (), campaign_obj: campaign_section.CampaignInput | None = None,
+          lean_obj: lean.LeanSummary | None = None) -> Path:
     """report.html, after publication egress (`_publish`) and the credential scan (HB-SEC-001), and beside it the run
     record of what the report withheld and flagged (`RECORD`). The record is the publication record, a derived
     artifact regenerated with the report and never a ledger fact (R-80 DR-EG-1, ADR-0006 amendment); `report_sha256`
@@ -2335,7 +2341,8 @@ def write(run_dir: Path, view: views.RunView, credential_values: set[str] = froz
     scanned and the email is not (R-80 c4)."""
     operator = operator if operator is not None else egress.Operator.from_os()
     doc = render(view, archive_present=(run_dir / "archive").is_dir(), run_dir=run_dir, root=root, operator=operator,
-                 board_obj=board_obj, params=params, comparison_obj=comparison_obj, campaign_obj=campaign_obj)
+                 board_obj=board_obj, params=params, comparison_obj=comparison_obj, campaign_obj=campaign_obj,
+                 lean_obj=lean_obj)
     # The rendered page, before any section is withheld: a credential refuses the whole write, never only its section,
     # so `bench report` never prints a table that carries it either (residual 5; R-80 c4 made the section scan run).
     found = scan(doc, credential_values)
