@@ -17,6 +17,11 @@ def slow(payload):
 
 
 def spawn_grandchild(payload):
+    # RF-11: no creationflags on purpose (allowlisted in tests/test_console_windows.py). CREATE_NO_WINDOW gives the
+    # grandchild its own console whatever its host is, so an attached host's stdout would never reach it and RF-11
+    # survives. SW_HIDE hides the new console a detached host's grandchild gets; it does not stop an attached one.
+    hidden = (subprocess.STARTUPINFO(dwFlags=subprocess.STARTF_USESHOWWINDOW, wShowWindow=0)
+              if sys.platform == "win32" else None)
     subprocess.run([sys.executable, "-c", f"import sys; sys.stdout.write({TOKEN!r}); sys.stdout.flush()"], check=False,
-                   creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+                   startupinfo=hidden)
     return "safe"

@@ -1,0 +1,16 @@
+# Lean ring (ADR-0022 section 1): e5-pilot.yaml's content with ring tag `lean`; two confirmed runs of it are the two batches.
+# 10 property tasks x 2 arms (pack-off, pack-on; no arm Y) x 3 combos x 1 = 60 cells.
+# Every combo pins its concrete model id. Tokens are the only cost axis.
+# The pack-on arm is a role arm: bind it at plan time with --arm on=SOURCE@COMMIT.
+schema: bench-matrix/2
+ring: {tag: lean}
+bom: {file: bench/bom.yaml, subset: [S1, S2, RS1, RS2, RW1, RW2, NG1, NG2, SM1, SM2]}
+repetitions: 1
+arms:
+  - {id: "off"}
+  - {id: "on"}
+comparisons: [["off", "on"]]
+combos:
+  - {id: cc-opus, harness: claude-code, model: claude-opus-5-5}
+  - {id: codex-sol, harness: codex, model: gpt-6.1-sol}
+  - {id: copilot-sol, harness: copilot, model: gpt-6.1-sol}

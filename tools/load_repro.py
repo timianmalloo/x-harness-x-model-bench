@@ -15,6 +15,13 @@ import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except (ValueError, OSError):
+            pass
+
 DEFAULT_PREFIX = ["uv", "run", "pytest", "-n", "4", "--dist", "loadscope"]
 HEADER = re.compile(r"^_{2,} (?:ERROR at (setup|teardown) of )?\S+ _{2,}$", re.MULTILINE)
 NO_RESULT = "no result"
@@ -46,7 +53,7 @@ def _stage_and_error(output: str) -> tuple[str, str]:
 
 
 def _base_sha(cwd) -> str:
-    done = subprocess.run(["git", "rev-parse", "HEAD"], cwd=cwd, capture_output=True, text=True, check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    done = subprocess.run(["git", "rev-parse", "HEAD"], cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace", check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     return done.stdout.strip() if done.returncode == 0 else "not recorded"
 
 
@@ -58,7 +65,7 @@ def run_repro(node: str, runs: int, out, prefix=None, cwd=None) -> dict:
         start = time.monotonic()
         done = subprocess.run(
             [*(prefix or DEFAULT_PREFIX), node, "--junitxml", str(junit)],
-            cwd=cwd, capture_output=True, text=True, check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace", check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
         )
         walls.append(round(time.monotonic() - start, 3))
         failed = _outcome(junit, node)
@@ -71,7 +78,7 @@ def run_repro(node: str, runs: int, out, prefix=None, cwd=None) -> dict:
         "node": node, "n": runs, "failures": len(failure_list), "rate": len(failure_list) / runs,
         "failure_list": failure_list, "wall_s": walls, "base_sha": _base_sha(cwd),
     }
-    Path(out).write_text(json.dumps(record, indent=2), encoding="utf-8")
+    Path(out).write_text(json.dumps(record, indent=2), encoding="utf-8", newline="\n")
     return record
 
 
