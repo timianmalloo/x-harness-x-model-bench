@@ -351,7 +351,8 @@ def run(args: argparse.Namespace) -> int:
         if args.transport == "session-http":  # the bench, not the harness, runs an HTTP server: it is started here
             http_server = subprocess.Popen([sys.executable, str(SERVER), "--http", "0", "--log", str(server_log), "--reply", reply],
                                            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                                           env={**os.environ, LOG_ENV: str(server_log)})
+                                           env={**os.environ, LOG_ENV: str(server_log)},
+                                           creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
             servers[:] = http_servers(f"http://127.0.0.1:{json.loads(http_server.stdout.readline())['port']}/mcp")
         with rec.with_suffix(".stderr.log").open("wb") as err:
             cell = procs.spawn([sys.executable, str(RECORDER), "record", "--out", str(rec), "--", *argv],

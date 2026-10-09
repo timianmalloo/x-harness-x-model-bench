@@ -198,7 +198,7 @@ def run_hidden(tid: str, tree: Path, turns: tuple[int, ...]) -> Hidden:
         shutil.copytree(task_dir(tid) / "tests" / f"turn{turn}", work / f"turn{turn}")
     argv = [sys._base_executable if a == "{python}" else a for a in task_yaml(tid)["oracle"]["command"]]
     env = {k: v for k, v in os.environ.items() if k in ("PATH", "SYSTEMROOT", "TEMP", "TMP")}
-    proc = subprocess.run(argv, cwd=work, capture_output=True, text=True, timeout=300, check=False, env={**env, "PYTHONUTF8": "1", "PYTHONDONTWRITEBYTECODE": "1"})
+    proc = subprocess.run(argv, cwd=work, capture_output=True, text=True, timeout=300, check=False, env={**env, "PYTHONUTF8": "1", "PYTHONDONTWRITEBYTECODE": "1"}, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     out = proc.stdout + proc.stderr
     ran = re.search(r"^Ran (\d+) tests? in ", out, re.MULTILINE)
     return Hidden(proc.returncode, int(ran.group(1)) if ran else 0,
@@ -294,7 +294,7 @@ def test_provenance(tid, bases):
     assert data["source"]["commit"] == spec["pin"] and data["source"]["repo"] == spec["repo"]
     clone = workspace.upstream_tree(spec["repo"], spec["pin"], ring_cache.ring_root("rw") / "upstream")
     upstream = subprocess.run(["git", "rev-parse", f"{spec['pin']}^{{tree}}"], cwd=clone, capture_output=True, text=True,
-                              check=True).stdout.strip()
+                              check=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.strip()
     recorded = re.search(r"^- pin tree: `([0-9a-f]{40})`", evidence(tid), re.MULTILINE)
     assert recorded and upstream == spec["tree"]
     text = (folder / "LICENSE").read_text(encoding="utf-8").replace("\r\n", "\n")
@@ -611,3 +611,52 @@ def test_difflib_is_the_only_diff_engine_the_measure_uses():
     """The real `_changes.line_delta` names its algorithm (W1-L 5.1: SequenceMatcher, autojunk off); a drift would change every count."""
     source = inspect.getsource(_changes.line_delta)
     assert "autojunk=False" in source and difflib.SequenceMatcher is not None
+
+
+# ---- the tests-clause variants, per hidden test (Ruling 114; X-REDS) -------------------------------------------------
+# Expected ids of the final-tree hidden run (both turn files, the run `observe` names `final`).
+# A pair is (assertion failures, other exceptions). Kept here, never in variants.py.
+
+SPECS = {
+    ("RW1", "deaddelegate"): (frozenset({"T2-5"}), frozenset()),
+    ("RW1", "duplicate"): (frozenset({"T2-5"}), frozenset()),
+    ("RW1", "t2short"): (frozenset({"T2-5"}), frozenset({"T2-1", "T2-2", "T2-3", "T2-4"})),
+    ("RW2", "duplicate"): (frozenset({"T2-1", "T2-2", "T2-3", "T2-4", "T2-6"}), frozenset()),
+    ("RW2", "ignorereturn"): (frozenset({"T2-6"}), frozenset()),
+    ("RW2", "nohookorder"): (frozenset({"T2-1"}), frozenset()),
+    ("RW2", "t2short"): (frozenset({"T2-3", "T2-4"}), frozenset({"T2-1", "T2-2", "T2-5", "T2-6"})),
+}
+
+_TESTS_CLAUSE = {
+    ("RW1", "deaddelegate"), ("RW1", "duplicate"), ("RW1", "t2short"),
+    ("RW2", "duplicate"), ("RW2", "ignorereturn"), ("RW2", "nohookorder"), ("RW2", "t2short"),
+}
+
+
+def tests_clause_cases():
+    """`variant_cases()` whose declared flips include `property_check_pass` with clause `tests`."""
+    cases = []
+    for tid, name in variant_cases():
+        spec = variants(tid)[name]
+        if "property_check_pass" in spec["flips"] and spec["clauses"].get("property_check_pass") == "tests":
+            cases.append((tid, name))
+    return cases
+
+
+@pytest.mark.parametrize(("tid", "name"), tests_clause_cases())
+def test_each_tests_clause_variant_fails_exactly_its_hidden_set(tid, name, bases):
+    """The variant's final-tree hidden-test run fails and errors exactly the ids `SPECS` names.
+
+    Seven variants declare `property_check_pass` with clause `tests`: RW1 `t2short`, `duplicate`,
+    `deaddelegate`; RW2 `t2short`, `nohookorder`, `ignorereturn`, `duplicate`. `t2short` errors on
+    some turn-2 ids and fails an assertion on the rest; the others fail assertions only.
+    """
+    cases = tests_clause_cases()
+    assert len(cases) == 7
+    assert set(cases) == _TESTS_CLAUSE
+    spec = variant(tid, name)
+    overlays = apply_edits(solution(tid, "reference"), spec["edits"])
+    result = run_hidden(tid, build(bases[tid], overlays, (1, 2)), (1, 2))
+    failed, errored = SPECS[(tid, name)]
+    assert result.errored == errored, result.output
+    assert result.failed == failed, result.output

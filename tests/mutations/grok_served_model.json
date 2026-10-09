@@ -26,5 +26,12 @@
     "find": "    while found is None and time.monotonic() < deadline:",
     "replace": "    while False:",
     "tests": ["tests/test_grok_served_model.py::test_wait_returns_when_the_assistant_row_appears"]
+  },
+  {
+    "name": "M5: the store key is quote(tree, safe='') with no normalisation",
+    "file": "tools/grok_served_model.py",
+    "find": "    return os.path.normcase(os.path.normpath(unquote(left))) == os.path.normcase(os.path.normpath(unquote(right)))",
+    "replace": "    from urllib.parse import quote\n    return left == quote(right, safe=\"\")",
+    "tests": ["tests/test_grok_served_model.py::test_observed_layout_is_found_by_tree"]
   }
 ]

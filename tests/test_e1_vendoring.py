@@ -36,6 +36,7 @@ def test_e1_workspace_matches_pinned_git_archive_byte_for_byte() -> None:
         ["git", "-C", str(SOURCE), "archive", "--format=zip", source["commit"], "--", *paths],
         check=True,
         capture_output=True,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
     ).stdout
     with zipfile.ZipFile(io.BytesIO(archive)) as zipped:
         [name] = [n for n in zipped.namelist() if not n.endswith("/")]

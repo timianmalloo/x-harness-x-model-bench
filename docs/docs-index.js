@@ -791,7 +791,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f31526502ab5ba0794656bd4da87ed0bf827e936e35bdbfccf6df9bf0c8a98a9"
+      "sourceSha256": "c8cdd8afaaeab91380183b1c015a1007313c01c684cd61b113d51f1627ebb381"
     },
     {
       "id": "adr-0018-hidden-check-harness",
@@ -870,7 +870,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "80559667245cbe4eddbed9f889418a73d9c12d30d393916cfbe06b24f4c08944"
+      "sourceSha256": "db681eef9bf06ff8ec7fe47910474a875de3ea0aa26b846f522f1c441b6dff67"
     },
     {
       "id": "adr-0020-power-and-verdicts-stdlib",
@@ -1641,6 +1641,34 @@ window.DOCS_INDEX = {
       "sourceSha256": "8861e94c8fb2f1b6e57c4c2f6cac5a1601fa2dea2a9af5addf7b3dfdee52f3b1"
     },
     {
+      "id": "note-20261008-spike-s-j4",
+      "path": "docs/notes/spike-s-j4.md",
+      "title": "Spike S-J4 - is the first session/update after the adapter's lazy helper spawns?",
+      "type": "decision-note",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-12-24",
+      "reviewSuggested": [],
+      "summary": "Verified on all three harnesses (Windows host; macOS unverified): the Job Object process count at the first session/update of turn 1 (B) is at least the count at the end of a no-tool turn 1 (C), so the W1-J section 4.4 assume: holds on Claude Code, Codex and Copilot. Counts A/B/C: Claude Code 4/6/4, Codex 4/4/4, Copilot 2/2/2.",
+      "tags": [
+        "spike",
+        "acp",
+        "multi-turn",
+        "job-object",
+        "baseline",
+        "S-J4"
+      ],
+      "links": [
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "c2c2dbee39dbd1860f0b0638409c3fbcd18eb02a9bcdc2bd8d066b0bdd9307c3"
+    },
+    {
       "id": "note-catalog-0.5-anchors",
       "path": "docs/notes/catalog-0.5-anchors.md",
       "title": "Catalog 0.5.dev normalisation anchors and weight corrections (R-78 condition 1, R-79)",
@@ -1975,7 +2003,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "a4dfec300601b49d3c3be353037fa87b2f470a5ff5953608d273e2be47ad3d07"
+      "sourceSha256": "d9ba4bbe7d9d00f464a5388aefd6e11c9a19d1d6280522574e66fce99f894d6b"
     },
     {
       "id": "design-eval-arms",
@@ -2594,7 +2622,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b57ae857a5cdf6c4b0dc071d7d5863d2b6fc1db014f6e7bbd6a1ebdaa11c582c"
+      "sourceSha256": "0b2e0a00dc237a2f4b9894eb1ac7a0515e6a4c7c30bd5d2a2b88fd3d34d731b3"
     },
     {
       "id": "design-eval-resume",
@@ -2667,7 +2695,7 @@ window.DOCS_INDEX = {
       "phase": "Enterprise evaluation: W0 (serial spine item 2), before Wave 1",
       "reviewBy": "2026-10-17",
       "reviewSuggested": [],
-      "summary": "Revision 6.13 (Coordinator #39: HB-PLN-005 retired by X-A3c; the copy_retries null erratum; J1c's snapshot TABLE entry; X-K2b no longer waits on X-TE9; HB-ALM-003 to E5; the G1 cli.py and workspace.py pins stay; rev-6.13 change table at the end). Revision 6.12 (Coordinator #35: `cell.turn_ended` carries the int `turn_ms`, not a float `turn_seconds`, because the canonical form has no floats; X-J1b writes the one `lifecycle.TABLE` entry for it; the discrimination record's `hosts_ready` is an int count; rev-6.12 change table at the end). Revision 6.11 (C-W0, Coordinator #31: R-106's launch-recheck key set in section 6, the R-106 c7 reader key-set sweep, the shared-value rule (keys and value types), the X-K2a script-only split, the section 13 rows of the E2-E4 plan and HB-GRD-007 to X-C; rev-6.11 change table and re-read list at the end). Revision 6 (R-98: the discrimination record body drops `run_id` and `grading_id`, ADR-0016 Amendment 1; and the conditions of the five W0 rev 4/5 delta reviews; rev-6 change table and re-read list at the end). Revision 5 (the W1-E and W1-L seam answers SR-E1, SR-E2, SR-L1..SR-L4, the W1-L review rulings and R-97; rev-5 change table and re-read list at the end; DR-E1, then open, is ruled by R-98 and applied in rev 6). Revision 4 (the batch-b seam answers and the RV-PAT, RV-SIM, RV-SEC and RV-DS cross-slice findings on W1-B, W1-C, W1-D and W1-H; rev-4 change table and the delta re-read list at the end; rev 3's table kept). The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
+      "summary": "Revision 6.15 (C-W0, Coordinator #56: the console-window convention for every child launch in tools/ and tests/, R6.15a; the alarm drill record bench-drill/1 at bench/drills/, the two bench drill commands and register's HB-CMP-011 refusal, R6.15b; rev-6.15 change table at the end). Revision 6.13 (Coordinator #39: HB-PLN-005 retired by X-A3c; the copy_retries null erratum; J1c's snapshot TABLE entry; X-K2b no longer waits on X-TE9; HB-ALM-003 to E5; the G1 cli.py and workspace.py pins stay; rev-6.13 change table at the end). Revision 6.12 (Coordinator #35: `cell.turn_ended` carries the int `turn_ms`, not a float `turn_seconds`, because the canonical form has no floats; X-J1b writes the one `lifecycle.TABLE` entry for it; the discrimination record's `hosts_ready` is an int count; rev-6.12 change table at the end). Revision 6.11 (C-W0, Coordinator #31: R-106's launch-recheck key set in section 6, the R-106 c7 reader key-set sweep, the shared-value rule (keys and value types), the X-K2a script-only split, the section 13 rows of the E2-E4 plan and HB-GRD-007 to X-C; rev-6.11 change table and re-read list at the end). Revision 6 (R-98: the discrimination record body drops `run_id` and `grading_id`, ADR-0016 Amendment 1; and the conditions of the five W0 rev 4/5 delta reviews; rev-6 change table and re-read list at the end). Revision 5 (the W1-E and W1-L seam answers SR-E1, SR-E2, SR-L1..SR-L4, the W1-L review rulings and R-97; rev-5 change table and re-read list at the end; DR-E1, then open, is ruled by R-98 and applied in rev 6). Revision 4 (the batch-b seam answers and the RV-PAT, RV-SIM, RV-SEC and RV-DS cross-slice findings on W1-B, W1-C, W1-D and W1-H; rev-4 change table and the delta re-read list at the end; rev 3's table kept). The one vocabulary the twelve Wave 1 design slices and the Wave 2 tracks share: the ten property-task ids and their BOM and task.yaml stubs, the task.yaml property and expected-value fields, the PropertyCheck input, result, framing and outcome precedence, create_once and the directory publish, bench-matrix/2 and bench-plan/2, the campaign ledger rows and the pre-registration freeze order, the identity manifest, the discrimination record, the catalog 0.7 metric ids under R-90, the power, verdict and gate shapes, every planned new module with its run/grade class, the HB codes reserved per track, the hub-file owner per phase, and the four frozen fields of every shared-surface guard. Ends with the disposition of every finding of the five W0 lens reviews.",
       "tags": [
         "benchmark",
         "campaign",
@@ -2759,7 +2787,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "ba38ea3052787fec9a2ddd977d88103d1825d66d7e4e9e8cec84d682ec416ffe"
+      "sourceSha256": "fb1d61c6b89ada2c7218aa3db4c92fdc109f4cb1486437b18f742d9214a4006b"
     },
     {
       "id": "design-eval-security-tasks",
@@ -4909,6 +4937,250 @@ window.DOCS_INDEX = {
       "sourceSha256": "9d837584e42555ed32e1c08c0a9763c72fb9c17e09fd0755b58029d5c3c0b13a"
     },
     {
+      "id": "coordinator-log-c54",
+      "path": "docs/coordination/coordinator-log/c54.md",
+      "title": "Coordinator #54 hand-back (2026-10-08): the finish plan (backlog, pack upstream, E5 preconditions, E5)",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-08",
+      "reviewSuggested": [],
+      "summary": "Coordinator #54 on coord/fin-c54-plan (base f544deb2) for Leader leader-fin, epoch 19. It wrote docs/coordination/coordination-finish.md and its html view from repo evidence: 11 tracks, four batches with one gate ring before E5, the final-head spine, and E5 sized from grid-4's measured rates. No dispatch, merge or push.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "plan",
+        "e5"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c53",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-finish",
+          "rel": "relates-to"
+        },
+        {
+          "to": "run-report-e2e4",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "91052e81468c631026babf407af4907fb3eae3c350eff02649f25999fc715add"
+    },
+    {
+      "id": "coordinator-log-c55",
+      "path": "docs/coordination/coordinator-log/c55.md",
+      "title": "Coordinator #55 hand-back (2026-10-08): the wave-1 compiles (ten tracks), the runner contracts, Ruling 115's plan and ADR edits",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-08",
+      "reviewSuggested": [],
+      "summary": "Coordinator #55 on coord/fin-c55-compile for Leader leader-fin, epoch 19. Ten briefs compiled in compiled mode against the plan at 7f96fb70 (C-W0) and Rulings 114 and 115, each replayed through check_compile; seven coord-run/1 contracts for the Grok and Agy tracks; Ruling 115 condition 4's plan edits, the X-PRICERET row and the dated notes beside ADR-0017 and ADR-0019. No dispatch, no push.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c54",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-finish",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "c527723efbdda187feff7fdd4bdd3a3fcbcc441f352accf976a204ae92a240d1"
+    },
+    {
+      "id": "coordinator-log-c57",
+      "path": "docs/coordination/coordinator-log/c57.md",
+      "title": "Coordinator #57 hand-back (2026-10-08): five turn-2 and recompiled briefs, the measured Grok floor, CACHE-B's result, STORE-A",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-08",
+      "reviewSuggested": [],
+      "summary": "Coordinator #57 on coord/fin-c57-compile (base d8ec8302) for Leader leader-fin, epoch 19. Five compiled briefs, each replayed through check_compile: X-WIN turn 2, X-HYG turn 2, X-REDS (recompiled), X-FLAKE turn 2 and X-EVU turn 2, with their coord-run/1 contracts. Grok's mid-turn context figure measured (updates.jsonl _meta.totalTokens) and its floor set at 88k from the grounding cost. CACHE-B gains X-CACHEB's partial result; STORE-A is opened for grok_served_model's store key. No dispatch, no push.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c55",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "f340c1a2d9a7d99daaba65e785f5b5d7e0a1469d9257b66097c5f03909c75f2f"
+    },
+    {
+      "id": "coordinator-log-c58",
+      "path": "docs/coordination/coordinator-log/c58.md",
+      "title": "Coordinator #58 hand-back (2026-10-08): five compiles, the corrected Agy floor, X-GSM, LOGTEAR-A",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-08",
+      "reviewSuggested": [],
+      "summary": "Coordinator #58 on coord/fin-c58-compile (base 82691dbf) for Leader leader-fin, epoch 19. Five compiled briefs, each replayed through check_compile: X-WIN turn 3 (added by the Leader), X-S2 turn 2, X-GSM (new; STORE-A's owner), X-DRILL (Codex, no model pin) and X-E5M (Sonnet). The Agy floor moves to 105k (the Leader's CEIL-A correction). LOGTEAR-A registered: a torn row in the Leader's ledger refused every commit repo-wide. No dispatch, no push.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c57",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "99214536410ce7be88876fe44fade38855fdf9c16ea83ad08a26ebb74238ffa5"
+    },
+    {
+      "id": "coordinator-log-c59",
+      "path": "docs/coordination/coordinator-log/c59.md",
+      "title": "Coordinator #59 hand-back (2026-10-08): X-HYG turn 3 compiled, LOGTEAR-A's X-HYG instance",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-08",
+      "reviewSuggested": [],
+      "summary": "Coordinator #59 on coord/fin-c59-compile (base 5a42a574) for Leader leader-fin, epoch 19. One compiled brief, replayed through check_compile: X-HYG turn 3 (Grok, xhyg3-fin, base build/fin-x-hyg2 at b1ab5246). The X-HYG assignment row gains a note on the turn 2 red the Leader committed after LOGTEAR-A, and LOGTEAR-A gains its X-HYG instance. No dispatch, no push.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c58",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "af1c9f776ee2e9846f961083d47589a7202922239ec14fb051d4b7762c27c689"
+    },
+    {
+      "id": "coordinator-log-c60",
+      "path": "docs/coordination/coordinator-log/c60.md",
+      "title": "Coordinator #60 hand-back (2026-10-08): X-PACKOFF compiled (Ruling 116), PACKOFF-A, a MUT-E instance",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-08",
+      "reviewSuggested": [],
+      "summary": "Coordinator #60 on coord/fin-c60-compile (base 1b61aedd, owner/ruling-r116) for Leader leader-fin, epoch 19. One compiled brief, replayed through check_compile: X-PACKOFF (Claude Code Agent tool, sonnet, xpackoff-fin), exactly as Ruling 116 defines it, with HB-PRE-009 and W1-L Erratum 5 named. Plan rows for X-PACKOFF, the X-E5M re-run erratum, DR-PACKOFF ruled and X-WIN turn 4 on Sonnet. Register: PACKOFF-A and a MUT-E instance. No dispatch, no push.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c59",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-finish",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "8ec1e20732fbc1a1949e2df015433cb7c3dc77450ab94421eac364ac571caf00"
+    },
+    {
+      "id": "coordinator-log-c61",
+      "path": "docs/coordination/coordinator-log/c61.md",
+      "title": "Coordinator #61 hand-back (2026-10-08): X-SJ4 compiled, PACKOFF-A's SHAs, plan notes, a TEST-E instance",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-11-08",
+      "reviewSuggested": [],
+      "summary": "Coordinator #61 on coord/fin-c61-compile (base e06bdd83, join-x-win) for Leader leader-fin, epoch 19. One compiled brief, replayed through check_compile: X-SJ4 (spike S-J4; Claude Code Agent tool, sonnet, xsj4-fin), whose first item is a dry check of builds, node, npm and credential names that hands back with one operator message if anything is missing. PACKOFF-A's Control and Status lines carry X-PACKOFF's SHAs. Plan notes: the P2 gate ring deferred past P3, X-PACKOFF's budget finding, X-E5M's re-plan evidence. A TEST-E instance for X-PACKOFF's P0 command. No dispatch, no push.",
+      "tags": [
+        "coordination",
+        "coordinator-log",
+        "compile"
+      ],
+      "links": [
+        {
+          "to": "coordinator-log",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c60",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-finish",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "17a6c923ec2849475fb3ec4a6470f6f14a82c19658dfde1f828a08a6089e7f10"
+    },
+    {
       "id": "defect-classes",
       "path": "docs/lessons/defect-classes.md",
       "title": "Defect-class register",
@@ -4935,7 +5207,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b97c7471391bc4651c4eaf11c4fd502faef96038b412c1d41df535c72bd2dab6"
+      "sourceSha256": "4eeb29dc3d338d1db2727688622890d0717d6ce06448830502b5000ddbcab7c0"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -5750,6 +6022,35 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "b81a21924c03712da251ea54d4ba305543f3278025a3ce804dc66681e8fd0794"
+    },
+    {
+      "id": "prompt-lean-benchmark",
+      "path": "docs/coordination/lean-benchmark-prompt.md",
+      "title": "Execution prompt - the lean pack benchmark (define-architecture, prepare and execute with coordination)",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-23",
+      "reviewSuggested": [],
+      "summary": "The operator's prompt for a fresh session: from the committed lean spec, run /define-architecture, /prepare-for-coordination and /execute-with-coordination, then run the 120-cell benchmark and report. Owner Fable; Leader and Coordinators Opus; Opus and Haiku sub-agents; Grok and Agy for distributed coding.",
+      "tags": [
+        "prompt",
+        "coordination",
+        "lean-benchmark"
+      ],
+      "links": [
+        {
+          "to": "spec-lean-pack-benchmark",
+          "rel": "implements"
+        },
+        {
+          "to": "plan-strategy-lean-benchmark",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "45f88a6c9bcfd9e8e3f848653a3674a0bc814916d60eb81669fbae86f5aff29f"
     },
     {
       "id": "proof-phase2",
@@ -7379,7 +7680,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "2b35fece6b5117acf6c8651d17c4ba3e1b9e21b5859ebbdc0c913c266c09df8d"
+      "sourceSha256": "d5a141f87109496f5f76688e4e1fbc199178215e3f66b61a03f5328a2cebdd31"
     },
     {
       "id": "runbook-test-tiers",
@@ -9330,6 +9631,73 @@ window.DOCS_INDEX = {
       "sourceSha256": "e3ae06a8347b43e7945efd362e4e3cea7e35d6ed1d65593c0c8a00b08d1b0701"
     },
     {
+      "id": "coordination-finish",
+      "path": "docs/coordination/coordination-finish.md",
+      "title": "Coordination plan - finish: the post-E4 backlog, the pack upstream, E5's preconditions and E5",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "Enterprise evaluation: backlog close-out, pack revision 100, E5 preconditions, E5 (the first real campaign); Leader epoch 19",
+      "reviewBy": "2026-10-22",
+      "reviewSuggested": [],
+      "summary": "Coordinator #54's plan at main f544deb2. 11 tracks (9 dispatchable, 2 gated) across Codex, Agy, Grok and Claude Code Sonnet; four push batches with one gate ring (X-PROP, grade/property.py); a serial spine that ends every src/ join, then re-runs the ten records and the convergence check on the final head, then runs E5 as a Leader lane with two operator stops (pilot spend, then grid spend and nights). E5 sized from grid-4's measured cell and grading rates: 846-5,256 cells, 24-147 h of run, 1.1-6.7 billion tokens (Inferred from measured rates). Twelve candidates struck or merged. Pre-grid critical path Inferred at 12 h, 21-29 h at E2-E4's measured overrun.",
+      "tags": [
+        "coordination",
+        "worktrees",
+        "parallelism",
+        "evaluation-campaign",
+        "e5"
+      ],
+      "links": [
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "implements"
+        },
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0021-plan-level-resume-and-liveness",
+          "rel": "depends-on"
+        },
+        {
+          "to": "run-report-e2e4",
+          "rel": "depends-on"
+        },
+        {
+          "to": "coordination-e2e4",
+          "rel": "relates-to"
+        },
+        {
+          "to": "proof-eval-campaign-convergence",
+          "rel": "relates-to"
+        },
+        {
+          "to": "runbook-resume-and-alarm",
+          "rel": "relates-to"
+        },
+        {
+          "to": "design-eval-multi-turn",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        },
+        {
+          "to": "defect-classes",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordinator-log-c54",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "8d50ba2cce95d9bf4dde873998a38159f010d4dcafc4cf27667d377c2c0a51ee"
+    },
+    {
       "id": "coordination-finish-harness-bench",
       "path": "docs/coordination/coordination-finish-harness-bench.md",
       "title": "Coordination plan - finish harness-bench (phases 2-5, the 31 outstanding to-dos)",
@@ -9421,6 +9789,70 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "b65007497b4bc047e0bd76b590acbf1fb40ac4fd7ed46805de21d675cfe2c40d"
+    },
+    {
+      "id": "plan-strategy-lean-benchmark",
+      "path": "docs/plans/strategy-lean-benchmark.md",
+      "title": "Strategy - from E5's campaign to the lean pack benchmark",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-23",
+      "reviewSuggested": [],
+      "summary": "Where the repo stands on 2026-10-09 and the path to the operator-accepted lean design: 10 tasks x 2 arms x 3 harnesses x 2 repetitions = 120 cells, about 2 h of run and 2 h of grading, reusing plan/run/grade/report and adding only a paired property_check_pass summary.",
+      "tags": [
+        "strategy",
+        "evaluation",
+        "lean-benchmark",
+        "e5",
+        "pack-effect"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "relates-to"
+        },
+        {
+          "to": "coordination-finish",
+          "rel": "relates-to"
+        },
+        {
+          "to": "arch-evaluation-campaign",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "f4348a7accaf7cecee4809d58141a6b2e8ae32596eb5f6464dc3d8364f9eebd7"
+    },
+    {
+      "id": "x-evu-coverage",
+      "path": "docs/coordination/eval-wave2-e234/x-evu-coverage.md",
+      "title": "Coverage Map: E5 Enterprise Evaluation Report Validations",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-17",
+      "reviewSuggested": [],
+      "summary": "Coverage map of E5's report validations (EV-16, EV-18, EV-19, EVU-1..8) to named test nodes with proving assertions and run results.",
+      "tags": [],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "implements"
+        },
+        {
+          "to": "coordination-eval-campaign",
+          "rel": "implements"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "80f669ae5d323ea891234643d0a1ddeec9385301b747ff7c7f75bddde4f49808"
     },
     {
       "id": "privacy-review",
@@ -9970,7 +10402,7 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TD\n  O([Open report]) --> H[Header + campaign block: question, arms, pre-registration hash, baseline, fixes, MDE]\n  O -->|run in no campaign| NC([No verdict section; harness-bench report as before])\n  H -->|run ineligible| IN([Verdict section states reason and differing items; no verdicts])\n  H --> T[Verdict table: property x harness, per comparison]\n  T -->|better or worse| E1[Effect, interval, MDE mark, token ratio]\n  T -->|no difference >= MDE| E2([Interval inside the MDE band; reader can rule out effects of MDE size])\n  T -->|inconclusive| E3([Reason: underpowered or not recorded, with counts; reader sees what more data would need])\n  E1 -->|dominance rule met| D([A dominates B: keep A for this harness])\n  E1 -->|better but costlier| C([better at xN tokens: reader weighs value against cost])\n  T -->|activate a verdict| RUNS[Runs filtered to its pairs] --> UF3([Harness-bench UF-3: cell card])\n  T -->|activate excluded n| XL[Excluded cells: id, arm, cause] --> UF3\n  O -->|pack section read directly| PK([Pack section: header and every intention verdict labelled exploratory; link to section 3])\n  UF3 -->|archive absent| NA([Archive not in this copy + path])\n  H -->|analysis not pre-registered| EX([Labelled exploratory wherever shown; not a verdict])"
         }
       ],
-      "sourceSha256": "dc44b25711edc3125b255de5df1e911a90cda089f18f7b433b26037d467392d1"
+      "sourceSha256": "3aac0f48f6bb821d5d0118995496abd4b0810071d5f6c2dfcfb1ded704b26163"
     },
     {
       "id": "spec-harness-bench",
@@ -10042,7 +10474,54 @@ window.DOCS_INDEX = {
           "mermaid": "flowchart TD\n  A([P2 runs /new-bench-task ID]) --> S[stub: task.yaml from template]\n  S --> D[draft: prompt.md, workspace base]\n  D --> O[oracle: hidden tests / rubric / clarifications / seeded bug]\n  O --> V{bench validate}\n  V -->|contract broken| E[Folder, rule, fix] --> O\n  V -->|scenario 1, no clarifications| E\n  V -->|scenario 7, no seeded bug or no toolchain pin| E\n  V -->|ok| DIS{Discrimination check: reference passes, naive or seeded fails}\n  DIS -->|does not discriminate| E2[Oracle too weak or too strict: shown with both results] --> O\n  DIS -->|discriminates| R([status: ready])"
         }
       ],
-      "sourceSha256": "9d009f9d990506096fc9b3358ad05b5c2b70c8f8804b52fdb96958ba2d35e321"
+      "sourceSha256": "1da04b0fb82099ecc15ab77da1d33daeaf377f70c5c02ee7b8dda684265ae08e"
+    },
+    {
+      "id": "spec-lean-pack-benchmark",
+      "path": "docs/specs/lean-pack-benchmark.md",
+      "title": "Spec: Lean pack benchmark, pack-on vs pack-off per harness in about 2 h of run and 2 h of grading",
+      "type": "spec",
+      "status": "in-review",
+      "owner": "@timianmalloo",
+      "phase": "Lean benchmark (replaces E5's campaign for the pack-on/off question; operator 2026-10-09)",
+      "reviewBy": "2027-04-09",
+      "reviewSuggested": [],
+      "summary": "One question, one paired run: with the AI-Forward pack on versus off, does each harness (Claude Code claude-opus-5-5, Codex gpt-6.1-sol, Copilot gpt-6.1-sol) do better on the ten property tasks, and at what token cost? 120 cells (10 tasks x 2 arms x 3 harnesses x 2 repetitions) in two batches of 60, about 2 h of run and 2 h of grading. The primary metric is property_check_pass, paired by task, repetition and harness. The report adds a lean summary built from the existing paired two-stage bootstrap. This supersedes E5's campaign design for this question; the tasks, metrics, arms and rulings stay.",
+      "tags": [
+        "benchmark",
+        "spec",
+        "lean",
+        "pack-effect",
+        "property-tasks",
+        "paired",
+        "tokens"
+      ],
+      "links": [
+        {
+          "to": "spec-enterprise-evaluation",
+          "rel": "refines"
+        },
+        {
+          "to": "spec-harness-bench",
+          "rel": "refines"
+        },
+        {
+          "to": "plan-strategy-lean-benchmark",
+          "rel": "implements"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [
+        {
+          "kind": "flowchart",
+          "title": "User flows",
+          "mermaid": "flowchart TD\n  A[P1 opens report.html] --> B{Lean shape?}\n  B -- no --> Z[Existing report, unchanged]\n  B -- yes --> C[Lean summary header: question, pre-registered yes/no, batches 2 of 2]\n  C --> D[Per-harness table]\n  D --> E{Interval contains 0?}\n  E -- yes --> F[Row says no detectable effect at MDE 0.31]\n  E -- no --> G[Row states direction and size]\n  F --> H[Token ratio beside it]\n  G --> H\n  H --> I{Pairs recorded = 20?}\n  I -- no --> J[Row shows k of 20, excluded cells with causes]\n  I -- yes --> K[Pooled row]\n  J --> K\n  K --> L{Harnesses disagree?}\n  L -- yes --> M[Note: read the per-harness rows]\n  L -- no --> N[Optional: expand per-property table]\n  M --> N\n  N --> O[Limits note: clustering caveat, checkpoint numbers]\n  C --> P{Only batch 1 graded?}\n  P -- yes --> Q[Header says 1 of 2 batches; rows show 10 pairs and MDE 0.42]\n  Q --> D"
+        }
+      ],
+      "sourceSha256": "35740b906d2b6a3187cf1a46799109af98cb5106945c7f936b5bbe36d8110e7d"
     },
     {
       "id": "threat-model",
@@ -10243,6 +10722,14 @@ window.DOCS_INDEX = {
       "artifactId": "coordination-eval-campaign"
     },
     {
+      "id": "surface-coordination-coordination-finish",
+      "path": "docs/coordination/coordination-finish.html",
+      "title": "Coordination Finish",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "coordination-finish"
+    },
+    {
       "id": "surface-coordination-coordination-phase1-finish",
       "path": "docs/coordination/coordination-phase1-finish.html",
       "title": "Coordination plan - finish harness-bench phase 1 (pre-merge findings, N5, mutation bar, E2E)",
@@ -10417,6 +10904,29 @@ window.DOCS_INDEX = {
       "artifactId": "spec-harness-bench"
     },
     {
+      "id": "surface-coordination-lean-benchmark-prompt",
+      "path": "docs/coordination/lean-benchmark-prompt.html",
+      "title": "Lean Benchmark Prompt",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "prompt-lean-benchmark"
+    },
+    {
+      "id": "surface-proposals-lean-pack-benchmark",
+      "path": "docs/proposals/lean-pack-benchmark.html",
+      "title": "Lean Pack Benchmark",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact."
+    },
+    {
+      "id": "surface-specs-lean-pack-benchmark",
+      "path": "docs/specs/lean-pack-benchmark.html",
+      "title": "Lean Pack Benchmark",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "spec-lean-pack-benchmark"
+    },
+    {
       "id": "surface-coordination-eval-wave2-e1-overnight-2026-10-05",
       "path": "docs/coordination/eval-wave2-e1/overnight-2026-10-05.html",
       "title": "Overnight 2026 10 05",
@@ -10439,7 +10949,15 @@ window.DOCS_INDEX = {
       "kind": "knowledge-tool",
       "description": "Open an interactive knowledge artifact.",
       "artifactId": "run-report-e2e4"
+    },
+    {
+      "id": "surface-plans-strategy-lean-benchmark",
+      "path": "docs/plans/strategy-lean-benchmark.html",
+      "title": "Strategy Lean Benchmark",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "9e21ef8e172b362711919d963393b04f3b222afef9f4c59df2c0ea391f280d69"
+  "graphSha256": "dfe4f4c9c4b3c958d2934847cbaa4714399ebcf189828011c72be38208e5e3c4"
 };

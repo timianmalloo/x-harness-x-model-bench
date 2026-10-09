@@ -28,7 +28,8 @@ FIXTURES = ("c44dd2b-no-heads", "heads")
 
 
 def _git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, encoding="utf-8", check=False)
+    return subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, encoding="utf-8", check=False,
+                          creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
 
 def _repo(tmp_path: Path, version: str = "9.1") -> Path:

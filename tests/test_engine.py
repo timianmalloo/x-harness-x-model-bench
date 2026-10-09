@@ -1570,7 +1570,8 @@ def test_a_host_sleep_mid_turn_kills_the_cell_as_host_suspended(base, monkeypatc
 
 def test_a_build_server_left_by_the_turn_is_gone_before_the_job_is_closed(base, monkeypatch):  # T-JOB-daemon (T1-15)
     from harness_bench import procs
-    sibling = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(120)"])  # another build, in no cell's job
+    sibling = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(120)"],
+                               creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))  # another build, in no cell's job
     seen = []
     real_close = procs.CellProcess.close
 
@@ -2221,7 +2222,8 @@ def test_engine_crash_leaves_no_cell_running(base):  # T-ENG-crash-no-orphan
     script = base / "crasher.py"
     script.write_text(CRASHER.format(tests=str(Path(__file__).parent), src=str(ROOT / "src"), run_id=run_id,
                                      run_dir=str(base / "runs" / run_id), cells=str(base / "cells")), encoding="utf-8")
-    proc = subprocess.Popen([sys.executable, str(script)])
+    proc = subprocess.Popen([sys.executable, str(script)],
+                            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     deadline = time.monotonic() + 60
     pids = []
     while time.monotonic() < deadline and len(pids) < 2:
@@ -2230,7 +2232,8 @@ def test_engine_crash_leaves_no_cell_running(base):  # T-ENG-crash-no-orphan
         pids = [(e["pid"], e["created_at"]) for e in events if e["kind"] == "attempt.process_started"]
     assert len(pids) == 2, "cells never started"
     time.sleep(1)
-    subprocess.run(["taskkill", "/F", "/PID", str(proc.pid)], capture_output=True, check=False)
+    subprocess.run(["taskkill", "/F", "/PID", str(proc.pid)], capture_output=True, check=False,
+                   creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     proc.wait(timeout=30)
     time.sleep(2)
     for pid, created in pids:
@@ -2266,12 +2269,14 @@ def test_an_engine_thread_failure_exits_the_process_and_leaves_no_cell_running(b
     script = base / "failer.py"
     script.write_text(FAILER.format(tests=str(Path(__file__).parent), src=str(ROOT / "src"), run_id=run_id,
                                     run_dir=str(base / "runs" / run_id), cells=str(base / "cells")), encoding="utf-8")
-    proc = subprocess.Popen([sys.executable, str(script)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    proc = subprocess.Popen([sys.executable, str(script)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     try:
         assert proc.wait(timeout=60) == 1, "the process did not exit: a worker thread holds it open"
     finally:
         if proc.poll() is None:
-            subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)], capture_output=True, check=False)
+            subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)], capture_output=True, check=False,
+                           creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
             proc.wait(timeout=30)
     exited_at, real_alive = time.monotonic(), host.process_alive
     monkeypatch.setattr(host, "process_alive", lambda pid, created_at: real_alive(pid, created_at) or time.monotonic() - exited_at < death_lag)

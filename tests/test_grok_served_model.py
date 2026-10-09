@@ -5,6 +5,7 @@ Fixtures under tests/fixtures/grok_sessions are synthetic copies of the real ses
 `current_model_id`). Each test runs the tool as a subprocess, the way README section 3 runs it.
 """
 
+import json
 import subprocess
 import sys
 import threading
@@ -19,7 +20,8 @@ SID = "00000000-0000-4000-8000-000000000001"
 
 
 def _run(*args: str) -> subprocess.CompletedProcess:
-    return subprocess.run([sys.executable, str(TOOL), *args], capture_output=True, text=True, timeout=30, check=False)
+    return subprocess.run([sys.executable, str(TOOL), *args], capture_output=True, text=True, timeout=30, check=False,
+                          creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
 
 def _case(name: str) -> str:
@@ -120,7 +122,7 @@ def test_tree_and_session_resolve_the_url_encoded_folder(tmp_path):
     assert r.returncode == 0, r.stderr
 
 
-@pytest.mark.parametrize("args", [[], ["--tree", "x"]])
+@pytest.mark.parametrize("args", [[], ["--tree", "x", "--root", "no-such-grok-sessions-root"]])
 def test_bad_invocation_exits_2(args):
     assert _run(*args).returncode == 2
 
@@ -171,3 +173,52 @@ def test_wait_returns_when_the_assistant_row_appears(tmp_path):
 
 def test_wait_with_nothing_arriving_ends_with_2():
     assert _run("--first", "--wait", "1", _case("first_user_only")).returncode == 2
+
+
+# STORE-A: the key is the tree path with backslashes, URL-encoded, written here as a
+# literal. The tool's quote() must not build this fixture.
+
+
+def test_observed_layout_is_found_by_tree(tmp_path):
+    tree = "C:/Projects/gsm-demo"
+    cwd = "C:\\Projects\\gsm-demo"
+    key = "C%3A%5CProjects%5Cgsm-demo"
+    older = "11111111-1111-4111-8111-111111111111"
+    newer = "22222222-2222-4222-8222-222222222222"
+    key_dir = tmp_path / key
+    key_dir.mkdir()
+    (key_dir / "prompt_history.jsonl").write_text("", encoding="utf-8")
+
+    def write_session(uuid: str, updated_at: str, model: str) -> None:
+        folder = key_dir / uuid
+        folder.mkdir()
+        summary = {
+            "info": {"id": uuid, "cwd": cwd},
+            "created_at": "2026-10-08T00:00:00Z",
+            "updated_at": updated_at,
+        }
+        (folder / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
+        row = {"type": "assistant", "content": "", "model_id": model}
+        (folder / "chat_history.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8")
+
+    write_session(older, "2026-10-08T00:00:00Z", "grok-4.7-older")
+    write_session(newer, "2026-10-08T01:00:00Z", "grok-4.7-newer")
+
+    newest = _run("--tree", tree, "--root", str(tmp_path))
+    assert newest.returncode == 0, newest.stdout + newest.stderr
+    assert "grok-4.7-newer" in newest.stdout
+    assert "grok-4.7-older" not in newest.stdout
+
+    picked = _run("--tree", tree, "--session", older, "--root", str(tmp_path))
+    assert picked.returncode == 0, picked.stdout + picked.stderr
+    assert "grok-4.7-older" in picked.stdout
+    assert "grok-4.7-newer" not in picked.stdout
+
+    fallback = _run("--tree", tree, "--session", "xgsm-fin", "--root", str(tmp_path))
+    assert fallback.returncode == 0, fallback.stdout + fallback.stderr
+    assert "grok-4.7-newer" in fallback.stdout
+    assert "grok-4.7-older" not in fallback.stdout
+
+    missing = _run("--tree", "C:/Projects/gsm-none", "--root", str(tmp_path))
+    assert missing.returncode == 2
+    assert "not recorded" in missing.stdout

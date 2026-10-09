@@ -32,6 +32,7 @@ import time
 from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
+from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 
@@ -56,6 +57,9 @@ from harness_bench.grade.property import check_segment
 
 log = logging.getLogger("harness_bench.campaign")
 _TRACE: contextvars.ContextVar[dict | None] = contextvars.ContextVar("campaign_trace", default=None)
+# simplify: one night-window constant; ceiling: no operator window input.
+# Upgrade trigger: the operator names a window, then make it a pre-registration field.
+MULTI_NIGHT_HOURS = 4
 
 FIELDS: Mapping[str, Mapping[str, str]] = {  # exact field sets besides kind, campaign_id and the stamp; s=str, i=int, d=dict
     "campaign.created": {"question": "s"},
@@ -1586,6 +1590,54 @@ def _check_statement(state: CampaignState, statement: dict) -> None:
             raise BenchError("HB-CMP-008", f'arm "{arm}" source is a local path. Use the remote URL or omit source.')
 
 
+DRILL_KEYS = frozenset({"schema", "run_id", "code", "task", "seeded_at", "pushed_at", "acknowledged_at", "toast", "bench_commit"})
+
+
+def valid_drill(record: object) -> bool:
+    """One immutable host-channel attestation; no secret or host fields are admitted."""
+    if not isinstance(record, dict) or set(record) != DRILL_KEYS or any(not isinstance(v, str) for v in record.values()):
+        return False
+    if (record["schema"] != "bench-drill/1" or not re.fullmatch(r"drill-[0-9a-f]{8}", record["run_id"])
+            or record["code"] not in ("HB-ALM-001", "HB-ALM-002") or not record["task"].strip()
+            or record["toast"] not in ("seen", "not-seen", "not-run") or not re.fullmatch(r"[0-9a-f]{40}", record["bench_commit"])):
+        return False
+    times = [record[key] for key in ("seeded_at", "pushed_at", "acknowledged_at")]
+    try:
+        if any(not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", t) for t in times):
+            return False
+        seeded, pushed, acknowledged = [datetime.fromisoformat(t) for t in times]
+    except ValueError:
+        return False
+    return seeded < pushed <= acknowledged
+
+
+def acknowledged_drill(root: Path) -> dict | None:
+    """The host's drill is shared by campaigns; readers never create its folder."""
+    for path in sorted((root / "bench" / "drills").glob("*.json")):
+        try:
+            record = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if valid_drill(record):
+            return record
+    return None
+
+
+def _grid_hours(root: Path, state: CampaignState) -> float:
+    final = latest(state, "power.recorded", role="final")
+    if final is None:
+        return 0
+    results = power_model.analyse(decimal_view(content(root, state.campaign_id, "power", final["input_hash"])))
+    return max((result.hours for result in results.values()), default=0)
+
+
+def _check_drill(root: Path, state: CampaignState) -> None:
+    hours = _grid_hours(root, state)
+    if hours > MULTI_NIGHT_HOURS and acknowledged_drill(root) is None:
+        raise BenchError("HB-CMP-011", f"grid of {hours:g} h exceeds MULTI_NIGHT_HOURS ({MULTI_NIGHT_HOURS} h) with no acknowledged alarm drill. "
+                                      "Run bench drill start with the operator, then bench drill ack --run-id from the phone push.")
+
+
 def _preview(root: Path, state: CampaignState, statement: dict, digest: str, prereg_file: Path) -> str:
     method = statement["correction"].get("method")
     per_test, rule = power_model.level_for(method, Decimal(statement["alpha"]), statement["correction"].get("m", 1))
@@ -1600,6 +1652,13 @@ def _preview(root: Path, state: CampaignState, statement: dict, digest: str, pre
                 if statement["min_pairs"] < row["n"]:
                     lines.append(f"warning: min_pairs {statement['min_pairs']} is below the required n {row['n']} for "
                                  f"({prop}, {row['harness']}, {row['comparison'][0]} vs {row['comparison'][1]}); the verdict will say underpowered.")
+    drill = acknowledged_drill(root)
+    if drill is not None:
+        lines.append(f"drill: {drill['run_id']} acknowledged {drill['acknowledged_at']}")
+    elif (hours := _grid_hours(root, state)) > MULTI_NIGHT_HOURS:
+        lines.append(f"drill: none recorded; register --confirm will refuse (HB-CMP-011) for a grid of {hours:g} h")
+    else:
+        lines.append("drill: none recorded")
     lines.append(f"to register: bench campaign register {state.campaign_id} --prereg {prereg_file} --confirm {digest[:12]}")
     return "\n".join(lines)
 
@@ -1671,6 +1730,7 @@ def register(root: Path, campaign_id: str, prereg_file: Path, confirm: str | Non
             return _no_change(f'statement {digest[:12]} is already registered for campaign "{campaign_id}"')
         _check_statement(state, statement)
         _check_against_pilot(root, state, statement, runs)
+        _check_drill(root, state)
         folder = campaign_dir(root, campaign_id) / "prereg"
         folder.mkdir(exist_ok=True)
         atomic.create_once(folder / f"{digest}.json", ledger.canonical(statement))  # the file first; a crash before the row is retried by appending the row only

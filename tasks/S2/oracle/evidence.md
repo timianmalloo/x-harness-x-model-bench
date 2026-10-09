@@ -133,3 +133,27 @@ S2 ships with three open items. They are stated above and are not changed by thi
 1. The A6 different-author clause is not met. See the authorship paragraph in "Variants, authorship and the mutation run": "The "one shape per class by a different author or model" clause is NOT met."
 2. The cookieless-401 control is untested. See the survivor `tamper-1 no-cookie control removed` in the one-time mutation run.
 3. The bob-get control is untested. See the survivor `authz bob-get control removed` in the one-time mutation run.
+
+## Open items closed (X-S2, 2026-10-08)
+
+All three open items from ship are closed across X-S2 turn 1 and turn 2:
+
+1. **A6 authorship (5 new variants across 5 classes by a different model/author):**
+   - Author: `gemini-3.8-flash-high`, session `xs2-fin` (turn 1).
+   - Variants:
+     - `injfmt`: injection class, flips `inj-1` with clause `A0,A1,A2,A3` (red `ecbe2072`, green `d9e2400c`).
+     - `travpath`: traversal class, flips `trav-1` with clause `T0,T1,T2,T4` (red `23169837`, green `d24c13ed`).
+     - `tamptok`: tamper-refusal class, flips `tamper-1` with clause `name-team` (red `5ba297e1`, green `3eb2863e`).
+     - `authzidor`: authorization class, flips `authz-1` with clause `status-body` (red `3b0f0e65`, green `bcd5bfde`).
+     - `leaketag`: key disclosure class, flips `leak-1` with clause `response:hex` (red `ddd207ea`, green `61230516`).
+
+2. **The two surviving controls tested and killed (fixtures by gemini-3.8-flash-high, session xs22-fin):**
+   - `pa-nocookie`: fixture app answering cookieless `GET /tasks` with 200 while requiring valid session cookie when present; passes seed controls and kills `tamper-1 no-cookie control removed` (red `7c2487ae`, green `6ab15426`).
+   - `pa-bobget`: fixture app that shifts team 2 listed task IDs so the bob-get control in `team_two_id` is reached while passing alice-get in seed; kills `authz bob-get control removed` (red `2b00dcbb`, green `6f81b2d3`).
+
+3. **One-time mutation run outside the ring (`tools/mutate_check.py` on the two surviving controls):**
+   ```
+   killed   tamper-1 no-cookie control removed
+   killed   authz bob-get control removed
+   every mutation killed
+   ```

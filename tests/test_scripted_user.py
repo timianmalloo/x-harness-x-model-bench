@@ -186,7 +186,7 @@ def test_cache_key_is_question_hash_set_hash_and_matcher_version():
 
 def _commits(pathspec: str) -> set[str]:
     out = subprocess.run(["git", "log", "--format=%H", "--", pathspec], cwd=ROOT, capture_output=True, text=True,
-                         check=True, timeout=60).stdout
+                         check=True, timeout=60, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
     return set(out.split())
 
 
@@ -630,7 +630,7 @@ def test_stdio_server_over_pipes(tmp_path):
         _ask(3, {"question": "what is the MAXIMUM input size"}),
     ]
     proc = subprocess.Popen([spec["command"], *spec["args"]], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE, env=env, cwd=tmp_path)
+                            stderr=subprocess.PIPE, env=env, cwd=tmp_path, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     stdout, stderr = proc.communicate("".join(json.dumps(m) + "\n" for m in messages).encode(), timeout=60)
     assert (proc.returncode, stderr) == (0, b"")
     replies = [json.loads(line) for line in stdout.decode().splitlines()]

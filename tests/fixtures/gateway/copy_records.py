@@ -80,7 +80,8 @@ def real_values() -> dict[str, str]:
     git = shutil.which("git")
     for key, name in (("user.email", "git e-mail"), ("user.name", "git name")):
         if git:
-            done = subprocess.run([git, "config", "--get", key], capture_output=True, text=True, check=False)
+            done = subprocess.run([git, "config", "--get", key], capture_output=True, text=True, check=False,
+                                  creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
             found[name] = done.stdout.strip()
     return {k: v for k, v in found.items() if len(v) >= 3}
 

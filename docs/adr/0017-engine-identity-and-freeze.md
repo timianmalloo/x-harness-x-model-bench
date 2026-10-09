@@ -80,3 +80,7 @@ Section 1's text above is not rewritten; this amendment is appended and governs 
 ## Evidence
 
 - `plan.py` (`file_hash`, `profile_record`, `builds`, `price_list_hash`), ADR-0006 (`grader_build`, `extraction_id`), `bench/catalog-freeze.yaml` [Verified, read 2026-10-03].
+
+## Note, 2026-10-08 (Ruling 115; written by Coordinator #55)
+
+R-115: the USD rendering is retired at X-NOPRICE; the `prices` identity component (0017) and `cost_usd`/`cost_of_pass` in catalog 0.7 (0019) stand until the post-E5 retirement, condition 5. Nothing this ADR guarantees changes before E5; the post-E5 track X-PRICERET amends it.

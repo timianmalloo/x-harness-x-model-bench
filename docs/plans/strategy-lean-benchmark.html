@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Strategy Lean Benchmark</title><style>
+:root { color-scheme: light dark; --bg:#f7f5ef; --panel:#fff; --text:#20201d;
+  --muted:#66645f; --line:#d9d5ca; --accent:#3157a4; --code:#f0eee7; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#171816; --panel:#20221f; --text:#f2f1eb; --muted:#b8b6ae;
+    --line:#3d403a; --accent:#8fb0ff; --code:#292c27; }
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text);
+  font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { width:min(920px,calc(100% - 32px)); margin:32px auto; padding:40px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+h1,h2,h3,h4,h5,h6 { line-height:1.2; margin:1.5em 0 .55em; }
+h1 { margin-top:0; font-size:2.2rem; } h2 { border-bottom:1px solid var(--line); padding-bottom:.3em; }
+a { color:var(--accent); } code { background:var(--code); padding:.12em .35em; border-radius:4px; }
+pre { overflow:auto; padding:16px; background:var(--code); border-radius:8px; }
+pre code { padding:0; } blockquote { margin:1em 0; padding:.2em 1em; color:var(--muted);
+  border-left:4px solid var(--line); }
+table { width:100%; border-collapse:collapse; margin:1em 0; display:block; overflow:auto; }
+th,td { padding:.55em .75em; border:1px solid var(--line); text-align:left; vertical-align:top; }
+th { background:var(--code); } hr { border:0; border-top:1px solid var(--line); }
+.source { color:var(--muted); font-size:.9rem; margin-bottom:2rem; }
+@media (max-width:640px) { main { width:100%; margin:0; padding:24px 18px; border:0; border-radius:0; } }
+</style></head><body><main><div class="source">Rendered from strategy-lean-benchmark.md</div><h1>Strategy: from E5&#x27;s campaign to the lean pack benchmark</h1>
+<p><strong>Result first.</strong> Almost everything the lean benchmark needs is already built and joined: the ten property tasks, the two-arm matrix with a bound pack-on arm, <code>bench plan</code> / <code>run</code> / <code>grade</code> / <code>report</code>, pack-off workspaces without instruction files (Ruling 116), and tokens as the only cost axis (Ruling 115). Four things are missing:</p>
+<ol><li>a 2-repetition matrix;</li><li>a paired summary on the primary metric, <code>property_check_pass</code>;</li><li>the docs that retire E5&#x27;s campaign design;</li><li>one short pre-registration.</li></ol>
+<p>The work is about one day of agent time and about 4.5 h of machine time for the run. Every claim below was read from the repo on 2026-10-09; anything not read is marked <strong>Inferred</strong>.</p>
+<h2>1. The decision being implemented</h2>
+<p>The operator accepted the proposal <em>Lean Pack Benchmark</em>, revision 2, on 2026-10-09 (&quot;perfect&quot;). The proposal is <code>docs/proposals/lean-pack-benchmark.html</code>, published as https://claude.ai/artifact/2RCLBk2oQAkiaErgW6Em6x. The same day the operator decided:</p>
+<ul><li><strong>The alarm requirement is dropped</strong> (&quot;yes drop the requirement&quot;). The drill&#x27;s push never reached the phone. The</li></ul>
+<p>lean run is under 4 h, so registration&#x27;s HB-CMP-011 never applies, and the lean run does not register a campaign anyway.</p>
+<ul><li><strong>Target: about 2 h of run and 2 h of grading</strong> (&quot;further reduce: i want a target of about 2hr for run time and 2hr</li></ul>
+<p>for grading&quot;).</p>
+<table><thead><tr><th></th><th>E5 as planned (<code>coordination-finish.md</code> <em>E5 sizing</em>)</th><th>Lean benchmark</th></tr></thead><tbody><tr><td>cells</td><td>1,644 (27 repetitions + 24 calibration)</td><td><strong>120</strong> (2 repetitions, no calibration)</td></tr><tr><td>run at 3 slots</td><td>30.7 h, about 4 nights</td><td><strong>about 2.2 h</strong> (Inferred: grid-4&#x27;s 1.12 min per cell at 3 slots)</td></tr><tr><td>grading</td><td>31.8 h</td><td><strong>about 2.3 h</strong> (Inferred: grid-4&#x27;s 1.16 min per cell)</td></tr><tr><td>tokens</td><td>1.74B</td><td><strong>about 127M</strong> (Inferred: the spec&#x27;s 1.06M per cell)</td></tr><tr><td>answer</td><td>15 verdicts (5 properties x 3 harnesses) at MDE 0.20</td><td>per harness: pack-on vs pack-off on the primary metric, 20 pairs, MDE about 0.31; pooled 60 pairs, MDE about 0.19; per property exploratory; token ratio per harness</td></tr></tbody></table>
+<p>The MDE figures use the spec&#x27;s paired-binary formula. Recomputing the spec&#x27;s own case (ψ 0.28, δ 0.20, α 0.05, power 0.8) gives 52.5, which matches the spec&#x27;s n = 53. The script is <code>C:\tf\leader\mde2.py</code>. Repeats of one task are correlated, so the real per-harness MDE lies between the 20-pair value (0.31) and the 10-task value (0.42).</p>
+<h2>2. Where the repo stands (read 2026-10-09)</h2>
+<p><strong>Branches.</strong> <code>integrate/finish-19</code> at <code>a1cf7e95</code> holds every P2 and P3 join of the finish run:</p>
+<ul><li>X-PROP, X-HYG, X-GSM, X-WIN, X-CACHEB;</li><li>X-REDS, X-NOPRICE, X-S2, X-DRILL (with its loop-back), X-PACKOFF (with its loop-back), X-SJ4, X-E5M;</li><li>Rulings 114-116.</li></ul>
+<p><code>main</code> is at <code>f544deb2</code>. The finish batch gate (gate ring and stamp renewal, stamped tier, rings, <code>mutate --touched f544deb2</code>, light checks, <code>run-verify-gates</code>) was running at this writing. The push to <code>main</code> follows its green.</p>
+<p><strong>Usable as is:</strong></p>
+<table><thead><tr><th>capability</th><th>where</th><th>read</th></tr></thead><tbody><tr><td>the ten property tasks (S, RS, RW, NG, SM, two each)</td><td><code>tasks/</code>, <code>bench/bom.yaml</code></td><td><code>bench/rings/e5-pilot.yaml</code> subset</td></tr><tr><td>two-arm matrix, pack-on as a role arm bound at plan time</td><td><code>bench/rings/e5-pilot.yaml</code> (1 repetition, 60 cells), <code>bench/matrix.e5-grid.yaml</code></td><td><code>bench plan ... --arm on=C:/Projects/ai-forward@4a22f12c...</code> exits 0 on both, on the joined head (Leader, 2026-10-09)</td></tr><tr><td>plan, run (runs to completion, then grades), grade, report</td><td><code>bench --help</code></td><td><code>src/harness_bench/cli.py</code></td></tr><tr><td>pack-off workspaces free of agent-instruction files, for every harness</td><td><code>workspace.task_source</code>, HB-PRE-009</td><td>Ruling 116; X-PACKOFF</td></tr><tr><td>the report&#x27;s pack-effect section: pass@1 and composite differences per combo, with intervals</td><td><code>src/harness_bench/board.py</code> <code>PackEffectRow</code>, <code>report/html.py</code></td><td><code>board.py:80</code>, <code>:240</code></td></tr><tr><td>tokens as the only rendered cost axis</td><td><code>report/**</code>, <code>cli_table.py</code></td><td>Ruling 115; X-NOPRICE</td></tr><tr><td>pinned E5 models</td><td><code>cc-opus</code> <code>claude-opus-5-5</code>, <code>codex-sol</code> <code>gpt-6.1-sol</code>, <code>copilot-sol</code> <code>gpt-6.1-sol</code></td><td><code>bench/rings/e5-pilot.yaml</code></td></tr></tbody></table>
+<p><strong>Not on the lean path:</strong></p>
+<ul><li><strong>The campaign machinery.</strong> This covers <code>bench campaign</code>, the prior and final power analyses, pre-registration</li></ul>
+<p>registration, the alarm drill, HB-CMP-011, nightly resume under the alarm, and the convergence re-run. It stays in the code, unused by this run. Nothing is deleted.</p>
+<ul><li><strong>The readiness records.</strong> <code>plan.py</code> and <code>run</code> do not import <code>readiness</code>; only <code>campaign.py</code>, <code>cli.py</code>,</li></ul>
+<p><code>discriminate.py</code> and <code>identity.py</code> do (read by grep). So a lean run does not need the ten records. They are stale against the final head anyway (RECID-A), and X-PACKOFF changed NG1&#x27;s and S2&#x27;s base trees.</p>
+<p><strong>Gaps:</strong></p>
+<ol><li><strong>No 2-repetition matrix.</strong> <code>e5-pilot.yaml</code> has 1 repetition; <code>matrix.e5-grid.yaml</code> has 27 plus a comparison ring</li></ol>
+<p>tag.</p>
+<ol><li><strong>No paired summary on `property_check_pass`.</strong> The board&#x27;s pack effect covers pass@1 and the composite.</li></ol>
+<p><code>property_check_pass</code> is catalog 0.7 with <code>weight: 0</code> (<code>bench/metrics.yaml:57</code>), so it is outside the composite. The lean question (&quot;does the pack make each harness better at enterprise properties&quot;) is answered by that metric, so the spec must name the primary metric and the report must show its paired difference per harness with an interval.</p>
+<ol><li><strong>The docs still describe E5 as a campaign.</strong> These need to say the lean design supersedes it:</li></ol>
+<ul><li><code>docs/specs/enterprise-evaluation.md</code>;</li><li><code>docs/coordination/coordination-finish.md</code> spine 8, <em>E5 sizing</em> and the operator stops;</li><li><code>docs/architecture-evaluation-campaign.md</code>.</li></ul>
+<ol><li><strong>No pre-registration.</strong> One paragraph naming the primary metric, the comparison, the pairing unit and the</li></ol>
+<p>exclusions, committed before batch 1.</p>
+<p><strong>In flight from the finish run, to land or close before the lean run:</strong></p>
+<table><thead><tr><th>item</th><th>state</th><th>action</th></tr></thead><tbody><tr><td>finish batch gate</td><td>running</td><td>push P2+P3 to <code>main</code> when green</td></tr><tr><td>X-ALARMCWD (<code>build/fin-x-alarmcwd</code>, <code>edceff56</code>)</td><td>verified: red with the old script (<code>assert 1 == 6</code>), green 20/20</td><td>join (small, real bug, keeps the alarm correct for future multi-night work)</td></tr><tr><td>X-FLAKE turn 3 (<code>build/fin-x-flake3</code>, Sonnet)</td><td>running</td><td>verify and join when it returns, or close it as not delivered</td></tr><tr><td>F-PACK phase 1 (ai-forward <code>fix/xh-finish-upstream</code>, <code>e1f8ad5</code>)</td><td><code>verify-bundle</code> 18/18 by the worker; 37 line-ending-only files uncommitted</td><td>Leader verifies, then pushes to ai-forward; phase 2 (<code>/updatepack</code> here) after the lean result</td></tr><tr><td>scheduled task <code>HarnessBenchAlarmDrill</code></td><td>exists (on demand, no trigger)</td><td>delete with the operator&#x27;s go</td></tr><tr><td>X-CACHEB&#x27;s Windows event-log read</td><td>open since 2026-10-08</td><td>stays open (not on the lean path)</td></tr><tr><td>worktrees (<code>coord worktree list</code>)</td><td>many finish-run trees</td><td><code>coord worktree cleanup</code> report, then <code>--remove</code> on the operator&#x27;s go</td></tr></tbody></table>
+<h2>3. Strategy</h2>
+<p>Smallest correct path (the Solution-Selection Ladder): reuse first, and build only what the answer cannot exist without.</p>
+<ol><li><strong>Phase A: land the finish run (the current session).</strong> Batch gate green, then push <code>integrate/finish-19</code> to</li></ol>
+<p><code>main</code>. Join X-ALARMCWD, and X-FLAKE if it is green, then push. Push F-PACK phase 1 to ai-forward after a Leader re-run of <code>verify-bundle.ps1</code>. Commit this strategy, the spec and the execution prompt with that push, so a fresh session starts from <code>main</code>.</p>
+<ol><li><strong>Phase B: specify (`/specify`).</strong> A spec for the lean benchmark that supersedes E5&#x27;s campaign design for this</li></ol>
+<p>question:</p>
+<ul><li>functional layer: the question, the design (120 cells, two batches), the primary metric, the comparisons, the</li></ul>
+<p>outputs, the checkpoint between batches, the pre-registration;</p>
+<ul><li>UX and UI layers: the report&#x27;s lean summary.</li></ul>
+<p>Written on 2026-10-09: <code>docs/specs/lean-pack-benchmark.md</code>.</p>
+<ol><li><strong>Phase C: define the architecture (`/define-architecture`).</strong> Expected decisions:</li></ol>
+<ul><li>(a) <strong>One run or two.</strong> One matrix with <code>repetitions: 2</code> and a checkpoint read from <code>bench status</code>, or two runs of</li></ul>
+<p>the 1-repetition pilot ring with a pooled summary. Choose by reading whether the plan orders cells repetition-major and whether the report can pool runs. Recommendation, Inferred: two runs, because the checkpoint is then a real stop, plus a summary that reads both runs&#x27; ledgers.</p>
+<ul><li>(b) <strong>Where the paired summary lives.</strong> Extend the board&#x27;s pack effect to <code>property_check_pass</code> paired by</li></ul>
+<p>(task, repetition, harness), reusing <code>board.interval</code>. Do not build a second interval engine (derive, don&#x27;t store).</p>
+<ul><li>(c) <strong>Per-property rows, exploratory</strong>, with counts and no verdict words. EVU-6&#x27;s sweep pattern keeps &quot;better&quot;,</li></ul>
+<p>&quot;worse&quot; and &quot;dominates&quot; out of the exploratory text.</p>
+<ul><li>(d) <strong>Token ratio per harness with its interval.</strong> Check what the board already gives here.</li><li>(e) <strong>Records:</strong> refresh the ten readiness records on the final head (about 1 h of Leader machine time,</li></ul>
+<p>Inferred), or settle for <code>bench validate</code> plus the discrimination evidence already joined. Recommendation: <code>bench validate</code> plus one discrimination trial each for NG1 and S2, whose base trees changed.</p>
+<ol><li><strong>Phase D: prepare for coordination (`/prepare-for-coordination`).</strong> Few tracks; the Simplifier strikes the rest:</li></ol>
+<ul><li><strong>L-MATRIX</strong>: the lean matrix file(s), and <code>bench plan</code> proof of 120 cells (60 per batch), 0 instruction files for</li></ul>
+<p>every pack-off cell, and the model pins.</p>
+<ul><li><strong>L-SUMMARY</strong>: the paired <code>property_check_pass</code> summary in <code>board</code> and the report, red first, with mutants.</li><li><strong>L-DOCS</strong>: errata that retire E5&#x27;s campaign design in the spec, the plan and the architecture; the</li></ul>
+<p>pre-registration paragraph.</p>
+<ul><li><strong>L-RECORDS</strong> (if the architecture keeps it): Leader machine time.</li></ul>
+<ol><li><strong>Phase E: execute (`/execute-with-coordination`).</strong></li><li>Join the tracks.</li><li>Run one batch gate, and the gate ring only if a stamp input moved.</li><li>Push.</li><li>Commit the pre-registration.</li><li><strong>Operator stop:</strong> token approval, about 127M Inferred.</li><li>Batch 1: 60 cells. Then the checkpoint: real minutes, grading minutes and tokens per cell against the estimate.</li><li>Batch 2: 60 cells. Grade batch 1 while batch 2 runs, if the architecture allows it.</li><li>Grade, then report, then write the run report.</li><li><strong>Phase F: close.</strong> Delete the drill task, run worktree cleanup, delete the scratch roots, and write the closing</li></ol>
+<p>audit entries.</p>
+<h2>4. Seats and harnesses for the execution (operator, 2026-10-09)</h2>
+<ul><li><strong>Owner:</strong> Fable (<code>owner-fable</code>). It rules decision requests.</li><li><strong>Leader and Coordinators:</strong> Claude Code, Opus (<code>claude-opus-5-5</code>).</li><li><strong>Claude sub-agents:</strong> Opus for code that needs judgement (L-SUMMARY review, any loop-back); Haiku</li></ul>
+<p>(<code>claude-haiku-4-5-20251001</code>) for mechanical work (docs errata, cleanup reports, read-only sweeps).</p>
+<ul><li><strong>Distributed coding:</strong> Grok (<code>grok-4.7</code>, effort high) and Agy (<code>gemini-3.8-flash-high</code>) through <code>coord-runner</code>.</li></ul>
+<p>Codex and Copilot are not workers in this run; Copilot is a benchmark subject only.</p>
+<h2>5. Lessons from the finish run that the execution must carry (each is a class in <code>docs/lessons/defect-classes.md</code>)</h2>
+<table><thead><tr><th>class</th><th>what happened</th><th>carry-over rule</th></tr></thead><tbody><tr><td>CEIL-A</td><td>Grok&#x27;s and Agy&#x27;s floors were taken as the first context reading, so every turn split at item 1</td><td>floors are the grounding cost at the first edit: Grok 88k (<code>updates.jsonl</code> <code>params._meta.totalTokens</code>), Agy about 105k (Inferred, one case); thresholds absolute</td></tr><tr><td>verification gap (X-DRILL, X-PACKOFF)</td><td>a worker&#x27;s own test files were green, but neighbours failed at the join recount</td><td>before each <code>src/</code> join, the Leader runs the full suite on the worker branch (<code>pytest -n 4 --dist loadscope</code>)</td></tr><tr><td>LOGTEAR-A</td><td>concurrent runner appends tore a row in the Leader&#x27;s log, and every commit repo-wide was refused</td><td>never edit a log; stop and ask the operator; the control is owed (per-run logs or an append lock)</td></tr><tr><td>FLAKE-A</td><td>the end-to-end walk fails under load and passes alone</td><td>one recount retry per join (<code>conductor-join --continue</code> needs <code>--title</code>), then treat a second red as real</td></tr><tr><td>PACKOFF-A</td><td>upstream instruction files leaked into pack-off workspaces</td><td>HB-PRE-009 guards every harness; <code>bench plan</code> with the <code>--arm on=</code> binding is the probe</td></tr><tr><td>TEST-E</td><td>a compiled premise check omitted <code>--arm on=SOURCE@COMMIT</code> and proved nothing</td><td>a brief&#x27;s proof command is run once by its author before dispatch</td></tr><tr><td>STORE-A</td><td>Grok&#x27;s served-model reader used the wrong store key</td><td>fixed by X-GSM; read the served id with <code>tools/grok_served_model.py --tree</code></td></tr><tr><td>alarm working directory</td><td>the scheduled alarm task ran from <code>System32</code>, where <code>bench</code> cannot find the repo</td><td>fixed by X-ALARMCWD (the wrapper runs from the repo)</td></tr></tbody></table>
+<h2>6. Risks and how they surface</h2>
+<table><thead><tr><th>risk</th><th>signal</th><th>response</th></tr></thead><tbody><tr><td>property tasks run slower or costlier than grid-4 (no real-model cell has run them)</td><td>batch 1&#x27;s measured minutes and tokens per cell</td><td>the checkpoint: the operator keeps or cuts batch 2</td></tr><tr><td>a harness&#x27;s pack effect is smaller than the per-harness MDE</td><td>the interval crosses 0</td><td>report &quot;inconclusive at MDE 0.31&quot;; a 1-repetition top-up for that harness (20 cells, about 45 min) is the operator&#x27;s call</td></tr><tr><td>a rate limit at 3 slots</td><td>cell failures with a rate-limit cause in <code>bench status</code></td><td>drop to 2 slots (grid-4 measured 2)</td></tr><tr><td>the pooled result hides opposite per-harness effects</td><td>per-harness intervals on opposite sides of 0</td><td>the per-harness rows are the decision; the pooled row is a summary</td></tr></tbody></table></main></body></html>

@@ -170,3 +170,16 @@ class SleepDetector:
         gap = (wall - self._wall) - (unbiased - self._unbiased)
         self._wall, self._unbiased = wall, unbiased
         return gap > self.gap
+
+
+def run_scheduled_task(task: str) -> bool:
+    """Start an already configured Windows scheduled task; True only when it was triggered and exited 0."""
+    import os
+
+    from harness_bench import procs
+
+    try:
+        result = procs.run(["schtasks.exe", "/run", "/tn", task], cwd=os.getcwd(), env=dict(os.environ), timeout=30)
+    except (OSError, procs.SpawnError):
+        return False
+    return not result.timed_out and result.returncode == 0

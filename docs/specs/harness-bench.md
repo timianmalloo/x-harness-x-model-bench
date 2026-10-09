@@ -422,6 +422,7 @@ Each criterion is written so that a test can fail it. IDs are stable, and downst
 - **Given** a cell's model calls and a price list version with an entry for each served model effective on the run date **When** cost is computed **Then** `cost_usd` = Σ tokens by type × that entry's per-type price, and the price list version, source URL and date are shown with it.
 - **Given** a served model with no entry **When** cost is computed **Then** `cost_usd` is NA (US-27), and the report header states the exclusion.
 - **Given** a Copilot cell **When** cost is computed **Then** its native AI units and premium requests are recorded. `cost_usd` is shown only when the price list version holds a dated, sourced AI-unit-to-USD rate; otherwise it is NA. [Spike 1.2: native per-type AI-unit prices. Verified. The USD rate is Flagged R6]
+- **Erratum 2026-10-08 (Ruling 115):** tokens are the cost axis, always (R-115); a USD figure is never rendered; the price list is retired after E5. The `cost_usd` Given/Then clauses above are superseded.
 
 **US-24 · smoke — As P1, I want time split into model, tool and idle time, so that slow tools are not blamed on the model.**
 - **Given** a cell **When** time is extracted **Then** wall clock, model time and tool time are recorded, and idle = wall − model − tool. Any component the harness does not expose is NOT_RECORDED.

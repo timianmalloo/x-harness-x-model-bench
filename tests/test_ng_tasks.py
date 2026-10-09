@@ -398,10 +398,15 @@ def test_ng_pin_tree_matches_the_engine_built_base(task_id):
     source = task_yaml(task_id)["source"]
     clone = workspace.upstream_tree(source["repo"], source["commit"], ring_cache.ring_root("ng") / "upstream")
     tree = subprocess.run(["git", "rev-parse", f"{SPECS[task_id]['pin']}^{{tree}}"], cwd=clone, capture_output=True, text=True,
-                          check=True).stdout.strip()
+                          check=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.strip()
     assert tree == recorded_tree(task_id) == SPECS[task_id]["tree"]
     listed = set(subprocess.run(["git", "ls-tree", "-r", "--name-only", SPECS[task_id]["pin"]], cwd=clone, capture_output=True,
-                                text=True, check=True).stdout.split())
+                                text=True, check=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.split())
+    removed = {n for n in listed if n in workspace.INSTRUCTION_FILES or any(
+        n.startswith(d + "/") and n.endswith(".instructions.md") for d in workspace.INSTRUCTION_DIRS)}  # Ruling 116, the engine's own list
+    listed -= removed
+    if task_id == "NG1":
+        assert removed == {".github/copilot-instructions.md"}
     built = {p.relative_to(base).as_posix() for p in base.rglob("*") if p.is_file() and ".git" not in p.relative_to(base).parts}
     overlay = {p.relative_to(task_dir(task_id) / "workspace").as_posix() for p in (task_dir(task_id) / "workspace").rglob("*")
                if p.is_file() and "__pycache__" not in p.parts}  # bytecode the reflect/load_lib tests write is no overlay
@@ -507,7 +512,7 @@ def test_ng_contract_problems_fire_on_each_red_fixture():
 
 def reflect(lib_dir: Path, names: tuple[str, ...]) -> dict[str, bool]:
     done = subprocess.run([sys._base_executable, "-S", "-B", str(FIXTURES / "reflect.py"), str(lib_dir), *names], capture_output=True,
-                          text=True, timeout=60, check=False)
+                          text=True, timeout=60, check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     assert done.returncode == 0, done.stderr
     return json.loads(done.stdout)
 

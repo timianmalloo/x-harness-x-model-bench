@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lean Pack Benchmark</title><style>
+:root { color-scheme: light dark; --bg:#f7f5ef; --panel:#fff; --text:#20201d;
+  --muted:#66645f; --line:#d9d5ca; --accent:#3157a4; --code:#f0eee7; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#171816; --panel:#20221f; --text:#f2f1eb; --muted:#b8b6ae;
+    --line:#3d403a; --accent:#8fb0ff; --code:#292c27; }
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text);
+  font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { width:min(920px,calc(100% - 32px)); margin:32px auto; padding:40px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+h1,h2,h3,h4,h5,h6 { line-height:1.2; margin:1.5em 0 .55em; }
+h1 { margin-top:0; font-size:2.2rem; } h2 { border-bottom:1px solid var(--line); padding-bottom:.3em; }
+a { color:var(--accent); } code { background:var(--code); padding:.12em .35em; border-radius:4px; }
+pre { overflow:auto; padding:16px; background:var(--code); border-radius:8px; }
+pre code { padding:0; } blockquote { margin:1em 0; padding:.2em 1em; color:var(--muted);
+  border-left:4px solid var(--line); }
+table { width:100%; border-collapse:collapse; margin:1em 0; display:block; overflow:auto; }
+th,td { padding:.55em .75em; border:1px solid var(--line); text-align:left; vertical-align:top; }
+th { background:var(--code); } hr { border:0; border-top:1px solid var(--line); }
+.source { color:var(--muted); font-size:.9rem; margin-bottom:2rem; }
+@media (max-width:640px) { main { width:100%; margin:0; padding:24px 18px; border:0; border-radius:0; } }
+</style></head><body><main><div class="source">Rendered from lean-pack-benchmark.md</div><h1>Spec: Lean pack benchmark</h1>
+<p><em>Status: in review. Sources: the operator-accepted proposal `docs/proposals/lean-pack-benchmark.html` (revision 2, &quot;perfect&quot;, 2026-10-09) and the strategy `docs/plans/strategy-lean-benchmark.md`. Every repo claim was read on 2026-10-09 at `a1cf7e95` (branch `integrate/finish-19`). Confidence labels: </em><em>Verified</em><em> means read or run here; </em><em>Inferred</em><em> means modelled, with the model named; </em><em>Flagged</em><em> means unknown.</em></p>
+<h2>Part A — Functional specification</h2>
+<h3>Problem</h3>
+<p>The operator wants to know whether the AI-Forward pack improves each harness&#x27;s enterprise-quality outcomes, and at what token cost. E5, as specified in <code>docs/specs/enterprise-evaluation.md</code>, answers a finer question: 15 verdicts (5 properties × 3 harnesses), each powered for a 20-point difference. That needs 53 pairs per verdict, which comes to 1,644 cells, about 31 h of run, about 32 h of grading, about 4 nights under an alarm, and 1.74B tokens (<code>coordination-finish.md</code>, <em>E5 sizing</em>, Inferred from grid-4 rates).</p>
+<p>The operator judged that out of proportion (&quot;this has gotten WAY out of hand&quot;, 2026-10-09). They asked for about 2 h of run and about 2 h of grading. Nothing has been measured yet: no real-model cell has run the ten property tasks (<em>E5 sizing</em>, &quot;Gap that forces modelling&quot;, Verified by reading).</p>
+<h3>Target users &amp; personas</h3>
+<ul><li><strong>P1, the Benchmark Owner / operator</strong> (primary, as in the enterprise-evaluation spec). They decide whether the pack</li></ul>
+<p>is worth its tokens on each harness. They read one report and want an answer the same day.</p>
+<ul><li><strong>P3, a reader of the report</strong> (secondary): a pack author or reviewer, who needs the result&#x27;s limits stated beside</li></ul>
+<p>the result.</p>
+<h3>Core scenario</h3>
+<ol><li>P1 confirms one plan of 120 cells.</li><li>P1 commits a one-paragraph pre-registration.</li><li>Batch 1 runs: 60 cells, repetition 1, about 1.1 h at 3 slots (Inferred). Its real minutes and tokens per cell are</li></ol>
+<p>read at the checkpoint.</p>
+<ol><li>P1 keeps batch 2, or stops.</li><li>Batch 2 runs: 60 cells, repetition 2. Both batches are graded.</li><li>The report opens on a <strong>lean summary</strong>. For each harness it gives:</li></ol>
+<ul><li>the paired difference in <code>property_check_pass</code> (pack-on minus pack-off) with a 95% interval and the design&#x27;s</li></ul>
+<p>MDE;</p>
+<ul><li>a pooled row across harnesses;</li><li>per-property directions, labelled exploratory;</li><li>the on/off token ratio with its interval.</li></ul>
+<ol><li>P1 reads the answer in one sitting.</li></ol>
+<h3>In scope / Out of scope (explicit non-goals)</h3>
+<p><strong>In scope:</strong></p>
+<ul><li>one comparison: pack-off vs pack-on (the pack revision bound at plan time);</li><li>the ten property tasks;</li><li>three harnesses with pinned models;</li><li>two repetitions in two batches, with a checkpoint;</li><li>the lean summary;</li><li>a pre-registration paragraph;</li><li>a run report.</li></ul>
+<p><strong>Out of scope (non-goals):</strong></p>
+<ul><li><strong>A campaign.</strong> No <code>bench campaign</code> record, prior or final power analysis, admission loop, registration,</li></ul>
+<p>dominance rule, forced defect fix or eligibility verdicts. The machinery stays in the code, unused.</p>
+<ul><li><strong>Multi-night running</strong>, the alarm task and the alarm drill. The run is under 4 h, so HB-CMP-011 never applies.</li><li><strong>Calibration cells</strong>, and the convergence re-run (resume table and TLC model check).</li><li><strong>Verdict words</strong> (<code>better</code>, <code>worse</code>, <code>no difference ≥ MDE</code>, <code>dominates</code>) on per-property rows.</li><li><strong>Arm Y</strong> or any third pack revision.</li><li><strong>USD</strong> (Ruling 115).</li><li><strong>New metrics.</strong> Catalog 0.7 is frozen; <code>property_check_pass</code> and <code>tokens_by_type</code> already exist.</li></ul>
+<h3>Conceptual domain model (DM1 / DM4)</h3>
+<p><strong>Bounded context:</strong> Evaluation, as in the enterprise-evaluation spec. This spec adds two derived concepts and one aggregate; it adds no stored quantity that the ledger does not already record.</p>
+<p><strong>Ubiquitous language:</strong></p>
+<table><thead><tr><th>term</th><th>meaning</th></tr></thead><tbody><tr><td><strong>Lean benchmark</strong></td><td>One answer to the pack-on/off question: one plan identity, its batches, its pre-registration and its lean summary.</td></tr><tr><td><strong>Batch</strong></td><td>One <code>bench run</code> of the lean plan&#x27;s cells for one repetition (60 cells). Batch 1 is repetition 1; batch 2 is repetition 2.</td></tr><tr><td><strong>Pair</strong></td><td>The pack-off and pack-on cells of the same task, repetition and harness. The pairing unit.</td></tr><tr><td><strong>Primary metric</strong></td><td><code>property_check_pass</code> (catalog 0.7, <code>bench/metrics.yaml:57</code>, Verified): &quot;1 only when the stated ask&#x27;s hidden tests pass and the property&#x27;s check passes&quot;. Binary.</td></tr><tr><td><strong>Paired difference</strong></td><td>Pack-on minus pack-off on the primary metric, aggregated over pairs. Its interval is the existing two-stage percentile bootstrap: task, then repetition, task-balanced mean (<code>stats.py:21</code> <code>METHOD</code>, <code>stats.paired_delta</code>, Verified).</td></tr><tr><td><strong>Design MDE</strong></td><td>The smallest true difference the design detects with 80% power at α 0.05, given ψ = 0.28 (DR-E5). It is computed with the enterprise-evaluation spec&#x27;s paired-binary formula, which reproduces that spec&#x27;s n = 53 as 52.5 (Verified). Per harness: 20 pairs give 0.31. Pooled: 60 pairs give 0.19.</td></tr><tr><td><strong>Exploratory row</strong></td><td>A per-property direction with its pair counts: 4 pairs per harness, 12 pooled. It is not a verdict.</td></tr><tr><td><strong>Token ratio</strong></td><td>Pack-on total tokens over pack-off total tokens per harness, with its interval. Tokens come from <code>tokens_by_type</code> (catalog 0.7 <code>:31</code>).</td></tr><tr><td><strong>Checkpoint</strong></td><td>The read of batch 1&#x27;s measured minutes per cell, grading minutes per cell and tokens per cell, set against the estimate before batch 2 starts.</td></tr><tr><td><strong>Pre-registration (lean)</strong></td><td>One committed paragraph: the question, the primary metric, the comparison, the pairing unit, the exclusion rule and the two MDEs. Written before batch 1&#x27;s first cell.</td></tr></tbody></table>
+<p><strong>Entities vs value objects:</strong></p>
+<ul><li>Entities: the Lean benchmark and its Batches (each batch is an existing Run).</li><li>Value objects: Pair, Paired difference, Exploratory row, Token ratio, Checkpoint, Pre-registration (lean).</li></ul>
+<p><strong>Aggregate:</strong> <em>Lean benchmark</em> (root). <strong>Invariant:</strong> every pair compares two cells that share the same task, repetition, harness, model pin, engine identity and pack-off workspace rule. Only the arm differs. Both batches come from one confirmed plan identity, so no drift between plans can pose as a pack effect (EV-17&#x27;s intent, kept).</p>
+<h3>User stories &amp; acceptance criteria</h3>
+<p><strong>LB-1. As P1, I want one plan of 120 cells, so that the run&#x27;s size is fixed before any cell starts.</strong></p>
+<ul><li><strong>Given</strong> the lean matrix (10 tasks from <code>bench/rings/e5-pilot.yaml</code>&#x27;s subset, arms <code>off</code> and <code>on</code>, combos</li></ul>
+<p><code>cc-opus</code> <code>claude-opus-5-5</code>, <code>codex-sol</code> <code>gpt-6.1-sol</code>, <code>copilot-sol</code> <code>gpt-6.1-sol</code>, 2 repetitions) <strong>When</strong> <code>bench plan</code> runs with <code>--arm on=&lt;pack source&gt;@&lt;40-hex commit&gt;</code> <strong>Then</strong> it exits 0 and lists exactly 120 cells:</p>
+<ul><li>60 per repetition;</li><li>20 per harness per arm;</li><li>every cell carries its concrete model id;</li><li>every <code>off</code> cell has 0 instruction files (HB-PRE-008 and HB-PRE-009 hold).</li><li><strong>Given</strong> the <code>on</code> arm is not bound <strong>When</strong> <code>bench plan</code> runs without <code>--json</code> <strong>Then</strong> it refuses, naming the</li></ul>
+<p>unbound role. A plan never runs <code>on</code> unbound.</p>
+<ul><li><strong>Given</strong> a pack-off cell whose base tree still carries an instruction file <strong>When</strong> the plan builds it <strong>Then</strong></li></ul>
+<p>HB-PRE-009 refuses (Ruling 116).</p>
+<p><strong>LB-2. As P1, I want a pre-registration committed before batch 1, so that the analysis cannot be chosen after seeing the data.</strong></p>
+<ul><li><strong>Given</strong> the pre-registration paragraph <strong>When</strong> it is read <strong>Then</strong> it names:</li><li>the question;</li><li><code>property_check_pass</code> as the primary metric;</li><li>pack-off vs pack-on;</li><li>the pair (task × repetition × harness);</li><li>the exclusion rule (a cell with no recorded primary value is excluded from its pair, and the pair is dropped);</li><li>the per-harness MDE 0.31 and the pooled MDE 0.19.</li><li><strong>Given</strong> batch 1&#x27;s first cell started at time T <strong>When</strong> the pre-registration commit&#x27;s time is compared <strong>Then</strong></li></ul>
+<p>the commit is earlier than T. Otherwise the run report labels the result &quot;not pre-registered&quot;.</p>
+<p><strong>LB-3. As P1, I want a checkpoint after batch 1, so that a slower or costlier reality than the estimate costs one batch, not two.</strong></p>
+<ul><li><strong>Given</strong> batch 1 is graded <strong>When</strong> the checkpoint is read <strong>Then</strong> it reports measured:</li><li>minutes of run per cell;</li><li>minutes of grading per cell;</li><li>tokens per cell, per harness and per arm;</li></ul>
+<p>each beside the estimate (1.12 min, 1.16 min, 1.06M; Inferred).</p>
+<ul><li><strong>Given</strong> batch 1&#x27;s projected batch-2 run time exceeds 2 h, or its tokens exceed the approved budget&#x27;s half</li></ul>
+<p><strong>When</strong> the checkpoint is read <strong>Then</strong> batch 2 does not start without P1&#x27;s explicit go.</p>
+<ul><li><strong>Given</strong> a harness whose batch-1 cells failed for an infrastructure cause (auth, rate limit) on more than 20% of</li></ul>
+<p>its cells <strong>When</strong> the checkpoint is read <strong>Then</strong> it is named, with the cause, before batch 2.</p>
+<p><strong>LB-4. As P1, I want a per-harness paired difference on the primary metric, so that I can decide per harness.</strong></p>
+<ul><li><strong>Given</strong> both batches graded <strong>When</strong> the report renders <strong>Then</strong>, for each harness:</li><li>a row shows the pack-on minus pack-off difference in <code>property_check_pass</code> as a point and a 95% interval, from</li></ul>
+<p><code>stats.paired_delta</code> over that harness&#x27;s pairs (two-stage bootstrap, task then repetition);</p>
+<ul><li>the row shows the pair count and the design MDE 0.31;</li><li>the row&#x27;s statement says <code>no detectable effect</code> when the interval contains 0 (<code>stats.no_detectable_effect</code>, the</li></ul>
+<p>only definition of that label). Otherwise it states the direction and the size.</p>
+<ul><li><strong>Given</strong> a harness with fewer than 20 recorded pairs <strong>When</strong> the row renders <strong>Then</strong> it shows `k of 20 pairs</li></ul>
+<p>recorded` and the excluded cells with their causes.</p>
+<ul><li><strong>Given</strong> a harness with 0 recorded pairs <strong>When</strong> the row renders <strong>Then</strong> it shows <code>not recorded (0 pairs)</code>,</li></ul>
+<p>never a 0.</p>
+<p><strong>LB-5. As P1, I want a pooled row across harnesses, so that I see the overall direction.</strong></p>
+<ul><li><strong>Given</strong> both batches graded <strong>When</strong> the report renders <strong>Then</strong> one pooled row shows the paired difference over</li></ul>
+<p>all recorded pairs (60 at most) with its interval, the pair count and the design MDE 0.19.</p>
+<ul><li><strong>Given</strong> two harnesses&#x27; intervals lie wholly on opposite sides of 0 <strong>When</strong> the pooled row renders <strong>Then</strong> it</li></ul>
+<p>carries the note <code>harnesses disagree: read the per-harness rows</code>.</p>
+<p><strong>LB-6. As P3, I want per-property directions, so that I see where the pack helps or hurts, without reading them as verdicts.</strong></p>
+<ul><li><strong>Given</strong> both batches graded <strong>When</strong> the report renders <strong>Then</strong> a per-property table shows, for each property</li></ul>
+<p>and harness:</p>
+<ul><li>pack-off passes over recorded, and pack-on passes over recorded (e.g. <code>1/4 → 3/4</code>);</li><li>a direction (<code>up</code>, <code>down</code>, <code>same</code>);</li><li>a header that reads <code>Exploratory: 4 pairs per harness; not powered for a per-property finding</code>.</li><li><strong>Given</strong> the per-property table&#x27;s text <strong>When</strong> it is swept for <code>better|worse|dominates</code> (case-insensitive)</li></ul>
+<p><strong>Then</strong> there are 0 matches (EVU-6&#x27;s sweep pattern).</p>
+<p><strong>LB-7. As P1, I want the token cost beside the effect, so that the answer includes what the pack costs.</strong></p>
+<ul><li><strong>Given</strong> both batches graded <strong>When</strong> the report renders <strong>Then</strong> each harness row shows the on/off token ratio</li></ul>
+<p>as a point and a 95% interval (two-stage bootstrap over tasks and repetitions, as LB-4), from <code>tokens_by_type</code> totals.</p>
+<ul><li><strong>Given</strong> a cell whose tokens are not recorded <strong>When</strong> the ratio is computed <strong>Then</strong> that pair is excluded from</li></ul>
+<p>the ratio, and the count of exclusions is shown. A missing value never becomes 0 (US-27).</p>
+<ul><li><strong>Given</strong> the rendered report <strong>When</strong> it is searched for <code>$</code>, <code>USD</code> or <code>cost_usd</code> labels <strong>Then</strong> there are 0</li></ul>
+<p>matches (Ruling 115).</p>
+<p><strong>LB-8. As P1, I want a run report, so that the result, its limits and its cost are on one page.</strong></p>
+<ul><li><strong>Given</strong> the run is done <strong>When</strong> the run report is written <strong>Then</strong> it states:</li><li>the per-harness and pooled results;</li><li>both MDEs and the clustering caveat (the true per-harness MDE lies between 0.31 for 20 independent pairs and</li></ul>
+<p>0.42 for 10 tasks);</p>
+<ul><li>the checkpoint numbers;</li><li>total tokens per harness and arm;</li><li>the engine identity;</li><li>the pack revision;</li><li>whether the result was pre-registered.</li></ul>
+<h3>Non-functional requirements (ISO/IEC 25010 checklist)</h3>
+<table><thead><tr><th>attribute</th><th>requirement</th><th>how it is checked</th></tr></thead><tbody><tr><td>Performance efficiency (time)</td><td>run ≤ 2.5 h and grading ≤ 2.5 h at 3 slots, for 120 cells</td><td>measured at the checkpoint and at the end; Inferred target from grid-4 rates</td></tr><tr><td>Resource (tokens)</td><td>≤ 150M tokens total, against an Inferred 127M</td><td><code>tokens_by_type</code> totals in the run report</td></tr><tr><td>Functional correctness</td><td>the paired difference and its interval are <code>stats.paired_delta</code>, nothing re-implemented (derive, don&#x27;t store)</td><td>a test feeds known pairs and checks point and bounds against <code>paired_delta</code></td></tr><tr><td>Reliability</td><td>a cell lost to infrastructure is excluded and named, never scored 0</td><td>LB-4 and LB-7 criteria</td></tr><tr><td>Usability</td><td>P1 reads the answer from the lean summary without opening raw tables</td><td>Part B UX criteria</td></tr><tr><td>Accessibility</td><td>WCAG 2.2 AA, as the report&#x27;s existing sections</td><td>Part C</td></tr><tr><td>Maintainability</td><td>no new metric, and no change to catalog 0.7; the change is confined to board and report</td><td>the catalog freeze check stays green</td></tr><tr><td>Security / privacy</td><td>no new egress; tokens and credentials are handled as today</td><td>unchanged surfaces</td></tr><tr><td>Portability</td><td>the report stays a self-contained HTML file</td><td>as the harness-bench spec</td></tr><tr><td>Compatibility</td><td>a run without the lean shape (not 2 arms) renders no lean summary and keeps its report golden byte-identical</td><td>a golden test</td></tr></tbody></table>
+<h3>Boundary set</h3>
+<ul><li>Cells: exactly 120, which is 60 per batch, 20 per harness per arm, and 2 per task per harness per arm.</li><li>Pairs per harness: 20 at most. Pooled: 60 at most. Per property per harness: 4 at most.</li><li>A pair needs both cells recorded. One missing cell drops the pair (LB-2&#x27;s exclusion rule).</li><li>The primary metric is binary. A value other than 0 or 1 is a grading defect, never a pass.</li></ul>
+<h3>Comparables &amp; user evidence (sourced)</h3>
+<table><thead><tr><th>source</th><th>what it shows</th><th>label</th></tr></thead><tbody><tr><td>The enterprise-evaluation spec, <em>Power-analysis inputs</em> and DR-E5</td><td>ψ = 0.28, and n = 53 for MDE 0.20 per verdict</td><td>Verified (read, and the formula reproduces 52.5)</td></tr><tr><td>Grid-4 (<code>runs/grid-4</code>, <code>coordination-finish.md</code> <em>E5 sizing</em>)</td><td>1.68 min of wall per cell at 2 slots; grading 1.16 min per cell; median cell 1.5-2.4 min, p90 4.8-6.4 min</td><td>Verified as recorded there; the lean rates are Inferred from it</td></tr><tr><td>The enterprise-evaluation spec&#x27;s token table (<code>:444-458</code>)</td><td>pack-on uses 2.2× (Claude Code), 3.1× (Codex) and 10.8× (Copilot) the tokens of pack-off</td><td>Verified for that population (flagged R-E5)</td></tr><tr><td><code>stats.py</code></td><td>two-stage percentile bootstrap (task, then repetition) and paired deltas, already behind the report&#x27;s pack effect (<code>board.py:685</code>)</td><td>Verified</td></tr><tr><td>The operator&#x27;s words, 2026-10-09</td><td>&quot;this has gotten WAY out of hand&quot;; &quot;further reduce: i want a target of about 2hr for run time and 2hr for grading&quot;; &quot;perfect&quot;</td><td>Verified (session record, <code>docs/plans/strategy-lean-benchmark.md</code>)</td></tr></tbody></table>
+<h3>Applicable governance lenses</h3>
+<ul><li><strong>Quality attributes:</strong> walked above.</li><li><strong>Threat model:</strong> no new trust boundary. The pack-on arm&#x27;s source binding is the existing <code>--arm</code>.</li><li><strong>Privacy:</strong> unchanged.</li><li><strong>Accessibility:</strong> Part C.</li><li><strong>Performance:</strong> the 2 h + 2 h budget is the NFR. The checkpoint is its control.</li><li><strong>Release / rollback:</strong> a report-only change behind the lean shape. A non-lean run&#x27;s golden stays byte-identical.</li><li><strong>Observability:</strong> the checkpoint reads <code>bench status</code> and the ledger. Run minutes, grading minutes and tokens are</li></ul>
+<p>measured, not modelled, after batch 1.</p>
+<h3>AI-integrated allocation</h3>
+<p>N/A: the benchmark measures AI harnesses; the lean summary itself calls no model.</p>
+<h2>Part B — UX specification</h2>
+<h3>Personas &amp; jobs-to-be-done (deepened)</h3>
+<ul><li><strong>P1&#x27;s job:</strong> &quot;Tell me, per harness, whether the pack helps on enterprise properties, how sure we are, and what it</li></ul>
+<p>costs, so that I can decide in one read.&quot; The job ends at the per-harness rows.</p>
+<ul><li><strong>P3&#x27;s job:</strong> &quot;Show me where it helps and the limits, so that I do not over-read a small sample.&quot;</li></ul>
+<h3>Information architecture</h3>
+<p>The lean summary is one section of the existing report. It sits where E5&#x27;s verdict section would, and appears only on a run with the lean shape:</p>
+<ol><li><strong>Lean summary header.</strong> The question, the pre-registration status, and the batch count with pair counts.</li><li><strong>Per-harness table</strong> (the decision): effect and interval, MDE, pairs, statement, token ratio.</li><li><strong>Pooled row:</strong> a summary, with the disagreement note when it applies.</li><li><strong>Per-property table</strong>, exploratory and collapsed by default.</li><li><strong>Limits note:</strong> the clustering caveat and the checkpoint numbers.</li></ol>
+<p>The existing sections (header facts, leaderboard, pack effect on pass@1 and composite, cells) follow unchanged.</p>
+<h3>User flows</h3>
+<pre><code class="language-mermaid">flowchart TD
+  A[P1 opens report.html] --&gt; B{Lean shape?}
+  B -- no --&gt; Z[Existing report, unchanged]
+  B -- yes --&gt; C[Lean summary header: question, pre-registered yes/no, batches 2 of 2]
+  C --&gt; D[Per-harness table]
+  D --&gt; E{Interval contains 0?}
+  E -- yes --&gt; F[Row says no detectable effect at MDE 0.31]
+  E -- no --&gt; G[Row states direction and size]
+  F --&gt; H[Token ratio beside it]
+  G --&gt; H
+  H --&gt; I{Pairs recorded = 20?}
+  I -- no --&gt; J[Row shows k of 20, excluded cells with causes]
+  I -- yes --&gt; K[Pooled row]
+  J --&gt; K
+  K --&gt; L{Harnesses disagree?}
+  L -- yes --&gt; M[Note: read the per-harness rows]
+  L -- no --&gt; N[Optional: expand per-property table]
+  M --&gt; N
+  N --&gt; O[Limits note: clustering caveat, checkpoint numbers]
+  C --&gt; P{Only batch 1 graded?}
+  P -- yes --&gt; Q[Header says 1 of 2 batches; rows show 10 pairs and MDE 0.42]
+  Q --&gt; D</code></pre>
+<p><strong>Recovery paths:</strong></p>
+<ul><li><strong>A batch stopped at the checkpoint:</strong> the report renders from batch 1 alone, labelled <code>1 of 2 batches</code>, with MDE</li></ul>
+<p>0.42.</p>
+<ul><li><strong>A harness with 0 recorded pairs:</strong> its row says <code>not recorded (0 pairs)</code> and names the causes.</li></ul>
+<h3>Wireframe-level structure (Skeleton)</h3>
+<pre><code>[Lean summary]  Does the pack help each harness?   Pre-registered: yes (commit abc1234)   Batches: 2 of 2
+ harness      | pack-on − pack-off (property_check_pass) | 95% interval | MDE  | pairs | statement               | tokens on/off
+ Claude Code  |  +0.25                                   | [+0.05, +0.45]| 0.31 | 20/20 | pack-on higher by 0.25  | 2.1× [1.8, 2.5]
+ Codex        |  +0.05                                   | [-0.15, +0.25]| 0.31 | 20/20 | no detectable effect    | 3.0× [2.4, 3.7]
+ Copilot      |  ...
+ pooled       |  +0.12                                   | [+0.01, +0.23]| 0.19 | 60/60 | pack-on higher by 0.12  | —
+ [&gt; Per property (exploratory: 4 pairs per harness)]
+ [Limits: true per-harness MDE between 0.31 and 0.42 (repeats of a task are correlated). Checkpoint: 1.3 min/cell run, ...]</code></pre>
+<p><em>The figures above are placeholders that show the layout. They are not results.</em></p>
+<h3>UX acceptance criteria (falsifiable)</h3>
+<ul><li><strong>LBU-1.</strong> On a lean-shaped run, the per-harness table is the first table of the lean summary. No scroll is needed</li></ul>
+<p>past the header to reach it at 1280×800.</p>
+<ul><li><strong>LBU-2.</strong> Every per-harness row shows all six fields: effect, interval, MDE, pairs, statement, token ratio. A</li></ul>
+<p>missing field reads <code>not recorded — &lt;reason&gt;</code>, never blank.</p>
+<ul><li><strong>LBU-3.</strong> The per-property table is collapsed by default, and its header carries the word <code>Exploratory</code>.</li><li><strong>LBU-4.</strong> A run with one graded batch renders <code>1 of 2 batches</code> and the 1-batch MDE (0.42). It never shows the</li></ul>
+<p>2-batch MDE over 1-batch data.</p>
+<ul><li><strong>LBU-5.</strong> A non-lean run shows no lean-summary element, and its report golden is byte-identical (as EVU-4 for the</li></ul>
+<p>campaign section).</p>
+<h2>Part C — UI specification</h2>
+<h3>UI Archetype Signature</h3>
+<ul><li><strong>Archetype:</strong> B3 · Telemetry Bento Box, inherited from the harness-bench Part C through the enterprise-evaluation</li></ul>
+<p>spec, with no new deviations.</p>
+<ul><li><strong>Selection:</strong> inherited. The JTBD (compare measured quantities with uncertainty, drill to evidence) is unchanged.</li></ul>
+<h3>Medium(s) &amp; platform guidelines</h3>
+<p>As the harness-bench spec: a self-contained HTML file opened from <code>file://</code> in Chromium-based browsers and Firefox; WCAG 2.2; the WAI-ARIA APG patterns for table and disclosure. The tables are pre-rendered and readable with JavaScript off.</p>
+<h3>Visual intent &amp; tokens</h3>
+<ul><li><strong>Experience qualities:</strong> <em>plain, honest about doubt</em>. Opposites to avoid: <em>celebratory, falsely certain</em>.</li><li><strong>Tokens:</strong> only the report&#x27;s existing tokens. No new colour, size or radius literal.</li><li><strong>Effect encoding:</strong> the pack-effect section&#x27;s interval bar on a diverging axis centred on 0, with the MDE as a</li></ul>
+<p>patterned band from −MDE to +MDE.</p>
+<ul><li><strong>Token-ratio encoding:</strong> a log-scale interval bar centred on 1×.</li><li><strong>Statements:</strong> text first. Colour never carries meaning alone.</li></ul>
+<h3>Key screens &amp; complete component states</h3>
+<table><thead><tr><th>component</th><th>default</th><th>hover / focus</th><th>empty</th><th>error / partial</th><th>overflow</th></tr></thead><tbody><tr><td>Lean summary header</td><td>question, pre-registration status with commit, <code>Batches: n of 2</code></td><td>the commit id&#x27;s tooltip shows the full sha</td><td>absent on a non-lean run</td><td>pre-registration missing or late: <code>Not pre-registered: &lt;reason&gt;</code></td><td>wraps below 480 px</td></tr><tr><td>Per-harness row</td><td>effect, interval bar, MDE, pairs, statement, ratio bar</td><td>exact bounds, n, resamples, seed</td><td><code>not recorded (0 pairs)</code> with causes</td><td><code>k of 20 pairs recorded</code>, with excluded cells listed</td><td>the table scrolls in its container; the first column is sticky</td></tr><tr><td>Pooled row</td><td>as a harness row, MDE 0.19</td><td>as above</td><td><code>not recorded (0 pairs)</code></td><td>the disagreement note</td><td>as above</td></tr><tr><td>Per-property table</td><td>collapsed: <code>Per property (exploratory: 4 pairs per harness)</code></td><td>focus ring; expanded rows show <code>a/b → c/d</code> and the direction</td><td>a property with no recorded pair: <code>0/0 → 0/0, not recorded</code></td><td>—</td><td>scrolls in its container</td></tr><tr><td>Limits note</td><td>the clustering caveat and the checkpoint numbers</td><td>—</td><td>checkpoint not run: <code>Checkpoint not recorded</code></td><td>—</td><td>wraps</td></tr></tbody></table>
+<h3>Motion, copy, accessibility &amp; performance</h3>
+<ul><li><strong>Motion:</strong> none, except the disclosure&#x27;s expand and collapse, which honours <code>prefers-reduced-motion</code>.</li><li><strong>Copy:</strong> plain statements. <code>no detectable effect</code> is the only label for an interval containing 0. Per-property text</li></ul>
+<p>never uses <code>better</code>, <code>worse</code> or <code>dominates</code>.</p>
+<ul><li><strong>Accessibility:</strong> WCAG 2.2 AA. axe-core reports 0 violations for the section in light and dark (as EVU-5).</li></ul>
+<p>Contrast of the bars and the MDE band is at least 3:1 against the panel.</p>
+<ul><li><strong>Performance:</strong> the section adds at most 30 kB to report.html.</li></ul>
+<h3>AI-UX</h3>
+<p>N/A: the section presents measurements; no AI acts through it.</p>
+<h3>UI acceptance criteria (falsifiable)</h3>
+<ul><li><strong>LBI-1.</strong> axe-core (WCAG 2.2 AA) reports 0 violations for the lean summary in light and dark mode.</li><li><strong>LBI-2.</strong> Each per-harness row&#x27;s DOM contains its statement as text. A check with colours and glyphs removed still</li></ul>
+<p>reads every statement.</p>
+<ul><li><strong>LBI-3.</strong> Every effect mark carries <code>data-interval-lo</code>, <code>data-interval-hi</code> and <code>data-mde</code> (as EVU-2), and every</li></ul>
+<p>ratio mark carries <code>data-interval-lo</code> and <code>data-interval-hi</code>.</p>
+<ul><li><strong>LBI-4.</strong> The per-property section&#x27;s text has 0 matches for <code>better|worse|dominates</code>.</li></ul>
+<h2>Supersession (what changes in <code>docs/specs/enterprise-evaluation.md</code> for this question)</h2>
+<table><thead><tr><th>enterprise-evaluation content</th><th>under this spec</th></tr></thead><tbody><tr><td>Epic EA (ten property tasks, hidden checks), Epic EB (metrics that record, catalog 0.7)</td><td><strong>kept</strong></td></tr><tr><td>Arms pack-off and pack revision X (as <code>on</code>); arm Y</td><td>X <strong>kept</strong> as <code>on</code>; Y <strong>out</strong> (operator, 2026-10-08)</td></tr><tr><td>Epic EC (EV-12 power analysis, EV-13 pre-registration as a campaign record)</td><td><strong>superseded</strong>: design MDEs are stated in this spec, and the pre-registration is one paragraph (LB-2)</td></tr><tr><td>EV-14 pilot ring</td><td><strong>kept as batch 1</strong> (<code>bench/rings/e5-pilot.yaml</code>, 60 cells); no admission step</td></tr><tr><td>EV-15 pack-regression ring, EV-16 engine freeze, campaign lifecycle</td><td>regression ring <strong>out</strong>; one engine identity per lean benchmark <strong>kept</strong> (the aggregate&#x27;s invariant); campaign lifecycle <strong>out</strong></td></tr><tr><td>EV-17 one grid for all arms</td><td><strong>kept</strong> in intent: both batches come from one confirmed plan identity</td></tr><tr><td>EV-18 verdict per property × harness × comparison</td><td><strong>superseded</strong> by LB-4 (per harness), LB-5 (pooled) and LB-6 (per property, exploratory)</td></tr><tr><td>EV-19 value beside cost, dominance</td><td>value beside cost <strong>kept</strong> (LB-7); dominance <strong>out</strong></td></tr><tr><td>EV-20 campaign eligibility in the report</td><td><strong>out</strong> (no campaign); the pre-registration status is shown instead (LB-2)</td></tr><tr><td>ADR-0021 §7 multi-night drill (HB-CMP-011)</td><td><strong>not triggered</strong> (no registration, under 4 h); the requirement was dropped by the operator on 2026-10-09</td></tr><tr><td>Rulings 115 (tokens only) and 116 (pack-off instruction-free)</td><td><strong>kept</strong></td></tr></tbody></table>
+<h2>Flagged risks &amp; residual unknowns</h2>
+<table><thead><tr><th>risk / unknown</th><th>label</th><th>response</th></tr></thead><tbody><tr><td>Property-task cells run slower or cost more than grid-4&#x27;s mix</td><td>Flagged (no real-model cell has run them)</td><td>the checkpoint (LB-3)</td></tr><tr><td>ψ for property tasks may differ from 0.28</td><td>Flagged</td><td>the MDEs are design figures; the bootstrap interval is the result</td></tr><tr><td>Repeats of a task are correlated, so the true per-harness MDE lies between 0.31 and 0.42</td><td>Inferred</td><td>stated in the limits note and the run report (LB-8)</td></tr><tr><td>A rate limit at 3 slots</td><td>Flagged (grid-4 measured 2 slots)</td><td>the checkpoint names infrastructure failures (LB-3); drop to 2 slots</td></tr><tr><td><code>property_check_pass</code> is NA for a task whose property grader cannot run</td><td>Inferred from <code>grade/property.py:174-176</code></td><td>NA cells drop their pair and are listed (LB-4)</td></tr></tbody></table>
+<h2>Gate record</h2>
+<p><em>Proportionate tier T1 (operator brief). The authors (Leader, as Product Strategist and Domain Researcher) wrote this; the gate below is the adversarial read, recorded, not self-cleared.</em></p>
+<table><thead><tr><th>reviewer</th><th>finding</th><th>resolution</th></tr></thead><tbody><tr><td>Simplifier</td><td>Could the existing pack-effect section on pass@1 answer the question with no change?</td><td>No. pass@1 is the correctness grader&#x27;s score (<code>metrics.yaml:47</code>). <code>property_check_pass</code> additionally requires the property&#x27;s check (<code>:57</code>), and the question is about properties. The pack effect computes <code>[&quot;pass_at_1&quot;, *cat.areas]</code> (<code>board.py:588</code>, <code>:825</code>), so the change is one more existing metric through the same <code>paired_delta</code>, plus the section.</td></tr><tr><td>Simplifier</td><td>Is the per-property table gold-plating?</td><td>Kept, collapsed, labelled exploratory. It costs no run time and it is the property signal P3 needs.</td></tr><tr><td>Test Architect</td><td>LB-4&#x27;s statement must be falsifiable</td><td>It is tied to <code>stats.no_detectable_effect</code> (one definition), with numeric point and bounds; a test with known pairs fixes it.</td></tr><tr><td>Test Architect</td><td>LB-3&#x27;s thresholds must be measurable</td><td>Projected run time over 2 h, and tokens over half the approved budget, both read from batch 1&#x27;s ledger.</td></tr><tr><td>Data &amp; Persistence</td><td>Is any new quantity stored?</td><td>No. Pairs, differences, ratios and the checkpoint are derived from the ledger. The pre-registration is a committed text file.</td></tr><tr><td>UX Researcher / IA</td><td>Is the 1-batch case covered?</td><td>Yes: the recovery path, LBU-4.</td></tr><tr><td>UX &amp; Accessibility</td><td>Are the states complete?</td><td>The component table covers empty, partial and error for every component. LBI-1 to LBI-4.</td></tr><tr><td>Security</td><td>No new trust boundary</td><td>Agreed; not convened beyond this read.</td></tr></tbody></table>
+<p>Residual risk: the checkpoint is the only control on cost and time until the first real cells are measured.</p></main></body></html>

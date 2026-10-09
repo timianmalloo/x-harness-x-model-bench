@@ -1,0 +1,18 @@
+# E5 grid (DR-E5 design): paired per harness, n = 53 pairs, 10 property tasks x 2 arms x 3 combos.
+# Run at 3 grid slots (a launch-time setting: bench plan --parallelism 3; the matrix carries no slots key).
+# The 24 calibration cells (1,620 + 24 = 1,644) are added by the campaign, not by this file.
+# Tokens are the only cost axis.
+schema: bench-matrix/2
+ring: {tag: comparison}
+bom: {file: bench/bom.yaml, subset: [S1, S2, RS1, RS2, RW1, RW2, NG1, NG2, SM1, SM2]}
+# assume: repetitions = ceil(n / 2) = 27 for n = 53 pairs per harness (DR-E5 design, E5 sizing erratum);
+#   confirm: the final power analysis (EV-12) before registration; breaks: the grid is over- or under-powered.
+repetitions: 27
+arms:
+  - {id: "off"}
+  - {id: "on"}
+comparisons: [["off", "on"]]
+combos:
+  - {id: cc-opus, harness: claude-code, model: claude-opus-5-5}
+  - {id: codex-sol, harness: codex, model: gpt-6.1-sol}
+  - {id: copilot-sol, harness: copilot, model: gpt-6.1-sol}

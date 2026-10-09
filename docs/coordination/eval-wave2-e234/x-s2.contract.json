@@ -1,0 +1,48 @@
+{
+  "schema": "coord-run/1",
+  "run_id": "r-xs2-fin",
+  "owner": "leader-fin",
+  "parallelism": 1,
+  "workers": [
+    {
+      "session": "xs2-fin",
+      "branch": "build/fin-x-s2",
+      "harness": "agy",
+      "transport": "agy",
+      "argv": [
+        "agy",
+        "--model",
+        "gemini-3.8-flash-high",
+        "--add-dir",
+        "{worktree}",
+        "--mode",
+        "accept-edits",
+        "--input-format",
+        "stream-json",
+        "--output-format",
+        "stream-json"
+      ],
+      "binding_files": [
+        "AGENTS.md",
+        ".agents/hooks.json"
+      ],
+      "deadline_seconds": 3300,
+      "output_limit": 4194304,
+      "evidence": [
+        {
+          "kind": "commit"
+        }
+      ],
+      "required_capabilities": {
+        "worktree_isolation": "observed-only",
+        "instructions": "observed-only",
+        "hooks": "observed-only",
+        "permissions": "observed-only"
+      },
+      "prompts": [
+        "al-01M4E8Z3NM9CYD3GFB7CGYDBA5"
+      ],
+      "fallback": "Leader-held (FALLBACK-A): coordination-finish.md, Track assignment detail, names what follows a failed or split turn; the worker launches, spawns or messages nothing. Agy 1.3.0 is qualified by X-WIN turn 1: the Leader reads its served id from cli.log before the second Agy dispatch."
+    }
+  ]
+}

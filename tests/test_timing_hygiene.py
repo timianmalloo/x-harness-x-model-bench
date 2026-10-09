@@ -39,6 +39,8 @@ TIMING_ALLOWED: Mapping[str, str] = {
     "test_procs.py::test_engine_crash_kills_every_descendant": _POLL,
     "test_procs.py::test_spawn_console_false_is_detached_and_job_holds_only_the_child": "X-F F2 own test: polls a real child's job membership until it settles (README 2, one entry per track)",
     "test_procs_posix.py::test_engine_crash_kills_every_descendant": _POLL,
+    "test_window_check.py::visible_window_child": _STALL,
+    "test_window_check.py::test_window_check_child_with_flag_lists_nothing": _STALL,
     "test_procs.py::test_run_with_an_unconfirmed_kill_raises_nothing_and_leaks_nothing": _POLL,
     "test_gateway_headless.py::test_t_gw_09_a_timed_out_call_is_unavailable_even_when_it_left_a_record": _HUNG,
     "test_gateway_headless.py::test_t_gw_10_the_credential_is_gone_after_a_timeout_and_after_an_exception_past_the_copy": _HUNG,

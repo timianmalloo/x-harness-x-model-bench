@@ -86,7 +86,7 @@ def test_workspace_builder_installs_each_arms_own_pack_and_exact_manifest(base, 
 
 
 def _git(cwd, *args):
-    return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, check=False).stdout
+    return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
 
 
 def _local_pack_repo(path):  # mirrors tests/test_cli.py::_pack_repo; no dependency on ../ai-forward
@@ -275,6 +275,31 @@ def test_task_source_from_upstream_builds_the_pinned_tree_plus_the_overlay(base)
     assert _tree(dest) == {"a.txt": "OVERRIDE\n", "sub/b.txt": "B\n", "README.md": "overlay\n"}
     assert len(_git(dest, "log", "--oneline").strip().splitlines()) == 1  # one base commit, no upstream history
     assert _git(dest, "remote").strip() == ""
+
+
+def test_task_source_drops_the_upstream_agent_instruction_files(base):  # X-PACKOFF, Ruling 116
+    upstream = base / "upstream"
+    upstream.mkdir()
+    commit = _local_upstream_repo(upstream, {"a.txt": "A\n", "AGENTS.md": "upstream rules\n",
+                                             ".github/copilot-instructions.md": "upstream copilot\n"})
+    task_dir = base / "tasks" / "P5"
+    _source_task(task_dir, upstream, commit, {"README.md": "overlay\n"})
+
+    dest = workspace.task_source(task_dir, "v5", base / "sources", base / "upstream-cache")
+
+    assert _tree(dest) == {"a.txt": "A\n", "README.md": "overlay\n"}
+
+
+def test_task_source_refuses_a_base_tree_that_carries_an_instruction_file(base):  # X-PACKOFF, Ruling 116
+    upstream = base / "upstream"
+    upstream.mkdir()
+    commit = _local_upstream_repo(upstream, {"a.txt": "A\n"})
+    task_dir = base / "tasks" / "P6"
+    _source_task(task_dir, upstream, commit, {"AGENTS.md": "overlay rules\n"})
+
+    with pytest.raises(BenchError) as e:
+        workspace.task_source(task_dir, "v6", base / "sources", base / "upstream-cache")
+    assert e.value.code == "HB-PRE-009"
 
 
 def test_task_source_leaves_bytecode_a_test_wrote_into_the_task_workspace_out_of_the_base(base):  # NG pin-tree flake

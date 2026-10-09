@@ -18,7 +18,8 @@ GUARD = Path(__file__).resolve().parents[1] / "tools" / "heredoc_guard.py"
 
 def _run(command: str) -> subprocess.CompletedProcess:
     payload = json.dumps({"tool_name": "Bash", "tool_input": {"command": command}})
-    return subprocess.run([sys.executable, str(GUARD)], input=payload, capture_output=True, text=True, timeout=30, check=False)
+    return subprocess.run([sys.executable, str(GUARD)], input=payload, capture_output=True, text=True, timeout=30, check=False,
+                          creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
 
 @pytest.mark.parametrize("command", [
@@ -96,13 +97,15 @@ def test_a_plain_removal_passes(command):
 
 
 def test_a_malformed_payload_never_blocks():
-    result = subprocess.run([sys.executable, str(GUARD)], input="not json", capture_output=True, text=True, timeout=30, check=False)
+    result = subprocess.run([sys.executable, str(GUARD)], input="not json", capture_output=True, text=True, timeout=30, check=False,
+                            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     assert result.returncode == 0
 
 
 def _run_as(tool_name: str, command: str) -> subprocess.CompletedProcess:
     payload = json.dumps({"tool_name": tool_name, "tool_input": {"command": command}})
-    return subprocess.run([sys.executable, str(GUARD)], input=payload, capture_output=True, text=True, timeout=30, check=False)
+    return subprocess.run([sys.executable, str(GUARD)], input=payload, capture_output=True, text=True, timeout=30, check=False,
+                          creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
 
 @pytest.mark.parametrize("command", [

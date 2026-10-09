@@ -1,0 +1,50 @@
+{
+  "schema": "coord-run/1",
+  "run_id": "r-xdrill-fin",
+  "owner": "leader-fin",
+  "parallelism": 1,
+  "workers": [
+    {
+      "session": "xdrill-fin",
+      "branch": "build/fin-x-drill",
+      "harness": "codex",
+      "transport": "acp",
+      "argv": [
+        "node",
+        "C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@agentclientprotocol/codex-acp/dist/index.js"
+      ],
+      "binding_files": [
+        "AGENTS.md",
+        "C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@agentclientprotocol/codex-acp/dist/index.js",
+        "C:/Projects/x-harness-x-model-bench/.tools/harness/node_modules/@agentclientprotocol/codex-acp/package.json",
+        "C:/Users/malla/AppData/Roaming/npm/node_modules/@openai/codex/node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe",
+        "C:/Users/malla/.codex/config.toml"
+      ],
+      "runtime": {
+        "unattended": true,
+        "mailbox": false,
+        "max_turns": 1,
+        "max_retries": 0,
+        "permissions": "deny",
+        "mode_id": "agent-full-access"
+      },
+      "deadline_seconds": 3300,
+      "output_limit": 4194304,
+      "evidence": [
+        {
+          "kind": "commit"
+        }
+      ],
+      "required_capabilities": {
+        "worktree_isolation": "observed-only",
+        "instructions": "observed-only",
+        "hooks": "observed-only",
+        "permissions": "observed-only"
+      },
+      "prompts": [
+        "al-01M4ECG1A3TYH6A2S812JMMKWQ"
+      ],
+      "fallback": "Leader-held (FALLBACK-A): coordination-finish.md, Track assignment detail, names what follows a failed or split turn; the worker launches, spawns or messages nothing. X-DRILL turn 1 of up to 2 (Coordinator #58): the integration head, a new branch; no model pin (operator 2026-10-08: config.toml gpt-6.1-sol, no wrapper pin), the served id read back from the rollout. The real drill is the Leader's and the operator's after the join (plan Operator actions 6)."
+    }
+  ]
+}

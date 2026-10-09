@@ -88,7 +88,8 @@ class ProbeHost:
         self._log = open(self.log_path, "wb")  # noqa: SIM115 - held open for the host process's life, closed in close()
         self.proc = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self._log,
                                      close_fds=True, env={k: os.environ[k] for k in ("PATH", "SYSTEMROOT", "TEMP", "TMP")
-                                                          if k in os.environ} | {"PYTHONDONTWRITEBYTECODE": "1"})
+                                                          if k in os.environ} | {"PYTHONDONTWRITEBYTECODE": "1"},
+                                     creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         self.lines = queue.Queue()
         threading.Thread(target=self._read, daemon=True).start()
         self.start_ms = None

@@ -179,7 +179,7 @@ def renew(root: Path | None = None, *, stamped: bool = False) -> int:
         cmd += ["-n", "4"]  # the 450 s D1 test bounds the wall time either way; the rest overlaps it
     env = {**os.environ, "HB_REQUIRE_DOTNET": "1"} if stamped else None  # a skipped stamped test proves nothing
 
-    proc = subprocess.run(cmd, cwd=repo_root, env=env, capture_output=True, text=True, encoding="utf-8", errors="replace", check=False)
+    proc = subprocess.run(cmd, cwd=repo_root, env=env, capture_output=True, text=True, encoding="utf-8", errors="replace", check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     output = proc.stdout + "\n" + proc.stderr
 
     if proc.returncode == 5:

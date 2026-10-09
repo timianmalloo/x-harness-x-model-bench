@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lean Pack Benchmark</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column, a decision strip up top, comparison tables in scroll boxes, a timeline at the end. */
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --ink: #18202b; --muted: #5a6575; --line: #dde2ea;
+  --accent: #0f6e6a; --accent-soft: #e2f1ef; --warn: #9a5a00; --warn-soft: #fbf0dc; --cut: #8a2f2f; --cut-soft: #f7e6e6;
+  --sans: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11161d; --panel: #18202a; --ink: #e6ebf1; --muted: #9aa6b5; --line: #2a3442;
+  --accent: #4fc2b8; --accent-soft: #15302e; --warn: #e3a54a; --warn-soft: #33270f; --cut: #e08383; --cut-soft: #351c1c; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #11161d; --panel: #18202a; --ink: #e6ebf1; --muted: #9aa6b5; --line: #2a3442;
+  --accent: #4fc2b8; --accent-soft: #15302e; --warn: #e3a54a; --warn-soft: #33270f; --cut: #e08383; --cut-soft: #351c1c; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 860px; margin: 0 auto; padding-inline: 20px; padding-block: 32px 64px; display: grid; gap: 36px; }
+h1, h2, h3 { line-height: 1.2; text-wrap: balance; margin: 0; }
+h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.3rem; font-weight: 650; }
+h3 { font-size: 1.02rem; font-weight: 650; }
+p { margin: 0; max-width: 66ch; }
+.eyebrow { font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+section { display: grid; gap: 14px; }
+.lede { font-size: 1.08rem; color: var(--ink); }
+.muted { color: var(--muted); }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.question { background: var(--accent-soft); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 4px; font-size: 1.08rem; }
+.strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; display: grid; gap: 4px; min-width: 0; }
+.stat .v { font-family: var(--mono); font-size: 1.35rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stat .v.now { color: var(--cut); }
+.stat .v.new { color: var(--accent); }
+.stat .k { font-size: 0.82rem; color: var(--muted); }
+.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 0.92rem; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 0.76rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); font-weight: 600; background: var(--bg); }
+tr:last-child td { border-bottom: 0; }
+td.r, th.r { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.pick td { background: var(--accent-soft); }
+tr.pick td:first-child { font-weight: 650; }
+tr.now td { color: var(--muted); }
+.tag { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.04em; padding: 1px 7px; border-radius: 99px; vertical-align: 1px; }
+.tag.keep { background: var(--accent-soft); color: var(--accent); }
+.tag.cut { background: var(--cut-soft); color: var(--cut); }
+.tag.inf { background: var(--warn-soft); color: var(--warn); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.box { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px; display: grid; gap: 10px; min-width: 0; }
+ul { margin: 0; padding-left: 1.15em; display: grid; gap: 6px; }
+li { max-width: 64ch; }
+ol.steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 0; counter-reset: s; }
+ol.steps li { counter-increment: s; display: grid; grid-template-columns: 2.2rem 1fr auto; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--line); max-width: none; }
+ol.steps li:last-child { border-bottom: 0; }
+ol.steps li::before { content: counter(s); font-family: var(--mono); color: var(--accent); font-weight: 600; }
+ol.steps .t { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); white-space: nowrap; }
+.decide { display: grid; gap: 10px; }
+.decide div { display: grid; grid-template-columns: 1.6rem 1fr; gap: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
+.decide b { font-family: var(--mono); color: var(--accent); }
+.note { font-size: 0.86rem; color: var(--muted); }
+code { font-family: var(--mono); font-size: 0.86em; background: var(--bg); border: 1px solid var(--line); padding: 0 4px; border-radius: 3px; }
+@media (max-width: 480px) { h1 { font-size: 1.6rem; } ol.steps li { grid-template-columns: 1.8rem 1fr; } ol.steps .t { grid-column: 2; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header style="display:grid;gap:10px">
+  <div class="eyebrow">x-harness-x-model-bench · proposal · revision 2 · 2026-10-09</div>
+  <h1>Lean Pack Benchmark</h1>
+  <p class="lede">E5 grew into a four-night campaign. This design answers the same question in about 2 hours of run and 2 hours of grading, using everything that is already built.</p>
+  <p class="note">Revision 2 targets about 2 h of run and 2 h of grading (operator, 2026-10-09). Revision 1 proposed 3 repetitions (180 cells, about 3.4 h + 3.5 h).</p>
+</header>
+
+<section>
+  <div class="eyebrow">The question</div>
+  <p class="question">With the AI-Forward pack on versus off, does each harness (Claude Code, Codex, Copilot) do better on enterprise-quality tasks, and what does it cost in tokens?</p>
+</section>
+
+<section>
+  <h2>At a glance</h2>
+  <div class="strip">
+    <div class="stat"><span class="k">Cells, today's E5 design</span><span class="v now num">1,644</span></div>
+    <div class="stat"><span class="k">Cells, proposed</span><span class="v new num">120</span></div>
+    <div class="stat"><span class="k">Run + grading, today</span><span class="v now num">≈ 62 h</span></div>
+    <div class="stat"><span class="k">Run + grading, proposed</span><span class="v new num">≈ 2.2 h + 2.3 h</span></div>
+    <div class="stat"><span class="k">Tokens, today</span><span class="v now num">1.74 B</span></div>
+    <div class="stat"><span class="k">Tokens, proposed</span><span class="v new num">≈ 127 M</span></div>
+  </div>
+  <p class="note"><span class="tag inf">Inferred</span> Hours and tokens use grid-4's measured rates (1.68 min of wall per cell at 2 slots, so 1.12 min at 3 slots; 1.16 min grading per cell) and the spec's 1.06M tokens per cell. No real-model cell has run the ten property tasks yet, so the first batch of the proposed run measures the real rates.</p>
+</section>
+
+<section>
+  <h2>Why E5 got so big</h2>
+  <p>The plan asks for a separate verdict for every <strong>property × harness</strong> pair: 5 properties × 3 harnesses = 15 verdicts. Each verdict must detect a 20-point pass-rate difference (MDE 0.20). The spec's power formula says that needs 53 paired runs <em>per verdict</em>. With 2 tasks per property, that is 27 repetitions of every cell.</p>
+  <p>The multi-night grid, the alarm and drill, the nightly resume, the two-stage power analysis and the convergence proofs all follow from that one choice. The question above does not need 15 separate verdicts at that precision.</p>
+  <p class="note">The figure 53 was checked here by recomputing it with the spec's paired-binary formula (ψ = 0.28, α = 0.05, power 0.8), which gives 52.5. The other detectable effects on this page come from the same formula.</p>
+</section>
+
+<section>
+  <h2>Take stock: today's design</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Piece</th><th>What it is</th><th class="r">Size</th></tr></thead>
+    <tbody>
+      <tr><td>Tasks</td><td>10 property tasks, 2 each for security, resilience, rework, no-guessing and simplicity</td><td class="r">10</td></tr>
+      <tr><td>Arms</td><td>pack off, pack on (arm Y dropped on 2026-10-08)</td><td class="r">2</td></tr>
+      <tr><td>Harnesses</td><td>Claude Code <code>claude-opus-5-5</code>, Codex <code>gpt-6.1-sol</code>, Copilot <code>gpt-6.1-sol</code></td><td class="r">3</td></tr>
+      <tr><td>Pilot ring</td><td>every task × arm × harness, once</td><td class="r">60 cells</td></tr>
+      <tr><td>Comparison grid</td><td>27 repetitions + 24 calibration cells, about 4 nights at 3 slots, under the alarm task</td><td class="r">1,644 cells</td></tr>
+      <tr><td>Campaign steps</td><td>baseline, records reproduced, prior power, stop A, pilot, grading, admission, final power, stop B, pre-registration, nightly grid with resume, grading, 15 verdicts, a forced defect fix with re-grade, conclude</td><td class="r">16 steps</td></tr>
+      <tr><td>Extra gates</td><td>alarm drill (HB-CMP-011), convergence re-run (resume table + TLC model check)</td><td class="r">2</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Proposed: one paired run, about 2 h + 2 h</h2>
+  <div class="cols">
+    <div class="box">
+      <h3>The run</h3>
+      <ul>
+        <li>The same 10 tasks (2 per property), 2 arms and 3 harnesses, with the models pinned as today.</li>
+        <li><strong>2 repetitions</strong>: 10 × 2 × 3 × 2 = <span class="num">120</span> cells.</li>
+        <li>Two batches of 60, one repetition each. Batch 1 is the existing pilot ring, and it measures the real time and tokens before batch 2 starts.</li>
+        <li>About 2.2 h of run at 3 slots, then about 2.3 h of grading. <span class="tag inf">Inferred</span></li>
+        <li>Under 4 hours of run, so no alarm, no drill and no overnight.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>The answer it gives</h3>
+      <ul>
+        <li><strong>Per harness:</strong> pack-on vs pack-off pass rate over the 10 tasks. That is 20 pairs each, enough to detect a <span class="num">31</span>-point difference: a large effect.</li>
+        <li><strong>All harnesses together:</strong> 60 pairs, enough to detect a <span class="num">19</span>-point difference.</li>
+        <li><strong>Per property:</strong> shown as a direction with its counts (4 pairs per harness), labelled exploratory. These are not verdicts.</li>
+        <li><strong>Cost:</strong> the on/off token ratio per harness, with its interval. Token ratios are large (the spec's figures: pack-on used 2.2× the tokens on Claude Code, 3.1× on Codex and 10.8× on Copilot), so 20 pairs measure them well even with the 24% run-to-run drift the spec records.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="note">If one harness lands near the line and you care about it, top it up with 1 more repetition for that harness only: 20 cells, about 22 min of run and 23 min of grading. That takes it to 30 pairs, enough to detect a 26-point difference. You decide on the numbers in front of you, not in advance.</p>
+</section>
+
+<section>
+  <h2>What was reduced to reach 2 h, and why it is safe</h2>
+  <p>About 2 h of run at 3 slots is about 107 cells, and about 2 h of grading is about 103 cells (grid-4 rates). Each lever was weighed against the objectives: every harness compared, every property covered, the arms paired, and tokens measured.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Lever</th><th class="r">Cells</th><th>What it costs</th><th>Decision</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td>Repetitions 3 → 2</td><td class="r">120</td><td>Per-harness detection goes from 26 to 31 points. Repeats of the same task are correlated, so a repetition adds less information than a task does; this is the cheapest thing to give up.</td><td><span class="tag keep">chosen</span></td></tr>
+      <tr><td>Tasks 10 → 5 (one per property), 3 repetitions</td><td class="r">90</td><td>Each property rests on a single task, so a property result is one task's quirks. Per-harness detection gets worse, not better (35 points).</td><td><span class="tag cut">rejected</span></td></tr>
+      <tr><td>Tasks 10 → 8, 2 repetitions</td><td class="r">96</td><td>Two properties fall to one task each. Per-harness detection 34 points.</td><td><span class="tag cut">rejected</span></td></tr>
+      <tr><td>Harnesses 3 → 2</td><td class="r">120</td><td>Drops one of the three comparisons the question asks for.</td><td><span class="tag cut">rejected</span></td></tr>
+      <tr><td>Cell time limit 900 s → 600 s</td><td class="r">120</td><td>Cuts the slow tail (grid-4: median 1.5-2.4 min, p90 4.8-6.4 min, max 30.2 min), but turns slow passes into failures, which changes the answer.</td><td><span class="tag inf">only if batch 1 shows the tail is the problem</span></td></tr>
+      <tr><td>4 slots instead of 3</td><td class="r">120</td><td>Shorter run, but rate-limit exposure at 4 is not measured.</td><td><span class="tag inf">not now</span></td></tr>
+      <tr><td>Grade batch 1 while batch 2 runs</td><td class="r">120</td><td>The same totals, about 1 h less wall clock; the two compete for the machine.</td><td><span class="tag inf">optional</span></td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">The detectable effects assume every pair is independent. Repeats of one task are not fully independent, so the real per-harness figure sits somewhere between the 20-pair value (31 points) and the 10-task value (42 points). That is why the design keeps all 10 tasks and cuts repetitions instead.</p>
+</section>
+
+<section>
+  <h2>Options compared</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Design</th><th class="r">Cells</th><th class="r">Run (3 slots)</th><th class="r">Grading</th><th class="r">Tokens</th><th class="r">Detectable, per harness</th><th class="r">Detectable, pooled</th></tr></thead>
+    <tbody>
+      <tr><td>Smoke: pilot ring only (1 repetition)</td><td class="r">60</td><td class="r">1.1 h</td><td class="r">1.2 h</td><td class="r">63 M</td><td class="r">42 pts</td><td class="r">26 pts</td></tr>
+      <tr class="pick"><td>Proposed: 2 repetitions</td><td class="r">120</td><td class="r">2.2 h</td><td class="r">2.3 h</td><td class="r">127 M</td><td class="r">31 pts</td><td class="r">19 pts</td></tr>
+      <tr><td>Revision 1: 3 repetitions</td><td class="r">180</td><td class="r">3.4 h</td><td class="r">3.5 h</td><td class="r">191 M</td><td class="r">26 pts</td><td class="r">15 pts</td></tr>
+      <tr><td>Thorough: 5 repetitions</td><td class="r">300</td><td class="r">5.6 h</td><td class="r">5.8 h</td><td class="r">318 M</td><td class="r">21 pts</td><td class="r">12 pts</td></tr>
+      <tr class="now"><td>Today: per property × harness verdicts</td><td class="r">1,644</td><td class="r">30.7 h</td><td class="r">31.8 h</td><td class="r">1.74 B</td><td class="r">20 pts per property</td><td class="r">n/a</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">"Detectable" means the smallest true pass-rate difference the design finds 80% of the time at α = 0.05, given 28% of pairs disagreeing (ψ = 0.28, from DR-E5). The pooled figures assume pooling across harnesses is acceptable; with 3 harnesses the pooled result is a summary, and the per-harness figures are the decision. Run hours, grading hours and tokens are <span class="tag inf">Inferred</span> as above.</p>
+</section>
+
+<section>
+  <h2>What changes</h2>
+  <div class="cols">
+    <div class="box">
+      <h3><span class="tag cut">drop</span> for this benchmark</h3>
+      <ul>
+        <li>The multi-night grid, the alarm task and the drill. The HB-CMP-011 rule never triggers at under 4 hours of run.</li>
+        <li>15 separate property × harness verdicts at MDE 0.20.</li>
+        <li>The two power analyses and the admission loop between them.</li>
+        <li>Operator stops A and B as two steps. You approve the token spend once, before batch 1.</li>
+        <li>The forced "defect fix with re-grade" exercise.</li>
+        <li>The convergence re-run (resume table + TLC). It proves multi-night resume, which this run does not use.</li>
+        <li>The 24 calibration cells.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3><span class="tag keep">keep</span></h3>
+      <ul>
+        <li>The frozen engine identity and the final task records, so results are reproducible.</li>
+        <li>The pinned models and the paired design (same task, same repetition, arm is the only difference).</li>
+        <li>Ruling 116: pack-off workspaces carry no instruction files, checked by HB-PRE-009 for every harness.</li>
+        <li>Grading and the report. Tokens are the only cost axis (Ruling 115).</li>
+        <li>A short written pre-registration: one paragraph committed before batch 1, naming the primary metric (pass rate) and the comparisons. That keeps the result honest at almost no cost.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="note">Nothing already built is deleted. The campaign machinery stays in the code, unused by this run, and is available if a later question needs per-property precision.</p>
+</section>
+
+<section>
+  <h2>Path to a result</h2>
+  <ol class="steps">
+    <li><span>Batch gate finishes: gate ring, rings, mutation check (running now)</span><span class="t">≈ 16:40Z</span></li>
+    <li><span>Push P2 + P3 to main; make the final task records on that head</span><span class="t">≈ 1 h</span></li>
+    <li><span>Commit the one-paragraph pre-registration; you approve about 127M tokens</span><span class="t">5 min</span></li>
+    <li><span>Batch 1: the pilot ring, 60 cells (repetition 1); check the real minutes and tokens per cell</span><span class="t">≈ 1.1 h run</span></li>
+    <li><span>Batch 2: 60 cells (repetition 2), while batch 1 is graded</span><span class="t">≈ 1.1 h run</span></li>
+    <li><span>Grade what remains of the 120 cells</span><span class="t">≈ 1.2-2.3 h</span></li>
+    <li><span>Report: per-harness results, the pooled summary, per-property directions, token ratios</span><span class="t">≈ 30 min</span></li>
+  </ol>
+  <p class="note"><span class="tag inf">Inferred</span> About 2.2 h of run and 2.3 h of grading. With grading overlapped, the run and grading take about 3.5-4.5 h of wall clock after the final records. The only steps that need you are step 3 and reading the report. If batch 1 shows a much slower real rate, you decide before batch 2 whether to keep the second repetition.</p>
+</section>
+
+<section>
+  <h2>In-flight work under this plan</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Item</th><th>State</th><th>Under this plan</th></tr></thead>
+    <tbody>
+      <tr><td>P2 + P3 tracks (13 tracks)</td><td>joined on <code>integrate/finish-19</code></td><td>keep; push after the batch gate</td></tr>
+      <tr><td>Batch gate</td><td>running</td><td>keep; it gates the push</td></tr>
+      <tr><td>Alarm working-directory fix</td><td>verified, not joined</td><td>join it (small; fixes a real bug the drill found), or park it</td></tr>
+      <tr><td>Alarm drill, scheduled task <code>HarnessBenchAlarmDrill</code></td><td>push never reached the phone</td><td>stop; delete the task with your go</td></tr>
+      <tr><td>X-FLAKE (load-repro tool)</td><td>turn 3 running</td><td>let it finish; it helps with the flaky end-to-end tests</td></tr>
+      <tr><td>F-PACK (engine fixes in ai-forward)</td><td>verify-bundle passes; not pushed</td><td>push to ai-forward; phase 2 waits until after the result</td></tr>
+      <tr><td>X-PRICERET (retire the price code)</td><td>planned after E5</td><td>unchanged</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Decisions for you</h2>
+  <div class="decide">
+    <div><b>1</b><span>Adopt the lean design: 2 repetitions, 120 cells in two batches of 60, per-harness results, per-property as exploratory. Or pick smoke (60) or revision 1 (180).</span></div>
+    <div><b>2</b><span>Approve about 127M tokens for the run (Inferred; batch 1 measures the real rate before batch 2 starts).</span></div>
+    <div><b>3</b><span>Drop the convergence re-run and the calibration cells for this run.</span></div>
+    <div><b>4</b><span>Delete the <code>HarnessBenchAlarmDrill</code> scheduled task.</span></div>
+  </div>
+</section>
+
+</div>
+</body>
+</html>
