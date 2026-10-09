@@ -12,7 +12,6 @@ import hashlib
 import json
 import os
 import re
-import subprocess
 import sys
 import uuid
 from collections import Counter
@@ -594,10 +593,8 @@ def _prereg(path_text: str | None) -> lean.Prereg | None:
     path = Path(path_text).resolve()
     if not path.is_file():
         raise BenchError("HB-USR-002", f"--prereg {path_text}: no such file")
-    logged = subprocess.run(["git", "log", "-1", "--format=%cI", "--", path.name], cwd=path.parent, capture_output=True,
-                            text=True, encoding="utf-8", timeout=60, check=False,
-                            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
-    when = (logged.stdout or "").strip()
+    logged = gitsafe.git(["log", "-1", "--format=%cI", "--", path.name], path.parent, 60, check=False)
+    when = "" if logged.timed_out else (logged.stdout or "").strip()
     return lean.Prereg(hashlib.sha256(path.read_bytes()).hexdigest(), datetime.fromisoformat(when) if when else None)
 
 
@@ -686,7 +683,7 @@ def cmd_report(args) -> int:
     text, code = cli_table.render(view, plain=_plain(), run_dir=run_dir, root=root, board_obj=board_obj, params=params, comparison_obj=comp_obj)
     if code == OK:
         # html.write's credential scan must run before a label reaches the terminal (residual 5).
-        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator(), board_obj=board_obj, params=params, comparison_obj=comp_obj, canaries=egress.CANARIES, campaign_obj=campaign_obj, lean_obj=lean_obj)
+        report_path = html.write(run_dir, view, _credential_values(root, run_dir), root=root, operator=_report_operator(), board_obj=board_obj, params=params, lean_obj=lean_obj, comparison_obj=comp_obj, canaries=egress.CANARIES, campaign_obj=campaign_obj)
         print(text, end="")
         print(f"report: {report_path}")
     else:
