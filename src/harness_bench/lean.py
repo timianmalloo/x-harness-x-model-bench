@@ -8,14 +8,17 @@ seams*. `build` is L-SUM-A's to write; the renderer (L-SUM-B1) reads `LeanSummar
 
 from __future__ import annotations
 
+import dataclasses
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from typing import Literal
 
+from harness_bench import plan, power, stats, verdicts
+from harness_bench.errors import BenchError
 from harness_bench.stats import Interval
-from harness_bench.views import RunView
+from harness_bench.views import CellView, RunView
 
 
 @dataclass(frozen=True)
@@ -93,6 +96,102 @@ class Estimate:
 ESTIMATE = Estimate(run_min_per_cell=Decimal("1.12"), grade_min_per_cell=Decimal("1.16"), tokens_per_cell=1_060_000)
 
 
+RING_TAG = "lean"
+_CENT = Decimal("0.01")
+_ALPHA = Decimal("0.05")  # the lean summary reports 95% intervals (stats.METHOD)
+
+
+def _sizer(delta: float) -> float:
+    """ADR-0023 decision 6: the design's paired sizer (discordance 0.28, alpha 0.05, power 0.8)."""
+    return power.n_paired_exact(0.28, delta, 0.05, 0.8)
+
+
+def _mde(planned_pairs: int) -> Decimal:
+    """Derived, never typed in: 20 -> 0.31, 10 -> 0.42, 60 -> 0.19, 30 -> 0.26."""
+    return Decimal(str(power.mde_for(planned_pairs, _sizer))).quantize(_CENT)
+
+
+def _checked(batches: Sequence[BatchInput]) -> tuple[str, str]:
+    """One or two lean batches that name one and the same comparison; returns it (ref arm, treat arm)."""
+    if not 1 <= len(batches) <= 2:
+        raise BenchError("HB-USR-002", f"the lean summary takes one or two batches, got {len(batches)}")
+    comparisons = set()
+    for batch in batches:
+        view = batch.view
+        tag = (view.plan.get("ring") or {}).get("tag")
+        if tag != RING_TAG:
+            raise BenchError("HB-USR-002", f"run {view.run_id}: ring tag {tag!r}; the lean summary reads {RING_TAG} batches only")
+        named = plan.plan_comparisons(view.plan)
+        if len(named) != 1:
+            raise BenchError("HB-USR-002", f"run {view.run_id}: the lean summary needs one comparison, the plan names {len(named)}")
+        comparisons.add(named[0])
+    if len(comparisons) != 1:
+        raise BenchError("HB-USR-002", f"the batches name different comparisons: {sorted(comparisons)}")
+    return comparisons.pop()
+
+
+def _combos(batches: Sequence[BatchInput]) -> list[tuple[str, str, str]]:
+    """(combo, harness, model) in plan order: each combo where it first appears in batch order."""
+    seen: dict[str, tuple[str, str, str]] = {}
+    for batch in batches:
+        for cell in batch.view.plan["cells"]:
+            seen.setdefault(cell["combo"], (cell["combo"], cell["harness"], cell["model"]))
+    return list(seen.values())
+
+
+def _planned(batches: Sequence[BatchInput], combo: str | None, ref: str) -> int:
+    """Planned pairs: the planned pack-off cells of `combo` (every combo when None) over the batches."""
+    return sum(1 for batch in batches for cell in batch.view.plan["cells"]
+               if (combo is None or cell["combo"] == combo) and plan.cell_arm(cell) == ref)
+
+
+def _relabelled(batches: Sequence[BatchInput]) -> list[CellView]:
+    """ADR-0023 decision 2: rep = batch index, cell_id = "<run_id>/<cell_id>", so an excluded cell names its batch."""
+    return [dataclasses.replace(cell, rep=index, cell_id=f"{batch.view.run_id}/{cell.cell_id}")
+            for index, batch in enumerate(batches, 1) for cell in batch.view.cells]
+
+
+def _statement(interval: Interval) -> str:
+    """ADR-0023 decision 5: `no detectable effect` exactly when `stats.no_detectable_effect` says so."""
+    if interval.n == 0:
+        return "not recorded (0 pairs)"
+    null = stats.no_detectable_effect(interval)
+    if null is None:
+        # assume: an interval that is not computed (pairs from one task only) states no direction. Confirm: the
+        # Coordinator rules the wording (handed back with A3). Breaks if false: only this string changes.
+        return f"not recorded ({interval.reason})"
+    if null:
+        return "no detectable effect"
+    size = abs(interval.point).quantize(_CENT)
+    return f"pack-on higher by {size}" if interval.lo > 0 else f"pack-on lower by {size}"
+
+
+def _row(combo: str, harness: str, model: str, pairs: Sequence[verdicts.Pair], excluded: Sequence[tuple[str, str]],
+         planned: int, comparison: tuple[str, str], seed: int) -> LeanRow:
+    ref = [stats.Obs(p.task, p.rep, p.ref) for p in pairs]
+    treat = [stats.Obs(p.task, p.rep, p.treat) for p in pairs]
+    effect, _ = stats.paired_delta(ref, treat, comparison, stats.Params(seed=seed), f"{RING_TAG}|{combo}")
+    return LeanRow(combo=combo, harness=harness, model=model, effect=effect.point, lo=effect.lo, hi=effect.hi,
+                   mde=_mde(planned), pairs=len(pairs), planned_pairs=planned, excluded=tuple(excluded),
+                   statement=_statement(effect), token_ratio=None, ratio_excluded=0)
+
+
 def build(batches: Sequence[BatchInput], prereg: Prereg | None) -> LeanSummary:
     """One or two batches, in batch order, to the lean summary. Pure; raises `BenchError` on a non-lean view."""
-    raise NotImplementedError("L-SUM-A")
+    comparison = _checked(batches)
+    ref, _ = comparison
+    cells = _relabelled(batches)
+    tasks = tuple(sorted({cell["task"] for batch in batches for cell in batch.view.plan["cells"]}))
+    seed = stats.DEFAULT_SEED
+    rows = []
+    for combo, harness, model in _combos(batches):
+        spec = verdicts.VerdictSpec(prop=verdicts.PRIMARY, harness=harness, comparison=comparison, tasks=tasks,
+                                    mde=Decimal(0), method=stats.METHOD, alpha_per_test=_ALPHA, level_rule="not used",
+                                    min_pairs=1, seed=seed, resamples=stats.MIN_RESAMPLES, required_pairs=None)
+        pairs, excluded, _ = verdicts.collect([c for c in cells if c.combo == combo], spec)
+        rows.append(_row(combo, harness, model, pairs, excluded, _planned(batches, combo, ref), comparison, seed))
+    pooled = _row("pooled", "pooled", "pooled", (), (), _planned(batches, None, ref), comparison, seed)
+    return LeanSummary(batches=len(batches), run_ids=tuple(b.view.run_id for b in batches),
+                       plan_hashes=tuple(str(b.view.plan["plan_hash"]) for b in batches),
+                       prereg_status="Not pre-registered: no pre-registration supplied", rows=tuple(rows), pooled=pooled,
+                       disagree=False, properties=(), checkpoint=())
