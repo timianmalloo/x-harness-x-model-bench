@@ -438,7 +438,7 @@ SHA = "ab" * 32
 
 
 def _timed(started_1: datetime | None, started_2: datetime | None = None) -> list:
-    first, second = _batches()
+    first, second = _batches(change=_priced)
     return [dataclasses.replace(first, first_cell_started_at=started_1),
             dataclasses.replace(second, first_cell_started_at=started_2)]
 
@@ -456,6 +456,12 @@ def test_a_pre_registration_committed_before_batch_ones_first_cell_counts_and_se
     pooled, _ = stats.paired_delta(_obs(batches, "cc", REF, key), _obs(batches, "cc", TREAT, key), (REF, TREAT),
                                    stats.Params(seed=pooled_seed), "lean|pooled")
     assert (summary.pooled.lo, summary.pooled.hi) == (pooled.lo, pooled.hi)
+    # 0/1 values give coarse quantiles that two seeds can share; the token ratio's continuous ones cannot.
+    tokens = stats.paired_ratio(_token_obs(batches, "cc", REF), _token_obs(batches, "cc", TREAT), (REF, TREAT), seeded,
+                                "lean|cc|tokens")
+    default = stats.paired_ratio(_token_obs(batches, "cc", REF), _token_obs(batches, "cc", TREAT), (REF, TREAT),
+                                 stats.Params(), "lean|cc|tokens")
+    assert row.token_ratio == tokens and (tokens.lo, tokens.hi) != (default.lo, default.hi)
 
 
 @pytest.mark.parametrize("committed", [T, T + timedelta(seconds=1)])
