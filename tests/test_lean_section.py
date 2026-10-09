@@ -97,7 +97,9 @@ def _harness_rows(doc):
 
 
 def _part(row, name):
-    return _text(re.search(rf'<span data-part="{name}"[^>]*>(.*?)</span>', row, re.DOTALL).group(1))
+    found = re.search(rf'<span data-part="{name}"[^>]*>(.*?)</span>', row, re.DOTALL)
+    assert found is not None, f"no {name} part"
+    return _text(found.group(1))
 
 
 # ---------------------------------------------------------------- B1: the header and the per-harness table
@@ -177,3 +179,124 @@ def test_a_zero_pair_row_says_not_recorded_and_names_the_causes_never_a_0():
     assert _part(row, "statement") == "not recorded (0 pairs)"
     assert f"{RUN_1}/cell-01 auth" in _text(row)
     assert "+0.00" not in row and "<svg" not in row
+
+
+# ---------------------------------------------------------------- B2: pooled note, per property, ratio, limits, states
+
+FAMILIES = ("S", "RS", "RW", "NG", "SM")
+
+
+def _props():
+    rows = [lean.PropertyRow(family=f, harness="claude-code", off=(1, 4), on=(3, 4), direction="up") for f in FAMILIES]
+    rows.append(lean.PropertyRow(family="S", harness="codex", off=(2, 4), on=(1, 4), direction="down"))
+    rows.append(lean.PropertyRow(family="RS", harness="codex", off=(0, 0), on=(0, 0), direction="same"))
+    return tuple(rows)
+
+
+def _block(doc, name):
+    found = re.search(rf'<(\w+) data-block="{name}"[^>]*>.*?</\1>', doc, re.DOTALL)
+    assert found is not None, f"no {name} block"
+    return found.group(0)
+
+
+def test_the_pooled_row_carries_the_disagreement_note_exactly_when_harnesses_disagree():
+    """LB-5: the note text is exactly `harnesses disagree: read the per-harness rows`."""
+    note = "harnesses disagree: read the per-harness rows"
+    rows = _harness_rows(_render(_pooled_summary(disagree=True)))
+    assert _part(rows["pooled"], "note") == note
+    assert sum(note in r for r in rows.values()) == 1
+    assert note not in _render(_pooled_summary(disagree=False))
+
+
+def test_the_per_property_table_is_collapsed_exploratory_and_shows_a_over_b_to_c_over_d():
+    """LBU-3 and LB-6: collapsed by default, `Exploratory` in its header, `a/b → c/d` with the direction."""
+    block = _block(_render(_pooled_summary(properties=_props())), "per-property")
+    assert block.startswith("<details") and " open" not in block.split(">", 1)[0]
+    summary = _text(re.search(r"<summary>(.*?)</summary>", block, re.DOTALL).group(1))
+    assert summary == "Per property (Exploratory: 4 pairs per harness)"
+    assert "Exploratory: 4 pairs per harness; not powered for a per-property finding" in _text(block)
+    rows = re.findall(r'<tr data-family="([^"]+)" data-harness="([^"]+)">(.*?)</tr>', block, re.DOTALL)
+    assert len(rows) == 7
+    first = _text(rows[0][2])
+    assert first == "S claude-code 1/4 → 3/4 up"
+    assert _text(rows[5][2]) == "S codex 2/4 → 1/4 down"
+    assert _text(rows[6][2]) == "RS codex 0/0 → 0/0, not recorded not recorded"
+
+
+def test_the_per_property_text_has_no_verdict_word():
+    """LBI-4 / LB-6: 0 matches for better|worse|dominates, case-insensitive."""
+    block = _block(_render(_pooled_summary(properties=_props())), "per-property")
+    assert re.findall(r"better|worse|dominates", block, re.IGNORECASE) == []
+
+
+def test_an_empty_per_property_table_says_so():
+    block = _block(_render(_pooled_summary(properties=())), "per-property")
+    assert "No per-property row recorded." in _text(block)
+
+
+def test_the_ratio_is_labelled_as_a_ratio_of_totals_with_its_exclusion_count_and_the_median_line():
+    """ADR-0023 point 9 and LB-7: the label, one line naming the pack-improvement median, the exclusion count."""
+    doc = _render(_pooled_summary())
+    heads = [_text(h) for h in re.findall(r'<th scope="col">(.*?)</th>', doc, re.DOTALL)]
+    assert heads[-1] == "token ratio of totals (pack-on / pack-off)"
+    line = _text(_block(doc, "ratio-note"))
+    assert "median" in line and "Pack improvement" in line
+    rows = _harness_rows(doc)
+    assert _part(rows["codex"], "ratio-excluded") == "2 pairs excluded from the ratio"
+    assert _part(rows["claude-code"], "ratio-excluded") == "0 pairs excluded from the ratio"
+
+
+def test_no_currency_label_anywhere_in_the_section():
+    """LB-7 / Ruling 115: 0 `$`, `USD` or `cost_usd` labels."""
+    doc = _render(_pooled_summary(properties=_props(), disagree=True))
+    assert re.findall(r"\$|USD|cost_usd", doc) == []
+
+
+def test_the_limits_note_shows_each_checkpoint_value_beside_its_estimate():
+    """LB-3: run minutes, grading minutes and tokens per cell, each beside `lean.ESTIMATE`; `not recorded` never 0."""
+    over = _checkpoint(RUN_2, run_min=None, tokens=None, infra=(5, 20, ("auth", "rate limit")))
+    text = _text(_block(_render(_pooled_summary(checkpoint=(_checkpoint(RUN_1), over))), "limits"))
+    assert "repeats of a task are correlated" in text.lower()
+    assert f"{RUN_1}: run minutes per cell 1.30 (estimate 1.12, Inferred)" in text
+    assert f"{RUN_1}: grading minutes per cell 1.20 (estimate 1.16, Inferred)" in text
+    assert f"{RUN_1}: tokens per cell, claude-code-combo arm-b 980,000 (estimate 1,060,000, Inferred)" in text
+    assert f"{RUN_2}: run minutes per cell not recorded (estimate 1.12, Inferred)" in text
+    assert f"{RUN_2}: tokens per cell, claude-code-combo arm-b not recorded (estimate 1,060,000, Inferred)" in text
+    assert f"{RUN_1}: infrastructure failures, claude-code-combo 1 of 20 cells (rate limit)" in text
+    assert f"{RUN_2}: infrastructure failures, claude-code-combo 5 of 20 cells (auth, rate limit): over 20%" in text
+
+
+def test_a_missing_checkpoint_reads_checkpoint_not_recorded():
+    assert "Checkpoint not recorded" in _text(_block(_render(_pooled_summary(checkpoint=())), "limits"))
+
+
+def test_an_empty_summary_renders_its_empty_state_and_the_pooled_row_not_recorded():
+    """Part C, empty: no harness row, and a pooled row with 0 pairs reads `not recorded (0 pairs)`."""
+    zero = _row("pooled", None, None, None, "not recorded (0 pairs)", mde="0.19", pairs=0, planned=60)
+    doc = _render(_pooled_summary(rows=(), pooled=zero, properties=(), checkpoint=()))
+    assert "No per-harness row recorded." in _text(doc)
+    assert _part(_harness_rows(doc)["pooled"], "statement") == "not recorded (0 pairs)"
+
+
+def _contrast(a, b):
+    def lum(hexv):
+        rgb = [int(hexv[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+        lin = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in rgb]
+        return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+    hi, lo = sorted((lum(a), lum(b)), reverse=True)
+    return (hi + 0.05) / (lo + 0.05)
+
+
+def test_the_bars_and_the_mde_band_are_at_least_3_to_1_against_the_panel_in_both_themes():
+    """Part C: every painted part of the section's bars and MDE band reads at 3:1 or more against the panel."""
+    style = getattr(_section(), "STYLE", "")
+    assert "#lean-summary .bar .mde-band{" in style
+    light, dark = html.STYLE.split("@media (prefers-color-scheme: dark){", 1)
+    themes = [dict(re.findall(r"--([\w-]+):\s*(#[0-9a-fA-F]{6})", light))]
+    themes.append({**themes[0], **dict(re.findall(r"--([\w-]+):\s*(#[0-9a-fA-F]{6})", dark.split("}}", 1)[0]))})
+    painted = re.findall(r"#lean-summary \.bar [^{]*\{([^}]*)\}", style)
+    tokens = {t for body in painted for t in re.findall(r"(?:fill|stroke):var\(--([\w-]+)\)", body)}
+    assert tokens, "no painted bar part"
+    for theme in themes:
+        for token in tokens:
+            assert _contrast(theme[token], theme["panel"]) >= 3, token
