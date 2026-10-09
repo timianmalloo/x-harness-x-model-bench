@@ -718,11 +718,18 @@ def timing_line(intervals: int, seconds: float) -> str:
     return f"statistics: {intervals} intervals in {seconds:.3f} s"
 
 
-def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = None) -> Comparison:
-    """Two-run comparison under US-52 preconditions."""
-    if params is None:
-        params = Params(seed=DEFAULT_SEED, resamples=DEFAULT_RESAMPLES)
+def _cells_by_id(plan: dict) -> dict[str, dict]:
+    return {c["cell_id"]: c for c in plan.get("cells", [])}
 
+
+def _task_versions(plan: dict) -> dict:
+    return {c.get("task"): c.get("task_version") for c in _cells_by_id(plan).values()}
+
+
+def check_comparable(base: RunView, view: RunView, extra: Sequence[str] = ()) -> None:
+    """US-52 preconditions, the one comparability function of `compare` and `pool_check` (ADR-0022 section 3). The same
+    run is HB-STA-001; two differing ring hashes fail fast with HB-PLN-003; every other difference (graded, combos, BOM,
+    catalog, task versions, platform, then the caller's `extra`) is named in one HB-STA-002."""
     if base.run_id == view.run_id:
         raise BenchError("HB-STA-001", "statistics input spans more than one grading pass of one run")
 
@@ -770,12 +777,7 @@ def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = 
         diffs.append(f"catalog version differs: A {base.catalog_version}, B {view.catalog_version}")
 
     # 5. Task versions
-    base_plan_by_id = {c["cell_id"]: c for c in base.plan.get("cells", [])}
-    view_plan_by_id = {c["cell_id"]: c for c in view.plan.get("cells", [])}
-
-    base_task_vers = {c.get("task"): c.get("task_version") for c in base_plan_by_id.values()}
-    view_task_vers = {c.get("task"): c.get("task_version") for c in view_plan_by_id.values()}
-
+    base_task_vers, view_task_vers = _task_versions(base.plan), _task_versions(view.plan)
     shared_tasks = sorted(set(base_task_vers) & set(view_task_vers))
     for t in shared_tasks:
         if base_task_vers[t] != view_task_vers[t]:
@@ -791,8 +793,19 @@ def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = 
     if base_platform is not None and view_platform is not None and base_platform != view_platform:
         diffs.append(f"platform differs: A {base_platform}, B {view_platform}")
 
+    diffs.extend(extra)
     if diffs:
         raise BenchError("HB-STA-002", "; ".join(diffs))
+
+
+def compare(base: RunView, view: RunView, cat: Catalog, params: Params | None = None) -> Comparison:
+    """Two-run comparison under US-52 preconditions (`check_comparable`)."""
+    if params is None:
+        params = Params(seed=DEFAULT_SEED, resamples=DEFAULT_RESAMPLES)
+
+    check_comparable(base, view)
+    base_plan_by_id, view_plan_by_id = _cells_by_id(base.plan), _cells_by_id(view.plan)
+    base_task_vers, view_task_vers = _task_versions(base.plan), _task_versions(view.plan)
 
     # Compute deltas treat (view) - ref (base)
     all_tasks = sorted(set(base_task_vers) | set(view_task_vers))
