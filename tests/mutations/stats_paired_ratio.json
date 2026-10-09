@@ -1,0 +1,44 @@
+[
+ {
+  "name": "the point inverted (ref over treat)",
+  "file": "src/harness_bench/stats.py",
+  "find": "    point = treat_total / ref_total\n",
+  "replace": "    point = ref_total / treat_total\n",
+  "tests": ["tests/test_stats_paired_ratio.py::test_paired_ratio_matches_a_hand_computed_reference"]
+ },
+ {
+  "name": "the resampled statistic inverted",
+  "file": "src/harness_bench/stats.py",
+  "find": "statistics.append(drawn_treat / drawn_ref)",
+  "replace": "statistics.append(drawn_ref / drawn_treat)",
+  "tests": ["tests/test_stats_paired_ratio.py::test_paired_ratio_matches_a_hand_computed_reference"]
+ },
+ {
+  "name": "the ratio's n < 2 guard deleted",
+  "file": "src/harness_bench/stats.py",
+  "find": "    if n < 2:\n        missing = Interval(point, None, None, n, \"interval not computed (n < 2)\")\n        return missing\n",
+  "replace": "",
+  "tests": ["tests/test_stats_paired_ratio.py::test_paired_ratio_fewer_than_two_shared_tasks_is_not_a_zero_interval"]
+ },
+ {
+  "name": "one-arm tasks enter the ratio",
+  "file": "src/harness_bench/stats.py",
+  "find": "    shared = tuple(sorted(set(ref_tasks) & set(treat_tasks)))\n",
+  "replace": "    shared = tuple(sorted(set(ref_tasks) | set(treat_tasks)))\n",
+  "tests": ["tests/test_stats_paired_ratio.py::test_paired_ratio_matches_a_hand_computed_reference"]
+ },
+ {
+  "name": "the ratio's no-shared-task guard deleted",
+  "file": "src/harness_bench/stats.py",
+  "find": "        return Interval(None, None, None, 0, \"not computed (no valid cell with a value)\")\n    ref_total = Decimal(0)\n",
+  "replace": "        pass\n    ref_total = Decimal(0)\n",
+  "tests": ["tests/test_stats_paired_ratio.py::test_paired_ratio_fewer_than_two_shared_tasks_is_not_a_zero_interval"]
+ },
+ {
+  "name": "the ratio's localcontext removed",
+  "file": "src/harness_bench/stats.py",
+  "find": "with localcontext(_CONTEXT):\n        return _paired_ratio(ref, treat, labels, params, key)",
+  "replace": "if True:\n        return _paired_ratio(ref, treat, labels, params, key)",
+  "tests": ["tests/test_stats_paired_ratio.py::test_paired_ratio_ignores_the_ambient_decimal_context"]
+ }
+]
