@@ -39,6 +39,15 @@ proven. The objective is lexicographic: completeness and rigor first, token cost
 - the run report and the coordination plan of the finish run (`docs/coordination/coordination-finish.md`).
 
 **Start-state check, before anything else (stop and report if it fails):**
+- **Commit the finish run's leftover ledger lines first.** The primary carries them uncommitted at handover:
+  `.agents/log/leader-fin.jsonl` (lease release at epoch 19 and two refused renews), `.agents/log/xflake3-fin.jsonl`
+  (session end) and the untracked `.agents/log/leader-fin-push2.jsonl`. Commit them as they are (never edit a log),
+  push, and read origin back.
+- **Clean up the stale worktrees next, before any new tree is made.** The finish run left 41 non-primary trees
+  (`build/fin-*`, `coord/fin-c54..c61`, `integrate/*`, `owner/ruling-r114..r116`). Run `coord worktree cleanup` and
+  read the report, then `--remove` (operator's go, 2026-10-09). The fail-safe rules hold: a tree that is dirty,
+  unmerged or held is reported, never removed. Keep `build/fin-x-alarmcwd` and `build/fin-x-flake3` until they are
+  joined, then remove them too.
 - `origin/main` contains the spec, the strategy and this prompt, and the finish run's P2 and P3 joins (`git log
   origin/main --oneline | grep -E "join-x-packoff|join-x-e5m"`).
 - Run `coord doctor` and `pack-doctor.py`, and read their states back.
@@ -105,7 +114,7 @@ Re-check "latest" at the start. If a newer Opus or Sol id is served, ask the ope
   mode, replayed through the runner's check before dispatch) and own the errata and the register.
 - **Claude sub-agents** (the Agent tool, always with an explicit `model`):
   - Opus for work that needs judgement: the lean summary's code review, any loop-back fix, the run report's analysis.
-  - Haiku (`claude-haiku-4-5-20251001`) for mechanical work: docs errata, cleanup reports, read-only sweeps, the
+  - Haiku, latest (`claude-haiku-5-5` on 2026-10-09; re-check at the start) for mechanical work: docs errata, cleanup reports, read-only sweeps, the
     pre-registration's formatting check.
 - **Distributed coding, through `coord-runner`, served id read back for every dispatch:**
   - **Grok** `grok-4.7`, effort high. R-103: read the first response's served model with `tools/grok_served_model.py
@@ -122,9 +131,10 @@ not need):
   - every pack-off cell lists 0 instruction files;
   - every cell carries its model pin.
 
-  Bind the pack-on arm to the pack revision the operator names. The finish run planned against
-  `C:/Projects/ai-forward@4a22f12c4cbc9cd403627995109ccfdc1c6fa9c6`; ask if the revision should move to the F-PACK
-  head.
+  Bind the pack-on arm to the F-PACK head (operator, 2026-10-09):
+  `C:/Projects/ai-forward@e1f8ad5e9e3d42acbbbffbde0702deed8699c019` (`fix/xh-finish-upstream`), once it is pushed to
+  ai-forward. It replaces the finish run's `4a22f12c4cbc9cd403627995109ccfdc1c6fa9c6`. If the pushed head is not
+  `e1f8ad5e`, ask the operator before binding.
 - **L-SUMMARY.** The lean summary per spec LB-4 to LB-7 and Part B/C. The expected smallest change: add
   `property_check_pass` to the pack effect's measures (`board.py:588`, `:825` build `["pass_at_1", *cat.areas]`),
   plus the report section. Red first, with mutants. A non-lean run's report golden stays byte-identical. No second
@@ -186,7 +196,7 @@ moved):
 **Plan output, per track:** owner; harness and model, with the reason; authored paths; depends-on; tier; budget
 (calls, tokens, wall); exit evidence; fallback; termination condition; join batch. Also the serial spine, the
 critical path (Inferred durations, labelled), the struck tracks, and the operator actions with their timing (the
-pack-on revision, the token approval, the drill-task deletion if still open, and worktree cleanup).
+F-PACK push that the pack-on revision waits on, the token approval, the drill-task deletion if still open, and worktree cleanup).
 
 **Execution reporting:** one status table per update (task, what it does, status, harness and model). Report only
 when done or blocked on the operator.
