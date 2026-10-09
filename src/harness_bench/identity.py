@@ -92,6 +92,7 @@ CLASSES: Mapping[str, Literal["run", "grade"]] = {
     "report/judges.py": "grade",
     "report/model.py": "grade",
     "report/pack_improvement.py": "grade",
+    "report/lean_section.py": "grade",
     "report/summaries.py": "grade",
     "report/assets/report.js": "grade",
     # W0 §9 includes these future phase modules and the two landed D1/F0 modules.
