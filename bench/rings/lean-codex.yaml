@@ -1,0 +1,17 @@
+# Lean Codex ring (L-CODEX-PIN, operator ruling 2026-10-10): lean.yaml's content with only the codex-sol combo.
+# Why: lean batch 1 refused every Codex cell with HB-CELL-116 - pinned Codex 0.156.0 does not serve gpt-6.1-sol on a
+# ChatGPT account; 0.160.0 does. Codex was bumped to 0.160.0 and its 40 cells run as their own 2-batch lean pair;
+# Claude Code and Copilot keep their lean batches on the old build.
+# 10 property tasks x 2 arms (pack-off, pack-on; no arm Y) x 1 combo x 1 = 20 cells.
+# Every combo pins its concrete model id. Tokens are the only cost axis.
+# The pack-on arm is a role arm: bind it at plan time with --arm on=SOURCE@COMMIT.
+schema: bench-matrix/2
+ring: {tag: lean}
+bom: {file: bench/bom.yaml, subset: [S1, S2, RS1, RS2, RW1, RW2, NG1, NG2, SM1, SM2]}
+repetitions: 1
+arms:
+  - {id: "off"}
+  - {id: "on"}
+comparisons: [["off", "on"]]
+combos:
+  - {id: codex-sol, harness: codex, model: gpt-6.1-sol}
