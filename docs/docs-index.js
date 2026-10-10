@@ -5417,7 +5417,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "7f99c0256aa875ed6b130a55f16d6b910ae6af909a08360723886b45737ed18e"
+      "sourceSha256": "320dcfb3db039a37f601dc6215939d9484b90625b93127aa5cf571b594725d0c"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -9977,7 +9977,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "84ef78611898bfdaa6e8c4b3dede024e0cdf2111914abd32eaeebbadfda17126"
+      "sourceSha256": "6410a444436ea61f93f194ed92abe155e9ff7f060cbb02e89a2db7a9b78a7d7b"
     },
     {
       "id": "coordination-phase1-finish",
@@ -11247,5 +11247,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "b4acdeea75224e7cad7a0d650120ac4c2b74b55406c3df9dfb3b944effb98616"
+  "graphSha256": "923cbdccb6133889cca79b23face67449e5111c211a5c6540a59ec80d219a9cc"
 };

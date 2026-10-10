@@ -360,6 +360,45 @@ in `docs/lessons/defect-classes.md`, *Coordinator #66 entries*.*
       (`1877636d`). The join's recount is the full suite, so the skipped run would have repeated it.
     - Both are Leader deviations. Source: the Leader's brief to Coordinator #66.
 
+## Planned vs actual (Leader, 2026-10-10)
+
+*Measured unless marked. Times are UTC. Claude token figures are the harness-reported `subagent_tokens` per
+dispatch. Grok and Agy usage was not recorded by their runners ("not recorded", not 0).*
+
+| track | planned (harness · budget · wall) | actual (harness · turns · wall · tokens) | exit evidence | what paid |
+| --- | --- | --- | --- | --- |
+| L-CONTRACT | Coordinator, Opus · 25 calls · 0.4 h | Coordinator #62, Opus · 1 · 25 min (with the six compiles) · 310k | red `0979b336`, green `c878d32d`; joined at the third recount (two FLAKE-A reds, measured by LOOP-J0) | independence: yes. A and B1 never changed the contract mid-wave. One additive field by ruling |
+| L-MATRIX | Grok · 70 calls · 1.2 h | Grok turn 1 split before M1 (floor 117k) · 8 min; Opus turn 2 · 28 min · 165k | 60 cells per plan, off 0 / on 21 instruction files, HB-CMP-010, pool_check; 5 mutants | independence: yes. Grok delivered nothing (CEIL-A) |
+| L-SUM-A | Grok · 140 calls · 2.2 h | Grok turn 1 A1 (`paired_ratio`) · 20 min; Opus turn 2 A2-A6 · 66 min · 283k | 36 mutants killed; two seams ruled | independence: partial. It could not join alone (D-K5 with C; DEP-A) |
+| L-SUM-B1 | Agy · 120 calls · 2.2 h | Agy turn 1 B0 golden · 17 min (floor 166k); Opus turn 2 B1-B5 · 22 min · 213k | axe 0/0 light and dark; 25/25 mutants; golden byte-equal | independence: yes |
+| L-SUM-C | Agy · 60 calls · 0.8 h | Opus (compiled for Opus by #65) · 21 min · 194k | e2e (a)-(f); 9/9 mutants | context hygiene: yes |
+| L-FIX-TEXTIO | Haiku · 20 calls · 0.3 h | Haiku · 2 runs (one branch ruling) · ~6 min · 106k | run-verify-gates 9 of 9 (5 + 2 sites) | context hygiene: yes |
+| L-FIX-RF11 | Opus · 50 calls · 1 h | Opus · 50 min (35 of them queued on SUITE-LOCK) · 138k | RF-11 killed, RF-11 unchanged | judgement: yes (the bare fix would have opened windows) |
+| L-DOCS | Haiku + Coordinator · 0.7 h | Haiku 4 min · 128k; Coordinator #63 5 min · 121k | 11 review fixes; pre-registration with all six LB-2 items | yes |
+| LOOP-J0 (unplanned) | — | Opus · 37 min · 113k | FLAKE-A, measured at both commits | it cleared a rule-2 "second red is real" without a fix |
+| L-CODEX-PIN (unplanned) | — | Opus · 11 min + 3 min · 109k | Codex 0.160.0; `lean-codex.yaml`; a one-cell ACP probe valid | it saved Codex's rows |
+| Coordinators #64-66 (errata, register, compile) | — | Opus · 7 + 9 + 9 min · 155k + 181k + 142k | errata and register entries joined | — |
+| Gates (two adversary councils) | — | Opus · 139k + 196k | 1 veto each, cleared by change | yes: both vetoes were real defects |
+
+**Totals (measured):**
+- Claude sub-agent tokens about 2.70M, summed from the per-dispatch `subagent_tokens`. The Leader session's own
+  usage is not recorded.
+- Benchmark cells used about 87.6M tokens, against 127M approved.
+- The benchmark's machine time was 2 h 38 min, including grading.
+
+**Plan vs real:**
+- **Critical path.** Planned about 13.8 h (Inferred). Actual: the build phase ran from about 19:05Z on 10-09 to
+  00:08Z on 10-10 (about 5 h), with the run phase after it.
+- **Wall time.** Batch 2 waited about 12.5 h for the operator, after D1. Excluding that wait, the critical path
+  was about 9 h.
+
+**Which justifications paid:**
+- Isolation and context hygiene paid on every Claude track.
+- Independence at the fixed contract paid for A and B1, but not for A versus C.
+- External-harness distribution did not pay at this brief size. Every Grok and Agy turn split on its context floor
+  (CEIL-A, measured 107-166k). The plan's Opus fallback carried the work.
+- Next time: compile briefs under about 30 kB for Grok and Agy, or route T2 tracks to Opus from the start.
+
 ## Gate record
 
 *Adversary gate, 2026-10-09: an Opus sub-agent with the Simplifier, Test Architect and Tech Lead lenses, reading the
