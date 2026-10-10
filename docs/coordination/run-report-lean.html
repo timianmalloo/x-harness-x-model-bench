@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Run Report Lean</title><style>
+:root { color-scheme: light dark; --bg:#f7f5ef; --panel:#fff; --text:#20201d;
+  --muted:#66645f; --line:#d9d5ca; --accent:#3157a4; --code:#f0eee7; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#171816; --panel:#20221f; --text:#f2f1eb; --muted:#b8b6ae;
+    --line:#3d403a; --accent:#8fb0ff; --code:#292c27; }
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text);
+  font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { width:min(920px,calc(100% - 32px)); margin:32px auto; padding:40px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+h1,h2,h3,h4,h5,h6 { line-height:1.2; margin:1.5em 0 .55em; }
+h1 { margin-top:0; font-size:2.2rem; } h2 { border-bottom:1px solid var(--line); padding-bottom:.3em; }
+a { color:var(--accent); } code { background:var(--code); padding:.12em .35em; border-radius:4px; }
+pre { overflow:auto; padding:16px; background:var(--code); border-radius:8px; }
+pre code { padding:0; } blockquote { margin:1em 0; padding:.2em 1em; color:var(--muted);
+  border-left:4px solid var(--line); }
+table { width:100%; border-collapse:collapse; margin:1em 0; display:block; overflow:auto; }
+th,td { padding:.55em .75em; border:1px solid var(--line); text-align:left; vertical-align:top; }
+th { background:var(--code); } hr { border:0; border-top:1px solid var(--line); }
+.source { color:var(--muted); font-size:.9rem; margin-bottom:2rem; }
+@media (max-width:640px) { main { width:100%; margin:0; padding:24px 18px; border:0; border-radius:0; } }
+</style></head><body><main><div class="source">Rendered from run-report-lean.md</div><h1>Run report: the lean pack benchmark</h1>
+<p><strong>Status: accepted.</strong> Written by the analysis seat (Claude Code, <code>claude-opus-5-5</code>, session <code>report-lean</code>) for the Leader <code>lean-leader-1</code>, 2026-10-10. It answers spec LB-8.</p>
+<p><strong>Sources.</strong> Every number is <strong>Verified</strong> (read from a named file) or <strong>Inferred</strong> (the model is stated). Paths:</p>
+<ul><li><strong>R-b1, R-b2, R-cb1, R-cb2</strong>: <code>runs/&lt;run&gt;/report.html</code> in the integration tree</li></ul>
+<p><code>C:/Projects/x-harness-x-model-bench-integrate-lean-20</code> (runs <code>lean-b1</code>, <code>lean-b2</code>, <code>lean-codex-b1</code>, <code>lean-codex-b2</code>). R-b2 holds the pooled lean section for <code>lean-b1</code>+<code>lean-b2</code>; R-cb2 holds the pooled Codex pair.</p>
+<ul><li><strong>P</strong>: <code>runs/&lt;run&gt;/plan.json</code> in the same tree. <strong>E</strong>: <code>runs/&lt;run&gt;/events/*.jsonl</code>.</li><li><strong>L</strong>: the Leader&#x27;s scratch, <code>C:/tf/lean-leader/</code> (<code>*-start.txt</code>, <code>engine-id.jsonl</code>, <code>owed-docs.md</code>,</li></ul>
+<p><code>codex-probe/</code>).</p>
+<ul><li><strong>Plan</strong>: <code>docs/coordination/coordination-lean.md</code>, <em>Errata (Coordinator #64)</em> and <em>(Coordinator #66)</em>.</li><li><strong>Register</strong>: <code>docs/lessons/defect-classes.md</code>, <em>Coordinator #64 entries</em> and <em>Coordinator #66 entries</em>.</li></ul>
+<p>Tokens are the only cost axis in this report.</p>
+<h2>Result</h2>
+<p><strong>No harness shows a detectable pack effect on `property_check_pass` at this design&#x27;s power.</strong> The measured effect (pack-on minus pack-off) is +0.00 for Claude Code, Copilot and Codex. Every 95% interval contains zero. The design could detect only an effect of about 0.31 or more per harness (0.42 if task repeats count as one). So a smaller effect, in either direction, is not ruled out. The pack does change token use. For the same tasks, pack-on used <strong>1.62x</strong> the tokens of pack-off in Claude Code, <strong>9.56x</strong> in Copilot and <strong>2.28x</strong> in Codex (ratio of totals). Per pair, that is about 0.29M more tokens in Claude Code, 2.01M in Copilot and 0.26M in Codex.</p>
+<h3>Per harness (Verified: R-b2 lean section for Claude Code, Copilot and their pooled row; R-cb2 for Codex)</h3>
+<table><thead><tr><th>Harness (model)</th><th>Effect on <code>property_check_pass</code></th><th>95% interval</th><th>MDE</th><th>Pairs</th><th>Statement</th><th>Token ratio of totals, on/off [95% interval]</th></tr></thead><tbody><tr><td>Claude Code (<code>claude-opus-5-5</code>)</td><td>+0.00</td><td>[-0.20, +0.20]</td><td>0.31</td><td>20 of 20</td><td>no detectable effect</td><td>1.62x [1.28, 2.03]</td></tr><tr><td>Copilot (<code>gpt-6.1-sol</code>)</td><td>+0.00</td><td>[-0.25, +0.30]</td><td>0.31</td><td>20 of 20</td><td>no detectable effect</td><td>9.56x [8.40, 11.29]</td></tr><tr><td>Codex (<code>gpt-6.1-sol</code>, Codex 0.160.0; own pair)</td><td>+0.00</td><td>[-0.10, +0.10]</td><td>0.31</td><td>20 of 20</td><td>no detectable effect</td><td>2.28x [2.00, 2.85]</td></tr><tr><td>Pooled, Claude Code + Copilot only</td><td>+0.00</td><td>[-0.18, +0.18]</td><td>0.19</td><td>40 of 60</td><td>no detectable effect</td><td>4.27x [2.79, 6.41]</td></tr></tbody></table>
+<ul><li><strong>Codex in `lean-b1`/`lean-b2`: 0 pairs, by ruling.</strong> R-b2 lists Codex as &quot;0 of 20 pairs recorded&quot;: 36 cells</li></ul>
+<p>skipped by decision D1 and 4 invalid (2 per batch, &quot;failed (model unavailable)&quot;). Its Codex numbers come from the separate pair (R-cb2), whose own pooled row repeats the Codex row.</p>
+<ul><li><strong>There is no three-harness pooled row.</strong> The Codex pair ran on a different engine identity: commit <code>f6389964</code>,</li></ul>
+<p>not <code>6140844f</code>, with the Codex build bumped to 0.160.0 and its own ring file (<code>bench/rings/lean-codex.yaml</code>). Rule S7 allows pooling only within one engine identity (Plan, erratum 10). So the pooled row covers the two harnesses that share <code>lean-b1</code>/<code>lean-b2</code>&#x27;s identity. It is not a three-harness answer.</p>
+<ul><li>The token ratio is total pack-on tokens over total pack-off tokens. R-b2 notes that its <em>Pack improvement</em></li></ul>
+<p>section shows the median of per-pair ratios instead, so the two can differ.</p>
+<h2>The two MDEs and the clustering caveat</h2>
+<ul><li><strong>Per harness: between 0.31 and 0.42</strong> (Verified: the Limits note in R-b2 and R-cb2; Inferred as a range in the</li></ul>
+<p>spec). 0.31 assumes 20 independent pairs. But each harness ran the same 10 tasks twice (one repeat per batch). Repeats of one task are correlated, so the effective sample lies between 20 pairs and 10 tasks. With 10 tasks the MDE is 0.42.</p>
+<ul><li><strong>Pooled two-harness: 0.19 is a design figure.</strong> It was computed for 60 planned pairs (three harnesses). Only 40</li></ul>
+<p>were recorded (R-b2: &quot;40 of 60 pairs recorded&quot;), because Codex left this pool. So 0.19 overstates the power of the row that exists. Inferred (model: MDE scales with 1/sqrt(n), from the 0.31 at n = 20): with 40 independent pairs the MDE is about 0.22 (0.31 x sqrt(20/40)); with clustering down to 20 task clusters it is about 0.30 (0.42 x sqrt(10/20)). The measured pooled interval is ±0.18 (Verified, R-b2).</p>
+<h2>Per property (exploratory)</h2>
+<p><em>Exploratory: 4 pairs per harness per property (2 tasks x 2 batches). Not powered for any per-property finding. The counts below are reported, not judged.</em> Verified: R-b2 (Claude Code, Copilot) and R-cb2 (Codex).</p>
+<table><thead><tr><th>Property</th><th>Claude Code, off -&gt; on</th><th>Copilot, off -&gt; on</th><th>Codex, off -&gt; on</th></tr></thead><tbody><tr><td>NG</td><td>4/4 -&gt; 4/4 (0)</td><td>4/4 -&gt; 4/4 (0)</td><td>4/4 -&gt; 4/4 (0)</td></tr><tr><td>RS</td><td>4/4 -&gt; 4/4 (0)</td><td>4/4 -&gt; 2/4 (-2)</td><td>2/4 -&gt; 2/4 (0)</td></tr><tr><td>RW</td><td>4/4 -&gt; 3/4 (-1)</td><td>3/4 -&gt; 3/4 (0)</td><td>3/4 -&gt; 3/4 (0)</td></tr><tr><td>S</td><td>1/4 -&gt; 1/4 (0)</td><td>2/4 -&gt; 3/4 (+1)</td><td>2/4 -&gt; 2/4 (0)</td></tr><tr><td>SM</td><td>3/4 -&gt; 4/4 (+1)</td><td>3/4 -&gt; 4/4 (+1)</td><td>4/4 -&gt; 4/4 (0)</td></tr></tbody></table>
+<p>Cells are passes / recorded pairs; the bracket is the change in passes. Inferred (model: the per-harness MDE of 0.31 at 20 pairs, scaled by 1/sqrt(n) to 4 pairs, is about 0.69): a change of one or two passes in four is below what this size can separate from chance.</p>
+<h2>Checkpoint numbers per batch</h2>
+<p>Verified: the Limits note of each batch&#x27;s report (R-b1, R-b2, R-cb1, R-cb2). The estimates beside them are the plan&#x27;s Inferred figures, as the reports print them.</p>
+<table><thead><tr><th>Batch</th><th>Run min / cell (est. 1.12)</th><th>Grading min / cell (est. 1.16)</th><th>Infrastructure failures</th></tr></thead><tbody><tr><td><code>lean-b1</code></td><td>1.27</td><td>0.11</td><td>Codex 2 of 20 (model unavailable); Copilot 0 of 20; Claude Code 0 of 20</td></tr><tr><td><code>lean-b2</code></td><td>0.82</td><td>0.10</td><td>Codex 2 of 20 (model unavailable); Copilot 0 of 20; Claude Code 0 of 20</td></tr><tr><td><code>lean-codex-b1</code></td><td>0.85</td><td>0.10</td><td>Codex 0 of 20</td></tr><tr><td><code>lean-codex-b2</code></td><td>0.81</td><td>0.10</td><td>Codex 0 of 20</td></tr></tbody></table>
+<p>Mean tokens per cell (estimate 1,060,000 for every combo):</p>
+<table><thead><tr><th>Batch</th><th>Claude Code off</th><th>Claude Code on</th><th>Copilot off</th><th>Copilot on</th><th>Codex off</th><th>Codex on</th></tr></thead><tbody><tr><td><code>lean-b1</code></td><td>474,156</td><td>793,712</td><td>233,269</td><td>2,208,852</td><td>not recorded</td><td>not recorded</td></tr><tr><td><code>lean-b2</code></td><td>463,590</td><td>729,848</td><td>236,643</td><td>2,284,781</td><td>not recorded</td><td>not recorded</td></tr><tr><td><code>lean-codex-b1</code></td><td>-</td><td>-</td><td>-</td><td>-</td><td>198,809</td><td>441,168</td></tr><tr><td><code>lean-codex-b2</code></td><td>-</td><td>-</td><td>-</td><td>-</td><td>209,884</td><td>489,465</td></tr></tbody></table>
+<p>Grading ran about ten times faster than estimated. Only Copilot pack-on cells exceeded the token estimate.</p>
+<h2>Tokens per harness and arm</h2>
+<p>Each figure is a per-cell mean (Verified, above) x 10 cells per batch-arm, summed over two batches. Inferred only in one respect: the means are printed rounded to a whole token, so each product can be off by at most 5 tokens per batch-arm.</p>
+<table><thead><tr><th>Harness</th><th>Pack-off</th><th>Pack-on</th><th>Total</th><th>Added by the pack</th></tr></thead><tbody><tr><td>Claude Code</td><td>9,377,460</td><td>15,235,600</td><td>24,613,060</td><td>5,858,140</td></tr><tr><td>Copilot</td><td>4,699,120</td><td>44,936,330</td><td>49,635,450</td><td>40,237,210</td></tr><tr><td>Codex</td><td>4,086,930</td><td>9,306,330</td><td>13,393,260</td><td>5,219,400</td></tr><tr><td><strong>All</strong></td><td>18,163,510</td><td>69,478,260</td><td><strong>87,641,770</strong></td><td>51,314,750</td></tr></tbody></table>
+<p>The total is 69.0% of the operator&#x27;s approval of 127M tokens (2026-10-09), and under the spec&#x27;s 150M ceiling. The Leader&#x27;s figures (Claude Code 24,613,060; Copilot 49,635,450; Codex 13,393,260; total 87,641,770) match this recomputation exactly. The 4 refused Codex cells in <code>lean-b1</code>/<code>lean-b2</code> have no token record and are not counted.</p>
+<p><strong>Copilot&#x27;s total is a lower bound on 8 cells.</strong> See <em>Limits</em>, HB-VAL-005.</p>
+<h2>Wall and machine time</h2>
+<p>Start: the Leader&#x27;s start notes (L, <code>b1-start.txt</code>, <code>b2-start.txt</code>, <code>cb1-start.txt</code>, <code>cb2-start.txt</code>). End: the <code>run.completed</code> / <code>grading.completed</code> events (E). All on 2026-10-10, UTC. Each span includes its own grading.</p>
+<table><thead><tr><th>Batch</th><th>Start</th><th>End</th><th>Span</th></tr></thead><tbody><tr><td><code>lean-b1</code></td><td>00:10:42Z</td><td>01:26:39Z</td><td>75 min 57 s</td></tr><tr><td><code>lean-b2</code></td><td>13:58:39Z</td><td>14:47:48Z</td><td>49 min 9 s</td></tr><tr><td><code>lean-codex-b1</code></td><td>15:24:56Z</td><td>15:41:54Z</td><td>16 min 58 s</td></tr><tr><td><code>lean-codex-b2</code></td><td>15:42:22Z</td><td>15:58:40Z</td><td>16 min 18 s</td></tr></tbody></table>
+<p>Machine time across the four batches: 158 min 22 s (2 h 38 min), run and grading together. The spec&#x27;s target was 2.5 h of run plus 2.5 h of grading. The gap between <code>lean-b1</code> and <code>lean-b2</code> (about 12.5 h) is outside this figure.</p>
+<h2>Engine identity and pack revision</h2>
+<p>Verified: L, <code>engine-id.jsonl</code>.</p>
+<table><thead><tr><th>Runs</th><th>Engine commit</th><th>identity_hash</th></tr></thead><tbody><tr><td><code>lean-b1</code>, <code>lean-b2</code></td><td><code>6140844f71c222135ebbe0c62ef9d43a5512cf16</code></td><td><code>f12c63b87654bc9a01e3182e3402fc43121b2e56a759f8234e27253c6dde4c8c</code></td></tr><tr><td><code>lean-codex-b1</code>, <code>lean-codex-b2</code></td><td><code>f6389964b3968a8c3ca9ffeb46451af62d369f16</code></td><td><code>d69b43b3cf918b797b3c6688e92c2f15e651535bcbba0504be8383ec5cc93e51</code></td></tr></tbody></table>
+<p>The identity is equal within each pair, as S7 requires. It differs between the pairs.</p>
+<p><strong>Pack revision (pack-on arm):</strong> <code>C:/Projects/ai-forward</code> at <code>e1f8ad5e9e3d42acbbbffbde0702deed8699c019</code>, revision 99. Verified: the <code>pack</code> block of all four <code>plan.json</code> files. The commit (2026-10-08) is on the ai-forward branch <code>fix/xh-finish-upstream</code> (Verified, <code>git branch --contains</code>). The Leader calls it the F-PACK head; that label was not checked here.</p>
+<h2>Pre-registration</h2>
+<p><strong>Pre-registered.</strong> <code>docs/notes/lean-preregistration.md</code> hashes to <code>af36296ebcb0</code> (sha256, first 12; Verified: the file at <code>415bc4cc</code> and at this report&#x27;s base both hash to it, and R-b2 and R-cb2 print the same value). It reached <code>main</code> in merge <code>415bc4cc</code>, committed 2026-10-09T14:46:52-07:00 (21:46:52Z), and the join <code>47721f98</code> followed at 21:46:57Z; <code>47721f98</code> is on <code>origin/main</code> (Verified, <code>git log</code> and <code>git branch -r --contains</code>). <code>lean-b1</code>&#x27;s first event is 2026-10-10T00:10:43Z (E). So the pre-registration was committed and pushed about 2 h 24 min before the first cell. The push time itself is not recorded; it is bounded by the commit and by the next fetch that saw it.</p>
+<h2>What changed from the plan, and why</h2>
+<p><strong>The Codex pin refusal.</strong> Batch 1 refused every Codex cell it launched with HB-CELL-116. The bench pinned Codex 0.156.0, which does not serve <code>gpt-6.1-sol</code> on a ChatGPT account (&quot;not supported when using Codex with a ChatGPT account&quot;); the global 0.160.0 does (the Leader&#x27;s spike, <code>C:/tf/lean-leader/codex-spike/</code>). No real-model cell had run the lean pins before batch 1. The Leader&#x27;s decision D1 defaulted to <code>skip_combo</code> after 30 min, while the question was still open with the operator. Sources: L, <code>owed-docs.md</code> item 23; Plan, erratum 10.</p>
+<p><strong>The operator&#x27;s ruling.</strong> Keep <code>lean-b1</code> and <code>lean-b2</code> as run (Claude Code and Copilot; Codex skipped). Run Codex&#x27;s 40 cells as their own lean pair on Codex 0.160.0, from <code>bench/rings/lean-codex.yaml</code>. The bump was a new track, L-CODEX-PIN (merge <code>e10175a7</code>, join <code>f6389964</code>).</p>
+<p><strong>The one-cell probe.</strong> Before the pair, one cell ran through the full cell path (ACP via codex-acp 1.12.0 and Codex 0.160.0; X1 fixture, pack off). It completed and was valid (Verified: L, <code>codex-probe/run.txt</code>: &quot;completed 1&quot;, &quot;valid 1&quot;).</p>
+<p><strong>The consequence.</strong> The Codex rows carry their own engine identity, and there is no three-harness pooled row.</p>
+<p><strong>The build phase.</strong></p>
+<ul><li>Nine planned tracks (L-CONTRACT, L-MATRIX, L-SUM-A, L-SUM-B1, L-SUM-C, L-FIX-TEXTIO, L-FIX-RF11, L-DOCS, L-READY),</li></ul>
+<p>joined in J0-J2, plus L-CODEX-PIN after the refusal.</p>
+<ul><li>Two external turns split on CEIL-A context floors: L-MATRIX on Grok (floor about 117k at the first edit) and</li></ul>
+<p>L-SUM-B1 on Agy (about 166k). Both took the Opus sub-agent fallback; L-SUM-C was compiled for Opus from the start.</p>
+<ul><li>Join recounts went red on flaky tests (FLAKE-A: engine no-launch[4], disc check-less-variant); LOOP-J0 measured them</li></ul>
+<p>and cleared L-CONTRACT.</p>
+<ul><li>Register: new classes CONSOLE-FLAG-MASKS-TEST, RED-ONE-GATE-A, HELP-A (Coordinator #64); GATE-RACE-A,</li></ul>
+<p>COARSE-SEED-A, TOOL-UNPINNED-A (Coordinator #66). Instances added to CEIL-A, FLAKE-A, EDIT-B, TEST-A, HELP-A, DEP-A, GUARD-A, MUT-E, SERVE-A, COORD-B, GOLD-A.</p>
+<h2>Limits</h2>
+<ul><li><strong>Two repetitions per task, correlated.</strong> Each harness ran 10 tasks twice. The per-harness MDE is 0.31 only if the</li></ul>
+<p>repeats are independent; it is up to 0.42 if they are not.</p>
+<ul><li><strong>&quot;No detectable effect&quot; is not evidence of no effect.</strong> It means the interval contains zero at this power. An</li></ul>
+<p>effect below about 0.31 (per harness) could exist and go unseen.</p>
+<ul><li><strong>Copilot HB-VAL-005 warnings (token cross-check).</strong> On 8 of 40 Copilot cells (RW1 and RW2, both arms, both</li></ul>
+<p>batches) the ACP turn total differs from the sum of <code>model_calls</code> (Verified: the validity section of R-b1 and R-b2). It is a warning; it does not change a cell&#x27;s validity. It does affect the token figures: Copilot&#x27;s token source is the native record (<code>bench/profiles/copilot.yaml</code>, <code>usage_source: native_record</code>), and on every one of the 8 cells the ACP total is higher, by 1.34x to 1.67x. Summed over the 8 cells the ACP total is 23,674,150 against 15,163,027 in <code>model_calls</code>, a gap of 8,511,123 tokens (Verified arithmetic; total = inputTokens + outputTokens, since Copilot&#x27;s <code>inputTokens</code> includes cache read and write, <code>views.ACP_TOTAL_KEYS</code>). Which source is right is not settled. Inferred (model: the ACP total replaces <code>model_calls</code> on those 8 cells): Copilot&#x27;s total would be 58,146,573, the grand total 96,152,893 (still under 127M), and Copilot&#x27;s ratio of totals about 9.70x rather than 9.56x. So the Copilot token figures here are a lower bound. The pass/fail effect is not touched.</p>
+<ul><li><strong>Other warnings.</strong> HB-VAL-006 (the executed-build check skipped: no recorded <code>agent_version</code>) appears on cells in</li></ul>
+<p>all four reports. It flags a check that did not run; it changes no number above.</p>
+<ul><li><strong>The pooled row.</strong> It pools two harnesses only, and its 0.19 MDE was sized for 60 pairs (see above).</li><li><strong>One model per harness, one pack revision, one account per vendor.</strong> The result does not reach other models,</li></ul>
+<p>other pack revisions or other harness builds.</p></main></body></html>
