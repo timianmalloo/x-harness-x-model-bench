@@ -1,1 +1,3 @@
 {"agent": "leader-fin", "at": 1791565396.0229483, "kind": "session-start", "path": "-", "seq": 1, "session": "leader-fin-push", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-integrate-lean-push-19"}
+{"agent": "leader-fin", "at": 1791572588.5642653, "kind": "session-end", "path": "-", "seq": 2, "session": "leader-fin-push", "wi": "WI-0", "worktree": "x-harness-x-model-bench"}
+{"agent": "leader-fin", "at": 1791572597.2710602, "kind": "session-end", "path": "-", "seq": 3, "session": "leader-fin-push", "wi": "WI-0", "worktree": "x-harness-x-model-bench-integrate-lean-push-19"}
