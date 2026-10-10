@@ -1801,3 +1801,35 @@ the register first (ID-A); new ids were checked free by `git grep` at `f6389964`
   every tree and every gate. Rung: lockfile (make it impossible). Upgrade trigger: none needed once pinned; a second
   unpinned gate tool found by the sweep gets the same fix.
 - **Status:** `candidate`
+
+## Leader entries (2026-10-10; lean benchmark close)
+
+### AUDIT-STRAND-A: a worker appends its closing audit entry and hands back without committing it (candidate)
+- **Signature:** a sub-agent runs `audit-log.py append` as its last action, then hands back. The entry stays as an
+  uncommitted change to `docs/audit/audit-log.jsonl` in the worker's tree. Its branch is joined without it, so the
+  register loses the run's measured duration and summary. The tree then reads "uncommitted changes" at cleanup.
+- **Why it survives:** the hand-back names the entry id, so it reads as recorded. The join merges commits, not
+  working changes. Nothing compares the ids a hand-back names with the ids on the branch.
+- **Instances (2026-10-09/10, all Leader-recovered by a commit in the worker's tree, then a docs-only join):**
+  L-FIX-RF11 (`ffca855d`), L-SUM-B1 turn 1 (Agy, at its split), L-FIX-TEXTIO (`al-01M4H7GQBDG8BZRW5D2DYCH2WV`),
+  LOOP-J0 (`al-01M4H97A4DZ8ZXT89CVBBXT0CA`). The last two were found only by `coord worktree cleanup`'s report.
+- **Sweep:** done for this run: cleanup's report lists every tree with uncommitted changes, and all four are joined.
+- **Control (proposed; rung: gate):** `conductor-join` refuses a branch whose tree has an uncommitted
+  `docs/audit/audit-log.jsonl` change, naming the entry. Interim: the Leader runs `git status --short` in a worker's
+  tree before every join.
+- **Status:** `candidate`
+
+### MSYS-COPY-A: Git Bash `cp -r` drops an extensionless file that has a `.exe` twin (candidate; Leader-caused)
+- **Signature:** in Git Bash (MSYS), `cp -r` treats `name` and `name.exe` as one file. When a directory holds both
+  (a venv's `Scripts/python3` beside `python3.exe`), the second copy fails with "File exists". The extensionless
+  file is missing or wrong in the destination.
+- **Why it survives:** `cp` prints the error and continues. The directory looks copied, and the file count is short
+  by the number of twins (here 2 of 52,543).
+- **Instances:** `2026-10-10`, copying `runs/lean-b1` from the integration tree to the primary before cleanup:
+  `ws/.tox/{ruff,pyright}/Scripts/python3` were not copied. `bench verify lean-b1` caught it (HB-LED-005, exit 5).
+  The Leader copied both files with PowerShell `Copy-Item`, the hashes matched, and the copy then verified `ok`.
+- **Sweep:** the other three runs copied with equal file counts and verified `ok`.
+- **Control (proposed; rung: procedure, then tool):** copy run folders with a Windows-native tool (`robocopy` or
+  `Copy-Item`), then run `bench verify` on the copy before the source is removed. `bench verify` already catches it,
+  so the procedure only needs to make that run mandatory.
+- **Status:** `candidate`
