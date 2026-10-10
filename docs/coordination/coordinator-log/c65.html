@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>C65</title><style>
+:root { color-scheme: light dark; --bg:#f7f5ef; --panel:#fff; --text:#20201d;
+  --muted:#66645f; --line:#d9d5ca; --accent:#3157a4; --code:#f0eee7; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#171816; --panel:#20221f; --text:#f2f1eb; --muted:#b8b6ae;
+    --line:#3d403a; --accent:#8fb0ff; --code:#292c27; }
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text);
+  font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { width:min(920px,calc(100% - 32px)); margin:32px auto; padding:40px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+h1,h2,h3,h4,h5,h6 { line-height:1.2; margin:1.5em 0 .55em; }
+h1 { margin-top:0; font-size:2.2rem; } h2 { border-bottom:1px solid var(--line); padding-bottom:.3em; }
+a { color:var(--accent); } code { background:var(--code); padding:.12em .35em; border-radius:4px; }
+pre { overflow:auto; padding:16px; background:var(--code); border-radius:8px; }
+pre code { padding:0; } blockquote { margin:1em 0; padding:.2em 1em; color:var(--muted);
+  border-left:4px solid var(--line); }
+table { width:100%; border-collapse:collapse; margin:1em 0; display:block; overflow:auto; }
+th,td { padding:.55em .75em; border:1px solid var(--line); text-align:left; vertical-align:top; }
+th { background:var(--code); } hr { border:0; border-top:1px solid var(--line); }
+.source { color:var(--muted); font-size:.9rem; margin-bottom:2rem; }
+@media (max-width:640px) { main { width:100%; margin:0; padding:24px 18px; border:0; border-radius:0; } }
+</style></head><body><main><div class="source">Rendered from c65.md</div><h1>Coordinator #65 (2026-10-09; Leader <code>lean-leader-1</code> epoch 20; branch <code>coord/lean-c65</code>)</h1>
+<p>Seat <code>coord-opus-lean</code>, model <code>claude-opus-5-5</code>. This is a hand-back session on base <code>1d50774b</code> (<code>origin/main</code>, which holds J1). There was no dispatch, no merge and no push. Nothing under <code>src/</code>, <code>tests/</code>, <code>tools/</code>, <code>bench/</code> or <code>tasks/</code> changed.</p>
+<h2>Compile table (dispatch this id)</h2>
+<table><thead><tr><th>track</th><th>raw id</th><th>compiled id</th><th>harness · model</th><th>session</th><th>base → branch</th><th>brief</th></tr></thead><tbody><tr><td>L-SUM-C</td><td><code>al-01M4HCJFTHTG20PNP6MWEXPEH9</code></td><td><code>al-01M4HCJPD4MXWCZRKNW0FG2WDM</code></td><td>Claude Code Agent tool · <code>model: opus</code> (<code>claude-opus-5-5</code>)</td><td><code>lsumc-lean</code></td><td>the Leader-made coord tree at the integration head after L-SUM-A joins → <code>build/lean-l-sum-c</code></td><td><code>C:\tf\c65\briefs\l-sum-c.md</code> (100,629 bytes)</td></tr></tbody></table>
+<p><strong>check_compile</strong> (<code>check_compile.py C:/Projects/x-harness-x-model-bench-coord-lean-c65 al-01M4HCJPD4MXWCZRKNW0FG2WDM</code>, exit 0):</p>
+<pre><code>kind compilation | entry dispatchable True | doc is dict True
+doc dispatchable True | mode compiled | decision_requests []
+raw_id al-01M4HCJFTHTG20PNP6MWEXPEH9 | raw present True
+check_schema: None
+verify_document: []</code></pre>
+<p>So the brief is <strong>dispatchable: true</strong>.</p>
+<p><strong>Render counts:</strong></p>
+<ul><li><code>python3</code> 0, <code>--no-model</code> 0, <code>USD</code> 0;</li><li>one start line, <code>audit-log.py start --session lsumc-lean --skill implement</code>;</li><li><code>AGENT_SESSION=lsumc-lean</code> 3 times;</li><li>fallback tokens (<code>Fallback:</code>, <code>follow-on</code>, <code>R-87</code>) 0.</li></ul>
+<p>The word &quot;fallback&quot; appears 4 times outside FALLBACK-A. Each one is history or a slot name, not an instruction:</p>
+<ul><li>the header&#x27;s deviation reason, in the Leader&#x27;s own words;</li><li>the plan&#x27;s Errata item 5, quoted, which the render carries twice;</li><li>the contract slot&#x27;s <code>fallback: unset</code> line.</li></ul>
+<p><strong>Method.</strong> The method is Coordinator #62&#x27;s.</p>
+<ul><li>Compiled mode, never <code>--no-model</code>.</li><li>The templates are <code>C:\tf\c60\tpl</code>, copied to <code>C:\tf\c65\tpl</code>. The driver <code>C:\tf\c65\compile.py</code> is c62&#x27;s, re-pointed</li></ul>
+<p>at this tree. It also writes the rendered brief to disk.</p>
+<ul><li>The builder <code>C:\tf\c65\build_lsumc.py</code> reuses the same X-GSM paragraphs:</li><li>the session variable;</li><li>scratch (<code>C:\tf\lsumc</code>);</li><li>FALLBACK-A and RED-C;</li><li>the commit rules;</li><li>the generic &quot;Not yours&quot;.</li><li>It quotes every passage verbatim behind an anchor assert. From the plan at <code>1d50774b</code>:</li><li>the L-SUM-C Tracks row (<code>:116</code>) and detail row (<code>:130</code>). The deadline cell&#x27;s third part, &quot;Opus sub-agent&quot;, is the</li></ul>
+<p>Leader-held fallback and is dropped (FALLBACK-A);</p>
+<ul><li>the pins (<code>:77-82</code>), <em>Common to every row</em> (<code>:84-89</code>), <em>Common exit evidence</em> (<code>:91-106</code>) and the whole-suite line</li></ul>
+<p>(<code>:108</code>);</p>
+<ul><li>the Shared guards that apply: console, arms guard, MUT-E, the goldens and <code>report/html.py</code> (<code>:191-217</code>);</li><li>Seams rows <code>:184</code>, <code>:186-188</code>;</li><li>the whole Errata section (<code>:262-323</code>).</li><li>It also quotes, behind the same asserts:</li><li>ADR-0022 §3, §3a and §4 (<code>:64-83</code>);</li><li>ADR-0023 decisions 7-9 (<code>:82-107</code>);</li><li>the architecture&#x27;s <code>bench report</code> contract (<code>:162-169</code>).</li></ul>
+<p><strong>Contracts cited from the code</strong> (each line asserted by the builder):</p>
+<ul><li><strong>main `1d50774b`:</strong></li><li><code>board.check_comparable</code> <code>:729</code> (HB-STA-001 <code>:734</code>, HB-PLN-003 <code>:740</code>, HB-STA-002 <code>:798</code>) and <code>board.pool_check</code></li></ul>
+<p><code>:812</code> (the shown differences at <code>:837-842</code>);</p>
+<ul><li><code>lean_section.build</code> <code>:173</code>;</li><li><code>html.render</code> <code>:2219-2223</code> and <code>html.write</code> <code>:2332-2336</code>, each with <code>lean_obj=None</code>; <code>_run_wall_clock</code> <code>:197-211</code>,</li></ul>
+<p>called at <code>:386</code>;</p>
+<ul><li><code>cmd_report</code> <code>:586</code>; the <code>report</code> subparser <code>:732-737</code>;</li><li><code>report.json:139</code>, the <code>_run_wall_clock</code> call-site find.</li><li><strong>`build/lean-l-sum-a2` (`0f1368e3`, not on main):</strong></li><li><code>views.run_wall_ns</code> <code>:319</code>, <code>views.grading_duration</code> <code>:331</code>, <code>views.first_cell_started_at</code> <code>:346</code>;</li><li><code>lean.BatchInput</code> <code>:26-31</code>, <code>lean.Prereg</code> <code>:35-37</code>, <code>lean.RING_TAG</code> <code>:100</code>, <code>lean.build</code> <code>:272</code>;</li><li>the fixture builders in <code>tests/test_lean.py</code>: <code>_run_dir</code> <code>:32</code>, <code>_pass</code> <code>:47</code>, <code>_view</code> <code>:140</code>, and the</li></ul>
+<p><code>first_cell_started_at</code> cases from <code>:95</code>.</p>
+<p><strong>Identities checked free:</strong></p>
+<ul><li><code>lsumc-lean</code> has <code>git grep</code> hits only in the plan and its HTML (and now this session&#x27;s audit entries);</li><li>no <code>.agents/log/lsumc-lean.jsonl</code>;</li><li>no branch <code>build/lean-l-sum-c</code> and no tree for it;</li><li><code>tests/test_lean_report_e2e.py</code> and <code>tests/mutations/lean_cli.json</code> are absent on main and on <code>0f1368e3</code>.</li></ul>
+<p><strong>Assumptions in the brief</strong> (none consequential):</p>
+<ol><li>The Leader&#x27;s tree holds <code>1d50774b</code> and <code>0f1368e3</code>. The brief&#x27;s base checks confirm it.</li><li><code>pool_check</code>&#x27;s shown differences are printed on stdout before the <code>report:</code> line:</li></ol>
+<ul><li><code>lean_section.build</code> takes no differences argument;</li><li>the CLI table is unchanged (ADR-0023 decision 9);</li><li>if the page must show them, that is a seam to L-SUM-B1&#x27;s file.</li></ul>
+<ol><li>The non-lean <code>--pool</code> refusal reuses HB-USR-002. That is the code of <code>cmd_report</code>&#x27;s own usage refusal (<code>cli.py:635</code>)</li></ol>
+<p>and of <code>lean.build</code>&#x27;s non-lean refusal.</p>
+<h2>TEST-E (on <code>1d50774b</code>; outputs in <code>C:\tf\c65\te-*.txt</code>)</h2>
+<table><thead><tr><th>command</th><th>observed</th></tr></thead><tbody><tr><td><code>uv run bench report --help</code></td><td>exit 0. It lists <code>--seed</code>, <code>--resamples</code>, <code>--baseline</code> and <code>--summaries</code>; <strong>no `--pool`, no `--prereg`</strong></td></tr><tr><td><code>uv run bench --runs C:/tf/c65/runs report b2 --pool b1</code></td><td><strong>exit 2</strong>, <code>bench: error: unrecognized arguments: --pool b1</code>, before any run is read. This is the row&#x27;s red. C0&#x27;s test fails on its exit-code assert</td></tr></tbody></table>
+<h2>Deviations</h2>
+<ol><li><strong>Harness and model</strong> (the Leader&#x27;s decision, recorded):</li></ol>
+<ul><li>The row names &quot;Agy, or Grok if the Agy slot is busy&quot;. The brief targets a Claude Code Agent-tool sub-agent,</li></ul>
+<p><code>model: opus</code>, with a context ceiling of 400k.</p>
+<ul><li>Reason, stated in the brief&#x27;s header: the floors measured this run exceed the item budgets at this brief&#x27;s size</li></ul>
+<p>(Grok about 117k, Agy about 166k; Errata item 5).</p>
+<ul><li>The plan&#x27;s Opus fallback delivered L-MATRIX, L-SUM-A and L-SUM-B1.</li><li>The worker measures its context at its first edit and at hand-back. The row&#x27;s F + 50k is recorded as an estimate,</li></ul>
+<p>not a stop.</p>
+<ol><li><strong>Tree:</strong> the brief says &quot;the tree the Leader names&quot; (a Leader-made coord tree, as Errata item 2 records for the</li></ol>
+<p>Agent-tool rows). It never says <code>isolation: worktree</code>.</p>
+<ol><li><strong>Brief size:</strong> 100,629 bytes, above the 75 kB of Errata item 5. Most of the difference is the quoted Errata section</li></ol>
+<p>(the render carries it twice) and the contracts. The 400k ceiling covers it.</p>
+<h2>Status</h2>
+<table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td><strong>Completed</strong></td><td>The L-SUM-C brief compiled (<code>al-01M4HCJPD4MXWCZRKNW0FG2WDM</code>) and dispatchable; TEST-E; this log</td></tr><tr><td><strong>Remaining</strong></td><td>Leader: join L-SUM-A (<code>build/lean-l-sum-a2</code>), make the coord tree on <code>build/lean-l-sum-c</code>, then dispatch the brief with <code>model: opus</code></td></tr><tr><td><strong>Best next action</strong></td><td>the L-SUM-A join</td></tr></tbody></table></main></body></html>
