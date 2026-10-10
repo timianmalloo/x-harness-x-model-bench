@@ -1,0 +1,2 @@
+{"agent": "lsuma2-lean", "at": 1791580742.576388, "kind": "session-start", "path": "-", "seq": 1, "session": "lsuma2-lean", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-lean-l-sum-a2"}
+{"action": "add", "agent": "lsuma2-lean", "at": 1791580903.7013378, "deadline_at": 1791582703.7013378, "id": "req-01M4H8P68QVZP4RQ33P9M1RFGF", "kind": "request", "path": "-", "seq": 2, "session": "lsuma2-lean", "to": "coord-opus-lean", "type": "request", "wi": "WI-0"}

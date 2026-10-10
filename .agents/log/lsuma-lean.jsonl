@@ -1,0 +1,6 @@
+{"agent": "lsuma-lean", "at": 1791579311.8033152, "kind": "session-start", "path": "-", "seq": 1, "session": "lsuma-lean", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-lean-l-sum-a"}
+{"agent": "lsuma-lean", "at": 1791579403.5546079, "kind": "session-start", "path": "-", "seq": 2, "session": "lsuma-lean", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-lean-l-sum-a"}
+{"agent": "lsuma-lean", "at": 1791579887.0018454, "kind": "claim", "long_edit": "L-SUM-A one turn, deadline 3300s", "path": "tests/test_stats_paired_ratio.py", "seq": 3, "session": "lsuma-lean", "ttl": 3300.0, "wi": "L-SUM-A"}
+{"agent": "lsuma-lean", "at": 1791579887.3863993, "kind": "claim", "long_edit": "L-SUM-A one turn, deadline 3300s", "path": "src/harness_bench/stats.py", "seq": 4, "session": "lsuma-lean", "ttl": 3300.0, "wi": "L-SUM-A"}
+{"action": "add", "agent": "lsuma-lean", "at": 1791580605.0060716, "deadline_at": 1791581505.0060716, "id": "req-01M4H8D2JGF50ZP7F1Z65GR8B9", "kind": "request", "path": "-", "seq": 5, "session": "lsuma-lean", "to": "coord-opus-lean", "type": "request", "wi": "WI-0"}
+{"agent": "lsuma-lean", "at": 1791580658.7878742, "kind": "session-end", "path": "-", "seq": 6, "session": "lsuma-lean", "wi": "WI-0", "worktree": "x-harness-x-model-bench-build-lean-l-sum-a"}
