@@ -7,8 +7,8 @@ credential_kind: "subscription login (copied)"
 command: ["{node}", "{adapter}"]
 shutdown_grace_seconds: 10
 files:
-  # R-74 item 5: `multi_agent` is the pinned 0.156.0 feature (stable, default true) that offers spawn_agent and the
-  # other collaboration tools. seed_home writes true only for a scenario-6 cell and false for every other cell.
+  # R-74 item 5: `multi_agent` is the pinned 0.160.0 feature (stable, default true; as in 0.156.0) that offers
+  # spawn_agent and the other collaboration tools. seed_home writes true only for a scenario-6 cell and false for every other cell.
   config.toml: |-
     model = "{model}"
     web_search = "disabled"

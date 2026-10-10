@@ -188,7 +188,7 @@ def test_real_install_resolves_the_pinned_builds():
     tools.install(ROOT / "bench" / "tools", dest, timeout=900)
     builds = tools.resolve(dest)
     assert builds["claude-code"].version == "2.1.282"
-    assert builds["codex"].version == "0.156.0"
+    assert builds["codex"].version == "0.160.0"
     assert builds["copilot"].version == "1.0.89-1"
     assert builds["copilot"].adapter is None
     assert builds["codex"].exe.is_file() and builds["claude-code"].exe.is_file()
