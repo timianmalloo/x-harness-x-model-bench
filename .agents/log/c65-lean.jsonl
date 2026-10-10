@@ -1,1 +1,2 @@
 {"agent": "coord-opus-lean", "at": 1791584555.6664681, "kind": "session-start", "path": "-", "seq": 1, "session": "c65-lean", "tree": "worktree", "wi": "WI-0", "worktree": "x-harness-x-model-bench-coord-lean-c65"}
+{"agent": "c65-lean", "at": 1791649368.7255473, "kind": "session-end", "path": "-", "seq": 2, "session": "c65-lean", "wi": "WI-0", "worktree": "x-harness-x-model-bench-coord-lean-c65"}
