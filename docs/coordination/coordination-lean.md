@@ -322,6 +322,44 @@ its source. Register entries for the same run are in `docs/lessons/defect-classe
    killed, `1d033470`). A RED-C deviation, accepted by the Leader. Source: L-SUM-B1 turn 2's closing entry
    `al-01M4H991Q8TMFW2GHYG2ZGPP04` (`e9234a4b`).
 
+## Errata (Coordinator #66, 2026-10-10)
+
+*Applied by Coordinator #66 (Claude Code, `claude-opus-5-5`, session `c66-lean`) on `coord/lean-c66` at base
+`f6389964`, from the Leader's owed-docs list (closing pass, items 20 and 23, and the Leader's rule-2 shortcuts). The
+numbering continues Coordinator #64's block. The rows above are not rewritten. Register entries for the same run are
+in `docs/lessons/defect-classes.md`, *Coordinator #66 entries*.*
+
+9. **L-SUM-C's harness** (Tracks row, harness column: "Agy, or Grok if the Agy slot is busy"): L-SUM-C was compiled
+   for the Claude Code Agent tool on Opus, not Agy or Grok. Cause: this run's measured context floors (erratum 5:
+   Agy 166k and Grok 117k at the first edit, for briefs of about 75 kB) left an Agy or Grok turn too little room. It
+   ran as `lsumc-lean` on `build/lean-l-sum-c` (brief `al-01M4HCJPD4MXWCZRKNW0FG2WDM`), served `claude-opus-5-5`,
+   green at `9426312f`. Source: the Leader's owed-docs list, item 20; L-SUM-C's closing entry
+   `al-01M4HDV7GGRCZZ5K69ZKFTBX90` (`38afe914`).
+10. **The run's shape after the Codex refusal** (S6 and S7; L-MATRIX's plan proof, "60 cells: 20 per combo"):
+    - Batch 1 refused every Codex cell with HB-CELL-116: the pinned Codex 0.156.0 does not serve `gpt-6.1-sol` on a
+      ChatGPT account, and 0.160.0 does (the Leader's spike, 2026-10-10). The Leader's decision D1 defaulted to
+      `skip_combo` after 30 min, while the question was open with the operator.
+    - **Operator ruling:** `lean-b1` and `lean-b2` stay as they are: Claude Code and Copilot, with Codex skipped by D1.
+      Codex's 40 cells run as **their own lean pair** (20 cells per batch) on **Codex 0.160.0**, from
+      `bench/rings/lean-codex.yaml` (`lean.yaml`'s content with the `codex-sol` combo only).
+    - The bump is a new track, **L-CODEX-PIN** (`build/lean-codex-pin`: red `d0f878fc`, green `c418a783`, golden
+      re-capture `1877636d`; merge `e10175a7`; join `f6389964`). Its brief was written by the Leader, not compiled: a
+      rule-5 deviation inside the operator-ruled scope.
+    - **Engine identity:** the Codex pair runs at commit `f6389964`. S7's rule (one sha for both batches, compared,
+      unequal is a stop) applies within each pair, so the Codex pair's identity is not batch 1's.
+    - Source: the Leader's owed-docs list, item 23; `bench/rings/lean-codex.yaml`'s header at `f6389964`. Register:
+      SERVE-A and COORD-B instances.
+11. **Planned vs actual: rule 2's pre-checks, two more shortcuts** (rule 2, "the whole suite is the Leader's"; Order
+    step 6). Erratum 6 recorded J1's.
+    - **J2:** L-SUM-A and L-SUM-C were joined as **one** combined candidate (`build/lean-l-sum-c`, which contains
+      `build/lean-l-sum-a2`; merge `87c0ff81`), with one full suite and one recount. Cause: A's branch alone was red
+      on `tests/test_resume.py::test_completed_has_one_definition` (two definitions until C's rewire; register
+      DEP-A).
+    - **L-CODEX-PIN:** the second per-branch pre-check was skipped. The first pre-check's only red was a test-data
+      golden (`tests/goldens/report-nonlean-arms.html`, plan hash only; register GOLD-A), fixed by re-capture
+      (`1877636d`). The join's recount is the full suite, so the skipped run would have repeated it.
+    - Both are Leader deviations. Source: the Leader's brief to Coordinator #66.
+
 ## Gate record
 
 *Adversary gate, 2026-10-09: an Opus sub-agent with the Simplifier, Test Architect and Tech Lead lenses, reading the

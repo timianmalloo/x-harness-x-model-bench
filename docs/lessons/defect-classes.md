@@ -382,6 +382,7 @@ summary: >-
 - **Instances:**
   - `2026-09-25`, W1-COP-I slice 5: `worker-codex-copi5` raised `req-01M3B110FQ1RQS4W2HRVTKN17B` (a `plan.py` seam: the bool `defaultDisabled` that canonical JSON forbids) and mailed the Leader three times. The request expired without a ruling. The fix went to a Claude Sonnet loop-back (`33bbf40` → `0baaa96`) only after the Leader read the mail. At first the Leader also wrongly reported that the request never reached the primary.
   - `2026-10-03`, Evaluation Campaign Wave 2, X-D1 (Codex `gpt-6.1-sol`): two requests to the Coordinator (`req-01M41KBTSTZ738NAGXNK0SRVXH`, `req-01M41KRKY9AKE563Z9J86F2GAF`) sat 25-32 min overdue, because the Coordinator now runs as hand-back sessions and none was live. The worker's fallbacks were "keep it pending", so it handed back partial and assertion-red (`3cea81d9`). Variant: the addressee is a seat that is not running, not a Leader who did not read.
+  - `2026-10-10` (lean batch 1; Leader-caused; from the Leader's owed-docs list, item 23; recorded by Coordinator #66). Variant: the default fires before the addressee can answer. The Leader's decision D1 on the Codex refusal (SERVE-A, the same date) had the default `skip_combo` after 30 min. The question was relayed to the operator and stayed open about 30 min, so the default fired while the operator's answer was pending. The operator then ruled a different shape (Codex as its own lean pair). **Control (proposed by the Leader):** the Leader answers a relayed decision before its default fires, or extends it; a decision's timeout is at least the expected operator latency. Rung: Leader procedure. Upgrade trigger: one more default that fires on a decision relayed to the operator.
 - **Sweep:** every worker hand-back in this plan. The other mail on record (slices 1, 2 and 5) was informational and needed no ruling. Why the pack's `mail-doorbell` hook, wired in `.claude/settings.json`, did not surface the request in the Leader's session was not diagnosed. 2026-10-03: `coord request list` held only the two X-D1 requests open.
 - **Control:** at every hand-back, the Leader runs `coord mail read` and `coord request list` before it reviews the result, and rules on or closes each open request. **Second instance (2026-10-03), so the upgrade fires:** (1) `docs/coordination/eval-wave2-e1/README.md` §3: before every join and dispatch batch the Leader runs `coord request list`, spawns a Coordinator hand-back session for any open request to it, and does not merge a branch whose commits name an open request; (2) README §2: a worker's fallback is the recommended option built to green in its own commit, never "pending"; (3) **proposed, the Leader's call (repo-local pack deviation):** `.tools/coord/runner-leader.sh` `prepare` and the join refuse while `coord request list --json` shows a request to `coord-opus-e1e4` that is `overdue`, so the procedure becomes a gate.
 - **Status:** `observed` (Leader procedure plus a brief rule; gate proposed)
@@ -668,6 +669,7 @@ summary: >-
 - **Why it survives:** the field looks like ordinary provenance (it answers "which code produced this?"), so including it in the result bytes reads as thoroughness, not as a defect. The failure appears only the first time that code changes, which can be months after the field was added — by then the control's false positive looks like the control doing its job.
 - **Instances:**
   - `2026-09-30` (DR-CAT-1, R-86): `extraction_id` (the normaliser's build hash, `normalize.py:85`) sat in `views.export`'s per-cell bytes beside `grading_id` (already correctly excluded). A normaliser fix (R-15/R-24/R-54 provenance tracking) changes `extraction_id` on every re-grade, which the US-4 catalog control and the 0.3 byte-identity gate both read as "a score or reason moved without a bump" — a false positive with a real cost (it forces an illegitimate catalog bump or a forbidden re-pin). `grader_build` (the grader's own code hash) was already correctly kept out of the export; `extraction_id` was its unflagged twin.
+  - `2026-10-10` (L-CODEX-PIN; reported by the Leader as GOLDEN-COUPLED, owed-docs item 24; recorded here by Coordinator #66). *Shape widens: an input-identity hash, not a code-identity hash, in a rendered golden.* `tests/goldens/report-nonlean-arms.html` (L-SUM-B1's LBU-5 golden) embeds the fixture plan's hash. The fixture plans against the live `bench/` (the tools pin), so the Codex pin bump turned it red with `report/html.py` unchanged: only "Plan hash" differs (`862b6c5d03e4` → `07059454f0ec`). The golden guards `html.py` but fails on an unrelated input. Resolved by re-capture (`1877636d`, "plan hash only; html.py unchanged"). This instance is not covered by the control below, which is specific to `extraction_id` in `views.export`. **Control (proposed by the Leader):** the golden's fixture pins its own `bench/` inputs, or the comparison masks the plan hash, so the golden fails only for a rendering change. Rung: test. Upgrade trigger: one more golden re-captured for a hash-only diff.
 - **Sweep (2026-09-30):** every committed export/golden fixture grepped for `grader_build`, `grading_id`, `extraction_id`: `tests/fixtures/catalog/{0.4,0.5}/*.export` and `tests/fixtures/validity/golden-exports-5feece0.json` carry `extraction_id` from before this fix — left untouched as frozen, point-in-time goldens for retired catalog versions (the established pattern: `leaderboard`'s R-78 removal did not rewrite 0.4's goldens either; a frozen golden is never re-validated against live code after its version is retired). `tests/fixtures/ledger/r34-cc-opus-pack-on-powershell-denied.json`'s `extraction_id` is a native-record/ledger-row fixture (`test_allowlist_classes.py`), not an export golden, and is unaffected. The one *current* consumer, `tests/test_views.py`'s pre-R-15 golden-export comparison, now strips `extraction_id` from the historical fixture before comparing, the same way it already strips `leaderboard`.
 - **Control:** `tests/test_catalog_version.py::test_a_normaliser_change_alone_leaves_the_control_green_and_extraction_id_out_of_the_export` monkeypatches the code-identity source and asserts both that the US-4 control stays green and that the field is absent from `views.export`'s cells. Observed red before the fix (the (a) export-mismatch finding fired on the monkeypatch alone). The general rule (CI2 derive): a code-identity field (a build hash, a tool-version hash) never enters a result golden's bytes; it belongs in the row that already carries the pass's identity (here, `RunView.Cell.extraction_id`, read by `pack_improvement.py:887` and `context_growth.py:147` from the view object, never from the export bytes).
 - **Status:** `controlled`
@@ -835,6 +837,14 @@ summary: >-
   - `2026-10-05` (the X-J2b join; Coordinator #38): LGc's "STRATEGIES line removed" mutant in `tests/mutations/diffstats.json` had the find `, "simplicity": diffstats.grade}`, the **end** of the shared `STRATEGIES` literal (`grade/property.py`, a pre-declared union, plan scope rule 9). J2b appended `"rework"` to the same line, so the find no longer occurred. The Leader retargeted it at the join (`2ac331c1`) to the entry's own text `"simplicity": diffstats.grade, ` (the noguess mutant's form); every diffstats mutant killed. *Sibling shape:* no code moved; another track's legal append moved the line's end. **Control (rung: compiled prompt):** a mutant on a shared or pre-declared union line targets its own key or entry only, never the line's end or a neighbour's text. X-J1e's compile (`al-01M47M0QM3WDCDXGR3JAJZ0CX0`) carries it. Upgrade trigger: one more stale find on a union line; then `tests/test_mutate_check.py` refuses a find that ends with a union literal's closing bracket.
   - `2026-09-25` (W3-MUT-SWEEP, `3fb2a29d`): 10 stale or ambiguous finds re-pointed across `validity.json`, `views_copilot.json`, `profile_classes.json`, `r35_r36.json`, `stop.json`, `copilot.json`; the control was built then but the class was not registered.
   - `2026-10-08` (X-NOPRICE, `xnoprice-fin` then `xnoprice2-fin`; registered by Coordinator #60): the *duplicate* shape. No code moved. `tests/mutations/report.json`'s "a missing header fact rendered empty" had the find `else "not recorded"`. X-NOPRICE's new token spend line in `report/html.py` (`:374` at `7ebdbfbd`) also ends in `else "not recorded"`, so at `7ebdbfbd~1` the find occurs on 2 lines (measured here with `grep -c`). `mutate_check` checks only that the find occurs and then replaces the first match (`tools/mutate_check.py:458-462`), so the mutant moved to the new line and survived. `xnoprice2-fin` retargeted it to the unique line `:413` (`val_str = ... else "not recorded"`) in `7ebdbfbd`. The existing control (`test_every_mutation_find_text_occurs_exactly_once_in_its_target_file`) refuses this shape, but only when the guard list runs; the checker itself does not. **Proposed upgrade (rung: make it impossible at apply):** `mutate_check` reports a find that does not occur exactly once in its target file as `error`, never applies it. Owner: the Leader assigns (`tools/mutate_check.py` is X-HYG's in this plan).
+  - `2026-10-09` (L-SUM-C, `lsumc-lean`; from the Leader's owed-docs list, item 22b; recorded by Coordinator #66).
+    The X-K1d shape again, at plan time: a plan's MUT-E owner list enumerated by the plan, not by the lines touched.
+    The lean plan named `report.json` and `cli.json` for L-SUM-C (*Seams*). Editing the `html.write` call in
+    `cli.py` also moved finds in `campaign.json` (M-R1) and `egress.json` (R-80 c3), which the plan never named. The
+    final guard list caught both at 0 occurrences (`9283c8bb`), and `9426312f` placed the `lean_obj` keyword so no
+    foreign find moves (closing entry `al-01M4HDV7GGRCZZ5K69ZKFTBX90`). The existing control held. **Control
+    (proposed by the Leader):** a plan's MUT-E owners come from grepping the target lines over every
+    `tests/mutations/*.json`, not from the module names. Rung: plan step. Upgrade trigger: one more unnamed owner.
 - **Sweep:** the control below runs over every set on every suite run.
 - **Control:** `tests/test_mutate_check.py::test_every_mutation_find_text_occurs_exactly_once_in_its_target_file` (`97100d01`, 2026-09-25), in the default ring; the Leader reports it caught the X-D1 move (not re-run by the Coordinator). Rung: test.
 - **Status:** `controlled`
@@ -848,6 +858,7 @@ summary: >-
   - `2026-10-03` (R-92): Grok Q0 under `-m grok-4.7` served `grok-4.6-build` x8 (`chat_history.jsonl` `model_id`), while `grok models` listed 4.7 as the default.
   - `2026-10-03` (R-103): X-B1a (`w2-b1a-e1e4`) under the same argv served `grok-4.6-build` x59, after Q0b served `grok-4.7-build` at 10:16. The join read (R-92 c1, `tools/grok_served_model.py`, exit 1) caught it after the turn had committed; two of six Grok sessions that day drifted, both whole-session.
   - `2026-10-05` (Leader, measured): X-G3's first attempt (run `w2-g3-e1e4`) drifted to grok-4.6. The run record has `selected_model` grok-4.6 and `selected_model_set` false. The retry runs as `w2-g3-r2-e1e4`.
+  - `2026-10-10` (lean batch 1; Leader-caused; from the Leader's owed-docs list, item 23; recorded by Coordinator #66). *Shape: refused, not swapped.* The bench's pinned Codex 0.156.0 refuses `gpt-6.1-sol` on a ChatGPT account ("not supported when using Codex with a ChatGPT account"); the global 0.160.0 serves it (the Leader's spike, 2026-10-10). Batch 1 refused every Codex cell with HB-CELL-116 (`bench/rings/lean-codex.yaml`'s header at `f6389964`). No real-model cell ran the lean pins before batch 1, although the spec flagged it ("no real-model cell has run them"). The plan proof (`bench plan`) checks that a pin exists, never that the account serves it through the pinned build: the class's root, the pin checked where it is written. Resolved by operator ruling: Codex bumped to 0.160.0 (L-CODEX-PIN, merge `e10175a7`) and its cells run as their own lean pair. **Control (proposed by the Leader):** a readiness item before batch 1: one served-model probe turn per combo through the **pinned** build, its served id recorded. Rung: readiness step (ADR-0022 §6's list). Upgrade trigger: one more batch that starts on an unprobed combo.
 - **Root cause (DRIFT; measured by the Leader in code, 2026-10-05; Coordinator #34 re-read both sites on `0d4a291a`):** the pin reaches Grok only through argv. `docs/ai-forward-pack/scripts/coord-runner.py:958-959` sets `options["expected_model"]` only when `worker["harness"] == "copilot"`. So for Grok, `docs/ai-forward-pack/scripts/coord_transport.py:779-781` (`if expected_model is not None: self.rpc("session/set_model", ...)`) never runs, and `selected_model_set` stays false. Grok's ACP session default (`session/new`'s `currentModelId`, recorded as `selected_model`) can then override argv `-m grok-4.7`. This explains why a drift is whole-session and varies between sessions on the same argv (R-103). The transport also never compares the served model with the pin, so nothing fails closed.
 - **Control candidate (upstream-owned: X-PACK phase 2, or a new ai-forward item):** (3) the runner derives `expected_model` from argv `-m` for Grok as it does for Copilot, so the transport calls `session/set_model`; and the transport fails closed (a named refusal before the first prompt) when the served model differs from `expected_model`. Rung when built: make it impossible (the session cannot start on another model). Until then, controls (1) and (2) stand. This repository does not edit `coord-runner.py` or `coord_transport.py` outside `/updatepack`.
 - **Sweep:** the served-model read for each external harness at the join (README §3: Grok `chat_history.jsonl`, Codex `rollout-*.jsonl` `model`, Agy `cli.log`), and the Sonnet report's first line (R-91 c1). Owed: a count of Grok sessions since Q0 per served id, from the session store (the Leader, at the next report).
@@ -946,6 +957,15 @@ summary: >-
   - The design predates the guard's reach into `resume.py`, and each conflict surfaced only when a worker hit it.
   - **Sweep:** W1-K sections 2 and 3.1, every call that `resume.py` makes into another module, each checked against `identity.CLASSES`. The three calls above are the only grade-class hits. `ledger`, `archive`, `atomic`, `lifecycle`, `engine` and `plan` are run class.
   - **Control (Coordinator procedure, from #43 on):** at compile time, check every cross-module call that a design gives a run-class module against `identity.CLASSES`. A grade-class callee is resolved in the compile before dispatch: moved to a run-class module, injected at the composition root, or ruled as an allowlist edge by the Leader. Rung: Coordinator procedure. Upgrade trigger: one more design-side instance. Then the W1 design template gets a "module class of every callee" column.
+- **Instance, a compile-side shape (Coordinator #66, from the Leader's owed-docs list, item 22a):** `2026-10-09`
+  L-SUM-C (`lsumc-lean`, `build/lean-l-sum-c`). The compiled brief (`al-01M4HCJPD4MXWCZRKNW0FG2WDM`) dictated the
+  launch mechanism for `--prereg`'s git read: a subprocess call with `creationflags`. `tests/test_architecture.py`
+  forbids that in `src/` (`test_only_procs_calls_subprocess_or_spawns`, `test_only_gitsafe_runs_git`). The final guard
+  list caught it at `9283c8bb`, and `9426312f` moved the read to `gitsafe.git` (the closing entry
+  `al-01M4HDV7GGRCZZ5K69ZKFTBX90` records it as a deviation). Here the brief did not just omit the guard: it
+  prescribed the forbidden construct. **Control (proposed by the Leader):** a compile that names a launch in `src/`
+  cites `procs.run` or `gitsafe.git`, never a raw `subprocess` form. Rung: compiled prompt. Upgrade trigger: one more
+  compile-prescribed construct that a guard in the eight-file list refuses.
 - **Status:** `partially-controlled` (C-W0's template edit landed in `4760e55e`)
 
 ### TEST-E: a test id built by prefixing one file's path onto another file's node id runs as a pytest usage error (candidate)
@@ -964,6 +984,17 @@ summary: >-
 - **Why it survives:** the independence test is applied to the ownership table, which is what the brief author is looking at. The call sits in a prose paragraph of the design (and here in the same brief's own acceptance item) that nobody reads against the table. A ruling that cites the brief inherits the claim (NG: a citation does not promote a claim).
 - **Instances:**
   - `2026-10-03 → 2026-10-05` X-H1 (`docs/coordination/eval-wave2-e1/x-h1.md:31`, Coordinator #6, part 2, `d97f8dcb`) said "c reads nothing from a or b" and ran b ∥ c. But H1c's `pack_regression` seeds with `seed_for(...)` (the same brief's turn c item 7; design `eval-power-verdicts.md:188`), and `seed_for` is H1b's (`x-h1.md` turn b Work; W0 `eval-seam-contracts.md:461`). R-105 cited the line (`docs/notes/rulings.md`, R-105 facts and c5) and sent H1c to Grok from `4891e4d4`, a base with no `verdicts.py`. Coordinator #17 found it. The Leader ruled that H1c waits for H1b. Coordinator #18 corrected the brief (order a → b → c) and README §5's X-H1 row.
+  - `2026-10-09` the lean plan (`docs/coordination/coordination-lean.md`, rows L-SUM-A and L-SUM-C; Leader-caused;
+    recorded by Coordinator #66 from the Leader's owed-docs list, item 21). *Shape: an invariant edge, not a call
+    edge.* The plan split one extraction across two tracks: L-SUM-A adds `views.run_wall_ns` (a numeric copy of
+    `report/html.py`'s `_run_wall_clock`), and L-SUM-C rewires the caller. So A's branch alone carries two definitions
+    of run completion, and `tests/test_resume.py::test_completed_has_one_definition` (D-K5) went red at A's candidate
+    pre-check (`assert 14 == 12`). L-SUM-C's closing entry (`al-01M4HDV7GGRCZZ5K69ZKFTBX90`) records the same red at
+    its base and the green at `7b35706a`. Neither track's own gates ran the resume guard, so the GUARD-A side is
+    present too. Resolution: A and C joined as one batch (J2, merge `87c0ff81`). **Control (proposed by the
+    Leader):** a plan that splits "extract a helper" from "rewire its caller" puts both in one track, or names the
+    one-definition guard in both rows. Rung: plan step. Upgrade trigger: one more split that reddens a one-definition
+    guard.
 - **Sweep (2026-10-05, Coordinator #18; `independent|reads nothing|in parallel|∥` over `docs/coordination/eval-wave2-e1/*.md`):** `x-h1.md:31` and README §5 row X-H1 were corrected. README §8's #14a order line (B1b ∥ B1c) and #14b order line (H1b ∥ H1c) are historical records: B1b and B1c have both joined, and the H1 line is superseded by this entry. `x-d.md:35` "plan-independent" is not a turn claim. Not swept: E2–E4 briefs (owed at their next compile).
 - **Control (proposed):** before any parallel dispatch, the Coordinator lists each sibling turn's planned imports and calls, taken from the design's signatures and prose (grep the design for `<other module>.` and for the other turn's owned symbol names), and checks them against the other turns' owned symbols. Any hit is a DAG edge, and the brief says which line proved it. Rung: Coordinator procedure at brief-writing and compile (CO-S0). Upgrade trigger: a second instance. Then `coord-runner prepare` (or the compile step) refuses a parallel pair whose briefs name a cross-owned symbol.
 - **Status:** `candidate`
@@ -1660,6 +1691,12 @@ asks):
     --help` raised `FileNotFoundError('--help')`. Read at `build/lean-l-matrix2`: `main` (`:571`) matches
     `--restore`, `--check-clean`, `--cosmic-ray` and `--touched` by hand, with no argument parser; the run itself is
     the hand-back's, not re-run by me.
+  - `2026-10-09` L-SUM-A turn 2 (`lsuma2-lean`; reported by the Leader as ARGV-0-ONLY; recorded here by Coordinator
+    #66, because the root is the same hand-rolled `argv` dispatch in the same `main`): a second shape, silent. After
+    the four option checks, `main` reads `spec = json.loads(Path(argv[0]).read_text(...))` (`tools/mutate_check.py:592`
+    at `f6389964`) and never reads `argv[1:]`. So `mutate_check.py a.json b.json` checks `a.json` only, exits on its
+    result, and says nothing about `b.json`. Read in code by me; the multi-file run itself is the hand-back's. The
+    signature widens: a hand-rolled entry point both mis-reads an option (`--help`) and drops extra arguments.
 - **Sweep (owed):** run `--help` on every `tools/*.py` entry point. Known already: `tools/spikes/s_j4_baseline.py`
   has no argument parser, and running it launches three ACP adapters with model calls (`c62.md`, errata proposal 4),
   so a blind `--help` sweep must skip it. A related shape: `bench plan --matrix <absent file>` ends in an unhandled
@@ -1667,4 +1704,100 @@ asks):
 - **Control (proposed by the Leader):** a test runs `--help` on every `tools/*.py` entry point and expects exit 0,
   with an explicit allowlist for scripts that must not run. Rung: test. Upgrade trigger: a second tool found by that
   test, or a worker turn lost to a `--help` traceback.
+- **Status:** `candidate`
+
+## Coordinator #66 entries (2026-10-10; lean benchmark execution, part 2)
+
+*Recorded by Coordinator #66 (session `c66-lean`, `coord/lean-c66` at base `f6389964`) from the Leader's owed-docs
+list, items 19 and 21-25 (closing pass). Items 1-18 are Coordinator #64's (above). The plan's errata for the same
+run are in `docs/coordination/coordination-lean.md`, *Errata (Coordinator #66)*. Each class text was checked against
+the register first (ID-A); new ids were checked free by `git grep` at `f6389964`.*
+
+**Instances added to existing classes** (each written into its class's own Instances list):
+- **HELP-A**: the Leader's ARGV-0-ONLY (L-SUM-A turn 2). `mutate_check`'s `main` reads `argv[0]` only and drops the
+  rest silently. Same tool, same hand-rolled dispatch, so one class.
+- **DEP-A**: the plan split "extract `views.run_wall_ns`" (L-SUM-A) from "rewire `_run_wall_clock`" (L-SUM-C), so A
+  alone carried two definitions and D-K5's one-definition guard went red (item 21; Leader-caused).
+- **GUARD-A**: L-SUM-C's compiled brief prescribed a raw subprocess launch that `tests/test_architecture.py` forbids
+  in `src/` (item 22a).
+- **MUT-E**: L-SUM-C's plan named two mutation sets; the edit moved finds in two more (`campaign.json`,
+  `egress.json`) (item 22b).
+- **SERVE-A**: the pinned Codex 0.156.0 refuses `gpt-6.1-sol` on a ChatGPT account, and no served-model probe ran
+  through the pinned build before batch 1 (item 23a; Leader-caused).
+- **COORD-B**: decision D1's 30-min default fired while the relayed operator question was still open (item 23b;
+  Leader-caused).
+- **GOLD-A**: the Leader's GOLDEN-COUPLED. The non-lean report golden embeds a plan hash computed over the live
+  `bench/`, so a Codex pin bump reddened it with `html.py` unchanged (item 24).
+
+**New classes:** GATE-RACE-A, COARSE-SEED-A (item 19), TOOL-UNPINNED-A (item 25), below.
+
+**Records, not classes:**
+- L-SUM-A's placeholder pin `test_build_is_l_sum_as_to_write` was replaced by a BenchError pin,
+  `test_build_refuses_zero_batches`, at `0f1368e3` (Leader ruling `req-01M4H8P68QVZP4RQ33P9M1RFGF`; L-SUM-A turn 2's
+  resume entry, `b854d5a4`).
+- L-SUM-C deviation (item 22): `--prereg` on a non-lean run is ignored, not refused. The contract is silent on it.
+
+### GATE-RACE-A: a gate run in the background reads a working tree the agent is still editing, so its result measures a moving tree, not the commit (candidate)
+- **Signature:** an agent commits, starts a gate (the guard list, the suite) in the background, and keeps editing the
+  same tree. The gate reads files as they are at read time, so its verdict is for a mix of the commit and the
+  in-flight edit. A red can be the edit's, and a green can miss a red in the commit.
+- **Why it survives:** the gate is reported "on commit X" because it started right after X. Nothing records the tree
+  state at the gate's start and end. A red that the agent can explain ("I was editing that file") reads as harmless,
+  so the run is not repeated on a clean tree. Siblings: GATE-RUN-A (a process writes into a read-only gate run) is the
+  same race seen from the corpus side; E2E-E (the gate passed, its contents did not).
+- **Instances:**
+  - `2026-10-09` L-SUM-A turn 2 (`lsuma2-lean`; reported by the Leader, owed-docs item 19; recorded by Coordinator
+    #66): "guard list on first commit exit 1 (1 failed, 230 passed; the failure was the contract pin I was editing in
+    the working tree while the background run read it, not the commit)" (the turn's closing entry
+    `al-01M4HC39GMPMJNYM7344W01DBN`). The first-commit guard result therefore certifies no commit. The later runs on
+    `0f1368e3` were on a clean tree (exit 0, 231 passed).
+- **Sweep (owed):** the hand-backs of this run that report a gate "on" a commit while later commits followed in the
+  same turn. Read each closing entry for a background gate and an edit in the same window.
+- **Control (proposed by Coordinator #66):** a gate that certifies a commit runs on a clean tree at that commit, and
+  its report records `git status --porcelain` empty at start and end; a non-empty status voids the result. Rung:
+  compiled prompt (the worker's gate rule), then a wrapper that records both statuses. Upgrade trigger: one more gate
+  result reported against a commit while the tree was dirty.
+- **Status:** `candidate`
+
+### COARSE-SEED-A: a test proves a seed reaches a statistic on 0/1 data, whose coarse quantiles two seeds can share, so a lost seed survives (candidate)
+- **Signature:** a test checks that a seed changes or fixes a bootstrap result by comparing intervals computed on
+  binary (0/1) outcomes. On small binary samples the bootstrap quantiles take few values, so two seeds often give the
+  same interval. The mutant that drops the seed then yields the same numbers, and it survives.
+- **Why it survives:** the test reads like a seed test and passes on the right code. Only a mutant that removes the
+  seed shows that the assertion cannot see the difference. The data's coarseness is a property of the fixture, not of
+  the assertion's text.
+- **Instances:**
+  - `2026-10-09` L-SUM-A turn 2 (`lsuma2-lean`; reported by the Leader, owed-docs item 19; recorded by Coordinator
+    #66): `mutate_check tests/mutations/lean.json` gave 29 killed, 1 survived ("pre-registration seeding"). The test
+    was strengthened to assert on the token ratio, whose values are continuous, and the survivor was then killed
+    (closing entry `al-01M4HC39GMPMJNYM7344W01DBN`; green `9e690b56`). The test now says why
+    (`tests/test_lean.py:459`, read at `f6389964`: "0/1 values give coarse quantiles that two seeds can share; the
+    token ratio's continuous ones cannot").
+- **Sweep (owed):** every test that asserts a seed's effect on `stats.paired_delta` or another bootstrap over 0/1
+  outcomes: `git grep -n "seed" -- tests/test_stats*.py tests/test_lean*.py tests/test_verdicts.py`, each read for
+  its data type.
+- **Control (proposed by Coordinator #66):** a test that proves a seed reaches a statistic asserts on a quantity
+  that moves with the seed (a continuous measure), or asserts the seed value the statistic received; and every
+  seed path has a mutant that drops it. Rung: test-authoring rule in the compiled prompt, held by the mutation set.
+  Upgrade trigger: one more surviving seed mutant.
+- **Status:** `candidate`
+
+### TOOL-UNPINNED-A: a gate tool absent from the lockfile resolves to whatever is on the path or in the tree's venv, so trees run different versions of one gate (candidate)
+- **Signature:** a gate runs `uv run <tool>`, but the tool is not in `pyproject.toml` or `uv.lock`. `uv run` then
+  finds it on `PATH` or in that tree's `.venv`. One tree with a stray install runs another version, and a new rule
+  in that version fails a gate that is green in every other tree.
+- **Why it survives:** the command looks pinned because it goes through `uv run`. The version is never printed in a
+  gate log, so a version difference reads as a code difference.
+- **Instances:**
+  - `2026-10-10` the `join-l-codex-pin` join (reported by the Leader, owed-docs item 25; recorded by Coordinator #66):
+    the integration tree's `.venv` held a stray ruff 0.17.0 (installed 2026-10-09T17:15 local, origin unknown), while
+    every other tree used the global 0.16.5. 0.17.0 flagged RUF100 at `src/harness_bench/host.py:113` and stopped the
+    join at its check step. The Leader removed the stray install. Checked by me at `f6389964`: `ruff` occurs 0 times
+    in `pyproject.toml` and in `uv.lock`; the `dev` group holds hypothesis, playwright, pytest and pytest-xdist only.
+    The install time and the RUF100 finding are the Leader's report, not re-run by me.
+- **Sweep (owed):** every tool a gate runs through `uv run` (`git grep -ho "uv run [a-z_-]*"` over `docs/`, `tools/`
+  and `.github/`), each checked for an entry in `uv.lock`.
+- **Control (proposed by the Leader):** pin ruff in the `dev` dependency group, so `uv.lock` fixes one version for
+  every tree and every gate. Rung: lockfile (make it impossible). Upgrade trigger: none needed once pinned; a second
+  unpinned gate tool found by the sweep gets the same fix.
 - **Status:** `candidate`
