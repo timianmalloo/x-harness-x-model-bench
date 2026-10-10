@@ -7857,6 +7857,40 @@ window.DOCS_INDEX = {
       "sourceSha256": "9800558ad99e36ae2fb88db8c5a969d0fd76980b74fa5160c3ca270b6743b43d"
     },
     {
+      "id": "run-report-lean",
+      "path": "docs/coordination/run-report-lean.md",
+      "title": "Run report - the lean pack benchmark (pack-on vs pack-off per harness)",
+      "type": "doc",
+      "status": "accepted",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2027-04-10",
+      "reviewSuggested": [],
+      "summary": "The lean benchmark ran 2026-10-10: Claude Code (claude-opus-5-5) and Copilot (gpt-6.1-sol) as two pooled batches, and Codex (gpt-6.1-sol) as its own pair on Codex 0.160.0 after the pinned 0.156.0 was refused. No harness shows a detectable pack effect on property_check_pass (effect +0.00 each; per-harness MDE 0.31 to 0.42). The pack adds tokens: 1.62x for Claude Code, 9.56x for Copilot, 2.28x for Codex (ratio of totals). Total 87.6M tokens against an approved 127M; Copilot's figure is a lower bound on 8 cells. Pre-registered (af36296ebcb0) before the first cell.",
+      "tags": [
+        "coordination",
+        "run-report",
+        "lean-benchmark",
+        "pack-effect"
+      ],
+      "links": [
+        {
+          "to": "spec-lean-pack-benchmark",
+          "rel": "implements"
+        },
+        {
+          "to": "coordination-lean",
+          "rel": "relates-to"
+        },
+        {
+          "to": "arch-lean-benchmark",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "65b7cf58c7c41994b913128ec528085113d72b7bf5007fcfb547b48657c8f60e"
+    },
+    {
       "id": "runbook-resume-and-alarm",
       "path": "docs/runbooks/resume-and-alarm.md",
       "title": "Runbook: resume a crashed run and wire the alarm channel",
@@ -11239,6 +11273,14 @@ window.DOCS_INDEX = {
       "artifactId": "run-report-e2e4"
     },
     {
+      "id": "surface-coordination-run-report-lean",
+      "path": "docs/coordination/run-report-lean.html",
+      "title": "Run Report Lean",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "run-report-lean"
+    },
+    {
       "id": "surface-plans-strategy-lean-benchmark",
       "path": "docs/plans/strategy-lean-benchmark.html",
       "title": "Strategy Lean Benchmark",
@@ -11247,5 +11289,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "923cbdccb6133889cca79b23face67449e5111c211a5c6540a59ec80d219a9cc"
+  "graphSha256": "7841bfe8613457aad14dd030e7873a87478894eea6bde4a35d7beeb496886701"
 };
