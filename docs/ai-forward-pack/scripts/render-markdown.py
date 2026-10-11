@@ -5,6 +5,8 @@ import argparse
 import html
 import os
 import re
+import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -197,11 +199,57 @@ def write_atomic(path, content):
         raise
 
 
+def find_chrome():
+    """The command prefix that opens a file in Google Chrome on this machine, or None."""
+    if sys.platform == "darwin":
+        if Path("/Applications/Google Chrome.app").is_dir():
+            return ["open", "-a", "Google Chrome"]
+        return None
+    if os.name == "nt":
+        relative = Path("Google") / "Chrome" / "Application" / "chrome.exe"
+        for variable in ("ProgramFiles", "ProgramFiles(x86)", "LOCALAPPDATA"):
+            base = os.environ.get(variable)
+            if base and (Path(base) / relative).is_file():
+                return [str(Path(base) / relative)]
+    for name in ("chrome", "google-chrome", "google-chrome-stable"):
+        found = shutil.which(name)
+        if found:
+            return [found]
+    return None
+
+
+def _launch(command):
+    subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                     stderr=subprocess.DEVNULL)
+
+
+def open_in_chrome(path, env=None, finder=find_chrome, launch=_launch):
+    """Open the rendered HTML in Chrome for the reader. Returns "opened" or "not opened: <why>".
+
+    A headless host (CI, or AF_NO_OPEN set) is skipped before any lookup; a missing Chrome is
+    reported, never silent, and never fails the render that already succeeded.
+    """
+    env = os.environ if env is None else env
+    for variable in ("AF_NO_OPEN", "CI"):
+        if env.get(variable):
+            return f"not opened: {variable} is set"
+    command = finder()
+    if not command:
+        return "not opened: chrome not found"
+    try:
+        launch(command + [Path(path).resolve().as_uri()])
+    except OSError as exc:
+        return f"not opened: {exc}"
+    return "opened"
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source", type=Path)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--title")
+    parser.add_argument("--open", action="store_true",
+                        help="open the written HTML in Google Chrome (skipped when AF_NO_OPEN or CI is set)")
     args = parser.parse_args(argv)
     if args.source.suffix.lower() != ".md":
         parser.error("source must be a Markdown (.md) file")
@@ -212,6 +260,8 @@ def main(argv=None):
         print(f"RENDER-MARKDOWN.ERROR: {exc}", file=sys.stderr)
         return 1
     print(output)
+    if args.open:
+        print(f"open: {open_in_chrome(output)} ({output})", file=sys.stderr)
     return 0
 
 

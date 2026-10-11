@@ -34,6 +34,11 @@ Leader `lean-leader-1`, 2026-10-10. It answers spec LB-8.
 - **Plan**: `docs/coordination/coordination-lean.md`, *Errata (Coordinator #64)* and *(Coordinator #66)*.
 - **Register**: `docs/lessons/defect-classes.md`, *Coordinator #64 entries* and *Coordinator #66 entries*.
 
+**Where the sources are now (2026-10-11).** The integration tree and `C:/tf/lean-leader/` were deleted at the
+post-run cleanup. The four runs (R-\*, P, E) are kept under `runs/` in the primary checkout; before the delete each
+copy matched the tree (file count and bytes; `lean-b1` also file by file) and passed `bench verify`. L's raw files are gone: their findings are in this report,
+the plan's errata and the register.
+
 Tokens are the only cost axis in this report.
 
 ## Result

@@ -5455,7 +5455,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "320dcfb3db039a37f601dc6215939d9484b90625b93127aa5cf571b594725d0c"
+      "sourceSha256": "7181b4024faeaf0c15679f1ecd5c3f554d3eca6d3f2a1bafec6cb1a3a7840bba"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -7926,7 +7926,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "65b7cf58c7c41994b913128ec528085113d72b7bf5007fcfb547b48657c8f60e"
+      "sourceSha256": "b2f38f158162fa53eb7974fd782fb4fd5a0edf27622f8b86212ed76e4f98f3d5"
     },
     {
       "id": "runbook-resume-and-alarm",
@@ -11335,5 +11335,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "9fc849e7189a1b0d8fc36d9c4cea2d847b6414977a4e2bace8dc2129a6fe96b1"
+  "graphSha256": "31607382080adced98cbd796bceb7c598087f89b71ddfcec78ab593a905ddb1e"
 };

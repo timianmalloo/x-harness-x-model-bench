@@ -86,7 +86,7 @@ The join's steps and their gates are `reference/join.md` — read at this stage,
 
 **Never remove a worktree to resolve a conflict** (WT11). If two tracks collided, deleting one side destroys the evidence of what collided.
 
-**Stage 7 — Report.** Planned vs actual, per track: budget vs spend, seam requests raised and resolved, boundary corrections made, and **which of the plan's parallelism justifications actually paid**. That comparison is the input to the next plan, and without it the next division is drawn from a feeling again.
+**Stage 7 — Report.** Planned vs actual, per track: budget vs spend, seam requests raised and resolved, boundary corrections made, and **which of the plan's parallelism justifications actually paid**. That comparison is the input to the next plan, and without it the next division is drawn from a feeling again. Write it as the **run report**, `docs/coordination/run-report-<plan-slug>.md`, and end the run with `python3 docs/ai-forward-pack/scripts/render-markdown.py docs/coordination/run-report-<plan-slug>.md --open`: the HTML lands beside it and opens in Chrome for the operator. A `not opened: <why>` line (CI, `AF_NO_OPEN`, no Chrome) goes into the status table — never silently dropped.
 
 ## Definition of done (exit gate)
 - [ ] A plan existed and parsed, **or** the prompt already named the tracks, owners and paths (the stated-division exception) and that naming is recorded as the division used.
@@ -100,7 +100,7 @@ The join's steps and their gates are `reference/join.md` — read at this stage,
 - [ ] Merged in dependency order **by `conductor-join.py`** — the conflict-marker gate first, one recount per join with `recount_seconds` recorded, the join entry at T1 / fan-out 0 with a measured duration; `coord regen` clean; the **integrated** gate set green through `run-verify-gates.py`.
 - [ ] Every brief opened with the `start` line, claimed for the minutes of the edit, never claimed a `register`-class path, never called `EnterWorktree`, and carried a context ceiling with its hand-off rule; every resume carried `start`.
 - [ ] Trees closed with `coord worktree cleanup`; nothing removed to resolve a conflict; every refusal reported with its reason.
-- [ ] Planned vs actual recorded per track.
+- [ ] Planned vs actual recorded per track, in the run report (md + html), and the HTML opened in Chrome — or its `not opened` reason reported.
 - [ ] Status table emitted.
 
 ## Documentation & discoverability (last action)
