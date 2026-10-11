@@ -2158,3 +2158,14 @@ Conditions. 1. The removal is unconditional for every `workspace_from: source` t
 (B) refused as the primary: it drops one of the two no-guessing tasks and one of the two security tasks, so two of the five properties rest on a single task, and it leaves Codex's AGENTS.md exposure as a fix-after on the first real campaign. (C) refused: it loses a harness E5 pre-registered and leaves Codex exposed.
 
 - request: req-01M4EFYTEFR6881YCP3TGZQPBM · ruled by: owner-fable · at: 2026-10-08T19:36:06Z
+
+### Ruling 117 — lean re-run start state (operator, 2026-10-11): push the pack branch, re-pin Antigravity to 1.3.3, reasoning text in the run record, keep GPT-5.6 Sol Fast
+
+Asked at the start-state check of `docs/coordination/lean-rerun-equal-reasoning-prompt.md`; answered by the operator (Tim Mallalieu) in the same session.
+
+1. **ai-forward `feat/run-report-open`: push it.** Pushed by the Leader-to-be; `origin` reads `refs/heads/feat/run-report-open` = `ed9625a7`.
+2. **Antigravity: re-pin to 1.3.3, not 1.3.2.** agy updated itself from 1.3.2 to 1.3.3 at 09:40 on 2026-10-11, after the prompt's verification. The bench pins 1.3.3, sha256 `fbbfb3f15c7628252c5e12765683c688ba05ee122b853cadeb0bbfd4e13ca25b` (a frozen copy at `C:\tf\agy-1.3.3\agy.exe`), with auto-update off for cells. The prompt's "1.3.2" reads as 1.3.3 everywhere.
+3. **Reasoning text: the run record, not `docs/audit`.** Per-cell reasoning rows go to `runs/<run>/reasoning/`; `docs/audit/audit-log.jsonl` gets one entry per batch naming the stream, its row count and its hash head.
+4. **`gpt-5.6-sol-fast` stays the sixth combo.** Copilot 1.0.89-1 serves it to this login as "GPT-5.6 Sol Fast (Internal only)" (ACP `session/new`, `availableModels`, read 2026-10-11). The id is resolved; no decision request is needed.
+
+- ruled by: operator · at: 2026-10-11
