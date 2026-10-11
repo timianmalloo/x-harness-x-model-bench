@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Harness Cost Comparison</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+/* Layout: a reading column (~80ch) for prose; charts, the kiviat and wide tables sit in framed panels that scroll inside themselves. */
+:root {
+  --bg: #f5f6f8; --surface: #ffffff; --fg: #17202b; --muted: #5a6573; --rule: #d7dce3; --soft: #eef1f5;
+  --accent: #2b5aa8;
+  --cc: #b5562f; --cx: #2c7a57; --cp: #6a4c9c;
+  --b-uncached: #8a96a6; --b-read: #4f7cc4; --b-write: #9ab6e3; --b-out: #d08a2c; --b-tool: #c46b4f; --b-api: #6a4c9c;
+  --display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f141a; --surface: #161d25; --fg: #e4e9ef; --muted: #9aa5b3; --rule: #2a3440; --soft: #1c252f;
+  --accent: #82a8e8; --cc: #e58a62; --cx: #63c294; --cp: #b39ae0;
+  --b-uncached: #7d8898; --b-read: #6f99de; --b-write: #3e5f93; --b-out: #e3a24a; --b-tool: #df8a6c; --b-api: #b39ae0;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f141a; --surface: #161d25; --fg: #e4e9ef; --muted: #9aa5b3; --rule: #2a3440; --soft: #1c252f;
+  --accent: #82a8e8; --cc: #e58a62; --cx: #63c294; --cp: #b39ae0;
+  --b-uncached: #7d8898; --b-read: #6f99de; --b-write: #3e5f93; --b-out: #e3a24a; --b-tool: #df8a6c; --b-api: #b39ae0;
+  color-scheme: dark }
+
+body { background: var(--bg); color: var(--fg); font: 400 15px/1.6 var(--body); }
+.page { max-width: 84ch; margin: 0 auto; padding-inline: 16px; padding-block: 40px 72px; display: grid; gap: 44px; }
+header { display: grid; gap: 10px; }
+.eyebrow, .k, th, .label { font: 500 11.5px/1.35 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 600 clamp(28px, 5vw, 40px)/1.1 var(--display); margin: 0; text-wrap: balance; }
+h2 { font: 600 23px/1.25 var(--display); margin: 0; text-wrap: balance; display: flex; gap: 10px; align-items: baseline; }
+h2 .n { font: 500 13px/1 var(--mono); color: var(--muted); }
+h3 { font: 600 16px/1.3 var(--body); margin: 0; }
+p { margin: 0; }
+section { display: grid; gap: 14px; min-width: 0; }
+code { font-family: var(--mono); font-size: .87em; }
+.lede { font-size: 17px; line-height: 1.55; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--muted); font-size: 13px; }
+ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+.panel { background: var(--surface); border: 1px solid var(--rule); padding: 16px; min-width: 0; }
+.scroll { overflow-x: auto; }
+.cap { font-size: 12.5px; color: var(--muted); }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--rule); padding: 14px 16px; display: grid; gap: 6px; min-width: 0; }
+.card h3 { display: flex; gap: 8px; align-items: center; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.card dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 0; font-size: 13px; }
+.card dt { color: var(--muted); } .card dd { margin: 0; font-variant-numeric: tabular-nums; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; white-space: nowrap; }
+th { background: var(--soft); }
+td.n, th.n { text-align: right; }
+tr.grp td { background: var(--soft); font-weight: 600; }
+.tbl { border: 1px solid var(--rule); background: var(--surface); overflow-x: auto; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 12px; height: 10px; display: inline-block; }
+.bars { display: grid; gap: 8px; }
+.bar-row { display: grid; grid-template-columns: minmax(150px, 220px) 1fr; gap: 10px; align-items: center; min-width: 560px; }
+.bar-row .nm { font-size: 13px; display: flex; gap: 8px; align-items: center; }
+.bar-row .nm small { color: var(--muted); }
+.track { position: relative; height: 22px; display: flex; align-items: center; }
+.seg { height: 100%; }
+.val { font: 500 12px/1 var(--mono); color: var(--fg); padding-left: 8px; white-space: nowrap; }
+.kiv { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(220px, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 760px) { .kiv { grid-template-columns: 1fr; } }
+.kiv svg { width: 100%; height: auto; display: block; }
+.kiv svg text { fill: var(--fg); font: 12px var(--body); }
+.kiv svg .tick { fill: var(--muted); font: 10px var(--mono); }
+fieldset { border: 1px solid var(--rule); margin: 0; padding: 10px 12px 12px; display: grid; gap: 6px; }
+legend { font: 500 11.5px/1.3 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 0 4px; }
+.chk { display: flex; gap: 8px; align-items: center; font-size: 13.5px; cursor: pointer; }
+.chk input { accent-color: var(--accent); width: 16px; height: 16px; }
+.chk .line { width: 22px; height: 0; border-top: 3px solid; flex: none; }
+.chk .line.dash { border-top-style: dashed; }
+.btns { display: flex; flex-wrap: wrap; gap: 6px; }
+button { font: 500 12.5px/1 var(--body); color: var(--fg); background: var(--soft); border: 1px solid var(--rule); padding: 7px 10px; border-radius: 4px; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.note { border-left: 3px solid var(--accent); background: var(--surface); padding: 12px 14px; font-size: 13.5px; display: grid; gap: 6px; }
+.obs { counter-reset: o; list-style: none; padding: 0; display: grid; gap: 12px; }
+.obs li { background: var(--surface); border: 1px solid var(--rule); padding: 12px 14px; display: grid; gap: 4px; }
+.obs li b { font-weight: 600; }
+.tag { font: 500 11px/1.5 var(--mono); padding: 0 6px; border: 1px solid var(--rule); border-radius: 3px; color: var(--muted); }
+footer { border-top: 1px solid var(--rule); padding-top: 16px; color: var(--muted); font-size: 12.5px; display: grid; gap: 6px; }
+</style>
+</head>
+<body>
+<main class="page">
+  <header>
+    <div class="eyebrow">x-harness-x-model-bench · cost comparison · runs of 2026-10-10</div>
+    <h1>What each coding harness costs in tokens and time</h1>
+    <p class="lede">Claude Code, Codex and Copilot ran the same 10 coding tasks on one Windows machine. This page compares only what each harness spent: tokens, clock time, model requests and tool calls, and how far its edits strayed from the task.</p>
+    <div class="meta"><span>120 valid cells</span><span>87.6M tokens</span><span>5 h 43 min of cell time (summed; up to three ran at once)</span><span>Tokens are the only cost unit</span></div>
+  </header>
+
+  <section>
+    <h2><span class="n">1</span> What was benchmarked</h2>
+    <p>Each <b>cell</b> is one harness given one task in a fresh copy of a real open-source Python repository, with a fixed prompt and a 45-minute budget. The harness works on its own until it stops. A grader then runs the task's hidden tests and checks, and the bench records every model request, tool call and file change.</p>
+    <ul>
+      <li><b>10 tasks on 10 repositories</b>, in five pairs: security (S1 microdot, S2 bottle), resilience (RS1 prometheus client, RS2 structlog), rework (RW1 humanfriendly, RW2 schedule), working from a vendored API without guessing (NG1 cachetools, NG2 tomli), and simplicity (SM1 tinydb, SM2 jmespath).</li>
+      <li><b>Two repository conditions.</b> <em>Bare</em>: the repository as published. <em>With instructions</em>: the same repository carrying an agent-instruction kit (an <code>AGENTS.md</code>, a <code>CLAUDE.md</code>, 13 instruction files marked to apply everywhere, a skill library and tool hooks). This page does not judge whether the kit helps. It only shows what each harness spends in each condition.</li>
+      <li><b>Each task ran twice per harness and condition</b>, in two batches: 10 tasks × 2 conditions × 2 runs = <b>40 cells per harness</b>. Up to three cells ran at once.</li>
+      <li><b>What is measured per cell:</b> tokens by type (fresh input, cache read, cache write, output), the harness process's wall-clock time, time inside tools, model requests, tool calls by kind, the change set against the task's allowed files, and the hidden test results.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span> Harnesses and models</h2>
+    <div class="grid3">
+      <div class="card"><h3><span class="sw" style="background:var(--cc)"></span>Claude Code</h3>
+        <dl><dt>Model</dt><dd><code>claude-opus-5-5</code></dd><dt>Build</dt><dd>2.1.282 (ACP adapter 0.81.2)</dd><dt>Reasoning</dt><dd>harness default; no reasoning tokens reported</dd><dt>Token source</dt><dd>ACP turn usage</dd><dt>Tools</dt><dd>Edit, Bash, Read, PowerShell, Write, Grep, Glob</dd></dl></div>
+      <div class="card"><h3><span class="sw" style="background:var(--cx)"></span>Codex CLI</h3>
+        <dl><dt>Model</dt><dd><code>gpt-6.1-sol</code></dd><dt>Build</dt><dd>0.160.0 (codex-acp 1.12.0)</dd><dt>Reasoning</dt><dd>effort <b>low</b> (harness default)</dd><dt>Token source</dt><dd>Codex session record</dd><dt>Tools</dt><dd>one shell tool (<code>exec</code>) for everything</dd></dl></div>
+      <div class="card"><h3><span class="sw" style="background:var(--cp)"></span>GitHub Copilot CLI</h3>
+        <dl><dt>Model</dt><dd><code>gpt-6.1-sol</code></dd><dt>Build</dt><dd>1.0.89-1</dd><dt>Reasoning</dt><dd>effort <b>medium</b> (harness default)</dd><dt>Token source</dt><dd>Copilot session record</dd><dt>Tools</dt><dd>view, powershell, apply_patch, glob, rg, skill</dd></dl></div>
+    </div>
+    <p class="cap">Codex and Copilot ran the same model with different default reasoning effort. Neither bench profile set it. Codex's cells ran on 0.160.0 as a separate pair after the pinned 0.156.0 was refused the model; Claude Code and Copilot ran in the two main batches.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span> Cost per harness and model</h2>
+    <h3>Tokens per cell, by type</h3>
+    <div class="legend"><span><i style="background:var(--b-uncached)"></i>fresh input</span><span><i style="background:var(--b-read)"></i>cache read</span><span><i style="background:var(--b-write)"></i>cache write</span><span><i style="background:var(--b-out)"></i>output</span></div>
+    <div class="panel scroll"><div class="bars" id="tokBars"></div></div>
+    <p class="cap">Mean per cell, 20 cells per bar. Cache reads are prompt text the provider had already seen; they are counted as tokens like the rest.</p>
+
+    <h3>Clock time per cell</h3>
+    <div class="legend"><span><i style="background:var(--b-tool)"></i>time inside tools (includes hooks)</span><span><i style="background:var(--b-api)"></i>model API time (Copilot only)</span><span><i style="background:var(--rule)"></i>rest of the cell</span></div>
+    <div class="panel scroll"><div class="bars" id="timeBars"></div></div>
+    <p class="cap">Wall clock is the harness process from start to exit (mean per cell). Model time is recorded only in Copilot's session record, and its tool time overlaps its model time when tools run in parallel, so the segments are indicative.</p>
+
+    <h3>All measures</h3>
+    <div class="tbl"><table id="fullTable"></table></div>
+    <p class="cap">"Discretionary drift" counts lines changed outside the task's allowed files. It leaves out tool caches (<code>.pytest_cache</code>, <code>.mypy_cache</code>), files written by hooks and the audit script (<code>.agents/log</code>, <code>docs/audit</code>), and test files that every harness wrote for that task (the task's allowed-file list omits a test file the task needs). "Task orientation" is the in-scope share of all changed lines. Both use the bench's own drift grader, run again on the archived working copies.</p>
+
+    <h3>Kiviat: all measures at once</h3>
+    <div class="panel kiv">
+      <div><svg id="kiviat" viewBox="0 0 600 470" role="img" aria-label="Kiviat diagram of seven measures for the selected harness and condition combinations"></svg></div>
+      <div style="display:grid;gap:12px">
+        <fieldset id="picks"><legend>Show</legend></fieldset>
+        <div class="btns">
+          <button type="button" data-pick="all">All six</button>
+          <button type="button" data-pick="off">Bare only</button>
+          <button type="button" data-pick="on">With instructions only</button>
+          <button type="button" data-pick="none">Clear</button>
+        </div>
+        <p class="cap">The outer ring is the best value among all six series. Cost axes show best ÷ value, so 0.5 means twice the best. Clean cells, task orientation and hidden checks are shares from 0 to 1. Solid lines are bare, dashed lines are with instructions.</p>
+      </div>
+    </div>
+    <div class="tbl"><table id="kivTable"></table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span> Observations</h2>
+    <ol class="obs">
+      <li><b>In a bare repository Codex is the cheapest and fastest, and Copilot is close behind.</b> Codex used 204k tokens and 1.8 min per cell, Copilot 235k (+15%) and 2.1 min, Claude Code 469k (2.3× Codex) and 2.2 min. Claude Code sends a larger fixed prompt (first request 21.0k tokens vs Codex 11.8k), and each later request carries more context (29k vs 18.5k on average), over more requests (13.7 vs 9.8).</li>
+      <li><b>With instruction files in the repository, the harnesses separate sharply.</b> Copilot rose to 2.25M tokens and 6.4 min per cell: 4.8× Codex (465k, 2.3 min) and 2.9× Claude Code (762k, 2.3 min). Section 5 traces the cause to how Copilot builds its prompt and runs hooks.</li>
+      <li><b>Most tokens are cache reads.</b> Cached prompt text is 83–89% of Codex's tokens and 87–94% of Claude Code's and Copilot's. Output is small everywhere: 3–10k tokens per cell. Cost is driven by how much context is resent on each request and how many requests are made, not by how much the model writes.</li>
+      <li><b>Copilot makes the most unrequested edits; Codex the fewest.</b> Copilot edited files outside the task in 16 of 20 cells in both conditions: READMEs, docs pages, <code>pyproject.toml</code>, type stubs. Codex did so in 0 of 20 bare cells (1 with instructions), Claude Code in 3 and 2. The volumes are small (Copilot about 21–26 lines per cell).</li>
+      <li><b>The outcomes were the same.</b> Every cell passed its task's functional tests (pass@1 = 100% for all six series). Hidden property checks passed in 75–80% of cells for every harness. Here, spending more tokens or time did not buy a better result.</li>
+      <li><b>The harnesses work in different styles.</b> Codex does everything through one shell tool (8.6 calls per bare cell), often batching several commands into one call. Copilot reads in small steps (10 <code>view</code> calls per cell, 25 tool calls in all). Claude Code sits between them (18 calls: edit, shell, read).</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span> Why Copilot and Codex differ on the same model</h2>
+    <p>Both ran <code>gpt-6.1-sol</code>. The differences come from the harness: what it puts in the prompt, how many requests it makes, how it uses tools, and its default settings. Each harness keeps its own session record in the archived cell, so this can be read directly rather than inferred.</p>
+    <div class="tbl"><table id="deepTable"></table></div>
+    <h3>What each harness sends before the task (characters)</h3>
+    <div class="legend"><span><i style="background:var(--b-uncached)"></i>harness's own instructions</span><span><i style="background:var(--b-write)"></i>tool or skill catalogue</span><span><i style="background:var(--b-out)"></i>AGENTS.md / CLAUDE.md</span><span><i style="background:var(--b-tool)"></i>instruction files inlined</span></div>
+    <div class="panel scroll"><div class="bars" id="promptBars"></div></div>
+    <p class="cap">Measured from one cell per condition (identical across cells of a condition, up to the repository's own files). Codex's tool definitions are not in its record, so its bars leave them out. Characters, not tokens: roughly 3–4 characters per token for this text.</p>
+    <div class="note">
+      <p><b>Bare repository: nearly the same per request, more requests and tool calls for Copilot.</b> Input per request is 19.0k tokens for Copilot vs 18.5k for Codex. Copilot makes more requests (median 12 vs 7.5) and 3–4× the tool calls (24 vs 6.5 in the session records). It also runs at reasoning effort medium vs Codex's low: 1,390 vs about 110 reasoning tokens per cell. Net result: +15% tokens, +15% time.</p>
+      <p><b>With instructions: Copilot resends the whole kit on every request.</b> Copilot's system prompt grows from 19k to <b>329k characters</b>. It inlines all 13 instruction files marked <code>applyTo: "**"</code> (235k characters), both <code>AGENTS.md</code> and <code>CLAUDE.md</code> (55k), and a larger tool and skill catalogue (19k). Codex adds only <code>AGENTS.md</code> (27k) and a skill list (20k), and reads other documents only if it chooses to (it did not). Input per request: <b>107k vs 37k tokens</b>. Copilot also makes more requests (19 vs 10), so total input is 2.02M vs 0.37M per cell (medians).</p>
+      <p><b>Hooks account for most of Copilot's extra time.</b> The kit's hooks ran 60 times per Copilot cell (22 before a tool, 39 after it, plus session and prompt hooks), a median of <b>173 s</b> per cell from the hook start and end events. That is most of the rise in wall clock from 2.1 to 6.4 min.</p>
+    </div>
+    <h3>How much deeper this can go</h3>
+    <ul>
+      <li><b>Available now, not yet used:</b> every tool call with its arguments and timing (Copilot events, Codex rollouts), Codex's per-request token curve (in one cell with instructions it grows from 21k to 47k over 9 requests), and the full text of every prompt. These can show where requests are spent: exploration vs editing vs verification.</li>
+      <li><b>Not recorded:</b> Copilot's per-request token sizes (only per-session totals; the 107k above is an average), model time for Claude Code and Codex, and Codex's tool-definition size.</li>
+      <li><b>Controlled reruns would separate the causes:</b> Codex and Copilot at the same reasoning effort, the kit with instruction files narrowed from <code>**</code> to the paths they govern, and the kit with hooks off. Each is a small run (a few tasks, about 20 cells) on the existing bench.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>Sources: the bench's records for runs <code>lean-b1</code>, <code>lean-b2</code> (Claude Code, Copilot) and <code>lean-codex-b1</code>, <code>lean-codex-b2</code> (Codex), read with the bench's own reader; each harness's session record in the archived cells; the bench's drift grader re-run on the archived working copies. Copilot's token totals are a lower bound on 8 cells, where its session total exceeds the per-call sum.</p>
+    <p>Classifications made for this page, not by the bench: which out-of-scope files count as drift, and the prompt-composition split.</p>
+  </footer>
+</main>
+
+<script>
+const S = [
+  {id:"cc-off", h:"Claude Code", m:"claude-opus-5-5", c:"bare", col:"--cc", tokens:468873, med:327455, total:9377454, b:[1145,433454,23794,10480], wall:2.201, wmed:2.419, wtot:44.0, tool:0.568, api:null, req:13.65, tools:17.85, drift:4.5, dcells:3, orient:0.984, pass1:1, prop:0.80},
+  {id:"cc-on", h:"Claude Code", m:"claude-opus-5-5", c:"with instructions", col:"--cc", tokens:761780, med:586297, total:15235602, b:[1145,708168,42044,10422], wall:2.329, wmed:2.125, wtot:46.6, tool:0.705, api:null, req:13.65, tools:17.65, drift:0.6, dcells:2, orient:0.998, pass1:1, prop:0.80},
+  {id:"cx-off", h:"Codex", m:"gpt-6.1-sol", c:"bare", col:"--cx", tokens:204346, med:148870, total:4086929, b:[32135,169101,0,3110], wall:1.824, wmed:1.905, wtot:36.5, tool:0.282, api:null, req:9.75, tools:8.55, drift:0, dcells:0, orient:1.0, pass1:1, prop:0.75},
+  {id:"cx-on", h:"Codex", m:"gpt-6.1-sol", c:"with instructions", col:"--cx", tokens:465317, med:370994, total:9306331, b:[46781,414624,0,3912], wall:2.277, wmed:2.326, wtot:45.5, tool:0.385, api:null, req:11.7, tools:10.5, drift:4.35, dcells:1, orient:0.973, pass1:1, prop:0.75},
+  {id:"cp-off", h:"Copilot", m:"gpt-6.1-sol", c:"bare", col:"--cp", tokens:234956, med:229144, total:4699123, b:[37,203494,24967,6458], wall:2.105, wmed:2.258, wtot:42.1, tool:0.399, api:1.630, req:12.25, tools:25.2, drift:20.6, dcells:16, orient:0.933, pass1:1, prop:0.80},
+  {id:"cp-on", h:"Copilot", m:"gpt-6.1-sol", c:"with instructions", col:"--cp", tokens:2246817, med:2033920, total:44936330, b:[61,2116091,122047,8617], wall:6.434, wmed:6.406, wtot:128.7, tool:3.561, api:2.628, req:20.4, tools:37.6, drift:26.3, dcells:16, orient:0.916, pass1:1, prop:0.80}
+];
+const N = 20;
+const fmt = n => n == null ? "–" : Math.round(n).toLocaleString("en-US");
+const k = n => n >= 1e6 ? (n/1e6).toFixed(2) + "M" : n >= 1e3 ? Math.round(n/1e3) + "k" : String(Math.round(n));
+const f1 = n => n == null ? "–" : n.toFixed(1);
+const f2 = n => n == null ? "–" : n.toFixed(2);
+const pct = n => Math.round(n * 100) + "%";
+const sw = s => `<span class="sw" style="background:var(${s.col})"></span>`;
+const name = s => `${sw(s)}<span>${s.h} <small>${s.c}</small></span>`;
+
+function bars(el, rows, max, segs, label) {
+  el.innerHTML = rows.map(r => {
+    const parts = segs(r).map(([v, c]) => `<div class="seg" style="width:${(v / max * 100).toFixed(3)}%;background:var(${c})"></div>`).join("");
+    return `<div class="bar-row"><div class="nm">${name(r)}</div><div class="track">${parts}<span class="val">${label(r)}</span></div></div>`;
+  }).join("");
+}
+const tokMax = Math.max(...S.map(s => s.tokens)) * 1.08;
+bars(document.getElementById("tokBars"), S, tokMax,
+  s => [[s.b[0], "--b-uncached"], [s.b[1], "--b-read"], [s.b[2], "--b-write"], [s.b[3], "--b-out"]],
+  s => k(s.tokens));
+const tMax = Math.max(...S.map(s => s.wall)) * 1.12;
+bars(document.getElementById("timeBars"), S, tMax,
+  s => s.api != null
+    ? [[Math.min(s.api, s.wall), "--b-api"], [Math.max(0, Math.min(s.tool, s.wall - s.api)), "--b-tool"], [Math.max(0, s.wall - s.api - s.tool), "--rule"]]
+    : [[s.tool, "--b-tool"], [s.wall - s.tool, "--rule"]],
+  s => f2(s.wall) + " min");
+
+const rowsDef = [
+  ["Tokens per cell (mean)", s => fmt(s.tokens)], ["Tokens per cell (median)", s => fmt(s.med)],
+  ["Fresh input", s => fmt(s.b[0])], ["Cache read", s => fmt(s.b[1])], ["Cache write", s => fmt(s.b[2])], ["Output", s => fmt(s.b[3])],
+  ["Tokens, all 20 cells", s => fmt(s.total)],
+  ["Wall clock per cell, min (mean)", s => f2(s.wall)], ["Wall clock per cell, min (median)", s => f2(s.wmed)],
+  ["Time inside tools, min", s => f2(s.tool)], ["Model API time, min", s => s.api == null ? "not recorded" : f2(s.api)],
+  ["Cell time, all 20 cells, min", s => f1(s.wtot)],
+  ["Model requests per cell", s => f1(s.req)], ["Tool calls per cell", s => f1(s.tools)],
+  ["Discretionary drift, lines per cell", s => f1(s.drift)], ["Cells with discretionary drift", s => s.dcells + " of " + N],
+  ["Task orientation", s => pct(s.orient)], ["Functional tests passed (pass@1)", s => pct(s.pass1)], ["Hidden property checks passed", s => pct(s.prop)]
+];
+document.getElementById("fullTable").innerHTML =
+  `<thead><tr><th>Measure</th>${S.map(s => `<th class="n">${s.h}<br>${s.c}</th>`).join("")}</tr></thead><tbody>` +
+  rowsDef.map(([l, fn]) => `<tr><td>${l}</td>${S.map(s => `<td class="n">${fn(s)}</td>`).join("")}</tr>`).join("") + "</tbody>";
+
+// Kiviat. Normalized over all six series so toggling never rescales.
+const best = key => Math.min(...S.map(s => s[key]));
+const AX = [
+  {l:"Token economy", v:s => best("tokens") / s.tokens, raw:s => k(s.tokens) + "/cell"},
+  {l:"Speed", v:s => best("wall") / s.wall, raw:s => f2(s.wall) + " min"},
+  {l:"Request economy", v:s => best("req") / s.req, raw:s => f1(s.req) + " req"},
+  {l:"Tool-call economy", v:s => best("tools") / s.tools, raw:s => f1(s.tools) + " calls"},
+  {l:"Clean cells (no drift)", v:s => (N - s.dcells) / N, raw:s => (N - s.dcells) + "/" + N},
+  {l:"Task orientation", v:s => s.orient, raw:s => pct(s.orient)},
+  {l:"Hidden checks passed", v:s => s.prop, raw:s => pct(s.prop)}
+];
+const svg = document.getElementById("kiviat");
+const CX = 300, CY = 238, R = 165;
+const ang = i => -Math.PI / 2 + i * 2 * Math.PI / AX.length;
+const pt = (i, r) => [CX + Math.cos(ang(i)) * r, CY + Math.sin(ang(i)) * r];
+let base = "";
+[0.25, 0.5, 0.75, 1].forEach(t => {
+  base += `<polygon points="${AX.map((_, i) => pt(i, R * t).join(",")).join(" ")}" fill="none" stroke="var(--rule)" stroke-width="1"/>`;
+  base += `<text class="tick" x="${CX + 3}" y="${CY - R * t - 2}">${t}</text>`;
+});
+AX.forEach((a, i) => {
+  const [x, y] = pt(i, R);
+  const [lx, ly] = pt(i, R + 22);
+  const anchor = Math.abs(lx - CX) < 8 ? "middle" : lx > CX ? "start" : "end";
+  base += `<line x1="${CX}" y1="${CY}" x2="${x}" y2="${y}" stroke="var(--rule)" stroke-width="1"/>`;
+  base += `<text x="${lx}" y="${ly + 4}" text-anchor="${anchor}">${a.l}</text>`;
+});
+const picks = document.getElementById("picks");
+picks.insertAdjacentHTML("beforeend", S.map(s =>
+  `<label class="chk"><input type="checkbox" id="pick-${s.id}" value="${s.id}" checked><span class="line${s.c === "bare" ? "" : " dash"}" style="border-color:var(${s.col})"></span>${s.h} · <code>${s.m}</code> · ${s.c}</label>`).join(""));
+function draw() {
+  const on = S.filter(s => document.getElementById("pick-" + s.id).checked);
+  const shapes = on.map(s => {
+    const pts = AX.map((a, i) => pt(i, R * Math.max(0, Math.min(1, a.v(s)))));
+    const dash = s.c === "bare" ? "" : ' stroke-dasharray="7 5"';
+    return `<polygon points="${pts.map(p => p.join(",")).join(" ")}" fill="var(${s.col})" fill-opacity="0.08" stroke="var(${s.col})" stroke-width="2.2"${dash}/>` +
+      pts.map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="var(${s.col})"/>`).join("");
+  }).join("");
+  svg.innerHTML = base + shapes + (on.length ? "" : `<text x="${CX}" y="${CY}" text-anchor="middle" class="tick">Pick at least one series</text>`);
+  document.getElementById("kivTable").innerHTML = on.length
+    ? `<thead><tr><th>Axis</th>${on.map(s => `<th class="n">${s.h}<br>${s.c}</th>`).join("")}</tr></thead><tbody>` +
+      AX.map(a => `<tr><td>${a.l}</td>${on.map(s => `<td class="n">${a.raw(s)} <span class="tag">${a.v(s).toFixed(2)}</span></td>`).join("")}</tr>`).join("") + "</tbody>"
+    : `<tbody><tr><td>No series selected.</td></tr></tbody>`;
+}
+picks.addEventListener("change", draw);
+document.querySelectorAll("[data-pick]").forEach(b => b.addEventListener("click", () => {
+  const p = b.dataset.pick;
+  S.forEach(s => { document.getElementById("pick-" + s.id).checked = p === "all" || (p === "off" && s.c === "bare") || (p === "on" && s.c !== "bare"); });
+  draw();
+}));
+draw();
+
+// Deep dive table and prompt composition.
+const D = [
+  ["Model requests per cell (median)", "12", "7.5", "19", "10"],
+  ["Input tokens per request (mean of cells)", "19,017", "18,480", "107,356", "36,755"],
+  ["First request, input tokens", "not recorded", "11,836", "not recorded", "21,098"],
+  ["Input tokens per cell (median, session record)", "220,378", "144,794", "2,023,944", "366,458"],
+  ["Output tokens per cell (median)", "6,109", "3,554", "8,760", "4,432"],
+  ["Reasoning effort", "medium", "low", "medium", "low"],
+  ["Reasoning tokens per cell (mean)", "1,308", "133", "1,791", "224"],
+  ["Tool calls per cell (median, session record)", "24.5", "6.5", "37.5", "9"],
+  ["Hook runs per cell (median)", "0", "–", "60", "–"],
+  ["Hook time per cell (median)", "0 s", "–", "173 s", "–"],
+  ["Model API time per cell (median)", "98 s", "not recorded", "151 s", "not recorded"],
+  ["Instruction files inlined in the prompt", "0", "0", "13", "0"]
+];
+document.getElementById("deepTable").innerHTML =
+  `<thead><tr><th>Same model, gpt-6.1-sol</th><th class="n">Copilot<br>bare</th><th class="n">Codex<br>bare</th><th class="n">Copilot<br>with instructions</th><th class="n">Codex<br>with instructions</th></tr></thead><tbody>` +
+  D.map(r => `<tr><td>${r[0]}</td>${r.slice(1).map(v => `<td class="n">${v}</td>`).join("")}</tr>`).join("") + "</tbody>";
+const P = [
+  {h:"Copilot", c:"bare", col:"--cp", parts:[13846, 5454, 0, 0]},
+  {h:"Codex", c:"bare", col:"--cx", parts:[21769 + 2700, 7690, 0, 0]},
+  {h:"Copilot", c:"with instructions", col:"--cp", parts:[20354, 19037, 54747, 234630]},
+  {h:"Codex", c:"with instructions", col:"--cx", parts:[21769 + 2700, 19562, 27084, 0]}
+];
+const pMax = Math.max(...P.map(p => p.parts.reduce((a, b) => a + b, 0))) * 1.1;
+bars(document.getElementById("promptBars"), P, pMax,
+  p => [[p.parts[0], "--b-uncached"], [p.parts[1], "--b-write"], [p.parts[2], "--b-out"], [p.parts[3], "--b-tool"]],
+  p => k(p.parts.reduce((a, b) => a + b, 0)) + " chars");
+</script>
+</body>
+</html>

@@ -6301,6 +6301,37 @@ window.DOCS_INDEX = {
       "sourceSha256": "e09fc8d9d2edfd1dd52283eccd11bef6fd698c17cbe5a35c74c5fcd7b761b8e5"
     },
     {
+      "id": "prompt-lean-rerun-equal-reasoning",
+      "path": "docs/coordination/lean-rerun-equal-reasoning-prompt.md",
+      "title": "Execution prompt - the lean benchmark re-run at equal reasoning, with cost-anatomy capture",
+      "type": "doc",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-25",
+      "reviewSuggested": [],
+      "summary": "The operator's prompt for a fresh session: re-run the lean benchmark with six combos pinned at high reasoning and the largest context each serves (Claude Code Opus 5.5 1M; Codex and Copilot GPT-6.1 Sol; Copilot GPT-5.6 Sol Fast; Grok 4.7; Antigravity Gemini 3.8 Flash), add Grok and Antigravity as bench harnesses, extend each cell's record with reasoning text and the per-request, per-tool and prompt-composition facts that explain token cost and drift, and end with a regenerated harness-cost-comparison.html opened in Chrome.",
+      "tags": [
+        "prompt",
+        "coordination",
+        "lean-benchmark",
+        "cost-anatomy",
+        "reasoning"
+      ],
+      "links": [
+        {
+          "to": "prompt-lean-benchmark",
+          "rel": "depends-on"
+        },
+        {
+          "to": "run-report-lean",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "dadd05c344c6a2e39bc7c47e215501e4890421d99d480fc5181efda80b9f04c8"
+    },
+    {
       "id": "proof-phase2",
       "path": "docs/proof/phase2.md",
       "title": "Proof Pack - phase 2 (wave-by-wave joins)",
@@ -11241,6 +11272,13 @@ window.DOCS_INDEX = {
       "description": "Open an interactive knowledge artifact."
     },
     {
+      "id": "surface-coordination-harness-cost-comparison",
+      "path": "docs/coordination/harness-cost-comparison.html",
+      "title": "Harness Cost Comparison",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact."
+    },
+    {
       "id": "surface-proposals-harness-bench-report-mockup",
       "path": "docs/proposals/harness-bench-report-mockup.html",
       "title": "harness-bench · run 2026-09-23 (mockup)",
@@ -11295,6 +11333,14 @@ window.DOCS_INDEX = {
       "artifactId": "lean-preregistration"
     },
     {
+      "id": "surface-coordination-lean-rerun-equal-reasoning-prompt",
+      "path": "docs/coordination/lean-rerun-equal-reasoning-prompt.html",
+      "title": "Lean Rerun Equal Reasoning Prompt",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "prompt-lean-rerun-equal-reasoning"
+    },
+    {
       "id": "surface-coordination-eval-wave2-e1-overnight-2026-10-05",
       "path": "docs/coordination/eval-wave2-e1/overnight-2026-10-05.html",
       "title": "Overnight 2026 10 05",
@@ -11335,5 +11381,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "31607382080adced98cbd796bceb7c598087f89b71ddfcec78ab593a905ddb1e"
+  "graphSha256": "ea3cdbaf73e591fc0d4ac3ffea862215e493f0371d7adbfbfcc2c44e4e46903b"
 };
