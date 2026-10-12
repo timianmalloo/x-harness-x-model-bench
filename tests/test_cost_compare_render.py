@@ -305,6 +305,7 @@ def test_every_combo_row_shows_its_transport_and_the_served_window_where_it_is_n
     for sid, body in rows:
         s = by_id[sid]
         assert s.transport in _text(body), sid
+        assert ("served window" in _text(body)) == (s.harness == "agy"), sid  # only where it differs from 1M
         assert ("served window 922,000" in _text(body)) == (s.harness == "agy"), sid
     copilot = [body for sid, body in rows if by_id[sid].harness == "copilot"]
     assert copilot and all("copilot -p (local adapter)" in _text(b) for b in copilot)
