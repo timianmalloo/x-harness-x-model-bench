@@ -1,0 +1,79 @@
+[
+  {
+    "name": "R-DRIFT: no path is a tool cache (DRIFT-MACHINE-A: caches read as discretionary)",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "    if any(part in TOOL_CACHES for part in norm.split(\"/\")[:-1]):\n        return MACHINE_CACHE",
+    "replace": "    if False:\n        return MACHINE_CACHE",
+    "tests": ["tests/test_drift_split.py::test_a_cache_a_hook_log_a_test_file_and_a_readme_edit_split_into_machine_task_implied_and_discretionary"]
+  },
+  {
+    "name": "R-DRIFT: the pack's audit and hook files are authored changes",
+    "file": "src/harness_bench/grade/_changes.py",
+    "find": "    return MACHINE_PACK_LOG if norm in PACK_LOGS or HOOK_LEDGER.fullmatch(norm) else None",
+    "replace": "    return None",
+    "tests": ["tests/test_drift_split.py::test_a_cache_a_hook_log_a_test_file_and_a_readme_edit_split_into_machine_task_implied_and_discretionary"]
+  },
+  {
+    "name": "R-DRIFT: a test path outside the radius is discretionary (RADIUS-TEST-A)",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "    return TASK_IMPLIED if _changes.is_test_path(path, base_paths) else DISCRETIONARY",
+    "replace": "    return DISCRETIONARY",
+    "tests": ["tests/test_drift_split.py::test_a_cache_a_hook_log_a_test_file_and_a_readme_edit_split_into_machine_task_implied_and_discretionary"]
+  },
+  {
+    "name": "R-DRIFT: applicable ignores all_tasks",
+    "file": "src/harness_bench/grade/runner.py",
+    "find": "            if owner is None and has_radius and m.get(\"all_tasks\") is True:",
+    "replace": "            if False:",
+    "tests": ["tests/test_drift_split.py::test_the_four_drift_metrics_apply_to_every_task_with_a_radius_and_a_lean_task_yields_all_four"]
+  },
+  {
+    "name": "R-DRIFT: the pass never tells applicable the task has a radius",
+    "file": "src/harness_bench/grade/runner.py",
+    "find": "applicable(self.catalog, names, prop, has_radius=bool(task.get(\"blast_radius\"))).items()",
+    "replace": "applicable(self.catalog, names, prop, has_radius=False).items()",
+    "tests": ["tests/test_drift_split.py::test_a_pass_grades_an_all_tasks_metric_for_a_task_whose_graders_omit_its_grader"]
+  },
+  {
+    "name": "R-DRIFT: attention drift ignores `from . import mod` (the static import scan)",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "                    out |= _module_files(f\"{module}.{alias.name}\" if module else alias.name, base_paths, anchor)",
+    "replace": "                    pass",
+    "tests": ["tests/test_drift_split.py::test_attention_drift_on_a_fixture_tool_sequence_equals_a_hand_count"]
+  },
+  {
+    "name": "R-DRIFT: a read call with no path counts as an outside target",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "                where = \"no-path\" if target is None else",
+    "replace": "                where = \"outside\" if target is None else",
+    "tests": ["tests/test_drift_split.py::test_attention_drift_on_a_fixture_tool_sequence_equals_a_hand_count"]
+  },
+  {
+    "name": "R-DRIFT: an absolute path into the live working copy is never relativised",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "    at = path.find(marker + \"/\")",
+    "replace": "    at = -1",
+    "tests": ["tests/test_drift_split.py::test_attention_drift_on_a_fixture_tool_sequence_equals_a_hand_count"]
+  },
+  {
+    "name": "R-DRIFT: a directory search target holding a neighbourhood file is outside",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "        return any(m.startswith(prefix) for m in self.members)",
+    "replace": "        return False",
+    "tests": ["tests/test_drift_split.py::test_attention_drift_on_a_fixture_tool_sequence_equals_a_hand_count"]
+  },
+  {
+    "name": "R-DRIFT: the prompt names no path",
+    "file": "src/harness_bench/grade/drift.py",
+    "find": "    return tuple(sorted(t for t in tokens if t and (\"/\" in t or _EXTENSION.search(t))))",
+    "replace": "    return ()",
+    "tests": ["tests/test_drift_split.py::test_attention_drift_on_a_fixture_tool_sequence_equals_a_hand_count"]
+  },
+  {
+    "name": "R-DRIFT: the report's radius match folds case again (two definitions, RADIUS-TEST-A)",
+    "file": "src/harness_bench/report/pack_improvement.py",
+    "find": "    return any(_changes.in_radius(p, list(blast_radius)) for p in paths)",
+    "replace": "    return any(_changes.in_radius(p.lower(), [g.lower() for g in blast_radius]) for p in paths)",
+    "tests": ["tests/test_radius_consumers.py::test_one_radius_definition_case_sensitive_on_every_host"]
+  }
+]
