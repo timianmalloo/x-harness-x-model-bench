@@ -28,6 +28,7 @@ from pathlib import Path
 
 import yaml
 
+from harness_bench import archive
 from harness_bench.board import LEGACY_PAIR, Board, _cell_task_rep, view_comparisons
 from harness_bench.errors import BenchError
 from harness_bench.grade import _changes
@@ -775,7 +776,7 @@ def _cell_indicators(
     if not archive_present:
         na = Measure(None, NA_ARCHIVE_ABSENT)
         return _CellIndicators(None, na, False, na, False, na, na, na, pfw)
-    attempts = tool_phases.attempt_dirs(run_dir, cell.cell_id)
+    attempts = archive.attempt_dirs(run_dir, cell.cell_id)
     attempt_dir = attempts[-1] if attempts else None
     ws = attempt_dir / "ws" if attempt_dir is not None else None
     session_id = outcome_event.get("session_id")

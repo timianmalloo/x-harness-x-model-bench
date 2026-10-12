@@ -17,7 +17,7 @@ import re
 from collections.abc import Collection, Mapping, Sequence
 from pathlib import Path
 
-from harness_bench import profiles
+from harness_bench import archive, profiles
 from harness_bench.grade import _changes
 from harness_bench.telemetry import (
     ProcessTrace,
@@ -167,15 +167,6 @@ def carry_until_compaction(entered: Sequence[int], compacted_before: Collection[
     return tuple(out)
 
 
-def attempt_dirs(run_dir: Path, cell_id: str) -> list[Path]:
-    """A cell's archived attempt folders, oldest first (`attempt-<n>`; a leaked temp sibling is not one)."""
-    base = run_dir / "archive" / cell_id
-    if not base.is_dir():
-        return []
-    return sorted((p for p in base.glob("attempt-*") if p.name.rsplit("-", 1)[-1].isdigit()),
-                  key=lambda p: int(p.name.rsplit("-", 1)[1]))
-
-
 def cell_trace(run_dir: Path, view: RunView, cell: CellView, session_id: str | None) -> ProcessTrace | None:
     """This cell's `ProcessTrace`: the main session's `tool_inputs` composed with every sub-agent
     record's own calls, in native order (design section 4.3's own comment). The record globs come
@@ -187,7 +178,7 @@ def cell_trace(run_dir: Path, view: RunView, cell: CellView, session_id: str | N
     profile = (view.plan.get("profiles") or {}).get(cell.harness) or {}
     if reader is None or not session_id or not profile.get("record_glob"):
         return None
-    attempts = attempt_dirs(run_dir, cell.cell_id)
+    attempts = archive.attempt_dirs(run_dir, cell.cell_id)
     if not attempts:
         return None
     home = attempts[-1] / "home"

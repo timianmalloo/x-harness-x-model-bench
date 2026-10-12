@@ -9,14 +9,20 @@ stream does not carry is a `Measure` with its `not recorded` reason, never a 0. 
 
 from __future__ import annotations
 
+import argparse
 import math
+import re
+import statistics
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
-from decimal import Decimal
+from dataclasses import dataclass, field, replace
+from decimal import ROUND_HALF_EVEN, Decimal
+from pathlib import Path
 
-from harness_bench.report import model
+from harness_bench import views as views_mod
+from harness_bench.report import context_growth, model, tool_phases
 from harness_bench.report.html_builder import Html, el
-from harness_bench.views import Measure, RunView
+from harness_bench.report.tool_phases import PHASES
+from harness_bench.views import CellView, Measure, RunView, sum_tokens
 
 # ADR-0027 s0: ACP, a native stream (ADR-0025), or Copilot `-p` behind the local adapter (ADR-0028).
 TRANSPORTS = ("acp", "native stream", "copilot -p (local adapter)")
@@ -66,12 +72,14 @@ class ReasoningRow:
 
 @dataclass(frozen=True)
 class ContextCurve:
-    """The per-request context curve: the median cell, with the min-max band, per request index."""
+    """The per-request context curve: the median cell, with the min-max band, per request index. `reason` (additive,
+    R-DERIV) is why the curve is empty; render falls back to the served window's reason without it."""
     series: SeriesKey
     served_window: Measure
     median: tuple[int, ...]
     low: tuple[int, ...]
     high: tuple[int, ...]
+    reason: str | None = None
 
 
 @dataclass(frozen=True)
@@ -117,9 +125,11 @@ class DriftRow:
 
 @dataclass(frozen=True)
 class KiviatSeries:
-    """One kiviat series: axis (KIVIAT_AXES) -> its value normalised over all series; None = not recorded."""
+    """One kiviat series: axis (KIVIAT_AXES) -> its value normalised over all series; None = not recorded, with the
+    axis's reason in `reasons` (additive, R-REPORT-R seam 1; render shows a generic text where none is given)."""
     series: SeriesKey
     axes: Mapping[str, str | None]  # decimal strings, as the ledger writes non-integers
+    reasons: Mapping[str, str] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -137,9 +147,253 @@ class CostCompare:
     kiviat: tuple[KiviatSeries, ...]
 
 
+# --- build (R-DERIV) -----------------------------------------------------------------------------------------------
+
+DRIFT_METRICS = ("drift_machine_lines", "drift_task_implied_lines", "scope_creep", "attention_drift")
+HIDDEN_CHECKS = "pass_at_1"  # the hidden tests' verdict (the correctness grader)
+# A built reader writes rows whenever it read the record (an `omitted` reasoning row per request at least), so a cell
+# with none and no recorded reason was not read by this pass's reader: not recorded, never a plausible 0.
+NO_ROWS = "no rows for this cell; a reader that reads none is not told apart from none"
+VISIBLE_KINDS = ("text", "summary")  # reasoning source kinds that carry visible text (ADR-0026 s1)
+_EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}")
+_UUID = re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b", re.IGNORECASE)
+_Q = Decimal("0.0001")
+
+
+def _transport(plan: dict, harness: str) -> str:
+    """ADR-0027 s0: Copilot `-p` behind the local adapter when the plan's build names `adapter_version`
+    (`views._prompt_mode`, R-VALIDITY's detection); agy's native stream (its profile's `transport`); else ACP.
+    simplify: a second copy of `pack_cost._transport` (R-PACKCOST, built in parallel). Ceiling: these two pages.
+    Upgrade trigger: the J2 join -> one transport function for both (the Leader's ruling)."""
+    if views_mod._prompt_mode(plan, harness):
+        return TRANSPORTS[2]
+    recorded = ((plan.get("profiles") or {}).get(harness) or {}).get("transport")
+    return TRANSPORTS[1] if recorded == "agy-stream" or (recorded is None and harness == "agy") else TRANSPORTS[0]
+
+
+def _mean(ms: Sequence[Measure], whole: bool = False) -> Measure:
+    """The mean over the cells that record it (an int for tokens and ms when `whole`, else 4 places), or NOT_RECORDED
+    with the first cell's reason when none does.
+    assume: a series mean is over the cells that record the measure, not only over valid cells. Confirmed by: the
+    decision request handed back with this track. If false: an invalid or unrecorded cell moves a series mean; the fix
+    is a validity filter here, one line."""
+    values = [Decimal(m.value) for m in ms if m.value is not None]
+    if not values:
+        return Measure(None, next((m.reason for m in ms if m.reason), "no cell"))
+    mean = sum(values) / len(values)
+    return Measure(int(mean.quantize(Decimal(1), rounding=ROUND_HALF_EVEN))) if whole else Measure(_dec(mean))
+
+
+def _dec(d: Decimal) -> int | Decimal:
+    return int(d) if d == d.to_integral_value() else d.quantize(_Q, rounding=ROUND_HALF_EVEN)
+
+
+@dataclass
+class _Cell:
+    """One cell's per-cell measures, each a Measure (a value or its reason)."""
+    view: RunView
+    cell: CellView
+    m: dict[str, Measure]
+    buckets: dict[str, Measure]
+    parts: dict[str, Measure]
+    kinds: tuple[str, ...]
+    excerpts: tuple[str, ...]
+    dropped: int
+    series: context_growth.RequestSeries
+    paths: tuple[str, ...]
+
+
+def _served_value(view: RunView, cell: CellView, name: str) -> Measure:
+    reason = views_mod.stream_reason(view, "served", cell)
+    if reason is not None:
+        return Measure(None, reason)
+    values = sorted({str(r["value"]) for r in views_mod.cell_rows(view, "served", cell) or []
+                     if r.get("field") == name and r.get("value") is not None and r.get("not_recorded") is None})
+    return Measure(", ".join(values)) if values else Measure(None, f"no source records the served {name}")
+
+
+def _outside_paths(view: RunView, cell: CellView) -> tuple[str, ...]:
+    """drift.log's outside lines (`grade/drift.py`: `status, path, zone, +a -d[, class]`), as `path (class)`."""
+    evidence = cell.evidence.get("scope_creep")
+    path = view.run_dir / evidence if evidence and view.run_dir is not None else None
+    if path is None or not path.is_file():
+        return ()
+    out = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        parts = line.split("\t")
+        if len(parts) >= 4 and parts[2] == "outside":
+            out.append(f"{parts[1]} ({parts[4]})" if len(parts) > 4 else parts[1])
+    return tuple(out)
+
+
+def _cell(view: RunView, cell: CellView) -> _Cell:
+    graded = cell.extraction_id is not None
+    calls = views_mod.cell_rows(view, "model_calls", cell) or []
+    tools = views_mod.cell_rows(view, "tool_calls", cell)
+    total = sum_tokens(cell.tokens)
+    m: dict[str, Measure] = {
+        "tokens": Measure(total) if total is not None else Measure(None, cell.tokens_reason or "not recorded"),
+        "wall": cell.wall_ms, "requests": cell.calls_per_cell,
+        "tool_calls": Measure(len(tools)) if tools is not None else Measure(None, "not graded"),
+        "effort": _served_value(view, cell, "effort"),
+        "window": context_growth.served_window(view, cell),
+    }
+    buckets: dict[str, Measure] = {}
+    for per_model in (cell.tokens or {}).values():
+        for b, v in per_model.items():
+            buckets[b] = Measure((buckets.get(b, Measure(0)).value or 0) + v)
+    # reasoning: tokens from the usage report (model_calls.reasoning); visible text from the `reasoning` stream
+    if not graded:
+        m["reasoning"] = m["reasoning_per_request"] = Measure(None, "not graded")
+    elif not calls or any(r.get("reasoning") is None for r in calls):
+        m["reasoning"] = m["reasoning_per_request"] = Measure(None, "the usage report gives no reasoning tokens")
+    else:
+        tokens = sum(r["reasoning"] for r in calls)
+        requests = sum(r.get("requests", 1) for r in calls)
+        m["reasoning"] = Measure(tokens)
+        m["reasoning_per_request"] = Measure(_dec(Decimal(tokens) / requests)) if requests else Measure(None, "no request")
+    items = views_mod.cell_rows(view, "reasoning", cell) or []
+    r_reason = views_mod.stream_reason(view, "reasoning", cell) or (None if items else NO_ROWS)
+    m["visible"] = Measure(None, r_reason) if r_reason else Measure(
+        sum(r.get("chars") or 0 for r in items if r.get("source_kind") in VISIBLE_KINDS))
+    texts = [r["text"] for r in sorted(items, key=lambda r: (r["native_ordinal"], r["item_ordinal"]))
+             if isinstance(r.get("text"), str) and r["text"].strip()]
+    kept = [t[:EXCERPT_CHARS] for t in texts if not (_EMAIL.search(t) or _UUID.search(t))]
+    # prompt composition
+    rows = views_mod.cell_rows(view, "prompt_parts", cell) or []
+    p_reason = views_mod.stream_reason(view, "prompt_parts", cell) or (None if rows else NO_ROWS)
+    parts: dict[str, Measure] = {}
+    for r in rows:
+        parts[r["part"]] = Measure((parts.get(r["part"], Measure(0)).value or 0) + (r.get("chars") or 0))
+    m["instruction_files"] = Measure(None, p_reason) if p_reason else Measure(
+        sum(1 for r in rows if r.get("part") == "instruction_file"))
+    # tool phases, bytes and re-reads, from the native record's ToolInput sequence
+    session = next((e.get("session_id") for e in view.facts.get("events", ())
+                    if e.get("kind") == "cell.outcome" and e.get("cell_id") == cell.cell_id), None)
+    trace = tool_phases.cell_trace(view.run_dir, view, cell, session) if view.run_dir is not None else None
+    if trace is None:
+        why = (f"no tool-input reader for {cell.harness}" if cell.harness not in tool_phases.TRACE_READERS
+               else "no native record in the archive")
+        for p in (*PHASES, "bytes", "rereads"):
+            m[p] = Measure(None, why)
+    else:
+        m.update({p: Measure(n) for p, n in tool_phases.phase_counts(trace.calls).items()})
+        m["bytes"] = tool_phases.bytes_returned(trace.calls)
+        m["rereads"] = Measure(tool_phases.rereads(trace.calls))
+    anatomy = views_mod.time_anatomy(view, cell)
+    m.update({"model_ms": anatomy.model_ms, "acp_ms": anatomy.model_ms_acp_estimate, "tool_ms": anatomy.tool_ms,
+              "hook_ms": anatomy.hook_ms, "idle_ms": anatomy.idle_ms})
+    for metric in (*DRIFT_METRICS, HIDDEN_CHECKS):
+        m[metric] = cell.scores.get(metric, Measure(None, "not graded" if not graded else f"{metric} not in this pass"))
+    m["clean"] = Measure(1 if cell.validity == "valid" else 0)
+    return _Cell(view, cell, m, buckets, parts, tuple(sorted({r["source_kind"] for r in items})),
+                 tuple(kept[:EXCERPT_CAP]), len(texts) - len(kept),
+                 context_growth.request_series(view, cell.cell_id), _outside_paths(view, cell))
+
+
+def _key(view: RunView, cell: CellView) -> SeriesKey:
+    return SeriesKey(cell.combo, cell.harness, cell.model, cell.arm, _transport(view.plan, cell.harness))
+
+
+def _curve(key: SeriesKey, cells: Sequence[_Cell], window: Measure) -> ContextCurve:
+    """Per request index every cell reached: the median cell's context and the min-max band (`_series`'s rule)."""
+    series = [c.series.inputs for c in cells if c.series.reason is None and c.series.inputs]
+    if not series:
+        reason = next((c.series.reason for c in cells if c.series.reason), context_growth.NO_REQUESTS)
+        return ContextCurve(key, window, (), (), (), reason)
+    n = min(len(s) for s in series)
+    at = [[s[i] for s in series] for i in range(n)]
+    return ContextCurve(key, window, tuple(round(statistics.median(v)) for v in at), tuple(min(v) for v in at),
+                        tuple(max(v) for v in at))
+
+
+def _kiviat_series(keys: Sequence[SeriesKey], rows: Mapping[SeriesKey, Mapping[str, Measure]]) -> tuple[KiviatSeries, ...]:
+    """ADR-0027 s3's axes, raw (render normalises each over all series): an economy is the best series' mean over
+    this series' (lower is better, so the best is 1); the rest are shares in [0, 1]."""
+    def best(name: str) -> Decimal | None:
+        values = [Decimal(rows[k][name].value) for k in keys if rows[k][name].value is not None]
+        return min(values) if values else None
+
+    lows = {n: best(n) for n in ("tokens", "wall", "requests", "tool_calls")}
+    out = []
+    for k in keys:
+        r = rows[k]
+        got: list[tuple[str, Decimal | None, str | None]] = []
+        for axis, name in (("token economy", "tokens"), ("speed", "wall"), ("request economy", "requests"),
+                           ("tool-call economy", "tool_calls")):
+            v = r[name]
+            got.append((axis, None if v.value is None else Decimal(1) if Decimal(v.value) == 0 else lows[name] / Decimal(v.value),
+                        v.reason))
+        got.append(("clean cells", None if r["clean"].value is None else Decimal(r["clean"].value), r["clean"].reason))
+        phases = [r[p] for p in PHASES]
+        total = sum(Decimal(p.value) for p in phases) if all(p.value is not None for p in phases) else None
+        why = next((p.reason for p in phases if p.value is None), None) or "no tool calls"
+        got.append(("edit orientation", Decimal(r["edit"].value) / total if total else None, why))
+        got.append(("read orientation", Decimal(r["explore"].value) / total if total else None, why))
+        hidden = r[HIDDEN_CHECKS]
+        got.append(("hidden checks passed", None if hidden.value is None else Decimal(hidden.value), hidden.reason))
+        axes = {a: None if v is None else str(v.quantize(_Q, rounding=ROUND_HALF_EVEN)) for a, v, _ in got}
+        out.append(KiviatSeries(k, axes, {a: why or "not recorded" for a, v, why in got if v is None}))
+    return tuple(out)
+
+
 def build(views: Sequence[RunView]) -> CostCompare:
-    """Pure: every number from the views and the ADR-0026 s4 derivations (R-DERIV builds it)."""
-    raise NotImplementedError("cost_compare.build: R-DERIV")
+    """Pure over the views (their rows and archives, ADR-0026 s4's derivations): one series per (combo, arm), each
+    figure the mean per cell over the series' cells that record it (`_mean`), a NOT_RECORDED with its reason otherwise.
+    Excerpts are collected (email- and UUID-shaped ones dropped and counted); the page shows them only with
+    `--excerpts`."""
+    grouped: dict[SeriesKey, list[_Cell]] = {}
+    for view in views:
+        for cell in view.cells:
+            grouped.setdefault(_key(view, cell), []).append(_cell(view, cell))
+    keys = list(grouped)
+    means: dict[SeriesKey, dict[str, Measure]] = {}
+    combos, reasoning, context, prompts, phases, anatomy, drift = [], [], [], [], [], [], []
+    for k in keys:
+        cells = grouped[k]
+        names = list(dict.fromkeys(n for c in cells for n in c.m))
+        whole = {"tokens", "wall", "model_ms", "acp_ms", "tool_ms", "hook_ms", "idle_ms", "bytes", "reasoning",
+                 "visible", "drift_machine_lines", "drift_task_implied_lines", "scope_creep"}
+        mean = {n: _mean([c.m[n] for c in cells], whole=n in whole) for n in names if n not in ("effort", "window")}
+        mean["effort"] = _same([c.m["effort"] for c in cells])
+        mean["window"] = _same([c.m["window"] for c in cells])
+        means[k] = mean
+        bucket_names = list(dict.fromkeys(b for c in cells for b in c.buckets))
+        combos.append(ComboRow(k, len(cells), str(_plan_cell(cells[0]).get("effort", "default")), mean["effort"],
+                               _plan_cell(cells[0]).get("context", "default"), mean["window"], mean["tokens"],
+                               {b: _mean([c.buckets.get(b, Measure(0) if c.cell.tokens else Measure(
+                                   None, c.cell.tokens_reason)) for c in cells], whole=True) for b in bucket_names},
+                               mean["wall"], mean["requests"], mean["tool_calls"]))
+        reasoning.append(ReasoningRow(k, mean["reasoning"], mean["reasoning_per_request"], mean["visible"],
+                                      tuple(sorted({s for c in cells for s in c.kinds})),
+                                      tuple(e for c in cells for e in c.excerpts)[:EXCERPT_CAP],
+                                      sum(c.dropped for c in cells)))
+        context.append(_curve(k, cells, mean["window"]))
+        part_names = list(dict.fromkeys(p for c in cells for p in c.parts))
+        prompts.append(PromptComposition(k, {p: _mean([c.parts.get(p, Measure(0)) for c in cells], whole=True)
+                                             for p in part_names}, mean["instruction_files"]))
+        phases.append(ToolPhaseRow(k, mean["explore"], mean["edit"], mean["verify"], mean["other"], mean["bytes"]))
+        anatomy.append(TimeAnatomyRow(k, mean["model_ms"], mean["acp_ms"], mean["tool_ms"], mean["hook_ms"],
+                                      mean["idle_ms"]))
+        drift.append(DriftRow(k, mean["drift_machine_lines"], mean["drift_task_implied_lines"], mean["scope_creep"],
+                              mean["attention_drift"], tuple(dict.fromkeys(p for c in cells for p in c.paths))))
+    catalogs = sorted({v.catalog_version for v in views if v.catalog_version})
+    return CostCompare(tuple(v.run_id for v in views), ", ".join(catalogs) or None, False, tuple(combos),
+                       tuple(reasoning), tuple(context), tuple(prompts), tuple(phases), tuple(anatomy), tuple(drift),
+                       _kiviat_series(keys, means))
+
+
+def _plan_cell(c: _Cell) -> dict:
+    return next((p for p in c.view.plan.get("cells", ()) if p.get("cell_id") == c.cell.cell_id), {})
+
+
+def _same(ms: Sequence[Measure]) -> Measure:
+    """A setting over the series' cells: the one value they record, the values joined when they differ, or the
+    first reason when none records it."""
+    values = list(dict.fromkeys(str(m.value) for m in ms if m.value is not None))
+    if not values:
+        return Measure(None, next((m.reason for m in ms if m.reason), "not recorded"))
+    return Measure(int(values[0]) if len(values) == 1 and values[0].isdigit() else ", ".join(values))
 
 
 # --- render (R-REPORT-R) -------------------------------------------------------------------------------------------
@@ -381,7 +635,7 @@ def _context(cc: CostCompare, pg: _Page) -> model.Section:
     rows = []
     for c in cc.context:
         if not c.median:
-            na = _fmt(Measure(None, c.served_window.reason or "no requests recorded"))
+            na = _fmt(Measure(None, c.reason or c.served_window.reason or "no requests recorded"))
             rows.append((c.series, [_fmt(c.served_window), na, na, na, na, na]))
             continue
         rows.append((c.series, [_fmt(c.served_window), f"{len(c.median):,}", f"{c.median[0]:,}", f"{c.median[-1]:,}",
@@ -485,7 +739,9 @@ def _kiviat(cc: CostCompare, pg: _Page) -> model.Section:
 
     def cell(k: KiviatSeries, a: str) -> str:
         n = norm(k, a)
-        return "not recorded (no value for this axis)" if n is None else f"{k.axes[a]} ({n:.4f} of the max)"
+        if n is None:
+            return f"not recorded ({k.reasons.get(a) or 'no value for this axis'})"
+        return f"{k.axes[a]} ({n:.4f} of the max)"
 
     table = pg.table("kiviat-caption", "Kiviat values per series: the value, then its share of the axis maximum "
                      "over all series", list(KIVIAT_AXES), [(k.series, [cell(k, a) for a in KIVIAT_AXES])
@@ -518,6 +774,51 @@ def render(cc: CostCompare, scan: Callable[[str], list[str]] | None = None) -> s
                       style=report_html.STYLE + STYLE, script=SCRIPT)
 
 
+DEFAULT_OUT = "cost-compare.html"
+
+
+def _parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(prog="bench report --cost-compare")
+    p.add_argument("cost_compare", nargs="+", metavar="RUN")
+    p.add_argument("--out", default=None)
+    p.add_argument("--analysis", default=None)
+    p.add_argument("--open", action="store_true")
+    p.add_argument("--excerpts", action="store_true")
+    p.add_argument("--root", default=".")
+    p.add_argument("--runs", default=None)
+    return p
+
+
+def load_views(args: argparse.Namespace) -> list[RunView]:
+    """Each named run's view, from `--runs` (default `<root>/runs`), in the order named."""
+    runs = Path(args.runs) if getattr(args, "runs", None) else Path(args.root) / "runs"
+    return [views_mod.load(runs / run_id) for run_id in args.cost_compare]
+
+
+def embed(page: str, section: str) -> str:
+    """The analyst section (ADR-0029 s7, the Leader's ruling for this page) as the page's last section."""
+    assert page.count("</main>") == 1
+    return page.replace("</main>", f"{section}</main>")
+
+
 def cli_main(argv: Sequence[str]) -> int:
-    """`bench report --cost-compare RUN [RUN ...] --out PATH [--open] [--excerpts]`, written through `publish`."""
-    raise NotImplementedError("cost_compare.cli_main: R-DERIV")
+    """`bench report --cost-compare RUN [RUN ...] --out PATH [--open] [--excerpts] [--analysis MD]`, written through
+    `publish`. `argv` is the CLI's parsed namespace (`cli.cmd_report`), or a list of strings for a direct call. With
+    `--analysis`, the analyst's Markdown is checked and rendered by `report.analysis` (R-PACKCOST's shared helper):
+    every number it cites must be in the page's generated tables, or nothing is written."""
+    from harness_bench.report import publish
+
+    args = argv if isinstance(argv, argparse.Namespace) else _parser().parse_args(list(argv))
+    cc = build(load_views(args))
+    if getattr(args, "excerpts", False):
+        cc = replace(cc, excerpts=True)
+    page = render(cc)
+    if args.analysis:
+        # R-PACKCOST's helper, imported only when --analysis is given
+        from harness_bench.report import analysis
+
+        md = Path(args.analysis).read_text(encoding="utf-8")
+        page = embed(page, analysis.check_and_render(md, analysis.table_numbers(page)))
+    out = Path(args.out) if args.out else Path(args.root) / DEFAULT_OUT
+    publish.publish(page, out, bool(args.open))
+    return 0
