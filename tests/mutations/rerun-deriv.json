@@ -73,9 +73,9 @@
  },
  {
   "name": "a Copilot -p combo reads ACP",
-  "file": "src/harness_bench/report/cost_compare.py",
-  "find": "    if views_mod._prompt_mode(plan, harness):\n        return TRANSPORTS[2]\n",
-  "replace": "    if views_mod._prompt_mode(plan, harness):\n        return TRANSPORTS[0]\n",
+  "file": "src/harness_bench/report/tool_phases.py",
+  "find": "    if views._prompt_mode(plan, harness):\n        return TRANSPORTS[2]\n",
+  "replace": "    if views._prompt_mode(plan, harness):\n        return TRANSPORTS[0]\n",
   "tests": [
    "tests/test_cost_compare_e2e.py::test_build_fills_each_combo_transport_from_the_plan"
   ]
@@ -95,7 +95,7 @@
   "find": "    p_reason = views_mod.stream_reason(view, \"prompt_parts\", cell) or (None if rows else NO_ROWS)\n",
   "replace": "    p_reason = views_mod.stream_reason(view, \"prompt_parts\", cell)\n",
   "tests": [
-   "tests/test_cost_compare_e2e.py::test_the_end_to_end_golden_is_byte_equal_on_re_render"
+   "tests/test_cost_compare_e2e.py::test_a_cell_with_no_prompt_part_rows_and_no_reason_is_not_recorded_never_zero"
   ]
  },
  {

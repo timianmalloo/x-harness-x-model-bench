@@ -21,11 +21,10 @@ from pathlib import Path
 from harness_bench import views as views_mod
 from harness_bench.report import context_growth, model, tool_phases
 from harness_bench.report.html_builder import Html, el
-from harness_bench.report.tool_phases import PHASES
+from harness_bench.report.tool_phases import PHASES, TRANSPORTS
 from harness_bench.views import CellView, Measure, RunView, sum_tokens
 
-# ADR-0027 s0: ACP, a native stream (ADR-0025), or Copilot `-p` behind the local adapter (ADR-0028).
-TRANSPORTS = ("acp", "native stream", "copilot -p (local adapter)")
+# ADR-0027 s0's TRANSPORTS are defined once, in `tool_phases`, beside `tool_phases.transport` (J2-FIX item 1).
 # ADR-0027 s3: the kiviat's axes, each normalised over all series so toggling a series never rescales.
 KIVIAT_AXES = ("token economy", "speed", "request economy", "tool-call economy", "clean cells", "edit orientation",
                "read orientation", "hidden checks passed")
@@ -160,23 +159,13 @@ _UUID = re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 _Q = Decimal("0.0001")
 
 
-def _transport(plan: dict, harness: str) -> str:
-    """ADR-0027 s0: Copilot `-p` behind the local adapter when the plan's build names `adapter_version`
-    (`views._prompt_mode`, R-VALIDITY's detection); agy's native stream (its profile's `transport`); else ACP.
-    simplify: a second copy of `pack_cost._transport` (R-PACKCOST, built in parallel). Ceiling: these two pages.
-    Upgrade trigger: the J2 join -> one transport function for both (the Leader's ruling)."""
-    if views_mod._prompt_mode(plan, harness):
-        return TRANSPORTS[2]
-    recorded = ((plan.get("profiles") or {}).get(harness) or {}).get("transport")
-    return TRANSPORTS[1] if recorded == "agy-stream" or (recorded is None and harness == "agy") else TRANSPORTS[0]
-
-
 def _mean(ms: Sequence[Measure], whole: bool = False) -> Measure:
     """The mean over the cells that record it (an int for tokens and ms when `whole`, else 4 places), or NOT_RECORDED
     with the first cell's reason when none does.
-    assume: a series mean is over the cells that record the measure, not only over valid cells. Confirmed by: the
-    decision request handed back with this track. If false: an invalid or unrecorded cell moves a series mean; the fix
-    is a validity filter here, one line."""
+
+    The rule (Leader ruling on R-DERIV's decision request, option a): a series mean covers every cell of the series
+    that records the measure, valid or not; a cell that does not record it is left out, never counted as 0, and an
+    invalid cell is not filtered out (validity is its own axis, `clean cells`)."""
     values = [Decimal(m.value) for m in ms if m.value is not None]
     if not values:
         return Measure(None, next((m.reason for m in ms if m.reason), "no cell"))
@@ -238,10 +227,11 @@ def _cell(view: RunView, cell: CellView) -> _Cell:
         "effort": _served_value(view, cell, "effort"),
         "window": context_growth.served_window(view, cell),
     }
-    buckets: dict[str, Measure] = {}
+    sums: dict[str, int] = {}
     for per_model in (cell.tokens or {}).values():
         for b, v in per_model.items():
-            buckets[b] = Measure((buckets.get(b, Measure(0)).value or 0) + v)
+            sums[b] = sums.get(b, 0) + v
+    buckets = {b: Measure(v) for b, v in sums.items()}
     # reasoning: tokens from the usage report (model_calls.reasoning); visible text from the `reasoning` stream
     if not graded:
         m["reasoning"] = m["reasoning_per_request"] = Measure(None, "not graded")
@@ -262,14 +252,14 @@ def _cell(view: RunView, cell: CellView) -> _Cell:
     # prompt composition
     rows = views_mod.cell_rows(view, "prompt_parts", cell) or []
     p_reason = views_mod.stream_reason(view, "prompt_parts", cell) or (None if rows else NO_ROWS)
-    parts: dict[str, Measure] = {}
+    chars: dict[str, int] = {}
     for r in rows:
-        parts[r["part"]] = Measure((parts.get(r["part"], Measure(0)).value or 0) + (r.get("chars") or 0))
+        chars[r["part"]] = chars.get(r["part"], 0) + (r.get("chars") or 0)
+    parts = {p: Measure(v) for p, v in chars.items()}
     m["instruction_files"] = Measure(None, p_reason) if p_reason else Measure(
         sum(1 for r in rows if r.get("part") == "instruction_file"))
     # tool phases, bytes and re-reads, from the native record's ToolInput sequence
-    session = next((e.get("session_id") for e in view.facts.get("events", ())
-                    if e.get("kind") == "cell.outcome" and e.get("cell_id") == cell.cell_id), None)
+    session = tool_phases.main_session(view, cell)
     trace = tool_phases.cell_trace(view.run_dir, view, cell, session) if view.run_dir is not None else None
     if trace is None:
         why = (f"no tool-input reader for {cell.harness}" if cell.harness not in tool_phases.TRACE_READERS
@@ -292,7 +282,16 @@ def _cell(view: RunView, cell: CellView) -> _Cell:
 
 
 def _key(view: RunView, cell: CellView) -> SeriesKey:
-    return SeriesKey(cell.combo, cell.harness, cell.model, cell.arm, _transport(view.plan, cell.harness))
+    return SeriesKey(cell.combo, cell.harness, cell.model, cell.arm, tool_phases.transport(view.plan, cell.harness))
+
+
+def _part(c: _Cell, part: str) -> Measure:
+    """One cell's characters of one part kind: its recorded sum; a measured 0 when the cell's parts were read and
+    hold none of that kind; NOT_RECORDED with the cell's reason when its parts were not read (never a plausible 0)."""
+    if part in c.parts:
+        return c.parts[part]
+    reason = c.m["instruction_files"].reason
+    return Measure(None, reason) if c.m["instruction_files"].value is None else Measure(0)
 
 
 def _curve(key: SeriesKey, cells: Sequence[_Cell], window: Measure) -> ContextCurve:
@@ -370,7 +369,7 @@ def build(views: Sequence[RunView]) -> CostCompare:
                                       sum(c.dropped for c in cells)))
         context.append(_curve(k, cells, mean["window"]))
         part_names = list(dict.fromkeys(p for c in cells for p in c.parts))
-        prompts.append(PromptComposition(k, {p: _mean([c.parts.get(p, Measure(0)) for c in cells], whole=True)
+        prompts.append(PromptComposition(k, {p: _mean([_part(c, p) for c in cells], whole=True)
                                              for p in part_names}, mean["instruction_files"]))
         phases.append(ToolPhaseRow(k, mean["explore"], mean["edit"], mean["verify"], mean["other"], mean["bytes"]))
         anatomy.append(TimeAnatomyRow(k, mean["model_ms"], mean["acp_ms"], mean["tool_ms"], mean["hook_ms"],
@@ -434,8 +433,11 @@ SCRIPT = """document.querySelectorAll('#kiviat input[data-series]').forEach(func
 
 
 def _fmt(m: Measure) -> str:
-    """A Measure as text: `not recorded (<reason>)` for None, never 0 or blank."""
+    """A Measure as text: `not recorded (<reason>)` for None, never 0 or blank; a reader's reason that already reads
+    `not recorded: ...` is shown as it is (never `not recorded (not recorded: ...)`)."""
     if m.value is None:
+        if m.reason and m.reason.startswith("not recorded"):
+            return m.reason
         return f"not recorded ({m.reason})" if m.reason else "not recorded"
     if isinstance(m.value, int):
         return f"{m.value:,}"
@@ -740,7 +742,7 @@ def _kiviat(cc: CostCompare, pg: _Page) -> model.Section:
     def cell(k: KiviatSeries, a: str) -> str:
         n = norm(k, a)
         if n is None:
-            return f"not recorded ({k.reasons.get(a) or 'no value for this axis'})"
+            return _fmt(Measure(None, k.reasons.get(a) or "no value for this axis"))
         return f"{k.axes[a]} ({n:.4f} of the max)"
 
     table = pg.table("kiviat-caption", "Kiviat values per series: the value, then its share of the axis maximum "

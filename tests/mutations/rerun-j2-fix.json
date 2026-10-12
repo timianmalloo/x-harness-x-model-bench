@@ -1,0 +1,58 @@
+[
+  {
+    "name": "J2-FIX item 10: every Copilot prompt part shares native_ordinal 0",
+    "file": "src/harness_bench/telemetry/copilot.py",
+    "find": "    return [PromptPart(n, *part) for n, part in enumerate(parts)]",
+    "replace": "    return [PromptPart(0, *part) for part in parts]",
+    "tests": ["tests/test_reader_copilot.py::test_pack_on_parts_carry_distinct_ordinals_and_load_in_a_view"]
+  },
+  {
+    "name": "J2-FIX item 7: views matches the prompt label by its /prompt suffix again",
+    "file": "src/harness_bench/views.py",
+    "find": "        kind, prompt = r.get(\"update_kind\"), r.get(\"method\") == TIMELINE_PROMPT\n",
+    "replace": "        kind, prompt = r.get(\"update_kind\"), str(r.get(\"method\")).endswith(TIMELINE_PROMPT[7:])\n",
+    "tests": ["tests/test_cost_compare_e2e.py::test_the_timeline_labels_are_the_drivers_constants_matched_exactly"]
+  },
+  {
+    "name": "J2-FIX item 2: cell_facts cannot reach the view's run directory",
+    "file": "src/harness_bench/report/pack_cost.py",
+    "find": "    run_dir = view.run_dir\n    if run_dir is None:\n",
+    "replace": "    run_dir = None\n    if run_dir is None:\n",
+    "tests": ["tests/test_pack_cost.py::test_the_real_path_decomposes_a_graded_copilot_pair_with_no_fakes"]
+  },
+  {
+    "name": "J2-FIX item 1: agy's native stream reads ACP",
+    "file": "src/harness_bench/report/tool_phases.py",
+    "find": "    return TRANSPORTS[1] if recorded == \"agy-stream\" or (recorded is None and harness == \"agy\") else TRANSPORTS[0]",
+    "replace": "    return TRANSPORTS[0]",
+    "tests": ["tests/test_tool_phases.py::test_one_transport_definition_serves_both_report_pages"]
+  },
+  {
+    "name": "J2-FIX item 9: a series mean counts an unrecorded cell as 0",
+    "file": "src/harness_bench/report/cost_compare.py",
+    "find": "    values = [Decimal(m.value) for m in ms if m.value is not None]\n",
+    "replace": "    values = [Decimal(m.value or 0) for m in ms]\n",
+    "tests": ["tests/test_cost_compare_e2e.py::test_a_series_mean_covers_the_cells_that_record_the_measure_valid_or_not"]
+  },
+  {
+    "name": "J2-FIX item 5: a cell whose prompt parts were not read counts 0 characters per part (T-A1)",
+    "file": "src/harness_bench/report/cost_compare.py",
+    "find": "    return Measure(None, reason) if c.m[\"instruction_files\"].value is None else Measure(0)\n",
+    "replace": "    return Measure(0)\n",
+    "tests": ["tests/test_cost_compare_e2e.py::test_a_cell_with_no_prompt_part_rows_and_no_reason_is_not_recorded_never_zero"]
+  },
+  {
+    "name": "J2-FIX item 5: a reader's not-recorded reason is wrapped twice on the page",
+    "file": "src/harness_bench/report/cost_compare.py",
+    "find": "        if m.reason and m.reason.startswith(\"not recorded\"):\n            return m.reason\n",
+    "replace": "",
+    "tests": ["tests/test_cost_compare_e2e.py::test_the_end_to_end_golden_is_byte_equal_on_re_render"]
+  },
+  {
+    "name": "J2-FIX item 5: a missing pack source folder reaches git (procs outside the egress allowlist)",
+    "file": "src/harness_bench/report/pack_cost.py",
+    "find": "    if not source.is_dir():  # git would not start in a missing folder\n        return PackSource(label, UNREADABLE, lambda _: None)\n",
+    "replace": "",
+    "tests": ["tests/test_pack_cost.py::test_an_unreadable_pack_source_gives_unclassified_with_its_reason"]
+  }
+]

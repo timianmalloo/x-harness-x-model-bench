@@ -17,7 +17,7 @@ import re
 from collections.abc import Collection, Mapping, Sequence
 from pathlib import Path
 
-from harness_bench import archive, profiles
+from harness_bench import archive, profiles, views
 from harness_bench.grade import _changes
 from harness_bench.telemetry import (
     ProcessTrace,
@@ -55,6 +55,30 @@ NO_BYTES = "a tool result's size is not in the record"
 NO_CALLS = "no tool calls recorded"
 # The harnesses whose reader yields a `ToolInput` sequence (each module's `tool_inputs`).
 TRACE_READERS = {"claude-code": claude_code, "codex": codex, "copilot": copilot}
+# ADR-0027 s0: ACP, a native stream (ADR-0025), or Copilot `-p` behind the local adapter (ADR-0028); one wording on
+# both report pages (cost_compare, pack_cost).
+TRANSPORTS = ("acp", "native stream", "copilot -p (local adapter)")
+
+
+def transport(plan: dict, harness: str) -> str:
+    """A combo's transport, a plan fact (ADR-0027 s0, Ruling 120): Copilot `-p` behind the local adapter when the
+    plan's build names `adapter_version` (`views._prompt_mode`, R-VALIDITY's detection); agy's native stream (its
+    profile's `transport`); else ACP. The one definition both report pages read (J2-FIX item 1).
+
+    assume: a profile record with no `transport` field is agy's `agy-stream` for agy and ACP for every other harness
+    (`bench/profiles/agy.yaml:5`; a plan's profile record may not carry the field). Confirm: a `transport` field in
+    every plan's profile record. Breaks if false: a row names the wrong transport; the fix is to require the field."""
+    if views._prompt_mode(plan, harness):
+        return TRANSPORTS[2]
+    recorded = ((plan.get("profiles") or {}).get(harness) or {}).get("transport")
+    return TRANSPORTS[1] if recorded == "agy-stream" or (recorded is None and harness == "agy") else TRANSPORTS[0]
+
+
+def main_session(view: RunView, cell: CellView) -> str | None:
+    """The cell's main session id, as its `cell.outcome` event records it; None when none does. The one definition
+    the report derivations read for a cell's own record and requests."""
+    return next((e.get("session_id") for e in view.facts.get("events", ())
+                 if e.get("kind") == "cell.outcome" and e.get("cell_id") == cell.cell_id), None)
 
 
 def _matches_blast_radius(paths: Sequence[str], blast_radius: Sequence[str]) -> bool:

@@ -65,6 +65,19 @@ def test_bytes_returned_is_the_sum_or_not_recorded_never_a_partial_sum():
     assert tool_phases.bytes_returned(()).value is None
 
 
+def test_one_transport_definition_serves_both_report_pages():
+    """J2-FIX item 1: `tool_phases.transport` is the one definition; neither page keeps a copy."""
+    from harness_bench.report import cost_compare, pack_cost
+
+    assert not hasattr(cost_compare, "_transport") and not hasattr(pack_cost, "_transport")
+    assert cost_compare.TRANSPORTS is tool_phases.TRANSPORTS
+    acp, stream, p = tool_phases.TRANSPORTS
+    plan = {"builds": {"copilot": {"adapter_version": "0.1.0"}, "codex": {"adapter_version": "9"}},
+            "profiles": {"agy": {}, "grok": {"transport": "acp"}, "x": {"transport": "agy-stream"}}}
+    assert [tool_phases.transport(plan, h) for h in ("copilot", "codex", "agy", "grok", "x")] == [p, acp, stream, acp, stream]
+    assert tool_phases.transport({}, "copilot") == acp  # an ACP-era build names no adapter
+
+
 def test_carry_until_compaction_counts_each_entry_on_every_later_request_until_a_compaction():
     assert tool_phases.carry_until_compaction((5, 3, 2, 4), ()) == (5, 8, 10, 14)
     assert tool_phases.carry_until_compaction((5, 3, 2, 4), (2,)) == (5, 8, 2, 6)  # drops what entered before 2

@@ -51,8 +51,8 @@
  {
   "name": "M-COP-IMPORT: a custom instruction's chars double-count its imported file",
   "file": "src/harness_bench/telemetry/copilot.py",
-  "find": "PromptPart(\"instruction_file\", None, end - start - inner, \"inlined\", source)",
-  "replace": "PromptPart(\"instruction_file\", None, end - start, \"inlined\", source)",
+  "find": "(\"instruction_file\", None, end - start - inner, \"inlined\", source)",
+  "replace": "(\"instruction_file\", None, end - start, \"inlined\", source)",
   "tests": ["tests/test_reader_copilot.py::test_instruction_file_parts_on_pack_on_and_none_on_pack_off"]
  },
  {

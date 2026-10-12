@@ -306,13 +306,13 @@ def test_cost_compare_dataclasses_fields_and_order():
                                             "requests_per_cell", "tool_calls_per_cell"]
     assert names(cost_compare.ReasoningRow) == ["series", "tokens_per_cell", "tokens_per_request", "visible_chars",
                                                 "source_kinds", "excerpts", "excerpts_dropped"]
-    assert names(cost_compare.ContextCurve) == ["series", "served_window", "median", "low", "high"]
+    assert names(cost_compare.ContextCurve) == ["series", "served_window", "median", "low", "high", "reason"]
     assert names(cost_compare.PromptComposition) == ["series", "chars_by_part", "instruction_files"]
     assert names(cost_compare.ToolPhaseRow) == ["series", "explore", "edit", "verify", "other", "bytes_returned"]
     assert names(cost_compare.TimeAnatomyRow) == ["series", "model_ms", "model_ms_acp_estimate", "tool_ms", "hook_ms", "idle_ms"]
     assert names(cost_compare.DriftRow) == ["series", "machine_lines", "task_implied_lines", "discretionary_lines",
                                             "attention_drift", "out_of_scope_paths"]
-    assert names(cost_compare.KiviatSeries) == ["series", "axes"]
+    assert names(cost_compare.KiviatSeries) == ["series", "axes", "reasons"]
     assert cost_compare.KIVIAT_AXES == ("token economy", "speed", "request economy", "tool-call economy", "clean cells",
                                         "edit orientation", "read orientation", "hidden checks passed")
     assert names(cost_compare.CostCompare) == ["runs", "catalog_version", "excerpts", "combos", "reasoning", "context",
@@ -331,21 +331,11 @@ def test_pack_cost_dataclasses_fields_and_order():
     assert names(pack_cost.TopFile) == ["path", "component", "harness", "tokens_per_cell", "requests_carried", "delivery"]
     assert names(pack_cost.Candidate) == ["rule", "harness", "figure", "threshold", "lever"]
     assert names(pack_cost.PackCost) == ["runs", "pack_source", "pack_source_reason", "harnesses", "components",
-                                         "component_costs", "top_files", "candidates", "thresholds"]
+                                         "component_costs", "top_files", "candidates", "thresholds", "pairs", "outcomes",
+                                         "outcome_reason", "transports"]
 
 
-@pytest.mark.parametrize("call", [
-    lambda: cost_compare.build([]), lambda: cost_compare.cli_main([]),
-    lambda: pack_cost.build([]), lambda: pack_cost.render(None), lambda: pack_cost.cli_main([]),
-    lambda: tool_phases.phases(()), lambda: tool_phases.carry_until_compaction((), ()),
-    lambda: context_growth.request_series(None, "a"),
-])
-def test_the_stubs_raise_not_implemented(call):
-    with pytest.raises(NotImplementedError):
-        call()
-
-
-def test_the_stub_signatures():
+def test_the_stub_signatures():  # every J0 stub is built (R-DERIV, R-PACKCOST): their signatures stay pinned
     sig = {f: list(inspect.signature(f).parameters) for f in (
         cost_compare.build, cost_compare.render, cost_compare.cli_main, pack_cost.build, pack_cost.render,
         pack_cost.cli_main, tool_phases.phases, tool_phases.carry_until_compaction, publish.publish, publish.scan_text,

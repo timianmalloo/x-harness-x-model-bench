@@ -210,6 +210,32 @@ def test_instruction_file_parts_on_pack_on_and_none_on_pack_off():
     assert len(_parts(OFF, "system")) == 1 and len(_parts(OFF, "skills")) == 2
 
 
+def test_pack_on_parts_carry_distinct_ordinals_and_load_in_a_view(tmp_path, monkeypatch):
+    """J2-FIX item 10: `PromptPart.native_ordinal` (J1A-FIX item 28) is the part's position in its record, so the
+    pack-on parts never share a key and a pass that writes them loads without HB-LED-003."""
+    from archived_runs import GOOD, make_root, make_run, pass_rows
+
+    from harness_bench import profiles, views
+    from harness_bench.grade import runner
+
+    parts = copilot.read(ON).prompt_parts
+    assert isinstance(parts, list), parts
+    assert [p.native_ordinal for p in parts] == list(range(len(parts)))
+    real = profiles.READERS["codex"]
+
+    def reader(path):
+        ex = real(path)
+        ex.prompt_parts = parts
+        return ex
+
+    monkeypatch.setitem(profiles.READERS, "codex", reader)
+    root = make_root(tmp_path / "r")
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    gid = runner.run_pass(run_dir, root).grading_id
+    assert len(pass_rows(run_dir, "prompt_parts", gid)) == len(parts)
+    assert views.load(run_dir).cells[0].extraction_id is not None  # no HB-LED-003: every part's key differs
+
+
 def test_without_the_debug_log_prompt_parts_are_not_recorded(tmp_path):
     assert copilot.read(_record_only(tmp_path, ON)).prompt_parts == "not recorded: no debug process log in the cell home"
 
