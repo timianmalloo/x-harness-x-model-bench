@@ -4,8 +4,8 @@ Fixtures (scrubbed real turns of the pinned build: Claude Code 2.1.282, claude-a
 - `rerun-1m-settings*`: the settings spike (2026-10-11), `ANTHROPIC_MODEL=claude-opus-5-5[1m]`, effort high, thinking
   display `summarized`, copied-credential login. Served the 1M model.
 - `rerun-x1-packon*`: one pack-on X1 turn (2026-10-12), the same settings, `CLAUDE_CODE_OAUTH_TOKEN` login. The
-  adapter's model menu offered `opus`, not `opus[1m]`, so it served `claude-opus-5-5` at 200,000 (and one 1,000,000
-  size on the final usage_update).
+  adapter's model menu offered `opus`, not `opus[1m]`; its in-turn usage_updates say 200,000 (the adapter's
+  seed) and its post-result one 1,000,000 (the authoritative window; PROBE-FIX-2 D).
 Each `-acp.jsonl` holds the turn's inbound ACP usage_update notifications and its prompt result, one JSON-RPC message
 per line."""
 
@@ -54,10 +54,25 @@ def test_served_reads_effort_model_and_the_acp_context_size_each_with_its_source
     assert served[("context_tokens", "acp:usage_update.size")] == [1_000_000]
 
 
-def test_a_source_showing_two_context_sizes_writes_both_so_the_view_refuses_them():
-    served = _served(PACK_ON)  # the OAuth-token turn: served 200k, the final usage_update says 1M
+def test_only_the_post_result_size_is_a_served_context_row():
+    # PROBE-FIX-2 D (a): the in-turn 200k sizes are the adapter's seed; the usage_update before the prompt result
+    # carries result.modelUsage.contextWindow, the authoritative window (claude_code._authoritative)
+    served = _served(PACK_ON)
     assert served[("model_served", "transcript:attachment.identity.modelId")] == ["claude-opus-5-5"]
-    assert served[("context_tokens", "acp:usage_update.size")] == [200_000, 1_000_000]
+    assert served[("context_tokens", "acp:usage_update.size")] == [1_000_000]
+
+
+def test_a_source_showing_two_context_sizes_writes_both_so_the_view_refuses_them(tmp_path):
+    # two turns whose post-result updates disagree (PROBE-FIX-2 D: a genuine disagreement, never a seed)
+    def update(size):
+        return {"jsonrpc": "2.0", "method": "session/update", "params": {"sessionId": "s", "update": {
+            "sessionUpdate": "usage_update", "used": 900, "size": size}}}
+    end = {"jsonrpc": "2.0", "id": 3, "result": {"stopReason": "end_turn"}}
+    acp = tmp_path / "two-acp.jsonl"
+    acp.write_text("".join(json.dumps(m) + "\n" for m in (update(200_000), end, update(1_000_000), end)), encoding="utf-8")
+    rows = [r for r in normalize.served_rows(*ARGS, claude_code.read(ONE_M, acp=acp), "x")
+            if r["field"] == "context_tokens" and r["value"] is not None]
+    assert [r["value"] for r in rows] == [200_000, 1_000_000]
 
 
 def test_without_an_acp_record_the_context_size_is_not_recorded_never_a_guess():
@@ -148,8 +163,11 @@ def _cell_home(tmp_path: Path, sizes: list[int] | None) -> Path:
     if sizes is not None:
         lines = [{"first_mono_ns": 1, "last_mono_ns": 1, "count": 1, "method": "session/prompt", "update_kind": "sent",
                   "tool_call_id": None}]
-        lines += [{"first_mono_ns": 2, "last_mono_ns": 3, "count": 2, "method": "session/update",
-                   "update_kind": "usage_update", "tool_call_id": None, "used": 900, "size": s} for s in sizes]
+        for s in sizes:  # PROBE-FIX-2 D (a): each size is a turn's post-result update, right before its prompt response
+            lines += [{"first_mono_ns": 2, "last_mono_ns": 3, "count": 2, "method": "session/update",
+                       "update_kind": "usage_update", "tool_call_id": None, "used": 900, "size": s},
+                      {"first_mono_ns": 4, "last_mono_ns": 4, "count": 1, "method": "session/prompt",
+                       "update_kind": "response", "tool_call_id": None}]
         (tmp_path / "home" / "acp-timeline.jsonl").write_text("".join(json.dumps(x) + "\n" for x in lines), encoding="utf-8")
     return record
 

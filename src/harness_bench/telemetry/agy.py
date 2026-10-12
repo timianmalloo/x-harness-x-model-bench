@@ -6,7 +6,8 @@ stream_driver.STREAM_RECORD) and the conversation store beside it, `<cell home>/
 (`init`, `step_update`, tool steps) only; the input event and the outcome grammar stay in `stream_driver.py`
 (tests/test_architecture.py), so no denial or turn status is read here.
 
-- served: `model_served` is `init.model`. The stream carries no context window, effort or reasoning summary.
+- served: `model_served` is `init.model`; `effort` is its `-low|-medium|-high` suffix (none: not recorded). The stream
+  carries no context window or reasoning summary.
 - model calls: one per `agent_response` step in state DONE with `usage`, at that line. `reasoning` is
   `thinking_tokens`, a component of `output_tokens` (215 of 216 on the spike's one-word turn).
 - tool calls: one per tool step, at its first line. A DONE state is not success (the spike's turn1 `run_command` reached
@@ -86,6 +87,10 @@ _RULE = re.compile(r"<RULE\[(?P<path>[^\]\r\n]{1,1024})\]>(?P<body>.*?)</RULE\[(
 PROMPT_SOURCE = "conversations/<id>.db gen_metadata.data 1.1"
 RULE_SOURCE = PROMPT_SOURCE + " <RULE[...]>"
 NO_DB = "not recorded: conversation db not found"
+# Leader ruling PROBE-FIX-2 B (DR option a): agy names the effort in the model id (`gemini-3.8-flash-high`), so the served
+# effort is the served init.model's level suffix; an id with none records no effort.
+_EFFORT_SUFFIX = re.compile(r"-(low|medium|high)$")
+EFFORT_SOURCE = "agy-stream.ndjson init.model suffix"
 
 
 class WireError(ValueError):
@@ -240,13 +245,17 @@ def read(path: Path) -> Extraction:
     ex.tool_calls = [ToolCall(t["n"], t["name"], TOOL_CLASS.get(t["name"], "other"), None, None, t["ok"], t["code"])
                      for t in sorted(tools.values(), key=lambda t: t["n"])]
     no_context = not_recorded("the agy stream carries no context window")
+    effort = _EFFORT_SUFFIX.search(model or "")
+    sources = {"model_served": "agy-stream.ndjson init.model"} if model else {}
+    if effort:
+        sources["effort"] = EFFORT_SOURCE
     ex.served = ServedSettings(
         model_served=model or not_recorded("no init.model in the agy stream"),
         model_api=not_recorded("the agy stream names only the served model"),
-        effort=not_recorded("the agy stream carries no effort"),
+        effort=effort.group(1) if effort else not_recorded("the served init.model carries no effort suffix"),
         context_tokens=no_context, context_tier=no_context,
         reasoning_summary=not_recorded("the agy stream carries no reasoning-summary setting"),
-        sources={"model_served": "agy-stream.ndjson init.model"} if model else {})
+        sources=sources)
     ex.harness_events = not_recorded("agy steps are a Flagged source for hooks, skills and compaction; not read")[1]
     db = _store(path, ex.session_id)
     if db is None:

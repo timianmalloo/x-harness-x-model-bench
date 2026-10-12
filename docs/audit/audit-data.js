@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-12T22:45:21Z",
+  "generated": "2026-10-12T23:23:03Z",
   "audit": [
     {
       "actor": null,
@@ -189710,6 +189710,28 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-12T21:14:06Z",
       "duration_seconds": 5475.0
+    },
+    {
+      "id": "al-01M4S6TG2Z24N7H8DT2ZK3SNN3",
+      "shortname": "probe-fix2",
+      "datetime": "2026-10-12T23:23:03Z",
+      "session": "probe-fix2-rerun",
+      "prompt": "probe-fix2-rerun: PROBE-FIX-2 four Leader rulings on the dev-probe re-grade",
+      "summary": "A: claude-code model_aliases claude-opus-5-5[1m]->claude-opus-5-5 (profile record hash 48a8adf2). B: agy served effort from init.model -low|-medium|-high suffix. C: grok config.toml [permission] allow Bash/Read/Edit/Write/Grep/Glob, deny WebFetch/WebSearch/MCPTool, [ui] permission_mode always-approve (allow rules alone still asked; real run 4/4 end_turn, permission_requests 0). D: per Leader ruling (a) after a decision request, Claude served context is the authoritative post-result usage_update only (claude-agent-acp 0.81.2 result.modelUsage.contextWindow); in-turn sizes are the seed. 6 real probe timelines as fixtures; mutants killed.",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Implement the four PROBE-FIX-2 rulings red first and re-grade the dev-probe copy",
+      "done_when": "named tests green, test_mutate_check green, own mutants killed, ruff clean, Grok cells end_turn with no cancelled permission request",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-12T22:51:44Z",
+      "duration_seconds": 1879.0
     }
   ],
   "changes": [

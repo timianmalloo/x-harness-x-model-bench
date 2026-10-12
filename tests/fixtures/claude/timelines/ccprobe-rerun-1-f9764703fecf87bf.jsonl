@@ -1,0 +1,38 @@
+{"first_mono_ns": 700506014980900, "last_mono_ns": 700506014980900, "count": 1, "method": "initialize", "update_kind": "response", "tool_call_id": null}
+{"first_mono_ns": 700506241362000, "last_mono_ns": 700506241362000, "count": 1, "method": "_auth/status_update", "update_kind": null, "tool_call_id": null}
+{"first_mono_ns": 700507722011400, "last_mono_ns": 700507722011400, "count": 1, "method": "session/new", "update_kind": "response", "tool_call_id": null}
+{"first_mono_ns": 700507722982800, "last_mono_ns": 700507722982800, "count": 1, "method": "session/update", "update_kind": "available_commands_update", "tool_call_id": null}
+{"first_mono_ns": 700507730570500, "last_mono_ns": 700507730570500, "count": 1, "method": "session/prompt", "update_kind": "sent", "tool_call_id": null}
+{"first_mono_ns": 700508442702700, "last_mono_ns": 700508442702700, "count": 1, "method": "session/update", "update_kind": "available_commands_update", "tool_call_id": null}
+{"first_mono_ns": 700509231938000, "last_mono_ns": 700509231938000, "count": 1, "method": "session/update", "update_kind": "usage_update", "tool_call_id": null, "used": 37948, "size": 200000}
+{"first_mono_ns": 700511321860600, "last_mono_ns": 700511325215600, "count": 13, "method": "session/update", "update_kind": "agent_thought_chunk", "tool_call_id": null}
+{"first_mono_ns": 700511328010700, "last_mono_ns": 700511329680000, "count": 14, "method": "session/update", "update_kind": "agent_message_chunk", "tool_call_id": null}
+{"first_mono_ns": 700511348357900, "last_mono_ns": 700511348357900, "count": 1, "method": "session/update", "update_kind": "tool_call", "tool_call_id": "toolu_01VSnMNL7a6DwfmyzrBJ2Mxz"}
+{"first_mono_ns": 700511349823200, "last_mono_ns": 700511349823200, "count": 1, "method": "session/update", "update_kind": "tool_call_update", "tool_call_id": "toolu_01VSnMNL7a6DwfmyzrBJ2Mxz"}
+{"first_mono_ns": 700511353670900, "last_mono_ns": 700511353670900, "count": 1, "method": "session/update", "update_kind": "tool_call", "tool_call_id": "toolu_01TY2zSBVJY5it4tpxKoiddk"}
+{"first_mono_ns": 700511354287700, "last_mono_ns": 700511354287700, "count": 1, "method": "session/update", "update_kind": "tool_call_update", "tool_call_id": "toolu_01TY2zSBVJY5it4tpxKoiddk"}
+{"first_mono_ns": 700511356749400, "last_mono_ns": 700511356749400, "count": 1, "method": "session/update", "update_kind": "usage_update", "tool_call_id": null, "used": 38194, "size": 200000}
+{"first_mono_ns": 700512024879000, "last_mono_ns": 700512024879000, "count": 1, "method": "session/update", "update_kind": "tool_call_update", "tool_call_id": "toolu_01VSnMNL7a6DwfmyzrBJ2Mxz"}
+{"first_mono_ns": 700512051738900, "last_mono_ns": 700512051738900, "count": 1, "method": "session/update", "update_kind": "tool_call_update", "tool_call_id": "toolu_01TY2zSBVJY5it4tpxKoiddk"}
+{"first_mono_ns": 700513048766400, "last_mono_ns": 700513048766400, "count": 1, "method": "session/update", "update_kind": "tool_call_update", "tool_call_id": "toolu_01VSnMNL7a6DwfmyzrBJ2Mxz"}
+{"first_mono_ns": 700513050246100, "last_mono_ns": 700513050246100, "count": 1, "method": "session/update", "update_kind": "tool_call_update", "tool_call_id": "toolu_01TY2zSBVJY5it4tpxKoiddk"}
+{"first_mono_ns": 700513621119100, "last_mono_ns": 700513621119100, "count": 1, "method": "session/update", "update_kind": "usage_update", "tool_call_id": null, "used": 38492, "size": 200000}
+{"first_mono_ns": 700518679301500, "last_mono_ns": 700518686962900, "count": 29, "method": "session/update", "update_kind": "agent_thought_chunk", "tool_call_id": null}
+{"first_mono_ns": 700518688614100, "last_mono_ns": 700518688614100, "count": 1, "method": "session/update", "update_kind": "tool_call", "tool_call_id": "toolu_01LXPf2KjK2JrH8AJGrnwKHp"}
+{"first_mono_ns": 700518689377500, "last_mono_ns": 700518691403100, "count": 3, "method": "session/update", "update_kind": "tool_call_update", "tool_call_id": "toolu_01LXPf2KjK2JrH8AJGrnwKHp"}
+{"first_mono_ns": 700518692651900, "last_mono_ns": 700518692651900, "count": 1, "method": "session/update", "update_kind": "tool_call", "tool_call_id": "toolu_01LZhR9TrT7QKLVnRDYCfhV2"}
+{"first_mono_ns": 700518693094300, "last_mono_ns": 700518693979300, "count": 3, "method": "session/update", "update_kind": "tool_call_update", "tool_call_id": "toolu_01LZhR9TrT7QKLVnRDYCfhV2"}
+{"first_mono_ns": 700518694851800, "last_mono_ns": 700518694851800, "count": 1, "method": "session/update", "update_kind": "usage_update", "tool_call_id": null, "used": 39013, "size": 200000}
+{"first_mono_ns": 700519315375400, "last_mono_ns": 700519784083900, "count": 2, "method": "session/update", "update_kind": "tool_call_update", "tool_call_id": "toolu_01LXPf2KjK2JrH8AJGrnwKHp"}
+{"first_mono_ns": 700520518593700, "last_mono_ns": 700520854022100, "count": 2, "method": "session/update", "update_kind": "tool_call_update", "tool_call_id": "toolu_01LZhR9TrT7QKLVnRDYCfhV2"}
+{"first_mono_ns": 700521632665300, "last_mono_ns": 700521632665300, "count": 1, "method": "session/update", "update_kind": "usage_update", "tool_call_id": null, "used": 39257, "size": 200000}
+{"first_mono_ns": 700521632843200, "last_mono_ns": 700521632843200, "count": 1, "method": "session/update", "update_kind": "tool_call", "tool_call_id": "toolu_01SBd2prJVVgkixm3GuQWSh8"}
+{"first_mono_ns": 700522866634900, "last_mono_ns": 700523119294700, "count": 2, "method": "session/update", "update_kind": "tool_call_update", "tool_call_id": "toolu_01SBd2prJVVgkixm3GuQWSh8"}
+{"first_mono_ns": 700523122084900, "last_mono_ns": 700523122084900, "count": 1, "method": "session/update", "update_kind": "usage_update", "tool_call_id": null, "used": 39452, "size": 200000}
+{"first_mono_ns": 700524486732400, "last_mono_ns": 700525162715500, "count": 2, "method": "session/update", "update_kind": "tool_call_update", "tool_call_id": "toolu_01SBd2prJVVgkixm3GuQWSh8"}
+{"first_mono_ns": 700525732709700, "last_mono_ns": 700525732709700, "count": 1, "method": "session/update", "update_kind": "usage_update", "tool_call_id": null, "used": 39597, "size": 200000}
+{"first_mono_ns": 700527631022400, "last_mono_ns": 700527631891500, "count": 12, "method": "session/update", "update_kind": "agent_thought_chunk", "tool_call_id": null}
+{"first_mono_ns": 700529655350500, "last_mono_ns": 700529659386300, "count": 74, "method": "session/update", "update_kind": "agent_message_chunk", "tool_call_id": null}
+{"first_mono_ns": 700529661155400, "last_mono_ns": 700529661155400, "count": 1, "method": "session/update", "update_kind": "usage_update", "tool_call_id": null, "used": 40054, "size": 200000}
+{"first_mono_ns": 700530227581500, "last_mono_ns": 700530227581500, "count": 1, "method": "session/update", "update_kind": "usage_update", "tool_call_id": null, "used": 40054, "size": 1000000}
+{"first_mono_ns": 700530228010700, "last_mono_ns": 700530228010700, "count": 1, "method": "session/prompt", "update_kind": "response", "tool_call_id": null}

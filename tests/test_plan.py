@@ -766,6 +766,7 @@ def test_the_plan_records_each_harness_profile_it_uses():  # grading and views r
                         "vendor": "anthropic", "usage_source": "acp_turn", "auxiliary_models": ["claude-haiku-4-5"],
                             "record_glob": "projects/**/{session_id}.jsonl", "shutdown_grace_seconds": "10",
                         "subagent_glob": "projects/**/{session_id}/subagents/agent-*.jsonl",
+                        "model_aliases": {"claude-opus-5-5[1m]": ["claude-opus-5-5"]},  # PROBE-FIX-2 A
                         "settings": {  # R-SETTINGS (ADR-0024 s3): frozen, so a default cell is judged by default_serves
                             "context": {"values": ["1000000"], "apply": "model_id", "default_serves": 200000, "args": {}},
                             "effort": {"values": ["low", "medium", "high", "xhigh", "max"], "apply": "placeholder",
