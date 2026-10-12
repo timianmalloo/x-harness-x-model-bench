@@ -140,6 +140,12 @@ review-suggested:
      model and checked by its existing model-check test (`tests/test_check_models.py`) in the same track.
    - **Credential scan.** `report/credentials.py` also reads the bench home's `auth.json`, so that token is among
      the scanned literals.
+   - **Erratum (Coordinator #2, 2026-10-12; Leader ruling, epoch 21).** "Two consecutive authentication failures
+     for one harness stop the batch" is replaced by the existing mechanism: `blocked_auth` (HB-CELL-202) already
+     opens a per-harness decision and pauses that harness's launches while it is open (`engine.py:65`; PE-4). An
+     authentication failure still ends the cell as infrastructure; it then pauses only that harness until the
+     decision is answered, and other harnesses keep launching. No new stop path is built. The resume write-back
+     above stands. Recorded in `docs/coordination/coordination-lean-rerun.md`, *Errata* E4.
 8. **Isolation and builds.**
    - `DROP_PREFIXES` (`profiles.py:41`) gains `GROK_`, `AGY_`, `GEMINI_`, `GOOGLE_`; each profile re-adds only its
      own values. `GIT_CONFIG_GLOBAL` is seeded to one bench file for every harness, because a relocated `HOME`
