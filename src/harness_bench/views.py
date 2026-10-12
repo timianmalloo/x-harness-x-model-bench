@@ -16,11 +16,14 @@ Rules, each defined once here:
 - Validity, in order: an invalidating cause; `invalid (build mismatch)` (HB-VAL-007, R-47); not graded;
   `invalid (tools denied by hook)` (HB-VAL-004, R-27); `invalid (out-of-profile tool called)` (HB-VAL-008, R-45 item
   2, R-54) for a class-`other` tool call that executed; `invalid (model mismatch)` (HB-VAL-002) for a served model
-  that is not the pin, a declared auxiliary model, or one the task's `model_map` names (US-11), even in a partial
-  record; `not recorded` for an unreadable usage record (HB-VAL-003, R-15), distinct from `invalid (no model call)`
+  that is not the pin, a declared auxiliary model, an exact alias of the pin, or one the task's `model_map` names
+  (US-11, ADR-0024 s5), read from `model_calls` and the `served` model, even in a partial record; `invalid (setting
+  mismatch)` (HB-VAL-010, ADR-0024 s4) for a served effort or context that differs from the pin or `default_serves`;
+  `not recorded` for an unreadable usage record (HB-VAL-003, R-15), distinct from `invalid (no model call)`
   (HB-VAL-001, a readable record with no call); else valid.
 - Warnings flag a cell without changing its validity: HB-VAL-005 (Σ model_calls vs the ACP turn total, R-24/R-26
-  c5), HB-VAL-006 (the executed-build check skipped, R-22 c1, R-47) and HB-VAL-009 (an out-of-profile attempt the
+  c5; `not recorded` for a `copilot -p` cell with no usage, ADR-0028 s4), HB-VAL-006 (the executed-build check
+  skipped, R-22 c1, R-47), HB-VAL-011 (a pinned or declared setting no source records, ADR-0024 s4) and HB-VAL-009 (an out-of-profile attempt the
   driver or a native hook refused, R-54). One code has one level and one emitter; a `Cause` code is never a view
   finding (R-47).
 - `meta_calls` counts class-`meta` tool calls per cell (Claude Code's `ToolSearch`): a cost axis, never scored (R-54 c3).
@@ -30,6 +33,7 @@ Rules, each defined once here:
 
 from __future__ import annotations
 
+import inspect
 import re
 from dataclasses import dataclass, field, fields
 from datetime import datetime
@@ -401,6 +405,13 @@ def _idle(wall: Measure, model: Measure, tool: Measure) -> Measure:
 
 
 NO_ACP_USAGE = "the adapter reported no usage"
+NOT_RECORDED = "not recorded"  # a Finding level beside error and warning: the check had no input (ADR-0028 s4)
+
+
+def _prompt_mode(plan: dict, harness: str) -> bool:
+    """ADR-0028 s1-s2: a Copilot cell runs `copilot -p` behind the pinned local adapter, which the plan's build record
+    names (`adapter_version`); an ACP-era Copilot build has none (`tools.LAYOUT`: no adapter)."""
+    return harness == "copilot" and as_dict(as_dict(plan.get("builds")).get(harness)).get("adapter_version") is not None
 
 # R-24, R-26 c5: the ACP turn total cross-checks Σ of the current extraction's model_calls buckets.
 # simplify: a harness list in code. Ceiling: harnesses whose adapter `usage` is the turn total over every model.
@@ -431,16 +442,20 @@ def _build_check(plan: dict, harness: str, opened: dict) -> Finding | None:
     return None
 
 
-def _token_cross_check(ended: dict, calls: list[ModelCall], turn_rows: list[dict] = ()) -> Finding | None:
+def _token_cross_check(ended: dict, calls: list[ModelCall], turn_rows: list[dict] = (),
+                       prompt_mode: bool = False) -> Finding | None:
     """HB-VAL-005, a warning, never a validity change: the ACP turn total and Σ model_calls disagree, or no ACP usage
     was recorded (the check did not run, which is never read as a pass). Copilot's `inputTokens` includes cache read
-    and write (R-20 c2)."""
+    and write (R-20 c2). A `copilot -p` cell whose final object carries no usage reads `not recorded`, never a warning
+    (ADR-0028 s4): that path has no ACP usage to cross-check."""
     per_turn = [u for r in turn_rows if isinstance(u := as_dict(r.get("usage")).get("usage"), dict)]
     if per_turn:  # the sum over the turn_ended rows present; a turn with no row is not recorded, never 0 (design 4.5)
         usage = {k: sum(u[k] for u in per_turn) if all(is_count(u.get(k)) for u in per_turn) else None
                  for k in {k for u in per_turn for k in u}}
     else:
         usage = as_dict(ended.get("acp_usage")).get("usage")
+    if not isinstance(usage, dict) and prompt_mode:
+        return Finding("HB-VAL-005", NOT_RECORDED, "token cross-check not recorded: the copilot -p final object carries no usage")
     if not isinstance(usage, dict):
         return Finding("HB-VAL-005", "warning", "token cross-check not run: no ACP usage recorded")
     diffs = []
@@ -525,9 +540,73 @@ def _unrecorded(source: str, record_reason: str | None, ended: dict, usage: list
     return record_reason
 
 
+# ADR-0024 s4: the served-row field each combo setting is judged by.
+SETTING_FIELDS = {"effort": "effort", "context": "context_tokens"}
+# ADR-0028 s5: a pinned context judged by the served tier, not the token count (the count is recorded, never judged).
+# simplify: a table here, because the plan freezes no settings args. Ceiling: this one Copilot value. Upgrade trigger: a
+# second tier-judged value, or `profile_record` freezing `settings.<name>.args` -> derive the tier from the frozen map.
+CONTEXT_TIERS = {("copilot", "922000"): "long_context"}
+_TAKES_ALIASES = "model_aliases" in inspect.signature(profiles.model_allowed).parameters
+
+
+def _model_allowed(model: str, pin: str, prof: dict) -> bool:
+    """`profiles.model_allowed`, the one definition, with the plan's frozen exact alias table (ADR-0024 s5)."""
+    aliases = as_dict(prof.get("model_aliases"))
+    if _TAKES_ALIASES:
+        return profiles.model_allowed(model, pin, prof["auxiliary_models"], aliases)
+    # simplify: the base has the 3-argument form until J1a merges R-SETTINGS's alias table. Ceiling: the J1b join.
+    # Upgrade trigger: J1a joined -> delete this line and `_TAKES_ALIASES`.
+    return profiles.model_allowed(model, pin, prof["auxiliary_models"]) or model in aliases.get(pin, ())
+
+
+def _expected(cell: dict, prof: dict, setting: str) -> tuple[str | None, str, str]:
+    """(expected value, its basis, the served field judged): the pin, else the profile's frozen `default_serves`
+    (None: no record shows it, so nothing is judged). A plan from before bench-matrix/3 carries neither: "default"."""
+    requested = str(cell.get(setting, profiles.DEFAULT))
+    if setting == "context" and (tier := CONTEXT_TIERS.get((cell["harness"], requested))) is not None:
+        return tier, "pinned tier", "context_tier"
+    if requested != profiles.DEFAULT:
+        return requested, "pinned", SETTING_FIELDS[setting]
+    declared = as_dict(as_dict(prof.get("settings")).get(setting)).get("default_serves")
+    return (None if declared is None else str(declared)), "default_serves", SETTING_FIELDS[setting]
+
+
+def _serves(expected: str, row: dict) -> bool:
+    """Equal as written. Codex's row is its nominal window (the effective one / the catalog percent, Leader ruling
+    2026-10-12), so no harness's value is scaled here and no `source` is parsed."""
+    return row.get("value") is not None and str(row["value"]) == expected
+
+
+def _served_settings(cell: dict, prof: dict, rows: list[dict]) -> tuple[Finding | None, list[Finding]]:
+    """ADR-0024 s4, ADR-0028 s5: (HB-VAL-010 for every recorded value that differs from the expected one, None when
+    none does; one HB-VAL-011 warning per pinned or declared setting that no source records). A row is recorded when
+    it has no `not_recorded` reason, so a source that shows null (Copilot's contextTier) is a recorded null. Two
+    sources that disagree are both judged, so one that differs is HB-VAL-010. No expected value judges nothing."""
+    differs: list[str] = []
+    unrecorded: list[Finding] = []
+    for setting in SETTING_FIELDS:
+        expected, basis, field_name = _expected(cell, prof, setting)
+        if expected is None:
+            continue
+        recorded = [r for r in rows if r.get("field") == field_name and r.get("not_recorded") is None]
+        if not recorded:
+            unrecorded.append(Finding("HB-VAL-011", "warning",
+                                      f"served {setting} not recorded: expected {expected} ({basis}), no source records it"))
+        differs += [f"{setting} served {r.get('value')}, expected {expected} ({basis}) from {r.get('source')}"
+                    for r in recorded if not _serves(expected, r)]
+    return (Finding("HB-VAL-010", "error", "; ".join(differs)) if differs else None), unrecorded
+
+
+def _model_served(rows: list[dict]) -> frozenset[str]:
+    """ADR-0024 s4: HB-VAL-002's second input, every recorded `model_served` value, by base id (R-32)."""
+    return frozenset(normalize.base_model_id(r["value"]) for r in rows
+                     if r.get("field") == "model_served" and isinstance(r.get("value"), str))
+
+
 def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: set[str] | None,
               unrecorded: str | None = None, denials: int = 0, mapped: frozenset[str] = frozenset(),
-              build: Finding | None = None, out_of_profile: Finding | None = None) -> tuple[str, str | None]:
+              build: Finding | None = None, out_of_profile: Finding | None = None, settings: Finding | None = None,
+              model_served: frozenset[str] = frozenset()) -> tuple[str, str | None]:
     if outcome is None:
         return state, None  # not started | no outcome
     cause = Cause[outcome["cause"]] if outcome.get("cause") else None
@@ -546,8 +625,11 @@ def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: 
         return "invalid (out-of-profile tool called)", out_of_profile.code
     # A served model that is neither the pin, a declared auxiliary model, nor one the task's model_map names. Seen in a
     # partial record it is still measured, so it outranks "not recorded" (D&P); an empty served set cannot mismatch.
-    if any(not profiles.model_allowed(m, cell["model"], prof["auxiliary_models"]) and m not in mapped for m in served):
+    # ADR-0024 s4: model_calls and the served-settings model; an old run has no `served` rows, so it judges as before.
+    if any(not _model_allowed(m, cell["model"], prof) and m not in mapped for m in served | model_served):
         return "invalid (model mismatch)", "HB-VAL-002"
+    if settings is not None:  # ADR-0024 s4: a served setting is measured even in a partial record, like the model (D&P)
+        return "invalid (setting mismatch)", settings.code
     if unrecorded is not None:  # R-15 c1: distinct from a readable record with no call (HB-VAL-001)
         return "not recorded", "HB-VAL-003"
     if not served:
@@ -590,7 +672,10 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     if cell["harness"] in ACP_TOTAL_HARNESSES and source == "native_record" and calls is not None and unrecorded is None:
         warnings.append(_token_cross_check(ended, ex.model_calls,
                                           [e for e in facts["events"] if e.get("cell_id") == cid
-                                           and e["kind"] == "cell.turn_ended"]))
+                                           and e["kind"] == "cell.turn_ended"], _prompt_mode(plan, cell["harness"])))
+    served_rows = [r for r in facts.get("served", ()) if r["cell_id"] == cid and r["extraction_id"] == extraction]
+    setting, setting_unrecorded = _served_settings(cell, prof, served_rows) if extraction is not None else (None, [])
+    warnings += setting_unrecorded
     totals = normalize.totals(source, ex, usage) if recorded and unrecorded is None else {}
     if unrecorded is not None:
         tokens_reason = f"not recorded ({unrecorded})"  # R-21 c2: never a partial sum or a zero
@@ -610,7 +695,7 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     # R-54 (b): a row outside the profile that a hook denied is a refused attempt (HB-VAL-009), not an R-27 treatment denial.
     denials = normalize.hook_denials([r for r in tools or [] if not _outside(r.get("tool_class"), scenario)])
     validity, validity_code = _validity(cell, prof, outcome, state, served, unrecorded, denials, _mapped(plan, cell), build,
-                                        executed)
+                                        executed, setting, _model_served(served_rows))
     cause = Cause[outcome["cause"]] if outcome and outcome.get("cause") else None
     return CellView(
         cell_id=cid, task=cell["task"], rep=cell["rep"], label=cell.get("label", cid), combo=cell["combo"], arm=cell_arm(cell), harness=cell["harness"], model=cell["model"],
@@ -683,7 +768,7 @@ def export(view: RunView) -> bytes:
 @dataclass(frozen=True)
 class Finding:
     code: str
-    level: str  # error | warning
+    level: str  # error | warning | not recorded (a check with no input, never a warning: ADR-0028 s4)
     message: str
 
 
