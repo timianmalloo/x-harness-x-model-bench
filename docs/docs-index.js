@@ -1121,7 +1121,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b1a4a1544ad602cfff8437faa2ffacd180db7ef67188f696d18774de562a7d1e"
+      "sourceSha256": "8385d3da7f9f986da2122fa21f6a2c60f7a587b1acc0fa259a39a7f104a80a45"
     },
     {
       "id": "adr-0026-per-cell-anatomy-facts-catalog-0-8",
@@ -1168,7 +1168,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "28dca6637e4df64b519919ac982f24796c64d7ca920ca763c645276b0179d9c3"
+      "sourceSha256": "9724e1e60e1737b86fb01a58114cafe7d0576b6f46c04111636403a103c3f618"
     },
     {
       "id": "adr-0027-cost-compare-report",
@@ -5783,7 +5783,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b0c6c8bce93ae4f63927c0b1f27e1fb4ab317e0afa08ac06940f921d1cc94b94"
+      "sourceSha256": "bc915d88a89ead150a8dd82107eee0cdc0a2689bd58bf7da5fee4e5116647f8b"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -10463,7 +10463,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "f116326b3f044866e82de9e785414f76e0810f10ee76ee7c1554e452a6dfe0e7"
+      "sourceSha256": "3e5ee39fc43d9ed44825fe248e79d380713a0dbeabfbf2b092588f7c22f67c08"
     },
     {
       "id": "coordination-phase1-finish",
@@ -11772,5 +11772,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "f22996427189115a7f0484b7cc5cfe55f279778fb06e0a6a3f33d0bdfb2fc5fc"
+  "graphSha256": "3fdbf3a04c930f0e5880a3a20277ad16881c08011aecbaf3a1dea480d8fd08d0"
 };
