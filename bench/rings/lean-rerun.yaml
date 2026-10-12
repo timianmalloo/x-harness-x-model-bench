@@ -1,6 +1,7 @@
 # Lean re-run ring at equal reasoning (ADR-0022 s1, ADR-0024): lean.yaml's ten property tasks, six combos, effort high.
 # 10 property tasks x 2 arms (pack-off, pack-on) x 6 combos x 1 = 120 cells; two confirmed runs of it are the two batches.
 # Every combo pins its concrete model id, effort and context (architecture-lean-rerun.md, the six-combo table, as amended
+# by Ruling 122: Claude Code at its served 200,000 window - the long-lived token is not served [1m], measured twice),
 # by Ruling 120: Copilot at 922,000 in -p mode). Grok and agy context are "default": no knob (Grok serves 256,000; agy's
 # window is not recorded). Grok and agy run one cell at a time (ADR-0025 s7; the plan refuses any other cap).
 # Tokens are the only cost axis. The pack-on arm is a role arm: bind it at plan time with --arm on=SOURCE@COMMIT.
@@ -14,7 +15,7 @@ arms:
   - {id: "on"}
 comparisons: [["off", "on"]]
 combos:
-  - {id: cc-opus-1m, harness: claude-code, model: "claude-opus-5-5[1m]", effort: high, context: 1000000}
+  - {id: cc-opus, harness: claude-code, model: claude-opus-5-5, effort: high, context: default}
   - {id: codex-sol, harness: codex, model: gpt-6.1-sol, effort: high, context: 872000}
   - {id: copilot-sol, harness: copilot, model: gpt-6.1-sol, effort: high, context: 922000}
   - {id: copilot-sol-fast, harness: copilot, model: gpt-5.6-sol-fast, effort: high, context: 922000}

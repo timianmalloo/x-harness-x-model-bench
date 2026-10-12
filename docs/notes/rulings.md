@@ -2231,3 +2231,17 @@ Asked during `/define-architecture` of the lean re-run, after the probes below; 
   2. `docs/coordination/ai-forward-pack-cost.html` (ADR-0029): for the pack owner; where pack-on's extra tokens are
      spent, per harness and per pack component, and what to tune.
 - ruled by: operator · at: 2026-10-12
+
+### Ruling 122 — Claude Code runs at its served 200,000 window (operator choice, then measurement, 2026-10-12)
+
+- **Asked** after the development probe (run `devprobe-rerun-1`): on the long-lived token the bench uses for Claude
+  Code cells (`HB_CLAUDE_OAUTH_TOKEN`), both cells were served `claude-opus-5-5`, not `claude-opus-5-5[1m]`, at
+  200,000. The operator chose: "I'll mint a new token".
+- **Measured:** the operator minted a fresh token (`claude setup-token`, saved outside the repo; 108 characters, a
+  new value). Re-probe `ccprobe-rerun-1` (X1, both arms, 2 repetitions): all 4 cells served `claude-opus-5-5` at
+  200,000 again. The interactive subscription login gets 1M, but its rotating refresh tokens cannot be copied into
+  cells (CRED-COPY-A).
+- **Decides** (the fallback stated with the question): combo `cc-opus` pins `claude-opus-5-5`, effort high, context
+  `default` (the profile's `default_serves` 200,000), read back and judged like every combo. Both reports state the
+  200,000 window beside Claude Code's numbers, as they state Grok's 256,000. Cells use the new token.
+- ruled by: operator (choice) and Leader (fallback on the measurement) · at: 2026-10-12
