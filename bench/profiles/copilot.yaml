@@ -1,16 +1,33 @@
-# Copilot cell profile (ADR-0003, ADR-0013; docs/design/phase2-copilot-profile.md). Native ACP: no adapter.
+# Copilot cell profile (ADR-0003, ADR-0013; docs/design/phase2-copilot-profile.md). ADR-0028 (Ruling 120): copilot -p
+# behind the pinned local ACP adapter bench/adapters/copilot_p_acp.py, the only mode in which 1.0.89-1 applies
+# --context long_context. The adapter adds -p <text> and --session-id / --resume per prompt. --available-tools stays
+# last: profiles.argv extends that list with the scenario-6 ids and the scripted-user tool. The R-COPILOT-P spike
+# (2026-10-12) ran this argv without --allow-all-tools: non-interactive, and the model was offered exactly these tools.
 harness: copilot
 vendor: openai   # R-73 item 1: a profile fact, never inferred from a model id
 home_env: COPILOT_HOME
 credential: null
 credential_kind: "subscription login (credential store)"
 files: {}
-command: ["{exe}", "--acp", "--model", "{model}", "--allow-tool", "shell", "--allow-tool", "write", "--disable-builtin-mcps", "--available-tools", "powershell", "list_powershell", "read_powershell", "stop_powershell", "apply_patch", "view", "glob", "rg", "skill"]
+command: ["{python}", "{adapter}", "--exe", "{exe}", "--", "--output-format", "json", "--model", "{model}", "--reasoning-effort", "{effort}", "{context_arg}", "--allow-tool", "shell", "--allow-tool", "write", "--no-ask-user", "--disable-builtin-mcps", "--log-level", "debug", "--log-dir", "{home}/logs", "--available-tools", "powershell", "list_powershell", "read_powershell", "stop_powershell", "apply_patch", "view", "glob", "rg", "skill"]
 shutdown_grace_seconds: 10
 env:
   COPILOT_AUTO_UPDATE: "false"
 mode: null
-set_model: true
+set_model: false   # the model is in argv; the adapter accepts session/set_model but nothing reads it
 record_glob: "session-state/{session_id}/events.jsonl"
 usage_source: native_record
 auxiliary_models: []
+scripted_user: unsupported   # ADR-0028 s7: until a spike shows the MCP wiring works in -p mode
+settings:
+  effort:
+    values: [none, minimal, low, medium, high, xhigh, max]   # copilot --help, 1.0.89-1
+    apply: placeholder
+    default_serves: null
+  context:
+    values: ["default", "922000"]
+    apply: placeholder
+    default_serves: 272000   # ADR-0024 s3; judged by session.start.contextTier (ADR-0028 s5)
+    args:
+      "default": []
+      "922000": ["--context", "long_context"]

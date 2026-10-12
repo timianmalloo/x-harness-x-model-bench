@@ -3,7 +3,7 @@
 `--version` prints the pinned build's banner. Any other launch appends {argv, pid} to cfg["log"], then by
 cfg["mode"]: "replay" (default) writes a real, scrubbed `copilot -p --output-format json` stdout unchanged and exits 0
 (turn1-stdout.jsonl for --session-id, turn2-resume-stdout.jsonl for --resume); "hang" writes one line and sleeps;
-"fail" writes one non-result line and exits 3; "noresult" exits 0 without a result object; "tokens" ends with a result
+"fail" writes a result object and exits 3; "noresult" exits 0 without a result object; "tokens" ends with a result
 whose usage carries ACP token counts.
 """
 
@@ -30,8 +30,9 @@ elif mode == "hang":
     out.write(first)
     out.flush()
     time.sleep(120)
-elif mode == "fail":
-    out.write(first)
+elif mode == "fail":  # a final object, then a non-zero exit: the exit code alone must decide
+    out.write(first + b'{"type":"result","exitCode":1,"usage":{"premiumRequests":1}}\n')
+    out.flush()
     sys.exit(3)
 elif mode == "tokens":
     out.write(first + json.dumps({"type": "result", "exitCode": 0, "usage": {
