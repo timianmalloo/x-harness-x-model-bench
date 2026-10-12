@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-12T23:23:03Z",
+  "generated": "2026-10-12T23:39:14Z",
   "audit": [
     {
       "actor": null,
@@ -189732,6 +189732,33 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-12T22:51:44Z",
       "duration_seconds": 1879.0
+    },
+    {
+      "id": "al-01M4S7R4WRF73JRMT0KDSEZH3T",
+      "shortname": "join-probe-fix2-rerun",
+      "datetime": "2026-10-12T23:39:14Z",
+      "session": "lean-rerun-leader",
+      "prompt": "the join of build/rerun-probe-fix2 into integrate/rerun-21",
+      "summary": "dev-probe fixes: every combo reads back as pinned; Grok 4/4 real cells complete without a permission prompt recount_seconds=914 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "the build the formal probe and both batches run on",
+      "done_when": "full suite green; gates green",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-12T23:23:58Z",
+      "duration_seconds": 916.0
     }
   ],
   "changes": [

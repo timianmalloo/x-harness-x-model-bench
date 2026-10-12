@@ -2503,7 +2503,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "6e1eb16020cb6b6389151e80e59bdc7b5f4ecf365a5de19b6d7b1d8ba7c52db3"
+      "sourceSha256": "461378a96b59813cdb89cda274e861fe449c55ea55aa6cfeda1ed52c8d45c4ea"
     },
     {
       "id": "design-eval-arms",
@@ -11772,5 +11772,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "1ba23f37416a9247d3155880e7ac625e144e880d53819caf7ce31f844d6202cd"
+  "graphSha256": "a7322d42416f3cfc2f13dc334bf367c0c3cfe2085eb07e03ddd0ffcee66e539e"
 };
