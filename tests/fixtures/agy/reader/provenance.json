@@ -1,0 +1,19 @@
+{
+  "agy_version": "1.3.3",
+  "built_by": "R-READ-AGY (session ragy-rerun-opus), 2026-10-12, from the spike records in C:\\tf\\spike-agy (2026-10-11)",
+  "layout": "<home>/agy-stream.ndjson (the teed stream) and <home>/.gemini/antigravity-cli/conversations/<conversation id>.db",
+  "scrub": [
+    "every UUID (conversation, trajectory, step, bot- ids) became 00000000-0000-4000-8000-<n, 12 digits>, the same byte length",
+    "the sessionID value and each response id (step_payload 5.9.8.2, 5.9.11) became digits of the same length",
+    "every C:\\tf\\spike-agy path, any separator run and either drive-letter case, became C:\\cell\\fixture (same length)",
+    "every opaque step_payload value (not UTF-8 and not a protobuf message) became synthetic bytes of the same length (a sha256 chain seeded with 'agy-fixture-opaque-<length>'), so each length prefix stays valid",
+    "gen_metadata.data was rebuilt as field 1 { 1: the prompt, 19: the model }: every prompt character outside the <user_rules> section became 'x' (its length kept); every other field was dropped",
+    "only steps(idx, step_type, status, step_payload) and gen_metadata(idx, data, size) were kept",
+    "checked: no email address, account or org id, Authorization, Bearer or JWT shape, no operator user name (tests/test_reader_agy.py also scans every byte)"
+  ],
+  "homes": {
+    "pack-on": {"stream": "C:\\tf\\spike-agy\\turn2.ndjson", "db": "home-upd conversations/5ed07ceb-....db", "repo": "AGENTS.md, GEMINI.md, .agents/rules/r.md"},
+    "pack-off": {"stream": "C:\\tf\\spike-agy\\perm\\stream.ndjson", "db": "perm/home conversations/65ec1b30-....db", "repo": "README.md only"},
+    "turn1": {"stream": "C:\\tf\\spike-agy\\turn1.ndjson", "db": "home-upd conversations/d0e71ad9-....db", "note": "the only spike step with thought text (step_payload 20.3, step 3); the db exists in home-upd although the C2 brief listed none"}
+  }
+}
