@@ -1210,7 +1210,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "0a255604cddc4d14d374bbafec9fe412511adf6227fe1431afa3e48ad9b0608b"
+      "sourceSha256": "42b95b0a336b63bc21184492134fa3cd1f9f73dbda8e63f40d4a72ba0160f379"
     },
     {
       "id": "adr-0028-copilot-prompt-mode-transport",
@@ -5783,7 +5783,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "bc915d88a89ead150a8dd82107eee0cdc0a2689bd58bf7da5fee4e5116647f8b"
+      "sourceSha256": "b4c504f671dfef3ae7f675fea4b625aa5a2bb4fd20646715b7d6d3b92b7d4092"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -10463,7 +10463,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "3e5ee39fc43d9ed44825fe248e79d380713a0dbeabfbf2b092588f7c22f67c08"
+      "sourceSha256": "cb2f14c41f647397d674971ed9fc9841a48524992b42ffe4feba2eecf78658ca"
     },
     {
       "id": "coordination-phase1-finish",
@@ -11772,5 +11772,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "3fdbf3a04c930f0e5880a3a20277ad16881c08011aecbaf3a1dea480d8fd08d0"
+  "graphSha256": "1ba23f37416a9247d3155880e7ac625e144e880d53819caf7ce31f844d6202cd"
 };
