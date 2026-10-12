@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-12T21:04:57Z",
+  "generated": "2026-10-12T22:45:21Z",
   "audit": [
     {
       "actor": null,
@@ -189688,6 +189688,28 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-12T20:49:32Z",
       "duration_seconds": 925.0
+    },
+    {
+      "id": "al-01M4S4NFFVHKDQQ8F3MC4TRKND",
+      "shortname": "probe-fix",
+      "datetime": "2026-10-12T22:45:21Z",
+      "session": "probe-fix-rerun",
+      "prompt": "probe-fix-rerun: PROBE-FIX loop-back fixes from the development probe",
+      "summary": "Grok tool-call native_ordinal is the call's position (0 duplicate keys on the probe); agy records found with an empty session_opened id and rows stamped with init's conversation id; agy uncached_input = input_tokens (cache_read separate, Verified); copilot parallel-request sweep test; probe re-graded in C:/tf/probe-fix: 0 duplicate keys in every fact, agy 19/20 model calls matching turn totals",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Fix the probe's Grok duplicate tool_calls keys and agy's missing model_calls; re-read the probe run",
+      "done_when": "named tests green, reader mutation files killed, test_mutate_check green, ruff clean",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-12T21:14:06Z",
+      "duration_seconds": 5475.0
     }
   ],
   "changes": [
