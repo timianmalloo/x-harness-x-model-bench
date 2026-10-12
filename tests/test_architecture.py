@@ -1,7 +1,8 @@
 """Structural rules (design test plan D0 and D3), checked on the source, not by review.
 
-- D3: engine, driver and archive never import grade or report; only procs.py calls subprocess; only
-  gitsafe.py runs git; only driver.py speaks ACP.
+- D3: engine, driver, stream_driver and archive never import grade or report; only procs.py calls subprocess; only
+  gitsafe.py runs git; only driver.py speaks ACP; only stream_driver.py holds the agy stream's input event and outcome
+  grammar (ADR-0025 s1); only report/publish.py calls render-markdown's open_in_chrome, once (ADR-0027 s1).
 - D0: no path of the retired coordinator runner (`coord-run/1`) remains in the benchmark's code, its
   skills (and their synced copies) or its README (owner ruling: the benchmark never runs in the
   coordinator's runner).
@@ -41,7 +42,7 @@ def _imports(tree: ast.Module) -> set[str]:
     return names
 
 
-@pytest.mark.parametrize("name", ["engine", "driver", "archive"])
+@pytest.mark.parametrize("name", ["engine", "driver", "stream_driver", "archive"])
 def test_the_run_path_never_imports_grading_or_reports(name):
     imported = _imports(_tree(SRC / f"{name}.py"))
     assert not {i for i in imported if i.startswith(("harness_bench.grade", "harness_bench.report"))}
@@ -143,6 +144,72 @@ ACP_SERVERS = frozenset({"synthetic_agent.py"})  # the ACP *server* of W1-E 5.1;
 def test_only_driver_speaks_acp():
     assert [p.name for p in MODULES if p.name not in ACP_SERVERS and (ACP_METHODS - {"initialize"} & _string_constants(p) or
             ("initialize" in _string_constants(p) and "session/new" in _string_constants(p)))] == ["driver.py"]
+
+
+# ADR-0025 s1, s3 (the ACP rule's mirror): the agy stream's input event (`{"event": "user", "message": ...}`) and its
+# outcome grammar (`result.status == "SUCCESS"`, `denied_actions`, the permission-failure prefix) are held only by
+# stream_driver.py. telemetry/agy.py may read event bodies (`init`, `step_update`, tool events) for its facts: none of
+# those names is a token here, so the driver and the reader are jointly satisfiable.
+AGY_STREAM_MODULE = "stream_driver.py"
+AGY_OUTCOME_TOKENS = frozenset({"denied_actions", "permission check failed for "})
+AGY_INPUT_EVENT = frozenset({"event", "user", "message"})
+AGY_RESULT_STATUS = frozenset({"result", "SUCCESS"})
+
+
+def _agy_grammar_offenders(sources: dict[str, str]) -> list[str]:
+    """Root: src/harness_bench/; recursion: yes; tokens: any AGY_OUTCOME_TOKENS constant, or every constant of
+    AGY_INPUT_EVENT or of AGY_RESULT_STATUS in one module; allowlist: AGY_STREAM_MODULE."""
+    offenders = []
+    for rel, source in sorted(sources.items()):
+        consts = {n.value for n in ast.walk(ast.parse(source)) if isinstance(n, ast.Constant) and isinstance(n.value, str)}
+        if rel != AGY_STREAM_MODULE and (consts & AGY_OUTCOME_TOKENS or AGY_INPUT_EVENT <= consts
+                                         or AGY_RESULT_STATUS <= consts):
+            offenders.append(rel)
+    return offenders
+
+
+def test_only_stream_driver_holds_the_agy_stream_grammar():
+    assert _agy_grammar_offenders({p.relative_to(SRC).as_posix(): p.read_text(encoding="utf-8") for p in MODULES}) == []
+
+
+@pytest.mark.parametrize(("rel", "source", "bad"), [
+    ("stream_driver.py", 'line = {"event": "user", "message": {"role": "user", "content": p}}', False),
+    ("stream_driver.py", 'ok = e["result"]["status"] == "SUCCESS" and not e["denied_actions"]', False),
+    ("telemetry/agy.py", 'if e["type"] in ("init", "step_update"): usage = e["usage"]', False),
+    ("telemetry/agy.py", 'denied = e["denied_actions"]', True),
+    ("telemetry/agy.py", 'done = e["type"] == "result" and e["status"] == "SUCCESS"', True),
+    ("engine.py", 'line = {"event": "user", "message": text}', True),
+    ("driver.py", 'blocked = text.startswith("permission check failed for ")', True),
+])
+def test_agy_grammar_rule_fires_outside_the_stream_driver_only(rel, source, bad):
+    assert bool(_agy_grammar_offenders({rel: source})) is bad
+
+
+# ADR-0027 s1 / ADR-0029 s1: the page is opened through the pack's own render-markdown lookup, from one call site.
+OPEN_IN_CHROME_SITE = "report/publish.py"
+
+
+def _open_in_chrome_sites(sources: dict[str, str]) -> list[str]:
+    """Root: src/harness_bench/; recursion: yes; tokens: every call whose callee ends in `open_in_chrome`; allowed:
+    one call, in OPEN_IN_CHROME_SITE."""
+    return [f"{rel}:{n.lineno}" for rel, source in sorted(sources.items()) for n in ast.walk(ast.parse(source))
+            if isinstance(n, ast.Call) and (n.func.attr if isinstance(n.func, ast.Attribute) else
+                                            n.func.id if isinstance(n.func, ast.Name) else None) == "open_in_chrome"]
+
+
+def test_open_in_chrome_is_called_only_from_report_publish_once():
+    sites = _open_in_chrome_sites({p.relative_to(SRC).as_posix(): p.read_text(encoding="utf-8") for p in MODULES})
+    assert len(sites) <= 1 and all(site.split(":")[0] == OPEN_IN_CHROME_SITE for site in sites)
+
+
+@pytest.mark.parametrize(("sources", "ok"), [
+    ({"report/publish.py": "def publish(h, o, op):\n    return render.open_in_chrome(o)\n"}, True),
+    ({"report/cost_compare.py": "open_in_chrome(path)\n"}, False),
+    ({"report/publish.py": "render.open_in_chrome(a)\nrender.open_in_chrome(b)\n"}, False),
+])
+def test_open_in_chrome_rule_names_one_site(sources, ok):
+    sites = _open_in_chrome_sites(sources)
+    assert (len(sites) <= 1 and all(s.split(":")[0] == OPEN_IN_CHROME_SITE for s in sites)) is ok
 
 
 def test_a_judge_backend_is_reached_only_through_egress_check_and_release():

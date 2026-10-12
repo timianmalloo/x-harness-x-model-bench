@@ -36,6 +36,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from types import ModuleType
 from typing import Protocol
 
 from harness_bench import (
@@ -47,6 +48,7 @@ from harness_bench import (
     lifecycle,
     oslock,
     procs,
+    stream_driver,
 )
 from harness_bench.errors import BenchError, Cause
 from harness_bench.gitsafe import GitError
@@ -75,6 +77,12 @@ DISK_FULL_WINERRORS = (39, 112)  # ERROR_HANDLE_DISK_FULL, ERROR_DISK_FULL
 KILL_RETRY_CAP = 30.0  # seconds: the longest wait between retries of an unconfirmed kill (HB-RUN-002)
 RECORD_POLL = 0.5  # seconds: how often a waiting worker re-checks that the engine can still record
 log = logging.getLogger("harness_bench.engine")
+
+
+def protocol_module(launcher) -> ModuleType:
+    """ADR-0025 s1: the profile's transport names the module `_attempt` drives the cell with; there is no protocol class.
+    A launcher that names none (every launcher before the lean re-run, and the test fakes) is ACP."""
+    return stream_driver if getattr(launcher, "transport", "acp") == "agy-stream" else driver
 
 
 class Launcher(Protocol):
@@ -851,15 +859,16 @@ class Engine:
                                    "build_version": build.get("version"), "build_sha256": build.get("sha256"),
                                    "credential_kind": launcher.credential_kind, "network_mode": "unrestricted"})
             started = True
-            session = driver.open_session(cp, ws, launcher.mode, self.params["handshake_timeout"],
-                                          cell["model"] if launcher.set_model else None, result, mcp_servers, a.cancel)
+            proto = protocol_module(launcher)
+            session = proto.open_session(cp, ws, launcher.mode, self.params["handshake_timeout"],
+                                         cell["model"] if launcher.set_model else None, result, mcp_servers, a.cancel)
             if session is not None:
                 try:
                     record_session_opened(result.session_id)
                     prompts = [task["prompt"]] + [t["prompt"] for t in task.get("turns", [])]
                     for n, text in enumerate(prompts, 1):
-                        rec = driver.send_turn(session, text, barrier_for(n), n,
-                                               on_first_update=baseline if n == 1 else None)
+                        rec = proto.send_turn(session, text, barrier_for(n), n,
+                                              on_first_update=baseline if n == 1 else None)
                         if rec is None:
                             break  # no response came back: the outcome cause says why; no turn_ended
                         nxt = (("cancel" if a.kill_reason == "stop" else "stop") if a.cancel.is_set()

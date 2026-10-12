@@ -1,6 +1,6 @@
 """Console windows suppression guard (GO14a, R6.15a).
 
-Every child launch in tools/, tools/spikes/ and tests/ (recursive over *.py,
+Every child launch in tools/, tools/spikes/, tests/ and bench/adapters/ (recursive over *.py,
 fixture helpers included, skipping __pycache__) must suppress console windows
 by passing creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0).
 """
@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-ROOTS = ("tools", "tests")
+ROOTS = ("tools", "tests", "bench/adapters")
 RECURSION = True
 SUBPROCESS_CALLS = frozenset({"run", "Popen", "call", "check_call", "check_output"})
 TOKENS = frozenset({f"subprocess.{name}" for name in SUBPROCESS_CALLS} | {"os.system"})
@@ -112,7 +112,7 @@ def test_allowlist_is_subset_and_justified():
 
 
 def test_frozen_fields():
-    assert ROOTS == ("tools", "tests")
+    assert ROOTS == ("tools", "tests", "bench/adapters")
     assert RECURSION is True
     assert TOKENS == frozenset({
         "subprocess.run",

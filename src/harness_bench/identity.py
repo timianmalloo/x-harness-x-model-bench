@@ -24,12 +24,14 @@ class CheckResult(NamedTuple):
 
 # Pattern: Table-driven classification (ADR-0017 Amendment 1; W0 §9).
 # Explicit file keys keep a new file red until its class is reviewed.
+J0_GRADE_FILES = ("report/cost_compare.py", "report/pack_cost.py", "report/tool_phases.py", "report/publish.py")
 CLASSES: Mapping[str, Literal["run", "grade"]] = {
     "__init__.py": "run",
     "archive.py": "run",
     "cli.py": "run",
     "config.py": "run",
     "driver.py": "run",
+    "stream_driver.py": "run",
     "engine.py": "run",
     "errors.py": "run",
     "gitsafe.py": "run",
@@ -52,6 +54,8 @@ CLASSES: Mapping[str, Literal["run", "grade"]] = {
     "telemetry/claude_code.py": "run",
     "telemetry/codex.py": "run",
     "telemetry/copilot.py": "run",
+    "telemetry/grok.py": "run",
+    "telemetry/agy.py": "run",
     "telemetry/normalize.py": "run",
     "board.py": "grade",
     "composites.py": "grade",
@@ -115,6 +119,10 @@ CLASSES: Mapping[str, Literal["run", "grade"]] = {
     "alarm.py": "grade",
     "grade/noguess.py": "grade",
     "grade/diffstats.py": "grade",
+    # simplify: the lean re-run's four report modules are classed by R-CONTRACT-RUN and created by R-CONTRACT-FACTS
+    # (J0), so each is classed once its file exists and either branch passes alone and joined. Ceiling: J0. Upgrade
+    # trigger: J0 joined; then these become four plain entries above.
+    **{name: "grade" for name in J0_GRADE_FILES if (Path(__file__).parent / name).is_file()},
 }
 
 # Explicitly retired on landing; stale() prevents a landed key lingering here.

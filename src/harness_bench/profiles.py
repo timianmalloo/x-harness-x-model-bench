@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import os
 import shutil
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -23,8 +24,20 @@ from harness_bench import config, tools
 from harness_bench.errors import BenchError
 from harness_bench.telemetry import claude_code, codex, copilot
 
+# Leader ruling (lean re-run J0): grok and agy join HARNESSES and READERS in wave 1 (R-SETTINGS), in the same candidate
+# as their profile files (R-TRANSPORT); identity reads profile_record for every name here, so a name without its yaml
+# would break the engine identity between J0 and J1a. Their reader stubs are telemetry/grok.py and telemetry/agy.py.
 HARNESSES = ("claude-code", "codex", "copilot")
 USAGE_SOURCES = ("acp_turn", "native_record")
+# ADR-0024 s1-s3: a combo's settings. "default" is the absence of a pin: it expands nothing, joins no cell id, and is
+# what every bench-matrix/2 combo carries.
+DEFAULT = "default"
+SETTINGS = ("effort", "context")
+SETTING_APPLY = ("placeholder", "model_id", "none")
+SETTING_PLACEHOLDERS = {"effort": "{effort}", "context": "{context_tokens}"}
+CONTEXT_ARG = "{context_arg}"  # ADR-0028 s3: a whole argv element, replaced by the context setting's argv map
+TRANSPORTS = ("acp", "agy-stream")  # ADR-0025 s1: the module engine._attempt drives the cell with
+SCRIPTED_USER = ("supported", "unsupported")  # ADR-0028 s7: the plan refuses a scripted-user task when unsupported
 # ADR-0003 Am. 2026-09-30: a claude-code-only alternative to the copied-credential-file path (ADR-0003 amended 2026-09-30).
 # Claude Code refresh tokens rotate; copying the operator's own ~/.claude login into every cell home means one
 # cell's refresh strands every other copy's, mid-run. `claude setup-token` mints a long-lived (1-year) OAuth
@@ -49,6 +62,18 @@ CELL_ENV = {
 
 
 @dataclass(frozen=True)
+class Setting:
+    """One `settings:` entry of a profile (ADR-0024 s3): the values it accepts (strings, so 922000 and "922000" are one
+    value), how a value is applied, what the harness serves for "default" (None: no record shows it), and, for a
+    `{context_arg}` profile, the argv elements each value becomes (ADR-0028 s3)."""
+
+    values: tuple[str, ...] = ()
+    apply: str = "none"
+    default_serves: str | int | None = None
+    args: dict[str, tuple[str, ...]] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
 class Profile:
     harness: str
     home_env: str
@@ -70,6 +95,38 @@ class Profile:
     # R-74 item 4: where a session's sub-agent records land beside the main one ({session_id} filled per cell); empty
     # when a harness writes its sub-agents into the main record (Copilot: rows with a top-level agentId).
     subagent_glob: str = ""
+    # Lean re-run seams (ADR-0024 s3, ADR-0025 s1-s8, ADR-0028 s7). Parsed here with defaults that leave the three
+    # existing profiles' launches byte-equal; what each one does beyond placeholder expansion is R-SETTINGS's and
+    # R-TRANSPORT's (session_meta on session/new, user_home_vars, seed_files, the credential home, the alias table).
+    settings: dict[str, Setting] = field(default_factory=dict)
+    transport: str = "acp"
+    session_meta: dict = field(default_factory=dict)
+    user_home_vars: tuple[str, ...] = ()
+    seed_files: dict[str, str] = field(default_factory=dict)
+    credential_home_env: str | None = None
+    model_aliases: dict[str, tuple[str, ...]] = field(default_factory=dict)
+    scripted_user: str = "supported"
+
+    def expand_settings(self, text: str, where: str, effort=DEFAULT, context=DEFAULT) -> str:
+        """`{effort}` and `{context_tokens}` become the cell's values; "default" expands nothing. A placeholder left in
+        a launch input is refused, never sent as literal text (the plan refuses an unsupported value first, R-SETTINGS)."""
+        for value, placeholder in ((effort, SETTING_PLACEHOLDERS["effort"]), (context, SETTING_PLACEHOLDERS["context"])):
+            if value != DEFAULT:
+                text = text.replace(placeholder, str(value))
+            elif placeholder in text:
+                raise BenchError("HB-USR-002", f"{self.harness}: {where} needs {placeholder}, but the cell's setting is "
+                                               f"{DEFAULT!r}")
+        return text
+
+    def context_args(self, context=DEFAULT) -> list[str]:
+        """The argv elements `{context_arg}` becomes: none for "default" unless the map says otherwise (ADR-0028 s3)."""
+        setting = self.settings.get("context", Setting())
+        key = str(context)
+        if key in setting.args:
+            return list(setting.args[key])
+        if context == DEFAULT:
+            return []
+        raise BenchError("HB-USR-002", f"{self.harness}: context {key} has no {CONTEXT_ARG} mapping in the profile")
 
     def model_allowed(self, served: str, pinned: str) -> bool:
         return model_allowed(served, pinned, self.auxiliary_models)
@@ -79,7 +136,8 @@ class Profile:
         in the reader), only in a scenario-6 cell. Every other cell is seeded and launched exactly as before."""
         return DELEGATE_IDS.get(self.harness, ()) if scenario == 6 else ()
 
-    def seed_home(self, home: Path, model: str, scenario: int | None = None, oauth_token: str | None = None) -> None:
+    def seed_home(self, home: Path, model: str, scenario: int | None = None, oauth_token: str | None = None,
+                  effort=DEFAULT, context=DEFAULT) -> None:
         """Write the profile's files; `{delegate}` in a template becomes `, "<id>"` per delegate id of a scenario-6
         cell (a JSON-list continuation, the Claude Code allowlist) and nothing in any other cell (R-74 item 3).
 
@@ -92,7 +150,8 @@ class Profile:
         # True only in a scenario-6 cell; false in every other cell, including a seed that names no scenario.
         multi_agent = "true" if scenario == 6 else "false"
         for name, template in self.files.items():
-            (home / name).write_text(template.replace("{model}", model).replace("{delegate}", delegate)
+            text = self.expand_settings(template, f"file {name}", effort, context)
+            (home / name).write_text(text.replace("{model}", model).replace("{delegate}", delegate)
                                      .replace("{multi_agent}", multi_agent) + "\n", encoding="utf-8")
         if (not oauth_token and self.credential_source is not None and self.credential_name is not None
                 and self.credential_source.is_file()):
@@ -104,12 +163,13 @@ class Profile:
             (home / self.credential_name).unlink(missing_ok=True)
 
     def cell_env(self, base: dict[str, str], home: Path, build: tools.Build, model: str, traceparent: str,
-                 oauth_token: str | None = None) -> dict[str, str]:
+                 oauth_token: str | None = None, effort=DEFAULT, context=DEFAULT) -> dict[str, str]:
         env = {k: v for k, v in base.items() if k.upper() not in DROP_EXACT and not k.upper().startswith(DROP_PREFIXES)}
         env.update(CELL_ENV)
         env[self.home_env] = str(home)
         for key, template in self.env.items():
-            env[key] = template.replace("{model}", model).replace("{exe}", str(build.exe))
+            env[key] = (self.expand_settings(template, f"env {key}", effort, context).replace("{model}", model)
+                        .replace("{exe}", str(build.exe)).replace("{home}", str(home)))
         if traceparent:
             env["TRACEPARENT"] = traceparent
         if oauth_token:  # ADR-0003 Am. 2026-09-30: CLAUDE_CODE_OAUTH_TOKEN in place of the copied credential file
@@ -117,10 +177,12 @@ class Profile:
         return env
 
     def argv(self, build: tools.Build, model: str | None = None, mcp_config: Path | None = None,
-             scenario: int | None = None) -> list[str]:
+             scenario: int | None = None, effort=DEFAULT, context=DEFAULT, home: Path | None = None) -> list[str]:
         if model is None and any("{model}" in part for part in self.command):
             raise ValueError(f"{self.harness}: model is required by the command template")
-        values = {"exe": str(build.exe), "model": model}
+        if home is None and any("{home}" in part for part in self.command):
+            raise ValueError(f"{self.harness}: the cell home is required by the command template")
+        values = {"exe": str(build.exe), "model": model, "python": sys.executable, "home": str(home)}
         if any("{node}" in part for part in self.command):
             node = shutil.which("node")
             if not node:
@@ -130,9 +192,15 @@ class Profile:
             if build.adapter is None:
                 raise BenchError("HB-PRE-007", f"{self.harness}: command needs an ACP adapter")
             values["adapter"] = str(build.adapter)
-        argv = [part.replace("{exe}", values["exe"]).replace("{model}", values["model"] or "")
-                .replace("{node}", values.get("node", "")).replace("{adapter}", values.get("adapter", ""))
-                for part in self.command]
+        argv = []
+        for part in self.command:
+            if part == CONTEXT_ARG:
+                argv.extend(self.context_args(context))
+                continue
+            part = self.expand_settings(part, "command", effort, context)
+            argv.append(part.replace("{exe}", values["exe"]).replace("{model}", values["model"] or "")
+                        .replace("{node}", values.get("node", "")).replace("{adapter}", values.get("adapter", ""))
+                        .replace("{python}", values["python"]).replace("{home}", values["home"]))
         delegate = self.delegate_ids(scenario) if self.harness == "copilot" else ()
         if delegate:  # R-74 item 3: the four ids join the --available-tools list, before any scripted-user addition
             if "--available-tools" not in argv:
@@ -172,6 +240,35 @@ def subagent_session_id(path: Path) -> str:
     return path.stem.removeprefix("agent-")
 
 
+def _str_tuple(harness: str, key: str, value) -> tuple[str, ...]:
+    if not isinstance(value, list) or any(not isinstance(v, (str, int)) or isinstance(v, bool) for v in value):
+        raise BenchError("HB-USR-002", f"{harness}: profile {key} must be a list of strings")
+    return tuple(str(v) for v in value)
+
+
+def _mapping(harness: str, key: str, value) -> dict:
+    if not isinstance(value, dict):
+        raise BenchError("HB-USR-002", f"{harness}: profile {key} must be a mapping")
+    return dict(value)
+
+
+def _settings(harness: str, data) -> dict[str, Setting]:
+    """ADR-0024 s3: `settings: {<name>: {values, apply, default_serves, args}}`; absent means no setting is declared."""
+    out = {}
+    for name, entry in _mapping(harness, "settings", data).items():
+        if name not in SETTINGS:
+            raise BenchError("HB-USR-002", f"{harness}: unknown setting {name!r} (have {SETTINGS})")
+        entry = _mapping(harness, f"settings.{name}", entry)
+        apply = entry.get("apply", "none")
+        if apply not in SETTING_APPLY:
+            raise BenchError("HB-USR-002", f"{harness}: settings.{name}.apply must be one of {SETTING_APPLY}")
+        args = {str(k): _str_tuple(harness, f"settings.{name}.args.{k}", v)
+                for k, v in _mapping(harness, f"settings.{name}.args", entry.get("args") or {}).items()}
+        out[name] = Setting(values=_str_tuple(harness, f"settings.{name}.values", entry.get("values") or []),
+                            apply=apply, default_serves=entry.get("default_serves"), args=args)
+    return out
+
+
 def load(root: Path, harness: str, credential_source: Path | None = None) -> Profile:
     if harness not in HARNESSES:
         raise ValueError(f"no profile for harness {harness!r} (have {HARNESSES})")
@@ -188,6 +285,15 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
     grace = data.get("shutdown_grace_seconds")
     if isinstance(grace, bool) or not isinstance(grace, (int, float)) or not 0 < grace <= 10:
         raise BenchError("HB-USR-002", f"{harness}: shutdown_grace_seconds must be greater than 0 and at most 10")
+    transport = data.get("transport", "acp")
+    if transport not in TRANSPORTS:
+        raise BenchError("HB-USR-002", f"{harness}: transport must be one of {TRANSPORTS}")
+    scripted_user = data.get("scripted_user", "supported")
+    if scripted_user not in SCRIPTED_USER:
+        raise BenchError("HB-USR-002", f"{harness}: scripted_user must be one of {SCRIPTED_USER}")
+    home_env_name = data.get("credential_home_env")
+    if home_env_name is not None and (not isinstance(home_env_name, str) or not home_env_name):
+        raise BenchError("HB-USR-002", f"{harness}: credential_home_env must be a nonempty string")
     return Profile(
         harness=data["harness"],
         vendor=vendor,
@@ -206,6 +312,15 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
         credential_kind=data.get("credential_kind", "subscription login (copied)"),
         shutdown_grace=float(grace),
         subagent_glob=data.get("subagent_glob") or "",
+        settings=_settings(harness, data.get("settings") or {}),
+        transport=transport,
+        session_meta=_mapping(harness, "session_meta", data.get("session_meta") or {}),
+        user_home_vars=_str_tuple(harness, "user_home_vars", data.get("user_home_vars") or []),
+        seed_files={str(k): str(v) for k, v in _mapping(harness, "seed_files", data.get("seed_files") or {}).items()},
+        credential_home_env=home_env_name,
+        model_aliases={str(k): _str_tuple(harness, f"model_aliases.{k}", v)
+                       for k, v in _mapping(harness, "model_aliases", data.get("model_aliases") or {}).items()},
+        scripted_user=scripted_user,
     )
 
 
@@ -227,6 +342,7 @@ class ProfileLauncher:
         self.usage_source = profile.usage_source
         self.mode = profile.mode
         self.set_model = profile.set_model
+        self.transport = profile.transport  # ADR-0025 s1: engine.protocol_module reads it
         # ADR-0003 Am. 2026-09-30: read once, at construction (before any cell launches) -- the operator sets it before the run
         # starts, for the run's duration. None for every harness but claude-code (the only one this path covers).
         self._oauth_token = os.environ.get(OAUTH_TOKEN_ENV) if profile.harness == "claude-code" else None
@@ -243,7 +359,8 @@ class ProfileLauncher:
 
     def seed(self, home: Path, cell: dict) -> None:
         # R-74 item 3: the allowance is per cell; ADR-0003 Am. 2026-09-30: no credential file when an oauth token is set
-        self.profile.seed_home(home, cell["model"], cell.get("scenario"), oauth_token=self._oauth_token)
+        self.profile.seed_home(home, cell["model"], cell.get("scenario"), oauth_token=self._oauth_token,
+                               effort=cell.get("effort", DEFAULT), context=cell.get("context", DEFAULT))
 
     def clean(self, home: Path) -> None:
         self.profile.clean_home(home)
@@ -251,9 +368,12 @@ class ProfileLauncher:
     def argv_env(self, cell: dict, home: Path, traceparent: str) -> tuple[list[str], dict[str, str]]:
         if self.build is None:
             raise RuntimeError("check_build must run before argv_env")
+        # A plan written before the lean re-run has no effort or context on its cells: both read as "default".
+        effort, context = cell.get("effort", DEFAULT), cell.get("context", DEFAULT)
         return self.profile.argv(self.build, cell["model"], mcp_config=cell.get("mcp_config"),
-                                 scenario=cell.get("scenario")), self.profile.cell_env(
-            dict(os.environ), home, self.build, cell["model"], traceparent, oauth_token=self._oauth_token)
+                                 scenario=cell.get("scenario"), effort=effort, context=context, home=home), \
+            self.profile.cell_env(dict(os.environ), home, self.build, cell["model"], traceparent,
+                                  oauth_token=self._oauth_token, effort=effort, context=context)
 
     def records(self, home: Path, session_id: str) -> list[Path]:
         return self.profile.native_records(home, session_id)
