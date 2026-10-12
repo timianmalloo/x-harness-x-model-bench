@@ -88,6 +88,7 @@ CLASSES: Mapping[str, Literal["run", "grade"]] = {
     "grade/rigor.py": "grade",
     "grade/runner.py": "grade",
     "report/__init__.py": "grade",
+    "report/analysis.py": "grade",  # R-PACKCOST: the analyst-section check shared by pack-cost and cost-compare
     "report/cli_table.py": "grade",
     "report/context_growth.py": "grade",
     "report/credentials.py": "grade",

@@ -16,11 +16,14 @@ Rules, each defined once here:
 - Validity, in order: an invalidating cause; `invalid (build mismatch)` (HB-VAL-007, R-47); not graded;
   `invalid (tools denied by hook)` (HB-VAL-004, R-27); `invalid (out-of-profile tool called)` (HB-VAL-008, R-45 item
   2, R-54) for a class-`other` tool call that executed; `invalid (model mismatch)` (HB-VAL-002) for a served model
-  that is not the pin, a declared auxiliary model, or one the task's `model_map` names (US-11), even in a partial
-  record; `not recorded` for an unreadable usage record (HB-VAL-003, R-15), distinct from `invalid (no model call)`
+  that is not the pin, a declared auxiliary model, an exact alias of the pin, or one the task's `model_map` names
+  (US-11, ADR-0024 s5), read from `model_calls` and the `served` model, even in a partial record; `invalid (setting
+  mismatch)` (HB-VAL-010, ADR-0024 s4) for a served effort or context that differs from the pin or `default_serves`;
+  `not recorded` for an unreadable usage record (HB-VAL-003, R-15), distinct from `invalid (no model call)`
   (HB-VAL-001, a readable record with no call); else valid.
 - Warnings flag a cell without changing its validity: HB-VAL-005 (Σ model_calls vs the ACP turn total, R-24/R-26
-  c5), HB-VAL-006 (the executed-build check skipped, R-22 c1, R-47) and HB-VAL-009 (an out-of-profile attempt the
+  c5; `not recorded` for a `copilot -p` cell with no usage, ADR-0028 s4), HB-VAL-006 (the executed-build check
+  skipped, R-22 c1, R-47), HB-VAL-011 (a pinned or declared setting no source records, ADR-0024 s4) and HB-VAL-009 (an out-of-profile attempt the
   driver or a native hook refused, R-54). One code has one level and one emitter; a `Cause` code is never a view
   finding (R-47).
 - `meta_calls` counts class-`meta` tool calls per cell (Claude Code's `ToolSearch`): a cost axis, never scored (R-54 c3).
@@ -30,6 +33,7 @@ Rules, each defined once here:
 
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass, field, fields
 from datetime import datetime
@@ -64,7 +68,7 @@ KEYS = {  # ADR-0006 as amended: the key of one row of each fact
     "verdict_uses": ("run_id", "grading_id", "cell_id", "item_id", "judge_or_matcher"),  # Amendment 3
     "served": (*_READER_KEY, "field", "source"),  # two sources that disagree are two rows (ADR-0024 s4)
     "reasoning": (*_READER_KEY, "native_ordinal", "item_ordinal"),
-    "prompt_parts": (*_READER_KEY, "part", "path", "source"),
+    "prompt_parts": (*_READER_KEY, "native_ordinal", "part", "path", "source"),  # Leader ruling: the DR1 shape
     "harness_events": (*_READER_KEY, "native_ordinal"),  # ADR-0026 erratum (DR1): identical events never collide
 }
 
@@ -191,6 +195,38 @@ class RunView:
     catalog_version: str | None
     cells: list[CellView]
     header: dict[str, str | int | None] = field(default_factory=dict)  # credential kind, network mode, executed builds, probe passes
+    # ADR-0026 s4: the report derivations read the run's verified rows and its archive; None for a view built by hand.
+    run_dir: Path | None = None
+    facts: dict[str, list[dict]] = field(default_factory=dict, repr=False)  # every FACT's verified rows, as load read them
+
+
+def cell_rows(view: RunView, fact: str, cell: CellView) -> list[dict] | None:
+    """`fact`'s rows for the cell's current extraction (the one its scores name), in ledger order; None when the cell
+    has no current extraction (not graded). The one filter `_cell_view` applies to `model_calls` and `tool_calls`."""
+    if cell.extraction_id is None:
+        return None
+    return [r for r in view.facts.get(fact, ()) if r.get("cell_id") == cell.cell_id
+            and r.get("extraction_id") == cell.extraction_id]
+
+
+def stream_present(view: RunView, fact: str) -> bool:
+    """ADR-0026 s1: the current pass wrote `fact` (its `grading.completed.heads` names the segment); a pass from before
+    the stream existed did not, so its cells read `not recorded (stream absent)`, never an empty measure."""
+    done = next((e for e in view.facts.get("events", ()) if e.get("kind") == "grading.completed"
+                 and e.get("grading_id") == view.grading_id), {})
+    return fact in as_dict(done.get("heads"))
+
+
+def stream_reason(view: RunView, fact: str, cell: CellView) -> str | None:
+    """Why `fact` holds no row for the cell, or None when its rows can be read as a measure: the stream is absent from
+    the pass, the cell is not graded, or the reader recorded a whole-record reason (`streams_not_recorded`)."""
+    if not stream_present(view, fact):
+        return "stream absent"
+    if cell.extraction_id is None:
+        return "not graded"
+    done = next(e for e in view.facts["events"] if e.get("kind") == "grading.completed"
+                and e.get("grading_id") == view.grading_id)
+    return as_dict(as_dict(done.get("streams_not_recorded")).get(cell.cell_id)).get(fact)
 
 
 def _refuse_duplicates(facts: dict[str, list[dict]]) -> None:
@@ -400,7 +436,151 @@ def _idle(wall: Measure, model: Measure, tool: Measure) -> Measure:
     return Measure(idle) if idle >= 0 else Measure(None, "model and tool time exceed wall time")
 
 
+# ADR-0026 s4 time anatomy: new measures beside `_model_time` and `_idle`, which keep their meaning in report.html.
+NO_TIMELINE = "no ACP update timeline in the archive"
+NO_ACP_TURN = "the ACP timeline holds no prompt-to-reply interval"
+NO_HOOKS = "no hook rows; a reader that reads none is not told apart from a cell that ran none"
+NOT_SEPARABLE = "not separable: no model intervals of either kind"
+NO_ANCHOR = "not separable: the native and ACP clocks share no anchor"
+OVER_WALL = "the model, tool and hook intervals exceed wall time"
+
+
+@dataclass(frozen=True)
+class TimeAnatomy:
+    """One cell's time anatomy (ADR-0026 s4): `model_ms` is the native measure (`_model_time`, unchanged);
+    `model_ms_acp_estimate` is its own labelled measure, derived from ACP arrival times (ADR-0026 s3); `idle_ms` is
+    wall minus the union of the model, tool and hook intervals used, `not separable` with no model interval."""
+
+    model_ms: Measure
+    model_ms_acp_estimate: Measure
+    tool_ms: Measure
+    hook_ms: Measure
+    idle_ms: Measure
+
+
+def read_timeline(run_dir: Path | None, cell_id: str) -> list[dict] | None:
+    """The cell's `acp-timeline.jsonl` from its last archived attempt's home, in file order; None when there is none
+    or a line does not parse (the timeline is best effort, so a torn one is not recorded, never a partial one)."""
+    # the driver writes it; imported only when a report asks
+    from harness_bench.driver import TIMELINE
+
+    attempts = archive.attempt_dirs(run_dir, cell_id) if run_dir is not None else []
+    path = attempts[-1] / "home" / TIMELINE if attempts else None
+    if path is None or not path.is_file():
+        return None
+    try:
+        rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    except (OSError, ValueError):
+        return None
+    if not all(isinstance(r, dict) and is_count(r.get("first_mono_ns")) and is_count(r.get("last_mono_ns"))
+               for r in rows):
+        return None
+    return rows
+
+
+def acp_intervals(timeline: list[dict]) -> list[tuple[int, int]]:
+    """ADR-0026 s3's estimate, as mono_ns spans: each runs from a prompt (`session/prompt` sent) or the latest tool
+    result (`tool_call_update` arrival) to the next tool call or turn end (`session/prompt`'s response). The labels
+    are the driver's own exported constants, matched exactly: this module reads the driver's log, never speaks ACP."""
+    # the driver writes the timeline; imported only when a report asks (as `read_timeline`)
+    from harness_bench.driver import (
+        TIMELINE_PROMPT,
+        TIMELINE_RESPONSE,
+        TIMELINE_SENT,
+        TIMELINE_TOOL_CALL,
+        TIMELINE_TOOL_CALL_UPDATE,
+    )
+
+    spans: list[tuple[int, int]] = []
+    start: int | None = None
+    for r in timeline:
+        kind, prompt = r.get("update_kind"), r.get("method") == TIMELINE_PROMPT
+        if kind == TIMELINE_SENT and prompt:
+            start = r["first_mono_ns"]
+        elif kind == TIMELINE_TOOL_CALL_UPDATE:
+            start = r["last_mono_ns"]
+        elif start is not None and (kind == TIMELINE_TOOL_CALL or (kind == TIMELINE_RESPONSE and prompt)):
+            spans.append((start, r["first_mono_ns"]))
+            start = None
+    return spans
+
+
+def _ns(value) -> int | None:
+    at = _ts(value)
+    return None if at is None or at.tzinfo is None else int(at.timestamp() * 1_000_000_000)
+
+
+def _spans(rows: list[dict]) -> list[tuple[int, int]] | None:
+    """Each row's [start, end] on the epoch clock; None when one has no zoned start or end (`busy_ms`'s rule)."""
+    out = [(_ns(r.get("start")), _ns(r.get("end"))) for r in rows]
+    return None if any(s is None or e is None or e < s for s, e in out) else out
+
+
+def _union_ns(spans: list[tuple[int, int]]) -> int:
+    total, cur = 0, None
+    for s, e in sorted(spans):
+        if cur is None or s > cur[1]:
+            total += 0 if cur is None else cur[1] - cur[0]
+            cur = (s, e)
+        else:
+            cur = (cur[0], max(cur[1], e))
+    return total + (0 if cur is None else cur[1] - cur[0])
+
+
+def _anchor(events: list[dict], cell_id: str) -> int | None:
+    """epoch_ns minus mono_ns at the cell's process start (`ledger.stamp` writes both); None when either is missing."""
+    started = next((e for e in events if e.get("kind") == "attempt.process_started" and e.get("cell_id") == cell_id), {})
+    epoch = _ns(started.get("recorded_at"))
+    return None if epoch is None or not is_count(started.get("mono_ns")) else epoch - started["mono_ns"]
+
+
+def time_anatomy(view: RunView, cell: CellView) -> TimeAnatomy:
+    """ADR-0026 s4 for one cell, from the view's rows and the cell's archived ACP timeline."""
+    timeline = read_timeline(view.run_dir, cell.cell_id)
+    acp = acp_intervals(timeline) if timeline is not None else []
+    estimate = (Measure(None, NO_TIMELINE) if timeline is None else Measure(None, NO_ACP_TURN) if not acp
+                else Measure(round(sum(e - s for s, e in acp) / 1_000_000)))
+    hooks = [r for r in cell_rows(view, "harness_events", cell) or [] if r.get("event") == "hook"]
+    reason = stream_reason(view, "harness_events", cell)
+    hook = (Measure(None, reason) if reason is not None else busy_ms(hooks) if hooks else Measure(None, NO_HOOKS))
+    return TimeAnatomy(cell.model_ms, estimate, cell.tool_ms, hook, _anatomy_idle(view, cell, acp, hooks, hook))
+
+
+def _anatomy_idle(view: RunView, cell: CellView, acp: list[tuple[int, int]], hooks: list[dict],
+                  hook: Measure) -> Measure:
+    """wall - |native model (else the ACP estimate's) ∪ tool ∪ hook intervals|, each kind used only where its own
+    measure is recorded. Native spans are on the epoch clock and the estimate's on the mono clock, so a union of both
+    maps the native ones through the process-start anchor; with none, it is not separable."""
+    if cell.model_ms.value is None and not acp:
+        return Measure(None, NOT_SEPARABLE)
+    if cell.wall_ms.value is None:
+        return Measure(None, f"needs wall time ({cell.wall_ms.reason})")
+    native: list[tuple[int, int]] = []
+    for used, rows in ((cell.model_ms.value is not None, cell_rows(view, "model_calls", cell)),
+                       (cell.tool_ms.value is not None, cell_rows(view, "tool_calls", cell)),
+                       (hook.value is not None, hooks)):
+        spans = _spans(rows or []) if used else []
+        if spans is None:
+            return Measure(None, "an interval used has no zoned start or end")
+        native += spans
+    spans = native
+    if cell.model_ms.value is None:  # the ACP estimate's intervals: one clock for the union
+        anchor = _anchor(view.facts.get("events", []), cell.cell_id)
+        if anchor is None and native:
+            return Measure(None, NO_ANCHOR)
+        spans = [(s - (anchor or 0), e - (anchor or 0)) for s, e in native] + acp
+    busy = round(_union_ns(spans) / 1_000_000)
+    return Measure(cell.wall_ms.value - busy) if busy <= cell.wall_ms.value else Measure(None, OVER_WALL)
+
+
 NO_ACP_USAGE = "the adapter reported no usage"
+NOT_RECORDED = "not recorded"  # a Finding level beside error and warning: the check had no input (ADR-0028 s4)
+
+
+def _prompt_mode(plan: dict, harness: str) -> bool:
+    """ADR-0028 s1-s2: a Copilot cell runs `copilot -p` behind the pinned local adapter, which the plan's build record
+    names (`adapter_version`); an ACP-era Copilot build has none (`tools.LAYOUT`: no adapter)."""
+    return harness == "copilot" and as_dict(as_dict(plan.get("builds")).get(harness)).get("adapter_version") is not None
 
 # R-24, R-26 c5: the ACP turn total cross-checks Σ of the current extraction's model_calls buckets.
 # simplify: a harness list in code. Ceiling: harnesses whose adapter `usage` is the turn total over every model.
@@ -431,16 +611,20 @@ def _build_check(plan: dict, harness: str, opened: dict) -> Finding | None:
     return None
 
 
-def _token_cross_check(ended: dict, calls: list[ModelCall], turn_rows: list[dict] = ()) -> Finding | None:
+def _token_cross_check(ended: dict, calls: list[ModelCall], turn_rows: list[dict] = (),
+                       prompt_mode: bool = False) -> Finding | None:
     """HB-VAL-005, a warning, never a validity change: the ACP turn total and Σ model_calls disagree, or no ACP usage
     was recorded (the check did not run, which is never read as a pass). Copilot's `inputTokens` includes cache read
-    and write (R-20 c2)."""
+    and write (R-20 c2). A `copilot -p` cell whose final object carries no usage reads `not recorded`, never a warning
+    (ADR-0028 s4): that path has no ACP usage to cross-check."""
     per_turn = [u for r in turn_rows if isinstance(u := as_dict(r.get("usage")).get("usage"), dict)]
     if per_turn:  # the sum over the turn_ended rows present; a turn with no row is not recorded, never 0 (design 4.5)
         usage = {k: sum(u[k] for u in per_turn) if all(is_count(u.get(k)) for u in per_turn) else None
                  for k in {k for u in per_turn for k in u}}
     else:
         usage = as_dict(ended.get("acp_usage")).get("usage")
+    if not isinstance(usage, dict) and prompt_mode:
+        return Finding("HB-VAL-005", NOT_RECORDED, "token cross-check not recorded: the copilot -p final object carries no usage")
     if not isinstance(usage, dict):
         return Finding("HB-VAL-005", "warning", "token cross-check not run: no ACP usage recorded")
     diffs = []
@@ -525,9 +709,74 @@ def _unrecorded(source: str, record_reason: str | None, ended: dict, usage: list
     return record_reason
 
 
+# ADR-0024 s4: the served-row field each combo setting is judged by.
+SETTING_FIELDS = {"effort": "effort", "context": "context_tokens"}
+TIER_FLAG = "--context"  # ADR-0028 s5: the argv flag whose value names a context tier (Copilot's `--context long_context`)
+
+
+def _context_tier(prof: dict, requested: str) -> str | None:
+    """ADR-0028 s5: a pinned context is judged by the served tier, not the token count (the count is recorded, never
+    judged), when its frozen argv names one: `settings.context.args[<value>]` holds `--context <tier>` (Copilot's
+    922000). A plan that froze no args (before R-SETTINGS) names no tier."""
+    args = as_dict(as_dict(as_dict(prof.get("settings")).get("context")).get("args")).get(requested)
+    args = list(args) if isinstance(args, (list, tuple)) else []
+    return str(args[args.index(TIER_FLAG) + 1]) if TIER_FLAG in args[:-1] else None
+
+
+def _model_allowed(model: str, pin: str, prof: dict) -> bool:
+    """`profiles.model_allowed`, the one definition, with the plan's frozen exact alias table (ADR-0024 s5)."""
+    aliases = as_dict(prof.get("model_aliases"))
+    return profiles.model_allowed(model, pin, prof["auxiliary_models"], aliases)
+
+
+def _expected(cell: dict, prof: dict, setting: str) -> tuple[str | None, str, str]:
+    """(expected value, its basis, the served field judged): the pin, else the profile's frozen `default_serves`
+    (None: no record shows it, so nothing is judged). A plan from before bench-matrix/3 carries neither: "default"."""
+    requested = str(cell.get(setting, profiles.DEFAULT))
+    if setting == "context" and (tier := _context_tier(prof, requested)) is not None:
+        return tier, "pinned tier", "context_tier"
+    if requested != profiles.DEFAULT:
+        return requested, "pinned", SETTING_FIELDS[setting]
+    declared = as_dict(as_dict(prof.get("settings")).get(setting)).get("default_serves")
+    return (None if declared is None else str(declared)), "default_serves", SETTING_FIELDS[setting]
+
+
+def _serves(expected: str, row: dict) -> bool:
+    """Equal as written. Codex's row is its nominal window (the effective one / the catalog percent, Leader ruling
+    2026-10-12), so no harness's value is scaled here and no `source` is parsed."""
+    return row.get("value") is not None and str(row["value"]) == expected
+
+
+def _served_settings(cell: dict, prof: dict, rows: list[dict]) -> tuple[Finding | None, list[Finding]]:
+    """ADR-0024 s4, ADR-0028 s5: (HB-VAL-010 for every recorded value that differs from the expected one, None when
+    none does; one HB-VAL-011 warning per pinned or declared setting that no source records). A row is recorded when
+    it has no `not_recorded` reason, so a source that shows null (Copilot's contextTier) is a recorded null. Two
+    sources that disagree are both judged, so one that differs is HB-VAL-010. No expected value judges nothing."""
+    differs: list[str] = []
+    unrecorded: list[Finding] = []
+    for setting in SETTING_FIELDS:
+        expected, basis, field_name = _expected(cell, prof, setting)
+        if expected is None:
+            continue
+        recorded = [r for r in rows if r.get("field") == field_name and r.get("not_recorded") is None]
+        if not recorded:
+            unrecorded.append(Finding("HB-VAL-011", "warning",
+                                      f"served {setting} not recorded: expected {expected} ({basis}), no source records it"))
+        differs += [f"{setting} served {r.get('value')}, expected {expected} ({basis}) from {r.get('source')}"
+                    for r in recorded if not _serves(expected, r)]
+    return (Finding("HB-VAL-010", "error", "; ".join(differs)) if differs else None), unrecorded
+
+
+def _model_served(rows: list[dict]) -> frozenset[str]:
+    """ADR-0024 s4: HB-VAL-002's second input, every recorded `model_served` value, by base id (R-32)."""
+    return frozenset(normalize.base_model_id(r["value"]) for r in rows
+                     if r.get("field") == "model_served" and isinstance(r.get("value"), str))
+
+
 def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: set[str] | None,
               unrecorded: str | None = None, denials: int = 0, mapped: frozenset[str] = frozenset(),
-              build: Finding | None = None, out_of_profile: Finding | None = None) -> tuple[str, str | None]:
+              build: Finding | None = None, out_of_profile: Finding | None = None, settings: Finding | None = None,
+              model_served: frozenset[str] = frozenset()) -> tuple[str, str | None]:
     if outcome is None:
         return state, None  # not started | no outcome
     cause = Cause[outcome["cause"]] if outcome.get("cause") else None
@@ -546,8 +795,11 @@ def _validity(cell: dict, prof: dict, outcome: dict | None, state: str, served: 
         return "invalid (out-of-profile tool called)", out_of_profile.code
     # A served model that is neither the pin, a declared auxiliary model, nor one the task's model_map names. Seen in a
     # partial record it is still measured, so it outranks "not recorded" (D&P); an empty served set cannot mismatch.
-    if any(not profiles.model_allowed(m, cell["model"], prof["auxiliary_models"]) and m not in mapped for m in served):
+    # ADR-0024 s4: model_calls and the served-settings model; an old run has no `served` rows, so it judges as before.
+    if any(not _model_allowed(m, cell["model"], prof) and m not in mapped for m in served | model_served):
         return "invalid (model mismatch)", "HB-VAL-002"
+    if settings is not None:  # ADR-0024 s4: a served setting is measured even in a partial record, like the model (D&P)
+        return "invalid (setting mismatch)", settings.code
     if unrecorded is not None:  # R-15 c1: distinct from a readable record with no call (HB-VAL-001)
         return "not recorded", "HB-VAL-003"
     if not served:
@@ -590,7 +842,10 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     if cell["harness"] in ACP_TOTAL_HARNESSES and source == "native_record" and calls is not None and unrecorded is None:
         warnings.append(_token_cross_check(ended, ex.model_calls,
                                           [e for e in facts["events"] if e.get("cell_id") == cid
-                                           and e["kind"] == "cell.turn_ended"]))
+                                           and e["kind"] == "cell.turn_ended"], _prompt_mode(plan, cell["harness"])))
+    served_rows = [r for r in facts.get("served", ()) if r["cell_id"] == cid and r["extraction_id"] == extraction]
+    setting, setting_unrecorded = _served_settings(cell, prof, served_rows) if extraction is not None else (None, [])
+    warnings += setting_unrecorded
     totals = normalize.totals(source, ex, usage) if recorded and unrecorded is None else {}
     if unrecorded is not None:
         tokens_reason = f"not recorded ({unrecorded})"  # R-21 c2: never a partial sum or a zero
@@ -610,7 +865,7 @@ def _cell_view(plan: dict, cell: dict, facts: dict[str, list[dict]], grading_id:
     # R-54 (b): a row outside the profile that a hook denied is a refused attempt (HB-VAL-009), not an R-27 treatment denial.
     denials = normalize.hook_denials([r for r in tools or [] if not _outside(r.get("tool_class"), scenario)])
     validity, validity_code = _validity(cell, prof, outcome, state, served, unrecorded, denials, _mapped(plan, cell), build,
-                                        executed)
+                                        executed, setting, _model_served(served_rows))
     cause = Cause[outcome["cause"]] if outcome and outcome.get("cause") else None
     return CellView(
         cell_id=cid, task=cell["task"], rep=cell["rep"], label=cell.get("label", cid), combo=cell["combo"], arm=cell_arm(cell), harness=cell["harness"], model=cell["model"],
@@ -633,7 +888,8 @@ def load(run_dir: Path, catalog_version: str | None = None, *, any_kind: bool = 
     _refuse_duplicates(facts)
     grading_id, catalog = _current_pass(facts["events"], catalog_version)
     cells = [_cell_view(plan, c, facts, grading_id) for c in plan["cells"]]
-    return RunView(plan["run_id"], plan, completed(facts["events"]), grading_id, catalog, cells, _header(facts["events"]))
+    return RunView(plan["run_id"], plan, completed(facts["events"]), grading_id, catalog, cells, _header(facts["events"]),
+                   run_dir, facts)
 
 
 def build_label(harness: str, version: str) -> str:
@@ -683,7 +939,7 @@ def export(view: RunView) -> bytes:
 @dataclass(frozen=True)
 class Finding:
     code: str
-    level: str  # error | warning
+    level: str  # error | warning | not recorded (a check with no input, never a warning: ADR-0028 s4)
     message: str
 
 

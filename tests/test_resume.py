@@ -1313,3 +1313,49 @@ def test_stop_recorded_reads_the_three_rows(row, expected):
 def test_has_work_while_a_launched_cell_has_no_outcome(golden1):
     rows = golden1.rows[:5]  # launch_intent recorded, no outcome, no run.completed
     assert _need(resume, "has_work")(golden1.plan, rows) is True
+
+
+# ---------------------------------------------------------------- R-CAP: the bench credential write-back (ADR-0025 s7)
+
+class _BenchHomeLauncher(FakeLauncher):
+    """A launcher whose profile names a bench credential home (the Grok shape, ADR-0025 s7): the seed source is there."""
+
+    def __init__(self, behaviours, source: Path):
+        super().__init__(behaviours)
+        self.profile = SimpleNamespace(credential_home_env="HB_GROK_CRED_HOME", credential_name=".credentials.json",
+                                       credential_source=source)
+
+
+@pytest.mark.parametrize("last_row", ["cell.outcome", "attempt.process_started"])  # C1 archives the home; C6 discards it
+@pytest.mark.parametrize("leftover_is_newer", [True, False])
+def test_resume_writes_a_newer_leftover_credential_back_before_the_clean(golden1, tmp_path, leftover_is_newer, last_row):
+    i = next(n for n, r in enumerate(golden1.rows) if r["kind"] == last_row)
+    env = _prefix(golden1, tmp_path, i + 1)  # the cell's home is left over, with the dead agent's credential copy in it
+    source = tmp_path / "bench-home" / ".credentials.json"
+    source.parent.mkdir()
+    source.write_bytes(b'{"token": "bench"}')
+    home = env.cfg.cells_root / env.plan["run_id"] / golden1.cells[0] / "home"
+    home.mkdir(parents=True)
+    (home / ".credentials.json").write_bytes(b'{"token": "refreshed"}')
+    newer, older = (home / ".credentials.json", source) if leftover_is_newer else (source, home / ".credentials.json")
+    os.utime(older, ns=(newer.stat().st_mtime_ns - 10**9,) * 2)
+    old = env.cfg.launchers["fake"]
+    env.cfg.launchers["fake"] = _BenchHomeLauncher(old.behaviours, source)
+
+    assert _resume(env).exit_code == 0
+
+    assert source.read_bytes() == (b'{"token": "refreshed"}' if leftover_is_newer else b'{"token": "bench"}')
+    assert not list(env.cfg.cells_root.rglob(".credentials.json"))  # the clean still ran, after the write-back
+    assert not list((env.run_dir / "archive").rglob(".credentials.json"))
+
+
+def test_a_profile_without_a_bench_home_writes_nothing_back(tmp_path):  # Claude Code, Codex: the real login is the source
+    source, home = tmp_path / "real" / ".credentials.json", tmp_path / "home"
+    source.parent.mkdir()
+    source.write_bytes(b"real")
+    home.mkdir()
+    (home / ".credentials.json").write_bytes(b"cell copy")
+    os.utime(source, ns=((home / ".credentials.json").stat().st_mtime_ns - 10**9,) * 2)
+    launcher = _BenchHomeLauncher({}, source)
+    launcher.profile.credential_home_env = None
+    assert resume.write_back_credentials(launcher, home) is False and source.read_bytes() == b"real"

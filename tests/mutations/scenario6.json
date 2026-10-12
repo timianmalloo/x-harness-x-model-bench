@@ -49,7 +49,7 @@
  {
   "name": "R-73/R-74 (W3-S6): a missing role per vendor is accepted",
   "file": "src/harness_bench/config.py",
-  "find": "sorted(set(vendors) - roles[role])",
+  "find": "sorted(needed - roles[role])",
   "replace": "sorted(set())",
   "tests": [
    "tests/test_model_map.py::test_each_map_defect_is_named"

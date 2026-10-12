@@ -1,0 +1,79 @@
+[
+ {
+  "name": "an uninstalled harness is no longer left out of resolve, so every run needs grok and agy installed",
+  "file": "src/harness_bench/tools.py",
+  "find": "        if len(missing) == len(required):\n            continue",
+  "replace": "        if False:\n            continue",
+  "tests": ["tests/test_tools.py::test_a_plan_with_only_claude_code_resolves_without_a_grok_or_agy_build"]
+ },
+ {
+  "name": "install_vendored takes any source, whatever its sha256",
+  "file": "src/harness_bench/tools.py",
+  "find": "    harness = next((h for h, pin in pins.items() if pin[\"sha256\"] == sha), None)",
+  "replace": "    harness = next(iter(pins), None)",
+  "tests": ["tests/test_tools.py::test_a_vendored_source_with_another_hash_is_refused"]
+ },
+ {
+  "name": "the installed vendored exe is left writable",
+  "file": "src/harness_bench/tools.py",
+  "find": "        os.replace(tmp, dest)\n        _set_writable(dest, False)\n",
+  "replace": "        os.replace(tmp, dest)\n",
+  "tests": ["tests/test_tools.py::test_the_installed_vendored_exe_is_read_only_and_a_reinstall_keeps_it"]
+ },
+ {
+  "name": "the npm-installed executables are left writable",
+  "file": "src/harness_bench/tools.py",
+  "find": "    _npm_ci(src, dest, timeout)\n    for exe in _npm_exes(dest):\n        _set_writable(exe, False)\n",
+  "replace": "    _npm_ci(src, dest, timeout)\n",
+  "tests": ["tests/test_tools.py::test_install_makes_the_npm_executables_read_only_and_keeps_grok_out_of_the_real_home"]
+ },
+ {
+  "name": "a reinstall no longer makes the read-only executables writable before npm ci",
+  "file": "src/harness_bench/tools.py",
+  "find": "    for exe in _npm_exes(dest):  # npm ci removes node_modules",
+  "replace": "    for exe in []:  # npm ci removes node_modules",
+  "tests": ["tests/test_tools.py::test_install_makes_the_npm_executables_read_only_and_keeps_grok_out_of_the_real_home"]
+ },
+ {
+  "name": "npm ci runs Grok's postinstall against the operator's real ~/.grok",
+  "file": "src/harness_bench/tools.py",
+  "find": "cwd=str(dest), env=env, timeout=timeout)",
+  "replace": "cwd=str(dest), env=None, timeout=timeout)",
+  "tests": ["tests/test_tools.py::test_install_makes_the_npm_executables_read_only_and_keeps_grok_out_of_the_real_home"]
+ },
+ {
+  "name": "a local adapter whose bytes differ from its pin is no longer refused at resolve",
+  "file": "src/harness_bench/tools.py",
+  "find": "    if sha != pin[\"sha256\"]:\n        raise PinMismatch(harness, f\"adapter",
+  "replace": "    if False:\n        raise PinMismatch(harness, f\"adapter",
+  "tests": ["tests/test_tools.py::test_a_local_adapter_whose_bytes_differ_from_its_pin_is_refused_at_resolve"]
+ },
+ {
+  "name": "an installed vendored exe whose bytes differ from its pin is no longer refused at resolve",
+  "file": "src/harness_bench/tools.py",
+  "find": "    if sha != pin[\"sha256\"]:\n        raise PinMismatch(harness, f\"{exe}",
+  "replace": "    if False:\n        raise PinMismatch(harness, f\"{exe}",
+  "tests": ["tests/test_tools.py::test_a_one_byte_change_to_the_vendored_exe_is_refused_at_resolve"]
+ },
+ {
+  "name": "an adapter pin may point outside the bench root",
+  "file": "src/harness_bench/tools.py",
+  "find": "    if root.resolve() not in adapter.parents:",
+  "replace": "    if False:",
+  "tests": ["tests/test_tools.py::test_a_missing_escaping_or_incomplete_adapter_pin_is_hb_pre_007"]
+ },
+ {
+  "name": "a pin mismatch is no longer a BuildChanged, so the engine's cell-start check would not catch it",
+  "file": "src/harness_bench/tools.py",
+  "find": "class PinMismatch(BuildChanged, BenchError):",
+  "replace": "class PinMismatch(BenchError):",
+  "tests": ["tests/test_tools.py::test_a_one_byte_change_to_the_vendored_exe_is_refused_at_resolve"]
+ },
+ {
+  "name": "the build record drops the bench interpreter's identity",
+  "file": "src/harness_bench/tools.py",
+  "find": ",\n                \"python_version\": self.python_version, \"python_path\": self.python_path}",
+  "replace": "}",
+  "tests": ["tests/test_tools.py::test_the_build_record_carries_the_bench_interpreter_and_an_older_record_is_build_changed"]
+ }
+]

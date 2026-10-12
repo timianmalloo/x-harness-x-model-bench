@@ -144,7 +144,7 @@ def recover_archive(cell_dir: Path, dest_root: Path, attempt: int, exclude_names
                                  "link_target": os.readlink(source)})
                 elif source.is_dir():
                     stack.extend(sorted(source.iterdir(), reverse=True))
-                elif source.is_file() and source.name not in exclude_names:
+                elif source.is_file() and source.name not in _basenames(exclude_names):
                     rows.append({"path": rel, "kind": "file", "size": source.stat().st_size,
                                  "sha256": _sha(source), "link_target": ""})
             for row in rows:
@@ -198,11 +198,17 @@ def attempt_dirs(run_dir: Path, cell_id: str) -> list[Path]:
     return [p for _, p in matches]
 
 
+def _basenames(names) -> frozenset[str]:
+    """Credential names as the archive matches them: by basename, so a nested seed (Grok's `.grok/auth.json`,
+    ADR-0025 s7) is excluded like a top-level one."""
+    return frozenset(Path(n).name for n in names)
+
+
 class _Copy:
     def __init__(self, cell_dir: Path, exclude_names: set[str], *, include_names: set[str] | None = None,
                  cancel=None) -> None:
         self.cell_dir = cell_dir
-        self.exclude_names = exclude_names
+        self.exclude_names = _basenames(exclude_names)
         self.rows: list[dict] = []
         self.total_bytes = 0
         self.include_names = include_names

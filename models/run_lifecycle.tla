@@ -31,6 +31,8 @@ EXTENDS Naturals, FiniteSets, TLC
 CONSTANTS
     Cells,          \* the plan's cells
     Parallelism,    \* at most this many cells run at once
+    Capped,         \* the cells of the one capped harness (ADR-0025 s7: harness_parallelism)
+    HarnessCap,     \* at most this many of them run at once
     MaxCrashes,     \* engine crashes explored
     Passes,         \* grading pass ids (each process mints its own)
     Graders,        \* processes that may grade: {"engine"} or {"engine", "bench"}
@@ -38,6 +40,7 @@ CONSTANTS
     BUG             \* "none" or one seeded defect name
 
 ASSUME Parallelism \in Nat \ {0}
+ASSUME Capped \subseteq Cells /\ HarnessCap \in Nat \ {0}
 ASSUME "engine" \in Graders /\ Graders \subseteq {"engine", "bench"}
 ASSUME NumTurns \in 1..2
 
@@ -189,6 +192,8 @@ StartCell(c) ==
     \* Parallelism is enforced where a proc starts, counting every running proc,
     \* including one that was killed and has not yet exited (the slot is held until confirmed).
     /\ (BUG = "exceed_parallelism" \/ Cardinality(Running) < Parallelism)
+    \* ADR-0025 s7: the same guard per harness, counting that harness's running procs (engine._launchable).
+    /\ (BUG = "exceed_harness_cap" \/ c \notin Capped \/ Cardinality(Running \cap Capped) < HarnessCap)
     /\ proc' = [proc EXCEPT ![c] = "running"]
     /\ launchEpoch' = [launchEpoch EXCEPT ![c] = epoch]
     /\ IF stopApplied THEN Flag("launchAfterStop")
@@ -744,7 +749,8 @@ Spec == Init /\ [][Next]_vars /\ Fairness
 
 \* Cells and passes are interchangeable. Safety configuration only: TLC's symmetry reduction is
 \* unsound for liveness, which is checked in a separate configuration.
-Symmetry == Permutations(Cells) \cup Permutations(Passes)
+\* A cap splits the cells into the capped harness's and the rest: a permutation stays within each part.
+Symmetry == Permutations(Capped) \cup Permutations(Cells \ Capped) \cup Permutations(Passes)
 
 -----------------------------------------------------------------------------
 (* Safety invariants *)
@@ -791,6 +797,9 @@ AtMostOneActivePass        == Cardinality({p \in Passes : passState[p] = "active
 ControlAppliedOnce         == \A k \in Controls : applyCount[k] <= 1
 NoLaunchAfterStop          == ~flags["launchAfterStop"]
 ParallelismBound           == Cardinality(Running) <= Parallelism
+\* ADR-0025 s7: a harness's frozen cap counts its running procs, as ParallelismBound counts all of them. One capped
+\* harness stands for each: caps are independent guards on disjoint cell sets, and no cap reads another.
+HarnessCapBound            == Cardinality(Running \cap Capped) <= HarnessCap
 StoppedNeverRelaunched     == \A c \in Cells : wasStopped[c] => outcome[c] = "stopped"
 DecisionResolvedOnce       == resolutions <= 1
 NoLaunchWhileDecisionOpen  == ~flags["launchWhileOpen"]

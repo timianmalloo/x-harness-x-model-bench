@@ -32,10 +32,14 @@ from __future__ import annotations
 
 import statistics
 from dataclasses import dataclass
+from datetime import datetime
+from decimal import Decimal
 from pathlib import Path
 
 from harness_bench import views
 from harness_bench.grade.cost import ACP_MISSES_CALLS, SESSION_TOTALS
+from harness_bench.report import tool_phases
+from harness_bench.telemetry import grok
 
 NO_TURNS = "No turns recorded for {task}."
 
@@ -172,6 +176,72 @@ class RequestSeries:
     reason: str | None = None
 
 
+NOT_PER_REQUEST = "per-session totals only"  # a row that sums several requests (`requests` > 1, e.g. Copilot's)
+NO_REQUESTS = "no model call recorded"
+UNPLACED = "a compaction's place among the requests is not recorded"
+NO_WINDOW = "no served window recorded"
+
+
+def _at(value) -> datetime | None:
+    """A zoned ISO instant, or None (an unzoned one cannot be ordered against a zoned one)."""
+    try:
+        at = datetime.fromisoformat(value) if isinstance(value, str) else None
+    except ValueError:
+        return None
+    return at if at is not None and at.tzinfo is not None else None
+
+
 def request_series(view: views.RunView, cell_id: str) -> RequestSeries:
-    """The signature only (R-CONTRACT-FACTS); R-DERIV builds it, and owns this module from J1b."""
-    raise NotImplementedError("context_growth.request_series: R-DERIV")
+    """One cell's per-request input series (ADR-0026 s4): each request's prompt (`_size`) in native order, from the
+    cell's current-extraction main-session `model_calls` rows, with the requests a `harness_events` compaction
+    precedes. Not recorded, with its reason and empty tuples, when the source misses calls (`acp_turn`), the harness
+    records per turn (Grok, `grok.PER_REQUEST`), a row sums several requests, there is no call, or a compaction cannot
+    be placed (no zoned time on it or on a request) -- never a curve with a guessed position."""
+    cell = next(c for c in view.cells if c.cell_id == cell_id)
+    profile = (view.plan.get("profiles") or {}).get(cell.harness) or {}
+    if profile.get("usage_source") == "acp_turn":
+        return RequestSeries(cell_id, reason=ACP_MISSES_CALLS)
+    if cell.harness == "grok":
+        return RequestSeries(cell_id, reason=grok.PER_REQUEST.removeprefix("not recorded: "))
+    rows = views.cell_rows(view, "model_calls", cell)
+    if rows is None:
+        return RequestSeries(cell_id, reason="not graded")
+    session = tool_phases.main_session(view, cell)
+    calls = sorted((r for r in rows if r["principal"] == cell_id and (session is None or r.get("native_session_id") == session)),
+                   key=lambda r: r["native_ordinal"])
+    if not calls:
+        return RequestSeries(cell_id, reason=NO_REQUESTS)
+    if any(r.get("requests", 1) != 1 for r in calls):
+        return RequestSeries(cell_id, reason=NOT_PER_REQUEST)
+    compactions = [e for e in views.cell_rows(view, "harness_events", cell) or [] if e.get("event") == "compaction"]
+    before: set[int] = set()
+    for e in compactions:
+        at = _at(e.get("start") or e.get("end"))
+        times = [_at(r.get("start") or r.get("end")) for r in calls]
+        if at is None or any(t is None for t in times):
+            return RequestSeries(cell_id, reason=UNPLACED)
+        before.add(next((i for i, t in enumerate(times) if t >= at), len(calls)))
+    return RequestSeries(cell_id, inputs=tuple(_size(r) for r in calls),
+                         compacted_before=tuple(sorted(i for i in before if i < len(calls))))
+
+
+def served_window(view: views.RunView, cell: views.CellView) -> views.Measure:
+    """The cell's served context window (`served` rows, field `context_tokens`): one recorded value, or NOT_RECORDED
+    with the reason (the stream absent, no source recorded it, or sources disagree)."""
+    reason = views.stream_reason(view, "served", cell)
+    if reason is not None:
+        return views.Measure(None, reason)
+    values = {str(r["value"]) for r in views.cell_rows(view, "served", cell) or []
+              if r.get("field") == "context_tokens" and r.get("not_recorded") is None and r.get("value") is not None}
+    if len(values) != 1:
+        return views.Measure(None, NO_WINDOW if not values else "sources disagree: " + ", ".join(sorted(values)))
+    return views.Measure(int(values.pop()))
+
+
+def peak_vs_window(series: RequestSeries, window: views.Measure) -> views.Measure:
+    """The series' peak request as a share of the served window (a Decimal at 4 places), or NOT_RECORDED."""
+    if series.reason is not None:
+        return views.Measure(None, series.reason)
+    if window.value is None:
+        return views.Measure(None, window.reason or NO_WINDOW)
+    return views.Measure((Decimal(max(series.inputs)) / Decimal(window.value)).quantize(Decimal("0.0001")))

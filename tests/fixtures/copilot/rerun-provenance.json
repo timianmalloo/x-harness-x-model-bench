@@ -1,0 +1,38 @@
+{
+  "track": "R-READ-COPILOT (session rcopilot-rerun-opus)",
+  "built": "2026-10-12",
+  "fixtures": {
+    "rerun-off": {
+      "source": "R-COPILOT-P raw record C:\\tf\\r-copilot-p\\records\\off\\home (X1 pack-off, copilot -p through bench/adapters/copilot_p_acp.py, agent 1.0.89-1, gpt-6.1-sol, --reasoning-effort high, --context long_context, --log-level debug)",
+      "session_id": "81c95380-20f7-4339-a640-e93f1869ddd4",
+      "real_record": {"requests": 5, "instructions_chars": 20287, "instruction_file_parts": 0, "system_chars": 19520, "skills_chars": 767}
+    },
+    "rerun-on": {
+      "source": "R-COPILOT-P raw record C:\\tf\\r-copilot-p\\records\\on\\home (X1 pack-on, same settings)",
+      "session_id": "9226f641-30da-4f5a-89fa-73663d5754bb",
+      "real_record": {"requests": 12, "instructions_chars": 329674, "instruction_file_parts_inlined": 16, "instruction_file_parts_listed": 6,
+                      "system_chars": 20900, "instruction_file_chars": 294509, "skills_chars": 14265, "skills_listed": 31}
+    },
+    "rerun-fast": {
+      "source": "settings spike C:\\tf\\spike-settings\\copilot-fast\\home (ACP mode, gpt-5.6-sol-fast; session.start.contextTier null; response model gpt-5.6-sol)",
+      "session_id": "43ed66b8-fd1b-438e-8e4c-bb341fdb7c56",
+      "real_record": {"requests": 2, "instructions_chars": 19311}
+    }
+  },
+  "built_from_real_records": true,
+  "trimming": [
+    "events.jsonl: every line kept; string values over 2000 chars cut to 2000 + '...[trimmed]', except reasoningText",
+    "debug logs: only the [rust:model_wire] request blocks and response blocks (the 'response (Request-ID ...)', 'data:' and body lines) are kept; every other log line is dropped",
+    "wire bodies: string values over 2000 chars cut as above, except instructions; bodies re-serialized with indent=2 after the original stamped first line",
+    "instructions over 50,000 chars (rerun-on only): structure lines kept whole (tags, ---, applyTo:, the 'Here is a list of instruction files' lead-in, its '.md' table rows); of each prose run only its first line, cut to 120 chars; tag lines cut to 300",
+    "a later request whose instructions equal the first request's: replaced by '[identical to the first request; trimmed by the fixture builder]' (the reader reads the fixed prefix from the first request only)"
+  ],
+  "scrubbing": [
+    "emails (21 users.noreply.github.com hits in the real logs) -> <EMAIL>",
+    "the record's own absolute prefix (C:\\tf\\r-copilot-p\\records\\{off,on}, C:\\tf\\spike-settings\\copilot-fast, in plain, JSON and JSON-in-JSON escaping) -> C:\\cells\\cell",
+    "Bearer-scheme tokens, JWT-shaped values and auth-header values -> placeholders; none were found after the trim",
+    "a build-time check parses every events line and every wire body and fails on any email, bearer, JWT, gho_/ghu_ shape left"
+  ],
+  "known_differences": "Instruction chars in rerun-on are those of the reduced text, so tests assert the partition (sum of part chars == the fixture's own instructions length), not the real 329,674; the real numbers are above. The scrubbed email is shorter than the original, so rerun-off's instructions are not 20,287 chars in the fixture. Opaque reasoning payloads are cut to 2000 chars, so their sha256 differs from the real record's.",
+  "builder": "C:\\tf\\r-read-copilot\\build_fixtures.py (scratch, not committed; its rules are listed here)"
+}

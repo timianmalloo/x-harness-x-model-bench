@@ -520,14 +520,15 @@ def _report_operator() -> egress.Operator:
 
 def _judge_calls(args, root: Path) -> judge.Calls:
     """The call environment of `bench grade --allow-model-calls`, read at run time and never committed (R-42): the
-    pinned CLIs, every harness profile, and whom egress protects: the operator (the e-mail from BENCH_OPERATOR_EMAIL,
+    pinned CLIs, the judge harnesses' profiles, and whom egress protects: the operator (the e-mail from BENCH_OPERATOR_EMAIL,
     the user name and home of this login) and the credential values this host holds (design section 7.4)."""
     email = os.environ.get("BENCH_OPERATOR_EMAIL", "").strip()
     if not email:
         raise BenchError("HB-USR-002", "set BENCH_OPERATOR_EMAIL to the operator's e-mail: egress scans every judge "
                                        "request for it (supplied at run time, never committed, R-42)")
     return judge.Calls(cells_root=Path(args.cells_root), builds=tools.resolve(Path(args.tools_dir)),
-                       profiles={h: profiles.load(root, h) for h in profiles.HARNESSES},
+                       # a jury names only JUDGE_HARNESSES (config.validate_gateway), so only their profiles are read
+                       profiles={h: profiles.load(root, h) for h in config.JUDGE_HARNESSES},
                        operator=egress.Operator.from_os(email),
                        secrets=tuple(sorted(report_credentials.host_values(root))), canaries=egress.CANARIES)
 

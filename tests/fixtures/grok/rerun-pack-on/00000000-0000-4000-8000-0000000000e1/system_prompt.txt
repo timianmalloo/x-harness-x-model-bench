@@ -1,0 +1,1 @@
+You are a synthetic Grok fixture system prompt. It stands in for system_prompt.txt.

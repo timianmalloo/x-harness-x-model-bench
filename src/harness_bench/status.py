@@ -35,7 +35,8 @@ LIVENESS = ("alive", "stalled", "not running")
 COMPLETION = ("complete", "in progress", "incomplete")
 OUTCOMES = ("completed", "timed_out", "stopped", "skipped (decision)", "failed", "no outcome", "not started")
 VALIDITY = ("valid", "invalid (infrastructure)", "invalid (benchmark)", "invalid (no model call)", "invalid (model mismatch)",
-            "invalid (tools denied by hook)", "invalid (build mismatch)", "invalid (out-of-profile tool called)", "not recorded",
+            "invalid (tools denied by hook)", "invalid (build mismatch)", "invalid (out-of-profile tool called)",
+            "invalid (setting mismatch)", "not recorded",
             "not graded")
 RUN_ID = r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}"
 # CELL_ID, LABEL: the ids and labels plan.py freezes (config.py owns the one definition; plan.py

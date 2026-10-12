@@ -29,6 +29,7 @@ import shutil
 import subprocess
 import threading
 import time
+from collections import Counter
 from collections.abc import Callable, Iterator
 from concurrent.futures import Future
 from concurrent.futures import TimeoutError as FutureTimeout
@@ -52,6 +53,7 @@ from harness_bench import (
 )
 from harness_bench.errors import BenchError, Cause
 from harness_bench.gitsafe import GitError
+from harness_bench.plan import harness_parallelism
 from harness_bench.scripted_user import log as scripted_log
 from harness_bench.scripted_user import server as scripted_server
 from harness_bench.telemetry import normalize
@@ -234,6 +236,7 @@ class Engine:
         self.infra_streak = 0
         self.deferred: list[str] = []  # D-K13: cells the resume left untouched because their process is alive
         self.cells = {c["cell_id"]: c for c in plan.get("cells", [])}
+        self.harness_caps = harness_parallelism(plan)  # ADR-0025 s7: {} for a plan without caps (every plan before R-CAP)
         self.pending: list[dict] = []  # the launch queue; a skip_combo decision removes cells from it (design 6.1)
         self.decisions = _Decisions(self.params.get("decision_timeout"))
         self.spend_cap = self.params.get("spend_cap_tokens")  # None: no cap, or disabled by a `continue` (design 6.1)
@@ -482,14 +485,19 @@ class Engine:
                     # The slot ends when the process is confirmed gone (module doc), which is before the
                     # outcome. A worker still archiving stays in active so the loop drains it, and does
                     # not keep the slot: design 6.2 step 8 launches in this tick once the decision is closed.
-                    held = sum(cid not in self.outcomes for cid in self.active)
-                    if pending and not self.stopped and not self.broken and held < self.params["parallelism"] \
+                    held_by = Counter(a.cell["harness"] for cid, a in self.active.items() if cid not in self.outcomes)
+                    held = sum(held_by.values())
+                    nxt = self._launchable(pending, held_by)
+                    if nxt is not None and not self.stopped and not self.broken and held < self.params["parallelism"] \
                             and not self.decisions.any_open:
                         self._identity_ok()  # one check clears all launches of this tick
-                    while pending and not self.stopped and not self.broken and held < self.params["parallelism"] \
+                    while nxt is not None and not self.stopped and not self.broken and held < self.params["parallelism"] \
                             and not self.decisions.any_open:  # launching pauses while a decision is open (US-15)
-                        self._launch(pending.pop(0))
+                        cell = pending.pop(nxt)
+                        self._launch(cell)
                         held += 1
+                        held_by[cell["harness"]] += 1
+                        nxt = self._launchable(pending, held_by)
                 for cell_id, a in list(self.active.items()):
                     if not a.thread.is_alive():
                         self.active.pop(cell_id)
@@ -633,6 +641,16 @@ class Engine:
                 path.unlink()
             except OSError as exc:
                 log.warning("control retried", extra={"error_code": "HB-USR-002", "detail": type(exc).__name__})
+
+    def _launchable(self, pending: list[dict], held_by: Counter) -> int | None:
+        """The index of the first pending cell whose harness is under its frozen cap (ADR-0025 s7; the model's StartCell
+        guard and HarnessCapBound), or None. The queue order holds otherwise: a capped harness's cell waits in place
+        while a later cell of another harness launches. The slot is counted as `held` counts it (launch to outcome)."""
+        for i, cell in enumerate(pending):
+            cap = self.harness_caps.get(cell["harness"])
+            if cap is None or held_by[cell["harness"]] < cap:
+                return i
+        return None
 
     def _launch(self, cell: dict) -> None:
         free_bytes = self._launch_free_bytes()
@@ -860,8 +878,12 @@ class Engine:
                                    "credential_kind": launcher.credential_kind, "network_mode": "unrestricted"})
             started = True
             proto = protocol_module(launcher)
+            # ADR-0025 s2: the profile's session_meta rides on session/new (ProfileLauncher has .profile; a fake may not).
+            # Both drivers take the keyword; an empty map is None, so session/new carries no `_meta`.
+            meta = getattr(getattr(launcher, "profile", None), "session_meta", None) or None
             session = proto.open_session(cp, ws, launcher.mode, self.params["handshake_timeout"],
-                                         cell["model"] if launcher.set_model else None, result, mcp_servers, a.cancel)
+                                         cell["model"] if launcher.set_model else None, result, mcp_servers, a.cancel,
+                                         session_meta=meta)
             if session is not None:
                 try:
                     record_session_opened(result.session_id)

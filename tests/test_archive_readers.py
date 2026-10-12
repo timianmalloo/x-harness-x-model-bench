@@ -5,7 +5,9 @@ from pathlib import Path
 
 SRC = Path(__file__).resolve().parents[1] / "src/harness_bench"
 READERS = {"engine.py", "grade/runner.py", "report/credentials.py", "report/judges.py",
-           "report/pack_improvement.py", "report/summaries.py", "report/html.py", "resume.py", "views.py"}
+           "report/pack_improvement.py", "report/summaries.py", "report/html.py", "resume.py", "views.py",
+           "report/tool_phases.py",  # cell_trace, moved from pack_improvement (R-DERIV)
+           "report/pack_cost.py"}  # the pre-turn tree of the archived working copy (R-PACKCOST, ADR-0029 s4)
 ANNOTATION = {"grade/__init__.py"}
 GIT_ARCHIVE = {"grade/_changes.py", "workspace.py"}
 
@@ -47,5 +49,5 @@ def test_t_sweep_1_guard_detects_unknown_reader_and_broad_glob():
 def test_t_sweep_1_exact_reader_and_exception_set():
     sources = {p.relative_to(SRC).as_posix(): p.read_text(encoding="utf-8") for p in SRC.rglob("*.py")}
     assert archive_readers(sources) == READERS
-    assert len(READERS) == 9
+    assert len(READERS) == 11
     assert ANNOTATION | GIT_ARCHIVE <= sources.keys()

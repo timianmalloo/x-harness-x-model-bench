@@ -1,0 +1,58 @@
+[
+  {
+    "name": "claude effort not read",
+    "file": "src/harness_bench/telemetry/claude_code.py",
+    "find": "        _keep(efforts, row.get(\"effort\"))\n",
+    "replace": "        _keep(efforts, None)\n",
+    "tests": ["tests/test_reader_claude_code.py::test_served_reads_effort_model_and_the_acp_context_size_each_with_its_source"]
+  },
+  {
+    "name": "claude acp keeps only the first context size",
+    "file": "src/harness_bench/telemetry/claude_code.py",
+    "find": "    sizes = [(s, SRC_ACP_SIZE) for s in _acp_sizes(acp)] if acp is not None else _timeline_sizes(record)\n",
+    "replace": "    sizes = [(s, SRC_ACP_SIZE) for s in _acp_sizes(acp)[:1]] if acp is not None else _timeline_sizes(record)\n",
+    "tests": ["tests/test_reader_claude_code.py::test_a_source_showing_two_context_sizes_writes_both_so_the_view_refuses_them"]
+  },
+  {
+    "name": "claude thinking written as raw text, not summary",
+    "file": "src/harness_bench/telemetry/claude_code.py",
+    "find": "items.append(ReasoningItem(n, k, \"summary\", text, len(text), None, None))",
+    "replace": "items.append(ReasoningItem(n, k, \"text\", text, len(text), None, None))",
+    "tests": ["tests/test_reader_claude_code.py::test_a_thinking_block_is_a_summary_row_with_its_text_as_stored"]
+  },
+  {
+    "name": "claude AGENTS.md not told apart",
+    "file": "src/harness_bench/telemetry/claude_code.py",
+    "find": "            part = \"agents_md\" if path.replace(\"\\\\\", \"/\").rsplit(\"/\", 1)[-1] == \"AGENTS.md\" else \"instruction_file\"\n",
+    "replace": "            part = \"instruction_file\"\n",
+    "tests": ["tests/test_reader_claude_code.py::test_flagged_1_instruction_files_from_the_instructions_attachment"]
+  },
+  {
+    "name": "claude instruction path left absolute",
+    "file": "src/harness_bench/telemetry/claude_code.py",
+    "find": "    return path[len(root):] if cwd and path.lower().startswith(root.lower()) else path\n",
+    "replace": "    return path\n",
+    "tests": ["tests/test_reader_claude_code.py::test_flagged_1_instruction_files_from_the_instructions_attachment"]
+  },
+  {
+    "name": "claude hook ok never set",
+    "file": "src/harness_bench/telemetry/claude_code.py",
+    "find": "    ok = True if errors == [] else None\n",
+    "replace": "    ok = None\n",
+    "tests": ["tests/test_reader_claude_code.py::test_flagged_3_stop_hooks_from_the_stop_hook_summary_row"]
+  },
+  {
+    "name": "claude events share one ordinal (DR1)",
+    "file": "src/harness_bench/telemetry/claude_code.py",
+    "find": "replace(e, native_ordinal=i) for i, (_, e)",
+    "replace": "replace(e, native_ordinal=1) for i, (_, e)",
+    "tests": ["tests/test_reader_claude_code.py::test_flagged_3_stop_hooks_from_the_stop_hook_summary_row"]
+  },
+  {
+    "name": "claude skill tool not a skill load",
+    "file": "src/harness_bench/telemetry/claude_code.py",
+    "find": "            if name == \"Skill\":",
+    "replace": "            if name == \"skill\":",
+    "tests": ["tests/test_reader_claude_code.py::test_flagged_4_a_skill_load_is_a_skill_tool_call"]
+  }
+]

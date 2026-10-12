@@ -1,0 +1,45 @@
+# Grok cell profile (ADR-0025 s5; ADR-0024 s3 settings). Values in {braces} are filled per cell. ACP over `grok agent stdio`.
+harness: grok
+vendor: xai   # R-73 item 1: a profile fact, never inferred from a model id
+# HOME and USERPROFILE are the cell home (Grok with only GROK_HOME set read the real ~/.claude, spike G1); GROK_HOME is
+# the cell home's .grok, Grok's own layout under a relocated HOME.
+home_env: HOME
+# Never a copy of ~/.grok/auth.json (CRED-COPY-A: copies stranded the real login, 2026-10-11). Cells seed from the
+# operator's dedicated bench home named by credential_home_env (`source` is resolved against it) and write it back
+# under a lock (R-SETTINGS, ADR-0025 s7). The archive excludes the copy by its basename, auth.json (archive.py).
+credential: { source: "auth.json", name: ".grok/auth.json" }
+credential_home_env: HB_GROK_CRED_HOME
+credential_kind: "subscription login (bench credential home)"
+command: ["{exe}", "agent", "--model", "{model}", "--reasoning-effort", "{effort}", "stdio"]
+shutdown_grace_seconds: 10
+user_home_vars: [HOME, USERPROFILE]   # ADR-0025 s5: both are the cell home (R-SETTINGS's mechanism)
+seed_files:
+  # [cli] auto_update = false: Grok in a fresh home updated itself 1.0.41 -> 1.0.50 within a minute (Verified).
+  .grok/config.toml: |-
+    [cli]
+    auto_update = false
+  # Trusted in both arms: an untrusted folder loads no project instructions (Verified), so the arms differ only by
+  # the files in the repo. {worktree} is the cell's working copy (profiles.WORKTREE), in a TOML literal string.
+  .grok/trusted_folders.toml: |-
+    [folders.'{worktree}']
+    trusted = true
+    decided_at = 1791740000
+env:
+  GROK_HOME: "{home}/.grok"
+mode: null
+set_model: true   # the SERVE-A pin: session/set_model, and its _meta.model answer must be {"Ok": <pin>} (driver.py)
+# The session directory: .grok/sessions/<url-encoded cwd>/<session id>/ (usage.json per turn, chat_history.jsonl,
+# signals.json, events.jsonl; spike 2026-10-11). The reader is telemetry/grok.py (R-READ-GROK).
+record_glob: ".grok/sessions/*/{session_id}"
+usage_source: native_record
+auxiliary_models: []
+model_aliases:
+  grok-4.7: ["grok-4.7-build"]   # ADR-0024 s5: exact pairs only (R-103)
+settings:
+  effort:
+    values: [low, medium, high, xhigh]   # models_cache.json reasoning_efforts, grok 1.0.41 (high is its default)
+    apply: placeholder
+    default_serves: high
+  context:
+    apply: none
+    default_serves: 256000

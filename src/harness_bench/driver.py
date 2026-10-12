@@ -13,7 +13,14 @@
   (the static profile should make it zero, US-14); any other client request gets -32601.
 - Verbatim prompt: the task text is sent exactly as given (US-10).
 - Optional model pin: `session/set_model` right after `session/new`, only when the caller passes `model=`; a
-  refusal is `failed (model unavailable)` and the prompt is never sent (ADR-0003, R-13, R-18).
+  refusal is `failed (model unavailable)` and the prompt is never sent (ADR-0003, R-13, R-18). An answer that carries
+  `_meta.model` must be `{"Ok": <pin>}` (Grok 1.0.41's report; SERVE-A), else the same failure (ADR-0025 s2).
+- Optional `session_meta`: the profile's mapping, sent as `session/new` `_meta` (ADR-0025 s2); none sends none.
+- Update timeline (ADR-0026 s3): `acp-timeline.jsonl` in the cell home, arrival times and kinds, never content;
+  consecutive messages of one kind collapse into one line, so its size follows kind changes, not streamed chunks.
+  A `usage_update` line also carries the numbers `used` (its last) and `size`; a new size starts a new line, so
+  the timeline is the served context size's source over ACP (telemetry/claude_code.py; J1A-FIX item 22).
+  Buffered and best-effort: a write failure stops the timeline and is logged, never a cell failure.
 - Ack barrier: `before_send()` runs after the handshake and before `session/prompt` is written; the
   engine persists `prompt_sent` in it, so a failed append means the prompt is never sent (model
   QueuePromptSent -> PersistPromptSent -> SendPrompt). The driver never retries `session/prompt`.
@@ -26,6 +33,7 @@ Only this module speaks ACP (design D3 import lint).
 from __future__ import annotations
 
 import json
+import logging
 import queue
 import re
 import threading
@@ -33,6 +41,7 @@ import time
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
+from time import monotonic_ns as _arrival_ns
 
 from harness_bench.errors import Cause
 from harness_bench.procs import CellProcess
@@ -42,6 +51,87 @@ MAX_LINE = 8 << 20
 MAX_JUNK = 20
 PROTOCOL_VERSION = 1
 CLIENT_INFO = {"name": "harness-bench", "version": "1"}
+TIMELINE = "acp-timeline.jsonl"
+TIMELINE_FLUSH = 64  # completed lines held before one append (the buffer bound)
+# The timeline's labels a reader matches (`views.acp_intervals`): the prompt request's method, the two kinds this
+# driver stamps on a request line, and the two tool-call update kinds the agent sends. Exported so no other module
+# spells an ACP name (test_only_driver_speaks_acp; Leader ruling on R-DERIV seam 3).
+TIMELINE_PROMPT = "session/prompt"
+TIMELINE_SENT, TIMELINE_RESPONSE = "sent", "response"
+TIMELINE_TOOL_CALL, TIMELINE_TOOL_CALL_UPDATE = "tool_call", "tool_call_update"
+log = logging.getLogger("harness_bench.driver")
+
+
+def cell_home(cwd: Path) -> Path:
+    """The cell home beside the worktree: engine.py lays a cell out as `home, ws = cell_dir / "home", cell_dir / "ws"`
+    and passes ws as cwd (pinned by tests/test_stream_driver.py). Shared with stream_driver."""
+    return Path(cwd).parent / "home"
+
+
+def _label(value) -> str | None:
+    """A protocol kind or id as the timeline keeps it; anything else (content) is not kept."""
+    return value if isinstance(value, str) and len(value) <= 128 else None
+
+
+def _number(value) -> int | None:
+    """A usage_update count as the timeline keeps it: a non-negative int, else None (never content)."""
+    return value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else None
+
+
+class _Timeline:
+    """ADR-0026 s3: one line per run of same-kind messages, `{first_mono_ns, last_mono_ns, count, method,
+    update_kind, tool_call_id}`; fed by the reader thread and the prompt send, flushed at turn end and close."""
+
+    def __init__(self, path: Path | None) -> None:
+        self.path, self.lock = path, threading.Lock()
+        self.run: dict | None = None
+        self.pending: list[dict] = []
+        self.stopped = path is None
+
+    def add(self, method: str | None, update_kind: str | None, tool_call_id: str | None,
+            usage: tuple[int | None, int | None] | None = None) -> None:
+        """`usage` is a usage_update's (used, size), numbers only: the size is in the run's key, `used` its last."""
+        ns = _arrival_ns()
+        with self.lock:
+            if self.stopped:
+                return
+            key = (method, update_kind, tool_call_id, None if usage is None else usage[1])
+            if self.run is not None and self.run["key"] == key:
+                self.run["last_mono_ns"], self.run["count"] = ns, self.run["count"] + 1
+                if usage is not None:
+                    self.run["used"] = usage[0]
+                return
+            if self.run is not None:
+                self.pending.append(self.run)
+            self.run = {"key": key, "first_mono_ns": ns, "last_mono_ns": ns, "count": 1}
+            if usage is not None:
+                self.run["used"] = usage[0]
+            if len(self.pending) >= TIMELINE_FLUSH:
+                self._write()
+
+    def flush(self, final: bool = False) -> None:
+        with self.lock:
+            if final and self.run is not None:
+                self.pending.append(self.run)
+                self.run = None
+            self._write()
+            if final:
+                self.stopped = True
+
+    def _write(self) -> None:
+        if self.stopped or not self.pending:
+            self.pending.clear()
+            return
+        rows = [{"first_mono_ns": r["first_mono_ns"], "last_mono_ns": r["last_mono_ns"], "count": r["count"],
+                 "method": r["key"][0], "update_kind": r["key"][1], "tool_call_id": r["key"][2],
+                 **({"used": r["used"], "size": r["key"][3]} if "used" in r else {})} for r in self.pending]
+        self.pending.clear()
+        try:
+            with self.path.open("a", encoding="utf-8", newline="\n") as f:
+                f.write("".join(json.dumps(row) + "\n" for row in rows))
+        except OSError as exc:  # the stderr-tail pattern (engine.py): the timeline stops, the cell goes on
+            self.stopped = True
+            log.warning("acp timeline stopped", extra={"detail": str(exc)})
 
 
 class ProtocolError(Exception):
@@ -124,19 +214,25 @@ class TurnResult:
 class Session:
     """Own the channel until close; close() is idempotent."""
 
-    def __init__(self, channel, cwd, mode, handshake_timeout, model, mcp_servers):
+    def __init__(self, channel, cwd, mode, handshake_timeout, model, mcp_servers, session_meta=None):
         self.channel = channel
         self.result = channel.result
         self.cwd, self.mode = cwd, mode
         self.handshake_timeout, self.model = handshake_timeout, model
         self.mcp_servers = mcp_servers
+        self.session_meta = session_meta
         self.closed = False
 
     def close(self) -> None:
         if self.closed:
             return
         self.closed = True
-        self.channel.cell.proc.stdin.close()
+        try:
+            self.channel.cell.proc.stdin.close()
+        finally:
+            timeline = getattr(self.channel, "timeline", None)
+            if timeline is not None:
+                timeline.flush(final=True)
 
 
 class _Eof(Exception):
@@ -156,7 +252,8 @@ class _Timeout(Exception):
 class _Channel:
     """The adapter's stdio: a reader thread turns stdout into messages on a queue."""
 
-    def __init__(self, cell: CellProcess, result: TurnResult, cancel: threading.Event | None = None) -> None:
+    def __init__(self, cell: CellProcess, result: TurnResult, cancel: threading.Event | None = None,
+                 timeline: _Timeline | None = None) -> None:
         self.cell = cell
         self.result = result
         self.cancel = cancel
@@ -165,7 +262,22 @@ class _Channel:
         self.seq = 0
         self.turn_start: float | None = None  # set when the prompt is sent
         self.on_first_update: Callable[[], None] | None = None
+        self.timeline = timeline if timeline is not None else _Timeline(None)
+        self.methods: dict[int, str] = {}  # request id -> method, so a response's timeline line names its request
         threading.Thread(target=self._read, daemon=True).start()
+
+    def _arrived(self, msg: dict) -> None:
+        params = msg.get("params") if isinstance(msg.get("params"), dict) else {}
+        if "method" in msg:
+            update = params.get("update") if isinstance(params.get("update"), dict) else {}
+            call = params.get("toolCall") if isinstance(params.get("toolCall"), dict) else update
+            kind = "request" if "id" in msg else _label(update.get("sessionUpdate"))
+            usage = (_number(update.get("used")), _number(update.get("size"))) if kind == "usage_update" else None
+            self.timeline.add(_label(msg["method"]), kind, _label(call.get("toolCallId")), usage)
+        else:
+            rid = msg.get("id")
+            self.timeline.add(self.methods.get(rid, TIMELINE_RESPONSE) if isinstance(rid, int) else TIMELINE_RESPONSE,
+                              TIMELINE_RESPONSE, None)
 
     def _read(self) -> None:
         parser = LineParser()
@@ -176,6 +288,7 @@ class _Channel:
                 if not chunk:
                     break
                 for msg in parser.feed(chunk):
+                    self._arrived(msg)
                     self.inbox.put(("msg", msg))
         except ProtocolError as exc:
             self.inbox.put(("protocol", exc.detail))
@@ -215,6 +328,9 @@ class _Channel:
     def rpc(self, method: str, params: dict, deadline: float | None) -> dict:
         self.seq += 1
         rid = self.seq
+        self.methods[rid] = method
+        if method == TIMELINE_PROMPT:
+            self.timeline.add(method, TIMELINE_SENT, None)
         if not self.send({"jsonrpc": "2.0", "id": rid, "method": method, "params": params}):
             self._observe_cancel(False)
             raise _Eof
@@ -290,16 +406,26 @@ def _handshake(session: Session) -> bool:
         info = init.get("agentInfo")
         version = info.get("version") if isinstance(info, dict) else None
         result.agent_version = version if isinstance(version, str) else None  # verbatim; null when not reported
-        created = ch.rpc("session/new", {"cwd": str(cwd), "mcpServers": mcp_servers or []}, deadline)
+        params = {"cwd": str(cwd), "mcpServers": mcp_servers or []}
+        if session.session_meta:  # ADR-0025 s2: the profile's mapping, verbatim
+            params["_meta"] = dict(session.session_meta)
+        created = ch.rpc("session/new", params, deadline)
         result.session_id = created.get("sessionId")
         modes = created.get("modes") if isinstance(created.get("modes"), dict) else {}
         current = modes.get("currentModeId")
         result.permission_mode_effective = current if isinstance(current, str) else None
         if model:
             try:
-                ch.rpc("session/set_model", {"sessionId": result.session_id, "modelId": model}, deadline)
+                answer = ch.rpc("session/set_model", {"sessionId": result.session_id, "modelId": model}, deadline)
             except _AcpError as exc:  # tagged by step: the plan's model is not served here
                 _fail(result, Cause.model_unavailable, f"set_model refused: {exc}", started)
+                return False
+            meta = answer.get("_meta")
+            # ADR-0025 s2 (SERVE-A): an answer that reports the session's model must report the pin, else the cell
+            # fails before the prompt; an answer without the report (Copilot's {}) is judged from native evidence.
+            if isinstance(meta, dict) and "model" in meta and meta["model"] != {"Ok": model}:
+                _fail(result, Cause.model_unavailable,
+                      f"set_model answered _meta.model {json.dumps(meta['model'])[:200]}, not {{'Ok': {model!r}}}", started)
                 return False
         if mode:
             ch.rpc("session/set_mode", {"sessionId": result.session_id, "modeId": mode}, deadline)
@@ -324,11 +450,19 @@ def _handshake(session: Session) -> bool:
 
 def open_session(cell: CellProcess, cwd: Path, mode: str | None, handshake_timeout: float,
                  model: str | None = None, result: TurnResult | None = None,
-                 mcp_servers: list[dict] | None = None, cancel: threading.Event | None = None) -> Session | None:
-    """Open one channel; None means the supplied result carries the handshake cause."""
+                 mcp_servers: list[dict] | None = None, cancel: threading.Event | None = None,
+                 session_meta: dict | None = None) -> Session | None:
+    """Open one channel; None means the supplied result carries the handshake cause. The timeline is kept only where
+    the cell home exists (the engine's layout); a caller with no home beside its cwd gets none."""
     result = result if result is not None else TurnResult()
-    session = Session(_Channel(cell, result, cancel), cwd, mode, handshake_timeout, model, mcp_servers)
-    return session if _handshake(session) else None
+    home = cell_home(cwd)
+    timeline = _Timeline(home / TIMELINE if home.is_dir() else None)
+    session = Session(_Channel(cell, result, cancel, timeline), cwd, mode, handshake_timeout, model, mcp_servers,
+                      session_meta)
+    if _handshake(session):
+        return session
+    timeline.flush(final=True)
+    return None
 
 
 def send_turn(session: Session, prompt: str, before_send: Callable[[str | None], None], turn: int,
@@ -361,6 +495,7 @@ def send_turn(session: Session, prompt: str, before_send: Callable[[str | None],
         result.cause, result.detail = _prompt_error_cause(exc), f"prompt error: {exc}"
     finally:
         ch.on_first_update = None
+        ch.timeline.flush()
     result.turn_seconds = time.monotonic() - turn_start
     if result.cause is not None:
         return None

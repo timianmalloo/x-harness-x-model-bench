@@ -23,6 +23,7 @@ import uuid
 from pathlib import Path
 
 import pytest
+from archived_runs import FROZEN_ROOT
 from clean_parent import CLEAN_PARENT
 from test_cli import _pack_repo
 from test_cli_campaign import CID, cli_rc, commit_all, make_repo, set_freeze
@@ -77,7 +78,10 @@ def lean_repo(base: Path) -> Path:
     (root / "bench" / "task-freeze.yaml").unlink(missing_ok=True)  # the frozen wave-3 tasks are not in this lean copy
     # `baseline` needs catalog 0.7 frozen (HB-CMP-006) and a `.dev` catalog's passes are probes, never current (views._is_probe).
     # The real tree released 0.7 at X-G3's join (R-86 c3, 2c4e2204); the lean copy re-pins its own freeze entry to its catalog_hash.
+    # The live catalog is 0.8 since the S4b freeze, so the lean copy carries the released 0.7 definitions (the frozen
+    # fixture root's metrics.yaml, which is 2c4e2204's) rather than a relabelled live file.
     metrics = root / "bench" / "metrics.yaml"
+    shutil.copy(FROZEN_ROOT / "bench" / "metrics.yaml", metrics)
     assert 'version: "0.7"' in metrics.read_text(encoding="utf-8")
     set_freeze(root, identity.catalog_hash(root))
     cache = upstream_cache()

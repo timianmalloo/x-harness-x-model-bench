@@ -1,0 +1,16 @@
+{
+  "agy_version": "1.3.3",
+  "agy_sha256": "fbbfb3f15c7628252c5e12765683c688ba05ee122b853cadeb0bbfd4e13ca25b",
+  "version_evidence": "each source home's .gemini/antigravity-cli/cli.log: 'Language server version: 1.3.3'",
+  "argv": "agy.exe --input-format stream-json --output-format stream-json --model gemini-3.8-flash-high --print-timeout <n>s --add-dir <repo> -p=",
+  "home": "isolated: HOME and USERPROFILE set to a scratch home; AGY_CLI_DISABLE_AUTO_UPDATE=true; no credential copied (keyring)",
+  "scrub": "the repo path in every string became C:\\cell\\ws (or C:/cell/ws); a grounding redirect URL became https://example.invalid/redirect; no email, JWT, Bearer or Authorization shape (checked when built)",
+  "streams": {
+    "success.ndjson": {"kind": "recorded", "source": "C:\\tf\\spike-agy\\turn2.ndjson", "captured": "2026-10-11", "turns": 1, "outcome": "completed"},
+    "denial.ndjson": {"kind": "recorded", "source": "C:\\tf\\spike-agy\\turn1.ndjson", "captured": "2026-10-11", "turns": 1, "outcome": "blocked (non-empty denied_actions; no allow rule seeded)"},
+    "two-turn.ndjson": {"kind": "recorded", "source": "C:\\tf\\r-transport\\rec\\two-turn.ndjson", "captured": "2026-10-12", "turns": 2, "outcome": "completed", "note": "one process, two user lines; one init; a view_file ERROR (not a permission check) then DONE steps; settings.json allow command(*), read_file(*), write_file(*), deny mcp(*), read_url(*), execute_url(*)"},
+    "denial-tool-error.ndjson": {"kind": "recorded, cut", "source": "C:\\tf\\r-transport\\rec\\deny-web.ndjson", "captured": "2026-10-12", "turns": 1, "outcome": "blocked (a tool ERROR 'permission check failed for ' under a deny rule; the result says SUCCESS with no denied_actions)", "note": "kept: init, steps 0-5 (step 4 is the denial) and the turn's own result; cut: steps 6-125, the agent listing directories outside its worktree"},
+    "tool-error-streak.ndjson": {"kind": "constructed from recorded lines", "source": "two-turn.ndjson lines 1-3, its step-2 ACTIVE and ERROR lines repeated five times (step_index 2-6), its turn-1 result", "turns": 1, "outcome": "ended (five consecutive native tool errors, NATIVE_ERROR_STREAK_CAP)"},
+    "unknown-event.ndjson": {"kind": "constructed from recorded lines", "source": "success.ndjson with one {\"event\": \"heartbeat\"} line before its result", "turns": 1, "outcome": "protocol failure (unknown event type)"}
+  }
+}

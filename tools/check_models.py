@@ -45,6 +45,7 @@ VARIANTS = {
     "apply_twice": ("inv", "ControlAppliedOnce"),
     "launch_after_stop": ("inv", "NoLaunchAfterStop"),
     "exceed_parallelism": ("inv", "ParallelismBound"),
+    "exceed_harness_cap": ("inv", "HarnessCapBound"),  # ADR-0025 s7 (R-CAP): the per-harness cap
     "reconcile_no_wait": ("inv", "NoLaunchBesideOrphan"),
     "relaunch_stopped": ("inv", "StoppedNeverRelaunched"),
     "double_resolution": ("inv", "DecisionResolvedOnce"),
@@ -75,13 +76,17 @@ VARIANTS = {
 # engine and `bench grade` both grading); two-pass variants use the grading config. Every seeded
 # defect is reachable there.
 SMALL = {"Cells = {c1, c2, c3}": "Cells = {c1, c2}", "Parallelism = 2": "Parallelism = 1",
-         'Graders = {"engine"}': 'Graders = {"engine", "bench"}'}
+         "Capped = {c1, c2, c3}": "Capped = {c1, c2}", 'Graders = {"engine"}': 'Graders = {"engine", "bench"}'}
+# ADR-0025 s7: the cap binds only below a free global slot. SMALL keeps it non-binding (HarnessCap 2), or a cap on both
+# cells would hide the parallelism guard from exceed_parallelism and the orphan slot from reconcile_no_wait.
+CAP_BINDS = {"Parallelism = 1": "Parallelism = 2", "HarnessCap = 2": "HarnessCap = 1"}
 DEEP = {"MaxCrashes = 1": "MaxCrashes = 2"}
 TWO_PASS = {"no_lock"}             # variants that need two grading passes use the grading config
 # Variants whose defect needs a free slot beside an orphan run at parallelism 2.
 # Variants and witnesses (keyed by label) whose defect needs a second turn run at NumTurns = 2.
 TWO_TURNS = {"NumTurns = 1": "NumTurns = 2"}
 WIDER = {"reconcile_no_wait": {"Parallelism = 1": "Parallelism = 2"},
+         "exceed_harness_cap": CAP_BINDS,
          "resend_turn_on_resume": TWO_TURNS, "prompt_before_snapshot": TWO_TURNS, "snapshot_in_flight": TWO_TURNS,
          "kill_between_turns": TWO_TURNS, "crashed_turn_as_between": TWO_TURNS, "snapshot_in_place": TWO_TURNS,
          "between_without_snapshot": TWO_TURNS, "between_ignores_next": TWO_TURNS, "snapshot_when_stopping": TWO_TURNS,
@@ -167,7 +172,8 @@ def main(argv: list[str]) -> int:
 
     grading = (MODELS / f"{MODEL}.grading.cfg").read_text(encoding="utf-8")
     turns = (MODELS / f"{MODEL}.turns.cfg").read_text(encoding="utf-8")   # logic line L1: the two-turn real-design run
-    runs = [("liveness", liveness), ("grading", grading), ("safety-small", small), ("safety-turns", turns)]
+    runs = [("liveness", liveness), ("grading", grading), ("safety-small", small), ("safety-turns", turns),
+            ("safety-cap", substitute(small, CAP_BINDS))]  # the real design with the per-harness cap binding (R-CAP)
     if "--quick" not in argv:
         runs.append(("safety", safety))
     if "--deep" in argv:

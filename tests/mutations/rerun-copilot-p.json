@@ -1,0 +1,82 @@
+[
+  {
+    "name": "the second prompt starts a new session instead of resuming",
+    "file": "bench/adapters/copilot_p_acp.py",
+    "find": "[\"--resume\", self.session_id] if self.turns > 1 else",
+    "replace": "[\"--session-id\", self.session_id] if self.turns > 1 else",
+    "tests": [
+      "tests/test_copilot_p_adapter.py::test_two_prompts_are_two_children_on_one_session_in_one_adapter_process",
+      "tests/test_copilot_p_adapter.py::test_an_engine_two_turn_cell_through_the_adapter_passes_lifecycle_replay"
+    ]
+  },
+  {
+    "name": "agentInfo.version is never reported",
+    "file": "bench/adapters/copilot_p_acp.py",
+    "find": "return found.group(1) if found and done.returncode == 0 else None",
+    "replace": "return None",
+    "tests": ["tests/test_copilot_p_adapter.py::test_two_prompts_are_two_children_on_one_session_in_one_adapter_process"]
+  },
+  {
+    "name": "session/cancel leaves the child running",
+    "file": "bench/adapters/copilot_p_acp.py",
+    "find": "if child is not None and child.poll() is None:",
+    "replace": "if False:",
+    "tests": ["tests/test_copilot_p_adapter.py::test_session_cancel_kills_the_child_and_answers_cancelled"]
+  },
+  {
+    "name": "a non-zero exit with a result object is end_turn",
+    "file": "bench/adapters/copilot_p_acp.py",
+    "find": "if code == 0 and isinstance(last, dict) and last.get(\"type\") == \"result\":",
+    "replace": "if isinstance(last, dict) and last.get(\"type\") == \"result\":",
+    "tests": ["tests/test_copilot_p_adapter.py::test_a_child_that_fails_or_ends_without_a_result_is_not_end_turn"]
+  },
+  {
+    "name": "exit 0 without a result object is end_turn",
+    "file": "bench/adapters/copilot_p_acp.py",
+    "find": "if code == 0 and isinstance(last, dict) and last.get(\"type\") == \"result\":",
+    "replace": "if code == 0:",
+    "tests": ["tests/test_copilot_p_adapter.py::test_a_child_that_fails_or_ends_without_a_result_is_not_end_turn"]
+  },
+  {
+    "name": "token-free result usage is returned as ACP usage (a false HB-VAL-005)",
+    "file": "bench/adapters/copilot_p_acp.py",
+    "find": "any(isinstance(usage.get(k), int) for k in TOKEN_KEYS)",
+    "replace": "True",
+    "tests": ["tests/test_copilot_p_adapter.py::test_usage_comes_from_the_final_object_only_when_it_carries_tokens"]
+  },
+  {
+    "name": "the adapter writes CRLF line ends",
+    "file": "bench/adapters/copilot_p_acp.py",
+    "find": "line = json.dumps(obj, ensure_ascii=False).encode(\"utf-8\") + b\"\\n\"",
+    "replace": "line = json.dumps(obj, ensure_ascii=False).encode(\"utf-8\") + b\"\\r\\n\"",
+    "tests": ["tests/test_copilot_p_adapter.py::test_stdout_is_utf8_with_lf_and_each_turn_is_teed_unchanged"]
+  },
+  {
+    "name": "the turn tee changes the bytes",
+    "file": "bench/adapters/copilot_p_acp.py",
+    "find": "tee.write(line)",
+    "replace": "tee.write(line.replace(b\"\\n\", b\"\\r\\n\"))",
+    "tests": ["tests/test_copilot_p_adapter.py::test_stdout_is_utf8_with_lf_and_each_turn_is_teed_unchanged"]
+  },
+  {
+    "name": "the profile drops the context argv",
+    "file": "bench/profiles/copilot.yaml",
+    "find": "\"{context_arg}\", ",
+    "replace": "",
+    "tests": ["tests/test_profile_copilot_p.py::test_context_922000_puts_long_context_in_the_child_argv_and_default_puts_nothing"]
+  },
+  {
+    "name": "the profile claims scripted-user support",
+    "file": "bench/profiles/copilot.yaml",
+    "find": "scripted_user: unsupported",
+    "replace": "scripted_user: supported",
+    "tests": ["tests/test_profile_copilot_p.py::test_the_settings_block_and_the_scripted_user_flag"]
+  },
+  {
+    "name": "the tool list is not last, so the scenario-6 ids land after --log-dir",
+    "file": "bench/profiles/copilot.yaml",
+    "find": "\"--log-level\", \"debug\", \"--log-dir\", \"{home}/logs\", \"--available-tools\", \"powershell\", \"list_powershell\", \"read_powershell\", \"stop_powershell\", \"apply_patch\", \"view\", \"glob\", \"rg\", \"skill\"]",
+    "replace": "\"--available-tools\", \"powershell\", \"list_powershell\", \"read_powershell\", \"stop_powershell\", \"apply_patch\", \"view\", \"glob\", \"rg\", \"skill\", \"--log-level\", \"debug\", \"--log-dir\", \"{home}/logs\"]",
+    "tests": ["tests/test_profile_copilot_p.py::test_a_scenario6_launch_extends_the_tool_list"]
+  }
+]

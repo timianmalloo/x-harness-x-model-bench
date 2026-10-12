@@ -7,6 +7,7 @@ ledger rows only. Nothing here imports a grade module: `cfg.verify` is injected 
 
 import shutil
 import time
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -203,6 +204,32 @@ def _live_pid(cell_rows: list[dict]) -> tuple[int, int] | None:
     return started[-1]["pid"], started[-1].get("created_at") or 0
 
 
+def write_back_credentials(launcher, home: Path) -> bool:
+    """ADR-0021 and ADR-0025 s7: before a leftover cell home is cleaned, its credential copy is written back over the seed
+    source when it is newer and its bytes differ (the dead cell's agent refreshed the token). Only a profile that names a
+    bench credential home (`credential_home_env`, Grok) is written back: every other profile's source is the operator's
+    real login, which a cell copy never overwrites. A temporary sibling, then a replace, so the source is never torn.
+
+    assume: R-SETTINGS's Grok profile seeds from `credential_source` inside `$HB_GROK_CRED_HOME`. Confirm: its grok
+    profile load. Breaks: the write-back target. The engine's own write-back at a live cell's end (ProfileLauncher.clean)
+    is R-SETTINGS's; it must not then write back an older copy, which this path has just declined."""
+    profile = getattr(launcher, "profile", None)
+    if profile is None or not getattr(profile, "credential_home_env", None) or profile.credential_name is None \
+            or profile.credential_source is None:
+        return False
+    leftover, source = home / profile.credential_name, profile.credential_source
+    if not leftover.is_file():
+        return False
+    if source.is_file() and (leftover.stat().st_mtime_ns <= source.stat().st_mtime_ns
+                             or leftover.read_bytes() == source.read_bytes()):
+        return False
+    tmp = source.with_name(f".{source.name}.write-back-{uuid.uuid4().hex}")
+    shutil.copy2(leftover, tmp)
+    atomic.rename_with_retry(tmp, source, replace=True)
+    log.info("credential written back", extra={"path_role": "bench credential home"})
+    return True
+
+
 def _folder_rows(folder: Path) -> list[dict]:
     """The rows a published snapshot folder holds (simplify: files only; ceiling a snapshot with links, which `copy.fill`
     never publishes; upgrade trigger: a snapshot row of kind link that must survive a redo)."""
@@ -298,6 +325,7 @@ class _Resume:
         if rule == "C6" and not self.stopped:  # D-K3: the folder is discarded, the cell launches once
             folder = self.eng.cfg.cells_root / self.plan["run_id"] / cid
             if folder.exists():
+                write_back_credentials(self.eng.cfg.launchers[cell["harness"]], folder / "home")  # ADR-0025 s7, as in C1
                 shutil.rmtree(folder, onexc=atomic.make_writable)
             return [cell]
         turn = max((r.get("turn", 1) for r in cell_rows if r["kind"] == "cell.prompt_sent"), default=1)
@@ -373,6 +401,7 @@ class _Resume:
         launcher = eng.cfg.launchers[cell["harness"]]
         cell_dir = eng.cfg.cells_root / self.plan["run_id"] / cid
         if (cell_dir / "home").exists():
+            write_back_credentials(launcher, cell_dir / "home")  # ADR-0025 s7: a refreshed token outlives its dead cell
             launcher.clean(cell_dir / "home")  # DS 11: seeded credentials never reach the archive
         recorded = [r for r in self.rows["archive_files"] if r.get("cell_id") == cid and r.get("archive_attempt") == 1
                     and archive.snapshot_of(r) == "final"]

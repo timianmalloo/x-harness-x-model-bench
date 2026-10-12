@@ -2,7 +2,8 @@
 
 `report.html`'s shape regexes catch a credential-*shaped* string. This module supplements them with
 the actual values: it reads the host's credential files (named by `bench/profiles/*.yaml`,
-`credential.source`/`credential.name`), the operator's claude-code oauth-token-env value if set
+`credential.source`/`credential.name`, and the `auth.json` of a bench credential home a profile's
+`credential_home_env` names, ADR-0025 s7), the operator's claude-code oauth-token-env value if set
 (`profiles.OAUTH_TOKEN_ENV`, ADR-0003 Am. 2026-09-30), and any leftover copy in an archived cell home, then
 checks the report text for each value and for its base64 and URL-encoded forms. A hit never carries
 the value: only a count reaches the caller (`html.scan`), which is all `HB-SEC-001` ever names.
@@ -24,6 +25,7 @@ from harness_bench import config, profiles
 # Below this, a matched string is too likely to be a coincidental id or short field name to be
 # worth treating as "a credential value" (simplify: raise if false positives show up in practice).
 MIN_VALUE_LEN = 12
+BENCH_HOME_FILE = "auth.json"  # ADR-0025 s7: "the bench home's auth.json"
 
 
 def _strings(data: object, out: set[str]) -> None:
@@ -68,6 +70,11 @@ def credential_files(root: Path) -> dict[str, tuple[Path, str]]:
         source, name = cred.get("source"), cred.get("name")
         if source and name:
             out[data.get("harness", p.stem)] = (Path(source).expanduser(), name)
+        # ADR-0025 s7: a dedicated bench credential home (Grok's HB_GROK_CRED_HOME) holds a token family of its own;
+        # its auth.json is scanned like a credential file, and its name finds a leftover copy in an archived home.
+        home_env = data.get("credential_home_env")
+        if isinstance(home_env, str) and (home := os.environ.get(home_env, "").strip()):
+            out[f"{data.get('harness', p.stem)}:bench-home"] = (Path(home).expanduser() / BENCH_HOME_FILE, BENCH_HOME_FILE)
     return out
 
 

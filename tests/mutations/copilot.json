@@ -116,21 +116,21 @@
     "file": "src/harness_bench/tools.py",
     "find": "required = (version_file, exe, adapter) if adapter is not None else (version_file, exe)",
     "replace": "required = (version_file, exe, adapter)",
-    "tests": ["tests/test_tools.py::test_copilot_resolves_platform_build_without_adapter"]
+    "tests": ["tests/test_tools.py::test_copilot_resolves_platform_build_with_its_repo_local_adapter"]
   },
   {
     "name": "adapterless version is not None",
     "file": "src/harness_bench/tools.py",
     "find": "if adapter_dir is not None else None)\n        adapter_sha256",
     "replace": "if adapter_dir is not None else \"missing\")\n        adapter_sha256",
-    "tests": ["tests/test_tools.py::test_copilot_resolves_platform_build_without_adapter"]
+    "tests": ["tests/test_tools.py::test_resolve_finds_grok_and_the_vendored_agy"]
   },
   {
     "name": "adapterless hash is not None",
     "file": "src/harness_bench/tools.py",
     "find": "adapter_sha256 = _sha_tree(adapter_dir / \"dist\") if adapter_dir is not None else None",
     "replace": "adapter_sha256 = _sha_tree(adapter_dir / \"dist\") if adapter_dir is not None else \"missing\"",
-    "tests": ["tests/test_tools.py::test_copilot_resolves_platform_build_without_adapter"]
+    "tests": ["tests/test_tools.py::test_resolve_finds_grok_and_the_vendored_agy"]
   },
   {
     "name": "github host credential must be dropped",

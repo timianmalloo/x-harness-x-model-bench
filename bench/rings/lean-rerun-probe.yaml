@@ -1,0 +1,22 @@
+# Lean re-run readiness probe (ADR-0024 s6, R-PROBE): lean-rerun.yaml's six combos x both arms on one real property task.
+# 1 task x 2 arms x 6 combos x 1 = 12 cells. The task is RW1, the two-turn rework task, so the probe's one property task is
+# also "the two-turn RW1 for agy" (a matrix cannot give agy a task of its own).
+# assume: RW1 for every combo meets ADR-0024 s6 ("one real property task, plus the two-turn RW1 for agy");
+# confirm: the Leader at J1a; breaks: the probe needs a second task for agy, and this file gains a second matrix.
+# Ring tag pilot, not lean: board.pool_check refuses to pool a probe with a lean batch.
+schema: bench-matrix/3
+ring: {tag: pilot}
+bom: {file: bench/bom.yaml, subset: [RW1]}
+repetitions: 1
+harness_parallelism: {grok: 1, agy: 1}
+arms:
+  - {id: "off"}
+  - {id: "on"}
+comparisons: [["off", "on"]]
+combos:
+  - {id: cc-opus-1m, harness: claude-code, model: "claude-opus-5-5[1m]", effort: high, context: 1000000}
+  - {id: codex-sol, harness: codex, model: gpt-6.1-sol, effort: high, context: 872000}
+  - {id: copilot-sol, harness: copilot, model: gpt-6.1-sol, effort: high, context: 922000}
+  - {id: copilot-sol-fast, harness: copilot, model: gpt-5.6-sol-fast, effort: high, context: 922000}
+  - {id: grok-4.7, harness: grok, model: grok-4.7, effort: high, context: default}
+  - {id: agy-gemini, harness: agy, model: gemini-3.8-flash-high, effort: high, context: default}

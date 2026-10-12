@@ -1,0 +1,132 @@
+"""R-SETTINGS: the Grok credential seed and write-back (ADR-0025 s7, CRED-COPY-A).
+
+A cell seeds its credential copy from the bench credential home (the profile's `credential_home_env`), and before
+`clean` deletes the copy, a changed copy is written back atomically, under an oslock on the credential home held from
+seed to write-back. The profile here is a fixture: `bench/profiles/grok.yaml` is R-TRANSPORT's.
+"""
+
+from __future__ import annotations
+
+import os
+import threading
+import time
+from pathlib import Path
+
+import pytest
+
+from harness_bench import oslock, profiles
+from harness_bench.errors import BenchError
+
+ENV = "HB_GROK_CRED_HOME"
+
+
+def _profile() -> profiles.Profile:
+    # credential.source is resolved against the credential home; credential.name is the copy inside the cell home
+    return profiles.Profile("grok", "GROK_HOME", Path("auth.json"), ".grok/auth.json", ("{exe}",),
+                            credential_home_env=ENV)
+
+
+def _bench(tmp_path: Path, monkeypatch, token: str = "tok-1") -> Path:
+    bench = tmp_path / "grok-cred"
+    bench.mkdir()
+    (bench / "auth.json").write_text(token, encoding="utf-8")
+    monkeypatch.setenv(ENV, str(bench))
+    return bench
+
+
+def _launcher(tmp_path: Path, **kw) -> profiles.ProfileLauncher:
+    return profiles.ProfileLauncher(_profile(), tmp_path, {}, **kw)
+
+
+def _refresh(home: Path, token: str) -> None:
+    """The fake harness: its refresh rotates the token in the cell's copy."""
+    (home / ".grok" / "auth.json").write_text(token, encoding="utf-8")
+
+
+def test_two_sequential_cells_carry_the_rotated_token_through_the_bench_home(tmp_path, monkeypatch):
+    bench = _bench(tmp_path, monkeypatch)
+    launcher = _launcher(tmp_path)
+    for n, home in enumerate((tmp_path / "c1" / "home", tmp_path / "c2" / "home"), start=1):
+        launcher.seed(home, {"model": "grok-4.7"})
+        assert (home / ".grok" / "auth.json").read_text(encoding="utf-8") == f"tok-{n}"
+        _refresh(home, f"tok-{n + 1}")
+        launcher.clean(home)
+        assert (bench / "auth.json").read_text(encoding="utf-8") == f"tok-{n + 1}"
+        assert not (home / ".grok" / "auth.json").exists()
+    assert sorted(p.name for p in bench.iterdir() if p.name != profiles.CRED_LOCK_NAME) == ["auth.json"]
+
+
+def test_unchanged_bytes_are_not_written(tmp_path, monkeypatch):
+    bench = _bench(tmp_path, monkeypatch)
+    replaced = []
+    real_replace = os.replace
+    monkeypatch.setattr(profiles.os, "replace", lambda a, b: (replaced.append(b), real_replace(a, b)))
+    launcher = _launcher(tmp_path)
+    before = (bench / "auth.json").stat().st_mtime_ns
+    launcher.seed(tmp_path / "home", {"model": "grok-4.7"})
+    launcher.clean(tmp_path / "home")
+    assert replaced == []
+    assert (bench / "auth.json").stat().st_mtime_ns == before
+    assert not (tmp_path / "home" / ".grok" / "auth.json").exists()
+
+
+def test_the_lock_is_held_from_seed_to_write_back(tmp_path, monkeypatch):
+    bench = _bench(tmp_path, monkeypatch)
+    launcher = _launcher(tmp_path)
+    launcher.seed(tmp_path / "home", {"model": "grok-4.7"})
+    assert oslock.is_held(bench / profiles.CRED_LOCK_NAME)
+    launcher.clean(tmp_path / "home")
+    assert not oslock.is_held(bench / profiles.CRED_LOCK_NAME)
+
+
+def test_a_second_engine_waits_on_the_lock_and_seeds_the_newest_token(tmp_path, monkeypatch):
+    _bench(tmp_path, monkeypatch)
+    first, second = _launcher(tmp_path), _launcher(tmp_path)
+    home_a, home_b = tmp_path / "a" / "home", tmp_path / "b" / "home"
+    first.seed(home_a, {"model": "grok-4.7"})
+    done = threading.Event()
+    thread = threading.Thread(target=lambda: (second.seed(home_b, {"model": "grok-4.7"}), done.set()))
+    thread.start()
+    assert not done.wait(0.5), "the second engine seeded while the first held the credential home"
+    _refresh(home_a, "tok-2")
+    first.clean(home_a)
+    assert done.wait(10)
+    thread.join()
+    assert (home_b / ".grok" / "auth.json").read_text(encoding="utf-8") == "tok-2"
+    second.clean(home_b)
+
+
+def test_a_lock_not_released_within_the_wait_fails_the_seed_without_a_copy(tmp_path, monkeypatch):
+    bench = _bench(tmp_path, monkeypatch)
+    held = oslock.RunLock.acquire(bench / profiles.CRED_LOCK_NAME)
+    try:
+        launcher = _launcher(tmp_path, cred_lock_wait=0.2)
+        started = time.monotonic()
+        with pytest.raises(BenchError) as err:
+            launcher.seed(tmp_path / "home", {"model": "grok-4.7"})
+        assert time.monotonic() - started >= 0.2
+        assert err.value.code == "HB-CELL-202"
+        assert not (tmp_path / "home" / ".grok" / "auth.json").exists()
+        launcher.clean(tmp_path / "home")  # the engine's finally: nothing held, nothing written
+        assert (bench / "auth.json").read_text(encoding="utf-8") == "tok-1"
+    finally:
+        held.release()
+
+
+def test_an_unset_credential_home_is_refused_at_seed(tmp_path, monkeypatch):
+    monkeypatch.delenv(ENV, raising=False)
+    with pytest.raises(BenchError) as err:
+        _launcher(tmp_path).seed(tmp_path / "home", {"model": "grok-4.7"})
+    assert err.value.code == "HB-USR-002" and ENV in err.value.message
+
+
+def test_a_profile_without_a_credential_home_is_unchanged(tmp_path):
+    source = tmp_path / "auth.json"
+    source.write_text("tok", encoding="utf-8")
+    p = profiles.Profile("codex", "CODEX_HOME", source, "auth.json", ("{exe}",))
+    launcher = profiles.ProfileLauncher(p, tmp_path, {})
+    launcher.seed(tmp_path / "home", {"model": "m"})
+    (tmp_path / "home" / "auth.json").write_text("tok-2", encoding="utf-8")
+    launcher.clean(tmp_path / "home")
+    assert source.read_text(encoding="utf-8") == "tok"  # no write-back for a copied login (CRED-COPY-A)
+    assert not (tmp_path / "home" / "auth.json").exists()

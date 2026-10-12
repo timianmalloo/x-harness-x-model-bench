@@ -89,7 +89,8 @@ NA_BY_DESIGN = {"spec_coverage": (None, "hidden-test coverage is partial_credit 
 def test_the_unmeasured_drift_metrics_are_na_with_the_design_reasons(tmp_path):  # R-67 DR-G2, R-68
     got = grade_d1(tmp_path, *d1_cell(tmp_path, BLOCK))
     assert {m: got[m] for m in NA_BY_DESIGN} == NA_BY_DESIGN
-    assert set(got) == set(applicable(CATALOG, ["drift"])["drift"]) == {*NA_BY_DESIGN, *MEASURED}
+    assert set(got) == set(applicable(CATALOG, ["drift"])["drift"]) == {*NA_BY_DESIGN, *MEASURED, "drift_machine_lines",
+                                                                          "drift_task_implied_lines", "attention_drift"}
 
 
 def test_a_cell_that_changed_nothing_is_0_and_convention_drift_no_lines_changed(tmp_path):  # the gate's 35af shape
@@ -210,6 +211,8 @@ def test_an_untracked_file_the_pre_turn_ignore_rules_name_is_not_scope_creep(tmp
     got = grade_d1(tmp_path, *pack_cell_with_ignore(tmp_path, {MARKER: '{\n  "s": "2026-09-25T06:27:25Z"\n}\n'}))
     assert {m: got[m] for m in MEASURED} == \
         {"scope_creep": (0, None), "scope_creep_files": (0, None), "convention_drift": (None, "no lines changed")}
+    # catalog 0.8 (R-DRIFT): an ignored file is no change at all, so it is in no drift class either
+    assert (got["drift_machine_lines"], got["drift_task_implied_lines"]) == ((0, None), (0, None))
 
 
 def test_more_ignored_files_than_one_check_ignore_call_takes_are_all_asked(tmp_path):  # 100 paths per call

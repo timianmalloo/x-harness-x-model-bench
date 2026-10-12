@@ -9,14 +9,25 @@ shutdown_grace_seconds: 10
 files:
   # R-74 item 5: `multi_agent` is the pinned 0.160.0 feature (stable, default true; as in 0.156.0) that offers
   # spawn_agent and the other collaboration tools. seed_home writes true only for a scenario-6 cell and false for every other cell.
+  # ADR-0024 s3: the effort and context lines are left out of a "default" cell's file; top-level keys sit before the
+  # first table. model_reasoning_summary is requested only, never judged (ADR-0024 s7: codex-acp 1.12.0 serves `auto`).
   config.toml: |-
     model = "{model}"
+    model_reasoning_effort = "{effort}"
+    model_context_window = {context_tokens}
+    model_reasoning_summary = "detailed"
     web_search = "disabled"
     [features]
     apps = false
     multi_agent = {multi_agent}
 env:
   CODEX_PATH: "{exe}"
+# ADR-0024 s3: what a combo may pin. Effort values: gpt-6.1-sol's supported_reasoning_levels in the 0.160.0
+# models_cache.json (spike-settings/codex); 872,000 is the measured window (served 828,400 = 95%, spike X2). The default
+# effort depends on the model (gpt-6.1-sol: low), so it is not declared; the default window serves 272,000.
+settings:
+  effort: {values: [low, medium, high, xhigh, max, ultra], apply: placeholder, default_serves: null}
+  context: {values: ["872000"], apply: placeholder, default_serves: 272000}
 mode: agent-full-access
 record_glob: "sessions/**/rollout-*-{session_id}.jsonl"
 # R-74 item 5: a spawned agent writes its own rollout beside the parent's in the fresh home. The runner skips the

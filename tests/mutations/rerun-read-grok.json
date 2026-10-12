@@ -1,0 +1,136 @@
+[
+ {
+  "name": "uncached input is the full prompt",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "max(full - read - write, 0)",
+  "replace": "full",
+  "tests": ["tests/test_reader_grok.py::test_usage_is_one_model_call_per_turn_and_model_with_requests_from_model_calls"]
+ },
+ {
+  "name": "requests always 1, never modelCalls",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "calls if is_count(calls) else 1))",
+  "replace": "1))",
+  "tests": ["tests/test_reader_grok.py::test_usage_is_one_model_call_per_turn_and_model_with_requests_from_model_calls"]
+ },
+ {
+  "name": "an absent usage field read as 0",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "full, read, write, out = (ex.count(n, usage, k) for k in USAGE_KEYS)",
+  "replace": "full, read, write, out = (usage.get(k, 0) for k in USAGE_KEYS)",
+  "tests": ["tests/test_reader_grok.py::test_a_turn_field_the_record_lacks_is_hb_tel_001_never_a_silent_zero"]
+ },
+ {
+  "name": "the cached-above-full guard removed",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "if full < read + write:",
+  "replace": "if False:",
+  "tests": ["tests/test_reader_grok.py::test_a_full_prompt_below_its_cached_part_is_hb_tel_001_never_a_plausible_uncached_count"]
+ },
+ {
+  "name": "an absent usage.json is a call-level gap, not the record's",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "MissingField(0, \"usage.json:turns\")",
+  "replace": "MissingField(1, \"usage.json:turns\")",
+  "tests": ["tests/test_reader_grok.py::test_an_absent_usage_file_makes_the_record_unreadable_never_zero_calls"]
+ },
+ {
+  "name": "the encrypted payload stored as text",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "return [(\"encrypted-only\", None, sha)] if sha else",
+  "replace": "return [(\"encrypted-only\", payload, sha)] if sha else",
+  "tests": ["tests/test_reader_grok.py::test_reasoning_rows_are_summary_text_on_pack_on_and_encrypted_only_with_sha256_on_pack_off"]
+ },
+ {
+  "name": "summary text dropped",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "    if texts:\n",
+  "replace": "    if False:\n",
+  "tests": ["tests/test_reader_grok.py::test_reasoning_rows_are_summary_text_on_pack_on_and_encrypted_only_with_sha256_on_pack_off"]
+ },
+ {
+  "name": "item ordinal not reset per request",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "request, items = n, 0",
+  "replace": "request, items = n, items",
+  "tests": ["tests/test_reader_grok.py::test_reasoning_rows_are_summary_text_on_pack_on_and_encrypted_only_with_sha256_on_pack_off"]
+ },
+ {
+  "name": "only the first served id kept",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "if value and value not in seen:",
+  "replace": "if value and not seen:",
+  "tests": ["tests/test_reader_grok.py::test_two_served_ids_in_one_record_are_both_written"]
+ },
+ {
+  "name": "context source not named",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "\"context_tokens\": \"signals.json:contextWindowTokens\"}",
+  "replace": "\"context_tokens\": \"signals.json\"}",
+  "tests": ["tests/test_reader_grok.py::test_effort_and_context_tokens_come_from_the_record_with_their_sources"]
+ },
+ {
+  "name": "a file path read as the session dir",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "d = path if path.is_dir() else path.parent",
+  "replace": "d = path",
+  "tests": ["tests/test_reader_grok.py::test_a_session_dir_or_its_chat_history_file_reads_the_same"]
+ },
+ {
+  "name": "instruction files dropped",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "    for f in files:\n",
+  "replace": "    for f in files[:0]:\n",
+  "tests": ["tests/test_reader_grok.py::test_instruction_files_from_agents_md_files_and_system_and_tools_parts_with_chars"]
+ },
+ {
+  "name": "an absent prompt_context reads as zero instruction files",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "        return NO_PROMPT_CONTEXT\n",
+  "replace": "        return []\n",
+  "tests": ["tests/test_reader_grok.py::test_an_absent_prompt_context_is_not_recorded_never_zero_instruction_files"]
+ },
+ {
+  "name": "web_fetch in profile",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "\"web_fetch\": \"other\"",
+  "replace": "\"web_fetch\": \"read\"",
+  "tests": ["tests/test_reader_grok.py::test_a_web_fetch_call_is_class_other_and_a_read_file_call_is_read_with_its_outcome",
+            "tests/test_reader_grok.py::test_tool_class_covers_every_advertised_tool_and_classes_the_out_of_profile_ones_other"]
+ },
+ {
+  "name": "an unknown tool in profile",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "return TOOL_CLASS.get(name, \"other\")",
+  "replace": "return TOOL_CLASS.get(name, \"shell\")",
+  "tests": ["tests/test_reader_grok.py::test_tool_class_covers_every_advertised_tool_and_classes_the_out_of_profile_ones_other"]
+ },
+ {
+  "name": "spawn_subagent classed delegate",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "\"spawn_subagent\": \"other\"",
+  "replace": "\"spawn_subagent\": \"delegate\"",
+  "tests": ["tests/test_reader_grok.py::test_tool_class_covers_every_advertised_tool_and_classes_the_out_of_profile_ones_other"]
+ },
+ {
+  "name": "the outcome not read",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "ok = None if outcome is None else outcome == \"success\"",
+  "replace": "ok = None",
+  "tests": ["tests/test_reader_grok.py::test_a_web_fetch_call_is_class_other_and_a_read_file_call_is_read_with_its_outcome"]
+ },
+ {
+  "name": "the start not paired",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "start = started[name].popleft() if name and started[name] else None",
+  "replace": "start = None",
+  "tests": ["tests/test_reader_grok.py::test_a_web_fetch_call_is_class_other_and_a_read_file_call_is_read_with_its_outcome"]
+ },
+ {
+  "name": "hook and compaction stream claimed empty",
+  "file": "src/harness_bench/telemetry/grok.py",
+  "find": "ex.harness_events = NO_EVENTS",
+  "replace": "ex.harness_events = []",
+  "tests": ["tests/test_reader_grok.py::test_hooks_and_compaction_are_flagged_so_the_stream_is_not_recorded"]
+ }
+]

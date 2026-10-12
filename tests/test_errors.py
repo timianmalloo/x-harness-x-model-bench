@@ -25,6 +25,7 @@ def test_attribution_is_from_the_closed_set():
     ("memory", "HB-CELL-103", "infrastructure"),
     ("unclassified", "HB-CELL-199", "none"),
     ("blocked_auth", "HB-CELL-202", "harness"),
+    ("native_error_streak", "HB-CELL-302", "agent"),  # R-TRANSPORT seam 6: the agent's own tool-error loop
 ])
 def test_design_table_rows(cause, code, attribution):
     c = errors.Cause[cause]
@@ -127,3 +128,10 @@ def test_bench_error_carries_its_code():
     assert "HB-LED-002" in str(exc)
     with pytest.raises(ValueError):
         errors.BenchError("HB-NOPE-000", "unknown code")
+
+
+def test_the_native_error_streak_is_the_agents_and_scored():  # R-TRANSPORT seam 6, never adapter_crash
+    from harness_bench import stream_driver
+
+    assert stream_driver.STREAK_CAUSE is errors.Cause.native_error_streak
+    assert not errors.Cause.native_error_streak.invalidates
