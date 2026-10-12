@@ -1,0 +1,84 @@
+[
+ {
+  "name": "R-CAP the per-harness cap is never compared",
+  "file": "src/harness_bench/engine.py",
+  "find": "            if cap is None or held_by[cell[\"harness\"]] < cap:\n",
+  "replace": "            if True:\n",
+  "tests": [
+   "tests/test_engine.py::test_a_harness_cap_holds_its_cells_to_one_while_others_launch_beside"
+  ]
+ },
+ {
+  "name": "R-CAP the plan's frozen caps are never read",
+  "file": "src/harness_bench/engine.py",
+  "find": "        self.harness_caps = harness_parallelism(plan)",
+  "replace": "        self.harness_caps = {}",
+  "tests": [
+   "tests/test_engine.py::test_a_harness_cap_holds_its_cells_to_one_while_others_launch_beside"
+  ]
+ },
+ {
+  "name": "R-CAP a launch in this tick is not counted against its harness",
+  "file": "src/harness_bench/engine.py",
+  "find": "                        held_by[cell[\"harness\"]] += 1\n",
+  "replace": "",
+  "tests": [
+   "tests/test_engine.py::test_a_harness_cap_holds_its_cells_to_one_while_others_launch_beside"
+  ]
+ },
+ {
+  "name": "R-CAP a profile's session_meta never reaches open_session",
+  "file": "src/harness_bench/engine.py",
+  "find": "**({\"session_meta\": meta} if meta else {}))",
+  "replace": ")",
+  "tests": [
+   "tests/test_engine.py::test_a_profiles_session_meta_reaches_open_session"
+  ]
+ },
+ {
+  "name": "R-CAP the new harness instruction trees are not scanned",
+  "file": "src/harness_bench/workspace.py",
+  "find": "    for rel in INSTRUCTION_TREES:\n",
+  "replace": "    for rel in ():\n",
+  "tests": [
+   "tests/test_workspace.py::test_task_source_drops_every_file_under_the_new_harness_instruction_trees",
+   "tests/test_workspace.py::test_task_source_refuses_a_new_harness_instruction_file_in_the_overlay"
+  ]
+ },
+ {
+  "name": "R-CAP C1 cleans a leftover home without the write-back",
+  "file": "src/harness_bench/resume.py",
+  "find": "            write_back_credentials(launcher, cell_dir / \"home\")",
+  "replace": "            pass",
+  "tests": [
+   "tests/test_resume.py::test_resume_writes_a_newer_leftover_credential_back_before_the_clean[True-cell.outcome]"
+  ]
+ },
+ {
+  "name": "R-CAP C6 discards a leftover home without the write-back",
+  "file": "src/harness_bench/resume.py",
+  "find": "                write_back_credentials(self.eng.cfg.launchers[cell[\"harness\"]], folder / \"home\")",
+  "replace": "                pass",
+  "tests": [
+   "tests/test_resume.py::test_resume_writes_a_newer_leftover_credential_back_before_the_clean[True-attempt.process_started]"
+  ]
+ },
+ {
+  "name": "R-CAP an older leftover credential is written back",
+  "file": "src/harness_bench/resume.py",
+  "find": "(leftover.stat().st_mtime_ns <= source.stat().st_mtime_ns\n                             or leftover.read_bytes()",
+  "replace": "(leftover.read_bytes()",
+  "tests": [
+   "tests/test_resume.py::test_resume_writes_a_newer_leftover_credential_back_before_the_clean[False-cell.outcome]"
+  ]
+ },
+ {
+  "name": "R-CAP a profile without a bench home writes over the real login",
+  "file": "src/harness_bench/resume.py",
+  "find": "    if profile is None or not getattr(profile, \"credential_home_env\", None) or profile.credential_name is None \\\n",
+  "replace": "    if profile is None or profile.credential_name is None \\\n",
+  "tests": [
+   "tests/test_resume.py::test_a_profile_without_a_bench_home_writes_nothing_back"
+  ]
+ }
+]

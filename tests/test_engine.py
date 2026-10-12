@@ -1224,6 +1224,41 @@ def test_parallelism_is_never_exceeded(base):
     assert peak == 1 and len(_outcomes(events)) == 3
 
 
+def test_a_harness_cap_holds_its_cells_to_one_while_others_launch_beside(base):  # R-CAP, ADR-0025 s7; model HarnessCapBound
+    p, launcher = _decision_plan([("fake", "A", {"sleep": 1}), ("fake", "A", {"sleep": 1}), ("other", "B", {"sleep": 1})],
+                                 parallelism=3)
+    p["harness_parallelism"] = {"fake": 1}
+    harness = {c["cell_id"]: c["harness"] for c in p["cells"]}
+    _, events, summary = _decision_run(base, (p, launcher))
+    running, peak = set(), {"fake": 0, "all": 0}
+    for e in events:
+        if e["kind"] in ("attempt.process_started", "attempt.process_ended"):
+            (running.add if e["kind"] == "attempt.process_started" else running.discard)(e["cell_id"])
+            peak["fake"] = max(peak["fake"], sum(harness[c] == "fake" for c in running))
+            peak["all"] = max(peak["all"], len(running))
+    assert peak == {"fake": 1, "all": 2}  # the cap binds its harness only: the queued `other` cell skips the held one
+    assert len(_outcomes(events)) == 3 and summary.exit_code == 0
+
+
+@pytest.mark.parametrize("meta", [{"thinking": {"display": "summarized"}}, {}])
+def test_a_profiles_session_meta_reaches_open_session(base, monkeypatch, meta):  # R-CAP seam for R-TRANSPORT (ADR-0025 s2)
+    from types import SimpleNamespace
+
+    from harness_bench import driver
+    seen = []
+    real = driver.open_session
+
+    def recording(*args, session_meta=None, **kwargs):
+        seen.append(session_meta)
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(driver, "open_session", recording)
+    launcher = FakeLauncher({})
+    launcher.profile = SimpleNamespace(session_meta=meta)
+    summary, _, _ = _run(base, _plan(n_cells=1), launcher)
+    assert seen == [meta or None] and summary.exit_code == 0  # an empty map sends nothing, as before the seam
+
+
 def test_credentials_are_gone_after_every_cell_even_when_the_workspace_is_kept(base, monkeypatch):  # T-CELL-credclean
     from harness_bench import archive
     monkeypatch.setattr(archive, "delete_after_verify", lambda *a, **k: False)  # the workspace cannot be deleted
