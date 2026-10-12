@@ -1,0 +1,73 @@
+[
+ {
+  "name": "RA1: agy's thought text is labelled full reasoning text rather than a summary",
+  "file": "src/harness_bench/telemetry/agy.py",
+  "find": "ReasoningItem(n, k, \"summary\", value, len(value), tokens, None)",
+  "replace": "ReasoningItem(n, k, \"text\", value, len(value), tokens, None)",
+  "tests": ["tests/test_reader_agy.py::test_reasoning_is_the_opaque_step_payload_as_encrypted_only_with_its_sha256"]
+ },
+ {
+  "name": "RA2: a request's thinking tokens are counted on every one of its items, not once",
+  "file": "src/harness_bench/telemetry/agy.py",
+  "find": "tokens = thinking if k == 0 else None",
+  "replace": "tokens = thinking",
+  "tests": ["tests/test_reader_agy.py::test_reasoning_is_the_opaque_step_payload_as_encrypted_only_with_its_sha256"]
+ },
+ {
+  "name": "RA3: a length-delimited field that runs past the payload is read short (a partial decode)",
+  "file": "src/harness_bench/telemetry/agy.py",
+  "find": "            if i + size > len(b):\n",
+  "replace": "            if False:\n",
+  "tests": ["tests/test_reader_agy.py::test_a_truncated_step_payload_is_omitted_with_the_steps_thinking_tokens"]
+ },
+ {
+  "name": "RA4: an omitted reasoning row drops the step's thinking_tokens",
+  "file": "src/harness_bench/telemetry/agy.py",
+  "find": "ReasoningItem(n, 0, \"omitted\", None, None, thinking, None)",
+  "replace": "ReasoningItem(n, 0, \"omitted\", None, None, None, None)",
+  "tests": ["tests/test_reader_agy.py::test_a_truncated_step_payload_is_omitted_with_the_steps_thinking_tokens"]
+ },
+ {
+  "name": "RA5: a tool step's DONE state reads as success",
+  "file": "src/harness_bench/telemetry/agy.py",
+  "find": "{\"n\": n, \"name\": name, \"ok\": None,",
+  "replace": "{\"n\": n, \"name\": name, \"ok\": True,",
+  "tests": ["tests/test_reader_agy.py::test_tool_steps_give_tool_calls_at_their_first_line_closed_by_their_terminal_state"]
+ },
+ {
+  "name": "RA6: a tool step's ERROR state is not read as a failure",
+  "file": "src/harness_bench/telemetry/agy.py",
+  "find": "if state == \"ERROR\":",
+  "replace": "if state == \"FAILED\":",
+  "tests": ["tests/test_reader_agy.py::test_an_out_of_profile_tool_that_ran_fires_hb_val_008"]
+ },
+ {
+  "name": "RA7: the out-of-profile agy tools (web, browser, image, sub-agent, MCP, messaging) are classed in profile",
+  "file": "src/harness_bench/telemetry/agy.py",
+  "find": "| dict.fromkeys(_OTHER, \"other\"))",
+  "replace": "| dict.fromkeys(_OTHER, \"read\"))",
+  "tests": ["tests/test_reader_agy.py::test_tool_class_covers_every_tool_the_pinned_build_advertises",
+            "tests/test_reader_agy.py::test_an_out_of_profile_tool_that_ran_fires_hb_val_008"]
+ },
+ {
+  "name": "RA8: no RULE block of the request prompt becomes an instruction_file part",
+  "file": "src/harness_bench/telemetry/agy.py",
+  "find": "for m in _RULE.finditer(text)]",
+  "replace": "for m in _RULE.finditer(\"\")]",
+  "tests": ["tests/test_reader_agy.py::test_instruction_files_are_the_rule_blocks_of_the_request_prompt"]
+ },
+ {
+  "name": "RA9: a conversation db that is not there is opened anyway (reads as unreadable, not as not found)",
+  "file": "src/harness_bench/telemetry/agy.py",
+  "find": "return db if db.is_file() else None",
+  "replace": "return db",
+  "tests": ["tests/test_reader_agy.py::test_a_stream_without_its_conversation_db_still_gives_served_and_steps"]
+ },
+ {
+  "name": "RA10: the context window the stream never carries reads as 0",
+  "file": "src/harness_bench/telemetry/agy.py",
+  "find": "context_tokens=no_context, context_tier=no_context",
+  "replace": "context_tokens=0, context_tier=no_context",
+  "tests": ["tests/test_reader_agy.py::test_served_model_is_init_model_and_the_context_window_is_not_recorded"]
+ }
+]
