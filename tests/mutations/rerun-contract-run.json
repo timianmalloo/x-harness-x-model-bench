@@ -1,0 +1,94 @@
+[
+  {
+    "name": "cell id always takes the settings (RECID-A)",
+    "file": "src/harness_bench/plan.py",
+    "find": "        if self.effort != profiles.DEFAULT or self.context != profiles.DEFAULT:\n",
+    "replace": "        if True:\n",
+    "tests": [
+      "tests/test_contract_run.py::test_cell_settings_default_and_the_id_recipe",
+      "tests/test_contract_run.py::test_grid4_replan_carries_default_settings_and_an_empty_harness_cap"
+    ]
+  },
+  {
+    "name": "cell id ignores a pinned effort",
+    "file": "src/harness_bench/plan.py",
+    "find": "        if self.effort != profiles.DEFAULT or self.context != profiles.DEFAULT:\n",
+    "replace": "        if self.context != profiles.DEFAULT:\n",
+    "tests": [
+      "tests/test_contract_run.py::test_cell_settings_default_and_the_id_recipe"
+    ]
+  },
+  {
+    "name": "expand drops the combo effort",
+    "file": "src/harness_bench/plan.py",
+    "find": "c.get(\"effort\", profiles.DEFAULT), c.get(\"context\", profiles.DEFAULT)))",
+    "replace": "profiles.DEFAULT, c.get(\"context\", profiles.DEFAULT)))",
+    "tests": [
+      "tests/test_contract_run.py::test_expand_reads_combo_settings_and_a_v2_matrix_gives_default"
+    ]
+  },
+  {
+    "name": "transport is never read",
+    "file": "src/harness_bench/engine.py",
+    "find": "    return stream_driver if getattr(launcher, \"transport\", \"acp\") == \"agy-stream\" else driver\n",
+    "replace": "    return driver\n",
+    "tests": [
+      "tests/test_contract_run.py::test_attempt_picks_the_protocol_module_by_transport"
+    ]
+  },
+  {
+    "name": "context_arg default keeps a literal element",
+    "file": "src/harness_bench/profiles.py",
+    "find": "        if context == DEFAULT:\n            return []\n",
+    "replace": "        if context == DEFAULT:\n            return [CONTEXT_ARG]\n",
+    "tests": [
+      "tests/test_contract_run.py::test_context_arg_default_drops_its_argv_element",
+      "tests/test_contract_run.py::test_context_arg_with_no_context_setting_drops_for_default"
+    ]
+  },
+  {
+    "name": "a default cell leaks the literal placeholder",
+    "file": "src/harness_bench/profiles.py",
+    "find": "            elif placeholder in text:\n",
+    "replace": "            elif False:\n",
+    "tests": [
+      "tests/test_contract_run.py::test_default_never_leaks_a_literal_placeholder"
+    ]
+  },
+  {
+    "name": "launcher ignores the cell effort",
+    "file": "src/harness_bench/profiles.py",
+    "find": "        effort, context = cell.get(\"effort\", DEFAULT), cell.get(\"context\", DEFAULT)\n",
+    "replace": "        effort, context = DEFAULT, cell.get(\"context\", DEFAULT)\n",
+    "tests": [
+      "tests/test_contract_run.py::test_profile_launcher_reads_the_cell_settings"
+    ]
+  },
+  {
+    "name": "unknown transport accepted",
+    "file": "src/harness_bench/profiles.py",
+    "find": "    if transport not in TRANSPORTS:\n",
+    "replace": "    if False:\n",
+    "tests": [
+      "tests/test_contract_run.py::test_a_bad_new_key_is_refused"
+    ]
+  },
+  {
+    "name": "agy grammar rule allows every module",
+    "file": "tests/test_architecture.py",
+    "find": "        if rel != AGY_STREAM_MODULE and (consts & AGY_OUTCOME_TOKENS",
+    "replace": "        if False and (consts & AGY_OUTCOME_TOKENS",
+    "tests": [
+      "tests/test_architecture.py::test_agy_grammar_rule_fires_outside_the_stream_driver_only"
+    ]
+  },
+  {
+    "name": "console guard loses bench/adapters",
+    "file": "tests/test_console_windows.py",
+    "find": "ROOTS = (\"tools\", \"tests\", \"bench/adapters\")",
+    "replace": "ROOTS = (\"tools\", \"tests\")",
+    "tests": [
+      "tests/test_contract_run.py::test_the_console_window_guard_scans_bench_adapters"
+    ]
+  }
+]
