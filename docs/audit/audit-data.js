@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-12T16:25:04Z",
+  "generated": "2026-10-12T17:01:18Z",
   "audit": [
     {
       "actor": null,
@@ -180384,6 +180384,28 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-12T15:16:47Z",
       "duration_seconds": 4097.0
+    },
+    {
+      "id": "al-01M4RGZFPH4VTSE64J81EY35X2",
+      "shortname": "r-settings",
+      "datetime": "2026-10-12T17:01:17Z",
+      "session": "r-settings-rerun-2",
+      "prompt": "r-settings-rerun-2: Leader follow-up on R-SETTINGS (per-cell git config, user_home_vars, seed_files, frozen settings block)",
+      "summary": "GIT_CONFIG_GLOBAL per cell at <home>/.gitconfig with the bench identity; user_home_vars set to the cell home; seed_files written with {home}/{worktree}/{model}, worktree = <cell>/ws; profile_record freezes a non-empty settings block; 36/36 mutants killed",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "close the Leader's three follow-up items and R-VALIDITY's settings-record seam",
+      "done_when": "red then green: two cells two gitconfig paths, a write in one invisible to the other; HOME/USERPROFILE = cell home; seed files with the worktree; settings frozen in profile_record",
+      "tier": "T2",
+      "fan_out": 0,
+      "started_at": "2026-10-12T16:26:52Z",
+      "duration_seconds": 2065.0
     }
   ],
   "changes": [
