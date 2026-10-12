@@ -1,0 +1,41 @@
+# Antigravity (agy) cell profile (ADR-0025 s6; ADR-0024 s3 settings). Values in {braces} are filled per cell.
+# Not ACP: stream_driver.py drives agy's stream-json, several turns in one process.
+harness: agy
+vendor: google   # R-73 item 1: a profile fact, never inferred from a model id
+transport: agy-stream
+scripted_user: unsupported   # no MCP server input on the stream (ADR-0028 s7); the plan refuses such a task
+home_env: HOME   # with USERPROFILE below: agy keeps .gemini/ and AppData/ under the cell home (spike 2026-10-11)
+credential: null   # the Windows keyring, in place (the Copilot pattern); nothing is copied
+credential_kind: "subscription login (keyring)"
+# `-p` takes a value, so `-p=` goes last (Verified). Two ADR-0025 s6 flags are left out, measured on agy 1.3.3
+# (2026-10-12): `--add-dir` takes only an absolute path and agy's workspace already starts with its cwd, the cell's
+# worktree (cli.log `workspaceDirs=[<cwd> ...]`; a view_file there ran with no allow rule); `--print-timeout`
+# defaults to 0s, "waits until the turn completes", so the engine's budget kill stays the one bound and a budget
+# overrun is classified timed_out, not as an agy-side stop.
+command: ["{exe}", "--input-format", "stream-json", "--output-format", "stream-json", "--model", "{model}", "-p="]
+shutdown_grace_seconds: 10
+files:
+  # ADR-0004 classes as agy grants (the six grant kinds in agy 1.3.3: command, read_file, write_file, mcp, read_url,
+  # execute_url). allow: shell and file read/edit. deny: MCP tools and URL reads/execution. Measured 2026-10-12: agy
+  # parses both lists (cli.log `CLI settings initialized: permissions=&{Allow:[...] Deny:[...]}`), command(*) lets a
+  # command run, and a denied read_url is a tool ERROR `permission check failed for ` (blocked, stream_driver). Not
+  # covered by any grant kind: search_web ran under these rules, and image generation, browser and subagent tools have
+  # no kind (R-TRANSPORT's seam request: detection only, telemetry/agy.py TOOL_CLASS). Never
+  # --dangerously-skip-permissions.
+  .gemini/antigravity-cli/settings.json: '{"permissions": {"allow": ["command(*)", "read_file(*)", "write_file(*)"], "deny": ["mcp(*)", "read_url(*)", "execute_url(*)"]}}'
+env:
+  USERPROFILE: "{home}"
+  AGY_CLI_DISABLE_AUTO_UPDATE: "true"   # the value 1 does not work (Verified)
+mode: null
+set_model: false   # the model is in argv; the stream has no model setter
+# The teed stream (stream_driver.STREAM_RECORD), one per cell; its init names the conversation, whose store is
+# .gemini/antigravity-cli/conversations/<conversation id>.db beside it. The reader is telemetry/agy.py (R-READ-AGY).
+record_glob: "agy-stream.ndjson"
+usage_source: native_record
+auxiliary_models: []
+settings:
+  effort:
+    values: [high]   # the model id carries it: gemini-3.8-flash-high (ADR-0024 s3; the plan checks -high <=> high)
+    apply: model_id
+  context:
+    apply: none
