@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-12T14:22:33Z",
+  "generated": "2026-10-12T14:46:11Z",
   "audit": [
     {
       "actor": null,
@@ -180252,6 +180252,28 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-12T13:49:20Z",
       "duration_seconds": 1993.0
+    },
+    {
+      "id": "al-01M4R982WNXBMQ75VV00ZYB305",
+      "shortname": "r-contract-facts",
+      "datetime": "2026-10-12T14:46:11Z",
+      "session": "r-contract-facts-rerun",
+      "prompt": "r-contract-facts-rerun: R-CONTRACT-FACTS grade-side seams in code",
+      "summary": "errors codes (HB-VAL-010/011, HB-PRE-010/011/012, HB-CELL-203); ServedSettings, stream item dataclasses, ToolInput.bytes_returned, four Extraction reader hooks; four row builders; PASS_FACTS/FACTS/KEYS for served, reasoning, prompt_parts, harness_events; all_tasks bool check; report stubs cost_compare, pack_cost, tool_phases, publish, request_series; tests/test_contract_facts.py incl. reasoning tamper test",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "grade-side seams of the lean re-run in code, no behaviour change for an old run's view",
+      "done_when": "test_contract_facts green red-first; tamper test fails bench verify; existing tests of touched modules green",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-12T14:27:36Z",
+      "duration_seconds": 1115.0
     }
   ],
   "changes": [
