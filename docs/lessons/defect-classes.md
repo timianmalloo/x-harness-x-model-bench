@@ -237,6 +237,12 @@ summary: >-
 - **Instances:**
   - `2026-09-24`: T6 wrote `findings-T6.md` through a shell heredoc after the Write tool was refused.
   - T1–T5 and T8 did not route around the refusal. They reported the content, and the Coordinator transcribed it.
+  - `2026-10-12` (lean re-run R-READ-CODEX, Opus fallback; its closing entry; recorded by Coordinator #3): the
+    permission classifier denied the worker's copy of a real Codex rollout record. The worker did
+    not route around it: it hand-authored the fixtures and said so ("fixtures hand-authored after a classifier denial
+    of the real-rollout copy"). The refusal held. *Residual:* the Codex reader's fixtures are not from a real record,
+    so a field the real rollout carries in another shape is not proven (ENV-B's risk); the S3 development probe's
+    real Codex cell is the first real-record test of `telemetry/codex.py`.
 - **Sweep:** every findings file carries a line saying who wrote it and why.
 - **Control:** the brief clause "the harness refuses sub-agent writes to findings files; put the content in your report" (T8 and T9 briefs). That is an instruction rung only; no automated check exists.
 - **Upgrade trigger:** a second route-around.
@@ -403,6 +409,17 @@ summary: >-
 - **Derive:** a tree running a mutation sweep is not a tree to commit in; commit only named paths (`git add <paths>`), never `-a`, in any tree a background tool can write. Upgrade trigger: a third instance, then `--check-clean` joins the commit boundary (the pre-commit hook is the pack's `coord-core precommit`, so that is an upstream change).
 - **Control:** `tools/mutate_check.py` writes `<git-dir>/mutate-applied.json` before it applies a mutation. The git dir is `git rev-parse --git-dir` of the checkout it runs in, so each worktree has its own. The record holds the file path, the sha256 of the original bytes, and the original bytes (base64). The sidecar is removed only after those bytes are written back. `python tools/mutate_check.py --restore` writes them back when the file's bytes differ, removes the sidecar, and prints what it did; with no sidecar it exits 0 and prints `nothing to restore`. A mutation run refuses to start (exit 2, naming the file and `--restore`) while a sidecar exists. `python tools/mutate_check.py --check-clean` exits 1 naming the file when a sidecar exists and 0 otherwise. Tests in `tests/test_mutate_check.py`: an apply interrupted before restore (tmp worktree), a normal run leaves no sidecar, refusal, `--check-clean` both ways. Mutants in `tests/mutations/mutate_check.json`: the sidecar is never written; the refusal is skipped.
 - **Instance, a fourth shape (a digest taken while a mutant may be applied; recorded by Coordinator #29 from the overnight report, section 4 item (2)):** `2026-10-05` the Leader queued a `mutate_check` run in the gate tree behind a pending `gate_stamp --renew`. The renewal computes its digest over `src/harness_bench/grade/**` outside SUITE-LOCK, so it could have stamped a mutant as the frozen gate input. The Leader stopped the queued run by PID before it took the lock. Control (proposed): `tools/gate_stamp.py --renew` takes SUITE-LOCK and refuses while `<git-dir>/mutate-applied.json` exists (repo-local; Lane F item 5 of `docs/coordination/coordination-e2e4.md` where it generalises); until then, no mutating job runs in a tree whose stamp renewal is pending (scope rule 5).
+- **Instance, the live-commit shape again (2026-10-12, lean re-run J1A-FIX; recorded by Coordinator #3 from the
+  Leader's owed-docs brief):** a `mutate_check` run was in flight in the J1A-FIX tree when the worker committed with
+  `git add -A`, so the applied mutant T1-15 in `src/harness_bench/engine.py` was swept into `a5302a9e` and
+  `e21c8bb4`. The worker restored the file in `c0cd9664` ("engine.py is now byte-equal to `08bc9dfb`", its message,
+  read by me). This is the 2026-09-30 shape (a commit with `-a` while a sweep runs), a second time. **The derive
+  rule (named paths, never `-a`, in a tree a background tool writes) was prose in this entry, not in the worker's
+  brief:** the common brief's rules do not carry it. **Control (proposed; rung: hook):** the commit boundary runs
+  `tools/mutate_check.py --check-clean` and refuses while `<git-dir>/mutate-applied.json` exists; that is the upgrade
+  this entry already names (an upstream change to the pack's `coord-core precommit`, or a repo-local pre-commit
+  step). Until then (rung: compiled prompt): every brief carries "never commit while your own mutation run is in
+  flight; commit named paths".
 - **Control gap (2026-10-04, Coordinator #15):** the upgrade trigger has fired (the session-end instance is the third shape and the fourth source). Proposed upgrade: the session-start hook that already marks the audit (`SessionStart`/`SubagentStart`) runs `--check-clean` in the checkout it starts in and prints the file and `--restore` on exit 1; the Leader runs `--check-clean` in the primary before each batch run (R-104 c2) and before each join. Rung: hook (proposed). Owner: the Leader decides who builds it.
 - **Status:** `partially-controlled` (the sidecar and `--restore` hold; nothing runs them at session start)
 
@@ -671,9 +688,25 @@ summary: >-
 - **Instances:**
   - `2026-09-30` (DR-CAT-1, R-86): `extraction_id` (the normaliser's build hash, `normalize.py:85`) sat in `views.export`'s per-cell bytes beside `grading_id` (already correctly excluded). A normaliser fix (R-15/R-24/R-54 provenance tracking) changes `extraction_id` on every re-grade, which the US-4 catalog control and the 0.3 byte-identity gate both read as "a score or reason moved without a bump" — a false positive with a real cost (it forces an illegitimate catalog bump or a forbidden re-pin). `grader_build` (the grader's own code hash) was already correctly kept out of the export; `extraction_id` was its unflagged twin.
   - `2026-10-10` (L-CODEX-PIN; reported by the Leader as GOLDEN-COUPLED, owed-docs item 24; recorded here by Coordinator #66). *Shape widens: an input-identity hash, not a code-identity hash, in a rendered golden.* `tests/goldens/report-nonlean-arms.html` (L-SUM-B1's LBU-5 golden) embeds the fixture plan's hash. The fixture plans against the live `bench/` (the tools pin), so the Codex pin bump turned it red with `report/html.py` unchanged: only "Plan hash" differs (`862b6c5d03e4` → `07059454f0ec`). The golden guards `html.py` but fails on an unrelated input. Resolved by re-capture (`1877636d`, "plan hash only; html.py unchanged"). This instance is not covered by the control below, which is specific to `extraction_id` in `views.export`. **Control (proposed by the Leader):** the golden's fixture pins its own `bench/` inputs, or the comparison masks the plan hash, so the golden fails only for a rendering change. Rung: test. Upgrade trigger: one more golden re-captured for a hash-only diff.
+    - **Control landed (Coordinator #3, 2026-10-12):** R-GOLD moved `archived_runs.make_root` onto the frozen root
+      `tests/fixtures/bench-root/` (catalog 0.7, profiles, tools pin, X1); `tests/test_fixture_root_isolation.py`
+      holds it (green on `coord/rerun-c3`). The plan-hash shape is controlled.
+  - `2026-10-12` (S4b catalog 0.8 freeze; Coordinator #3, `1f506520`). *Shape widens again: an input-identity
+    **label** from the live tree, through a fallback the fixture root does not reach.* The same golden moved at the
+    freeze (`loaded: 0.8.dev` → `loaded: 0.8`, catalog version only), and R-DRIFT had moved it once already
+    (`58c489ac`, `loaded: 0.7` → `loaded: 0.8.dev`). The test calls `html.write(run_dir, view)` with no `root`, and
+    `html.py:2224` then loads the catalog from `config.repo_root()`, the live `bench/metrics.yaml`, not the frozen
+    root (Verified at `d7de17d1`). The isolation control is blind to it twice over: its `edited_live` fixture patches
+    `archived_runs.ROOT`, not `config.repo_root()`, and its perturbation (a byte appended to each file) leaves the
+    `version:` label unchanged. Red observed before the re-capture (`test_nonlean_report_golden`, the golden's bytes
+    differ). **Control (proposed):** the test passes `root=` the fixture root to `html.write`, so the golden reads
+    the frozen 0.7 catalog (one more re-capture, `loaded: 0.7`), and `edited_live` also relabels the live version,
+    so the isolation test fails on this shape. Owner: the Leader assigns (`report/html.py` is not touched;
+    `tests/test_lean_section.py` and `tests/test_fixture_root_isolation.py` are test-side). Rung: test. Upgrade
+    trigger: one more golden moved by a live catalog label.
 - **Sweep (2026-09-30):** every committed export/golden fixture grepped for `grader_build`, `grading_id`, `extraction_id`: `tests/fixtures/catalog/{0.4,0.5}/*.export` and `tests/fixtures/validity/golden-exports-5feece0.json` carry `extraction_id` from before this fix — left untouched as frozen, point-in-time goldens for retired catalog versions (the established pattern: `leaderboard`'s R-78 removal did not rewrite 0.4's goldens either; a frozen golden is never re-validated against live code after its version is retired). `tests/fixtures/ledger/r34-cc-opus-pack-on-powershell-denied.json`'s `extraction_id` is a native-record/ledger-row fixture (`test_allowlist_classes.py`), not an export golden, and is unaffected. The one *current* consumer, `tests/test_views.py`'s pre-R-15 golden-export comparison, now strips `extraction_id` from the historical fixture before comparing, the same way it already strips `leaderboard`.
 - **Control:** `tests/test_catalog_version.py::test_a_normaliser_change_alone_leaves_the_control_green_and_extraction_id_out_of_the_export` monkeypatches the code-identity source and asserts both that the US-4 control stays green and that the field is absent from `views.export`'s cells. Observed red before the fix (the (a) export-mismatch finding fired on the monkeypatch alone). The general rule (CI2 derive): a code-identity field (a build hash, a tool-version hash) never enters a result golden's bytes; it belongs in the row that already carries the pass's identity (here, `RunView.Cell.extraction_id`, read by `pack_improvement.py:887` and `context_growth.py:147` from the view object, never from the export bytes).
-- **Status:** `partially-controlled` (Leader, 2026-10-10: the 2026-09-30 control covers `extraction_id` in `views.export`; the 2026-10-10 input-identity shape in `tests/goldens/report-nonlean-arms.html` has only a proposed control. It returns to `controlled` once that control's test lands.)
+- **Status:** `partially-controlled` (Leader, 2026-10-10: the 2026-09-30 control covers `extraction_id` in `views.export`; the 2026-10-10 input-identity shape in `tests/goldens/report-nonlean-arms.html` has only a proposed control. It returns to `controlled` once that control's test lands.) Coordinator #3, 2026-10-12: that test landed (`tests/test_fixture_root_isolation.py`), so the 2026-10-10 shape is controlled; the status stays `partially-controlled` only for the 2026-10-12 live-label instance, whose control is proposed.
 
 ### GATE-D: a freeze control's pair check can only be satisfied by bumping the version it is not about
 - **Signature:** a control gates two independently-versioned artifacts as a pair — here, a metrics catalog version `v` and an export-shape version `N` — by requiring one map to record `{N: {catalog: v}}`. Because that map holds exactly one `catalog` per `N`, a legitimate bump of `v` alone (no change to `N`'s shape) can only pass by rewriting an already-committed entry, which the control's own append-only rule ((e)) forbids. The control is unsatisfiable by construction for the exact class of change it exists to allow.
@@ -779,6 +812,17 @@ summary: >-
 - **Instances:**
   - `2026-10-03` (Evaluation Campaign Wave 2): Grok's skills-reload acknowledgement arrived **before the `session/new` response**. The runner's Grok compatibility in `docs/ai-forward-pack/scripts/coord_transport.py` accepts that message only inside `session/prompt`. Measured: 2 of 3 Grok dispatches failed this way, each in under 10 s (`w2-g1-e1e4`, `w2-enva-e1e4`). The retry `w2-g1b-e1e4` got past `session/new`, committed red `a08a4060` and green `76deb253`, and then hit its 1,200 s deadline (reported by the Leader).
   - `2026-10-05` 10:07 (sibling instance, the `initialize` phase; Coordinator #33 from the Leader's report): on Grok 1.0.41, run `w2-k2a-e1e4`, the skills-reload acknowledgement `{"id":"skills-reload","result":{"result":{"reloaded":0}}}` arrived **during `initialize`**. The ai-forward transport at revision 98 accepts it only in `session/new` and `session/prompt`, so the dispatch failed in ACP initialize before the first prompt, and X-K2a ran as a Sonnet fallback in its tree. The fix landed for the two phases already seen, not for "every wait", so this class recurred in the third phase its own control names. Owner: upstream (ai-forward). Route: X-PACK phase 2, or a new upstream item if phase 2 has closed. Meanwhile every Grok contract's fallback covers a failure before the first prompt: the follow-on runs as Claude Code Sonnet in the same tree under the same session, because the runner refuses a second attempt under the same id (X-G3's contract carries it, Coordinator #33).
+  - `2026-10-12` 15:51 UTC (lean re-run, the Grok floor canary R-READ-CODEX, run `r-rcodex-rerun`; Leader owed-docs
+    item 1; recorded by Coordinator #3). **A fourth phase: `session/set_model`.** The runner record
+    (`C:/tf/rerun-leader/rcodex-run.log`, Verified) has `code: protocol_error`, `protocol_error_phase:
+    session/set_model`, `protocol_error_message` the skills-reload acknowledgement `{"id": "skills-reload", …
+    {"reloaded": 1}}`, 3.719 s, `prompts_started` 0, `reported_version` 1.0.41. The Leader's probe
+    (`C:/tf/rerun-leader/grok_setmodel_probe.py`) shows Grok answers `set_model` correctly
+    (`{"_meta":{"model":{"Ok":"grok-4.7"}}}`) and also emits `session/update` (`available_commands_update`) and
+    `_x.ai/*` notifications in that phase. The 2026-10-05 fix again covered the phases already seen, not every wait;
+    `set_model` is reached for Grok because of SERVE-A's root-cause fix (the runner sets `expected_model`
+    for Grok from argv `-m`, `coord-runner.py:218-231`, Verified). Consequence: R-READ-CODEX and R-READ-GROK ran on the Opus fallback (plan *Errata* E17). Owner:
+    upstream (ai-forward `coord_transport.py`, pack-managed; through `/updatepack`).
 - **Sweep:** owed by the fix slice: every request/response wait in `coord_transport.py` (`initialize`, `session/new`, `session/prompt`, any cancel), and every other harness's compatibility shim, for a tolerance tied to one phase.
 - **Control:** a red-first test in the pack's transport tests: a fake agent sends the acknowledgement before the `session/new` response, and before the `initialize` response, and the client must complete both; then one tolerance that every wait applies, not one per phase. Fix slice `xport-grok-e1e4` (Claude Sonnet, branch `fix/grok-session-new-race`, launched by the Leader). It is a **repo-local deviation** of the pack's script, so it is recorded as a deviation for `updatepack` to merge. Pushing it to the ai-forward repo needs the operator. Meanwhile, Grok tracks wait for the fix (Leader, 2026-10-03); they are not rerouted to Sonnet. Rung: test. Upgrade trigger: the fix upstream, then this entry moves to the pack's register.
 - **Status:** `candidate`
@@ -835,6 +879,12 @@ summary: >-
 - **Why it survives:** the slice checks its own new variants. MOD-A's control (each variant against its target alone) turns the symptom red in `check_models.py`, but only after the model change is written, and the author reads "NOT rejected" on someone else's variant as that slice's problem. The cause is a cross-slice guard interaction, which MOD-A's signature (a variant that cannot fail) does not name.
 - **Instances:**
   - `2026-10-03` (W1-K, `NoLaunchAfterStop`, R-100; reported by the Leader): W1-K removed the `Resume` guard and its `relaunch_stopped` lift and added the stop branch of `ReconcileRecord` and the `StartCell` lift; W1-K rev 1.1 §5 (`docs/design/eval-resume.md`, branch `design/eval-resume`) names the class and checks it. Which variant was starved first is not recorded here (Inferred).
+  - `2026-10-12` (lean re-run R-CAP, `060ea9c1`; handed back as "a dominating guard blinds a variant"; recorded by
+    Coordinator #3). The new per-harness cap (`HarnessCap` in `models/run_lifecycle.tla`) was binding on both
+    small-bound cells and dominated the parallelism guard: the full check rejected 33 of 35 variants, so
+    `exceed_parallelism` and `reconcile_no_wait` were no longer rejected by their own targets. Fix: `CAP_BINDS`
+    lowers `HarnessCap` only for `safety-cap` and `exceed_harness_cap`; 35 of 35 (the commit message, read by me;
+    the run not repeated). The both-directions check held: it is what turned the two variants red.
 - **Sweep:** W1-K's quick run: all 34 variants `rejected by own target` (W1-K rev 1.1 §5, the author's run; not re-run by the Coordinator).
 - **Control:** W1-K's both-directions check in `tools/check_models.py`: each new or removed guard is checked against every other variant, both directions, and a variant that stops being rejected by its own target fails the run. `assume:` it lands with W1-K's gate revision, now running (the `check_models.py` row of W0 §13: W1-K by seam, then X-K1); confirmed by `git log main -- tools/check_models.py` after that merge; if it does not land, MOD-A's control is the only guard and this entry stays a design-time check. Rung: test, once merged; until then the design-time statement in W1-K §5. Upgrade trigger: a starved variant found after the check is on main.
 - **Status:** `candidate` (the control is not on main yet)
@@ -894,6 +944,15 @@ summary: >-
   - `2026-10-03` (R-103): X-B1a (`w2-b1a-e1e4`) under the same argv served `grok-4.6-build` x59, after Q0b served `grok-4.7-build` at 10:16. The join read (R-92 c1, `tools/grok_served_model.py`, exit 1) caught it after the turn had committed; two of six Grok sessions that day drifted, both whole-session.
   - `2026-10-05` (Leader, measured): X-G3's first attempt (run `w2-g3-e1e4`) drifted to grok-4.6. The run record has `selected_model` grok-4.6 and `selected_model_set` false. The retry runs as `w2-g3-r2-e1e4`.
   - `2026-10-10` (lean batch 1; Leader-caused; from the Leader's owed-docs list, item 23; recorded by Coordinator #66). *Shape: refused, not swapped.* The bench's pinned Codex 0.156.0 refuses `gpt-6.1-sol` on a ChatGPT account ("not supported when using Codex with a ChatGPT account"); the global 0.160.0 serves it (the Leader's spike, 2026-10-10). Batch 1 refused every Codex cell with HB-CELL-116 (`bench/rings/lean-codex.yaml`'s header at `f6389964`). No real-model cell ran the lean pins before batch 1, although the spec flagged it ("no real-model cell has run them"). The plan proof (`bench plan`) checks that a pin exists, never that the account serves it through the pinned build: the class's root, the pin checked where it is written. Resolved by operator ruling: Codex bumped to 0.160.0 (L-CODEX-PIN, merge `e10175a7`) and its cells run as their own lean pair. **Control (proposed by the Leader):** a readiness item before batch 1: one served-model probe turn per combo through the **pinned** build, its served id recorded. Rung: readiness step (ADR-0022 §6's list). Upgrade trigger: one more batch that starts on an unprobed combo.
+  - `2026-10-12` (lean re-run R-READ-CC; its closing entry; owed-docs item 7; recorded by Coordinator #3). *Shape:
+    the auth path changes the served menu.* A Claude Code turn authenticated with an OAuth token (the
+    `HB_CLAUDE_OAUTH_TOKEN` path, Inferred from "OAuth-token login") and pinned `opus[1m]` served `claude-opus-5-5` at a 200k window: the token's menu
+    offered `opus`, not `opus[1m]` (R-READ-CC's finding, "the OAuth-token login served claude-opus-5-5 at 200k for a
+    [1m] request"; its record not re-read by me). The pin is valid on another login path, so a probe through the
+    operator's interactive login proves nothing about the cell's token path. **Control (proposed):** the S3/S5
+    served probe runs each combo through the **cell's own credential path** and HB-VAL-010 judges the served window
+    against the pin (R-VALIDITY's rule). Rung: readiness probe. Upgrade trigger: a batch cell served at a window
+    its pin did not ask for.
 - **Root cause (DRIFT; measured by the Leader in code, 2026-10-05; Coordinator #34 re-read both sites on `0d4a291a`):** the pin reaches Grok only through argv. `docs/ai-forward-pack/scripts/coord-runner.py:958-959` sets `options["expected_model"]` only when `worker["harness"] == "copilot"`. So for Grok, `docs/ai-forward-pack/scripts/coord_transport.py:779-781` (`if expected_model is not None: self.rpc("session/set_model", ...)`) never runs, and `selected_model_set` stays false. Grok's ACP session default (`session/new`'s `currentModelId`, recorded as `selected_model`) can then override argv `-m grok-4.7`. This explains why a drift is whole-session and varies between sessions on the same argv (R-103). The transport also never compares the served model with the pin, so nothing fails closed.
 - **Control candidate (upstream-owned: X-PACK phase 2, or a new ai-forward item):** (3) the runner derives `expected_model` from argv `-m` for Grok as it does for Copilot, so the transport calls `session/set_model`; and the transport fails closed (a named refusal before the first prompt) when the served model differs from `expected_model`. Rung when built: make it impossible (the session cannot start on another model). Until then, controls (1) and (2) stand. This repository does not edit `coord-runner.py` or `coord_transport.py` outside `/updatepack`.
 - **Sweep:** the served-model read for each external harness at the join (README §3: Grok `chat_history.jsonl`, Codex `rollout-*.jsonl` `model`, Agy `cli.log`), and the Sonnet report's first line (R-91 c1). Owed: a count of Grok sessions since Q0 per served id, from the session store (the Leader, at the next report).
@@ -1177,6 +1236,12 @@ summary: >-
   - `2026-10-06` (reported by the Leader to Coordinator #38; not re-observed by me): `tests/test_engine.py::test_no_launch_after_a_stop_while_another_cell_still_runs[4]` failed under load and passed alone. **This is the fourth instance, so the upgrade trigger below has fired**, and it is the first in an engine stop path, not in `discriminate` or the campaign lock. The load-repro tool in `tools/` is owed (the Leader, Lane F); until it exists, the Leader's join report records N and the failure rate for this node before accepting a re-run as green.
   - `2026-10-06` (reported by the Leader to Coordinator #48; diagnosed in `c48.md`): the three reds of the `-n 4` recount since X-RETIER. 3 of the 7 `-n 4` recounts in the Leader's join logs were red (`join-k1c-flake`, `join-rs-red1`, `join-rs-red2`); the 7 took 563 to 877 s, against 1,851 s for the serial recount at `join-retier`. Each is moved to its mechanism's class: (1) `test_property_real_host.py::test_not_alone_at_arrival_is_row_4_never_scored`, WinError 32 at `atomic.py:310`, twice: **WIN-A, delete shape, measured** (CR48-1; a code defect, fix X-FLAKE F1). (2) Four `test_e1_e2e.py` walk tests at join-x-rs run 1: **TIME-B, Inferred** (CR48-2; the S1 probe-host start bound flips the walk's admission; DR-48-1 to the Owner; X-FLAKE F2 makes the next instance record its pilot outcomes). (3) The P4 batch survivor "reconciliation trusts a link without hashing the record" (`tests/mutations/discriminate.json`), killed in 2 of 2 re-runs: **a load-caused setup ERROR of the named test read as "survived"**, Inferred (CR48-3). The mutant removes the hash check, so wherever the hash case runs it fails with a FAILED line. A survivor therefore means the named test never produced one, and its module fixture `first` is the real discrimination trial on which FLAKE-A's HB-RDY-011 instances fail. CR47-14's verdict stands; X-FLAKE F3 prints the reason. **`-n 4` stays** (the speed holds even with re-runs: at 3 in 7, the expected 1.75 runs of about 11 min is still under the 31 min serial run). The `--dist loadscope` proposal is in `c48.md`; it needs the operator's approval and a measurement first.
   - `2026-10-09` (the join of `coord/lean-c62` into `integrate/lean-20`, merge `bd9beb8f`; measured by LOOP-J0, `C:\tf\loopj0\finding.md`; recorded by Coordinator #64, not re-observed): two recounts of one tree, each red on a different node. (1) `tests/test_engine.py::test_no_launch_after_a_stop_while_another_cell_still_runs[4]` failed in recount 1 (1 failed, 4292 passed) and passed alone (2 passed, 5.39 s). **Its second recorded instance** (the first is 2026-10-06, above). (2) `tests/test_discriminate.py::test_a_check_less_variant_declaring_the_clause_property_json_records_is_compared_and_clean` failed in recount 2 (1 failed, 4292 passed): a new node, in the same trial-fixture family as the HB-RDY-011 instances. **Measured** with `tools/load_repro.py`, N=30 per cell, at `bd9beb8f` and at its parent `b262fda7`, alone and under a 16-process CPU burn on 24 logical CPUs: engine 0/60 at both commits; disc 1/60 at `bd9beb8f` and 2/60 at the parent, all three "no result" (pytest completed, and the junit file held no outcome for the node). The merged change is not implicated (mechanisms M1-M4 checked, M5 Inferred). Neither red's stage or error text is recorded, because the join log keeps only summary lines. The trigger is Inferred to need the suite's own I/O and process load: 16 CPU burners alone did not reproduce either red. The join's first record blamed recount 1 on "a concurrent Leader suite"; that is wrong, because SUITE-LOCK (`tests/suite_lock.py`) serializes full suites across worktrees. The correction is an appended audit entry (`audit-correction-join-l-contract`, `al-01M4HBAT7Z7F3030HQR4JDDYG4`).
+  - `2026-10-12` (lean re-run R-CAP; handed back as "the TIME-B2 load flake"; recorded by Coordinator #3, not
+    re-observed): `tests/test_engine.py::test_no_launch_after_a_stop_while_another_cell_still_runs[4]` failed under
+    load in R-CAP's tree and passed alone. **Its third recorded instance** (2026-10-06, 2026-10-09). TIME-B2 is the
+    2026-10-03 track that replaced this file's real sleeps with events; the node still fails under load after it.
+    Not recorded: the stage, the error text and the load at the time. Upgrade trigger fired: the node is now the
+    class's most frequent; its next report runs `tools/load_repro.py` on it with `--with` suite co-load (gap (b)).
 - **Control gaps (LOOP-J0, 2026-10-09; proposed, not fixed; X-FLAKE owns `tools/load_repro.py`):** (a) `load_repro` deletes each run's junit file and keeps no stdout, so a "no result" run loses its cause (3 of 120 disc runs): keep the junit file and the output tail of every run that is not a pass. (b) `load_repro` runs only the node, while this class's trigger is the suite's own load: add `--with <paths>` for suite-shaped co-load (for example the node's module plus `test_e1_e2e.py`). (c) `conductor-join`'s recount log keeps only pytest's summary: keep the `-rf` short summary with its messages for any red. Rung: tool option and join log. Upgrade trigger: the next instance whose stage is not recorded.
 - **PATH-B re-examination (Coordinator #41, 2026-10-06; fixtures read at `481f5c21`, lengths measured on the leftover fixture roots under `C:\Projects\bench-test`):** none of the four named instances ran under a long pytest tmp path. Each root is `CLEAN_PARENT` (`tests/clean_parent.py`: `C:/Projects/bench-test` on Windows) plus a fixed-length name, independent of `TMP`, `TEMP` and pytest's basetemp: `test_discriminate`'s two nodes and `test_engine`'s no-launch[4] use the `base` fixture (`tests/conftest.py:44-47`, `<32 hex>`, a 56-character root); the e2e `S1Repo` uses `xint-<12 hex>` (`tests/test_e1_e2e.py:137-139`). The longest path a discriminate fixture trial leaves is 139 characters below its root (measured: `runs\disc-disc-c-…\archive\<16>\attempt-1\ws\.git\objects\..`), about 195 in all, 65 under MAX_PATH; the engine fake-launcher archive is 110. And the path length is the same in the failing run and the passing re-run, so length alone cannot explain a failure that needs load. Verdicts: `test_a_leaked_temp_is_swept…` **load or unknown, not PATH-B**; `test_no_link_after_hb_rdy_010` **load or unknown, not PATH-B**; `test_engine` no-launch[4] **load (Inferred: a stop path with a release file), not PATH-B**; e2e `S1Repo` m8 `clauses.json` **load or unknown, not PATH-B** (S1's check runs the real probe host; its archive depth is Inferred from S1's tree, whose deepest oracle file is 41 characters). The one `TEMP`-dependent path in the workspace stage is gitsafe's shared state `%TEMP%\harness-bench-git` (`src/harness_bench/gitsafe.py:16`), short, and shared by every process with the same `TEMP`: a load mechanism candidate (Inferred), not a length one. **Not recorded:** the failing runs' `TEMP` and the exception text behind the "workspace" cause (`engine.py:673-675` maps any `BenchError`, `GitError` or `OSError` from the build to it, including a 120 s git timeout, `workspace.py:29`). The next instance's report records both.
 - **Candidate mechanisms (Inferred, not measured):** TIME-B (a real-time bound sized on an idle machine), WIN-A (a transient Windows refusal of a rename or delete inside the workspace build) and, for the L9 test, a real lock race. Neither `test_discriminate.py` test body sleeps or asserts a duration (read at `197092d3`, `:135-148`, `:175-189`). So TIME-B is not the obvious fit, and the "workspace" stage name points at the build of the trial's working tree. Once a repro names the mechanism, the instance moves to that class.
@@ -1400,7 +1465,7 @@ summary: >-
 | **E2E-B** | Declared shape with no write path | A facet/status/enum/route declared and never set | Telemetry reports "nothing to do" — true, for the wrong reason | Test that the shape is written under the claimed condition | `uncontrolled` |
 | **E2E-C** | Green suite, broken surface | All units green; the page never renders; the composition root is never exercised | Units construct their subject by hand | One proof through the real composition root to the rendered surface (E11) | `uncontrolled` |
 | **E2E-D** | Component tests that can't see each other | Every part correct against its own expectation; parts disagree | Per-component coverage is high | Cross-surface consistency test on one seeded scenario (E12) | `uncontrolled` |
-| **E2E-E** | The gate passed, its contents didn't | Several checks in one block; only the last exit code propagates | The gate is green | Run each control independently; assert each reports its own status (E13) | `partially-controlled` (2026-09-24). **Instance:** the Coordinator committed `5dcb2fe` while `pytest --collect-only` had 1 error, because `\| tail -1` hid the exit status. It was fixed in `101ec85`. **Control:** `tools/heredoc_guard.py` blocks a gate (pytest, ruff, mutate_check, conductor-join, run-verify-gates) piped without `pipefail`. It was observed red at `291468b` and fixed in `727cbb4`. Other multi-check blocks are not covered. |
+| **E2E-E** | The gate passed, its contents didn't | Several checks in one block; only the last exit code propagates | The gate is green | Run each control independently; assert each reports its own status (E13) | `partially-controlled` (2026-09-24). **Instance:** the Coordinator committed `5dcb2fe` while `pytest --collect-only` had 1 error, because `\| tail -1` hid the exit status. It was fixed in `101ec85`. **Control:** `tools/heredoc_guard.py` blocks a gate (pytest, ruff, mutate_check, conductor-join, run-verify-gates) piped without `pipefail`. It was observed red at `291468b` and fixed in `727cbb4`. Other multi-check blocks are not covered. **Instance (2026-10-12, the Leader's piped guard at J1a):** see *Coordinator #3 entries*, "E2E-E instance". |
 | **E2E-F** | Exit code taken as result | A command returned success; the state was never read back | Success is success-shaped | Read back the state and assert on it (E14) | `uncontrolled` |
 | **E2E-G** | Reachability not verified | The surface exists but nothing links to it — or a link points at nothing | The feature works if you can get to it | Assert the navigation path to any new surface (E10) | `uncontrolled` |
 | **RIG-A** | Own-code shape asserted from memory | "This type has that member" — written in a design, never opened | Designs aren't compiled | Read the file or label Inferred (E15); review opens the cited file | `uncontrolled` |
@@ -1931,7 +1996,11 @@ first). The controls are ADR-0026 §6's; they are owed by R-DRIFT (the first two
   a **drift-split test** on a fixture working copy holding a cache, a hook log, a test file and a README edit,
   which must yield machine-written, task-implied and discretionary rows separately (`tests/test_drift_split.py`).
   Upgrade trigger: a new harness or pack hook writing a path the list does not name.
-- **Status:** `candidate`
+- **Control landed (Coordinator #3, 2026-10-12):** R-DRIFT `58c489ac` (the machine-written list in
+  `grade/_changes.py`, separate from `BUILD_OUTPUT`) with `tests/test_drift_split.py`, joined in the combined
+  candidate `d7de17d1`; the file ran green on `coord/rerun-c3` (part of `124 passed`, the named freeze run).
+  Rung: test.
+- **Status:** `controlled`
 
 ### RADIUS-TEST-A: a task radius omits a file the task needs, and a radius consumer that does not use `is_test_path` counts it (candidate)
 - **Signature:** a task's prompt asks for a test file ("Add tests in `tests/test_limiter.py`") that its
@@ -1960,7 +2029,10 @@ first). The controls are ADR-0026 §6's; they are owed by R-DRIFT (the first two
   calls `is_test_path` or is named exempt; it fails today on `_matches_blast_radius`. The grader rule (catalog 0.8:
   a test path outside the radius is task-implied, not discretionary) fixes the class for every task without a
   task-version bump (ADR-0026 §5). Upgrade trigger: a new radius consumer outside `grade/` or `report/`.
-- **Status:** `candidate`
+- **Control landed (Coordinator #3, 2026-10-12):** R-DRIFT `58c489ac` (`pack_improvement._matches_blast_radius`
+  now calls `_changes.in_radius`; catalog 0.8's task-implied rule, frozen at S4b in `1f506520`) with
+  `tests/test_radius_consumers.py`, joined in `d7de17d1`; green on `coord/rerun-c3` (the same named run). Rung: test.
+- **Status:** `controlled`
 
 ### LEAK-HOME-A: a home variable relocates only part of a harness's user state (candidate)
 - **Signature:** a cell sets the harness's own home variable (`GROK_HOME`) to the cell home and leaves `HOME` and
@@ -2022,3 +2094,163 @@ trigger) and **SCAN-A** (a frozen-root listing counted the bytecode pytest write
   (ADR-0013 places cells outside the repository; the primary's parent is the right place). Not built. Owner: the
   Leader assigns. Upgrade trigger: one more worker turn spent re-diagnosing the nine.
 - **Status:** `candidate`
+
+## Coordinator #3 entries (2026-10-12; lean re-run build)
+
+*Written by Coordinator #3 (session `c3-rerun`, Opus) on `coord/rerun-c3` (base `d7de17d1`), from the Leader's
+owed-docs list (`C:/tf/rerun-leader/owed-docs.md`, items 1-8) and the hand-backs it cites. ID-A read first: the
+register's class headings, and a repo search for each new id below (0 matches outside this section and the plan's
+errata). **Instances appended in place** (one entry per class): XPORT-A (the Grok runner refusal at
+`session/set_model`), MUT-A (a live mutant swept into a commit, J1A-FIX), MOD-C (R-CAP's dominating cap guard),
+FLAKE-A (the `no_launch_after_a_stop…[4]` node, a third time), SERVE-A (the OAuth token's served menu, R-READ-CC),
+COORD-A (R-READ-CODEX's classifier denial, not routed around), GOLD-A (the non-lean golden moved at the 0.8 freeze by
+a live catalog label), and E2E-E (the Leader's piped gate; the table row points here). **Status moves:**
+DRIFT-MACHINE-A and RADIUS-TEST-A to `controlled` (`tests/test_drift_split.py`, `tests/test_radius_consumers.py`);
+GOLD-A's 2026-10-10 shape is controlled by `tests/test_fixture_root_isolation.py`, but the class stays
+`partially-controlled` for the new instance (see GOLD-A). **Received by name only (text owed):** SCRUB-ESC-A and
+REDCOUNT-A (R-READ-COPILOT's hand-back). Their text did not reach me, and no id is allocated for them here, so that no
+class is written from a name alone. The nearest evidence for SCRUB-ESC-A is two R-READ-COPILOT commits, `c27b7d9c`
+("rerun Copilot fixtures use the repo's <EMAIL> scrub placeholder") and `4647cfee` ("reword the rerun provenance's
+scrub note so no secret-shape scan matches it"). The Leader forwards the hand-back text, and the next Coordinator
+registers both.*
+
+### E2E-E instance (2026-10-12; the inherited row above points here)
+- `2026-10-12` (the Leader, J1a; owed list brief; `C:/tf/rerun-leader/mute.txt`): the Leader ran the MUT-E/MUT-B
+  guard (`tests/test_mutate_check.py`) with its status behind a pipe, so its failure did not stop the command chain,
+  and the chain went on into a mutation pass. The saved output shows the red the pipe hid: `1 failed, 51 passed`,
+  `test_every_named_test_in_the_mutation_sets_exists`, three stale `tests/mutations/copilot.json` test names (e.g.
+  `adapterless build requires an adapter -> tests/test_tools.py::test_copilot_resolves_platform_build_without_adapter`).
+  The chain's exact text is the Leader's report, not re-read by me. CT27 ("a gate's exit status is never behind a
+  pipe") is an always-loaded rule, and `tools/heredoc_guard.py` blocks a piped gate without `pipefail` only where
+  that hook runs. *Shape:* the Leader's own shell, where the hook did not fire. **Control (proposed):** the Leader's
+  join and gate commands run through `run-verify-gates.py` / `conductor-join.py` only (CT27's sanctioned forms), and
+  `heredoc_guard.py`'s coverage is checked for the Leader's shell. Rung: hook coverage. Upgrade trigger: one more
+  piped gate in a Leader or Coordinator shell.
+
+### RUNMSG-A: a runner records a failure code without the raised message, so a pre-prompt refusal cannot be classed (candidate)
+- **Signature:** a dispatch runner catches an exception from a transport callback and records only a code
+  (`callback_failed`). The record keeps `protocol_error_message: null`, 0 stdout and 0 stderr bytes, so nothing says
+  which callback raised or why. The failure ends the dispatch before the first prompt, and the Leader can only route
+  around it.
+- **Why it survives:** the code is specific enough to look like a diagnosis. The runner's other refusals (XPORT-A's
+  `protocol_error`) do carry the message and the phase, so a reader expects this one to as well. The field exists
+  and is null; nothing marks it "not recorded".
+- **Instances:**
+  - `2026-10-12` 16:28 UTC (lean re-run, the Agy floor canary R-READ-AGY, run `r-ragy-rerun`; Leader owed-docs item
+    4): `code: callback_failed`, **one attempt**, 2.11 s, `prompts_started` 0, `protocol_error_message` null,
+    `protocol_error_phase` null, `stdout_bytes` 0, `stderr_bytes` 0, `session_id` null
+    (`C:/tf/rerun-leader/ragy-run.log`, Verified). The owed list's "x6" is the code's six occurrences in the record's
+    lines, not six attempts. With the Grok refusal the same day (XPORT-A), every external row ran on the Opus
+    fallback (plan *Errata* E17).
+- **Not an existing class:** XPORT-A is a protocol message refused in a phase, and its record names the message;
+  DIAG-A is a cause attributed without a record (no cause is attributed here); OBS-A is a measurement written only on
+  a clean exit.
+- **Sweep (owed, upstream):** every `except` in `docs/ai-forward-pack/scripts/coord_transport.py` and
+  `coord-runner.py` that sets a code without the exception text. Not run here (pack-managed files).
+- **Control (proposed; upstream, through `/updatepack`):** the runner records the exception type, its message and
+  the callback name with every `callback_failed`, and a test in the pack's transport tests raises from an admit/emit
+  callback and asserts all three in the record. Rung: test. Upgrade trigger: one more pre-prompt failure whose
+  record has no message.
+- **Status:** `candidate`
+
+### CAPCOUNT-A: a concurrency cap counted over one kind of seat while another kind launches against it (candidate; Leader-caused)
+- **Signature:** the cap is "6 concurrent workers", and the Leader counts it over the Agent-tool workers it is
+  tracking. A runner dispatch (a canary through `coord-runner`) is a worker too, but it starts from another command,
+  so it is not in the count. The total goes over the cap with no check firing.
+- **Why it survives:** the cap is a number in the plan and in the Leader's head, not a check on dispatch (FALLBACK-A
+  notes the same of the fan-out cap). A short-lived extra worker leaves no trace in the count it broke.
+- **Instances:**
+  - `2026-10-12` 15:51 UTC (lean re-run wave 1a; Leader owed-docs item 2): 6 Opus wave-1a workers plus the Grok
+    canary, 7 launched against the cap of 6. The canary failed in under 4 s before any prompt (XPORT-A, 3.719 s), so
+    no work ran over the cap. The Leader reports the cap was counted over coordinators and workers inconsistently.
+- **Sweep:** the plan's other caps: "at most 2 per external harness" (*Order of operations* step 6) has the same
+  shape. Not otherwise swept.
+- **Control (proposed):** the Leader's dispatch step reads one live count of every running worker of every kind
+  (Agent-tool seats and runner dispatches, from the coordination board) and refuses a dispatch at the cap. Rung:
+  Leader procedure, then a `coord` check. Upgrade trigger: one more launch over a cap.
+- **Status:** `candidate`
+
+### INSTALL-OUT-A: a dependency install script writes outside the install root (candidate)
+- **Signature:** a package manager runs a dependency's install hook (`npm ci` runs `postinstall`). The hook writes to
+  a location derived from the user's environment (`$GROK_HOME`, default `~/.grok`), not to the install root. A
+  scratch or bench install then rewrites the operator's real user state.
+- **Why it survives:** the install succeeds and its own tree is correct. The write lands in another tree, and the
+  bytes it writes can be identical to what was there, so a hash check of the result sees nothing. Sibling:
+  LEAK-HOME-A is the read side (a home variable that relocates only part of a harness's state); this is the write
+  side, at install time.
+- **Instances:**
+  - `2026-10-12` (lean re-run R-BUILDS; Leader owed-docs item 5): before its `GROK_HOME` redirect, a scratch `npm ci`
+    ran `@xai-official/grok`'s postinstall against the operator's real `~/.grok`: `config.toml` re-serialized at
+    08:23:07 local (`cli.installer = "npm"`), `bin\grok.exe` re-copied (bytes unchanged, `6db593f5…`; `grok.exe.old`
+    present). The real login still worked afterwards (`grok models`). Facts are the Leader's. The operator is told
+    in the run report.
+- **Sweep:** every `npm ci` the bench runs (`tools.install`, its `npm ci` env at `src/harness_bench/tools.py:274`); the
+  vendored agy install copies a file and runs no hook; the other npm-installed builds were not
+  checked for install hooks by me (owed: read each package's `scripts` in `bench/tools/package-lock.json`).
+- **Control:** `tools.install` runs `npm ci` with `GROK_HOME` inside `node_modules` (`tools.py:274`, R-BUILDS
+  `3e9f3712`), and `tests/test_tools.py::test_install_makes_the_npm_executables_read_only_and_keeps_grok_out_of_the_real_home`
+  asserts the env (`:250`). Rung: test. Gap: the control is per package; a new dependency with a hook is not
+  covered. Upgrade: run `npm ci` with `HOME`, `USERPROFILE` and `APPDATA` pointed into a scratch home too, so any
+  hook's default lands in scratch. Upgrade trigger: a new npm build in `LAYOUT`.
+- **Status:** `partially-controlled`
+
+### KEYORD-A: a fact stream whose key has no ordinal collides on identical rows (candidate)
+- **Signature:** a reader writes one row per native item (an event, a prompt part) and the stream's ledger key
+  (`views.KEYS`) has no position field. Two native items with the same field values get the same key, and the ledger
+  refuses the second as a duplicate (HB-LED-003) or keeps one of them.
+- **Why it survives:** fixtures hold distinct items, so the key looks unique. Real records repeat: the same hook
+  event twice, the same instruction file in two requests. The collision appears only on a real run.
+- **Instances:**
+  - `2026-10-12` (lean re-run J0; R-CONTRACT-FACTS DR1; plan *Errata* E12): `harness_events` could collide on
+    identical events; ruled at J0 that its rows gain `native_ordinal` and the key ends with it (`f1a65146`).
+  - `2026-10-12` (lean re-run J1a; Leader owed-docs item 8): `prompt_parts` lacked the ordinal; Codex runs raised
+    HB-LED-003 and 61 tests failed. J1A-FIX item 28 (`09414521`) put `PromptPart.native_ordinal` first in the key
+    and in `views.KEYS`, filled by every reader (the commit message, read by me). The same contract stage made the
+    same omission twice in one batch of streams.
+- **Sweep (Coordinator #3, `views.py:62-73` read at `d7de17d1`):** `model_calls`, `tool_calls`, `reasoning`,
+  `prompt_parts`, `harness_events` carry `native_ordinal`. `served` is keyed by `(field, source)` and an identical row
+  is written once by design (DR2). `turn_usage`, `archive_files`, `scores` and `verdict_uses` are keyed by their
+  declared grain (attempt and model, path, metric, item), not by a native item list. None found open.
+- **Control:** `tests/test_contract_facts.py:155-159` pins each reader stream's key (instance-level). **Proposed
+  (class-level):** a test that every `views.KEYS` entry built on `_READER_KEY` includes `native_ordinal` unless it is
+  named exempt with its reason (`served`). Rung: test. Upgrade trigger: a new reader stream.
+- **Status:** `partially-controlled`
+
+### PIPE-PATCH-A: a patch piped through PowerShell `Set-Content -NoNewline` is joined into an invalid patch (candidate)
+- **Signature:** an agent builds a patch as text and writes it with PowerShell `Set-Content -NoNewline` (or pipes it
+  through a cmdlet that treats each line as an object). The lines are joined with no separator, so `git apply` gets
+  one long line and refuses it. In the same turn, a later `git checkout` to recover discarded the tree's uncommitted
+  edits.
+- **Why it survives:** the patch text looks right in the agent's own output; the joining happens in the shell, after
+  the agent's view. The recovery step is a git command that is safe on a clean tree, so its cost is invisible until
+  the tree is dirty. Siblings: EOL-A (a text-mode edit rewrites line endings), EDIT-B (escapes corrupted by nested
+  generation).
+- **Instances:**
+  - `2026-10-12` (lean re-run R-DERIV; handed back as text; Leader owed-docs item 8): as the signature. The track closed
+    with 13 mutants killed (its closing entry); whether the lost edits were redone is not recorded. The commands are R-DERIV's report, not re-read by
+    me.
+- **Control (proposed):** a patch is written with the file tool (Write/Edit) or with `git apply` reading a file the
+  agent wrote, never through a PowerShell pipe; and no `git checkout -- <path>` or `git switch` runs on a dirty tree
+  without a WIP commit first. Rung: always-loaded instruction (the common brief), then the pack's hook if one more
+  instance follows. Upgrade trigger: one more patch joined by a shell.
+- **Status:** `candidate`
+
+### ROUND-A: a ratio rounded before its threshold comparison fires a rule below its threshold (candidate)
+- **Signature:** a rule compares a share or ratio with a threshold constant (`share >= THRESHOLD`). The share is
+  rounded (`quantize`) for display before the comparison, so a value just below the threshold rounds up to it and the
+  rule fires.
+- **Why it survives:** the rounded value is what the page shows, so the fired rule looks consistent with the
+  printed number. Only a value inside the rounding interval below the threshold shows it.
+- **Instances:**
+  - `2026-10-12` (lean re-run R-PACKCOST; Leader owed-docs item 8): the hazard was handed back as a register
+    candidate; R-PACKCOST's own code keeps the exact share (`_share`, `report/pack_cost.py:543-545`: "a rule compares
+    the unrounded share with its threshold; `_show` rounds it for the page only", Verified at `d7de17d1`). Whether the
+    code ever shipped the rounded form is not recorded here.
+- **Sweep (Coordinator #3):** `report/pack_improvement.py`'s threshold rules (`WASTE_RATIO`,
+  `CEREMONY_SHARE_THRESHOLD`, `FIXED_CONTEXT_SHARE`, `PROCESS_ONLY_ON/OFF`): no `quantize` or `round(` in the file
+  (search, 0 matches), so no rounding before comparison there. Other rule thresholds in `src/` not swept.
+- **Control:** `tests/test_pack_cost.py::test_a_candidate_fires_exactly_at_its_threshold_and_not_below` and its
+  mutant "R-PACKCOST a share is rounded before its threshold comparison" (`tests/mutations/rerun-packcost.json`,
+  killed per R-PACKCOST's report). Rung: test, for `pack_cost.py`. Upgrade trigger: a threshold rule in another
+  module.
+- **Status:** `partially-controlled`
