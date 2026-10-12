@@ -7,25 +7,47 @@
 - Anthropic-style usage already excludes cached tokens from `input_tokens`.
 - Verified 2026-09-23: with Claude Code 2.1.274 under the ACP adapter, the record omits the turn's
   final API call and auxiliary calls; the adapter's turn usage is authoritative for this harness
-  (normalize.totals, profile usage_source acp_turn).
+  (normalize.totals, profile usage_source acp_turn). Observed 2026-10-12 on 2.1.282 (R-READ-CC, two turns): the
+  record's per-`requestId` outputs sum exactly to the ACP turn's main-model `outputTokens`; the auxiliary title call
+  (claude-haiku-4-5) is still absent from the record.
+
+The lean re-run's reader facts (ADR-0026 s1; R-READ-CC spike, 2026-10-12, one pack-on X1 turn):
+- served: `effort` on every assistant row; `attachment` type `model` -> `identity.modelId`; the context size is not in
+  the transcript but in the ACP `usage_update.size` (a second source, read only when `read(path, acp=...)` is given).
+- reasoning: each `thinking` block is a `summary` (display `summarized`), its text as stored; an empty one with only
+  a signature is `encrypted-only`.
+- prompt parts: `attachment` type `instructions` (`files[].path/content`), `prompt_snapshot` (`systemPrompt` list,
+  `tools`), `skill_listing` (`content`).
+- events: `system` rows of subtype `stop_hook_summary` (`hookInfos[].command/durationMs`, `hookErrors`); a `Skill`
+  tool call is a skill load. Hooks of other events (SessionStart, PreToolUse, PostToolUse, UserPromptSubmit) that
+  print nothing leave no row (the spike's SessionStart hook ran and wrote its file, with no transcript row), and no
+  compaction row was seen: both are not recorded.
 """
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
+from dataclasses import replace
 from pathlib import Path
 
 from harness_bench.telemetry import (
     Extraction,
+    HarnessEvent,
     ModelCall,
     ProcessTrace,
+    PromptPart,
     ProviderError,
+    ReasoningItem,
+    ServedSettings,
     ToolCall,
     ToolInput,
     as_dict,
     as_list,
     as_status,
     as_str,
+    not_recorded,
     rows,
     unexpected_status,
 )
@@ -82,18 +104,144 @@ def _note_advertised(names: list[str], row: dict) -> None:
                     names.remove(name)
 
 
-def read(path: Path) -> Extraction:
+SRC_EFFORT = "transcript:assistant.effort"
+SRC_MODEL = "transcript:attachment.identity.modelId"
+SRC_ACP_SIZE = "acp:usage_update.size"
+
+
+def _served(efforts: list[str], models: list[str], acp: Path | None) -> tuple[ServedSettings, ...]:
+    """One `ServedSettings` per distinct value of a field, in record order (DR2): a second value repeats the first
+    settings' other fields, so its rows de-duplicate in `served_rows` and only the differing value adds a row."""
+    base = ServedSettings(
+        model_requested=not_recorded("the plan's, never a served row"),
+        model_served=models[0] if models else not_recorded("no model attachment in the transcript"),
+        model_api=not_recorded("Claude Code has no model_api source (ADR-0024 s4)"),
+        effort=efforts[0] if efforts else not_recorded("no assistant row carries effort"),
+        context_tokens=not_recorded("the transcript does not record the context size"),
+        context_tier=not_recorded("Claude Code has no context tier"),
+        reasoning_summary=not_recorded("the thinking display is a session/new option the transcript does not record"),
+        sources={**({"model_served": SRC_MODEL} if models else {}), **({"effort": SRC_EFFORT} if efforts else {})})
+    out = [base]
+    out += [replace(base, model_served=m) for m in models[1:]]
+    out += [replace(base, effort=e) for e in efforts[1:]]
+    sizes = _acp_sizes(acp) if acp is not None else []
+    out += [replace(base, context_tokens=s, sources={**base.sources, "context_tokens": SRC_ACP_SIZE}) for s in sizes]
+    return tuple(out)
+
+
+def _acp_sizes(acp: Path) -> list[int]:
+    """Distinct `usage_update.size` values, in order, from a file of ACP JSON-RPC messages (one per line)."""
+    sizes: list[int] = []
+    for line in acp.read_text(encoding="utf-8").splitlines():
+        try:
+            msg = json.loads(line)
+        except ValueError:
+            continue
+        update = as_dict(as_dict(as_dict(msg).get("params")).get("update"))
+        size = update.get("size")
+        if update.get("sessionUpdate") == "usage_update" and isinstance(size, int) and size not in sizes:
+            sizes.append(size)
+    return sizes
+
+
+def _keep(values: list[str], value) -> None:
+    if isinstance(value, str) and value not in values:
+        values.append(value)
+
+
+def _rel(path: str | None, cwd: str | None) -> str | None:
+    """An instruction file's path relative to the session's cwd when it lies under it (cell paths differ per cell)."""
+    if path is None:
+        return None
+    path = path.replace("\\", "/")
+    root = (cwd or "").replace("\\", "/").rstrip("/") + "/"
+    return path[len(root):] if cwd and path.lower().startswith(root.lower()) else path
+
+
+def _note_parts(parts: list[PromptPart], seen: set[str], row: dict) -> None:
+    """The fixed prefix's parts, each from the first attachment that shows it."""
+    att = as_dict(row.get("attachment"))
+    kind = att.get("type")
+    if kind == "instructions":
+        for f in as_list(att.get("files")):
+            content = as_str(f.get("content")) if isinstance(f, dict) else None
+            path = _rel(as_str(f.get("path")), as_str(row.get("cwd"))) if isinstance(f, dict) else None
+            if path is None or f"file:{path}" in seen:
+                continue
+            seen.add(f"file:{path}")
+            part = "agents_md" if path.replace("\\", "/").rsplit("/", 1)[-1] == "AGENTS.md" else "instruction_file"
+            parts.append(PromptPart(part, path, len(content) if content is not None else None, "inlined",
+                                    "transcript:attachment.instructions"))
+    elif kind == "prompt_snapshot":
+        system = att.get("systemPrompt")
+        if "system" not in seen and isinstance(system, list) and all(isinstance(s, str) for s in system):
+            seen.add("system")
+            parts.append(PromptPart("system", None, sum(len(s) for s in system), "inlined",
+                                    "transcript:attachment.prompt_snapshot.systemPrompt"))
+        tools = att.get("tools")
+        if "tools" not in seen and isinstance(tools, list) and tools:
+            seen.add("tools")  # chars of the recorded tools array as compact JSON (the record keeps no wire bytes)
+            parts.append(PromptPart("tools", None, len(json.dumps(tools, ensure_ascii=False, separators=(",", ":"))),
+                                    "inlined", "transcript:attachment.prompt_snapshot.tools"))
+    elif kind == "skill_listing" and "skills" not in seen and isinstance(att.get("content"), str):
+        seen.add("skills")
+        parts.append(PromptPart("skills", None, len(att["content"]), "listed", "transcript:attachment.skill_listing"))
+
+
+def _hook_events(row: dict, stamp: str | None) -> list[HarnessEvent]:
+    """A `stop_hook_summary` row: one hook event per `hookInfos` entry (ordinal set later). `ok` is 1 only when the
+    row lists no `hookErrors`; with errors the record does not say which hook failed, so `ok` is None."""
+    errors = row.get("hookErrors")
+    ok = True if errors == [] else None
+    return [HarnessEvent(0, "hook", as_str(info.get("command")), None, stamp, ok,
+                         f"Stop durationMs={info.get('durationMs')}")
+            for info in as_list(row.get("hookInfos")) if isinstance(info, dict)]
+
+
+def _reasoning(n: int, start: int, message: dict) -> list[ReasoningItem]:
+    items = []
+    for block in as_list(message.get("content")):
+        if not isinstance(block, dict) or block.get("type") not in ("thinking", "redacted_thinking"):
+            continue
+        text = as_str(block.get("thinking"))
+        opaque = as_str(block.get("signature")) if block.get("type") == "thinking" else as_str(block.get("data"))
+        k = start + len(items)
+        if text:
+            items.append(ReasoningItem(n, k, "summary", text, len(text), None, None))
+        elif opaque:
+            items.append(ReasoningItem(n, k, "encrypted-only", None, None, None, hashlib.sha256(opaque.encode()).hexdigest()))
+    return items
+
+
+def read(path: Path, acp: Path | None = None) -> Extraction:
+    """The native record; `acp`, when given, is the turn's ACP messages (one JSON-RPC message per line), the second
+    source of the served context size. Without it that field is `not recorded` (the engine passes none today)."""
     ex = Extraction()
     seen_messages: set[str] = set()
+    call_line: dict[str, int] = {}  # request key -> its ModelCall's native_ordinal
+    item_counts: dict[str, int] = {}
     open_tools: dict[str, dict] = {}
     advertised: list[str] = []
+    efforts: list[str] = []
+    models: list[str] = []
+    parts: list[PromptPart] = []
+    part_seen: set[str] = set()
+    reasoning: list[ReasoningItem] = []
+    events: list[tuple[int, HarnessEvent]] = []
+    skills: dict[str, dict] = {}
     for n, row in rows(path, ex):
         _note_advertised(advertised, row)
+        _note_parts(parts, part_seen, row)
         kind = row.get("type")
         message = as_dict(row.get("message"))
         stamp = as_str(row.get("timestamp"))
         if ex.session_id is None:
             ex.session_id = as_str(row.get("sessionId"))
+        att = as_dict(row.get("attachment"))
+        if att.get("type") == "model":
+            _keep(models, as_dict(att.get("identity")).get("modelId"))
+        if kind == "system" and row.get("subtype") == "stop_hook_summary":
+            events += [(n, e) for e in _hook_events(row, stamp)]
         if kind == "user":
             content = message.get("content")
             if ex.first_user_text is None:
@@ -106,6 +254,10 @@ def read(path: Path) -> Extraction:
                     tool = open_tools.pop(tool_id)
                     ex.tool_calls.append(ToolCall(tool["n"], tool["name"], TOOL_CLASSES.get(tool["name"], "other"),
                                                   tool["start"], stamp, not bool(block.get("is_error"))))
+                if tool_id in skills:
+                    skill = skills.pop(tool_id)
+                    events.append((skill["n"], HarnessEvent(0, "skill_load", skill["name"], skill["start"], stamp,
+                                                            not bool(block.get("is_error")), None)))
             continue
         if kind != "assistant":
             continue
@@ -119,19 +271,35 @@ def read(path: Path) -> Extraction:
         model = message.get("model")
         if not isinstance(model, str) or model == "<synthetic>":
             continue
-        mid = message.get("id")
-        if isinstance(mid, str) and mid not in seen_messages:
-            seen_messages.add(mid)
+        _keep(efforts, row.get("effort"))
+        # ADR-0026 s2: one row per request, keyed by `requestId` (a record without one keys by `message.id`).
+        key = as_str(row.get("requestId")) or as_str(message.get("id"))
+        if key is not None and key not in seen_messages:
+            seen_messages.add(key)
+            call_line[key] = n
             usage = as_dict(message.get("usage"))
             ex.model_calls.append(ModelCall(n, model, ex.count(n, usage, "input_tokens"), ex.count(n, usage, "cache_read_input_tokens"),
                                             ex.count(n, usage, "cache_creation_input_tokens"), ex.count(n, usage, "output_tokens"),
                                             None, stamp, stamp))
+        if key is not None:
+            items = _reasoning(call_line[key], item_counts.get(key, 0), message)
+            item_counts[key] = item_counts.get(key, 0) + len(items)
+            reasoning += items
         for _, block in _tool_use_blocks(n, message):
-            open_tools[block["id"]] = {"n": n, "name": as_str(block.get("name")) or "unknown", "start": stamp}
+            name = as_str(block.get("name")) or "unknown"
+            open_tools[block["id"]] = {"n": n, "name": name, "start": stamp}
+            if name == "Skill":  # the Skill tool's schema (prompt_snapshot `tools`) takes `skill`, the skill's name
+                skills[block["id"]] = {"n": n, "name": as_str(as_dict(block.get("input")).get("skill")), "start": stamp}
     for tool in open_tools.values():  # a call with no result (killed turn)
         ex.tool_calls.append(ToolCall(tool["n"], tool["name"], TOOL_CLASSES.get(tool["name"], "other"), tool["start"], None, None))
+    events += [(s["n"], HarnessEvent(0, "skill_load", s["name"], s["start"], None, None, None)) for s in skills.values()]
     ex.tool_calls.sort(key=lambda t: t.native_ordinal)
     ex.account_connector_tools = len({name for name in advertised if _ACCOUNT_CONNECTOR.fullmatch(name)})
+    ex.served = _served(efforts, models, acp)
+    ex.reasoning = reasoning
+    ex.prompt_parts = parts
+    # DR1: native_ordinal is the event's position among the record's events (two hooks share one row's line).
+    ex.harness_events = [replace(e, native_ordinal=i) for i, (_, e) in enumerate(sorted(events, key=lambda t: t[0]), 1)]
     return ex
 
 
