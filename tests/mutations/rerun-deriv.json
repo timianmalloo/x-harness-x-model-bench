@@ -1,0 +1,119 @@
+[
+ {
+  "name": "every command is explore, even after the first edit",
+  "file": "src/harness_bench/report/tool_phases.py",
+  "find": "        elif \"read_tool\" in cls or (call.command and not edited):\n",
+  "replace": "        elif \"read_tool\" in cls or call.command:\n",
+  "tests": [
+   "tests/test_tool_phases.py::test_phase_counts_on_a_fixture_sequence_equal_the_hand_classification"
+  ]
+ },
+ {
+  "name": "verify matches a substring, not a word",
+  "file": "src/harness_bench/report/tool_phases.py",
+  "find": "_VERIFY = re.compile(r\"\\b(?:\" + \"|\".join(VERIFY_COMMANDS) + r\")\\b\")\n",
+  "replace": "_VERIFY = re.compile(\"|\".join(VERIFY_COMMANDS))\n",
+  "tests": [
+   "tests/test_tool_phases.py::test_verify_matches_a_declared_pattern_as_a_word_never_a_substring"
+  ]
+ },
+ {
+  "name": "an edit does not reset the re-read memory",
+  "file": "src/harness_bench/report/tool_phases.py",
+  "find": "            seen.difference_update(call.paths)\n",
+  "replace": "            pass\n",
+  "tests": [
+   "tests/test_tool_phases.py::test_re_reads_count_a_path_read_again_with_no_edit_to_it_in_between"
+  ]
+ },
+ {
+  "name": "bytes returned sums the calls that show a size (a partial sum)",
+  "file": "src/harness_bench/report/tool_phases.py",
+  "find": "    if any(c.bytes_returned is None for c in calls):\n        return Measure(None, NO_BYTES)\n    return Measure(sum(c.bytes_returned for c in calls))\n",
+  "replace": "    return Measure(sum(c.bytes_returned or 0 for c in calls))\n",
+  "tests": [
+   "tests/test_tool_phases.py::test_bytes_returned_is_the_sum_or_not_recorded_never_a_partial_sum"
+  ]
+ },
+ {
+  "name": "a compaction drops nothing",
+  "file": "src/harness_bench/report/tool_phases.py",
+  "find": "        if i in compacted_before:\n            carried = 0\n",
+  "replace": "        if i in compacted_before:\n            carried = carried\n",
+  "tests": [
+   "tests/test_tool_phases.py::test_carry_until_compaction_counts_each_entry_on_every_later_request_until_a_compaction"
+  ]
+ },
+ {
+  "name": "the estimate starts at a tool result's first arrival",
+  "file": "src/harness_bench/views.py",
+  "find": "            start = r[\"last_mono_ns\"]\n",
+  "replace": "            start = r[\"first_mono_ns\"]\n",
+  "tests": [
+   "tests/test_cost_compare_e2e.py::test_acp_intervals_run_from_a_prompt_or_tool_result_to_the_next_tool_call_or_turn_end"
+  ]
+ },
+ {
+  "name": "idle unions two clocks with no anchor",
+  "file": "src/harness_bench/views.py",
+  "find": "        if anchor is None and native:\n            return Measure(None, NO_ANCHOR)\n",
+  "replace": "        if False:\n            return Measure(None, NO_ANCHOR)\n",
+  "tests": [
+   "tests/test_cost_compare_e2e.py::test_time_anatomy_keeps_model_time_and_labels_the_acp_estimate_as_its_own_measure"
+  ]
+ },
+ {
+  "name": "a session-total row is read as one request",
+  "file": "src/harness_bench/report/context_growth.py",
+  "find": "    if any(r.get(\"requests\", 1) != 1 for r in calls):\n",
+  "replace": "    if False:\n",
+  "tests": [
+   "tests/test_cost_compare_e2e.py::test_request_series_is_per_request_or_not_recorded_with_its_reason"
+  ]
+ },
+ {
+  "name": "a Copilot -p combo reads ACP",
+  "file": "src/harness_bench/report/cost_compare.py",
+  "find": "    if views_mod._prompt_mode(plan, harness):\n        return TRANSPORTS[2]\n",
+  "replace": "    if views_mod._prompt_mode(plan, harness):\n        return TRANSPORTS[0]\n",
+  "tests": [
+   "tests/test_cost_compare_e2e.py::test_build_fills_each_combo_transport_from_the_plan"
+  ]
+ },
+ {
+  "name": "an email-shaped excerpt is kept",
+  "file": "src/harness_bench/report/cost_compare.py",
+  "find": "    kept = [t[:EXCERPT_CHARS] for t in texts if not (_EMAIL.search(t) or _UUID.search(t))]\n",
+  "replace": "    kept = [t[:EXCERPT_CHARS] for t in texts if not _UUID.search(t)]\n",
+  "tests": [
+   "tests/test_cost_compare_e2e.py::test_an_excerpt_shaped_like_an_email_or_uuid_is_dropped_and_counted"
+  ]
+ },
+ {
+  "name": "no prompt_parts rows read as zero instruction files",
+  "file": "src/harness_bench/report/cost_compare.py",
+  "find": "    p_reason = views_mod.stream_reason(view, \"prompt_parts\", cell) or (None if rows else NO_ROWS)\n",
+  "replace": "    p_reason = views_mod.stream_reason(view, \"prompt_parts\", cell)\n",
+  "tests": [
+   "tests/test_cost_compare_e2e.py::test_the_end_to_end_golden_is_byte_equal_on_re_render"
+  ]
+ },
+ {
+  "name": "the page is written without publish",
+  "file": "src/harness_bench/report/cost_compare.py",
+  "find": "    publish.publish(page, out, bool(args.open))\n",
+  "replace": "    out.write_text(page, encoding=\"utf-8\")\n",
+  "tests": [
+   "tests/test_cost_compare_e2e.py::test_bench_report_cost_compare_writes_the_page_through_publish"
+  ]
+ },
+ {
+  "name": "the analyst section is not embedded",
+  "file": "src/harness_bench/report/cost_compare.py",
+  "find": "    return page.replace(\"</main>\", f\"{section}</main>\")\n",
+  "replace": "    return page\n",
+  "tests": [
+   "tests/test_cost_compare_e2e.py::test_analysis_is_checked_against_the_page_numbers_and_embedded"
+  ]
+ }
+]

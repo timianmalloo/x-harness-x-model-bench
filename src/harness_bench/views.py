@@ -33,6 +33,7 @@ Rules, each defined once here:
 
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass, field, fields
 from datetime import datetime
@@ -194,6 +195,38 @@ class RunView:
     catalog_version: str | None
     cells: list[CellView]
     header: dict[str, str | int | None] = field(default_factory=dict)  # credential kind, network mode, executed builds, probe passes
+    # ADR-0026 s4: the report derivations read the run's verified rows and its archive; None for a view built by hand.
+    run_dir: Path | None = None
+    facts: dict[str, list[dict]] = field(default_factory=dict, repr=False)  # every FACT's verified rows, as load read them
+
+
+def cell_rows(view: RunView, fact: str, cell: CellView) -> list[dict] | None:
+    """`fact`'s rows for the cell's current extraction (the one its scores name), in ledger order; None when the cell
+    has no current extraction (not graded). The one filter `_cell_view` applies to `model_calls` and `tool_calls`."""
+    if cell.extraction_id is None:
+        return None
+    return [r for r in view.facts.get(fact, ()) if r.get("cell_id") == cell.cell_id
+            and r.get("extraction_id") == cell.extraction_id]
+
+
+def stream_present(view: RunView, fact: str) -> bool:
+    """ADR-0026 s1: the current pass wrote `fact` (its `grading.completed.heads` names the segment); a pass from before
+    the stream existed did not, so its cells read `not recorded (stream absent)`, never an empty measure."""
+    done = next((e for e in view.facts.get("events", ()) if e.get("kind") == "grading.completed"
+                 and e.get("grading_id") == view.grading_id), {})
+    return fact in as_dict(done.get("heads"))
+
+
+def stream_reason(view: RunView, fact: str, cell: CellView) -> str | None:
+    """Why `fact` holds no row for the cell, or None when its rows can be read as a measure: the stream is absent from
+    the pass, the cell is not graded, or the reader recorded a whole-record reason (`streams_not_recorded`)."""
+    if not stream_present(view, fact):
+        return "stream absent"
+    if cell.extraction_id is None:
+        return "not graded"
+    done = next(e for e in view.facts["events"] if e.get("kind") == "grading.completed"
+                and e.get("grading_id") == view.grading_id)
+    return as_dict(as_dict(done.get("streams_not_recorded")).get(cell.cell_id)).get(fact)
 
 
 def _refuse_duplicates(facts: dict[str, list[dict]]) -> None:
@@ -401,6 +434,139 @@ def _idle(wall: Measure, model: Measure, tool: Measure) -> Measure:
             return Measure(None, f"needs {name} time")
     idle = wall.value - model.value - tool.value
     return Measure(idle) if idle >= 0 else Measure(None, "model and tool time exceed wall time")
+
+
+# ADR-0026 s4 time anatomy: new measures beside `_model_time` and `_idle`, which keep their meaning in report.html.
+NO_TIMELINE = "no ACP update timeline in the archive"
+NO_ACP_TURN = "the ACP timeline holds no prompt-to-reply interval"
+NO_HOOKS = "no hook rows; a reader that reads none is not told apart from a cell that ran none"
+NOT_SEPARABLE = "not separable: no model intervals of either kind"
+NO_ANCHOR = "not separable: the native and ACP clocks share no anchor"
+OVER_WALL = "the model, tool and hook intervals exceed wall time"
+
+
+@dataclass(frozen=True)
+class TimeAnatomy:
+    """One cell's time anatomy (ADR-0026 s4): `model_ms` is the native measure (`_model_time`, unchanged);
+    `model_ms_acp_estimate` is its own labelled measure, derived from ACP arrival times (ADR-0026 s3); `idle_ms` is
+    wall minus the union of the model, tool and hook intervals used, `not separable` with no model interval."""
+
+    model_ms: Measure
+    model_ms_acp_estimate: Measure
+    tool_ms: Measure
+    hook_ms: Measure
+    idle_ms: Measure
+
+
+def read_timeline(run_dir: Path | None, cell_id: str) -> list[dict] | None:
+    """The cell's `acp-timeline.jsonl` from its last archived attempt's home, in file order; None when there is none
+    or a line does not parse (the timeline is best effort, so a torn one is not recorded, never a partial one)."""
+    # the driver writes it; imported only when a report asks
+    from harness_bench.driver import TIMELINE
+
+    attempts = archive.attempt_dirs(run_dir, cell_id) if run_dir is not None else []
+    path = attempts[-1] / "home" / TIMELINE if attempts else None
+    if path is None or not path.is_file():
+        return None
+    try:
+        rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    except (OSError, ValueError):
+        return None
+    if not all(isinstance(r, dict) and is_count(r.get("first_mono_ns")) and is_count(r.get("last_mono_ns"))
+               for r in rows):
+        return None
+    return rows
+
+
+# The timeline's label for the prompt request, matched by suffix: this module reads the driver's log and never speaks
+# ACP, and test_architecture's rule keeps every ACP method name in driver.py (seam handed back: a driver constant).
+_PROMPT_SUFFIX = "/prompt"
+
+
+def acp_intervals(timeline: list[dict]) -> list[tuple[int, int]]:
+    """ADR-0026 s3's estimate, as mono_ns spans: each runs from a prompt (`session/prompt` sent) or the latest tool
+    result (`tool_call_update` arrival) to the next tool call or turn end (`session/prompt`'s response)."""
+    spans: list[tuple[int, int]] = []
+    start: int | None = None
+    for r in timeline:
+        method, kind = r.get("method"), r.get("update_kind")
+        prompt = isinstance(method, str) and method.endswith(_PROMPT_SUFFIX)
+        if kind == "sent" and prompt:
+            start = r["first_mono_ns"]
+        elif kind == "tool_call_update":
+            start = r["last_mono_ns"]
+        elif start is not None and (kind == "tool_call" or (kind == "response" and prompt)):
+            spans.append((start, r["first_mono_ns"]))
+            start = None
+    return spans
+
+
+def _ns(value) -> int | None:
+    at = _ts(value)
+    return None if at is None or at.tzinfo is None else int(at.timestamp() * 1_000_000_000)
+
+
+def _spans(rows: list[dict]) -> list[tuple[int, int]] | None:
+    """Each row's [start, end] on the epoch clock; None when one has no zoned start or end (`busy_ms`'s rule)."""
+    out = [(_ns(r.get("start")), _ns(r.get("end"))) for r in rows]
+    return None if any(s is None or e is None or e < s for s, e in out) else out
+
+
+def _union_ns(spans: list[tuple[int, int]]) -> int:
+    total, cur = 0, None
+    for s, e in sorted(spans):
+        if cur is None or s > cur[1]:
+            total += 0 if cur is None else cur[1] - cur[0]
+            cur = (s, e)
+        else:
+            cur = (cur[0], max(cur[1], e))
+    return total + (0 if cur is None else cur[1] - cur[0])
+
+
+def _anchor(events: list[dict], cell_id: str) -> int | None:
+    """epoch_ns minus mono_ns at the cell's process start (`ledger.stamp` writes both); None when either is missing."""
+    started = next((e for e in events if e.get("kind") == "attempt.process_started" and e.get("cell_id") == cell_id), {})
+    epoch = _ns(started.get("recorded_at"))
+    return None if epoch is None or not is_count(started.get("mono_ns")) else epoch - started["mono_ns"]
+
+
+def time_anatomy(view: RunView, cell: CellView) -> TimeAnatomy:
+    """ADR-0026 s4 for one cell, from the view's rows and the cell's archived ACP timeline."""
+    timeline = read_timeline(view.run_dir, cell.cell_id)
+    acp = acp_intervals(timeline) if timeline is not None else []
+    estimate = (Measure(None, NO_TIMELINE) if timeline is None else Measure(None, NO_ACP_TURN) if not acp
+                else Measure(round(sum(e - s for s, e in acp) / 1_000_000)))
+    hooks = [r for r in cell_rows(view, "harness_events", cell) or [] if r.get("event") == "hook"]
+    reason = stream_reason(view, "harness_events", cell)
+    hook = (Measure(None, reason) if reason is not None else busy_ms(hooks) if hooks else Measure(None, NO_HOOKS))
+    return TimeAnatomy(cell.model_ms, estimate, cell.tool_ms, hook, _anatomy_idle(view, cell, acp, hooks, hook))
+
+
+def _anatomy_idle(view: RunView, cell: CellView, acp: list[tuple[int, int]], hooks: list[dict],
+                  hook: Measure) -> Measure:
+    """wall - |native model (else the ACP estimate's) ∪ tool ∪ hook intervals|, each kind used only where its own
+    measure is recorded. Native spans are on the epoch clock and the estimate's on the mono clock, so a union of both
+    maps the native ones through the process-start anchor; with none, it is not separable."""
+    if cell.model_ms.value is None and not acp:
+        return Measure(None, NOT_SEPARABLE)
+    if cell.wall_ms.value is None:
+        return Measure(None, f"needs wall time ({cell.wall_ms.reason})")
+    native: list[tuple[int, int]] = []
+    for used, rows in ((cell.model_ms.value is not None, cell_rows(view, "model_calls", cell)),
+                       (cell.tool_ms.value is not None, cell_rows(view, "tool_calls", cell)),
+                       (hook.value is not None, hooks)):
+        spans = _spans(rows or []) if used else []
+        if spans is None:
+            return Measure(None, "an interval used has no zoned start or end")
+        native += spans
+    spans = native
+    if cell.model_ms.value is None:  # the ACP estimate's intervals: one clock for the union
+        anchor = _anchor(view.facts.get("events", []), cell.cell_id)
+        if anchor is None and native:
+            return Measure(None, NO_ANCHOR)
+        spans = [(s - (anchor or 0), e - (anchor or 0)) for s, e in native] + acp
+    busy = round(_union_ns(spans) / 1_000_000)
+    return Measure(cell.wall_ms.value - busy) if busy <= cell.wall_ms.value else Measure(None, OVER_WALL)
 
 
 NO_ACP_USAGE = "the adapter reported no usage"
@@ -718,7 +884,8 @@ def load(run_dir: Path, catalog_version: str | None = None, *, any_kind: bool = 
     _refuse_duplicates(facts)
     grading_id, catalog = _current_pass(facts["events"], catalog_version)
     cells = [_cell_view(plan, c, facts, grading_id) for c in plan["cells"]]
-    return RunView(plan["run_id"], plan, completed(facts["events"]), grading_id, catalog, cells, _header(facts["events"]))
+    return RunView(plan["run_id"], plan, completed(facts["events"]), grading_id, catalog, cells, _header(facts["events"]),
+                   run_dir, facts)
 
 
 def build_label(harness: str, version: str) -> str:
