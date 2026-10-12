@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-12T15:46:16Z",
+  "generated": "2026-10-12T15:47:38Z",
   "audit": [
     {
       "actor": null,
@@ -189079,6 +189079,28 @@ window.AUDIT_DATA = {
       },
       "mode": "compiled",
       "dispatchable": true
+    },
+    {
+      "id": "al-01M4RCRKWYSX5Z1FD34PRCT4WY",
+      "shortname": "c2-rerun",
+      "datetime": "2026-10-12T15:47:38Z",
+      "session": "c2-rerun",
+      "prompt": "Coordinator #2 (c2-rerun) for lean-rerun-leader epoch 21: errata to the lean re-run plan and ADR-0025/0026; register entries; compile the two floor-canary runner briefs and contracts; compile the wave-1b briefs (R-READ-CC, R-VALIDITY, R-READ-GROK, R-REPORT-R, R-READ-COPILOT)",
+      "summary": "Plan Errata E1-E15 (Leader addenda, J0 rulings DR1/DR2 and R-CONTRACT-RUN, J0 facts) and ADR errata; WT-NEST-A plus MUT-E and SCAN-A instances; canary compiles al-01M4RC34535SJHNS095T4TE2FE (rcodex-rerun), al-01M4RC35W9MJ9MN8VPBBW1BDJ6 (ragy-rerun) with contracts; wave-1b compiles al-01M4RCNBZGNN2ECC248KN7AVFT, al-01M4RCNQ40TRW0YBPKQMHN86W5, al-01M4RCP3DAHM0TX0WD5DRSC4SV with contracts (not dispatched); Agent-tool briefs R-READ-CC, R-VALIDITY in C:/tf/rerun-leader/briefs",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "errata and register committed; two canary briefs compiled with contracts; five wave-1b briefs compiled (three runner, two Agent-tool)",
+      "done_when": "commits on coord/rerun-c2; every compile gate pass and dispatchable; docs-graph validate exit 0",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-12T15:17:19Z",
+      "duration_seconds": 1819.0
     }
   ],
   "changes": [
