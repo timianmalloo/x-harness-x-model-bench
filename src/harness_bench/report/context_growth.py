@@ -158,3 +158,20 @@ def build(view: views.RunView, run_dir: Path | None = None) -> ContextGrowthResu
         for t in task_ids
     )
     return ContextGrowthResult(tasks=tasks)
+
+
+@dataclass(frozen=True)
+class RequestSeries:
+    """One cell's per-request input series (ADR-0026 s4, ADR-0029 s3): the input tokens of each request in native
+    order, with compactions from `harness_events`; `reason` is the `not recorded` reason when the cell has no
+    per-request rows (e.g. Grok's per-turn totals), and the tuples are then empty."""
+
+    cell_id: str
+    inputs: tuple[int, ...] = ()
+    compacted_before: tuple[int, ...] = ()
+    reason: str | None = None
+
+
+def request_series(view: views.RunView, cell_id: str) -> RequestSeries:
+    """The signature only (R-CONTRACT-FACTS); R-DERIV builds it, and owns this module from J1b."""
+    raise NotImplementedError("context_growth.request_series: R-DERIV")

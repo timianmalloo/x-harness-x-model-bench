@@ -10,8 +10,10 @@
   property of the pass, so it rides on the pass's own summary row: no new event kind, and none per cell.
 - A grading segment of a pass that did not complete is named once, in this pass's own events segment
   (`segment.abandoned`, HB-LED-004). Nobody writes into another writer's file.
-- Extractions are written once: a cell's `model_calls` and `tool_calls` are written only when no
-  completed pass already holds the cell's `extraction_id` (the normaliser build hash).
+- Extractions are written once: a cell's `model_calls` and `tool_calls`, and its reader-fact streams (`served`,
+  `reasoning`, `prompt_parts`, `harness_events`, ADR-0026 s1), are written only when no completed pass already holds
+  the cell's `extraction_id` (the normaliser build hash). A reader hook left at "not recorded: reader not built"
+  writes no row; any other whole-record reason rides on `grading.completed.streams_not_recorded`.
 - Only archived cells are graded, each exactly once per pass, from the archive alone.
 - The dispatch: each cell is graded by its task's de-duplicated `graders` list, in catalog order, through `GRADERS`.
   The applicable set is every `kind: score` catalog metric of those graders, and each gets exactly one row: the
@@ -75,7 +77,16 @@ from harness_bench.plan import file_hash, load_confirmed, task_version_hash
 from harness_bench.telemetry import Extraction, normalize
 
 logger = logging.getLogger("harness_bench.grade")
-PASS_FACTS = ("events", "model_calls", "tool_calls", "scores", "verdict_uses")  # verdict_uses: ADR-0006 Amendment 3
+# verdict_uses: ADR-0006 Amendment 3. The last four: ADR-0026 s1's reader-fact streams, written from the reader hooks.
+READER_STREAMS = ("served", "reasoning", "prompt_parts", "harness_events")
+PASS_FACTS = ("events", "model_calls", "tool_calls", "scores", "verdict_uses", *READER_STREAMS)
+_STREAM_ROWS = {"served": normalize.served_rows, "reasoning": normalize.reasoning_rows,
+                "prompt_parts": normalize.prompt_part_rows, "harness_events": normalize.harness_event_rows}
+# The cell's own settings and fixed prefix are the main record's; reasoning and harness events are also read from
+# each sub-agent record, keyed by its own native session id, as model_calls are (R-74 item 4).
+# assume: a sub-agent's prefix is not the cell's fixed prefix; confirm: R-READ-CC's sub-agent records; breaks: a
+# sub-agent's prefix then needs its own rows, and pack_cost's fixed-prefix term would miss it.
+_MAIN_ONLY = frozenset({"served", "prompt_parts"})
 NOT_BUILT = "not built"
 TASK_CHANGED = "task changed since the plan (version hash mismatch)"
 TASK_FREE = frozenset({"cost", "process"})  # graders that never read the task, so they grade a cell whose task changed
@@ -255,6 +266,7 @@ class _Pass:
         self.prices = config.load_yaml(prices_path) if self.prices_ok else {}
         self.writers: dict[str, ledger.SegmentWriter] = {}
         self.unreadable: dict[str, str] = {}  # cell_id -> why its native record could not be read (R-15)
+        self.streams_nr: dict[str, dict[str, str]] = {}  # cell_id -> stream -> a hook's whole-record reason (ADR-0026 s1)
         self.advertised: dict[str, list[str]] = {}  # cell_id -> the tool ids its record advertised, when read (R-45 item 2)
         self.wanted: set[tuple[str, str]] = set()  # the applicable (cell, metric) keys of this pass
         self.written: Counter[tuple[str, str]] = Counter()  # score rows written per (cell, metric)
@@ -299,7 +311,9 @@ class _Pass:
             self.append("events", {"kind": "grading.completed", "grading_id": self.grading_id, "cells_graded": graded,
                                    "heads": dict(heads),  # ruling R-2: bench verify checks each against its seal
                                    "unreadable_records": dict(sorted(self.unreadable.items())),  # R-15
-                                   "tools_advertised": dict(sorted(self.advertised.items()))})  # R-45 item 2
+                                   "tools_advertised": dict(sorted(self.advertised.items()))}  # R-45 item 2
+                        # ADR-0026 s1: only when a reader states one, so a pass over old-shape readers is unchanged
+                        | ({"streams_not_recorded": dict(sorted(self.streams_nr.items()))} if self.streams_nr else {}))
             heads["events"] = self.writers["events"].seal()
         finally:
             for w in self.writers.values():
@@ -317,6 +331,10 @@ class _Pass:
         cid = cell["cell_id"]
         model_rows = normalize.model_call_rows(self.plan["run_id"], cid, session_id, ex, self.extraction)
         tool_rows = normalize.tool_call_rows(self.plan["run_id"], cid, session_id, ex, self.extraction)
+        streams = {s: build(self.plan["run_id"], cid, session_id, ex, self.extraction) for s, build in _STREAM_ROWS.items()}
+        reasons = {s: r for s in READER_STREAMS if (r := normalize.stream_reason(getattr(ex, s))) is not None}
+        if reasons:
+            self.streams_nr[cid] = reasons
         # R-74 item 4: each sub-agent record of the session is read into the same facts, keyed by its own native session
         # id, so the out-of-profile control and the served models see inside sub-agents. A plan from before the field
         # names none. The main record stays the cell's extraction (the graders' input).
@@ -331,6 +349,9 @@ class _Pass:
                 sid = sub.session_id
             model_rows += normalize.model_call_rows(self.plan["run_id"], cid, sid, sub, self.extraction)
             tool_rows += normalize.tool_call_rows(self.plan["run_id"], cid, sid, sub, self.extraction)
+            for s, build in _STREAM_ROWS.items():
+                if s not in _MAIN_ONLY:
+                    streams[s] += build(self.plan["run_id"], cid, sid, sub, self.extraction)
             reason = normalize.record_unreadable(sub)
             sub_reason = sub_reason or (f"sub-agent record {sid}: {reason}" if reason else None)
         if (cid, self.extraction) not in held:
@@ -338,6 +359,9 @@ class _Pass:
                 self.append("model_calls", row)
             for row in tool_rows:
                 self.append("tool_calls", row)
+            for s in READER_STREAMS:
+                for row in streams[s]:
+                    self.append(s, row)
         return ex, sub_reason, model_rows, tool_rows
 
     def _grade_cell(self, cell: dict, attempt: int, session_id: str, held: set, usage: dict, events: tuple) -> None:

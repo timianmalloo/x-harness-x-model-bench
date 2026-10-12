@@ -51,7 +51,10 @@ from harness_bench.telemetry import (
 
 ENGINE_PREFIX = "engine-"
 GRADE_PREFIX = "grade-"
-FACTS = ("events", "model_calls", "tool_calls", "turn_usage", "archive_files", "scores", "verdict_uses")
+# ADR-0026 s1: the four reader-fact streams of a grading pass; an old run has none, so its view reads empty lists.
+FACTS = ("events", "model_calls", "tool_calls", "turn_usage", "archive_files", "scores", "verdict_uses",
+         "served", "reasoning", "prompt_parts", "harness_events")
+_READER_KEY = ("run_id", "extraction_id", "cell_id", "native_session_id")
 KEYS = {  # ADR-0006 as amended: the key of one row of each fact
     "model_calls": ("run_id", "extraction_id", "principal", "native_session_id", "native_ordinal", "model"),
     "tool_calls": ("run_id", "extraction_id", "cell_id", "native_session_id", "native_ordinal"),
@@ -59,6 +62,10 @@ KEYS = {  # ADR-0006 as amended: the key of one row of each fact
     "archive_files": ("run_id", "cell_id", "archive_attempt", "snapshot", "path"),
     "scores": ("run_id", "grading_id", "cell_id", "metric_id"),
     "verdict_uses": ("run_id", "grading_id", "cell_id", "item_id", "judge_or_matcher"),  # Amendment 3
+    "served": (*_READER_KEY, "field", "source"),  # two sources that disagree are two rows (ADR-0024 s4)
+    "reasoning": (*_READER_KEY, "native_ordinal", "item_ordinal"),
+    "prompt_parts": (*_READER_KEY, "part", "path", "source"),
+    "harness_events": (*_READER_KEY, "native_ordinal"),  # ADR-0026 erratum (DR1): identical events never collide
 }
 
 

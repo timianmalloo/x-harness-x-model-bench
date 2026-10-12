@@ -260,6 +260,8 @@ def validate_metrics(
                     if grader in seen_secondary:
                         p.add(where, f"{area_id}.{mid}: also_graded_by repeats {grader!r}")
                     seen_secondary.add(grader)
+            if "all_tasks" in m and not isinstance(m["all_tasks"], bool):  # ADR-0026 s5; runner.applicable reads it
+                p.add(where, f"{area_id}.{mid}: all_tasks must be true or false, got {m['all_tasks']!r}")
             kind = m.get("kind")
             weight = m.get("weight", 0)
             if kind == "derived" and weight > 0:

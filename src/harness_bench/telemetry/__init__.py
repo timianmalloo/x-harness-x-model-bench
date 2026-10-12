@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import json
 import re
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -85,6 +85,83 @@ class MissingField:
     code: str = "HB-TEL-001"
 
 
+# --- The lean re-run's reader facts (ADR-0024 s4, ADR-0026 s1; architecture-lean-rerun.md, Contracts) --------------
+# Four reader hooks ride on `Extraction`: `served`, `reasoning`, `prompt_parts`, `harness_events`. A reader that does
+# not fill one leaves it at READER_NOT_BUILT, and the grading pass writes no row for it, so a pass over an old-shape
+# reader writes nothing new. Any other string is that stream's `not recorded: <reason>` for the record as a whole.
+READER_NOT_BUILT = "not recorded: reader not built"
+NotRecorded = tuple[None, str]  # NR: (None, reason); a value that a source does not show is never a guess or a 0
+
+
+def not_recorded(reason: str) -> NotRecorded:
+    """The NR value for `reason`, worded as every report states it: `not recorded: <reason>`."""
+    return (None, f"not recorded: {reason}")
+
+
+def is_not_recorded(value) -> bool:
+    return isinstance(value, tuple) and len(value) == 2 and value[0] is None and isinstance(value[1], str)
+
+
+_NOT_BUILT: NotRecorded = (None, READER_NOT_BUILT)
+SERVED_FIELDS = ("model_served", "model_api", "effort", "context_tokens", "context_tier", "reasoning_summary")
+REASONING_KINDS = ("text", "summary", "encrypted-only", "omitted")
+PART_KINDS = ("system", "tools", "skills", "instruction_file", "agents_md")
+DELIVERIES = ("inlined", "on-demand", "listed")
+EVENT_KINDS = ("hook", "skill_load", "compaction")
+
+
+@dataclass(frozen=True)
+class ServedSettings:
+    """One per cell, from the harness's own record (ADR-0024 s4). `model_requested` is the plan's and is never written
+    as a `served` row (ADR-0026 s1: requested values are the plan's). `sources` maps a field to the record path and
+    field it was read from."""
+    model_requested: str | NotRecorded = _NOT_BUILT
+    model_served: str | NotRecorded = _NOT_BUILT
+    model_api: str | NotRecorded = _NOT_BUILT
+    effort: str | NotRecorded = _NOT_BUILT
+    context_tokens: int | NotRecorded = _NOT_BUILT
+    context_tier: str | NotRecorded = _NOT_BUILT
+    reasoning_summary: str | NotRecorded = _NOT_BUILT
+    sources: Mapping[str, str] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class ReasoningItem:
+    """One reasoning item the harness recorded (ADR-0026 s1). `native_ordinal` is its request; `source_kind` is one of
+    REASONING_KINDS; text is stored as the harness stored it, never reconstructed."""
+    native_ordinal: int
+    item_ordinal: int
+    source_kind: str
+    text: str | None
+    chars: int | None
+    reasoning_tokens: int | None
+    opaque_sha256: str | None
+
+
+@dataclass(frozen=True)
+class PromptPart:
+    """One part of the fixed prefix one cell's harness sent (ADR-0026 s1): `part` in PART_KINDS, `delivery` in
+    DELIVERIES."""
+    part: str
+    path: str | None
+    chars: int | None
+    delivery: str
+    source: str
+
+
+@dataclass(frozen=True)
+class HarnessEvent:
+    """One hook invocation, skill load or compaction (ADR-0026 s1): `event` in EVENT_KINDS. `native_ordinal` is the
+    event's position in its record (ADR-0026 erratum, ruling on DR1), so two identical events never share a key."""
+    native_ordinal: int
+    event: str
+    name: str | None
+    start: str | None
+    end: str | None
+    ok: bool | None
+    detail: str | None
+
+
 @dataclass
 class Extraction:
     session_id: str | None = None
@@ -105,6 +182,11 @@ class Extraction:
     # R-45: Copilot's checkpoint advertises tool ids to the model. None means the checkpoint was
     # not readable or absent; an empty list must never imply a measured absence of tools.
     tools_advertised: list[str] | None = None
+    # The four reader hooks (see READER_NOT_BUILT above).
+    served: ServedSettings | tuple[ServedSettings, ...] | str = READER_NOT_BUILT  # a tuple: one per source (DR2)
+    reasoning: list[ReasoningItem] | str = READER_NOT_BUILT
+    prompt_parts: list[PromptPart] | str = READER_NOT_BUILT
+    harness_events: list[HarnessEvent] | str = READER_NOT_BUILT
 
     def count(self, n: int, usage: dict, key: str) -> int:
         """The usage field `key` of the call at line `n`; absent or not a count is HB-TEL-001 (and 0 in the bucket)."""
@@ -212,6 +294,7 @@ class ToolInput:
     paths: tuple[str, ...]
     command: str | None
     is_write: bool
+    bytes_returned: int | None = None  # ADR-0026 s4: the tool result's size; None when the record does not show it
 
 
 @dataclass(frozen=True)

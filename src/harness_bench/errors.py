@@ -18,6 +18,10 @@ class Cause(Enum):
     timed_out = ("HB-CELL-301", "agent", "timed_out")
     blocked_permission = ("HB-CELL-201", "agent", "blocked (permission)")
     blocked_auth = ("HB-CELL-202", "harness", "blocked (auth)")
+    # ADR-0025 s3: a native stream's non-empty `denied_actions`, or a tool ERROR `permission check failed for `.
+    # assume: the agent attempted an action the cell does not permit, as blocked_permission; confirm: the agy probe's
+    # denied rows; breaks: a harness-side denial would need the "harness" attribution.
+    blocked_denied = ("HB-CELL-203", "agent", "blocked (denied action)")
     adapter_crash = ("HB-CELL-105", "harness", "failed (adapter crash)")
     protocol = ("HB-CELL-107", "harness", "failed (protocol)")
     provider = ("HB-CELL-108", "infrastructure", "failed (provider)")
@@ -89,6 +93,10 @@ RUN_CODES: dict[str, str] = {
     "HB-PRE-007": "a planned harness build is missing from the tools folder, or its hash differs",
     "HB-PRE-008": "Copilot instruction list failed or pack-off loaded repository instructions",
     "HB-PRE-009": "a task base tree still carries an agent instruction file (a path in INSTRUCTION_FILES or a *.instructions.md under INSTRUCTION_DIRS) after the upstream removal",
+    # The lean re-run's plan-time refusals (ADR-0024 s3, ADR-0025 s5, ADR-0028 s7); each names the combo or task.
+    "HB-PRE-010": "combo setting not supported by its profile (names the combo, the setting and the supported values)",
+    "HB-PRE-011": "per-harness parallelism cap missing or above 1 for a grok or agy combo (names the harness and the cap)",
+    "HB-PRE-012": "scripted-user task refused: the profile declares `scripted_user: unsupported` (names the task and the harness)",
     "HB-RUN-001": "ledger append failed: launching stopped, run incomplete",
     "HB-RUN-002": "a kill unconfirmed after 5 minutes (retries continue; the slot stays held)",
     "HB-RUN-003": "teardown refused: the run's lock is held by a live engine",
@@ -123,6 +131,9 @@ RUN_CODES: dict[str, str] = {
     "HB-VAL-007": "validity: build mismatch (the session's agent_version differs from the pinned build's recorded self-report)",
     "HB-VAL-008": "validity: out-of-profile tool called (a class-other tool call executed)",
     "HB-VAL-009": "warning: out-of-profile attempt refused (the driver counted a permission request, or a native hook denied it)",
+    # ADR-0024 s4: the served-settings read-back (`served` rows judged against the pin or `default_serves`).
+    "HB-VAL-010": "validity: served setting differs from the expected value (effort or context; names the setting, expected, served and source)",
+    "HB-VAL-011": "warning: served setting not recorded (the expected value is pinned or declared, and no source records it)",
     "HB-SEC-001":"credential value found in a report to be published",
     "HB-USR-001": "unknown run id",
     "HB-USR-002": "invalid input",
