@@ -76,9 +76,10 @@ VARIANTS = {
 # engine and `bench grade` both grading); two-pass variants use the grading config. Every seeded
 # defect is reachable there.
 SMALL = {"Cells = {c1, c2, c3}": "Cells = {c1, c2}", "Parallelism = 2": "Parallelism = 1",
-         "Capped = {c1, c2, c3}": "Capped = {c1, c2}", "HarnessCap = 2": "HarnessCap = 1",
-         'Graders = {"engine"}': 'Graders = {"engine", "bench"}'}
-CAP_BINDS = {"Parallelism = 1": "Parallelism = 2"}  # ADR-0025 s7: a cap of 1 binds only beside a free global slot
+         "Capped = {c1, c2, c3}": "Capped = {c1, c2}", 'Graders = {"engine"}': 'Graders = {"engine", "bench"}'}
+# ADR-0025 s7: the cap binds only below a free global slot. SMALL keeps it non-binding (HarnessCap 2), or a cap on both
+# cells would hide the parallelism guard from exceed_parallelism and the orphan slot from reconcile_no_wait.
+CAP_BINDS = {"Parallelism = 1": "Parallelism = 2", "HarnessCap = 2": "HarnessCap = 1"}
 DEEP = {"MaxCrashes = 1": "MaxCrashes = 2"}
 TWO_PASS = {"no_lock"}             # variants that need two grading passes use the grading config
 # Variants whose defect needs a free slot beside an orphan run at parallelism 2.
