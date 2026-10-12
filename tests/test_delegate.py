@@ -104,17 +104,19 @@ def _copilot_tools(argv: list[str]) -> list[str]:
     return argv[start:end]
 
 
-def test_a_scenario6_copilot_cell_advertises_the_four_ids_and_every_other_cell_exactly_as_before():
+def test_a_scenario6_copilot_cell_advertises_the_four_ids_and_every_other_cell_exactly_as_before(tmp_path):
     p = profiles.load(ROOT, "copilot")
-    before = p.argv(BUILD, "gpt-6-sol")
-    assert p.argv(BUILD, "gpt-6-sol", scenario=6) == [*before, *COPILOT_DELEGATE]
+    cell = {"effort": "high", "home": tmp_path}  # ADR-0028 s3: the -p argv needs the cell's effort and home
+    before = p.argv(BUILD, "gpt-6-sol", **cell)
+    assert p.argv(BUILD, "gpt-6-sol", scenario=6, **cell) == [*before, *COPILOT_DELEGATE]
     for scenario in (None, 1, 5, 7):
-        assert p.argv(BUILD, "gpt-6-sol", scenario=scenario) == before
+        assert p.argv(BUILD, "gpt-6-sol", scenario=scenario, **cell) == before
     assert not set(COPILOT_DELEGATE) & set(_copilot_tools(before))
 
 
 def test_the_scenario6_ids_come_before_the_scripted_user_additions(tmp_path):  # one --available-tools list
-    argv = profiles.load(ROOT, "copilot").argv(BUILD, "gpt-6-sol", mcp_config=tmp_path / "m.json", scenario=6)
+    argv = profiles.load(ROOT, "copilot").argv(BUILD, "gpt-6-sol", mcp_config=tmp_path / "m.json", scenario=6,
+                                               effort="high", home=tmp_path)
     assert _copilot_tools(argv)[-5:] == [*COPILOT_DELEGATE, "scripted_user-ask_user"]
 
 
@@ -151,8 +153,8 @@ def test_the_launcher_seeds_from_the_cell(tmp_path):  # engine.py passes the cel
 def test_the_launcher_launches_copilot_from_the_cell(tmp_path):  # argv_env passes the cell's scenario (R-74 item 3)
     launcher = profiles.ProfileLauncher(profiles.load(ROOT, "copilot"), tmp_path, {})
     launcher.build = BUILD
-    six, _ = launcher.argv_env({"model": "gpt-6-sol", "scenario": 6}, tmp_path / "home", "")
-    five, _ = launcher.argv_env({"model": "gpt-6-sol", "scenario": 5}, tmp_path / "home", "")
+    six, _ = launcher.argv_env({"model": "gpt-6-sol", "scenario": 6, "effort": "high"}, tmp_path / "home", "")
+    five, _ = launcher.argv_env({"model": "gpt-6-sol", "scenario": 5, "effort": "high"}, tmp_path / "home", "")
     assert six == [*five, *COPILOT_DELEGATE]
 
 
