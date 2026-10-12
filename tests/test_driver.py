@@ -954,3 +954,118 @@ def test_session_new_still_sends_its_servers_when_the_agent_starts_slowly(tmp_pa
     finally:
         cell.terminate_and_confirm(timeout=10)
         cell.close()
+
+
+# --- R-TRANSPORT (ADR-0025 s2, ADR-0026 s3): session_meta, the fail-closed set_model check, the update timeline ------
+
+class _KeptPipe(io.BytesIO):
+    """The cell's stdin: what the driver wrote stays readable after it closes the pipe."""
+
+    def close(self) -> None:
+        pass
+
+
+def _scripted(tmp_path: Path, replies: list[dict]):
+    """An in-process agent: its stdout is `replies`, one JSON line each; the cell lives in tmp/ws, its home in tmp/home."""
+    from types import SimpleNamespace
+
+    ws, home = tmp_path / "ws", tmp_path / "home"
+    ws.mkdir(parents=True, exist_ok=True)
+    home.mkdir(exist_ok=True)
+    stdout = io.BytesIO(b"".join(json.dumps(r, separators=(",", ":")).encode() + b"\n" for r in replies))
+    return SimpleNamespace(proc=SimpleNamespace(stdin=_KeptPipe(), stdout=stdout)), ws, home
+
+
+INIT = {"jsonrpc": "2.0", "id": 1, "result": {"protocolVersion": 1, "agentInfo": {"name": "grok", "version": "1.0.41"}}}
+CREATED = {"jsonrpc": "2.0", "id": 2, "result": {"sessionId": "s-1"}}
+
+
+def _update(kind: str, **extra) -> dict:
+    return {"jsonrpc": "2.0", "method": "session/update",
+            "params": {"sessionId": "s-1", "update": {"sessionUpdate": kind, **extra}}}
+
+
+def _session_turn(tmp_path, replies, model=None, session_meta=None):
+    cell, ws, home = _scripted(tmp_path, replies)
+    result = driver.TurnResult()
+    meta = {} if session_meta is None else {"session_meta": session_meta}
+    session = driver.open_session(cell, ws, None, 10, model, result, [], None, **meta)
+    if session is not None:
+        try:
+            driver.send_turn(session, "p", lambda sid: None, 1)
+        finally:
+            session.close()
+    sent = [json.loads(line) for line in cell.proc.stdin.getvalue().splitlines()]
+    return result, sent, home
+
+
+def test_session_new_carries_the_profile_session_meta(tmp_path):  # ADR-0025 s2 (Claude's thinking display, ADR-0026)
+    meta = {"thinking": {"display": "summarized"}}
+    done = {"jsonrpc": "2.0", "id": 3, "result": {"stopReason": "end_turn"}}
+    result, sent, _ = _session_turn(tmp_path, [INIT, CREATED, done], session_meta=meta)
+    assert result.cause is None, result.detail
+    new = next(m for m in sent if m.get("method") == "session/new")
+    assert new["params"] == {"cwd": str(tmp_path / "ws"), "mcpServers": [], "_meta": meta}
+    result, sent, _ = _session_turn(tmp_path / "none", [INIT, CREATED, done])
+    assert "_meta" not in next(m for m in sent if m.get("method") == "session/new")["params"]  # unchanged without one
+
+
+@pytest.mark.parametrize(("answer", "ok"), [({"_meta": {"model": {"Ok": "grok-4.7"}}}, True),
+                                            ({"_meta": {"model": {"Ok": "grok-4.6"}}}, False),
+                                            ({"_meta": {"model": {"Err": "unknown model"}}}, False),
+                                            ({}, True), ({"_meta": {"other": 1}}, True)],
+                         ids=["pin", "another-model", "err", "no-meta", "meta-without-model"])
+def test_a_set_model_answer_naming_another_model_fails_before_the_prompt(tmp_path, answer, ok):  # HB-CELL-116
+    replies = [INIT, CREATED, {"jsonrpc": "2.0", "id": 3, "result": answer},
+               {"jsonrpc": "2.0", "id": 4, "result": {"stopReason": "end_turn"}}]
+    result, sent, _ = _session_turn(tmp_path, replies, model="grok-4.7")
+    methods = [m["method"] for m in sent if "method" in m]
+    if ok:
+        assert result.cause is None and methods[-1] == "session/prompt", result.detail
+    else:
+        assert result.cause is Cause.model_unavailable and result.cause.code == "HB-CELL-116"
+        assert not result.prompt_sent and methods == ["initialize", "session/new", "session/set_model"]
+        assert "grok-4.7" in result.detail
+
+
+def _timeline(home: Path) -> list[dict]:
+    return [json.loads(line) for line in (home / driver.TIMELINE).read_text(encoding="utf-8").splitlines()]
+
+
+def test_a_10000_chunk_turn_has_a_timeline_under_100_lines(tmp_path):  # ADR-0026 s3: bounded by kind changes
+    chunks = [_update("agent_message_chunk", content={"type": "text", "text": "x"})] * 10_000
+    tool = [_update("tool_call", toolCallId="t1"), _update("tool_call_update", toolCallId="t1"),
+            _update("tool_call_update", toolCallId="t1")]
+    replies = [INIT, CREATED, *chunks, *tool, *chunks, {"jsonrpc": "2.0", "id": 3, "result": {"stopReason": "end_turn"}}]
+    result, _, home = _session_turn(tmp_path, replies)
+    assert result.cause is None and result.updates == 20_003
+    rows = _timeline(home)
+    assert len(rows) < 100
+    chunk_rows = [r for r in rows if r["update_kind"] == "agent_message_chunk"]
+    # every reply is readable at once here, so the prompt's own "sent" line can land inside the first run of chunks
+    assert sum(r["count"] for r in chunk_rows) == 20_000 and len(chunk_rows) <= 3
+    assert {"method": "session/update", "update_kind": "tool_call_update", "tool_call_id": "t1", "count": 2}.items() \
+        <= next(r for r in rows if r["update_kind"] == "tool_call_update").items()
+    assert all(r["first_mono_ns"] <= r["last_mono_ns"] for r in rows)
+    assert set(rows[0]) == {"first_mono_ns", "last_mono_ns", "count", "method", "update_kind", "tool_call_id"}
+    assert "x" not in json.dumps([{k: v for k, v in r.items() if k not in ("first_mono_ns", "last_mono_ns")}
+                                  for r in rows]).replace("text", "")  # no content, only kinds and ids
+
+
+def test_a_timeline_write_failure_leaves_the_outcome_unchanged(tmp_path, caplog):  # best effort, never a cell failure
+    replies = [INIT, CREATED, *[_update("agent_message_chunk")] * 200, _update("tool_call", toolCallId="t1"),
+               {"jsonrpc": "2.0", "id": 3, "result": {"stopReason": "end_turn"}}]
+    kept, _, _ = _session_turn(tmp_path / "kept", replies)
+    (tmp_path / "broken" / "home" / driver.TIMELINE).mkdir(parents=True)  # a directory where the file goes
+    broken, _, _ = _session_turn(tmp_path / "broken", replies)
+    fields = ("cause", "stop_reason", "updates", "prompt_sent", "session_id", "detail")
+    assert [getattr(broken, f) for f in fields] == [getattr(kept, f) for f in fields] == \
+        [None, "end_turn", 201, True, "s-1", ""]
+    assert any("timeline" in r.getMessage() for r in caplog.records)
+
+
+def test_no_cell_home_means_no_timeline(tmp_path):  # a caller that is not the engine (cwd with no home beside it)
+    cell, ws, home = _scripted(tmp_path, [INIT, CREATED, {"jsonrpc": "2.0", "id": 3, "result": {"stopReason": "end_turn"}}])
+    home.rmdir()
+    result = driver.run_turn(cell, cwd=ws, prompt="p", mode=None, handshake_timeout=10, before_send=lambda sid: None)
+    assert result.cause is None and not home.exists()
