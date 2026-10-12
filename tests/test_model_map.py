@@ -31,7 +31,7 @@ VENDORS = {"anthropic": frozenset({"claude-haiku-4-5"}), "openai": frozenset()}
 
 def test_every_profile_declares_its_vendor():
     assert {h: profiles.load(ROOT, h).vendor for h in profiles.HARNESSES} == {
-        "claude-code": "anthropic", "codex": "openai", "copilot": "openai"}
+        "claude-code": "anthropic", "codex": "openai", "copilot": "openai", "grok": "xai", "agy": "google"}
 
 
 def test_a_profile_without_a_vendor_is_refused_never_inferred(tmp_path):
@@ -47,7 +47,7 @@ def test_a_profile_without_a_vendor_is_refused_never_inferred(tmp_path):
 
 def test_the_plan_freezes_each_profile_vendor():  # views read the run's vendor, not today's profile file (US-26)
     assert {h: plan.profile_record(ROOT, h)["vendor"] for h in profiles.HARNESSES} == {
-        "claude-code": "anthropic", "codex": "openai", "copilot": "openai"}
+        "claude-code": "anthropic", "codex": "openai", "copilot": "openai", "grok": "xai", "agy": "google"}
 
 
 # --- item 2: one resolver ------------------------------------------------------------------------------------------
@@ -220,6 +220,40 @@ def test_bench_plan_accepts_a_scenario6_map_with_one_role_off_the_pin(tmp_path):
     assert {c["combo"] for c in p["cells"]} == {"cc-sonnet", "codex-sol"}
     codex = next(c for c in p["cells"] if c["combo"] == "codex-sol")
     assert plan.resolved_model_map(p, codex) == {"a": "gpt-6-sol", "b": "gpt-6-astra"}
+
+
+def _grok_build(root: Path, bom: dict) -> dict:
+    m = {"schema": "bench-matrix/1", "run_id": "g", "bom": {"file": "bench/bom.yaml", "subset": ["X1"]}, "repetitions": 1,
+         "packs": ["on", "off"], "harness_parallelism": {"grok": 1}, "combos": [{"id": "cc-sonnet", "harness": "claude-code", "model": "claude-sonnet-5"},
+                                             {"id": "grok-47", "harness": "grok", "model": "grok-4.7"}]}
+    builds = {"claude-code": {"version": "2.1.274", "sha256": "a" * 64}, "grok": {"version": "1.0.41", "sha256": "d" * 64}}
+    return plan.build_plan(root, m, bom, "g1", builds, {"source": "../ai-forward", "commit": "c" * 40, "revision": 92})
+
+
+def test_bench_validate_requires_no_vendor_column_a_plan_may_never_use():  # Leader ruling, R-TRANSPORT seam 8
+    vendors = {**VENDORS, "xai": frozenset()}
+    assert config.model_map_problems(PER_VENDOR, vendors, required=()) == []
+    assert config.model_map_problems(PER_VENDOR, vendors) == ["role 'derived-quantities' has no model for vendor 'xai'",
+                                                              "role 'domain-model' has no model for vendor 'xai'",
+                                                              "role 'tests' has no model for vendor 'xai'"]
+
+
+def test_bench_plan_refuses_a_grok_cell_on_a_map_with_no_xai_role(tmp_path):  # per plan, not per repo
+    root, bom = _scenario6_root(tmp_path, {"a@anthropic": "claude-opus-5-5", "a@openai": "gpt-6-astra"})
+    with pytest.raises(BenchError) as err:
+        _grok_build(root, bom)
+    assert (err.value.code, err.value.message) == (
+        "HB-USR-002", "scenario 6: X1's model_map names no role for vendor xai (cell X1.grok-47.arm-off.r1) (R-73 item 5)")
+
+
+def test_bench_plan_refuses_a_cell_whose_vendor_lacks_one_role_of_the_map(tmp_path):
+    root, bom = _scenario6_root(tmp_path, {"a@anthropic": "claude-sonnet-5", "b@anthropic": "claude-opus-5-5",
+                                           "a@xai": "grok-4.7-fast"})
+    with pytest.raises(BenchError) as err:
+        _grok_build(root, bom)
+    assert (err.value.code, err.value.message) == (
+        "HB-USR-002", "scenario 6: X1's model_map role 'b' has no model for vendor xai (cell X1.grok-47.arm-off.r1); "
+                      "every role needs one for each vendor a plan uses (R-73 c1)")
 
 
 def test_bench_plan_refuses_a_scenario6_cell_with_no_role_for_its_vendor(tmp_path):

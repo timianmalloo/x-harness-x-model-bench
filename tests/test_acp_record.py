@@ -251,7 +251,7 @@ def test_turn_parser_accepts_every_harness_in_profiles_HARNESSES(monkeypatch):
     rec = _recorder()
     seen = []
     monkeypatch.setattr(rec, "turn", lambda args: seen.append(args.harness) or 0)
-    assert profiles.HARNESSES == ("claude-code", "codex", "copilot")  # today's set; the parser must track it
+    assert profiles.HARNESSES == ("claude-code", "codex", "copilot", "grok", "agy")  # today's set; the parser must track it
     for harness in profiles.HARNESSES:
         code = rec.main(["turn", "--harness", harness, "--model", "m", "--out", "x.jsonl"])
         assert code == 0

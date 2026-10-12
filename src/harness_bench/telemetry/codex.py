@@ -20,10 +20,11 @@
 
 The lean re-run's reader facts (ADR-0024 s4, ADR-0026 s1; R-READ-CODEX):
 - `served`: `model_served`, `effort` and `reasoning_summary` from each `turn_context` (`model`, `effort`, `summary`);
-  `context_tokens` from `task_started.model_context_window`, its source naming the cell's own catalog percent
-  (`<home>/models_cache.json`, the served model's `effective_context_window_percent`, where home is the parent of
-  the record's `sessions` folder). A value that changes between turns is a second `ServedSettings` (DR2), so both
-  are written. The rollout carries no API model and Codex has no context tier: both not recorded.
+  `context_tokens` is the nominal window (Leader ruling 2026-10-12): `task_started.model_context_window` (the
+  effective one) / (the cell's own catalog percent / 100), from `<home>/models_cache.json`, the served model's
+  `effective_context_window_percent`, where home is the parent of the record's `sessions` folder; an exact integer,
+  else not recorded. Its source keeps the effective value and the percent. A value that changes between turns is a
+  second `ServedSettings` (DR2), so both are written. The rollout carries no API model and Codex has no context tier: both not recorded.
 - `reasoning`: one item per `response_item` `reasoning`. Kind `text` when it carries `content` text, else `summary`
   (its `summary_text` parts joined by a blank line), else `encrypted-only`, else `omitted`. `opaque_sha256` is the
   sha256 of `encrypted_content`; nothing is reconstructed. `native_ordinal` is the request: the line of the first new
@@ -129,43 +130,59 @@ _TURN_FIELDS = (("model", "model_served"), ("effort", "effort"), ("summary", "re
 _CONTEXT_SOURCE = "rollout:task_started.model_context_window"
 
 
-def _catalog_percent(path: Path, model: str | None) -> str:
-    """The cell's own catalog percent as a source note (ADR-0024 s4): `<home>/models_cache.json`, the served model's
-    `effective_context_window_percent`. Home is the parent of the record's nearest `sessions` folder."""
+def _catalog_percent(path: Path, model: str | None) -> tuple[int | None, str]:
+    """(the served model's `effective_context_window_percent`, its source note), or (None, the reason) (ADR-0024 s4):
+    `<home>/models_cache.json`, where home is the parent of the record's nearest `sessions` folder."""
     home = next((p.parent for p in path.parents if p.name == "sessions"), path.parent)
     catalog = home / "models_cache.json"
     if not catalog.is_file():
-        return "not recorded: no models_cache.json beside the record"
+        return None, "no models_cache.json beside the record"
     if model is None:
-        return "not recorded: no served model to look up"
+        return None, "no served model to look up"
     try:
         if catalog.stat().st_size > MAX_FILE:
-            return "not recorded: models_cache.json over the size bound"
+            return None, "models_cache.json over the size bound"
         body = json.loads(catalog.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, ValueError, RecursionError):
-        return "not recorded: models_cache.json does not parse"
+        return None, "models_cache.json does not parse"
     entry = next((m for m in as_list(as_dict(body).get("models")) if isinstance(m, dict) and m.get("slug") == model), None)
     if entry is None:
-        return f"not recorded: models_cache.json has no {model}"
+        return None, f"models_cache.json has no {model}"
     percent, ceiling = entry.get("effective_context_window_percent"), entry.get("max_context_window")
-    if not is_count(percent):
-        return f"not recorded: models_cache.json {model} has no effective_context_window_percent"
+    if not is_count(percent) or percent == 0:
+        return None, f"models_cache.json {model} has no effective_context_window_percent"
     tail = f" (max_context_window={ceiling})" if is_count(ceiling) else ""
-    return f"models_cache.json models[{model}].effective_context_window_percent={percent}{tail}"
+    return percent, f"models_cache.json models[{model}].effective_context_window_percent={percent} / 100){tail}"
+
+
+def _nominal(window: int, percent: int | None, note: str) -> tuple[int | tuple, str]:
+    """(the nominal window, its source) from one effective `model_context_window` (Leader ruling 2026-10-12): the
+    effective value / (the catalog percent / 100), an exact integer, else not recorded. The source keeps both inputs,
+    so two different windows are two sources (views.KEYS `served`)."""
+    effective = f"{_CONTEXT_SOURCE}={window}"
+    if percent is None:
+        return not_recorded(f"nominal window needs the catalog percent: {note}"), effective
+    if window * 100 % percent:
+        return not_recorded(f"{window} / ({percent} / 100) is not an integer"), effective
+    return window * 100 // percent, f"nominal = {effective} / ({note}"
 
 
 def _served(path: Path, seen: dict[str, list]) -> ServedSettings | tuple[ServedSettings, ...]:
     """One `ServedSettings` from each field's first reading, plus one more per later different reading (DR2)."""
     reasons = {"model_served": "no turn_context.model", "effort": "no turn_context.effort",
                "reasoning_summary": "no turn_context.summary", "context_tokens": "no task_started.model_context_window"}
+    model = seen["model_served"][0] if seen["model_served"] else None
+    percent, note = _catalog_percent(path, model)
+    windows = [_nominal(w, percent, note) for w in seen["context_tokens"]]
+    seen = {**seen, "context_tokens": [value for value, _ in windows]}
     first = {f: (vals[0] if vals else not_recorded(reasons[f])) for f, vals in seen.items()}
-    model = first["model_served"] if isinstance(first["model_served"], str) else None
     sources = {f: f"rollout:turn_context.{k}" for k, f in _TURN_FIELDS if seen[f]}
-    if seen["context_tokens"]:
-        sources["context_tokens"] = f"{_CONTEXT_SOURCE}; catalog percent: {_catalog_percent(path, model)}"
+    if windows:
+        sources["context_tokens"] = windows[0][1]
     base = ServedSettings(model_api=not_recorded("the rollout carries no API model"),
                           context_tier=not_recorded("codex has no context tier"), sources=sources, **first)
-    extra = [replace(base, **{f: v}) for f, vals in seen.items() for v in vals[1:]]
+    extra = [replace(base, **{f: v}) for f, vals in seen.items() if f != "context_tokens" for v in vals[1:]]
+    extra += [replace(base, context_tokens=v, sources={**sources, "context_tokens": s}) for v, s in windows[1:]]
     return (base, *extra) if extra else base
 
 
@@ -188,6 +205,17 @@ def _prompt_part(text: str, role: str) -> PromptPart:
     if stripped.startswith("<skills_instructions>"):
         return PromptPart("skills", None, len(text), "listed", source)
     return PromptPart("system", None, len(text), "inlined", source)
+
+
+def _one_per_key(parts: list[PromptPart]) -> list[PromptPart]:
+    """One part per ledger key (part, path, source; views.KEYS): a rollout sends several developer and injected user
+    texts of one kind, so their chars are summed in first-seen order, as Claude's system strings are one part."""
+    merged: dict[tuple, PromptPart] = {}
+    for p in parts:
+        key = (p.part, p.path, p.source)
+        seen = merged.get(key)
+        merged[key] = p if seen is None else replace(seen, chars=None if None in (seen.chars, p.chars) else seen.chars + p.chars)
+    return list(merged.values())
 
 
 def read(path: Path) -> Extraction:
@@ -275,7 +303,7 @@ def read(path: Path) -> Extraction:
     reasoning.extend(pending)  # no reported call followed: each keeps its own line
     ex.served = _served(path, seen)
     ex.reasoning = reasoning
-    ex.prompt_parts = parts if parts else not_recorded("no prefix items in the rollout")[1]
+    ex.prompt_parts = _one_per_key(parts) if parts else not_recorded("no prefix items in the rollout")[1]
     ex.harness_events = not_recorded("codex hooks and compaction are not verified in the rollout (ADR-0026 s1, Flagged)")[1]
     return ex
 

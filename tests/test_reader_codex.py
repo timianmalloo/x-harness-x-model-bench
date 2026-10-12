@@ -52,18 +52,27 @@ def test_served_settings_come_from_turn_context_and_task_started_with_the_catalo
     assert (one["model_served"]["value"], one["model_served"]["source"]) == ("gpt-6.1-sol", "rollout:turn_context.model")
     assert (one["effort"]["value"], one["effort"]["source"]) == ("high", "rollout:turn_context.effort")
     assert (one["reasoning_summary"]["value"], one["reasoning_summary"]["source"]) == ("auto", "rollout:turn_context.summary")
-    assert one["context_tokens"]["value"] == 828400 == 872000 * 95 // 100  # pin x catalog percent (ADR-0024 s4)
-    assert one["context_tokens"]["source"] == ("rollout:task_started.model_context_window; catalog percent: models_cache.json "
-                                               "models[gpt-6.1-sol].effective_context_window_percent=95 (max_context_window=872000)")
+    # The nominal window (Leader ruling 2026-10-12): the effective 828,400 / (the catalog's 95 / 100) = 872,000, exact.
+    assert one["context_tokens"]["value"] == 872000 == 828400 * 100 // 95
+    assert one["context_tokens"]["source"] == ("nominal = rollout:task_started.model_context_window=828400 / "
+                                               "(models_cache.json models[gpt-6.1-sol].effective_context_window_percent=95"
+                                               " / 100) (max_context_window=872000)")
     for nr in ("model_api", "context_tier"):
         assert one[nr]["value"] is None and one[nr]["not_recorded"].startswith("not recorded: ")
 
 
-def test_served_context_without_a_catalog_names_the_missing_percent_source(tmp_path):
+def test_served_context_without_a_catalog_is_not_recorded_naming_the_missing_percent(tmp_path):
     rows = _served(codex.read(_home(tmp_path, catalog=None)))
-    assert [r["value"] for r in rows.get("context_tokens", [])] == [828400]
-    assert rows["context_tokens"][0]["source"] == ("rollout:task_started.model_context_window; catalog percent: "
-                                                   "not recorded: no models_cache.json beside the record")
+    assert [(r["value"], r["not_recorded"]) for r in rows.get("context_tokens", [])] == [
+        (None, "not recorded: nominal window needs the catalog percent: no models_cache.json beside the record")]
+    assert rows["context_tokens"][0]["source"] == "rollout:task_started.model_context_window=828400"
+
+
+def test_a_percent_that_does_not_divide_the_window_exactly_is_not_recorded(tmp_path):
+    catalog = {"models": [{**CATALOG["models"][0], "effective_context_window_percent": 97}]}
+    rows = _served(codex.read(_home(tmp_path, catalog=catalog)))
+    assert [(r["value"], r["not_recorded"]) for r in rows["context_tokens"]] == [
+        (None, "not recorded: 828400 / (97 / 100) is not an integer")]
 
 
 def test_two_turn_contexts_that_disagree_are_both_written(tmp_path):
@@ -117,6 +126,19 @@ def test_the_agents_md_block_is_an_instruction_file_part_on_pack_on_and_absent_o
     off = codex.read(PACK_OFF).prompt_parts
     assert [p.part for p in off] == ["system", "skills", "system", "system"]
     assert not [p for p in off if p.part == "instruction_file"]
+
+
+def test_texts_of_one_kind_from_one_source_are_one_row_with_their_chars_summed():
+    """The ledger keys prompt_parts by (part, path, source) (views.KEYS): the pack-on record's four developer `system`
+    texts (363 + 920 + 2429 + 271 chars) and two injected user ones (920 + 371) are one part each, as Claude's system
+    strings are one (claude_code.py), never several rows under one key (HB-LED-003)."""
+    rows = normalize.prompt_part_rows("run", "cell", "sid", codex.read(PACK_ON), "x")
+    assert [(r["part"], r["chars"], r["source"]) for r in rows] == [
+        ("system", 18992, "rollout:session_meta.base_instructions"),
+        ("skills", 18601, "rollout:response_item.message[developer]"),
+        ("system", 3983, "rollout:response_item.message[developer]"),
+        ("system", 1291, "rollout:response_item.message[user]"),
+        ("instruction_file", 26006, "rollout:response_item.message[user]")]
 
 
 def test_harness_events_are_not_recorded_with_a_reason():

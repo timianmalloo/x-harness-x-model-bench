@@ -461,10 +461,12 @@ def map_key(key) -> tuple[str, str] | None:
     return (role, vendor) if role and vendor else None
 
 
-def model_map_problems(model_map, vendors: dict[str, frozenset[str]]) -> list[str]:
+def model_map_problems(model_map, vendors: dict[str, frozenset[str]], required=None) -> list[str]:
     """R-73 c1: a scenario-6 map against the vendors the profiles declare (`vendors`: vendor -> the auxiliary models of
     its harnesses). Every key is `<role>@<vendor>` for a declared vendor, every value names a model that is not an
-    auxiliary one, and every role is present for every declared vendor.
+    auxiliary one, and every role is present for every vendor in `required` (default: every declared vendor).
+    `bench validate` requires none: a role's vendor column is required per plan, for the vendors of the harnesses the
+    plan uses (Leader ruling on R-TRANSPORT seam 8; plan._require_discriminating_maps).
     Not checked here: that a harness of the vendor serves the value. R-73 c1 reads that from the harness's own recording
     or the R-74 qualification record, and no committed per-harness served list exists yet (named in the W3-S6 report)."""
     if not isinstance(model_map, dict):
@@ -485,8 +487,9 @@ def model_map_problems(model_map, vendors: dict[str, frozenset[str]]) -> list[st
             out.append(f"{key} must name a model")
         elif any(model.startswith(aux) for aux in vendors[vendor]):
             out.append(f"{key} names {model}, an auxiliary model of a {vendor} harness")
+    needed = set(vendors) if required is None else set(required)
     for role in sorted(roles):
-        out.extend(f"role {role!r} has no model for vendor {vendor!r}" for vendor in sorted(set(vendors) - roles[role]))
+        out.extend(f"role {role!r} has no model for vendor {vendor!r}" for vendor in sorted(needed - roles[role]))
     return out
 
 
@@ -529,7 +532,7 @@ def validate_repo(root: Path) -> list[str]:
         # R-73 c1 from draft on. assume: a stub's map is a placeholder (F1 and F2 read `tbd`, like their source.commit);
         # confirm: the Leader's F1 map at draft; breaks: a stub planned as is -- bench plan refuses it (R-73 item 5).
         if t.get("scenario") == 6 and t.get("status") in ("draft", "ready") and t.get("model_map"):
-            for problem in model_map_problems(t["model_map"], vendors):
+            for problem in model_map_problems(t["model_map"], vendors, required=()):
                 p.add(f"tasks/{name}", f"model_map: {problem}")
     validate_task_freeze(root, p)
     validate_rubrics(root, p)

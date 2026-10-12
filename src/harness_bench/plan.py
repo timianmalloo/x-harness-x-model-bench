@@ -469,6 +469,13 @@ def _require_discriminating_maps(body: dict) -> None:
         if not roles:
             raise BenchError("HB-USR-002", f"scenario 6: {c['task']}'s model_map names no role for vendor {vendor} "
                                            f"(cell {c['label']}) (R-73 item 5)")
+        # R-73 c1, per plan (Leader ruling on R-TRANSPORT seam 8): every role the map names has this vendor's column.
+        model_map = body["tasks"][c["task"]].get("model_map") or {}
+        missing = sorted({parsed[0] for key in model_map if (parsed := config.map_key(key)) is not None} - set(roles))
+        if missing:
+            raise BenchError("HB-USR-002", f"scenario 6: {c['task']}'s model_map role {', '.join(map(repr, missing))} has "
+                                           f"no model for vendor {vendor} (cell {c['label']}); every role needs one for "
+                                           "each vendor a plan uses (R-73 c1)")
         if all(model == c["model"] for model in roles.values()):
             raise BenchError("HB-USR-002", f"scenario 6: every role of {c['task']}'s model_map for vendor {vendor} equals "
                                            f"the pin of {c['label']} ({c['model']}), so routing cannot be told from no "

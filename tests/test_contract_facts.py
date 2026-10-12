@@ -98,7 +98,7 @@ def test_the_four_reader_hooks_default_to_reader_not_built():
 
 def _ex() -> telemetry.Extraction:
     ex = telemetry.Extraction()
-    ex.served = telemetry.ServedSettings(model_served="m", effort="high", context_tokens=telemetry.not_recorded("absent"),
+    ex.served = telemetry.ServedSettings(model_served="gpt-6-sol", effort="high", context_tokens=telemetry.not_recorded("absent"),
                                          sources={"model_served": "rollout:turn_context.model", "effort": "rollout:turn_context.effort"})
     ex.reasoning = [telemetry.ReasoningItem(3, 0, "summary", "plan", 4, 12, None)]
     ex.prompt_parts = [telemetry.PromptPart("instruction_file", "AGENTS.md", 900, "inlined", "rollout:developer")]
@@ -171,7 +171,22 @@ def root(tmp_path):
     return r
 
 
-def test_an_old_shape_reader_writes_no_row_in_the_new_streams(root, tmp_path):
+def _old_shape_reader(monkeypatch) -> None:
+    """A reader from before the four hooks: the codex reader with each hook reset to its default (R-READ-CODEX built
+    them, so an old shape is patched in)."""
+    real = profiles.READERS["codex"]
+
+    def reader(path):
+        ex = real(path)
+        for stream in STREAMS:
+            setattr(ex, stream, telemetry.READER_NOT_BUILT)
+        return ex
+
+    monkeypatch.setitem(profiles.READERS, "codex", reader)
+
+
+def test_an_old_shape_reader_writes_no_row_in_the_new_streams(root, tmp_path, monkeypatch):
+    _old_shape_reader(monkeypatch)
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     gid = runner.run_pass(run_dir, root).grading_id
     assert [pass_rows(run_dir, s, gid) for s in STREAMS] == [[], [], [], []]
@@ -301,10 +316,9 @@ def test_pack_cost_dataclasses_fields_and_order():
 
 
 @pytest.mark.parametrize("call", [
-    lambda: cost_compare.build([]), lambda: cost_compare.render(None), lambda: cost_compare.cli_main([]),
+    lambda: cost_compare.build([]), lambda: cost_compare.cli_main([]),
     lambda: pack_cost.build([]), lambda: pack_cost.render(None), lambda: pack_cost.cli_main([]),
     lambda: tool_phases.phases(()), lambda: tool_phases.carry_until_compaction((), ()),
-    lambda: publish.publish("", Path("x.html"), False), lambda: publish.scan_text(""),
     lambda: context_growth.request_series(None, "a"),
 ])
 def test_the_stubs_raise_not_implemented(call):
@@ -317,7 +331,7 @@ def test_the_stub_signatures():
         cost_compare.build, cost_compare.render, cost_compare.cli_main, pack_cost.build, pack_cost.render,
         pack_cost.cli_main, tool_phases.phases, tool_phases.carry_until_compaction, publish.publish, publish.scan_text,
         context_growth.request_series)}
-    assert list(sig.values()) == [["views"], ["cc"], ["argv"], ["views"], ["pc", "analysis_html"], ["argv"],
+    assert list(sig.values()) == [["views"], ["cc", "scan"], ["argv"], ["views"], ["pc", "analysis_html"], ["argv"],
                                   ["calls"], ["entered", "compacted_before"], ["html", "out", "open"], ["text"],
                                   ["view", "cell_id"]]
     assert tool_phases.PHASES == ("explore", "edit", "verify", "other")
