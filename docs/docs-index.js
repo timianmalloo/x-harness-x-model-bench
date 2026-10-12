@@ -5783,7 +5783,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "366c85dd2695e44da004dde0325e91bf5b3755d1694d90e7e7e04930a481c8c4"
+      "sourceSha256": "b0c6c8bce93ae4f63927c0b1f27e1fb4ab317e0afa08ac06940f921d1cc94b94"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -11772,5 +11772,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "e48983122fb8bc1888d31d55a06b82e4b6647abb4c2df436556bd281eef602ae"
+  "graphSha256": "f22996427189115a7f0484b7cc5cfe55f279778fb06e0a6a3f33d0bdfb2fc5fc"
 };
