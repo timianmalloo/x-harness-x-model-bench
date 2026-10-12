@@ -210,6 +210,22 @@ def test_instruction_file_parts_on_pack_on_and_none_on_pack_off():
     assert len(_parts(OFF, "system")) == 1 and len(_parts(OFF, "skills")) == 2
 
 
+def test_a_listed_instruction_row_carries_its_own_table_row_and_the_parts_partition_exactly():
+    """Leader ruling (J2-FIX DR, option c): each `listed` instruction_file part counts the characters of its own
+    table row, taken out of the `system` part, so every part has a count and the parts still partition the first
+    request's instructions exactly."""
+    parts = copilot.read(ON).prompt_parts
+    assert isinstance(parts, list), parts
+    listed = [p for p in parts if p.part == "instruction_file" and p.delivery == "listed"]
+    assert len(listed) == 6 and all(p.chars for p in listed)
+    log = next((ON.parents[2] / "logs").glob("process-*.log"))
+    text = next(body for kind, _, body in copilot._wire(log) if kind == "request")["instructions"]
+    row = next(line for line in text.splitlines(keepends=True) if "csharp-style-guide.instructions.md" in line)
+    assert next(p.chars for p in listed if p.path.endswith("csharp-style-guide.instructions.md")) == len(row)
+    assert all(p.chars is not None for p in parts if p.part == "instruction_file")
+    assert sum(p.chars for p in parts if p.chars is not None) == len(text)
+
+
 def test_pack_on_parts_carry_distinct_ordinals_and_load_in_a_view(tmp_path, monkeypatch):
     """J2-FIX item 10: `PromptPart.native_ordinal` (J1A-FIX item 28) is the part's position in its record, so the
     pack-on parts never share a key and a pass that writes them loads without HB-LED-003."""

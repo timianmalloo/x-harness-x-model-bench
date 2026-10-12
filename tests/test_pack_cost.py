@@ -299,9 +299,10 @@ def test_the_real_path_decomposes_a_graded_copilot_pair_with_no_fakes(tmp_path):
     terms = {t.name: t.median for t in h.terms}
     # hand count from the records: 12 pack-on requests, 5 pack-off, the pack-off median request input 6,619
     assert terms["extra_requests"] == Measure((12 - 5) * 6619)
-    # Copilot's listed instruction rows carry no character count (the reader counts their text in the system part),
-    # so the prefix, and the tokens per character every attributed term needs, is not recorded: never a guess.
-    unpriced = Measure(None, "not recorded: prompt part instruction_file has no character count")
+    # Every instruction_file part now has a count (its own table row, Leader ruling on the J2-FIX DR); the listed
+    # `tools` part (the request's tool fingerprint, names and digests only) has none, so the prefix, and the tokens
+    # per character every attributed term needs, is not recorded: never a guess (decision request handed back).
+    unpriced = Measure(None, "not recorded: prompt part tools has no character count")
     assert terms["fixed_prefix"] == terms["pack_reads"] == terms["skill_loads"] == unpriced
     assert isinstance(terms["reasoning_output"].value, int)
     assert h.delta_total.value == sum(m.value for m in terms.values() if m.value is not None)

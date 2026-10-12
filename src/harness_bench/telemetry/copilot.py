@@ -479,9 +479,12 @@ def _prompt_parts(logs: list[Path], pairs: list[dict]) -> list[PromptPart] | str
         parts.append(("instruction_file", None, end - start, "inlined", source))
         covered += end - start
     listed = text.find(_LISTED)
-    if listed != -1:
-        parts += [("instruction_file", _path(m.group(1)), None, "listed", source)
-                  for m in _LISTED_ROW.finditer(text, listed)]
+    if listed != -1:  # each listed file counts its own table row, line end included (Leader ruling, J2-FIX DR c)
+        for m in _LISTED_ROW.finditer(text, listed):
+            end = text.find("\n", m.end())
+            row = (len(text) if end == -1 else end + 1) - m.start()
+            parts.append(("instruction_file", _path(m.group(1)), row, "listed", source))
+            covered += row
     for block in _SKILLS.finditer(text):
         for entry in _SKILL.finditer(text, block.start(1), block.end(1)):
             location = _LOCATION.search(entry.group(0))
