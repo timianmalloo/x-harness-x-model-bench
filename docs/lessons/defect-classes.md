@@ -27,6 +27,7 @@ summary: >-
 
 **Status counts:** controlled 13 · partially-controlled 7 · uncontrolled 2 (project classes). Inherited E2E-E: partially-controlled. ENV-A is `observed`. CAUSE-A is `observed` (2026-09-30).
 **Recurrence since last review:**
+- 2026-10-12 (Coordinator #2, the lean re-run's J0): one project candidate, WT-NEST-A (a checkout-relative `--cells-root` default lands inside the primary from a nested agent worktree; nine HB-GRD-006 reds). A MUT-E instance (R-CONTRACT-FACTS appended to the `PASS_FACTS`/`FACTS` union tuples and reported no retargets; it fires the 2026-10-05 union-line upgrade trigger) and a SCAN-A instance (the frozen-root listing counted the bytecode pytest writes; the test-side shape).
 - 2026-10-09 (Coordinator #64, the lean benchmark's J1 docs pass): three project candidates, CONSOLE-FLAG-MASKS-TEST (a convention sweep masks the fixture RF-11 needs), RED-ONE-GATE-A (a fix track's red from one gate; Leader-caused) and HELP-A (`mutate_check.py --help` raises `FileNotFoundError`). Instances: CEIL-A gains the brief-size shape and this run's measured floors; FLAKE-A gains the L-CONTRACT join's two reds with LOOP-J0's rates and three control gaps; EDIT-B gains its file-writing heredoc instance; TEST-A absorbs the proposed TEST-WEAK-SUBSTR.
 - 2026-10-08 (Coordinator #60, `docs/coordination/coordinator-log/c60.md`): one project candidate, PACKOFF-A (an upstream pin carries an agent-instruction file into every arm's base tree; Ruling 116; X-E5M's NG1 and S2 refusal). Its control is X-PACKOFF's build. X-E5M's authoring finding (no pack-off-safety check before `ready`) is one line in it, not a class. MUT-E gains X-NOPRICE's instance (a find text that newly added code also contains retargets the mutant to the first match).
 - 2026-10-08 (Coordinator #57, `docs/coordination/coordinator-log/c57.md`): one project candidate, STORE-A. A reader keys another harness's session store with our identifiers, so it reports "not recorded" while the record is there. The instance is `tools/grok_served_model.py --tree --session`. Also: CACHE-B gains X-CACHEB's result (the sweeper was not found, and the event-log half is not recorded), and CEIL-A gains its unreadable-figure instance (Grok's `updates.jsonl` `_meta.totalTokens`).
@@ -707,6 +708,26 @@ summary: >-
 - **Why it survives:** the scan was designed and fixtured against *added-by-the-agent* artifacts (a smuggled `.class`/`.olean`/`.png`) — exactly the threat it exists to catch — never against the tool's own, unavoidable output, because the fixture that would show the gap (a real build run, not a hand-placed binary) was never in the default ring until a real grading pass hit real agent transcripts. The two places that need the same build-output name list (the scan, and the disposable build copy's own `shutil.copytree` ignore list) were written far apart in the same file and never cross-checked against each other.
 - **Instances:**
   - `2026-10-02` (grid-3, same incident as HASH-A, found by the Leader reading the per-cell evidence after the statement-hash fix): `_g2_formal_checks_clean`'s `_artifact_offender(proofs_src, _G2_PROOF_ALLOWED_EXTS, _G2_PROOF_ALLOWED_NAMES)` (`formal.py:372`, pre-fix) flagged `.lake/build/**` and `lake-manifest.json` — both unavoidable results of the `lake build` `tasks/G2/prompt.md:28` requires — as unexpected artifacts, scoring `formal_checks_clean` `0` for all 12 real G2 cells regardless of proof quality. `_grading_copy`'s own `copytree` (`formal.py:280`, then line 269) already excluded exactly these two names when making the disposable build copy, so a binary smuggled under `.lake/` could never reach the graded build either way — the scan's own sibling function already had the answer.
+  - `2026-10-12` (lean re-run, the J0 recount; R-GOLD; recorded by Coordinator #2). *Test-side shape:* the scan is a
+    test, and the tool is the test runner itself. `tests/test_fixture_root_isolation.py::test_the_frozen_root_holds_exactly_the_contracted_inputs`
+    (`:49-50` at `8cda3fc3`) lists every file under the frozen root `tests/fixtures/bench-root/` with `rglob("*")`
+    and compares the set with the contracted inputs. That root holds a `conftest.py`, so collecting it writes
+    `__pycache__/conftest.cpython-*.pyc` (and a `.pyc.<pid>` temp) into the very tree the test lists. It went red,
+    deterministically, at the J0 recount on the Leader's full suite. Why it survived the track (Inferred, not
+    re-run): workers run named test files only (SUITE-LOCK), and a named-file run need not collect that fixture
+    root's `conftest.py`; the full suite collects all of `tests/`, so only the Leader's run wrote the bytecode. Fixed by the
+    R-GOLD loop-back `2d11d554` (red first: `test_bytecode_pytest_writes_into_the_frozen_root_is_not_an_extra_input`
+    failed with the two `.pyc` names; the listing now ignores `__pycache__/` and `*.pyc*`), joined in `b06d391e`.
+    **Sweep (2026-10-12, Coordinator #2, by reading, not running):** whole-tree listings in `tests/` (`grep -rn
+    'rglob("\*")' tests/*.py`, 20 hits). Two already exclude `__pycache__` by the same independent fix
+    (`tests/ring_cache.py:26`, `tests/test_plan.py:730`), and `16763b16` made `task_source` drop it from cached
+    bases (a third sibling). The rest list `tmp_path` trees the test writes itself, or task workspaces pytest does
+    not collect. The other fixture root with a `conftest.py`, `tests/fixtures/grade/formal/`, has no whole-tree
+    listing (no hit). `make_root` copies only `tasks/X1` and `bench/profiles` from the frozen root
+    (`tests/archived_runs.py:99,102`), so the root-level `__pycache__` never reaches a built root. **Control review:**
+    SCAN-A's control is grader-scoped; the test-side shape is controlled by the loop-back's red test only. Upgrade
+    trigger: one more whole-tree listing over a pytest-collected directory; then one shared test helper that lists
+    a tree minus `__pycache__`/`*.pyc*`, which every such listing uses.
 - **Sweep (2026-10-02):** `grade/_changes.py:30` already carries a same-shaped, independently-arrived-at fix for a different pair of tools: `BUILD_OUTPUT = frozenset({".git", "bin", "obj", "TestResults", "__pycache__"})`, excluded from `drift`'s change-set diffing (dotnet's `bin`/`obj`, xunit's `TestResults`, Python's `__pycache__`) — proving this is a recurring shape across graders, not unique to G2, just never named until now. G1's own scan (`_g1_formal_checks_clean`, `spec/**`) has no live instance: the scan runs before TLC is ever invoked, and the one real-pass TLC invocation redirects its own output to `-metadir <out_dir>/meta`, outside `spec/` — see `docs/design/formal-grader.md`'s `formal_checks_clean` section (G1 clause) for the full reasoning, flagged for re-check if G1's eventual `prompt.md` ever asks the agent to run TLC locally without a `-metadir` redirect. No merge of `_changes.BUILD_OUTPUT` and formal.py's new `_LAKE_BUILD_OUTPUT` into one repo-wide list: the two serve different tools (dotnet/pytest vs. Lean) with no present overlap, and the ask (G12 extended: "one definition **per scan+copy pair**") was satisfied within formal.py's own two use sites — a repo-wide merge would be speculative generality the Simplifier would reject (YAGNI) until a third tool's build output needs the same treatment somewhere else.
 - **Control:** `tests/test_grade_formal.py::test_g2_formal_checks_clean_lake_build_output_is_not_a_binary_artifact` (a `Proofs/` tree with real `.lake/build/**` output and `lake-manifest.json`, otherwise clean, scores `1`; observed red before the fix, exactly the grid-3 shape) and `::test_g2_formal_checks_clean_a_stray_binary_outside_lake_still_fails` (parametrized `x.olean`/`foo.so`: a binary anywhere else, even beside a genuine `.lake/` tree, still scores `0` — proving the exemption is narrow, not "anything near `.lake` passes"). The general rule (CI2 derive): whenever a task's own instructions mandate running a tool in a scanned directory, name that tool's build-output in one shared constant the scan excludes and the disposable-copy step strips, and add a positive fixture that runs (or fakes) the mandated tool before asserting the scan passes — a scan fixtured only with hand-placed violations never proves it tolerates compliance.
 - **Status:** `controlled`
@@ -845,6 +866,20 @@ summary: >-
     foreign find moves (closing entry `al-01M4HDV7GGRCZZ5K69ZKFTBX90`). The existing control held. **Control
     (proposed by the Leader):** a plan's MUT-E owners come from grepping the target lines over every
     `tests/mutations/*.json`, not from the module names. Rung: plan step. Upgrade trigger: one more unnamed owner.
+  - `2026-10-12` (lean re-run J0; R-CONTRACT-FACTS, `549f84fe` and `f1a65146`; found by the Leader at the J0
+    recount, retargeted in `8cda3fc3`; recorded by Coordinator #2). R-CONTRACT-FACTS's hand-back reported **no
+    retargets**, but its seam edits appended the four reader streams to two union tuples: `PASS_FACTS` in
+    `grade/runner.py` and `FACTS` in `views.py`. Two `tests/mutations/judge.json` finds named each tuple whole,
+    ending at its closing bracket (`... "scores", "verdict_uses")`), so both finds occurred 0 times. MUT-E
+    (`test_mutate_check.py:413`) caught them; the Leader retargeted them to `... "verdict_uses", *READER_STREAMS)`
+    and `... "verdict_uses",` (the diff of `8cda3fc3`, read by me). *Shape:* the 2026-10-05 union-line shape again
+    (an append moves the line's end), plus a hand-back that did not run the find check before it said "none". The
+    existing control held at the join. **This is the 2026-10-05 entry's upgrade trigger** ("one more stale find on
+    a union line"): the proposed control is that `tests/test_mutate_check.py` refuses a find that ends with a union
+    literal's closing bracket. Owner: the Leader assigns (`tests/test_mutate_check.py` is the Leader's file in this
+    plan). Until then (rung: compiled prompt): every compiled wave-1 brief asks the worker to run
+    `tests/test_mutate_check.py::test_every_mutation_find_text_occurs_exactly_once_in_its_target_file` before it
+    reports "no retargets".
 - **Sweep:** the control below runs over every set on every suite run.
 - **Control:** `tests/test_mutate_check.py::test_every_mutation_find_text_occurs_exactly_once_in_its_target_file` (`97100d01`, 2026-09-25), in the default ring; the Leader reports it caught the X-D1 move (not re-run by the Coordinator). Rung: test.
 - **Status:** `controlled`
@@ -1949,4 +1984,41 @@ first). The controls are ADR-0026 §6's; they are owed by R-DRIFT (the first two
 - **Control (ADR-0026 §6; rung: probe check):** the probe's pack-off `prompt_parts` list **0 instruction files for
   every harness** (at the S3 and S5 probes, ADR-0024 §6), and R-TRANSPORT's Grok launch test asserts `HOME`,
   `USERPROFILE` and `GROK_HOME` in the env. Upgrade trigger: a pack-off cell with an `instruction_file` part.
+- **Status:** `candidate`
+
+## Coordinator #2 entries (2026-10-12; lean re-run)
+
+*Written by Coordinator #2 (session `c2-rerun`, Opus) at `8cda3fc3`. ID-A read first: the register's 138 class
+headings, and `git grep -n -w -e WT-NEST-A` exit 1. One new class below; two instances appended in place, one entry per
+class: **MUT-E** (R-CONTRACT-FACTS's unreported `judge.json` finds; it fires the 2026-10-05 union-line upgrade
+trigger) and **SCAN-A** (a frozen-root listing counted the bytecode pytest writes; the test-side shape).*
+
+### WT-NEST-A: a checkout-relative default lands inside the primary when the checkout is a nested agent worktree (candidate)
+- **Signature:** a default path is derived from the checkout's parent: `--cells-root` defaults to
+  `root.parent / "bench-cells"` (`cli.py:762` at `8cda3fc3`; `:740` at `2f633d54`). That assumes the checkout's
+  parent is outside every project. An Agent-tool worktree sits at
+  `C:\Projects\x-harness-x-model-bench\.claude\worktrees\<id>`, so its parent is the primary's `.claude\worktrees`,
+  and the default cells root (and its `grading` root) lands **inside the primary checkout**, under its
+  `pyproject.toml`. HB-GRD-006 then refuses, correctly ("pyproject.toml is above the grading root
+  …\.claude\worktrees\bench-cells\grading"), and every test that drives the CLI with the default fails.
+- **Why it survives:** the tests pass in the primary and in any sibling tree (the Leader's suite runs in one), and
+  the failing check is a correct control (ORCL-B's HB-GRD-006) firing, so each worker reads it as noise, re-diagnoses
+  it, and reports "fails on the base too". Nothing ties a test's result to where the checkout sits. Siblings, not
+  the same class: **ORCL-B** is the product side (a grading copy nested in a project; controlled by this very
+  refusal); **ENV-C** is a hermetic test reading an ambient variable, not a location.
+- **Instances:**
+  - `2026-10-12` (lean re-run, before and at J0): the R-CONTRACT-FACTS, R-GOLD and R-CONTRACT-RUN hand-backs each
+    reported the same nine HB-GRD-006 failures in their Agent-tool worktrees, red on the base too: five in
+    `tests/test_cli.py`, two in `tests/test_grade_judge.py`, two in `tests/test_injection_and_publication.py`
+    (the list as the Leader's addenda name it, `C:/tf/rerun-leader/briefs/leader-addenda.md`, *Everyone*; the
+    hand-backs not re-read by me). The Leader ruled them environmental for wave 1 (plan *Errata* E11).
+- **Sweep (Coordinator #2, 2026-10-12, by `grep -rn "root.parent /"` over `src/harness_bench` and `tools`):** the
+  same `root.parent / "bench-cells"` default in `cli.py:762`, `grade/runner.py:239`, `plan.py:467`,
+  `tools/acp_record.py:390` and `tools/calibrate.py:33`; a sibling default `root.parent / "ai-forward"` for the pack
+  source (`cli.py:344`), which in a nested worktree names a folder that does not exist. Not run.
+- **Control (proposed; rung: test):** the tests that drive the CLI or `run_pass` pass an explicit `--cells-root`
+  under `tmp_path` (one shared fixture), so their result does not depend on where the checkout sits; and a guard
+  test refuses a test module that calls `cli.main` without `--cells-root`. The product default is not changed
+  (ADR-0013 places cells outside the repository; the primary's parent is the right place). Not built. Owner: the
+  Leader assigns. Upgrade trigger: one more worker turn spent re-diagnosing the nine.
 - **Status:** `candidate`
