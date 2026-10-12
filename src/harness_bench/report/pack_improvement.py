@@ -28,14 +28,20 @@ from pathlib import Path
 
 import yaml
 
-from harness_bench import profiles
 from harness_bench.board import LEGACY_PAIR, Board, _cell_task_rep, view_comparisons
 from harness_bench.errors import BenchError
 from harness_bench.grade import _changes
 from harness_bench.grade.cost import ACP_MISSES_CALLS, SESSION_TOTALS
 from harness_bench.plan import cell_arm
+from harness_bench.report import tool_phases
+from harness_bench.report.tool_phases import (
+    CEREMONY_CLASSES,
+    PACK_PATHS,  # noqa: F401 -- re-exported: its tests read pi.PACK_PATHS
+    TEST_PATH,
+    classify,
+)
 from harness_bench.stats import fisher_exact_two_sided, holm
-from harness_bench.telemetry import ProcessTrace, ToolInput, claude_code, codex, copilot
+from harness_bench.telemetry import ProcessTrace, ToolInput
 from harness_bench.views import CellView, Measure, RunView, rows, sum_tokens
 
 # A threshold change bumps this and the Method line prints it (design section 10 DR-PI-2, R-85 c4).
@@ -64,23 +70,12 @@ NA_NO_TOOL_CALLS = "no tool calls"
 NA_NO_TEST_PATH = "task has no test path in its blast radius"
 NA_NO_DRIFT_GRADER = "no drift grader for this task"
 
-# design section 4.3's table.
-PACK_PATHS = (
-    ".claude/knowledge/", ".claude/skills/", ".claude/agents/",
-    ".github/instructions/", ".github/knowledge/", ".github/agents/", ".github/prompts/",
-    ".agents/skills/", ".grok/", "docs/ai-forward-pack/", "AGENTS.md",
-)
-PACK_SCRIPTS = ("audit-log.py", "prompt-log.py", "docs-graph.py", "coord-core.py", "pack-doctor.py")
+# design section 4.3's classifier and its table live in `report.tool_phases` (ADR-0026 s4: one shared module).
 PACK_WRITE_PATHS = ("docs/audit/", "docs/docs-index.js", ".agents/", "docs/coordination/", "docs/lessons/")
 
-TEST_PATH = re.compile(r"(^|/)tests?/|Tests?\.cs$|(^|/)test_[^/]*\.py$|_test\.py$")
-_WORKTREE_CREATE = re.compile(r"\bgit\s+worktree\s+add\b|\bworktree\s+new\b")
-_GIT_IDENTITY = re.compile(r"\bgit\s+config\s+(--global\s+)?user\.(name|email)\b")
 _GOAL = re.compile(r"\bGoal\b\s*[:*]", re.IGNORECASE)
 _DONE_WHEN = re.compile(r"Done when", re.IGNORECASE)
 _GITDIR_MARKER = "/ws/.git/worktrees/"
-
-CEREMONY_CLASSES = frozenset({"pack_read", "skill_load", "pack_script", "worktree_create"})
 
 # drift.log's own two line shapes (`grade/drift.py:125,139`, pinned by reading the grader's writer, not
 # guessed from a sample -- R-85 hand-off): a changed-file line is 5 tab-separated fields ending in the
@@ -247,42 +242,6 @@ def _normalize_calls(calls: Sequence[ToolInput], ws: Path | None) -> tuple[ToolI
     return tuple(replace(c, paths=tuple(_relative_to_root(p, ws) for p in c.paths)) for c in calls)
 
 
-def _matches_blast_radius(paths: Sequence[str], blast_radius: Sequence[str]) -> bool:
-    """Any of `paths` inside `blast_radius`, by `_changes.in_radius`: the graders' one radius definition
-    (ADR-0026 s4, RADIUS-TEST-A), case-sensitive on every host, so a path is inside on this report
-    exactly when it is inside for drift and the property graders. Its `*` matches `/` too, so `src/**`
-    and `src/*` match the same set (design section 4.4)."""
-    return any(_changes.in_radius(p, list(blast_radius)) for p in paths)
-
-
-def classify(call: ToolInput, blast_radius: Sequence[str] | None) -> frozenset[str]:
-    """One tool call's classes (design section 4.3's table). `blast_radius=None` means the task's
-    own blast radius could not be read: `product_write` then never fires here (it would otherwise
-    guess a match against an unknown set) -- a caller that needs the NA propagated checks
-    `blast_radius is None` itself before calling (the indicator functions below do this).
-
-    Only `call.paths` and `call.command` are examined (PI-T7): a source write whose file *content*
-    happens to mention `tests/` is invisible to `ToolInput`, which carries no content field, so it
-    can never be mistaken for a `test_write`."""
-    classes: set[str] = set()
-    haystack = " ".join((*call.paths, call.command or ""))
-    if not call.is_write and any(p in haystack for p in PACK_PATHS):
-        classes.add("pack_read")
-    if call.name in ("Skill", "skill"):
-        classes.add("skill_load")
-    if call.command and any(s in call.command for s in PACK_SCRIPTS):
-        classes.add("pack_script")
-    if (call.command and _WORKTREE_CREATE.search(call.command)) or call.name == "EnterWorktree":
-        classes.add("worktree_create")
-    if call.command and _GIT_IDENTITY.search(call.command):
-        classes.add("git_identity")
-    if call.is_write and any(TEST_PATH.search(p) for p in call.paths):
-        classes.add("test_write")
-    elif call.is_write and blast_radius is not None and _matches_blast_radius(call.paths, blast_radius):
-        classes.add("product_write")
-    return frozenset(classes)
-
-
 def ceremony_share(calls: Sequence[ToolInput], blast_radius: Sequence[str] | None) -> Measure:
     """`ceremony_calls / len(calls)` (design section 4.3). NA `NA_NO_TOOL_CALLS` when the trace has
     no calls at all -- never 0/0 read as 0."""
@@ -374,7 +333,7 @@ def diverted_delivery(attempt_dir: Path, ws: Path, blast_radius: Sequence[str] |
             if not candidate.is_file():
                 continue
             rel = candidate.relative_to(sibling).as_posix()
-            if not _matches_blast_radius((rel,), blast_radius):
+            if not _changes.in_radius(rel, list(blast_radius)):
                 continue
             counterpart = ws / candidate.relative_to(sibling)
             if not counterpart.is_file() or counterpart.read_bytes() != candidate.read_bytes():
@@ -698,9 +657,6 @@ _THRESHOLD_BASIS = (
     ("PROCESS_ONLY_OFF", PROCESS_ONLY_OFF, "section 5 rule 3"),
 )
 
-_TRACE_READERS = {"claude-code": claude_code, "codex": codex, "copilot": copilot}
-
-
 @dataclass(frozen=True)
 class GroupRow:
     """One (task, combo) row of section 7.3's value-vs-waste table."""
@@ -795,39 +751,6 @@ def method_lines(board_obj: Board | None) -> tuple[str, ...]:
     return tuple(lines)
 
 
-def _attempt_dirs(run_dir: Path, cell_id: str) -> list[Path]:
-    base = run_dir / "archive" / cell_id
-    if not base.is_dir():
-        return []
-    return sorted((p for p in base.glob("attempt-*") if p.name.rsplit("-", 1)[-1].isdigit()),
-                  key=lambda p: int(p.name.rsplit("-", 1)[1]))
-
-
-def _cell_trace(run_dir: Path, view: RunView, cell: CellView, session_id: str | None) -> ProcessTrace | None:
-    """This cell's `ProcessTrace`: the main session's `tool_inputs` composed with every sub-agent
-    record's own calls, in native order (design section 4.3's own comment). The record globs come
-    from the run's OWN frozen `plan.json` profile entry (`plan.py:240-245`), never a live
-    `bench/profiles/*.yaml` re-read -- a profile that drifted after this run was planned must never
-    change what this run's own trace reads. `None` (never a guessed empty trace) when the harness has
-    no reader, the archive has no attempt, or no session id was recorded."""
-    reader = _TRACE_READERS.get(cell.harness)
-    profile = (view.plan.get("profiles") or {}).get(cell.harness) or {}
-    if reader is None or not session_id or not profile.get("record_glob"):
-        return None
-    attempts = _attempt_dirs(run_dir, cell.cell_id)
-    if not attempts:
-        return None
-    home = attempts[-1] / "home"
-    mains = profiles.find_records(home, profile["record_glob"], session_id)
-    if not mains:
-        return None
-    main = reader.tool_inputs(mains[0])
-    extra: list[ToolInput] = []
-    for sub_path in profiles.find_records(home, profile.get("subagent_glob") or "", session_id):
-        extra.extend(reader.tool_inputs(sub_path).calls)
-    return ProcessTrace(main.first_assistant_text, main.calls + tuple(extra))
-
-
 @dataclass(frozen=True)
 class _CellIndicators:
     trace: ProcessTrace | None
@@ -852,11 +775,11 @@ def _cell_indicators(
     if not archive_present:
         na = Measure(None, NA_ARCHIVE_ABSENT)
         return _CellIndicators(None, na, False, na, False, na, na, na, pfw)
-    attempts = _attempt_dirs(run_dir, cell.cell_id)
+    attempts = tool_phases.attempt_dirs(run_dir, cell.cell_id)
     attempt_dir = attempts[-1] if attempts else None
     ws = attempt_dir / "ws" if attempt_dir is not None else None
     session_id = outcome_event.get("session_id")
-    trace = _cell_trace(run_dir, view, cell, session_id) if attempt_dir is not None else None
+    trace = tool_phases.cell_trace(run_dir, view, cell, session_id) if attempt_dir is not None else None
     record_na = Measure(None, NA_RECORD_UNREADABLE)
     if trace is None:
         ceremony, test_first_, goal_present, git_ident = record_na, record_na, False, False
