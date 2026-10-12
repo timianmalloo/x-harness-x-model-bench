@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-12T14:22:33Z",
+  "generated": "2026-10-12T14:43:02Z",
   "audit": [
     {
       "actor": null,
@@ -180252,6 +180252,28 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-12T13:49:20Z",
       "duration_seconds": 1993.0
+    },
+    {
+      "id": "al-01M4R92AF9W34YSEKYY5FTAME6",
+      "shortname": "c1-rerun",
+      "datetime": "2026-10-12T14:43:02Z",
+      "session": "c1-rerun",
+      "prompt": "Coordinator #1 (lean re-run, epoch 21): register entries DRIFT-MACHINE-A, RADIUS-TEST-A, LEAK-HOME-A; compile the eight wave-1 briefs with TEST-E",
+      "summary": "Three register entries committed (ab94824d) with docs-graph validate exit 0; eight briefs compiled to C:/tf/rerun-leader/briefs (7.3-12.5 kB each, scratch, not committed) with TEST-E output; findings on the plan handed back",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Register the three ADR-0026 section 6 classes before the code, and give each wave-1 track a brief under 25 kB",
+      "done_when": "validate exit 0; entries committed; eight briefs under 25 kB with TEST-E; closing entry committed",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-12T14:27:33Z",
+      "duration_seconds": 929.0
     }
   ],
   "changes": [
