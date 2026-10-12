@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-12T20:39:27Z",
+  "generated": "2026-10-12T20:43:01Z",
   "audit": [
     {
       "actor": null,
@@ -189595,6 +189595,28 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-12T18:40:40Z",
       "duration_seconds": 7127.0
+    },
+    {
+      "id": "al-01M4RXNFX7AN9SNHBMBZY53HDD",
+      "shortname": "j2-fix",
+      "datetime": "2026-10-12T20:43:01Z",
+      "session": "j2-fix-rerun-2",
+      "prompt": "j2-fix-rerun-2: Leader ruling (c) on the J2-FIX DR - Copilot listed instruction rows carry their table-row characters",
+      "summary": "copilot reader: each listed instruction_file part counts its own table row, subtracted from system; partition exact; real-path pack-cost re-pinned (fixed_prefix still not recorded: the listed tools part has no count - DR); mutants added; rerun-read-copilot 9/9, rerun-packcost 16/16, rerun-j2-fix 10/10 killed",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Apply Leader ruling (c): listed instruction rows carry characters, parts partition exactly",
+      "done_when": "red-first listed-row test green, real-path test re-pinned, mutation files every mutation killed, ruff clean",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-12T20:40:26Z",
+      "duration_seconds": 155.0
     }
   ],
   "changes": [
