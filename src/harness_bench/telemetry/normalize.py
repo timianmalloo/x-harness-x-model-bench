@@ -194,17 +194,23 @@ def _flag(value: bool | None) -> int | None:
 def served_rows(run_id: str, cell_id: str, session_id: str, ex: Extraction, extraction: str) -> list[dict]:
     """ADR-0026 s1 `served`: one row is exactly one setting of one cell, as one source showed it. A hook left at
     READER_NOT_BUILT, or a whole-record reason, writes no row; a field the source does not show is a row with
-    `value` None and its `not_recorded` reason."""
-    s = ex.served
-    if not isinstance(s, ServedSettings):
+    `value` None and its `not_recorded` reason. The hook holds one `ServedSettings`, or a tuple of them, one per
+    source (ADR-0026 erratum, ruling on DR2), so two sources that disagree are both written. A row equal to one
+    already written (e.g. a field each settings leaves unread, with no source) is written once; two different values
+    under one (field, source) are both written, so the view refuses them (HB-LED-003) rather than one being dropped."""
+    settings = (ex.served,) if isinstance(ex.served, ServedSettings) else ex.served
+    if not isinstance(settings, tuple):
         return []
-    out = []
-    for name in SERVED_FIELDS:
-        value = getattr(s, name)
-        nr = is_not_recorded(value)
-        out.append(_prefix("served_setting", run_id, cell_id, session_id, extraction)
-                   | {"field": name, "value": None if nr else value, "not_recorded": value[1] if nr else None,
-                      "source": s.sources.get(name)})
+    out, seen = [], set()
+    for s in settings:
+        for name in SERVED_FIELDS:
+            value = getattr(s, name)
+            nr = is_not_recorded(value)
+            row = {"field": name, "value": None if nr else value, "not_recorded": value[1] if nr else None,
+                   "source": s.sources.get(name)}
+            if (key := tuple(row.values())) not in seen:
+                seen.add(key)
+                out.append(_prefix("served_setting", run_id, cell_id, session_id, extraction) | row)
     return out
 
 
@@ -229,7 +235,7 @@ def harness_event_rows(run_id: str, cell_id: str, session_id: str, ex: Extractio
     """ADR-0026 s1 `harness_events`: one row is exactly one hook invocation, skill load or compaction."""
     events = ex.harness_events if isinstance(ex.harness_events, list) else []
     return [_prefix("harness_event", run_id, cell_id, session_id, extraction)
-            | {"event": e.event, "name": e.name, "start": e.start, "end": e.end, "ok": _flag(e.ok), "detail": e.detail}
+            | {"native_ordinal": e.native_ordinal, "event": e.event, "name": e.name, "start": e.start, "end": e.end, "ok": _flag(e.ok), "detail": e.detail}
             for e in events]
 
 

@@ -77,7 +77,9 @@ def test_the_stream_item_dataclasses_carry_the_adr_0026_columns():
     assert names(telemetry.ReasoningItem) == ["native_ordinal", "item_ordinal", "source_kind", "text", "chars",
                                               "reasoning_tokens", "opaque_sha256"]
     assert names(telemetry.PromptPart) == ["part", "path", "chars", "delivery", "source"]
-    assert names(telemetry.HarnessEvent) == ["event", "name", "start", "end", "ok", "detail"]
+    # Ruling on DR1 (ADR-0026 erratum): `native_ordinal`, the event's position in its record, so two identical events
+    # never collide on the key (HB-LED-003).
+    assert names(telemetry.HarnessEvent) == ["native_ordinal", "event", "name", "start", "end", "ok", "detail"]
     assert telemetry.REASONING_KINDS == ("text", "summary", "encrypted-only", "omitted")
     assert telemetry.PART_KINDS == ("system", "tools", "skills", "instruction_file", "agents_md")
     assert telemetry.DELIVERIES == ("inlined", "on-demand", "listed")
@@ -100,8 +102,19 @@ def _ex() -> telemetry.Extraction:
                                          sources={"model_served": "rollout:turn_context.model", "effort": "rollout:turn_context.effort"})
     ex.reasoning = [telemetry.ReasoningItem(3, 0, "summary", "plan", 4, 12, None)]
     ex.prompt_parts = [telemetry.PromptPart("instruction_file", "AGENTS.md", 900, "inlined", "rollout:developer")]
-    ex.harness_events = [telemetry.HarnessEvent("hook", "pre", "2026-10-12T00:00:00Z", None, True, None)]
+    ex.harness_events = [telemetry.HarnessEvent(7, "hook", "pre", "2026-10-12T00:00:00Z", None, True, None)]
     return ex
+
+
+def test_two_served_settings_with_different_sources_write_both_rows():  # ruling on DR2: a tuple, one per source
+    ex = telemetry.Extraction()
+    ex.served = (telemetry.ServedSettings(effort="high", sources={"effort": "rollout:turn_context.effort"}),
+                 telemetry.ServedSettings(effort="medium", sources={"effort": "config.toml:model_reasoning_effort"}))
+    rows = [r for r in normalize.served_rows("r1", "a", "s", ex, "x") if r["field"] == "effort"]
+    assert [(r["value"], r["source"]) for r in rows] == [("high", "rollout:turn_context.effort"),
+                                                          ("medium", "config.toml:model_reasoning_effort")]
+    # a field neither source read (no source, the same reason) is one row, never a duplicate key
+    assert [r["field"] for r in normalize.served_rows("r1", "a", "s", ex, "x")] == [*telemetry.SERVED_FIELDS, "effort"]
 
 
 def test_served_rows_one_per_setting_with_the_reason_when_not_recorded():
@@ -122,7 +135,8 @@ def test_the_list_stream_row_builders_have_exactly_the_adr_columns():
     (p,) = normalize.prompt_part_rows("r1", "a", "s", ex, "x")
     assert list(p) == [*PREFIX, "part", "path", "chars", "delivery", "source"] and p["kind"] == "prompt_part"
     (h,) = normalize.harness_event_rows("r1", "a", "s", ex, "x")
-    assert list(h) == [*PREFIX, "event", "name", "start", "end", "ok", "detail"] and h["kind"] == "harness_event"
+    assert list(h) == [*PREFIX, "native_ordinal", "event", "name", "start", "end", "ok", "detail"]
+    assert (h["kind"], h["native_ordinal"]) == ("harness_event", 7)
     assert h["ok"] == 1  # flags are 0/1 ints in the ledger
 
 
@@ -140,8 +154,7 @@ def test_the_four_streams_are_pass_facts_and_view_facts_with_keys():
     assert views.KEYS["served"] == ("run_id", "extraction_id", "cell_id", "native_session_id", "field", "source")
     assert views.KEYS["reasoning"] == ("run_id", "extraction_id", "cell_id", "native_session_id", "native_ordinal", "item_ordinal")
     assert views.KEYS["prompt_parts"] == ("run_id", "extraction_id", "cell_id", "native_session_id", "part", "path", "source")
-    assert views.KEYS["harness_events"] == ("run_id", "extraction_id", "cell_id", "native_session_id", "event", "name",
-                                            "start", "end", "ok", "detail")
+    assert views.KEYS["harness_events"] == ("run_id", "extraction_id", "cell_id", "native_session_id", "native_ordinal")
 
 
 def _cost_only(root: Path) -> None:
@@ -167,17 +180,30 @@ def test_an_old_shape_reader_writes_no_row_in_the_new_streams(root, tmp_path):
     assert views.verify(run_dir) == []
 
 
-def _with_hooks(monkeypatch, reason: str | None = None) -> None:
+def _with_hooks(monkeypatch, reason: str | None = None, events: list | None = None, served=None) -> None:
     real = profiles.READERS["codex"]
 
     def reader(path):
         ex = real(path)
         built = _ex()
-        ex.served, ex.reasoning, ex.prompt_parts = built.served, built.reasoning, built.prompt_parts
-        ex.harness_events = reason if reason is not None else built.harness_events
+        ex.served, ex.reasoning, ex.prompt_parts = served or built.served, built.reasoning, built.prompt_parts
+        ex.harness_events = reason if reason is not None else (events or built.harness_events)
         return ex
 
     monkeypatch.setitem(profiles.READERS, "codex", reader)
+
+
+def test_an_identical_event_pair_and_two_served_sources_write_every_row_and_the_view_loads(root, tmp_path, monkeypatch):
+    load = telemetry.HarnessEvent
+    pair = [load(4, "skill_load", "implement", None, None, None, None), load(9, "skill_load", "implement", None, None, None, None)]
+    two = (telemetry.ServedSettings(effort="high", sources={"effort": "a"}), telemetry.ServedSettings(effort="high", sources={"effort": "b"}))
+    _with_hooks(monkeypatch, events=pair, served=two)
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    gid = runner.run_pass(run_dir, root).grading_id
+    assert [r["native_ordinal"] for r in pass_rows(run_dir, "harness_events", gid)] == [4, 9]
+    assert [r["source"] for r in pass_rows(run_dir, "served", gid) if r["field"] == "effort"] == ["a", "b"]
+    assert views.verify(run_dir) == []
+    assert views.load(run_dir).cells[0].validity == "valid"  # no HB-LED-003: the keys differ
 
 
 def test_a_pass_writes_the_four_streams_from_the_hooks(root, tmp_path, monkeypatch):

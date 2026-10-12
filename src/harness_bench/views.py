@@ -65,8 +65,7 @@ KEYS = {  # ADR-0006 as amended: the key of one row of each fact
     "served": (*_READER_KEY, "field", "source"),  # two sources that disagree are two rows (ADR-0024 s4)
     "reasoning": (*_READER_KEY, "native_ordinal", "item_ordinal"),
     "prompt_parts": (*_READER_KEY, "part", "path", "source"),
-    # ADR-0026 s1 gives this stream no ordinal column, so the key is the whole row: two identical events are refused.
-    "harness_events": (*_READER_KEY, "event", "name", "start", "end", "ok", "detail"),
+    "harness_events": (*_READER_KEY, "native_ordinal"),  # ADR-0026 erratum (DR1): identical events never collide
 }
 
 

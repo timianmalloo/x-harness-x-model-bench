@@ -151,7 +151,9 @@ class PromptPart:
 
 @dataclass(frozen=True)
 class HarnessEvent:
-    """One hook invocation, skill load or compaction (ADR-0026 s1): `event` in EVENT_KINDS."""
+    """One hook invocation, skill load or compaction (ADR-0026 s1): `event` in EVENT_KINDS. `native_ordinal` is the
+    event's position in its record (ADR-0026 erratum, ruling on DR1), so two identical events never share a key."""
+    native_ordinal: int
     event: str
     name: str | None
     start: str | None
@@ -181,7 +183,7 @@ class Extraction:
     # not readable or absent; an empty list must never imply a measured absence of tools.
     tools_advertised: list[str] | None = None
     # The four reader hooks (see READER_NOT_BUILT above).
-    served: ServedSettings | str = READER_NOT_BUILT
+    served: ServedSettings | tuple[ServedSettings, ...] | str = READER_NOT_BUILT  # a tuple: one per source (DR2)
     reasoning: list[ReasoningItem] | str = READER_NOT_BUILT
     prompt_parts: list[PromptPart] | str = READER_NOT_BUILT
     harness_events: list[HarnessEvent] | str = READER_NOT_BUILT
