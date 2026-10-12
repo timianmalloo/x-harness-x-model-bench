@@ -481,7 +481,7 @@ class Engine:
                     self._expire_decisions()
                     self.on_tick()
                     if sleep.slept():
-                        pass
+                        self._kill_all("host_suspended")
                     # The slot ends when the process is confirmed gone (module doc), which is before the
                     # outcome. A worker still archiving stays in active so the loop drains it, and does
                     # not keep the slot: design 6.2 step 8 launches in this tick once the decision is closed.
