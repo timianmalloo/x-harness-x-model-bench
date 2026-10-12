@@ -302,6 +302,35 @@ def test_task_source_refuses_a_base_tree_that_carries_an_instruction_file(base):
     assert e.value.code == "HB-PRE-009"
 
 
+NEW_HARNESS_INSTRUCTIONS = {".agents/rules/x.md": "agy rule\n", ".agents/skills/s/SKILL.md": "agy skill\n",
+                            ".grok/settings.md": "grok rule\n"}  # ADR-0025 s8: every file under these trees is loaded
+
+
+def test_task_source_drops_every_file_under_the_new_harness_instruction_trees(base):  # R-CAP, ADR-0025 s8
+    upstream = base / "upstream"
+    upstream.mkdir()
+    commit = _local_upstream_repo(upstream, {"a.txt": "A\n", ".agents/notes.md": "not a rule\n", **NEW_HARNESS_INSTRUCTIONS})
+    task_dir = base / "tasks" / "P7"
+    _source_task(task_dir, upstream, commit, {"README.md": "overlay\n"})
+
+    dest = workspace.task_source(task_dir, "v7", base / "sources", base / "upstream-cache")
+
+    assert _tree(dest) == {"a.txt": "A\n", ".agents/notes.md": "not a rule\n", "README.md": "overlay\n"}
+
+
+@pytest.mark.parametrize("rel", sorted(NEW_HARNESS_INSTRUCTIONS))
+def test_task_source_refuses_a_new_harness_instruction_file_in_the_overlay(base, rel):  # R-CAP, HB-PRE-009
+    upstream = base / "upstream"
+    upstream.mkdir()
+    commit = _local_upstream_repo(upstream, {"a.txt": "A\n"})
+    task_dir = base / "tasks" / "P8"
+    _source_task(task_dir, upstream, commit, {rel: NEW_HARNESS_INSTRUCTIONS[rel]})
+
+    with pytest.raises(BenchError) as e:
+        workspace.task_source(task_dir, "v8", base / "sources", base / "upstream-cache")
+    assert e.value.code == "HB-PRE-009" and rel in str(e.value)
+
+
 def test_task_source_leaves_bytecode_a_test_wrote_into_the_task_workspace_out_of_the_base(base):  # NG pin-tree flake
     upstream = base / "upstream"
     upstream.mkdir()
