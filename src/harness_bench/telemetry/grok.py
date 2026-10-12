@@ -120,10 +120,10 @@ def _reasoning_items(row: dict) -> list[tuple[str, str | None, str | None]]:
     return [("encrypted-only", None, sha)] if sha else [("omitted", None, None)]
 
 
-def _chat(d: Path, ex: Extraction, served: list[str], effort: list[str]) -> dict[str, tuple[int, str]]:
+def _chat(d: Path, ex: Extraction, served: list[str], effort: list[str]) -> dict[str, str]:
     """Reasoning items and the calls each assistant row made, in native order; the requested calls by id."""
     ex.reasoning = []
-    calls: dict[str, tuple[int, str]] = {}
+    calls: dict[str, str] = {}
     request = None  # the line that opened the current model response (its first reasoning or assistant row)
     items = 0
     for n, row in rows(d / CHAT, ex):
@@ -148,14 +148,16 @@ def _chat(d: Path, ex: Extraction, served: list[str], effort: list[str]) -> dict
         for call in as_list(row.get("tool_calls")):
             call = as_dict(call)
             if (call_id := as_str(call.get("id"))) is not None:
-                calls[call_id] = (n, as_str(call.get("name")) or "unknown")
+                calls[call_id] = as_str(call.get("name")) or "unknown"
     return calls
 
 
-def _tool_calls(d: Path, ex: Extraction, calls: dict[str, tuple[int, str]]) -> None:
+def _tool_calls(d: Path, ex: Extraction, calls: dict[str, str]) -> None:
     """A requested call's times and outcome from `events.jsonl`: `tool_completed` names its call id; its start is the
     earliest open `tool_started` of the same tool (events carry no id on start). A call with no completion has
-    neither (a killed turn)."""
+    neither (a killed turn). `native_ordinal` is the call's position among the record's requested calls, 1-based, in
+    native order (line, then its index in that row's `tool_calls`): one assistant row holds several parallel calls
+    (devprobe-rerun-1), so its line is no key (HB-LED-003; Claude Code's DR1 rule for events)."""
     started: dict[str, deque] = defaultdict(deque)
     done: dict[str, tuple[str | None, str | None, str | None]] = {}
     if (d / "events.jsonl").is_file():
@@ -166,10 +168,10 @@ def _tool_calls(d: Path, ex: Extraction, calls: dict[str, tuple[int, str]]) -> N
             elif event.get("type") == "tool_completed" and (call_id := as_str(event.get("tool_call_id"))):
                 start = started[name].popleft() if name and started[name] else None
                 done[call_id] = (start, stamp, as_str(event.get("outcome")))
-    for call_id, (n, name) in calls.items():
+    for position, (call_id, name) in enumerate(calls.items(), 1):
         start, end, outcome = done.get(call_id, (None, None, None))
         ok = None if outcome is None else outcome == "success"
-        ex.tool_calls.append(ToolCall(n, name, tool_class(name), start, end, ok, None if ok in (None, True) else outcome))
+        ex.tool_calls.append(ToolCall(position, name, tool_class(name), start, end, ok, None if ok in (None, True) else outcome))
 
 
 def _prompt_parts(d: Path) -> list[PromptPart] | str:

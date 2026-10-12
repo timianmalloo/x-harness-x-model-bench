@@ -276,3 +276,16 @@ def test_requests_of_another_session_are_not_this_cells(tmp_path):
     ex = copilot.read(record)
     assert [(c.requests, c.start) for c in ex.model_calls] == [(5, None)]
     assert not any(source and source.startswith(DEBUG) for _, source in _served(ex))
+
+
+def test_parallel_tool_requests_in_one_message_are_keyed_by_their_own_start_lines():
+    # PROBE-FIX sweep (the Grok HB-LED-003 shape): one assistant.message holds several toolRequests (rerun-off lines 5
+    # and 14, as in devprobe-rerun-1); each call is keyed by its own tool.execution_start line, so no two share a key.
+    events = _events(OFF)
+    requested = [t["toolCallId"] for e in events if e.get("type") == "assistant.message"
+                 for t in e["data"].get("toolRequests") or []]
+    starts = {e["data"]["toolCallId"]: n for n, e in enumerate(events, 1) if e.get("type") == "tool.execution_start"}
+    assert max(len(e["data"].get("toolRequests") or []) for e in events if e.get("type") == "assistant.message") > 1
+    rows = normalize.tool_call_rows("run", "cell", "sid", copilot.read(OFF), "x")
+    assert sorted(r["native_ordinal"] for r in rows) == sorted(starts[c] for c in requested)
+    assert len({r["native_ordinal"] for r in rows}) == len(rows) == len(requested)

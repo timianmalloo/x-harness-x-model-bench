@@ -12,10 +12,12 @@ import json
 import shutil
 import sqlite3
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
-from harness_bench import views
+from harness_bench import profiles, views
+from harness_bench.grade import runner
 from harness_bench.telemetry import (
     ModelCall,
     PromptPart,
@@ -27,8 +29,10 @@ from harness_bench.telemetry import (
     normalize,
 )
 
+ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = Path(__file__).parent / "fixtures" / "agy" / "reader"
-PACK_ON, PACK_OFF, TURN1 = (FIXTURES / name / "agy-stream.ndjson" for name in ("pack-on", "pack-off", "turn1"))
+PACK_ON, PACK_OFF, TURN1, CACHED = (FIXTURES / name / "agy-stream.ndjson" for name in ("pack-on", "pack-off", "turn1",
+                                                                                     "cached"))
 MODEL = "gemini-3.8-flash-high"
 # sha256 of each fixture's opaque step_payload bytes (the scrub's synthetic stand-ins, same length as recorded)
 SHA_986 = "ef1dcf0aa41f6e733771c51074c555f06972387f67750e929f648806cd93427c"  # pack-on step 1, field 20.14.2.1
@@ -71,6 +75,36 @@ def test_one_model_call_per_agent_response_step_with_thinking_as_a_component_of_
     assert agy.read(PACK_ON).model_calls == [ModelCall(4, MODEL, 11885, 0, 0, 216, 215)]
     assert agy.read(PACK_OFF).model_calls == [ModelCall(3, MODEL, 11692, 0, 0, 227, 165),
                                               ModelCall(7, MODEL, 12062, 0, 0, 88, 85)]
+
+
+def test_input_tokens_exclude_cache_read_so_uncached_input_is_input_tokens():
+    # PROBE-FIX: devprobe-rerun-1's agy-off stream (cut to two requests, provenance.json `cached`). Step 13 reports
+    # input_tokens 3302 beside cache_read_tokens 16260 and total_tokens 3820 = input + output, so input_tokens is the
+    # uncached part only (the cell's totals: cache_read 243503 > input 131099).
+    calls = agy.read(CACHED).model_calls
+    assert [(c.native_ordinal, c.uncached_input, c.cache_read, c.cache_write, c.output, c.reasoning) for c in calls] == [
+        (2, 16793, 0, 0, 2280, 1787), (3, 3302, 16260, 0, 518, 50)]
+
+
+def test_the_runner_reads_the_cells_stream_although_session_opened_names_no_session(tmp_path):
+    # PROBE-FIX: agy names its conversation in the stream's init, after the prompt, so attempt.session_opened carries
+    # session_id "" (devprobe-rerun-1, both agy cells) and the runner found "no native record for the session". The
+    # profile's glob names the cell home's one teed stream, so no id is needed to find it; rows carry init's id.
+    home = tmp_path / "attempt-1" / "home"
+    home.mkdir(parents=True)
+    shutil.copy(CACHED, home / "agy-stream.ndjson")
+    glob = profiles.load(ROOT, "agy").record_glob
+    assert profiles.find_records(home, glob, "") == [home / "agy-stream.ndjson"]
+    rollout = home / "sessions" / "2026" / "rollout-2026-10-12-any.jsonl"
+    rollout.parent.mkdir(parents=True)
+    rollout.write_text("{}\n", encoding="utf-8")
+    assert profiles.find_records(home, "sessions/**/rollout-*{session_id}.jsonl", "") == []  # an id glob still needs one
+    fake = SimpleNamespace(plan={"run_id": "run", "profiles": {"agy": {"record_glob": glob}}}, extraction="x",
+                           streams_nr={})
+    _, _, model_rows, _ = runner._Pass._extract(fake, {"harness": "agy", "cell_id": "c"}, tmp_path / "attempt-1", "",
+                                                held={("c", "x")})
+    assert [(r["native_session_id"], r["native_ordinal"]) for r in model_rows] == [
+        ("00000000-0000-4000-8000-000000000020", 2), ("00000000-0000-4000-8000-000000000020", 3)]
 
 
 def test_tool_steps_give_tool_calls_at_their_first_line_closed_by_their_terminal_state():
@@ -168,7 +202,7 @@ def test_an_out_of_profile_tool_that_ran_fires_hb_val_008(tmp_path):
     assert "search_web" in error.message
 
 
-@pytest.mark.parametrize("name", ["pack-on", "pack-off", "turn1"])
+@pytest.mark.parametrize("name", ["pack-on", "pack-off", "turn1", "cached"])
 def test_committed_fixture_bytes_carry_no_spike_path_or_secret_shape(name):
     for f in (FIXTURES / name).rglob("*"):
         if f.is_file():

@@ -1,0 +1,57 @@
+[
+  {
+    "name": "grok tool calls keyed by a constant, not their position",
+    "file": "src/harness_bench/telemetry/grok.py",
+    "find": "ex.tool_calls.append(ToolCall(position, name,",
+    "replace": "ex.tool_calls.append(ToolCall(1, name,",
+    "tests": [
+      "tests/test_reader_grok.py::test_two_tool_calls_in_one_assistant_line_get_distinct_native_ordinals_in_native_order"
+    ]
+  },
+  {
+    "name": "grok positions start at 0",
+    "file": "src/harness_bench/telemetry/grok.py",
+    "find": "enumerate(calls.items(), 1)",
+    "replace": "enumerate(calls.items(), 0)",
+    "tests": [
+      "tests/test_reader_grok.py::test_two_tool_calls_in_one_assistant_line_get_distinct_native_ordinals_in_native_order",
+      "tests/test_reader_grok.py::test_a_web_fetch_call_is_class_other_and_a_read_file_call_is_read_with_its_outcome"
+    ]
+  },
+  {
+    "name": "agy cache_read subtracted from input_tokens again",
+    "file": "src/harness_bench/telemetry/agy.py",
+    "find": "uncached, cache_read = ex.count(n, usage, \"input_tokens\"), ex.count(n, usage, \"cache_read_tokens\")",
+    "replace": "cache_read = ex.count(n, usage, \"cache_read_tokens\"); uncached = max(ex.count(n, usage, \"input_tokens\") - cache_read, 0)",
+    "tests": [
+      "tests/test_reader_agy.py::test_input_tokens_exclude_cache_read_so_uncached_input_is_input_tokens"
+    ]
+  },
+  {
+    "name": "an empty session id finds no record for any glob",
+    "file": "src/harness_bench/profiles.py",
+    "find": "return sorted(home.glob(record_glob)) if record_glob else []",
+    "replace": "return []",
+    "tests": [
+      "tests/test_reader_agy.py::test_the_runner_reads_the_cells_stream_although_session_opened_names_no_session"
+    ]
+  },
+  {
+    "name": "rows stamped with the event's empty session id",
+    "file": "src/harness_bench/grade/runner.py",
+    "find": "session_id = session_id or ex.session_id or \"\"",
+    "replace": "session_id = session_id or \"\"",
+    "tests": [
+      "tests/test_reader_agy.py::test_the_runner_reads_the_cells_stream_although_session_opened_names_no_session"
+    ]
+  },
+  {
+    "name": "copilot calls keyed by one line, not their own start line",
+    "file": "src/harness_bench/telemetry/copilot.py",
+    "find": "open_tools[tool_call_id] = {\"n\": n, \"name\"",
+    "replace": "open_tools[tool_call_id] = {\"n\": 1, \"name\"",
+    "tests": [
+      "tests/test_reader_copilot.py::test_parallel_tool_requests_in_one_message_are_keyed_by_their_own_start_lines"
+    ]
+  }
+]
