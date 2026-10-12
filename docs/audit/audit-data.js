@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-11T16:53:36Z",
+  "generated": "2026-10-12T01:17:11Z",
   "audit": [
     {
       "actor": null,
@@ -180207,6 +180207,27 @@ window.AUDIT_DATA = {
         "lean-rerun"
       ],
       "outcome": "success"
+    },
+    {
+      "id": "al-01M4PTYRG0DSYN3H18XX3MBAPH",
+      "shortname": "define-architecture-lean-rerun",
+      "datetime": "2026-10-12T01:17:11Z",
+      "session": "lean-rerun-leader",
+      "prompt": "T1 /define-architecture for docs/coordination/lean-rerun-equal-reasoning-prompt.md: the combo-settings contract, the new per-cell facts, the report generator (operator prompt 12ac42f4; Rulings 117, 118)",
+      "summary": "Architecture amendment + ADR-0024..0027: bench-matrix/3 effort/context frozen per cell and judged against the served value (HB-VAL-010/011, default_serves); stream_driver for agy with coord_transport as oracle; Grok over ACP with a dedicated credential home (CRED-COPY-A, measured stranding); 4 new grading-pass streams; catalog 0.8 drift split by grader rule; generated cost-compare report. Spikes: 6 harness spikes + Copilot ACP context probe (272k on 1.0.89-1 and 1.0.92-4). Council: 4 vetoes, all cleared by change in 3 rounds.",
+      "kind": "skill",
+      "skill": "define-architecture",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/architecture-lean-rerun.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "duration_source": "session-start-hook",
+      "started_at": "2026-10-12T01:15:09Z",
+      "duration_seconds": 122.0
     }
   ],
   "changes": [
@@ -181607,6 +181628,32 @@ window.AUDIT_DATA = {
         "after": "307ec7874b7ef4d386dbbd8edb576ed5ee7121ae",
         "branch": "main",
         "pushed": true,
+        "commits": []
+      }
+    },
+    {
+      "id": "cl-01M4PTYS0NX7NBQ6QGN8XG6SA2",
+      "datetime": "2026-10-12T01:17:11Z",
+      "session": null,
+      "kind": "architecture",
+      "skill": "define-architecture",
+      "title": "Lean re-run architecture: settings as plan facts judged against served values; Grok/agy cells; anatomy facts; catalog 0.8; cost-compare report",
+      "prompt": "T1 /define-architecture for docs/coordination/lean-rerun-equal-reasoning-prompt.md: the combo-settings contract, the new per-cell facts, the report generator (operator prompt 12ac42f4; Rulings 117, 118)",
+      "summary": "ADR-0024 settings + served read-back gate; ADR-0025 agy native-stream driver, Grok over ACP, credential-safe isolated cells; ADR-0026 four new fact streams, derivations extended, drift split; ADR-0027 generated cost-compare page with self-contained golden",
+      "rationale": "Last run mixed harness behaviour with reasoning setting and recorded no reasoning; argv-checked settings were ignored by three harnesses in spikes (SERVE-A), so settings are judged where they are honoured",
+      "artifacts": [
+        "docs/architecture-lean-rerun.md",
+        "docs/adr/0024-combo-settings-and-served-read-back.md",
+        "docs/adr/0025-transport-seam-grok-and-agy-cells.md",
+        "docs/adr/0026-per-cell-anatomy-facts-catalog-0-8.md",
+        "docs/adr/0027-cost-compare-report.md"
+      ],
+      "tags": [],
+      "git": {
+        "before": "0c569647",
+        "after": "0c569647cf4e06160db42f49bbdcd9acdc950faf",
+        "branch": "main",
+        "pushed": false,
         "commits": []
       }
     }

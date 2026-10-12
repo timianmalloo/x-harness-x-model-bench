@@ -2,7 +2,7 @@
 window.DOCS_INDEX = {
   "schemaVersion": "docs-index/v2",
   "project": "x-harness-x-model-bench",
-  "generator": "docs-graph.py derive",
+  "generator": "docs-graph.py flag",
   "rootId": "adr-0001-cell-containers",
   "artifactTypes": [
     "knowledge",
@@ -1033,6 +1033,186 @@ window.DOCS_INDEX = {
       "sourceSha256": "3617c2a865f8737a25549b8271cecae24c07e232d60f952eb24fab22b80c6972"
     },
     {
+      "id": "adr-0024-combo-settings-and-served-read-back",
+      "path": "docs/adr/0024-combo-settings-and-served-read-back.md",
+      "title": "ADR-0024: Combo settings (effort, context) are frozen plan facts, applied by the profile and read back from the harness's own record as a validity gate",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Lean re-run at equal reasoning (operator 2026-10-11)",
+      "reviewBy": "2027-04-11",
+      "reviewSuggested": [
+        {
+          "by": "arch-lean-rerun",
+          "on": "2026-10-11",
+          "reason": "lean re-run amendment: bench-matrix/3 settings, served read-back (HB-VAL-010/011), Grok and agy cells, catalog 0.8 drift split, cost-compare report (ADR-0024..0027)"
+        }
+      ],
+      "summary": "bench-matrix/3 combos carry effort and context. Both are frozen on every cell, applied only through the profile's declared settings, and refused at plan time when the profile does not support the value. A profile also declares what its \"default\" serves. Each reader returns the settings the harness actually served, from its own record, and every pinned or declared value is judged: a mismatch invalidates the cell (HB-VAL-010), and a value no record carries is a warning (HB-VAL-011). A twelve-plus-cell readiness probe on a real property task runs the same check after the last code join and before batch 1. bench-matrix/2 files still load, as \"default\".",
+      "tags": [
+        "benchmark",
+        "settings",
+        "reasoning-effort",
+        "context-window",
+        "validity",
+        "serve-a",
+        "readiness"
+      ],
+      "links": [
+        {
+          "to": "arch-lean-rerun",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0017-engine-identity-and-freeze",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0022-lean-benchmark-two-batch-runs",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "cbb90395bcd75da4f22b5a9f6835256aae4e2554b865215ae837e714d5bf4358"
+    },
+    {
+      "id": "adr-0025-transport-seam-grok-and-agy-cells",
+      "path": "docs/adr/0025-transport-seam-grok-and-agy-cells.md",
+      "title": "ADR-0025: Grok over the existing ACP driver; Antigravity over a bench-owned native-stream driver with the pack adapter as its oracle; isolated, pinned, credential-safe cells",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Lean re-run at equal reasoning (operator 2026-10-11)",
+      "reviewBy": "2027-04-11",
+      "reviewSuggested": [
+        {
+          "by": "arch-lean-rerun",
+          "on": "2026-10-11",
+          "reason": "lean re-run amendment: bench-matrix/3 settings, served read-back (HB-VAL-010/011), Grok and agy cells, catalog 0.8 drift split, cost-compare report (ADR-0024..0027)"
+        }
+      ],
+      "summary": "The engine picks its protocol module by profile.transport: driver.py (ACP, unchanged behaviour plus a session/new _meta passthrough and a fail-closed set_model check) or a new stream_driver.py with the same function signatures, the only module that speaks Antigravity's stream-json, multi-turn, under the bench's own process control, teeing the raw stream into the cell home as the native record. The pack's coord_transport agy path is not imported: it discards the bodies the bench must record and spawns its own processes. It is the conformance oracle in a contract test through its public run_session instead. Grok and Antigravity cells are isolated by HOME and USERPROFILE, run read-only pinned executables with self-update off, seed their trust and permission files, restrict tools to the ADR-0004 classes, and never copy a worker's credential.",
+      "tags": [
+        "benchmark",
+        "transport",
+        "acp",
+        "grok",
+        "antigravity",
+        "isolation",
+        "builds",
+        "credentials"
+      ],
+      "links": [
+        {
+          "to": "arch-lean-rerun",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0013-native-cells",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0004-static-permissions",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "b1a4a1544ad602cfff8437faa2ffacd180db7ef67188f696d18774de562a7d1e"
+    },
+    {
+      "id": "adr-0026-per-cell-anatomy-facts-catalog-0-8",
+      "path": "docs/adr/0026-per-cell-anatomy-facts-catalog-0-8.md",
+      "title": "ADR-0026: Per-cell anatomy - four new grading-pass fact streams (served, reasoning, prompt_parts, harness_events), the existing report-time derivations extended, and catalog 0.8's drift split and attention drift",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Lean re-run at equal reasoning (operator 2026-10-11)",
+      "reviewBy": "2027-04-11",
+      "reviewSuggested": [
+        {
+          "by": "arch-lean-rerun",
+          "on": "2026-10-11",
+          "reason": "lean re-run amendment: bench-matrix/3 settings, served read-back (HB-VAL-010/011), Grok and agy cells, catalog 0.8 drift split, cost-compare report (ADR-0024..0027)"
+        }
+      ],
+      "summary": "The grading pass reads four native facts into hash-chained streams that bench verify checks: served settings, every reasoning item (visible text or summary, else encrypted-only or omitted, never reconstructed), the fixed prompt parts each harness sends, and hook, skill-load and compaction events. Tool phases, bytes returned, context curves, re-reads and time anatomy extend the report-time derivations that already exist (tool_inputs, context_growth, pack_improvement's classifier, views' busy and idle time); nothing is defined twice. Catalog 0.8 splits drift into machine-written, task-implied and discretionary lines by grader rule (no task-version bump), makes the drift metrics apply to every task with a radius, and adds attention drift.",
+      "tags": [
+        "benchmark",
+        "telemetry",
+        "reasoning",
+        "fact-stream",
+        "drift",
+        "catalog",
+        "instrumentation"
+      ],
+      "links": [
+        {
+          "to": "arch-lean-rerun",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0006-results-data-model",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0019-catalog-0-7-property-metrics",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0024-combo-settings-and-served-read-back",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "28dca6637e4df64b519919ac982f24796c64d7ca920ca763c645276b0179d9c3"
+    },
+    {
+      "id": "adr-0027-cost-compare-report",
+      "path": "docs/adr/0027-cost-compare-report.md",
+      "title": "ADR-0027: bench report --cost-compare generates the harness cost comparison from run records alone, with a self-contained golden",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Lean re-run at equal reasoning (operator 2026-10-11)",
+      "reviewBy": "2027-04-11",
+      "reviewSuggested": [
+        {
+          "by": "arch-lean-rerun",
+          "on": "2026-10-11",
+          "reason": "lean re-run amendment: bench-matrix/3 settings, served read-back (HB-VAL-010/011), Grok and agy cells, catalog 0.8 drift split, cost-compare report (ADR-0024..0027)"
+        }
+      ],
+      "summary": "A new pure module, report/cost_compare.py, builds the cost-comparison page from one or more RunViews and the existing report derivations; the CLI writes it with --out and opens it in Chrome through the pack's own render-markdown lookup. It keeps the hand-built page's five sections, adds reasoning, context curves, prompt composition, tool phases, time anatomy, the drift split and a 12-series kiviat normalised over all series. No number is hand-filled. Its golden runs on a fixture whose bench inputs are its own, so a pin bump never reddens it (GOLD-A).",
+      "tags": [
+        "benchmark",
+        "report",
+        "cost",
+        "kiviat",
+        "golden",
+        "gold-a"
+      ],
+      "links": [
+        {
+          "to": "arch-lean-rerun",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0026-per-cell-anatomy-facts-catalog-0-8",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0023-lean-summary-over-verdicts",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "5e3aed712324bcbbf45a4bbb5ea1546977cb2ba570673399fdd86cbe426aa6a7"
+    },
+    {
       "id": "arch-evaluation-campaign",
       "path": "docs/architecture-evaluation-campaign.md",
       "title": "Architecture amendment: the Evaluation Campaign (arms, multi-turn cells, campaigns, hidden checks)",
@@ -1205,6 +1385,66 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "bd03b4a10dd1e1ac2342fc00f3b94e4bcaad9cc2f6862e61e2e8771045eeba71"
+    },
+    {
+      "id": "arch-lean-rerun",
+      "path": "docs/architecture-lean-rerun.md",
+      "title": "Architecture amendment: the lean re-run at equal reasoning (combo settings, served read-back, Grok and Antigravity cells, per-cell anatomy, the cost-compare report)",
+      "type": "architecture",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Lean re-run at equal reasoning (operator 2026-10-11)",
+      "reviewBy": "2027-04-11",
+      "reviewSuggested": [],
+      "summary": "The smallest architecture that lets the lean ring re-run six harness/model combos at one reasoning setting and explain the cost differences. Combos gain effort and context (bench-matrix/3), frozen per cell and read back from each harness's own record as a validity gate (HB-VAL-010), including what \"default\" serves. The engine picks its protocol module by profile: ACP stays in driver.py; a new stream_driver.py with the same signatures speaks Antigravity's native stream-json. Grok runs over the existing ACP driver, never on a copy of a worker's credential. New hash-chained grading facts record served settings, reasoning items, prompt composition and harness events; the existing report derivations are extended, not duplicated; catalog 0.8 adds drift split three ways and attention drift. A generated cost-compare report replaces the hand-built page.",
+      "tags": [
+        "benchmark",
+        "architecture",
+        "lean-benchmark",
+        "settings",
+        "reasoning",
+        "transport",
+        "grok",
+        "antigravity",
+        "report",
+        "drift"
+      ],
+      "links": [
+        {
+          "to": "arch-lean-benchmark",
+          "rel": "refines"
+        },
+        {
+          "to": "arch-harness-bench",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0024-combo-settings-and-served-read-back",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0025-transport-seam-grok-and-agy-cells",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0026-per-cell-anatomy-facts-catalog-0-8",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0027-cost-compare-report",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0022-lean-benchmark-two-batch-runs",
+          "rel": "depends-on"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "90bc6cb52db1c5de2e64914d56cf70f09debc9f5133f33b70938f0576ab1f45a"
     },
     {
       "id": "lean-preregistration",
@@ -2175,7 +2415,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "d9ba4bbe7d9d00f464a5388aefd6e11c9a19d1d6280522574e66fce99f894d6b"
+      "sourceSha256": "43b91981bddca9604ad34b076fd9383c2c76eeedee9bd1ef591df56046c0b79f"
     },
     {
       "id": "design-eval-arms",
@@ -5455,7 +5695,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "7181b4024faeaf0c15679f1ecd5c3f554d3eca6d3f2a1bafec6cb1a3a7840bba"
+      "sourceSha256": "366c85dd2695e44da004dde0325e91bf5b3755d1694d90e7e7e04930a481c8c4"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -11381,5 +11621,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "ea3cdbaf73e591fc0d4ac3ffea862215e493f0371d7adbfbfcc2c44e4e46903b"
+  "graphSha256": "3dab8d3292aa63142b304f43528858c3b11ca9d2ea7a0305cf1d5b477ed8dce4"
 };

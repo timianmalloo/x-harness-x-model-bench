@@ -1833,3 +1833,30 @@ the register first (ID-A); new ids were checked free by `git grep` at `f6389964`
   `Copy-Item`), then run `bench verify` on the copy before the source is removed. `bench verify` already catches it,
   so the procedure only needs to make that run mandatory.
 - **Status:** `candidate`
+
+## Leader entries (2026-10-11; lean re-run, define-architecture)
+
+### CRED-COPY-A: a rotating credential copied into an isolated home strands the original (candidate; Leader-caused)
+- **Signature:** a cell or spike gets its own home and a *copy* of the operator's login file (`auth.json`,
+  `.credentials.json`). The access token in it is short-lived and the file holds a refresh token. When the copy
+  refreshes, the provider rotates the token family, so the original file's refresh token is dead. The real home
+  then reports "not authenticated", and every live worker on that login fails.
+- **Why it survives:** the copy works, and so does the original, until the access token expires. The failure lands
+  hours later, in another process, with no link to the cell that caused it. A before/after hash of the original
+  cannot see it: rotation kills the token on the server and leaves the file bytes unchanged.
+- **Instances:**
+  - `2026-09-30` (ADR-0003 Am.): Claude Code; the shape is why `HB_CLAUDE_OAUTH_TOKEN` exists (`profiles.py:28-33`).
+    Recorded there as prose, never as a class.
+  - `2026-10-11` (lean re-run, Grok spike; Leader-dispatched Opus sub-agent): two Grok cells ran on copies of
+    `~/.grok/auth.json`. At 18:06 `grok models` in the real home said "You are not authenticated" and rewrote the
+    file. The access token is a JWT that had expired 2.4 h earlier (Verified: its `exp`, not its value). Cause
+    Inferred: rotation by a cell refresh. The Grok coordination workers depend on that login.
+- **Sweep:** every profile that copies a credential: Codex (`~/.codex/auth.json`, `bench/profiles/codex.yaml`) has
+  run many cells on copies without a recorded stranding (Inferred: not rotated within a run, or not rotating);
+  Claude Code has the OAuth-token path; Copilot and Antigravity use a credential store in place (no copy).
+- **Control (rung: design, then test):** ADR-0025 §7. Cells never copy a worker's credential; Grok uses a dedicated
+  bench credential home with atomic write-back under an `oslock`, one cell at a time; the readiness gate starts on
+  an expired access token and judges by authentication of both homes, never by hash. Test (owed, with the Grok
+  track): a fake credential whose refresh rotates, two sequential cells, the bench home still valid. Upgrade
+  trigger: a Codex stranding, which would move Codex onto the same path.
+- **Status:** `candidate`

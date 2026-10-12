@@ -2169,3 +2169,22 @@ Asked at the start-state check of `docs/coordination/lean-rerun-equal-reasoning-
 4. **`gpt-5.6-sol-fast` stays the sixth combo.** Copilot 1.0.89-1 serves it to this login as "GPT-5.6 Sol Fast (Internal only)" (ACP `session/new`, `availableModels`, read 2026-10-11). The id is resolved; no decision request is needed.
 
 - ruled by: operator · at: 2026-10-11
+
+### Ruling 118 — lean re-run: Copilot combos run over ACP at the served 272k default tier (operator, 2026-10-11)
+
+Asked during `/define-architecture` of the lean re-run, after the probes below; answered by the operator.
+
+> "ACP at 272k (Recommended)"
+
+- **Why it was asked.** Copilot does not apply `long_context` through ACP, the protocol the bench drives it with.
+  Verified on 2026-10-11: on 1.0.89-1 (the pin), the `--context long_context` flag, a `config.json`
+  `contextTier`, `session/new` `_meta.contextTier` and `session/set_config_option context` (refused: "Unknown
+  config option 'context'") each served `usage_update.size` 272,000 with `session.start.contextTier` null; on the
+  cached 1.0.92-4, the flag and `set_config_option` gave the same. Only `copilot -p` mode applies it (the settings
+  spike, `C:\tf\spike-settings\copilot\home-p`). Probe: `C:\tf\spike-settings\tools\copilot_tier_probe.py`.
+- **Decides:** `copilot-sol` and `copilot-sol-fast` pin context `default` (272,000 served) and stay on the ACP
+  path. The read-back judges the served 272k against that pin. The run report and the cost report state the 272k
+  window beside Copilot's numbers, as they state Grok's 256k.
+- **Refused:** a third, Copilot `-p` transport (more build risk, and Copilot cells would no longer be driven as the
+  2026-10-10 cells were).
+- ruled by: operator · at: 2026-10-11
