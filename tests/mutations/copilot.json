@@ -51,15 +51,15 @@
   {
     "name": "command placeholders must expand",
     "file": "src/harness_bench/profiles.py",
-    "find": "argv = [part.replace(\"{exe}\", values[\"exe\"]).replace(\"{model}\", values[\"model\"] or \"\")",
-    "replace": "argv = [part.replace(\"{exe}\", \"{exe}\").replace(\"{model}\", values[\"model\"] or \"\")",
+    "find": "argv.append(part.replace(\"{exe}\", values[\"exe\"]).replace(\"{model}\", values[\"model\"] or \"\")",
+    "replace": "argv.append(part.replace(\"{exe}\", \"{exe}\").replace(\"{model}\", values[\"model\"] or \"\")",
     "tests": ["tests/test_profiles.py::test_copilot_argv_uses_the_pinned_exe_and_each_cells_model"]
   },
   {
     "name": "argv template leaves unrelated braces literal",
     "file": "src/harness_bench/profiles.py",
-    "find": "argv = [part.replace(\"{exe}\", values[\"exe\"]).replace(\"{model}\", values[\"model\"] or \"\")\n                .replace(\"{node}\", values.get(\"node\", \"\")).replace(\"{adapter}\", values.get(\"adapter\", \"\"))\n                for part in self.command]",
-    "replace": "argv = [part.format_map(values) for part in self.command]",
+    "find": "argv.append(part.replace(\"{exe}\", values[\"exe\"]).replace(\"{model}\", values[\"model\"] or \"\")\n                        .replace(\"{node}\", values.get(\"node\", \"\")).replace(\"{adapter}\", values.get(\"adapter\", \"\"))\n                        .replace(\"{python}\", values[\"python\"]).replace(\"{home}\", values[\"home\"]))",
+    "replace": "argv.append(part.format_map(values))",
     "tests": ["tests/test_profiles.py::test_command_template_preserves_literal_braces"]
   },
   {

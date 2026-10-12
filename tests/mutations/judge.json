@@ -114,15 +114,15 @@
  {
   "name": "the pass has no verdict_uses segment",
   "file": "src/harness_bench/grade/runner.py",
-  "find": "PASS_FACTS = (\"events\", \"model_calls\", \"tool_calls\", \"scores\", \"verdict_uses\")",
-  "replace": "PASS_FACTS = (\"events\", \"model_calls\", \"tool_calls\", \"scores\")",
+  "find": "PASS_FACTS = (\"events\", \"model_calls\", \"tool_calls\", \"scores\", \"verdict_uses\", *READER_STREAMS)",
+  "replace": "PASS_FACTS = (\"events\", \"model_calls\", \"tool_calls\", \"scores\", *READER_STREAMS)",
   "tests": ["tests/test_grade_judge.py::test_t_gw_21_verdict_uses_is_append_only_and_a_rewrite_fails_verify"]
  },
  {
   "name": "verify and views do not read verdict_uses",
   "file": "src/harness_bench/views.py",
-  "find": "FACTS = (\"events\", \"model_calls\", \"tool_calls\", \"turn_usage\", \"archive_files\", \"scores\", \"verdict_uses\")",
-  "replace": "FACTS = (\"events\", \"model_calls\", \"tool_calls\", \"turn_usage\", \"archive_files\", \"scores\")",
+  "find": "FACTS = (\"events\", \"model_calls\", \"tool_calls\", \"turn_usage\", \"archive_files\", \"scores\", \"verdict_uses\",",
+  "replace": "FACTS = (\"events\", \"model_calls\", \"tool_calls\", \"turn_usage\", \"archive_files\", \"scores\",",
   "tests": ["tests/test_grade_judge.py::test_t_gw_21_verdict_uses_is_append_only_and_a_rewrite_fails_verify"]
  },
  {
