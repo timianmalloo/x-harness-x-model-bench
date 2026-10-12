@@ -483,6 +483,10 @@ def profile_record(root: Path, harness: str) -> dict:
     record = {"profile_hash": file_hash(root / "bench" / "profiles" / f"{harness}.yaml"), "vendor": p.vendor,
               "usage_source": p.usage_source, "auxiliary_models": list(p.auxiliary_models), "record_glob": p.record_glob,
               "subagent_glob": p.subagent_glob, "shutdown_grace_seconds": format(p.shutdown_grace, "g")}
+    if p.settings:  # ADR-0024 s3-s4: a "default" cell is judged against the frozen default_serves; absent when empty
+        record["settings"] = {name: {"values": list(s.values), "apply": s.apply, "default_serves": s.default_serves,
+                                     "args": {value: list(argv) for value, argv in sorted(s.args.items())}}
+                              for name, s in sorted(p.settings.items())}
     if p.model_aliases:  # ADR-0024 s5: frozen for HB-VAL-002; absent when empty, so no earlier record changes shape
         record["model_aliases"] = {pin: list(names) for pin, names in sorted(p.model_aliases.items())}
     return record

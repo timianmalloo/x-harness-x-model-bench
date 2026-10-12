@@ -23,7 +23,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from harness_bench import config, oslock, tools
+from harness_bench import config, gitsafe, oslock, tools
 from harness_bench.errors import BenchError
 from harness_bench.telemetry import claude_code, codex, copilot
 
@@ -38,6 +38,10 @@ DEFAULT = "default"
 SETTINGS = ("effort", "context")
 SETTING_APPLY = ("placeholder", "model_id", "none")
 SETTING_PLACEHOLDERS = {"effort": "{effort}", "context": "{context_tokens}"}
+WORKTREE = "{worktree}"  # a seed_files placeholder: the cell's working copy (Grok's trusted folder)
+# assume: the engine lays a cell out as <cell>/home and <cell>/ws (engine._run_cell); confirm: the test that reads that
+# line; breaks: a seeded trusted folder names a path the agent never works in, and Grok loads no project instructions.
+CELL_WORKTREE_BESIDE_HOME = "ws"
 CONTEXT_ARG = "{context_arg}"  # ADR-0028 s3: a whole argv element, replaced by the context setting's argv map
 TRANSPORTS = ("acp", "agy-stream")  # ADR-0025 s1: the module engine._attempt drives the cell with
 SCRIPTED_USER = ("supported", "unsupported")  # ADR-0028 s7: the plan refuses a scripted-user task when unsupported
@@ -60,17 +64,19 @@ DROP_EXACT = {"CLAUDECODE", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "COPILOT_HOME", "
 # ADR-0025 s8: the Grok and Antigravity homes, keys and projects of the operator never reach a cell; a profile re-adds
 # only its own values (its env block).
 DROP_PREFIXES = ("CLAUDE_CODE_", "CODEX_", "COPILOT_", "GIT_CONFIG_", "GROK_", "AGY_", "GEMINI_", "GOOGLE_")
-# ADR-0025 s8: one bench-owned global git config for every cell, so a relocated HOME (Grok, agy) and a kept one read the
-# same (empty) file, never the operator's. It is not gitsafe's host-side file (ADR-0010 B6): a cell may write its own
-# global config, and that must never reach host git. seed_home creates it.
-CELL_GITCONFIG = Path(tempfile.gettempdir()) / "harness-bench-cell-git" / "gitconfig"
+# ADR-0025 s8 (Leader ruling r-settings-rerun-2): each cell's own global git config, in its home, never the operator's
+# and never shared, so a `git config --global` in one cell reaches no other cell and never host git (gitsafe's own file,
+# ADR-0010 B6). It carries the bench identity, so an agent's commit works the same in every harness. seed_home writes it;
+# cell_env names it in GIT_CONFIG_GLOBAL. With HOME relocated to the cell home (Grok, agy), ~/.gitconfig is this file too.
+CELL_GITCONFIG_NAME = ".gitconfig"
+CELL_GITCONFIG_TEXT = (f"[user]\n\tname = {gitsafe.BENCH_IDENTITY['GIT_AUTHOR_NAME']}\n"
+                       f"\temail = {gitsafe.BENCH_IDENTITY['GIT_AUTHOR_EMAIL']}\n")
 CELL_ENV = {
     "MSBUILDDISABLENODEREUSE": "1",
     "UseSharedCompilation": "false",
     "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
     "GIT_CONFIG_COUNT": "2", "GIT_CONFIG_KEY_0": "core.fsmonitor", "GIT_CONFIG_VALUE_0": "false",
     "GIT_CONFIG_KEY_1": "core.longpaths", "GIT_CONFIG_VALUE_1": "true",
-    "GIT_CONFIG_GLOBAL": str(CELL_GITCONFIG),
 }
 # ADR-0025 s7: the lock file inside the credential home; a cell holds it from seed to write-back.
 CRED_LOCK_NAME = ".harness-bench-cred.lock"
@@ -167,7 +173,7 @@ class Profile:
         return DELEGATE_IDS.get(self.harness, ()) if scenario == 6 else ()
 
     def seed_home(self, home: Path, model: str, scenario: int | None = None, oauth_token: str | None = None,
-                  effort=DEFAULT, context=DEFAULT) -> None:
+                  effort=DEFAULT, context=DEFAULT, worktree: Path | None = None) -> None:
         """Write the profile's files; `{delegate}` in a template becomes `, "<id>"` per delegate id of a scenario-6
         cell (a JSON-list continuation, the Claude Code allowlist) and nothing in any other cell (R-74 item 3).
 
@@ -175,8 +181,7 @@ class Profile:
         (`cell_env`) instead -- no credential file is copied into its home at all. A non-claude-code profile
         never receives a token (ProfileLauncher gates it), so this only ever changes claude-code's seed."""
         home.mkdir(parents=True, exist_ok=True)
-        CELL_GITCONFIG.parent.mkdir(parents=True, exist_ok=True)
-        CELL_GITCONFIG.touch(exist_ok=True)
+        (home / CELL_GITCONFIG_NAME).write_text(CELL_GITCONFIG_TEXT, encoding="utf-8")
         delegate = "".join(f', "{name}"' for name in self.delegate_ids(scenario))
         # R-74 item 5: Codex 0.156.0 feature multi_agent (stable, default true) is what offers the collaboration tools.
         # True only in a scenario-6 cell; false in every other cell, including a seed that names no scenario.
@@ -190,6 +195,13 @@ class Profile:
                 and self.credential_source.is_file()):
             (home / self.credential_name).parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(self.credential_source, home / self.credential_name)
+        # ADR-0025 s5-s6: trust, update and permission files (Grok, agy); `{worktree}` is the cell's working copy.
+        for name, template in self.seed_files.items():
+            if WORKTREE in template and worktree is None:
+                raise BenchError("HB-USR-002", f"{self.harness}: seed file {name} needs {WORKTREE}, and none was given")
+            (home / name).parent.mkdir(parents=True, exist_ok=True)
+            text = template.replace(WORKTREE, str(worktree)).replace("{home}", str(home)).replace("{model}", model)
+            (home / name).write_text(text if text.endswith("\n") else text + "\n", encoding="utf-8")
 
     def clean_home(self, home: Path) -> None:
         """Delete the credential copy (the native records stay for the archive)."""
@@ -201,6 +213,9 @@ class Profile:
         env = {k: v for k, v in base.items() if k.upper() not in DROP_EXACT and not k.upper().startswith(DROP_PREFIXES)}
         env.update(CELL_ENV)
         env[self.home_env] = str(home)
+        env["GIT_CONFIG_GLOBAL"] = str(home / CELL_GITCONFIG_NAME)
+        for name in self.user_home_vars:  # ADR-0025 s5-s6: HOME, USERPROFILE = the cell home (Grok, agy)
+            env[name] = str(home)
         for key, template in self.env.items():
             if self.omits(template, effort, context):
                 continue
@@ -434,7 +449,8 @@ class ProfileLauncher:
             profile = dataclasses.replace(profile, credential_source=self._take_credential_home(home))
         # R-74 item 3: the allowance is per cell; ADR-0003 Am. 2026-09-30: no credential file when an oauth token is set
         profile.seed_home(home, cell["model"], cell.get("scenario"), oauth_token=self._oauth_token,
-                          effort=cell.get("effort", DEFAULT), context=cell.get("context", DEFAULT))
+                          effort=cell.get("effort", DEFAULT), context=cell.get("context", DEFAULT),
+                          worktree=home.parent / CELL_WORKTREE_BESIDE_HOME)
 
     def _take_credential_home(self, home: Path) -> Path:
         """Lock the bench credential home (waiting for another engine's cell to write back), and return the credential

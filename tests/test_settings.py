@@ -318,6 +318,25 @@ def test_the_plan_profile_record_freezes_a_profile_alias_table(tmp_path, monkeyp
     assert plan.profile_record(root, "agy")["model_aliases"] == {"a": ["b"]}
 
 
+def test_the_plan_profile_record_freezes_a_non_empty_settings_block(tmp_path, monkeypatch):
+    """R-VALIDITY's seam: a "default" cell is judged against the frozen record's settings[name].default_serves."""
+    assert plan.profile_record(ROOT, "codex")["settings"] == {
+        "context": {"apply": "placeholder", "args": {}, "default_serves": 272000, "values": ["872000"]},
+        "effort": {"apply": "placeholder", "args": {}, "default_serves": None,
+                   "values": ["low", "medium", "high", "xhigh", "max", "ultra"]}}
+    assert plan.profile_record(ROOT, "claude-code")["settings"]["context"] == {
+        "apply": "model_id", "args": {}, "default_serves": 200000, "values": ["1000000"]}
+    assert "settings" not in plan.profile_record(ROOT, "copilot")
+    root = _fixture_root(tmp_path, monkeypatch, "agy")
+    path = root / "bench" / "profiles" / "agy.yaml"
+    path.write_text(path.read_text(encoding="utf-8").replace(
+        "  effort: {values: [low, high], apply: model_id}",
+        '  effort: {values: [low, high], apply: model_id}\n  context: {values: ["922000"], apply: placeholder, '
+        'default_serves: 272000, args: {"922000": [--context, long_context]}}'), encoding="utf-8")
+    assert plan.profile_record(root, "agy")["settings"]["context"]["args"] == {"922000": ["--context", "long_context"]}
+    canonical(plan.profile_record(root, "agy"))  # the plan's canonical form accepts it (no floats, no tuples)
+
+
 # --- 13. the two lean re-run rings validate ------------------------------------------------------------------------
 
 @pytest.mark.parametrize(("name", "cells"), [("lean-rerun.yaml", 120), ("lean-rerun-probe.yaml", 12)])

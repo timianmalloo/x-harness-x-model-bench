@@ -30,25 +30,94 @@ def test_no_grok_agy_gemini_or_google_variable_reaches_a_cell(tmp_path, harness)
 
 
 @pytest.mark.parametrize("harness", ["claude-code", "codex", "copilot"])
-def test_git_config_global_names_the_one_bench_file(tmp_path, harness):
+def test_git_config_global_is_a_file_in_the_cell_home(tmp_path, harness):
+    """Leader ruling (r-settings-rerun-2): one global git config per cell, inside its home, never a shared file."""
     p = profiles.load(ROOT, harness, credential_source=tmp_path / "absent")
-    env = p.cell_env(dict(PARENT), tmp_path, _build(tmp_path, harness), "m", "")
-    assert env["GIT_CONFIG_GLOBAL"] == str(profiles.CELL_GITCONFIG)
-    assert profiles.CELL_ENV["GIT_CONFIG_GLOBAL"] == str(profiles.CELL_GITCONFIG)
+    env_a = p.cell_env(dict(PARENT), tmp_path / "a", _build(tmp_path, harness), "m", "")
+    env_b = p.cell_env(dict(PARENT), tmp_path / "b", _build(tmp_path, harness), "m", "")
+    assert env_a["GIT_CONFIG_GLOBAL"] == str(tmp_path / "a" / profiles.CELL_GITCONFIG_NAME)
+    assert env_b["GIT_CONFIG_GLOBAL"] == str(tmp_path / "b" / profiles.CELL_GITCONFIG_NAME)
+    assert "GIT_CONFIG_GLOBAL" not in profiles.CELL_ENV
 
 
-def test_the_cell_git_config_is_not_the_host_side_safe_config():
-    """ADR-0010 B6: host git reads gitsafe's file; a cell that writes `git config --global` must not reach it."""
+def test_a_cell_git_config_write_is_not_visible_to_another_cell(tmp_path):
+    p = profiles.Profile("codex", "CODEX_HOME", None, None, ("{exe}",))
+    homes = [tmp_path / "a", tmp_path / "b"]
+    for home in homes:
+        p.seed_home(home, "m")
+    with (homes[0] / profiles.CELL_GITCONFIG_NAME).open("a", encoding="utf-8") as f:
+        f.write("[core]\n\tpager = planted\n")
+    assert "planted" not in (homes[1] / profiles.CELL_GITCONFIG_NAME).read_text(encoding="utf-8")
+
+
+def test_the_cell_git_config_carries_the_bench_identity_and_is_not_host_git_s(tmp_path):
+    """An agent's commit works the same in every harness; ADR-0010 B6: host git's own file is never the cell's."""
+    import subprocess
+
     from harness_bench import gitsafe
 
-    assert profiles.CELL_GITCONFIG != gitsafe._safe_paths()[1]
+    p = profiles.Profile("codex", "CODEX_HOME", None, None, ("{exe}",))
+    p.seed_home(tmp_path / "home", "m")
+    path = tmp_path / "home" / profiles.CELL_GITCONFIG_NAME
+    assert path != gitsafe._safe_paths()[1]
+    env = {k: v for k, v in __import__("os").environ.items() if not k.startswith("GIT_")}
+    env["GIT_CONFIG_GLOBAL"], env["GIT_CONFIG_NOSYSTEM"] = str(path), "1"
+    got = [subprocess.run(["git", "config", "--global", key], capture_output=True, text=True, env=env, check=True,
+                          creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.strip()
+           for key in ("user.name", "user.email")]
+    assert got == [gitsafe.BENCH_IDENTITY["GIT_AUTHOR_NAME"], gitsafe.BENCH_IDENTITY["GIT_AUTHOR_EMAIL"]]
 
 
-def test_seed_home_creates_the_bench_git_config(tmp_path, monkeypatch):
-    target = tmp_path / "bench-git" / "gitconfig"
-    monkeypatch.setattr(profiles, "CELL_GITCONFIG", target)
-    profiles.Profile("codex", "CODEX_HOME", None, None, ("{exe}",)).seed_home(tmp_path / "home", "m")
-    assert target.is_file()
+# --- user_home_vars and seed_files (ADR-0025 s5-s6; Leader ruling r-settings-rerun-2) ---------------------------
+
+def test_user_home_vars_name_the_cell_home(tmp_path):
+    p = profiles.Profile("grok", "GROK_HOME", None, None, ("{exe}",), user_home_vars=("HOME", "USERPROFILE"),
+                         env={"GROK_HOME": "{home}/.grok"})
+    env = p.cell_env({"PATH": "p", "HOME": "C:/Users/op", "USERPROFILE": "C:/Users/op"}, tmp_path / "home",
+                     _build(tmp_path, "grok"), "m", "")
+    assert (env["HOME"], env["USERPROFILE"]) == (str(tmp_path / "home"), str(tmp_path / "home"))
+    assert env["GROK_HOME"] == f"{tmp_path / 'home'}/.grok"
+
+
+def test_seed_files_are_written_with_the_home_and_the_worktree(tmp_path):
+    p = profiles.Profile("grok", "GROK_HOME", None, None, ("{exe}",), seed_files={
+        ".grok/trusted_folders.toml": "[[folders]]\npath = '{worktree}'\n",
+        ".grok/config.toml": "[cli]\nauto_update = false\nhome = '{home}'",
+    })
+    home, ws = tmp_path / "home", tmp_path / "ws"
+    p.seed_home(home, "m", worktree=ws)
+    assert (home / ".grok" / "trusted_folders.toml").read_text(encoding="utf-8") == f"[[folders]]\npath = '{ws}'\n"
+    assert (home / ".grok" / "config.toml").read_text(encoding="utf-8") == \
+        f"[cli]\nauto_update = false\nhome = '{home}'\n"
+
+
+def test_a_seed_file_naming_the_worktree_needs_one(tmp_path):
+    from harness_bench.errors import BenchError
+
+    p = profiles.Profile("grok", "GROK_HOME", None, None, ("{exe}",), seed_files={"t.toml": "path = '{worktree}'"})
+    with pytest.raises(BenchError) as err:
+        p.seed_home(tmp_path / "home", "m")
+    assert err.value.code == "HB-USR-002" and "{worktree}" in err.value.message
+
+
+def test_the_launcher_seeds_the_worktree_beside_the_cell_home(tmp_path):
+    """The engine lays a cell out as <cell>/home and <cell>/ws (engine._run_cell); the launcher's worktree is that ws."""
+    import inspect
+
+    from harness_bench import engine
+
+    assert 'home, ws = cell_dir / "home", cell_dir / "ws"' in inspect.getsource(engine.Engine._run_cell)
+    p = profiles.Profile("grok", "GROK_HOME", None, None, ("{exe}",), seed_files={"t.toml": "path = '{worktree}'"})
+    profiles.ProfileLauncher(p, tmp_path, {}).seed(tmp_path / "cell" / "home", {"model": "m"})
+    assert (tmp_path / "cell" / "home" / "t.toml").read_text(encoding="utf-8") == f"path = '{tmp_path / 'cell' / 'ws'}'\n"
+
+
+@pytest.mark.parametrize("harness", ["claude-code", "codex", "copilot"])
+def test_the_existing_profiles_declare_no_home_vars_or_seed_files(tmp_path, harness):
+    p = profiles.load(ROOT, harness, credential_source=tmp_path / "absent")
+    assert (p.user_home_vars, p.seed_files) == ((), {})
+    env = p.cell_env({"PATH": "p", "HOME": "C:/Users/op"}, tmp_path, _build(tmp_path, harness), "m", "")
+    assert env["HOME"] == "C:/Users/op"
 
 
 def test_seed_home_creates_the_parents_of_a_nested_template(tmp_path):
