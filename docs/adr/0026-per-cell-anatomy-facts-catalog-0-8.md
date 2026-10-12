@@ -84,6 +84,14 @@ review-suggested:
      count and sealed head hash.
    - **Pack-off check for every harness.** `prompt_parts` rows with `part: instruction_file` make the pack-off rule
      (0 instruction files) checkable for every harness at the probe (ADR-0024 §6), not only Copilot's plan probe.
+   - **Erratum (Coordinator #2, 2026-10-12; J0 rulings on R-CONTRACT-FACTS's DR1 and DR2, landed in `f1a65146`).**
+     `harness_events` rows also carry **`native_ordinal`** (the event's position in its record), and the stream's
+     key is `(run_id, extraction_id, cell_id, native_session_id, native_ordinal)`, so two identical events never
+     collide. The `served` stream is **multi-source**: a reader's `served` hook may return a tuple of
+     `ServedSettings`, one per source, and every source's rows are written; an identical row (a field no source
+     read) is written once. Separately, Copilot's "Verified: full request bodies" above is Flagged until
+     R-COPILOT-P's `-p`-mode debug-log records show it (Leader addendum). Recorded in
+     `docs/coordination/coordination-lean-rerun.md`, *Errata* E8 and E12.
 2. **Per-request rows in `model_calls`** (columns unchanged; readers fill them where the record allows):
    - Claude Code: per `requestId`, deduplicated (Verified); `start` not recorded (the stamp is write time).
    - Codex: per `token_usage_record` / `token_count` (Verified).

@@ -1,0 +1,49 @@
+{
+  "schema": "coord-run/1",
+  "run_id": "r-ragy-rerun",
+  "owner": "lean-rerun-leader",
+  "base": "8cda3fc3",
+  "parallelism": 1,
+  "workers": [
+    {
+      "session": "ragy-rerun",
+      "branch": "build/rerun-read-agy",
+      "harness": "agy",
+      "transport": "agy",
+      "argv": [
+        "agy",
+        "--model",
+        "gemini-3.8-flash-high",
+        "--add-dir",
+        "{worktree}",
+        "--mode",
+        "accept-edits",
+        "--input-format",
+        "stream-json",
+        "--output-format",
+        "stream-json"
+      ],
+      "binding_files": [
+        "AGENTS.md",
+        ".agents/hooks.json"
+      ],
+      "deadline_seconds": 2400,
+      "output_limit": 4194304,
+      "evidence": [
+        {
+          "kind": "commit"
+        }
+      ],
+      "required_capabilities": {
+        "worktree_isolation": "observed-only",
+        "instructions": "observed-only",
+        "hooks": "observed-only",
+        "permissions": "observed-only"
+      },
+      "prompts": [
+        "al-01M4RC35W9MJ9MN8VPBBW1BDJ6"
+      ],
+      "fallback": "Leader-held (FALLBACK-A): coordination-lean-rerun.md, Track assignment detail (R-READ-AGY; the Agy floor canary by Errata E9), names what follows a failed or split turn: an Opus sub-agent; the worker launches, spawns or messages nothing. R-103 (the served-model check) applies: the Leader reads the served model from the runner's record; not gemini-3.8-flash-high means kill and retry once, then the Opus sub-agent. No agy worker runs while a probe or a batch runs (ADR-0025 s7)."
+    }
+  ]
+}
