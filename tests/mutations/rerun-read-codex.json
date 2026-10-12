@@ -1,0 +1,86 @@
+[
+  {
+    "name": "sed -i counts as a read",
+    "file": "src/harness_bench/telemetry/codex.py",
+    "find": "        if \"-n\" not in seen or any(s.startswith((\"-i\", \"--in-place\")) for s in seen):\n",
+    "replace": "        if False:\n",
+    "tests": ["tests/test_reader_codex.py::test_shell_read_commands_name_their_targets_as_read_paths"]
+  },
+  {
+    "name": "a grep pattern is taken as a path",
+    "file": "src/harness_bench/telemetry/codex.py",
+    "find": "        return \"read\", tuple(positionals if named else positionals[1:])\n",
+    "replace": "        return \"read\", tuple(positionals)\n",
+    "tests": ["tests/test_reader_codex.py::test_shell_read_commands_name_their_targets_as_read_paths"]
+  },
+  {
+    "name": "a redirect is not refused",
+    "file": "src/harness_bench/telemetry/codex.py",
+    "find": "        elif (t and set(t) <= _PUNCTUATION) or \"`\" in t or",
+    "replace": "        elif \"`\" in t or",
+    "tests": ["tests/test_reader_codex.py::test_shell_read_commands_name_their_targets_as_read_paths"]
+  },
+  {
+    "name": "a variable is taken as a path",
+    "file": "src/harness_bench/telemetry/codex.py",
+    "find": "t.startswith((\"$\", \"@(\"))",
+    "replace": "t.startswith(\"@(\")",
+    "tests": ["tests/test_reader_codex.py::test_shell_read_commands_name_their_targets_as_read_paths"]
+  },
+  {
+    "name": "an unknown cmdlet parameter is skipped as a switch",
+    "file": "src/harness_bench/telemetry/codex.py",
+    "find": "            if low in _PS_SWITCH[family] or not strict:\n",
+    "replace": "            if True:\n",
+    "tests": ["tests/test_reader_codex.py::test_shell_read_commands_name_their_targets_as_read_paths"]
+  },
+  {
+    "name": "python open in a write mode is a read",
+    "file": "src/harness_bench/telemetry/codex.py",
+    "find": " or any(set(m.group(4) or \"r\") - set(\"rbt\") for m in opens):",
+    "replace": ":",
+    "tests": ["tests/test_reader_codex.py::test_shell_read_commands_name_their_targets_as_read_paths"]
+  },
+  {
+    "name": "bytes returned dropped",
+    "file": "src/harness_bench/telemetry/codex.py",
+    "find": "            returned.setdefault(call_id, _output_bytes(payload))\n",
+    "replace": "            returned.setdefault(call_id, None)\n",
+    "tests": ["tests/test_reader_codex.py::test_bytes_returned_is_the_utf8_size_of_the_call_output"]
+  },
+  {
+    "name": "reasoning items lose their place within a request",
+    "file": "src/harness_bench/telemetry/codex.py",
+    "find": "replace(r, native_ordinal=n, item_ordinal=i)",
+    "replace": "replace(r, native_ordinal=n)",
+    "tests": ["tests/test_reader_codex.py::test_pack_on_reasoning_keeps_every_item_and_numbers_items_within_a_request"]
+  },
+  {
+    "name": "encrypted-only reads as omitted",
+    "file": "src/harness_bench/telemetry/codex.py",
+    "find": "else (\"encrypted-only\", None) if opaque else (\"omitted\", None))",
+    "replace": "else (\"omitted\", None) if opaque else (\"encrypted-only\", None))",
+    "tests": ["tests/test_reader_codex.py::test_reasoning_rows_are_a_summary_and_an_encrypted_only_item_each_on_its_request"]
+  },
+  {
+    "name": "a later different served value is dropped (DR2)",
+    "file": "src/harness_bench/telemetry/codex.py",
+    "find": "    extra = [replace(base, **{f: v}) for f, vals in seen.items() for v in vals[1:]]\n",
+    "replace": "    extra = []\n",
+    "tests": ["tests/test_reader_codex.py::test_two_turn_contexts_that_disagree_are_both_written"]
+  },
+  {
+    "name": "the catalog is looked for beside the record, not at home",
+    "file": "src/harness_bench/telemetry/codex.py",
+    "find": "    home = next((p.parent for p in path.parents if p.name == \"sessions\"), path.parent)\n",
+    "replace": "    home = path.parent\n",
+    "tests": ["tests/test_reader_codex.py::test_served_settings_come_from_turn_context_and_task_started_with_the_catalog_percent_source"]
+  },
+  {
+    "name": "the AGENTS.md block reads as system",
+    "file": "src/harness_bench/telemetry/codex.py",
+    "find": "        return PromptPart(\"instruction_file\", \"AGENTS.md\", len(text), \"inlined\", source)\n",
+    "replace": "        return PromptPart(\"system\", \"AGENTS.md\", len(text), \"inlined\", source)\n",
+    "tests": ["tests/test_reader_codex.py::test_the_agents_md_block_is_an_instruction_file_part_on_pack_on_and_absent_on_pack_off"]
+  }
+]
