@@ -30,7 +30,7 @@
   "scrubbing": [
     "emails (21 users.noreply.github.com hits in the real logs) -> user@example.invalid",
     "the record's own absolute prefix (C:\\tf\\r-copilot-p\\records\\{off,on}, C:\\tf\\spike-settings\\copilot-fast, in plain, JSON and JSON-in-JSON escaping) -> C:\\cells\\cell",
-    "bearer tokens, JWT (eyJ.x.y) shapes and authorization values -> placeholders; none were found after the trim",
+    "Bearer-scheme tokens, JWT-shaped values and auth-header values -> placeholders; none were found after the trim",
     "a build-time check parses every events line and every wire body and fails on any email, bearer, JWT, gho_/ghu_ shape left"
   ],
   "known_differences": "Instruction chars in rerun-on are those of the reduced text, so tests assert the partition (sum of part chars == the fixture's own instructions length), not the real 329,674; the real numbers are above. The scrubbed email is shorter than the original, so rerun-off's instructions are not 20,287 chars in the fixture. Opaque reasoning payloads are cut to 2000 chars, so their sha256 differs from the real record's.",
