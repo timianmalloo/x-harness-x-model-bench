@@ -90,5 +90,14 @@
     "tests": [
       "tests/test_probe_fix2.py::test_the_probes_claude_window_is_the_authoritative_1000000_only"
     ]
+  },
+  {
+    "name": "grok asks in its default mode",
+    "file": "bench/profiles/grok.yaml",
+    "find": "    [ui]\n    permission_mode = \"always-approve\"",
+    "replace": "    [ui]\n    permission_mode = \"default\"",
+    "tests": [
+      "tests/test_probe_fix2.py::test_grok_config_allows_the_profile_classes_and_denies_web_and_mcp"
+    ]
   }
 ]
