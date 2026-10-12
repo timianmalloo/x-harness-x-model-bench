@@ -481,7 +481,7 @@ class Engine:
                     self._expire_decisions()
                     self.on_tick()
                     if sleep.slept():
-                        self._kill_all("host_suspended")
+                        pass
                     # The slot ends when the process is confirmed gone (module doc), which is before the
                     # outcome. A worker still archiving stays in active so the loop drains it, and does
                     # not keep the slot: design 6.2 step 8 launches in this tick once the decision is closed.
@@ -1026,11 +1026,11 @@ class Engine:
         `decision.opened` it feeds are never empty for a scanned cause."""
         errors = [error for ex in extractions for error in ex.errors]
         scanned = normalize.classify(errors)
-        if kill_reason == "timeout":
-            return Cause.timed_out
         if scanned:
             result.detail = next((e.message for e in errors if normalize.classify([e]) == scanned), result.detail)
             return scanned
+        if kill_reason == "timeout":
+            return Cause.timed_out
         if kill_reason == "host_suspended":
             return Cause.host_suspended
         if exit_status in NO_MEMORY_STATUSES or OOM_SIGNATURE.search(tail):

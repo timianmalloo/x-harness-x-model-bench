@@ -9,8 +9,8 @@
   {
     "name": "claude acp keeps only the first context size",
     "file": "src/harness_bench/telemetry/claude_code.py",
-    "find": "    sizes = _acp_sizes(acp) if acp is not None else []\n",
-    "replace": "    sizes = _acp_sizes(acp)[:1] if acp is not None else []\n",
+    "find": "    sizes = [(s, SRC_ACP_SIZE) for s in _acp_sizes(acp)] if acp is not None else _timeline_sizes(record)\n",
+    "replace": "    sizes = [(s, SRC_ACP_SIZE) for s in _acp_sizes(acp)[:1]] if acp is not None else _timeline_sizes(record)\n",
     "tests": ["tests/test_reader_claude_code.py::test_a_source_showing_two_context_sizes_writes_both_so_the_view_refuses_them"]
   },
   {

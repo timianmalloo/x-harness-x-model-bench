@@ -46,6 +46,13 @@ ALLOWED: dict[tuple[str, str, str], str] = {
         "the lock file; no content is written, so no O_BINARY is required",
     ("grade/bench_check", "_host", "os.open"):
         "the probe host's stdin from os.devnull, read-only; nothing is written or published",
+    # J1a candidate (J1A-FIX): three stage-then-replace sites the wave-1 tracks added.
+    ("profiles", "_replace_atomically", "os.replace"):
+        "R-SETTINGS credential write-back: mkstemp beside the target, then one os.replace; old bytes or new, never torn",
+    ("report/publish", "_write", "os.replace"):
+        "R-REPORT-R page write: a .tmp beside the page, then one os.replace; a reader sees the old page or the new",
+    ("tools", "install_vendored", "os.replace"):
+        "R-BUILDS vendored exe: a .partial beside it, then one os.replace, then re-hashed against its pin",
 }
 
 

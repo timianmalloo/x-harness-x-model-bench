@@ -252,8 +252,8 @@ def test_bench_plan_refuses_a_cell_whose_vendor_lacks_one_role_of_the_map(tmp_pa
     with pytest.raises(BenchError) as err:
         _grok_build(root, bom)
     assert (err.value.code, err.value.message) == (
-        "HB-USR-002", "scenario 6: X1's model_map role 'b' has no model for vendor xai (cell X1.grok-47.arm-off.r1); "
-                      "every role needs one for each vendor a plan uses (R-73 c1)")
+        "HB-USR-002", ("scenario 6: X1's model_map role 'b' has no model for vendor xai (cell X1.grok-47.arm-off.r1); "
+                       "every role needs one for each vendor a plan uses (R-73 c1)"))
 
 
 def test_bench_plan_refuses_a_scenario6_cell_with_no_role_for_its_vendor(tmp_path):
