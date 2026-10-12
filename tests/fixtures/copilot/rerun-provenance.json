@@ -28,7 +28,7 @@
     "a later request whose instructions equal the first request's: replaced by '[identical to the first request; trimmed by the fixture builder]' (the reader reads the fixed prefix from the first request only)"
   ],
   "scrubbing": [
-    "emails (21 users.noreply.github.com hits in the real logs) -> user@example.invalid",
+    "emails (21 users.noreply.github.com hits in the real logs) -> <EMAIL>",
     "the record's own absolute prefix (C:\\tf\\r-copilot-p\\records\\{off,on}, C:\\tf\\spike-settings\\copilot-fast, in plain, JSON and JSON-in-JSON escaping) -> C:\\cells\\cell",
     "Bearer-scheme tokens, JWT-shaped values and auth-header values -> placeholders; none were found after the trim",
     "a build-time check parses every events line and every wire body and fails on any email, bearer, JWT, gho_/ghu_ shape left"
