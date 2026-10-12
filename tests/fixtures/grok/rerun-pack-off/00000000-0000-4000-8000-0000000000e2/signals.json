@@ -1,0 +1,14 @@
+{
+ "turnCount": 1,
+ "compactionCount": 0,
+ "contextTokensUsed": 3000,
+ "contextWindowTokens": 256000,
+ "toolCallCount": 1,
+ "toolsUsed": [
+  "read_file"
+ ],
+ "modelsUsed": [
+  "grok-4.7"
+ ],
+ "primaryModelId": "grok-4.7"
+}
