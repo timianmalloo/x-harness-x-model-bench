@@ -14,8 +14,10 @@
 The lean re-run's reader facts (ADR-0026 s1; R-READ-CC spike, 2026-10-12, one pack-on X1 turn):
 - served: `effort` on every assistant row; `attachment` type `model` -> `identity.modelId`; the context size is not in
   the transcript but in the ACP `usage_update.size`: the driver's `acp-timeline.jsonl` in the cell home (the parent
-  of the record's `projects` folder), one served row per distinct size, its source naming the timeline line (so two
-  sizes are two keys and HB-VAL-010 judges them); `read(path, acp=...)` reads raw ACP messages instead (tests).
+  of the record's `projects` folder). Only the adapter's authoritative size is served: the usage_update directly before
+  a prompt response (`_authoritative`, PROBE-FIX-2 D); one served row per distinct such size, its source naming the
+  timeline line (so two sizes are two keys and HB-VAL-010 judges them); in-turn sizes are the adapter's seed. A
+  timeline with none is `not recorded`. `read(path, acp=...)` reads raw ACP messages instead (tests).
 - model calls: `reasoning` is the request's `usage.output_tokens_details.thinking_tokens` (its first row).
 - reasoning: each `thinking` block is a `summary` (display `summarized`), its text as stored; an empty one with only
   a signature is `encrypted-only`.
@@ -33,8 +35,10 @@ import hashlib
 import json
 import re
 from dataclasses import replace
+from itertools import pairwise
 from pathlib import Path
 
+from harness_bench.driver import TIMELINE_PROMPT, TIMELINE_RESPONSE
 from harness_bench.telemetry import (
     Extraction,
     HarnessEvent,
@@ -113,6 +117,8 @@ SRC_MODEL = "transcript:attachment.identity.modelId"
 SRC_ACP_SIZE = "acp:usage_update.size"
 SRC_TIMELINE_SIZE = "acp-timeline.jsonl:usage_update.size"  # + "@<line>" of the size's first line
 TIMELINE = "acp-timeline.jsonl"  # driver.TIMELINE (only driver.py speaks ACP, so the name is repeated here)
+NO_AUTHORITATIVE = "no authoritative window (adapter seed only)"
+_END, _OTHER = (None, "end"), (None, "")  # a prompt response, and any other message, in a record's update sequence
 
 
 def _served(efforts: list[str], models: list[str], acp: Path | None, record: Path) -> tuple[ServedSettings, ...]:
@@ -127,49 +133,76 @@ def _served(efforts: list[str], models: list[str], acp: Path | None, record: Pat
         context_tier=not_recorded("Claude Code has no context tier"),
         reasoning_summary=not_recorded("the thinking display is a session/new option the transcript does not record"),
         sources={**({"model_served": SRC_MODEL} if models else {}), **({"effort": SRC_EFFORT} if efforts else {})})
+    sizes = [(s, SRC_ACP_SIZE) for s in _acp_sizes(acp)] if acp is not None else _timeline_sizes(record)
+    if sizes is not None and not sizes:  # a timeline whose turns end with no post-result usage_update
+        base = replace(base, context_tokens=not_recorded(NO_AUTHORITATIVE))
     out = [base]
     out += [replace(base, model_served=m) for m in models[1:]]
     out += [replace(base, effort=e) for e in efforts[1:]]
-    sizes = [(s, SRC_ACP_SIZE) for s in _acp_sizes(acp)] if acp is not None else _timeline_sizes(record)
-    out += [replace(base, context_tokens=s, sources={**base.sources, "context_tokens": src}) for s, src in sizes]
+    out += [replace(base, context_tokens=s, sources={**base.sources, "context_tokens": src}) for s, src in sizes or ()]
     return tuple(out)
 
 
-def _timeline_sizes(record: Path) -> list[tuple[int, str]]:
-    """(size, source) per distinct `usage_update` size in the cell home's ACP timeline, in order; none without one."""
+def _authoritative(seen: list[tuple[int | None, str]]) -> list[tuple[int, str]]:
+    """The distinct authoritative sizes, in order: `seen` is the record's sequence, (size, source) for a usage_update,
+    `_END` for a prompt response and `_OTHER` for anything else.
+
+    Leader ruling on PROBE-FIX-2 item D (option a), from claude-agent-acp 0.81.2 (dist/acp-agent.js): every in-turn
+    usage_update sends `size: session.contextWindowSize` (~4241), which session/new seeds from a cache, a text heuristic
+    or a default with `contextWindowAuthoritative` false (~6683-6735); on the turn's `result` the adapter sets it from
+    `result.modelUsage[model].contextWindow`, marks it authoritative and sends one more usage_update, then answers the
+    prompt (~3755-3795). So the served window is the size of the usage_update directly before a prompt response; an
+    earlier size is the seed (devprobe-rerun-1 and ccprobe-rerun-1: 200000 in turn, 1000000 after the result)."""
+    sizes: list[tuple[int, str]] = []
+    for (size, source), after in pairwise(seen):
+        if size is not None and after == _END and size not in [s for s, _ in sizes]:
+            sizes.append((size, source))
+    return sizes
+
+
+def _timeline_sizes(record: Path) -> list[tuple[int, str]] | None:
+    """(size, source) per distinct authoritative `usage_update` size in the cell home's ACP timeline, in order; None
+    without a timeline. The timeline collapses same-kind runs, so a result update that repeats the seed's size is the
+    run that ends right before the response, and the run's first line is its source."""
     home = next((p.parent for p in record.parents if p.name == "projects"), None)
     timeline = home / TIMELINE if home is not None else None
     if timeline is None or not timeline.is_file():
-        return []
-    out: list[tuple[int, str]] = []
+        return None
     try:
         lines = timeline.read_text(encoding="utf-8").splitlines()
     except (OSError, UnicodeDecodeError):
-        return []
+        return None
+    out: list[tuple[int | None, str]] = []
     for n, line in enumerate(lines, 1):
         try:
             row = as_dict(json.loads(line))
         except ValueError:
             continue
         size = row.get("size")
-        if row.get("update_kind") == "usage_update" and isinstance(size, int) and size not in [s for s, _ in out]:
+        if row.get("update_kind") == "usage_update" and isinstance(size, int):
             out.append((size, f"{SRC_TIMELINE_SIZE}@{n}"))
-    return out
+        else:
+            out.append(_END if row.get("update_kind") == TIMELINE_RESPONSE and row.get("method") == TIMELINE_PROMPT
+                       else _OTHER)
+    return _authoritative(out)
 
 
 def _acp_sizes(acp: Path) -> list[int]:
-    """Distinct `usage_update.size` values, in order, from a file of ACP JSON-RPC messages (one per line)."""
-    sizes: list[int] = []
+    """The distinct authoritative sizes by the same rule, from a file of ACP JSON-RPC messages (one per line): a prompt
+    response is a result carrying `stopReason`."""
+    seen: list[tuple[int | None, str]] = []
     for line in acp.read_text(encoding="utf-8").splitlines():
         try:
-            msg = json.loads(line)
+            msg = as_dict(json.loads(line))
         except ValueError:
             continue
-        update = as_dict(as_dict(as_dict(msg).get("params")).get("update"))
+        update = as_dict(as_dict(msg.get("params")).get("update"))
         size = update.get("size")
-        if update.get("sessionUpdate") == "usage_update" and isinstance(size, int) and size not in sizes:
-            sizes.append(size)
-    return sizes
+        if update.get("sessionUpdate") == "usage_update" and isinstance(size, int):
+            seen.append((size, SRC_ACP_SIZE))
+        else:
+            seen.append(_END if "stopReason" in as_dict(msg.get("result")) else _OTHER)
+    return [s for s, _ in _authoritative(seen)]
 
 
 def _keep(values: list[str], value) -> None:

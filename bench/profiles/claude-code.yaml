@@ -40,3 +40,7 @@ record_glob: "projects/**/{session_id}.jsonl"
 subagent_glob: "projects/**/{session_id}/subagents/agent-*.jsonl"
 usage_source: acp_turn   # its native record misses the final and auxiliary calls (docs/notes/decision-token-source-per-harness.md)
 auxiliary_models: ["claude-haiku-4-5"]   # title generation; a served model starting with one of these is allowed (US-11)
+# ADR-0024 s5 (Leader ruling PROBE-FIX-2 A): the `[1m]` pin is served as the API id, which the transcript's message.model
+# records (devprobe-rerun-1). Exact pair only; the window is judged by context alone (HB-VAL-010).
+model_aliases:
+  "claude-opus-5-5[1m]": ["claude-opus-5-5"]

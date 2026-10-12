@@ -1,0 +1,94 @@
+[
+  {
+    "name": "claude code [1m] pin aliased to a different api id",
+    "file": "bench/profiles/claude-code.yaml",
+    "find": "\"claude-opus-5-5[1m]\": [\"claude-opus-5-5\"]",
+    "replace": "\"claude-opus-5-5[1m]\": [\"claude-opus-5-5-x\"]",
+    "tests": [
+      "tests/test_probe_fix2.py::test_the_claude_code_profile_allows_the_api_id_of_the_1m_pin_exactly",
+      "tests/test_probe_fix2.py::test_the_probes_claude_cells_are_valid_under_the_1m_pin"
+    ]
+  },
+  {
+    "name": "agy effort suffix matched anywhere, not at the end",
+    "file": "src/harness_bench/telemetry/agy.py",
+    "find": "_EFFORT_SUFFIX = re.compile(r\"-(low|medium|high)$\")",
+    "replace": "_EFFORT_SUFFIX = re.compile(r\"-(low|medium|high)\")",
+    "tests": [
+      "tests/test_probe_fix2.py::test_agy_effort_reads_only_an_exact_level_suffix"
+    ]
+  },
+  {
+    "name": "agy effort recorded without its source",
+    "file": "src/harness_bench/telemetry/agy.py",
+    "find": "        sources[\"effort\"] = EFFORT_SOURCE",
+    "replace": "        pass",
+    "tests": [
+      "tests/test_probe_fix2.py::test_agy_effort_is_the_served_init_model_suffix"
+    ]
+  },
+  {
+    "name": "agy effort never read from the model id",
+    "file": "src/harness_bench/telemetry/agy.py",
+    "find": "effort = _EFFORT_SUFFIX.search(model or \"\")",
+    "replace": "effort = None",
+    "tests": [
+      "tests/test_probe_fix2.py::test_agy_effort_is_the_served_init_model_suffix"
+    ]
+  },
+  {
+    "name": "grok edit class not granted",
+    "file": "bench/profiles/grok.yaml",
+    "find": "allow = [\"Bash\", \"Read\", \"Edit\", \"Write\", \"Grep\", \"Glob\"]",
+    "replace": "allow = [\"Bash\", \"Read\", \"Write\", \"Grep\", \"Glob\"]",
+    "tests": [
+      "tests/test_probe_fix2.py::test_grok_config_allows_the_profile_classes_and_denies_web_and_mcp"
+    ]
+  },
+  {
+    "name": "grok web and mcp not denied",
+    "file": "bench/profiles/grok.yaml",
+    "find": "deny = [\"WebFetch\", \"WebSearch\", \"MCPTool\"]",
+    "replace": "deny = []",
+    "tests": [
+      "tests/test_probe_fix2.py::test_grok_config_allows_the_profile_classes_and_denies_web_and_mcp"
+    ]
+  },
+  {
+    "name": "only the last recorded context row is judged",
+    "file": "src/harness_bench/views.py",
+    "find": "for r in recorded if not _serves(expected, r)]",
+    "replace": "for r in recorded[-1:] if not _serves(expected, r)]",
+    "tests": [
+      "tests/test_probe_fix2.py::test_two_different_authoritative_sizes_are_hb_val_010"
+    ]
+  },
+  {
+    "name": "claude seed sizes kept as served rows",
+    "file": "src/harness_bench/telemetry/claude_code.py",
+    "find": "if size is not None and after == _END and size not in",
+    "replace": "if size is not None and size not in",
+    "tests": [
+      "tests/test_probe_fix2.py::test_the_probes_claude_window_is_the_authoritative_1000000_only",
+      "tests/test_reader_claude_code.py::test_only_the_post_result_size_is_a_served_context_row"
+    ]
+  },
+  {
+    "name": "claude seed-only turn keeps the transcript reason",
+    "file": "src/harness_bench/telemetry/claude_code.py",
+    "find": "    if sizes is not None and not sizes:",
+    "replace": "    if False:",
+    "tests": [
+      "tests/test_probe_fix2.py::test_a_turn_with_only_seed_sizes_records_no_window"
+    ]
+  },
+  {
+    "name": "claude timeline never sees a prompt response",
+    "file": "src/harness_bench/telemetry/claude_code.py",
+    "find": "row.get(\"method\") == TIMELINE_PROMPT",
+    "replace": "row.get(\"method\") == TIMELINE_RESPONSE",
+    "tests": [
+      "tests/test_probe_fix2.py::test_the_probes_claude_window_is_the_authoritative_1000000_only"
+    ]
+  }
+]

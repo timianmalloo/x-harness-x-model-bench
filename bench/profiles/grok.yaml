@@ -15,9 +15,18 @@ shutdown_grace_seconds: 10
 user_home_vars: [HOME, USERPROFILE]   # ADR-0025 s5: both are the cell home (R-SETTINGS's mechanism)
 seed_files:
   # [cli] auto_update = false: Grok in a fresh home updated itself 1.0.41 -> 1.0.50 within a minute (Verified).
+  # [permission] (Leader ruling PROBE-FIX-2 C): the driver answers every session/request_permission `cancelled`
+  # (driver.py), so Grok must not ask: the ADR-0004 classes are allowed in Grok's own config (shell, file read, file
+  # edit; Grok's rule names, ~/.grok/docs/user-guide/22-permissions-and-safety.md "Tool Names") and web and MCP are
+  # denied (deny wins over allow and over every mode). The mode stays `default`: anything else still asks, and is
+  # cancelled, so no out-of-class tool runs unasked.
   .grok/config.toml: |-
     [cli]
     auto_update = false
+
+    [permission]
+    allow = ["Bash", "Read", "Edit", "Write", "Grep", "Glob"]
+    deny = ["WebFetch", "WebSearch", "MCPTool"]
   # Trusted in both arms: an untrusted folder loads no project instructions (Verified), so the arms differ only by
   # the files in the repo. {worktree} is the cell's working copy (profiles.WORKTREE), in a TOML literal string.
   .grok/trusted_folders.toml: |-

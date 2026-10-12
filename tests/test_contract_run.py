@@ -37,13 +37,13 @@ EXISTING = ("claude-code", "codex", "copilot")
 # Measured on the J1a candidate (39a43852 + J1A-FIX): identity_hash(plan.profile_record(ROOT, h)), after R-SETTINGS froze
 # `settings` (claude-code 32e06b14..7bca and codex 57701845..fe56, as it reported) and R-COPILOT-P changed copilot.
 PROFILE_RECORD_HASHES = {
-    "claude-code": "32e06b1458153f26c240603e99968fc564937b4d87915e15dae972713f8d7bca",
+    "claude-code": "48a8adf21c80e74725c5c31e7821ef3d5c3ec7d11430ad6ee23e1f969cd439a0",  # PROBE-FIX-2 A: model_aliases
     "codex": "5770184504015078b37e8a69e6b050c2c55dc99d18c1725173930e541515fe56",
     "copilot": "62a87c27b83a9c9ec291139e6b8301ee1f2528b5631ade7bec19138a47766eac",
 }
 # The new fields each existing profile now sets (R-SETTINGS: settings, Claude's session_meta; Ruling 120: copilot -p
 # cannot answer a scripted user); every other new field is still at its default.
-SET_BY_WAVE_1 = {"claude-code": {"settings", "session_meta"}, "codex": {"settings"}, "copilot": {"settings", "scripted_user"}}
+SET_BY_WAVE_1 = {"claude-code": {"settings", "session_meta", "model_aliases"}, "codex": {"settings"}, "copilot": {"settings", "scripted_user"}}
 NEW_FIELDS = {"settings": {}, "transport": "acp", "session_meta": {}, "user_home_vars": (), "seed_files": {},
               "credential_home_env": None, "model_aliases": {}, "scripted_user": "supported"}
 FIXTURE_PROFILE = """\
