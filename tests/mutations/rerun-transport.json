@@ -23,8 +23,8 @@
  {
   "name": "RT4: the stream's line bound is doubled (one kind of content, two bounds)",
   "file": "src/harness_bench/stream_driver.py",
-  "find": "                    if len(line) > MAX_LINE:\n",
-  "replace": "                    if len(line) > 2 * MAX_LINE:\n",
+  "find": "                if max(map(len, lines), default=0) > MAX_LINE or len(buf) > MAX_LINE:  # complete or still partial\n",
+  "replace": "                if max(map(len, lines), default=0) > 2 * MAX_LINE or len(buf) > 2 * MAX_LINE:\n",
   "tests": ["tests/test_stream_driver.py::test_a_line_over_8_mib_is_a_protocol_failure"]
  },
  {

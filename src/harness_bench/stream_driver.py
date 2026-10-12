@@ -144,16 +144,12 @@ class _Channel:
                 buf += data
                 lines = buf.split(b"\n")
                 buf = lines.pop()
-                stamps = [_read_ns()] * len(lines)
-                self.tee.chunk(data, stamps)
-                for line in lines:
-                    if len(line) > MAX_LINE:
-                        self.inbox.put(("protocol", "a line over 8 MiB from agy"))
-                        return
-                    self.inbox.put(("line", line))
-                if len(buf) > MAX_LINE:
+                self.tee.chunk(data, [_read_ns()] * len(lines))
+                if max(map(len, lines), default=0) > MAX_LINE or len(buf) > MAX_LINE:  # complete or still partial
                     self.inbox.put(("protocol", "a line over 8 MiB from agy"))
                     return
+                for line in lines:
+                    self.inbox.put(("line", line))
         except (OSError, ValueError):
             pass
         finally:
