@@ -4,6 +4,7 @@ import importlib.util
 import json
 import shutil
 import subprocess
+import sys
 import tomllib
 import uuid
 from pathlib import Path
@@ -126,12 +127,14 @@ def test_profile_registry_has_one_reader_build_and_yaml_per_harness():
 
 
 def test_copilot_profile_declares_native_acp_and_credential_store(tmp_path):
+    # Ruling 120 / ADR-0028: copilot -p behind the local adapter replaced native --acp; the name is kept for the
+    # mutation registry (tests/mutations/copilot.json). The credential-store claims are unchanged.
     p = profiles.load(ROOT, "copilot")
     assert (p.harness, p.home_env, p.credential_source, p.credential_name) == ("copilot", "COPILOT_HOME", None, None)
     assert p.files == {} and p.mode is None
-    assert p.command[:8] == ("{exe}", "--acp", "--model", "{model}", "--allow-tool", "shell", "--allow-tool", "write")
+    assert p.command[:5] == ("{python}", "{adapter}", "--exe", "{exe}", "--")
     assert p.env == {"COPILOT_AUTO_UPDATE": "false"}
-    assert (p.set_model, p.credential_kind) == (True, "subscription login (credential store)")
+    assert (p.set_model, p.credential_kind) == (False, "subscription login (credential store)")
     assert (p.record_glob, p.usage_source, p.auxiliary_models) == (
         "session-state/{session_id}/events.jsonl", "native_record", ())
 
@@ -164,11 +167,12 @@ def test_existing_adapter_profiles_keep_the_old_argv_call_shape(tmp_path):
         assert p.argv(FakeBuild()) == [shutil.which("node"), str(FakeBuild.adapter)]
 
 
-def test_copilot_argv_uses_the_pinned_exe_and_each_cells_model():
-    p = profiles.load(ROOT, "copilot")
+def test_copilot_argv_uses_the_pinned_exe_and_each_cells_model(tmp_path):
+    p = profiles.load(ROOT, "copilot")  # ADR-0028 s3: the adapter runs the pinned exe; the model is in its pass-through
     for model in ("gpt-6-sol", "other-advertised-model"):
-        assert p.argv(FakeBuild(), model)[:8] == [str(FakeBuild.exe), "--acp", "--model", model,
-                                                   "--allow-tool", "shell", "--allow-tool", "write"]
+        argv = p.argv(FakeBuild(), model, effort="high", home=tmp_path)
+        assert argv[2:5] == ["--exe", str(FakeBuild.exe), "--"]
+        assert argv[argv.index("--model") + 1] == model
 
 
 def test_copilot_profile_has_r45_static_tool_flags():
@@ -222,13 +226,16 @@ def test_command_template_rejects_an_adapter_placeholder_without_an_adapter(tmp_
         p.argv(build, "gpt-6-sol")
 
 
-def test_native_copilot_command_does_not_need_node_or_an_adapter(monkeypatch):
-    p = profiles.load(ROOT, "copilot")
+def test_native_copilot_command_does_not_need_node_or_an_adapter(monkeypatch, tmp_path):
+    # Ruling 120 / ADR-0028: the Copilot profile now runs its local Python adapter, so it needs no node; a command
+    # without {adapter} (hand-built here: no shipped profile is adapterless any more) needs no adapter either.
+    monkeypatch.setattr(profiles.shutil, "which", lambda _: None)
+    argv = profiles.load(ROOT, "copilot").argv(FakeBuild(), "gpt-6-sol", effort="high", home=tmp_path)
+    assert argv[:2] == [sys.executable, str(FakeBuild.adapter)]
     build = FakeBuild()
     build.adapter = None
-    monkeypatch.setattr(profiles.shutil, "which", lambda _: None)
-    assert p.argv(build, "gpt-6-sol")[:8] == [str(build.exe), "--acp", "--model", "gpt-6-sol",
-                                              "--allow-tool", "shell", "--allow-tool", "write"]
+    native = profiles.Profile("copilot", "COPILOT_HOME", None, None, ("{exe}", "--model", "{model}"))
+    assert native.argv(build, "gpt-6-sol") == [str(build.exe), "--model", "gpt-6-sol"]
 
 
 def test_adapter_command_rejects_missing_node(monkeypatch, tmp_path):
@@ -256,7 +263,7 @@ def test_copilot_launcher_reports_model_setter_and_credential_store(tmp_path):
     p = profiles.load(ROOT, "copilot")
     launcher = profiles.ProfileLauncher(p, tmp_path, {})
     assert (launcher.set_model, launcher.credential_kind, launcher.credential_names) == (
-        True, "subscription login (credential store)", frozenset())
+        False, "subscription login (credential store)", frozenset())  # ADR-0028: the model is in the -p argv
 
 
 def test_copilot_launcher_fills_each_cells_model_and_finds_its_record(tmp_path):
@@ -264,8 +271,8 @@ def test_copilot_launcher_fills_each_cells_model_and_finds_its_record(tmp_path):
     launcher = profiles.ProfileLauncher(p, tmp_path, {})
     launcher.build = FakeBuild()
     for model in ("gpt-6-sol", "second-model"):
-        argv, _ = launcher.argv_env({"model": model}, tmp_path / "home", "")
-        assert argv[3] == model
+        argv, _ = launcher.argv_env({"model": model, "effort": "high"}, tmp_path / "home", "")
+        assert argv[argv.index("--model") + 1] == model
     record = tmp_path / "home" / "session-state" / "session-a" / "events.jsonl"
     record.parent.mkdir(parents=True)
     record.write_text("{}\n", encoding="utf-8")

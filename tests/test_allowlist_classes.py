@@ -89,8 +89,8 @@ def copilot_advertised(record: Path) -> set[str]:
 
 def copilot_allowlist(scenario: int = 5) -> set[str]:
     """The --available-tools list a Copilot cell of `scenario` is launched with (the real argv path, R-74 item 3)."""
-    build = SimpleNamespace(exe=Path("copilot.exe"), adapter=None)
-    argv = profiles.load(ROOT, "copilot").argv(build, "gpt-6-sol", scenario=scenario)
+    build = SimpleNamespace(exe=Path("copilot.exe"), adapter=Path("copilot_p_acp.py"))  # ADR-0028: the -p adapter
+    argv = profiles.load(ROOT, "copilot").argv(build, "gpt-6-sol", scenario=scenario, effort="high", home=Path("home"))
     if "--available-tools" not in argv:
         return set()
     return set(argv[argv.index("--available-tools") + 1:])

@@ -1,6 +1,7 @@
 """R-37/R-51: one task-owned scripted user reaches only its intended cell."""
 
 import json
+import sys
 from pathlib import Path
 
 import pytest
@@ -75,18 +76,23 @@ def test_copilot_scripted_cell_uses_launch_config_and_never_session_mcp_servers(
 
 def test_copilot_argv_is_exact_for_scripted_and_ordinary_cells(tmp_path):
     profile = profiles.load(ROOT, "copilot")
-    build = tools.Build("copilot", "1.0.89-1", tmp_path / "copilot.exe", "a" * 64, None, None, None)
-    base = [str(build.exe), "--acp", "--model", "gpt-6-sol", "--allow-tool", "shell", "--allow-tool", "write",
-            "--disable-builtin-mcps", "--available-tools", "powershell", "list_powershell", "read_powershell",
+    # Ruling 120 / ADR-0028 s3: copilot -p behind the local adapter; the tool list stays last so this append extends it
+    build = tools.Build("copilot", "1.0.89-1", tmp_path / "copilot.exe", "a" * 64, tmp_path / "copilot_p_acp.py",
+                        "0.1.0", "b" * 64)
+    home = tmp_path / "home"
+    base = [sys.executable, str(build.adapter), "--exe", str(build.exe), "--", "--output-format", "json",
+            "--model", "gpt-6-sol", "--reasoning-effort", "high", "--allow-tool", "shell", "--allow-tool", "write",
+            "--no-ask-user", "--disable-builtin-mcps", "--log-level", "debug", "--log-dir", f"{home}/logs",
+            "--available-tools", "powershell", "list_powershell", "read_powershell",
             "stop_powershell", "apply_patch", "view", "glob", "rg", "skill"]
-    assert profile.argv(build, "gpt-6-sol") == base
+    assert profile.argv(build, "gpt-6-sol", effort="high", home=home) == base
     cfg = tmp_path / "cell" / "mcp-config.json"
     scripted = [*base, "scripted_user-ask_user", "--allow-tool", "scripted_user",
                 "--additional-mcp-config", f"@{cfg}"]
-    assert profile.argv(build, "gpt-6-sol", mcp_config=cfg) == scripted
+    assert profile.argv(build, "gpt-6-sol", mcp_config=cfg, effort="high", home=home) == scripted
     launcher = profiles.ProfileLauncher(profile, tmp_path, {})
     launcher.build = build
-    assert launcher.argv_env({"model": "gpt-6-sol", "mcp_config": cfg}, tmp_path / "home", "")[0] == scripted
+    assert launcher.argv_env({"model": "gpt-6-sol", "mcp_config": cfg, "effort": "high"}, home, "")[0] == scripted
 
 
 def test_plan_freezes_scripted_user_hash_and_matcher_version():
