@@ -21,7 +21,8 @@ def _row(field, value, source="rec field", not_recorded=None):
 
 
 def _prof(default_context=None, default_effort=None, aliases=None, aux=()):
-    settings = {"effort": {"default_serves": default_effort}, "context": {"default_serves": default_context}}
+    settings = {"effort": {"default_serves": default_effort},  # the context args as copilot.yaml freezes them (ADR-0028 s5)
+                "context": {"default_serves": default_context, "args": {"default": [], "922000": ["--context", "long_context"]}}}
     return {"auxiliary_models": list(aux), "settings": settings, **({"model_aliases": aliases} if aliases else {})}
 
 

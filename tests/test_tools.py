@@ -192,6 +192,8 @@ def test_resolve_finds_grok_and_the_vendored_agy(tmp_path):
     tools_dir, root, exe = _install_agy(tmp_path)
     builds = tools.resolve(tools_dir, root)
     assert builds["grok"].version == "1.0.41" and builds["grok"].adapter is None
+    grok = builds["grok"].record()
+    assert (grok["adapter_version"], grok["adapter_sha256"]) == (None, None)  # an adapterless build records no adapter
     assert builds["agy"].version == "1.3.3" and builds["agy"].sha256 == _sha(AGY_BYTES)
     assert builds["agy"].exe == exe == tmp_path / "agy" / "1.3.3" / "agy.exe"  # .tools/agy/1.3.3/ beside .tools/harness
 

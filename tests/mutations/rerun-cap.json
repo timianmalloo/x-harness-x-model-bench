@@ -29,7 +29,7 @@
  {
   "name": "R-CAP a profile's session_meta never reaches open_session",
   "file": "src/harness_bench/engine.py",
-  "find": "**({\"session_meta\": meta} if meta else {}))",
+  "find": "session_meta=meta)",
   "replace": ")",
   "tests": [
    "tests/test_engine.py::test_a_profiles_session_meta_reaches_open_session"

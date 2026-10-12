@@ -34,12 +34,16 @@ READERS = [("grok", grok_reader), ("agy", agy_reader)]
 
 ROOT = Path(__file__).resolve().parents[1]
 EXISTING = ("claude-code", "codex", "copilot")
-# Measured on the base commit (2f633d54) before any edit: identity_hash(plan.profile_record(ROOT, h)).
+# Measured on the J1a candidate (39a43852 + J1A-FIX): identity_hash(plan.profile_record(ROOT, h)), after R-SETTINGS froze
+# `settings` (claude-code 32e06b14..7bca and codex 57701845..fe56, as it reported) and R-COPILOT-P changed copilot.
 PROFILE_RECORD_HASHES = {
-    "claude-code": "afc754b8977d2f3d90d28e94e588b0228cf1b6cac16cfb6559573e614402059b",
-    "codex": "54f14a284b77f7430920b87d243c1547e90bc27960fe319bbe7e958aacd747d1",
-    "copilot": "36a8cd0a893732aa4e79eeeeb0bfb38c79d871070d708c4101538448e51b83a9",
+    "claude-code": "32e06b1458153f26c240603e99968fc564937b4d87915e15dae972713f8d7bca",
+    "codex": "5770184504015078b37e8a69e6b050c2c55dc99d18c1725173930e541515fe56",
+    "copilot": "62a87c27b83a9c9ec291139e6b8301ee1f2528b5631ade7bec19138a47766eac",
 }
+# The new fields each existing profile now sets (R-SETTINGS: settings, Claude's session_meta; Ruling 120: copilot -p
+# cannot answer a scripted user); every other new field is still at its default.
+SET_BY_WAVE_1 = {"claude-code": {"settings", "session_meta"}, "codex": {"settings"}, "copilot": {"settings", "scripted_user"}}
 NEW_FIELDS = {"settings": {}, "transport": "acp", "session_meta": {}, "user_home_vars": (), "seed_files": {},
               "credential_home_env": None, "model_aliases": {}, "scripted_user": "supported"}
 FIXTURE_PROFILE = """\
@@ -80,8 +84,8 @@ def _build(tmp_path: Path) -> tools.Build:
 
 def test_harnesses_stay_three_until_wave_1():
     """Leader ruling (J0): grok and agy join HARNESSES and READERS with R-SETTINGS, in the candidate that carries
-    R-TRANSPORT's two profile files; identity reads profile_record for every name in HARNESSES."""
-    assert profiles.HARNESSES == EXISTING
+    R-TRANSPORT's two profile files; identity reads profile_record for every name in HARNESSES. J1a carries them."""
+    assert profiles.HARNESSES == (*EXISTING, "grok", "agy")
     assert set(profiles.READERS) == set(profiles.HARNESSES)
     assert grok_reader is not None and agy_reader is not None
 
@@ -89,7 +93,9 @@ def test_harnesses_stay_three_until_wave_1():
 @pytest.mark.parametrize("harness", EXISTING)
 def test_existing_profiles_parse_every_new_field_to_its_default(harness):
     p = profiles.load(ROOT, harness)
-    assert {name: getattr(p, name) for name in NEW_FIELDS} == NEW_FIELDS
+    still_default = {name: value for name, value in NEW_FIELDS.items() if name not in SET_BY_WAVE_1[harness]}
+    assert {name: getattr(p, name) for name in still_default} == still_default
+    assert all(getattr(p, name) != NEW_FIELDS[name] for name in SET_BY_WAVE_1[harness])
 
 
 def test_profile_field_names_and_hand_built_defaults():
@@ -173,7 +179,17 @@ def test_default_never_leaks_a_literal_placeholder(tmp_path):
     assert err.value.code == "HB-USR-002"
 
 
-@pytest.mark.parametrize("harness", EXISTING)
+def test_copilot_p_refuses_a_default_effort_never_launching_the_literal(tmp_path):
+    """R-COPILOT-P (Ruling 120): copilot -p's command carries `{effort}`, so `default` is refused, never launched with
+    the placeholder text; it is the one existing profile whose default launch changed."""
+    p = profiles.load(ROOT, "copilot", credential_source=tmp_path / "absent")
+    build = tools.Build("copilot", "1", tmp_path / "x.exe", "0" * 64, tmp_path / "adapter.js", "1", "0" * 64)
+    with pytest.raises(BenchError) as err:
+        p.argv(build, "model-x", scenario=6, effort="default", context="default", home=tmp_path)
+    assert err.value.code == "HB-USR-002" and "{effort}" in err.value.message
+
+
+@pytest.mark.parametrize("harness", ("claude-code", "codex"))
 def test_default_changes_nothing_for_the_existing_profiles(tmp_path, harness):
     p = profiles.load(ROOT, harness, credential_source=tmp_path / "absent")
     build = tools.Build(harness, "1", tmp_path / "x.exe", "0" * 64, tmp_path / "adapter.js", "1", "0" * 64)
@@ -246,6 +262,9 @@ def test_grid4_replan_carries_default_settings_and_an_empty_harness_cap(monkeypa
     fixture = json.loads((ROOT / "tests/fixtures/plans/grid4-cells.json").read_text(encoding="utf-8"))
     monkeypatch.setattr(plan, "_probe_instructions", lambda root, cells, *args: (
         {(c.task, c.arm): 0 for c in cells if c.harness == "copilot"}, []))
+    from test_plan import _grid4_scripted_user_as_planned
+
+    _grid4_scripted_user_as_planned(monkeypatch)  # grid-4 predates copilot -p's scripted_user: unsupported
     body = plan.build_plan(ROOT, fixture["matrix"], config.load_yaml(ROOT / "bench/bom.yaml"), "grid4-replan",
                            fixture["builds"], fixture["pack"], task_versions=fixture["task_versions"])
     assert {r["cell_id"] for r in body["cells"]} == {r["cell_id"] for r in fixture["cells"]}
@@ -286,17 +305,14 @@ def test_stream_driver_stub_has_the_driver_signatures():
     for name in ("open_session", "send_turn"):
         assert list(inspect.signature(getattr(stream_driver, name)).parameters) == \
             list(inspect.signature(getattr(driver, name)).parameters)
-    with pytest.raises(NotImplementedError):
-        stream_driver.open_session(None, Path("."), None, 1.0)
-    with pytest.raises(NotImplementedError):
-        stream_driver.send_turn(None, "p", lambda s: None, 1)
+    for module in (driver, stream_driver):  # R-TRANSPORT: the profile's session_meta on session/new (ADR-0025 s2)
+        assert "session_meta" in inspect.signature(module.open_session).parameters
 
 
 @pytest.mark.parametrize(("harness", "module"), READERS)
-def test_reader_stubs_raise_not_implemented(harness, module, tmp_path):
+def test_the_new_readers_are_the_registered_ones(harness, module):  # R-READ-GROK and R-READ-AGY built the J0 stubs
     assert module is not None, harness
-    with pytest.raises(NotImplementedError):
-        module.read(tmp_path / "record")
+    assert profiles.READERS[harness] is module.read
 
 
 # --- identity and the CLI seams ----------------------------------------------------------------------------------

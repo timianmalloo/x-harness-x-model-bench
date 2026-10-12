@@ -326,7 +326,9 @@ def test_the_plan_profile_record_freezes_a_non_empty_settings_block(tmp_path, mo
                    "values": ["low", "medium", "high", "xhigh", "max", "ultra"]}}
     assert plan.profile_record(ROOT, "claude-code")["settings"]["context"] == {
         "apply": "model_id", "args": {}, "default_serves": 200000, "values": ["1000000"]}
-    assert "settings" not in plan.profile_record(ROOT, "copilot")
+    assert plan.profile_record(ROOT, "copilot")["settings"]["context"] == {  # R-COPILOT-P: the tier argv is frozen too
+        "apply": "placeholder", "args": {"922000": ["--context", "long_context"], "default": []}, "default_serves": 272000,
+        "values": ["default", "922000"]}
     root = _fixture_root(tmp_path, monkeypatch, "agy")
     path = root / "bench" / "profiles" / "agy.yaml"
     path.write_text(path.read_text(encoding="utf-8").replace(

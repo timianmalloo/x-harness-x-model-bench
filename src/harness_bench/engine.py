@@ -879,11 +879,11 @@ class Engine:
             started = True
             proto = protocol_module(launcher)
             # ADR-0025 s2: the profile's session_meta rides on session/new (ProfileLauncher has .profile; a fake may not).
-            # An empty map sends no keyword, so a driver without the parameter (and every launch before it) is unchanged.
+            # Both drivers take the keyword; an empty map is None, so session/new carries no `_meta`.
             meta = getattr(getattr(launcher, "profile", None), "session_meta", None) or None
             session = proto.open_session(cp, ws, launcher.mode, self.params["handshake_timeout"],
                                          cell["model"] if launcher.set_model else None, result, mcp_servers, a.cancel,
-                                         **({"session_meta": meta} if meta else {}))
+                                         session_meta=meta)
             if session is not None:
                 try:
                     record_session_opened(result.session_id)

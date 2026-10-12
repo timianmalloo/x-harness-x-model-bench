@@ -92,7 +92,7 @@ RUN_CODES: dict[str, str] = {
     "HB-PRE-005": "long paths not enabled (Windows LongPathsEnabled, git core.longpaths)",
     "HB-PRE-007": "a planned harness build is missing from the tools folder, or its hash differs",
     "HB-PRE-008": "Copilot instruction list failed or pack-off loaded repository instructions",
-    "HB-PRE-009": "a task base tree still carries an agent instruction file (a path in INSTRUCTION_FILES or a *.instructions.md under INSTRUCTION_DIRS) after the upstream removal",
+    "HB-PRE-009": "a task base tree still carries an agent instruction file (a path in INSTRUCTION_FILES, a *.instructions.md under INSTRUCTION_DIRS, or any file under INSTRUCTION_TREES) after the upstream removal",
     # The lean re-run's plan-time refusals (ADR-0024 s3, ADR-0025 s5, ADR-0028 s7); each names the combo or task.
     "HB-PRE-010": "combo setting not supported by its profile (names the combo, the setting and the supported values)",
     "HB-PRE-011": "per-harness parallelism cap missing or above 1 for a grok or agy combo (names the harness and the cap)",
