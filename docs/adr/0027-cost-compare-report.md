@@ -75,6 +75,12 @@ review-suggested:
    reaches it; a `procs` job-contained launch is not used, because it would kill Chrome. It prints the returned
    status (`opened`, or `not opened: <why>`; skipped under `AF_NO_OPEN` or `CI`). If the module cannot be loaded,
    the status is `not opened: render-markdown.py not loadable (<error>)`. No second Chrome lookup is written.
+   - **Erratum (Coordinator #3, 2026-10-12; the plan's call site, Leader owed-docs item 3).** "From `cli.py` only"
+     is replaced: the one call site is **`report/publish.py`** (`publish`, `report/publish.py:81`, Verified at
+     `d7de17d1`), which both `--cost-compare` and `--pack-cost` reach through their `cli_main`; `cli.py` does not
+     call it. `tests/test_architecture.py::test_open_in_chrome_is_called_only_from_report_publish_once`
+     (`OPEN_IN_CHROME_SITE = "report/publish.py"`, `:189`) is the control. Recorded in
+     `docs/coordination/coordination-lean-rerun.md`, *Errata (Coordinator #3)* E16.
 5. **Goldens (GOLD-A control), sequenced first.** `tests/goldens/cost-compare.html` is rendered from a fixture root
    that carries its own `bench/` (metrics, profiles, tool pins) and its own tasks, so a live pin, profile or catalog
    change cannot move it. A second test asserts the fixture root reads nothing from the repository's `bench/`. The

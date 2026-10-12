@@ -78,7 +78,7 @@ def lean_repo(base: Path) -> Path:
     (root / "bench" / "task-freeze.yaml").unlink(missing_ok=True)  # the frozen wave-3 tasks are not in this lean copy
     # `baseline` needs catalog 0.7 frozen (HB-CMP-006) and a `.dev` catalog's passes are probes, never current (views._is_probe).
     # The real tree released 0.7 at X-G3's join (R-86 c3, 2c4e2204); the lean copy re-pins its own freeze entry to its catalog_hash.
-    # The live catalog is 0.8.dev until the S4b freeze, so the lean copy carries the released 0.7 definitions (the frozen
+    # The live catalog is 0.8 since the S4b freeze, so the lean copy carries the released 0.7 definitions (the frozen
     # fixture root's metrics.yaml, which is 2c4e2204's) rather than a relabelled live file.
     metrics = root / "bench" / "metrics.yaml"
     shutil.copy(FROZEN_ROOT / "bench" / "metrics.yaml", metrics)
