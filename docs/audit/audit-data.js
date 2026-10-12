@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-12T14:55:02Z",
+  "generated": "2026-10-12T15:35:56Z",
   "audit": [
     {
       "actor": null,
@@ -180192,88 +180192,3941 @@ window.AUDIT_DATA = {
       "tool": null
     },
     {
-      "id": "al-01M4NY4NTY6CSTVHKNZ7GNXJAQ",
-      "shortname": "lean re-run at equal reasoning (high), largest context",
+      "actor": null,
+      "artifacts": [],
       "datetime": "2026-10-11T16:53:36Z",
-      "session": "prompt-log",
+      "id": "al-01M4NY4NTY6CSTVHKNZ7GNXJAQ",
+      "kind": "prompt",
+      "outcome": "success",
       "prompt": "---\nid: prompt-lean-rerun-equal-reasoning\ntitle: \"Execution prompt - the lean benchmark re-run at equal reasoning, with cost-anatomy capture\"\ntype: doc\nstatus: proposed\nowner: \"@timianmalloo\"\nsummary: \"The operator's prompt for a fresh session: re-run the lean benchmark with six combos pinned at high reasoning and the largest context each serves (Claude Code Opus 5.5 1M; Codex and Copilot GPT-6.1 Sol; Copilot GPT-5.6 Sol Fast; Grok 4.7; Antigravity Gemini 3.8 Flash), add Grok and Antigravity as bench harnesses, extend each cell's record with reasoning text and the per-request, per-tool and prompt-composition facts that explain token cost and drift, and end with a regenerated harness-cost-comparison.html opened in Chrome.\"\ntags: [prompt, coordination, lean-benchmark, cost-anatomy, reasoning]\nlinks:\n  - { to: prompt-lean-benchmark, rel: depends-on }\n  - { to: run-report-lean, rel: depends-on }\nreview-by: \"2026-10-25\"\n---\n\n# Execution prompt: the lean benchmark re-run at equal reasoning\n\nPaste everything below the line into a fresh Claude Code session started in `C:\\Projects\\x-harness-x-model-bench`.\n\n---\n\nRe-run the lean benchmark with every harness/model combination at the **same reasoning setting (high)** and the\n**largest context window each one serves**, and extend each cell's record so the next cost report can explain *why*\ntoken cost, time and drift differ, not only *that* they differ. The steps run in this session, in order; each starts\nonly when the one before it has committed and its gate has passed:\n1. `/define-architecture` (T1): the combo-settings contract, the new per-cell facts, the report generator;\n2. `/prepare-for-coordination`;\n3. `/execute-with-coordination`, as Leader;\n4. the readiness probe, the run (two batches), grading, the run report and the cost report.\n\n**Why this run exists.** The 2026-10-10 lean run compared harnesses at their *default* settings: Codex ran\n`gpt-6.1-sol` at reasoning effort **low**, Copilot ran the same model at **medium**, and Claude Code at its own default.\nThe cost comparison (`docs/coordination/harness-cost-comparison.html`) therefore mixed harness behaviour with\nreasoning setting. It also found that reasoning text is barely recorded (Claude Code: 202 thinking blocks, 1,793\ncharacters in total; Codex: encrypted reasoning, summaries off by default; Copilot: readable text on 77 of 214\nmessages), and that none of it reaches the bench's records.\n\n**Sources of record** (read them first; the repo wins over this prompt):\n- `docs/specs/lean-pack-benchmark.md`, `docs/architecture-lean-benchmark.md` (ADR-0022, ADR-0023);\n- `docs/coordination/run-report-lean.md` and `docs/coordination/coordination-lean.md` (its errata and planned vs\n  actual);\n- `docs/coordination/harness-cost-comparison.html`: the report this run must deepen, and its method (footer);\n- `docs/lessons/defect-classes.md` (CEIL-A, FLAKE-A, GOLD-A, TOOL-UNPINNED-A, SERVE-A and the 2026-10-10 entries);\n- `docs/notes/rulings.md`;\n- `bench/profiles/*.yaml`, `bench/rings/lean.yaml`, `bench/rings/lean-codex.yaml`, `bench/tools/package.json`.\n\n**Start-state check, before anything else (stop and report if it fails):**\n- `origin/main` contains this prompt and `docs/coordination/harness-cost-comparison.html`.\n- ai-forward branch `feat/run-report-open` (`ed9625a`) is pushed, or the operator has said it stays local. Its change\n  is already installed here (`59f55424`).\n- `coord worktree list` shows only the primary; otherwise `coord worktree cleanup` (report, then `--remove` on the\n  operator's go).\n- Run `coord doctor` and `pack-doctor.py`, and read their states back.\n- Re-check \"latest\" for every pin below (`grok models` with `XAI_API_KEY` unset; `agy models`; Copilot's and Codex's\n  served lists). If a newer Opus, Sol, Grok or Gemini id is served, ask the operator before changing a pin.\n\n**The six combos (operator, 2026-10-11).** Every cell pins model, reasoning effort and context:\n\n| combo | harness | model | reasoning | context | how the pinned build takes it (verified 2026-10-11 from the build or its catalog) |\n| --- | --- | --- | --- | --- | --- |\n| `cc-opus-1m` | Claude Code 2.1.282 | `claude-opus-5-5[1m]` | effort `high` | 1M | `ANTHROPIC_MODEL`; effort through `CLAUDE_CODE_EFFORT_LEVEL` or the `effort` setting (both in the 2.1.282 SDK types) |\n| `codex-sol` | Codex 0.160.0 | `gpt-6.1-sol` | `model_reasoning_effort = \"high\"` | 872k (the catalog's `max_context_window`; default 272k) | `config.toml`; also `model_reasoning_summary = \"detailed\"` |\n| `copilot-sol` | Copilot 1.0.89-1 | `gpt-6.1-sol` | `--reasoning-effort high` | `--context long_context` | CLI flags (both in `copilot --help`) |\n| `copilot-sol-fast` | Copilot 1.0.89-1 | GPT-5.6 Sol Fast: **id not yet verified** | `--reasoning-effort high` | `--context long_context` (operator expects about 922k) | CLI flags |\n| `grok-4.7` | Grok CLI 1.0.41 (`@xai-official/grok`) | `grok-4.7` | `--reasoning-effort high` (levels low, medium, high, xhigh; catalog default high) | **256k**: the catalog's `context_window` for every subscription model; no larger tier, no context setting | `grok agent stdio` (ACP over stdio, as `coord_transport` drives it); `XAI_API_KEY` unset |\n| `agy-gemini` | Antigravity CLI 1.3.2 (`agy.exe`) | `gemini-3.8-flash-high` | `high` is part of the model id (`-low`/`-medium`/`-high`); `--effort high` also exists | **not settable and not reported** by the CLI; Inferred about 1M for Gemini Flash, unverified | `agy -p --input-format stream-json --output-format stream-json` (native stream, not ACP) |\n\n- The operator's \"1M everywhere\" is the target; the largest *served* window is what gets pinned. Codex's catalog\n  (`models_cache.json` in the archived homes) says 872,000 for `gpt-6.1-sol`, at 95% effective. Copilot's long-context\n  size is not in any record yet: the probe reads it.\n- \"GPT-5.6 Sol Fast\": Codex's catalog lists `gpt-5.6-sol` and no \"fast\" variant. The Copilot id must come from\n  Copilot's own served-model list through the pinned build (ACP `session/new`, or `/model`). If no such model is\n  served, raise a decision request to the Owner; never substitute.\n- \"High\" is each vendor's own scale (Anthropic effort, OpenAI reasoning effort, xAI reasoning effort, Google's\n  `-high` model variant). Equal *setting* is the control; the\n  report states that equal setting is not proven equal *depth*, and shows reasoning tokens per cell beside it.\n- **Grok, verified 2026-10-11:** on the subscription login (`grok models` with `XAI_API_KEY` unset) the served models\n  are `grok-4.7` (default, \"latest frontier\"), `grok-4.7-build-fast`, `grok-4.6`, `grok-4.5`; `~/.grok/models_cache.json`\n  gives each a 256,000 context window with auto-compaction at 80%. **Operator, 2026-10-11: keep Grok at 256k** (its\n  closest to 1M); the report states the smaller window beside Grok's numbers. With `XAI_API_KEY` set, the list differs (API models\n  such as `grok-4.20-0309-reasoning`); the bench uses the subscription login, as the coordination runner does (R-103).\n- **Antigravity, verified 2026-10-11:** `agy models` serves `gemini-3.8-flash-{low,medium,high}` (the newest Gemini;\n  `gemini-3.1-pro-*` is older), plus Claude and GPT-OSS models, which this run does not use. A one-turn stream-json\n  spike (`agy -p ... --output-format stream-json`) reported the served model, 60 tools, per-step usage with\n  `thinking_tokens` and `cache_read_tokens`, and step durations, but no context window. The probe must find the served\n  limit or record it as `not recorded`.\n- **Antigravity updates itself:** it moved from 1.3.1 (last run) to 1.3.2 and left `agy.exe.<stamp>.old` beside the\n  binary. The bench must pin a copy (version + sha256 in `.tools`, checked at every cell start, as for the npm builds)\n  and turn auto-update off for cells, or a batch can change builds mid-run.\n- Grok and Antigravity remain coordination workers in this run; as benchmark subjects they run only in isolated cell\n  homes, never in a worker's home or session store.\n- Pack arms stay as in the lean design (off, on), so cells pair as before: 10 tasks × 2 arms × 6 combos = 120 cells\n  per batch, two batches, **240 cells**.\n\n**Work to divide** (verify each against the repo; the Simplifier strikes what the goal does not need):\n\n- **R-HARNESS-GROK: Grok as a bench harness.** A `bench/profiles/grok.yaml` (vendor `xai`) over ACP:\n  `grok agent stdio --model {model} --reasoning-effort {effort}`, `XAI_API_KEY` removed from the cell env. Pin\n  `@xai-official/grok` 1.0.41 in `bench/tools/package.json` and add it to `tools.LAYOUT` (version, exe, sha256). Spikes,\n  each run once against the pinned build: home isolation (does an env var relocate `~/.grok`, or must the cell set\n  `HOME`/`USERPROFILE`; the credential is `~/.grok/auth.json`); the record (`sessions/<cwd>/<id>/`: `chat_history.jsonl`\n  with `reasoning` items, `events.jsonl`, `prompt_context.json`, which lists `agents_md_files`); the token source\n  (per-call usage in the record, or ACP turn usage); the tool allowlist mapped to the ADR-0004 classes; the instruction\n  files Grok loads in each arm (pack-off lists 0). Reuse `coord_transport`'s Grok handling (the skills-reload watcher\n  replies, release floor 1.0.34) rather than writing it again.\n- **R-HARNESS-AGY: Antigravity as a bench harness.** Antigravity speaks its own stream-json, not ACP, so the engine\n  needs a second transport. Reuse the pack's Agy native-stream adapter in `coord_transport` (the coordination runner\n  already drives `agy` this way) behind the engine's transport interface; do not fork the ACP path. A\n  `bench/profiles/agy.yaml` (vendor `google`): `agy -p --input-format stream-json --output-format stream-json --model\n  {model} --add-dir {worktree}` with a stated permission mode. Pin a copy of `agy.exe` 1.3.2 (version and sha256) and\n  turn auto-update off for cells. Spikes, each run once: home isolation (`~/.gemini/antigravity-cli`, its credential and\n  its conversations store); the record (the stream's per-step `usage` with `thinking_tokens`, and the trajectory database\n  `conversations/<id>.db`, table `steps`, which may hold thinking text); the tool allowlist; the instruction files it\n  loads in each arm (`AGENTS.md`, `.agents/rules`, `.agents/skills`). If a cell cannot be isolated or recorded to the\n  bench's standard, raise a decision request instead of running it half-measured.\n\n- **R-SETTINGS: combo settings are plan facts.** Matrix combos gain `effort` and `context` (schema `bench-matrix/3`;\n  `bench-matrix/2` files still load, with both fields absent meaning \"harness default\", recorded as such). Profiles take\n  them through placeholders: Codex `config.toml` (`model_reasoning_effort`, `model_reasoning_summary`,\n  `model_context_window`), Copilot argv (`--reasoning-effort`, `--context`), Claude Code env or settings. The plan\n  freezes them; the engine identity includes them. Red first: a plan whose combo sets `effort: high` produces a cell\n  launch with that setting for every harness.\n- **R-SERVED: served settings are read back, per cell, and gate validity.** From each native record, read what was\n  actually served: model id, reasoning effort, context window or tier. Known sources: Copilot `session.start.contextTier`\n  and `session.usage_checkpoint...reasoning_effort`; Codex `session_meta.context_window` and turn context; Grok the\n  session record and the catalog entry it ran under (`context_window`, `reasoning_effort`); Antigravity the stream's\n  `init.model` (effort is in the id; the context limit is not reported); Claude Code to be found (spike: the\n  transcript's model id and any effort field). A mismatch with the plan makes the cell invalid\n  under a new `HB-VAL-*` code. A setting that no record carries is `not recorded`, never assumed.\n- **R-PROBE: the readiness probe, per combo, through the pinned build** (last run's SERVE-A lesson: the pinned Codex\n  build was refused its model at cell one). One real one-turn cell per combo, X1 fixture, pack off. Exit evidence:\n  served model, effort and context read back and equal to the pins; reasoning text visible in the record. Runs before\n  batch 1 and before the token approval.\n- **R-REASON: reasoning goes to the record.** A new hash-chained fact stream `reasoning` per run (the same ledger\n  discipline as `model_calls` and `tool_calls`, checked by `bench verify`). One row per reasoning item: cell, request\n  ordinal, harness source kind (`text` · `summary` · `encrypted-only` · `omitted`), the visible text, its character\n  count, reasoning tokens where the vendor reports them, and a sha256 of any opaque payload. Turn on the most verbose\n  visible reasoning each build allows: Codex `model_reasoning_summary = \"detailed\"` (and raw reasoning if 0.160.0 has a\n  setting for it: verify); Claude Code's thinking display (find the 2.1.282 setting: today's records keep signatures\n  only); Copilot's `reasoningText`; Grok's `reasoning.summary` text (present in today's records, beside\n  `encrypted_content`); Antigravity's thinking text if the trajectory store holds it, otherwise its `thinking_tokens`\n  with source kind `omitted`. Where a vendor returns only encrypted reasoning, the row says so; nothing is\n  reconstructed or paraphrased.\n  - **Where \"the audit log\" lands** (operator's term; proposal): the per-cell reasoning text belongs in the run's own\n    record (`runs/<run>/reasoning/`), because it runs to megabytes per batch. `docs/audit/audit-log.jsonl` gets one\n    entry per batch that names the stream, its row count and its hash head. Ask the operator once if they want the\n    text itself in `docs/audit`.\n- **R-ANATOMY: the per-cell facts behind cost and drift.** Each is read from the native record, emitted on the normal\n  path (no flag), and degrades to `not recorded` with a reason:\n  1. *Per request:* fresh input, cache read, cache write, output, reasoning tokens; start and end time. Copilot's\n     record holds per-session totals only: find a per-request source (ACP updates, the process log), or record `not\n     recorded (per-session totals only)`.\n  2. *Prompt composition:* the fixed prefix each harness sends: system or base instructions, tool and skill\n     catalogue, instruction files loaded (path, characters, inlined or read on demand), `AGENTS.md`/`CLAUDE.md`. Last\n     run measured these by hand: Copilot inlined 13 `applyTo: \"**\"` files (235k characters) on every request.\n  3. *Context curve:* input tokens per request in order, the peak against the served window, and compaction events.\n  4. *Tool calls with arguments:* target paths (read, edit, search) and commands; inside or outside the task's\n     radius; bytes returned into context; a phase tag by a stated rule (explore · edit · verify · other); re-reads of\n     the same file.\n  5. *Hooks and skills:* every hook invocation by type with its duration; every skill load.\n  6. *Time anatomy:* model, tool, hook and idle time per cell, for every harness (last run had model time for Copilot\n     only).\n  7. *Drift, split three ways:* machine-written (tool caches, hook and audit logs), task-implied, and discretionary\n     edits; plus *attention drift*: the share of reads and searches that target files outside the task's neighbourhood\n     (its radius, the radius's imports, its tests).\n  These are new metrics: catalog 0.7 → 0.8, each with its definition, grader and `not recorded` reason.\n- **R-DRIFT-FIX: two defects found by the cost comparison** (register entries first, class → sweep → control):\n  - the drift grader counts tool caches (`.pytest_cache`, `.mypy_cache`) as scope creep; most raw scope-creep lines\n    last run were caches;\n  - five tasks' `blast_radius` omits the test file the task needs (RW2 `test_schedule.py`, NG1\n    `tests/test_limiter.py`, NG2 `tests/test_interp.py`, SM1 `tests/test_tables.py`, SM2 `tests/test_search_many.py`);\n    every harness wrote it. Fix the task versions (a task-version bump, recorded) or the grader's rule; state which.\n- **R-REPORT: the deeper cost report, generated.** `bench report --cost-compare <run> [<run> ...] --out\n  docs/coordination/harness-cost-comparison.html --open` writes the page from the run records alone, no hand-filled\n  numbers, and opens it in Chrome through the same lookup as `render-markdown.py --open` (skipped under `AF_NO_OPEN` or\n  `CI`; otherwise `not opened: <why>`). It keeps the current page's five sections (what was benchmarked; harnesses and\n  models, now with served effort and context; cost per combo; observations; why same-model harnesses differ) and adds:\n  - reasoning: tokens per cell and per request, visible-text volume, source kind per harness, and a few short excerpts;\n  - the per-request context curve per combo;\n  - prompt composition per combo (measured, not hand-classified);\n  - tool phases (explore / edit / verify) and bytes returned;\n  - time anatomy for every combo;\n  - drift three ways plus attention drift, with the out-of-scope paths listed;\n  - the kiviat with a checkbox per series (6 combos × 2 arms = 12), normalized over all series so toggling never\n    rescales; axes: token economy, speed, request economy, tool-call economy, clean cells, edit orientation, read\n    orientation, hidden checks passed.\n  A golden test pins the renderer on a fixture whose `bench/` inputs are its own (GOLD-A), so a pin bump never reddens it.\n\n**Rules the plan must encode** (measured lessons):\n1. **Floors (CEIL-A), measured 2026-10-10 for ~75 kB briefs:** Grok about 117k, Agy about 166k, Opus Coordinator 137k,\n   Opus worker about 109k, Haiku about 99k, at the first edit. Keep Grok and Agy briefs under ~30 kB, or route the track\n   to an Opus sub-agent. Thresholds are absolute: the floor plus the planned work.\n2. **Before every `src/` or `tests/` join,** one full suite on the candidate, then the join recount. A red that passes\n   alone gets one retry; a second red goes to a loop-back fix track (Opus). Record FLAKE-A instances.\n3. **The worker gate (R-104):** red first on an assertion; the guard list on the first and final commit;\n   `mutate_check` on the worker's own mutation files; ruff and `docs-graph validate`; the console flag on every launch\n   it adds; the windows check at hand-back. Never `--no-verify`, never rewrite a commit.\n4. **Never edit a log.** A torn row or a classifier denial stops that action and goes to the operator.\n5. **Every brief's proof command is run once by its author before dispatch (TEST-E).**\n6. **Seats never write the primary.** New session ids per continuation (IDN-A); a new runner turn uses a new branch.\n7. **Caps:** 6 concurrent workers, at most 2 per external harness; the health check at every dispatch and join.\n   Scratch under `C:\\tf\\<track>`.\n8. **Tokens are the only cost axis.** Never write USD (Ruling 115).\n9. **A relayed decision is answered before its default fires,** or its timeout is extended past the operator's\n   expected latency (last run's D1 defaulted while the operator was answering).\n10. **Pin ruff** in the dev dependency group (TOOL-UNPINNED-A) before the first join.\n\n**Seats** (as in the last run):\n- **Owner:** Claude Code, Fable (`claude-fable-5-1`), session `owner-fable`; rules into `docs/notes/rulings.md`.\n- **Leader:** Claude Code, Opus (`claude-opus-5-5`), the next lease epoch; merges only in a dedicated integration tree;\n  pushes with exactly `git -C C:/Projects/x-harness-x-model-bench push origin <gated sha>:main` and reads origin back.\n- **Coordinators:** Claude Code, Opus; compiled briefs; own the errata and the register.\n- **Claude sub-agents** (explicit `model` every time): Opus for judgement (the reasoning-capture design, the report\n  analysis, loop-back fixes); Haiku latest (`claude-haiku-5-5`; re-check) for mechanical work.\n- **Distributed coding** through `coord-runner`, served id read back for every dispatch: Grok `grok-4.7` (effort high;\n  R-103) and Agy `gemini-3.8-flash-high`, in parallel, within rule 1.\n- **Not workers:** Codex, Sonnet, GitHub Copilot (benchmark subjects only). Grok and Antigravity are both workers and\n  subjects: a worker's home, credentials and session store are never a cell's, and a cell never reads them.\n\n**The run** (Leader, after the tracks join and the batch gate is green):\n1. Push. Run R-PROBE for all six combos; stop on any mismatch.\n2. Commit a pre-registration paragraph (what is compared, the six pins, the arms, the metrics) before batch 1.\n3. Ask the operator once to approve the token budget: **about 160M–270M** (Inferred: last run's per-cell means × 40\n   cells per combo, with Copilot GPT-5.6 Sol Fast assumed equal to Copilot GPT-6.1 Sol, × 1.0–1.5 for high effort;\n   Grok and Antigravity have no bench cells yet, so each is bracketed at 0.2M–0.8M per cell). Set `spend_cap_tokens`\n   per batch from the approval.\n4. Batch 1: 120 cells. Checkpoint: minutes per cell for run and grading, tokens per cell per combo and arm, reasoning\n   rows per cell, and served settings, each against the estimate. Batch 2 waits for the operator only if a threshold\n   trips, or if Grok's or Antigravity's measured tokens per cell exceed the bracket.\n5. Batch 2: 120 cells. Grade, verify (`bench verify` on both, including the `reasoning` stream), report.\n6. The run report (md + html) under `docs/coordination/`, ending with `render-markdown.py ... --open` (Stage 7). It\n   carries the lean summary as before, and the served settings per combo.\n7. **Then the cost report:** `bench report --cost-compare` over both batches, written to\n   `docs/coordination/harness-cost-comparison.html` and opened in Chrome. Commit and push both reports.\n\nTargets: about 5–6 h of machine time for 240 cells including grading (Inferred: last run's 158 min for 120 cells,\nscaled to 240, with Copilot's heavier cells and two harnesses never timed in a cell). The checkpoint measures it.\n\n**Plan output, per track:** owner; harness and model, with the reason; authored paths; depends-on; tier; budget\n(calls, tokens, wall); exit evidence; fallback; termination condition; join batch. Also the serial spine, the critical\npath (Inferred durations, labelled), the struck tracks, and the operator actions with their timing (the\nGPT-5.6 Sol Fast id if unresolved, the token approval, the audit-log placement question, any Grok or Antigravity\nisolation that needs an operator setting, worktree cleanup).\n\n**Execution reporting:** one status table per update (task, what it does, status, harness and model). Report only\nwhen done or blocked on the operator.\n\n**Stop rules:** the health check trips twice; the host becomes unstable (record evidence first); `main` cannot be\nmade green within one bisect round; a probe shows a served setting that differs from its pin; an operator-only\nblocker gates every remaining track.\n\nClose with `coord worktree cleanup` (report first, then `--remove` on the operator's go), the closing audit entries,\nand the scratch roots listed for deletion.\n\n**Not in scope:**\n- reasoning *quality* scoring or an LLM judge of reasoning text;\n- new tasks (the five radius fixes are task-version bumps of existing tasks, not new tasks);\n- arm Y, campaigns, calibration cells, macOS, GitHub Actions;\n- USD;\n- force pushes or history rewrites;\n- Codex, Sonnet or GitHub Copilot as workers.",
+      "session": "prompt-log",
+      "shortname": "lean re-run at equal reasoning (high), largest context",
+      "skill": null,
       "summary": "prompt logged for reuse",
+      "tags": [
+        "lean-rerun"
+      ],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/architecture-lean-rerun.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-12T01:17:11Z",
+      "duration_seconds": 122.0,
+      "duration_source": "session-start-hook",
+      "id": "al-01M4PTYRG0DSYN3H18XX3MBAPH",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "T1 /define-architecture for docs/coordination/lean-rerun-equal-reasoning-prompt.md: the combo-settings contract, the new per-cell facts, the report generator (operator prompt 12ac42f4; Rulings 117, 118)",
+      "session": "lean-rerun-leader",
+      "shortname": "define-architecture-lean-rerun",
+      "skill": "define-architecture",
+      "started_at": "2026-10-12T01:15:09Z",
+      "summary": "Architecture amendment + ADR-0024..0027: bench-matrix/3 effort/context frozen per cell and judged against the served value (HB-VAL-010/011, default_serves); stream_driver for agy with coord_transport as oracle; Grok over ACP with a dedicated credential home (CRED-COPY-A, measured stranding); 4 new grading-pass streams; catalog 0.8 drift split by grader rule; generated cost-compare report. Spikes: 6 harness spikes + Copilot ACP context probe (272k on 1.0.89-1 and 1.0.92-4). Council: 4 vetoes, all cleared by change in 3 rounds.",
+      "tags": [],
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [
+        "docs/coordination/coordination-lean-rerun.md"
+      ],
+      "compiled": false,
+      "datetime": "2026-10-12T14:22:33Z",
+      "done_when": "plan md+html committed with every gate veto cleared by the reviewer",
+      "duration_seconds": 1993.0,
+      "fan_out": 0,
+      "goal": "a coordination plan for the lean re-run that one Leader can execute",
+      "id": "al-01M4R7WTT71RWRDP94KKVPNHRE",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "/prepare-for-coordination for the lean re-run at equal reasoning (prompt 12ac42f4; architecture c6f85549; Rulings 117-121)",
+      "session": "lean-rerun-leader",
+      "shortname": "coordination-lean-rerun",
+      "skill": "prepare-for-coordination",
+      "started_at": "2026-10-12T13:49:20Z",
+      "summary": "18 tracks (3 contract/fixture before wave 1, 13 in wave 1, 2 in wave 2), batched joins, serial spine S0-S9, stop rules, 7 struck; gate: 3 vetoes round 1, 2 more after Rulings 120/121 (Copilot -p adapter; pack-cost page), all cleared by change over 4 rounds",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-12T14:55:02Z",
+      "done_when": "isolation test green; live consumers listed and green; non-lean and pack-improvement goldens green; ruff pinned",
+      "duration_seconds": 1646.0,
+      "fan_out": 0,
+      "goal": "Make the default fixture root frozen and self-contained, keep a live mode for named catalog-identity consumers, pin ruff",
+      "id": "al-01M4R9RA8VMGX3422MS13F7XWV",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "r-gold-rerun: R-GOLD self-contained golden fixtures, ruff pin",
+      "session": "r-gold-rerun",
+      "shortname": "r-gold",
+      "skill": "implement",
+      "started_at": "2026-10-12T14:27:36Z",
+      "summary": "make_root defaults to the frozen tests/fixtures/bench-root (catalog 0.7, profiles, tools pin, X1); release=False is the live mode for 3 named consumers; tests/test_fixture_root_isolation.py red then green; goldens unchanged; ruff==0.16.5 pinned in dev group and uv.lock",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-12T14:46:11Z",
+      "done_when": "test_contract_facts green red-first; tamper test fails bench verify; existing tests of touched modules green",
+      "duration_seconds": 1115.0,
+      "fan_out": 0,
+      "goal": "grade-side seams of the lean re-run in code, no behaviour change for an old run's view",
+      "id": "al-01M4R982WNXBMQ75VV00ZYB305",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "r-contract-facts-rerun: R-CONTRACT-FACTS grade-side seams in code",
+      "session": "r-contract-facts-rerun",
+      "shortname": "r-contract-facts",
+      "skill": "implement",
+      "started_at": "2026-10-12T14:27:36Z",
+      "summary": "errors codes (HB-VAL-010/011, HB-PRE-010/011/012, HB-CELL-203); ServedSettings, stream item dataclasses, ToolInput.bytes_returned, four Extraction reader hooks; four row builders; PASS_FACTS/FACTS/KEYS for served, reasoning, prompt_parts, harness_events; all_tasks bool check; report stubs cost_compare, pack_cost, tool_phases, publish, request_series; tests/test_contract_facts.py incl. reasoning tamper test",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-12T14:52:34Z",
+      "done_when": "identical-event pair writes two rows and the view loads; two sources write both rows; touched modules' tests green",
+      "duration_seconds": 325.0,
+      "fan_out": 0,
+      "goal": "apply the Leader's rulings DR1 (a) and DR2 (a) on build/rerun-contract-facts",
+      "id": "al-01M4R9KSJ0ZJE9QMMZRVXDFK63",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "r-contract-facts-rerun-2: R-CONTRACT-FACTS rulings on DR1 and DR2",
+      "session": "r-contract-facts-rerun-2",
+      "shortname": "r-contract-facts",
+      "skill": "implement",
+      "started_at": "2026-10-12T14:47:09Z",
+      "summary": "harness_events gains native_ordinal (columns and KEYS); served hook accepts a tuple of ServedSettings, one per source, served_rows writes all and writes an identical row once; red-first tests for both",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-12T14:43:02Z",
+      "done_when": "validate exit 0; entries committed; eight briefs under 25 kB with TEST-E; closing entry committed",
+      "duration_seconds": 929.0,
+      "fan_out": 0,
+      "goal": "Register the three ADR-0026 section 6 classes before the code, and give each wave-1 track a brief under 25 kB",
+      "id": "al-01M4R92AF9W34YSEKYY5FTAME6",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "Coordinator #1 (lean re-run, epoch 21): register entries DRIFT-MACHINE-A, RADIUS-TEST-A, LEAK-HOME-A; compile the eight wave-1 briefs with TEST-E",
+      "session": "c1-rerun",
+      "shortname": "c1-rerun",
+      "skill": "execute-with-coordination",
+      "started_at": "2026-10-12T14:27:33Z",
+      "summary": "Three register entries committed (ab94824d) with docs-graph validate exit 0; eight briefs compiled to C:/tf/rerun-leader/briefs (7.3-12.5 kB each, scratch, not committed) with TEST-E output; findings on the plan handed back",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "actor": null,
+      "artifacts": [],
+      "compiled": false,
+      "datetime": "2026-10-12T14:58:03Z",
+      "done_when": "test_contract_run green; profile_record hashes and plan fixture cell ids unchanged; touched-module tests green",
+      "duration_seconds": 1826.0,
+      "fan_out": 0,
+      "goal": "run-side structural seams so 13 wave-1 tracks each own one file, no behaviour change",
+      "id": "al-01M4R9XTPSPMC2QSJPECB79RGY",
+      "kind": "skill",
+      "outcome": "success",
+      "prompt": "r-contract-run-rerun: R-CONTRACT-RUN run-side seams in code",
+      "session": "r-contract-run-rerun",
+      "shortname": "r-contract-run",
+      "skill": "implement",
+      "started_at": "2026-10-12T14:27:37Z",
+      "summary": "Profile settings/transport/session_meta/user_home_vars/seed_files/credential_home_env/model_aliases/scripted_user with defaults; {effort},{context_tokens},{python},{home},{context_arg} expansion; Cell effort/context (RECID-A ids unchanged); harness_parallelism frozen; engine.protocol_module; stream_driver/grok/agy stubs; cli seams; identity classes; agy-stream and open_in_chrome rules; console ROOTS += bench/adapters; HARNESSES unchanged per Leader ruling",
+      "tags": [],
+      "tier": "T1",
+      "tool": null
+    },
+    {
+      "id": "al-01M4RBFXN5JAEJZDSHJT629QNW",
+      "shortname": "Brief: R-READ-CODEX — Codex reader facts (Grok floor canary) (self-conta…",
+      "datetime": "2026-10-12T15:25:25Z",
+      "session": "prompt-compile",
+      "prompt": "# Brief: R-READ-CODEX — Codex reader facts (Grok floor canary) (self-contained)\n\n*Compiled by Coordinator #1, 2026-10-12, at `2f633d54`, for Grok (`grok-4.7`, `--reasoning-effort high`) through `coord-runner`. This brief is complete: you do not need\nthe common brief. Session id: `r-read-codex`. Branch: `build/rerun-read-codex`. Repository: the worktree the runner gave you\n(a checkout of `integrate/rerun-21` after J0).*\n\n**Goal.** Teach the existing reader to emit the four new fact streams' inputs for its harness, red first, on scrubbed\nfixtures. **Done when** every red test in section 6 is green, your mutants are killed, ruff is clean, and the closing\naudit entry is committed. **Not in scope:** section 7. **Tier** T1. **Fan-out** 0.\n\n## 1. Your row, verbatim\n\n### Tracks table (`docs/coordination/coordination-lean-rerun.md:133`)\n\n| track | owns (authored) | depends on | tier | fan-out cap | budget | exit evidence | harness |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| **R-READ-CODEX** Codex reader facts (Grok floor canary) | `src/harness_bench/telemetry/codex.py` (served settings, reasoning items, prompt parts, harness events where present, per-request rows, `bytes_returned`); `tests/test_reader_codex.py` (new); `tests/fixtures/codex/rerun-*.jsonl` (scrubbed); `tests/mutations/rerun-read-codex.json` | J0 | T1 | 0 | 60 calls · canary + 50k · 1 · 1.0 h | red first on the scrubbed rollout: served `model`, `effort` `high`, window 828,400 with the catalog percent's source; two reasoning rows (`summary` with text; `encrypted-only` with a sha256); the AGENTS.md block as an `instruction_file` part on a pack-on fixture and none on pack-off. Existing Codex reader tests green | Grok (bounded; brief under 30 kB; dispatched first, alone, as the Grok floor canary) |\n\n### Track assignment detail (`:156`)\n\n| track | sessions · branches | why this harness and model | why it earns the multiplier | expected seam requests | deadline · termination · fallback | join batch · gate ring |\n| --- | --- | --- | --- | --- | --- | --- |\n| R-READ-CODEX | runner `rcodex-rerun` · `build/rerun-read-codex` | one reader, one fixture: Grok's measured profile on bounded work | **independence**; it is the Grok floor canary | none | 2,400 s, R-103 kill and one retry · ends at a green commit · Opus sub-agent | J1b · none |\n\n## 2. Base\n\nYour worktree is cut from `integrate/rerun-21` **after J0** (R-GOLD, R-CONTRACT-RUN and R-CONTRACT-FACTS\njoined). The anchors below were read by Coordinator #1 at `2f633d54`, **before J0**: J0 adds the contract fields,\ncodes and stubs, so line numbers may have moved. Re-read the named symbol, never trust the number alone. Where an\nanchor says \"J0 adds\", open the J0 code and use its exact names; do not re-create them.\n\n## 3. The contract you fill (ADR-0026 §1, condensed; the J0 code is the authority)\n\nADR-0026 §1 row grain (columns beyond `kind, run_id, extraction_id, cell_id, native_session_id`):\n- `served`: one setting of one cell as one source showed it: `field` (model_served · model_api · effort ·\n  context_tokens · context_tier · reasoning_summary), `value`, `not_recorded`, `source`.\n- `reasoning`: one reasoning item: `native_ordinal` (its request), `item_ordinal`, `source_kind` (text · summary ·\n  encrypted-only · omitted), `text`, `chars`, `reasoning_tokens`, `opaque_sha256`.\n- `prompt_parts`: one part of the fixed prefix: `part` (system · tools · skills · instruction_file · agents_md),\n  `path`, `chars`, `delivery` (inlined · on-demand · listed), `source`.\n- `harness_events`: one hook, skill load or compaction: `event`, `name`, `start`, `end`, `ok` (0/1/None), `detail`.\nCodex sources (ADR-0024 §4, ADR-0026 §1): `turn_context.effort`, `turn_context.model`,\n`task_started.model_context_window` judged against pin × catalog percent; `response_item reasoning` `summary_text` +\n`encrypted_content`; rollout developer/user items incl. the AGENTS.md block; tools are not in the record; hooks and\ncompaction are Flagged: absent → `not recorded: <reason>`. Rows use canonical types (str, int, None, list, dict;\nflags 0/1). Requested values are never stored: they are the plan's.\n\n## 4. Code anchors\n\n- `src/harness_bench/telemetry/codex.py`: doc `:1-20` (model from the latest `turn_context`; per-call\n  `event_msg/token_count`; the injected AGENTS.md block `:17-18`); `_is_injected_context` `:61-65` (the block starts\n  `# AGENTS.md instructions for `); `read` `:103-160` (`turn_context` `:117`; `token_count` `:119-130`);\n  `tool_inputs` `:178`.\n- `src/harness_bench/telemetry/__init__.py`: `ModelCall` `:32-58`, `Extraction` `:89`, `ToolInput` `:206-215`. J0\n  (R-CONTRACT-FACTS) adds `ServedSettings`, `ToolInput.bytes_returned` and the four reader hooks `served`,\n  `reasoning`, `prompt_parts`, `harness_events` (default \"not recorded: reader not built\"), and the row builders in\n  `telemetry/normalize.py`. **Open the J0 code and implement those hooks for Codex; do not rename them.**\n- Today `codex.read` returns no served, reasoning or prompt-part facts (TEST-E below).\n\n## 5. Fixture sources (read-only)\n\n- **Spike rollout (served settings, reasoning):** `C:\\tf\\spike-settings\\codex\\home\\sessions\\2026\\10\\11\\rollout-2026-10-11T13-12-38-01a12c98-9001-7e20-aef4-2496b2879ed0.jsonl`\n  (65 kB). Facts read by Coordinator #1: line 2 `task_started.model_context_window = 828400`; line 8 `turn_context`\n  `model gpt-6.1-sol`, `effort high`, `summary auto`; line 12 a `reasoning` item with one summary text (494 chars) and\n  `encrypted_content`; line 21 a `reasoning` item with no summary and `encrypted_content` (encrypted-only); no\n  AGENTS.md block (a pack-off record). The sibling rollout `…T13-12-45-…aa48….jsonl` is an auxiliary\n  `codex-auto-review` session (effort low): not the cell's.\n- **Catalog percent:** `C:\\tf\\spike-settings\\codex\\home\\models_cache.json` (424 kB). Copy only the served\n  model's entry; 872,000 × 95% = 828,400 is the check (ADR-0024 §4: record the percent's source field).\n- **Pack-on AGENTS.md block:** the committed `tests/fixtures/native/codex/pack-on.jsonl` (1 match).\n- Copy what you need into `C:\\tf\\r-read-codex\\`, scrub, then commit as `tests/fixtures/codex/rerun-*.jsonl`.\n\n## 6. Red-first tests (each fails on an assertion first; quote the failure)\n\n1. Served: `model_served` `gpt-6.1-sol` (from `turn_context.model`), `effort` `high`, `context_tokens` 828,400 with\n   the catalog percent's source recorded, each a `served` row with its `source`.\n2. Reasoning: two rows on the spike rollout: `summary` with its text (494 chars) and `opaque_sha256`;\n   `encrypted-only` with a sha256 and no text. Never reconstructed.\n3. Prompt parts: the AGENTS.md block as an `instruction_file` part on the pack-on fixture; none on the pack-off one.\n4. Per-request `model_calls` rows per `token_count`/`token_usage_record` (columns unchanged).\n5. Existing Codex reader tests green (`tests/test_telemetry.py`; find any other with\n   `git grep -l \"codex\" -- tests/test_*.py`).\n\n## 7. Not in scope\n- Every other reader, `views.py` and validity (R-VALIDITY), `grade/runner.py` (J0 writes the streams from your\n  hooks), the error codes (J0), `profiles.py`, `driver.py`, `bench/profiles/*`.\n- Existing `tests/mutations/*.json`, the register, the rulings, the docs index.\n\n## Rules (condensed from the common brief; each is a stop if broken)\n- Leader `lean-rerun-leader` (epoch 21); decision requests go to `owner-fable`. You own only your row's paths.\n- First command, from your worktree root: `python C:/Projects/x-harness-x-model-bench/docs/ai-forward-pack/scripts/audit-log.py start --session r-read-codex --skill implement`.\n  Use `python`, never `python3`.\n- Work only in the worktree the runner gave you; create branch `build/rerun-read-codex` there (`git switch -c build/rerun-read-codex`). Never\n  write `C:/Projects/x-harness-x-model-bench` (the primary). Absolute paths in commands.\n- Never edit an existing `tests/mutations/*.json`: new mutants go in `tests/mutations/rerun-r-read-codex.json`; a moved\n  existing find is handed back as text (file, old find, new find). Never edit `docs/lessons/defect-classes.md`,\n  `docs/notes/rulings.md`, `docs/docs-index.js`, `docs/audit/audit-data.js` or any `*.jsonl` log.\n- Red first: write each test, run it, see it fail **on an assertion** (quote it), then make it pass.\n- Run **named test files or node ids only**: `uv run pytest <files> -q`. Never the whole suite, `-n`, or a\n  directory. `uv run python tools/mutate_check.py tests/mutations/rerun-r-read-codex.json` (it queues on the suite lock).\n- `uv run ruff check src tests tools bench/adapters` clean for your files.\n- A subprocess you add under `tools/`, `tests/` or `bench/adapters/` passes\n  `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`. Kill only PIDs you started.\n- A multi-line program is a file, then a run; never a heredoc into an interpreter. Never put a gate's exit status\n  behind a pipe.\n- Every committed fixture is scrubbed first: no email, account or org id, `Authorization`, `Bearer `, or `eyJ…`\n  (JWT) shape. Real records are read-only; copy into `C:\\tf\\r-read-codex\\`. Never copy a credential file.\n- Never `--no-verify`, `-n`/hooks overrides, amend, rewrite, force-push, or push. Tokens are the only cost unit.\n- A product or scope question: stop and hand back a decision request (question, options, recommendation, needed\n  by, fallback).\n- Context ceiling: at about 300k tokens commit what is green, write the hand-off (done, remaining, next red test),\n  and stop.\n\n## Closing (in this order)\n1. Commit your work (small green commits are fine).\n2. `python docs/ai-forward-pack/scripts/audit-log.py append --shortname r-read-codex --session r-read-codex --skill implement --kind skill --prompt \"r-read-codex: Codex reader facts (Grok floor canary)\" --summary \"<what landed>\" --goal \"<row goal>\" --done-when \"<exit evidence, short>\" --tier T1 --fan-out 0`,\n   then `git add docs/audit && git commit -m \"chore(audit): r-read-codex closing entry\"`.\n3. `git status --short` is empty.\n\n## Hand-back (your final message)\n- branch and head sha; `git log --oneline <base>..HEAD`;\n- each red test: the command and the quoted failure, then the green result;\n- handed-back mutation retargets, new defect classes (as text), decision requests;\n- the served model id you ran as; tokens/turns if known; **your context size at your first edit** (the floor this\n  canary measures);\n- anything not done, and why.\n\n## TEST-E: the pre-work proof, run once\n\nRun once by Coordinator #1 on `2f633d54` (pre-J0) with `uv run --frozen python teste.py <section>` (a scratch script that imports the modules named and prints what they do today). This is the state your red tests start from; J0 may already have changed some of it (re-check).\n\n`teste-read-codex.txt`:\n\n```text\nExtraction fields: ['account_connector_tools', 'errors', 'first_user_text', 'hook_failures', 'hook_starts', 'malformed_lines', 'missing', 'model_calls', 'session_id', 'tool_calls', 'tools_advertised', 'truncated']\nmodel_calls: 2\nhas served / reasoning / prompt_parts attrs: [False, False, False]\n```",
+      "summary": "raw prompt logged for compilation",
       "kind": "prompt",
       "skill": null,
       "tool": null,
       "actor": null,
       "artifacts": [],
-      "tags": [
-        "lean-rerun"
-      ],
+      "tags": [],
       "outcome": "success"
     },
     {
-      "id": "al-01M4PTYRG0DSYN3H18XX3MBAPH",
-      "shortname": "define-architecture-lean-rerun",
-      "datetime": "2026-10-12T01:17:11Z",
-      "session": "lean-rerun-leader",
-      "prompt": "T1 /define-architecture for docs/coordination/lean-rerun-equal-reasoning-prompt.md: the combo-settings contract, the new per-cell facts, the report generator (operator prompt 12ac42f4; Rulings 117, 118)",
-      "summary": "Architecture amendment + ADR-0024..0027: bench-matrix/3 effort/context frozen per cell and judged against the served value (HB-VAL-010/011, default_serves); stream_driver for agy with coord_transport as oracle; Grok over ACP with a dedicated credential home (CRED-COPY-A, measured stranding); 4 new grading-pass streams; catalog 0.8 drift split by grader rule; generated cost-compare report. Spikes: 6 harness spikes + Copilot ACP context probe (272k on 1.0.89-1 and 1.0.92-4). Council: 4 vetoes, all cleared by change in 3 rounds.",
-      "kind": "skill",
-      "skill": "define-architecture",
+      "id": "al-01M4RBXBY1KF65KWE8KXFAPCP8",
+      "shortname": "Brief: R-READ-CODEX — Codex reader facts (Grok floor canary) (self-conta…",
+      "datetime": "2026-10-12T15:32:45Z",
+      "session": "prompt-compile",
+      "prompt": "# Brief: R-READ-CODEX — Codex reader facts (Grok floor canary) (self-contained)\n\n*Compiled by Coordinator #1, 2026-10-12, at `2f633d54`, for Grok (`grok-4.7`, `--reasoning-effort high`) through `coord-runner`; amended by Coordinator #2 at `8cda3fc3` (session id, base, J0 anchors, mutation file name, the MUT-E check). This brief is complete: you do not need\nthe common brief. Session id: `rcodex-rerun`. Branch: `build/rerun-read-codex`. Repository: the worktree the runner gave you\n(a checkout of the J0 candidate head `8cda3fc3`).*\n\n**Goal.** Teach the existing reader to emit the four new fact streams' inputs for its harness, red first, on scrubbed\nfixtures. **Done when** every red test in section 6 is green, your mutants are killed, ruff is clean, and the closing\naudit entry is committed. **Not in scope:** section 7. **Tier** T1. **Fan-out** 0.\n\n## 1. Your row, verbatim\n\n### Tracks table (`docs/coordination/coordination-lean-rerun.md:133`)\n\n| track | owns (authored) | depends on | tier | fan-out cap | budget | exit evidence | harness |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| **R-READ-CODEX** Codex reader facts (Grok floor canary) | `src/harness_bench/telemetry/codex.py` (served settings, reasoning items, prompt parts, harness events where present, per-request rows, `bytes_returned`); `tests/test_reader_codex.py` (new); `tests/fixtures/codex/rerun-*.jsonl` (scrubbed); `tests/mutations/rerun-read-codex.json` | J0 | T1 | 0 | 60 calls · canary + 50k · 1 · 1.0 h | red first on the scrubbed rollout: served `model`, `effort` `high`, window 828,400 with the catalog percent's source; two reasoning rows (`summary` with text; `encrypted-only` with a sha256); the AGENTS.md block as an `instruction_file` part on a pack-on fixture and none on pack-off. Existing Codex reader tests green | Grok (bounded; brief under 30 kB; dispatched first, alone, as the Grok floor canary) |\n\n### Track assignment detail (`:156`)\n\n| track | sessions · branches | why this harness and model | why it earns the multiplier | expected seam requests | deadline · termination · fallback | join batch · gate ring |\n| --- | --- | --- | --- | --- | --- | --- |\n| R-READ-CODEX | runner `rcodex-rerun` · `build/rerun-read-codex` | one reader, one fixture: Grok's measured profile on bounded work | **independence**; it is the Grok floor canary | none | 2,400 s, R-103 kill and one retry · ends at a green commit · Opus sub-agent | J1b · none |\n\n## 2. Base\n\nYour worktree is cut from the J0 candidate head **`8cda3fc3`** (R-GOLD, R-CONTRACT-RUN and R-CONTRACT-FACTS\nmerged, the Leader's mutation retargets applied; the Leader dispatched wave 1a from it). The J0 anchors in section 4\nwere re-read by Coordinator #2 at `8cda3fc3`. Re-read the named symbol, never trust the number alone. Use the J0\nnames exactly; do not re-create them.\n`8cda3fc3` lacks one later fix (the R-GOLD loop-back, `2d11d554`): after a pytest run collects\n`tests/fixtures/bench-root/conftest.py`, `tests/test_fixture_root_isolation.py::test_the_frozen_root_holds_exactly_the_contracted_inputs`\ncan be red with `__pycache__` names. That red is not yours: name it if you see it, do not fix it.\n\n## 3. The contract you fill (ADR-0026 §1, condensed; the J0 code is the authority)\n\nADR-0026 §1 row grain (columns beyond `kind, run_id, extraction_id, cell_id, native_session_id`):\n- `served`: one setting of one cell as one source showed it: `field` (model_served · model_api · effort ·\n  context_tokens · context_tier · reasoning_summary), `value`, `not_recorded`, `source`.\n- `reasoning`: one reasoning item: `native_ordinal` (its request), `item_ordinal`, `source_kind` (text · summary ·\n  encrypted-only · omitted), `text`, `chars`, `reasoning_tokens`, `opaque_sha256`.\n- `prompt_parts`: one part of the fixed prefix: `part` (system · tools · skills · instruction_file · agents_md),\n  `path`, `chars`, `delivery` (inlined · on-demand · listed), `source`.\n- `harness_events`: one hook, skill load or compaction: `event`, `name`, `start`, `end`, `ok` (0/1/None), `detail`.\nCodex sources (ADR-0024 §4, ADR-0026 §1): `turn_context.effort`, `turn_context.model`,\n`task_started.model_context_window` judged against pin × catalog percent; `response_item reasoning` `summary_text` +\n`encrypted_content`; rollout developer/user items incl. the AGENTS.md block; tools are not in the record; hooks and\ncompaction are Flagged: absent → `not recorded: <reason>`. Rows use canonical types (str, int, None, list, dict;\nflags 0/1). Requested values are never stored: they are the plan's.\n\n## 4. Code anchors\n\n- `src/harness_bench/telemetry/codex.py`: doc `:1-20` (model from the latest `turn_context`; per-call\n  `event_msg/token_count`; the injected AGENTS.md block `:17-18`); `_is_injected_context` `:61-65` (the block starts\n  `# AGENTS.md instructions for `); `read` `:103-160` (`turn_context` `:117`; `token_count` `:119-130`);\n  `tool_inputs` `:178`.\n- `src/harness_bench/telemetry/__init__.py` at `8cda3fc3` (J0): `ModelCall` `:32`; `READER_NOT_BUILT` `:92`\n  (\"not recorded: reader not built\"); `NotRecorded` and `not_recorded(reason)` `:93-98`; `SERVED_FIELDS`,\n  `REASONING_KINDS`, `PART_KINDS`, `DELIVERIES`, `EVENT_KINDS` `:106-110`; `ServedSettings` `:114-125` (fields\n  `model_requested`, `model_served`, `model_api`, `effort`, `context_tokens`, `context_tier`, `reasoning_summary`,\n  each a value or `not_recorded(...)`, and `sources`, a field → record path and field map); `ReasoningItem`\n  `:129-138`; `PromptPart` `:142-149`; `HarnessEvent` `:153-162` (with `native_ordinal`, ruling on DR1);\n  `Extraction` `:166`, whose four fields `served`, `reasoning`, `prompt_parts`, `harness_events` (`:186-189`) a reader\n  fills inside `read()`; `served` may be one `ServedSettings` or a tuple of them, one per source (ruling on DR2);\n  `ToolInput.bytes_returned` `:297`. The row builders are in `telemetry/normalize.py`: `served_rows` `:194`,\n  `reasoning_rows` `:217`, `prompt_part_rows` `:226`, `harness_event_rows` `:234`. **Fill those four fields in\n  `codex.read`; do not rename them or edit `__init__.py` or `normalize.py`.**\n- Today `codex.read` returns no served, reasoning or prompt-part facts (TEST-E below).\n\n## 5. Fixture sources (read-only)\n\n- **Spike rollout (served settings, reasoning):** `C:\\tf\\spike-settings\\codex\\home\\sessions\\2026\\10\\11\\rollout-2026-10-11T13-12-38-01a12c98-9001-7e20-aef4-2496b2879ed0.jsonl`\n  (65 kB). Facts read by Coordinator #1: line 2 `task_started.model_context_window = 828400`; line 8 `turn_context`\n  `model gpt-6.1-sol`, `effort high`, `summary auto`; line 12 a `reasoning` item with one summary text (494 chars) and\n  `encrypted_content`; line 21 a `reasoning` item with no summary and `encrypted_content` (encrypted-only); no\n  AGENTS.md block (a pack-off record). The sibling rollout `…T13-12-45-…aa48….jsonl` is an auxiliary\n  `codex-auto-review` session (effort low): not the cell's.\n- **Catalog percent:** `C:\\tf\\spike-settings\\codex\\home\\models_cache.json` (424 kB). Copy only the served\n  model's entry; 872,000 × 95% = 828,400 is the check (ADR-0024 §4: record the percent's source field).\n- **Pack-on AGENTS.md block:** the committed `tests/fixtures/native/codex/pack-on.jsonl` (1 match).\n- Copy what you need into `C:\\tf\\r-read-codex\\`, scrub, then commit as `tests/fixtures/codex/rerun-*.jsonl`.\n\n## 6. Red-first tests (each fails on an assertion first; quote the failure)\n\n1. Served: `model_served` `gpt-6.1-sol` (from `turn_context.model`), `effort` `high`, `context_tokens` 828,400 with\n   the catalog percent's source recorded, each a `served` row with its `source`.\n2. Reasoning: two rows on the spike rollout: `summary` with its text (494 chars) and `opaque_sha256`;\n   `encrypted-only` with a sha256 and no text. Never reconstructed.\n3. Prompt parts: the AGENTS.md block as an `instruction_file` part on the pack-on fixture; none on the pack-off one.\n4. Per-request `model_calls` rows per `token_count`/`token_usage_record` (columns unchanged).\n5. Existing Codex reader tests green (`tests/test_telemetry.py`; find any other with\n   `git grep -l \"codex\" -- tests/test_*.py`).\n\n## 7. Not in scope\n- Every other reader, `views.py` and validity (R-VALIDITY), `grade/runner.py` (J0 writes the streams from your\n  hooks), the error codes (J0), `profiles.py`, `driver.py`, `bench/profiles/*`.\n- Existing `tests/mutations/*.json`, the register, the rulings, the docs index.\n\n## Rules (condensed from the common brief; each is a stop if broken)\n- Leader `lean-rerun-leader` (epoch 21); decision requests go to `owner-fable`. You own only your row's paths.\n- First command, from your worktree root: `python C:/Projects/x-harness-x-model-bench/docs/ai-forward-pack/scripts/audit-log.py start --session rcodex-rerun --skill implement`.\n  Use `python`, never `python3`.\n- Work only in the worktree the runner gave you; create branch `build/rerun-read-codex` there (`git switch -c build/rerun-read-codex`). Never\n  write `C:/Projects/x-harness-x-model-bench` (the primary). Absolute paths in commands.\n- Never edit an existing `tests/mutations/*.json`: new mutants go in `tests/mutations/rerun-read-codex.json`; a moved\n  existing find is handed back as text (file, old find, new find). Never edit `docs/lessons/defect-classes.md`,\n  `docs/notes/rulings.md`, `docs/docs-index.js`, `docs/audit/audit-data.js` or any `*.jsonl` log.\n- Red first: write each test, run it, see it fail **on an assertion** (quote it), then make it pass.\n- Run **named test files or node ids only**: `uv run pytest <files> -q`. Never the whole suite, `-n`, or a\n  directory. Before you report \"no retargets\", run `uv run pytest tests/test_mutate_check.py::test_every_mutation_find_text_occurs_exactly_once_in_its_target_file -q` (MUT-E: your edit may move an existing find).\n  `uv run python tools/mutate_check.py tests/mutations/rerun-read-codex.json` (it queues on the suite lock).\n- `uv run ruff check src tests tools bench/adapters` clean for your files.\n- A subprocess you add under `tools/`, `tests/` or `bench/adapters/` passes\n  `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`. Kill only PIDs you started.\n- A multi-line program is a file, then a run; never a heredoc into an interpreter. Never put a gate's exit status\n  behind a pipe.\n- Every committed fixture is scrubbed first: no email, account or org id, `Authorization`, `Bearer `, or `eyJ…`\n  (JWT) shape. Real records are read-only; copy into `C:\\tf\\r-read-codex\\`. Never copy a credential file.\n- Never `--no-verify`, `-n`/hooks overrides, amend, rewrite, force-push, or push. Tokens are the only cost unit.\n- A product or scope question: stop and hand back a decision request (question, options, recommendation, needed\n  by, fallback).\n- Context ceiling: at about 300k tokens commit what is green, write the hand-off (done, remaining, next red test),\n  and stop.\n\n## Closing (in this order)\n1. Commit your work (small green commits are fine).\n2. `python docs/ai-forward-pack/scripts/audit-log.py append --shortname r-read-codex --session rcodex-rerun --skill implement --kind skill --prompt \"r-read-codex: Codex reader facts (Grok floor canary)\" --summary \"<what landed>\" --goal \"<row goal>\" --done-when \"<exit evidence, short>\" --tier T1 --fan-out 0`,\n   then `git add docs/audit && git commit -m \"chore(audit): r-read-codex closing entry\"`.\n3. `git status --short` is empty.\n\n## Hand-back (your final message)\n- branch and head sha; `git log --oneline <base>..HEAD`;\n- each red test: the command and the quoted failure, then the green result;\n- handed-back mutation retargets, new defect classes (as text), decision requests;\n- the served model id you ran as; tokens/turns if known; **your context size at your first edit** (the floor this\n  canary measures);\n- anything not done, and why.\n\n## TEST-E: the pre-work proof, run once\n\nRun once by Coordinator #1 on `2f633d54` (pre-J0) with `uv run --frozen python teste.py <section>` (a scratch script that imports the modules named and prints what they do today). This is the state your red tests start from; J0 may already have changed some of it (re-check).\n\n`teste-read-codex.txt`:\n\n```text\nExtraction fields: ['account_connector_tools', 'errors', 'first_user_text', 'hook_failures', 'hook_starts', 'malformed_lines', 'missing', 'model_calls', 'session_id', 'tool_calls', 'tools_advertised', 'truncated']\nmodel_calls: 2\nhas served / reasoning / prompt_parts attrs: [False, False, False]\n```",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
       "tool": null,
       "actor": null,
-      "artifacts": [
-        "docs/architecture-lean-rerun.md"
-      ],
+      "artifacts": [],
       "tags": [],
-      "outcome": "success",
-      "compiled": false,
-      "duration_source": "session-start-hook",
-      "started_at": "2026-10-12T01:15:09Z",
-      "duration_seconds": 122.0
+      "outcome": "success"
     },
     {
-      "id": "al-01M4R7WTT71RWRDP94KKVPNHRE",
-      "shortname": "coordination-lean-rerun",
-      "datetime": "2026-10-12T14:22:33Z",
-      "session": "lean-rerun-leader",
-      "prompt": "/prepare-for-coordination for the lean re-run at equal reasoning (prompt 12ac42f4; architecture c6f85549; Rulings 117-121)",
-      "summary": "18 tracks (3 contract/fixture before wave 1, 13 in wave 1, 2 in wave 2), batched joins, serial spine S0-S9, stop rules, 7 struck; gate: 3 vetoes round 1, 2 more after Rulings 120/121 (Copilot -p adapter; pack-cost page), all cleared by change over 4 rounds",
-      "kind": "skill",
-      "skill": "prepare-for-coordination",
+      "id": "al-01M4RBXJKW1GXX027W8WNSHCM8",
+      "shortname": "Brief: R-READ-AGY — Antigravity reader (Agy floor canary) (self-containe…",
+      "datetime": "2026-10-12T15:32:52Z",
+      "session": "prompt-compile",
+      "prompt": "# Brief: R-READ-AGY — Antigravity reader (Agy floor canary) (self-contained)\n\n*Compiled by Coordinator #2, 2026-10-12, at `8cda3fc3`, for Antigravity (`gemini-3.8-flash-high`) through\n`coord-runner`. This brief is complete: you do not need the common brief. Session id: `ragy-rerun`. Branch:\n`build/rerun-read-agy`. Repository: the worktree the runner gave you (a checkout of the J0 candidate head `8cda3fc3`).*\n\n**Goal.** Build the Antigravity reader `telemetry/agy.py` (today a J0 stub), red first, on scrubbed fixtures, so it\nfills the bench's model calls, tool calls and the four new fact streams from an agy cell's records. **Done when**\nevery red test in section 6 is green, your mutants are killed, ruff is clean, and the closing audit entry is\ncommitted. **Not in scope:** section 7. **Tier** T1. **Fan-out** 0. **You are the Agy floor canary:** report your\ncontext size (tokens) at your first edit; the Leader routes every later Agy row by that number.\n\n## 1. Your row, verbatim\n\n### Tracks table (`docs/coordination/coordination-lean-rerun.md:137`)\n\n| track | owns (authored) | depends on | tier | fan-out cap | budget | exit evidence | harness |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| **R-READ-AGY** Antigravity reader | `src/harness_bench/telemetry/agy.py` (`init.model`, per-step usage with `thinking_tokens`, tool events; thinking text from `conversations/<id>.db` `steps.step_payload` by a stdlib protobuf wire decoder, failing to `omitted`; prompt parts from `gen_metadata`); `tests/test_reader_agy.py` (new); `tests/fixtures/agy/reader/*` (scrubbed); `tests/mutations/rerun-read-agy.json` | the Agy canary's floor recorded | T1 | 0 | 70 calls · canary + 60k · 1 · 1.2 h | red first on the fixtures: served `gemini-3.8-flash-high`, context `not recorded`; per-step rows; a `text` reasoning row matching the spike's known thinking text; a truncated payload gives `omitted` with the step's `thinking_tokens`, never wrong text; `instruction_file` parts (AGENTS.md as a `RULE`) ≥ 1 on a pack-on fixture and 0 on pack-off | Agy (bounded; brief under 30 kB), or Opus by the canary |\n\n### Track assignment detail (`:160`)\n\n| track | sessions · branches | why this harness and model | why it earns the multiplier | expected seam requests | deadline · termination · fallback | join batch · gate ring |\n| --- | --- | --- | --- | --- | --- | --- |\n| R-READ-AGY | runner `ragy-rerun` · `build/rerun-read-agy` | bounded reader with a small decoder | **independence** | none | 2,400 s · ends at a green commit · Opus sub-agent | J1b · none |\n\n### The erratum that makes you the canary (plan *Errata* E9, Coordinator #2)\n\n\"The Agy floor canary is **R-READ-AGY** (its fixtures exist in `C:\\tf\\spike-agy`): it depends on J0 and is dispatched\nfirst, alone, in wave 1a.\" So your depends-on is J0, not \"the Agy canary's floor recorded\".\n\n## 2. Base\n\nYour worktree is cut from the J0 candidate head **`8cda3fc3`** (R-GOLD, R-CONTRACT-RUN and R-CONTRACT-FACTS merged;\nthe Leader dispatched wave 1a from it). The anchors below were read by Coordinator #2 at `8cda3fc3`; re-read the named\nsymbol, never trust the number alone. `8cda3fc3` lacks one later fix (the R-GOLD loop-back, `2d11d554`): after a\npytest run collects `tests/fixtures/bench-root/conftest.py`,\n`tests/test_fixture_root_isolation.py::test_the_frozen_root_holds_exactly_the_contracted_inputs` can be red with\n`__pycache__` names. That red is not yours: name it if you see it, do not fix it.\n\n## 3. The contract you fill (ADR-0026 §1; the J0 code is the authority)\n\nFour streams, written by the grading pass from the four `Extraction` fields you fill. Columns beyond\n`kind, run_id, extraction_id, cell_id, native_session_id`:\n- `served`: one setting of one cell as one source showed it: `field` (model_served · model_api · effort ·\n  context_tokens · context_tier · reasoning_summary), `value`, `not_recorded`, `source`.\n- `reasoning`: one reasoning item: `native_ordinal` (its request), `item_ordinal`, `source_kind` (text · summary ·\n  encrypted-only · omitted), `text`, `chars`, `reasoning_tokens`, `opaque_sha256`.\n- `prompt_parts`: one part of the fixed prefix: `part` (system · tools · skills · instruction_file · agents_md),\n  `path`, `chars`, `delivery` (inlined · on-demand · listed), `source`.\n- `harness_events`: one hook, skill load or compaction: `native_ordinal`, `event`, `name`, `start`, `end`, `ok`\n  (0/1/None), `detail`.\n\nADR-0026 §1's agy sources, verbatim: \"agy | thinking text in `conversations/<id>.db` `steps.step_payload` (protobuf,\nstdlib wire decoder; Verified present); failed decode → `omitted` with `thinking_tokens` | `gen_metadata` (Verified:\nfull prompt) | steps (Flagged)\". Also: \"Text is stored as the harness stored it; nothing is reconstructed or\nparaphrased. An item with only an encrypted payload is `encrypted-only` with its sha256. A harness that reports only\ntokens yields one `omitted` row per request with the count.\" The architecture's risk line: \"agy's protobuf payload has\nno published schema. The reader decodes the wire format with a field map taken from the spike; a change reads as\n`not recorded`, never as wrong text.\" Requested values are never stored: they are the plan's. A source that is absent\nis `not recorded: <reason>`.\n\n## 4. Code anchors (at `8cda3fc3`)\n\n- `src/harness_bench/telemetry/agy.py`: the J0 stub, whole: `def read(path: Path) -> Extraction: raise\n  NotImplementedError(...)`. Its docstring: \"It may read the stream's event bodies (`init`, `step_update`, tool\n  events); the input event and the outcome grammar stay in `stream_driver.py` (tests/test_architecture.py).\"\n- `tests/test_architecture.py:149-185`, the agy-stream rule your module must pass: outside `stream_driver.py`, no\n  module may hold the constant `\"denied_actions\"` or `\"permission check failed for \"`, nor **all** of `\"event\"`,\n  `\"user\"`, `\"message\"`, nor **both** `\"result\"` and `\"SUCCESS\"` (`AGY_OUTCOME_TOKENS`, `AGY_INPUT_EVENT`,\n  `AGY_RESULT_STATUS`, `:154-156`). So read `init` and `step_update`; never test a result status or denials.\n- `src/harness_bench/telemetry/__init__.py`: `ModelCall` `:32-57` (`native_ordinal`, `model`, `uncached_input`,\n  `cache_read`, `cache_write`, `output`, `reasoning` = a component of output, `start`, `end`, `requests`);\n  `ToolCall` `:61-68` (`native_ordinal`, `name`, `tool_class` shell | edit | read | other, `start`, `end`, `ok`,\n  `outcome_code`); `READER_NOT_BUILT` `:92`; `NotRecorded`, `not_recorded(reason)` `:93-98`; `SERVED_FIELDS`,\n  `REASONING_KINDS`, `PART_KINDS`, `DELIVERIES`, `EVENT_KINDS` `:106-110`; `ServedSettings` `:114-125` (each field a\n  value or `not_recorded(...)`, plus `sources`, a field → record path and field map); `ReasoningItem` `:129-138`;\n  `PromptPart` `:142-149`; `HarnessEvent` `:153-162`; `Extraction` `:166`, whose fields `served`, `reasoning`,\n  `prompt_parts`, `harness_events` (`:186-189`) a reader fills inside `read()`.\n- The four row builders, `src/harness_bench/telemetry/normalize.py`: `served_rows` `:194`, `reasoning_rows` `:217`,\n  `prompt_part_rows` `:226`, `harness_event_rows` `:234`. Test your `Extraction` through them.\n- A reader to copy the shape from: `src/harness_bench/telemetry/codex.py` `read` `:103`.\n- The native record (ADR-0025 §3): \"Every stdout line is teed, unchanged, to `<cell home>/agy-stream.ndjson`, the\n  native record.\" The cell home is `HOME`/`USERPROFILE` (ADR-0025 §6), so the conversation store is\n  `<cell home>/.gemini/antigravity-cli/conversations/<conversation_id>.db` (the spike's layout, below).\n  assume: `read(path)` receives the teed `agy-stream.ndjson` and finds the db beside it by that layout, with the\n  `conversation_id` from the `init` event; confirm: R-TRANSPORT's `bench/profiles/agy.yaml` record glob at J1a;\n  breaks: if the profile names another record path, that is a seam request to the Coordinator, not your edit. A db\n  that is not found gives `reasoning` and `prompt_parts` as `not recorded: conversation db not found`.\n- `profiles.READERS` has no `agy` entry yet (R-TRANSPORT adds it). Your tests call `harness_bench.telemetry.agy.read`\n  directly.\n\n## 5. Fixture sources (read-only; copy into `C:\\tf\\r-read-agy\\`)\n\n- **Pack-on turn** (repo with `AGENTS.md`, `GEMINI.md`, `.agents/rules/r.md`): stream `C:\\tf\\spike-agy\\turn2.ndjson`\n  (5 lines, conversation `5ed07ceb-…`: `init.model` `gemini-3.8-flash-high`; one `agent_response` step with usage\n  `input_tokens` 11885, `output_tokens` 216, `thinking_tokens` 215, `cache_read_tokens` 0) and its db\n  `C:\\tf\\spike-agy\\home-upd\\.gemini\\antigravity-cli\\conversations\\5ed07ceb-71fc-4fbe-ae6b-3b06d470ae02.db` (tables\n  `steps` (2 rows: `idx`, `step_type`, `status`, `metadata`, `step_payload` blob, …), `gen_metadata` (1 row, a\n  71,778-byte `data` blob), `trajectory_meta`, `executor_metadata`, and three more). `gen_metadata[0].data` holds\n  `<RULE[C:\\tf\\spike-agy\\repo\\AGENTS.md]>Reply in lowercase…<\/RULE[…AGENTS.md]>`, a `<RULE[…GEMINI.md]>` block and a\n  `<RULE[user_global]>` block (the home `GEMINI.md`).\n- **Pack-off turn** (repo with only `README.md`): stream `C:\\tf\\spike-agy\\perm\\stream.ndjson` (8 lines, conversation\n  `65ec1b30-…`, three steps with `thinking_tokens` 165, 85, 250; a `run_command` tool) and its db\n  `C:\\tf\\spike-agy\\perm\\home\\.gemini\\antigravity-cli\\conversations\\65ec1b30-4f02-4656-8de8-243f15929889.db`. No\n  `<RULE[…AGENTS.md]>` block in its `gen_metadata`.\n- **A turn with tools and no db:** `C:\\tf\\spike-agy\\turn1.ndjson` (conversation `d0e71ad9-…`; `view_file` and\n  `run_command` tool steps with `ACTIVE`/`DONE` states and `duration_seconds`; no `conversations/` db exists for it).\n- Read-only inspection scripts from the spike: `C:\\tf\\spike-agy\\db.py` (tables), `blobs.py` (printable runs),\n  `grepblob.py` (regex context). Copy, do not run them from inside `C:\\tf\\spike-agy`.\n- **Scrub before commit:** replace every UUID, `bot-…` id and `sessionID` value with a synthetic value **of the same\n  byte length** (protobuf length prefixes stay valid; Inferred), and every `C:\\tf\\spike-agy` path likewise. Keep only\n  the tables and rows your tests need. No email address, account or org id, `Authorization`, `Bearer ` or `eyJ…` (JWT)\n  shape, and no operator user name, in any committed byte (grep the db file too). Never copy a credential file.\n\n## 6. Red-first tests (each fails on an assertion first; quote the failure)\n\n1. Served: `model_served` `gemini-3.8-flash-high` from `init.model` (with its `source`); `context_tokens` and\n   `context_tier` `not recorded` (the stream carries no context window).\n2. Per-step rows: one `ModelCall` per `agent_response` step with usage; `reasoning` = `thinking_tokens`, a component\n   of `output` (215 of 216 on the pack-on turn). Tool steps give `ToolCall` rows from their `DONE` state.\n   assume: `input_tokens` includes `cache_read_tokens` (every spike value is 0, so the fixtures cannot tell); mark\n   it with an inline `assume:` comment and hand it back; breaks: `uncached_input` on a cached turn.\n3. Reasoning: decode `steps.step_payload` with a stdlib protobuf wire decoder (varint, length-delimited, fixed32/64;\n   no dependency) and a field map you derive from the fixture. The row asks for \"a `text` reasoning row matching the\n   spike's known thinking text\". Coordinator #2's TEST-E (below) found **no printable thinking prose** in either db's\n   `steps` by a printable-run scan, only high-entropy bytes after the response text. So: if your decoder finds the\n   thinking text as a UTF-8 field, assert it exactly (`text`, `chars`, `reasoning_tokens`); if it finds only an opaque\n   payload, the item is `encrypted-only` with its sha256; if it decodes nothing, one `omitted` row per step with\n   `thinking_tokens`. Never reconstruct text. Hand back which case held, with the field map.\n4. A truncated `step_payload` (cut mid-field in a test copy) gives `omitted` with that step's `thinking_tokens`, never\n   wrong text.\n5. Prompt parts from `gen_metadata`: `instruction_file` parts ≥ 1 on the pack-on fixture (the `AGENTS.md` `RULE`, with\n   its path and `chars`), and 0 on the pack-off fixture.\n6. A stream whose db is absent (the `turn1` shape) still gives served and per-step rows, with `reasoning` and\n   `prompt_parts` `not recorded: conversation db not found`.\n7. `harness_events`: steps are Flagged as a source; with none read, the field is `not recorded: <reason>`.\n8. `tests/test_architecture.py` stays green with your module (the agy-stream rule).\n\n## 7. Not in scope\n\n- `stream_driver.py`, `bench/profiles/agy.yaml`, `profiles.py` (`READERS`), `tests/fixtures/agy/stream/` (all\n  R-TRANSPORT's); every other reader; `views.py` and validity (R-VALIDITY); `grade/runner.py`; `errors.py`;\n  `telemetry/__init__.py`, `telemetry/normalize.py`.\n- Existing `tests/mutations/*.json`, the register, the rulings, the docs index.\n\n## Rules (condensed from the common brief; each is a stop if broken)\n\n- Leader `lean-rerun-leader` (epoch 21); decision requests go to `owner-fable`. You own only your row's paths.\n- First command, from your worktree root: `python C:/Projects/x-harness-x-model-bench/docs/ai-forward-pack/scripts/audit-log.py start --session ragy-rerun --skill implement`.\n  Use `python`, never `python3`.\n- Work only in the worktree the runner gave you; create branch `build/rerun-read-agy` there\n  (`git switch -c build/rerun-read-agy`). Never write `C:/Projects/x-harness-x-model-bench` (the primary). Absolute\n  paths in commands.\n- Never edit an existing `tests/mutations/*.json`: new mutants go in `tests/mutations/rerun-read-agy.json`; a moved\n  existing find is handed back as text (file, old find, new find). Before you report \"no retargets\", run\n  `uv run pytest tests/test_mutate_check.py::test_every_mutation_find_text_occurs_exactly_once_in_its_target_file -q`.\n  Never edit `docs/lessons/defect-classes.md`, `docs/notes/rulings.md`, `docs/docs-index.js`,\n  `docs/audit/audit-data.js` or any `*.jsonl` log.\n- Red first: write each test, run it, see it fail **on an assertion** (quote it), then make it pass.\n- Run **named test files or node ids only**: `uv run pytest <files> -q`. Never the whole suite, `-n`, or a\n  directory. `uv run python tools/mutate_check.py tests/mutations/rerun-read-agy.json` (it queues on the suite lock).\n- `uv run ruff check src tests tools bench/adapters` clean for your files.\n- A subprocess you add under `tools/`, `tests/` or `bench/adapters/` passes\n  `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`. Kill only PIDs you started.\n- A multi-line program is a file, then a run; never a heredoc into an interpreter. Never put a gate's exit status\n  behind a pipe.\n- Never `--no-verify`, `-n`/hooks overrides, amend, rewrite, force-push, or push. Tokens are the only cost unit.\n- A product or scope question: stop and hand back a decision request (question, options, recommendation, needed by,\n  fallback).\n- Context ceiling: at about 300k tokens commit what is green, write the hand-off (done, remaining, next red test),\n  and stop.\n\n## Closing (in this order)\n\n1. Commit your work (small green commits are fine).\n2. `python docs/ai-forward-pack/scripts/audit-log.py append --shortname r-read-agy --session ragy-rerun --skill implement --kind skill --prompt \"r-read-agy: Antigravity reader (Agy floor canary)\" --summary \"<what landed>\" --goal \"<row goal>\" --done-when \"<exit evidence, short>\" --tier T1 --fan-out 0`,\n   then `git add docs/audit && git commit -m \"chore(audit): r-read-agy closing entry\"`.\n3. `git status --short` is empty.\n\n## Hand-back (your final message)\n\n- branch and head sha; `git log --oneline 8cda3fc3..HEAD`;\n- each red test: the command and the quoted failure, then the green result;\n- the reasoning case that held (text, encrypted-only or omitted) and the decoded field map;\n- handed-back mutation retargets, new defect classes (as text), decision requests;\n- the served model id you ran as; tokens/turns if known; **your context size at your first edit** (the floor this\n  canary measures);\n- anything not done, and why.\n\n## TEST-E: the pre-work proof, run once\n\nRun once by Coordinator #2 at `8cda3fc3` with the spike's read-only scripts (`db.py`, `blobs.py`, `grepblob.py`):\n\n```text\n5ed07ceb db tables: trajectory_meta 1, steps 2, gen_metadata 1, executor_metadata 1, parent_references 0,\n  trajectory_metadata_blob 1, battle_mode_infos 0\nsteps[0].step_payload 1649B: ids | \"Reply with the single word ok. Do not use any tools.\" | skill and rule names\nsteps[1].step_payload 1405B: ids | \"ok\" then high-entropy bytes (no printable run of 6+ that reads as prose)\ngen_metadata[0].data 71778B: ... <RULE[C:\\tf\\spike-agy\\repo\\AGENTS.md]>.Reply in lowercase...<\/RULE[...AGENTS.md]>\n  <RULE[C:\\tf\\spike-agy\\repo\\GEMINI.md]>.probe gemini md marker..<\/RULE[...]> ... gemini-3.8-flash-high\n65ec1b30 db (pack-off): steps 4; no <RULE[...AGENTS.md]>; steps[3] \"On branch master\" then high-entropy bytes\ntelemetry/agy.py read(): raises NotImplementedError(\"telemetry.agy.read is not built yet (R-READ-AGY)\")\n```",
+      "summary": "raw prompt logged for compilation",
+      "kind": "prompt",
+      "skill": null,
       "tool": null,
       "actor": null,
-      "artifacts": [
-        "docs/coordination/coordination-lean-rerun.md"
-      ],
+      "artifacts": [],
       "tags": [],
-      "outcome": "success",
-      "compiled": false,
-      "goal": "a coordination plan for the lean re-run that one Leader can execute",
-      "done_when": "plan md+html committed with every gate veto cleared by the reviewer",
-      "tier": "T1",
-      "fan_out": 0,
-      "started_at": "2026-10-12T13:49:20Z",
-      "duration_seconds": 1993.0
+      "outcome": "success"
     },
     {
-      "id": "al-01M4R9RA8VMGX3422MS13F7XWV",
-      "shortname": "r-gold",
-      "datetime": "2026-10-12T14:55:02Z",
-      "session": "r-gold-rerun",
-      "prompt": "r-gold-rerun: R-GOLD self-contained golden fixtures, ruff pin",
-      "summary": "make_root defaults to the frozen tests/fixtures/bench-root (catalog 0.7, profiles, tools pin, X1); release=False is the live mode for 3 named consumers; tests/test_fixture_root_isolation.py red then green; goldens unchanged; ruff==0.16.5 pinned in dev group and uv.lock",
-      "kind": "skill",
-      "skill": "implement",
+      "id": "al-01M4RC34535SJHNS095T4TE2FE",
+      "shortname": "compile-Brief: R-READ-CODEX — Codex reader facts (Grok floor canary) (self-conta…",
+      "datetime": "2026-10-12T15:35:54Z",
+      "session": "rcodex-rerun",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session rcodex-rerun --skill implement\nGoal state\nGoal: R-READ-CODEX, Codex reader facts (Grok floor canary): teach src/harness_bench/telemetry/codex.py to fill the four J0 Extraction fields (served settings, reasoning items, prompt parts, harness events where present), per-request rows and bytes_returned, red first on scrubbed fixtures. You are session rcodex-rerun, harness Grok through coord-runner (ACP), model grok-4.7 with --reasoning-effort high, branch build/rerun-read-codex, base 8cda3fc3; Leader lean-rerun-leader (epoch 21); owner-fable rules every decision request.\nDone when: the row's exit evidence, verbatim: red first on the scrubbed rollout: served `model`, `effort` `high`, window 828,400 with the catalog percent's source; two reasoning rows (`summary` with text; `encrypted-only` with a sha256); the AGENTS.md block as an `instruction_file` part on a pack-on fixture and none on pack-off. Existing Codex reader tests green; your mutants in tests/mutations/rerun-read-codex.json killed; the MUT-E find check run before any 'no retargets' report; ruff clean for your files; the closing audit entry committed in your tree; git status --short empty; your context size at your first edit reported\nNot in scope: every other reader, views.py and validity (R-VALIDITY), grade/runner.py, errors.py, profiles.py, driver.py, bench/profiles/*; telemetry/__init__.py and telemetry/normalize.py (J0's contract; read, never edit); existing tests/mutations/*.json, docs/lessons/defect-classes.md, docs/notes/rulings.md, the docs index, any *.jsonl log; the whole suite, -n or a directory run, joins, pushes (the Leader's)\nTier: T1\nFan-out cap: 0\nContext ceiling: canary + 50k (the row's budget): your floor at the first edit is what this canary measures; report it. At about 300k tokens commit what is green and hand off\nMain-line budget: 60 calls; 1.0 h; 2,400 s deadline for this turn\nTrace\n| clause | trace |\n|---|---|\n| done_when: # Brief: R-READ-CODEX — Codex reader facts (Grok floor canary) (self-contained)\n\n*Compiled by Coordinator #1, 2026-10-12, at `2f633d54`, for Grok (`grok-4.7`, `--reasoning-effort high`) through `coord-runner`; amended by Coordinator #2 at `8cda3fc3` (session id, base, J0 anchors, mutation file name, the MUT-E check). This brief is complete: you do not need\nthe common brief. Session id: `rcodex-rerun`. Branch: `build/rerun-read-codex`. Repository: the worktree the runner gave you\n(a checkout of the J0 candidate head `8cda3fc3`).*\n\n**Goal.** Teach the existing reader to emit the four new fact streams' inputs for its harness, red first, on scrubbed\nfixtures. **Done when** every red test in section 6 is green, your mutants are killed, ruff is clean, and the closing\naudit entry is committed. **Not in scope:** section 7. **Tier** T1. **Fan-out** 0. | phrase: # Brief: R-READ-CODEX — Codex reader facts (Grok floor canary) (self-contained)\n\n*Compiled |\n| done_when: ## 1. Your row, verbatim\n\n### Tracks table (`docs/coordination/coordination-lean-rerun.md:133`)\n\n| track | owns (authored) | depends on | tier | fan-out cap | budget | exit evidence | harness |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| **R-READ-CODEX** Codex reader facts (Grok floor canary) | `src/harness_bench/telemetry/codex.py` (served settings, reasoning items, prompt parts, harness events where present, per-request rows, `bytes_returned`); `tests/test_reader_codex.py` (new); `tests/fixtures/codex/rerun-*.jsonl` (scrubbed); `tests/mutations/rerun-read-codex.json` | J0 | T1 | 0 | 60 calls · canary + 50k · 1 · 1.0 h | red first on the scrubbed rollout: served `model`, `effort` `high`, window 828,400 with the catalog percent's source; two reasoning rows (`summary` with text; `encrypted-only` with a sha256); the AGENTS.md block as an `instruction_file` part on a pack-on fixture and none on pack-off. Existing Codex reader tests green | Grok (bounded; brief under 30 kB; dispatched first, alone, as the Grok floor canary) |\n\n### Track assignment detail (`:156`)\n\n| track | sessions · branches | why this harness and model | why it earns the multiplier | expected seam requests | deadline · termination · fallback | join batch · gate ring |\n| --- | --- | --- | --- | --- | --- | --- |\n| R-READ-CODEX | runner `rcodex-rerun` · `build/rerun-read-codex` | one reader, one fixture: Grok's measured profile on bounded work | **independence**; it is the Grok floor canary | none | 2,400 s, R-103 kill and one retry · ends at a green commit · Opus sub-agent | J1b · none | | phrase: ## 1. Your row, verbatim\n\n### Tracks table (`docs/coordination/coordination-lean-rerun.md: |\n| done_when: ## 2. Base\n\nYour worktree is cut from the J0 candidate head **`8cda3fc3`** (R-GOLD, R-CONTRACT-RUN and R-CONTRACT-FACTS\nmerged, the Leader's mutation retargets applied; the Leader dispatched wave 1a from it). The J0 anchors in section 4\nwere re-read by Coordinator #2 at `8cda3fc3`. Re-read the named symbol, never trust the number alone. Use the J0\nnames exactly; do not re-create them.\n`8cda3fc3` lacks one later fix (the R-GOLD loop-back, `2d11d554`): after a pytest run collects\n`tests/fixtures/bench-root/conftest.py`, `tests/test_fixture_root_isolation.py::test_the_frozen_root_holds_exactly_the_contracted_inputs`\ncan be red with `__pycache__` names. That red is not yours: name it if you see it, do not fix it. | phrase: ## 2. Base\n\nYour worktree is cut from the J0 candidate head **`8cda3fc3`** (R-GOLD, R-CONT |\n| done_when: ## 3. The contract you fill (ADR-0026 §1, condensed; the J0 code is the authority)\n\nADR-0026 §1 row grain (columns beyond `kind, run_id, extraction_id, cell_id, native_session_id`):\n- `served`: one setting of one cell as one source showed it: `field` (model_served · model_api · effort ·\n  context_tokens · context_tier · reasoning_summary), `value`, `not_recorded`, `source`.\n- `reasoning`: one reasoning item: `native_ordinal` (its request), `item_ordinal`, `source_kind` (text · summary ·\n  encrypted-only · omitted), `text`, `chars`, `reasoning_tokens`, `opaque_sha256`.\n- `prompt_parts`: one part of the fixed prefix: `part` (system · tools · skills · instruction_file · agents_md),\n  `path`, `chars`, `delivery` (inlined · on-demand · listed), `source`.\n- `harness_events`: one hook, skill load or compaction: `event`, `name`, `start`, `end`, `ok` (0/1/None), `detail`.\nCodex sources (ADR-0024 §4, ADR-0026 §1): `turn_context.effort`, `turn_context.model`,\n`task_started.model_context_window` judged against pin × catalog percent; `response_item reasoning` `summary_text` +\n`encrypted_content`; rollout developer/user items incl. the AGENTS.md block; tools are not in the record; hooks and\ncompaction are Flagged: absent → `not recorded: <reason>`. Rows use canonical types (str, int, None, list, dict;\nflags 0/1). Requested values are never stored: they are the plan's. | phrase: ## 3. The contract you fill (ADR-0026 §1, condensed; the J0 code is the authority)\n\nADR-00 |\n| done_when: ## 4. Code anchors\n\n- `src/harness_bench/telemetry/codex.py`: doc `:1-20` (model from the latest `turn_context`; per-call\n  `event_msg/token_count`; the injected AGENTS.md block `:17-18`); `_is_injected_context` `:61-65` (the block starts\n  `# AGENTS.md instructions for `); `read` `:103-160` (`turn_context` `:117`; `token_count` `:119-130`);\n  `tool_inputs` `:178`.\n- `src/harness_bench/telemetry/__init__.py` at `8cda3fc3` (J0): `ModelCall` `:32`; `READER_NOT_BUILT` `:92`\n  (\"not recorded: reader not built\"); `NotRecorded` and `not_recorded(reason)` `:93-98`; `SERVED_FIELDS`,\n  `REASONING_KINDS`, `PART_KINDS`, `DELIVERIES`, `EVENT_KINDS` `:106-110`; `ServedSettings` `:114-125` (fields\n  `model_requested`, `model_served`, `model_api`, `effort`, `context_tokens`, `context_tier`, `reasoning_summary`,\n  each a value or `not_recorded(...)`, and `sources`, a field → record path and field map); `ReasoningItem`\n  `:129-138`; `PromptPart` `:142-149`; `HarnessEvent` `:153-162` (with `native_ordinal`, ruling on DR1);\n  `Extraction` `:166`, whose four fields `served`, `reasoning`, `prompt_parts`, `harness_events` (`:186-189`) a reader\n  fills inside `read()`; `served` may be one `ServedSettings` or a tuple of them, one per source (ruling on DR2);\n  `ToolInput.bytes_returned` `:297`. The row builders are in `telemetry/normalize.py`: `served_rows` `:194`,\n  `reasoning_rows` `:217`, `prompt_part_rows` `:226`, `harness_event_rows` `:234`. **Fill those four fields in\n  `codex.read`; do not rename them or edit `__init__.py` or `normalize.py`.**\n- Today `codex.read` returns no served, reasoning or prompt-part facts (TEST-E below). | phrase: ## 4. Code anchors\n\n- `src/harness_bench/telemetry/codex.py`: doc `:1-20` (model from the  |\n| done_when: ## 5. Fixture sources (read-only)\n\n- **Spike rollout (served settings, reasoning):** `C:\\tf\\spike-settings\\codex\\home\\sessions\\2026\\10\\11\\rollout-2026-10-11T13-12-38-01a12c98-9001-7e20-aef4-2496b2879ed0.jsonl`\n  (65 kB). Facts read by Coordinator #1: line 2 `task_started.model_context_window = 828400`; line 8 `turn_context`\n  `model gpt-6.1-sol`, `effort high`, `summary auto`; line 12 a `reasoning` item with one summary text (494 chars) and\n  `encrypted_content`; line 21 a `reasoning` item with no summary and `encrypted_content` (encrypted-only); no\n  AGENTS.md block (a pack-off record). The sibling rollout `…T13-12-45-…aa48….jsonl` is an auxiliary\n  `codex-auto-review` session (effort low): not the cell's.\n- **Catalog percent:** `C:\\tf\\spike-settings\\codex\\home\\models_cache.json` (424 kB). Copy only the served\n  model's entry; 872,000 × 95% = 828,400 is the check (ADR-0024 §4: record the percent's source field).\n- **Pack-on AGENTS.md block:** the committed `tests/fixtures/native/codex/pack-on.jsonl` (1 match).\n- Copy what you need into `C:\\tf\\r-read-codex\\`, scrub, then commit as `tests/fixtures/codex/rerun-*.jsonl`. | phrase: ## 5. Fixture sources (read-only)\n\n- **Spike rollout (served settings, reasoning):** `C:\\t |\n| done_when: ## 6. Red-first tests (each fails on an assertion first; quote the failure)\n\n1. Served: `model_served` `gpt-6.1-sol` (from `turn_context.model`), `effort` `high`, `context_tokens` 828,400 with\n   the catalog percent's source recorded, each a `served` row with its `source`.\n2. Reasoning: two rows on the spike rollout: `summary` with its text (494 chars) and `opaque_sha256`;\n   `encrypted-only` with a sha256 and no text. Never reconstructed.\n3. Prompt parts: the AGENTS.md block as an `instruction_file` part on the pack-on fixture; none on the pack-off one.\n4. Per-request `model_calls` rows per `token_count`/`token_usage_record` (columns unchanged).\n5. Existing Codex reader tests green (`tests/test_telemetry.py`; find any other with\n   `git grep -l \"codex\" -- tests/test_*.py`). | phrase: ## 6. Red-first tests (each fails on an assertion first; quote the failure)\n\n1. Served: `m |\n| not_in_scope: ## 7. Not in scope\n- Every other reader, `views.py` and validity (R-VALIDITY), `grade/runner.py` (J0 writes the streams from your\n  hooks), the error codes (J0), `profiles.py`, `driver.py`, `bench/profiles/*`.\n- Existing `tests/mutations/*.json`, the register, the rulings, the docs index. | phrase: ## 7. Not in scope\n- Every other reader, `views.py` and validity (R-VALIDITY), `grade/runn |\n| done_when: ## Rules (condensed from the common brief; each is a stop if broken)\n- Leader `lean-rerun-leader` (epoch 21); decision requests go to `owner-fable`. You own only your row's paths.\n- First command, from your worktree root: `python C:/Projects/x-harness-x-model-bench/docs/ai-forward-pack/scripts/audit-log.py start --session rcodex-rerun --skill implement`.\n  Use `python`, never `python3`.\n- Work only in the worktree the runner gave you; create branch `build/rerun-read-codex` there (`git switch -c build/rerun-read-codex`). Never\n  write `C:/Projects/x-harness-x-model-bench` (the primary). Absolute paths in commands.\n- Never edit an existing `tests/mutations/*.json`: new mutants go in `tests/mutations/rerun-read-codex.json`; a moved\n  existing find is handed back as text (file, old find, new find). Never edit `docs/lessons/defect-classes.md`,\n  `docs/notes/rulings.md`, `docs/docs-index.js`, `docs/audit/audit-data.js` or any `*.jsonl` log.\n- Red first: write each test, run it, see it fail **on an assertion** (quote it), then make it pass.\n- Run **named test files or node ids only**: `uv run pytest <files> -q`. Never the whole suite, `-n`, or a\n  directory. Before you report \"no retargets\", run `uv run pytest tests/test_mutate_check.py::test_every_mutation_find_text_occurs_exactly_once_in_its_target_file -q` (MUT-E: your edit may move an existing find).\n  `uv run python tools/mutate_check.py tests/mutations/rerun-read-codex.json` (it queues on the suite lock).\n- `uv run ruff check src tests tools bench/adapters` clean for your files.\n- A subprocess you add under `tools/`, `tests/` or `bench/adapters/` passes\n  `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`. Kill only PIDs you started.\n- A multi-line program is a file, then a run; never a heredoc into an interpreter. Never put a gate's exit status\n  behind a pipe.\n- Every committed fixture is scrubbed first: no email, account or org id, `Authorization`, `Bearer `, or `eyJ…`\n  (JWT) shape. Real records are read-only; copy into `C:\\tf\\r-read-codex\\`. Never copy a credential file.\n- Never `--no-verify`, `-n`/hooks overrides, amend, rewrite, force-push, or push. Tokens are the only cost unit.\n- A product or scope question: stop and hand back a decision request (question, options, recommendation, needed\n  by, fallback).\n- Context ceiling: at about 300k tokens commit what is green, write the hand-off (done, remaining, next red test),\n  and stop. | phrase: ## Rules (condensed from the common brief; each is a stop if broken)\n- Leader `lean-rerun- |\n| done_when: ## Closing (in this order)\n1. Commit your work (small green commits are fine).\n2. `python docs/ai-forward-pack/scripts/audit-log.py append --shortname r-read-codex --session rcodex-rerun --skill implement --kind skill --prompt \"r-read-codex: Codex reader facts (Grok floor canary)\" --summary \"<what landed>\" --goal \"<row goal>\" --done-when \"<exit evidence, short>\" --tier T1 --fan-out 0`,\n   then `git add docs/audit && git commit -m \"chore(audit): r-read-codex closing entry\"`.\n3. `git status --short` is empty. | phrase: ## Closing (in this order)\n1. Commit your work (small green commits are fine).\n2. `python  |\n| done_when: ## Hand-back (your final message)\n- branch and head sha; `git log --oneline <base>..HEAD`;\n- each red test: the command and the quoted failure, then the green result;\n- handed-back mutation retargets, new defect classes (as text), decision requests;\n- the served model id you ran as; tokens/turns if known; **your context size at your first edit** (the floor this\n  canary measures);\n- anything not done, and why. | phrase: ## Hand-back (your final message)\n- branch and head sha; `git log --oneline <base>..HEAD`; |\n| done_when: ## TEST-E: the pre-work proof, run once\n\nRun once by Coordinator #1 on `2f633d54` (pre-J0) with `uv run --frozen python teste.py <section>` (a scratch script that imports the modules named and prints what they do today). This is the state your red tests start from; J0 may already have changed some of it (re-check).\n\n`teste-read-codex.txt`:\n\n```text\nExtraction fields: ['account_connector_tools', 'errors', 'first_user_text', 'hook_failures', 'hook_starts', 'malformed_lines', 'missing', 'model_calls', 'session_id', 'tool_calls', 'tools_advertised', 'truncated']\nmodel_calls: 2\nhas served / reasoning / prompt_parts attrs: [False, False, False]\n``` | phrase: ## TEST-E: the pre-work proof, run once\n\nRun once by Coordinator #1 on `2f633d54` (pre-J0) |\nReferences\n- 2f633d54: unresolved (not found)\n- grok-4.7: unresolved (not found)\n- --reasoning-effort high: unresolved (not found)\n- coord-runner: unresolved (not found)\n- 8cda3fc3: unresolved (not found)\n- rcodex-rerun: unresolved (not found)\n- build/rerun-read-codex: unresolved (not found)\n- docs/coordination/coordination-lean-rerun.md:133: unresolved (not found)\n- src/harness_bench/telemetry/codex.py: src/harness_bench/telemetry/codex.py sha256 e472088372a229fca663c7d6653459f38c3f3bd9db7c18afba750825931ac55a\n- bytes_returned: unresolved (not found)\n- tests/test_reader_codex.py: unresolved (not found)\n- tests/fixtures/codex/rerun-*.jsonl: unresolved (not found)\n- tests/mutations/rerun-read-codex.json: unresolved (not found)\n- model: unresolved (not found)\n- effort: unresolved (not found)\n- high: unresolved (not found)\n- summary: unresolved (not found)\n- encrypted-only: unresolved (not found)\n- instruction_file: unresolved (not found)\n- :156: unresolved (not found)\n- 2d11d554: unresolved (not found)\n- tests/fixtures/bench-root/conftest.py: tests/fixtures/bench-root/conftest.py sha256 41bc62ffaa4d6fa5535ef00910d1f34191d9cf134e87f9a330726d226e61bd2f\n- tests/test_fixture_root_isolation.py::test_the_frozen_root_holds_exactly_the_contracted_inputs: unresolved (not found)\n- __pycache__: unresolved (not found)\n- kind, run_id, extraction_id, cell_id, native_session_id: unresolved (not found)\n- served: unresolved (not found)\n- field: unresolved (not found)\n- value: unresolved (not found)\n- not_recorded: unresolved (not found)\n- source: unresolved (not found)\n- reasoning: unresolved (not found)\n- native_ordinal: unresolved (not found)\n- item_ordinal: unresolved (not found)\n- source_kind: unresolved (not found)\n- text: unresolved (not found)\n- chars: unresolved (not found)\n- reasoning_tokens: unresolved (not found)\n- opaque_sha256: unresolved (not found)\n- prompt_parts: unresolved (not found)\n- part: unresolved (not found)\n- path: unresolved (not found)\n- delivery: unresolved (not found)\n- harness_events: unresolved (not found)\n- event: unresolved (not found)\n- name: unresolved (not found)\n- start: unresolved (not found)\n- end: unresolved (not found)\n- ok: unresolved (not found)\n- detail: unresolved (not found)\n- turn_context.effort: unresolved (not found)\n- turn_context.model: unresolved (not found)\n- task_started.model_context_window: unresolved (not found)\n- response_item reasoning: unresolved (not found)\n- summary_text: unresolved (not found)\n- encrypted_content: unresolved (not found)\n- not recorded: <reason: unresolved (not found)\n- :1-20: unresolved (not found)\n- turn_context: unresolved (not found)\n- event_msg/token_count: unresolved (not found)\n- :17-18: unresolved (not found)\n- _is_injected_context: unresolved (not found)\n- :61-65: unresolved (not found)\n- # AGENTS.md instructions for: unresolved (not found)\n- read: unresolved (not found)\n- :103-160: unresolved (not found)\n- :117: unresolved (not found)\n- token_count: unresolved (not found)\n- :119-130: unresolved (not found)\n- tool_inputs: unresolved (not found)\n- :178: unresolved (not found)\n- src/harness_bench/telemetry/__init__.py: src/harness_bench/telemetry/__init__.py sha256 d1b6ce2ec4d2601b00193dbd1c44fd30358afff488160b629795eb5cfa29d158\n- ModelCall: unresolved (not found)\n- :32: unresolved (not found)\n- READER_NOT_BUILT: unresolved (not found)\n- :92: unresolved (not found)\n- NotRecorded: unresolved (not found)\n- not_recorded(reason: unresolved (not found)\n- :93-98: unresolved (not found)\n- SERVED_FIELDS: unresolved (not found)\n- REASONING_KINDS: unresolved (not found)\n- PART_KINDS: unresolved (not found)\n- DELIVERIES: unresolved (not found)\n- EVENT_KINDS: unresolved (not found)\n- :106-110: unresolved (not found)\n- ServedSettings: unresolved (not found)\n- :114-125: unresolved (not found)\n- model_requested: unresolved (not found)\n- model_served: unresolved (not found)\n- model_api: unresolved (not found)\n- context_tokens: unresolved (not found)\n- context_tier: unresolved (not found)\n- reasoning_summary: unresolved (not found)\n- sources: unresolved (not found)\n- ReasoningItem: unresolved (not found)\n- :129-138: unresolved (not found)\n- PromptPart: unresolved (not found)\n- :142-149: unresolved (not found)\n- HarnessEvent: unresolved (not found)\n- :153-162: unresolved (not found)\n- Extraction: unresolved (not found)\n- :166: unresolved (not found)\n- :186-189: unresolved (not found)\n- ToolInput.bytes_returned: unresolved (not found)\n- :297: unresolved (not found)\n- telemetry/normalize.py: src/harness_bench/telemetry/normalize.py sha256 fe13b9b12e8e600bbf9a54a8870a3b12e4215fc9749f1100049ba031ac496ad3\n- served_rows: unresolved (not found)\n- :194: unresolved (not found)\n- reasoning_rows: unresolved (not found)\n- :217: unresolved (not found)\n- prompt_part_rows: unresolved (not found)\n- :226: unresolved (not found)\n- harness_event_rows: unresolved (not found)\n- :234: unresolved (not found)\n- codex.read: unresolved (not found)\n- __init__.py: unresolved (ambiguous: 31 matches)\n- normalize.py: src/harness_bench/telemetry/normalize.py sha256 fe13b9b12e8e600bbf9a54a8870a3b12e4215fc9749f1100049ba031ac496ad3\n- C:\\tf\\spike-settings\\codex\\home\\sessions\\2026\\10\\11\\rollout-2026-10-11T13-12-38-01a12c98-9001-7e20-aef4-2496b2879ed0.jsonl: unresolved (outside repo)\n- task_started.model_context_window = 828400: unresolved (not found)\n- model gpt-6.1-sol: unresolved (not found)\n- effort high: unresolved (not found)\n- summary auto: unresolved (not found)\n- …T13-12-45-…aa48….jsonl: unresolved (not found)\n- codex-auto-review: unresolved (not found)\n- C:\\tf\\spike-settings\\codex\\home\\models_cache.json: unresolved (outside repo)\n- tests/fixtures/native/codex/pack-on.jsonl: tests/fixtures/native/codex/pack-on.jsonl sha256 65b360d8330d35ab89ee067e5391824cd89ea3b5061ef4cbceb3a3b29ffdaa68\n- C:\\tf\\r-read-codex\\: unresolved (outside repo)\n- gpt-6.1-sol: unresolved (not found)\n- model_calls: unresolved (not found)\n- token_usage_record: unresolved (not found)\n- tests/test_telemetry.py: tests/test_telemetry.py sha256 5c0574f17f58fae208bbc98048a84bfcb43ec72c36a0081b126b017cf49ae82c\n- git grep -l \"codex\" -- tests/test_*.py: unresolved (not found)\n- views.py: unresolved (ambiguous: 2 matches)\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 7b717cada3c601ef3280c6d0012c08f5d801dbf51f37ce7aaea46f34a560581d\n- profiles.py: src/harness_bench/profiles.py sha256 52b57ea1734e40260a26689c1aee3fd1b158b63178aec3d512d6ca6eab83afdc\n- driver.py: src/harness_bench/driver.py sha256 62ae439512dd93d435b50e24cbd5667baacaf02f2827d3f8f78de66f9bdcedd1\n- bench/profiles/*: unresolved (not found)\n- tests/mutations/*.json: unresolved (not found)\n- lean-rerun-leader: unresolved (not found)\n- owner-fable: unresolved (not found)\n- python C:/Projects/x-harness-x-model-bench/docs/ai-forward-pack/scripts/audit-log.py start --session rcodex-rerun --skill implement: unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- git switch -c build/rerun-read-codex: unresolved (not found)\n- C:/Projects/x-harness-x-model-bench: unresolved (outside repo)\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 bc915d88a89ead150a8dd82107eee0cdc0a2689bd58bf7da5fee4e5116647f8b\n- docs/notes/rulings.md: docs/notes/rulings.md sha256 6e1eb16020cb6b6389151e80e59bdc7b5f4ecf365a5de19b6d7b1d8ba7c52db3\n- docs/docs-index.js: docs/docs-index.js sha256 e5f83d697280b781769a2c163f29c4830a0e8fdc3fec02259803e14f6bd96280\n- docs/audit/audit-data.js: docs/audit/audit-data.js sha256 695a3f354ee2fe11c9343119dec6aa9cf0ae0ba5303d9165d3857db3b74cf45e\n- *.jsonl: unresolved (not found)\n- uv run pytest <files> -q: unresolved (not found)\n- -n: unresolved (not found)\n- uv run pytest tests/test_mutate_check.py::test_every_mutation_find_text_occurs_exactly_once_in_its_target_file -q: unresolved (not found)\n- uv run python tools/mutate_check.py tests/mutations/rerun-read-codex.json: unresolved (not found)\n- uv run ruff check src tests tools bench/adapters: unresolved (not found)\n- tools/: unresolved (not found)\n- tests/: unresolved (not found)\n- bench/adapters/: unresolved (not found)\n- creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0: unresolved (not found)\n- Authorization: unresolved (not found)\n- Bearer: unresolved (not found)\n- eyJ…: unresolved (not found)\n- --no-verify: unresolved (not found)\n- python docs/ai-forward-pack/scripts/audit-log.py append --shortname r-read-codex --session rcodex-rerun --skill implement --kind skill --prompt \"r-read-codex: Codex reader facts (Grok floor canary)\" --summary \"<what landed>\" --goal \"<row goal>\" --done-when \"<exit evidence, short>\" --tier T1 --fan-out 0: unresolved (not found)\n- git add docs/audit && git commit -m \"chore(audit): r-read-codex closing entry: unresolved (not found)\n- git status --short: unresolved (not found)\n- git log --oneline <base>..HEAD: unresolved (not found)\n- uv run --frozen python teste.py <section: unresolved (not found)\n- teste-read-codex.txt: unresolved (not found)\n- AGENTS.md: AGENTS.md sha256 e436ec2bf8627963a5eb15e61261ae74e2cbc00f783a3641ac7b12369edc74d0\n- 0/1/None: unresolved (not found)\n- developer/user: unresolved (not found)\n- 0/1: unresolved (not found)\n- token_count`/`token_usage_record: unresolved (not found)\n- tests/test_*.py: unresolved (not found)\n- C:/Projects/x-harness-x-model-bench/docs/ai-forward-pack/scripts/audit-log.py: unresolved (outside repo)\n- tests/test_mutate_check.py::test_every_mutation_find_text_occurs_exactly_once_in_its_target_file: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 23bfd72f0bf50e7418fb41bddf2d5922744188fb77ba5028928586c0f3592353\n- bench/adapters: unresolved (not found)\n- -n`/hooks: unresolved (not found)\n- docs/ai-forward-pack/scripts/audit-log.py: docs/ai-forward-pack/scripts/audit-log.py sha256 d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4\n- docs/audit: unresolved (not found)\n- tokens/turns: unresolved (not found)\n- teste.py: unresolved (not found)\n- /: unresolved (outside repo)\nAssumptions\n- #1 belief: the runner checks the worktree out at 8cda3fc3 (the J0 candidate head the Leader dispatched wave 1a from) · confirm: git log -1 --format=%h in the tree reads 8cda3fc3 · breaks: the J0 anchors move; the worker stops before any edit and reports · consequential: false\n- #2 belief: compiling a Grok brief with the claude-code template is faithful: no grok template is installed (prompt-compile.py lists claude-code, codex, copilot) and last run's Grok compile al-01M4H21SH1E5GDDV6KX0PDG2T0 used claude-code · confirm: the runner's prepare verifies and renders the compilation for harness grok · breaks: a Grok-specific rendering rule would be missed; the runner's check refuses it before dispatch · consequential: false\n- #3 belief: the brief amended by Coordinator #2 (R-READ-CODEX.c2.md) changes only the session id (rcodex-rerun, the plan's runner session), the base, the J0 anchors, the mutation file name (the plan row's rerun-read-codex.json) and the MUT-E check; no scope is added · confirm: diff C:/tf/rerun-leader/briefs/R-READ-CODEX.md C:/tf/rerun-leader/briefs/R-READ-CODEX.c2.md · breaks: an unreviewed scope change reaches the worker; the Leader reads the diff before dispatch · consequential: false\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: R-103 (Leader-held): a first response not served as grok-4.7* is killed and retried once, then the Opus fallback\nper_branch_exit: a green commit and the committed closing audit entry; or, at the context ceiling, a hand-off naming what is done, what remains and the next red test\njoin_rule: J1b: the Leader's batched candidate on integrate/rerun-21, one full suite, the handed-back retargets applied, then the recount; owned paths only\ncontainment: the runner's worktree on build/rerun-read-codex, session rcodex-rerun; owned paths src/harness_bench/telemetry/codex.py, tests/test_reader_codex.py, tests/fixtures/codex/rerun-*.jsonl, tests/mutations/rerun-read-codex.json; scratch C:\\tf\\r-read-codex; never the primary checkout\ntermination: one turn; ends at a green commit\ndeadline: 2,400 s\nfallback: an Opus sub-agent (the plan's Track assignment detail row); FALLBACK-A: the worker launches, spawns or messages nothing\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M4RBXBY1KF65KWE8KXFAPCP8\nraw sha256: f93c074619078af0da435782f4edbf21b457ea7d556374438af2eddcc9308f58\ncompiler model: claude-opus-5-5[1m]\nengine seconds: 0.121\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M4RBXBY1KF65KWE8KXFAPCP8 for claude-code v1: 12 clauses, 3 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
       "tool": null,
       "actor": null,
       "artifacts": [],
       "tags": [],
       "outcome": "success",
-      "compiled": false,
-      "goal": "Make the default fixture root frozen and self-contained, keep a live mode for named catalog-identity consumers, pin ruff",
-      "done_when": "isolation test green; live consumers listed and green; non-lean and pack-improvement goldens green; ruff pinned",
-      "tier": "T1",
-      "fan_out": 0,
-      "started_at": "2026-10-12T14:27:36Z",
-      "duration_seconds": 1646.0
+      "compiled": {
+        "assumptions": [
+          {
+            "belief": "the runner checks the worktree out at 8cda3fc3 (the J0 candidate head the Leader dispatched wave 1a from)",
+            "breaks": "the J0 anchors move; the worker stops before any edit and reports",
+            "confirm": "git log -1 --format=%h in the tree reads 8cda3fc3",
+            "consequential": false,
+            "id": "#1"
+          },
+          {
+            "belief": "compiling a Grok brief with the claude-code template is faithful: no grok template is installed (prompt-compile.py lists claude-code, codex, copilot) and last run's Grok compile al-01M4H21SH1E5GDDV6KX0PDG2T0 used claude-code",
+            "breaks": "a Grok-specific rendering rule would be missed; the runner's check refuses it before dispatch",
+            "confirm": "the runner's prepare verifies and renders the compilation for harness grok",
+            "consequential": false,
+            "id": "#2"
+          },
+          {
+            "belief": "the brief amended by Coordinator #2 (R-READ-CODEX.c2.md) changes only the session id (rcodex-rerun, the plan's runner session), the base, the J0 anchors, the mutation file name (the plan row's rerun-read-codex.json) and the MUT-E check; no scope is added",
+            "breaks": "an unreviewed scope change reaches the worker; the Leader reads the diff before dispatch",
+            "confirm": "diff C:/tf/rerun-leader/briefs/R-READ-CODEX.md C:/tf/rerun-leader/briefs/R-READ-CODEX.c2.md",
+            "consequential": false,
+            "id": "#3"
+          }
+        ],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "# Brief: R-READ-CODEX — Codex reader facts (Grok floor canary) (self-contained)\n\n*Compiled by Coordinator #1, 2026-10-12, at `2f633d54`, for Grok (`grok-4.7`, `--reasoning-effort high`) through `coord-runner`; amended by Coordinator #2 at `8cda3fc3` (session id, base, J0 anchors, mutation file name, the MUT-E check). This brief is complete: you do not need\nthe common brief. Session id: `rcodex-rerun`. Branch: `build/rerun-read-codex`. Repository: the worktree the runner gave you\n(a checkout of the J0 candidate head `8cda3fc3`).*\n\n**Goal.** Teach the existing reader to emit the four new fact streams' inputs for its harness, red first, on scrubbed\nfixtures. **Done when** every red test in section 6 is green, your mutants are killed, ruff is clean, and the closing\naudit entry is committed. **Not in scope:** section 7. **Tier** T1. **Fan-out** 0.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "# Brief: R-READ-CODEX — Codex reader facts (Grok floor canary) (self-contained)\n\n*Compiled"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## 1. Your row, verbatim\n\n### Tracks table (`docs/coordination/coordination-lean-rerun.md:133`)\n\n| track | owns (authored) | depends on | tier | fan-out cap | budget | exit evidence | harness |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| **R-READ-CODEX** Codex reader facts (Grok floor canary) | `src/harness_bench/telemetry/codex.py` (served settings, reasoning items, prompt parts, harness events where present, per-request rows, `bytes_returned`); `tests/test_reader_codex.py` (new); `tests/fixtures/codex/rerun-*.jsonl` (scrubbed); `tests/mutations/rerun-read-codex.json` | J0 | T1 | 0 | 60 calls · canary + 50k · 1 · 1.0 h | red first on the scrubbed rollout: served `model`, `effort` `high`, window 828,400 with the catalog percent's source; two reasoning rows (`summary` with text; `encrypted-only` with a sha256); the AGENTS.md block as an `instruction_file` part on a pack-on fixture and none on pack-off. Existing Codex reader tests green | Grok (bounded; brief under 30 kB; dispatched first, alone, as the Grok floor canary) |\n\n### Track assignment detail (`:156`)\n\n| track | sessions · branches | why this harness and model | why it earns the multiplier | expected seam requests | deadline · termination · fallback | join batch · gate ring |\n| --- | --- | --- | --- | --- | --- | --- |\n| R-READ-CODEX | runner `rcodex-rerun` · `build/rerun-read-codex` | one reader, one fixture: Grok's measured profile on bounded work | **independence**; it is the Grok floor canary | none | 2,400 s, R-103 kill and one retry · ends at a green commit · Opus sub-agent | J1b · none |",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## 1. Your row, verbatim\n\n### Tracks table (`docs/coordination/coordination-lean-rerun.md:"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## 2. Base\n\nYour worktree is cut from the J0 candidate head **`8cda3fc3`** (R-GOLD, R-CONTRACT-RUN and R-CONTRACT-FACTS\nmerged, the Leader's mutation retargets applied; the Leader dispatched wave 1a from it). The J0 anchors in section 4\nwere re-read by Coordinator #2 at `8cda3fc3`. Re-read the named symbol, never trust the number alone. Use the J0\nnames exactly; do not re-create them.\n`8cda3fc3` lacks one later fix (the R-GOLD loop-back, `2d11d554`): after a pytest run collects\n`tests/fixtures/bench-root/conftest.py`, `tests/test_fixture_root_isolation.py::test_the_frozen_root_holds_exactly_the_contracted_inputs`\ncan be red with `__pycache__` names. That red is not yours: name it if you see it, do not fix it.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## 2. Base\n\nYour worktree is cut from the J0 candidate head **`8cda3fc3`** (R-GOLD, R-CONT"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## 3. The contract you fill (ADR-0026 §1, condensed; the J0 code is the authority)\n\nADR-0026 §1 row grain (columns beyond `kind, run_id, extraction_id, cell_id, native_session_id`):\n- `served`: one setting of one cell as one source showed it: `field` (model_served · model_api · effort ·\n  context_tokens · context_tier · reasoning_summary), `value`, `not_recorded`, `source`.\n- `reasoning`: one reasoning item: `native_ordinal` (its request), `item_ordinal`, `source_kind` (text · summary ·\n  encrypted-only · omitted), `text`, `chars`, `reasoning_tokens`, `opaque_sha256`.\n- `prompt_parts`: one part of the fixed prefix: `part` (system · tools · skills · instruction_file · agents_md),\n  `path`, `chars`, `delivery` (inlined · on-demand · listed), `source`.\n- `harness_events`: one hook, skill load or compaction: `event`, `name`, `start`, `end`, `ok` (0/1/None), `detail`.\nCodex sources (ADR-0024 §4, ADR-0026 §1): `turn_context.effort`, `turn_context.model`,\n`task_started.model_context_window` judged against pin × catalog percent; `response_item reasoning` `summary_text` +\n`encrypted_content`; rollout developer/user items incl. the AGENTS.md block; tools are not in the record; hooks and\ncompaction are Flagged: absent → `not recorded: <reason>`. Rows use canonical types (str, int, None, list, dict;\nflags 0/1). Requested values are never stored: they are the plan's.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## 3. The contract you fill (ADR-0026 §1, condensed; the J0 code is the authority)\n\nADR-00"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## 4. Code anchors\n\n- `src/harness_bench/telemetry/codex.py`: doc `:1-20` (model from the latest `turn_context`; per-call\n  `event_msg/token_count`; the injected AGENTS.md block `:17-18`); `_is_injected_context` `:61-65` (the block starts\n  `# AGENTS.md instructions for `); `read` `:103-160` (`turn_context` `:117`; `token_count` `:119-130`);\n  `tool_inputs` `:178`.\n- `src/harness_bench/telemetry/__init__.py` at `8cda3fc3` (J0): `ModelCall` `:32`; `READER_NOT_BUILT` `:92`\n  (\"not recorded: reader not built\"); `NotRecorded` and `not_recorded(reason)` `:93-98`; `SERVED_FIELDS`,\n  `REASONING_KINDS`, `PART_KINDS`, `DELIVERIES`, `EVENT_KINDS` `:106-110`; `ServedSettings` `:114-125` (fields\n  `model_requested`, `model_served`, `model_api`, `effort`, `context_tokens`, `context_tier`, `reasoning_summary`,\n  each a value or `not_recorded(...)`, and `sources`, a field → record path and field map); `ReasoningItem`\n  `:129-138`; `PromptPart` `:142-149`; `HarnessEvent` `:153-162` (with `native_ordinal`, ruling on DR1);\n  `Extraction` `:166`, whose four fields `served`, `reasoning`, `prompt_parts`, `harness_events` (`:186-189`) a reader\n  fills inside `read()`; `served` may be one `ServedSettings` or a tuple of them, one per source (ruling on DR2);\n  `ToolInput.bytes_returned` `:297`. The row builders are in `telemetry/normalize.py`: `served_rows` `:194`,\n  `reasoning_rows` `:217`, `prompt_part_rows` `:226`, `harness_event_rows` `:234`. **Fill those four fields in\n  `codex.read`; do not rename them or edit `__init__.py` or `normalize.py`.**\n- Today `codex.read` returns no served, reasoning or prompt-part facts (TEST-E below).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## 4. Code anchors\n\n- `src/harness_bench/telemetry/codex.py`: doc `:1-20` (model from the "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## 5. Fixture sources (read-only)\n\n- **Spike rollout (served settings, reasoning):** `C:\\tf\\spike-settings\\codex\\home\\sessions\\2026\\10\\11\\rollout-2026-10-11T13-12-38-01a12c98-9001-7e20-aef4-2496b2879ed0.jsonl`\n  (65 kB). Facts read by Coordinator #1: line 2 `task_started.model_context_window = 828400`; line 8 `turn_context`\n  `model gpt-6.1-sol`, `effort high`, `summary auto`; line 12 a `reasoning` item with one summary text (494 chars) and\n  `encrypted_content`; line 21 a `reasoning` item with no summary and `encrypted_content` (encrypted-only); no\n  AGENTS.md block (a pack-off record). The sibling rollout `…T13-12-45-…aa48….jsonl` is an auxiliary\n  `codex-auto-review` session (effort low): not the cell's.\n- **Catalog percent:** `C:\\tf\\spike-settings\\codex\\home\\models_cache.json` (424 kB). Copy only the served\n  model's entry; 872,000 × 95% = 828,400 is the check (ADR-0024 §4: record the percent's source field).\n- **Pack-on AGENTS.md block:** the committed `tests/fixtures/native/codex/pack-on.jsonl` (1 match).\n- Copy what you need into `C:\\tf\\r-read-codex\\`, scrub, then commit as `tests/fixtures/codex/rerun-*.jsonl`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## 5. Fixture sources (read-only)\n\n- **Spike rollout (served settings, reasoning):** `C:\\t"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## 6. Red-first tests (each fails on an assertion first; quote the failure)\n\n1. Served: `model_served` `gpt-6.1-sol` (from `turn_context.model`), `effort` `high`, `context_tokens` 828,400 with\n   the catalog percent's source recorded, each a `served` row with its `source`.\n2. Reasoning: two rows on the spike rollout: `summary` with its text (494 chars) and `opaque_sha256`;\n   `encrypted-only` with a sha256 and no text. Never reconstructed.\n3. Prompt parts: the AGENTS.md block as an `instruction_file` part on the pack-on fixture; none on the pack-off one.\n4. Per-request `model_calls` rows per `token_count`/`token_usage_record` (columns unchanged).\n5. Existing Codex reader tests green (`tests/test_telemetry.py`; find any other with\n   `git grep -l \"codex\" -- tests/test_*.py`).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## 6. Red-first tests (each fails on an assertion first; quote the failure)\n\n1. Served: `m"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "## 7. Not in scope\n- Every other reader, `views.py` and validity (R-VALIDITY), `grade/runner.py` (J0 writes the streams from your\n  hooks), the error codes (J0), `profiles.py`, `driver.py`, `bench/profiles/*`.\n- Existing `tests/mutations/*.json`, the register, the rulings, the docs index.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## 7. Not in scope\n- Every other reader, `views.py` and validity (R-VALIDITY), `grade/runn"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## Rules (condensed from the common brief; each is a stop if broken)\n- Leader `lean-rerun-leader` (epoch 21); decision requests go to `owner-fable`. You own only your row's paths.\n- First command, from your worktree root: `python C:/Projects/x-harness-x-model-bench/docs/ai-forward-pack/scripts/audit-log.py start --session rcodex-rerun --skill implement`.\n  Use `python`, never `python3`.\n- Work only in the worktree the runner gave you; create branch `build/rerun-read-codex` there (`git switch -c build/rerun-read-codex`). Never\n  write `C:/Projects/x-harness-x-model-bench` (the primary). Absolute paths in commands.\n- Never edit an existing `tests/mutations/*.json`: new mutants go in `tests/mutations/rerun-read-codex.json`; a moved\n  existing find is handed back as text (file, old find, new find). Never edit `docs/lessons/defect-classes.md`,\n  `docs/notes/rulings.md`, `docs/docs-index.js`, `docs/audit/audit-data.js` or any `*.jsonl` log.\n- Red first: write each test, run it, see it fail **on an assertion** (quote it), then make it pass.\n- Run **named test files or node ids only**: `uv run pytest <files> -q`. Never the whole suite, `-n`, or a\n  directory. Before you report \"no retargets\", run `uv run pytest tests/test_mutate_check.py::test_every_mutation_find_text_occurs_exactly_once_in_its_target_file -q` (MUT-E: your edit may move an existing find).\n  `uv run python tools/mutate_check.py tests/mutations/rerun-read-codex.json` (it queues on the suite lock).\n- `uv run ruff check src tests tools bench/adapters` clean for your files.\n- A subprocess you add under `tools/`, `tests/` or `bench/adapters/` passes\n  `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`. Kill only PIDs you started.\n- A multi-line program is a file, then a run; never a heredoc into an interpreter. Never put a gate's exit status\n  behind a pipe.\n- Every committed fixture is scrubbed first: no email, account or org id, `Authorization`, `Bearer `, or `eyJ…`\n  (JWT) shape. Real records are read-only; copy into `C:\\tf\\r-read-codex\\`. Never copy a credential file.\n- Never `--no-verify`, `-n`/hooks overrides, amend, rewrite, force-push, or push. Tokens are the only cost unit.\n- A product or scope question: stop and hand back a decision request (question, options, recommendation, needed\n  by, fallback).\n- Context ceiling: at about 300k tokens commit what is green, write the hand-off (done, remaining, next red test),\n  and stop.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## Rules (condensed from the common brief; each is a stop if broken)\n- Leader `lean-rerun-"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## Closing (in this order)\n1. Commit your work (small green commits are fine).\n2. `python docs/ai-forward-pack/scripts/audit-log.py append --shortname r-read-codex --session rcodex-rerun --skill implement --kind skill --prompt \"r-read-codex: Codex reader facts (Grok floor canary)\" --summary \"<what landed>\" --goal \"<row goal>\" --done-when \"<exit evidence, short>\" --tier T1 --fan-out 0`,\n   then `git add docs/audit && git commit -m \"chore(audit): r-read-codex closing entry\"`.\n3. `git status --short` is empty.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## Closing (in this order)\n1. Commit your work (small green commits are fine).\n2. `python "
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## Hand-back (your final message)\n- branch and head sha; `git log --oneline <base>..HEAD`;\n- each red test: the command and the quoted failure, then the green result;\n- handed-back mutation retargets, new defect classes (as text), decision requests;\n- the served model id you ran as; tokens/turns if known; **your context size at your first edit** (the floor this\n  canary measures);\n- anything not done, and why.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## Hand-back (your final message)\n- branch and head sha; `git log --oneline <base>..HEAD`;"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## TEST-E: the pre-work proof, run once\n\nRun once by Coordinator #1 on `2f633d54` (pre-J0) with `uv run --frozen python teste.py <section>` (a scratch script that imports the modules named and prints what they do today). This is the state your red tests start from; J0 may already have changed some of it (re-check).\n\n`teste-read-codex.txt`:\n\n```text\nExtraction fields: ['account_connector_tools', 'errors', 'first_user_text', 'hook_failures', 'hook_starts', 'malformed_lines', 'missing', 'model_calls', 'session_id', 'tool_calls', 'tools_advertised', 'truncated']\nmodel_calls: 2\nhas served / reasoning / prompt_parts attrs: [False, False, False]\n```",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## TEST-E: the pre-work proof, run once\n\nRun once by Coordinator #1 on `2f633d54` (pre-J0)"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "the runner's worktree on build/rerun-read-codex, session rcodex-rerun; owned paths src/harness_bench/telemetry/codex.py, tests/test_reader_codex.py, tests/fixtures/codex/rerun-*.jsonl, tests/mutations/rerun-read-codex.json; scratch C:\\tf\\r-read-codex; never the primary checkout",
+          "deadline": "2,400 s",
+          "fallback": "an Opus sub-agent (the plan's Track assignment detail row); FALLBACK-A: the worker launches, spawns or messages nothing",
+          "join_rule": "J1b: the Leader's batched candidate on integrate/rerun-21, one full suite, the handed-back retargets applied, then the recount; owned paths only",
+          "per_branch_exit": "a green commit and the committed closing audit entry; or, at the context ceiling, a hand-off naming what is done, what remains and the next red test",
+          "termination": "one turn; ends at a green commit",
+          "transient_retry": "R-103 (Leader-held): a first response not served as grok-4.7* is killed and retried once, then the Opus fallback",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "canary + 50k (the row's budget): your floor at the first edit is what this canary measures; report it. At about 300k tokens commit what is green and hand off",
+          "done_when": [
+            "the row's exit evidence, verbatim: red first on the scrubbed rollout: served `model`, `effort` `high`, window 828,400 with the catalog percent's source; two reasoning rows (`summary` with text; `encrypted-only` with a sha256); the AGENTS.md block as an `instruction_file` part on a pack-on fixture and none on pack-off. Existing Codex reader tests green",
+            "your mutants in tests/mutations/rerun-read-codex.json killed; the MUT-E find check run before any 'no retargets' report; ruff clean for your files",
+            "the closing audit entry committed in your tree; git status --short empty; your context size at your first edit reported"
+          ],
+          "fan_out_cap": "0",
+          "goal": "R-READ-CODEX, Codex reader facts (Grok floor canary): teach src/harness_bench/telemetry/codex.py to fill the four J0 Extraction fields (served settings, reasoning items, prompt parts, harness events where present), per-request rows and bytes_returned, red first on scrubbed fixtures. You are session rcodex-rerun, harness Grok through coord-runner (ACP), model grok-4.7 with --reasoning-effort high, branch build/rerun-read-codex, base 8cda3fc3; Leader lean-rerun-leader (epoch 21); owner-fable rules every decision request.",
+          "main_line_budget": "60 calls; 1.0 h; 2,400 s deadline for this turn",
+          "not_in_scope": [
+            "every other reader, views.py and validity (R-VALIDITY), grade/runner.py, errors.py, profiles.py, driver.py, bench/profiles/*",
+            "telemetry/__init__.py and telemetry/normalize.py (J0's contract; read, never edit)",
+            "existing tests/mutations/*.json, docs/lessons/defect-classes.md, docs/notes/rulings.md, the docs index, any *.jsonl log",
+            "the whole suite, -n or a directory run, joins, pushes (the Leader's)"
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5[1m]",
+          "engine_seconds": 0.121,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M4RBXBY1KF65KWE8KXFAPCP8",
+        "raw_sha256": "f93c074619078af0da435782f4edbf21b457ea7d556374438af2eddcc9308f58",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "2f633d54"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grok-4.7"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--reasoning-effort high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "8cda3fc3"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "rcodex-rerun"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/rerun-read-codex"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/coordination/coordination-lean-rerun.md:133"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/codex.py",
+            "reason": null,
+            "sha256": "e472088372a229fca663c7d6653459f38c3f3bd9db7c18afba750825931ac55a",
+            "status": "resolved",
+            "token": "src/harness_bench/telemetry/codex.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bytes_returned"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_reader_codex.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/codex/rerun-*.jsonl"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/rerun-read-codex.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "effort"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "summary"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "encrypted-only"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "instruction_file"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":156"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "2d11d554"
+          },
+          {
+            "nearest": null,
+            "path": "tests/fixtures/bench-root/conftest.py",
+            "reason": null,
+            "sha256": "41bc62ffaa4d6fa5535ef00910d1f34191d9cf134e87f9a330726d226e61bd2f",
+            "status": "resolved",
+            "token": "tests/fixtures/bench-root/conftest.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_fixture_root_isolation.py::test_the_frozen_root_holds_exactly_the_contracted_inputs"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "__pycache__"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "kind, run_id, extraction_id, cell_id, native_session_id"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "served"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "field"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "value"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "not_recorded"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "source"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "reasoning"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "native_ordinal"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "item_ordinal"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "source_kind"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "text"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "chars"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "reasoning_tokens"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "opaque_sha256"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "prompt_parts"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "part"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "path"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "delivery"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "harness_events"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "event"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "name"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "start"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "end"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ok"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "detail"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "turn_context.effort"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "turn_context.model"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "task_started.model_context_window"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "response_item reasoning"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "summary_text"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "encrypted_content"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "not recorded: <reason"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":1-20"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "turn_context"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "event_msg/token_count"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":17-18"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "_is_injected_context"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":61-65"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "# AGENTS.md instructions for"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "read"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":103-160"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":117"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "token_count"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":119-130"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tool_inputs"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":178"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/__init__.py",
+            "reason": null,
+            "sha256": "d1b6ce2ec4d2601b00193dbd1c44fd30358afff488160b629795eb5cfa29d158",
+            "status": "resolved",
+            "token": "src/harness_bench/telemetry/__init__.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ModelCall"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":32"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "READER_NOT_BUILT"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":92"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "NotRecorded"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "not_recorded(reason"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":93-98"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "SERVED_FIELDS"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "REASONING_KINDS"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "PART_KINDS"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "DELIVERIES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "EVENT_KINDS"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":106-110"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ServedSettings"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":114-125"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model_requested"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model_served"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model_api"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "context_tokens"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "context_tier"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "reasoning_summary"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "sources"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ReasoningItem"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":129-138"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "PromptPart"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":142-149"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HarnessEvent"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":153-162"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Extraction"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":166"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":186-189"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ToolInput.bytes_returned"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":297"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/normalize.py",
+            "reason": null,
+            "sha256": "fe13b9b12e8e600bbf9a54a8870a3b12e4215fc9749f1100049ba031ac496ad3",
+            "status": "resolved",
+            "token": "telemetry/normalize.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "served_rows"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":194"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "reasoning_rows"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":217"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "prompt_part_rows"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":226"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "harness_event_rows"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":234"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "codex.read"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 31 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "__init__.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/normalize.py",
+            "reason": null,
+            "sha256": "fe13b9b12e8e600bbf9a54a8870a3b12e4215fc9749f1100049ba031ac496ad3",
+            "status": "resolved",
+            "token": "normalize.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:\\tf\\spike-settings\\codex\\home\\sessions\\2026\\10\\11\\rollout-2026-10-11T13-12-38-01a12c98-9001-7e20-aef4-2496b2879ed0.jsonl"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "task_started.model_context_window = 828400"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model gpt-6.1-sol"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "effort high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "summary auto"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "…T13-12-45-…aa48….jsonl"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "codex-auto-review"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:\\tf\\spike-settings\\codex\\home\\models_cache.json"
+          },
+          {
+            "nearest": null,
+            "path": "tests/fixtures/native/codex/pack-on.jsonl",
+            "reason": null,
+            "sha256": "65b360d8330d35ab89ee067e5391824cd89ea3b5061ef4cbceb3a3b29ffdaa68",
+            "status": "resolved",
+            "token": "tests/fixtures/native/codex/pack-on.jsonl"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:\\tf\\r-read-codex\\"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gpt-6.1-sol"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model_calls"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "token_usage_record"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_telemetry.py",
+            "reason": null,
+            "sha256": "5c0574f17f58fae208bbc98048a84bfcb43ec72c36a0081b126b017cf49ae82c",
+            "status": "resolved",
+            "token": "tests/test_telemetry.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git grep -l \"codex\" -- tests/test_*.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "7b717cada3c601ef3280c6d0012c08f5d801dbf51f37ce7aaea46f34a560581d",
+            "status": "resolved",
+            "token": "grade/runner.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/profiles.py",
+            "reason": null,
+            "sha256": "52b57ea1734e40260a26689c1aee3fd1b158b63178aec3d512d6ca6eab83afdc",
+            "status": "resolved",
+            "token": "profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/driver.py",
+            "reason": null,
+            "sha256": "62ae439512dd93d435b50e24cbd5667baacaf02f2827d3f8f78de66f9bdcedd1",
+            "status": "resolved",
+            "token": "driver.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/profiles/*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/*.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "lean-rerun-leader"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "owner-fable"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python C:/Projects/x-harness-x-model-bench/docs/ai-forward-pack/scripts/audit-log.py start --session rcodex-rerun --skill implement"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python3"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git switch -c build/rerun-read-codex"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/x-harness-x-model-bench"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "bc915d88a89ead150a8dd82107eee0cdc0a2689bd58bf7da5fee4e5116647f8b",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/rulings.md",
+            "reason": null,
+            "sha256": "6e1eb16020cb6b6389151e80e59bdc7b5f4ecf365a5de19b6d7b1d8ba7c52db3",
+            "status": "resolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/docs-index.js",
+            "reason": null,
+            "sha256": "e5f83d697280b781769a2c163f29c4830a0e8fdc3fec02259803e14f6bd96280",
+            "status": "resolved",
+            "token": "docs/docs-index.js"
+          },
+          {
+            "nearest": null,
+            "path": "docs/audit/audit-data.js",
+            "reason": null,
+            "sha256": "695a3f354ee2fe11c9343119dec6aa9cf0ae0ba5303d9165d3857db3b74cf45e",
+            "status": "resolved",
+            "token": "docs/audit/audit-data.js"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "*.jsonl"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest <files> -q"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-n"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest tests/test_mutate_check.py::test_every_mutation_find_text_occurs_exactly_once_in_its_target_file -q"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run python tools/mutate_check.py tests/mutations/rerun-read-codex.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run ruff check src tests tools bench/adapters"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/adapters/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Authorization"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Bearer"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "eyJ…"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--no-verify"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python docs/ai-forward-pack/scripts/audit-log.py append --shortname r-read-codex --session rcodex-rerun --skill implement --kind skill --prompt \"r-read-codex: Codex reader facts (Grok floor canary)\" --summary \"<what landed>\" --goal \"<row goal>\" --done-when \"<exit evidence, short>\" --tier T1 --fan-out 0"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git add docs/audit && git commit -m \"chore(audit): r-read-codex closing entry"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git status --short"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git log --oneline <base>..HEAD"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run --frozen python teste.py <section"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "teste-read-codex.txt"
+          },
+          {
+            "nearest": null,
+            "path": "AGENTS.md",
+            "reason": null,
+            "sha256": "e436ec2bf8627963a5eb15e61261ae74e2cbc00f783a3641ac7b12369edc74d0",
+            "status": "resolved",
+            "token": "AGENTS.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "0/1/None"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "developer/user"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "0/1"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "token_count`/`token_usage_record"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_*.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/x-harness-x-model-bench/docs/ai-forward-pack/scripts/audit-log.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_mutate_check.py::test_every_mutation_find_text_occurs_exactly_once_in_its_target_file"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "23bfd72f0bf50e7418fb41bddf2d5922744188fb77ba5028928586c0f3592353",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/adapters"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-n`/hooks"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/audit-log.py",
+            "reason": null,
+            "sha256": "d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/audit-log.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/audit"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tokens/turns"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "teste.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "/"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
+    },
+    {
+      "id": "al-01M4RC35W9MJ9MN8VPBBW1BDJ6",
+      "shortname": "compile-Brief: R-READ-AGY — Antigravity reader (Agy floor canary) (self-containe…",
+      "datetime": "2026-10-12T15:35:56Z",
+      "session": "ragy-rerun",
+      "prompt": "python3 docs/ai-forward-pack/scripts/audit-log.py start --session ragy-rerun --skill implement\nGoal state\nGoal: R-READ-AGY, the Antigravity reader (the Agy floor canary, plan Errata E9): build src/harness_bench/telemetry/agy.py from its J0 stub so it fills model calls, tool calls and the four J0 Extraction fields from an agy cell's teed stream and conversation db, red first on scrubbed fixtures. You are session ragy-rerun, harness Antigravity through coord-runner, model gemini-3.8-flash-high, branch build/rerun-read-agy, base 8cda3fc3; Leader lean-rerun-leader (epoch 21); owner-fable rules every decision request.\nDone when: the row's exit evidence, verbatim: red first on the fixtures: served `gemini-3.8-flash-high`, context `not recorded`; per-step rows; a `text` reasoning row matching the spike's known thinking text; a truncated payload gives `omitted` with the step's `thinking_tokens`, never wrong text; `instruction_file` parts (AGENTS.md as a `RULE`) ≥ 1 on a pack-on fixture and 0 on pack-off; the reasoning case that held (text, encrypted-only or omitted) handed back with the decoded field map; tests/test_architecture.py green with the module; your mutants in tests/mutations/rerun-read-agy.json killed; the MUT-E find check run before any 'no retargets' report; ruff clean for your files; the closing audit entry committed in your tree; git status --short empty; your context size at your first edit reported\nNot in scope: stream_driver.py, bench/profiles/agy.yaml, profiles.py (READERS), tests/fixtures/agy/stream/ (R-TRANSPORT's); every other reader; views.py and validity (R-VALIDITY); grade/runner.py; errors.py; telemetry/__init__.py and telemetry/normalize.py (read, never edit); existing tests/mutations/*.json, docs/lessons/defect-classes.md, docs/notes/rulings.md, the docs index, any *.jsonl log; the whole suite, -n or a directory run, joins, pushes (the Leader's)\nTier: T1\nFan-out cap: 0\nContext ceiling: canary + 60k (the row's budget): your floor at the first edit is what this canary measures; report it. At about 300k tokens commit what is green and hand off\nMain-line budget: 70 calls; 1.2 h; 2,400 s deadline for this turn\nTrace\n| clause | trace |\n|---|---|\n| done_when: # Brief: R-READ-AGY — Antigravity reader (Agy floor canary) (self-contained)\n\n*Compiled by Coordinator #2, 2026-10-12, at `8cda3fc3`, for Antigravity (`gemini-3.8-flash-high`) through\n`coord-runner`. This brief is complete: you do not need the common brief. Session id: `ragy-rerun`. Branch:\n`build/rerun-read-agy`. Repository: the worktree the runner gave you (a checkout of the J0 candidate head `8cda3fc3`).*\n\n**Goal.** Build the Antigravity reader `telemetry/agy.py` (today a J0 stub), red first, on scrubbed fixtures, so it\nfills the bench's model calls, tool calls and the four new fact streams from an agy cell's records. **Done when**\nevery red test in section 6 is green, your mutants are killed, ruff is clean, and the closing audit entry is\ncommitted. **Not in scope:** section 7. **Tier** T1. **Fan-out** 0. **You are the Agy floor canary:** report your\ncontext size (tokens) at your first edit; the Leader routes every later Agy row by that number. | phrase: # Brief: R-READ-AGY — Antigravity reader (Agy floor canary) (self-contained)\n\n*Compiled by |\n| done_when: ## 1. Your row, verbatim\n\n### Tracks table (`docs/coordination/coordination-lean-rerun.md:137`)\n\n| track | owns (authored) | depends on | tier | fan-out cap | budget | exit evidence | harness |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| **R-READ-AGY** Antigravity reader | `src/harness_bench/telemetry/agy.py` (`init.model`, per-step usage with `thinking_tokens`, tool events; thinking text from `conversations/<id>.db` `steps.step_payload` by a stdlib protobuf wire decoder, failing to `omitted`; prompt parts from `gen_metadata`); `tests/test_reader_agy.py` (new); `tests/fixtures/agy/reader/*` (scrubbed); `tests/mutations/rerun-read-agy.json` | the Agy canary's floor recorded | T1 | 0 | 70 calls · canary + 60k · 1 · 1.2 h | red first on the fixtures: served `gemini-3.8-flash-high`, context `not recorded`; per-step rows; a `text` reasoning row matching the spike's known thinking text; a truncated payload gives `omitted` with the step's `thinking_tokens`, never wrong text; `instruction_file` parts (AGENTS.md as a `RULE`) ≥ 1 on a pack-on fixture and 0 on pack-off | Agy (bounded; brief under 30 kB), or Opus by the canary |\n\n### Track assignment detail (`:160`)\n\n| track | sessions · branches | why this harness and model | why it earns the multiplier | expected seam requests | deadline · termination · fallback | join batch · gate ring |\n| --- | --- | --- | --- | --- | --- | --- |\n| R-READ-AGY | runner `ragy-rerun` · `build/rerun-read-agy` | bounded reader with a small decoder | **independence** | none | 2,400 s · ends at a green commit · Opus sub-agent | J1b · none |\n\n### The erratum that makes you the canary (plan *Errata* E9, Coordinator #2)\n\n\"The Agy floor canary is **R-READ-AGY** (its fixtures exist in `C:\\tf\\spike-agy`): it depends on J0 and is dispatched\nfirst, alone, in wave 1a.\" So your depends-on is J0, not \"the Agy canary's floor recorded\". | phrase: ## 1. Your row, verbatim\n\n### Tracks table (`docs/coordination/coordination-lean-rerun.md: |\n| done_when: ## 2. Base\n\nYour worktree is cut from the J0 candidate head **`8cda3fc3`** (R-GOLD, R-CONTRACT-RUN and R-CONTRACT-FACTS merged;\nthe Leader dispatched wave 1a from it). The anchors below were read by Coordinator #2 at `8cda3fc3`; re-read the named\nsymbol, never trust the number alone. `8cda3fc3` lacks one later fix (the R-GOLD loop-back, `2d11d554`): after a\npytest run collects `tests/fixtures/bench-root/conftest.py`,\n`tests/test_fixture_root_isolation.py::test_the_frozen_root_holds_exactly_the_contracted_inputs` can be red with\n`__pycache__` names. That red is not yours: name it if you see it, do not fix it. | phrase: ## 2. Base\n\nYour worktree is cut from the J0 candidate head **`8cda3fc3`** (R-GOLD, R-CONT |\n| done_when: ## 3. The contract you fill (ADR-0026 §1; the J0 code is the authority)\n\nFour streams, written by the grading pass from the four `Extraction` fields you fill. Columns beyond\n`kind, run_id, extraction_id, cell_id, native_session_id`:\n- `served`: one setting of one cell as one source showed it: `field` (model_served · model_api · effort ·\n  context_tokens · context_tier · reasoning_summary), `value`, `not_recorded`, `source`.\n- `reasoning`: one reasoning item: `native_ordinal` (its request), `item_ordinal`, `source_kind` (text · summary ·\n  encrypted-only · omitted), `text`, `chars`, `reasoning_tokens`, `opaque_sha256`.\n- `prompt_parts`: one part of the fixed prefix: `part` (system · tools · skills · instruction_file · agents_md),\n  `path`, `chars`, `delivery` (inlined · on-demand · listed), `source`.\n- `harness_events`: one hook, skill load or compaction: `native_ordinal`, `event`, `name`, `start`, `end`, `ok`\n  (0/1/None), `detail`.\n\nADR-0026 §1's agy sources, verbatim: \"agy | thinking text in `conversations/<id>.db` `steps.step_payload` (protobuf,\nstdlib wire decoder; Verified present); failed decode → `omitted` with `thinking_tokens` | `gen_metadata` (Verified:\nfull prompt) | steps (Flagged)\". Also: \"Text is stored as the harness stored it; nothing is reconstructed or\nparaphrased. An item with only an encrypted payload is `encrypted-only` with its sha256. A harness that reports only\ntokens yields one `omitted` row per request with the count.\" The architecture's risk line: \"agy's protobuf payload has\nno published schema. The reader decodes the wire format with a field map taken from the spike; a change reads as\n`not recorded`, never as wrong text.\" Requested values are never stored: they are the plan's. A source that is absent\nis `not recorded: <reason>`. | phrase: ## 3. The contract you fill (ADR-0026 §1; the J0 code is the authority)\n\nFour streams, wri |\n| done_when: ## 4. Code anchors (at `8cda3fc3`)\n\n- `src/harness_bench/telemetry/agy.py`: the J0 stub, whole: `def read(path: Path) -> Extraction: raise\n  NotImplementedError(...)`. Its docstring: \"It may read the stream's event bodies (`init`, `step_update`, tool\n  events); the input event and the outcome grammar stay in `stream_driver.py` (tests/test_architecture.py).\"\n- `tests/test_architecture.py:149-185`, the agy-stream rule your module must pass: outside `stream_driver.py`, no\n  module may hold the constant `\"denied_actions\"` or `\"permission check failed for \"`, nor **all** of `\"event\"`,\n  `\"user\"`, `\"message\"`, nor **both** `\"result\"` and `\"SUCCESS\"` (`AGY_OUTCOME_TOKENS`, `AGY_INPUT_EVENT`,\n  `AGY_RESULT_STATUS`, `:154-156`). So read `init` and `step_update`; never test a result status or denials.\n- `src/harness_bench/telemetry/__init__.py`: `ModelCall` `:32-57` (`native_ordinal`, `model`, `uncached_input`,\n  `cache_read`, `cache_write`, `output`, `reasoning` = a component of output, `start`, `end`, `requests`);\n  `ToolCall` `:61-68` (`native_ordinal`, `name`, `tool_class` shell | edit | read | other, `start`, `end`, `ok`,\n  `outcome_code`); `READER_NOT_BUILT` `:92`; `NotRecorded`, `not_recorded(reason)` `:93-98`; `SERVED_FIELDS`,\n  `REASONING_KINDS`, `PART_KINDS`, `DELIVERIES`, `EVENT_KINDS` `:106-110`; `ServedSettings` `:114-125` (each field a\n  value or `not_recorded(...)`, plus `sources`, a field → record path and field map); `ReasoningItem` `:129-138`;\n  `PromptPart` `:142-149`; `HarnessEvent` `:153-162`; `Extraction` `:166`, whose fields `served`, `reasoning`,\n  `prompt_parts`, `harness_events` (`:186-189`) a reader fills inside `read()`.\n- The four row builders, `src/harness_bench/telemetry/normalize.py`: `served_rows` `:194`, `reasoning_rows` `:217`,\n  `prompt_part_rows` `:226`, `harness_event_rows` `:234`. Test your `Extraction` through them.\n- A reader to copy the shape from: `src/harness_bench/telemetry/codex.py` `read` `:103`.\n- The native record (ADR-0025 §3): \"Every stdout line is teed, unchanged, to `<cell home>/agy-stream.ndjson`, the\n  native record.\" The cell home is `HOME`/`USERPROFILE` (ADR-0025 §6), so the conversation store is\n  `<cell home>/.gemini/antigravity-cli/conversations/<conversation_id>.db` (the spike's layout, below).\n  assume: `read(path)` receives the teed `agy-stream.ndjson` and finds the db beside it by that layout, with the\n  `conversation_id` from the `init` event; confirm: R-TRANSPORT's `bench/profiles/agy.yaml` record glob at J1a;\n  breaks: if the profile names another record path, that is a seam request to the Coordinator, not your edit. A db\n  that is not found gives `reasoning` and `prompt_parts` as `not recorded: conversation db not found`.\n- `profiles.READERS` has no `agy` entry yet (R-TRANSPORT adds it). Your tests call `harness_bench.telemetry.agy.read`\n  directly. | phrase: ## 4. Code anchors (at `8cda3fc3`)\n\n- `src/harness_bench/telemetry/agy.py`: the J0 stub, w |\n| done_when: ## 5. Fixture sources (read-only; copy into `C:\\tf\\r-read-agy\\`)\n\n- **Pack-on turn** (repo with `AGENTS.md`, `GEMINI.md`, `.agents/rules/r.md`): stream `C:\\tf\\spike-agy\\turn2.ndjson`\n  (5 lines, conversation `5ed07ceb-…`: `init.model` `gemini-3.8-flash-high`; one `agent_response` step with usage\n  `input_tokens` 11885, `output_tokens` 216, `thinking_tokens` 215, `cache_read_tokens` 0) and its db\n  `C:\\tf\\spike-agy\\home-upd\\.gemini\\antigravity-cli\\conversations\\5ed07ceb-71fc-4fbe-ae6b-3b06d470ae02.db` (tables\n  `steps` (2 rows: `idx`, `step_type`, `status`, `metadata`, `step_payload` blob, …), `gen_metadata` (1 row, a\n  71,778-byte `data` blob), `trajectory_meta`, `executor_metadata`, and three more). `gen_metadata[0].data` holds\n  `<RULE[C:\\tf\\spike-agy\\repo\\AGENTS.md]>Reply in lowercase…<\/RULE[…AGENTS.md]>`, a `<RULE[…GEMINI.md]>` block and a\n  `<RULE[user_global]>` block (the home `GEMINI.md`).\n- **Pack-off turn** (repo with only `README.md`): stream `C:\\tf\\spike-agy\\perm\\stream.ndjson` (8 lines, conversation\n  `65ec1b30-…`, three steps with `thinking_tokens` 165, 85, 250; a `run_command` tool) and its db\n  `C:\\tf\\spike-agy\\perm\\home\\.gemini\\antigravity-cli\\conversations\\65ec1b30-4f02-4656-8de8-243f15929889.db`. No\n  `<RULE[…AGENTS.md]>` block in its `gen_metadata`.\n- **A turn with tools and no db:** `C:\\tf\\spike-agy\\turn1.ndjson` (conversation `d0e71ad9-…`; `view_file` and\n  `run_command` tool steps with `ACTIVE`/`DONE` states and `duration_seconds`; no `conversations/` db exists for it).\n- Read-only inspection scripts from the spike: `C:\\tf\\spike-agy\\db.py` (tables), `blobs.py` (printable runs),\n  `grepblob.py` (regex context). Copy, do not run them from inside `C:\\tf\\spike-agy`.\n- **Scrub before commit:** replace every UUID, `bot-…` id and `sessionID` value with a synthetic value **of the same\n  byte length** (protobuf length prefixes stay valid; Inferred), and every `C:\\tf\\spike-agy` path likewise. Keep only\n  the tables and rows your tests need. No email address, account or org id, `Authorization`, `Bearer ` or `eyJ…` (JWT)\n  shape, and no operator user name, in any committed byte (grep the db file too). Never copy a credential file. | phrase: ## 5. Fixture sources (read-only; copy into `C:\\tf\\r-read-agy\\`)\n\n- **Pack-on turn** (repo |\n| done_when: ## 6. Red-first tests (each fails on an assertion first; quote the failure)\n\n1. Served: `model_served` `gemini-3.8-flash-high` from `init.model` (with its `source`); `context_tokens` and\n   `context_tier` `not recorded` (the stream carries no context window).\n2. Per-step rows: one `ModelCall` per `agent_response` step with usage; `reasoning` = `thinking_tokens`, a component\n   of `output` (215 of 216 on the pack-on turn). Tool steps give `ToolCall` rows from their `DONE` state.\n   assume: `input_tokens` includes `cache_read_tokens` (every spike value is 0, so the fixtures cannot tell); mark\n   it with an inline `assume:` comment and hand it back; breaks: `uncached_input` on a cached turn.\n3. Reasoning: decode `steps.step_payload` with a stdlib protobuf wire decoder (varint, length-delimited, fixed32/64;\n   no dependency) and a field map you derive from the fixture. The row asks for \"a `text` reasoning row matching the\n   spike's known thinking text\". Coordinator #2's TEST-E (below) found **no printable thinking prose** in either db's\n   `steps` by a printable-run scan, only high-entropy bytes after the response text. So: if your decoder finds the\n   thinking text as a UTF-8 field, assert it exactly (`text`, `chars`, `reasoning_tokens`); if it finds only an opaque\n   payload, the item is `encrypted-only` with its sha256; if it decodes nothing, one `omitted` row per step with\n   `thinking_tokens`. Never reconstruct text. Hand back which case held, with the field map.\n4. A truncated `step_payload` (cut mid-field in a test copy) gives `omitted` with that step's `thinking_tokens`, never\n   wrong text.\n5. Prompt parts from `gen_metadata`: `instruction_file` parts ≥ 1 on the pack-on fixture (the `AGENTS.md` `RULE`, with\n   its path and `chars`), and 0 on the pack-off fixture.\n6. A stream whose db is absent (the `turn1` shape) still gives served and per-step rows, with `reasoning` and\n   `prompt_parts` `not recorded: conversation db not found`.\n7. `harness_events`: steps are Flagged as a source; with none read, the field is `not recorded: <reason>`.\n8. `tests/test_architecture.py` stays green with your module (the agy-stream rule). | phrase: ## 6. Red-first tests (each fails on an assertion first; quote the failure)\n\n1. Served: `m |\n| not_in_scope: ## 7. Not in scope\n\n- `stream_driver.py`, `bench/profiles/agy.yaml`, `profiles.py` (`READERS`), `tests/fixtures/agy/stream/` (all\n  R-TRANSPORT's); every other reader; `views.py` and validity (R-VALIDITY); `grade/runner.py`; `errors.py`;\n  `telemetry/__init__.py`, `telemetry/normalize.py`.\n- Existing `tests/mutations/*.json`, the register, the rulings, the docs index. | phrase: ## 7. Not in scope\n\n- `stream_driver.py`, `bench/profiles/agy.yaml`, `profiles.py` (`READE |\n| done_when: ## Rules (condensed from the common brief; each is a stop if broken)\n\n- Leader `lean-rerun-leader` (epoch 21); decision requests go to `owner-fable`. You own only your row's paths.\n- First command, from your worktree root: `python C:/Projects/x-harness-x-model-bench/docs/ai-forward-pack/scripts/audit-log.py start --session ragy-rerun --skill implement`.\n  Use `python`, never `python3`.\n- Work only in the worktree the runner gave you; create branch `build/rerun-read-agy` there\n  (`git switch -c build/rerun-read-agy`). Never write `C:/Projects/x-harness-x-model-bench` (the primary). Absolute\n  paths in commands.\n- Never edit an existing `tests/mutations/*.json`: new mutants go in `tests/mutations/rerun-read-agy.json`; a moved\n  existing find is handed back as text (file, old find, new find). Before you report \"no retargets\", run\n  `uv run pytest tests/test_mutate_check.py::test_every_mutation_find_text_occurs_exactly_once_in_its_target_file -q`.\n  Never edit `docs/lessons/defect-classes.md`, `docs/notes/rulings.md`, `docs/docs-index.js`,\n  `docs/audit/audit-data.js` or any `*.jsonl` log.\n- Red first: write each test, run it, see it fail **on an assertion** (quote it), then make it pass.\n- Run **named test files or node ids only**: `uv run pytest <files> -q`. Never the whole suite, `-n`, or a\n  directory. `uv run python tools/mutate_check.py tests/mutations/rerun-read-agy.json` (it queues on the suite lock).\n- `uv run ruff check src tests tools bench/adapters` clean for your files.\n- A subprocess you add under `tools/`, `tests/` or `bench/adapters/` passes\n  `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`. Kill only PIDs you started.\n- A multi-line program is a file, then a run; never a heredoc into an interpreter. Never put a gate's exit status\n  behind a pipe.\n- Never `--no-verify`, `-n`/hooks overrides, amend, rewrite, force-push, or push. Tokens are the only cost unit.\n- A product or scope question: stop and hand back a decision request (question, options, recommendation, needed by,\n  fallback).\n- Context ceiling: at about 300k tokens commit what is green, write the hand-off (done, remaining, next red test),\n  and stop. | phrase: ## Rules (condensed from the common brief; each is a stop if broken)\n\n- Leader `lean-rerun |\n| done_when: ## Closing (in this order)\n\n1. Commit your work (small green commits are fine).\n2. `python docs/ai-forward-pack/scripts/audit-log.py append --shortname r-read-agy --session ragy-rerun --skill implement --kind skill --prompt \"r-read-agy: Antigravity reader (Agy floor canary)\" --summary \"<what landed>\" --goal \"<row goal>\" --done-when \"<exit evidence, short>\" --tier T1 --fan-out 0`,\n   then `git add docs/audit && git commit -m \"chore(audit): r-read-agy closing entry\"`.\n3. `git status --short` is empty. | phrase: ## Closing (in this order)\n\n1. Commit your work (small green commits are fine).\n2. `python |\n| done_when: ## Hand-back (your final message)\n\n- branch and head sha; `git log --oneline 8cda3fc3..HEAD`;\n- each red test: the command and the quoted failure, then the green result;\n- the reasoning case that held (text, encrypted-only or omitted) and the decoded field map;\n- handed-back mutation retargets, new defect classes (as text), decision requests;\n- the served model id you ran as; tokens/turns if known; **your context size at your first edit** (the floor this\n  canary measures);\n- anything not done, and why. | phrase: ## Hand-back (your final message)\n\n- branch and head sha; `git log --oneline 8cda3fc3..HEA |\n| done_when: ## TEST-E: the pre-work proof, run once\n\nRun once by Coordinator #2 at `8cda3fc3` with the spike's read-only scripts (`db.py`, `blobs.py`, `grepblob.py`):\n\n```text\n5ed07ceb db tables: trajectory_meta 1, steps 2, gen_metadata 1, executor_metadata 1, parent_references 0,\n  trajectory_metadata_blob 1, battle_mode_infos 0\nsteps[0].step_payload 1649B: ids | \"Reply with the single word ok. Do not use any tools.\" | skill and rule names\nsteps[1].step_payload 1405B: ids | \"ok\" then high-entropy bytes (no printable run of 6+ that reads as prose)\ngen_metadata[0].data 71778B: ... <RULE[C:\\tf\\spike-agy\\repo\\AGENTS.md]>.Reply in lowercase...<\/RULE[...AGENTS.md]>\n  <RULE[C:\\tf\\spike-agy\\repo\\GEMINI.md]>.probe gemini md marker..<\/RULE[...]> ... gemini-3.8-flash-high\n65ec1b30 db (pack-off): steps 4; no <RULE[...AGENTS.md]>; steps[3] \"On branch master\" then high-entropy bytes\ntelemetry/agy.py read(): raises NotImplementedError(\"telemetry.agy.read is not built yet (R-READ-AGY)\")\n``` | phrase: ## TEST-E: the pre-work proof, run once\n\nRun once by Coordinator #2 at `8cda3fc3` with the |\nReferences\n- 8cda3fc3: unresolved (not found)\n- gemini-3.8-flash-high: unresolved (not found)\n- coord-runner: unresolved (not found)\n- ragy-rerun: unresolved (not found)\n- build/rerun-read-agy: unresolved (not found)\n- telemetry/agy.py: src/harness_bench/telemetry/agy.py sha256 1cd1f46587aa667043a91ec89da728d5cf520f6d5fa27972b5570726d2b9935c\n- docs/coordination/coordination-lean-rerun.md:137: unresolved (not found)\n- src/harness_bench/telemetry/agy.py: src/harness_bench/telemetry/agy.py sha256 1cd1f46587aa667043a91ec89da728d5cf520f6d5fa27972b5570726d2b9935c\n- init.model: unresolved (not found)\n- thinking_tokens: unresolved (not found)\n- conversations/<id>.db: unresolved (not found)\n- steps.step_payload: unresolved (not found)\n- omitted: unresolved (not found)\n- gen_metadata: unresolved (not found)\n- tests/test_reader_agy.py: unresolved (not found)\n- tests/fixtures/agy/reader/*: unresolved (not found)\n- tests/mutations/rerun-read-agy.json: unresolved (not found)\n- not recorded: unresolved (not found)\n- text: unresolved (not found)\n- instruction_file: unresolved (not found)\n- RULE: unresolved (not found)\n- :160: unresolved (not found)\n- C:\\tf\\spike-agy: unresolved (outside repo)\n- 2d11d554: unresolved (not found)\n- tests/fixtures/bench-root/conftest.py: tests/fixtures/bench-root/conftest.py sha256 41bc62ffaa4d6fa5535ef00910d1f34191d9cf134e87f9a330726d226e61bd2f\n- tests/test_fixture_root_isolation.py::test_the_frozen_root_holds_exactly_the_contracted_inputs: unresolved (not found)\n- __pycache__: unresolved (not found)\n- Extraction: unresolved (not found)\n- kind, run_id, extraction_id, cell_id, native_session_id: unresolved (not found)\n- served: unresolved (not found)\n- field: unresolved (not found)\n- value: unresolved (not found)\n- not_recorded: unresolved (not found)\n- source: unresolved (not found)\n- reasoning: unresolved (not found)\n- native_ordinal: unresolved (not found)\n- item_ordinal: unresolved (not found)\n- source_kind: unresolved (not found)\n- chars: unresolved (not found)\n- reasoning_tokens: unresolved (not found)\n- opaque_sha256: unresolved (not found)\n- prompt_parts: unresolved (not found)\n- part: unresolved (not found)\n- path: unresolved (not found)\n- delivery: unresolved (not found)\n- harness_events: unresolved (not found)\n- event: unresolved (not found)\n- name: unresolved (not found)\n- start: unresolved (not found)\n- end: unresolved (not found)\n- ok: unresolved (not found)\n- detail: unresolved (not found)\n- encrypted-only: unresolved (not found)\n- not recorded: <reason: unresolved (not found)\n- . Its docstring: \"It may read the stream's event bodies : unresolved (not found)\n- stream_driver.py: src/harness_bench/stream_driver.py sha256 4c16781e0ce58b2a1ad3338d73ab4b69d556371393016366cae2990c1fa97f63\n- tests/test_architecture.py:149-185: unresolved (not found)\n- denied_actions: unresolved (not found)\n- permission check failed for : unresolved (not found)\n- user: unresolved (not found)\n- message: unresolved (not found)\n- result: unresolved (not found)\n- SUCCESS: unresolved (not found)\n- AGY_OUTCOME_TOKENS: unresolved (not found)\n- AGY_INPUT_EVENT: unresolved (not found)\n- AGY_RESULT_STATUS: unresolved (not found)\n- :154-156: unresolved (not found)\n- init: unresolved (not found; nearest: .git)\n- step_update: unresolved (not found)\n- src/harness_bench/telemetry/__init__.py: src/harness_bench/telemetry/__init__.py sha256 d1b6ce2ec4d2601b00193dbd1c44fd30358afff488160b629795eb5cfa29d158\n- ModelCall: unresolved (not found)\n- :32-57: unresolved (not found)\n- model: unresolved (not found)\n- uncached_input: unresolved (not found)\n- cache_read: unresolved (not found)\n- cache_write: unresolved (not found)\n- output: unresolved (not found)\n- requests: unresolved (not found)\n- ToolCall: unresolved (not found)\n- :61-68: unresolved (not found)\n- tool_class: unresolved (not found)\n- outcome_code: unresolved (not found)\n- READER_NOT_BUILT: unresolved (not found)\n- :92: unresolved (not found)\n- NotRecorded: unresolved (not found)\n- not_recorded(reason: unresolved (not found)\n- :93-98: unresolved (not found)\n- SERVED_FIELDS: unresolved (not found)\n- REASONING_KINDS: unresolved (not found)\n- PART_KINDS: unresolved (not found)\n- DELIVERIES: unresolved (not found)\n- EVENT_KINDS: unresolved (not found)\n- :106-110: unresolved (not found)\n- ServedSettings: unresolved (not found)\n- :114-125: unresolved (not found)\n- sources: unresolved (not found)\n- ReasoningItem: unresolved (not found)\n- :129-138: unresolved (not found)\n- PromptPart: unresolved (not found)\n- :142-149: unresolved (not found)\n- HarnessEvent: unresolved (not found)\n- :153-162: unresolved (not found)\n- :166: unresolved (not found)\n- :186-189: unresolved (not found)\n- read: unresolved (not found)\n- src/harness_bench/telemetry/normalize.py: src/harness_bench/telemetry/normalize.py sha256 fe13b9b12e8e600bbf9a54a8870a3b12e4215fc9749f1100049ba031ac496ad3\n- served_rows: unresolved (not found)\n- :194: unresolved (not found)\n- reasoning_rows: unresolved (not found)\n- :217: unresolved (not found)\n- prompt_part_rows: unresolved (not found)\n- :226: unresolved (not found)\n- harness_event_rows: unresolved (not found)\n- :234: unresolved (not found)\n- src/harness_bench/telemetry/codex.py: src/harness_bench/telemetry/codex.py sha256 e472088372a229fca663c7d6653459f38c3f3bd9db7c18afba750825931ac55a\n- :103: unresolved (not found)\n- cell home>/agy-stream.ndjson: unresolved (not found)\n- HOME: unresolved (not found)\n- USERPROFILE: unresolved (not found)\n- cell home>/.gemini/antigravity-cli/conversations/<conversation_id>.db: unresolved (not found)\n- read(path: unresolved (not found)\n- agy-stream.ndjson: unresolved (not found)\n- conversation_id: unresolved (not found)\n- bench/profiles/agy.yaml: unresolved (not found)\n- not recorded: conversation db not found: unresolved (not found)\n- profiles.READERS: unresolved (not found)\n- agy: unresolved (not found)\n- harness_bench.telemetry.agy.read: unresolved (not found)\n- C:\\tf\\r-read-agy\\: unresolved (outside repo)\n- AGENTS.md: AGENTS.md sha256 e436ec2bf8627963a5eb15e61261ae74e2cbc00f783a3641ac7b12369edc74d0\n- GEMINI.md: unresolved (not found)\n- .agents/rules/r.md: unresolved (not found)\n- C:\\tf\\spike-agy\\turn2.ndjson: unresolved (outside repo)\n- 5ed07ceb-…: unresolved (not found)\n- agent_response: unresolved (not found)\n- input_tokens: unresolved (not found)\n- output_tokens: unresolved (not found)\n- cache_read_tokens: unresolved (not found)\n- C:\\tf\\spike-agy\\home-upd\\.gemini\\antigravity-cli\\conversations\\5ed07ceb-71fc-4fbe-ae6b-3b06d470ae02.db: unresolved (outside repo)\n- steps: unresolved (not found)\n- idx: unresolved (not found)\n- step_type: unresolved (not found)\n- status: unresolved (not found)\n- metadata: unresolved (not found)\n- step_payload: unresolved (not found)\n- data: unresolved (not found)\n- trajectory_meta: unresolved (not found)\n- executor_metadata: unresolved (not found)\n- gen_metadata[0].data: unresolved (not found)\n- RULE[C:\\tf\\spike-agy\\repo\\AGENTS.md]>Reply in lowercase…<\/RULE[…AGENTS.md: unresolved (not found)\n- RULE[…GEMINI.md: unresolved (not found)\n- RULE[user_global: unresolved (not found)\n- README.md: unresolved (ambiguous: 59 matches)\n- C:\\tf\\spike-agy\\perm\\stream.ndjson: unresolved (outside repo)\n- 65ec1b30-…: unresolved (not found)\n- run_command: unresolved (not found)\n- C:\\tf\\spike-agy\\perm\\home\\.gemini\\antigravity-cli\\conversations\\65ec1b30-4f02-4656-8de8-243f15929889.db: unresolved (outside repo)\n- RULE[…AGENTS.md: unresolved (not found)\n- C:\\tf\\spike-agy\\turn1.ndjson: unresolved (outside repo)\n- d0e71ad9-…: unresolved (not found)\n- view_file: unresolved (not found)\n- ACTIVE: unresolved (not found)\n- DONE: unresolved (not found)\n- duration_seconds: unresolved (not found)\n- conversations/: unresolved (not found)\n- C:\\tf\\spike-agy\\db.py: unresolved (outside repo)\n- blobs.py: unresolved (not found)\n- grepblob.py: unresolved (not found)\n- bot-…: unresolved (not found)\n- sessionID: unresolved (not found)\n- Authorization: unresolved (not found)\n- Bearer: unresolved (not found)\n- eyJ…: unresolved (not found)\n- model_served: unresolved (not found)\n- context_tokens: unresolved (not found)\n- context_tier: unresolved (not found)\n- assume: unresolved (not found)\n- turn1: unresolved (not found)\n- tests/test_architecture.py: tests/test_architecture.py sha256 5e19707d4926a4baec2a64dd21aae8a607b0bff0a85a7854df515df1c72c30d2\n- profiles.py: src/harness_bench/profiles.py sha256 52b57ea1734e40260a26689c1aee3fd1b158b63178aec3d512d6ca6eab83afdc\n- READERS: unresolved (not found)\n- tests/fixtures/agy/stream/: unresolved (not found)\n- views.py: unresolved (ambiguous: 2 matches)\n- grade/runner.py: src/harness_bench/grade/runner.py sha256 7b717cada3c601ef3280c6d0012c08f5d801dbf51f37ce7aaea46f34a560581d\n- errors.py: src/harness_bench/errors.py sha256 7eadf32913cc986e0197d5085589dfd61445c7044639031278b847e0b358609c\n- telemetry/__init__.py: src/harness_bench/telemetry/__init__.py sha256 d1b6ce2ec4d2601b00193dbd1c44fd30358afff488160b629795eb5cfa29d158\n- telemetry/normalize.py: src/harness_bench/telemetry/normalize.py sha256 fe13b9b12e8e600bbf9a54a8870a3b12e4215fc9749f1100049ba031ac496ad3\n- tests/mutations/*.json: unresolved (not found)\n- lean-rerun-leader: unresolved (not found)\n- owner-fable: unresolved (not found)\n- python C:/Projects/x-harness-x-model-bench/docs/ai-forward-pack/scripts/audit-log.py start --session ragy-rerun --skill implement: unresolved (not found)\n- python: unresolved (not found)\n- python3: unresolved (not found)\n- git switch -c build/rerun-read-agy: unresolved (not found)\n- C:/Projects/x-harness-x-model-bench: unresolved (outside repo)\n- uv run pytest tests/test_mutate_check.py::test_every_mutation_find_text_occurs_exactly_once_in_its_target_file -q: unresolved (not found)\n- docs/lessons/defect-classes.md: docs/lessons/defect-classes.md sha256 bc915d88a89ead150a8dd82107eee0cdc0a2689bd58bf7da5fee4e5116647f8b\n- docs/notes/rulings.md: docs/notes/rulings.md sha256 6e1eb16020cb6b6389151e80e59bdc7b5f4ecf365a5de19b6d7b1d8ba7c52db3\n- docs/docs-index.js: docs/docs-index.js sha256 e5f83d697280b781769a2c163f29c4830a0e8fdc3fec02259803e14f6bd96280\n- docs/audit/audit-data.js: docs/audit/audit-data.js sha256 d6350739a8d6ba4dc22011366514ffc5ad8117a5576da1d03f547fea6d4e315c\n- *.jsonl: unresolved (not found)\n- uv run pytest <files> -q: unresolved (not found)\n- -n: unresolved (not found)\n- uv run python tools/mutate_check.py tests/mutations/rerun-read-agy.json: unresolved (not found)\n- uv run ruff check src tests tools bench/adapters: unresolved (not found)\n- tools/: unresolved (not found)\n- tests/: unresolved (not found)\n- bench/adapters/: unresolved (not found)\n- creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0: unresolved (not found)\n- --no-verify: unresolved (not found)\n- python docs/ai-forward-pack/scripts/audit-log.py append --shortname r-read-agy --session ragy-rerun --skill implement --kind skill --prompt \"r-read-agy: Antigravity reader (Agy floor canary)\" --summary \"<what landed>\" --goal \"<row goal>\" --done-when \"<exit evidence, short>\" --tier T1 --fan-out 0: unresolved (not found)\n- git add docs/audit && git commit -m \"chore(audit): r-read-agy closing entry: unresolved (not found)\n- git status --short: unresolved (not found)\n- git log --oneline 8cda3fc3..HEAD: unresolved (not found)\n- db.py: unresolved (not found)\n- 0/1/None: unresolved (not found)\n- home>/agy-stream.ndjson: unresolved (not found)\n- HOME`/`USERPROFILE: unresolved (not found)\n- home>/.gemini/antigravity-cli/conversations/<conversation_id>.db: unresolved (not found)\n- lowercase…<\/RULE[…AGENTS.md: unresolved (not found)\n- ACTIVE`/`DONE: unresolved (not found)\n- fixed32/64: unresolved (not found)\n- C:/Projects/x-harness-x-model-bench/docs/ai-forward-pack/scripts/audit-log.py: unresolved (outside repo)\n- tests/test_mutate_check.py::test_every_mutation_find_text_occurs_exactly_once_in_its_target_file: unresolved (not found)\n- tools/mutate_check.py: tools/mutate_check.py sha256 23bfd72f0bf50e7418fb41bddf2d5922744188fb77ba5028928586c0f3592353\n- bench/adapters: unresolved (not found)\n- -n`/hooks: unresolved (not found)\n- docs/ai-forward-pack/scripts/audit-log.py: docs/ai-forward-pack/scripts/audit-log.py sha256 d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4\n- docs/audit: unresolved (not found)\n- tokens/turns: unresolved (not found)\n- lowercase...<\/RULE[...AGENTS.md: unresolved (not found)\n- marker..<\/RULE: unresolved (not found)\n- RULE[...AGENTS.md: unresolved (not found)\nAssumptions\n- #1 belief: the runner checks the worktree out at 8cda3fc3 (the J0 candidate head the Leader dispatched wave 1a from) · confirm: git log -1 --format=%h in the tree reads 8cda3fc3 · breaks: the J0 anchors move; the worker stops before any edit and reports · consequential: false\n- #2 belief: compiling an Agy brief with the claude-code template is faithful: no agy template is installed (prompt-compile.py lists claude-code, codex, copilot) and last run's Agy compile al-01M4H21Y4P2ZHS4AZZEDCXKHEN was dispatched the same way · confirm: the runner's prepare verifies and renders the compilation for harness agy · breaks: an Agy-specific rendering rule would be missed; the runner's check refuses it before dispatch · consequential: false\n- #3 belief: read(path) receives the teed <cell home>/agy-stream.ndjson (ADR-0025 s3) and the db is <cell home>/.gemini/antigravity-cli/conversations/<conversation_id>.db (the spike's layout) · confirm: R-TRANSPORT's bench/profiles/agy.yaml record glob at J1a · breaks: the db lookup; a seam request to the Coordinator, the tests keep their fixtures · consequential: false\n- #4 belief: the spike dbs may hold no thinking prose: Coordinator #2's printable-run scan found none in either db's steps (TEST-E) · confirm: the worker's wire decoder on steps.step_payload · breaks: the row's 'text reasoning row matching the spike's known thinking text' cannot be shown; the worker emits encrypted-only or omitted rows as ADR-0026 s1 says and hands back the case; the Leader decides · consequential: false\nDecision requests\n- none\nContract slot\nwidth_cap: 1\ntransient_retry: none by the worker; a clean pre-prompt startup failure may be retried once by the runner within the budget\nper_branch_exit: a green commit and the committed closing audit entry; or, at the context ceiling, a hand-off naming what is done, what remains and the next red test\njoin_rule: J1b: the Leader's batched candidate on integrate/rerun-21, one full suite, the handed-back retargets applied, then the recount; owned paths only\ncontainment: the runner's worktree on build/rerun-read-agy, session ragy-rerun; owned paths src/harness_bench/telemetry/agy.py, tests/test_reader_agy.py, tests/fixtures/agy/reader/*, tests/mutations/rerun-read-agy.json; scratch C:\\tf\\r-read-agy; never the primary checkout\ntermination: one turn; ends at a green commit\ndeadline: 2,400 s\nfallback: an Opus sub-agent (the plan's Track assignment detail row); FALLBACK-A: the worker launches, spawns or messages nothing\nRules: absolute paths only; a multi-line program is a file, then a run; a gate's exit status is never behind a pipe.\nProvenance\nraw id: al-01M4RBXJKW1GXX027W8WNSHCM8\nraw sha256: 1321be632eeee748a1c479db9a52a20580f5f9b244c7c42038e8a2a63cd34237\ncompiler model: claude-opus-5-5[1m]\nengine seconds: 0.125\ntokens: not recorded\ngate: pass\ndispatchable: true\n",
+      "summary": "compiled al-01M4RBXJKW1GXX027W8WNSHCM8 for claude-code v1: 12 clauses, 4 assumptions, 0 decision requests",
+      "kind": "compilation",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": {
+        "assumptions": [
+          {
+            "belief": "the runner checks the worktree out at 8cda3fc3 (the J0 candidate head the Leader dispatched wave 1a from)",
+            "breaks": "the J0 anchors move; the worker stops before any edit and reports",
+            "confirm": "git log -1 --format=%h in the tree reads 8cda3fc3",
+            "consequential": false,
+            "id": "#1"
+          },
+          {
+            "belief": "compiling an Agy brief with the claude-code template is faithful: no agy template is installed (prompt-compile.py lists claude-code, codex, copilot) and last run's Agy compile al-01M4H21Y4P2ZHS4AZZEDCXKHEN was dispatched the same way",
+            "breaks": "an Agy-specific rendering rule would be missed; the runner's check refuses it before dispatch",
+            "confirm": "the runner's prepare verifies and renders the compilation for harness agy",
+            "consequential": false,
+            "id": "#2"
+          },
+          {
+            "belief": "read(path) receives the teed <cell home>/agy-stream.ndjson (ADR-0025 s3) and the db is <cell home>/.gemini/antigravity-cli/conversations/<conversation_id>.db (the spike's layout)",
+            "breaks": "the db lookup; a seam request to the Coordinator, the tests keep their fixtures",
+            "confirm": "R-TRANSPORT's bench/profiles/agy.yaml record glob at J1a",
+            "consequential": false,
+            "id": "#3"
+          },
+          {
+            "belief": "the spike dbs may hold no thinking prose: Coordinator #2's printable-run scan found none in either db's steps (TEST-E)",
+            "breaks": "the row's 'text reasoning row matching the spike's known thinking text' cannot be shown; the worker emits encrypted-only or omitted rows as ADR-0026 s1 says and hands back the case; the Leader decides",
+            "confirm": "the worker's wire decoder on steps.step_payload",
+            "consequential": false,
+            "id": "#4"
+          }
+        ],
+        "clauses": [
+          {
+            "section": "done_when",
+            "text": "# Brief: R-READ-AGY — Antigravity reader (Agy floor canary) (self-contained)\n\n*Compiled by Coordinator #2, 2026-10-12, at `8cda3fc3`, for Antigravity (`gemini-3.8-flash-high`) through\n`coord-runner`. This brief is complete: you do not need the common brief. Session id: `ragy-rerun`. Branch:\n`build/rerun-read-agy`. Repository: the worktree the runner gave you (a checkout of the J0 candidate head `8cda3fc3`).*\n\n**Goal.** Build the Antigravity reader `telemetry/agy.py` (today a J0 stub), red first, on scrubbed fixtures, so it\nfills the bench's model calls, tool calls and the four new fact streams from an agy cell's records. **Done when**\nevery red test in section 6 is green, your mutants are killed, ruff is clean, and the closing audit entry is\ncommitted. **Not in scope:** section 7. **Tier** T1. **Fan-out** 0. **You are the Agy floor canary:** report your\ncontext size (tokens) at your first edit; the Leader routes every later Agy row by that number.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "# Brief: R-READ-AGY — Antigravity reader (Agy floor canary) (self-contained)\n\n*Compiled by"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## 1. Your row, verbatim\n\n### Tracks table (`docs/coordination/coordination-lean-rerun.md:137`)\n\n| track | owns (authored) | depends on | tier | fan-out cap | budget | exit evidence | harness |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| **R-READ-AGY** Antigravity reader | `src/harness_bench/telemetry/agy.py` (`init.model`, per-step usage with `thinking_tokens`, tool events; thinking text from `conversations/<id>.db` `steps.step_payload` by a stdlib protobuf wire decoder, failing to `omitted`; prompt parts from `gen_metadata`); `tests/test_reader_agy.py` (new); `tests/fixtures/agy/reader/*` (scrubbed); `tests/mutations/rerun-read-agy.json` | the Agy canary's floor recorded | T1 | 0 | 70 calls · canary + 60k · 1 · 1.2 h | red first on the fixtures: served `gemini-3.8-flash-high`, context `not recorded`; per-step rows; a `text` reasoning row matching the spike's known thinking text; a truncated payload gives `omitted` with the step's `thinking_tokens`, never wrong text; `instruction_file` parts (AGENTS.md as a `RULE`) ≥ 1 on a pack-on fixture and 0 on pack-off | Agy (bounded; brief under 30 kB), or Opus by the canary |\n\n### Track assignment detail (`:160`)\n\n| track | sessions · branches | why this harness and model | why it earns the multiplier | expected seam requests | deadline · termination · fallback | join batch · gate ring |\n| --- | --- | --- | --- | --- | --- | --- |\n| R-READ-AGY | runner `ragy-rerun` · `build/rerun-read-agy` | bounded reader with a small decoder | **independence** | none | 2,400 s · ends at a green commit · Opus sub-agent | J1b · none |\n\n### The erratum that makes you the canary (plan *Errata* E9, Coordinator #2)\n\n\"The Agy floor canary is **R-READ-AGY** (its fixtures exist in `C:\\tf\\spike-agy`): it depends on J0 and is dispatched\nfirst, alone, in wave 1a.\" So your depends-on is J0, not \"the Agy canary's floor recorded\".",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## 1. Your row, verbatim\n\n### Tracks table (`docs/coordination/coordination-lean-rerun.md:"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## 2. Base\n\nYour worktree is cut from the J0 candidate head **`8cda3fc3`** (R-GOLD, R-CONTRACT-RUN and R-CONTRACT-FACTS merged;\nthe Leader dispatched wave 1a from it). The anchors below were read by Coordinator #2 at `8cda3fc3`; re-read the named\nsymbol, never trust the number alone. `8cda3fc3` lacks one later fix (the R-GOLD loop-back, `2d11d554`): after a\npytest run collects `tests/fixtures/bench-root/conftest.py`,\n`tests/test_fixture_root_isolation.py::test_the_frozen_root_holds_exactly_the_contracted_inputs` can be red with\n`__pycache__` names. That red is not yours: name it if you see it, do not fix it.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## 2. Base\n\nYour worktree is cut from the J0 candidate head **`8cda3fc3`** (R-GOLD, R-CONT"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## 3. The contract you fill (ADR-0026 §1; the J0 code is the authority)\n\nFour streams, written by the grading pass from the four `Extraction` fields you fill. Columns beyond\n`kind, run_id, extraction_id, cell_id, native_session_id`:\n- `served`: one setting of one cell as one source showed it: `field` (model_served · model_api · effort ·\n  context_tokens · context_tier · reasoning_summary), `value`, `not_recorded`, `source`.\n- `reasoning`: one reasoning item: `native_ordinal` (its request), `item_ordinal`, `source_kind` (text · summary ·\n  encrypted-only · omitted), `text`, `chars`, `reasoning_tokens`, `opaque_sha256`.\n- `prompt_parts`: one part of the fixed prefix: `part` (system · tools · skills · instruction_file · agents_md),\n  `path`, `chars`, `delivery` (inlined · on-demand · listed), `source`.\n- `harness_events`: one hook, skill load or compaction: `native_ordinal`, `event`, `name`, `start`, `end`, `ok`\n  (0/1/None), `detail`.\n\nADR-0026 §1's agy sources, verbatim: \"agy | thinking text in `conversations/<id>.db` `steps.step_payload` (protobuf,\nstdlib wire decoder; Verified present); failed decode → `omitted` with `thinking_tokens` | `gen_metadata` (Verified:\nfull prompt) | steps (Flagged)\". Also: \"Text is stored as the harness stored it; nothing is reconstructed or\nparaphrased. An item with only an encrypted payload is `encrypted-only` with its sha256. A harness that reports only\ntokens yields one `omitted` row per request with the count.\" The architecture's risk line: \"agy's protobuf payload has\nno published schema. The reader decodes the wire format with a field map taken from the spike; a change reads as\n`not recorded`, never as wrong text.\" Requested values are never stored: they are the plan's. A source that is absent\nis `not recorded: <reason>`.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## 3. The contract you fill (ADR-0026 §1; the J0 code is the authority)\n\nFour streams, wri"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## 4. Code anchors (at `8cda3fc3`)\n\n- `src/harness_bench/telemetry/agy.py`: the J0 stub, whole: `def read(path: Path) -> Extraction: raise\n  NotImplementedError(...)`. Its docstring: \"It may read the stream's event bodies (`init`, `step_update`, tool\n  events); the input event and the outcome grammar stay in `stream_driver.py` (tests/test_architecture.py).\"\n- `tests/test_architecture.py:149-185`, the agy-stream rule your module must pass: outside `stream_driver.py`, no\n  module may hold the constant `\"denied_actions\"` or `\"permission check failed for \"`, nor **all** of `\"event\"`,\n  `\"user\"`, `\"message\"`, nor **both** `\"result\"` and `\"SUCCESS\"` (`AGY_OUTCOME_TOKENS`, `AGY_INPUT_EVENT`,\n  `AGY_RESULT_STATUS`, `:154-156`). So read `init` and `step_update`; never test a result status or denials.\n- `src/harness_bench/telemetry/__init__.py`: `ModelCall` `:32-57` (`native_ordinal`, `model`, `uncached_input`,\n  `cache_read`, `cache_write`, `output`, `reasoning` = a component of output, `start`, `end`, `requests`);\n  `ToolCall` `:61-68` (`native_ordinal`, `name`, `tool_class` shell | edit | read | other, `start`, `end`, `ok`,\n  `outcome_code`); `READER_NOT_BUILT` `:92`; `NotRecorded`, `not_recorded(reason)` `:93-98`; `SERVED_FIELDS`,\n  `REASONING_KINDS`, `PART_KINDS`, `DELIVERIES`, `EVENT_KINDS` `:106-110`; `ServedSettings` `:114-125` (each field a\n  value or `not_recorded(...)`, plus `sources`, a field → record path and field map); `ReasoningItem` `:129-138`;\n  `PromptPart` `:142-149`; `HarnessEvent` `:153-162`; `Extraction` `:166`, whose fields `served`, `reasoning`,\n  `prompt_parts`, `harness_events` (`:186-189`) a reader fills inside `read()`.\n- The four row builders, `src/harness_bench/telemetry/normalize.py`: `served_rows` `:194`, `reasoning_rows` `:217`,\n  `prompt_part_rows` `:226`, `harness_event_rows` `:234`. Test your `Extraction` through them.\n- A reader to copy the shape from: `src/harness_bench/telemetry/codex.py` `read` `:103`.\n- The native record (ADR-0025 §3): \"Every stdout line is teed, unchanged, to `<cell home>/agy-stream.ndjson`, the\n  native record.\" The cell home is `HOME`/`USERPROFILE` (ADR-0025 §6), so the conversation store is\n  `<cell home>/.gemini/antigravity-cli/conversations/<conversation_id>.db` (the spike's layout, below).\n  assume: `read(path)` receives the teed `agy-stream.ndjson` and finds the db beside it by that layout, with the\n  `conversation_id` from the `init` event; confirm: R-TRANSPORT's `bench/profiles/agy.yaml` record glob at J1a;\n  breaks: if the profile names another record path, that is a seam request to the Coordinator, not your edit. A db\n  that is not found gives `reasoning` and `prompt_parts` as `not recorded: conversation db not found`.\n- `profiles.READERS` has no `agy` entry yet (R-TRANSPORT adds it). Your tests call `harness_bench.telemetry.agy.read`\n  directly.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## 4. Code anchors (at `8cda3fc3`)\n\n- `src/harness_bench/telemetry/agy.py`: the J0 stub, w"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## 5. Fixture sources (read-only; copy into `C:\\tf\\r-read-agy\\`)\n\n- **Pack-on turn** (repo with `AGENTS.md`, `GEMINI.md`, `.agents/rules/r.md`): stream `C:\\tf\\spike-agy\\turn2.ndjson`\n  (5 lines, conversation `5ed07ceb-…`: `init.model` `gemini-3.8-flash-high`; one `agent_response` step with usage\n  `input_tokens` 11885, `output_tokens` 216, `thinking_tokens` 215, `cache_read_tokens` 0) and its db\n  `C:\\tf\\spike-agy\\home-upd\\.gemini\\antigravity-cli\\conversations\\5ed07ceb-71fc-4fbe-ae6b-3b06d470ae02.db` (tables\n  `steps` (2 rows: `idx`, `step_type`, `status`, `metadata`, `step_payload` blob, …), `gen_metadata` (1 row, a\n  71,778-byte `data` blob), `trajectory_meta`, `executor_metadata`, and three more). `gen_metadata[0].data` holds\n  `<RULE[C:\\tf\\spike-agy\\repo\\AGENTS.md]>Reply in lowercase…<\/RULE[…AGENTS.md]>`, a `<RULE[…GEMINI.md]>` block and a\n  `<RULE[user_global]>` block (the home `GEMINI.md`).\n- **Pack-off turn** (repo with only `README.md`): stream `C:\\tf\\spike-agy\\perm\\stream.ndjson` (8 lines, conversation\n  `65ec1b30-…`, three steps with `thinking_tokens` 165, 85, 250; a `run_command` tool) and its db\n  `C:\\tf\\spike-agy\\perm\\home\\.gemini\\antigravity-cli\\conversations\\65ec1b30-4f02-4656-8de8-243f15929889.db`. No\n  `<RULE[…AGENTS.md]>` block in its `gen_metadata`.\n- **A turn with tools and no db:** `C:\\tf\\spike-agy\\turn1.ndjson` (conversation `d0e71ad9-…`; `view_file` and\n  `run_command` tool steps with `ACTIVE`/`DONE` states and `duration_seconds`; no `conversations/` db exists for it).\n- Read-only inspection scripts from the spike: `C:\\tf\\spike-agy\\db.py` (tables), `blobs.py` (printable runs),\n  `grepblob.py` (regex context). Copy, do not run them from inside `C:\\tf\\spike-agy`.\n- **Scrub before commit:** replace every UUID, `bot-…` id and `sessionID` value with a synthetic value **of the same\n  byte length** (protobuf length prefixes stay valid; Inferred), and every `C:\\tf\\spike-agy` path likewise. Keep only\n  the tables and rows your tests need. No email address, account or org id, `Authorization`, `Bearer ` or `eyJ…` (JWT)\n  shape, and no operator user name, in any committed byte (grep the db file too). Never copy a credential file.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## 5. Fixture sources (read-only; copy into `C:\\tf\\r-read-agy\\`)\n\n- **Pack-on turn** (repo"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## 6. Red-first tests (each fails on an assertion first; quote the failure)\n\n1. Served: `model_served` `gemini-3.8-flash-high` from `init.model` (with its `source`); `context_tokens` and\n   `context_tier` `not recorded` (the stream carries no context window).\n2. Per-step rows: one `ModelCall` per `agent_response` step with usage; `reasoning` = `thinking_tokens`, a component\n   of `output` (215 of 216 on the pack-on turn). Tool steps give `ToolCall` rows from their `DONE` state.\n   assume: `input_tokens` includes `cache_read_tokens` (every spike value is 0, so the fixtures cannot tell); mark\n   it with an inline `assume:` comment and hand it back; breaks: `uncached_input` on a cached turn.\n3. Reasoning: decode `steps.step_payload` with a stdlib protobuf wire decoder (varint, length-delimited, fixed32/64;\n   no dependency) and a field map you derive from the fixture. The row asks for \"a `text` reasoning row matching the\n   spike's known thinking text\". Coordinator #2's TEST-E (below) found **no printable thinking prose** in either db's\n   `steps` by a printable-run scan, only high-entropy bytes after the response text. So: if your decoder finds the\n   thinking text as a UTF-8 field, assert it exactly (`text`, `chars`, `reasoning_tokens`); if it finds only an opaque\n   payload, the item is `encrypted-only` with its sha256; if it decodes nothing, one `omitted` row per step with\n   `thinking_tokens`. Never reconstruct text. Hand back which case held, with the field map.\n4. A truncated `step_payload` (cut mid-field in a test copy) gives `omitted` with that step's `thinking_tokens`, never\n   wrong text.\n5. Prompt parts from `gen_metadata`: `instruction_file` parts ≥ 1 on the pack-on fixture (the `AGENTS.md` `RULE`, with\n   its path and `chars`), and 0 on the pack-off fixture.\n6. A stream whose db is absent (the `turn1` shape) still gives served and per-step rows, with `reasoning` and\n   `prompt_parts` `not recorded: conversation db not found`.\n7. `harness_events`: steps are Flagged as a source; with none read, the field is `not recorded: <reason>`.\n8. `tests/test_architecture.py` stays green with your module (the agy-stream rule).",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## 6. Red-first tests (each fails on an assertion first; quote the failure)\n\n1. Served: `m"
+            }
+          },
+          {
+            "section": "not_in_scope",
+            "text": "## 7. Not in scope\n\n- `stream_driver.py`, `bench/profiles/agy.yaml`, `profiles.py` (`READERS`), `tests/fixtures/agy/stream/` (all\n  R-TRANSPORT's); every other reader; `views.py` and validity (R-VALIDITY); `grade/runner.py`; `errors.py`;\n  `telemetry/__init__.py`, `telemetry/normalize.py`.\n- Existing `tests/mutations/*.json`, the register, the rulings, the docs index.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## 7. Not in scope\n\n- `stream_driver.py`, `bench/profiles/agy.yaml`, `profiles.py` (`READE"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## Rules (condensed from the common brief; each is a stop if broken)\n\n- Leader `lean-rerun-leader` (epoch 21); decision requests go to `owner-fable`. You own only your row's paths.\n- First command, from your worktree root: `python C:/Projects/x-harness-x-model-bench/docs/ai-forward-pack/scripts/audit-log.py start --session ragy-rerun --skill implement`.\n  Use `python`, never `python3`.\n- Work only in the worktree the runner gave you; create branch `build/rerun-read-agy` there\n  (`git switch -c build/rerun-read-agy`). Never write `C:/Projects/x-harness-x-model-bench` (the primary). Absolute\n  paths in commands.\n- Never edit an existing `tests/mutations/*.json`: new mutants go in `tests/mutations/rerun-read-agy.json`; a moved\n  existing find is handed back as text (file, old find, new find). Before you report \"no retargets\", run\n  `uv run pytest tests/test_mutate_check.py::test_every_mutation_find_text_occurs_exactly_once_in_its_target_file -q`.\n  Never edit `docs/lessons/defect-classes.md`, `docs/notes/rulings.md`, `docs/docs-index.js`,\n  `docs/audit/audit-data.js` or any `*.jsonl` log.\n- Red first: write each test, run it, see it fail **on an assertion** (quote it), then make it pass.\n- Run **named test files or node ids only**: `uv run pytest <files> -q`. Never the whole suite, `-n`, or a\n  directory. `uv run python tools/mutate_check.py tests/mutations/rerun-read-agy.json` (it queues on the suite lock).\n- `uv run ruff check src tests tools bench/adapters` clean for your files.\n- A subprocess you add under `tools/`, `tests/` or `bench/adapters/` passes\n  `creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0)`. Kill only PIDs you started.\n- A multi-line program is a file, then a run; never a heredoc into an interpreter. Never put a gate's exit status\n  behind a pipe.\n- Never `--no-verify`, `-n`/hooks overrides, amend, rewrite, force-push, or push. Tokens are the only cost unit.\n- A product or scope question: stop and hand back a decision request (question, options, recommendation, needed by,\n  fallback).\n- Context ceiling: at about 300k tokens commit what is green, write the hand-off (done, remaining, next red test),\n  and stop.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## Rules (condensed from the common brief; each is a stop if broken)\n\n- Leader `lean-rerun"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## Closing (in this order)\n\n1. Commit your work (small green commits are fine).\n2. `python docs/ai-forward-pack/scripts/audit-log.py append --shortname r-read-agy --session ragy-rerun --skill implement --kind skill --prompt \"r-read-agy: Antigravity reader (Agy floor canary)\" --summary \"<what landed>\" --goal \"<row goal>\" --done-when \"<exit evidence, short>\" --tier T1 --fan-out 0`,\n   then `git add docs/audit && git commit -m \"chore(audit): r-read-agy closing entry\"`.\n3. `git status --short` is empty.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## Closing (in this order)\n\n1. Commit your work (small green commits are fine).\n2. `python"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## Hand-back (your final message)\n\n- branch and head sha; `git log --oneline 8cda3fc3..HEAD`;\n- each red test: the command and the quoted failure, then the green result;\n- the reasoning case that held (text, encrypted-only or omitted) and the decoded field map;\n- handed-back mutation retargets, new defect classes (as text), decision requests;\n- the served model id you ran as; tokens/turns if known; **your context size at your first edit** (the floor this\n  canary measures);\n- anything not done, and why.",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## Hand-back (your final message)\n\n- branch and head sha; `git log --oneline 8cda3fc3..HEA"
+            }
+          },
+          {
+            "section": "done_when",
+            "text": "## TEST-E: the pre-work proof, run once\n\nRun once by Coordinator #2 at `8cda3fc3` with the spike's read-only scripts (`db.py`, `blobs.py`, `grepblob.py`):\n\n```text\n5ed07ceb db tables: trajectory_meta 1, steps 2, gen_metadata 1, executor_metadata 1, parent_references 0,\n  trajectory_metadata_blob 1, battle_mode_infos 0\nsteps[0].step_payload 1649B: ids | \"Reply with the single word ok. Do not use any tools.\" | skill and rule names\nsteps[1].step_payload 1405B: ids | \"ok\" then high-entropy bytes (no printable run of 6+ that reads as prose)\ngen_metadata[0].data 71778B: ... <RULE[C:\\tf\\spike-agy\\repo\\AGENTS.md]>.Reply in lowercase...<\/RULE[...AGENTS.md]>\n  <RULE[C:\\tf\\spike-agy\\repo\\GEMINI.md]>.probe gemini md marker..<\/RULE[...]> ... gemini-3.8-flash-high\n65ec1b30 db (pack-off): steps 4; no <RULE[...AGENTS.md]>; steps[3] \"On branch master\" then high-entropy bytes\ntelemetry/agy.py read(): raises NotImplementedError(\"telemetry.agy.read is not built yet (R-READ-AGY)\")\n```",
+            "trace": {
+              "kind": "phrase",
+              "ref": "## TEST-E: the pre-work proof, run once\n\nRun once by Coordinator #2 at `8cda3fc3` with the"
+            }
+          }
+        ],
+        "contract_slot": {
+          "containment": "the runner's worktree on build/rerun-read-agy, session ragy-rerun; owned paths src/harness_bench/telemetry/agy.py, tests/test_reader_agy.py, tests/fixtures/agy/reader/*, tests/mutations/rerun-read-agy.json; scratch C:\\tf\\r-read-agy; never the primary checkout",
+          "deadline": "2,400 s",
+          "fallback": "an Opus sub-agent (the plan's Track assignment detail row); FALLBACK-A: the worker launches, spawns or messages nothing",
+          "join_rule": "J1b: the Leader's batched candidate on integrate/rerun-21, one full suite, the handed-back retargets applied, then the recount; owned paths only",
+          "per_branch_exit": "a green commit and the committed closing audit entry; or, at the context ceiling, a hand-off naming what is done, what remains and the next red test",
+          "termination": "one turn; ends at a green commit",
+          "transient_retry": "none by the worker; a clean pre-prompt startup failure may be retried once by the runner within the budget",
+          "width_cap": "1"
+        },
+        "decision_requests": [],
+        "dispatchable": true,
+        "goal_state": {
+          "context_ceiling": "canary + 60k (the row's budget): your floor at the first edit is what this canary measures; report it. At about 300k tokens commit what is green and hand off",
+          "done_when": [
+            "the row's exit evidence, verbatim: red first on the fixtures: served `gemini-3.8-flash-high`, context `not recorded`; per-step rows; a `text` reasoning row matching the spike's known thinking text; a truncated payload gives `omitted` with the step's `thinking_tokens`, never wrong text; `instruction_file` parts (AGENTS.md as a `RULE`) ≥ 1 on a pack-on fixture and 0 on pack-off",
+            "the reasoning case that held (text, encrypted-only or omitted) handed back with the decoded field map; tests/test_architecture.py green with the module",
+            "your mutants in tests/mutations/rerun-read-agy.json killed; the MUT-E find check run before any 'no retargets' report; ruff clean for your files",
+            "the closing audit entry committed in your tree; git status --short empty; your context size at your first edit reported"
+          ],
+          "fan_out_cap": "0",
+          "goal": "R-READ-AGY, the Antigravity reader (the Agy floor canary, plan Errata E9): build src/harness_bench/telemetry/agy.py from its J0 stub so it fills model calls, tool calls and the four J0 Extraction fields from an agy cell's teed stream and conversation db, red first on scrubbed fixtures. You are session ragy-rerun, harness Antigravity through coord-runner, model gemini-3.8-flash-high, branch build/rerun-read-agy, base 8cda3fc3; Leader lean-rerun-leader (epoch 21); owner-fable rules every decision request.",
+          "main_line_budget": "70 calls; 1.2 h; 2,400 s deadline for this turn",
+          "not_in_scope": [
+            "stream_driver.py, bench/profiles/agy.yaml, profiles.py (READERS), tests/fixtures/agy/stream/ (R-TRANSPORT's)",
+            "every other reader; views.py and validity (R-VALIDITY); grade/runner.py; errors.py; telemetry/__init__.py and telemetry/normalize.py (read, never edit)",
+            "existing tests/mutations/*.json, docs/lessons/defect-classes.md, docs/notes/rulings.md, the docs index, any *.jsonl log",
+            "the whole suite, -n or a directory run, joins, pushes (the Leader's)"
+          ],
+          "tier": "T1"
+        },
+        "graph_neighbours": [],
+        "harness": "claude-code",
+        "mode": "compiled",
+        "provenance": {
+          "compile_tokens": null,
+          "compiler_model": "claude-opus-5-5[1m]",
+          "engine_seconds": 0.125,
+          "refusals": [],
+          "retries": 0
+        },
+        "raw_id": "al-01M4RBXJKW1GXX027W8WNSHCM8",
+        "raw_sha256": "1321be632eeee748a1c479db9a52a20580f5f9b244c7c42038e8a2a63cd34237",
+        "raw_text_normalised": false,
+        "references": [
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "8cda3fc3"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gemini-3.8-flash-high"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "coord-runner"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ragy-rerun"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "build/rerun-read-agy"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/agy.py",
+            "reason": null,
+            "sha256": "1cd1f46587aa667043a91ec89da728d5cf520f6d5fa27972b5570726d2b9935c",
+            "status": "resolved",
+            "token": "telemetry/agy.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/coordination/coordination-lean-rerun.md:137"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/agy.py",
+            "reason": null,
+            "sha256": "1cd1f46587aa667043a91ec89da728d5cf520f6d5fa27972b5570726d2b9935c",
+            "status": "resolved",
+            "token": "src/harness_bench/telemetry/agy.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "init.model"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "thinking_tokens"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "conversations/<id>.db"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "steps.step_payload"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "omitted"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gen_metadata"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_reader_agy.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/agy/reader/*"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/rerun-read-agy.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "not recorded"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "text"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "instruction_file"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "RULE"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":160"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:\\tf\\spike-agy"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "2d11d554"
+          },
+          {
+            "nearest": null,
+            "path": "tests/fixtures/bench-root/conftest.py",
+            "reason": null,
+            "sha256": "41bc62ffaa4d6fa5535ef00910d1f34191d9cf134e87f9a330726d226e61bd2f",
+            "status": "resolved",
+            "token": "tests/fixtures/bench-root/conftest.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_fixture_root_isolation.py::test_the_frozen_root_holds_exactly_the_contracted_inputs"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "__pycache__"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Extraction"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "kind, run_id, extraction_id, cell_id, native_session_id"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "served"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "field"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "value"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "not_recorded"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "source"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "reasoning"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "native_ordinal"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "item_ordinal"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "source_kind"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "chars"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "reasoning_tokens"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "opaque_sha256"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "prompt_parts"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "part"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "path"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "delivery"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "harness_events"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "event"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "name"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "start"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "end"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ok"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "detail"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "encrypted-only"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "not recorded: <reason"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ". Its docstring: \"It may read the stream's event bodies "
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/stream_driver.py",
+            "reason": null,
+            "sha256": "4c16781e0ce58b2a1ad3338d73ab4b69d556371393016366cae2990c1fa97f63",
+            "status": "resolved",
+            "token": "stream_driver.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_architecture.py:149-185"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "denied_actions"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "permission check failed for "
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "user"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "message"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "result"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "SUCCESS"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "AGY_OUTCOME_TOKENS"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "AGY_INPUT_EVENT"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "AGY_RESULT_STATUS"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":154-156"
+          },
+          {
+            "nearest": ".git",
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "init"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "step_update"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/__init__.py",
+            "reason": null,
+            "sha256": "d1b6ce2ec4d2601b00193dbd1c44fd30358afff488160b629795eb5cfa29d158",
+            "status": "resolved",
+            "token": "src/harness_bench/telemetry/__init__.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ModelCall"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":32-57"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uncached_input"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cache_read"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cache_write"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "output"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "requests"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ToolCall"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":61-68"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tool_class"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "outcome_code"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "READER_NOT_BUILT"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":92"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "NotRecorded"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "not_recorded(reason"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":93-98"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "SERVED_FIELDS"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "REASONING_KINDS"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "PART_KINDS"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "DELIVERIES"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "EVENT_KINDS"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":106-110"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ServedSettings"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":114-125"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "sources"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ReasoningItem"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":129-138"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "PromptPart"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":142-149"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HarnessEvent"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":153-162"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":166"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":186-189"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "read"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/normalize.py",
+            "reason": null,
+            "sha256": "fe13b9b12e8e600bbf9a54a8870a3b12e4215fc9749f1100049ba031ac496ad3",
+            "status": "resolved",
+            "token": "src/harness_bench/telemetry/normalize.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "served_rows"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":194"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "reasoning_rows"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":217"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "prompt_part_rows"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":226"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "harness_event_rows"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":234"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/codex.py",
+            "reason": null,
+            "sha256": "e472088372a229fca663c7d6653459f38c3f3bd9db7c18afba750825931ac55a",
+            "status": "resolved",
+            "token": "src/harness_bench/telemetry/codex.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ":103"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cell home>/agy-stream.ndjson"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HOME"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "USERPROFILE"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cell home>/.gemini/antigravity-cli/conversations/<conversation_id>.db"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "read(path"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "agy-stream.ndjson"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "conversation_id"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/profiles/agy.yaml"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "not recorded: conversation db not found"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "profiles.READERS"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "agy"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "harness_bench.telemetry.agy.read"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:\\tf\\r-read-agy\\"
+          },
+          {
+            "nearest": null,
+            "path": "AGENTS.md",
+            "reason": null,
+            "sha256": "e436ec2bf8627963a5eb15e61261ae74e2cbc00f783a3641ac7b12369edc74d0",
+            "status": "resolved",
+            "token": "AGENTS.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "GEMINI.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": ".agents/rules/r.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:\\tf\\spike-agy\\turn2.ndjson"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "5ed07ceb-…"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "agent_response"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "input_tokens"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "output_tokens"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "cache_read_tokens"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:\\tf\\spike-agy\\home-upd\\.gemini\\antigravity-cli\\conversations\\5ed07ceb-71fc-4fbe-ae6b-3b06d470ae02.db"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "steps"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "idx"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "step_type"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "status"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "metadata"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "step_payload"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "data"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "trajectory_meta"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "executor_metadata"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "gen_metadata[0].data"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "RULE[C:\\tf\\spike-agy\\repo\\AGENTS.md]>Reply in lowercase…<\/RULE[…AGENTS.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "RULE[…GEMINI.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "RULE[user_global"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 59 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "README.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:\\tf\\spike-agy\\perm\\stream.ndjson"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "65ec1b30-…"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "run_command"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:\\tf\\spike-agy\\perm\\home\\.gemini\\antigravity-cli\\conversations\\65ec1b30-4f02-4656-8de8-243f15929889.db"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "RULE[…AGENTS.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:\\tf\\spike-agy\\turn1.ndjson"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "d0e71ad9-…"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "view_file"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ACTIVE"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "DONE"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "duration_seconds"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "conversations/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:\\tf\\spike-agy\\db.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "blobs.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "grepblob.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bot-…"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "sessionID"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Authorization"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "Bearer"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "eyJ…"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "model_served"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "context_tokens"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "context_tier"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "assume"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "turn1"
+          },
+          {
+            "nearest": null,
+            "path": "tests/test_architecture.py",
+            "reason": null,
+            "sha256": "5e19707d4926a4baec2a64dd21aae8a607b0bff0a85a7854df515df1c72c30d2",
+            "status": "resolved",
+            "token": "tests/test_architecture.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/profiles.py",
+            "reason": null,
+            "sha256": "52b57ea1734e40260a26689c1aee3fd1b158b63178aec3d512d6ca6eab83afdc",
+            "status": "resolved",
+            "token": "profiles.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "READERS"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/fixtures/agy/stream/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "ambiguous: 2 matches",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "views.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/grade/runner.py",
+            "reason": null,
+            "sha256": "7b717cada3c601ef3280c6d0012c08f5d801dbf51f37ce7aaea46f34a560581d",
+            "status": "resolved",
+            "token": "grade/runner.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/errors.py",
+            "reason": null,
+            "sha256": "7eadf32913cc986e0197d5085589dfd61445c7044639031278b847e0b358609c",
+            "status": "resolved",
+            "token": "errors.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/__init__.py",
+            "reason": null,
+            "sha256": "d1b6ce2ec4d2601b00193dbd1c44fd30358afff488160b629795eb5cfa29d158",
+            "status": "resolved",
+            "token": "telemetry/__init__.py"
+          },
+          {
+            "nearest": null,
+            "path": "src/harness_bench/telemetry/normalize.py",
+            "reason": null,
+            "sha256": "fe13b9b12e8e600bbf9a54a8870a3b12e4215fc9749f1100049ba031ac496ad3",
+            "status": "resolved",
+            "token": "telemetry/normalize.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/mutations/*.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "lean-rerun-leader"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "owner-fable"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python C:/Projects/x-harness-x-model-bench/docs/ai-forward-pack/scripts/audit-log.py start --session ragy-rerun --skill implement"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python3"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git switch -c build/rerun-read-agy"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/x-harness-x-model-bench"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest tests/test_mutate_check.py::test_every_mutation_find_text_occurs_exactly_once_in_its_target_file -q"
+          },
+          {
+            "nearest": null,
+            "path": "docs/lessons/defect-classes.md",
+            "reason": null,
+            "sha256": "bc915d88a89ead150a8dd82107eee0cdc0a2689bd58bf7da5fee4e5116647f8b",
+            "status": "resolved",
+            "token": "docs/lessons/defect-classes.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/notes/rulings.md",
+            "reason": null,
+            "sha256": "6e1eb16020cb6b6389151e80e59bdc7b5f4ecf365a5de19b6d7b1d8ba7c52db3",
+            "status": "resolved",
+            "token": "docs/notes/rulings.md"
+          },
+          {
+            "nearest": null,
+            "path": "docs/docs-index.js",
+            "reason": null,
+            "sha256": "e5f83d697280b781769a2c163f29c4830a0e8fdc3fec02259803e14f6bd96280",
+            "status": "resolved",
+            "token": "docs/docs-index.js"
+          },
+          {
+            "nearest": null,
+            "path": "docs/audit/audit-data.js",
+            "reason": null,
+            "sha256": "d6350739a8d6ba4dc22011366514ffc5ad8117a5576da1d03f547fea6d4e315c",
+            "status": "resolved",
+            "token": "docs/audit/audit-data.js"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "*.jsonl"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run pytest <files> -q"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-n"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run python tools/mutate_check.py tests/mutations/rerun-read-agy.json"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "uv run ruff check src tests tools bench/adapters"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tools/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/adapters/"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "creationflags=getattr(subprocess, \"CREATE_NO_WINDOW\", 0"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "--no-verify"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "python docs/ai-forward-pack/scripts/audit-log.py append --shortname r-read-agy --session ragy-rerun --skill implement --kind skill --prompt \"r-read-agy: Antigravity reader (Agy floor canary)\" --summary \"<what landed>\" --goal \"<row goal>\" --done-when \"<exit evidence, short>\" --tier T1 --fan-out 0"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git add docs/audit && git commit -m \"chore(audit): r-read-agy closing entry"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git status --short"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "git log --oneline 8cda3fc3..HEAD"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "db.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "0/1/None"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "home>/agy-stream.ndjson"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "HOME`/`USERPROFILE"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "home>/.gemini/antigravity-cli/conversations/<conversation_id>.db"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "lowercase…<\/RULE[…AGENTS.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "ACTIVE`/`DONE"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "fixed32/64"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "outside repo",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "C:/Projects/x-harness-x-model-bench/docs/ai-forward-pack/scripts/audit-log.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tests/test_mutate_check.py::test_every_mutation_find_text_occurs_exactly_once_in_its_target_file"
+          },
+          {
+            "nearest": null,
+            "path": "tools/mutate_check.py",
+            "reason": null,
+            "sha256": "23bfd72f0bf50e7418fb41bddf2d5922744188fb77ba5028928586c0f3592353",
+            "status": "resolved",
+            "token": "tools/mutate_check.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "bench/adapters"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "-n`/hooks"
+          },
+          {
+            "nearest": null,
+            "path": "docs/ai-forward-pack/scripts/audit-log.py",
+            "reason": null,
+            "sha256": "d76f5fc6b35e03720e64127b36f95ffb7c96d1de6c415ea57fe5e690999496e4",
+            "status": "resolved",
+            "token": "docs/ai-forward-pack/scripts/audit-log.py"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "docs/audit"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "tokens/turns"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "lowercase...<\/RULE[...AGENTS.md"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "marker..<\/RULE"
+          },
+          {
+            "nearest": null,
+            "path": null,
+            "reason": "not found",
+            "sha256": null,
+            "status": "unresolved",
+            "token": "RULE[...AGENTS.md"
+          }
+        ],
+        "schema": "compiled-prompt/1",
+        "template": "claude-code",
+        "template_version": 1
+      },
+      "mode": "compiled",
+      "dispatchable": true
     }
   ],
   "changes": [
