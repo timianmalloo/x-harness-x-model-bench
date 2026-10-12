@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-12T14:22:33Z",
+  "generated": "2026-10-12T14:58:03Z",
   "audit": [
     {
       "actor": null,
@@ -180252,6 +180252,28 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-12T13:49:20Z",
       "duration_seconds": 1993.0
+    },
+    {
+      "id": "al-01M4R9XTPSPMC2QSJPECB79RGY",
+      "shortname": "r-contract-run",
+      "datetime": "2026-10-12T14:58:03Z",
+      "session": "r-contract-run-rerun",
+      "prompt": "r-contract-run-rerun: R-CONTRACT-RUN run-side seams in code",
+      "summary": "Profile settings/transport/session_meta/user_home_vars/seed_files/credential_home_env/model_aliases/scripted_user with defaults; {effort},{context_tokens},{python},{home},{context_arg} expansion; Cell effort/context (RECID-A ids unchanged); harness_parallelism frozen; engine.protocol_module; stream_driver/grok/agy stubs; cli seams; identity classes; agy-stream and open_in_chrome rules; console ROOTS += bench/adapters; HARNESSES unchanged per Leader ruling",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "run-side structural seams so 13 wave-1 tracks each own one file, no behaviour change",
+      "done_when": "test_contract_run green; profile_record hashes and plan fixture cell ids unchanged; touched-module tests green",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-12T14:27:37Z",
+      "duration_seconds": 1826.0
     }
   ],
   "changes": [
