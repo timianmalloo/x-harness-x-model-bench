@@ -34,6 +34,9 @@ TASK_STATUSES = ("stub", "draft", "ready")
 WORKSPACE_FROM_VALUES = ("workspace", "source")
 HARNESSES = ("claude-code", "codex", "copilot", "grok", "agy")
 PACKS = ("on", "off")
+# ADR-0024 s1: /3 is /2 with effort and context on every combo; /1 and /2 files still load (their settings: "default").
+MATRIX_SCHEMAS = ("bench-matrix/1", "bench-matrix/2", "bench-matrix/3")
+MATRIX_V3_COMBO_KEYS = ("id", "harness", "model", "effort", "context")
 ARM_OFF = "off"
 ARM_ID = re.compile(r"[a-z][a-z0-9-]{0,15}")
 PROPERTY_NAMES = ("security", "resilience", "rework", "no-guessing", "simplicity")
@@ -106,13 +109,26 @@ def validate_bom(bom: dict, p: Problems, where: str = "bench/bom.yaml") -> None:
             p.add(where, f"smoke BOM needs {'exactly' if s in SMOKE_REQUIRED else 'at most'} one task for scenario {s}, has {smoke.get(s, [])}")
 
 
+def _validate_combo_settings(c: dict, p: Problems, where: str) -> None:
+    """ADR-0024 s1: a bench-matrix/3 combo is exactly {id, harness, model, effort, context}. Whether the profile supports
+    the value is the plan's check (HB-PRE-010); here only the shape."""
+    cid = c.get("id")
+    for key in sorted(set(c) - set(MATRIX_V3_COMBO_KEYS)):
+        p.add(where, f"{cid}: unknown combo key {key!r} (bench-matrix/3 combos have {', '.join(MATRIX_V3_COMBO_KEYS)})")
+    effort, context = c.get("effort"), c.get("context")
+    if not isinstance(effort, str) or not effort.strip():
+        p.add(where, f"{cid}: effort is required: a nonempty string on the vendor's scale, or \"default\"")
+    if context != "default" and (isinstance(context, bool) or not isinstance(context, int) or context < 1):
+        p.add(where, f"{cid}: context is required: a positive integer token count, or \"default\"")
+
+
 def validate_matrix(m: dict, bom: dict, p: Problems, where: str) -> None:
     schema = m.get("schema")
-    if schema not in ("bench-matrix/1", "bench-matrix/2"):
-        p.add(where, "schema must be bench-matrix/1 or bench-matrix/2")
+    if schema not in MATRIX_SCHEMAS:
+        p.add(where, f"schema must be one of {', '.join(MATRIX_SCHEMAS)}")
     if not isinstance(m.get("repetitions"), int) or isinstance(m.get("repetitions"), bool) or m["repetitions"] < 1:
         p.add(where, "repetitions must be a positive integer")
-    if schema == "bench-matrix/2":
+    if schema in ("bench-matrix/2", "bench-matrix/3"):
         _validate_matrix_arms(m, p, where)
     else:
         for field_name in ("arms", "comparisons", "ring"):
@@ -134,6 +150,8 @@ def validate_matrix(m: dict, bom: dict, p: Problems, where: str) -> None:
             p.add(where, f"{c.get('id')}: harness must be one of {HARNESSES}")
         if not c.get("model") or c.get("model") == "auto":
             p.add(where, f"{c.get('id')}: model must be pinned (not empty, not auto)")
+        if schema == "bench-matrix/3":
+            _validate_combo_settings(c, p, where)
     if not ids:
         p.add(where, "at least one combo is required")
     subset = (m.get("bom") or {}).get("subset")

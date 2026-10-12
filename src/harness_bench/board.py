@@ -16,7 +16,7 @@ from typing import Any
 # added (a row-shape change) -> 2 -> 3.
 EXPORT_VERSION: int = 3
 
-from harness_bench import config, ledger
+from harness_bench import config, ledger, profiles
 from harness_bench.composites import Catalog
 from harness_bench.composites import area as compute_area
 from harness_bench.composites import gated as compute_gated
@@ -821,7 +821,9 @@ def pool_check(pool: RunView, view: RunView) -> tuple[str, ...]:
         if tag != "lean":
             lean.append(f"run {run.run_id} has ring tag {tag}, not lean")
     # Cells as a set keyed by cell_id: the stored list is in launch order, which follows the per-plan launch_seed.
-    cells_a, cells_b = ({cid: (c.get("task"), c.get("combo"), cell_arm(c), c.get("model")) for cid, c in _cells_by_id(p).items()}
+    # ADR-0024 s2: the settings join the tuple; a cell from a plan before the lean re-run reads as "default".
+    cells_a, cells_b = ({cid: (c.get("task"), c.get("combo"), cell_arm(c), c.get("model"), c.get("effort", profiles.DEFAULT),
+                               c.get("context", profiles.DEFAULT)) for cid, c in _cells_by_id(p).items()}
                         for p in (a, b))
     cell_parts = [f"{label}: {', '.join(sorted(ids))}" for label, ids in (
         ("only in A", cells_a.keys() - cells_b.keys()), ("only in B", cells_b.keys() - cells_a.keys()),
