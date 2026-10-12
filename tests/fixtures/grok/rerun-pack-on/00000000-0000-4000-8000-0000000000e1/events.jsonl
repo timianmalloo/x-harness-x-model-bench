@@ -1,0 +1,8 @@
+{"ts": "2026-10-11T20:12:22.372Z", "type": "turn_started", "session_id": "00000000-0000-4000-8000-0000000000e1", "turn_number": 0, "model_id": "grok-4.7", "schema_version": "1.0"}
+{"ts": "2026-10-11T20:12:22.387Z", "type": "loop_started", "loop_index": 0}
+{"ts": "2026-10-11T20:12:25.055Z", "type": "first_token"}
+{"ts": "2026-10-11T20:12:25.167Z", "type": "tool_started", "tool_name": "read_file"}
+{"ts": "2026-10-11T20:12:25.167Z", "type": "permission_requested", "tool_name": "read_file"}
+{"ts": "2026-10-11T20:12:25.167Z", "type": "permission_resolved", "tool_name": "read_file", "decision": "allow", "wait_ms": 0}
+{"ts": "2026-10-11T20:12:25.172Z", "type": "tool_completed", "tool_name": "read_file", "duration_ms": 5, "outcome": "success", "tool_call_id": "call-00000000-0000-4000-8000-0000000000c1-0"}
+{"ts": "2026-10-11T20:12:27.122Z", "type": "turn_ended", "outcome": "completed"}

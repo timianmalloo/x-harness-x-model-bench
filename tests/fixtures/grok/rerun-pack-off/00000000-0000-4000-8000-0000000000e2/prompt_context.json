@@ -1,0 +1,9 @@
+{
+ "version": 1,
+ "prompt_mode": "extend",
+ "audience": "primary",
+ "agents_md_files": [],
+ "persona_summaries": [],
+ "working_directory": "C:\\work\\repo",
+ "system_prompt_label": "Grok 4.7"
+}
