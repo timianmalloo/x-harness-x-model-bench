@@ -20,6 +20,11 @@ from harness_bench.grade import runner
 
 ROOT = Path(__file__).resolve().parents[1]
 FIX = Path(__file__).parent / "fixtures"
+FROZEN_ROOT = FIX / "bench-root"  # catalog 0.7, the three profiles, the tools pin and X1, frozen at J0 (GOLD-A)
+# The consumers of the real catalog's identity, (test module, function): each calls make_root(release=False).
+LIVE_CONSUMERS = (("test_catalog_version", "test_the_current_catalog_passes_the_us4_control"),
+                  ("test_catalog_version", "_us4_root"),
+                  ("test_grade_formal", "_g2_plan_run"))
 
 
 def gate_runs_root() -> Path:
@@ -82,20 +87,21 @@ _DEFAULT_RECORD = {"codex": FIX / "native" / "codex" / "ok.jsonl",
 
 
 def make_root(tmp_path: Path, release: bool = True) -> Path:
-    """A bench root with the real X1 task, catalog, profiles and an empty price list.
+    """A bench root with the X1 task, the catalog, the profiles, the tools pin and an empty price list.
 
-    With `release` (the default) a `.dev` catalog is relabelled to the version it probes (`0.4.dev` -> `0.4`), so the
-    passes a test runs are current in a default view (R-59 DR-4: a probe pass never is). A test of the probe rule, or
-    of the real catalog's identity (the US-4 control), passes `release=False` and gets the catalog byte for byte.
+    With `release` (the default) they come from `FROZEN_ROOT`, so no edit to the repository's `bench/` or `tasks/X1`
+    moves a golden built on this root (GOLD-A). Its catalog is the 0.7 release, so the passes a test runs are current
+    in a default view (R-59 DR-4: a probe pass never is). `release=False` is the live mode, for `LIVE_CONSUMERS`
+    only: the same inputs copied from the repository byte for byte, a `.dev` catalog included (the US-4 control).
     """
+    src = FROZEN_ROOT if release else ROOT
     r = tmp_path / "root"
-    shutil.copytree(ROOT / "tasks" / "X1", r / "tasks" / "X1")
-    (r / "bench").mkdir()
-    shutil.copy(ROOT / "bench" / "metrics.yaml", r / "bench" / "metrics.yaml")
-    shutil.copytree(ROOT / "bench" / "profiles", r / "bench" / "profiles")
-    version = str(yaml.safe_load((r / "bench" / "metrics.yaml").read_text(encoding="utf-8"))["version"])
-    if release and version.endswith(".dev"):
-        set_catalog_version(r, version.removesuffix(".dev"))
+    shutil.copytree(src / "tasks" / "X1", r / "tasks" / "X1")
+    (r / "bench" / "tools").mkdir(parents=True)
+    shutil.copy(src / "bench" / "metrics.yaml", r / "bench" / "metrics.yaml")
+    shutil.copytree(src / "bench" / "profiles", r / "bench" / "profiles")
+    for name in ("package.json", "package-lock.json"):
+        shutil.copy(src / "bench" / "tools" / name, r / "bench" / "tools" / name)
     set_prices(r, [])
     return r
 

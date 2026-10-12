@@ -80,11 +80,17 @@ class Cell:
     arm: str
     rep: int
     budget_seconds: int
+    # ADR-0024 s2: the combo's settings, frozen on every cell; "default" for every bench-matrix/2 combo.
+    effort: str = profiles.DEFAULT
+    context: str | int = profiles.DEFAULT
 
     @property
     def id(self) -> str:
         # "pack" is a frozen recipe label: changing the key would rewrite historical cell identities.
         ingredients = {"task_version": self.task_version, "combo": self.combo, "pack": self.arm, "rep": self.rep}
+        # RECID-A: the settings join the recipe only when one is pinned, so every existing cell id is unchanged.
+        if self.effort != profiles.DEFAULT or self.context != profiles.DEFAULT:
+            ingredients |= {"effort": self.effort, "context": self.context}
         return hashlib.sha256(canonical(ingredients)).hexdigest()[:16]
 
     @property
@@ -136,8 +142,24 @@ def expand(matrix: dict, bom: dict, task_versions: dict[str, str] | None = None)
             for arm in arms_of(matrix):
                 for c in matrix["combos"]:
                     cells.append(Cell(t["id"], versions.get(t["id"], t["id"]), t["scenario"], c["id"], c["harness"],
-                                      c["model"], arm["id"], rep, t["budget_minutes"] * 60))
+                                      c["model"], arm["id"], rep, t["budget_minutes"] * 60,
+                                      c.get("effort", profiles.DEFAULT), c.get("context", profiles.DEFAULT)))
     return cells
+
+
+def frozen_harness_parallelism(matrix: dict) -> dict[str, int]:
+    """ADR-0025 s7: the per-harness cap a plan freezes, from the matrix; {} when the matrix names none. Which harness
+    must be capped, and at what, is the plan refusal's (R-SETTINGS); the scheduler that honours it is R-CAP's."""
+    caps = matrix.get("harness_parallelism", {})
+    if not isinstance(caps, dict) or any(
+            h not in config.HARNESSES or isinstance(n, bool) or not isinstance(n, int) or n < 1 for h, n in caps.items()):
+        raise BenchError("HB-USR-002", "harness_parallelism must map known harnesses to positive integers")
+    return dict(sorted(caps.items()))
+
+
+def harness_parallelism(plan_body: dict) -> dict[str, int]:
+    """The frozen per-harness cap of a plan; a plan written before the lean re-run has none: {}."""
+    return dict(plan_body.get("harness_parallelism", {}))
 
 
 def arms_of(matrix: dict) -> list[dict]:
@@ -489,6 +511,7 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, a
             continue
         if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
             raise BenchError("HB-USR-002", f"{name} must be a positive integer")
+    caps = frozen_harness_parallelism(matrix)
     tasks = select_tasks(bom, matrix["bom"]["subset"])
     permitted_statuses = ("ready",) if kind == "measurement" else ("draft", "ready")
     offenders = []
@@ -569,6 +592,7 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, a
         "parameters": params,
         "price_list_hash": file_hash(root / "bench" / "prices.yaml"),
         "envelope_seconds": envelope_seconds(cells, parallelism),
+        "harness_parallelism": caps,
         "cells": [{"cell_id": c.id, "label": c.label, **asdict(c),
                    **({"instruction_count": instruction_counts[c.task, c.arm]} if c.harness == "copilot" else {})} for c in cells],
     }

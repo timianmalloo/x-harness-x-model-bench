@@ -270,8 +270,8 @@
  {
   "name": "R-73/R-74 (W3-S6): the launcher seeds without the scenario",
   "file": "src/harness_bench/profiles.py",
-  "find": "cell[\"model\"], cell.get(\"scenario\"), oauth_token=self._oauth_token)",
-  "replace": "cell[\"model\"], None, oauth_token=self._oauth_token)",
+  "find": "cell[\"model\"], cell.get(\"scenario\"), oauth_token=self._oauth_token,",
+  "replace": "cell[\"model\"], None, oauth_token=self._oauth_token,",
   "tests": [
    "tests/test_delegate.py::test_the_launcher_seeds_from_the_cell"
   ]
@@ -279,8 +279,8 @@
  {
   "name": "R-73/R-74 (W3-S6): the launcher launches without the scenario",
   "file": "src/harness_bench/profiles.py",
-  "find": "scenario=cell.get(\"scenario\")), self.profile.cell_env(",
-  "replace": "scenario=None), self.profile.cell_env(",
+  "find": "scenario=cell.get(\"scenario\"), effort=effort, context=context, home=home), \\",
+  "replace": "scenario=None, effort=effort, context=context, home=home), \\",
   "tests": [
    "tests/test_delegate.py::test_the_launcher_launches_copilot_from_the_cell"
   ]

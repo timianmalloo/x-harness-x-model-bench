@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib
 import json
 import os
 import re
@@ -276,7 +277,7 @@ def _plain() -> bool:
     return bool(os.environ.get("NO_COLOR")) or not sys.stdout.isatty()
 
 
-_PATH_ARGS = ("root", "runs", "cells_root", "tools_dir", "pack_source", "matrix")
+_PATH_ARGS = ("root", "runs", "cells_root", "tools_dir", "pack_source", "matrix", "out", "analysis", "vendored")
 
 
 def _resolve_paths(args: argparse.Namespace) -> None:
@@ -621,7 +622,26 @@ def _lean_summary(args, run_dir: Path, view: views.RunView) -> lean.LeanSummary 
                        for d, v in batches], _prereg(getattr(args, "prereg", None)))
 
 
+def _module_entry(module: str, name: str = "cli_main"):
+    """A lean re-run seam (J0): the command's own module entry, imported when called, so a wave-1 track builds its
+    command without editing cli.py, and this file does not depend on the branch that builds it."""
+    try:
+        mod = importlib.import_module(module)
+    except ModuleNotFoundError as exc:
+        if exc.name != module:
+            raise
+        raise NotImplementedError(f"{module} is not built yet") from exc
+    entry = getattr(mod, name, None)
+    if entry is None:
+        raise NotImplementedError(f"{module}.{name} is not built yet")
+    return entry
+
+
 def cmd_report(args) -> int:
+    if args.cost_compare is not None:  # ADR-0027 s1
+        return _module_entry("harness_bench.report.cost_compare")(args)
+    if args.pack_cost is not None:  # ADR-0029 s1
+        return _module_entry("harness_bench.report.pack_cost")(args)
     run_dir = _run_dir(args)
     root = Path(args.root)
     view = views.load(run_dir)
@@ -715,6 +735,8 @@ def cmd_teardown(args) -> int:
 
 
 def cmd_tools(args) -> int:
+    if args.vendored is not None:  # ADR-0025 s8: a vendored exe, copied only when its hash matches the pin
+        return _module_entry("harness_bench.tools")(args)
     root = Path(args.root)
     tools.install(root / "bench" / "tools", Path(args.tools_dir))
     for harness, b in sorted(tools.resolve(Path(args.tools_dir)).items()):
@@ -767,8 +789,17 @@ def build_parser() -> argparse.ArgumentParser:
                        ("grade", "a new grading pass"), ("report", "CLI table and report.html"),
                        ("verify", "check every ledger segment and archive"), ("teardown", "remove the run's archived cell folders")):
         sp = sub.add_parser(name, help=text)
-        sp.add_argument("run_id")
+        # report alone may name its runs through --cost-compare or --pack-cost instead; main() keeps run_id required
+        # otherwise, with argparse's own message and exit status.
+        sp.add_argument("run_id", nargs="?" if name == "report" else None)
         if name == "report":
+            sp.add_argument("--cost-compare", nargs="+", default=None, metavar="RUN",
+                            help="the harness cost comparison of these runs, one page (ADR-0027)")
+            sp.add_argument("--pack-cost", nargs="+", default=None, metavar="RUN",
+                            help="the AI-Forward pack cost analysis of these runs, one page (ADR-0029)")
+            sp.add_argument("--out", default=None, metavar="PATH", help="the page --cost-compare or --pack-cost writes")
+            sp.add_argument("--analysis", default=None, metavar="MD", help="--pack-cost: the analyst section to embed")
+            sp.add_argument("--open", action="store_true", help="open the written page in Chrome")
             sp.add_argument("--seed", type=int, default=None, help="bootstrap seed (default: 20260927)")
             sp.add_argument("--resamples", type=int, default=None, help="bootstrap resamples (minimum: 2000)")
             sp.add_argument("--baseline", default=None, help="baseline run id for comparison")
@@ -835,6 +866,8 @@ def build_parser() -> argparse.ArgumentParser:
         ds.add_argument(flag, default=argparse.SUPPRESS)
     tl = sub.add_parser("tools", help="the pinned harness builds")
     tl.add_argument("action", choices=["install"])
+    tl.add_argument("--vendored", default=None, metavar="SOURCE",
+                    help="install a vendored harness exe from SOURCE, only when its sha256 matches bench/tools/vendored.json")
     return p
 
 
@@ -873,11 +906,14 @@ COMMANDS = {"drill": cmd_drill, "validate": cmd_validate, "plan": cmd_plan, "run
 
 
 def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
     try:
-        args = build_parser().parse_args(argv)
+        args = parser.parse_args(argv)
     except BenchError as exc:  # an id callback of the parser refuses before any command runs
         print(str(exc), file=sys.stderr)
         return _exit_for(exc.code)
+    if args.command == "report" and args.run_id is None and args.cost_compare is None and args.pack_cost is None:
+        parser.exit(2, f"{parser.prog} report: error: the following arguments are required: run_id\n")
     args.runs = args.runs or str(Path(args.root) / "runs")
     _resolve_paths(args)
     try:

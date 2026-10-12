@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-12T14:22:33Z",
+  "generated": "2026-10-12T14:55:02Z",
   "audit": [
     {
       "actor": null,
@@ -180252,6 +180252,28 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-12T13:49:20Z",
       "duration_seconds": 1993.0
+    },
+    {
+      "id": "al-01M4R9RA8VMGX3422MS13F7XWV",
+      "shortname": "r-gold",
+      "datetime": "2026-10-12T14:55:02Z",
+      "session": "r-gold-rerun",
+      "prompt": "r-gold-rerun: R-GOLD self-contained golden fixtures, ruff pin",
+      "summary": "make_root defaults to the frozen tests/fixtures/bench-root (catalog 0.7, profiles, tools pin, X1); release=False is the live mode for 3 named consumers; tests/test_fixture_root_isolation.py red then green; goldens unchanged; ruff==0.16.5 pinned in dev group and uv.lock",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Make the default fixture root frozen and self-contained, keep a live mode for named catalog-identity consumers, pin ruff",
+      "done_when": "isolation test green; live consumers listed and green; non-lean and pack-improvement goldens green; ruff pinned",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-12T14:27:36Z",
+      "duration_seconds": 1646.0
     }
   ],
   "changes": [
