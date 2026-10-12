@@ -21,12 +21,17 @@ INPUTS = ("bench/metrics.yaml", "bench/profiles", "bench/tools/package.json", "b
           "tasks/X1")
 
 
+def _byproduct(path: Path) -> bool:
+    """Interpreter bytecode (`__pycache__/`, `*.pyc`, a `*.pyc.<pid>` temp): never a contracted input."""
+    return "__pycache__" in path.parts or ".pyc" in path.name
+
+
 def _files(base: Path) -> dict[str, bytes]:
     out = {}
     for rel in INPUTS:
         path = base / rel
         for f in sorted(path.rglob("*")) if path.is_dir() else [path]:
-            if f.is_file():
+            if f.is_file() and not _byproduct(f.relative_to(base)):
                 out[f.relative_to(base).as_posix()] = f.read_bytes()
     return out
 
@@ -46,11 +51,30 @@ def edited_live(tmp_path, monkeypatch) -> Path:
     return live
 
 
+def _extra(base: Path) -> set[str]:
+    """Files under `base` that are not contracted inputs (its own conftest.py aside)."""
+    listed = {f.relative_to(base).as_posix() for f in base.rglob("*")
+              if f.is_file() and not _byproduct(f.relative_to(base))}
+    return listed - {"conftest.py"} - set(_files(base))
+
+
 def test_the_frozen_root_holds_exactly_the_contracted_inputs():
-    listed = {f.relative_to(FROZEN_ROOT).as_posix() for f in FROZEN_ROOT.rglob("*") if f.is_file()}
-    assert listed - {"conftest.py"} == set(_files(FROZEN_ROOT))
+    assert _extra(FROZEN_ROOT) == set()
+    assert set(_files(FROZEN_ROOT)) >= {"bench/metrics.yaml", "bench/tools/package.json", "tasks/X1/task.yaml"}
     assert {p.name for p in (FROZEN_ROOT / "bench" / "profiles").iterdir()} == {"claude-code.yaml", "codex.yaml",
                                                                                 "copilot.yaml"}
+
+
+def test_bytecode_pytest_writes_into_the_frozen_root_is_not_an_extra_input(tmp_path):
+    # Collecting the root's conftest.py writes __pycache__/conftest.cpython-*.pyc (and a .pyc.<pid> temp) there.
+    copy = tmp_path / "bench-root"
+    shutil.copytree(FROZEN_ROOT, copy, ignore=shutil.ignore_patterns("__pycache__"))
+    for rel in ("__pycache__/conftest.cpython-314-pytest-9.1.1.pyc", "__pycache__/conftest.cpython-314.pyc.4242",
+                "tasks/X1/tests/__pycache__/test_slug_hidden.cpython-314.pyc"):
+        (copy / rel).parent.mkdir(parents=True, exist_ok=True)
+        (copy / rel).write_bytes(b"\0")
+    assert _extra(copy) == set()
+    assert set(_files(copy)) == set(_files(FROZEN_ROOT))
 
 
 def test_the_frozen_catalog_is_the_0_7_release_so_a_default_pass_is_current():
