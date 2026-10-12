@@ -281,9 +281,11 @@ def model_allowed(served: str, pinned: str, auxiliary_models, model_aliases=None
 
 def find_records(home: Path, record_glob: str, session_id: str) -> list[Path]:
     """The native records of one session, by its id only, never by time window (US-22). No glob names no record (a
-    profile or a plan without `subagent_glob`, R-74 item 4)."""
+    profile or a plan without `subagent_glob`, R-74 item 4). With no id the glob is globbed as written: one with no
+    `{session_id}` names the cell home's own record (agy's teed stream, whose conversation id arrives after
+    `attempt.session_opened`); one with it keeps the literal placeholder, so it names no record."""
     if not session_id or not record_glob:
-        return []
+        return sorted(home.glob(record_glob)) if record_glob else []
     return sorted(home.glob(record_glob.replace("{session_id}", session_id)))
 
 

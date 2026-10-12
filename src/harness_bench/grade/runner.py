@@ -333,6 +333,7 @@ class _Pass:
         if len(records) != 1:
             return None, "no native record for the session" if not records else "more than one native record for the session", [], []
         ex = profiles.READERS[cell["harness"]](records[0])
+        session_id = session_id or ex.session_id or ""  # agy: the record names its conversation, the event cannot
         cid = cell["cell_id"]
         model_rows = normalize.model_call_rows(self.plan["run_id"], cid, session_id, ex, self.extraction)
         tool_rows = normalize.tool_call_rows(self.plan["run_id"], cid, session_id, ex, self.extraction)

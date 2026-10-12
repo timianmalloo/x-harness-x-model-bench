@@ -14,6 +14,7 @@
   "homes": {
     "pack-on": {"stream": "C:\\tf\\spike-agy\\turn2.ndjson", "db": "home-upd conversations/5ed07ceb-....db", "repo": "AGENTS.md, GEMINI.md, .agents/rules/r.md"},
     "pack-off": {"stream": "C:\\tf\\spike-agy\\perm\\stream.ndjson", "db": "perm/home conversations/65ec1b30-....db", "repo": "README.md only"},
-    "turn1": {"stream": "C:\\tf\\spike-agy\\turn1.ndjson", "db": "home-upd conversations/d0e71ad9-....db", "note": "the only spike step with thought text (step_payload 20.3, step 3); the db exists in home-upd although the C2 brief listed none"}
+    "turn1": {"stream": "C:\\tf\\spike-agy\\turn1.ndjson", "db": "home-upd conversations/d0e71ad9-....db", "note": "the only spike step with thought text (step_payload 20.3, step 3); the db exists in home-upd although the C2 brief listed none"},
+    "cached": {"stream": "runs/devprobe-rerun-1 archive/9945b37e60fdd80d (agy-off) home/agy-stream.ndjson, lines 1, 18 and 21", "db": "none (stream only)", "built_by": "PROBE-FIX (session probe-fix-rerun), 2026-10-12", "scrub": "the conversation id became 00000000-0000-4000-8000-000000000020 (same length); init.cwd became C:\\cell\\fixture\\repo; every other byte as recorded", "note": "step 11 uncached (cache_read 0) and step 13, the first cached request: input_tokens 3302 beside cache_read_tokens 16260, total_tokens 3820 = input + output"}
   }
 }

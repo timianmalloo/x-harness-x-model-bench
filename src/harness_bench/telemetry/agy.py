@@ -223,11 +223,10 @@ def read(path: Path) -> Extraction:
         if step.get("step_type") == "agent_response" and state == "DONE" and isinstance(usage, dict):
             if model is None:
                 ex.missing.append(MissingField(n, "model"))
-            cache_read = ex.count(n, usage, "cache_read_tokens")
-            # assume: agy's input_tokens includes cache_read_tokens (as Gemini's promptTokenCount includes cached
-            # content). Confirm: a cached turn where input_tokens < cache_read_tokens would refute it (every spike value
-            # is 0). Breaks: uncached_input on a cached turn. agy reports no cache-write bucket: cache_write is 0.
-            uncached = max(ex.count(n, usage, "input_tokens") - cache_read, 0)
+            # input_tokens excludes cache_read_tokens (Verified, devprobe-rerun-1 agy-off step 13: input 3302 beside
+            # cache_read 16260, total_tokens = input + output), so it is the uncached input as recorded. agy reports no
+            # cache-write bucket: cache_write is 0.
+            uncached, cache_read = ex.count(n, usage, "input_tokens"), ex.count(n, usage, "cache_read_tokens")
             thinking = usage.get("thinking_tokens") if is_count(usage.get("thinking_tokens")) else None
             ex.model_calls.append(ModelCall(n, model or "NOT_RECORDED", uncached, cache_read, 0,
                                             ex.count(n, usage, "output_tokens"), thinking))

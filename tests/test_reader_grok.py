@@ -131,10 +131,23 @@ def test_an_absent_prompt_context_is_not_recorded_never_zero_instruction_files(t
 
 def test_a_web_fetch_call_is_class_other_and_a_read_file_call_is_read_with_its_outcome():
     web = normalize.tool_call_rows(*ARGS, grok.read(WEB), "x1")
-    assert [(r["native_ordinal"], r["name"], r["tool_class"], r["ok"]) for r in web] == [(6, "web_fetch", "other", 1)]
+    assert [(r["native_ordinal"], r["name"], r["tool_class"], r["ok"]) for r in web] == [(1, "web_fetch", "other", 1)]
     on = normalize.tool_call_rows(*ARGS, grok.read(ON), "x1")
     assert [(r["name"], r["tool_class"], r["start"], r["end"], r["ok"]) for r in on] == [
         ("read_file", "read", "2026-10-11T20:12:25.167Z", "2026-10-11T20:12:25.172Z", 1)]
+
+
+def test_two_tool_calls_in_one_assistant_line_get_distinct_native_ordinals_in_native_order(tmp_path):
+    # PROBE-FIX: the 1.0.41 build writes parallel calls as one assistant row (devprobe-rerun-1: list_dir + grep on
+    # one line); two rows sharing (session, native_ordinal) made HB-LED-003 refuse the run's view.
+    d = shutil.copytree(ON, tmp_path / "s")
+    lines = (d / "chat_history.jsonl").read_text(encoding="utf-8").splitlines()
+    row = json.loads(lines[5])
+    row["tool_calls"].append({"id": "call-00000000-0000-4000-8000-0000000000c1-1", "name": "grep", "arguments": "{}"})
+    lines[5] = json.dumps(row)
+    (d / "chat_history.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    rows = normalize.tool_call_rows(*ARGS, grok.read(d), "x1")
+    assert [(r["native_ordinal"], r["name"]) for r in rows] == [(1, "read_file"), (2, "grep")]
 
 
 def test_tool_class_covers_every_advertised_tool_and_classes_the_out_of_profile_ones_other():
