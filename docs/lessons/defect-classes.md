@@ -1860,3 +1860,93 @@ the register first (ID-A); new ids were checked free by `git grep` at `f6389964`
   track): a fake credential whose refresh rotates, two sequential cells, the bench home still valid. Upgrade
   trigger: a Codex stranding, which would move Codex onto the same path.
 - **Status:** `candidate`
+
+## Coordinator #1 entries (2026-10-12; lean re-run)
+
+*Written by Coordinator #1 (session `c1-rerun`, Opus) at `2f633d54`, before the code (ADR-0026 §6: register entries
+first). The controls are ADR-0026 §6's; they are owed by R-DRIFT (the first two) and by the S3/S5 probes (the third).*
+
+### DRIFT-MACHINE-A: machine-written files counted as discretionary scope creep (candidate)
+- **Signature:** the drift grader counts every changed path outside the task's `blast_radius` as scope creep
+  (`grade/drift.py:127-130`). Tool caches (`.pytest_cache`, `.mypy_cache`, `.ruff_cache`) and the files the pack's
+  hooks and audit script write are changed by machines, not chosen by the agent, yet land in `scope_creep` beside
+  authored edits. The only exclusions are `BUILD_OUTPUT` (`.git`, `bin`, `obj`, `TestResults`, `__pycache__`;
+  `grade/_changes.py:34`) and the pre-turn tree's own ignore rules (`drift.py:75-102`), so a task repo whose
+  `.gitignore` does not name a cache counts it.
+- **Why it survives:** the number is plausible (a cell that ran pytest has "more drift"), and it rises with the
+  same behaviour a good agent shows (running the tests). Two lists of generated names exist and disagree:
+  `config.GENERATED_DIR_NAMES` holds `.pytest_cache` (`config.py:49`) and `BUILD_OUTPUT` does not, so a reader who
+  checks one list sees the cache handled. None of the ten lean tasks runs the drift grader (all list
+  `graders: [correctness, property]`, Verified in `tasks/RW2,NG1,NG2,SM1,SM2/task.yaml`), so no graded cell ever
+  showed the shape: it surfaced only in a hand re-grade.
+- **Instances:**
+  - `2026-10-10` (lean benchmark, the harness cost comparison page, `docs/coordination/harness-cost-comparison.html`):
+    the raw outside-radius line counts were mostly `.pytest_cache` and `.mypy_cache` lines (the re-run prompt,
+    `docs/coordination/lean-rerun-equal-reasoning-prompt.md:167-168`). The page's "discretionary drift" had to
+    leave out tool caches and the hook and audit files (`.agents/log`, `docs/audit`) by hand (its caption, line
+    140). The bench's own grader would have reported them as scope creep.
+- **Sweep:** every consumer of a "machine-written" or "generated" name list: `drift.py` (counts them: the defect);
+  `diffstats.py:64,123`, `rework.py:74` (skip every non-`.py` path, so caches cannot count; not affected);
+  `property.py:487`, `diffstats.py:92,99` (`BUILD_OUTPUT` as a copy filter; not affected and must not move, ADR-0026
+  §5); `config.py:49,329` (`GENERATED_DIR_NAMES`, the reuse target); `pack_improvement.classify` (tool calls, not
+  file changes; not affected).
+- **Control (ADR-0026 §6; rung: test, owed by R-DRIFT):** one machine-written list in `grade/_changes.py`,
+  separate from `BUILD_OUTPUT` (tool caches from `config.GENERATED_DIR_NAMES` plus `.mypy_cache` and `.ruff_cache`,
+  and the exact paths the pack's hooks and audit script write, read from the hook files, not a `docs/audit` glob);
+  a **drift-split test** on a fixture working copy holding a cache, a hook log, a test file and a README edit,
+  which must yield machine-written, task-implied and discretionary rows separately (`tests/test_drift_split.py`).
+  Upgrade trigger: a new harness or pack hook writing a path the list does not name.
+- **Status:** `candidate`
+
+### RADIUS-TEST-A: a task radius omits a file the task needs, and a radius consumer that does not use `is_test_path` counts it (candidate)
+- **Signature:** a task's prompt asks for a test file ("Add tests in `tests/test_limiter.py`") that its
+  `blast_radius` does not list. Every harness writes it, and a radius consumer that judges paths by the radius
+  alone counts the required file as out-of-scope work. Consumers that also call `_changes.is_test_path` skip it;
+  consumers that do not, count it. A second radius definition makes it worse: `report/pack_improvement.
+  _matches_blast_radius` matches with `fnmatch.fnmatch` (case-insensitive on Windows, `pack_improvement.py:255`),
+  against `_changes.in_radius`'s `fnmatchcase` (`_changes.py:259-262`), so the same path can be inside on one
+  report and outside on another.
+- **Why it survives:** pass/fail does not move, because the property graders already skip test paths
+  (`diffstats.py:123`, `rework.py:74-76`, `noguess.py:197`). Only the scope measures move, and they move by the
+  same amount for every harness, so a comparison looks fair. A task-version review reads the radius against the
+  product files, not against the prompt's own test instruction.
+- **Instances:**
+  - `2026-10-10` (lean benchmark, the harness cost comparison page): five tasks' radius omits the test file the
+    prompt names, and every harness wrote it: RW2 `test_schedule.py`, NG1 `tests/test_limiter.py`, NG2
+    `tests/test_interp.py`, SM1 `tests/test_tables.py`, SM2 `tests/test_search_many.py` (radii Verified in each
+    `tasks/<ID>/task.yaml`: e.g. NG1 `["src/cachetools/limiter.py", "src/cachetools/__init__.py"]`). The page
+    removed them by hand ("test files that every harness wrote for that task", its caption, line 140).
+- **Sweep:** every radius consumer: `diffstats.measure` (`:123-129`, calls `is_test_path`; ok), `rework`
+  (`:74-76`, ok), `noguess` (`:197`, ok), `readiness` (`:346-352`, through `diffstats.measure`; ok), `drift`
+  (`:127`, `in_radius` only, **counts it**), `pack_improvement._matches_blast_radius` (`:250-255`, used at `:281`
+  and `:377`; **a second definition**, no `is_test_path`).
+- **Control (ADR-0026 §6; rung: test, owed by R-DRIFT):** a **radius-consumer test**
+  (`tests/test_radius_consumers.py`) asserting that every radius consumer calls `_changes.in_radius` and either
+  calls `is_test_path` or is named exempt; it fails today on `_matches_blast_radius`. The grader rule (catalog 0.8:
+  a test path outside the radius is task-implied, not discretionary) fixes the class for every task without a
+  task-version bump (ADR-0026 §5). Upgrade trigger: a new radius consumer outside `grade/` or `report/`.
+- **Status:** `candidate`
+
+### LEAK-HOME-A: a home variable relocates only part of a harness's user state (candidate)
+- **Signature:** a cell sets the harness's own home variable (`GROK_HOME`) to the cell home and leaves `HOME` and
+  `USERPROFILE` at the operator's. The harness keeps its own files in the cell home but still reads other user
+  state from the real profile: another harness's instruction files and skills. A pack-off cell then runs with
+  instructions it should not have, and a pack-on cell with extra ones.
+- **Why it survives:** the variable the harness documents works: its own config, sessions and credentials land in
+  the cell home, so a check of "where did the harness write" passes. The leak is a read, not a write, and it shows
+  only in what the model was given, which no bench record captured until `prompt_parts` (ADR-0026 §1).
+- **Instances:**
+  - `2026-10-11` (lean re-run, Grok spike G1, `C:\tf\spike-grok\`): with `GROK_HOME` alone, Grok read the real
+    `~/.claude` skills (65 matches for `.claude\skills` paths, e.g. `skills\graphify\SKILL.md`, in
+    `acp-new-grokhome-only.jsonl`; 0 in `acp-new-frozen.jsonl` and `acp-turn-full-iso.jsonl`, the runs with
+    `HOME`/`USERPROFILE` set too; counted by Coordinator #1, 2026-10-12). The real `~/.claude/CLAUDE.md` read is
+    recorded in `docs/architecture-lean-rerun.md:204` (Verified there, spike G1); its text was not found in that
+    record by this count (Inferred from the architecture's statement).
+- **Sweep:** every profile's home variables (`bench/profiles/*.yaml`, `profiles.CELL_ENV`): the new Grok profile
+  sets `HOME`, `USERPROFILE` and `GROK_HOME` (ADR-0025 §2); Antigravity uses the Windows keyring in place; the three
+  existing profiles are not re-measured here (no spike), so each is covered by the control below rather than by a
+  claim.
+- **Control (ADR-0026 §6; rung: probe check):** the probe's pack-off `prompt_parts` list **0 instruction files for
+  every harness** (at the S3 and S5 probes, ADR-0024 §6), and R-TRANSPORT's Grok launch test asserts `HOME`,
+  `USERPROFILE` and `GROK_HOME` in the env. Upgrade trigger: a pack-off cell with an `instruction_file` part.
+- **Status:** `candidate`
