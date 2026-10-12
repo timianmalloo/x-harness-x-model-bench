@@ -1,9 +1,11 @@
-"""R-PACKCOST: `report.pack_cost` (ADR-0029), from hand-built views with injected fakes.
+"""R-PACKCOST: `report.pack_cost` (ADR-0029), from hand-built views with injected fakes, and on a real fixture run.
 
-The derivations come through their J0 signatures only: `context_growth.request_series(view, cell_id)` and
-`tool_phases.carry_until_compaction(entered, compacted_before)` are faked here (R-DERIV builds them; the real-path test
-runs at J2), as is `pack_cost.cell_facts` (the per-cell reader facts). The plan and profiles of the golden's run come
-from R-GOLD's frozen fixture root (`archived_runs.FROZEN_ROOT`), never the repository's `bench/`.
+The arithmetic tests fake the derivations through their signatures: `context_growth.request_series(view, cell_id)`,
+`tool_phases.carry_until_compaction(entered, compacted_before)` and `pack_cost.cell_facts`. The real-path test (J2-FIX
+item 3) fakes nothing: a graded Copilot pack-off/pack-on pair, read by the real reader, `request_series`, the carry
+rule and `cell_facts` through the view alone, with git working copies and a git pack source. The plan and profiles
+of the golden's run come from R-GOLD's frozen fixture root (`archived_runs.FROZEN_ROOT`), never the repository's
+`bench/`.
 """
 
 from __future__ import annotations
@@ -13,6 +15,7 @@ import dataclasses
 import html
 import os
 import re
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -86,11 +89,11 @@ def _views() -> list[RunView]:
 
 
 def _parts(on: bool) -> tuple[PromptPart, ...]:
-    parts = [PromptPart("system", None, 2000, "inlined", "fixture")]
+    parts = [PromptPart(0, "system", None, 2000, "inlined", "fixture")]
     if on:
-        parts += [PromptPart("instruction_file", ".github/instructions/a.instructions.md", 4000, "inlined", "fixture"),
-                  PromptPart("agents_md", "AGENTS.md", 2000, "inlined", "fixture"),
-                  PromptPart("skills", None, 1000, "listed", "fixture")]
+        parts += [PromptPart(1, "instruction_file", ".github/instructions/a.instructions.md", 4000, "inlined", "fixture"),
+                  PromptPart(2, "agents_md", "AGENTS.md", 2000, "inlined", "fixture"),
+                  PromptPart(3, "skills", None, 1000, "listed", "fixture")]
     return tuple(parts)
 
 
@@ -204,10 +207,145 @@ def test_unrecorded_base_trees_or_prompt_parts_read_not_recorded_never_0(fakes, 
     assert _term(cc, "fixed_prefix").median == Measure(None, "not recorded: no prompt_parts rows")
 
 
+@pytest.mark.parametrize(("on_path", "off_path", "recorded"), [
+    ("copilotToolsFingerprint:aa", "copilotToolsFingerprint:aa", True),   # identical catalogue: delta exactly 0
+    ("copilotToolsFingerprint:aa", "copilotToolsFingerprint:bb", False),  # differing fingerprints
+    (None, None, False),                                                  # no fingerprint on either side
+    ("copilotToolsFingerprint:aa", None, False),                          # missing on one side
+])
+def test_a_part_with_no_count_is_a_zero_delta_only_when_both_arms_carry_the_identical_fingerprint(
+        fakes, monkeypatch, on_path, off_path, recorded):
+    """Leader ruling (J2-FIX tools-part DR): the one exception to the prefix rule."""
+    def with_tools(view, cell):
+        facts = _facts(view, cell)
+        path = on_path if cell.arm == "on" else off_path
+        return dataclasses.replace(facts, prompt_parts=(*facts.prompt_parts,
+                                                        PromptPart(9, "tools", path, None, "listed", "fixture")))
+    monkeypatch.setattr(pack_cost, "cell_facts", with_tools)
+    term = _term(_harness(pack_cost.build(_views()), "claude-code"), "fixed_prefix")
+    if recorded:
+        assert term.median.value == 10500 and pack_cost.IDENTICAL_FINGERPRINT in term.label
+    else:
+        assert term.median == Measure(None, "not recorded: prompt part tools has no character count")
+
+
 def test_the_real_reader_without_a_run_directory_reads_not_recorded():
     view = _views()[0]
     facts = pack_cost.cell_facts(view, view.cells[0])
     assert set(dataclasses.astuple(facts)) == {pack_cost.NO_RUN_DIR}
+
+
+# --- the real path: no fakes (J2-FIX items 2 and 3) ----------------------------------------------------------------
+COPILOT = Path(__file__).parent / "fixtures" / "copilot"
+# The pack files the pack-on record names (its AGENTS.md prompt part and its `view` calls), with frontmatter.
+REAL_PACK = {
+    "AGENTS.md": "# Agents\n",
+    ".github/instructions/testing-strategy.instructions.md": '---\napplyTo: "**"\n---\n# Testing\n',
+    ".github/instructions/observability-and-instrumentation.instructions.md": '---\napplyTo: "src/**"\n---\n# O\n',
+    ".agents/skills/implement/reference/co-s0.md": "# co-s0\n",
+}
+
+
+def _write(folder: Path, files: dict[str, str]) -> None:
+    for rel, text in files.items():
+        (folder / rel).parent.mkdir(parents=True, exist_ok=True)
+        (folder / rel).write_text(text, encoding="utf-8", newline="\n")
+
+
+def _real_run(tmp_path: Path, pack: dict) -> Path:
+    """A graded pack-off/pack-on Copilot pair: R-COPILOT-P's real `-p` records (`rerun-off`, `rerun-on`) and their
+    debug logs in each cell home, renamed to the cell's session; each working copy a git tree built as the workspace
+    builder commits it (the task base, then the pack revision on pack-on)."""
+    import json
+
+    from archived_runs import GOOD, make_root, make_run
+
+    from harness_bench.grade import runner
+
+    root = make_root(tmp_path / "r")
+    run_dir = make_run(root, tmp_path / "t", {"off": GOOD, "on": GOOD}, harness="copilot", model="gpt-6.1-sol")
+    plan = json.loads((run_dir / "plan.json").read_text(encoding="utf-8"))
+    for cell in plan["cells"]:
+        cell["arm"] = cell["pack"] = cell["cell_id"]
+        cell["label"] = f"X1.c.pack-{cell['arm']}.r1"
+    plan |= {"arms": {"off": {"pack": None}, "on": {"pack": pack}}, "comparisons": [["off", "on"]],
+             "builds": {"copilot": {"adapter_version": "0.1.0"}}}
+    plan["plan_hash"] = plan_mod.plan_hash(plan)
+    (run_dir / "plan.json").write_text(json.dumps(plan), encoding="utf-8")
+    for cell in plan["cells"]:
+        cid = cell["cell_id"]
+        attempt = run_dir / "archive" / cid / "attempt-1"
+        src = COPILOT / f"rerun-{cid}" / "home"
+        record = next((src / "session-state").glob("*/events.jsonl"))
+        native = record.parent.name
+        dest = attempt / "home" / "session-state" / f"sess-{cid}" / "events.jsonl"
+        dest.write_text(record.read_text(encoding="utf-8").replace(native, f"sess-{cid}"), encoding="utf-8")
+        (attempt / "home" / "logs").mkdir()
+        for log in (src / "logs").glob("process-*.log"):
+            (attempt / "home" / "logs" / log.name).write_text(
+                log.read_text(encoding="utf-8").replace(native, f"sess-{cid}"), encoding="utf-8")
+        ws = attempt / "ws"
+        _git(ws.parent, "init", "-q", str(ws))
+        _git(ws, "add", "-A")
+        _git(ws, "commit", "-q", "-m", f"X1 base ({cell['task_version'][:12]})")
+        if cid == "on":
+            _write(ws, REAL_PACK)
+            _git(ws, "add", "-A")
+            _git(ws, "commit", "-q", "-m", "ai-forward pack revision 1")
+    runner.run_pass(run_dir, root)
+    return run_dir
+
+
+def test_the_real_path_decomposes_a_graded_copilot_pair_with_no_fakes(tmp_path):
+    from harness_bench import views as views_mod
+    from harness_bench.telemetry import copilot
+
+    repo = tmp_path / "pack"
+    _write(repo, REAL_PACK)
+    _git(repo.parent, "init", "-q", str(repo))
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "pack")
+    view = views_mod.load(_real_run(tmp_path, {"source": str(repo), "commit": _git(repo, "rev-parse", "HEAD")}))
+    # The frozen X1 has no property grader, so the lean pairing's admission score is set on the view; every
+    # derivation under test (the reader rows, request_series, the carry, cell_facts, the pack source) is real.
+    view.cells = [dataclasses.replace(c, scores=c.scores | {"property_check_pass": Measure(1)}) for c in view.cells]
+    # one accessor: the view alone reaches its run's rows and archive (no `load_views` registration)
+    on = next(c for c in view.cells if c.cell_id == "on")
+    facts = pack_cost.cell_facts(view, on)
+    record = next((COPILOT / "rerun-on" / "home" / "session-state").glob("*/events.jsonl"))
+    assert facts.model_ordinals == tuple(c.native_ordinal for c in copilot.read(record).model_calls)
+    assert facts.base_tree == frozenset({"slug.py", *REAL_PACK})
+    assert isinstance(facts.prompt_parts, tuple) and isinstance(facts.tool_inputs, tuple)
+    pc = pack_cost.build([view])
+    (h,) = pc.harnesses
+    assert (h.harness, h.transport, h.pairs) == ("copilot", "copilot -p (local adapter)", 1)
+    terms = {t.name: t.median for t in h.terms}
+    # hand count from the records: 12 pack-on requests, 5 pack-off, the pack-off median request input 6,619
+    assert terms["extra_requests"] == Measure((12 - 5) * 6619)
+    # Every instruction_file part has a count (its own table row; Leader ruling on the J2-FIX DR), and both cells
+    # carry the identical tool fingerprint, so the `tools` part is an exact zero delta (Leader ruling on the
+    # tools-part DR): the fixed prefix is the instruction-file delta. Hand count from the facts: the change in prefix
+    # characters x 12 requests x the pack-on first request's input over its prefix characters (the session-id rename
+    # in `_real_run` shortens each cell's instructions by the id's length, the same in the rows).
+    off = next(c for c in view.cells if c.cell_id == "off")
+    chars = {c.cell_id: sum(p.chars for p in pack_cost.cell_facts(view, c).prompt_parts if p.part != "tools")
+             for c in (on, off)}
+    first = context_growth.request_series(view, "on").inputs[0]
+    hand = Decimal(chars["on"] - chars["off"]) * 12 * Decimal(first) / Decimal(chars["on"])
+    assert terms["fixed_prefix"] == Measure(635600) and abs(terms["fixed_prefix"].value - hand) <= 12  # per-part rounding
+    fixed = next(t for t in h.terms if t.name == "fixed_prefix")
+    assert pack_cost.IDENTICAL_FINGERPRINT in fixed.label and pack_cost.IDENTICAL_FINGERPRINT in pack_cost.render(pc)
+    # Copilot's tool results carry no size, so the on-demand terms are not recorded, never a guess
+    assert terms["pack_reads"] == terms["skill_loads"] == Measure(None, "not recorded: bytes returned are not in the record")
+    assert isinstance(terms["reasoning_output"].value, int)
+    assert h.delta_total.value == sum(m.value for m in terms.values() if m.value is not None)
+    assert {f.path: f.component for f in pc.components} == {
+        "AGENTS.md": "agents_md", ".agents/skills/implement/reference/co-s0.md": "skill",
+        ".github/instructions/testing-strategy.instructions.md": "always_applied_instruction",
+        ".github/instructions/observability-and-instrumentation.instructions.md": "scoped_instruction"}
+    top = {f.path: f for f in pc.top_files}
+    assert top["AGENTS.md"].delivery == "inlined" and top["AGENTS.md"].component == "agents_md"
+    assert not any(f.path.startswith("copilotToolsFingerprint") for f in pc.top_files)  # an exact 0 attributes nothing
 
 
 def test_per_file_tokens_are_labelled_and_the_task_readme_is_not_a_pack_file(fakes):

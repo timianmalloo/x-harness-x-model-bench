@@ -273,6 +273,7 @@ _UNSUPPORTED = not_recorded("unsupported events.version")[1]
 _NO_LOG = "no debug process log in the cell home"
 _SESSION = "events.jsonl:session.start"
 _DEBUG = "debug-log"
+FINGERPRINT = "copilotToolsFingerprint"  # the `tools` prompt part's path: `copilotToolsFingerprint:<digest>`
 _STAMP = re.compile(r"^(\d{4}-\d\d-\d\dT[\d:.]+Z) \[")
 _REQUEST = "[rust:model_wire] Wire request: "
 _DATA = "[rust:model_wire] data:"
@@ -459,14 +460,14 @@ def _prompt_parts(logs: list[Path], pairs: list[dict]) -> list[PromptPart] | str
     if text is None:
         return not_recorded("no request instructions in the debug process log")[1]
     source = f"{_DEBUG}:request.instructions"
-    parts: list[PromptPart] = []
+    parts: list[tuple] = []  # (part, path, chars, delivery, source); each becomes a PromptPart numbered by position
     covered = 0
     custom = [(m.start(), m.end()) for m in _CUSTOM.finditer(text)]
     for start, end in custom:
         imported = list(_IMPORTED.finditer(text, start, end))
         inner = sum(m.end() - m.start() for m in imported)
-        parts.append(PromptPart("instruction_file", None, end - start - inner, "inlined", source))
-        parts += [PromptPart("instruction_file", _path(m.group(1)), m.end() - m.start(), "inlined", source) for m in imported]
+        parts.append(("instruction_file", None, end - start - inner, "inlined", source))
+        parts += [("instruction_file", _path(m.group(1)), m.end() - m.start(), "inlined", source) for m in imported]
         covered += end - start
     starts = [m.start() for m in _APPLY.finditer(text) if not any(s <= m.start() < e for s, e in custom)]
     for i, start in enumerate(starts):
@@ -476,22 +477,30 @@ def _prompt_parts(logs: list[Path], pairs: list[dict]) -> list[PromptPart] | str
             listed = text.find(_LISTED, start)
             tag = _TOP_TAG.search(text, start)
             end = listed if listed != -1 else tag.start() if tag else len(text)
-        parts.append(PromptPart("instruction_file", None, end - start, "inlined", source))
+        parts.append(("instruction_file", None, end - start, "inlined", source))
         covered += end - start
     listed = text.find(_LISTED)
-    if listed != -1:
-        parts += [PromptPart("instruction_file", _path(m.group(1)), None, "listed", source)
-                  for m in _LISTED_ROW.finditer(text, listed)]
+    if listed != -1:  # each listed file counts its own table row, line end included (Leader ruling, J2-FIX DR c)
+        for m in _LISTED_ROW.finditer(text, listed):
+            end = text.find("\n", m.end())
+            row = (len(text) if end == -1 else end + 1) - m.start()
+            parts.append(("instruction_file", _path(m.group(1)), row, "listed", source))
+            covered += row
     for block in _SKILLS.finditer(text):
         for entry in _SKILL.finditer(text, block.start(1), block.end(1)):
             location = _LOCATION.search(entry.group(0))
-            parts.append(PromptPart("skills", _path(location.group(1)) if location else None, entry.end() - entry.start(),
-                                    "listed", source))
+            parts.append(("skills", _path(location.group(1)) if location else None, entry.end() - entry.start(),
+                          "listed", source))
             covered += entry.end() - entry.start()
-    parts.insert(0, PromptPart("system", None, len(text) - covered, "inlined", source))
+    parts.insert(0, ("system", None, len(text) - covered, "inlined", source))
     if pairs[0]["tools"] is not None:
-        parts.append(PromptPart("tools", None, None, "listed", f"{_DEBUG}:request.copilotToolsFingerprint (names and digests only)"))
-    return parts
+        # no character count (names and digests only); the fingerprint's digest is kept in `path` so two cells' tool
+        # catalogues compare exactly (Leader ruling, J2-FIX tools-part DR); None when the record gives no digest
+        digest = as_str(as_dict(pairs[0]["tools"]).get("digest"))
+        parts.append(("tools", f"{FINGERPRINT}:{digest}" if digest else None, None, "listed",
+                      f"{_DEBUG}:request.copilotToolsFingerprint (names and digests only)"))
+    # native_ordinal is the part's position in the record's parts (J1A-FIX item 28), so no two share a key
+    return [PromptPart(n, *part) for n, part in enumerate(parts)]
 
 
 def tool_inputs(path: Path) -> ProcessTrace:

@@ -478,24 +478,28 @@ def read_timeline(run_dir: Path | None, cell_id: str) -> list[dict] | None:
     return rows
 
 
-# The timeline's label for the prompt request, matched by suffix: this module reads the driver's log and never speaks
-# ACP, and test_architecture's rule keeps every ACP method name in driver.py (seam handed back: a driver constant).
-_PROMPT_SUFFIX = "/prompt"
-
-
 def acp_intervals(timeline: list[dict]) -> list[tuple[int, int]]:
     """ADR-0026 s3's estimate, as mono_ns spans: each runs from a prompt (`session/prompt` sent) or the latest tool
-    result (`tool_call_update` arrival) to the next tool call or turn end (`session/prompt`'s response)."""
+    result (`tool_call_update` arrival) to the next tool call or turn end (`session/prompt`'s response). The labels
+    are the driver's own exported constants, matched exactly: this module reads the driver's log, never speaks ACP."""
+    # the driver writes the timeline; imported only when a report asks (as `read_timeline`)
+    from harness_bench.driver import (
+        TIMELINE_PROMPT,
+        TIMELINE_RESPONSE,
+        TIMELINE_SENT,
+        TIMELINE_TOOL_CALL,
+        TIMELINE_TOOL_CALL_UPDATE,
+    )
+
     spans: list[tuple[int, int]] = []
     start: int | None = None
     for r in timeline:
-        method, kind = r.get("method"), r.get("update_kind")
-        prompt = isinstance(method, str) and method.endswith(_PROMPT_SUFFIX)
-        if kind == "sent" and prompt:
+        kind, prompt = r.get("update_kind"), r.get("method") == TIMELINE_PROMPT
+        if kind == TIMELINE_SENT and prompt:
             start = r["first_mono_ns"]
-        elif kind == "tool_call_update":
+        elif kind == TIMELINE_TOOL_CALL_UPDATE:
             start = r["last_mono_ns"]
-        elif start is not None and (kind == "tool_call" or (kind == "response" and prompt)):
+        elif start is not None and (kind == TIMELINE_TOOL_CALL or (kind == TIMELINE_RESPONSE and prompt)):
             spans.append((start, r["first_mono_ns"]))
             start = None
     return spans

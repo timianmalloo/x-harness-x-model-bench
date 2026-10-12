@@ -10,7 +10,9 @@ spread. Each harness row carries its `transport` (Ruling 120). Tokens only: no p
 The decomposition of one pair (ADR-0029 s3), with `tpc` the pack-on cell's own tokens per character (its first
 request's input tokens over its prefix characters, the prefix being every `inlined` or `listed` prompt part):
 
-- fixed prefix: per prompt part, (on chars - off chars) x the pack-on cell's requests x tpc. Inferred.
+- fixed prefix: per prompt part, (on chars - off chars) x the pack-on cell's requests x tpc. Inferred. A part with no
+  character count leaves the prefix not recorded, with one exception: the same kind with an identical fingerprint in
+  both cells of the pair is an exact zero delta (`_identical`; the page says so).
 - extra requests: (on requests - off requests) x the pack-off cell's median per-request input. Verified counts.
 - pack reads: each pack-on tool call (not a write, not a skill load) naming a pack file: its bytes returned x tpc,
   entering at the next request and carried until a compaction. Inferred.
@@ -33,7 +35,7 @@ from datetime import datetime
 from decimal import ROUND_HALF_EVEN, Decimal
 from pathlib import Path
 
-from harness_bench import config, gitsafe, lean, procs, stats, verdicts, views
+from harness_bench import archive, gitsafe, lean, stats, verdicts, views
 from harness_bench import plan as plan_mod
 from harness_bench.errors import BenchError
 from harness_bench.report import context_growth, model, tool_phases
@@ -76,6 +78,7 @@ LABELS = {
     "residual": "Verified: the delta minus the recorded terms; shown, never spread",
 }
 HOOK_TOKENS = "not recorded: hook output size is not in the record"
+IDENTICAL_FINGERPRINT = "tool catalogue identical in both arms (fingerprint equal): delta 0"
 NO_RUN_DIR = "not recorded: the run directory is not known to pack_cost"
 UNREADABLE = "not recorded: pack source not readable"
 NO_PACK = "not recorded: the plan binds no pack"
@@ -83,9 +86,6 @@ SKILL_TOOLS = frozenset({"skill"})  # lower-cased tool names that load a skill (
 DEFAULT_OUT = Path("docs") / "coordination" / "ai-forward-pack-cost.html"
 TITLE = "Where the AI-Forward pack's tokens go"
 GIT_TIMEOUT = 60
-
-# ADR-0027 s0's transports; one wording on both pages.
-TRANSPORT_ACP, TRANSPORT_STREAM, TRANSPORT_P = "acp", "native stream", "copilot -p (local adapter)"
 
 
 @dataclass(frozen=True)
@@ -102,7 +102,7 @@ class Term:
 @dataclass(frozen=True)
 class HarnessDecomposition:
     harness: str
-    transport: str  # a plan fact (cost_compare.TRANSPORTS)
+    transport: str  # a plan fact (tool_phases.TRANSPORTS)
     pairs: int
     delta_total: Measure
     terms: tuple[Term, ...]  # in TERMS order
@@ -202,31 +202,18 @@ class PackSource:
     read: Callable[[str], str | None]  # a pack file's text at the commit; None when the source has no such path
 
 
-_RUN_DIRS: dict[str, Path] = {}  # run_id -> run directory, registered by `load_views`
-
-
 def load_views(args) -> list[RunView]:
-    """The views of `args.pack_cost`, each registered with its run directory for `cell_facts`."""
+    """The views of `args.pack_cost`, from `--runs` (default `<root>/runs`), in the order named. Each view carries
+    its own run directory and rows (`RunView.run_dir`, `RunView.facts`), so nothing is registered here."""
     runs = Path(args.runs) if getattr(args, "runs", None) else Path(args.root) / "runs"
-    out = []
-    for run_id in args.pack_cost:
-        run_dir = runs / run_id
-        view = views.load(run_dir)
-        _RUN_DIRS[view.run_id] = run_dir
-        out.append(view)
-    return out
-
-
-def _rows(run_dir: Path, fact: str, cell: CellView) -> list[dict]:
-    return [r for r in views.rows(run_dir, fact) if r.get("cell_id") == cell.cell_id
-            and r.get("extraction_id") == cell.extraction_id]
+    return [views.load(runs / run_id) for run_id in args.pack_cost]
 
 
 def _base_tree(run_dir: Path, view: RunView, cell: CellView) -> frozenset[str] | str:
     # grade imports report: imported when a real cell is read
     from harness_bench.grade import _changes
 
-    attempts = sorted((run_dir / "archive" / cell.cell_id).glob("attempt-*"))
+    attempts = archive.attempt_dirs(run_dir, cell.cell_id)
     ws = attempts[-1] / "ws" if attempts else None
     plan_cell = next((c for c in view.plan.get("cells", []) if c.get("cell_id") == cell.cell_id), None)
     if ws is None or plan_cell is None:
@@ -241,24 +228,26 @@ def _base_tree(run_dir: Path, view: RunView, cell: CellView) -> frozenset[str] |
 
 
 def cell_facts(view: RunView, cell: CellView) -> CellFacts:
-    """The real reader: the cell's current-extraction rows of `model_calls`, `prompt_parts` and `harness_events`, its
-    tool inputs from its archived native record (`pack_improvement`'s trace reader), and its pre-turn tree."""
-    # its trace reader imports report.html at module load
-    from harness_bench.report import pack_improvement
-
-    run_dir = _RUN_DIRS.get(view.run_id)
-    if run_dir is None or cell.extraction_id is None:
+    """The real reader, through the view alone (J2-FIX item 2: the one accessor, `views.cell_rows` over
+    `RunView.facts`, with `RunView.run_dir` for the archive): the cell's current-extraction main-session
+    `model_calls`, its `prompt_parts` and `harness_events` rows, its tool inputs from its archived native record
+    (`tool_phases.cell_trace`), and its pre-turn tree."""
+    run_dir = view.run_dir
+    if run_dir is None:
         return CellFacts(NO_RUN_DIR, NO_RUN_DIR, NO_RUN_DIR, NO_RUN_DIR, NO_RUN_DIR)
-    calls = sorted((r for r in _rows(run_dir, "model_calls", cell) if r.get("principal") == cell.cell_id),
-                   key=lambda r: r["native_ordinal"])
+    if cell.extraction_id is None:
+        return CellFacts(*(["not recorded: not graded"] * 5))
+    session = tool_phases.main_session(view, cell)
+    calls = sorted((r for r in views.cell_rows(view, "model_calls", cell) if r.get("principal") == cell.cell_id
+                    and (session is None or r.get("native_session_id") == session)), key=lambda r: r["native_ordinal"])
     ordinals = tuple(r["native_ordinal"] for r in calls) or "not recorded: no model_calls rows"
-    parts = tuple(PromptPart(r["part"], r.get("path"), r.get("chars"), r["delivery"], r["source"])
-                  for r in _rows(run_dir, "prompt_parts", cell)) or "not recorded: no prompt_parts rows"
+    parts = tuple(PromptPart(r["native_ordinal"], r["part"], r.get("path"), r.get("chars"), r["delivery"], r["source"])
+                  for r in sorted(views.cell_rows(view, "prompt_parts", cell), key=lambda r: r["native_ordinal"])) \
+        or "not recorded: no prompt_parts rows"
     events = tuple(HarnessEvent(r["native_ordinal"], r["event"], r.get("name"), r.get("start"), r.get("end"),
                                 r.get("ok"), r.get("detail"))
-                   for r in _rows(run_dir, "harness_events", cell)) or "not recorded: no harness_events rows"
-    session = calls[0].get("native_session_id") if calls else None
-    trace = pack_improvement._cell_trace(run_dir, view, cell, session)
+                   for r in views.cell_rows(view, "harness_events", cell)) or "not recorded: no harness_events rows"
+    trace = tool_phases.cell_trace(run_dir, view, cell, session)
     tools = trace.calls if trace is not None else "not recorded: the native record is not readable"
     return CellFacts(ordinals, parts, tools, events, _base_tree(run_dir, view, cell))
 
@@ -275,9 +264,11 @@ def pack_source(plan: dict) -> PackSource:
         return PackSource("not recorded", NO_PACK, lambda _: None)
     source, commit = Path(str(pack["source"])), str(pack["commit"])
     label = f"{pack['source']}@{commit}"
+    if not source.is_dir():  # git would not start in a missing folder
+        return PackSource(label, UNREADABLE, lambda _: None)
     try:
         gitsafe.git(["cat-file", "-e", f"{commit}^{{commit}}"], cwd=source, timeout=GIT_TIMEOUT)
-    except (gitsafe.GitError, procs.SpawnError, OSError):  # SpawnError: the source folder does not exist
+    except (gitsafe.GitError, OSError):
         return PackSource(label, UNREADABLE, lambda _: None)
 
     def read(path: str) -> str | None:
@@ -329,21 +320,6 @@ def _pseudo(path: str) -> str:
     return "skill" if path in ("(skills part)", "(skill tool call)") else "other"
 
 
-def _transport(plan: dict, harness: str) -> str:
-    """ADR-0027 s0, Ruling 120: Copilot `-p` behind the local adapter when the plan's build names `adapter_version`
-    (`views._prompt_mode`, R-VALIDITY's detection); a native stream for agy.
-
-    assume: agy's only transport is `agy-stream` (`bench/profiles/agy.yaml:5`; the plan's profile record does not
-    carry `transport`), and every other harness runs over ACP. Confirm: a `transport` field in the plan's profile
-    record. Breaks if false: a harness row names the wrong transport; the fix is to read that field here."""
-    if views._prompt_mode(plan, harness):
-        return TRANSPORT_P
-    recorded = ((plan.get("profiles") or {}).get(harness) or {}).get("transport")
-    if recorded == "agy-stream" or (recorded is None and harness == "agy"):
-        return TRANSPORT_STREAM
-    return TRANSPORT_ACP
-
-
 # --- one pair ------------------------------------------------------------------------------------------------------
 
 def _int(value: Decimal) -> int:
@@ -365,10 +341,26 @@ def _rel(path: str, pack: frozenset[str]) -> str | None:
     return max(hits, key=len) if hits else None
 
 
-def _prefix(parts: tuple[PromptPart, ...]) -> dict[tuple[str, str | None], int] | str:
+def _uncounted(parts: tuple[PromptPart, ...] | str) -> set[tuple[str, str]]:
+    """The (part, fingerprint) keys of the prefix parts with no character count that name a fingerprint (`path`)."""
+    if isinstance(parts, str):
+        return set()
+    return {(p.part, p.path) for p in parts if p.delivery in ("inlined", "listed") and p.chars is None and p.path}
+
+
+def _identical(on: tuple[PromptPart, ...] | str, off: tuple[PromptPart, ...] | str) -> set[tuple[str, str]]:
+    """The prefix rule's one exception (Leader ruling, J2-FIX tools-part DR): a part with no character count whose
+    kind and fingerprint are identical in the pair's pack-on and pack-off cells contributes a delta of exactly 0,
+    whatever its size; it is left out of both prefixes (and so of the tokens-per-character base). Differing or
+    missing fingerprints leave the prefix not recorded."""
+    return _uncounted(on) & _uncounted(off)
+
+
+def _prefix(parts: tuple[PromptPart, ...], identical: set[tuple[str, str]] = frozenset()
+            ) -> dict[tuple[str, str | None], int] | str:
     out: dict[tuple[str, str | None], int] = {}
     for part in parts:
-        if part.delivery not in ("inlined", "listed"):
+        if part.delivery not in ("inlined", "listed") or (part.part, part.path) in identical:
             continue
         if part.chars is None:
             return f"not recorded: prompt part {part.part} has no character count"
@@ -399,6 +391,7 @@ class _Pair:
     pack_files: frozenset[str]
     on_total: int | None
     hook_ms: int | None
+    identical: bool = False  # a fixed-prefix part entered as an exact zero delta (`_identical`)
 
 
 def _carried(entered: list[int], compacted: Sequence[int]) -> tuple[int, int]:
@@ -416,8 +409,9 @@ def _pair(view: RunView, on: CellView, off: CellView, facts: Callable[[RunView, 
     pack: frozenset[str] = frozenset() if trees else f_on.base_tree - f_off.base_tree
     n_on, n_off = len(s_on.inputs), len(s_off.inputs)
     per_request = s_on.reason or s_off.reason or (None if n_on and n_off else "not recorded: no requests in the series")
-    prefix_on = _prefix(f_on.prompt_parts) if isinstance(f_on.prompt_parts, tuple) else f_on.prompt_parts
-    prefix_off = _prefix(f_off.prompt_parts) if isinstance(f_off.prompt_parts, tuple) else f_off.prompt_parts
+    identical = _identical(f_on.prompt_parts, f_off.prompt_parts)
+    prefix_on = _prefix(f_on.prompt_parts, identical) if isinstance(f_on.prompt_parts, tuple) else f_on.prompt_parts
+    prefix_off = _prefix(f_off.prompt_parts, identical) if isinstance(f_off.prompt_parts, tuple) else f_off.prompt_parts
     tpc: Decimal | str  # the pack-on cell's tokens per character, or why it is not recorded
     if per_request or isinstance(prefix_on, str):
         tpc = per_request or prefix_on
@@ -500,14 +494,17 @@ def _pair(view: RunView, on: CellView, off: CellView, facts: Callable[[RunView, 
     else:
         delta = Measure(t_on - t_off)
         terms["residual"] = Measure(delta.value - sum(m.value for m in terms.values() if m.value is not None))
-    return _Pair(on.harness, view.run_id, on.task, on.rep or 0, on, delta, terms, files, pack, t_on, hook_ms)
+    return _Pair(on.harness, view.run_id, on.task, on.rep or 0, on, delta, terms, files, pack, t_on, hook_ms,
+                 bool(identical) and terms["fixed_prefix"].value is not None)
 
 
 def _pairs(view: RunView) -> list[tuple[CellView, CellView]]:
     """The lean pairing (`verdicts.collect`): one pair is exactly one (harness, task, rep) of one batch, a pack-off
     and a pack-on cell, both admitted by its rule."""
-    named = plan_mod.plan_comparisons(view.plan)
-    ref, treat = named[0] if named else (config.ARM_OFF, "on")
+    named = plan_mod.plan_comparisons(view.plan)  # a plan with both packs and no comparisons block names off/on
+    if not named:
+        return []
+    ref, treat = named[0]
     tasks = tuple(sorted({c.task for c in view.cells}))
     out = []
     for harness in dict.fromkeys(c.harness for c in view.cells):
@@ -605,7 +602,7 @@ def build(views: Sequence[RunView]) -> PackCost:
     run_views = views
     plan = run_views[0].plan if run_views else {}
     src = pack_source(plan)
-    transports = {c.harness: _transport(v.plan, c.harness) for v in run_views for c in v.cells}
+    transports = {c.harness: tool_phases.transport(v.plan, c.harness) for v in run_views for c in v.cells}
     pairs = [_pair(v, on, off, cell_facts) for v in run_views for on, off in _pairs(v)]
     classes: dict[str, str] = {}
     pack_files = sorted(set().union(*(p.pack_files for p in pairs)) if pairs else set())
@@ -617,7 +614,10 @@ def build(views: Sequence[RunView]) -> PackCost:
         terms = []
         for name in TERMS:
             median, low, high = _agg([p.terms[name] for p in mine])
-            terms.append(Term(name, median, low, high, median.reason if median.value is None else LABELS[name]))
+            label = median.reason if median.value is None else LABELS[name]
+            if name == "fixed_prefix" and median.value is not None and any(p.identical for p in mine):
+                label = f"{label}; {IDENTICAL_FINGERPRINT}"
+            terms.append(Term(name, median, low, high, label))
         harnesses.append(HarnessDecomposition(harness, transports[harness], len(mine), _agg([p.delta for p in mine])[0],
                                               tuple(terms)))
         def comp_of(path: str) -> str:
@@ -793,9 +793,9 @@ def _tuning(pc: PackCost, t: _Tables) -> model.Section:
     return _section("tuning", "What to tune", *children)
 
 
-def render(pc: PackCost, analysis_html: str | None = None) -> str:
-    """The page's HTML; `analysis_html` is the analyst section (`analysis.check_and_render`), absent without
-    `--analysis`."""
+def render(pc: PackCost, analysis_html: Html | None = None) -> str:
+    """The page's HTML; `analysis_html` is the analyst section `analysis.check_and_render` built (escaped by the
+    builder), absent without `--analysis`."""
     # report.html and egress import each other; importing egress first is the order that resolves the cycle.
     from harness_bench import egress  # noqa: F401
     from harness_bench.report import html as report_html
@@ -804,7 +804,7 @@ def render(pc: PackCost, analysis_html: str | None = None) -> str:
     sections = [_header(pc, t), _decomposition(pc, t), _pair_table(pc, t), _components(pc, t), _top(pc, t),
                 _tuning(pc, t)]
     if analysis_html is not None:
-        sections.append(model.Section("analysis", "Analysis", Html(analysis_html)))
+        sections.append(model.Section("analysis", "Analysis", analysis_html))
     return model.page(model.ReportModel(run_id=", ".join(pc.runs), sections=tuple(sections)),
                       style=report_html.STYLE + STYLE)
 

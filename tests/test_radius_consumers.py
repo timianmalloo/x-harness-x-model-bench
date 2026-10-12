@@ -1,9 +1,11 @@
 """RADIUS-TEST-A's control (ADR-0026 s6): one radius definition, and every consumer accounts for test paths.
 
 A radius consumer is a module under `src/harness_bench` that reads the `blast_radius` key (a `"blast_radius"` string
-literal; a docstring that mentions it is not one). Each must match paths through `_changes.in_radius` (never its own
-`fnmatch`), and either call `_changes.is_test_path` or be named exempt here with its reason. A consumer that hands
-the radius to another consumer is named as a delegate, and the module it hands it to must pass the same rule.
+literal; a docstring that mentions it is not one) or matches a path against a radius it is handed (a call to
+`_changes.in_radius`, e.g. `report/tool_phases.py`'s classifier, J2-FIX item 8). Each must match paths through
+`_changes.in_radius` (never its own `fnmatch`), and either call `_changes.is_test_path` or be named exempt here with
+its reason. A consumer that hands the radius to another consumer is named as a delegate, and the module it hands it to
+must pass the same rule.
 """
 
 import ast
@@ -16,6 +18,8 @@ PRESENCE_ONLY = {"grade/runner.py": "applicable(has_radius=...) asks whether the
 EXEMPT_TEST_PATH = {  # module -> why it may match the radius without `is_test_path`
     "report/pack_improvement.py": "classify() decides test_write by its own TEST_PATH before product_write, so a test "
                                   "path is never a product write; diverted_delivery compares bytes, not scope",
+    "report/tool_phases.py": "classify() (moved here from pack_improvement) decides test_write by its own TEST_PATH "
+                             "before product_write, so a test path is never a product write",
 }
 
 
@@ -26,9 +30,11 @@ def _tree(rel: str) -> ast.Module:
 def _consumers() -> list[str]:
     out = []
     for path in sorted(SRC.rglob("*.py")):
+        rel = path.relative_to(SRC).as_posix()
         tree = ast.parse(path.read_text(encoding="utf-8"))
-        if any(isinstance(n, ast.Constant) and n.value == "blast_radius" for n in ast.walk(tree)):
-            out.append(path.relative_to(SRC).as_posix())
+        if rel != "grade/_changes.py" and (any(isinstance(n, ast.Constant) and n.value == "blast_radius"
+                                               for n in ast.walk(tree)) or _calls(tree, "_changes", "in_radius")):
+            out.append(rel)
     return out
 
 
@@ -44,7 +50,8 @@ def _imports_fnmatch(tree: ast.Module) -> bool:
 
 def test_the_sweep_finds_every_radius_consumer_the_register_names():
     assert set(_consumers()) == {"grade/diffstats.py", "grade/drift.py", "grade/noguess.py", "grade/rework.py",
-                                 "grade/runner.py", "readiness.py", "report/pack_improvement.py"}
+                                 "grade/runner.py", "readiness.py", "report/pack_improvement.py",
+                                 "report/tool_phases.py"}
 
 
 def test_every_radius_consumer_calls_in_radius_and_is_test_path_or_is_named_exempt():

@@ -53,6 +53,12 @@ PROTOCOL_VERSION = 1
 CLIENT_INFO = {"name": "harness-bench", "version": "1"}
 TIMELINE = "acp-timeline.jsonl"
 TIMELINE_FLUSH = 64  # completed lines held before one append (the buffer bound)
+# The timeline's labels a reader matches (`views.acp_intervals`): the prompt request's method, the two kinds this
+# driver stamps on a request line, and the two tool-call update kinds the agent sends. Exported so no other module
+# spells an ACP name (test_only_driver_speaks_acp; Leader ruling on R-DERIV seam 3).
+TIMELINE_PROMPT = "session/prompt"
+TIMELINE_SENT, TIMELINE_RESPONSE = "sent", "response"
+TIMELINE_TOOL_CALL, TIMELINE_TOOL_CALL_UPDATE = "tool_call", "tool_call_update"
 log = logging.getLogger("harness_bench.driver")
 
 
@@ -270,7 +276,8 @@ class _Channel:
             self.timeline.add(_label(msg["method"]), kind, _label(call.get("toolCallId")), usage)
         else:
             rid = msg.get("id")
-            self.timeline.add(self.methods.get(rid, "response") if isinstance(rid, int) else "response", "response", None)
+            self.timeline.add(self.methods.get(rid, TIMELINE_RESPONSE) if isinstance(rid, int) else TIMELINE_RESPONSE,
+                              TIMELINE_RESPONSE, None)
 
     def _read(self) -> None:
         parser = LineParser()
@@ -322,8 +329,8 @@ class _Channel:
         self.seq += 1
         rid = self.seq
         self.methods[rid] = method
-        if method == "session/prompt":
-            self.timeline.add(method, "sent", None)
+        if method == TIMELINE_PROMPT:
+            self.timeline.add(method, TIMELINE_SENT, None)
         if not self.send({"jsonrpc": "2.0", "id": rid, "method": method, "params": params}):
             self._observe_cancel(False)
             raise _Eof

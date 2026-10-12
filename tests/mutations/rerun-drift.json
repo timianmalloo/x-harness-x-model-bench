@@ -71,7 +71,7 @@
   },
   {
     "name": "R-DRIFT: the report's radius match folds case again (two definitions, RADIUS-TEST-A)",
-    "file": "src/harness_bench/report/pack_improvement.py",
+    "file": "src/harness_bench/report/tool_phases.py",
     "find": "    return any(_changes.in_radius(p, list(blast_radius)) for p in paths)",
     "replace": "    return any(_changes.in_radius(p.lower(), [g.lower() for g in blast_radius]) for p in paths)",
     "tests": ["tests/test_radius_consumers.py::test_one_radius_definition_case_sensitive_on_every_host"]

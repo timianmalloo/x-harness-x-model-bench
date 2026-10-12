@@ -38,6 +38,7 @@ from pathlib import Path
 
 from harness_bench import views
 from harness_bench.grade.cost import ACP_MISSES_CALLS, SESSION_TOTALS
+from harness_bench.report import tool_phases
 from harness_bench.telemetry import grok
 
 NO_TURNS = "No turns recorded for {task}."
@@ -205,8 +206,7 @@ def request_series(view: views.RunView, cell_id: str) -> RequestSeries:
     rows = views.cell_rows(view, "model_calls", cell)
     if rows is None:
         return RequestSeries(cell_id, reason="not graded")
-    session = next((e.get("session_id") for e in view.facts.get("events", ())
-                    if e.get("kind") == "cell.outcome" and e.get("cell_id") == cell_id), None)
+    session = tool_phases.main_session(view, cell)
     calls = sorted((r for r in rows if r["principal"] == cell_id and (session is None or r.get("native_session_id") == session)),
                    key=lambda r: r["native_ordinal"])
     if not calls:
