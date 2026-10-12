@@ -32,6 +32,20 @@ from harness_bench.plan import cell_arm
 NOT_FOUND = "pre-turn commit not found in the working copy"
 PACK_SUBJECT = re.compile(r"ai-forward pack revision \d+")  # workspace.install_pack's message
 BUILD_OUTPUT = frozenset({".git", "bin", "obj", "TestResults", "__pycache__"})  # never part of a tree, on either side
+# ADR-0026 s5 (DRIFT-MACHINE-A): the one machine-written list, separate from BUILD_OUTPUT (the property graders' copy
+# filter, which does not move). Tool caches: config's generated names plus the two linters' caches, at any depth.
+TOOL_CACHES = frozenset(config.GENERATED_DIR_NAMES | {".mypy_cache", ".ruff_cache"})
+# The files the pack's audit script writes (`docs/ai-forward-pack/scripts/audit-log.py`: STARTS_FILE, log_path, the
+# audit-log.md, audit-data.js and index.html views), in its two audit dirs (`audit_dir(resolve_default_root(None))`:
+# docs/audit, else .agents/log/audit). The session-start hook writes only through it (`hooks/session-start.py`).
+# Named exactly, never a docs/audit glob (gate finding 12): any other file there stays an authored change.
+AUDIT_DIRS = ("docs/audit", ".agents/log/audit")
+AUDIT_FILES = (".run-starts.json", "audit-log.jsonl", "change-log.jsonl", "audit-log.md", "audit-data.js", "index.html")
+PACK_LOGS = frozenset(f"{d}/{f}" for d in AUDIT_DIRS for f in AUDIT_FILES)
+# The heartbeat hook's one ledger row per sample (`hooks/heartbeat.py` -> coord-core `append_event`): a ledger named
+# by the session, directly under .agents/log (its scratch is under .git, already outside every tree).
+HOOK_LEDGER = re.compile(r"\.agents/log/[^/]+\.jsonl")
+MACHINE_CACHE, MACHINE_PACK_LOG = "cache", "pack-log"
 CHUNK = 1 << 20
 DIGEST_ALGORITHM = "sha256"
 CACHE_CAPACITY = 32
@@ -50,6 +64,7 @@ __all__ = [
     "in_radius",
     "is_test_path",
     "line_delta",
+    "machine_written",
     "pre_turn_commit",
     "pre_turn_tree",
     "product_lines",
@@ -260,6 +275,20 @@ def in_radius(path: str, radius: list[str]) -> bool:
     # simplify: fnmatch, where `*` also crosses `/`, so `dir/**` is every file under dir; ceiling: the task globs are
     # `**`, `<dir>/**` or one file; upgrade trigger: a glob with a `*` inside a path segment.
     return any(fnmatchcase(path.replace("\\", "/"), glob) for glob in radius)
+
+
+def machine_written(path: str) -> str | None:
+    """MACHINE_CACHE for a path under a tool cache directory, MACHINE_PACK_LOG for a file the pack's audit script or
+    heartbeat hook writes, None for every other path (an authored change).
+
+    assume: the pack's hooks write into the working copy only through audit-log.py (session-start.py) and the
+    heartbeat ledger (reread-guard writes the temp dir); confirm: a pack-on probe cell's drift.log; breaks: a hook
+    file the list does not name counts as discretionary (DRIFT-MACHINE-A's upgrade trigger).
+    """
+    norm = path.replace("\\", "/")
+    if any(part in TOOL_CACHES for part in norm.split("/")[:-1]):
+        return MACHINE_CACHE
+    return MACHINE_PACK_LOG if norm in PACK_LOGS or HOOK_LEDGER.fullmatch(norm) else None
 
 
 def line_delta(old: list[str], new: list[str]) -> tuple[list[int], list[int]]:

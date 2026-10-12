@@ -20,7 +20,6 @@ notes below for what each function still needs wired to it.
 
 from __future__ import annotations
 
-import fnmatch
 import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
@@ -32,6 +31,7 @@ import yaml
 from harness_bench import profiles
 from harness_bench.board import LEGACY_PAIR, Board, _cell_task_rep, view_comparisons
 from harness_bench.errors import BenchError
+from harness_bench.grade import _changes
 from harness_bench.grade.cost import ACP_MISSES_CALLS, SESSION_TOTALS
 from harness_bench.plan import cell_arm
 from harness_bench.stats import fisher_exact_two_sided, holm
@@ -248,11 +248,11 @@ def _normalize_calls(calls: Sequence[ToolInput], ws: Path | None) -> tuple[ToolI
 
 
 def _matches_blast_radius(paths: Sequence[str], blast_radius: Sequence[str]) -> bool:
-    """One definition of "a relative path matches a blast-radius glob" (design section 4.4's own
-    comment: `product_write` and `diverted_delivery` must use "the same matcher... for the
-    identical glob syntax, one definition, not two"). `fnmatch`'s `*` matches `/` too, so `src/**`
-    and `src/*` match the same set -- intentional (design section 4.4)."""
-    return any(fnmatch.fnmatch(p, pat) for p in paths for pat in blast_radius)
+    """Any of `paths` inside `blast_radius`, by `_changes.in_radius`: the graders' one radius definition
+    (ADR-0026 s4, RADIUS-TEST-A), case-sensitive on every host, so a path is inside on this report
+    exactly when it is inside for drift and the property graders. Its `*` matches `/` too, so `src/**`
+    and `src/*` match the same set (design section 4.4)."""
+    return any(_changes.in_radius(p, list(blast_radius)) for p in paths)
 
 
 def classify(call: ToolInput, blast_radius: Sequence[str] | None) -> frozenset[str]:
@@ -359,8 +359,8 @@ def diverted_delivery(attempt_dir: Path, ws: Path, blast_radius: Sequence[str] |
     it byte for byte (design section 4.4) -- file bytes only, never git. NA `NA_BLAST_RADIUS` when
     the blast radius could not be read (R-85 item 1).
 
-    Matches every file under the sibling (`rglob("*")`) against `blast_radius` by `fnmatch` on its
-    path relative to the sibling, POSIX-normalised -- the same matcher `classify()`'s own
+    Matches every file under the sibling (`rglob("*")`) against `blast_radius` by `_changes.in_radius`
+    on its path relative to the sibling, POSIX-normalised -- the same matcher `classify()`'s own
     `product_write` rule uses for the identical glob syntax (`src/**`, `tests/**`, a bare file name),
     so a `**` pattern means one thing in this module, not two. `Path.glob(pattern)` per pattern (the
     S3 original) silently misses every leaf file under a `**` segment -- pathlib's `**` matches

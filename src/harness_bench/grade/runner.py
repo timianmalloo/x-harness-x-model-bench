@@ -189,12 +189,15 @@ def tool_versions(root: Path, plan: Mapping) -> dict[str, str]:
     return out
 
 
-def applicable(catalog: dict, graders: list[str], prop: str | None = None) -> dict[str, dict[str, dict]]:
+def applicable(catalog: dict, graders: list[str], prop: str | None = None, *,
+               has_radius: bool = False) -> dict[str, dict[str, dict]]:
     """grader -> {metric id: catalog entry}: the `kind: score` metrics each of `graders` owns for this task, in catalog order.
 
-    Two clauses (R-90 c1, R-95). A metric with a `property:` tag applies only when the tag equals `prop` (the task's
-    `property.name`; None for a task with none, or one that changed, so only untagged metrics apply). The owner of a
-    metric is the first of [grader, *also_graded_by] the task names; it is in that grader's set and no other's."""
+    Three clauses (R-90 c1, R-95, ADR-0026 s5). A metric with a `property:` tag applies only when the tag equals `prop`
+    (the task's `property.name`; None for a task with none, or one that changed, so only untagged metrics apply). The
+    owner of a metric is the first of [grader, *also_graded_by] the task names; it is in that grader's set and no
+    other's. A metric marked `all_tasks: true` also applies to a task the graders omit when the task has a
+    `blast_radius` (`has_radius`), owned by its own `grader`: catalog 0.8's drift metrics, with no task-version bump."""
     out: dict[str, dict[str, dict]] = {}
     for area in catalog["areas"].values():
         for m in area.get("metrics") or []:
@@ -204,6 +207,8 @@ def applicable(catalog: dict, graders: list[str], prop: str | None = None) -> di
             if tag is not None and tag != prop:
                 continue
             owner = next((g for g in (m["grader"], *m.get("also_graded_by", ())) if g in graders), None)
+            if owner is None and has_radius and m.get("all_tasks") is True:
+                owner = m["grader"]
             if owner is not None:
                 out.setdefault(owner, {})[m["id"]] = m
     return out
@@ -389,7 +394,7 @@ class _Pass:
                          extraction=ex, prices=self.prices if self.prices_ok else None, emit=self.append,
                          work_root=work_root, snapshots=self._snapshots(cid, task))
         prop = (task.get("property") or {}).get("name") if current else None
-        for grader, metrics in applicable(self.catalog, names, prop).items():
+        for grader, metrics in applicable(self.catalog, names, prop, has_radius=bool(task.get("blast_radius"))).items():
             inp = dataclasses.replace(base, out_dir=out_dir / grader, work_root=work_root / grader, metrics=metrics)
             scores = self._run_grader(grader, inp, current)
             self.wanted.update((cid, m) for m in metrics)

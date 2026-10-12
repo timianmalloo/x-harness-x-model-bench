@@ -15,6 +15,7 @@ import pytest
 import yaml
 from archived_runs import (
     CODEX_MODEL,
+    FROZEN_ROOT,
     GOOD,
     ROOT,
     gate_runs_root,
@@ -270,7 +271,7 @@ def test_a_committed_mini_run_regrades_to_its_0_3_values_with_every_other_metric
     assert {k: v for k, v in got.items() if k[1] not in BUILT} == \
         {(c, m): (None, "not built") for c in "ab" for m in (CORRECTNESS | COST) - BUILT}
     assert views.export(views.load(run_dir, "0.3")) == export_before  # the 0.3 pass is still the 0.3 export
-    released = config.load_yaml(ROOT / "bench" / "metrics.yaml")["version"].removesuffix(".dev")
+    released = config.load_yaml(FROZEN_ROOT / "bench" / "metrics.yaml")["version"].removesuffix(".dev")
     assert views.load(run_dir).catalog_version == config.load_yaml(root / "bench" / "metrics.yaml")["version"] == released  # make_root releases the source catalog's .dev version
 
 
