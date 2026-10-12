@@ -1,0 +1,16 @@
+# Copilot cell profile (ADR-0003, ADR-0013; docs/design/phase2-copilot-profile.md). Native ACP: no adapter.
+harness: copilot
+vendor: openai   # R-73 item 1: a profile fact, never inferred from a model id
+home_env: COPILOT_HOME
+credential: null
+credential_kind: "subscription login (credential store)"
+files: {}
+command: ["{exe}", "--acp", "--model", "{model}", "--allow-tool", "shell", "--allow-tool", "write", "--disable-builtin-mcps", "--available-tools", "powershell", "list_powershell", "read_powershell", "stop_powershell", "apply_patch", "view", "glob", "rg", "skill"]
+shutdown_grace_seconds: 10
+env:
+  COPILOT_AUTO_UPDATE: "false"
+mode: null
+set_model: true
+record_glob: "session-state/{session_id}/events.jsonl"
+usage_source: native_record
+auxiliary_models: []
