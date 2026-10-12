@@ -42,6 +42,13 @@ review-suggested:
 
 ## Decision
 
+0. **Audience (Ruling 121).** This page is for the Copilot team, an external share: what each harness spends on the
+   same tasks, and why same-model harnesses differ. Pack tuning is not its subject; that is ADR-0029's page.
+   - Every combo row shows its **transport** (ACP, native stream, or Copilot `-p` behind the local adapter), a plan
+     fact, beside its numbers (Ruling 120's disclosure).
+   - **Reasoning excerpts are off by default** on this page (`--excerpts` turns them on): an external page carries
+     reasoning counts, volumes and source kinds, not other vendors' reasoning text. The pack page (private) may carry
+     them.
 1. **A separate output, not a `report.html` section.** `bench report --cost-compare RUN [RUN …] --out PATH
    [--open]` writes one page. `report.html`'s rendering is untouched; its catalog-version line moves once, at the
    0.8 freeze (§5).

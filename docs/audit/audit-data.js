@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-12T01:17:11Z",
+  "generated": "2026-10-12T14:22:33Z",
   "audit": [
     {
       "actor": null,
@@ -180228,6 +180228,30 @@ window.AUDIT_DATA = {
       "duration_source": "session-start-hook",
       "started_at": "2026-10-12T01:15:09Z",
       "duration_seconds": 122.0
+    },
+    {
+      "id": "al-01M4R7WTT71RWRDP94KKVPNHRE",
+      "shortname": "coordination-lean-rerun",
+      "datetime": "2026-10-12T14:22:33Z",
+      "session": "lean-rerun-leader",
+      "prompt": "/prepare-for-coordination for the lean re-run at equal reasoning (prompt 12ac42f4; architecture c6f85549; Rulings 117-121)",
+      "summary": "18 tracks (3 contract/fixture before wave 1, 13 in wave 1, 2 in wave 2), batched joins, serial spine S0-S9, stop rules, 7 struck; gate: 3 vetoes round 1, 2 more after Rulings 120/121 (Copilot -p adapter; pack-cost page), all cleared by change over 4 rounds",
+      "kind": "skill",
+      "skill": "prepare-for-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/coordination/coordination-lean-rerun.md"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "a coordination plan for the lean re-run that one Leader can execute",
+      "done_when": "plan md+html committed with every gate veto cleared by the reviewer",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-12T13:49:20Z",
+      "duration_seconds": 1993.0
     }
   ],
   "changes": [

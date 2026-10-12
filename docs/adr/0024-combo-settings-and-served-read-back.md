@@ -67,7 +67,7 @@ review-suggested:
    | --- | --- | --- | --- |
    | claude-code | env `CLAUDE_CODE_EFFORT_LEVEL={effort}` | `model_id` (`[1m]` = 1,000,000) | 200,000 (Inferred; probe confirms) |
    | codex | `config.toml` `model_reasoning_effort = "{effort}"` | `config.toml` `model_context_window = {context_tokens}` | 272,000 |
-   | copilot | argv `--reasoning-effort {effort}` | `none` under ACP (Ruling 118) | 272,000 |
+   | copilot | argv `--reasoning-effort {effort}` | argv `--context long_context` for `922000`, in `-p` mode (ADR-0028, Ruling 120; under ACP it is ignored) | 272,000 |
    | grok | argv `--reasoning-effort {effort}` on `grok agent`, before `stdio` | `none` | 256,000 |
    | agy | `model_id` (`-high`) | `none` | `null` (not recorded) |
 

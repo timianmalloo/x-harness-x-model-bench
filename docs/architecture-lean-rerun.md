@@ -13,6 +13,8 @@ links:
   - { to: adr-0025-transport-seam-grok-and-agy-cells, rel: depends-on }
   - { to: adr-0026-per-cell-anatomy-facts-catalog-0-8, rel: depends-on }
   - { to: adr-0027-cost-compare-report, rel: depends-on }
+  - { to: adr-0028-copilot-prompt-mode-transport, rel: depends-on }
+  - { to: adr-0029-ai-forward-pack-cost-analysis, rel: depends-on }
   - { to: adr-0022-lean-benchmark-two-batch-runs, rel: depends-on }
   - { to: rulings-register, rel: depends-on }
 review-by: "2027-04-11"
@@ -63,6 +65,16 @@ The six combos (operator 2026-10-11, as amended by Rulings 117 and 118, Verified
 | `copilot-sol-fast` | Copilot 1.0.89-1 | `gpt-5.6-sol-fast` | high | 272,000 (default tier; Ruling 118) | argv `--reasoning-effort` | as above; the API's response `model` is `gpt-5.6-sol` (recorded beside it) |
 | `grok-4.7` | Grok CLI 1.0.41 | `grok-4.7` | high | 256,000 (no knob; operator 2026-10-11, in the prompt) | argv `grok agent --model … --reasoning-effort … stdio` | `chat_history.jsonl` `model_id`, `reasoning_effort`; `signals.json` `contextWindowTokens` |
 | `agy-gemini` | Antigravity 1.3.3 (Ruling 117) | `gemini-3.8-flash-high` | high (in the model id) | not settable; `not recorded` | model id | stream `init.model`; context: not recorded |
+
+**Amendment, 2026-10-12 (Rulings 120 and 121).**
+- **Copilot at 1M** (Ruling 120, superseding Ruling 118): `copilot-sol` and `copilot-sol-fast` run `copilot -p` with
+  `--context long_context` (922,000 prompt tokens) behind a pinned local ACP adapter (`bench/adapters/copilot_p_acp.py`),
+  so the engine and its lifecycle stay on ACP; pinned `context: 922000` and judged by the served `contextTier`
+  (ADR-0028). The two Copilot rows of the table above read "922,000 (long_context, `-p`
+  mode)" from this date; the 272k rows are superseded.
+- **Two reports, two audiences** (Ruling 121): `docs/coordination/harness-cost-comparison.html` (ADR-0027) for the
+  Copilot team, and `docs/coordination/ai-forward-pack-cost.html` (ADR-0029, `report/pack_cost.py`) for the pack
+  owner: where pack-on's extra tokens go, per harness and per pack component, and what to tune.
 
 ## The system as a system
 

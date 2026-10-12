@@ -2200,3 +2200,34 @@ Asked during `/define-architecture` of the lean re-run, after the probes below; 
   `run_session("agy")` is the oracle in a contract test over recorded 1.3.3 streams. No pack code in the run path.
 - **Refused:** importing `coord_transport` into the engine (agy cells would record no tokens, tools or model id).
 - ruled by: operator · at: 2026-10-12
+
+### Ruling 120 — Copilot at 1M: run both Copilot combos in `copilot -p` mode (supersedes Ruling 118) (operator, 2026-10-12)
+
+> "ok lets use option a"
+
+- **Asked** after the operator asked for Copilot at a 1M window; options A (`-p` mode), B (an SDK-backed ACP
+  adapter), C (wait), D (keep 272k, Ruling 118).
+- **Decides:** `copilot-sol` and `copilot-sol-fast` run through a third transport, `copilot -p` (non-interactive),
+  with `--context long_context` (verified to set `session.start.contextTier = "long_context"` in `-p` mode, spike
+  2026-10-11; Copilot's model API lists the tier at 922,000 prompt tokens, 1,050,000 window). The pin stays Copilot
+  1.0.89-1. ADR-0028 records the design; its first step is a spike (tool restriction, two-turn resume,
+  `gpt-5.6-sol-fast` at long_context).
+- **Consequence stated in both reports:** Copilot's cells are driven in `-p` mode, not over ACP as on 2026-10-10 and
+  as the other harnesses are.
+- **Supersedes:** Ruling 118.
+- ruled by: operator · at: 2026-10-12
+
+### Ruling 121 — two reports for two audiences: the harness cost comparison, and the AI-Forward pack cost analysis (operator, 2026-10-12)
+
+> "i want to be able to understand 'why the ai-forward pack' costs more tokens ... as part of the output lets have
+> an analysis of specifically where the extra token cost comes (per harness) and what we can do to better tune the
+> ai-forward pack... provide this as a separate html file. the two artifacts will be for two different audiences -
+> the multi-harness benchmark output will be used, by me, to share with the copilot team so they can see their
+> extra cost - the ai-forward analysis will be used by me to fine tune the pack"
+
+- **Decides:** the run ends with two generated pages.
+  1. `docs/coordination/harness-cost-comparison.html` (ADR-0027): for the Copilot team; what each harness spends on
+     the same tasks and why same-model harnesses differ.
+  2. `docs/coordination/ai-forward-pack-cost.html` (ADR-0029): for the pack owner; where pack-on's extra tokens are
+     spent, per harness and per pack component, and what to tune.
+- ruled by: operator · at: 2026-10-12

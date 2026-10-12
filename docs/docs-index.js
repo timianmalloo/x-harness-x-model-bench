@@ -2,7 +2,7 @@
 window.DOCS_INDEX = {
   "schemaVersion": "docs-index/v2",
   "project": "x-harness-x-model-bench",
-  "generator": "docs-graph.py flag",
+  "generator": "docs-graph.py derive",
   "rootId": "adr-0001-cell-containers",
   "artifactTypes": [
     "knowledge",
@@ -1077,7 +1077,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "cbb90395bcd75da4f22b5a9f6835256aae4e2554b865215ae837e714d5bf4358"
+      "sourceSha256": "50d39cc14d92b110d218bc1041a0ee32206e8110333105db733ca46632eca895"
     },
     {
       "id": "adr-0025-transport-seam-grok-and-agy-cells",
@@ -1210,7 +1210,87 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "5e3aed712324bcbbf45a4bbb5ea1546977cb2ba570673399fdd86cbe426aa6a7"
+      "sourceSha256": "0a255604cddc4d14d374bbafec9fe412511adf6227fe1431afa3e48ad9b0608b"
+    },
+    {
+      "id": "adr-0028-copilot-prompt-mode-transport",
+      "path": "docs/adr/0028-copilot-prompt-mode-transport.md",
+      "title": "ADR-0028: Copilot cells run copilot -p behind a pinned local ACP adapter, so long_context applies and the engine stays on ACP",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Lean re-run at equal reasoning (operator 2026-10-12)",
+      "reviewBy": "2027-04-12",
+      "reviewSuggested": [],
+      "summary": "Ruling 120 supersedes Ruling 118: both Copilot combos run copilot -p, the only mode in which the pinned 1.0.89-1 applies --context long_context (922,000 prompt tokens). A small local adapter, bench/adapters/copilot_p_acp.py, serves minimal ACP on stdio and runs copilot -p once per prompt (--session-id, then --resume), the way codex-acp wraps Codex. The engine, the ACP driver, the lifecycle model and the views stay unchanged: one process per attempt. The adapter is pinned by sha256 in tools.LAYOUT. A spike comes first.",
+      "tags": [
+        "benchmark",
+        "transport",
+        "copilot",
+        "context-window",
+        "settings",
+        "adapter"
+      ],
+      "links": [
+        {
+          "to": "arch-lean-rerun",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0024-combo-settings-and-served-read-back",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0025-transport-seam-grok-and-agy-cells",
+          "rel": "refines"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "096d2126247dad95bf1b7ace49a5ef3bb9ce781d2182930dd5de6600244e5a57"
+    },
+    {
+      "id": "adr-0029-ai-forward-pack-cost-analysis",
+      "path": "docs/adr/0029-ai-forward-pack-cost-analysis.md",
+      "title": "ADR-0029: bench report --pack-cost decomposes pack-on's extra tokens per harness and per pack component, for tuning the pack",
+      "type": "adr",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "Lean re-run at equal reasoning (operator 2026-10-12)",
+      "reviewBy": "2027-04-12",
+      "reviewSuggested": [],
+      "summary": "Ruling 121 asks for a second page, for the pack owner: where pack-on's extra tokens go, per harness, and what to tune. report/pack_cost.py pairs pack-on with pack-off cells per task and splits the token difference into fixed prefix (by pack file), extra requests, on-demand reads of pack files, skill loads, hooks, reasoning and output, with the residual shown. Each pack file is mapped to a pack component (always-applied instruction, scoped instruction, AGENTS.md/CLAUDE.md, skill, persona, hook, knowledge doc). Rule-based tuning candidates come with their measured figures; an optional analyst section, written by an Opus seat and labelled as analysis, is embedded.",
+      "tags": [
+        "benchmark",
+        "report",
+        "pack",
+        "cost",
+        "attribution",
+        "tuning"
+      ],
+      "links": [
+        {
+          "to": "arch-lean-rerun",
+          "rel": "refines"
+        },
+        {
+          "to": "adr-0026-per-cell-anatomy-facts-catalog-0-8",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0027-cost-compare-report",
+          "rel": "relates-to"
+        },
+        {
+          "to": "rulings-register",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "302e7dfd8613ea479c5fbc116d53d22632a1e4cf0e74acf5f9ae2ee9f6a9a278"
     },
     {
       "id": "arch-evaluation-campaign",
@@ -1435,6 +1515,14 @@ window.DOCS_INDEX = {
           "rel": "depends-on"
         },
         {
+          "to": "adr-0028-copilot-prompt-mode-transport",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0029-ai-forward-pack-cost-analysis",
+          "rel": "depends-on"
+        },
+        {
           "to": "adr-0022-lean-benchmark-two-batch-runs",
           "rel": "depends-on"
         },
@@ -1444,7 +1532,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "90bc6cb52db1c5de2e64914d56cf70f09debc9f5133f33b70938f0576ab1f45a"
+      "sourceSha256": "217ccbd29e3f3fec6a376c6000bdadeff39c6610f12c2542c83f3f403660430a"
     },
     {
       "id": "lean-preregistration",
@@ -2415,7 +2503,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "43b91981bddca9604ad34b076fd9383c2c76eeedee9bd1ef591df56046c0b79f"
+      "sourceSha256": "6e1eb16020cb6b6389151e80e59bdc7b5f4ecf365a5de19b6d7b1d8ba7c52db3"
     },
     {
       "id": "design-eval-arms",
@@ -10323,6 +10411,61 @@ window.DOCS_INDEX = {
       "sourceSha256": "6410a444436ea61f93f194ed92abe155e9ff7f060cbb02e89a2db7a9b78a7d7b"
     },
     {
+      "id": "coordination-lean-rerun",
+      "path": "docs/coordination/coordination-lean-rerun.md",
+      "title": "Coordination plan - the lean re-run at equal reasoning (build, join, probe, run, report)",
+      "type": "plan",
+      "status": "proposed",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2026-10-26",
+      "reviewSuggested": [],
+      "summary": "Eighteen tracks: three before wave 1, run in parallel (the GOLD-A fixture move and two contract tracks that fix every shared file's structure in code), thirteen in wave 1 split into two dispatch halves at the cap of six, and two in wave 2 (the derivations and the AI-Forward pack cost analysis). A Leader-held serial spine carries batched joins, a development probe, the catalog 0.8 freeze and gate ring, the batch gate, the formal readiness probe, the pre-registration and the two batches. Derived and register artifacts need no coordination; every authored file has one owner at a time, and shared mutation files take hand-back retargets only. Grok and Agy get small briefs and a floor canary first. Seven tracks were struck or merged. Revised after the adversary gate (three vetoes, cleared by change).",
+      "tags": [
+        "coordination",
+        "worktrees",
+        "parallelism",
+        "lean-benchmark",
+        "lean-rerun"
+      ],
+      "links": [
+        {
+          "to": "arch-lean-rerun",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0024-combo-settings-and-served-read-back",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0025-transport-seam-grok-and-agy-cells",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0026-per-cell-anatomy-facts-catalog-0-8",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0027-cost-compare-report",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0028-copilot-prompt-mode-transport",
+          "rel": "implements"
+        },
+        {
+          "to": "adr-0029-ai-forward-pack-cost-analysis",
+          "rel": "implements"
+        },
+        {
+          "to": "coordination-lean",
+          "rel": "relates-to"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "f116326b3f044866e82de9e785414f76e0810f10ee76ee7c1554e452a6dfe0e7"
+    },
+    {
       "id": "coordination-phase1-finish",
       "path": "docs/coordination/coordination-phase1-finish.md",
       "title": "Coordination plan - finish harness-bench phase 1 (pre-merge findings, N5, mutation bar, E2E)",
@@ -11353,6 +11496,14 @@ window.DOCS_INDEX = {
       "artifactId": "coordination-lean"
     },
     {
+      "id": "surface-coordination-coordination-lean-rerun",
+      "path": "docs/coordination/coordination-lean-rerun.html",
+      "title": "Coordination Lean Rerun",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact.",
+      "artifactId": "coordination-lean-rerun"
+    },
+    {
       "id": "surface-coordination-coordination-phase1-finish",
       "path": "docs/coordination/coordination-phase1-finish.html",
       "title": "Coordination plan - finish harness-bench phase 1 (pre-merge findings, N5, mutation bar, E2E)",
@@ -11621,5 +11772,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "3dab8d3292aa63142b304f43528858c3b11ca9d2ea7a0305cf1d5b477ed8dce4"
+  "graphSha256": "e48983122fb8bc1888d31d55a06b82e4b6647abb4c2df436556bd281eef602ae"
 };
