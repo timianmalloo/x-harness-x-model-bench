@@ -355,7 +355,7 @@ Distributed Systems, Enterprise and coverage: pass-with-changes, every change ap
 
 **Open for the operator (decision requests):**
 
-- **DR-AGY-REUSE (finding 22).** The prompt says to reuse the pack's agy adapter behind the engine. The design uses
+- **DR-AGY-REUSE (finding 22) - ruled 2026-10-12, Ruling 119: the oracle design.** The prompt says to reuse the pack's agy adapter behind the engine. The design uses
   it as the conformance oracle instead (ADR-0025 §3-4), because it discards the bodies the bench must record and
   spawns its own process. Recommendation: accept the oracle design.
 - **Grok tool prevention** (ADR-0025 §5): only if design-slice finds Grok cannot block forbidden tools; due before

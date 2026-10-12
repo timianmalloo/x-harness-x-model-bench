@@ -2188,3 +2188,15 @@ Asked during `/define-architecture` of the lean re-run, after the probes below; 
 - **Refused:** a third, Copilot `-p` transport (more build risk, and Copilot cells would no longer be driven as the
   2026-10-10 cells were).
 - ruled by: operator · at: 2026-10-11
+
+### Ruling 119 — DR-AGY-REUSE: the bench-owned stream_driver, with coord_transport as its conformance oracle (operator, 2026-10-12)
+
+> "Oracle design (Recommended)"
+
+- **Asked** at the `/define-architecture` gate (council finding 22): the prompt said to reuse the pack's agy adapter
+  behind the engine; that adapter discards every event body and spawns its own process (`coord_transport.py:4-5`,
+  `:311`, `:863-927`).
+- **Decides:** ADR-0025 §3-4 as written. `stream_driver.py` records the raw agy stream under `procs`; the pack's
+  `run_session("agy")` is the oracle in a contract test over recorded 1.3.3 streams. No pack code in the run path.
+- **Refused:** importing `coord_transport` into the engine (agy cells would record no tokens, tools or model id).
+- ruled by: operator · at: 2026-10-12
