@@ -587,8 +587,8 @@
  {
   "name": "_grade_cell: applicable is called without the task's property, so no tagged metric is narrowed (T-R1)",
   "file": "src/harness_bench/grade/runner.py",
-  "find": "applicable(self.catalog, names, prop).items()",
-  "replace": "applicable(self.catalog, names, None).items()",
+  "find": "applicable(self.catalog, names, prop, has_radius=bool(task.get(\"blast_radius\"))).items()",
+  "replace": "applicable(self.catalog, names, None, has_radius=bool(task.get(\"blast_radius\"))).items()",
   "tests": [
    "tests/test_grade_runner.py::test_a_security_task_graded_by_property_writes_exactly_two_property_rows_and_the_pass_completes"
   ]

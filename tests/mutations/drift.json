@@ -9,8 +9,8 @@
   {
     "name": "GR-CODE c3: a file inside the blast radius is scope creep",
     "file": "src/harness_bench/grade/drift.py",
-    "find": "                if not inside:\n",
-    "replace": "                if True:\n",
+    "find": "    if _changes.in_radius(path, radius):\n        return INSIDE",
+    "replace": "    if False:\n        return INSIDE",
     "tests": ["tests/test_grade_drift.py::test_a_block_scoped_namespace_in_a_10_line_file_is_convention_drift_10"]
   },
   {
@@ -30,8 +30,8 @@
   {
     "name": "GR-CODE c3: added lines are not scope creep",
     "file": "src/harness_bench/grade/drift.py",
-    "find": "creep_lines += len(added) + deleted",
-    "replace": "creep_lines += deleted",
+    "find": "lines[cls] += len(added) + deleted",
+    "replace": "lines[cls] += deleted",
     "tests": ["tests/test_grade_drift.py::test_a_3_line_edit_outside_the_blast_radius_is_scope_creep_3_in_1_file"]
   },
   {
@@ -44,8 +44,8 @@
   {
     "name": "GR-CODE c3: scope_creep_files counts no file",
     "file": "src/harness_bench/grade/drift.py",
-    "find": "                    creep_files += 1\n",
-    "replace": "                    creep_files += 0\n",
+    "find": "files[cls] += 1",
+    "replace": "files[cls] += 0",
     "tests": ["tests/test_grade_drift.py::test_a_3_line_edit_outside_the_blast_radius_is_scope_creep_3_in_1_file"]
   },
   {
