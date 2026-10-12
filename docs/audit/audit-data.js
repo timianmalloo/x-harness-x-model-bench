@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-12T14:46:11Z",
+  "generated": "2026-10-12T14:52:34Z",
   "audit": [
     {
       "actor": null,
@@ -180274,6 +180274,28 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-12T14:27:36Z",
       "duration_seconds": 1115.0
+    },
+    {
+      "id": "al-01M4R9KSJ0ZJE9QMMZRVXDFK63",
+      "shortname": "r-contract-facts",
+      "datetime": "2026-10-12T14:52:34Z",
+      "session": "r-contract-facts-rerun-2",
+      "prompt": "r-contract-facts-rerun-2: R-CONTRACT-FACTS rulings on DR1 and DR2",
+      "summary": "harness_events gains native_ordinal (columns and KEYS); served hook accepts a tuple of ServedSettings, one per source, served_rows writes all and writes an identical row once; red-first tests for both",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "apply the Leader's rulings DR1 (a) and DR2 (a) on build/rerun-contract-facts",
+      "done_when": "identical-event pair writes two rows and the view loads; two sources write both rows; touched modules' tests green",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-12T14:47:09Z",
+      "duration_seconds": 325.0
     }
   ],
   "changes": [
