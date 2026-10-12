@@ -14,7 +14,7 @@ arms:
   - {id: "on"}
 comparisons: [["off", "on"]]
 combos:
-  - {id: cc-opus, harness: claude-code, model: claude-opus-5-5, effort: high, context: default}
+  - {id: cc-opus-1m, harness: claude-code, model: "claude-opus-5-5[1m]", effort: high, context: 1000000}
   - {id: codex-sol, harness: codex, model: gpt-6.1-sol, effort: high, context: 872000}
   - {id: copilot-sol, harness: copilot, model: gpt-6.1-sol, effort: high, context: 922000}
   - {id: copilot-sol-fast, harness: copilot, model: gpt-5.6-sol-fast, effort: high, context: 922000}

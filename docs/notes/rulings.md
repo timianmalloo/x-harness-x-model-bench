@@ -2245,3 +2245,20 @@ Asked during `/define-architecture` of the lean re-run, after the probes below; 
   `default` (the profile's `default_serves` 200,000), read back and judged like every combo. Both reports state the
   200,000 window beside Claude Code's numbers, as they state Grok's 256,000. Cells use the new token.
 - ruled by: operator (choice) and Leader (fallback on the measurement) · at: 2026-10-12
+
+### Ruling 123 — Claude Code is served 1,000,000 on the token; supersedes Ruling 122 (Leader correction, 2026-10-12)
+
+- **What was wrong.** Ruling 122 (and R-READ-CC's spike before it) read the ACP `usage_update.size` values sent
+  during the turn — 200,000 — as the served window. PROBE-FIX-2 read the pinned adapter's source
+  (`@agentclientprotocol/claude-agent-acp` 0.81.2, `dist/acp-agent.js` ~6683-6735 and ~3755-3790): in-turn sizes are a
+  seed set at `session/new` and marked non-authoritative ("The authoritative window arrives on the first
+  `result.modelUsage`"); on the turn's result the adapter sets the window from `modelUsage[model].contextWindow` and
+  sends a final `usage_update`. In all 6 probe cells (runs `devprobe-rerun-1`, `ccprobe-rerun-1`) that authoritative
+  value is **1,000,000** for the `claude-opus-5-5[1m]` pin. The transcript's `claude-opus-5-5` is the API model id,
+  which carries no `[1m]`.
+- **Decides:** combo `cc-opus-1m` pins `claude-opus-5-5[1m]`, effort high, context 1,000,000 again (the rings revert).
+  The served window is the authoritative post-result size only; the seed is not a served row. The model id is matched
+  by an exact alias (`claude-opus-5-5[1m]` ↔ `claude-opus-5-5`). Cells use the operator's new token.
+- **Supersedes:** Ruling 122. Register: an instance of the class "a reading taken before the source is authoritative"
+  (the Leader's and R-READ-CC's error), for the next Coordinator.
+- ruled by: Leader (correction on measured evidence) · at: 2026-10-12
