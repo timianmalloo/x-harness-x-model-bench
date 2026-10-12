@@ -22,12 +22,12 @@ from pathlib import Path
 
 from harness_bench import config, tools
 from harness_bench.errors import BenchError
-from harness_bench.telemetry import claude_code, codex, copilot
+from harness_bench.telemetry import agy, claude_code, codex, copilot, grok
 
 # Leader ruling (lean re-run J0): grok and agy join HARNESSES and READERS in wave 1 (R-SETTINGS), in the same candidate
 # as their profile files (R-TRANSPORT); identity reads profile_record for every name here, so a name without its yaml
 # would break the engine identity between J0 and J1a. Their reader stubs are telemetry/grok.py and telemetry/agy.py.
-HARNESSES = ("claude-code", "codex", "copilot")
+HARNESSES = ("claude-code", "codex", "copilot", "grok", "agy")
 USAGE_SOURCES = ("acp_turn", "native_record")
 # ADR-0024 s1-s3: a combo's settings. "default" is the absence of a pin: it expands nothing, joins no cell id, and is
 # what every bench-matrix/2 combo carries.
@@ -324,7 +324,7 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
     )
 
 
-READERS = {"claude-code": claude_code.read, "codex": codex.read, "copilot": copilot.read}
+READERS = {"claude-code": claude_code.read, "codex": codex.read, "copilot": copilot.read, "grok": grok.read, "agy": agy.read}
 # R-74 item 1: class `delegate` is static in each reader; the profile only reads it. Codex's ids are the ones its
 # 0.156.0 record names and qual-r74-codex-1 measured (item 5).
 DELEGATE_IDS = {"claude-code": tuple(n for n, c in claude_code.TOOL_CLASSES.items() if c == "delegate"),

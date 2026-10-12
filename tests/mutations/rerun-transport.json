@@ -1,0 +1,86 @@
+[
+ {
+  "name": "RT1: a tool ERROR 'permission check failed for ' is counted as an ordinary tool error, not a denial",
+  "file": "src/harness_bench/stream_driver.py",
+  "find": "                raise _Stop(Cause.blocked_denied, message[:200])\n",
+  "replace": "                pass\n",
+  "tests": ["tests/test_stream_driver.py::test_a_denial_is_never_a_success"]
+ },
+ {
+  "name": "RT2: a non-empty denied_actions is ignored, so a SUCCESS with denials completes",
+  "file": "src/harness_bench/stream_driver.py",
+  "find": "        if denied:\n",
+  "replace": "        if False:\n",
+  "tests": ["tests/test_stream_driver.py::test_a_denial_is_never_a_success"]
+ },
+ {
+  "name": "RT3: the tool-error streak cap fires one error late",
+  "file": "src/harness_bench/stream_driver.py",
+  "find": "            if self.session.error_streak >= NATIVE_ERROR_STREAK_CAP:\n",
+  "replace": "            if self.session.error_streak > NATIVE_ERROR_STREAK_CAP:\n",
+  "tests": ["tests/test_stream_driver.py::test_each_outcome_row_on_a_recorded_stream"]
+ },
+ {
+  "name": "RT4: the stream's line bound is doubled (one kind of content, two bounds)",
+  "file": "src/harness_bench/stream_driver.py",
+  "find": "                    if len(line) > MAX_LINE:\n",
+  "replace": "                    if len(line) > 2 * MAX_LINE:\n",
+  "tests": ["tests/test_stream_driver.py::test_a_line_over_8_mib_is_a_protocol_failure"]
+ },
+ {
+  "name": "RT5: a sidecar whose count differs from the stream's lines is joined anyway",
+  "file": "src/harness_bench/stream_driver.py",
+  "find": "    if len(times) != len(rows) or len(times) != lines:\n",
+  "replace": "    if len(times) != len(rows):\n",
+  "tests": ["tests/test_stream_driver.py::test_a_sidecar_count_mismatch_gives_not_recorded"]
+ },
+ {
+  "name": "RT6: an unknown event type is skipped instead of failing the protocol",
+  "file": "src/harness_bench/stream_driver.py",
+  "find": "        raise _Stop(Cause.protocol, f\"unknown agy event {str(kind)[:60]!r}\")\n",
+  "replace": "        return None\n",
+  "tests": ["tests/test_stream_driver.py::test_each_outcome_row_on_a_recorded_stream"]
+ },
+ {
+  "name": "RT7: every result is end_turn, so a non-SUCCESS status reads as completed",
+  "file": "src/harness_bench/stream_driver.py",
+  "find": "    result.stop_reason = \"end_turn\" if status == \"SUCCESS\" else str(status)\n",
+  "replace": "    result.stop_reason = \"end_turn\"\n",
+  "tests": ["tests/test_stream_driver.py::test_a_result_that_is_not_success_is_incomplete"]
+ },
+ {
+  "name": "RT8: the tee drops the last byte of each chunk (the record is no longer the stream read)",
+  "file": "src/harness_bench/stream_driver.py",
+  "find": "            self.stream.write(data)\n",
+  "replace": "            self.stream.write(data[:-1])\n",
+  "tests": ["tests/test_stream_driver.py::test_the_stream_is_teed_verbatim_with_one_read_time_per_line"]
+ },
+ {
+  "name": "RT9: a set_model answer naming another model is accepted (HB-CELL-116 never fires)",
+  "file": "src/harness_bench/driver.py",
+  "find": "            if isinstance(meta, dict) and \"model\" in meta and meta[\"model\"] != {\"Ok\": model}:\n",
+  "replace": "            if False:\n",
+  "tests": ["tests/test_driver.py::test_a_set_model_answer_naming_another_model_fails_before_the_prompt"]
+ },
+ {
+  "name": "RT10: the profile's session_meta is not sent on session/new",
+  "file": "src/harness_bench/driver.py",
+  "find": "            params[\"_meta\"] = dict(session.session_meta)\n",
+  "replace": "            pass\n",
+  "tests": ["tests/test_driver.py::test_session_new_carries_the_profile_session_meta"]
+ },
+ {
+  "name": "RT11: the timeline never collapses a run of one kind (one line per chunk)",
+  "file": "src/harness_bench/driver.py",
+  "find": "            if self.run is not None and self.run[\"key\"] == key:\n",
+  "replace": "            if False:\n",
+  "tests": ["tests/test_driver.py::test_a_10000_chunk_turn_has_a_timeline_under_100_lines"]
+ },
+ {
+  "name": "RT12: a timeline write failure propagates into the turn",
+  "file": "src/harness_bench/driver.py",
+  "find": "            log.warning(\"acp timeline stopped\", extra={\"detail\": str(exc)})\n",
+  "replace": "            raise\n",
+  "tests": ["tests/test_driver.py::test_a_timeline_write_failure_leaves_the_outcome_unchanged"]
+ }
+]
