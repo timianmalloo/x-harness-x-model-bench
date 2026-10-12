@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-12T14:55:02Z",
+  "generated": "2026-10-12T15:18:33Z",
   "audit": [
     {
       "actor": null,
@@ -180274,6 +180274,28 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-12T14:27:36Z",
       "duration_seconds": 1646.0
+    },
+    {
+      "id": "al-01M4RB3BB0F9VDKA5YED0T4W7Z",
+      "shortname": "r-gold",
+      "datetime": "2026-10-12T15:18:33Z",
+      "session": "r-gold-rerun-2",
+      "prompt": "r-gold-rerun-2: R-GOLD loop-back - frozen-root listing ignores bytecode",
+      "summary": "the frozen-root listing and input reader ignore __pycache__/ and *.pyc*; new red-first test with planted bytecode in a tmp copy; contracted inputs unchanged; isolation + lean_section green twice with real conftest bytecode present",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Make the frozen-root inventory test robust to pytest-written bytecode",
+      "done_when": "isolation and lean_section green on two consecutive runs with the conftest pycache present",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-12T15:16:06Z",
+      "duration_seconds": 147.0
     }
   ],
   "changes": [
