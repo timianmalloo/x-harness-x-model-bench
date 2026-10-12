@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-12T20:43:01Z",
+  "generated": "2026-10-12T20:48:45Z",
   "audit": [
     {
       "actor": null,
@@ -189617,6 +189617,28 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-12T20:40:26Z",
       "duration_seconds": 155.0
+    },
+    {
+      "id": "al-01M4RXZZB223721EP3ATNR6J5H",
+      "shortname": "j2-fix",
+      "datetime": "2026-10-12T20:48:45Z",
+      "session": "j2-fix-rerun-3",
+      "prompt": "j2-fix-rerun-3: Leader ruling on the tools-part DR - identical tool fingerprint is an exact zero prefix delta",
+      "summary": "copilot tools part keeps no count, path = copilotToolsFingerprint:<digest>; pack_cost _identical exception labelled on the page; real Copilot pair fixed_prefix 635600 (hand count within per-part rounding); differing/missing fingerprints stay not recorded; rerun-j2-fix 15/15, rerun-read-copilot 9/9, rerun-packcost 16/16 killed; no golden moved",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "Apply the tools-part ruling: exact zero delta on an identical fingerprint",
+      "done_when": "real pair fixed_prefix a number with the label, differing fingerprints not recorded, mutation files all killed, ruff clean",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-12T20:43:38Z",
+      "duration_seconds": 307.0
     }
   ],
   "changes": [
