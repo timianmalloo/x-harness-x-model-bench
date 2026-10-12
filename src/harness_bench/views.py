@@ -546,11 +546,6 @@ SETTING_FIELDS = {"effort": "effort", "context": "context_tokens"}
 # simplify: a table here, because the plan freezes no settings args. Ceiling: this one Copilot value. Upgrade trigger: a
 # second tier-judged value, or `profile_record` freezing `settings.<name>.args` -> derive the tier from the frozen map.
 CONTEXT_TIERS = {("copilot", "922000"): "long_context"}
-# ADR-0024 s4: Codex serves its pin x the cell's own catalog percent (models_cache.json). assume: the Codex reader writes
-# the percent into the context_tokens row's `source` as `effective_context_window_percent=<int>` (R-READ-CODEX: "window
-# 828,400 with the catalog percent's source"); confirm: R-READ-CODEX's fixture row at J1b; breaks: every pinned Codex
-# window reads as a mismatch (HB-VAL-010 at the probe, a loud failure, never a silent pass).
-CATALOG_PERCENT = re.compile(r"effective_context_window_percent=(\d+)")
 _TAKES_ALIASES = "model_aliases" in inspect.signature(profiles.model_allowed).parameters
 
 
@@ -577,12 +572,9 @@ def _expected(cell: dict, prof: dict, setting: str) -> tuple[str | None, str, st
 
 
 def _serves(expected: str, row: dict) -> bool:
-    value = row.get("value")
-    if value is not None and str(value) == expected:
-        return True
-    percent = CATALOG_PERCENT.search(row.get("source") or "")
-    return (percent is not None and isinstance(value, int) and expected.isdigit()
-            and value * 100 == int(expected) * int(percent.group(1)))
+    """Equal as written. Codex's row is its nominal window (the effective one / the catalog percent, Leader ruling
+    2026-10-12), so no harness's value is scaled here and no `source` is parsed."""
+    return row.get("value") is not None and str(row["value"]) == expected
 
 
 def _served_settings(cell: dict, prof: dict, rows: list[dict]) -> tuple[Finding | None, list[Finding]]:

@@ -50,15 +50,18 @@ def test_the_hb_val_010_message_names_setting_expected_served_and_source():
         "HB-VAL-010", "error", "context served 128000, expected 272000 (default_serves) from acp usage_update.size")
 
 
+# Leader ruling (2026-10-12): the Codex reader writes the NOMINAL window (828,400 / 95% = 872,000), the effective value
+# and the percent kept in `source`; the view judges it against the pin like every harness and parses no source.
+CODEX_SOURCE = "rollout task_started.model_context_window 828400 / models_cache.json effective_context_window_percent 95"
+
+
 def test_a_codex_cell_at_828400_under_pin_872000_with_catalog_percent_95_is_valid():
-    rows = [_row("context_tokens", 828400,
-                 "rollout task_started.model_context_window; models_cache.json effective_context_window_percent=95")]
+    rows = [_row("context_tokens", 872000, CODEX_SOURCE)]
     assert _judge(_cell_rec("codex", context="872000"), _prof(default_context=272000), rows)[0] == VALID
 
 
-def test_a_codex_window_off_the_catalog_percent_is_hb_val_010():
-    rows = [_row("context_tokens", 828401,
-                 "rollout task_started.model_context_window; models_cache.json effective_context_window_percent=95")]
+def test_an_effective_codex_window_is_judged_as_written_never_scaled_by_the_source():
+    rows = [_row("context_tokens", 828400, "models_cache.json effective_context_window_percent=95")]
     assert _judge(_cell_rec("codex", context="872000"), _prof(), rows)[0] == MISMATCH
 
 
