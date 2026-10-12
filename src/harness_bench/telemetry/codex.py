@@ -197,25 +197,14 @@ def _reasoning_item(n: int, payload: dict) -> ReasoningItem:
     return ReasoningItem(n, 0, kind, text, None if text is None else len(text), None, sha)
 
 
-def _prompt_part(text: str, role: str) -> PromptPart:
+def _prompt_part(n: int, text: str, role: str) -> PromptPart:
     source = f"rollout:response_item.message[{role}]"
     stripped = text.lstrip()
     if stripped.startswith("# AGENTS.md instructions for "):
-        return PromptPart("instruction_file", "AGENTS.md", len(text), "inlined", source)
+        return PromptPart(n, "instruction_file", "AGENTS.md", len(text), "inlined", source)
     if stripped.startswith("<skills_instructions>"):
-        return PromptPart("skills", None, len(text), "listed", source)
-    return PromptPart("system", None, len(text), "inlined", source)
-
-
-def _one_per_key(parts: list[PromptPart]) -> list[PromptPart]:
-    """One part per ledger key (part, path, source; views.KEYS): a rollout sends several developer and injected user
-    texts of one kind, so their chars are summed in first-seen order, as Claude's system strings are one part."""
-    merged: dict[tuple, PromptPart] = {}
-    for p in parts:
-        key = (p.part, p.path, p.source)
-        seen = merged.get(key)
-        merged[key] = p if seen is None else replace(seen, chars=None if None in (seen.chars, p.chars) else seen.chars + p.chars)
-    return list(merged.values())
+        return PromptPart(n, "skills", None, len(text), "listed", source)
+    return PromptPart(n, "system", None, len(text), "inlined", source)
 
 
 def read(path: Path) -> Extraction:
@@ -240,7 +229,7 @@ def read(path: Path) -> Extraction:
             base = payload.get("base_instructions")
             base = as_str(as_dict(base).get("text")) if isinstance(base, dict) else as_str(base)
             if base is not None and prefix_open:
-                parts.append(PromptPart("system", None, len(base), "inlined", "rollout:session_meta.base_instructions"))
+                parts.append(PromptPart(len(parts), "system", None, len(base), "inlined", "rollout:session_meta.base_instructions"))
         elif kind == "turn_context":
             for key, name in _TURN_FIELDS:
                 value = as_str(payload.get(key))
@@ -279,7 +268,9 @@ def read(path: Path) -> Extraction:
             texts = [c.get("text") for c in as_list(payload.get("content")) if isinstance(c, dict) and isinstance(c.get("text"), str)]
             prompt = role == "user" and bool(texts) and not all(_is_injected_context(t) for t in texts)
             if prefix_open:
-                parts.extend(_prompt_part(t, role) for t in texts if role == "developer" or _is_injected_context(t))
+                for t in texts:
+                    if role == "developer" or _is_injected_context(t):
+                        parts.append(_prompt_part(len(parts), t, role))
                 prefix_open = not prompt
             if prompt and ex.first_user_text is None:
                 ex.first_user_text = "".join(t for t in texts if not _is_injected_context(t))
@@ -303,7 +294,7 @@ def read(path: Path) -> Extraction:
     reasoning.extend(pending)  # no reported call followed: each keeps its own line
     ex.served = _served(path, seen)
     ex.reasoning = reasoning
-    ex.prompt_parts = _one_per_key(parts) if parts else not_recorded("no prefix items in the rollout")[1]
+    ex.prompt_parts = parts if parts else not_recorded("no prefix items in the rollout")[1]
     ex.harness_events = not_recorded("codex hooks and compaction are not verified in the rollout (ADR-0026 s1, Flagged)")[1]
     return ex
 

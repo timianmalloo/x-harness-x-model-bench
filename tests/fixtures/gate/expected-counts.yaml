@@ -39,6 +39,9 @@ runs:
       planning_ratio: 2               # exact: cc on and off; Codex no edit-class call; Copilot summary rows
       completion_without_intervention: 4  # exact: cc and cp 1; Codex stuck-loop count not measurable
       time_to_first_green: 0          # exact: NA by design (DR-G2)
+      drift_machine_lines: 6          # assume: R-DRIFT's measurement (catalog 0.8, all_tasks with blast_radius). Confirm: the S4b gate run. If false: criterion 5 names the metric
+      drift_task_implied_lines: 6     # assume: as drift_machine_lines (R-DRIFT)
+      attention_drift: 3              # assume: as drift_machine_lines (R-DRIFT)
   a1-capture-1:  # 3 A1 cells (cc-opus 30f8, codex 4267, copilot 600f); graders clarify, correctness, cost, process
     counts:
       key_question_recall: 3          # exact: 0, 0, 0
@@ -63,3 +66,7 @@ runs:
       planning_ratio: 1               # exact: cc 0.6000; codex no edit-class call; copilot summary rows
       completion_without_intervention: 2  # exact: cc and cp 1; codex stuck-loop count not measurable
       time_to_first_green: 0          # exact: NA by design (DR-G2)
+      drift_machine_lines: 3          # assume: R-DRIFT's measurement (catalog 0.8, all_tasks with blast_radius). Confirm: the S4b gate run. If false: criterion 5 names the metric
+      drift_task_implied_lines: 3     # assume: as drift_machine_lines (R-DRIFT)
+      scope_creep: 3                  # assume: as drift_machine_lines (R-DRIFT)
+      attention_drift: 1              # assume: as drift_machine_lines (R-DRIFT)

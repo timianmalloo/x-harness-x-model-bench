@@ -126,8 +126,9 @@ def test_the_committed_expected_counts_name_both_gate_runs_and_every_applicable_
     runs = config.load_yaml(ROOT / check_regrade.EXPECTED)["runs"]
     catalog = config.load_yaml(ROOT / "bench" / "metrics.yaml")
     for run, task, cells in (("row15-d1-1", "D1", 6), ("a1-capture-1", "A1", 3)):
-        graders = config.load_yaml(ROOT / "tasks" / task / "task.yaml")["graders"]
-        metrics = {m for ms in runner.applicable(catalog, graders).values() for m in ms}
+        task_yaml = config.load_yaml(ROOT / "tasks" / task / "task.yaml")  # as the runner reads it (runner.py:397)
+        metrics = {m for ms in runner.applicable(catalog, task_yaml["graders"],
+                                                 has_radius=bool(task_yaml.get("blast_radius"))).values() for m in ms}
         assert set(runs[run]["counts"]) == metrics, run
         assert all(n is None or 0 <= n <= cells for n in runs[run]["counts"].values()), run
 

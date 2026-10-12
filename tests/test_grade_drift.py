@@ -89,7 +89,8 @@ NA_BY_DESIGN = {"spec_coverage": (None, "hidden-test coverage is partial_credit 
 def test_the_unmeasured_drift_metrics_are_na_with_the_design_reasons(tmp_path):  # R-67 DR-G2, R-68
     got = grade_d1(tmp_path, *d1_cell(tmp_path, BLOCK))
     assert {m: got[m] for m in NA_BY_DESIGN} == NA_BY_DESIGN
-    assert set(got) == set(applicable(CATALOG, ["drift"])["drift"]) == {*NA_BY_DESIGN, *MEASURED}
+    assert set(got) == set(applicable(CATALOG, ["drift"])["drift"]) == {*NA_BY_DESIGN, *MEASURED, "drift_machine_lines",
+                                                                          "drift_task_implied_lines", "attention_drift"}
 
 
 def test_a_cell_that_changed_nothing_is_0_and_convention_drift_no_lines_changed(tmp_path):  # the gate's 35af shape

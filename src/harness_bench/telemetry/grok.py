@@ -178,11 +178,11 @@ def _prompt_parts(d: Path) -> list[PromptPart] | str:
     parts = []
     for name, part in (("system_prompt.txt", "system"), ("tool_definitions.json", "tools")):
         if (text := _text(d / name)) is not None:
-            parts.append(PromptPart(part, name, len(text), "inlined", name))
+            parts.append(PromptPart(len(parts), part, name, len(text), "inlined", name))
     for f in files:
         f = as_dict(f)
         content = as_str(f.get("content"))
-        parts.append(PromptPart("instruction_file", as_str(f.get("file_path")), None if content is None else len(content),
+        parts.append(PromptPart(len(parts), "instruction_file", as_str(f.get("file_path")), None if content is None else len(content),
                                 "inlined", "prompt_context.json:agents_md_files"))
     return parts
 

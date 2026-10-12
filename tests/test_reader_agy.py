@@ -106,14 +106,14 @@ def test_instruction_files_are_the_rule_blocks_of_the_request_prompt():
     assert isinstance(parts, list)
     rules = [p for p in parts if p.part == "instruction_file"]
     assert rules == [
-        PromptPart("instruction_file", "user_global", len("\nprobe user gemini md marker\n\n"), "inlined",
+        PromptPart(1, "instruction_file", "user_global", len("\nprobe user gemini md marker\n\n"), "inlined",
                    "conversations/<id>.db gen_metadata.data 1.1 <RULE[...]>"),
-        PromptPart("instruction_file", "C:\\cell\\fixture\\repo\\AGENTS.md", len("\nReply in lowercase.\n\n"), "inlined",
+        PromptPart(2, "instruction_file", "C:\\cell\\fixture\\repo\\AGENTS.md", len("\nReply in lowercase.\n\n"), "inlined",
                    "conversations/<id>.db gen_metadata.data 1.1 <RULE[...]>"),
-        PromptPart("instruction_file", "C:\\cell\\fixture\\repo\\GEMINI.md", len("\nprobe gemini md marker\n\n"),
+        PromptPart(3, "instruction_file", "C:\\cell\\fixture\\repo\\GEMINI.md", len("\nprobe gemini md marker\n\n"),
                    "inlined", "conversations/<id>.db gen_metadata.data 1.1 <RULE[...]>")]
     assert [p for p in parts if p.part == "system"] == [
-        PromptPart("system", None, 14895, "inlined", "conversations/<id>.db gen_metadata.data 1.1")]
+        PromptPart(0, "system", None, 14895, "inlined", "conversations/<id>.db gen_metadata.data 1.1")]
     off = agy.read(PACK_OFF).prompt_parts
     assert [p for p in off if p.part == "instruction_file"] == []
     assert [p.chars for p in off if p.part == "system"] == [14259]

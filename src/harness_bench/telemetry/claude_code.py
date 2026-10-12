@@ -170,22 +170,22 @@ def _note_parts(parts: list[PromptPart], seen: set[str], row: dict) -> None:
                 continue
             seen.add(f"file:{path}")
             part = "agents_md" if path.replace("\\", "/").rsplit("/", 1)[-1] == "AGENTS.md" else "instruction_file"
-            parts.append(PromptPart(part, path, len(content) if content is not None else None, "inlined",
+            parts.append(PromptPart(len(parts), part, path, len(content) if content is not None else None, "inlined",
                                     "transcript:attachment.instructions"))
     elif kind == "prompt_snapshot":
         system = att.get("systemPrompt")
         if "system" not in seen and isinstance(system, list) and all(isinstance(s, str) for s in system):
             seen.add("system")
-            parts.append(PromptPart("system", None, sum(len(s) for s in system), "inlined",
+            parts.append(PromptPart(len(parts), "system", None, sum(len(s) for s in system), "inlined",
                                     "transcript:attachment.prompt_snapshot.systemPrompt"))
         tools = att.get("tools")
         if "tools" not in seen and isinstance(tools, list) and tools:
             seen.add("tools")  # chars of the recorded tools array as compact JSON (the record keeps no wire bytes)
-            parts.append(PromptPart("tools", None, len(json.dumps(tools, ensure_ascii=False, separators=(",", ":"))),
+            parts.append(PromptPart(len(parts), "tools", None, len(json.dumps(tools, ensure_ascii=False, separators=(",", ":"))),
                                     "inlined", "transcript:attachment.prompt_snapshot.tools"))
     elif kind == "skill_listing" and "skills" not in seen and isinstance(att.get("content"), str):
         seen.add("skills")
-        parts.append(PromptPart("skills", None, len(att["content"]), "listed", "transcript:attachment.skill_listing"))
+        parts.append(PromptPart(len(parts), "skills", None, len(att["content"]), "listed", "transcript:attachment.skill_listing"))
 
 
 def _hook_events(row: dict, stamp: str | None) -> list[HarnessEvent]:

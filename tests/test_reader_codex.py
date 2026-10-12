@@ -128,17 +128,16 @@ def test_the_agents_md_block_is_an_instruction_file_part_on_pack_on_and_absent_o
     assert not [p for p in off if p.part == "instruction_file"]
 
 
-def test_texts_of_one_kind_from_one_source_are_one_row_with_their_chars_summed():
-    """The ledger keys prompt_parts by (part, path, source) (views.KEYS): the pack-on record's four developer `system`
-    texts (363 + 920 + 2429 + 271 chars) and two injected user ones (920 + 371) are one part each, as Claude's system
-    strings are one (claude_code.py), never several rows under one key (HB-LED-003)."""
+def test_each_prefix_text_is_its_own_row_numbered_by_its_position():
+    """Leader ruling (item 28, the DR1 shape): the pack-on record's four developer `system` texts and two injected user
+    ones are one row each, keyed apart by `native_ordinal`, never one key twice (HB-LED-003)."""
     rows = normalize.prompt_part_rows("run", "cell", "sid", codex.read(PACK_ON), "x")
-    assert [(r["part"], r["chars"], r["source"]) for r in rows] == [
-        ("system", 18992, "rollout:session_meta.base_instructions"),
-        ("skills", 18601, "rollout:response_item.message[developer]"),
-        ("system", 3983, "rollout:response_item.message[developer]"),
-        ("system", 1291, "rollout:response_item.message[user]"),
-        ("instruction_file", 26006, "rollout:response_item.message[user]")]
+    dev, user = "rollout:response_item.message[developer]", "rollout:response_item.message[user]"
+    assert [(r["native_ordinal"], r["part"], r["chars"], r["source"]) for r in rows] == [
+        (0, "system", 18992, "rollout:session_meta.base_instructions"), (1, "skills", 18601, dev),
+        (2, "system", 363, dev), (3, "system", 920, dev), (4, "system", 2429, dev), (5, "system", 271, dev),
+        (6, "system", 920, user), (7, "instruction_file", 26006, user), (8, "system", 371, user)]
+    assert len({(r["native_ordinal"], r["part"], r["path"], r["source"]) for r in rows}) == len(rows)
 
 
 def test_harness_events_are_not_recorded_with_a_reason():

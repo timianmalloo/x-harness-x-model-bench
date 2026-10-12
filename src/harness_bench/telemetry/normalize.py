@@ -227,7 +227,7 @@ def prompt_part_rows(run_id: str, cell_id: str, session_id: str, ex: Extraction,
     """ADR-0026 s1 `prompt_parts`: one row is exactly one part of the fixed prefix one cell's harness sent."""
     parts = ex.prompt_parts if isinstance(ex.prompt_parts, list) else []
     return [_prefix("prompt_part", run_id, cell_id, session_id, extraction)
-            | {"part": p.part, "path": p.path, "chars": p.chars, "delivery": p.delivery, "source": p.source}
+            | {"native_ordinal": p.native_ordinal, "part": p.part, "path": p.path, "chars": p.chars, "delivery": p.delivery, "source": p.source}
             for p in parts]
 
 

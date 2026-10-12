@@ -67,7 +67,7 @@ KEYS = {  # ADR-0006 as amended: the key of one row of each fact
     "verdict_uses": ("run_id", "grading_id", "cell_id", "item_id", "judge_or_matcher"),  # Amendment 3
     "served": (*_READER_KEY, "field", "source"),  # two sources that disagree are two rows (ADR-0024 s4)
     "reasoning": (*_READER_KEY, "native_ordinal", "item_ordinal"),
-    "prompt_parts": (*_READER_KEY, "part", "path", "source"),
+    "prompt_parts": (*_READER_KEY, "native_ordinal", "part", "path", "source"),  # Leader ruling: the DR1 shape
     "harness_events": (*_READER_KEY, "native_ordinal"),  # ADR-0026 erratum (DR1): identical events never collide
 }
 
