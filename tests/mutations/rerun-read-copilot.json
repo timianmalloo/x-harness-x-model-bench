@@ -1,0 +1,65 @@
+[
+ {
+  "name": "M-COP-SUMCHECK: per-request rows replace the session totals without the sum check",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "    if per_request and _sums(per_request) == _sums(ex.model_calls):",
+  "replace": "    if per_request:",
+  "tests": ["tests/test_reader_copilot.py::test_a_debug_log_that_does_not_sum_to_the_session_total_falls_back_to_it"]
+ },
+ {
+  "name": "M-COP-UNCACHED: uncached input keeps the cache writes",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "ModelCall(n, p[\"model\"], prompt - cached - write,",
+  "replace": "ModelCall(n, p[\"model\"], prompt - cached,",
+  "tests": ["tests/test_reader_copilot.py::test_off_per_request_buckets_are_the_logged_usage"]
+ },
+ {
+  "name": "M-COP-NULLTIER: a null contextTier becomes not recorded (HB-VAL-011 instead of HB-VAL-010)",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "    return value if value is None or isinstance(value, str) else",
+  "replace": "    return value if isinstance(value, str) else",
+  "tests": ["tests/test_reader_copilot.py::test_a_null_context_tier_is_a_measured_null_and_an_absent_one_is_not_recorded"]
+ },
+ {
+  "name": "M-COP-APIMODEL: model_api copies the request model instead of the response's",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "\"api_model\": as_str(body.get(\"model\")),",
+  "replace": "\"api_model\": request[\"model\"],",
+  "tests": ["tests/test_reader_copilot.py::test_sol_fast_is_served_with_model_api_from_the_debug_log_response"]
+ },
+ {
+  "name": "M-COP-SESSION: requests of another session count as this cell's",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "                ours = sid is None or sid == session_id\n",
+  "replace": "                ours = True\n",
+  "tests": ["tests/test_reader_copilot.py::test_requests_of_another_session_are_not_this_cells"]
+ },
+ {
+  "name": "M-COP-EMPTYTEXT: an empty reasoningText is written as a summary",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "        text = as_str(data.get(\"reasoningText\")) or None\n",
+  "replace": "        text = as_str(data.get(\"reasoningText\"))\n",
+  "tests": ["tests/test_reader_copilot.py::test_reasoning_rows_of_kind_summary_carry_the_reasoning_text"]
+ },
+ {
+  "name": "M-COP-HOOKDETAIL: a failed hook loses its error detail",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "                detail = None if ok is True else as_str(as_dict(data.get(\"error\")).get(\"message\"))\n",
+  "replace": "                detail = None\n",
+  "tests": ["tests/test_reader_copilot.py::test_hook_rows_pair_hook_start_with_hook_end"]
+ },
+ {
+  "name": "M-COP-IMPORT: a custom instruction's chars double-count its imported file",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "PromptPart(\"instruction_file\", None, end - start - inner, \"inlined\", source)",
+  "replace": "PromptPart(\"instruction_file\", None, end - start, \"inlined\", source)",
+  "tests": ["tests/test_reader_copilot.py::test_instruction_file_parts_on_pack_on_and_none_on_pack_off"]
+ },
+ {
+  "name": "M-COP-SKILLTOOL: skill loads are not read from the skill tool calls",
+  "file": "src/harness_bench/telemetry/copilot.py",
+  "find": "                if data.get(\"toolName\") == \"skill\":\n",
+  "replace": "                if False:\n",
+  "tests": ["tests/test_reader_copilot.py::test_skill_loads_come_from_the_skill_tool_calls"]
+ }
+]
