@@ -52,6 +52,10 @@ logger = logging.getLogger(__name__)
 # Only these identity fields are frozen into the plan, and only when they are strings.
 INSTRUCTION_IDENTITY_FIELDS = ("sourcePath", "id", "label", "location", "type")
 PHASE1_MAX_PARALLELISM = 4
+# ADR-0025 s7: harnesses whose cells run one at a time (Grok's rotating bench credential; agy's shared keyring login).
+CAPPED_HARNESSES = ("grok", "agy")
+# ADR-0024 s3: the model-id suffix of a `model_id` context setting (Claude Code `[1m]` = 1,000,000 tokens).
+CONTEXT_MODEL_MARKERS = {"1000000": "[1m]"}
 # Plan parameters (ADR-0007: shown at confirmation, recorded in the plan). Seconds unless named.
 DEFAULT_PARAMETERS = {
     "parallelism": 2,
@@ -155,6 +159,56 @@ def frozen_harness_parallelism(matrix: dict) -> dict[str, int]:
             h not in config.HARNESSES or isinstance(n, bool) or not isinstance(n, int) or n < 1 for h, n in caps.items()):
         raise BenchError("HB-USR-002", "harness_parallelism must map known harnesses to positive integers")
     return dict(sorted(caps.items()))
+
+
+def _setting_problem(combo: dict, profile: profiles.Profile, name: str) -> str | None:
+    """ADR-0024 s3: why `combo`'s setting `name` cannot run on `profile`, or None. "default" is always supported (it
+    pins nothing); a pinned value must be one the profile lists for a setting it applies (`none` applies nothing)."""
+    value = str(combo.get(name, profiles.DEFAULT))
+    # getattr: a stand-in profile with no settings field (the instruction-probe tests' stub) declares no setting
+    setting = getattr(profile, "settings", {}).get(name, profiles.Setting())
+    supported = setting.values if setting.apply != "none" else ()
+    if value != profiles.DEFAULT and value not in supported:
+        return (f"combo {combo['id']}: {name} {value!r} is not supported by the {combo['harness']} profile "
+                f"(supported: {', '.join(supported) or 'default only'})")
+    if setting.apply == "model_id":
+        # The model id carries the setting (claude `[1m]` = 1,000,000; agy `-high` = effort high): the id's marker and
+        # the pinned value must agree both ways, so a default combo on a marked id is refused too.
+        model = combo["model"]
+        marked = {v for v in setting.values if (marker := _model_id_marker(name, v)) and model.endswith(marker)}
+        if marked != ({value} if value != profiles.DEFAULT else set()):
+            return (f"combo {combo['id']}: model {model!r} and {name} {value!r} disagree: the {combo['harness']} profile "
+                    f"applies {name} through the model id")
+    return None
+
+
+def _model_id_marker(name: str, value: str) -> str | None:
+    """The model-id suffix that carries a `model_id` setting's value; None when no such marker is known (then a pinned
+    value cannot be checked, and is refused)."""
+    return f"-{value}" if name == "effort" else CONTEXT_MODEL_MARKERS.get(value)
+
+
+def require_combo_settings(root: Path, matrix: dict, tasks: list[dict]) -> None:
+    """Plan-time refusals, before any cell exists (ADR-0024 s3, ADR-0025 s7, ADR-0028 s7): a grok or agy combo without
+    a frozen cap of 1 (HB-PRE-011); a setting the combo's profile does not support, or a model id that disagrees with
+    it (HB-PRE-010); a scripted-user task for a profile that declares `scripted_user: unsupported` (HB-PRE-012)."""
+    caps = frozen_harness_parallelism(matrix)
+    for combo in matrix["combos"]:
+        harness = combo["harness"]
+        if harness in CAPPED_HARNESSES and caps.get(harness) != 1:
+            raise BenchError("HB-PRE-011", f"combo {combo['id']}: harness {harness} runs one cell at a time: the matrix "
+                                           f"needs harness_parallelism {{{harness}: 1}}, has {caps.get(harness)}")
+    scripted = sorted(t["id"] for t in tasks
+                      if config.load_yaml(root / "tasks" / t["id"] / "task.yaml").get("scripted_user") is True)
+    for combo in (c for c in matrix["combos"] if c["harness"] != "synthetic"):  # a synthetic combo has no profile
+        profile = profiles.load(root, combo["harness"])
+        for name in profiles.SETTINGS:
+            problem = _setting_problem(combo, profile, name)
+            if problem:
+                raise BenchError("HB-PRE-010", problem)
+        if scripted and getattr(profile, "scripted_user", "supported") == "unsupported":
+            raise BenchError("HB-PRE-012", f"combo {combo['id']}: task {', '.join(scripted)} needs the scripted user, "
+                                           f"and the {combo['harness']} profile declares scripted_user: unsupported")
 
 
 def harness_parallelism(plan_body: dict) -> dict[str, int]:
@@ -426,9 +480,12 @@ def profile_record(root: Path, harness: str) -> dict:
         return SYNTHETIC_PROFILE_RECORD
     p = profiles.load(root, harness)
     # The plan's canonical form has no floats; the decimal string preserves a fractional profile value exactly.
-    return {"profile_hash": file_hash(root / "bench" / "profiles" / f"{harness}.yaml"), "vendor": p.vendor, "usage_source": p.usage_source,
-            "auxiliary_models": list(p.auxiliary_models), "record_glob": p.record_glob, "subagent_glob": p.subagent_glob,
-            "shutdown_grace_seconds": format(p.shutdown_grace, "g")}
+    record = {"profile_hash": file_hash(root / "bench" / "profiles" / f"{harness}.yaml"), "vendor": p.vendor,
+              "usage_source": p.usage_source, "auxiliary_models": list(p.auxiliary_models), "record_glob": p.record_glob,
+              "subagent_glob": p.subagent_glob, "shutdown_grace_seconds": format(p.shutdown_grace, "g")}
+    if p.model_aliases:  # ADR-0024 s5: frozen for HB-VAL-002; absent when empty, so no earlier record changes shape
+        record["model_aliases"] = {pin: list(names) for pin, names in sorted(p.model_aliases.items())}
+    return record
 
 
 def instruction_list(exe: Path, ws: Path, env: dict[str, str]) -> list[dict]:
@@ -566,6 +623,7 @@ def build_plan(root: Path, matrix: dict, bom: dict, run_id: str, builds: dict, a
     missing = harnesses - set(builds)
     if missing:
         raise BenchError("HB-PRE-007", f"no planned build for {sorted(missing)}")
+    require_combo_settings(root, matrix, tasks)
     instruction_counts, instruction_lists = _probe_instructions(root, cells, versions, builds, arm_packs, tools_dir, cells_root)
     body = {
         "schema": SCHEMA,

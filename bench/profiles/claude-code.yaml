@@ -21,6 +21,16 @@ files:
 env:
   ANTHROPIC_MODEL: "{model}"
   CLAUDE_CODE_EXECUTABLE: "{exe}"
+  # ADR-0024 s3: a pinned effort; left out of a "default" cell's env (Verified honoured: spike C1, transcript `.effort`)
+  CLAUDE_CODE_EFFORT_LEVEL: "{effort}"
+# ADR-0024 s3: what a combo may pin. Effort values: the pinned SDK's EffortLevel (claude-agent-sdk sdk.d.ts:688). Context
+# is part of the model id: `[1m]` is 1,000,000 (the plan refuses an id and a context that disagree). default_serves:
+# 200,000 for context is Inferred (the probe confirms); a default effort depends on the model, so it is not declared.
+settings:
+  effort: {values: [low, medium, high, xhigh, max], apply: placeholder, default_serves: null}
+  context: {values: ["1000000"], apply: model_id, default_serves: 200000}
+# ADR-0026 s1: Claude's thinking display, sent as session/new `_meta` (the shape spike-settings/claude/acp3.jsonl sent)
+session_meta: {claudeCode: {options: {thinking: {type: adaptive, display: summarized}}}}
 mode: null
 record_glob: "projects/**/{session_id}.jsonl"
 # R-74 item 4: each sub-agent's transcript, its own file under the session's folder. assume: build 2.1.282 writes it there

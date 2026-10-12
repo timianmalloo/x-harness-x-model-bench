@@ -14,13 +14,16 @@ at every cell start (US-12).
 
 from __future__ import annotations
 
+import dataclasses
 import os
 import shutil
 import sys
+import tempfile
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from harness_bench import config, tools
+from harness_bench import config, oslock, tools
 from harness_bench.errors import BenchError
 from harness_bench.telemetry import claude_code, codex, copilot
 
@@ -48,17 +51,32 @@ SCRIPTED_USER = ("supported", "unsupported")  # ADR-0028 s7: the plan refuses a 
 OAUTH_TOKEN_ENV = "HB_CLAUDE_OAUTH_TOKEN"
 CELL_OAUTH_ENV = "CLAUDE_CODE_OAUTH_TOKEN"
 CREDENTIAL_KIND_OAUTH_TOKEN = "oauth_token_env"
+# ADR-0025 s7: the Grok bench credential home's variable names a credential store; no cell ever sees it.
+GROK_CRED_HOME_ENV = "HB_GROK_CRED_HOME"
 DROP_EXACT = {"CLAUDECODE", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "COPILOT_HOME", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN",
               "OPENAI_API_KEY", "ANTHROPIC_MODEL", "CODEX_PATH", "CLAUDE_CODE_EXECUTABLE", "FAKE_ACP", OAUTH_TOKEN_ENV,
-              "GH_TOKEN", "GITHUB_TOKEN", "GH_HOST", "GH_ENTERPRISE_TOKEN", "GITHUB_ENTERPRISE_TOKEN", "GH_CONFIG_DIR"}
-DROP_PREFIXES = ("CLAUDE_CODE_", "CODEX_", "COPILOT_", "GIT_CONFIG_")
+              "GH_TOKEN", "GITHUB_TOKEN", "GH_HOST", "GH_ENTERPRISE_TOKEN", "GITHUB_ENTERPRISE_TOKEN", "GH_CONFIG_DIR",
+              "XAI_API_KEY", GROK_CRED_HOME_ENV}
+# ADR-0025 s8: the Grok and Antigravity homes, keys and projects of the operator never reach a cell; a profile re-adds
+# only its own values (its env block).
+DROP_PREFIXES = ("CLAUDE_CODE_", "CODEX_", "COPILOT_", "GIT_CONFIG_", "GROK_", "AGY_", "GEMINI_", "GOOGLE_")
+# ADR-0025 s8: one bench-owned global git config for every cell, so a relocated HOME (Grok, agy) and a kept one read the
+# same (empty) file, never the operator's. It is not gitsafe's host-side file (ADR-0010 B6): a cell may write its own
+# global config, and that must never reach host git. seed_home creates it.
+CELL_GITCONFIG = Path(tempfile.gettempdir()) / "harness-bench-cell-git" / "gitconfig"
 CELL_ENV = {
     "MSBUILDDISABLENODEREUSE": "1",
     "UseSharedCompilation": "false",
     "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
     "GIT_CONFIG_COUNT": "2", "GIT_CONFIG_KEY_0": "core.fsmonitor", "GIT_CONFIG_VALUE_0": "false",
     "GIT_CONFIG_KEY_1": "core.longpaths", "GIT_CONFIG_VALUE_1": "true",
+    "GIT_CONFIG_GLOBAL": str(CELL_GITCONFIG),
 }
+# ADR-0025 s7: the lock file inside the credential home; a cell holds it from seed to write-back.
+CRED_LOCK_NAME = ".harness-bench-cred.lock"
+# simplify: a fixed wait for another engine's cell to release the credential home. Ceiling: one Grok cell (cap 1) per
+# engine, so the wait is at most one other engine's cell. Upgrade trigger: a seed refused with HB-CELL-202 in a run.
+CRED_LOCK_WAIT_SECONDS = 3600.0
 
 
 @dataclass(frozen=True)
@@ -118,6 +136,18 @@ class Profile:
                                                f"{DEFAULT!r}")
         return text
 
+    def omits(self, text: str, effort=DEFAULT, context=DEFAULT) -> bool:
+        """R-SETTINGS: a `default` setting expands nothing, so an env entry or a file line that exists only to carry
+        that setting's placeholder is left out, and a default cell launches exactly as it did before the profile
+        declared the setting. A command element is never left out: there a placeholder for a default setting is
+        refused (expand_settings), since dropping one element could leave its flag dangling."""
+        return any(value == DEFAULT and SETTING_PLACEHOLDERS[name] in text
+                   for name, value in (("effort", effort), ("context", context)))
+
+    def _expand_file(self, template: str, name: str, effort, context) -> str:
+        lines = [line for line in template.split("\n") if not self.omits(line, effort, context)]
+        return self.expand_settings("\n".join(lines), f"file {name}", effort, context)
+
     def context_args(self, context=DEFAULT) -> list[str]:
         """The argv elements `{context_arg}` becomes: none for "default" unless the map says otherwise (ADR-0028 s3)."""
         setting = self.settings.get("context", Setting())
@@ -129,7 +159,7 @@ class Profile:
         raise BenchError("HB-USR-002", f"{self.harness}: context {key} has no {CONTEXT_ARG} mapping in the profile")
 
     def model_allowed(self, served: str, pinned: str) -> bool:
-        return model_allowed(served, pinned, self.auxiliary_models)
+        return model_allowed(served, pinned, self.auxiliary_models, self.model_aliases)
 
     def delegate_ids(self, scenario) -> tuple[str, ...]:
         """R-74 item 3: the ids of class `delegate` this cell may be offered: the reader's own class map (item 1: static
@@ -145,16 +175,20 @@ class Profile:
         (`cell_env`) instead -- no credential file is copied into its home at all. A non-claude-code profile
         never receives a token (ProfileLauncher gates it), so this only ever changes claude-code's seed."""
         home.mkdir(parents=True, exist_ok=True)
+        CELL_GITCONFIG.parent.mkdir(parents=True, exist_ok=True)
+        CELL_GITCONFIG.touch(exist_ok=True)
         delegate = "".join(f', "{name}"' for name in self.delegate_ids(scenario))
         # R-74 item 5: Codex 0.156.0 feature multi_agent (stable, default true) is what offers the collaboration tools.
         # True only in a scenario-6 cell; false in every other cell, including a seed that names no scenario.
         multi_agent = "true" if scenario == 6 else "false"
         for name, template in self.files.items():
-            text = self.expand_settings(template, f"file {name}", effort, context)
+            text = self._expand_file(template, name, effort, context)
+            (home / name).parent.mkdir(parents=True, exist_ok=True)  # ADR-0025 s8: nested seeds (.grok/, .gemini/)
             (home / name).write_text(text.replace("{model}", model).replace("{delegate}", delegate)
                                      .replace("{multi_agent}", multi_agent) + "\n", encoding="utf-8")
         if (not oauth_token and self.credential_source is not None and self.credential_name is not None
                 and self.credential_source.is_file()):
+            (home / self.credential_name).parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(self.credential_source, home / self.credential_name)
 
     def clean_home(self, home: Path) -> None:
@@ -168,6 +202,8 @@ class Profile:
         env.update(CELL_ENV)
         env[self.home_env] = str(home)
         for key, template in self.env.items():
+            if self.omits(template, effort, context):
+                continue
             env[key] = (self.expand_settings(template, f"env {key}", effort, context).replace("{model}", model)
                         .replace("{exe}", str(build.exe)).replace("{home}", str(home)))
         if traceparent:
@@ -220,9 +256,12 @@ class Profile:
         return find_records(home, self.subagent_glob, session_id)
 
 
-def model_allowed(served: str, pinned: str, auxiliary_models) -> bool:
-    """The pin, or a declared auxiliary model (prefix match: builds date-stamp them) (US-11)."""
-    return served == pinned or any(served.startswith(a) for a in auxiliary_models)
+def model_allowed(served: str, pinned: str, auxiliary_models, model_aliases=None) -> bool:
+    """The pin, a declared auxiliary model (prefix match: builds date-stamp them) (US-11), or an exact alias of the pin
+    from the profile's table (ADR-0024 s5: Grok `grok-4.7` serves `grok-4.7-build`; a prefix rule would also admit
+    `grok-4.7-build-fast`). The one definition HB-VAL-002 and the probe use."""
+    return (served == pinned or served in (model_aliases or {}).get(pinned, ())
+            or any(served.startswith(a) for a in auxiliary_models))
 
 
 def find_records(home: Path, record_glob: str, session_id: str) -> list[Path]:
@@ -231,6 +270,32 @@ def find_records(home: Path, record_glob: str, session_id: str) -> list[Path]:
     if not session_id or not record_glob:
         return []
     return sorted(home.glob(record_glob.replace("{session_id}", session_id)))
+
+
+def _acquire_waiting(path: Path, wait: float, poll: float = 0.05) -> oslock.RunLock:
+    """Take the credential-home lock, waiting up to `wait` seconds for another holder (a second engine, ADR-0025 s7).
+    The OS releases a dead holder's lock, so only a live cell can make this wait."""
+    deadline = time.monotonic() + wait
+    while True:
+        try:
+            return oslock.RunLock.acquire(path, code="HB-CELL-202")
+        except BenchError as exc:
+            if time.monotonic() >= deadline:
+                raise BenchError("HB-CELL-202", f"credential home lock not released within {wait:g} s: "
+                                                f"{exc.message}") from None
+            time.sleep(poll)
+
+
+def _replace_atomically(target: Path, data: bytes) -> None:
+    """A temporary file beside the target, then one replace: a reader sees the old bytes or the new, never a torn file."""
+    fd, tmp = tempfile.mkstemp(prefix=f".{target.name}.", suffix=".tmp", dir=target.parent)
+    try:
+        with os.fdopen(fd, "wb") as f:
+            f.write(data)
+        os.replace(tmp, target)
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
 
 
 def subagent_session_id(path: Path) -> str:
@@ -335,7 +400,8 @@ DELEGATE_IDS = {"claude-code": tuple(n for n, c in claude_code.TOOL_CLASSES.item
 class ProfileLauncher:
     """engine.Launcher for a real harness. `planned` is the build record frozen in the plan."""
 
-    def __init__(self, profile: Profile, tools_dir: Path, planned: dict) -> None:
+    def __init__(self, profile: Profile, tools_dir: Path, planned: dict,
+                 cred_lock_wait: float = CRED_LOCK_WAIT_SECONDS) -> None:
         self.profile, self.tools_dir, self.planned = profile, tools_dir, planned
         self.harness = profile.harness
         self.credential_names = frozenset({profile.credential_name}) if profile.credential_name is not None else frozenset()
@@ -349,6 +415,11 @@ class ProfileLauncher:
         self.credential_kind = CREDENTIAL_KIND_OAUTH_TOKEN if self._oauth_token else profile.credential_kind
         self.shutdown_grace = profile.shutdown_grace
         self.build: tools.Build | None = None
+        # ADR-0025 s7: a profile with `credential_home_env` seeds from, and writes back to, a bench credential home the
+        # operator logged into once; `credential.source` is resolved against it. Read once, like the oauth token.
+        self._credential_home = os.environ.get(profile.credential_home_env) if profile.credential_home_env else None
+        self.cred_lock_wait = cred_lock_wait
+        self._held: dict[Path, tuple[oslock.RunLock, Path, bytes | None]] = {}  # cell home -> lock, bench file, seeded
 
     def check_build(self) -> dict:
         """Re-hash the installed build and refuse it unless it is the planned one (BuildChanged)."""
@@ -358,12 +429,44 @@ class ProfileLauncher:
         return build.record()
 
     def seed(self, home: Path, cell: dict) -> None:
+        profile = self.profile
+        if profile.credential_home_env is not None and profile.credential_name is not None:
+            profile = dataclasses.replace(profile, credential_source=self._take_credential_home(home))
         # R-74 item 3: the allowance is per cell; ADR-0003 Am. 2026-09-30: no credential file when an oauth token is set
-        self.profile.seed_home(home, cell["model"], cell.get("scenario"), oauth_token=self._oauth_token,
-                               effort=cell.get("effort", DEFAULT), context=cell.get("context", DEFAULT))
+        profile.seed_home(home, cell["model"], cell.get("scenario"), oauth_token=self._oauth_token,
+                          effort=cell.get("effort", DEFAULT), context=cell.get("context", DEFAULT))
+
+    def _take_credential_home(self, home: Path) -> Path:
+        """Lock the bench credential home (waiting for another engine's cell to write back), and return the credential
+        file the copy is seeded from. The lock is kept until `clean`."""
+        env = self.profile.credential_home_env
+        if not self._credential_home:
+            raise BenchError("HB-USR-002", f"{self.harness}: {env} is not set: log in once into the bench credential "
+                                           "home and set it to that folder (ADR-0025 s7)")
+        bench = Path(self._credential_home)
+        source = bench / (self.profile.credential_source or "")
+        lock = _acquire_waiting(bench / CRED_LOCK_NAME, self.cred_lock_wait)
+        self._held[home] = (lock, source, source.read_bytes() if source.is_file() else None)
+        return source
 
     def clean(self, home: Path) -> None:
-        self.profile.clean_home(home)
+        """Write a refreshed credential back to the bench home (atomically, only when its bytes changed), then delete
+        the copy, then release the credential-home lock (ADR-0025 s7). Runs at every cell end (engine `finally`).
+        assume: a write-back that raises still deletes the copy (the leftover-copy rule wins); confirm: the refresh gate
+        at the probe; breaks: that cell's refreshed token is lost and the operator logs in again (R-CAP's auth stop)."""
+        held = self._held.pop(home, None)
+        try:
+            if held is not None and self.profile.credential_name is not None:
+                _, source, seeded = held
+                copy = home / self.profile.credential_name
+                if copy.is_file() and (data := copy.read_bytes()) != seeded:
+                    _replace_atomically(source, data)
+        finally:
+            try:
+                self.profile.clean_home(home)
+            finally:
+                if held is not None:
+                    held[0].release()
 
     def argv_env(self, cell: dict, home: Path, traceparent: str) -> tuple[list[str], dict[str, str]]:
         if self.build is None:
