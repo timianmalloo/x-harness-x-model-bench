@@ -10,7 +10,9 @@ spread. Each harness row carries its `transport` (Ruling 120). Tokens only: no p
 The decomposition of one pair (ADR-0029 s3), with `tpc` the pack-on cell's own tokens per character (its first
 request's input tokens over its prefix characters, the prefix being every `inlined` or `listed` prompt part):
 
-- fixed prefix: per prompt part, (on chars - off chars) x the pack-on cell's requests x tpc. Inferred.
+- fixed prefix: per prompt part, (on chars - off chars) x the pack-on cell's requests x tpc. Inferred. A part with no
+  character count leaves the prefix not recorded, with one exception: the same kind with an identical fingerprint in
+  both cells of the pair is an exact zero delta (`_identical`; the page says so).
 - extra requests: (on requests - off requests) x the pack-off cell's median per-request input. Verified counts.
 - pack reads: each pack-on tool call (not a write, not a skill load) naming a pack file: its bytes returned x tpc,
   entering at the next request and carried until a compaction. Inferred.
@@ -76,6 +78,7 @@ LABELS = {
     "residual": "Verified: the delta minus the recorded terms; shown, never spread",
 }
 HOOK_TOKENS = "not recorded: hook output size is not in the record"
+IDENTICAL_FINGERPRINT = "tool catalogue identical in both arms (fingerprint equal): delta 0"
 NO_RUN_DIR = "not recorded: the run directory is not known to pack_cost"
 UNREADABLE = "not recorded: pack source not readable"
 NO_PACK = "not recorded: the plan binds no pack"
@@ -338,10 +341,26 @@ def _rel(path: str, pack: frozenset[str]) -> str | None:
     return max(hits, key=len) if hits else None
 
 
-def _prefix(parts: tuple[PromptPart, ...]) -> dict[tuple[str, str | None], int] | str:
+def _uncounted(parts: tuple[PromptPart, ...] | str) -> set[tuple[str, str]]:
+    """The (part, fingerprint) keys of the prefix parts with no character count that name a fingerprint (`path`)."""
+    if isinstance(parts, str):
+        return set()
+    return {(p.part, p.path) for p in parts if p.delivery in ("inlined", "listed") and p.chars is None and p.path}
+
+
+def _identical(on: tuple[PromptPart, ...] | str, off: tuple[PromptPart, ...] | str) -> set[tuple[str, str]]:
+    """The prefix rule's one exception (Leader ruling, J2-FIX tools-part DR): a part with no character count whose
+    kind and fingerprint are identical in the pair's pack-on and pack-off cells contributes a delta of exactly 0,
+    whatever its size; it is left out of both prefixes (and so of the tokens-per-character base). Differing or
+    missing fingerprints leave the prefix not recorded."""
+    return _uncounted(on) & _uncounted(off)
+
+
+def _prefix(parts: tuple[PromptPart, ...], identical: set[tuple[str, str]] = frozenset()
+            ) -> dict[tuple[str, str | None], int] | str:
     out: dict[tuple[str, str | None], int] = {}
     for part in parts:
-        if part.delivery not in ("inlined", "listed"):
+        if part.delivery not in ("inlined", "listed") or (part.part, part.path) in identical:
             continue
         if part.chars is None:
             return f"not recorded: prompt part {part.part} has no character count"
@@ -372,6 +391,7 @@ class _Pair:
     pack_files: frozenset[str]
     on_total: int | None
     hook_ms: int | None
+    identical: bool = False  # a fixed-prefix part entered as an exact zero delta (`_identical`)
 
 
 def _carried(entered: list[int], compacted: Sequence[int]) -> tuple[int, int]:
@@ -389,8 +409,9 @@ def _pair(view: RunView, on: CellView, off: CellView, facts: Callable[[RunView, 
     pack: frozenset[str] = frozenset() if trees else f_on.base_tree - f_off.base_tree
     n_on, n_off = len(s_on.inputs), len(s_off.inputs)
     per_request = s_on.reason or s_off.reason or (None if n_on and n_off else "not recorded: no requests in the series")
-    prefix_on = _prefix(f_on.prompt_parts) if isinstance(f_on.prompt_parts, tuple) else f_on.prompt_parts
-    prefix_off = _prefix(f_off.prompt_parts) if isinstance(f_off.prompt_parts, tuple) else f_off.prompt_parts
+    identical = _identical(f_on.prompt_parts, f_off.prompt_parts)
+    prefix_on = _prefix(f_on.prompt_parts, identical) if isinstance(f_on.prompt_parts, tuple) else f_on.prompt_parts
+    prefix_off = _prefix(f_off.prompt_parts, identical) if isinstance(f_off.prompt_parts, tuple) else f_off.prompt_parts
     tpc: Decimal | str  # the pack-on cell's tokens per character, or why it is not recorded
     if per_request or isinstance(prefix_on, str):
         tpc = per_request or prefix_on
@@ -473,7 +494,8 @@ def _pair(view: RunView, on: CellView, off: CellView, facts: Callable[[RunView, 
     else:
         delta = Measure(t_on - t_off)
         terms["residual"] = Measure(delta.value - sum(m.value for m in terms.values() if m.value is not None))
-    return _Pair(on.harness, view.run_id, on.task, on.rep or 0, on, delta, terms, files, pack, t_on, hook_ms)
+    return _Pair(on.harness, view.run_id, on.task, on.rep or 0, on, delta, terms, files, pack, t_on, hook_ms,
+                 bool(identical) and terms["fixed_prefix"].value is not None)
 
 
 def _pairs(view: RunView) -> list[tuple[CellView, CellView]]:
@@ -592,7 +614,10 @@ def build(views: Sequence[RunView]) -> PackCost:
         terms = []
         for name in TERMS:
             median, low, high = _agg([p.terms[name] for p in mine])
-            terms.append(Term(name, median, low, high, median.reason if median.value is None else LABELS[name]))
+            label = median.reason if median.value is None else LABELS[name]
+            if name == "fixed_prefix" and median.value is not None and any(p.identical for p in mine):
+                label = f"{label}; {IDENTICAL_FINGERPRINT}"
+            terms.append(Term(name, median, low, high, label))
         harnesses.append(HarnessDecomposition(harness, transports[harness], len(mine), _agg([p.delta for p in mine])[0],
                                               tuple(terms)))
         def comp_of(path: str) -> str:

@@ -226,6 +226,17 @@ def test_a_listed_instruction_row_carries_its_own_table_row_and_the_parts_partit
     assert sum(p.chars for p in parts if p.chars is not None) == len(text)
 
 
+def test_the_tools_part_carries_the_fingerprint_digest_and_no_character_count():
+    """Leader ruling (J2-FIX tools-part DR): the `tools` part stays listed with no count, its `path` the request's
+    tool-fingerprint digest (no schema text), so two cells' catalogues compare exactly."""
+    tools = {arm: [p for p in copilot.read(rec).prompt_parts if p.part == "tools"] for arm, rec in (("off", OFF), ("on", ON))}
+    assert {arm: [(p.path, p.chars, p.delivery) for p in ps] for arm, ps in tools.items()} == {
+        "off": [("copilotToolsFingerprint:6907acb0", None, "listed")],
+        "on": [("copilotToolsFingerprint:6907acb0", None, "listed")]}
+    fast = [p.path for p in copilot.read(FAST).prompt_parts if p.part == "tools"]
+    assert fast == ["copilotToolsFingerprint:360fbf8f"]  # a different catalogue, a different digest
+
+
 def test_pack_on_parts_carry_distinct_ordinals_and_load_in_a_view(tmp_path, monkeypatch):
     """J2-FIX item 10: `PromptPart.native_ordinal` (J1A-FIX item 28) is the part's position in its record, so the
     pack-on parts never share a key and a pass that writes them loads without HB-LED-003."""

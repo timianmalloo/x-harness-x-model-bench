@@ -15,6 +15,7 @@ import dataclasses
 import html
 import os
 import re
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -206,6 +207,28 @@ def test_unrecorded_base_trees_or_prompt_parts_read_not_recorded_never_0(fakes, 
     assert _term(cc, "fixed_prefix").median == Measure(None, "not recorded: no prompt_parts rows")
 
 
+@pytest.mark.parametrize(("on_path", "off_path", "recorded"), [
+    ("copilotToolsFingerprint:aa", "copilotToolsFingerprint:aa", True),   # identical catalogue: delta exactly 0
+    ("copilotToolsFingerprint:aa", "copilotToolsFingerprint:bb", False),  # differing fingerprints
+    (None, None, False),                                                  # no fingerprint on either side
+    ("copilotToolsFingerprint:aa", None, False),                          # missing on one side
+])
+def test_a_part_with_no_count_is_a_zero_delta_only_when_both_arms_carry_the_identical_fingerprint(
+        fakes, monkeypatch, on_path, off_path, recorded):
+    """Leader ruling (J2-FIX tools-part DR): the one exception to the prefix rule."""
+    def with_tools(view, cell):
+        facts = _facts(view, cell)
+        path = on_path if cell.arm == "on" else off_path
+        return dataclasses.replace(facts, prompt_parts=(*facts.prompt_parts,
+                                                        PromptPart(9, "tools", path, None, "listed", "fixture")))
+    monkeypatch.setattr(pack_cost, "cell_facts", with_tools)
+    term = _term(_harness(pack_cost.build(_views()), "claude-code"), "fixed_prefix")
+    if recorded:
+        assert term.median.value == 10500 and pack_cost.IDENTICAL_FINGERPRINT in term.label
+    else:
+        assert term.median == Measure(None, "not recorded: prompt part tools has no character count")
+
+
 def test_the_real_reader_without_a_run_directory_reads_not_recorded():
     view = _views()[0]
     facts = pack_cost.cell_facts(view, view.cells[0])
@@ -299,18 +322,30 @@ def test_the_real_path_decomposes_a_graded_copilot_pair_with_no_fakes(tmp_path):
     terms = {t.name: t.median for t in h.terms}
     # hand count from the records: 12 pack-on requests, 5 pack-off, the pack-off median request input 6,619
     assert terms["extra_requests"] == Measure((12 - 5) * 6619)
-    # Every instruction_file part now has a count (its own table row, Leader ruling on the J2-FIX DR); the listed
-    # `tools` part (the request's tool fingerprint, names and digests only) has none, so the prefix, and the tokens
-    # per character every attributed term needs, is not recorded: never a guess (decision request handed back).
-    unpriced = Measure(None, "not recorded: prompt part tools has no character count")
-    assert terms["fixed_prefix"] == terms["pack_reads"] == terms["skill_loads"] == unpriced
+    # Every instruction_file part has a count (its own table row; Leader ruling on the J2-FIX DR), and both cells
+    # carry the identical tool fingerprint, so the `tools` part is an exact zero delta (Leader ruling on the
+    # tools-part DR): the fixed prefix is the instruction-file delta. Hand count from the facts: the change in prefix
+    # characters x 12 requests x the pack-on first request's input over its prefix characters (the session-id rename
+    # in `_real_run` shortens each cell's instructions by the id's length, the same in the rows).
+    off = next(c for c in view.cells if c.cell_id == "off")
+    chars = {c.cell_id: sum(p.chars for p in pack_cost.cell_facts(view, c).prompt_parts if p.part != "tools")
+             for c in (on, off)}
+    first = context_growth.request_series(view, "on").inputs[0]
+    hand = Decimal(chars["on"] - chars["off"]) * 12 * Decimal(first) / Decimal(chars["on"])
+    assert terms["fixed_prefix"] == Measure(635600) and abs(terms["fixed_prefix"].value - hand) <= 12  # per-part rounding
+    fixed = next(t for t in h.terms if t.name == "fixed_prefix")
+    assert pack_cost.IDENTICAL_FINGERPRINT in fixed.label and pack_cost.IDENTICAL_FINGERPRINT in pack_cost.render(pc)
+    # Copilot's tool results carry no size, so the on-demand terms are not recorded, never a guess
+    assert terms["pack_reads"] == terms["skill_loads"] == Measure(None, "not recorded: bytes returned are not in the record")
     assert isinstance(terms["reasoning_output"].value, int)
     assert h.delta_total.value == sum(m.value for m in terms.values() if m.value is not None)
     assert {f.path: f.component for f in pc.components} == {
         "AGENTS.md": "agents_md", ".agents/skills/implement/reference/co-s0.md": "skill",
         ".github/instructions/testing-strategy.instructions.md": "always_applied_instruction",
         ".github/instructions/observability-and-instrumentation.instructions.md": "scoped_instruction"}
-    assert pc.top_files == () and pack_cost.render(pc).count(unpriced.reason) >= 3
+    top = {f.path: f for f in pc.top_files}
+    assert top["AGENTS.md"].delivery == "inlined" and top["AGENTS.md"].component == "agents_md"
+    assert not any(f.path.startswith("copilotToolsFingerprint") for f in pc.top_files)  # an exact 0 attributes nothing
 
 
 def test_per_file_tokens_are_labelled_and_the_task_readme_is_not_a_pack_file(fakes):

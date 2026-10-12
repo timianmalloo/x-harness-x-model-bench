@@ -21,6 +21,42 @@
     "tests": ["tests/test_reader_copilot.py::test_a_listed_instruction_row_carries_its_own_table_row_and_the_parts_partition_exactly"]
   },
   {
+    "name": "J2-FIX tools DR: the tools part records no fingerprint digest",
+    "file": "src/harness_bench/telemetry/copilot.py",
+    "find": "        parts.append((\"tools\", f\"{FINGERPRINT}:{digest}\" if digest else None, None, \"listed\",\n",
+    "replace": "        parts.append((\"tools\", None, None, \"listed\",\n",
+    "tests": ["tests/test_reader_copilot.py::test_the_tools_part_carries_the_fingerprint_digest_and_no_character_count"]
+  },
+  {
+    "name": "J2-FIX tools DR: an identical fingerprint is not an exact zero delta",
+    "file": "src/harness_bench/report/pack_cost.py",
+    "find": "    return _uncounted(on) & _uncounted(off)\n",
+    "replace": "    return set()\n",
+    "tests": ["tests/test_pack_cost.py::test_a_part_with_no_count_is_a_zero_delta_only_when_both_arms_carry_the_identical_fingerprint",
+              "tests/test_pack_cost.py::test_the_real_path_decomposes_a_graded_copilot_pair_with_no_fakes"]
+  },
+  {
+    "name": "J2-FIX tools DR: differing fingerprints are taken as equal",
+    "file": "src/harness_bench/report/pack_cost.py",
+    "find": "    return _uncounted(on) & _uncounted(off)\n",
+    "replace": "    return _uncounted(on) | _uncounted(off)\n",
+    "tests": ["tests/test_pack_cost.py::test_a_part_with_no_count_is_a_zero_delta_only_when_both_arms_carry_the_identical_fingerprint"]
+  },
+  {
+    "name": "J2-FIX tools DR: a part with no fingerprint on either side is taken as equal",
+    "file": "src/harness_bench/report/pack_cost.py",
+    "find": "if p.delivery in (\"inlined\", \"listed\") and p.chars is None and p.path}",
+    "replace": "if p.delivery in (\"inlined\", \"listed\") and p.chars is None}",
+    "tests": ["tests/test_pack_cost.py::test_a_part_with_no_count_is_a_zero_delta_only_when_both_arms_carry_the_identical_fingerprint"]
+  },
+  {
+    "name": "J2-FIX tools DR: the page does not say the tool catalogue was a zero delta",
+    "file": "src/harness_bench/report/pack_cost.py",
+    "find": "                label = f\"{label}; {IDENTICAL_FINGERPRINT}\"\n",
+    "replace": "                pass\n",
+    "tests": ["tests/test_pack_cost.py::test_a_part_with_no_count_is_a_zero_delta_only_when_both_arms_carry_the_identical_fingerprint"]
+  },
+  {
     "name": "J2-FIX item 7: views matches the prompt label by its /prompt suffix again",
     "file": "src/harness_bench/views.py",
     "find": "        kind, prompt = r.get(\"update_kind\"), r.get(\"method\") == TIMELINE_PROMPT\n",

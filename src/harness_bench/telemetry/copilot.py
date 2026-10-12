@@ -273,6 +273,7 @@ _UNSUPPORTED = not_recorded("unsupported events.version")[1]
 _NO_LOG = "no debug process log in the cell home"
 _SESSION = "events.jsonl:session.start"
 _DEBUG = "debug-log"
+FINGERPRINT = "copilotToolsFingerprint"  # the `tools` prompt part's path: `copilotToolsFingerprint:<digest>`
 _STAMP = re.compile(r"^(\d{4}-\d\d-\d\dT[\d:.]+Z) \[")
 _REQUEST = "[rust:model_wire] Wire request: "
 _DATA = "[rust:model_wire] data:"
@@ -493,7 +494,11 @@ def _prompt_parts(logs: list[Path], pairs: list[dict]) -> list[PromptPart] | str
             covered += entry.end() - entry.start()
     parts.insert(0, ("system", None, len(text) - covered, "inlined", source))
     if pairs[0]["tools"] is not None:
-        parts.append(("tools", None, None, "listed", f"{_DEBUG}:request.copilotToolsFingerprint (names and digests only)"))
+        # no character count (names and digests only); the fingerprint's digest is kept in `path` so two cells' tool
+        # catalogues compare exactly (Leader ruling, J2-FIX tools-part DR); None when the record gives no digest
+        digest = as_str(as_dict(pairs[0]["tools"]).get("digest"))
+        parts.append(("tools", f"{FINGERPRINT}:{digest}" if digest else None, None, "listed",
+                      f"{_DEBUG}:request.copilotToolsFingerprint (names and digests only)"))
     # native_ordinal is the part's position in the record's parts (J1A-FIX item 28), so no two share a key
     return [PromptPart(n, *part) for n, part in enumerate(parts)]
 
