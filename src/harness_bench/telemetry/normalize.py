@@ -24,7 +24,16 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from harness_bench.errors import Cause
-from harness_bench.telemetry import Extraction, ProviderError, as_dict, as_int
+from harness_bench.telemetry import (
+    READER_NOT_BUILT,
+    SERVED_FIELDS,
+    Extraction,
+    ProviderError,
+    ServedSettings,
+    as_dict,
+    as_int,
+    is_not_recorded,
+)
 
 BUCKETS = ("uncached_input", "cache_read", "cache_write", "output")
 PROVIDER_TYPES = ("overloaded", "rate_limit", "timeout", "api_error", "server_error", "unavailable")
@@ -172,6 +181,61 @@ def model_call_rows(run_id: str, cell_id: str, session_id: str, ex: Extraction, 
              "uncached_input": c.uncached_input, "cache_read": c.cache_read, "cache_write": c.cache_write, "output": c.output,
              "reasoning": c.reasoning, "start": c.start, "end": c.end, "requests": c.requests,
              "total_nano_aiu": c.total_nano_aiu} for c in ex.model_calls]
+
+
+def _prefix(kind: str, run_id: str, cell_id: str, session_id: str, extraction: str) -> dict:
+    return {"kind": kind, "run_id": run_id, "extraction_id": extraction, "cell_id": cell_id, "native_session_id": session_id}
+
+
+def _flag(value: bool | None) -> int | None:
+    return None if value is None else int(value)
+
+
+def served_rows(run_id: str, cell_id: str, session_id: str, ex: Extraction, extraction: str) -> list[dict]:
+    """ADR-0026 s1 `served`: one row is exactly one setting of one cell, as one source showed it. A hook left at
+    READER_NOT_BUILT, or a whole-record reason, writes no row; a field the source does not show is a row with
+    `value` None and its `not_recorded` reason."""
+    s = ex.served
+    if not isinstance(s, ServedSettings):
+        return []
+    out = []
+    for name in SERVED_FIELDS:
+        value = getattr(s, name)
+        nr = is_not_recorded(value)
+        out.append(_prefix("served_setting", run_id, cell_id, session_id, extraction)
+                   | {"field": name, "value": None if nr else value, "not_recorded": value[1] if nr else None,
+                      "source": s.sources.get(name)})
+    return out
+
+
+def reasoning_rows(run_id: str, cell_id: str, session_id: str, ex: Extraction, extraction: str) -> list[dict]:
+    """ADR-0026 s1 `reasoning`: one row is exactly one reasoning item the harness recorded."""
+    items = ex.reasoning if isinstance(ex.reasoning, list) else []
+    return [_prefix("reasoning_item", run_id, cell_id, session_id, extraction)
+            | {"native_ordinal": r.native_ordinal, "item_ordinal": r.item_ordinal, "source_kind": r.source_kind,
+               "text": r.text, "chars": r.chars, "reasoning_tokens": r.reasoning_tokens, "opaque_sha256": r.opaque_sha256}
+            for r in items]
+
+
+def prompt_part_rows(run_id: str, cell_id: str, session_id: str, ex: Extraction, extraction: str) -> list[dict]:
+    """ADR-0026 s1 `prompt_parts`: one row is exactly one part of the fixed prefix one cell's harness sent."""
+    parts = ex.prompt_parts if isinstance(ex.prompt_parts, list) else []
+    return [_prefix("prompt_part", run_id, cell_id, session_id, extraction)
+            | {"part": p.part, "path": p.path, "chars": p.chars, "delivery": p.delivery, "source": p.source}
+            for p in parts]
+
+
+def harness_event_rows(run_id: str, cell_id: str, session_id: str, ex: Extraction, extraction: str) -> list[dict]:
+    """ADR-0026 s1 `harness_events`: one row is exactly one hook invocation, skill load or compaction."""
+    events = ex.harness_events if isinstance(ex.harness_events, list) else []
+    return [_prefix("harness_event", run_id, cell_id, session_id, extraction)
+            | {"event": e.event, "name": e.name, "start": e.start, "end": e.end, "ok": _flag(e.ok), "detail": e.detail}
+            for e in events]
+
+
+def stream_reason(value) -> str | None:
+    """A hook's whole-record `not recorded` reason, or None (rows were read, or the reader is not built yet)."""
+    return value if isinstance(value, str) and value != READER_NOT_BUILT else None
 
 
 def tool_call_rows(run_id: str, cell_id: str, session_id: str, ex: Extraction, extraction: str) -> list[dict]:
