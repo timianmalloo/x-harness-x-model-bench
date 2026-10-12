@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-12T16:23:40Z",
+  "generated": "2026-10-12T16:34:20Z",
   "audit": [
     {
       "actor": null,
@@ -180384,6 +180384,28 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-12T15:16:49Z",
       "duration_seconds": 4011.0
+    },
+    {
+      "id": "al-01M4RFE425VYP5H6YP2MJYQ48F",
+      "shortname": "r-copilot-p",
+      "datetime": "2026-10-12T16:34:20Z",
+      "session": "r-copilot-p-rerun-2",
+      "prompt": "r-copilot-p-rerun-2: seam grant - retarget the Copilot profile tests to copilot -p",
+      "summary": "Retargeted 13 copilot test functions in test_profiles (5), test_delegate (3), test_scripted_user_wiring (1), test_allowlist_classes (helper, 4 tests); none deleted; names kept for mutation registries; test_contract_run.py untouched per Leader amendment; 99 passed; copilot, scripted_user_wiring, profile_classes, scenario6 mutants all killed",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "The Copilot-specific existing tests pass against the -p profile without losing a claim",
+      "done_when": "five files green; existing mutants still killed; commit; audit committed",
+      "tier": "T2",
+      "fan_out": 0,
+      "started_at": "2026-10-12T16:25:15Z",
+      "duration_seconds": 545.0
     }
   ],
   "changes": [
