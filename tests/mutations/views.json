@@ -47,7 +47,7 @@
  {
   "name": "a served model is never checked against the pin",
   "file": "src/harness_bench/views.py",
-  "find": "    if any(not profiles.model_allowed(m, cell[\"model\"], prof[\"auxiliary_models\"]) and m not in mapped for m in served):\n",
+  "find": "    if any(not _model_allowed(m, cell[\"model\"], prof) and m not in mapped for m in served | model_served):\n",
   "replace": "    if False:\n",
   "tests": [
    "tests/test_views.py::test_a_served_model_other_than_the_pin_is_a_mismatch"
@@ -56,8 +56,8 @@
  {
   "name": "declared auxiliary models ignored",
   "file": "src/harness_bench/views.py",
-  "find": "profiles.model_allowed(m, cell[\"model\"], prof[\"auxiliary_models\"])",
-  "replace": "profiles.model_allowed(m, cell[\"model\"], ())",
+  "find": "profiles.model_allowed(model, pin, prof[\"auxiliary_models\"], aliases)",
+  "replace": "profiles.model_allowed(model, pin, (), aliases)",
   "tests": [
    "tests/test_views.py::test_a_declared_auxiliary_model_is_not_a_mismatch"
   ]

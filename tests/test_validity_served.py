@@ -8,7 +8,7 @@ import pytest
 from archived_runs import GOOD, make_root, make_run
 from test_views import _acp_run, _cell, _edit_plan, _warnings
 
-from harness_bench import views
+from harness_bench import profiles, telemetry, views
 
 VALID = ("valid", None)
 MISMATCH = ("invalid (setting mismatch)", "HB-VAL-010")
@@ -21,7 +21,8 @@ def _row(field, value, source="rec field", not_recorded=None):
 
 
 def _prof(default_context=None, default_effort=None, aliases=None, aux=()):
-    settings = {"effort": {"default_serves": default_effort}, "context": {"default_serves": default_context}}
+    settings = {"effort": {"default_serves": default_effort},  # the context args as copilot.yaml freezes them (ADR-0028 s5)
+                "context": {"default_serves": default_context, "args": {"default": [], "922000": ["--context", "long_context"]}}}
     return {"auxiliary_models": list(aux), "settings": settings, **({"model_aliases": aliases} if aliases else {})}
 
 
@@ -136,7 +137,15 @@ def root(tmp_path):
     return make_root(tmp_path)
 
 
-def test_an_old_run_with_no_served_rows_keeps_its_validity_and_export(root, tmp_path):
+def test_an_old_run_with_no_served_rows_keeps_its_validity_and_export(root, tmp_path, monkeypatch):
+    real = profiles.READERS["codex"]  # an old-shape reader: R-READ-CODEX built the served hook, so it is reset here
+
+    def old_shape(path):
+        ex = real(path)
+        ex.served = telemetry.READER_NOT_BUILT
+        return ex
+
+    monkeypatch.setitem(profiles.READERS, "codex", old_shape)
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     from harness_bench.grade import runner
     runner.run_pass(run_dir, root)

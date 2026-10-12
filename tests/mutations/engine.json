@@ -459,8 +459,8 @@
  {
   "name": "D2 check per launch instead of per tick",
   "file": "src/harness_bench/engine.py",
-  "find": "                        self._launch(pending.pop(0))\n",
-  "replace": "                        self._identity_ok()\n                        self._launch(pending.pop(0))\n",
+  "find": "                        self._launch(cell)\n",
+  "replace": "                        self._identity_ok()\n                        self._launch(cell)\n",
   "tests": [
    "tests/test_engine.py::test_one_check_per_tick"
   ]

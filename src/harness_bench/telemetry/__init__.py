@@ -141,7 +141,9 @@ class ReasoningItem:
 @dataclass(frozen=True)
 class PromptPart:
     """One part of the fixed prefix one cell's harness sent (ADR-0026 s1): `part` in PART_KINDS, `delivery` in
-    DELIVERIES."""
+    DELIVERIES. `native_ordinal` is the part's position in its record (Leader ruling, the DR1 shape of HarnessEvent),
+    so two identical parts never share a key."""
+    native_ordinal: int
     part: str
     path: str | None
     chars: int | None

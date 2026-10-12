@@ -132,8 +132,8 @@
  {
   "name": "US-11: the task's model_map is ignored",
   "file": "src/harness_bench/views.py",
-  "find": " and m not in mapped for m in served):\n",
-  "replace": " for m in served):\n",
+  "find": " and m not in mapped for m in served | model_served):\n",
+  "replace": " for m in served | model_served):\n",
   "tests": [
    "tests/test_views.py::test_a_model_the_task_model_map_names_for_the_cells_vendor_is_valid"
   ]
@@ -141,8 +141,8 @@
  {
   "name": "US-11: any model_map allows every served model",
   "file": "src/harness_bench/views.py",
-  "find": " and m not in mapped for m in served):\n",
-  "replace": " and not mapped for m in served):\n",
+  "find": " and m not in mapped for m in served | model_served):\n",
+  "replace": " and not mapped for m in served | model_served):\n",
   "tests": [
    "tests/test_views.py::test_a_model_the_model_map_does_not_name_is_still_a_mismatch"
   ]
@@ -258,8 +258,8 @@
  {
   "name": "S2: bench-status/1 rejects not recorded",
   "file": "src/harness_bench/status.py",
-  "find": "\"invalid (out-of-profile tool called)\", \"not recorded\",\n",
-  "replace": "\"invalid (out-of-profile tool called)\",\n",
+  "find": "\"invalid (setting mismatch)\", \"not recorded\",\n",
+  "replace": "\"invalid (setting mismatch)\",\n",
   "tests": [
    "tests/test_status.py::test_a_cell_whose_native_record_is_unreadable_is_counted_as_not_recorded"
   ]
@@ -378,8 +378,8 @@
  {
   "name": "D&P: not recorded outranks a measured model mismatch",
   "file": "src/harness_bench/views.py",
-  "find": "    if any(not profiles.model_allowed(m, cell[\"model\"], prof[\"auxiliary_models\"]) and m not in mapped for m in served):\n        return \"invalid (model mismatch)\", \"HB-VAL-002\"\n    if unrecorded is not None:  # R-15 c1: distinct from a readable record with no call (HB-VAL-001)\n        return \"not recorded\", \"HB-VAL-003\"\n",
-  "replace": "    if unrecorded is not None:  # R-15 c1: distinct from a readable record with no call (HB-VAL-001)\n        return \"not recorded\", \"HB-VAL-003\"\n    if any(not profiles.model_allowed(m, cell[\"model\"], prof[\"auxiliary_models\"]) and m not in mapped for m in served):\n        return \"invalid (model mismatch)\", \"HB-VAL-002\"\n",
+  "find": "    if any(not _model_allowed(m, cell[\"model\"], prof) and m not in mapped for m in served | model_served):\n        return \"invalid (model mismatch)\", \"HB-VAL-002\"\n    if settings is not None:  # ADR-0024 s4: a served setting is measured even in a partial record, like the model (D&P)\n        return \"invalid (setting mismatch)\", settings.code\n    if unrecorded is not None:  # R-15 c1: distinct from a readable record with no call (HB-VAL-001)\n        return \"not recorded\", \"HB-VAL-003\"\n",
+  "replace": "    if unrecorded is not None:  # R-15 c1: distinct from a readable record with no call (HB-VAL-001)\n        return \"not recorded\", \"HB-VAL-003\"\n    if any(not _model_allowed(m, cell[\"model\"], prof) and m not in mapped for m in served | model_served):\n        return \"invalid (model mismatch)\", \"HB-VAL-002\"\n    if settings is not None:  # ADR-0024 s4: a served setting is measured even in a partial record, like the model (D&P)\n        return \"invalid (setting mismatch)\", settings.code\n",
   "tests": [
    "tests/test_views.py::test_a_mismatch_seen_in_a_partial_record_outranks_not_recorded"
   ]

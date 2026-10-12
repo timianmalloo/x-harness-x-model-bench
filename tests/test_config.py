@@ -82,7 +82,7 @@ def test_matrix2_pinned_arms_and_ring_roles_are_valid(tmp_path):
 
 
 @pytest.mark.parametrize("field,value,fragment", [
-    ("schema", "bench-matrix/3", "schema"),
+    ("schema", "bench-matrix/4", "schema"),
     ("packs", ["on", "off"], "packs"),
     ("arms", [], "at least 2"),
     ("arms", [{"id": "off"}], "at least 2"),

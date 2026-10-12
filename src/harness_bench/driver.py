@@ -18,6 +18,8 @@
 - Optional `session_meta`: the profile's mapping, sent as `session/new` `_meta` (ADR-0025 s2); none sends none.
 - Update timeline (ADR-0026 s3): `acp-timeline.jsonl` in the cell home, arrival times and kinds, never content;
   consecutive messages of one kind collapse into one line, so its size follows kind changes, not streamed chunks.
+  A `usage_update` line also carries the numbers `used` (its last) and `size`; a new size starts a new line, so
+  the timeline is the served context size's source over ACP (telemetry/claude_code.py; J1A-FIX item 22).
   Buffered and best-effort: a write failure stops the timeline and is logged, never a cell failure.
 - Ack barrier: `before_send()` runs after the handshake and before `session/prompt` is written; the
   engine persists `prompt_sent` in it, so a failed append means the prompt is never sent (model
@@ -65,6 +67,11 @@ def _label(value) -> str | None:
     return value if isinstance(value, str) and len(value) <= 128 else None
 
 
+def _number(value) -> int | None:
+    """A usage_update count as the timeline keeps it: a non-negative int, else None (never content)."""
+    return value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else None
+
+
 class _Timeline:
     """ADR-0026 s3: one line per run of same-kind messages, `{first_mono_ns, last_mono_ns, count, method,
     update_kind, tool_call_id}`; fed by the reader thread and the prompt send, flushed at turn end and close."""
@@ -75,18 +82,24 @@ class _Timeline:
         self.pending: list[dict] = []
         self.stopped = path is None
 
-    def add(self, method: str | None, update_kind: str | None, tool_call_id: str | None) -> None:
+    def add(self, method: str | None, update_kind: str | None, tool_call_id: str | None,
+            usage: tuple[int | None, int | None] | None = None) -> None:
+        """`usage` is a usage_update's (used, size), numbers only: the size is in the run's key, `used` its last."""
         ns = _arrival_ns()
         with self.lock:
             if self.stopped:
                 return
-            key = (method, update_kind, tool_call_id)
+            key = (method, update_kind, tool_call_id, None if usage is None else usage[1])
             if self.run is not None and self.run["key"] == key:
                 self.run["last_mono_ns"], self.run["count"] = ns, self.run["count"] + 1
+                if usage is not None:
+                    self.run["used"] = usage[0]
                 return
             if self.run is not None:
                 self.pending.append(self.run)
             self.run = {"key": key, "first_mono_ns": ns, "last_mono_ns": ns, "count": 1}
+            if usage is not None:
+                self.run["used"] = usage[0]
             if len(self.pending) >= TIMELINE_FLUSH:
                 self._write()
 
@@ -104,7 +117,8 @@ class _Timeline:
             self.pending.clear()
             return
         rows = [{"first_mono_ns": r["first_mono_ns"], "last_mono_ns": r["last_mono_ns"], "count": r["count"],
-                 "method": r["key"][0], "update_kind": r["key"][1], "tool_call_id": r["key"][2]} for r in self.pending]
+                 "method": r["key"][0], "update_kind": r["key"][1], "tool_call_id": r["key"][2],
+                 **({"used": r["used"], "size": r["key"][3]} if "used" in r else {})} for r in self.pending]
         self.pending.clear()
         try:
             with self.path.open("a", encoding="utf-8", newline="\n") as f:
@@ -252,7 +266,8 @@ class _Channel:
             update = params.get("update") if isinstance(params.get("update"), dict) else {}
             call = params.get("toolCall") if isinstance(params.get("toolCall"), dict) else update
             kind = "request" if "id" in msg else _label(update.get("sessionUpdate"))
-            self.timeline.add(_label(msg["method"]), kind, _label(call.get("toolCallId")))
+            usage = (_number(update.get("used")), _number(update.get("size"))) if kind == "usage_update" else None
+            self.timeline.add(_label(msg["method"]), kind, _label(call.get("toolCallId")), usage)
         else:
             rid = msg.get("id")
             self.timeline.add(self.methods.get(rid, "response") if isinstance(rid, int) else "response", "response", None)

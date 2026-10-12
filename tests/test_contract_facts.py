@@ -76,7 +76,7 @@ def test_tool_input_gains_bytes_returned_last_with_a_none_default():
 def test_the_stream_item_dataclasses_carry_the_adr_0026_columns():
     assert names(telemetry.ReasoningItem) == ["native_ordinal", "item_ordinal", "source_kind", "text", "chars",
                                               "reasoning_tokens", "opaque_sha256"]
-    assert names(telemetry.PromptPart) == ["part", "path", "chars", "delivery", "source"]
+    assert names(telemetry.PromptPart) == ["native_ordinal", "part", "path", "chars", "delivery", "source"]
     # Ruling on DR1 (ADR-0026 erratum): `native_ordinal`, the event's position in its record, so two identical events
     # never collide on the key (HB-LED-003).
     assert names(telemetry.HarnessEvent) == ["native_ordinal", "event", "name", "start", "end", "ok", "detail"]
@@ -98,10 +98,10 @@ def test_the_four_reader_hooks_default_to_reader_not_built():
 
 def _ex() -> telemetry.Extraction:
     ex = telemetry.Extraction()
-    ex.served = telemetry.ServedSettings(model_served="m", effort="high", context_tokens=telemetry.not_recorded("absent"),
+    ex.served = telemetry.ServedSettings(model_served="gpt-6-sol", effort="high", context_tokens=telemetry.not_recorded("absent"),
                                          sources={"model_served": "rollout:turn_context.model", "effort": "rollout:turn_context.effort"})
     ex.reasoning = [telemetry.ReasoningItem(3, 0, "summary", "plan", 4, 12, None)]
-    ex.prompt_parts = [telemetry.PromptPart("instruction_file", "AGENTS.md", 900, "inlined", "rollout:developer")]
+    ex.prompt_parts = [telemetry.PromptPart(2, "instruction_file", "AGENTS.md", 900, "inlined", "rollout:developer")]
     ex.harness_events = [telemetry.HarnessEvent(7, "hook", "pre", "2026-10-12T00:00:00Z", None, True, None)]
     return ex
 
@@ -133,7 +133,8 @@ def test_the_list_stream_row_builders_have_exactly_the_adr_columns():
     assert list(r) == [*PREFIX, "native_ordinal", "item_ordinal", "source_kind", "text", "chars", "reasoning_tokens",
                        "opaque_sha256"] and r["kind"] == "reasoning_item"
     (p,) = normalize.prompt_part_rows("r1", "a", "s", ex, "x")
-    assert list(p) == [*PREFIX, "part", "path", "chars", "delivery", "source"] and p["kind"] == "prompt_part"
+    assert list(p) == [*PREFIX, "native_ordinal", "part", "path", "chars", "delivery", "source"]
+    assert (p["kind"], p["native_ordinal"]) == ("prompt_part", 2)
     (h,) = normalize.harness_event_rows("r1", "a", "s", ex, "x")
     assert list(h) == [*PREFIX, "native_ordinal", "event", "name", "start", "end", "ok", "detail"]
     assert (h["kind"], h["native_ordinal"]) == ("harness_event", 7)
@@ -153,7 +154,8 @@ def test_the_four_streams_are_pass_facts_and_view_facts_with_keys():
     assert views.FACTS[-4:] == STREAMS
     assert views.KEYS["served"] == ("run_id", "extraction_id", "cell_id", "native_session_id", "field", "source")
     assert views.KEYS["reasoning"] == ("run_id", "extraction_id", "cell_id", "native_session_id", "native_ordinal", "item_ordinal")
-    assert views.KEYS["prompt_parts"] == ("run_id", "extraction_id", "cell_id", "native_session_id", "part", "path", "source")
+    assert views.KEYS["prompt_parts"] == ("run_id", "extraction_id", "cell_id", "native_session_id", "native_ordinal",
+                                         "part", "path", "source")
     assert views.KEYS["harness_events"] == ("run_id", "extraction_id", "cell_id", "native_session_id", "native_ordinal")
 
 
@@ -171,7 +173,22 @@ def root(tmp_path):
     return r
 
 
-def test_an_old_shape_reader_writes_no_row_in_the_new_streams(root, tmp_path):
+def _old_shape_reader(monkeypatch) -> None:
+    """A reader from before the four hooks: the codex reader with each hook reset to its default (R-READ-CODEX built
+    them, so an old shape is patched in)."""
+    real = profiles.READERS["codex"]
+
+    def reader(path):
+        ex = real(path)
+        for stream in STREAMS:
+            setattr(ex, stream, telemetry.READER_NOT_BUILT)
+        return ex
+
+    monkeypatch.setitem(profiles.READERS, "codex", reader)
+
+
+def test_an_old_shape_reader_writes_no_row_in_the_new_streams(root, tmp_path, monkeypatch):
+    _old_shape_reader(monkeypatch)
     run_dir = make_run(root, tmp_path, {"a": GOOD})
     gid = runner.run_pass(run_dir, root).grading_id
     assert [pass_rows(run_dir, s, gid) for s in STREAMS] == [[], [], [], []]
@@ -204,6 +221,23 @@ def test_an_identical_event_pair_and_two_served_sources_write_every_row_and_the_
     assert [r["source"] for r in pass_rows(run_dir, "served", gid) if r["field"] == "effort"] == ["a", "b"]
     assert views.verify(run_dir) == []
     assert views.load(run_dir).cells[0].validity == "valid"  # no HB-LED-003: the keys differ
+
+
+def test_two_identical_prompt_parts_write_two_rows_and_the_view_loads(root, tmp_path, monkeypatch):  # item 28 (DR1 shape)
+    real = profiles.READERS["codex"]
+
+    def reader(path):
+        ex = real(path)
+        ex.prompt_parts = [telemetry.PromptPart(n, "system", None, 10, "inlined", "rollout:response_item.message[developer]")
+                           for n in (3, 4)]
+        return ex
+
+    monkeypatch.setitem(profiles.READERS, "codex", reader)
+    run_dir = make_run(root, tmp_path, {"a": GOOD})
+    gid = runner.run_pass(run_dir, root).grading_id
+    assert len(pass_rows(run_dir, "prompt_parts", gid)) == 2
+    assert views.verify(run_dir) == []
+    assert views.load(run_dir).cells[0].validity == "valid"  # no HB-LED-003: the ordinals differ
 
 
 def test_a_pass_writes_the_four_streams_from_the_hooks(root, tmp_path, monkeypatch):
@@ -301,10 +335,9 @@ def test_pack_cost_dataclasses_fields_and_order():
 
 
 @pytest.mark.parametrize("call", [
-    lambda: cost_compare.build([]), lambda: cost_compare.render(None), lambda: cost_compare.cli_main([]),
+    lambda: cost_compare.build([]), lambda: cost_compare.cli_main([]),
     lambda: pack_cost.build([]), lambda: pack_cost.render(None), lambda: pack_cost.cli_main([]),
     lambda: tool_phases.phases(()), lambda: tool_phases.carry_until_compaction((), ()),
-    lambda: publish.publish("", Path("x.html"), False), lambda: publish.scan_text(""),
     lambda: context_growth.request_series(None, "a"),
 ])
 def test_the_stubs_raise_not_implemented(call):
@@ -317,7 +350,7 @@ def test_the_stub_signatures():
         cost_compare.build, cost_compare.render, cost_compare.cli_main, pack_cost.build, pack_cost.render,
         pack_cost.cli_main, tool_phases.phases, tool_phases.carry_until_compaction, publish.publish, publish.scan_text,
         context_growth.request_series)}
-    assert list(sig.values()) == [["views"], ["cc"], ["argv"], ["views"], ["pc", "analysis_html"], ["argv"],
+    assert list(sig.values()) == [["views"], ["cc", "scan"], ["argv"], ["views"], ["pc", "analysis_html"], ["argv"],
                                   ["calls"], ["entered", "compacted_before"], ["html", "out", "open"], ["text"],
                                   ["view", "cell_id"]]
     assert tool_phases.PHASES == ("explore", "edit", "verify", "other")

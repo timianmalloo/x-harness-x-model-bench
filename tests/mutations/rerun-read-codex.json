@@ -65,7 +65,7 @@
   {
     "name": "a later different served value is dropped (DR2)",
     "file": "src/harness_bench/telemetry/codex.py",
-    "find": "    extra = [replace(base, **{f: v}) for f, vals in seen.items() for v in vals[1:]]\n",
+    "find": "    extra = [replace(base, **{f: v}) for f, vals in seen.items() if f != \"context_tokens\" for v in vals[1:]]\n",
     "replace": "    extra = []\n",
     "tests": ["tests/test_reader_codex.py::test_two_turn_contexts_that_disagree_are_both_written"]
   },
@@ -79,8 +79,8 @@
   {
     "name": "the AGENTS.md block reads as system",
     "file": "src/harness_bench/telemetry/codex.py",
-    "find": "        return PromptPart(\"instruction_file\", \"AGENTS.md\", len(text), \"inlined\", source)\n",
-    "replace": "        return PromptPart(\"system\", \"AGENTS.md\", len(text), \"inlined\", source)\n",
+    "find": "        return PromptPart(n, \"instruction_file\", \"AGENTS.md\", len(text), \"inlined\", source)\n",
+    "replace": "        return PromptPart(n, \"system\", \"AGENTS.md\", len(text), \"inlined\", source)\n",
     "tests": ["tests/test_reader_codex.py::test_the_agents_md_block_is_an_instruction_file_part_on_pack_on_and_absent_on_pack_off"]
   }
 ]

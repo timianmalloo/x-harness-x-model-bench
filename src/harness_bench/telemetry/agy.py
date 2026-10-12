@@ -198,8 +198,9 @@ def _prompt_parts(gens: list[bytes]) -> list[PromptPart] | str:
     text = _prompt(gens)
     if text is None:
         return not_recorded("no request prompt in gen_metadata")[1]
-    return [PromptPart("system", None, len(text), "inlined", PROMPT_SOURCE)] + [
-        PromptPart("instruction_file", m["path"], len(m["body"]), "inlined", RULE_SOURCE) for m in _RULE.finditer(text)]
+    return [PromptPart(0, "system", None, len(text), "inlined", PROMPT_SOURCE)] + [
+        PromptPart(n, "instruction_file", m["path"], len(m["body"]), "inlined", RULE_SOURCE)
+        for n, m in enumerate(_RULE.finditer(text), 1)]
 
 
 def read(path: Path) -> Extraction:

@@ -496,7 +496,7 @@ def test_token_source_and_auxiliary_models_are_declared_per_harness(tmp_path):
 
 def test_unknown_harness_is_refused():
     with pytest.raises(ValueError):
-        profiles.load(ROOT, "grok")
+        profiles.load(ROOT, "nope")
 
 
 # A real handshake per harness with the pinned builds and a per-cell home (no prompt, no model call).

@@ -87,7 +87,9 @@ def test_the_default_root_reads_nothing_from_the_repository(tmp_path, edited_liv
     root = make_root(tmp_path)
     got = _files(root)
     assert got == _files(FROZEN_ROOT)
-    assert all(got[k] != v for k, v in _files(edited_live).items())
+    # Over the frozen root's own inventory: a live-only profile (grok, agy) is not part of the frozen contract.
+    edited = _files(edited_live)
+    assert all(edited[k] != v for k, v in got.items())
 
 
 def test_an_edited_live_profile_leaves_the_nonlean_report_golden_byte_equal(tmp_path, edited_live):

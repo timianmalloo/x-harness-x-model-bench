@@ -4,7 +4,8 @@ harness: agy
 vendor: google   # R-73 item 1: a profile fact, never inferred from a model id
 transport: agy-stream
 scripted_user: unsupported   # no MCP server input on the stream (ADR-0028 s7); the plan refuses such a task
-home_env: HOME   # with USERPROFILE below: agy keeps .gemini/ and AppData/ under the cell home (spike 2026-10-11)
+home_env: HOME   # with USERPROFILE: agy keeps .gemini/ and AppData/ under the cell home (spike 2026-10-11)
+user_home_vars: [HOME, USERPROFILE]   # ADR-0025 s6: both are the cell home (R-SETTINGS's mechanism)
 credential: null   # the Windows keyring, in place (the Copilot pattern); nothing is copied
 credential_kind: "subscription login (keyring)"
 # `-p` takes a value, so `-p=` goes last (Verified). Two ADR-0025 s6 flags are left out, measured on agy 1.3.3
@@ -24,7 +25,6 @@ files:
   # --dangerously-skip-permissions.
   .gemini/antigravity-cli/settings.json: '{"permissions": {"allow": ["command(*)", "read_file(*)", "write_file(*)"], "deny": ["mcp(*)", "read_url(*)", "execute_url(*)"]}}'
 env:
-  USERPROFILE: "{home}"
   AGY_CLI_DISABLE_AUTO_UPDATE: "true"   # the value 1 does not work (Verified)
 mode: null
 set_model: false   # the model is in argv; the stream has no model setter

@@ -29,6 +29,12 @@ _STALL = "a deliberate forced delay (TIME-B2): it lengthens one step on purpose,
 _INJECTED = "an injected clock and sleep (sleep=clock.sleep): no real time passes, so load cannot change the order"
 
 TIMING_ALLOWED: Mapping[str, str] = {
+    # J1a candidate (J1A-FIX): three real-time tests the wave-1 tracks added, each in a class below.
+    "test_copilot_p_adapter.py::cancel_once_the_child_runs": _POLL,  # R-COPILOT-P: polls for the child, then cancels
+    "test_cred_writeback.py::test_a_lock_not_released_within_the_wait_fails_the_seed_without_a_copy":
+        "asserts an elapsed lower bound (the lock wait was honoured): load only lengthens the wait, so it cannot flip",
+    "test_engine.py::test_a_harness_cap_holds_its_cells_to_one_while_others_launch_beside":
+        _STALL + "; the capped and the uncapped cell launch in one tick, so load lengthens their overlap",
     "test_driver.py::_poll_until": _POLL,
     "test_engine.py::_wait": _POLL,
     "test_engine.py::_stall": _STALL,

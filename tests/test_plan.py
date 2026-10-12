@@ -6,7 +6,7 @@ import os
 import shutil
 from collections import defaultdict
 from copy import deepcopy
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from fractions import Fraction
 from pathlib import Path
 from types import SimpleNamespace
@@ -380,6 +380,15 @@ def test_kind_readers_call_kind_of_instead_of_reading_kind_directly():
         assert violations(path.read_text(encoding="utf-8")) == [], path
 
 
+def _grid4_scripted_user_as_planned(monkeypatch) -> None:
+    """grid-4 was planned when copilot answered the scripted user; copilot -p declares `scripted_user: unsupported`
+    (Ruling 120), so today's plan refuses its A tasks (HB-PRE-012). The replay proves the cell recipe, not that
+    refusal (tests/test_settings.py covers it), so the profile reads as it did then."""
+    real = profiles.load
+    monkeypatch.setattr(profiles, "load", lambda root, harness, *a, **k: replace(
+        real(root, harness, *a, **k), scripted_user="supported"))
+
+
 def test_grid4_replan_gives_the_same_task_combo_arm_rep_set_and_cell_ids(monkeypatch):
     fixture = json.loads((ROOT / "tests/fixtures/plans/grid4-cells.json").read_text(encoding="utf-8"))
     assert fixture["provenance"]["source"] == "runs/grid-4/plan.json"
@@ -388,6 +397,7 @@ def test_grid4_replan_gives_the_same_task_combo_arm_rep_set_and_cell_ids(monkeyp
     # EV-17 proves the writer/cell recipe, not a harness probe. Existing probe tests cover this seam.
     monkeypatch.setattr(plan, "_probe_instructions", lambda root, cells, *args: (
         {(c.task, c.arm): 0 for c in cells if c.harness == "copilot"}, []))
+    _grid4_scripted_user_as_planned(monkeypatch)
     body = plan.build_plan(ROOT, fixture["matrix"], config.load_yaml(ROOT / "bench/bom.yaml"), "grid4-replan",
                            fixture["builds"], fixture["pack"], task_versions=fixture["task_versions"])
     fields = ("cell_id", "task", "task_version", "combo", "arm", "rep")
@@ -755,11 +765,19 @@ def test_the_plan_records_each_harness_profile_it_uses():  # grading and views r
         "claude-code": {"profile_hash": plan.file_hash(ROOT / "bench" / "profiles" / "claude-code.yaml"),
                         "vendor": "anthropic", "usage_source": "acp_turn", "auxiliary_models": ["claude-haiku-4-5"],
                             "record_glob": "projects/**/{session_id}.jsonl", "shutdown_grace_seconds": "10",
-                        "subagent_glob": "projects/**/{session_id}/subagents/agent-*.jsonl"},
+                        "subagent_glob": "projects/**/{session_id}/subagents/agent-*.jsonl",
+                        "settings": {  # R-SETTINGS (ADR-0024 s3): frozen, so a default cell is judged by default_serves
+                            "context": {"values": ["1000000"], "apply": "model_id", "default_serves": 200000, "args": {}},
+                            "effort": {"values": ["low", "medium", "high", "xhigh", "max"], "apply": "placeholder",
+                                       "default_serves": None, "args": {}}}},
         "codex": {"profile_hash": plan.file_hash(ROOT / "bench" / "profiles" / "codex.yaml"),
                   "vendor": "openai", "usage_source": "native_record", "auxiliary_models": [],
                       "record_glob": "sessions/**/rollout-*-{session_id}.jsonl", "shutdown_grace_seconds": "10",
-                  "subagent_glob": "sessions/**/rollout-*.jsonl"},
+                  "subagent_glob": "sessions/**/rollout-*.jsonl",
+                  "settings": {
+                      "context": {"values": ["872000"], "apply": "placeholder", "default_serves": 272000, "args": {}},
+                      "effort": {"values": ["low", "medium", "high", "xhigh", "max", "ultra"], "apply": "placeholder",
+                                 "default_serves": None, "args": {}}}},
     }
 
 

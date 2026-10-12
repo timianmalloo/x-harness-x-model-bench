@@ -9,8 +9,8 @@ import json
 import shutil
 from pathlib import Path
 
-from harness_bench import profiles
-from harness_bench.telemetry import Extraction, grok, normalize
+from harness_bench import profiles, views
+from harness_bench.telemetry import Extraction, ToolCall, grok, normalize
 
 FIX = Path(__file__).resolve().parent / "fixtures" / "grok"
 ON = FIX / "rerun-pack-on" / "00000000-0000-4000-8000-0000000000e1"
@@ -144,11 +144,23 @@ def test_tool_class_covers_every_advertised_tool_and_classes_the_out_of_profile_
     assert {n for n, c in grok.TOOL_CLASS.items() if c == "shell"} == shell
     assert {n for n, c in grok.TOOL_CLASS.items() if c == "read"} == {"read_file", "list_dir", "grep"}
     assert {n for n, c in grok.TOOL_CLASS.items() if c == "edit"} == {"search_replace", "write"}
-    assert {n for n, c in grok.TOOL_CLASS.items() if c == "meta"} == {"search_tool"}
+    assert {n for n, c in grok.TOOL_CLASS.items() if c == "meta"} == {"search_tool", *INERT}
     out = {"web_fetch", "image_gen", "image_edit", "image_to_video", "reference_to_video", "spawn_subagent",
            "scheduler_create", "scheduler_delete", "scheduler_list", "workflow", "use_tool"}
     assert out <= {n for n, c in grok.TOOL_CLASS.items() if c == "other"}
     assert grok.tool_class("a_tool_no_build_advertised") == "other"
+
+
+INERT = {"todo_write", "enter_plan_mode", "exit_plan_mode", "ask_user_question", "send_feedback"}
+
+
+def test_a_workspace_inert_tool_call_is_meta_and_never_hb_val_008():  # Leader ruling on R-READ-GROK's DR
+    ex = Extraction()
+    ex.tool_calls = [ToolCall(n, name, grok.tool_class(name), None, None, True) for n, name in enumerate(sorted(INERT), 1)]
+    error, warning = views._out_of_profile(normalize.tool_call_rows(*ARGS, ex, "x1"), None)
+    assert (error, warning) == (None, None)
+    ex.tool_calls = [ToolCall(9, "web_fetch", grok.tool_class("web_fetch"), None, None, True)]
+    assert views._out_of_profile(normalize.tool_call_rows(*ARGS, ex, "x1"), None)[0].code == "HB-VAL-008"
 
 
 def test_hooks_and_compaction_are_flagged_so_the_stream_is_not_recorded():

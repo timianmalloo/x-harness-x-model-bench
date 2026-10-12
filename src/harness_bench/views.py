@@ -33,7 +33,6 @@ Rules, each defined once here:
 
 from __future__ import annotations
 
-import inspect
 import re
 from dataclasses import dataclass, field, fields
 from datetime import datetime
@@ -68,7 +67,7 @@ KEYS = {  # ADR-0006 as amended: the key of one row of each fact
     "verdict_uses": ("run_id", "grading_id", "cell_id", "item_id", "judge_or_matcher"),  # Amendment 3
     "served": (*_READER_KEY, "field", "source"),  # two sources that disagree are two rows (ADR-0024 s4)
     "reasoning": (*_READER_KEY, "native_ordinal", "item_ordinal"),
-    "prompt_parts": (*_READER_KEY, "part", "path", "source"),
+    "prompt_parts": (*_READER_KEY, "native_ordinal", "part", "path", "source"),  # Leader ruling: the DR1 shape
     "harness_events": (*_READER_KEY, "native_ordinal"),  # ADR-0026 erratum (DR1): identical events never collide
 }
 
@@ -542,28 +541,29 @@ def _unrecorded(source: str, record_reason: str | None, ended: dict, usage: list
 
 # ADR-0024 s4: the served-row field each combo setting is judged by.
 SETTING_FIELDS = {"effort": "effort", "context": "context_tokens"}
-# ADR-0028 s5: a pinned context judged by the served tier, not the token count (the count is recorded, never judged).
-# simplify: a table here, because the plan freezes no settings args. Ceiling: this one Copilot value. Upgrade trigger: a
-# second tier-judged value, or `profile_record` freezing `settings.<name>.args` -> derive the tier from the frozen map.
-CONTEXT_TIERS = {("copilot", "922000"): "long_context"}
-_TAKES_ALIASES = "model_aliases" in inspect.signature(profiles.model_allowed).parameters
+TIER_FLAG = "--context"  # ADR-0028 s5: the argv flag whose value names a context tier (Copilot's `--context long_context`)
+
+
+def _context_tier(prof: dict, requested: str) -> str | None:
+    """ADR-0028 s5: a pinned context is judged by the served tier, not the token count (the count is recorded, never
+    judged), when its frozen argv names one: `settings.context.args[<value>]` holds `--context <tier>` (Copilot's
+    922000). A plan that froze no args (before R-SETTINGS) names no tier."""
+    args = as_dict(as_dict(as_dict(prof.get("settings")).get("context")).get("args")).get(requested)
+    args = list(args) if isinstance(args, (list, tuple)) else []
+    return str(args[args.index(TIER_FLAG) + 1]) if TIER_FLAG in args[:-1] else None
 
 
 def _model_allowed(model: str, pin: str, prof: dict) -> bool:
     """`profiles.model_allowed`, the one definition, with the plan's frozen exact alias table (ADR-0024 s5)."""
     aliases = as_dict(prof.get("model_aliases"))
-    if _TAKES_ALIASES:
-        return profiles.model_allowed(model, pin, prof["auxiliary_models"], aliases)
-    # simplify: the base has the 3-argument form until J1a merges R-SETTINGS's alias table. Ceiling: the J1b join.
-    # Upgrade trigger: J1a joined -> delete this line and `_TAKES_ALIASES`.
-    return profiles.model_allowed(model, pin, prof["auxiliary_models"]) or model in aliases.get(pin, ())
+    return profiles.model_allowed(model, pin, prof["auxiliary_models"], aliases)
 
 
 def _expected(cell: dict, prof: dict, setting: str) -> tuple[str | None, str, str]:
     """(expected value, its basis, the served field judged): the pin, else the profile's frozen `default_serves`
     (None: no record shows it, so nothing is judged). A plan from before bench-matrix/3 carries neither: "default"."""
     requested = str(cell.get(setting, profiles.DEFAULT))
-    if setting == "context" and (tier := CONTEXT_TIERS.get((cell["harness"], requested))) is not None:
+    if setting == "context" and (tier := _context_tier(prof, requested)) is not None:
         return tier, "pinned tier", "context_tier"
     if requested != profiles.DEFAULT:
         return requested, "pinned", SETTING_FIELDS[setting]

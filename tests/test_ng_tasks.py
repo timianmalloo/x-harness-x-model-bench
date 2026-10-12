@@ -403,7 +403,8 @@ def test_ng_pin_tree_matches_the_engine_built_base(task_id):
     listed = set(subprocess.run(["git", "ls-tree", "-r", "--name-only", SPECS[task_id]["pin"]], cwd=clone, capture_output=True,
                                 text=True, check=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.split())
     removed = {n for n in listed if n in workspace.INSTRUCTION_FILES or any(
-        n.startswith(d + "/") and n.endswith(".instructions.md") for d in workspace.INSTRUCTION_DIRS)}  # Ruling 116, the engine's own list
+        n.startswith(d + "/") and n.endswith(".instructions.md") for d in workspace.INSTRUCTION_DIRS) or any(
+        n.startswith(t + "/") for t in workspace.INSTRUCTION_TREES)}  # Ruling 116, the engine's own lists (ADR-0025 s8)
     listed -= removed
     if task_id == "NG1":
         assert removed == {".github/copilot-instructions.md"}

@@ -157,7 +157,8 @@ def test_t_eng_4_usage_sums_every_turn(tmp_path, source):
     rows = views.rows(cfg.run_dir, "turn_usage")
     outcome = row(_events(cfg.run_dir), "cell.outcome")
     cid, sid = outcome["cell_id"], outcome["session_id"]
-    native = next((cfg.run_dir / "archive" / cid / "attempt-1/home").rglob("*.jsonl"))
+    native = next(p for p in (cfg.run_dir / "archive" / cid / "attempt-1/home").rglob("*.jsonl")
+                  if p.name != driver.TIMELINE)  # the home also holds the ACP timeline (R-TRANSPORT)
     extraction = claude_code.read(native)
     assert sum(c.uncached_input for c in extraction.model_calls) == 12
     gid = "j1-crosscheck"
@@ -389,7 +390,8 @@ def test_k1_native_record_contains_both_turns_without_duplicate_message_ids(tmp_
                 "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0}} for n in (5, 7)]
     _, events, cfg, _, _ = run_cell(tmp_path, records)
     cid = row(events, "cell.outcome")["cell_id"]
-    native = next((cfg.run_dir / "archive" / cid / "attempt-1/home").rglob("*.jsonl"))
+    native = next(p for p in (cfg.run_dir / "archive" / cid / "attempt-1/home").rglob("*.jsonl")
+                  if p.name != driver.TIMELINE)  # the home also holds the ACP timeline (R-TRANSPORT)
     extraction = claude_code.read(native)
     assert sum(call.uncached_input for call in extraction.model_calls) == 12, extraction.model_calls
 

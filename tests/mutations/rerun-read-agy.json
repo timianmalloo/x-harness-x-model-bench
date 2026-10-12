@@ -52,8 +52,8 @@
  {
   "name": "RA8: no RULE block of the request prompt becomes an instruction_file part",
   "file": "src/harness_bench/telemetry/agy.py",
-  "find": "for m in _RULE.finditer(text)]",
-  "replace": "for m in _RULE.finditer(\"\")]",
+  "find": "for n, m in enumerate(_RULE.finditer(text), 1)]",
+  "replace": "for n, m in enumerate(_RULE.finditer(\"\"), 1)]",
   "tests": ["tests/test_reader_agy.py::test_instruction_files_are_the_rule_blocks_of_the_request_prompt"]
  },
  {
