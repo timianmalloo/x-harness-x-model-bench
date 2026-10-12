@@ -39,7 +39,7 @@ from pathlib import Path
 
 import pytest
 import yaml
-from archived_runs import ROOT, make_root, set_catalog_version
+from archived_runs import FROZEN_ROOT, ROOT, make_root, set_catalog_version
 from slow_ring import dotnet_gate
 
 from harness_bench import board, composites, config, ledger, views
@@ -591,6 +591,10 @@ ELEVEN = (
                      "discrimination records; 0 is none (EV-6 :276)")},
 )
 FREEZE_06_COMMIT = "d6dda42d"  # the 0.6 freeze; catalog_hash reads metrics.yaml and bench/rubrics/
+# The 0.7 release (X-G3's join, R-86 c3): its metrics.yaml is the frozen fixture root's (GOLD-A). The live catalog
+# is 0.8.dev until the S4b freeze, so a test of the 0.7 release reads these, never the live file.
+FREEZE_07_COMMIT = "2c4e2204"
+LIVE_VERSION = "0.8.dev"
 HSE_PHRASE = "unresolved vendored-API references in the final tree"
 HSE_RETIRED = "build-log errors"
 
@@ -673,7 +677,9 @@ def test_catalog_has_the_eleven_property_metrics_with_the_fixed_fields():
     found = _index(catalog)
     missing = sorted(row["id"] for row in ELEVEN if row["id"] not in found)
     assert missing == []  # red on 0.6: the catalog holds none of the eleven ids
-    assert catalog["version"] == "0.7"  # released at X-G3's join (R-86 c3, 2c4e2204)
+    assert catalog["version"] == LIVE_VERSION  # the live catalog, until the S4b freeze
+    released = config.load_yaml(FROZEN_ROOT / "bench" / "metrics.yaml")  # 0.7, released at X-G3's join (2c4e2204)
+    assert released["version"] == "0.7" and not [r["id"] for r in ELEVEN if r["id"] not in _index(released)]
     for row in ELEVEN:
         area, metric = found[row["id"]]
         assert area == row["area"], row["id"]
@@ -715,7 +721,8 @@ def test_the_06_definitions_read_from_the_freeze_commit_hash_to_the_pin_and_are_
     pinned = config.load_yaml(ROOT / FREEZE)["versions"]["0.6"]["catalog_hash"]
     assert runner.catalog_hash(root06) == pinned
     archived = config.load_yaml(root06 / "bench" / "metrics.yaml")
-    current = config.load_yaml(ROOT / "bench" / "metrics.yaml")
+    current = config.load_yaml(FROZEN_ROOT / "bench" / "metrics.yaml")  # the frozen 0.7 definitions, not the live file
+    assert str(current["version"]) == "0.7"
     assert _06_definition_problems(archived, current) == []
     # The allowed delta is only that one key. A copy that adds it stays clean; a real edit does not.
     allowed = copy.deepcopy(current)
@@ -857,8 +864,19 @@ def _cross(root: Path, root06: Path, golden06: Path, tmp: Path, export=None, boa
         board_export or (lambda name: graded_board_export(root, name, tmp)))
 
 
+def _root07(tmp: Path) -> Path:
+    """The frozen fixture root (catalog 0.7, X1) with the 0.7 release's rubrics, so catalog_hash is 0.7's."""
+    root = make_root(tmp / "root07")
+    done = subprocess.run(["git", "archive", FREEZE_07_COMMIT, "bench/rubrics"], cwd=ROOT, capture_output=True,
+                          timeout=60, check=False, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    assert done.returncode == 0, f"0.7 freeze commit {FREEZE_07_COMMIT} is not reachable: {done.stderr!r}"
+    with tarfile.open(fileobj=io.BytesIO(done.stdout), mode="r:") as archive:
+        archive.extractall(root, filter="data")
+    return root
+
+
 def test_07_regrades_the_x1_fixtures_to_the_06_goldens_on_both_surfaces(tmp_path):  # T-U1, green on arrival
-    assert _cross(_us4_root(tmp_path), _root06(tmp_path), GOLDEN / "0.6", tmp_path) == []
+    assert _cross(_root07(tmp_path), _root06(tmp_path), GOLDEN / "0.6", tmp_path) == []  # the 0.7 release
 
 
 def test_cross_version_problems_is_red_for_a_moved_06_metric(tmp_path, monkeypatch):  # T-U1a

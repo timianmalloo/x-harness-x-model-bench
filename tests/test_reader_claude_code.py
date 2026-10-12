@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from harness_bench import views
 from harness_bench.telemetry import claude_code, normalize
 
 FIX = Path(__file__).parent / "fixtures" / "claude"
@@ -135,3 +136,49 @@ def test_flagged_4_a_skill_load_is_a_skill_tool_call(tmp_path):
 def test_flagged_5_no_compaction_row_in_a_one_turn_record():
     events = normalize.harness_event_rows(*ARGS, claude_code.read(PACK_ON), "x")
     assert [e for e in events if e["event"] == "compaction"] == []
+
+
+# --- J1A-FIX items 22 and 23: the context size from the cell home's ACP timeline; reasoning tokens per request -------
+
+def _cell_home(tmp_path: Path, sizes: list[int] | None) -> Path:
+    """ONE_M laid out as a cell home holds it: home/projects/<slug>/<session>.jsonl, the driver's timeline at home."""
+    record = tmp_path / "home" / "projects" / "C--cells-a-ws" / "s.jsonl"
+    record.parent.mkdir(parents=True)
+    record.write_bytes(ONE_M.read_bytes())
+    if sizes is not None:
+        lines = [{"first_mono_ns": 1, "last_mono_ns": 1, "count": 1, "method": "session/prompt", "update_kind": "sent",
+                  "tool_call_id": None}]
+        lines += [{"first_mono_ns": 2, "last_mono_ns": 3, "count": 2, "method": "session/update",
+                   "update_kind": "usage_update", "tool_call_id": None, "used": 900, "size": s} for s in sizes]
+        (tmp_path / "home" / "acp-timeline.jsonl").write_text("".join(json.dumps(x) + "\n" for x in lines), encoding="utf-8")
+    return record
+
+
+def _context_rows(record: Path) -> list[dict]:
+    return [r for r in normalize.served_rows(*ARGS, claude_code.read(record), "x") if r["field"] == "context_tokens"]
+
+
+def test_the_served_context_size_is_read_from_the_cell_homes_acp_timeline(tmp_path):
+    rows = _context_rows(_cell_home(tmp_path, [1_000_000]))
+    assert [(r["value"], r["source"]) for r in rows if r["value"] is not None] == [
+        (1_000_000, "acp-timeline.jsonl:usage_update.size@2")]
+
+
+def test_without_a_timeline_beside_the_record_the_context_size_is_not_recorded(tmp_path):
+    rows = _context_rows(_cell_home(tmp_path, None))
+    assert [(r["value"], r["not_recorded"]) for r in rows] == [
+        (None, "not recorded: the transcript does not record the context size")]
+
+
+def test_two_timeline_sizes_are_two_served_rows_and_the_disagreement_is_hb_val_010(tmp_path):
+    rows = [r for r in _context_rows(_cell_home(tmp_path, [200_000, 1_000_000])) if r["value"] is not None]
+    assert [r["value"] for r in rows] == [200_000, 1_000_000] and len({r["source"] for r in rows}) == 2
+    cell = {"cell_id": "a", "harness": "claude-code", "model": "claude-opus-5-5", "effort": "default", "context": "default"}
+    prof = {"auxiliary_models": [], "settings": {"context": {"default_serves": 200000}, "effort": {}}}
+    finding, _ = views._served_settings(cell, prof, rows)
+    assert finding is not None and finding.code == "HB-VAL-010" and "1000000" in finding.message
+
+
+def test_model_call_reasoning_is_the_requests_thinking_tokens():  # usage.output_tokens_details.thinking_tokens
+    assert [c.reasoning for c in claude_code.read(PACK_ON).model_calls] == [34, 0, 367, 0, 10, 31, 80]
+    assert [c.reasoning for c in claude_code.read(ONE_M).model_calls] == [0, 98]

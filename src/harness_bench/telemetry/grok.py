@@ -47,8 +47,10 @@ TOOL_CLASS = {"run_terminal_command": "shell", "get_command_or_subagent_output":
               "read_file": "read", "list_dir": "read", "grep": "read",
               "search_replace": "edit", "write": "edit",
               "search_tool": "meta",  # R-54 (a)'s ToolSearch: returns an MCP tool's schema, invokes nothing
-              "todo_write": "other", "enter_plan_mode": "other", "exit_plan_mode": "other",
-              "ask_user_question": "other", "send_feedback": "other",
+              # Workspace-inert (Leader ruling on R-READ-GROK's DR): counted, never scored, as ToolSearch is (claude_code.py,
+              # R-54 (a)); grok agent --agent-profile's tools: allowlist is probed at S3.
+              "todo_write": "meta", "enter_plan_mode": "meta", "exit_plan_mode": "meta",
+              "ask_user_question": "meta", "send_feedback": "meta",
               "spawn_subagent": "other", "scheduler_create": "other", "scheduler_delete": "other",
               "scheduler_list": "other", "workflow": "other", "use_tool": "other", "web_fetch": "other",
               "image_gen": "other", "image_edit": "other", "image_to_video": "other", "reference_to_video": "other"}

@@ -1069,3 +1069,18 @@ def test_no_cell_home_means_no_timeline(tmp_path):  # a caller that is not the e
     home.rmdir()
     result = driver.run_turn(cell, cwd=ws, prompt="p", mode=None, handshake_timeout=10, before_send=lambda sid: None)
     assert result.cause is None and not home.exists()
+
+
+def test_each_usage_update_line_carries_its_used_and_size_numbers_and_a_size_change_starts_a_line(tmp_path):
+    """J1A-FIX item 22 (R-READ-CC finding): the timeline is the cell's one source of the served context size over ACP,
+    so a collapsed usage_update line carries the numeric `used` (its last) and `size`, still no content."""
+    usage = [_update("usage_update", used=1200, size=200_000), _update("usage_update", used=1500, size=200_000),
+             _update("usage_update", used=1900, size=1_000_000)]
+    replies = [INIT, CREATED, _update("agent_message_chunk", content={"type": "text", "text": "x"}), *usage,
+               {"jsonrpc": "2.0", "id": 3, "result": {"stopReason": "end_turn"}}]
+    result, _, home = _session_turn(tmp_path, replies)
+    assert result.cause is None, result.detail
+    rows = _timeline(home)
+    assert [(r["count"], r["used"], r["size"]) for r in rows if r["update_kind"] == "usage_update"] == [
+        (2, 1500, 200_000), (1, 1900, 1_000_000)]
+    assert all("used" not in r and "size" not in r for r in rows if r["update_kind"] != "usage_update")

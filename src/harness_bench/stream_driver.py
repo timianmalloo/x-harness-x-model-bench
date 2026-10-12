@@ -50,9 +50,8 @@ DENIAL_PREFIX = "permission check failed for "
 # coord_transport.NATIVE_ERROR_STREAK_CAP, pinned equal by tests/test_stream_driver.py: this many ERROR steps with no
 # DONE step between them end the cell.
 NATIVE_ERROR_STREAK_CAP = 5
-# assume: an agy tool-error loop is a harness-side failure until the taxonomy names it. Confirm: the decision request
-# R-TRANSPORT handed back (no HB-CELL code names the streak). Breaks: a streak is scored against the harness.
-STREAK_CAUSE = Cause.adapter_crash
+# The agent's own tool-error loop (HB-CELL-302; R-TRANSPORT seam 6, Leader ruling): scored, never a harness crash.
+STREAK_CAUSE = Cause.native_error_streak
 _ID = re.compile(r"[A-Za-z0-9._:/+-]{1,256}")  # coord_transport._identifier: the conversation and action id shape
 log = logging.getLogger("harness_bench.stream_driver")
 

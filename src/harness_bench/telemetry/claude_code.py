@@ -13,7 +13,10 @@
 
 The lean re-run's reader facts (ADR-0026 s1; R-READ-CC spike, 2026-10-12, one pack-on X1 turn):
 - served: `effort` on every assistant row; `attachment` type `model` -> `identity.modelId`; the context size is not in
-  the transcript but in the ACP `usage_update.size` (a second source, read only when `read(path, acp=...)` is given).
+  the transcript but in the ACP `usage_update.size`: the driver's `acp-timeline.jsonl` in the cell home (the parent
+  of the record's `projects` folder), one served row per distinct size, its source naming the timeline line (so two
+  sizes are two keys and HB-VAL-010 judges them); `read(path, acp=...)` reads raw ACP messages instead (tests).
+- model calls: `reasoning` is the request's `usage.output_tokens_details.thinking_tokens` (its first row).
 - reasoning: each `thinking` block is a `summary` (display `summarized`), its text as stored; an empty one with only
   a signature is `encrypted-only`.
 - prompt parts: `attachment` type `instructions` (`files[].path/content`), `prompt_snapshot` (`systemPrompt` list,
@@ -47,6 +50,7 @@ from harness_bench.telemetry import (
     as_list,
     as_status,
     as_str,
+    is_count,
     not_recorded,
     rows,
     unexpected_status,
@@ -107,9 +111,11 @@ def _note_advertised(names: list[str], row: dict) -> None:
 SRC_EFFORT = "transcript:assistant.effort"
 SRC_MODEL = "transcript:attachment.identity.modelId"
 SRC_ACP_SIZE = "acp:usage_update.size"
+SRC_TIMELINE_SIZE = "acp-timeline.jsonl:usage_update.size"  # + "@<line>" of the size's first line
+TIMELINE = "acp-timeline.jsonl"  # driver.TIMELINE (only driver.py speaks ACP, so the name is repeated here)
 
 
-def _served(efforts: list[str], models: list[str], acp: Path | None) -> tuple[ServedSettings, ...]:
+def _served(efforts: list[str], models: list[str], acp: Path | None, record: Path) -> tuple[ServedSettings, ...]:
     """One `ServedSettings` per distinct value of a field, in record order (DR2): a second value repeats the first
     settings' other fields, so its rows de-duplicate in `served_rows` and only the differing value adds a row."""
     base = ServedSettings(
@@ -124,9 +130,31 @@ def _served(efforts: list[str], models: list[str], acp: Path | None) -> tuple[Se
     out = [base]
     out += [replace(base, model_served=m) for m in models[1:]]
     out += [replace(base, effort=e) for e in efforts[1:]]
-    sizes = _acp_sizes(acp) if acp is not None else []
-    out += [replace(base, context_tokens=s, sources={**base.sources, "context_tokens": SRC_ACP_SIZE}) for s in sizes]
+    sizes = [(s, SRC_ACP_SIZE) for s in _acp_sizes(acp)] if acp is not None else _timeline_sizes(record)
+    out += [replace(base, context_tokens=s, sources={**base.sources, "context_tokens": src}) for s, src in sizes]
     return tuple(out)
+
+
+def _timeline_sizes(record: Path) -> list[tuple[int, str]]:
+    """(size, source) per distinct `usage_update` size in the cell home's ACP timeline, in order; none without one."""
+    home = next((p.parent for p in record.parents if p.name == "projects"), None)
+    timeline = home / TIMELINE if home is not None else None
+    if timeline is None or not timeline.is_file():
+        return []
+    out: list[tuple[int, str]] = []
+    try:
+        lines = timeline.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeDecodeError):
+        return []
+    for n, line in enumerate(lines, 1):
+        try:
+            row = as_dict(json.loads(line))
+        except ValueError:
+            continue
+        size = row.get("size")
+        if row.get("update_kind") == "usage_update" and isinstance(size, int) and size not in [s for s, _ in out]:
+            out.append((size, f"{SRC_TIMELINE_SIZE}@{n}"))
+    return out
 
 
 def _acp_sizes(acp: Path) -> list[int]:
@@ -214,8 +242,8 @@ def _reasoning(n: int, start: int, message: dict) -> list[ReasoningItem]:
 
 
 def read(path: Path, acp: Path | None = None) -> Extraction:
-    """The native record; `acp`, when given, is the turn's ACP messages (one JSON-RPC message per line), the second
-    source of the served context size. Without it that field is `not recorded` (the engine passes none today)."""
+    """The native record; `acp`, when given, is the turn's ACP messages (one JSON-RPC message per line), read for the
+    served context size instead of the cell home's timeline. With neither, that field is `not recorded`."""
     ex = Extraction()
     seen_messages: set[str] = set()
     call_line: dict[str, int] = {}  # request key -> its ModelCall's native_ordinal
@@ -278,9 +306,10 @@ def read(path: Path, acp: Path | None = None) -> Extraction:
             seen_messages.add(key)
             call_line[key] = n
             usage = as_dict(message.get("usage"))
+            thinking = as_dict(usage.get("output_tokens_details")).get("thinking_tokens")
             ex.model_calls.append(ModelCall(n, model, ex.count(n, usage, "input_tokens"), ex.count(n, usage, "cache_read_input_tokens"),
                                             ex.count(n, usage, "cache_creation_input_tokens"), ex.count(n, usage, "output_tokens"),
-                                            None, stamp, stamp))
+                                            thinking if is_count(thinking) else None, stamp, stamp))
         if key is not None:
             items = _reasoning(call_line[key], item_counts.get(key, 0), message)
             item_counts[key] = item_counts.get(key, 0) + len(items)
@@ -295,7 +324,7 @@ def read(path: Path, acp: Path | None = None) -> Extraction:
     events += [(s["n"], HarnessEvent(0, "skill_load", s["name"], s["start"], None, None, None)) for s in skills.values()]
     ex.tool_calls.sort(key=lambda t: t.native_ordinal)
     ex.account_connector_tools = len({name for name in advertised if _ACCOUNT_CONNECTOR.fullmatch(name)})
-    ex.served = _served(efforts, models, acp)
+    ex.served = _served(efforts, models, acp, path)
     ex.reasoning = reasoning
     ex.prompt_parts = parts
     # DR1: native_ordinal is the event's position among the record's events (two hooks share one row's line).

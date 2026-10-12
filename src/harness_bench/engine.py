@@ -1026,11 +1026,11 @@ class Engine:
         `decision.opened` it feeds are never empty for a scanned cause."""
         errors = [error for ex in extractions for error in ex.errors]
         scanned = normalize.classify(errors)
+        if kill_reason == "timeout":
+            return Cause.timed_out
         if scanned:
             result.detail = next((e.message for e in errors if normalize.classify([e]) == scanned), result.detail)
             return scanned
-        if kill_reason == "timeout":
-            return Cause.timed_out
         if kill_reason == "host_suspended":
             return Cause.host_suspended
         if exit_status in NO_MEMORY_STATUSES or OOM_SIGNATURE.search(tail):

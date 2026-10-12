@@ -8,14 +8,11 @@ from types import SimpleNamespace
 
 import pytest
 
-from harness_bench import engine, profiles, stream_driver
+from harness_bench import archive, engine, profiles, stream_driver
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILD = SimpleNamespace(exe=Path("C:/tools/harness.exe"), adapter=None)
 PARENT_ENV = {"PATH": "C:/Windows", "XAI_API_KEY": "xai-not-a-key", "HOME": "C:/real-home", "USERPROFILE": "C:/real-home"}
-# The two seams R-TRANSPORT hands back (no wave-1 row owns them): strict, so the fix turns these red until removed.
-SEAM_WORKTREE = pytest.mark.xfail(strict=True, reason="seam: profiles.seed_home expands no {worktree} placeholder")
-SEAM_XAI = pytest.mark.xfail(strict=True, reason="seam: profiles.DROP_EXACT lacks XAI_API_KEY (ADR-0025 s5)")
 
 
 def _launch(harness: str, tmp_path: Path, pack: str = "off", model: str = "grok-4.7", effort: str = "high"):
@@ -25,7 +22,11 @@ def _launch(harness: str, tmp_path: Path, pack: str = "off", model: str = "grok-
     ws.mkdir(parents=True)
     for name in profiles.load(ROOT, harness).files:  # R-SETTINGS's seed_home creates parents; not this test's subject
         (home / name).parent.mkdir(parents=True, exist_ok=True)
-    launcher = profiles.ProfileLauncher(profiles.load(ROOT, harness), tmp_path / "tools", {})
+    bench_home = tmp_path / "bench-home"  # Grok seeds from the operator's bench credential home (ADR-0025 s7)
+    bench_home.mkdir(exist_ok=True)
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setenv("HB_GROK_CRED_HOME", str(bench_home))
+        launcher = profiles.ProfileLauncher(profiles.load(ROOT, harness), tmp_path / "tools", {})
     launcher.build = BUILD
     cell = {"model": model, "pack": pack, "scenario": None, "effort": effort, "context": "default"}
     launcher.seed(home, cell)
@@ -42,8 +43,7 @@ def test_grok_env_puts_every_home_variable_in_the_cell(tmp_path):
     assert (env["HOME"], env["USERPROFILE"], env["GROK_HOME"]) == (str(home), str(home), f"{home}/.grok")
 
 
-@SEAM_XAI
-def test_grok_env_lacks_xai_api_key(tmp_path):
+def test_grok_env_lacks_xai_api_key(tmp_path):  # R-SETTINGS dropped it
     _, env, _, _, _ = _launch("grok", tmp_path)
     assert "XAI_API_KEY" not in env
 
@@ -60,8 +60,7 @@ def test_grok_config_turns_self_update_off(tmp_path):
     assert tomllib.loads((home / ".grok" / "config.toml").read_text(encoding="utf-8"))["cli"]["auto_update"] is False
 
 
-@SEAM_WORKTREE
-@pytest.mark.parametrize("pack", ["on", "off"])
+@pytest.mark.parametrize("pack", ["on", "off"])  # seed_files {worktree}
 def test_grok_trusts_the_worktree_in_both_arms(tmp_path, pack):
     _, _, home, ws, _ = _launch("grok", tmp_path, pack)
     folders = tomllib.loads((home / ".grok" / "trusted_folders.toml").read_text(encoding="utf-8"))["folders"]
@@ -70,9 +69,30 @@ def test_grok_trusts_the_worktree_in_both_arms(tmp_path, pack):
 
 def test_grok_never_copies_a_worker_credential(tmp_path):
     p = profiles.load(ROOT, "grok")
-    assert (p.credential_source, p.credential_name, p.credential_home_env) == (None, None, "HB_GROK_CRED_HOME")
-    _, _, home, _, _ = _launch("grok", tmp_path)
+    # the source is resolved against the bench credential home, never the operator's own ~/.grok (CRED-COPY-A)
+    assert (p.credential_source, p.credential_name, p.credential_home_env) == (
+        Path("auth.json"), ".grok/auth.json", "HB_GROK_CRED_HOME")
+    _, _, home, _, launcher = _launch("grok", tmp_path)  # an empty bench home: nothing to copy
     assert not list(home.rglob("auth.json"))
+    launcher.clean(home)
+
+
+def test_a_grok_cell_archive_excludes_its_seeded_credential(tmp_path, monkeypatch):  # R-TRANSPORT seam 4
+    bench_home = tmp_path / "bench-home"
+    bench_home.mkdir()
+    (bench_home / "auth.json").write_text('{"token": "x"}', encoding="utf-8")
+    monkeypatch.setenv("HB_GROK_CRED_HOME", str(bench_home))
+    launcher = profiles.ProfileLauncher(profiles.load(ROOT, "grok"), tmp_path / "tools", {})
+    cell_dir = tmp_path / "cell"
+    (cell_dir / "ws").mkdir(parents=True)
+    launcher.seed(cell_dir / "home", {"model": "grok-4.7", "scenario": None, "effort": "high", "context": "default"})
+    try:
+        assert (cell_dir / "home" / ".grok" / "auth.json").is_file()  # seeded from the bench home
+        result = archive.archive_cell(cell_dir, tmp_path / "archive", 1, launcher.credential_names)
+    finally:
+        launcher.clean(cell_dir / "home")
+    paths = {r["path"] for r in result.rows}
+    assert "home/.grok/config.toml" in paths and not [p for p in paths if p.endswith("auth.json")]
 
 
 def test_grok_reads_its_session_directory_and_its_alias():

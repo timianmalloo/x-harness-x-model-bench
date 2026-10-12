@@ -16,6 +16,9 @@ ATTRIBUTIONS = ("agent", "harness", "infrastructure", "benchmark", "none")
 class Cause(Enum):
     # name = (code, attribution, label shown in reports)
     timed_out = ("HB-CELL-301", "agent", "timed_out")
+    # R-TRANSPORT seam 6 (Leader ruling): NATIVE_ERROR_STREAK_CAP consecutive native tool errors with no step done between
+    # them (stream_driver.STREAK_CAUSE): the agent's own loop, so it is scored, never a harness crash.
+    native_error_streak = ("HB-CELL-302", "agent", "failed (native error streak)")
     blocked_permission = ("HB-CELL-201", "agent", "blocked (permission)")
     blocked_auth = ("HB-CELL-202", "harness", "blocked (auth)")
     # ADR-0025 s3: a native stream's non-empty `denied_actions`, or a tool ERROR `permission check failed for `.
