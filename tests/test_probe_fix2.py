@@ -76,6 +76,8 @@ def test_grok_config_allows_the_profile_classes_and_denies_web_and_mcp(tmp_path)
     assert config["cli"]["auto_update"] is False
     assert sorted(config["permission"]["allow"]) == ["Bash", "Edit", "Glob", "Grep", "Read", "Write"]
     assert sorted(config["permission"]["deny"]) == ["MCPTool", "WebFetch", "WebSearch"]
+    # allow rules alone still asked for a multi-line `python -c` (run-20261012T230923): the mode must not ask
+    assert config["ui"]["permission_mode"] == "always-approve"
 
 
 # --- D. Claude's served window is the adapter's authoritative (post-result) size -------------------------------------
