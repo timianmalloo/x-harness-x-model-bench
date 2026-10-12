@@ -26,6 +26,10 @@ from harness_bench.errors import BenchError
 
 INSTRUCTION_FILES = ("CLAUDE.md", ".claude/CLAUDE.md", "AGENTS.md", "GEMINI.md", ".github/copilot-instructions.md")
 INSTRUCTION_DIRS = (".github/instructions",)
+# ADR-0025 s8: Antigravity loads every file under .agents/rules and .agents/skills, Grok its .grok/ tree, so every file
+# there is an instruction file, whatever its name. Base trees only: check_cells_root keeps the two lists above, because
+# the operator's own ~/.grok (the real Grok home) and a repo's .agents/ sit above a cells root by design.
+INSTRUCTION_TREES = (".agents/rules", ".agents/skills", ".grok")
 GIT_TIMEOUT = 120
 # pack-apply rows that wrote a file; SKIP and UNCHANGED rows name no change (probe W1)
 WRITE_ACTIONS = ("ADD", "UPDATE", "MERGE")
@@ -144,10 +148,13 @@ def _extract_upstream_tree(clone: Path, commit: str, dest: Path) -> None:
 
 
 def _instruction_paths(tree: Path) -> list[Path]:
-    """Every agent instruction file in a tree: a path in INSTRUCTION_FILES, or a *.instructions.md under INSTRUCTION_DIRS."""
+    """Every agent instruction file in a tree: a path in INSTRUCTION_FILES, a *.instructions.md under INSTRUCTION_DIRS, or
+    any file under INSTRUCTION_TREES."""
     found = [tree / rel for rel in INSTRUCTION_FILES if (tree / rel).is_file()]
     for rel in INSTRUCTION_DIRS:
         found += sorted(p for p in (tree / rel).rglob("*") if p.is_file() and p.name.endswith(".instructions.md"))
+    for rel in INSTRUCTION_TREES:
+        found += sorted(p for p in (tree / rel).rglob("*") if p.is_file())
     return found
 
 
