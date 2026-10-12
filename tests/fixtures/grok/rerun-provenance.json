@@ -4,10 +4,10 @@
   "hand_built": true,
   "how": "Every file is hand-built in the real record's shape; no byte of a real record is copied. Keys, row kinds and row order follow the spike sessions; every value (session ids, call ids, reasoning ids, paths, encrypted payloads, prompt text, tool descriptions, token counts) is synthetic.",
   "shape_sources": {
-    "rerun-pack-on": "spike pack-on trusted session 01a12c98-... (home2): summary text in both reasoning rows, one agents_md_files entry (project Agents.md), contextWindowTokens 256000, model_id grok-4.7-build, reasoning_effort high",
-    "rerun-pack-off": "spike pack-off session 01a12c94-dd67-... (home): reasoning rows with an empty summary (encrypted-only), agents_md_files []",
+    "rerun-pack-on": "the R-READ-GROK brief s5 pack-on trusted spike session (home2): summary text in both reasoning rows, one agents_md_files entry (project Agents.md), contextWindowTokens 256000, model_id grok-4.7-build, reasoning_effort high",
+    "rerun-pack-off": "the brief s5 pack-off spike session (home): reasoning rows with an empty summary (encrypted-only), agents_md_files []",
     "rerun-web-fetch": "hand-built: no session record holds a web_fetch call (the ACP streams only advertise it); the assistant tool_calls row and the events.jsonl tool_started/tool_completed pair use the read_file call's real shape with the name web_fetch"
   },
-  "never_copied": "session 01a12c94-7992-... (its agents_md_files holds the operator's global instruction file, LEAK-HOME-A)",
+  "never_copied": "the brief s5 never-copy session (its agents_md_files holds the operator's global instruction file, LEAK-HOME-A)",
   "files_used_by_the_reader": ["chat_history.jsonl", "events.jsonl", "prompt_context.json", "signals.json", "usage.json", "system_prompt.txt", "tool_definitions.json"]
 }
