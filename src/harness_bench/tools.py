@@ -58,9 +58,11 @@ from harness_bench.errors import BenchError, Cause
 STAMP = ".lock-sha256"
 GROK_HOME_DIR = ".grok-home"  # under node_modules: `npm ci` removes it, so every install unpacks Grok afresh
 VENDORED = Path("bench") / "tools" / "vendored.json"
-COPILOT_PIN = "bench/adapters/copilot_p_acp.pin.json"  # R-COPILOT-P's data file: {path, version, sha256}
+BUILDS = Path("bench") / "tools" / "builds.yaml"  # every harness's layout, as data (one entry per profile)
+LAYOUT_KEYS = ("version_file", "version_key", "exe", "adapter", "adapter_pin")
 
 _DARWIN_TARGET_TRIPLE = {"arm64": "aarch64-apple-darwin", "x64": "x86_64-apple-darwin"}
+_WIN32_TARGET_TRIPLE = "x86_64-pc-windows-msvc"  # win32 pins x64 only (ADR-0013 s2)
 
 
 @dataclass(frozen=True)
@@ -88,27 +90,21 @@ def platform_tag(plat: str = sys.platform) -> str:
     raise BenchError("HB-PRE-007", f"unsupported host platform {plat!r} (ADR-0013 section 5: Windows or macOS only)")
 
 
-def _layout(tag: str) -> dict[str, ToolLayout]:
+def _layout(tag: str, root: Path | None = None) -> dict[str, ToolLayout]:
+    """Every harness's layout for one platform tag, from bench/tools/builds.yaml (its comment names the keys)."""
+    path = (root or bench_root()) / BUILDS
     if tag.startswith("win32"):
-        claude_exe, copilot_exe = f"@anthropic-ai/claude-agent-sdk-{tag}/claude.exe", f"@github/copilot-{tag}/copilot.exe"
-        codex_exe = f"@openai/codex-{tag}/vendor/x86_64-pc-windows-msvc/bin/codex.exe"
-        suffix = ".exe"
+        fill = {"tag": tag, "suffix": ".exe", "triple": _WIN32_TARGET_TRIPLE}
     else:  # darwin
-        arch = tag.rsplit("-", 1)[1]
-        claude_exe, copilot_exe = f"@anthropic-ai/claude-agent-sdk-{tag}/claude", f"@github/copilot-{tag}/copilot"
-        codex_exe = f"@openai/codex-{tag}/vendor/{_DARWIN_TARGET_TRIPLE[arch]}/bin/codex"
-        suffix = ""
-    return {
-        "claude-code": ToolLayout("@anthropic-ai/claude-agent-sdk/package.json", "claudeCodeVersion", claude_exe,
-                                  "@agentclientprotocol/claude-agent-acp"),
-        "codex": ToolLayout("@openai/codex/package.json", "version", codex_exe, "@agentclientprotocol/codex-acp"),
-        "copilot": ToolLayout(f"@github/copilot-{tag}/package.json", "version", copilot_exe, None, COPILOT_PIN),
-        "grok": ToolLayout(f"@xai-official/grok-{tag}/package.json", "version", f"{GROK_HOME_DIR}/bin/grok{suffix}", None),
-        "agy": ToolLayout(None, "version", f"agy{suffix}", None),
-    }
-
-
-LAYOUT = _layout(platform_tag())
+        fill = {"tag": tag, "suffix": "", "triple": _DARWIN_TARGET_TRIPLE[tag.rsplit("-", 1)[1]]}
+    layouts = {}
+    for harness, entry in config.load_yaml(path).items():
+        if not isinstance(entry, dict) or set(entry) - set(LAYOUT_KEYS) or not isinstance(entry.get("exe"), str):
+            raise BenchError("HB-USR-002", f"{path}: {harness} must map only {LAYOUT_KEYS} to strings, exe required")
+        text = {key: (entry[key].format(**fill) if isinstance(entry.get(key), str) else None) for key in LAYOUT_KEYS}
+        layouts[harness] = ToolLayout(text["version_file"], text["version_key"] or "version", text["exe"],
+                                      text["adapter"], text["adapter_pin"])
+    return layouts
 
 
 class BuildChanged(Exception):
@@ -169,6 +165,9 @@ class Build:
 def bench_root() -> Path:
     """The bench repository this module belongs to (cwd-independent): where the committed pin files live."""
     return config.repo_root(Path(__file__).resolve().parent)
+
+
+LAYOUT = _layout(platform_tag())
 
 
 def _pin(path: Path, harness: str, keys: tuple[str, ...], keyed: bool) -> dict:

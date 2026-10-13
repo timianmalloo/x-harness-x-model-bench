@@ -82,14 +82,6 @@ def _build(tmp_path: Path) -> tools.Build:
 
 # --- profiles: names, defaults, and the three existing profiles unchanged ---------------------------------------
 
-def test_harnesses_stay_three_until_wave_1():
-    """Leader ruling (J0): grok and agy join HARNESSES and READERS with R-SETTINGS, in the candidate that carries
-    R-TRANSPORT's two profile files; identity reads profile_record for every name in HARNESSES. J1a carries them."""
-    assert profiles.HARNESSES == (*EXISTING, "grok", "agy")
-    assert set(profiles.READERS) == set(profiles.HARNESSES)
-    assert grok_reader is not None and agy_reader is not None
-
-
 @pytest.mark.parametrize("harness", EXISTING)
 def test_existing_profiles_parse_every_new_field_to_its_default(harness):
     p = profiles.load(ROOT, harness)

@@ -49,9 +49,10 @@
 <body>
 <main>
   <h1>Prompt 1: run the lean benchmark for this CLI</h1>
-  <p class="sub">Nothing to fill in. The CLI you paste into works out what it is (harness, model, effort, context
-    window) from its own configuration, names the run itself, and runs both arms: pack off and pack on. It ends with
-    an HTML run summary open in Chrome and one <code>HANDOFF:</code> line for Prompt 2.</p>
+  <p class="sub">Any CLI, any model. Nothing to fill in. The CLI you paste into works out what it is (harness, model,
+    effort, context window) from its own configuration, names the run itself, and runs both arms: pack off and pack
+    on. If the bench has never run that CLI, it onboards it first. It ends with an HTML run summary open in Chrome
+    and one <code>HANDOFF:</code> line for Prompt 2.</p>
 
   <div class="card">
     <h2>How to use it</h2>
@@ -60,41 +61,56 @@
         the CLI's config file). The run measures exactly that.</li>
       <li>Open a <strong>new</strong> session of that CLI in <code>C:\Projects\x-harness-x-model-bench</code>, with
         full permissions so it runs unattended. Click <em>Copy prompt</em> below and paste it in.</li>
-      <li>Its first line names the run: <code>RUN: &lt;RUN_ID&gt; | harness … | model … | effort … | context …</code>.
+      <li>Its first line names the run and says whether it onboards first:
+        <code>RUN: &lt;RUN_ID&gt; | harness … (known | new: onboarding first) | model … | effort … | context …</code>.
         Its last line is <code>HANDOFF: &lt;RUN_ID&gt;@&lt;worktree&gt;</code>. Paste that line into Prompt 2.</li>
     </ol>
     <p style="margin:12px 0 0">You can run several CLIs at once. Each run gets its own name, branch, worktree and cell
-      folder. Grok and agy still run one cell at a time.</p>
+      folder.</p>
   </div>
 
   <div class="card">
-    <h2>What each CLI will run on this host</h2>
-    <p style="margin-top:0">Read from each CLI's config on 2026-10-13. If you change a CLI's config, the next run uses
-      the new values.</p>
+    <h2>A CLI the bench has never run</h2>
+    <p style="margin-top:0">The first paste into a new CLI (Muse, say) onboards it before the run. The CLI follows
+      <code>docs/runbooks/add-a-harness.md</code>:</p>
+    <ol>
+      <li><strong>Spike.</strong> It runs itself headless and finds where it records each session, its token usage,
+        how a second turn continues a session, and its model, effort and context settings.</li>
+      <li><strong>Write.</strong> It adds its own files: a profile, a build entry and pin, a reader that turns its
+        session record into token counts, and, if it does not speak ACP, a small adapter. Tests come first.</li>
+      <li><strong>Qualify.</strong> A one-task probe run in both arms, where every cell must be valid. Then the
+        reader's token counts must equal the CLI's own usage report for the same session, exactly.</li>
+      <li><strong>Run, then keep it.</strong> The full run follows. At the end, the onboarding commit is merged into
+        your local <code>main</code>, so the next paste into that CLI skips onboarding. Nothing is pushed.</li>
+    </ol>
+    <div class="note">The CLI being measured writes the code that measures it. The guards: tests first, a probe where
+      every cell must be valid, and an exact token cross-check against the CLI's own usage report. A CLI with no
+      independent usage report gets its token numbers labelled <em>Inferred</em>. Any gate it cannot pass stops it
+      with no <code>HANDOFF</code> line. Expect the first paste to take noticeably longer than a known CLI's run.</div>
+  </div>
+
+  <div class="card">
+    <h2>Where a known CLI's settings are read</h2>
     <div class="table-wrap">
     <table>
-      <tr><th>CLI</th><th>Model</th><th>Effort</th><th>Context</th><th>Read from</th></tr>
-      <tr><td>claude-code</td><td><code>claude-opus-5-5[1m]</code></td><td><code>high</code></td><td>1M</td>
-        <td>model id from the session; <code>effortLevel</code> in <code>~\.claude\settings.json</code>; 1M is the
-          window of every current Claude Code model</td></tr>
-      <tr><td>codex</td><td><code>gpt-6.1-sol</code></td><td><code>high</code></td><td>default</td>
-        <td><code>model</code>, <code>model_reasoning_effort</code>, <code>model_context_window</code> in
-          <code>~\.codex\config.toml</code></td></tr>
-      <tr><td>copilot</td><td><code>gpt-5.5</code></td><td><code>high</code></td><td>922k (long_context)</td>
-        <td><code>model</code>, <code>effortLevel</code>, <code>contextTier</code> in
-          <code>~\.copilot\settings.json</code></td></tr>
-      <tr><td>grok</td><td><code>grok-4.7</code></td><td><code>high</code></td><td>default (256k)</td>
-        <td>model from the session, else <code>default_model</code> in <code>~\.grok\settings_cache.json</code>;
-          <code>default_reasoning_effort</code> in <code>~\.grok\config.toml</code></td></tr>
-      <tr><td>agy</td><td><code>gemini-3.8-flash-high</code></td><td><code>high</code></td><td>default</td>
-        <td><code>model</code> in <code>~\.gemini\antigravity-cli\settings.json</code> (“Gemini 3.8 Flash (High)”);
-          the effort is in the id</td></tr>
+      <tr><th>CLI</th><th>Model</th><th>Effort</th><th>Context</th></tr>
+      <tr><td>claude-code</td><td>the session's model id, plus <code>[1m]</code></td>
+        <td><code>effortLevel</code> in <code>~\.claude\settings.json</code></td><td>1M (the <code>[1m]</code> suffix)</td></tr>
+      <tr><td>codex</td><td><code>model</code> in <code>~\.codex\config.toml</code></td>
+        <td><code>model_reasoning_effort</code> there</td><td><code>model_context_window</code> there, else default</td></tr>
+      <tr><td>copilot</td><td><code>model</code> in <code>~\.copilot\settings.json</code></td>
+        <td><code>effortLevel</code> there</td><td><code>contextTier: long_context</code> → 922k, else default</td></tr>
+      <tr><td>grok</td><td>the session's model, else <code>default_model</code> in <code>~\.grok\settings_cache.json</code></td>
+        <td><code>default_reasoning_effort</code> in <code>~\.grok\config.toml</code></td><td>default</td></tr>
+      <tr><td>agy</td><td><code>model</code> in <code>~\.gemini\antigravity-cli\settings.json</code>, as an id</td>
+        <td>the id's last part</td><td>default</td></tr>
+      <tr><td>any other</td><td colspan="3">its own config and <code>--help</code>; the run summary names the file and
+        key each value came from</td></tr>
     </table>
     </div>
-    <div class="note">Codex has no <code>model_context_window</code> in its config, so it runs at its default window,
-      which serves 272k. Earlier runs pinned 872k. To match them, add <code>model_context_window = 872000</code> to
-      <code>~\.codex\config.toml</code> before you paste. If a CLI's value is one the bench cannot pin, the prompt
-      stops before it creates anything and names the file and key to change.</div>
+    <div class="note">Codex with no <code>model_context_window</code> runs at its default window (272k served).
+      Earlier runs pinned 872k: add <code>model_context_window = 872000</code> to <code>~\.codex\config.toml</code>
+      to match them. For a known CLI, a value the bench cannot pin stops the run before anything is created.</div>
   </div>
 
   <div class="card">
@@ -108,29 +124,33 @@
 
   <div class="bar"><h2 style="margin:0">The prompt</h2><button id="copy" type="button">Copy prompt</button></div>
 <pre id="prompt">Run the lean benchmark for THIS CLI: the harness you are, with the model, effort and context window this CLI is
-configured with, in both arms (pack off and pack on). Nothing here is filled in by hand. Work alone: no sub-agents,
-no coordination layer, no worktree other than the one you create. Use `python`, never `python3` (Windows). Tokens
-are the only cost unit; never write USD.
+configured with, in both arms (pack off and pack on). Nothing here is filled in by hand. If the bench has never run
+this CLI, onboard it first: make the bench able to drive and measure it, prove that on a one-task probe, then run.
+Work alone: no sub-agents, no coordination layer, no worktree other than the one you create. Use `python`, never
+`python3` (Windows). Tokens are the only cost unit; never write USD.
 
 FIXED (change these only by editing the prompt):
   REPO        = C:\Projects\x-harness-x-model-bench
   TASKS       = [S1, S2, RS1, RS2, RW1, RW2, NG1, NG2, SM1, SM2]
   ARMS        = off (no pack) and on (the AI-Forward pack)
   REPETITIONS = 3                  (10 tasks x 2 arms x 3 = 60 cells)
-  PARALLELISM = 3                  (grok and agy run one cell at a time regardless)
+  PARALLELISM = 3                  (a harness capped at one cell at a time runs one regardless)
   PACK        = C:/Projects/ai-forward@ed9625a78690aeba04d0b6693ad296ba5e6a0cd9
+  RUNBOOK     = docs/runbooks/add-a-harness.md   (how a new CLI is onboarded and qualified)
 
 GOAL: a completed, verified bench run of this CLI's combo in its own worktree, an HTML run summary open in Chrome,
 and one HANDOFF line the grading prompt can use. DONE WHEN: `bench verify` passes on the run, the summary is open,
 and the HANDOFF line is printed. NOT IN SCOPE: judging with model calls, comparison reports, pack analysis (Prompt 2
-does those), editing bench code or any CLI's config, pushing anything.
+does those), any CLI's config, pushing anything, and any bench change other than a new CLI's onboarding files.
 
 STEP 0 - who am I (read only: nothing is created until this step passes)
-  - HARNESS: the CLI you are running in, one of claude-code, codex, copilot, grok, agy. Your own system prompt
-    names it; Claude Code also sets CLAUDECODE=1.
-  - MODEL, EFFORT, CONTEXT: read them from that CLI's own configuration, as below. When you can see the model this
-    session is running, it wins over a config default. A key that is absent means `default`. Read only the keys
-    named; never print or copy a credential.
+  - HARNESS: a short lower-case name for the CLI you are running in (claude-code, codex, copilot, grok, agy, muse, ...).
+    Your own system prompt names the CLI; Claude Code also sets CLAUDECODE=1. If a file in REPO\bench\profiles\ is
+    already this CLI, use its name. KNOWN: REPO\bench\profiles\&lt;HARNESS&gt;.yaml exists. NEW: it does not, and STEP 2
+    onboards it.
+  - MODEL, EFFORT, CONTEXT: read them from this CLI's own configuration. When you can see the model this session is
+    running, it wins over a config default. A key that is absent means `default`. Read only the keys you need; never
+    print or copy a credential. Where the known CLIs keep them:
       claude-code  MODEL   = the exact model id in your system prompt (e.g. claude-opus-5-5), plus "[1m]"
                    EFFORT  = top-level "effortLevel" in %USERPROFILE%\.claude\settings.json
                    CONTEXT = 1000000 (the [1m] suffix carries it). For claude-haiku-4-5: no suffix, default.
@@ -148,19 +168,22 @@ STEP 0 - who am I (read only: nothing is created until this step passes)
                              ("Gemini 3.8 Flash (High)" -&gt; gemini-3.8-flash-high)
                    EFFORT  = the id's last part (-high -&gt; high)
                    CONTEXT = default
-  - Check EFFORT and CONTEXT against `settings` in REPO\bench\profiles\&lt;HARNESS&gt;.yaml (`default` is always
-    allowed). A value the profile does not list is a stop: name the file and key to change and the values the
-    profile allows.
+      any other    its own config files and `--help`, and what this session reports about itself. Keep the file
+                   and key each value came from: the run summary names them.
+  - KNOWN: check EFFORT and CONTEXT against `settings` in its profile (`default` is always allowed). A value the
+    profile does not list is a stop: name the file and key to change and the values the profile allows.
+    NEW: STEP 2 writes the profile so that it accepts the values found here.
   - Name the run:
-      CTX      = 1m | 922k | 872k | default   (from CONTEXT)
+      CTX      = 1m | 922k | 872k | &lt;n&gt;k | default   (from CONTEXT)
       COMBO_ID = &lt;HARNESS&gt;-&lt;MODEL without "[1m]"&gt;-&lt;EFFORT&gt;-&lt;CTX&gt;, lower case
       RUN_ID   = lean-&lt;UTC yyyymmddThhmmss&gt;-&lt;4 random hex&gt;-&lt;COMBO_ID&gt;
                  If `git -C REPO branch --list bench/&lt;RUN_ID&gt;` prints anything, draw new hex.
       CELLS    = C:\Projects\bench-cells\&lt;RUN_ID&gt;: this run's own cell folders, so runs on this host never share one.
-      BENCH    = `uv run bench --cells-root &lt;CELLS&gt;`. Every bench command from STEP 5 on is BENCH followed by the
+      BENCH    = `uv run bench --cells-root &lt;CELLS&gt;`. Every bench command of the run is BENCH followed by the
                  subcommand (the flag goes BEFORE the subcommand), e.g. `BENCH run &lt;RUN_ID&gt;`.
   - Print this line, then go on without waiting:
-      RUN: &lt;RUN_ID&gt; | harness &lt;HARNESS&gt; | model &lt;MODEL&gt; | effort &lt;EFFORT&gt; | context &lt;CONTEXT&gt; | 60 cells
+      RUN: &lt;RUN_ID&gt; | harness &lt;HARNESS&gt; (known | new: onboarding first) | model &lt;MODEL&gt; | effort &lt;EFFORT&gt; |
+           context &lt;CONTEXT&gt; | 60 cells
 
 STEP 1 - start state and the worktree (stop and report if a check fails)
   - In REPO: `git pull --ff-only origin main` succeeds. Another CLI may be pulling at the same moment: on a git lock
@@ -168,27 +191,46 @@ STEP 1 - start state and the worktree (stop and report if a check fails)
     Record `git rev-parse HEAD` as BASE.
   - `python docs/ai-forward-pack/scripts/coord-core.py worktree new --branch bench/&lt;RUN_ID&gt; --session &lt;RUN_ID&gt;`
   - Read its path from `git worktree list` (call it WT). Do every later step inside WT, with absolute paths.
-    Never write the main checkout after this step.
+    Never write the main checkout after this step, except the STEP 10 merge.
 
-STEP 2 - the pinned builds (inside WT)
+STEP 2 - onboard (NEW only; a KNOWN CLI skips to STEP 3)
+  - Follow WT\RUNBOOK, all of it: spike this CLI, write its files, tests first, qualify, record. Its qualification
+    gate is the bar, and every part must hold:
+      * `uv run pytest -q` is green.
+      * A probe run: task S1, one repetition, both arms, run id &lt;RUN_ID&gt;-probe, cells root &lt;CELLS&gt;-probe. Every
+        cell is valid (no HB-VAL-001, 002, 008 or 010).
+      * The token cross-check: for one probe cell, the reader's totals equal this CLI's own independent usage
+        report for that session, exactly, per bucket. With no independent report, the numbers are Inferred and
+        the note says why.
+      * The served model, effort and context come from the session record, with their sources named.
+  - You are the CLI being measured, writing the code that measures you. Never weaken a test, a validity code or the
+    cross-check to get a green result. Never touch another harness's files, or the engine, driver, views or grading
+    code. A gate you cannot pass is a stop: report what failed and what you tried, leave WT in place, and print no
+    HANDOFF line.
+  - Commit the onboarding files on bench/&lt;RUN_ID&gt; as `feat(harness): onboard &lt;HARNESS&gt; &lt;version&gt;`. The probe
+    run stays separate from the real run.
+
+STEP 3 - the pinned builds (inside WT)
   - `uv run bench tools install --vendored C:\Users\malla\.harness-bench\agy-1.3.3\agy.exe`
   - `uv run bench tools install`
-  - The output lists one line per harness with its version and sha. Check HARNESS's line is present.
+  - A NEW CLI's vendored build was installed in STEP 2. The output lists one line per harness with its version and
+    sha. Check HARNESS's line is present.
 
-STEP 3 - the environment for the cells (only HARNESS's line applies)
+STEP 4 - the environment for the cells (only HARNESS's line applies)
   - Always: unset XAI_API_KEY.
   - grok: HB_GROK_CRED_HOME=C:\Users\malla\.harness-bench\grok-cred (the bench Grok login; never ~/.grok).
   - claude-code: HB_CLAUDE_OAUTH_TOKEN = the contents of C:\Users\malla\.harness-bench\claude-oauth-token.txt.txt,
     whitespace stripped. Never print the token; pass it only in the environment of the bench commands.
   - copilot: nothing (the profile sets COPILOT_AUTO_UPDATE=false and runs copilot -p behind the local adapter).
   - agy: nothing (the profile disables its auto-update and seeds its permissions).
+  - A NEW CLI: what STEP 2's note says it needs. Never print a secret.
 
-STEP 4 - the matrix (inside WT; write it to WT\runs\&lt;RUN_ID&gt;.matrix.yaml, which git ignores)
+STEP 5 - the matrix (inside WT; write it to WT\runs\&lt;RUN_ID&gt;.matrix.yaml, which git ignores)
   schema: bench-matrix/3
   ring: {tag: lean}
   bom: {file: bench/bom.yaml, subset: [&lt;TASKS&gt;]}
   repetitions: &lt;REPETITIONS&gt;
-  harness_parallelism: {grok: 1, agy: 1}
+  harness_parallelism: {grok: 1, agy: 1}     (a NEW CLI whose login is shared or rotates: add &lt;HARNESS&gt;: 1)
   arms:
     - {id: "off"}
     - {id: "on"}
@@ -196,17 +238,17 @@ STEP 4 - the matrix (inside WT; write it to WT\runs\&lt;RUN_ID&gt;.matrix.yaml, 
   combos:
     - {id: &lt;COMBO_ID&gt;, harness: &lt;HARNESS&gt;, model: "&lt;MODEL&gt;", effort: &lt;EFFORT&gt;, context: &lt;CONTEXT&gt;}
 
-STEP 5 - plan, then confirm (inside WT, with the STEP 3 environment)
+STEP 6 - plan, then confirm (inside WT, with the STEP 4 environment)
   - `BENCH plan --matrix runs/&lt;RUN_ID&gt;.matrix.yaml --run-id &lt;RUN_ID&gt; --parallelism &lt;PARALLELISM&gt;
-    --arm on=&lt;PACK&gt;` and read the table: every cell has HARNESS's pinned build, the
-    pack-on arm shows the pack revision, the pack-off arm shows "no pack", and there are 60 cells. A refusal
-    (HB-PRE-*) is a stop: report it verbatim.
+    --arm on=&lt;PACK&gt;` and read the table: every cell has HARNESS's pinned build, the pack-on arm shows the pack
+    revision, the pack-off arm shows "no pack", and there are 60 cells. A refusal (HB-PRE-*) is a stop: report it
+    verbatim.
   - Then the same command with `--confirm`.
 
-STEP 6 - run (inside WT)
+STEP 7 - run (inside WT)
   - `BENCH run &lt;RUN_ID&gt;`, as a background job. It launches the cells and runs a deterministic grading pass at its
-    end. Watch it with `BENCH status &lt;RUN_ID&gt;` every 10 minutes; report each
-    check in one line (cells ended / running / validity counts).
+    end. Watch it with `BENCH status &lt;RUN_ID&gt;` every 10 minutes; report each check in one line (cells ended /
+    running / validity counts).
   - Early check: when the first 2 cells have ended, look at `BENCH status`. A cell with validity code HB-VAL-002
     (model mismatch) or HB-VAL-010 (served effort or context differs from the pin) means the harness did not serve
     what STEP 0 read: stop the run (`BENCH stop &lt;RUN_ID&gt;`) and report which. HB-VAL-011 (setting not recorded) is
@@ -214,24 +256,28 @@ STEP 6 - run (inside WT)
   - Stop rules: the engine reports it is down twice; the host becomes unstable (record the evidence first); an
     authentication failure pauses launches (HB-CELL-202) and the decision times out. Never edit a log or a run file.
 
-STEP 7 - verify (inside WT)
+STEP 8 - verify (inside WT)
   - `BENCH verify &lt;RUN_ID&gt;` must exit 0. Exit 5 is an integrity failure: report it, do not repair it.
 
-STEP 8 - the run summary (inside WT)
+STEP 9 - the run summary (inside WT)
   - `BENCH report &lt;RUN_ID&gt;` (writes runs/&lt;RUN_ID&gt;/report.html).
   - Write runs/&lt;RUN_ID&gt;/run-summary.md from `BENCH status &lt;RUN_ID&gt; --json` and the report: the STEP 0 values
-    with the file and key each came from; the FIXED block; BASE and WT; the plan's builds; cells by outcome and by
-    validity (codes named); the served settings read back per arm (model, effort, context) with their source;
-    tokens per cell by arm (mean, min, max; fresh input, cache read, cache write, output, reasoning); wall minutes
-    per cell by arm; every warning code with its count; the run's start and end time and its total wall time. Every
-    number comes from the bench's output; label anything you computed (a mean) as computed.
+    with the file and key each came from; the FIXED block; BASE and WT; known or new, and for a new CLI the
+    onboarding note's path and the cross-check numbers; the plan's builds; cells by outcome and by validity (codes
+    named); the served settings read back per arm (model, effort, context) with their source; tokens per cell by arm
+    (mean, min, max; fresh input, cache read, cache write, output, reasoning); wall minutes per cell by arm; every
+    warning code with its count; the run's start and end time and its total wall time. Every number comes from the
+    bench's output; label anything you computed (a mean) as computed.
   - `python docs/ai-forward-pack/scripts/render-markdown.py runs/&lt;RUN_ID&gt;/run-summary.md --open` (HTML beside it,
     opened in Chrome). If it prints "not opened: &lt;why&gt;", say why.
 
-STEP 9 - the hand-off
+STEP 10 - the hand-off
+  - NEW only: bring the onboarding commit into REPO's main, so the next paste into this CLI skips STEP 2. In REPO:
+    `git merge --ff-only bench/&lt;RUN_ID&gt;`; if main has moved and that refuses, `git merge --no-edit bench/&lt;RUN_ID&gt;`.
+    A conflict is `git merge --abort` and a report line, never a resolution by hand. Do not push.
   - Write runs/&lt;RUN_ID&gt;/handoff.json: {"run_id", "worktree": WT, "branch": "bench/&lt;RUN_ID&gt;", "base": BASE,
-    "cells_root": CELLS, "combo": COMBO_ID, "harness", "model", "effort", "context", "pack": PACK, "cells", "verify": "ok",
-    "summary": "&lt;path to run-summary.html&gt;"}.
+    "cells_root": CELLS, "combo": COMBO_ID, "harness", "model", "effort", "context", "pack": PACK, "cells",
+    "onboarded": true|false, "verify": "ok", "summary": "&lt;path to run-summary.html&gt;"}.
   - Leave the worktree in place (Prompt 2 reads the run from it). Do not commit the run (runs/ is git-ignored) and
     do not push.
   - Report: one table (step, result, evidence) and anything that did not go as written. Then print, as the last

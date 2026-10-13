@@ -163,8 +163,8 @@
   {
     "name": "copilot reader belongs to registry",
     "file": "src/harness_bench/profiles.py",
-    "find": "\"codex\": codex.read, \"copilot\": copilot.read",
-    "replace": "\"codex\": codex.read",
+    "find": "READERS = {harness: reader_for(harness) for harness in HARNESSES}",
+    "replace": "READERS = {harness: reader_for(harness) for harness in HARNESSES if harness != \"copilot\"}",
     "tests": ["tests/test_profiles.py::test_profile_registry_has_one_reader_build_and_yaml_per_harness"]
   }
 ]

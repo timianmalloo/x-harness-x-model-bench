@@ -5783,7 +5783,7 @@ window.DOCS_INDEX = {
         }
       ],
       "diagrams": [],
-      "sourceSha256": "b4c504f671dfef3ae7f675fea4b625aa5a2bb4fd20646715b7d6d3b92b7d4092"
+      "sourceSha256": "68fea02bfb9bb323233ac89052b4d242934edb08b0a873b9a4cffa2b186835d7"
     },
     {
       "id": "note-proposal-grounding-findings",
@@ -8286,6 +8286,43 @@ window.DOCS_INDEX = {
       ],
       "diagrams": [],
       "sourceSha256": "b2f38f158162fa53eb7974fd782fb4fd5a0edf27622f8b86212ed76e4f98f3d5"
+    },
+    {
+      "id": "runbook-add-a-harness",
+      "path": "docs/runbooks/add-a-harness.md",
+      "title": "Runbook: add a harness the bench has never run",
+      "type": "doc",
+      "status": "draft",
+      "owner": "@timianmalloo",
+      "phase": "",
+      "reviewBy": "2027-04-13",
+      "reviewSuggested": [],
+      "summary": "A harness is its own files: a profile, a build entry, a pin, a reader module and, for a CLI that does not speak ACP, a small adapter. No list in the bench code names harnesses. This runbook is the contract the lean prompt's onboarding stage follows, and the qualification gate a new harness passes before its numbers count.",
+      "tags": [
+        "runbook",
+        "harness",
+        "onboarding",
+        "profile",
+        "telemetry",
+        "adapter",
+        "lean-benchmark"
+      ],
+      "links": [
+        {
+          "to": "adr-0025-transport-seam-grok-and-agy-cells",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0028-copilot-prompt-mode-transport",
+          "rel": "depends-on"
+        },
+        {
+          "to": "adr-0024-combo-settings-and-served-read-back",
+          "rel": "depends-on"
+        }
+      ],
+      "diagrams": [],
+      "sourceSha256": "5132997249281b5ad78eeede103fe5d625279c221c20cb05d2a4f7c550a5a8a1"
     },
     {
       "id": "runbook-resume-and-alarm",
@@ -11663,6 +11700,13 @@ window.DOCS_INDEX = {
       "description": "Open an interactive knowledge artifact."
     },
     {
+      "id": "surface-benchmarkpromps-grade-judge-report-prompt",
+      "path": "docs/benchmarkpromps/grade-judge-report-prompt.html",
+      "title": "Grade and Report Prompt",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact."
+    },
+    {
       "id": "surface-coordination-harness-cost-comparison",
       "path": "docs/coordination/harness-cost-comparison.html",
       "title": "Harness Cost Comparison",
@@ -11699,6 +11743,13 @@ window.DOCS_INDEX = {
       "kind": "knowledge-tool",
       "description": "Open an interactive knowledge artifact.",
       "artifactId": "prompt-lean-benchmark"
+    },
+    {
+      "id": "surface-benchmarkpromps-lean-benchmark-run-prompt",
+      "path": "docs/benchmarkpromps/lean-benchmark-run-prompt.html",
+      "title": "Lean Benchmark Run Prompt",
+      "kind": "knowledge-tool",
+      "description": "Open an interactive knowledge artifact."
     },
     {
       "id": "surface-proposals-lean-pack-benchmark",
@@ -11772,5 +11823,5 @@ window.DOCS_INDEX = {
       "artifactId": "plan-strategy-lean-benchmark"
     }
   ],
-  "graphSha256": "a7322d42416f3cfc2f13dc334bf367c0c3cfe2085eb07e03ddd0ffcee66e539e"
+  "graphSha256": "63f2ec5d0483b60b6fb72864f96aecd3f658207b480fe2e4226a3b3a121f9711"
 };

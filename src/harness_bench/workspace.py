@@ -24,12 +24,23 @@ from pathlib import Path
 from harness_bench import atomic, config, gitsafe, procs
 from harness_bench.errors import BenchError
 
-INSTRUCTION_FILES = ("CLAUDE.md", ".claude/CLAUDE.md", "AGENTS.md", "GEMINI.md", ".github/copilot-instructions.md")
+BUILT_IN_INSTRUCTION_FILES = ("CLAUDE.md", ".claude/CLAUDE.md", "AGENTS.md", "GEMINI.md", ".github/copilot-instructions.md")
 INSTRUCTION_DIRS = (".github/instructions",)
 # ADR-0025 s8: Antigravity loads every file under .agents/rules and .agents/skills, Grok its .grok/ tree, so every file
-# there is an instruction file, whatever its name. Base trees only: check_cells_root keeps the two lists above, because
-# the operator's own ~/.grok (the real Grok home) and a repo's .agents/ sit above a cells root by design.
-INSTRUCTION_TREES = (".agents/rules", ".agents/skills", ".grok")
+# there is an instruction file, whatever its name. Base trees only: check_cells_root keeps the files and dirs lists,
+# because the operator's own ~/.grok (the real Grok home) and a repo's .agents/ sit above a cells root by design.
+BUILT_IN_INSTRUCTION_TREES = (".agents/rules", ".agents/skills", ".grok")
+
+
+def instruction_rules(root: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """(files, trees): the built-in lists plus every profile's own `instruction_paths` (config.profile_isolation), so a
+    harness added later keeps its instruction files out of every base tree without a code edit."""
+    extra = config.profile_isolation(root)
+    return (tuple(dict.fromkeys((*BUILT_IN_INSTRUCTION_FILES, *extra["files"]))),
+            tuple(dict.fromkeys((*BUILT_IN_INSTRUCTION_TREES, *extra["trees"]))))
+
+
+INSTRUCTION_FILES, INSTRUCTION_TREES = instruction_rules(config.repo_root(Path(__file__).resolve().parent))
 GIT_TIMEOUT = 120
 # pack-apply rows that wrote a file; SKIP and UNCHANGED rows name no change (probe W1)
 WRITE_ACTIONS = ("ADD", "UPDATE", "MERGE")

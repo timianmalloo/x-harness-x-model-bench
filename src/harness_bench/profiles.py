@@ -15,6 +15,7 @@ at every cell start (US-12).
 from __future__ import annotations
 
 import dataclasses
+import importlib
 import os
 import shutil
 import sys
@@ -25,12 +26,11 @@ from pathlib import Path
 
 from harness_bench import config, gitsafe, oslock, tools
 from harness_bench.errors import BenchError
-from harness_bench.telemetry import agy, claude_code, codex, copilot, grok
+from harness_bench.telemetry import claude_code, codex, copilot
 
-# Leader ruling (lean re-run J0): grok and agy join HARNESSES and READERS in wave 1 (R-SETTINGS), in the same candidate
-# as their profile files (R-TRANSPORT); identity reads profile_record for every name here, so a name without its yaml
-# would break the engine identity between J0 and J1a. Their reader stubs are telemetry/grok.py and telemetry/agy.py.
-HARNESSES = ("claude-code", "codex", "copilot", "grok", "agy")
+# One per bench/profiles/<name>.yaml (config.harness_names): identity reads profile_record for every name here, and a
+# name always has its yaml because the name is the yaml's.
+HARNESSES = config.HARNESSES
 USAGE_SOURCES = ("acp_turn", "native_record")
 # ADR-0024 s1-s3: a combo's settings. "default" is the absence of a pin: it expands nothing, joins no cell id, and is
 # what every bench-matrix/2 combo carries.
@@ -64,6 +64,16 @@ DROP_EXACT = {"CLAUDECODE", "CLAUDE_CONFIG_DIR", "CODEX_HOME", "COPILOT_HOME", "
 # ADR-0025 s8: the Grok and Antigravity homes, keys and projects of the operator never reach a cell; a profile re-adds
 # only its own values (its env block).
 DROP_PREFIXES = ("CLAUDE_CODE_", "CODEX_", "COPILOT_", "GIT_CONFIG_", "GROK_", "AGY_", "GEMINI_", "GOOGLE_")
+# A later harness declares its own in its profile (`drop_env`: a name, or a prefix ending in `*`), unioned over every
+# profile so its variables reach no cell of any harness (config.profile_isolation).
+PROFILE_DROPS = config.profile_isolation(config.repo_root(Path(__file__).resolve().parent))["drop_env"]
+
+
+def _dropped(name: str) -> bool:
+    upper = name.upper()
+    if upper in DROP_EXACT or upper.startswith(DROP_PREFIXES):
+        return True
+    return any(upper.startswith(rule[:-1].upper()) if rule.endswith("*") else upper == rule.upper() for rule in PROFILE_DROPS)
 # ADR-0025 s8 (Leader ruling r-settings-rerun-2): each cell's own global git config, in its home, never the operator's
 # and never shared, so a `git config --global` in one cell reaches no other cell and never host git (gitsafe's own file,
 # ADR-0010 B6). It carries the bench identity, so an agent's commit works the same in every harness. seed_home writes it;
@@ -210,7 +220,7 @@ class Profile:
 
     def cell_env(self, base: dict[str, str], home: Path, build: tools.Build, model: str, traceparent: str,
                  oauth_token: str | None = None, effort=DEFAULT, context=DEFAULT) -> dict[str, str]:
-        env = {k: v for k, v in base.items() if k.upper() not in DROP_EXACT and not k.upper().startswith(DROP_PREFIXES)}
+        env = {k: v for k, v in base.items() if not _dropped(k)}
         env.update(CELL_ENV)
         env[self.home_env] = str(home)
         env["GIT_CONFIG_GLOBAL"] = str(home / CELL_GITCONFIG_NAME)
@@ -406,7 +416,19 @@ def load(root: Path, harness: str, credential_source: Path | None = None) -> Pro
     )
 
 
-READERS = {"claude-code": claude_code.read, "codex": codex.read, "copilot": copilot.read, "grok": grok.read, "agy": agy.read}
+def reader_for(harness: str):
+    """A harness's native-record reader: `read` in telemetry/<harness, `-` as `_`>.py, found by name (no registry)."""
+    module = harness.replace("-", "_")
+    try:
+        return importlib.import_module(f"harness_bench.telemetry.{module}").read
+    except ModuleNotFoundError as exc:
+        if exc.name != f"harness_bench.telemetry.{module}":
+            raise
+        raise BenchError("HB-USR-002", f"{harness}: bench/profiles/{harness}.yaml has no reader "
+                                       f"src/harness_bench/telemetry/{module}.py (docs/runbooks/add-a-harness.md)") from exc
+
+
+READERS = {harness: reader_for(harness) for harness in HARNESSES}
 # R-74 item 1: class `delegate` is static in each reader; the profile only reads it. Codex's ids are the ones its
 # 0.156.0 record names and qual-r74-codex-1 measured (item 5).
 DELEGATE_IDS = {"claude-code": tuple(n for n, c in claude_code.TOOL_CLASSES.items() if c == "delegate"),

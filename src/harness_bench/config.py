@@ -32,7 +32,6 @@ TASK_STATUSES = ("stub", "draft", "ready")
 # source.repo/source.commit (workspace.task_source), with tasks/<ID>/workspace/ overlaid on top,
 # instead of committing tasks/<ID>/workspace/ alone (tasks/README.md).
 WORKSPACE_FROM_VALUES = ("workspace", "source")
-HARNESSES = ("claude-code", "codex", "copilot", "grok", "agy")
 PACKS = ("on", "off")
 # ADR-0024 s1: /3 is /2 with effort and context on every combo; /1 and /2 files still load (their settings: "default").
 MATRIX_SCHEMAS = ("bench-matrix/1", "bench-matrix/2", "bench-matrix/3")
@@ -85,6 +84,41 @@ def repo_root(start: Path | None = None) -> Path:
         if (p / "bench" / "bom.yaml").is_file():
             return p
     raise FileNotFoundError("not inside the benchmark repo (no bench/bom.yaml above cwd)")
+
+
+def harness_names(root: Path) -> tuple[str, ...]:
+    """The harnesses the bench can run: one per bench/profiles/<name>.yaml. A harness is added by adding its files
+    (docs/runbooks/add-a-harness.md), never by editing a list in code."""
+    return tuple(sorted(p.stem for p in (root / "bench" / "profiles").glob("*.yaml")))
+
+
+HARNESSES = harness_names(repo_root(Path(__file__).resolve().parent))
+# A profile's `instruction_paths` keys: exact files (workspace.INSTRUCTION_FILES) and trees whose every file is one
+# (INSTRUCTION_TREES). INSTRUCTION_DIRS' `*.instructions.md` rule is Copilot's own, so a profile cannot add to it.
+ISOLATION_LISTS = ("files", "trees")
+
+
+def _profile_list(path: Path, key: str, value) -> tuple[str, ...]:
+    if not isinstance(value, list) or any(not isinstance(v, str) or not v for v in value):
+        raise BenchError("HB-USR-002", f"{path}: {key} must be a list of nonempty strings")
+    return tuple(value)
+
+
+def profile_isolation(root: Path) -> dict[str, tuple[str, ...]]:
+    """Every profile's own isolation rules, unioned and sorted: `drop_env` (variable names, or prefixes ending in `*`,
+    kept out of every cell's environment) and `instruction_paths` {files, trees} (where an agent loads
+    instructions from, kept out of every base tree). Unioned because one harness's variables or instruction files must
+    reach no cell of any harness. Optional: the five original profiles carry none (their rules are the built-in lists)."""
+    out: dict[str, set[str]] = {"drop_env": set(), **{name: set() for name in ISOLATION_LISTS}}
+    for path in sorted((root / "bench" / "profiles").glob("*.yaml")):
+        data = load_yaml(path)
+        out["drop_env"] |= set(_profile_list(path, "drop_env", data.get("drop_env") or []))
+        paths = data.get("instruction_paths") or {}
+        if not isinstance(paths, dict) or set(paths) - set(ISOLATION_LISTS):
+            raise BenchError("HB-USR-002", f"{path}: instruction_paths must map only {ISOLATION_LISTS} to lists")
+        for name in ISOLATION_LISTS:
+            out[name] |= set(_profile_list(path, f"instruction_paths.{name}", paths.get(name) or []))
+    return {name: tuple(sorted(values)) for name, values in out.items()}
 
 
 def validate_bom(bom: dict, p: Problems, where: str = "bench/bom.yaml") -> None:

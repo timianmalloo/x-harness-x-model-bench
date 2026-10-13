@@ -552,8 +552,8 @@
  {
   "name": "D2 telemetry source files are grade class",
   "file": "src/harness_bench/identity.py",
-  "find": "    if key.startswith(\"src/harness_bench/\"):\n",
-  "replace": "    if key.startswith(\"src/harness_bench/telemetry/\"):\n        return \"grade\"\n    if key.startswith(\"src/harness_bench/\"):\n",
+  "find": "    if key.startswith(\"src/harness_bench/\") and (cls := _source_class(key.removeprefix(\"src/harness_bench/\"))):\n",
+  "replace": "    if key.startswith(\"src/harness_bench/telemetry/\"):\n        return \"grade\"\n    if key.startswith(\"src/harness_bench/\") and (cls := _source_class(key.removeprefix(\"src/harness_bench/\"))):\n",
   "tests": [
    "tests/test_identity.py::test_telemetry_edit_changes_the_run_side_only"
   ]

@@ -129,6 +129,17 @@ CLASSES: Mapping[str, Literal["run", "grade"]] = {
 # Explicitly retired on landing; stale() prevents a landed key lingering here.
 PLANNED: frozenset[str] = frozenset()
 
+# A folder whose every file has one class by construction, so a new file there needs no review entry: a harness reader
+# is imported by profiles.reader_for on the run path (docs/runbooks/add-a-harness.md). CLASSES still wins for a listed file.
+CLASS_DIRS: Mapping[str, Literal["run", "grade"]] = {"telemetry/": "run"}
+
+
+def _source_class(name: str) -> Literal["run", "grade"] | None:
+    """A source file's class: its CLASSES entry, else its CLASS_DIRS folder's, else None (unclassed)."""
+    if name in CLASSES:
+        return CLASSES[name]
+    return next((cls for folder, cls in CLASS_DIRS.items() if name.startswith(folder)), None)
+
 # R-94 condition 3: exactly three validate-time edges, not cell-path imports.
 RUN_IMPORTS_GRADE_ALLOWED: Mapping[tuple[str, str], str] = {
     ("config.py", "egress.py"): "validate-time check, not on a cell's path; owner X-A1/X-A3; review 2027-10-03; remove when the validators leave `config.py`",
@@ -153,8 +164,9 @@ def _source_files(root: Path) -> set[str]:
 
 
 def unclassed(root: Path, classes: Mapping[str, str], planned: frozenset[str]) -> list[str]:
-    """Return disk files without a class; root is the repository root."""
-    return sorted(_source_files(root) - classes.keys())
+    """Return disk files without a class (an entry in `classes`, or a CLASS_DIRS folder); root is the repository root."""
+    return sorted(name for name in _source_files(root) - classes.keys()
+                  if not any(name.startswith(folder) for folder in CLASS_DIRS))
 
 
 def stale(root: Path, classes: Mapping[str, str], planned: frozenset[str]) -> list[str]:
@@ -179,8 +191,8 @@ def identity_hash(m: dict) -> str:
 
 
 def _class(key: str) -> Literal["run", "grade"]:
-    if key.startswith("src/harness_bench/"):
-        return CLASSES[key.removeprefix("src/harness_bench/")]
+    if key.startswith("src/harness_bench/") and (cls := _source_class(key.removeprefix("src/harness_bench/"))):
+        return cls
     if key in {"catalog", "prices", "gateway"}:
         return "grade"
     if key in {"bom", "uv.lock", "platform", "python"} or key.startswith(("profiles/", "builds/", "tasks/")):

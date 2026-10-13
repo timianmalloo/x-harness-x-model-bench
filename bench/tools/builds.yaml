@@ -1,0 +1,34 @@
+# Where each harness's pinned build lives under the tools folder (tools.py; ADR-0013 s2 and Amendment 1 s5; ADR-0025 s8).
+# One entry per bench/profiles/<harness>.yaml: adding a harness adds its entry here, never a line of code.
+#
+# Placeholders, per host: {tag} the npm platform tag (win32-x64, darwin-arm64, darwin-x64); {suffix} the executable
+# suffix (.exe on Windows, empty on macOS); {triple} the host's Rust target triple (x86_64-pc-windows-msvc,
+# aarch64-apple-darwin, x86_64-apple-darwin).
+#
+# Keys:
+#   version_file  npm route: the package.json under .tools/harness/node_modules whose version_key is the build's version.
+#                 Absent: a vendored exe, copied by `bench tools install --vendored`, whose version and sha256 are its
+#                 pin in bench/tools/vendored.json (keyed by harness).
+#   version_key   default "version".
+#   exe           the executable: under node_modules (npm route), or its file name in .tools/<harness>/<version>/.
+#   adapter       an npm ACP adapter package (run with node, entry dist/index.js).
+#   adapter_pin   a repo-local adapter's pin file {path, version, sha256}, relative to the bench root.
+claude-code:
+  version_file: "@anthropic-ai/claude-agent-sdk/package.json"
+  version_key: claudeCodeVersion
+  exe: "@anthropic-ai/claude-agent-sdk-{tag}/claude{suffix}"
+  adapter: "@agentclientprotocol/claude-agent-acp"
+codex:
+  version_file: "@openai/codex/package.json"
+  exe: "@openai/codex-{tag}/vendor/{triple}/bin/codex{suffix}"
+  adapter: "@agentclientprotocol/codex-acp"
+copilot:
+  version_file: "@github/copilot-{tag}/package.json"
+  exe: "@github/copilot-{tag}/copilot{suffix}"
+  adapter_pin: bench/adapters/copilot_p_acp.pin.json
+grok:
+  # GROK_HOME_DIR: the wrapper's postinstall unpacks the exe there (module docstring)
+  version_file: "@xai-official/grok-{tag}/package.json"
+  exe: ".grok-home/bin/grok{suffix}"
+agy:
+  exe: "agy{suffix}"
