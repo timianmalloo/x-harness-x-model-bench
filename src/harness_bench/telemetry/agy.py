@@ -71,14 +71,17 @@ _OTHER = (
     # sub-agents (out of profile on every cell by the ruling, never `delegate`)
     "browser_subagent", "invoke_subagent", "define_subagent", "manage_subagents",
     # scheduling, messaging, tasks, workflows, plugins, knowledge
-    "schedule", "send_message", "manage_inbox", "manage_task", "run_workflow", "search_marketplace",
+    "schedule", "send_message", "manage_inbox", "run_workflow", "search_marketplace",
     "list_plugin_accounts", "delete_knowledge", "notebook_execution",
-    # the user and permissions (no scripted user on agy, ADR-0028 s7)
-    "ask_question", "ask_permission", "ask_custom_permission", "list_permissions",
-    # turn control: they touch nothing in the workspace, but ADR-0004 allows only the three classes above
-    "finish", "wait", "wait_5_seconds",
+    # permission requests (no scripted user on agy, ADR-0028 s7): they ask for a grant, so they stay out of profile
+    "ask_permission", "ask_custom_permission",
 )
+# Workspace-inert (Leader ruling agy-meta-rerun, as Grok's todo_write ruling J1A-FIX item 24 and ToolSearch R-54 (a),
+# claude_code.py): the task list, the question to an absent user, the grant listing and turn control touch nothing in
+# the workspace, so they are counted, never scored. Measured: probe-rerun-1's agy cells were HB-VAL-008 on manage_task only.
+_META = ("manage_task", "ask_question", "list_permissions", "finish", "wait", "wait_5_seconds")
 TOOL_CLASS = (dict.fromkeys(_SHELL, "shell") | dict.fromkeys(_EDIT, "edit") | dict.fromkeys(_READ, "read")
+              | dict.fromkeys(_META, "meta")
               | dict.fromkeys(_OTHER, "other"))
 
 STORE = (".gemini", "antigravity-cli", "conversations")
