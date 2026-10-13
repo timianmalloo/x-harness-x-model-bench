@@ -26,8 +26,13 @@
   h1 { font-size: 1.7rem; margin: 0 0 4px; }
   h2 { font-size: 1.15rem; margin: 32px 0 8px; }
   p.sub { color: var(--muted); margin: 0 0 24px; }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; }
-  .note { background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: 10px 14px; margin: 12px 0; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px;
+          margin-bottom: 16px; }
+  .card h2 { margin-top: 0; }
+  .note { background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: 10px 14px; margin: 12px 0 0; }
+  ol { margin: 0; padding-left: 22px; }
+  ol li { margin: 4px 0; }
+  .table-wrap { overflow-x: auto; }
   table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
   th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
   th { color: var(--muted); font-weight: 600; }
@@ -43,58 +48,124 @@
 </head>
 <body>
 <main>
-  <h1>Prompt 1: run one lean benchmark</h1>
-  <p class="sub">One harness/model combo, one worktree, one run. Paste into the CLI you start in the main checkout
-    (<code>C:\Projects\x-harness-x-model-bench</code>), with full permissions so it runs unattended. It ends with an
-    HTML run summary opened in Chrome and one <code>HANDOFF:</code> line for Prompt 2.</p>
+  <h1>Prompt 1: run the lean benchmark for this CLI</h1>
+  <p class="sub">Nothing to fill in. The CLI you paste into works out what it is (harness, model, effort, context
+    window) from its own configuration, names the run itself, and runs both arms: pack off and pack on. It ends with
+    an HTML run summary open in Chrome and one <code>HANDOFF:</code> line for Prompt 2.</p>
 
   <div class="card">
-    <h2 style="margin-top:0">Before you paste</h2>
-    <p>Fill in the <code>SETTINGS</code> block at the top of the prompt. Known-good values (measured 2026-10-12 on the
-      pinned builds):</p>
+    <h2>How to use it</h2>
+    <ol>
+      <li>Set the CLI up the way you want it measured: the model, effort and context window (<code>/model</code>, or
+        the CLI's config file). The run measures exactly that.</li>
+      <li>Open a <strong>new</strong> session of that CLI in <code>C:\Projects\x-harness-x-model-bench</code>, with
+        full permissions so it runs unattended. Click <em>Copy prompt</em> below and paste it in.</li>
+      <li>Its first line names the run: <code>RUN: &lt;RUN_ID&gt; | harness … | model … | effort … | context …</code>.
+        Its last line is <code>HANDOFF: &lt;RUN_ID&gt;@&lt;worktree&gt;</code>. Paste that line into Prompt 2.</li>
+    </ol>
+    <p style="margin:12px 0 0">You can run several CLIs at once. Each run gets its own name, branch, worktree and cell
+      folder. Grok and agy still run one cell at a time.</p>
+  </div>
+
+  <div class="card">
+    <h2>What each CLI will run on this host</h2>
+    <p style="margin-top:0">Read from each CLI's config on 2026-10-13. If you change a CLI's config, the next run uses
+      the new values.</p>
+    <div class="table-wrap">
     <table>
-      <tr><th>HARNESS</th><th>MODEL</th><th>EFFORT</th><th>CONTEXT</th><th>Notes</th></tr>
-      <tr><td><code>claude-code</code></td><td><code>claude-opus-5-5[1m]</code></td><td><code>high</code></td><td><code>1000000</code></td><td>Needs <code>HB_CLAUDE_OAUTH_TOKEN</code> (the prompt reads it from your token file)</td></tr>
-      <tr><td><code>codex</code></td><td><code>gpt-6.1-sol</code></td><td><code>high</code></td><td><code>872000</code></td><td>Served as 828,400 (95%); judged at the nominal 872,000</td></tr>
-      <tr><td><code>copilot</code></td><td><code>gpt-6.1-sol</code> or <code>gpt-5.6-sol-fast</code></td><td><code>high</code></td><td><code>922000</code></td><td><code>copilot -p</code> behind the local adapter; long_context</td></tr>
-      <tr><td><code>grok</code></td><td><code>grok-4.7</code></td><td><code>high</code></td><td><code>default</code></td><td>256k; one cell at a time; <code>XAI_API_KEY</code> unset; bench Grok login</td></tr>
-      <tr><td><code>agy</code></td><td><code>gemini-3.8-flash-high</code></td><td><code>high</code></td><td><code>default</code></td><td>Effort is in the model id; one cell at a time; window not reported</td></tr>
+      <tr><th>CLI</th><th>Model</th><th>Effort</th><th>Context</th><th>Read from</th></tr>
+      <tr><td>claude-code</td><td><code>claude-opus-5-5[1m]</code></td><td><code>high</code></td><td>1M</td>
+        <td>model id from the session; <code>effortLevel</code> in <code>~\.claude\settings.json</code>; 1M is the
+          window of every current Claude Code model</td></tr>
+      <tr><td>codex</td><td><code>gpt-6.1-sol</code></td><td><code>high</code></td><td>default</td>
+        <td><code>model</code>, <code>model_reasoning_effort</code>, <code>model_context_window</code> in
+          <code>~\.codex\config.toml</code></td></tr>
+      <tr><td>copilot</td><td><code>gpt-5.5</code></td><td><code>high</code></td><td>922k (long_context)</td>
+        <td><code>model</code>, <code>effortLevel</code>, <code>contextTier</code> in
+          <code>~\.copilot\settings.json</code></td></tr>
+      <tr><td>grok</td><td><code>grok-4.7</code></td><td><code>high</code></td><td>default (256k)</td>
+        <td>model from the session, else <code>default_model</code> in <code>~\.grok\settings_cache.json</code>;
+          <code>default_reasoning_effort</code> in <code>~\.grok\config.toml</code></td></tr>
+      <tr><td>agy</td><td><code>gemini-3.8-flash-high</code></td><td><code>high</code></td><td>default</td>
+        <td><code>model</code> in <code>~\.gemini\antigravity-cli\settings.json</code> (“Gemini 3.8 Flash (High)”);
+          the effort is in the id</td></tr>
     </table>
-    <div class="note">Measured on RW1 (one task, 2026-10-12): tokens per cell ranged from 0.5M (Copilot pack-off) to 10.7M
-      (agy pack-on); Grok cells took 16-26 min each. A full lean run is 10 tasks x 2 arms x REPETITIONS cells.</div>
+    </div>
+    <div class="note">Codex has no <code>model_context_window</code> in its config, so it runs at its default window,
+      which serves 272k. Earlier runs pinned 872k. To match them, add <code>model_context_window = 872000</code> to
+      <code>~\.codex\config.toml</code> before you paste. If a CLI's value is one the bench cannot pin, the prompt
+      stops before it creates anything and names the file and key to change.</div>
+  </div>
+
+  <div class="card">
+    <h2>How a run is named</h2>
+    <p style="margin-top:0"><code>RUN_ID = lean-&lt;UTC yyyymmddThhmmss&gt;-&lt;4 random hex&gt;-&lt;COMBO_ID&gt;</code>,
+      where <code>COMBO_ID = &lt;harness&gt;-&lt;model&gt;-&lt;effort&gt;-&lt;context&gt;</code>. Example:
+      <code>lean-20261013T214502-7c1e-claude-code-claude-opus-5-5-high-1m</code>.</p>
+    <p style="margin:0">The time and the random part come first because the worktree folder keeps only the first 48
+      characters of the branch name. Two CLIs started in the same second still get different names.</p>
   </div>
 
   <div class="bar"><h2 style="margin:0">The prompt</h2><button id="copy" type="button">Copy prompt</button></div>
-<pre id="prompt">You are running ONE lean benchmark for ONE harness/model combo on this repository's bench. Work alone: no
-sub-agents, no coordination layer, no worktree other than the one you create. Use `python`, never `python3`
-(Windows). Tokens are the only cost unit; never write USD.
+<pre id="prompt">Run the lean benchmark for THIS CLI: the harness you are, with the model, effort and context window this CLI is
+configured with, in both arms (pack off and pack on). Nothing here is filled in by hand. Work alone: no sub-agents,
+no coordination layer, no worktree other than the one you create. Use `python`, never `python3` (Windows). Tokens
+are the only cost unit; never write USD.
 
-SETTINGS (the operator fills these in; do not change them):
-  COMBO_ID    = &lt;short id, e.g. codex-sol&gt;
-  HARNESS     = &lt;claude-code | codex | copilot | grok | agy&gt;
-  MODEL       = &lt;pinned model id, e.g. gpt-6.1-sol&gt;
-  EFFORT      = &lt;high&gt;
-  CONTEXT     = &lt;token count, or default&gt;
+FIXED (change these only by editing the prompt):
+  REPO        = C:\Projects\x-harness-x-model-bench
   TASKS       = [S1, S2, RS1, RS2, RW1, RW2, NG1, NG2, SM1, SM2]
-  ARMS        = off, on            (off = no pack; on = the AI-Forward pack)
+  ARMS        = off (no pack) and on (the AI-Forward pack)
+  REPETITIONS = 3                  (10 tasks x 2 arms x 3 = 60 cells)
+  PARALLELISM = 3                  (grok and agy run one cell at a time regardless)
   PACK        = C:/Projects/ai-forward@ed9625a78690aeba04d0b6693ad296ba5e6a0cd9
-  REPETITIONS = 2
-  PARALLELISM = 3                  (grok and agy are capped at 1 cell at a time regardless)
 
-GOAL: a completed, verified bench run of COMBO_ID in its own worktree, an HTML run summary open in Chrome, and one
-HANDOFF line the grading prompt can use. DONE WHEN: `bench verify` passes on the run, the summary is open, and the
-HANDOFF line is printed. NOT IN SCOPE: judging with model calls, comparison reports, pack analysis (Prompt 2 does
-those), editing bench code, pushing anything.
+GOAL: a completed, verified bench run of this CLI's combo in its own worktree, an HTML run summary open in Chrome,
+and one HANDOFF line the grading prompt can use. DONE WHEN: `bench verify` passes on the run, the summary is open,
+and the HANDOFF line is printed. NOT IN SCOPE: judging with model calls, comparison reports, pack analysis (Prompt 2
+does those), editing bench code or any CLI's config, pushing anything.
 
-STEP 0 - start state (stop and report if any check fails)
-  - In C:\Projects\x-harness-x-model-bench: `git pull --ff-only origin main` succeeds (local changes that block it
-    are a stop; never stash or reset them). Record `git rev-parse HEAD` as BASE.
-  - RUN_ID = lean-&lt;COMBO_ID&gt;-&lt;UTC yyyymmddThhmm&gt;. Use it for the branch, the worktree and the run.
-  - CELLS = C:\Projects\bench-cells\&lt;RUN_ID&gt;: this run's own cell folders, so runs of other combos on this host
-    never share one. Every `uv run bench` command from STEP 5 on carries `--cells-root &lt;CELLS&gt;` BEFORE the
-    subcommand, e.g. `uv run bench --cells-root &lt;CELLS&gt; run &lt;RUN_ID&gt;`.
+STEP 0 - who am I (read only: nothing is created until this step passes)
+  - HARNESS: the CLI you are running in, one of claude-code, codex, copilot, grok, agy. Your own system prompt
+    names it; Claude Code also sets CLAUDECODE=1.
+  - MODEL, EFFORT, CONTEXT: read them from that CLI's own configuration, as below. When you can see the model this
+    session is running, it wins over a config default. A key that is absent means `default`. Read only the keys
+    named; never print or copy a credential.
+      claude-code  MODEL   = the exact model id in your system prompt (e.g. claude-opus-5-5), plus "[1m]"
+                   EFFORT  = top-level "effortLevel" in %USERPROFILE%\.claude\settings.json
+                   CONTEXT = 1000000 (the [1m] suffix carries it). For claude-haiku-4-5: no suffix, default.
+      codex        MODEL   = top-level `model` in %USERPROFILE%\.codex\config.toml
+                   EFFORT  = top-level `model_reasoning_effort` there
+                   CONTEXT = top-level `model_context_window` there
+      copilot      MODEL   = "model" in %USERPROFILE%\.copilot\settings.json
+                   EFFORT  = "effortLevel" there
+                   CONTEXT = "contextTier" there: long_context -&gt; 922000; anything else -&gt; default
+      grok         MODEL   = the model this session runs; else "default_model" in %USERPROFILE%\.grok\settings_cache.json
+                   EFFORT  = `default_reasoning_effort` under [models] in %USERPROFILE%\.grok\config.toml
+                   CONTEXT = default
+      agy          MODEL   = "model" in %USERPROFILE%\.gemini\antigravity-cli\settings.json, turned from a display
+                             name into an id: lower case, parentheses dropped, spaces to hyphens
+                             ("Gemini 3.8 Flash (High)" -&gt; gemini-3.8-flash-high)
+                   EFFORT  = the id's last part (-high -&gt; high)
+                   CONTEXT = default
+  - Check EFFORT and CONTEXT against `settings` in REPO\bench\profiles\&lt;HARNESS&gt;.yaml (`default` is always
+    allowed). A value the profile does not list is a stop: name the file and key to change and the values the
+    profile allows.
+  - Name the run:
+      CTX      = 1m | 922k | 872k | default   (from CONTEXT)
+      COMBO_ID = &lt;HARNESS&gt;-&lt;MODEL without "[1m]"&gt;-&lt;EFFORT&gt;-&lt;CTX&gt;, lower case
+      RUN_ID   = lean-&lt;UTC yyyymmddThhmmss&gt;-&lt;4 random hex&gt;-&lt;COMBO_ID&gt;
+                 If `git -C REPO branch --list bench/&lt;RUN_ID&gt;` prints anything, draw new hex.
+      CELLS    = C:\Projects\bench-cells\&lt;RUN_ID&gt;: this run's own cell folders, so runs on this host never share one.
+      BENCH    = `uv run bench --cells-root &lt;CELLS&gt;`. Every bench command from STEP 5 on is BENCH followed by the
+                 subcommand (the flag goes BEFORE the subcommand), e.g. `BENCH run &lt;RUN_ID&gt;`.
+  - Print this line, then go on without waiting:
+      RUN: &lt;RUN_ID&gt; | harness &lt;HARNESS&gt; | model &lt;MODEL&gt; | effort &lt;EFFORT&gt; | context &lt;CONTEXT&gt; | 60 cells
 
-STEP 1 - the worktree
+STEP 1 - start state and the worktree (stop and report if a check fails)
+  - In REPO: `git pull --ff-only origin main` succeeds. Another CLI may be pulling at the same moment: on a git lock
+    error, wait 10 s and retry once. Local changes that block the pull are a stop; never stash or reset them.
+    Record `git rev-parse HEAD` as BASE.
   - `python docs/ai-forward-pack/scripts/coord-core.py worktree new --branch bench/&lt;RUN_ID&gt; --session &lt;RUN_ID&gt;`
   - Read its path from `git worktree list` (call it WT). Do every later step inside WT, with absolute paths.
     Never write the main checkout after this step.
@@ -104,7 +175,7 @@ STEP 2 - the pinned builds (inside WT)
   - `uv run bench tools install`
   - The output lists one line per harness with its version and sha. Check HARNESS's line is present.
 
-STEP 3 - the environment for the cells
+STEP 3 - the environment for the cells (only HARNESS's line applies)
   - Always: unset XAI_API_KEY.
   - grok: HB_GROK_CRED_HOME=C:\Users\malla\.harness-bench\grok-cred (the bench Grok login; never ~/.grok).
   - claude-code: HB_CLAUDE_OAUTH_TOKEN = the contents of C:\Users\malla\.harness-bench\claude-oauth-token.txt.txt,
@@ -126,33 +197,34 @@ STEP 4 - the matrix (inside WT; write it to WT\runs\&lt;RUN_ID&gt;.matrix.yaml, 
     - {id: &lt;COMBO_ID&gt;, harness: &lt;HARNESS&gt;, model: "&lt;MODEL&gt;", effort: &lt;EFFORT&gt;, context: &lt;CONTEXT&gt;}
 
 STEP 5 - plan, then confirm (inside WT, with the STEP 3 environment)
-  - `uv run bench plan --matrix runs/&lt;RUN_ID&gt;.matrix.yaml --run-id &lt;RUN_ID&gt; --parallelism &lt;PARALLELISM&gt;
-    --arm on=&lt;PACK&gt;` and read the table: every cell has HARNESS's pinned build, the pack-on arm shows the pack
-    revision, the pack-off arm shows "no pack", and the cell count is 10 x 2 x REPETITIONS. A refusal (HB-PRE-*) is a
-    stop: report it verbatim.
+  - `BENCH plan --matrix runs/&lt;RUN_ID&gt;.matrix.yaml --run-id &lt;RUN_ID&gt; --parallelism &lt;PARALLELISM&gt;
+    --arm on=&lt;PACK&gt;` and read the table: every cell has HARNESS's pinned build, the
+    pack-on arm shows the pack revision, the pack-off arm shows "no pack", and there are 60 cells. A refusal
+    (HB-PRE-*) is a stop: report it verbatim.
   - Then the same command with `--confirm`.
 
 STEP 6 - run (inside WT)
-  - `uv run bench run &lt;RUN_ID&gt;`, as a background job. It launches the cells and runs a deterministic grading pass at
-    its end. Watch it with `uv run bench status &lt;RUN_ID&gt;` every 10 minutes; report each check in one line
-    (cells ended / running / validity counts).
-  - Early check: when the first 2 cells have ended, look at `bench status`: a cell with validity code HB-VAL-002
+  - `BENCH run &lt;RUN_ID&gt;`, as a background job. It launches the cells and runs a deterministic grading pass at its
+    end. Watch it with `BENCH status &lt;RUN_ID&gt;` every 10 minutes; report each
+    check in one line (cells ended / running / validity counts).
+  - Early check: when the first 2 cells have ended, look at `BENCH status`. A cell with validity code HB-VAL-002
     (model mismatch) or HB-VAL-010 (served effort or context differs from the pin) means the harness did not serve
-    the pinned model or setting. HB-VAL-011 (setting not recorded) is a warning, expected for agy's context. Stop the run (`uv run bench stop &lt;RUN_ID&gt;`) and report which.
+    what STEP 0 read: stop the run (`BENCH stop &lt;RUN_ID&gt;`) and report which. HB-VAL-011 (setting not recorded) is
+    a warning, expected for agy's context.
   - Stop rules: the engine reports it is down twice; the host becomes unstable (record the evidence first); an
     authentication failure pauses launches (HB-CELL-202) and the decision times out. Never edit a log or a run file.
 
 STEP 7 - verify (inside WT)
-  - `uv run bench verify &lt;RUN_ID&gt;` must exit 0. Exit 5 is an integrity failure: report it, do not repair it.
+  - `BENCH verify &lt;RUN_ID&gt;` must exit 0. Exit 5 is an integrity failure: report it, do not repair it.
 
 STEP 8 - the run summary (inside WT)
-  - `uv run bench report &lt;RUN_ID&gt;` (writes runs/&lt;RUN_ID&gt;/report.html).
-  - Write runs/&lt;RUN_ID&gt;/run-summary.md from `uv run bench status &lt;RUN_ID&gt; --json` and the report: the settings
-    block; BASE and WT; the plan's builds; cells by outcome and by validity (codes named); the served settings read
-    back per arm (model, effort, context) with their source; tokens per cell by arm (mean, min, max; fresh input,
-    cache read, cache write, output, reasoning); wall minutes per cell by arm; every warning code with its count; the
-    run's start and end time and its total wall time. Every number comes from the bench's output; label anything you
-    computed (a mean) as computed.
+  - `BENCH report &lt;RUN_ID&gt;` (writes runs/&lt;RUN_ID&gt;/report.html).
+  - Write runs/&lt;RUN_ID&gt;/run-summary.md from `BENCH status &lt;RUN_ID&gt; --json` and the report: the STEP 0 values
+    with the file and key each came from; the FIXED block; BASE and WT; the plan's builds; cells by outcome and by
+    validity (codes named); the served settings read back per arm (model, effort, context) with their source;
+    tokens per cell by arm (mean, min, max; fresh input, cache read, cache write, output, reasoning); wall minutes
+    per cell by arm; every warning code with its count; the run's start and end time and its total wall time. Every
+    number comes from the bench's output; label anything you computed (a mean) as computed.
   - `python docs/ai-forward-pack/scripts/render-markdown.py runs/&lt;RUN_ID&gt;/run-summary.md --open` (HTML beside it,
     opened in Chrome). If it prints "not opened: &lt;why&gt;", say why.
 
@@ -160,11 +232,10 @@ STEP 9 - the hand-off
   - Write runs/&lt;RUN_ID&gt;/handoff.json: {"run_id", "worktree": WT, "branch": "bench/&lt;RUN_ID&gt;", "base": BASE,
     "cells_root": CELLS, "combo": COMBO_ID, "harness", "model", "effort", "context", "pack": PACK, "cells", "verify": "ok",
     "summary": "&lt;path to run-summary.html&gt;"}.
-  - Print, as the last line of your reply:  HANDOFF: &lt;RUN_ID&gt;@&lt;WT&gt;
   - Leave the worktree in place (Prompt 2 reads the run from it). Do not commit the run (runs/ is git-ignored) and
     do not push.
-
-Report at the end: one table (step, result, evidence), the HANDOFF line, and anything that did not go as written.</pre>
+  - Report: one table (step, result, evidence) and anything that did not go as written. Then print, as the last
+    line of your reply:  HANDOFF: &lt;RUN_ID&gt;@&lt;WT&gt;</pre>
 </main>
 <script>
   document.getElementById("copy").addEventListener("click", function () {
