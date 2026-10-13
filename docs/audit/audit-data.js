@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-13T01:03:56Z",
+  "generated": "2026-10-13T16:41:34Z",
   "audit": [
     {
       "actor": null,
@@ -189781,6 +189781,33 @@ window.AUDIT_DATA = {
       "fan_out": 0,
       "started_at": "2026-10-13T00:40:41Z",
       "duration_seconds": 1395.0
+    },
+    {
+      "id": "al-01M4V2835B0FJ0WCYK1Z27ECNV",
+      "shortname": "join-agy-meta",
+      "datetime": "2026-10-13T16:41:34Z",
+      "session": "lean-rerun-leader",
+      "prompt": "the join of the resolved merge into integrate/rerun-21",
+      "summary": "agy manage_task/ask_question/list_permissions/finish/wait classed meta recount_seconds=961 (docs_only=False).",
+      "kind": "skill",
+      "skill": "execute-with-coordination",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "land the agy meta-tool fix on main",
+      "done_when": "integrated gates green and pushed",
+      "tier": "T1",
+      "fan_out": 0,
+      "signals": {
+        "verification_path": true,
+        "verification_executed": true,
+        "acceptance_met": true
+      },
+      "started_at": "2026-10-13T16:25:31Z",
+      "duration_seconds": 963.0
     }
   ],
   "changes": [
