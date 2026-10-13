@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grade and Report Prompt</title>
+<style>
+  :root {
+    --bg: #fbfaf7; --panel: #ffffff; --ink: #1d1f23; --muted: #5d636e; --line: #e2e0da;
+    --accent: #2f5d8a; --code-bg: #f3f1ec; --warn: #8a4b16; --warn-bg: #fbf1e6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15171b; --panel: #1c1f24; --ink: #e8e6e1; --muted: #a2a7b0; --line: #2f333a;
+      --accent: #8db8e3; --code-bg: #23272d; --warn: #f0b27a; --warn-bg: #2b2219;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15171b; --panel: #1c1f24; --ink: #e8e6e1; --muted: #a2a7b0; --line: #2f333a;
+    --accent: #8db8e3; --code-bg: #23272d; --warn: #f0b27a; --warn-bg: #2b2219;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1080px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 1.7rem; margin: 0 0 4px; }
+  h2 { font-size: 1.15rem; margin: 32px 0 8px; }
+  p.sub { color: var(--muted); margin: 0 0 24px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; }
+  .note { background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: 10px 14px; margin: 12px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; font-size: 0.9em; }
+  .bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 28px 0 8px; }
+  button { font: inherit; background: var(--accent); color: var(--bg); border: 0; border-radius: 6px;
+           padding: 7px 14px; cursor: pointer; }
+  button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  pre#prompt { background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 18px;
+               white-space: pre; overflow-x: auto; font: 13px/1.5 ui-monospace, "Cascadia Code", Consolas, monospace;
+               margin: 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Prompt 2: grade, compare, analyse</h1>
+  <p class="sub">Run in Claude Code in the main checkout (<code>C:\Projects\x-harness-x-model-bench</code>) after every
+    Prompt 1 run has ended. Give it the <code>HANDOFF:</code> lines. It grades each run with the judges and writes three
+    HTML pages, each opened in Chrome.</p>
+
+  <div class="card">
+    <h2 style="margin-top:0">Before you paste</h2>
+    <table>
+      <tr><th>What</th><th>Why</th></tr>
+      <tr><td>Every Prompt 1 run has ended</td><td>Judge calls are refused while any run is live (HB-GRD-005).</td></tr>
+      <tr><td><code>BENCH_OPERATOR_EMAIL</code> set in the shell that starts Claude Code</td><td>Judge egress and the
+        two published pages are fail-closed without it (HB-USR-002). It is never written to a file.</td></tr>
+      <tr><td>The <code>HANDOFF</code> lines pasted into the <code>RUNS</code> block</td><td>One line per run:
+        <code>HANDOFF: &lt;RUN_ID&gt;@&lt;worktree&gt;</code>.</td></tr>
+    </table>
+    <p>The three pages, for two audiences:</p>
+    <table>
+      <tr><th>Page</th><th>For</th><th>Built by</th></tr>
+      <tr><td>1. Grading completion report</td><td>You: did every run grade, and is it valid?</td><td>the prompt (Markdown, then <code>render-markdown.py</code>)</td></tr>
+      <tr><td>2. Benchmark comparison</td><td>Sharing with harness teams: cost and quality per harness, and why they differ</td><td><code>bench report --cost-compare</code> plus an analyst section</td></tr>
+      <tr><td>3. Pack-on vs pack-off analysis</td><td>Tuning the AI-Forward pack: where its extra tokens go, per harness</td><td><code>bench report --pack-cost</code> plus an analyst section</td></tr>
+    </table>
+    <div class="note">The analyst sections are number-checked: every number they cite must appear in the page's generated
+      tables, or the page is refused with the unmatched numbers listed. That keeps the prose honest.</div>
+  </div>
+
+  <div class="bar"><h2 style="margin:0">The prompt</h2><button id="copy" type="button">Copy prompt</button></div>
+<pre id="prompt">You are grading, comparing and analysing lean benchmark runs that were run by the "lean benchmark run" prompt
+(Prompt 1). You work in the main checkout, C:\Projects\x-harness-x-model-bench, alone: no sub-agents, no
+coordination layer, no new worktree. Use `python`, never `python3` (Windows). Tokens are the only cost unit; never
+write USD. Never print a token or credential.
+
+RUNS (the operator pastes the HANDOFF lines, one per line):
+  HANDOFF: &lt;RUN_ID&gt;@&lt;WORKTREE&gt;
+  HANDOFF: &lt;RUN_ID&gt;@&lt;WORKTREE&gt;
+
+GOAL: every listed run graded with the judges, and three HTML pages written and open in Chrome: (1) the grading
+completion report, (2) the benchmark comparison with root causes, (3) the pack-on vs pack-off analysis with tuning
+candidates. DONE WHEN: each run has a completed grading pass, `bench verify` passes on each copied run, the three
+pages exist under docs/benchmark-reports/&lt;REPORT_ID&gt;/ and are open, and they are committed locally. NOT IN SCOPE:
+running or re-running cells, editing bench code or the pack, changing a grade by hand, pushing.
+
+STEP 0 - start state (stop and report if any check fails)
+  - `git pull --ff-only origin main` succeeds (local changes that block it are a stop; never stash or reset them).
+    Record `git rev-parse HEAD` as BASE.
+  - BENCH_OPERATOR_EMAIL is set (check it is non-empty; never print it). If it is empty, stop and ask.
+  - HB_CLAUDE_OAUTH_TOKEN = the contents of C:\Users\malla\.harness-bench\claude-oauth-token.txt.txt, whitespace
+    stripped, in the environment of the `bench grade` commands only (the Claude judge uses it). Unset XAI_API_KEY.
+  - REPORT_ID = report-&lt;UTC yyyymmddThhmm&gt;. OUT = docs/benchmark-reports/&lt;REPORT_ID&gt;.
+  - `uv run bench tools install` (the judges use the pinned claude-code and copilot builds).
+
+STEP 1 - read and check each run (for every HANDOFF line)
+  - Read &lt;WORKTREE&gt;\runs\&lt;RUN_ID&gt;\handoff.json. Check run_id matches, "verify" is "ok", and note combo, harness,
+    model, effort, context, pack, cells, cells_root.
+  - `uv run bench --runs &lt;WORKTREE&gt;\runs status &lt;RUN_ID&gt;`: the run has ended (no cell running). A live run is a stop.
+  - `uv run bench --runs &lt;WORKTREE&gt;\runs verify &lt;RUN_ID&gt;` must exit 0.
+
+STEP 2 - bring the runs into the main checkout (one runs folder, so the reports can read them together)
+  - `robocopy &lt;WORKTREE&gt;\runs\&lt;RUN_ID&gt; runs\&lt;RUN_ID&gt; /E /COPY:DAT /R:1 /W:1 /NP /NFL /NDL`. Robocopy exit codes 0-7
+    are success; 8 or more is a failure (stop). Use robocopy, not a Git Bash `cp` (it has altered copied run files
+    before, class MSYS-COPY-A).
+  - `uv run bench verify &lt;RUN_ID&gt;` in the main checkout must exit 0. If runs\&lt;RUN_ID&gt; already exists and differs,
+    stop and report; never overwrite a run.
+
+STEP 3 - grade (one run at a time)
+  - `uv run bench --cells-root C:\Projects\bench-cells\&lt;REPORT_ID&gt; grade &lt;RUN_ID&gt; --allow-model-calls`
+  - It prints "graded N cell(s) in pass &lt;grading_id&gt;". Record the grading_id and N. N must equal the run's cell
+    count. A refusal is reported verbatim (HB-GRD-005 means a run is live: wait and retry once; HB-USR-002 means the
+    email is missing).
+  - `uv run bench report &lt;RUN_ID&gt;` (writes runs\&lt;RUN_ID&gt;\report.html with the new pass).
+  - `uv run bench verify &lt;RUN_ID&gt;` again: exit 0.
+
+STEP 4 - page 1, the grading completion report
+  - Write &lt;OUT&gt;/grading-completion.md, from `uv run bench status &lt;RUN_ID&gt; --json` and each report.html, with:
+    one row per run (run id, combo, harness, model, worktree, cells, cells graded, grading_id, verify result,
+    validity counts by code); per run, the cells that are invalid or ungraded and why (code and text); the judge
+    calls made and missed per run; anything that did not grade, and what it would take to finish it.
+  - Every number comes from the bench output. Label any number you computed as computed.
+  - `python docs/ai-forward-pack/scripts/render-markdown.py &lt;OUT&gt;/grading-completion.md --open`
+
+STEP 5 - page 2, the benchmark comparison (for the harness teams)
+  - Generate it first with no analysis:
+    `uv run bench report --cost-compare &lt;RUN_ID&gt; &lt;RUN_ID&gt; ... --out &lt;OUT&gt;/benchmark-comparison.html`
+  - Read the generated page's tables. Then read the evidence behind each difference: per-cell tokens by part
+    (fresh input, cache read, cache write, output, reasoning), requests per cell, prompt composition
+    (runs/&lt;RUN_ID&gt;/prompt_parts), the served settings read back (runs/&lt;RUN_ID&gt;/served), tool and harness events
+    (runs/&lt;RUN_ID&gt;/harness_events), wall time, and grade outcomes per task.
+  - Write &lt;OUT&gt;/benchmark-comparison-analysis.md: for each harness, what drives its cost and its quality relative to
+    the others, and the root cause where the evidence shows one (cache behaviour, request count, context re-sent per
+    request, reasoning tokens, tool loops, retries, the system prompt the harness adds). Label each cause Verified
+    (you observed it in the run's facts; cite the file) or Inferred (state the model and what would confirm it).
+    Cite only numbers that appear in the generated tables.
+  - Regenerate with the analysis, and open it:
+    `uv run bench report --cost-compare &lt;RUN_ID&gt; ... --out &lt;OUT&gt;/benchmark-comparison.html
+     --analysis &lt;OUT&gt;/benchmark-comparison-analysis.md --open`
+    A refusal lists the numbers that do not appear in the tables: fix the analysis, never the tables.
+
+STEP 6 - page 3, pack-on vs pack-off (for tuning the AI-Forward pack)
+  - Generate: `uv run bench report --pack-cost &lt;RUN_ID&gt; ... --out &lt;OUT&gt;/pack-on-vs-off.html`
+  - Read its tables: per harness, the extra tokens of the pack-on arm over the pack-off arm, split by where they go
+    (instructions and skills loaded into the prompt, extra requests, extra tool calls, extra reasoning, cache
+    misses), and the quality difference per task.
+  - Read the pack itself at the run's pack revision (C:/Projects/ai-forward at the commit in handoff.json; read
+    with `git -C C:/Projects/ai-forward show &lt;commit&gt;:&lt;path&gt;`, never check it out): the always-loaded files, the
+    skills the cells invoked (runs/&lt;RUN_ID&gt;/harness_events), and their sizes.
+  - Write &lt;OUT&gt;/pack-on-vs-off-analysis.md:
+    (a) per harness, where the extra tokens come from, largest first, with the pack file or behaviour that causes
+        each (Verified or Inferred, as in STEP 5);
+    (b) where the pack paid for itself (grade gains) and where it cost tokens with no grade gain;
+    (c) tuning candidates, ranked by expected token saving, each with: the change (a file, a section, a load rule),
+        the evidence, the expected effect, the risk to quality, and how a next run would measure it.
+    Cite only numbers that appear in the generated tables.
+  - Regenerate with the analysis, and open it:
+    `uv run bench report --pack-cost &lt;RUN_ID&gt; ... --out &lt;OUT&gt;/pack-on-vs-off.html
+     --analysis &lt;OUT&gt;/pack-on-vs-off-analysis.md --open`
+
+STEP 7 - close
+  - `git add &lt;OUT&gt;` and commit: "docs(benchmark): grading and reports &lt;REPORT_ID&gt;". Do not commit runs/ (it is
+    git-ignored). Do not push: the operator decides.
+  - Leave the worktrees in place; the operator removes them.
+  - Report: one table (run, combo, cells graded, grading_id, verify, valid cells), the three page paths, the commit,
+    and anything that did not go as written. If a page printed "not opened: &lt;why&gt;", say why.
+
+Known caveats (say so in the pages where they apply):
+  - Grok runs one cell at a time and is slow; its wall time is not comparable to parallel harnesses per run, only
+    per cell.
+  - Antigravity (agy) does not report its context window; its served context is "not recorded".
+  - Copilot's per-request rows come from its debug log; where that is missing the page says "not recorded".
+  - Claude Code's 1M window is judged from the adapter's final usage update (Ruling 123); in-turn 200000 values are
+    a seed, not a measurement.
+  - The pack page converts prompt characters to tokens per cell (first-request input / prefix characters). For
+    Copilot this overstates the pack's share, because its tool catalogue is in the input but not in the counted
+    prefix. Keep that split labelled Inferred; the fix (use the off/on pair's first-request difference) is owed.
+  - A run with fewer than 2 repetitions per cell has no spread; say so rather than draw a conclusion from one cell.</pre>
+</main>
+<script>
+  document.getElementById("copy").addEventListener("click", function () {
+    var text = document.getElementById("prompt").textContent;
+    var btn = this;
+    navigator.clipboard.writeText(text).then(function () { btn.textContent = "Copied"; setTimeout(function () { btn.textContent = "Copy prompt"; }, 1500); });
+  });
+</script>
+</body>
+</html>

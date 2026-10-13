@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-13T16:41:34Z",
+  "generated": "2026-10-13T16:46:37Z",
   "audit": [
     {
       "actor": null,
@@ -189808,6 +189808,28 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-13T16:25:31Z",
       "duration_seconds": 963.0
+    },
+    {
+      "id": "al-01M4V2HAYGC23QY98VNPBVEED6",
+      "shortname": "benchmark-prompts-simplify",
+      "datetime": "2026-10-13T16:46:37Z",
+      "session": "lean-rerun-leader",
+      "prompt": "clean up the worktrees and scratch --- the approach we are using is too complicated, i want to simplify --- create 2 prompts (and save as two distinct html file under docs\\benchmarkpromps) Prompt 1: lean benchmark execution prompt (one worktree per harness/model combo, run the lean benchmark with my model settings, full permissions, html run summary opened in chrome, an ID to hand to the next prompt). Prompt 2: grading, judging, reporting prompt (given the IDs; run in the main checkout in Claude Code; three html artifacts: grading completion report, detailed comparison with root causes, pack-on vs pack-off token analysis with pack tuning). create these prompts now, then open them in chrome so i can review",
+      "summary": "Wrote docs/benchmarkpromps/lean-benchmark-run-prompt.html and grade-judge-report-prompt.html (single-agent, no coordination layer; HANDOFF: <run>@<worktree> as the hand-off; matrix template dry-run through bench plan). Joined the agy meta-tool fix (4,862 passed) and pushed 0b20a43f. Removed 29 worktrees (branches kept), C:\\tf scratch and the probe cell folders; probe runs kept in runs/.",
+      "kind": "prompt",
+      "skill": null,
+      "tool": null,
+      "actor": null,
+      "artifacts": [
+        "docs/benchmarkpromps/lean-benchmark-run-prompt.html",
+        "docs/benchmarkpromps/grade-judge-report-prompt.html"
+      ],
+      "tags": [],
+      "outcome": "success",
+      "goal": "two simple paste-in benchmark prompts, saved and open in Chrome; worktrees and scratch cleaned",
+      "done_when": "both html files exist and render, opened in Chrome; only the primary worktree remains; scratch removed",
+      "tier": "T1",
+      "fan_out": 0
     }
   ],
   "changes": [
