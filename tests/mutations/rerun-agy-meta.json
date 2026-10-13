@@ -1,0 +1,20 @@
+[
+  {
+    "name": "AM1: agy's workspace-inert task-list and turn-control tools are classed out of profile (HB-VAL-008)",
+    "file": "src/harness_bench/telemetry/agy.py",
+    "find": "              | dict.fromkeys(_META, \"meta\")\n",
+    "replace": "              | dict.fromkeys(_META, \"other\")\n",
+    "tests": [
+      "tests/test_reader_agy.py::test_a_workspace_inert_task_list_or_turn_control_call_is_meta_not_hb_val_008"
+    ]
+  },
+  {
+    "name": "AM2: manage_task drops out of the meta tuple and falls back to class other",
+    "file": "src/harness_bench/telemetry/agy.py",
+    "find": "_META = (\"manage_task\", ",
+    "replace": "_META = (",
+    "tests": [
+      "tests/test_reader_agy.py::test_a_workspace_inert_task_list_or_turn_control_call_is_meta_not_hb_val_008"
+    ]
+  }
+]

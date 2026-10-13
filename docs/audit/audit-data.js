@@ -1,7 +1,7 @@
 // Derived from docs/audit/*.jsonl by scripts/audit-log.py — DO NOT hand-edit (the JSONL logs are the source of truth; see audit-and-change-log.md).
 window.AUDIT_DATA = {
   "project": "x-harness-x-model-bench",
-  "generated": "2026-10-12T23:39:14Z",
+  "generated": "2026-10-13T01:03:56Z",
   "audit": [
     {
       "actor": null,
@@ -189759,6 +189759,28 @@ window.AUDIT_DATA = {
       },
       "started_at": "2026-10-12T23:23:58Z",
       "duration_seconds": 916.0
+    },
+    {
+      "id": "al-01M4SCK7RJW0Q7E2RQQGA79RAH",
+      "shortname": "agy-meta",
+      "datetime": "2026-10-13T01:03:56Z",
+      "session": "agy-meta-rerun",
+      "prompt": "agy-meta-rerun: agy workspace-inert tools are class meta",
+      "summary": "manage_task, ask_question, list_permissions, finish, wait, wait_5_seconds class meta in agy TOOL_CLASS (Leader ruling, J1A-FIX item 24 / R-54 (a)); red-first test; mutants AM1-AM2 killed; probe-rerun-1 copy re-graded: all 12 cells valid",
+      "kind": "skill",
+      "skill": "implement",
+      "tool": null,
+      "actor": null,
+      "artifacts": [],
+      "tags": [],
+      "outcome": "success",
+      "compiled": false,
+      "goal": "agy manage_task and other workspace-inert turn-control tools counted, never scored (not HB-VAL-008)",
+      "done_when": "test_reader_agy + test_mutate_check green; rerun-agy-meta and rerun-read-agy mutants killed; ruff clean; both agy probe cells valid on re-grade",
+      "tier": "T1",
+      "fan_out": 0,
+      "started_at": "2026-10-13T00:40:41Z",
+      "duration_seconds": 1395.0
     }
   ],
   "changes": [

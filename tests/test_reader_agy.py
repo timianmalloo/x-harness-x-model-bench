@@ -173,7 +173,7 @@ def test_tool_class_covers_every_tool_the_pinned_build_advertises():
     advertised = init["init"]["tools"]
     assert len(advertised) == 60
     assert sorted(agy.TOOL_CLASS) == sorted(advertised)
-    assert set(agy.TOOL_CLASS.values()) <= {"shell", "edit", "read", "other"}
+    assert set(agy.TOOL_CLASS.values()) <= {"shell", "edit", "read", "meta", "other"}
     assert {name: agy.TOOL_CLASS[name] for name in OUT_OF_PROFILE} == dict.fromkeys(OUT_OF_PROFILE, "other")
 
 
@@ -200,6 +200,27 @@ def test_an_out_of_profile_tool_that_ran_fires_hb_val_008(tmp_path):
     error, _ = views._out_of_profile(normalize.tool_call_rows("run", "cell", "sid", ex, "x"), None)
     assert error is not None and error.code == "HB-VAL-008"
     assert "search_web" in error.message
+
+
+# Leader ruling agy-meta-rerun (Grok's todo_write ruling, ToolSearch R-54 (a)): agy's workspace-inert task-list and
+# turn-control tools are `meta`, counted and never scored. The probe-rerun-1 agy cells were HB-VAL-008 on manage_task only.
+WORKSPACE_INERT = ("manage_task", "finish", "wait", "wait_5_seconds", "ask_question", "list_permissions")
+
+
+def test_a_workspace_inert_task_list_or_turn_control_call_is_meta_not_hb_val_008(tmp_path):
+    cid = "00000000-0000-4000-8000-000000000002"
+    steps = [s for i, name in enumerate(WORKSPACE_INERT, 1)
+             for s in ({"step_index": i, "state": "ACTIVE", "step_type": "tool", "tool_name": name},
+                       {"step_index": i, "state": "DONE", "step_type": "tool", "tool_name": name})]
+    lines = [PACK_ON.read_text(encoding="utf-8").splitlines()[0]] + [
+        json.dumps({"event": "step_update", "step_update": {"conversation_id": cid} | s}) for s in steps]
+    path = tmp_path / "agy-stream.ndjson"
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    ex = agy.read(path)
+    assert [(c.name, c.tool_class) for c in ex.tool_calls] == [(name, "meta") for name in WORKSPACE_INERT]
+    error, warning = views._out_of_profile(normalize.tool_call_rows("run", "cell", "sid", ex, "x"), None)
+    assert error is None and warning is None
+    assert {agy.TOOL_CLASS[n] for n in ("ask_permission", "ask_custom_permission", "notebook_execution")} == {"other"}
 
 
 @pytest.mark.parametrize("name", ["pack-on", "pack-off", "turn1", "cached"])
