@@ -49,7 +49,8 @@ def test_facts_read_each_sv1_cells_oracle_line_and_say_why_a_native_count_is_not
     (tmp_path / log).parent.mkdir(parents=True)
     (tmp_path / log).write_text('--- stderr\nSV1-MEASURES {"early_checks": 0, "status_checks": 4}\nRan 6 tests\n',
                                 encoding="utf-8")
-    cells = [_cell("sv-grok", "SV1", "grok", {"pass_at_1": log}),
+    # A harness with no tool-input reader (every bench harness has one since tracks W3/W4).
+    cells = [_cell("sv-grok", "SV1", "x-no-reader", {"pass_at_1": log}),
              _cell("sv-cc", "SV1", "claude-code", {}, {"pass_at_1": views.Measure(None, "no working copy in the archive")}),
              _cell("s1-cc", "S1", "claude-code", {})]
     plan = {"tasks": {"SV1": {"graders": ["correctness", "process"]}, "S1": {"graders": ["correctness", "property"]}},
@@ -58,6 +59,6 @@ def test_facts_read_each_sv1_cells_oracle_line_and_say_why_a_native_count_is_not
     facts = supervision.facts(view)
     assert set(facts) == {"sv-grok", "sv-cc"}
     assert facts["sv-grok"] == lean.SupervisionFacts({"early_checks": 0, "status_checks": 4}, None, None, None,
-                                                     "no tool-input reader for grok")
+                                                     "no tool-input reader for x-no-reader")
     assert facts["sv-cc"] == lean.SupervisionFacts(None, "no working copy in the archive", None, None,
                                                    "no native record in the archive")

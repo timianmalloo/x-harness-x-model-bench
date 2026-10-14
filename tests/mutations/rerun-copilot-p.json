@@ -82,8 +82,8 @@
   {
     "name": "the ACP control launch's tool list is not last, so the scenario-6 ids land after --log-dir",
     "file": "bench/profiles/copilot.yaml",
-    "find": "\"--allow-tool\", \"write\", \"--disable-builtin-mcps\", \"--log-level\", \"debug\", \"--log-dir\", \"{home}/logs\", \"--available-tools\", \"powershell\", \"list_powershell\", \"read_powershell\", \"stop_powershell\", \"apply_patch\", \"view\", \"glob\", \"rg\", \"skill\"]",
-    "replace": "\"--allow-tool\", \"write\", \"--disable-builtin-mcps\", \"--available-tools\", \"powershell\", \"list_powershell\", \"read_powershell\", \"stop_powershell\", \"apply_patch\", \"view\", \"glob\", \"rg\", \"skill\", \"--log-level\", \"debug\", \"--log-dir\", \"{home}/logs\"]",
+    "find": "\"--add-dir\", \"{home}\", \"--disable-builtin-mcps\", \"--log-level\", \"debug\", \"--log-dir\", \"{home}/logs\", \"--available-tools\", \"powershell\", \"list_powershell\", \"read_powershell\", \"stop_powershell\", \"apply_patch\", \"view\", \"glob\", \"rg\", \"skill\"]",
+    "replace": "\"--add-dir\", \"{home}\", \"--disable-builtin-mcps\", \"--available-tools\", \"powershell\", \"list_powershell\", \"read_powershell\", \"stop_powershell\", \"apply_patch\", \"view\", \"glob\", \"rg\", \"skill\", \"--log-level\", \"debug\", \"--log-dir\", \"{home}/logs\"]",
     "tests": ["tests/test_profiles.py::test_copilot_profile_has_r45_static_tool_flags[acp]"]
   }
 ]

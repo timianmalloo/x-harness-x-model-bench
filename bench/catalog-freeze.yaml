@@ -43,8 +43,8 @@ versions:
   '0.9':
     catalog_hash: a5c41e5af36d052cc2b3f6dc96fe8c0cd0970236f1945dd7a69fb24b23428ef7
     golden:
-      c44dd2b-no-heads: 4202a65610abcad106f3c367e2c34ba5b520681dddde2285e079793368194b1a
-      heads: 4202a65610abcad106f3c367e2c34ba5b520681dddde2285e079793368194b1a
+      c44dd2b-no-heads: 3abc876466063e344ad5f2fab9cd723f717d08a01f3dc3f627a939ad2c519194
+      heads: 3abc876466063e344ad5f2fab9cd723f717d08a01f3dc3f627a939ad2c519194
     board_golden:
       c44dd2b-no-heads: cee2d1891900ab78f3a1f336ac92c72c1e1adc745d4ef9c5015e1f42ffb8f2ae
       heads: cee2d1891900ab78f3a1f336ac92c72c1e1adc745d4ef9c5015e1f42ffb8f2ae
