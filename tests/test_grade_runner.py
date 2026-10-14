@@ -109,9 +109,10 @@ def test_formal_on_a_task_with_no_formal_block_is_na_never_0_or_a_crash(root, tm
                                 "statement_integrity", "model_conformance", "model_non_vacuity")} == \
         {m: (None, reason) for m in ("formal_checks_clean", "bugs_confirmed", "bug_claim_precision",
                                      "statement_integrity", "model_conformance", "model_non_vacuity")}
-    missing = (None, "per-call outcome missing on 2 of 2 calls")  # the captured Codex record: every ok is null (DR-G3)
+    # The captured Codex record: since W13 the Codex reader sets each call's ok (codex._call_outcome), so both calls are
+    # measured and neither failed (it read "per-call outcome missing on 2 of 2 calls" before W13).
     assert {m: got[m] for m in PROCESS} == {  # process is registered (GR-PROC p1-p3), so measured, never `not built`
-        "tool_error_rate": missing, "stuck_loops": missing, "recovery_rate": missing,
+        "tool_error_rate": ("0.0000", None), "stuck_loops": (0, None), "recovery_rate": (None, "no failed tool call"),
         "planning_ratio": (None, "no edit-class tool call (a shell command is an edit only where the reader classifies it as one)"),
         "completion_without_intervention": (None, "no cell outcome"),  # the builder's cell.outcome has no stop_reason
         "time_to_first_green": (None, "test runs not identifiable in the tool record (no command text extracted)")}

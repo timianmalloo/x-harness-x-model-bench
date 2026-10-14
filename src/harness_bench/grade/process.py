@@ -5,8 +5,9 @@ sorted by native_ordinal, excluding tool_class "meta".
 p2: recovery_rate over those same calls, and planning_ratio from model-call requests.
 p3: completion_without_intervention from the cell.outcome event and stuck_loops.
 time_to_first_green is NA: command text is not extracted.
-Registered in runner.GRADERS; a task's scores are written only when its `graders` list names `process` (the metrics
-carry no `all_tasks`), so the 10 lean tasks (graders: correctness, property) get no process row.
+Registered in runner.GRADERS. Since catalog 0.9 all six metrics carry `all_tasks: true` (owner decision 2026-10-14,
+ADR-0026 Amendment 1), so every task with a blast_radius -- every task -- is graded for process, whatever its
+`graders` list. grade_cell returns all six keys, so the six are flagged together (a subset would be HB-GRD-004).
 """
 
 from collections.abc import Mapping

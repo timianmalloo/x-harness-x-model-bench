@@ -592,9 +592,9 @@ ELEVEN = (
 )
 FREEZE_06_COMMIT = "d6dda42d"  # the 0.6 freeze; catalog_hash reads metrics.yaml and bench/rubrics/
 # The 0.7 release (X-G3's join, R-86 c3): its metrics.yaml is the frozen fixture root's (GOLD-A). The live catalog
-# is 0.8 since the S4b freeze (2026-10-12), so a test of the 0.7 release reads these, never the live file.
+# is 0.9 since its freeze (2026-10-14, ADR-0026 Amendment 1), so a test of the 0.7 release reads these, never the live file.
 FREEZE_07_COMMIT = "2c4e2204"
-LIVE_VERSION = "0.8"
+LIVE_VERSION = "0.9"
 HSE_PHRASE = "unresolved vendored-API references in the final tree"
 HSE_RETIRED = "build-log errors"
 
@@ -677,7 +677,7 @@ def test_catalog_has_the_eleven_property_metrics_with_the_fixed_fields():
     found = _index(catalog)
     missing = sorted(row["id"] for row in ELEVEN if row["id"] not in found)
     assert missing == []  # red on 0.6: the catalog holds none of the eleven ids
-    assert catalog["version"] == LIVE_VERSION  # the live catalog, released at the S4b freeze
+    assert catalog["version"] == LIVE_VERSION  # the live catalog, released at the 0.9 freeze
     released = config.load_yaml(FROZEN_ROOT / "bench" / "metrics.yaml")  # 0.7, released at X-G3's join (2c4e2204)
     assert released["version"] == "0.7" and not [r["id"] for r in ELEVEN if r["id"] not in _index(released)]
     for row in ELEVEN:
