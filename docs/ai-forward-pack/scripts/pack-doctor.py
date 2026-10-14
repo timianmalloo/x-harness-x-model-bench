@@ -141,6 +141,65 @@ def check_codex(root):
                    % len(inventory))
 
 
+def check_muse(root):
+    """Check the deployed Muse contract, never claim a running Muse catalog was read.
+
+    Muse discovers the shared .agents/skills surface (the Codex/Antigravity
+    tree) and reads AGENTS.md; its own contribution is the path map
+    docs/ai-forward-pack/muse-surface.md plus the AGENTS.md pointer to it.
+    The skill inventory is the shared codex-skills.json manifest."""
+    name = "Muse repository readiness"
+    fix = "run $updatepack (or pwsh tools/sync-pack.ps1 in the source repo); see docs/ai-forward-pack/muse-surface.md"
+    problems = []
+    required = ["AGENTS.md", "docs/ai-forward-pack/muse-surface.md",
+                "docs/ai-forward-pack/scripts/audit-log.py",
+                "docs/ai-forward-pack/scripts/prompt-log.py",
+                "docs/ai-forward-pack/scripts/docs-graph.py"]
+    required += [".claude/knowledge/" + doc + ".md" for doc in (
+        "agent-body-of-knowledge", "agent-rules-of-the-road", "agent-persona-catalog",
+        "layered-optimized-architecture", "engineering-governance")]
+    for rel in required:
+        if not (_read(os.path.join(root, rel)) or "").strip():
+            problems.append("missing or empty " + rel)
+    agents = _read(os.path.join(root, "AGENTS.md")) or ""
+    if "docs/ai-forward-pack/muse-surface.md" not in agents:
+        problems.append("AGENTS.md does not direct Muse to its grounding guide")
+
+    manifest = "docs/ai-forward-pack/codex-skills.json"
+    try:
+        inventory = json.loads(_read(os.path.join(root, manifest)) or "null")
+    except ValueError:
+        inventory = None
+    if not isinstance(inventory, dict) or not inventory:
+        return _result(name, FAIL, "; ".join(problems + ["missing or invalid " + manifest]), fix)
+    for skill, files in inventory.items():
+        if (not re.fullmatch(r"[a-z0-9-]+", skill) or not isinstance(files, list)
+                or "SKILL.md" not in files or any(
+                    not isinstance(f, str) or not f or "\\" in f
+                    or f.startswith("/") or ":" in f or ".." in f.split("/") for f in files)):
+            problems.append("invalid skill inventory entry " + skill)
+            continue
+        for rel in files:
+            target = ".agents/skills/" + skill + "/" + rel
+            if not os.path.isfile(os.path.join(root, target)):
+                problems.append("missing " + target)
+        target = ".agents/skills/" + skill + "/SKILL.md"
+        text = _read(os.path.join(root, target)) or ""
+        header = re.match(r"\A---\r?\n(.*?)\r?\n---(?:\r?\n|$)", text, re.S)
+        fields = {}
+        if header:
+            for key in ("name", "description"):
+                match = re.search(r"^" + key + r":[ \t]*([^\r\n]+)", header.group(1), re.M)
+                fields[key] = match.group(1).strip().strip("\"'") if match else ""
+        if fields.get("name") != skill or not fields.get("description", "").strip():
+            problems.append("invalid name/description in " + target)
+    if problems:
+        return _result(name, FAIL, "; ".join(problems), fix)
+    return _result(name, PASS,
+                   "%d pack skills, companion files, constitution and scripts present; filesystem only, Muse catalog not queried"
+                   % len(inventory))
+
+
 def check_claude_md_import(root):
     """CTX-B / F-01. Copilot CLI loads BOTH AGENTS.md and CLAUDE.md as custom instructions
     (measured: two ~58 KB <custom_instruction> blocks in one captured prefix), while Claude
@@ -224,14 +283,17 @@ def check_hooks(root):
         have.append("Grok Build (.grok/hooks/ai-forward.json)")
     if os.path.isfile(agy):
         have.append("Antigravity (.agents/hooks.json)")
-    if "reread-guard" in cc:
+    # B15: the guard runs inside the per-event dispatcher (dispatch.py); older installs name it directly.
+    if "reread-guard" in cc or "dispatch.py --host claude" in cc:
         have.append("Claude Code (.claude/settings.json)")
-    guard = os.path.isfile(os.path.join(root, "docs", "ai-forward-pack", "hooks", "reread-guard.py"))
-    if have and guard:
+    hooks_dir = os.path.join(root, "docs", "ai-forward-pack", "hooks")
+    missing = [f for f in ("reread-guard.py", "dispatch.py") if not os.path.isfile(os.path.join(hooks_dir, f))]
+    if have and not missing:
         return _result("re-read guard hook", PASS, "installed for " + ", ".join(have))
-    if have and not guard:
-        return _result("re-read guard hook", FAIL, "hook config present but docs/ai-forward-pack/hooks/reread-guard.py is missing",
-                       "copy adapters/hooks/reread-guard.py to docs/ai-forward-pack/hooks/ (INSTALL 1.5)")
+    if have:
+        return _result("re-read guard hook", FAIL, "hook config present but docs/ai-forward-pack/hooks/{0} is missing"
+                       .format(" and ".join(missing)),
+                       "copy adapters/hooks/reread-guard.py and dispatch.py to docs/ai-forward-pack/hooks/ (INSTALL 1.5)")
     return _result("re-read guard hook", WARN, "not installed on any host",
                    "copy adapters/hooks/copilot.ai-forward-hooks.json to .github/hooks/ai-forward.json, grok.ai-forward-hooks.json to .grok/hooks/ai-forward.json, agy.ai-forward-hooks.json to .agents/hooks.json, and merge adapters/hooks/claude-code.settings.hooks.json into .claude/settings.json (INSTALL 1.4 / 1.7 / 1.8)")
 
@@ -794,6 +856,7 @@ def run(root):
         check_surface(root, ".grok", [".grok/skills", ".grok/agents", ".grok/hooks", ".grok/rules"]),
         check_surface(root, ".agents", [".agents/skills", ".agents/rules", ".agents/hooks.json"]),
         check_codex(root),
+        check_muse(root),
         check_block(root, "CLAUDE.md"),
         check_block(root, "AGENTS.md"),
         check_claude_md_import(root),

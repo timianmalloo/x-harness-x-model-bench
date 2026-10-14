@@ -296,13 +296,45 @@ def should_reconvene(stats, advisory=True):
 # A flag someone has to remember is not "measurable by default". The grounding step calls
 # `start --session <id>`, which persists the stamp; `append` then picks it up automatically,
 # so no caller threads a variable through and no skill can silently forget the measurement.
-# The store is ephemeral per-run state, not project history -- it is git-ignored, and its
-# absence degrades to "no duration recorded", never to a wrong one (IO8).
+# The store is ephemeral per-run state, not project history, and its absence degrades to
+# "no duration recorded", never to a wrong one (IO8). It lives in the checkout's GIT DIR
+# (`<git-dir>/ai-forward/run-starts.json`; per checkout, never tracked, nothing to ignore), so
+# the session-start hook leaves the working tree unchanged: beside the log it was one more
+# file in every task's working copy, and in the `.agents/log/` fallback it was not even
+# ignored (bench decision B15). Outside git it stays beside the log, as before.
 STARTS_FILE = ".run-starts.json"
 STARTS_MAX_AGE_DAYS = 7
 
 
+def _checkout_git_dir(path):
+    """The git dir of the checkout holding `path` (`.git`, or the directory a linked worktree's
+    `.git` file names), or None outside git. Filesystem only; `path` need not exist yet."""
+    here = os.path.abspath(path)
+    while True:
+        dot = os.path.join(here, ".git")
+        if os.path.isdir(dot):
+            return dot
+        if os.path.isfile(dot):
+            try:
+                with open(dot, encoding="utf-8") as f:
+                    text = f.read().strip()
+            except OSError:
+                return None
+            if not text.startswith("gitdir:"):
+                return None
+            target = text.split(":", 1)[1].strip()
+            target = target if os.path.isabs(target) else os.path.join(here, target)
+            return target if os.path.isdir(target) else None
+        parent = os.path.dirname(here)
+        if parent == here:
+            return None
+        here = parent
+
+
 def _starts_path(root):
+    git_dir = _checkout_git_dir(audit_dir(root))
+    if git_dir:
+        return os.path.join(git_dir, "ai-forward", "run-starts.json")
     return os.path.join(audit_dir(root), STARTS_FILE)
 
 

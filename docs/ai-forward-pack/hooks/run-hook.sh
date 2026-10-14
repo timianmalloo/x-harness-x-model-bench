@@ -28,6 +28,11 @@ if [ "$1" = "--caller-cwd" ]; then
 fi
 script="${up}docs/ai-forward-pack/hooks/$1"
 shift
-py=$(python3 -c 'import sys;print(sys.executable)' 2>/dev/null)
-[ -x "$py" ] || py=$(python -c 'import sys;print(sys.executable)')
+# The interpreter is resolved at run time (PLAT-A/PLAT-B). Windows sets OS=Windows_NT for every
+# process. There python.org ships no python3.exe, and the python3 on PATH is a Store alias that
+# exits 9009 after ~200 ms (measured 2026-10-14, on every hook call), so Windows asks python first.
+first=python3; second=python
+if [ "$OS" = "Windows_NT" ]; then first=python; second=python3; fi
+py=$($first -c 'import sys;print(sys.executable)' 2>/dev/null)
+[ -x "$py" ] || py=$($second -c 'import sys;print(sys.executable)')
 exec "$py" "$script" "$@"

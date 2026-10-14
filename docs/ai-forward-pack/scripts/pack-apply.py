@@ -77,6 +77,14 @@ def read_hook_settings(path):
         return None
 
 
+# B15 (hook cost): revision 100 shipped one launcher command per pack hook; one dispatcher
+# command per host event replaces them. These are the source-managed names and commands it
+# retires. A refresh that left them would run every hook twice.
+RETIRED_HOOK_SCRIPTS = ("reread-guard", "mail-doorbell", "heartbeat", "git-identity-guard",
+                        "owner-review-gate", "session-start")
+RETIRED_AGY_SECTIONS = ("reread-guard", "session-start", "mail-doorbell", "heartbeat", "owner-review-gate")
+
+
 def merge_named_hook_bundles(source_text, current_text=None):
     """Refresh source-owned names and retain project-owned names; reject invalid JSON."""
     source = json.loads(source_text)
@@ -85,6 +93,9 @@ def merge_named_hook_bundles(source_text, current_text=None):
         if not isinstance(value, dict) or any(not isinstance(section, dict) for section in value.values()):
             raise ValueError("Named hook bundles must be objects of objects")
     _refresh_legacy_ownership(current)
+    for name in RETIRED_AGY_SECTIONS:
+        if name not in source:
+            current.pop(name, None)
     current.update(source)
     return json.dumps(current, indent=2) + "\n"
 
@@ -154,6 +165,23 @@ def merge_claude_settings(source_text, current_text=None):
     ownership_old.add(prefix + 'root=$(git rev-parse --show-toplevel) || exit 2; '
                       'exec "$py" "$root/docs/ai-forward-pack/scripts/coord-core.py" hook --host claude')
     hooks = current.setdefault("hooks", {})
+    ships_dispatcher = any("run-hook.sh dispatch.py --host claude" in handler.get("command", "")
+                           for entries in source.get("hooks", {}).values()
+                           for entry in entries for handler in entry["hooks"])
+    if ships_dispatcher:
+        # B15: the exact per-hook commands revision 100 (and its older spellings) shipped are
+        # retired; a custom wrapper never matches exactly and survives.
+        retired = re.compile("(?:" + re.escape(launcher) + "|(?:" + re.escape(prefix + '"$py" ') +
+                             "|python )docs/ai-forward-pack/hooks/)(?:" + "|".join(RETIRED_HOOK_SCRIPTS) +
+                             r")\.py --host claude(?: --event \w+)?")
+        for event in list(hooks):
+            kept = []
+            for entry in hooks[event]:
+                handlers = [h for h in entry["hooks"]
+                            if h.get("args") or not retired.fullmatch(str(h.get("command", "")))]
+                if handlers or not entry["hooks"]:
+                    kept.append(dict(entry, hooks=handlers))
+            hooks[event] = kept
     for event, entries in source.get("hooks", {}).items():
         replacements = {}
         for entry in entries:
@@ -607,6 +635,9 @@ class Applier(object):
         self.place("bundle", "adapters/codex/codex.md",
                    os.path.join(self.target, "docs", "ai-forward-pack", "codex.md"),
                    read(os.path.join(self.pack, "adapters", "codex", "codex.md")))
+        self.place("bundle", "adapters/muse/muse-surface.md",
+                   os.path.join(self.target, "docs", "ai-forward-pack", "muse-surface.md"),
+                   read(os.path.join(self.pack, "adapters", "muse", "muse-surface.md")))
 
     def agents(self):
         cc = os.path.join(self.pack, "adapters", "claude-code", "agents")
@@ -646,7 +677,7 @@ class Applier(object):
         for f in ("README.md", "OVERVIEW.md", "research-synthesis.md", "context-budget.json"):
             self.place("bundle", f, os.path.join(dp, f), read(os.path.join(self.pack, f)))
         hooks = os.path.join(self.pack, "adapters", "hooks")
-        for f in ("reread-guard.py", "session-start.py", "mail-doorbell.py", "heartbeat.py", "coord_identity.py",
+        for f in ("dispatch.py", "reread-guard.py", "session-start.py", "mail-doorbell.py", "heartbeat.py", "coord_identity.py",
                   "owner-review-gate.py", "git-identity-guard.py", "run-hook.sh", "copilot.ai-forward-hooks.json",
                   "README.md"):
             self.place("hooks", "adapters/hooks/" + f, os.path.join(dp, "hooks", f), read(os.path.join(hooks, f)))

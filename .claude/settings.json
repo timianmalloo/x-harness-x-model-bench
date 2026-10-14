@@ -22,29 +22,10 @@
         ]
       },
       {
-        "matcher": "Read",
         "hooks": [
           {
             "type": "command",
-            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh reread-guard.py --host claude",
-            "timeout": 10
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh mail-doorbell.py --host claude --event PreToolUse",
-            "timeout": 10
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh git-identity-guard.py --host claude",
+            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh dispatch.py --host claude --event PreToolUse",
             "timeout": 10
           }
         ]
@@ -55,16 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh reread-guard.py --host claude",
-            "timeout": 10
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh mail-doorbell.py --host claude --event UserPromptSubmit",
+            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh dispatch.py --host claude --event UserPromptSubmit",
             "timeout": 10
           }
         ]
@@ -75,7 +47,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh session-start.py --host claude",
+            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh dispatch.py --host claude --event SessionStart",
             "timeout": 15
           }
         ]
@@ -86,7 +58,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh session-start.py --host claude",
+            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh dispatch.py --host claude --event SubagentStart",
             "timeout": 15
           }
         ]
@@ -97,7 +69,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh heartbeat.py --host claude --event PostToolUse",
+            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh dispatch.py --host claude --event PostToolUse",
             "timeout": 10
           }
         ]
@@ -108,16 +80,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh heartbeat.py --host claude --event Stop",
-            "timeout": 10
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh owner-review-gate.py --host claude --event Stop",
+            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh dispatch.py --host claude --event Stop",
             "timeout": 10
           }
         ]
@@ -128,7 +91,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh owner-review-gate.py --host claude --event SubagentStop",
+            "command": "git -c alias.aif-hook=!sh aif-hook docs/ai-forward-pack/hooks/run-hook.sh dispatch.py --host claude --event SubagentStop",
             "timeout": 10
           }
         ]

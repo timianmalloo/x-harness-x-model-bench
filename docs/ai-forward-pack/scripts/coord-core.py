@@ -159,6 +159,30 @@ def resolve_root(cwd, raw):
     return root, None
 
 
+def coordination_active(root):
+    """Is coordination ON for this repository? Only when its record holds something: a session
+    ledger (`log/<session>.jsonl`, written by `session start`, mail twins, heartbeats), an inbox
+    (`mail/*.jsonl`) or the request store. A session identity in the environment is not enough,
+    and neither is the `log/` directory alone - the audit log's local fallback (AL0.2) creates
+    `log/audit/` in repositories that never coordinate.
+
+    The coordination hooks (doorbell, heartbeat, owner-review gate) return at once when this is
+    False, so a repository that never coordinates pays nothing for them and gains no ledger
+    (bench decision B15: they ran on every tool call in cells that never coordinate).
+    Filesystem only: this runs on the hook hot path."""
+    root = Path(root)
+    if (root / REQUESTS_FILE).is_file():
+        return True
+    for sub in ("log", "mail"):
+        try:
+            with os.scandir(str(root / sub)) as entries:
+                if any(entry.name.endswith(".jsonl") and entry.is_file() for entry in entries):
+                    return True
+        except OSError:
+            continue
+    return False
+
+
 def _norm(p):
     return str(p).replace("\\", "/").replace("**", "*")
 

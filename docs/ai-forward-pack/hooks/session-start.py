@@ -142,10 +142,10 @@ def _session_check_lines(cwd):
     return lines
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--host", choices=["claude", "grok", "agy", "copilot"], default="claude")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     try:
         if args.host == "claude" and os.environ.get("AGENT_HOST") == "copilot":
             return 0
